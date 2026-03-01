@@ -11,6 +11,7 @@ import os
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from scipy.stats import gaussian_kde
+import yfinance as yf
 
 # ==========================================
 # 0. 網頁基本設定
@@ -154,8 +155,10 @@ diffusion_model, is_loaded = load_models()
 # ==========================================
 with st.sidebar:
     st.header("⚙️ 預測參數設定")
+    # 新增股票代號輸入框 (預設為台積電)
+    ticker_input = st.text_input("🔍 輸入股票代號 (台股請加 .TW)", value="2330.TW")
     n_samples = st.slider("生成預測路徑數量 (信心區間解析度)", min_value=50, max_value=500, value=100, step=50)
-    st.info("💡 採樣數量越高，生成的機率雲圖會越平滑，但計算時間也會稍微增加。")
+    st.info("💡 採樣數量越高，生成的機率雲圖會越平滑。")
 
 if not is_loaded:
     st.error("❌ 找不到模型權重檔！請確認 `models/mamba_core_phase2.pth` 與 `models/diffusion_v1.pth` 是否存在。")
@@ -166,17 +169,26 @@ else:
     st.write("點擊下方按鈕，模型將會讀取最近 60 分鐘的市場特徵，並生成未來的可能走勢機率。")
     
     if st.button("🚀 生成未來走勢機率雲", type="primary"):
-        with st.spinner("🧠 正在載入真實 K 線資料，Diffusion 進行去噪演算中..."):
+        with st.spinner(f"🧠 正在從 Yahoo Finance 抓取 {ticker_input} 最新 K 線，Diffusion 演算中..."):
             
             # ==========================================
-            # 1. 讀取並清洗真實歷史資料
+            # 1. 透過 yfinance 抓取即時歷史資料
             # ==========================================
-            data_path = 'Data/2330_2023.parquet'
-            if not os.path.exists(data_path):
-                st.error(f"❌ 找不到真實資料檔：{data_path}。請確認檔案是否已放入 Data 資料夾！")
-                st.stop()
+            try:
+                # 抓取過去一年的日 K 線資料
+                stock_data = yf.Ticker(ticker_input)
+                df = stock_data.history(period="1y")
                 
-            df = pd.read_parquet(data_path)
+                if df.empty:
+                    st.error(f"❌ 找不到代號 {ticker_input} 的資料，請確認輸入是否正確！")
+                    st.stop()
+                    
+            except Exception as e:
+                st.error(f"❌ 抓取資料失敗: {e}")
+                st.stop()
+            
+            # 為了確保欄位名稱一致，將 yfinance 輸出的欄位轉為所需格式
+            df = df[['Close', 'Volume']].copy()
             
             # 計算與訓練時一模一樣的特徵
             df['Log_Ret'] = np.log((df['Close'] + 1e-8) / (df['Close'].shift(1) + 1e-8))
@@ -184,19 +196,17 @@ else:
             df.replace([np.inf, -np.inf], np.nan, inplace=True)
             df.dropna(inplace=True)
             
+            # 如果資料不足 60 筆則擋下
+            if len(df) < 60:
+                st.error("❌ 該股票的歷史資料不足 60 筆，無法進行預測！")
+                st.stop()
+            
             # 取出最後 60 筆原始收盤價用來畫圖
             recent_df = df.tail(60).copy()
             historical_prices = recent_df['Close'].values
             current_price = historical_prices[-1]
             
-            # 重新擬合標準化 (還原訓練時的資料分佈)
-            scaler = StandardScaler()
-            scaled_data = scaler.fit_transform(df[['Log_Ret', 'Log_Vol']].values)
-            scaled_data = np.clip(scaled_data, -5, 5) # 終極防護罩
-            
-            # 抓取最後 60 步的特徵餵給模型
-            recent_scaled = scaled_data[-60:]
-            real_history_tensor = torch.FloatTensor(recent_scaled).unsqueeze(0).to(diffusion_model.device)
+            # -- 後面的資料標準化、推論、畫圖程式碼完全不用動！ --
             
             # ==========================================
             # 2. 推論與數值還原
@@ -262,4 +272,5 @@ else:
             col3.metric("保守情境 (5%)", f"{p05_price:.2f}", f"{(p05_price - current_price):.2f}")
 
             col4.metric("樂觀情境 (95%)", f"{p95_price:.2f}", f"{(p95_price - current_price):.2f}")
+
 
