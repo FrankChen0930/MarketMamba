@@ -162,205 +162,206 @@ with st.sidebar:
 
 st.success("✅ Mamba 與 Diffusion 核心已成功上線！")
     
-    # 建立兩個分頁
-    tab1, tab2 = st.tabs(["🎯 單股預測終端", "🔥 飆股雷達掃描"])
+# 建立兩個分頁
+tab1, tab2 = st.tabs(["🎯 單股預測終端", "🔥 飆股雷達掃描"])
     
-    # 將原本的單股預測程式碼，全部縮排收進 tab1 裡面
-    with tab1:
-        st.subheader("📊 動態單股預測")
-        if st.button("🚀 生成未來走勢機率雲", type="primary"):
-            with st.spinner(f"🧠 正在從 Yahoo Finance 抓取 {ticker_input} 最新 K 線，Diffusion 演算中..."):
+# 將原本的單股預測程式碼，全部縮排收進 tab1 裡面
+with tab1:
+    st.subheader("📊 動態單股預測")
+    if st.button("🚀 生成未來走勢機率雲", type="primary"):
+        with st.spinner(f"🧠 正在從 Yahoo Finance 抓取 {ticker_input} 最新 K 線，Diffusion 演算中..."):
+            
+            # ==========================================
+            # 1. 透過 yfinance 抓取即時歷史資料
+            # ==========================================
+            try:
+                # 抓取過去一年的日 K 線資料
+                stock_data = yf.Ticker(ticker_input)
+                df = stock_data.history(period="1y")
                 
-                # ==========================================
-                # 1. 透過 yfinance 抓取即時歷史資料
-                # ==========================================
-                try:
-                    # 抓取過去一年的日 K 線資料
-                    stock_data = yf.Ticker(ticker_input)
-                    df = stock_data.history(period="1y")
-                    
-                    if df.empty:
-                        st.error(f"❌ 找不到代號 {ticker_input} 的資料，請確認輸入是否正確！")
-                        st.stop()
-                        
-                except Exception as e:
-                    st.error(f"❌ 抓取資料失敗: {e}")
+                if df.empty:
+                    st.error(f"❌ 找不到代號 {ticker_input} 的資料，請確認輸入是否正確！")
                     st.stop()
-                
-                # 為了確保欄位名稱一致，將 yfinance 輸出的欄位轉為所需格式
+                    
+            except Exception as e:
+                st.error(f"❌ 抓取資料失敗: {e}")
+                st.stop()
+            
+            # 為了確保欄位名稱一致，將 yfinance 輸出的欄位轉為所需格式
+            df = df[['Close', 'Volume']].copy()
+            
+            # 計算與訓練時一模一樣的特徵
+            df['Log_Ret'] = np.log((df['Close'] + 1e-8) / (df['Close'].shift(1) + 1e-8))
+            df['Log_Vol'] = np.log(df['Volume'] + 1)
+            df.replace([np.inf, -np.inf], np.nan, inplace=True)
+            df.dropna(inplace=True)
+            
+            # 如果資料不足 60 筆則擋下
+            if len(df) < 60:
+                st.error("❌ 該股票的歷史資料不足 60 筆，無法進行預測！")
+                st.stop()
+            
+            # 取出最後 60 筆原始收盤價用來畫圖
+            recent_df = df.tail(60).copy()
+            historical_prices = recent_df['Close'].values
+            current_price = historical_prices[-1]
+            
+            # 重新擬合標準化 (還原訓練時的資料分佈)
+            scaler = StandardScaler()
+            scaled_data = scaler.fit_transform(df[['Log_Ret', 'Log_Vol']].values)
+            scaled_data = np.clip(scaled_data, -5, 5) # 終極防護罩
+            
+            # 抓取最後 60 步的特徵餵給模型
+            recent_scaled = scaled_data[-60:]
+            real_history_tensor = torch.FloatTensor(recent_scaled).unsqueeze(0).to(diffusion_model.device)
+            
+            # ==========================================
+            # 2. 推論與數值還原
+            # ==========================================
+            # 預測出標準化後的 Log Return
+            predictions = diffusion_model.sample(real_history_tensor, n_samples=n_samples)
+            preds_scaled = predictions.cpu().numpy().flatten()
+            
+            # 反標準化：(預測值 * 標準差) + 平均數
+            preds_log_ret = (preds_scaled * scaler.scale_[0]) + scaler.mean_[0]
+            
+            # 轉換回真實股價：P_t = P_{t-1} * exp(Log_Ret)
+            predicted_prices = current_price * np.exp(preds_log_ret)
+            
+            # 計算 KDE 尋找「最密集的眾數」 (你要求的最大可能性落點)
+            kde = gaussian_kde(predicted_prices)
+            price_range = np.linspace(min(predicted_prices), max(predicted_prices), 1000)
+            kde_mode_price = price_range[np.argmax(kde(price_range))]
+            
+            # ==========================================
+            # 📈 繪製專業走勢預測圖
+            # ==========================================
+            fig, ax = plt.subplots(figsize=(12, 6))
+            
+            # A. 歷史走勢
+            days_past = np.arange(-59, 1)
+            ax.plot(days_past, historical_prices, color='#1f77b4', linewidth=2.5, label='真實歷史走勢 (最後 60 筆)')
+            ax.axvline(x=0, color='gray', linestyle='--', alpha=0.5, label='最新收盤價')
+            ax.scatter(0, current_price, color='black', s=50, zorder=5) 
+            
+            # B. 未來預測分佈
+            day_future = np.ones_like(predicted_prices) * 1 
+            ax.scatter(day_future, predicted_prices, color='#ff7f0e', alpha=0.3, label='Diffusion 預測路徑')
+            ax.boxplot(predicted_prices, positions=[1], widths=1.5, patch_artist=True,
+                       boxprops=dict(facecolor='#ff7f0e', alpha=0.5, color='#ff7f0e'),
+                       medianprops=dict(color='red', linewidth=2),
+                       whis=[5, 95], showfliers=False) 
+                       
+            # 標示出「最密集的眾數」
+            ax.scatter(1, kde_mode_price, color='purple', s=100, marker='*', zorder=10, label=f'最高機率落點 ({kde_mode_price:.2f})')
+            
+            # C. 圖表美化
+            ax.set_title(f"{ticker_input} 走勢與未來機率預測\n最新收盤價: {current_price:.2f}", fontsize=16, fontweight='bold')
+            ax.set_xlabel("時間步數 (分鐘/日)", fontsize=12)
+            ax.set_ylabel("股價 (TWD)", fontsize=12)
+            ax.set_xticks([-60, -40, -20, 0, 1])
+            ax.set_xticklabels(['T-60', 'T-40', 'T-20', 'T=0', 'T+1'])
+            ax.legend(loc='upper left')
+            ax.grid(True, linestyle=':', alpha=0.6)
+            
+            st.pyplot(fig)
+            
+            # ==========================================
+            # 📊 顯示數據統計
+            # ==========================================
+            mean_pred_price = np.mean(predicted_prices)
+            p05_price = np.percentile(predicted_prices, 5)
+            p95_price = np.percentile(predicted_prices, 95)
+            
+            col1, col2, col3, col4 = st.columns(4)
+            col1.metric("當前收盤價", f"{current_price:.2f}")
+            col2.metric("⭐ 最高機率目標價", f"{kde_mode_price:.2f}", f"{(kde_mode_price - current_price):.2f}")
+            col3.metric("保守情境 (5%)", f"{p05_price:.2f}", f"{(p05_price - current_price):.2f}")
+
+            col4.metric("樂觀情境 (95%)", f"{p95_price:.2f}", f"{(p95_price - current_price):.2f}")
+
+with tab2:
+    st.subheader("🚀 台灣指標股潛力掃描雷達")
+    st.write("自動掃描重點觀察清單，並依據 Mamba-Diffusion 預測之「最高機率漲幅」進行排序。")
+    
+    # 定義我們的 MVP 觀察清單 (台灣科技與金融巨頭)
+    watchlist = ["2330.TW", "2454.TW", "2317.TW", "2308.TW", "2382.TW", "3231.TW", "2881.TW", "2891.TW"]
+    
+    if st.button("啟動雷達掃描", type="primary", key="radar_btn"):
+        results = []
+        
+        # 建立一個進度條，讓畫面看起來更專業
+        progress_text = "雷達掃描中，請稍候..."
+        my_bar = st.progress(0, text=progress_text)
+        
+        for i, ticker in enumerate(watchlist):
+            try:
+                # 1. 抓資料
+                df = yf.Ticker(ticker).history(period="6mo")
+                if len(df) < 60:
+                    continue
+                    
                 df = df[['Close', 'Volume']].copy()
-                
-                # 計算與訓練時一模一樣的特徵
                 df['Log_Ret'] = np.log((df['Close'] + 1e-8) / (df['Close'].shift(1) + 1e-8))
                 df['Log_Vol'] = np.log(df['Volume'] + 1)
                 df.replace([np.inf, -np.inf], np.nan, inplace=True)
                 df.dropna(inplace=True)
                 
-                # 如果資料不足 60 筆則擋下
-                if len(df) < 60:
-                    st.error("❌ 該股票的歷史資料不足 60 筆，無法進行預測！")
-                    st.stop()
+                current_price = df['Close'].iloc[-1]
                 
-                # 取出最後 60 筆原始收盤價用來畫圖
-                recent_df = df.tail(60).copy()
-                historical_prices = recent_df['Close'].values
-                current_price = historical_prices[-1]
-                
-                # 重新擬合標準化 (還原訓練時的資料分佈)
+                # 2. 標準化與 Tensor 轉換
                 scaler = StandardScaler()
                 scaled_data = scaler.fit_transform(df[['Log_Ret', 'Log_Vol']].values)
-                scaled_data = np.clip(scaled_data, -5, 5) # 終極防護罩
-                
-                # 抓取最後 60 步的特徵餵給模型
+                scaled_data = np.clip(scaled_data, -5, 5)
                 recent_scaled = scaled_data[-60:]
                 real_history_tensor = torch.FloatTensor(recent_scaled).unsqueeze(0).to(diffusion_model.device)
                 
-                # ==========================================
-                # 2. 推論與數值還原
-                # ==========================================
-                # 預測出標準化後的 Log Return
-                predictions = diffusion_model.sample(real_history_tensor, n_samples=n_samples)
+                # 3. 模型推論
+                predictions = diffusion_model.sample(real_history_tensor, n_samples=100) # 雷達掃描時 n_samples 設 100 求快
                 preds_scaled = predictions.cpu().numpy().flatten()
-                
-                # 反標準化：(預測值 * 標準差) + 平均數
                 preds_log_ret = (preds_scaled * scaler.scale_[0]) + scaler.mean_[0]
-                
-                # 轉換回真實股價：P_t = P_{t-1} * exp(Log_Ret)
                 predicted_prices = current_price * np.exp(preds_log_ret)
                 
-                # 計算 KDE 尋找「最密集的眾數」 (你要求的最大可能性落點)
+                # 4. 尋找 KDE 眾數 (最高機率落點)
                 kde = gaussian_kde(predicted_prices)
-                price_range = np.linspace(min(predicted_prices), max(predicted_prices), 1000)
+                price_range = np.linspace(min(predicted_prices), max(predicted_prices), 500)
                 kde_mode_price = price_range[np.argmax(kde(price_range))]
                 
-                # ==========================================
-                # 📈 繪製專業走勢預測圖
-                # ==========================================
-                fig, ax = plt.subplots(figsize=(12, 6))
+                # 5. 計算預期漲幅
+                expected_return_pct = ((kde_mode_price - current_price) / current_price) * 100
                 
-                # A. 歷史走勢
-                days_past = np.arange(-59, 1)
-                ax.plot(days_past, historical_prices, color='#1f77b4', linewidth=2.5, label='真實歷史走勢 (最後 60 筆)')
-                ax.axvline(x=0, color='gray', linestyle='--', alpha=0.5, label='最新收盤價')
-                ax.scatter(0, current_price, color='black', s=50, zorder=5) 
+                # 儲存結果
+                results.append({
+                    "股票代號": ticker,
+                    "最新收盤價": round(current_price, 2),
+                    "目標預測價": round(kde_mode_price, 2),
+                    "預期漲幅 (%)": round(expected_return_pct, 2)
+                })
                 
-                # B. 未來預測分佈
-                day_future = np.ones_like(predicted_prices) * 1 
-                ax.scatter(day_future, predicted_prices, color='#ff7f0e', alpha=0.3, label='Diffusion 預測路徑')
-                ax.boxplot(predicted_prices, positions=[1], widths=1.5, patch_artist=True,
-                           boxprops=dict(facecolor='#ff7f0e', alpha=0.5, color='#ff7f0e'),
-                           medianprops=dict(color='red', linewidth=2),
-                           whis=[5, 95], showfliers=False) 
-                           
-                # 標示出「最密集的眾數」
-                ax.scatter(1, kde_mode_price, color='purple', s=100, marker='*', zorder=10, label=f'最高機率落點 ({kde_mode_price:.2f})')
-                
-                # C. 圖表美化
-                ax.set_title(f"{ticker_input} 走勢與未來機率預測\n最新收盤價: {current_price:.2f}", fontsize=16, fontweight='bold')
-                ax.set_xlabel("時間步數 (分鐘/日)", fontsize=12)
-                ax.set_ylabel("股價 (TWD)", fontsize=12)
-                ax.set_xticks([-60, -40, -20, 0, 1])
-                ax.set_xticklabels(['T-60', 'T-40', 'T-20', 'T=0', 'T+1'])
-                ax.legend(loc='upper left')
-                ax.grid(True, linestyle=':', alpha=0.6)
-                
-                st.pyplot(fig)
-                
-                # ==========================================
-                # 📊 顯示數據統計
-                # ==========================================
-                mean_pred_price = np.mean(predicted_prices)
-                p05_price = np.percentile(predicted_prices, 5)
-                p95_price = np.percentile(predicted_prices, 95)
-                
-                col1, col2, col3, col4 = st.columns(4)
-                col1.metric("當前收盤價", f"{current_price:.2f}")
-                col2.metric("⭐ 最高機率目標價", f"{kde_mode_price:.2f}", f"{(kde_mode_price - current_price):.2f}")
-                col3.metric("保守情境 (5%)", f"{p05_price:.2f}", f"{(p05_price - current_price):.2f}")
-    
-                col4.metric("樂觀情境 (95%)", f"{p95_price:.2f}", f"{(p95_price - current_price):.2f}")
-    
-    with tab2:
-        st.subheader("🚀 台灣指標股潛力掃描雷達")
-        st.write("自動掃描重點觀察清單，並依據 Mamba-Diffusion 預測之「最高機率漲幅」進行排序。")
+            except Exception as e:
+                pass # 掃描遇到單檔錯誤直接跳過，不中斷整體流程
+            
+            # 更新進度條
+            my_bar.progress((i + 1) / len(watchlist), text=f"正在分析: {ticker} ({i+1}/{len(watchlist)})")
         
-        # 定義我們的 MVP 觀察清單 (台灣科技與金融巨頭)
-        watchlist = ["2330.TW", "2454.TW", "2317.TW", "2308.TW", "2382.TW", "3231.TW", "2881.TW", "2891.TW"]
-        
-        if st.button("啟動雷達掃描", type="primary", key="radar_btn"):
-            results = []
+        # 掃描完成，整理數據並顯示
+        my_bar.empty() # 清除進度條
+        if results:
+            results_df = pd.DataFrame(results)
+            # 依照預期漲幅從高到低排序
+            results_df = results_df.sort_values(by="預期漲幅 (%)", ascending=False).reset_index(drop=True)
             
-            # 建立一個進度條，讓畫面看起來更專業
-            progress_text = "雷達掃描中，請稍候..."
-            my_bar = st.progress(0, text=progress_text)
+            st.success("✅ 掃描完成！以下為潛力排行榜：")
             
-            for i, ticker in enumerate(watchlist):
-                try:
-                    # 1. 抓資料
-                    df = yf.Ticker(ticker).history(period="6mo")
-                    if len(df) < 60:
-                        continue
-                        
-                    df = df[['Close', 'Volume']].copy()
-                    df['Log_Ret'] = np.log((df['Close'] + 1e-8) / (df['Close'].shift(1) + 1e-8))
-                    df['Log_Vol'] = np.log(df['Volume'] + 1)
-                    df.replace([np.inf, -np.inf], np.nan, inplace=True)
-                    df.dropna(inplace=True)
-                    
-                    current_price = df['Close'].iloc[-1]
-                    
-                    # 2. 標準化與 Tensor 轉換
-                    scaler = StandardScaler()
-                    scaled_data = scaler.fit_transform(df[['Log_Ret', 'Log_Vol']].values)
-                    scaled_data = np.clip(scaled_data, -5, 5)
-                    recent_scaled = scaled_data[-60:]
-                    real_history_tensor = torch.FloatTensor(recent_scaled).unsqueeze(0).to(diffusion_model.device)
-                    
-                    # 3. 模型推論
-                    predictions = diffusion_model.sample(real_history_tensor, n_samples=100) # 雷達掃描時 n_samples 設 100 求快
-                    preds_scaled = predictions.cpu().numpy().flatten()
-                    preds_log_ret = (preds_scaled * scaler.scale_[0]) + scaler.mean_[0]
-                    predicted_prices = current_price * np.exp(preds_log_ret)
-                    
-                    # 4. 尋找 KDE 眾數 (最高機率落點)
-                    kde = gaussian_kde(predicted_prices)
-                    price_range = np.linspace(min(predicted_prices), max(predicted_prices), 500)
-                    kde_mode_price = price_range[np.argmax(kde(price_range))]
-                    
-                    # 5. 計算預期漲幅
-                    expected_return_pct = ((kde_mode_price - current_price) / current_price) * 100
-                    
-                    # 儲存結果
-                    results.append({
-                        "股票代號": ticker,
-                        "最新收盤價": round(current_price, 2),
-                        "目標預測價": round(kde_mode_price, 2),
-                        "預期漲幅 (%)": round(expected_return_pct, 2)
-                    })
-                    
-                except Exception as e:
-                    pass # 掃描遇到單檔錯誤直接跳過，不中斷整體流程
-                
-                # 更新進度條
-                my_bar.progress((i + 1) / len(watchlist), text=f"正在分析: {ticker} ({i+1}/{len(watchlist)})")
-            
-            # 掃描完成，整理數據並顯示
-            my_bar.empty() # 清除進度條
-            if results:
-                results_df = pd.DataFrame(results)
-                # 依照預期漲幅從高到低排序
-                results_df = results_df.sort_values(by="預期漲幅 (%)", ascending=False).reset_index(drop=True)
-                
-                st.success("✅ 掃描完成！以下為潛力排行榜：")
-                
-                # 使用 Streamlit 內建的 dataframe 美化功能，替漲幅加上顏色標示
-                st.dataframe(
-                    results_df.style.map(
-                        lambda x: 'color: red;' if x > 0 else 'color: green;', 
-                        subset=['預期漲幅 (%)']
-                    ),
-                    use_container_width=True
-                )
-    
-    
-    
+            # 使用 Streamlit 內建的 dataframe 美化功能，替漲幅加上顏色標示
+            st.dataframe(
+                results_df.style.map(
+                    lambda x: 'color: red;' if x > 0 else 'color: green;', 
+                    subset=['預期漲幅 (%)']
+                ),
+                use_container_width=True
+            )
+
+
+
+
