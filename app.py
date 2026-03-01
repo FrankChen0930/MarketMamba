@@ -206,7 +206,14 @@ else:
             historical_prices = recent_df['Close'].values
             current_price = historical_prices[-1]
             
-            # -- 後面的資料標準化、推論、畫圖程式碼完全不用動！ --
+            # 重新擬合標準化 (還原訓練時的資料分佈)
+            scaler = StandardScaler()
+            scaled_data = scaler.fit_transform(df[['Log_Ret', 'Log_Vol']].values)
+            scaled_data = np.clip(scaled_data, -5, 5) # 終極防護罩
+            
+            # 抓取最後 60 步的特徵餵給模型
+            recent_scaled = scaled_data[-60:]
+            real_history_tensor = torch.FloatTensor(recent_scaled).unsqueeze(0).to(diffusion_model.device)
             
             # ==========================================
             # 2. 推論與數值還原
@@ -272,5 +279,6 @@ else:
             col3.metric("保守情境 (5%)", f"{p05_price:.2f}", f"{(p05_price - current_price):.2f}")
 
             col4.metric("樂觀情境 (95%)", f"{p95_price:.2f}", f"{(p95_price - current_price):.2f}")
+
 
 
