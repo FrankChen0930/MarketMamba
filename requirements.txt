@@ -4,4 +4,6 @@ pandas
 scikit-learn
 scipy
 matplotlib
+
 seaborn
+yfinance
