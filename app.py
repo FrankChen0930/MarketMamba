@@ -16,8 +16,17 @@ from scipy.stats import gaussian_kde
 # ==========================================
 st.set_page_config(page_title="MarketMamba 預測終端", page_icon="📈", layout="wide")
 
-# 🔥 強制設定 Matplotlib 使用微軟正黑體 (Windows 預設中文字型)
-plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei'] 
+# 動態載入我們自備的字型檔
+font_path = "NotoSansTC-Regular.ttf"  # 確認檔名與你上傳的一致
+if os.path.exists(font_path):
+    # 告訴 Matplotlib 把這個字型加進去
+    fm.fontManager.addfont(font_path)
+    # 設定全域字型為這個新字型
+    font_prop = fm.FontProperties(fname=font_path)
+    plt.rcParams['font.family'] = font_prop.get_name()
+else:
+    # 如果雲端沒抓到檔案，就退回原本的設定 (本機開發時的備案)
+    plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei', 'sans-serif'] 
 plt.rcParams['axes.unicode_minus'] = False # 解決負號 '-' 變成方塊的問題
 
 st.title("🐍 MarketMamba: 股市機率擴散預測模型")
@@ -250,4 +259,5 @@ else:
             col1.metric("當前收盤價", f"{current_price:.2f}")
             col2.metric("⭐ 最高機率目標價", f"{kde_mode_price:.2f}", f"{(kde_mode_price - current_price):.2f}")
             col3.metric("保守情境 (5%)", f"{p05_price:.2f}", f"{(p05_price - current_price):.2f}")
+
             col4.metric("樂觀情境 (95%)", f"{p95_price:.2f}", f"{(p95_price - current_price):.2f}")
