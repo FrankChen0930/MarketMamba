@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
 import seaborn as sns
 import math
 import os
@@ -261,3 +262,4 @@ else:
             col3.metric("保守情境 (5%)", f"{p05_price:.2f}", f"{(p05_price - current_price):.2f}")
 
             col4.metric("樂觀情境 (95%)", f"{p95_price:.2f}", f"{(p95_price - current_price):.2f}")
+
