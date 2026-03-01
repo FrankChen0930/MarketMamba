@@ -256,7 +256,7 @@ else:
             ax.scatter(1, kde_mode_price, color='purple', s=100, marker='*', zorder=10, label=f'最高機率落點 ({kde_mode_price:.2f})')
             
             # C. 圖表美化
-            ax.set_title(f"台積電 (2330) 走勢與未來機率預測\n最新收盤價: {current_price:.2f}", fontsize=16, fontweight='bold')
+            ax.set_title(f"{ticker_input} 走勢與未來機率預測\n最新收盤價: {current_price:.2f}", fontsize=16, fontweight='bold')
             ax.set_xlabel("時間步數 (分鐘/日)", fontsize=12)
             ax.set_ylabel("股價 (TWD)", fontsize=12)
             ax.set_xticks([-60, -40, -20, 0, 1])
@@ -279,6 +279,7 @@ else:
             col3.metric("保守情境 (5%)", f"{p05_price:.2f}", f"{(p05_price - current_price):.2f}")
 
             col4.metric("樂觀情境 (95%)", f"{p95_price:.2f}", f"{(p95_price - current_price):.2f}")
+
 
 
 
