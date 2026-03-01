@@ -281,86 +281,92 @@ with tab1:
             col4.metric("樂觀情境 (95%)", f"{p95_price:.2f}", f"{(p95_price - current_price):.2f}")
 
 with tab2:
-    st.subheader("🚀 台灣指標股潛力掃描雷達")
-    st.write("自動掃描重點觀察清單，並依據 Mamba-Diffusion 預測之「最高機率漲幅」進行排序。")
-    
-    # 定義我們的 MVP 觀察清單 (台灣科技與金融巨頭)
-    watchlist = ["2330.TW", "2454.TW", "2317.TW", "2308.TW", "2382.TW", "3231.TW", "2881.TW", "2891.TW"]
-    
-    if st.button("啟動雷達掃描", type="primary", key="radar_btn"):
-        results = []
+        st.subheader("🚀 台灣指標股潛力掃描雷達")
+        st.write("自動掃描重點觀察清單，並依據 Mamba-Diffusion 預測之「最高機率漲幅」進行排序。")
         
-        # 建立一個進度條，讓畫面看起來更專業
-        progress_text = "雷達掃描中，請稍候..."
-        my_bar = st.progress(0, text=progress_text)
+        # 1. 改用字典來儲存代號與對應的中文名稱
+        watchlist = {
+            "2330.TW": "台積電",
+            "2454.TW": "聯發科",
+            "2317.TW": "鴻海",
+            "2308.TW": "台達電",
+            "2382.TW": "廣達",
+            "3231.TW": "緯創",
+            "2881.TW": "富邦金",
+            "2891.TW": "中信金"
+        }
         
-        for i, ticker in enumerate(watchlist):
-            try:
-                # 1. 抓資料
-                df = yf.Ticker(ticker).history(period="6mo")
-                if len(df) < 60:
-                    continue
+        if st.button("啟動雷達掃描", type="primary", key="radar_btn"):
+            results = []
+            progress_text = "雷達掃描中，請稍候..."
+            my_bar = st.progress(0, text=progress_text)
+            
+            # 使用 .items() 來同時抓取代號 (ticker) 與名稱 (name)
+            for i, (ticker, name) in enumerate(watchlist.items()):
+                try:
+                    df = yf.Ticker(ticker).history(period="6mo")
+                    if len(df) < 60:
+                        continue
+                        
+                    df = df[['Close', 'Volume']].copy()
+                    df['Log_Ret'] = np.log((df['Close'] + 1e-8) / (df['Close'].shift(1) + 1e-8))
+                    df['Log_Vol'] = np.log(df['Volume'] + 1)
+                    df.replace([np.inf, -np.inf], np.nan, inplace=True)
+                    df.dropna(inplace=True)
                     
-                df = df[['Close', 'Volume']].copy()
-                df['Log_Ret'] = np.log((df['Close'] + 1e-8) / (df['Close'].shift(1) + 1e-8))
-                df['Log_Vol'] = np.log(df['Volume'] + 1)
-                df.replace([np.inf, -np.inf], np.nan, inplace=True)
-                df.dropna(inplace=True)
+                    current_price = df['Close'].iloc[-1]
+                    
+                    scaler = StandardScaler()
+                    scaled_data = scaler.fit_transform(df[['Log_Ret', 'Log_Vol']].values)
+                    scaled_data = np.clip(scaled_data, -5, 5)
+                    recent_scaled = scaled_data[-60:]
+                    real_history_tensor = torch.FloatTensor(recent_scaled).unsqueeze(0).to(diffusion_model.device)
+                    
+                    predictions = diffusion_model.sample(real_history_tensor, n_samples=100)
+                    preds_scaled = predictions.cpu().numpy().flatten()
+                    preds_log_ret = (preds_scaled * scaler.scale_[0]) + scaler.mean_[0]
+                    predicted_prices = current_price * np.exp(preds_log_ret)
+                    
+                    kde = gaussian_kde(predicted_prices)
+                    price_range = np.linspace(min(predicted_prices), max(predicted_prices), 500)
+                    kde_mode_price = price_range[np.argmax(kde(price_range))]
+                    
+                    expected_return_pct = ((kde_mode_price - current_price) / current_price) * 100
+                    
+                    # 2. 儲存結果時加入中文名稱，並把代號的 .TW 拿掉讓畫面更乾淨
+                    results.append({
+                        "股票名稱": name,
+                        "代號": ticker.replace(".TW", ""), 
+                        "最新收盤價": current_price,
+                        "目標預測價": kde_mode_price,
+                        "預期漲幅 (%)": expected_return_pct
+                    })
+                    
+                except Exception as e:
+                    pass
                 
-                current_price = df['Close'].iloc[-1]
-                
-                # 2. 標準化與 Tensor 轉換
-                scaler = StandardScaler()
-                scaled_data = scaler.fit_transform(df[['Log_Ret', 'Log_Vol']].values)
-                scaled_data = np.clip(scaled_data, -5, 5)
-                recent_scaled = scaled_data[-60:]
-                real_history_tensor = torch.FloatTensor(recent_scaled).unsqueeze(0).to(diffusion_model.device)
-                
-                # 3. 模型推論
-                predictions = diffusion_model.sample(real_history_tensor, n_samples=100) # 雷達掃描時 n_samples 設 100 求快
-                preds_scaled = predictions.cpu().numpy().flatten()
-                preds_log_ret = (preds_scaled * scaler.scale_[0]) + scaler.mean_[0]
-                predicted_prices = current_price * np.exp(preds_log_ret)
-                
-                # 4. 尋找 KDE 眾數 (最高機率落點)
-                kde = gaussian_kde(predicted_prices)
-                price_range = np.linspace(min(predicted_prices), max(predicted_prices), 500)
-                kde_mode_price = price_range[np.argmax(kde(price_range))]
-                
-                # 5. 計算預期漲幅
-                expected_return_pct = ((kde_mode_price - current_price) / current_price) * 100
-                
-                # 儲存結果
-                results.append({
-                    "股票代號": ticker,
-                    "最新收盤價": round(current_price, 2),
-                    "目標預測價": round(kde_mode_price, 2),
-                    "預期漲幅 (%)": round(expected_return_pct, 2)
-                })
-                
-            except Exception as e:
-                pass # 掃描遇到單檔錯誤直接跳過，不中斷整體流程
+                # 進度條也順便加上中文名稱
+                my_bar.progress((i + 1) / len(watchlist), text=f"正在分析: {name} ({ticker}) ({i+1}/{len(watchlist)})")
             
-            # 更新進度條
-            my_bar.progress((i + 1) / len(watchlist), text=f"正在分析: {ticker} ({i+1}/{len(watchlist)})")
-        
-        # 掃描完成，整理數據並顯示
-        my_bar.empty() # 清除進度條
-        if results:
-            results_df = pd.DataFrame(results)
-            # 依照預期漲幅從高到低排序
-            results_df = results_df.sort_values(by="預期漲幅 (%)", ascending=False).reset_index(drop=True)
-            
-            st.success("✅ 掃描完成！以下為潛力排行榜：")
-            
-            # 使用 Streamlit 內建的 dataframe 美化功能，替漲幅加上顏色標示
-            st.dataframe(
-                results_df.style.map(
-                    lambda x: 'color: red;' if x > 0 else 'color: green;', 
-                    subset=['預期漲幅 (%)']
-                ),
-                use_container_width=True
-            )
+            my_bar.empty()
+            if results:
+                results_df = pd.DataFrame(results)
+                results_df = results_df.sort_values(by="預期漲幅 (%)", ascending=False).reset_index(drop=True)
+                
+                st.success("✅ 掃描完成！以下為潛力排行榜：")
+                
+                # 3. 終極美化：加上顏色並限制小數點位數
+                st.dataframe(
+                    results_df.style.map(
+                        lambda x: 'color: red;' if x > 0 else 'color: green;', 
+                        subset=['預期漲幅 (%)']
+                    ).format({
+                        "最新收盤價": "{:.2f}",
+                        "目標預測價": "{:.2f}",
+                        "預期漲幅 (%)": "{:.2f}%"  # 順便補上百分比符號
+                    }),
+                    use_container_width=True
+                )
 
 
 
