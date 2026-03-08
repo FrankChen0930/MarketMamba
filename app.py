@@ -86,7 +86,12 @@ def get_stock_name(ticker):
     # 查詢時，同樣用 split 切割法洗乾淨
     clean_ticker = str(ticker).split('.')[0].strip()
     return TW_STOCK_DICT.get(clean_ticker, str(ticker))
-    
+
+def format_ticker(ticker):
+    # 將代號與中文名稱完美組合，例如 "2330.TW 台積電"
+    name = get_stock_name(ticker)
+    return f"{ticker} {name}" if name else str(ticker)
+
 # --- 側邊欄 UI ---
 with st.sidebar:
     st.header("📌 功能選單")
@@ -122,7 +127,7 @@ page = st.session_state['current_page']
 # 3. 頁面內容路由
 # ==========================================
 if not data_loaded:
-    st.stop() # 如果資料沒抓到，就停止渲染後面的畫面
+    st.stop() 
 
 # ------------------------------------------
 # 頁面 1: 凱利資金盤 (Top Picks)
@@ -131,67 +136,56 @@ if page == "📊 今日凱利資金盤":
     st.subheader("🎯 今日最佳防禦型飆股 (Top 10)")
     st.write("點擊表格中的任意一行，系統將自動為您跳轉至該股的「詳細軌跡透視」頁面。")
     
-    # 抓取 Top 10 與對應的軌跡資料
     top_picks = df_kelly.head(10).copy()
     display_df = top_picks[['Ticker', 'Volatility_Risk', 'Sharpe_Score', 'Suggested_Weight']].copy()
     
-    # 加上中文名稱
-    display_df.insert(0, '股票名稱', display_df['Ticker'].apply(get_stock_name))
-    
-    # 從 df_traj 裡面挖出 5~30 天的資料
     for day in [5, 10, 15, 20, 25, 30]:
-        # 把 df_traj 裡面對應天數的數值 map 過來
         day_values = df_traj.set_index('Ticker')[f'Day_{day}'].reindex(display_df['Ticker']).values
         display_df[f'預期報酬 ({day}天)'] = (day_values * 100)
         
-    # 格式化數字 (保留浮點數格式給 pandas，方便 Streamlit 渲染顏色)
     display_df['Volatility_Risk'] = display_df['Volatility_Risk'] * 100
     display_df['Suggested_Weight'] = display_df['Suggested_Weight'] * 100
     
-    # 重新命名欄位
     display_df = display_df.rename(columns={
-        'Ticker': '代號', 'Volatility_Risk': '波動風險(%)', 
+        'Ticker': '股票標的', 'Volatility_Risk': '波動風險(%)', 
         'Sharpe_Score': '夏普CP值', 'Suggested_Weight': '資金佔比(%)'
     })
+    
+    # 【關鍵升級】：將表格內的代號換成「代號+名稱」
+    display_df['股票標的'] = display_df['股票標的'].apply(format_ticker)
 
-    # 使用 dataframe 的 on_select 事件來捕捉使用者的點擊 (Streamlit 1.35+ 支援)
     event = st.dataframe(
         display_df.style.background_gradient(cmap='RdYlGn', subset=[f'預期報酬 ({d}天)' for d in [5,10,15,20,25,30]]),
-        use_container_width=True,
-        hide_index=True,
-        selection_mode="single-row",
-        on_select="rerun" 
+        use_container_width=True, hide_index=True, selection_mode="single-row", on_select="rerun" 
     )
     
-    # 如果使用者點擊了某一行，執行跳轉動作
     if len(event.selection.rows) > 0:
         selected_idx = event.selection.rows[0]
-        selected_ticker = display_df.iloc[selected_idx]['代號']
-        
-        # 寫入 Session State 並強制跳轉頁面
+        # 【關鍵升級】：因為現在欄位變成 "2330.TW 台積電"，我們只要空白前面的 "2330.TW"
+        selected_ticker = str(display_df.iloc[selected_idx]['股票標的']).split(' ')[0]
         st.session_state['target_ticker'] = selected_ticker
         st.session_state['current_page'] = "📈 個股軌跡透視"
         st.rerun()
+
 # ------------------------------------------
-# 頁面 2: 個股軌跡透視 (資訊卡片 + Plotly 雲圖融合版)
+# 頁面 2: 個股軌跡透視
 # ------------------------------------------
 elif page == "📈 個股軌跡透視":
     st.subheader("🔭 平行宇宙軌跡觀測儀")
     
     all_tickers = df_traj['Ticker'].astype(str).tolist()
     
-    # 如果從表格跳轉過來，帶入目標代號；否則預設第一檔
     if st.session_state.get('target_ticker') in all_tickers:
         default_idx = all_tickers.index(st.session_state['target_ticker'])
     else:
         default_idx = 0
         
-    target_ticker = st.selectbox("🔍 請選擇要觀測的股票代號", all_tickers, index=default_idx)
-    st.session_state['target_ticker'] = target_ticker # 更新狀態
+    # 【關鍵升級】：使用 format_func 讓下拉選單顯示中文，但背後仍傳遞純代碼
+    target_ticker = st.selectbox("🔍 請選擇要觀測的股票", all_tickers, index=default_idx, format_func=format_ticker)
+    st.session_state['target_ticker'] = target_ticker 
     
     stock_name = get_stock_name(target_ticker)
     
-    # ⚡ 透過 yfinance 抓取「個股基礎資訊」與「歷史股價」
     @st.cache_data(ttl=3600)
     def fetch_stock_info(ticker):
         for suffix in ['.TW', '.TWO']:
@@ -208,13 +202,9 @@ elif page == "📈 個股軌跡透視":
     with st.spinner(f"正在同步 {stock_name} 的個股資訊與建構機率雲..."):
         hist_df, stock_info, suffix = fetch_stock_info(target_ticker)
         
-    # ==========================================
-    # 確保有抓到資料，才開始畫圖與計算 (解決 NameError 的關鍵)
-    # ==========================================
     if hist_df is None:
         st.warning(f"⚠️ 無法從 Yahoo Finance 抓取 {target_ticker} 的歷史股價，請稍後再試。")
     else:
-        # 1. 顯示個股資訊卡片
         st.markdown(f"### {stock_name} ({target_ticker}) 個股速覽")
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("今日收盤價", f"{hist_df['Close'].iloc[-1]:.2f}")
@@ -223,7 +213,6 @@ elif page == "📈 個股軌跡透視":
         col4.metric("產業別", stock_info.get('industry', 'N/A'))
         st.divider()
 
-        # 2. 準備大腦預測軌跡資料
         stock_traj = df_traj[df_traj['Ticker'].astype(str) == target_ticker].iloc[0]
         volatility = df_kelly[df_kelly['Ticker'].astype(str) == target_ticker]['Volatility_Risk'].iloc[0]
         traj_values = stock_traj[[f'Day_{i}' for i in range(1, 31)]].values 
@@ -231,60 +220,26 @@ elif page == "📈 個股軌跡透視":
         current_price = hist_df['Close'].iloc[-1]
         last_date = hist_df.index[-1]
         
-        # 3. 計算未來的真實日期 (這裡就是剛剛消失的 future_dates！)
         future_dates = pd.bdate_range(start=last_date + pd.Timedelta(days=1), periods=30)
         future_mean_prices = current_price * (1 + traj_values)
         
-        # 4. 計算機率雲漏斗的邊界
         time_scale = np.sqrt(np.arange(1, 31) / 30.0) 
         upper_bound_95 = future_mean_prices * (1 + (volatility * 1.5 * time_scale))
         lower_bound_95 = future_mean_prices * (1 - (volatility * 1.5 * time_scale))
         upper_bound_68 = future_mean_prices * (1 + (volatility * 0.8 * time_scale))
         lower_bound_68 = future_mean_prices * (1 - (volatility * 0.8 * time_scale))
         
-        # ==========================================
-        # 📈 使用 Plotly 繪製專業互動圖表
-        # ==========================================
         import plotly.graph_objects as go
         fig = go.Figure()
 
-        # A. 歷史真實股價
-        fig.add_trace(go.Scatter(
-            x=hist_df.index, y=hist_df['Close'],
-            mode='lines', name='歷史真實股價', line=dict(color='#00d2ff', width=3)
-        ))
-
-        # B. 95% 機率雲
-        fig.add_trace(go.Scatter(
-            x=list(future_dates) + list(future_dates)[::-1],
-            y=list(upper_bound_95) + list(lower_bound_95)[::-1],
-            fill='toself', fillcolor='rgba(255, 127, 14, 0.1)',
-            line=dict(color='rgba(255,255,255,0)'), hoverinfo="skip", name='95% 機率雲'
-        ))
-
-        # C. 68% 機率雲
-        fig.add_trace(go.Scatter(
-            x=list(future_dates) + list(future_dates)[::-1],
-            y=list(upper_bound_68) + list(lower_bound_68)[::-1],
-            fill='toself', fillcolor='rgba(255, 127, 14, 0.25)',
-            line=dict(color='rgba(255,255,255,0)'), hoverinfo="skip", name='68% 機率雲'
-        ))
-
-        # D. 預測平均軌跡
-        fig.add_trace(go.Scatter(
-            x=future_dates, y=future_mean_prices,
-            mode='lines+markers', name='預測平均軌跡',
-            line=dict(color='#ff7f0e', width=3, dash='dot'), marker=dict(size=5)
-        ))
-        
-        # E. 連接點
-        fig.add_trace(go.Scatter(
-            x=[last_date, future_dates[0]], y=[current_price, future_mean_prices[0]],
-            mode='lines', line=dict(color='#ff7f0e', width=3, dash='dot'), showlegend=False
-        ))
+        fig.add_trace(go.Scatter(x=hist_df.index, y=hist_df['Close'], mode='lines', name='歷史真實股價', line=dict(color='#00d2ff', width=3)))
+        fig.add_trace(go.Scatter(x=list(future_dates) + list(future_dates)[::-1], y=list(upper_bound_95) + list(lower_bound_95)[::-1], fill='toself', fillcolor='rgba(255, 127, 14, 0.1)', line=dict(color='rgba(255,255,255,0)'), hoverinfo="skip", name='95% 機率雲'))
+        fig.add_trace(go.Scatter(x=list(future_dates) + list(future_dates)[::-1], y=list(upper_bound_68) + list(lower_bound_68)[::-1], fill='toself', fillcolor='rgba(255, 127, 14, 0.25)', line=dict(color='rgba(255,255,255,0)'), hoverinfo="skip", name='68% 機率雲'))
+        fig.add_trace(go.Scatter(x=future_dates, y=future_mean_prices, mode='lines+markers', name='預測平均軌跡', line=dict(color='#ff7f0e', width=3, dash='dot'), marker=dict(size=5)))
+        fig.add_trace(go.Scatter(x=[last_date, future_dates[0]], y=[current_price, future_mean_prices[0]], mode='lines', line=dict(color='#ff7f0e', width=3, dash='dot'), showlegend=False))
 
         fig.update_layout(
-            title=f"<b>{stock_name} ({target_ticker}{suffix}) 股價預測與機率分布</b>",
+            title=f"<b>{format_ticker(target_ticker)} 股價預測與機率分布</b>",
             yaxis_title="股價 (TWD)", xaxis_title="日期",
             template="plotly_dark", hovermode="x unified",
             legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
@@ -301,11 +256,9 @@ elif page == "💼 我的持股健檢":
     st.subheader("💼 我的專屬量化基金 (Portfolio)")
     st.write("輸入你目前持有的股票，MarketMamba 將每天自動為你進行 AI 健檢與退場評估。")
     
-    # 1. 初始化虛擬帳本 (Session State)
     if 'portfolio' not in st.session_state:
         st.session_state['portfolio'] = pd.DataFrame(columns=['股票代號', '持有成本', '持有股數'])
 
-    # 定義一個輕量級的抓價函數 (加上快取避免頻繁發送 API 請求)
     @st.cache_data(ttl=3600)
     def get_latest_close(ticker):
         for suffix in ['.TW', '.TWO']:
@@ -315,36 +268,33 @@ elif page == "💼 我的持股健檢":
                     return float(hist['Close'].iloc[-1])
             except:
                 continue
-        return 100.0  # 如果真的抓不到，就預設 100 元
+        return 100.0
 
-    # 2. 新增持股的表單介面
     with st.expander("➕ 新增庫存持股", expanded=True):
         col1, col2, col3, col4 = st.columns([3, 2, 2, 1])
         
         with col1:
             all_tickers_clean = df_kelly['Ticker'].astype(str).tolist()
-            new_ticker = st.selectbox("股票代號", all_tickers_clean)
+            # 【關鍵升級】：下拉選單加上中文
+            new_ticker = st.selectbox("股票標的", all_tickers_clean, format_func=format_ticker)
             
-        # ⚡ 核心魔法：根據選擇的代號，動態抓取最新股價
         with st.spinner("獲取最新股價中..."):
             default_price = get_latest_close(new_ticker)
             
         with col2:
-            # 將抓到的最新股價 default_price 直接塞進 value 裡面
             new_cost = st.number_input("持有成本 (TWD)", min_value=0.0, value=default_price, step=1.0)
             
         with col3:
             new_shares = st.number_input("持有股數 (股)", min_value=1, value=1000, step=100)
             
         with col4:
-            st.markdown("<br>", unsafe_allow_html=True) # 排版對齊用
+            st.markdown("<br>", unsafe_allow_html=True) 
             if st.button("新增", type="primary"):
                 new_row = pd.DataFrame({'股票代號': [new_ticker], '持有成本': [new_cost], '持有股數': [new_shares]})
                 st.session_state['portfolio'] = pd.concat([st.session_state['portfolio'], new_row], ignore_index=True)
-                st.success(f"已新增 {new_ticker}！")
-                st.rerun() # 重新整理網頁以顯示最新表格
+                st.success(f"已新增 {format_ticker(new_ticker)}！")
+                st.rerun() 
 
-    # 3. AI 持股健檢與即時監控
     if not st.session_state['portfolio'].empty:
         st.divider()
         st.subheader("🏥 AI 庫存持股健檢報告")
@@ -359,27 +309,27 @@ elif page == "💼 我的持股健檢":
             if pd.isna(row['Exp_Return_15D']):
                 return "⚪ 缺乏預測資料"
             elif row['Exp_Return_15D'] < 0:
-                return "🔴 趨勢轉弱 (建議獲利了結/停損)"
+                return "🔴 趨勢轉弱 (建議停損/了結)"
             elif row['Sharpe_Score'] > 0.5:
                 return "🟢 強勢護城河 (建議續抱)"
             else:
-                return "🟡 波動加劇 (請嚴格設定停損點)"
+                return "🟡 波動加劇 (嚴設停損)"
                 
         analysis_df['AI 操作建議'] = analysis_df.apply(get_action_signal, axis=1)
-        
         analysis_df['預期 15 天報酬'] = (analysis_df['Exp_Return_15D'] * 100).apply(lambda x: f"{x:.2f}%" if pd.notna(x) else "N/A")
         analysis_df['夏普分數'] = analysis_df['Sharpe_Score'].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
         
-        display_cols = ['股票代號', '持有成本', '持有股數', '預期 15 天報酬', '夏普分數', 'AI 操作建議']
+        # 【關鍵升級】：將表格內的代號替換為有中文的版本
+        analysis_df['股票標的'] = analysis_df['股票代號'].apply(format_ticker)
+        
+        display_cols = ['股票標的', '持有成本', '持有股數', '預期 15 天報酬', '夏普分數', 'AI 操作建議']
         
         st.dataframe(
             analysis_df[display_cols].style.applymap(
-                lambda x: 'color: #ff4b4b; font-weight: bold;' if '🔴' in str(x) else 
-                          ('color: #00fa9a; font-weight: bold;' if '🟢' in str(x) else ''),
+                lambda x: 'color: #ff4b4b; font-weight: bold;' if '🔴' in str(x) else ('color: #00fa9a; font-weight: bold;' if '🟢' in str(x) else ''),
                 subset=['AI 操作建議']
             ).format({"持有成本": "{:.2f}"}),
-            use_container_width=True,
-            hide_index=True
+            use_container_width=True, hide_index=True
         )
         
         if st.button("🗑️ 清空庫存"):
@@ -393,26 +343,21 @@ elif page == "💼 我的持股健檢":
 # ------------------------------------------
 elif page == "🤖 百萬實盤機器人":
     import json
+    import os
     from datetime import datetime
+    import plotly.graph_objects as go
     
     st.subheader("🤖 MarketMamba 全自動百萬實盤基金")
     st.write("初始資金 1,000,000 TWD。機器人將嚴格依照 V3.1 凱利資金盤的建議，每天自動進行部位的建倉與再平衡 (Rebalancing)。")
     
     LEDGER_FILE = "robot_ledger.json"
     
-    # 1. 初始化或讀取機器人帳本
     def load_ledger():
         if os.path.exists(LEDGER_FILE):
             with open(LEDGER_FILE, 'r') as f:
                 return json.load(f)
         else:
-            # 宇宙大爆炸的第一天：給予 100 萬現金
-            return {
-                "start_date": datetime.now().strftime("%Y-%m-%d"),
-                "cash": 1000000.0,
-                "holdings": {}, # 格式: {"2330.TW": {"shares": 1000, "cost": 600}}
-                "history": []   # 記錄每天的總淨值
-            }
+            return {"start_date": datetime.now().strftime("%Y-%m-%d"), "cash": 1000000.0, "holdings": {}, "history": []}
             
     def save_ledger(ledger):
         with open(LEDGER_FILE, 'w') as f:
@@ -420,14 +365,12 @@ elif page == "🤖 百萬實盤機器人":
             
     ledger = load_ledger()
     
-    # 2. 計算當前總淨值 (現金 + 股票市值)
     @st.cache_data(ttl=3600)
     def get_current_prices(tickers):
         prices = {}
         for ticker in tickers:
             try:
                 suffix = ".TW" if not ticker.endswith(".TW") and not ticker.endswith(".TWO") else ""
-                # 簡單抓取最新收盤價
                 hist = yf.Ticker(f"{ticker}{suffix}").history(period="1d")
                 if not hist.empty:
                     prices[ticker] = float(hist['Close'].iloc[-1])
@@ -440,73 +383,56 @@ elif page == "🤖 百萬實盤機器人":
     
     stock_value = 0.0
     for t, data in ledger["holdings"].items():
-        price = live_prices.get(t, data["cost"]) # 如果抓不到即時價，就用成本價估算
+        price = live_prices.get(t, data["cost"]) 
         stock_value += price * data["shares"]
         
     total_equity = ledger["cash"] + stock_value
     
-    # 3. 儀表板展示
     st.divider()
     col1, col2, col3 = st.columns(3)
     col1.metric("💰 基金總淨值 (NAV)", f"${total_equity:,.0f}", f"{(total_equity - 1000000)/10000:,.2f}%")
     col2.metric("💵 可用現金", f"${ledger['cash']:,.0f}")
     col3.metric("📈 股票市值", f"${stock_value:,.0f}")
     
-    # 4. 機器人操盤控制台
     st.subheader("⚙️ 機器人操作台")
     if st.button("🚀 執行今日建倉 / 調倉 (Rebalance)", type="primary"):
         with st.spinner("機器人正在比對最新凱利名單，並送出虛擬委託單..."):
-            # 抓取 Top 10 目標配置
             top_10 = df_kelly.head(10)
             target_tickers = top_10['Ticker'].astype(str).tolist()
             target_weights = top_10['Suggested_Weight'].values
-            
-            # 抓取這些目標股票的最新股價
             target_prices = get_current_prices(target_tickers)
             
-            # 步驟 A: 賣出不在 Top 10 裡面的股票 (獲利了結/停損)
             for t in list(ledger["holdings"].keys()):
                 if t not in target_tickers:
                     shares_to_sell = ledger["holdings"][t]["shares"]
                     sell_price = live_prices.get(t, ledger["holdings"][t]["cost"])
                     ledger["cash"] += shares_to_sell * sell_price
                     del ledger["holdings"][t]
-                    st.toast(f"🔴 賣出剔除名單: {t}")
+                    st.toast(f"🔴 賣出剔除名單: {format_ticker(t)}")
             
-            # 重新計算賣出後的總資金 (準備重新分配)
             current_total_funds = ledger["cash"]
             for t, data in ledger["holdings"].items():
                  current_total_funds += data["shares"] * live_prices.get(t, data["cost"])
             
-            # 步驟 B: 根據凱利比例買進或加碼
             for ticker, weight in zip(target_tickers, target_weights):
-                if ticker not in target_prices:
-                    continue # 抓不到報價跳過
-                    
+                if ticker not in target_prices: continue
                 target_value = current_total_funds * weight
                 current_price = target_prices[ticker]
-                target_shares = int(target_value // current_price) # 計算應該持有的總股數
-                
-                # 目前持有股數
+                target_shares = int(target_value // current_price) 
                 current_shares = ledger["holdings"].get(ticker, {}).get("shares", 0)
-                
-                # 需要加碼買進的股數
                 shares_to_buy = target_shares - current_shares
                 
                 if shares_to_buy > 0 and ledger["cash"] >= (shares_to_buy * current_price):
                     ledger["cash"] -= (shares_to_buy * current_price)
-                    
                     if ticker in ledger["holdings"]:
-                        # 平均成本法計算
                         old_cost = ledger["holdings"][ticker]["cost"]
                         old_shares = ledger["holdings"][ticker]["shares"]
                         new_avg_cost = ((old_cost * old_shares) + (current_price * shares_to_buy)) / target_shares
                         ledger["holdings"][ticker] = {"shares": target_shares, "cost": new_avg_cost}
                     else:
                         ledger["holdings"][ticker] = {"shares": shares_to_buy, "cost": current_price}
-                    st.toast(f"🟢 買進建倉: {ticker} ({shares_to_buy} 股)")
+                    st.toast(f"🟢 買進建倉: {format_ticker(ticker)} ({shares_to_buy} 股)")
             
-            # 記錄今天的淨值到歷史中
             today_str = datetime.now().strftime("%Y-%m-%d %H:%M")
             ledger["history"].append({"date": today_str, "equity": current_total_funds})
             save_ledger(ledger)
@@ -514,7 +440,6 @@ elif page == "🤖 百萬實盤機器人":
             st.success("✅ 今日調倉完畢！機器人已為明天的開盤做好準備。")
             st.rerun()
 
-    # 5. 顯示目前機器人的持股清單與淨值曲線
     if ledger["holdings"]:
         st.write("📋 **機器人目前庫存**")
         holding_list = []
@@ -522,7 +447,7 @@ elif page == "🤖 百萬實盤機器人":
             current_p = live_prices.get(t, d['cost'])
             profit_pct = (current_p - d['cost']) / d['cost'] * 100
             holding_list.append({
-                "股票代號": t,
+                "股票標的": format_ticker(t), # 【關鍵升級】：機器人帳本也加入中文
                 "持有股數": d["shares"],
                 "平均成本": d["cost"],
                 "最新報價": current_p,
@@ -531,24 +456,13 @@ elif page == "🤖 百萬實盤機器人":
             
         st.dataframe(pd.DataFrame(holding_list).style.applymap(
             lambda x: 'color: red;' if '-' in str(x) else 'color: green;', subset=['未實現損益']
-        ), use_container_width=True)
+        ), use_container_width=True, hide_index=True)
     else:
         st.info("🤖 機器人目前空手，請點擊上方按鈕執行建倉！")
         
-    # 如果有歷史紀錄，畫出淨值折線圖
     if len(ledger["history"]) > 0:
         hist_df = pd.DataFrame(ledger["history"])
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=hist_df['date'], y=hist_df['equity'], mode='lines+markers', line=dict(color='#00fa9a', width=3)))
         fig.update_layout(title="📈 基金淨值成長曲線", template="plotly_dark", yaxis_title="總淨值 (TWD)")
         st.plotly_chart(fig, use_container_width=True)
-
-
-
-
-
-
-
-
-
-
