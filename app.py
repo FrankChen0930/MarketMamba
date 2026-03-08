@@ -6,6 +6,7 @@ import matplotlib.font_manager as fm
 import os
 import seaborn as sns
 import yfinance as yf
+import plotly.graph_objects as go
 
 # ==========================================
 # 0. 網頁基本設定 & 字型處理
@@ -94,87 +95,124 @@ if page == "📊 今日凱利資金盤":
     st.dataframe(display_df, use_container_width=True, hide_index=True)
 
 # ------------------------------------------
-# 頁面 2: 個股軌跡透視
+# 頁面 2: 個股軌跡透視 (Plotly 專業互動版)
 # ------------------------------------------
 elif page == "📈 個股軌跡透視":
-    st.subheader("🔭 平行宇宙軌跡觀測儀")
-    st.write("在這裡，我們將利用大腦預測的未來 30 天走勢，同時觀測「累積報酬率」與「實際股價」的變化。")
+    st.subheader("🔭 平行宇宙軌跡觀測儀 (專業互動版)")
+    st.write("結合歷史真實 K 線與未來 30 天擴散機率雲，支援滑鼠懸停與拖曳縮放。")
     
-    # 建立一個選擇器，預設帶入 Top 10 的第一檔
+    # 建立選擇器
     top_1_ticker = str(df_kelly['Ticker'].iloc[0])
     all_tickers = df_traj['Ticker'].astype(str).tolist()
     default_idx = all_tickers.index(top_1_ticker) if top_1_ticker in all_tickers else 0
     target_ticker = st.selectbox("🔍 請選擇要觀測的股票代號", all_tickers, index=default_idx)
     
-    # 抓出軌跡資料
+    # 抓出預測軌跡與該股的波動風險
     stock_traj = df_traj[df_traj['Ticker'].astype(str) == target_ticker].iloc[0]
-    days = np.arange(1, 31)
-    traj_values = stock_traj[[f'Day_{i}' for i in range(1, 31)]].values * 100 
+    volatility = df_kelly[df_kelly['Ticker'].astype(str) == target_ticker]['Volatility_Risk'].iloc[0]
+    
+    traj_values = stock_traj[[f'Day_{i}' for i in range(1, 31)]].values 
     
     # ==========================================
-    # ⚡ 透過 yfinance 抓取最新股價以推算未來價格
+    # ⚡ 透過 yfinance 抓取「過去 20 天」的真實歷史
     # ==========================================
     @st.cache_data(ttl=3600)
-    def fetch_current_price(ticker):
-        # 智慧判斷：台股有上市 (.TW) 跟上櫃 (.TWO) 之分，我們讓程式自動試探
+    def fetch_history_data(ticker):
         for suffix in ['.TW', '.TWO']:
             try:
-                hist = yf.Ticker(f"{ticker}{suffix}").history(period="5d")
+                hist = yf.Ticker(f"{ticker}{suffix}").history(period="1mo") # 抓一個月歷史
                 if not hist.empty:
-                    return hist['Close'].iloc[-1], suffix
+                    return hist, suffix
             except:
                 continue
         return None, None
         
-    with st.spinner("正在同步市場最新即時報價..."):
-        current_price, suffix = fetch_current_price(target_ticker)
+    with st.spinner("正在同步市場即時報價與建構機率雲..."):
+        hist_df, suffix = fetch_history_data(target_ticker)
         
-    # ==========================================
-    # 📈 繪製雙圖表 (報酬率 vs 股價)
-    # ==========================================
-    if current_price is None:
-        st.warning(f"⚠️ 無法從 Yahoo Finance 抓取 {target_ticker} 的即時股價，僅顯示報酬率預測。")
-        price_values = None
+    if hist_df is None:
+        st.warning(f"⚠️ 無法抓取 {target_ticker} 的歷史股價。")
     else:
-        st.success(f"✅ 成功抓取 {target_ticker}{suffix} 最新收盤價： **{current_price:.2f} TWD**")
-        # 數學還原：未來股價 = 目前股價 * (1 + 累積報酬率/100)
-        price_values = current_price * (1 + traj_values / 100)
+        current_price = hist_df['Close'].iloc[-1]
+        last_date = hist_df.index[-1]
         
-    # 使用 Streamlit 雙欄位並排顯示 (左邊報酬率，右邊股價)
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        fig1, ax1 = plt.subplots(figsize=(8, 4))
-        ax1.plot(days, traj_values, marker='o', markersize=4, linestyle='-', color='#1f77b4', linewidth=2)
-        ax1.set_title(f"預期累積報酬率 (%)", fontsize=14, fontweight='bold')
-        ax1.set_xlabel("未來天數 (Trading Days)", fontsize=10)
-        ax1.set_ylabel("報酬率 (%)", fontsize=10)
-        ax1.axhline(0, color='gray', linestyle='--', linewidth=1.5, alpha=0.7)
-        ax1.grid(True, linestyle=':', alpha=0.6)
+        # 1. 計算未來的真實日期 (避開六日)
+        future_dates = pd.bdate_range(start=last_date + pd.Timedelta(days=1), periods=30)
         
-        final_ret = traj_values[-1]
-        ax1.annotate(f'{final_ret:.2f}%', xy=(30, final_ret), xytext=(28, final_ret),
-                     fontsize=11, fontweight='bold', color='#1f77b4')
-        st.pyplot(fig1)
+        # 2. 計算未來的目標均價
+        future_mean_prices = current_price * (1 + traj_values)
         
-    with col2:
-        if price_values is not None:
-            fig2, ax2 = plt.subplots(figsize=(8, 4))
-            ax2.plot(days, price_values, marker='o', markersize=4, linestyle='-', color='#ff7f0e', linewidth=2)
-            ax2.set_title(f"預期目標股價 (TWD)", fontsize=14, fontweight='bold')
-            ax2.set_xlabel("未來天數 (Trading Days)", fontsize=10)
-            ax2.set_ylabel("股價 (TWD)", fontsize=10)
-            # 畫一條現在股價的基準線
-            ax2.axhline(current_price, color='gray', linestyle='--', linewidth=1.5, alpha=0.7, label='目前股價')
-            ax2.grid(True, linestyle=':', alpha=0.6)
-            
-            final_price = price_values[-1]
-            ax2.annotate(f'{final_price:.2f}', xy=(30, final_price), xytext=(28, final_price),
-                         fontsize=11, fontweight='bold', color='#ff7f0e')
-            ax2.legend()
-            st.pyplot(fig2)
-            
-    st.info("💡 解讀指南：左圖(報酬率)適合用來跨股票比較 CP 值；右圖(實際股價)適合用來設定你在看盤軟體裡的「停利/停損」掛單價位！")
+        # 3. 利用波動率 (Volatility) 展開機率分布漏斗
+        # 隨著天數增加，不確定性 (標準差) 會以根號時間放大
+        time_scale = np.sqrt(np.arange(1, 31) / 30.0) 
+        upper_bound_95 = future_mean_prices * (1 + (volatility * 1.5 * time_scale))
+        lower_bound_95 = future_mean_prices * (1 - (volatility * 1.5 * time_scale))
+        
+        upper_bound_68 = future_mean_prices * (1 + (volatility * 0.8 * time_scale))
+        lower_bound_68 = future_mean_prices * (1 - (volatility * 0.8 * time_scale))
+        
+        # ==========================================
+        # 📈 使用 Plotly 繪製專業互動圖表
+        # ==========================================
+        fig = go.Figure()
+
+        # A. 畫出歷史真實股價 (左半邊)
+        fig.add_trace(go.Scatter(
+            x=hist_df.index, y=hist_df['Close'],
+            mode='lines', name='歷史真實股價',
+            line=dict(color='#00d2ff', width=3)
+        ))
+
+        # B. 畫出未來 95% 機率區間 (最外層，透明度最高)
+        fig.add_trace(go.Scatter(
+            x=list(future_dates) + list(future_dates)[::-1],
+            y=list(upper_bound_95) + list(lower_bound_95)[::-1],
+            fill='toself', fillcolor='rgba(255, 127, 14, 0.1)',
+            line=dict(color='rgba(255,255,255,0)'),
+            hoverinfo="skip", name='95% 機率雲'
+        ))
+
+        # C. 畫出未來 68% 機率區間 (內層，透明度較低)
+        fig.add_trace(go.Scatter(
+            x=list(future_dates) + list(future_dates)[::-1],
+            y=list(upper_bound_68) + list(lower_bound_68)[::-1],
+            fill='toself', fillcolor='rgba(255, 127, 14, 0.25)',
+            line=dict(color='rgba(255,255,255,0)'),
+            hoverinfo="skip", name='68% 機率雲'
+        ))
+
+        # D. 畫出未來預測平均軌跡 (中心虛線)
+        fig.add_trace(go.Scatter(
+            x=future_dates, y=future_mean_prices,
+            mode='lines+markers', name='預測平均軌跡',
+            line=dict(color='#ff7f0e', width=3, dash='dot'),
+            marker=dict(size=5)
+        ))
+        
+        # E. 連接歷史與未來的橋樑
+        fig.add_trace(go.Scatter(
+            x=[last_date, future_dates[0]], y=[current_price, future_mean_prices[0]],
+            mode='lines', line=dict(color='#ff7f0e', width=3, dash='dot'), showlegend=False
+        ))
+
+        # 圖表版面美化 (暗黑科技風)
+        fig.update_layout(
+            title=f"<b>{target_ticker}{suffix} 股價預測與機率分布</b>",
+            yaxis_title="股價 (TWD)",
+            xaxis_title="日期",
+            template="plotly_dark", # 瞬間變身專業看盤軟體
+            hovermode="x unified",  # 滑鼠游標會顯示整條線的資訊
+            legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
+            margin=dict(l=40, r=40, t=60, b=40)
+        )
+        
+        # 加上目前股價的水平基準線
+        fig.add_hline(y=current_price, line_dash="dash", line_color="gray", annotation_text="今日收盤價")
+
+        # 在 Streamlit 中渲染 Plotly 圖表
+        st.plotly_chart(fig, use_container_width=True)
+        
+        st.info("💡 操作提示：你可以用滑鼠在圖表上框選放大特定區域，或是將游標停留在未來日期上查看精準的預測價位。淺橘色區域代表未來可能發生的震盪範圍！")
 
 # ------------------------------------------
 # 頁面 3: 持股監視與實盤
@@ -182,5 +220,6 @@ elif page == "📈 個股軌跡透視":
 elif page == "🤖 持股監視與實盤 (開發中)":
     st.subheader("🤖 我的虛擬量化基金")
     st.write("這是我們預計實作「持股動態健檢」與「自動化 Paper Trading 績效曲線」的地方！")
+
 
 
