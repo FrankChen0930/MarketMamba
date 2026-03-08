@@ -8,6 +8,7 @@ import seaborn as sns
 import yfinance as yf
 import plotly.graph_objects as go
 import json
+import requests
 
 # ==========================================
 # 0. 網頁基本設定 & 字型處理
@@ -58,23 +59,18 @@ if 'current_page' not in st.session_state:
 if 'target_ticker' not in st.session_state:
     st.session_state['target_ticker'] = None
 
-# ⚡ 動態讀取外部字典檔 (加入快取，避免每次點擊都重新讀檔)
-@st.cache_data
+# ⚡ 動態讀取外部字典檔 (改用 GitHub Raw 網址直讀，避開本地路徑與快取地雷)
+@st.cache_data(ttl=3600) # 設定每小時重新抓取一次
 def load_ticker_mapping():
     try:
-        # 未來如果上傳到 GitHub，這裡可以直接改成 requests.get("你的 GitHub Raw 網址").json()
-        with open("ticker_mapping.json", "r", encoding="utf-8") as f:
-            return json.load(f)
+        # 直接指向你 GitHub 倉庫裡的 Raw 連結
+        url = "https://raw.githubusercontent.com/FrankChen0930/MarketMamba/main/ticker_mapping.json"
+        res = requests.get(url)
+        res.raise_for_status() # 確保網址正確回應
+        return res.json()
     except Exception as e:
-        st.warning(f"找不到 ticker_mapping.json，將直接顯示股票代號。")
+        st.warning(f"⚠️ 找不到 ticker_mapping.json，將直接顯示股票代號。錯誤: {e}")
         return {}
-
-TW_STOCK_DICT = load_ticker_mapping()
-
-def get_stock_name(ticker):
-    # 從外部載入的字典中尋找，找不到就回傳原始代號
-    return TW_STOCK_DICT.get(ticker, ticker)
-
 with st.sidebar:
     st.header("📌 功能選單")
     if data_loaded:
@@ -529,6 +525,7 @@ elif page == "🤖 百萬實盤機器人":
         fig.add_trace(go.Scatter(x=hist_df['date'], y=hist_df['equity'], mode='lines+markers', line=dict(color='#00fa9a', width=3)))
         fig.update_layout(title="📈 基金淨值成長曲線", template="plotly_dark", yaxis_title="總淨值 (TWD)")
         st.plotly_chart(fig, use_container_width=True)
+
 
 
 
