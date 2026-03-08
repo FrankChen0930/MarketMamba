@@ -153,9 +153,26 @@ if page == "📊 今日凱利資金盤":
     
     # 【關鍵升級】：將表格內的代號換成「代號+名稱」
     display_df['股票標的'] = display_df['股票標的'].apply(format_ticker)
+    
+    # 🎨 專業 UI 升級：定義台股專屬紅綠文字上色邏輯
+    def color_tw_returns(val):
+        if isinstance(val, (int, float)):
+            if val > 0:
+                return 'color: #ff4b4b; font-weight: bold;' # 漲：亮紅色
+            elif val < 0:
+                return 'color: #00fa9a; font-weight: bold;' # 跌：亮綠色
+        return ''
+
+    # 設定要格式化的欄位
+    return_cols = [f'預期報酬 ({d}天)' for d in [5,10,15,20,25,30]]
+    
+    # 套用顏色，並把數字格式化為帶有 % 的字串
+    styled_df = display_df.style.applymap(color_tw_returns, subset=return_cols) \
+                                .format({col: "{:.2f}%" for col in return_cols}) \
+                                .format({"波動風險(%)": "{:.2f}%", "資金佔比(%)": "{:.2f}%", "夏普CP值": "{:.4f}"})
 
     event = st.dataframe(
-        display_df.style.background_gradient(cmap='RdYlGn', subset=[f'預期報酬 ({d}天)' for d in [5,10,15,20,25,30]]),
+        styled_df, # 改用我們洗盡鉛華的極簡風格
         use_container_width=True, hide_index=True, selection_mode="single-row", on_select="rerun" 
     )
     
@@ -211,11 +228,22 @@ elif page == "📈 個股軌跡透視":
         col2.metric("本益比 (P/E)", stock_info.get('trailingPE', 'N/A'))
         col3.metric("市值 (億)", f"{stock_info.get('marketCap', 0) / 100000000:.2f}" if stock_info.get('marketCap') else 'N/A')
         col4.metric("產業別", stock_info.get('industry', 'N/A'))
-        st.divider()
-
+        
+        # 準備大腦預測軌跡資料
         stock_traj = df_traj[df_traj['Ticker'].astype(str) == target_ticker].iloc[0]
         volatility = df_kelly[df_kelly['Ticker'].astype(str) == target_ticker]['Volatility_Risk'].iloc[0]
         traj_values = stock_traj[[f'Day_{i}' for i in range(1, 31)]].values 
+        
+        # 📅 專業 UI 升級：新增多天期預期報酬看板
+        st.markdown("#### 📅 擴散模型預期報酬 (多天期解析)")
+        ret_cols = st.columns(6)
+        for idx, d in enumerate([5, 10, 15, 20, 25, 30]):
+            val = traj_values[d-1] * 100
+            # 依據正負值給予不同的箭頭與顏色
+            delta_color = "normal" if val > 0 else "inverse" 
+            ret_cols[idx].metric(f"{d} 天後", f"{val:.2f}%", delta_color=delta_color)
+
+        st.divider()
         
         current_price = hist_df['Close'].iloc[-1]
         last_date = hist_df.index[-1]
@@ -233,8 +261,11 @@ elif page == "📈 個股軌跡透視":
         fig = go.Figure()
 
         fig.add_trace(go.Scatter(x=hist_df.index, y=hist_df['Close'], mode='lines', name='歷史真實股價', line=dict(color='#00d2ff', width=3)))
-        fig.add_trace(go.Scatter(x=list(future_dates) + list(future_dates)[::-1], y=list(upper_bound_95) + list(lower_bound_95)[::-1], fill='toself', fillcolor='rgba(255, 127, 14, 0.1)', line=dict(color='rgba(255,255,255,0)'), hoverinfo="skip", name='95% 機率雲'))
-        fig.add_trace(go.Scatter(x=list(future_dates) + list(future_dates)[::-1], y=list(upper_bound_68) + list(lower_bound_68)[::-1], fill='toself', fillcolor='rgba(255, 127, 14, 0.25)', line=dict(color='rgba(255,255,255,0)'), hoverinfo="skip", name='68% 機率雲'))
+        
+        # 🎨 專業 UI 升級：調亮機率雲的透明度 (0.1 -> 0.25, 0.25 -> 0.55)
+        fig.add_trace(go.Scatter(x=list(future_dates) + list(future_dates)[::-1], y=list(upper_bound_95) + list(lower_bound_95)[::-1], fill='toself', fillcolor='rgba(255, 127, 14, 0.25)', line=dict(color='rgba(255,255,255,0)'), hoverinfo="skip", name='95% 機率雲'))
+        fig.add_trace(go.Scatter(x=list(future_dates) + list(future_dates)[::-1], y=list(upper_bound_68) + list(lower_bound_68)[::-1], fill='toself', fillcolor='rgba(255, 127, 14, 0.55)', line=dict(color='rgba(255,255,255,0)'), hoverinfo="skip", name='68% 機率雲'))
+        
         fig.add_trace(go.Scatter(x=future_dates, y=future_mean_prices, mode='lines+markers', name='預測平均軌跡', line=dict(color='#ff7f0e', width=3, dash='dot'), marker=dict(size=5)))
         fig.add_trace(go.Scatter(x=[last_date, future_dates[0]], y=[current_price, future_mean_prices[0]], mode='lines', line=dict(color='#ff7f0e', width=3, dash='dot'), showlegend=False))
 
@@ -466,3 +497,4 @@ elif page == "🤖 百萬實盤機器人":
         fig.add_trace(go.Scatter(x=hist_df['date'], y=hist_df['equity'], mode='lines+markers', line=dict(color='#00fa9a', width=3)))
         fig.update_layout(title="📈 基金淨值成長曲線", template="plotly_dark", yaxis_title="總淨值 (TWD)")
         st.plotly_chart(fig, use_container_width=True)
+
