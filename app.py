@@ -59,7 +59,7 @@ if 'current_page' not in st.session_state:
 if 'target_ticker' not in st.session_state:
     st.session_state['target_ticker'] = None
 
-# ⚡ 動態讀取外部字典檔 (加入「去後綴」清洗機制)
+# ⚡ 動態讀取外部字典檔 (使用最強的 split 切割法)
 @st.cache_data(ttl=3600)
 def load_ticker_mapping():
     try:
@@ -68,11 +68,11 @@ def load_ticker_mapping():
         res.raise_for_status() 
         raw_dict = res.json()
         
-        # 魔法在這裡：我們建立一個「乾淨版」字典
-        # 把所有的 .TW 和 .TWO 都拔掉，只留純數字當 Key
+        # 魔法在這裡：用 split('.')[0] 切割。
+        # "6846.TWO" -> "6846", "2330.TW" -> "2330", "6846.0" -> "6846"
         clean_dict = {}
         for k, v in raw_dict.items():
-            clean_key = str(k).replace(".TW", "").replace(".TWO", "")
+            clean_key = str(k).split('.')[0].strip()
             clean_dict[clean_key] = v
             
         return clean_dict
@@ -83,9 +83,9 @@ def load_ticker_mapping():
 TW_STOCK_DICT = load_ticker_mapping()
 
 def get_stock_name(ticker):
-    # 查詢時，也把傳進來的代號洗乾淨再去對照
-    clean_ticker = str(ticker).replace(".TW", "").replace(".TWO", "")
-    return TW_STOCK_DICT.get(clean_ticker, ticker)
+    # 查詢時，同樣用 split 切割法洗乾淨
+    clean_ticker = str(ticker).split('.')[0].strip()
+    return TW_STOCK_DICT.get(clean_ticker, str(ticker))
     
 # --- 側邊欄 UI ---
 with st.sidebar:
@@ -542,6 +542,7 @@ elif page == "🤖 百萬實盤機器人":
         fig.add_trace(go.Scatter(x=hist_df['date'], y=hist_df['equity'], mode='lines+markers', line=dict(color='#00fa9a', width=3)))
         fig.update_layout(title="📈 基金淨值成長曲線", template="plotly_dark", yaxis_title="總淨值 (TWD)")
         st.plotly_chart(fig, use_container_width=True)
+
 
 
 
