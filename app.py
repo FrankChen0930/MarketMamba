@@ -218,8 +218,84 @@ elif page == "📈 個股軌跡透視":
 # 頁面 3: 持股監視與實盤
 # ------------------------------------------
 elif page == "🤖 持股監視與實盤 (開發中)":
-    st.subheader("🤖 我的虛擬量化基金")
-    st.write("這是我們預計實作「持股動態健檢」與「自動化 Paper Trading 績效曲線」的地方！")
+    st.subheader("💼 我的專屬量化基金 (Portfolio)")
+    st.write("輸入你目前持有的股票，MarketMamba 將每天自動為你進行 AI 健檢與退場評估。")
+    
+    # 1. 初始化虛擬帳本 (Session State)
+    if 'portfolio' not in st.session_state:
+        st.session_state['portfolio'] = pd.DataFrame(columns=['股票代號', '持有成本', '持有股數'])
+
+    # 2. 新增持股的表單介面
+    with st.expander("➕ 新增庫存持股", expanded=True):
+        col1, col2, col3, col4 = st.columns([3, 2, 2, 1])
+        with col1:
+            # 為了防呆，直接讓使用者從預測清單裡面用選的
+            all_tickers_clean = df_kelly['Ticker'].astype(str).tolist()
+            new_ticker = st.selectbox("股票代號", all_tickers_clean)
+        with col2:
+            new_cost = st.number_input("持有成本 (TWD)", min_value=0.0, value=100.0, step=1.0)
+        with col3:
+            new_shares = st.number_input("持有股數 (股)", min_value=1, value=1000, step=100)
+        with col4:
+            st.markdown("<br>", unsafe_allow_html=True) # 排版對齊用
+            if st.button("新增", type="primary"):
+                # 將新資料加入 Session State 的 DataFrame 中
+                new_row = pd.DataFrame({'股票代號': [new_ticker], '持有成本': [new_cost], '持有股數': [new_shares]})
+                st.session_state['portfolio'] = pd.concat([st.session_state['portfolio'], new_row], ignore_index=True)
+                st.success(f"已新增 {new_ticker}！")
+                st.rerun() # 重新整理網頁以顯示最新表格
+
+    # 3. AI 持股健檢與即時監控
+    if not st.session_state['portfolio'].empty:
+        st.divider()
+        st.subheader("🏥 AI 庫存持股健檢報告")
+        
+        # 複製一份使用者的持股來做加工
+        my_portfolio = st.session_state['portfolio'].copy()
+        
+        # 將我們的 df_kelly 預測資料與使用者的持股合併 (Merge)
+        kelly_subset = df_kelly[['Ticker', 'Exp_Return_15D', 'Sharpe_Score']].copy()
+        kelly_subset['Ticker'] = kelly_subset['Ticker'].astype(str)
+        
+        # 進行資料表關聯
+        analysis_df = pd.merge(my_portfolio, kelly_subset, left_on='股票代號', right_on='Ticker', how='left')
+        
+        # 撰寫 AI 判斷邏輯
+        def get_action_signal(row):
+            if pd.isna(row['Exp_Return_15D']):
+                return "⚪ 缺乏預測資料"
+            elif row['Exp_Return_15D'] < 0:
+                return "🔴 趨勢轉弱 (建議獲利了結/停損)"
+            elif row['Sharpe_Score'] > 0.5:
+                return "🟢 強勢護城河 (建議續抱)"
+            else:
+                return "🟡 波動加劇 (請嚴格設定停損點)"
+                
+        analysis_df['AI 操作建議'] = analysis_df.apply(get_action_signal, axis=1)
+        
+        # 格式化數字以便閱讀
+        analysis_df['預期 15 天報酬'] = (analysis_df['Exp_Return_15D'] * 100).apply(lambda x: f"{x:.2f}%" if pd.notna(x) else "N/A")
+        analysis_df['夏普分數'] = analysis_df['Sharpe_Score'].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
+        
+        # 選擇要展示的欄位
+        display_cols = ['股票代號', '持有成本', '持有股數', '預期 15 天報酬', '夏普分數', 'AI 操作建議']
+        
+        st.dataframe(
+            analysis_df[display_cols].style.applymap(
+                lambda x: 'color: #ff4b4b; font-weight: bold;' if '🔴' in str(x) else 
+                          ('color: #00fa9a; font-weight: bold;' if '🟢' in str(x) else ''),
+                subset=['AI 操作建議']
+            ),
+            use_container_width=True,
+            hide_index=True
+        )
+        
+        # 提供清空按鈕
+        if st.button("🗑️ 清空庫存"):
+            st.session_state['portfolio'] = pd.DataFrame(columns=['股票代號', '持有成本', '持有股數'])
+            st.rerun()
+    else:
+        st.info("👆 目前庫存為空，請從上方新增持股來啟動 MarketMamba 的 AI 健檢功能。")
 
 
 
