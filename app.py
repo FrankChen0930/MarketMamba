@@ -87,11 +87,24 @@ def format_ticker(ticker):
     name = get_stock_name(ticker)
     return f"{ticker} {name}" if name else str(ticker)
 
+# 抓取更新時間
+@st.cache_data(ttl=3600)
+def get_update_time():
+    try:
+        url = "https://raw.githubusercontent.com/FrankChen0930/MarketMamba/main/update_time.txt"
+        res = requests.get(url)
+        return res.text.strip()
+    except:
+        return "未知"
+
+last_update = get_update_time()
+
 # --- 側邊欄 UI ---
 with st.sidebar:
     st.header("📌 功能選單")
     if data_loaded:
         st.success("✅ V3.1 雲端數據庫已連線")
+        st.caption(f"🕒 最新預測時間: {last_update}")
         
     st.markdown("---")
     
@@ -492,5 +505,6 @@ elif page == "🤖 百萬實盤機器人":
         fig.add_trace(go.Scatter(x=hist_df['date'], y=hist_df['equity'], mode='lines+markers', line=dict(color='#00fa9a', width=3)))
         fig.update_layout(title="📈 基金淨值成長曲線", template="plotly_dark", yaxis_title="總淨值 (TWD)")
         st.plotly_chart(fig, use_container_width=True)
+
 
 
