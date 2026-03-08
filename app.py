@@ -59,7 +59,7 @@ with st.sidebar:
     else:
         st.error("⚠️ 無法連線至雲端數據庫")
         
-    page = st.radio("前往頁面", ["📊 今日凱利資金盤", "📈 個股軌跡透視", "🤖 持股監視與實盤 (開發中)"])
+    page = st.radio("前往頁面", ["📊 今日凱利資金盤", "📈 個股軌跡透視", "💼 我的持股健檢", "🤖 百萬實盤機器人"])
     
     st.divider()
     st.info("💡 系統運作邏輯：\n每天收盤後由後端 A100 GPU 進行離線推論，覆蓋 Google Drive 檔案。前端網頁定時自動同步，實現 0 延遲秒開體驗。")
@@ -217,7 +217,7 @@ elif page == "📈 個股軌跡透視":
 # ------------------------------------------
 # 頁面 3: 持股監視與實盤
 # ------------------------------------------
-elif page == "🤖 持股監視與實盤 (開發中)":
+elif page == "💼 我的持股健檢":
     st.subheader("💼 我的專屬量化基金 (Portfolio)")
     st.write("輸入你目前持有的股票，MarketMamba 將每天自動為你進行 AI 健檢與退場評估。")
     
@@ -308,6 +308,160 @@ elif page == "🤖 持股監視與實盤 (開發中)":
     else:
         st.info("👆 目前庫存為空，請從上方新增持股來啟動 MarketMamba 的 AI 健檢功能。")
 
+# ------------------------------------------
+# 頁面 4: 百萬實盤機器人 (Paper Trading)
+# ------------------------------------------
+elif page == "🤖 百萬實盤機器人":
+    import json
+    from datetime import datetime
+    
+    st.subheader("🤖 MarketMamba 全自動百萬實盤基金")
+    st.write("初始資金 1,000,000 TWD。機器人將嚴格依照 V3.1 凱利資金盤的建議，每天自動進行部位的建倉與再平衡 (Rebalancing)。")
+    
+    LEDGER_FILE = "robot_ledger.json"
+    
+    # 1. 初始化或讀取機器人帳本
+    def load_ledger():
+        if os.path.exists(LEDGER_FILE):
+            with open(LEDGER_FILE, 'r') as f:
+                return json.load(f)
+        else:
+            # 宇宙大爆炸的第一天：給予 100 萬現金
+            return {
+                "start_date": datetime.now().strftime("%Y-%m-%d"),
+                "cash": 1000000.0,
+                "holdings": {}, # 格式: {"2330.TW": {"shares": 1000, "cost": 600}}
+                "history": []   # 記錄每天的總淨值
+            }
+            
+    def save_ledger(ledger):
+        with open(LEDGER_FILE, 'w') as f:
+            json.dump(ledger, f, indent=4)
+            
+    ledger = load_ledger()
+    
+    # 2. 計算當前總淨值 (現金 + 股票市值)
+    @st.cache_data(ttl=3600)
+    def get_current_prices(tickers):
+        prices = {}
+        for ticker in tickers:
+            try:
+                suffix = ".TW" if not ticker.endswith(".TW") and not ticker.endswith(".TWO") else ""
+                # 簡單抓取最新收盤價
+                hist = yf.Ticker(f"{ticker}{suffix}").history(period="1d")
+                if not hist.empty:
+                    prices[ticker] = float(hist['Close'].iloc[-1])
+            except:
+                pass
+        return prices
+
+    current_holdings = list(ledger["holdings"].keys())
+    live_prices = get_current_prices(current_holdings) if current_holdings else {}
+    
+    stock_value = 0.0
+    for t, data in ledger["holdings"].items():
+        price = live_prices.get(t, data["cost"]) # 如果抓不到即時價，就用成本價估算
+        stock_value += price * data["shares"]
+        
+    total_equity = ledger["cash"] + stock_value
+    
+    # 3. 儀表板展示
+    st.divider()
+    col1, col2, col3 = st.columns(3)
+    col1.metric("💰 基金總淨值 (NAV)", f"${total_equity:,.0f}", f"{(total_equity - 1000000)/10000:,.2f}%")
+    col2.metric("💵 可用現金", f"${ledger['cash']:,.0f}")
+    col3.metric("📈 股票市值", f"${stock_value:,.0f}")
+    
+    # 4. 機器人操盤控制台
+    st.subheader("⚙️ 機器人操作台")
+    if st.button("🚀 執行今日建倉 / 調倉 (Rebalance)", type="primary"):
+        with st.spinner("機器人正在比對最新凱利名單，並送出虛擬委託單..."):
+            # 抓取 Top 10 目標配置
+            top_10 = df_kelly.head(10)
+            target_tickers = top_10['Ticker'].astype(str).tolist()
+            target_weights = top_10['Suggested_Weight'].values
+            
+            # 抓取這些目標股票的最新股價
+            target_prices = get_current_prices(target_tickers)
+            
+            # 步驟 A: 賣出不在 Top 10 裡面的股票 (獲利了結/停損)
+            for t in list(ledger["holdings"].keys()):
+                if t not in target_tickers:
+                    shares_to_sell = ledger["holdings"][t]["shares"]
+                    sell_price = live_prices.get(t, ledger["holdings"][t]["cost"])
+                    ledger["cash"] += shares_to_sell * sell_price
+                    del ledger["holdings"][t]
+                    st.toast(f"🔴 賣出剔除名單: {t}")
+            
+            # 重新計算賣出後的總資金 (準備重新分配)
+            current_total_funds = ledger["cash"]
+            for t, data in ledger["holdings"].items():
+                 current_total_funds += data["shares"] * live_prices.get(t, data["cost"])
+            
+            # 步驟 B: 根據凱利比例買進或加碼
+            for ticker, weight in zip(target_tickers, target_weights):
+                if ticker not in target_prices:
+                    continue # 抓不到報價跳過
+                    
+                target_value = current_total_funds * weight
+                current_price = target_prices[ticker]
+                target_shares = int(target_value // current_price) # 計算應該持有的總股數
+                
+                # 目前持有股數
+                current_shares = ledger["holdings"].get(ticker, {}).get("shares", 0)
+                
+                # 需要加碼買進的股數
+                shares_to_buy = target_shares - current_shares
+                
+                if shares_to_buy > 0 and ledger["cash"] >= (shares_to_buy * current_price):
+                    ledger["cash"] -= (shares_to_buy * current_price)
+                    
+                    if ticker in ledger["holdings"]:
+                        # 平均成本法計算
+                        old_cost = ledger["holdings"][ticker]["cost"]
+                        old_shares = ledger["holdings"][ticker]["shares"]
+                        new_avg_cost = ((old_cost * old_shares) + (current_price * shares_to_buy)) / target_shares
+                        ledger["holdings"][ticker] = {"shares": target_shares, "cost": new_avg_cost}
+                    else:
+                        ledger["holdings"][ticker] = {"shares": shares_to_buy, "cost": current_price}
+                    st.toast(f"🟢 買進建倉: {ticker} ({shares_to_buy} 股)")
+            
+            # 記錄今天的淨值到歷史中
+            today_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+            ledger["history"].append({"date": today_str, "equity": current_total_funds})
+            save_ledger(ledger)
+            
+            st.success("✅ 今日調倉完畢！機器人已為明天的開盤做好準備。")
+            st.rerun()
+
+    # 5. 顯示目前機器人的持股清單與淨值曲線
+    if ledger["holdings"]:
+        st.write("📋 **機器人目前庫存**")
+        holding_list = []
+        for t, d in ledger["holdings"].items():
+            current_p = live_prices.get(t, d['cost'])
+            profit_pct = (current_p - d['cost']) / d['cost'] * 100
+            holding_list.append({
+                "股票代號": t,
+                "持有股數": d["shares"],
+                "平均成本": d["cost"],
+                "最新報價": current_p,
+                "未實現損益": f"{profit_pct:.2f}%"
+            })
+            
+        st.dataframe(pd.DataFrame(holding_list).style.applymap(
+            lambda x: 'color: red;' if '-' in str(x) else 'color: green;', subset=['未實現損益']
+        ), use_container_width=True)
+    else:
+        st.info("🤖 機器人目前空手，請點擊上方按鈕執行建倉！")
+        
+    # 如果有歷史紀錄，畫出淨值折線圖
+    if len(ledger["history"]) > 0:
+        hist_df = pd.DataFrame(ledger["history"])
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=hist_df['date'], y=hist_df['equity'], mode='lines+markers', line=dict(color='#00fa9a', width=3)))
+        fig.update_layout(title="📈 基金淨值成長曲線", template="plotly_dark", yaxis_title="總淨值 (TWD)")
+        st.plotly_chart(fig, use_container_width=True)
 
 
 
