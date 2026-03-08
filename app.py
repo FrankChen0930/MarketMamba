@@ -1,373 +1,111 @@
 import streamlit as st
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
-import seaborn as sns
-import math
 import os
-import pandas as pd
-from sklearn.preprocessing import StandardScaler
-from scipy.stats import gaussian_kde
-import yfinance as yf
+import seaborn as sns
 
 # ==========================================
-# 0. 網頁基本設定
+# 0. 網頁基本設定 & 字型處理
 # ==========================================
-st.set_page_config(page_title="MarketMamba 預測終端", page_icon="📈", layout="wide")
+st.set_page_config(page_title="MarketMamba 量化決策中心", page_icon="🐍", layout="wide")
 
-# 動態載入我們自備的字型檔
-font_path = "NotoSansTC-Regular.ttf"  # 確認檔名與你上傳的一致
+# 動態載入字型檔 (確保你的資料夾裡有 NotoSansTC-Regular.ttf)
+font_path = "NotoSansTC-Regular.ttf" 
 if os.path.exists(font_path):
-    # 告訴 Matplotlib 把這個字型加進去
     fm.fontManager.addfont(font_path)
-    # 設定全域字型為這個新字型
-    font_prop = fm.FontProperties(fname=font_path)
-    plt.rcParams['font.family'] = font_prop.get_name()
+    plt.rcParams['font.family'] = fm.FontProperties(fname=font_path).get_name()
 else:
-    # 如果雲端沒抓到檔案，就退回原本的設定 (本機開發時的備案)
     plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei', 'sans-serif'] 
-plt.rcParams['axes.unicode_minus'] = False # 解決負號 '-' 變成方塊的問題
+plt.rcParams['axes.unicode_minus'] = False 
 
-st.title("🐍 MarketMamba: 股市機率擴散預測模型")
-st.markdown("基於 **Mamba 架構** 與 **Diffusion 生成模型** 的次世代量化交易預測系統。")
-
-# ==========================================
-# 1. 模型架構定義 (必須與訓練時一模一樣)
-# ==========================================
-class MambaBlock(nn.Module):
-    def __init__(self, d_model, d_state=16, d_conv=4, expand=2):
-        super().__init__()
-        self.d_inner = int(expand * d_model)
-        self.dt_rank = math.ceil(d_model / 16)
-        self.in_proj = nn.Linear(d_model, self.d_inner * 2, bias=False)
-        self.conv1d = nn.Conv1d(in_channels=self.d_inner, out_channels=self.d_inner, bias=True, kernel_size=d_conv, groups=self.d_inner, padding=d_conv - 1)
-        self.act = nn.SiLU()
-        self.x_proj = nn.Linear(self.d_inner, self.dt_rank + d_state * 2, bias=False)
-        self.dt_proj = nn.Linear(self.dt_rank, self.d_inner, bias=True)
-        A = torch.arange(1, d_state + 1, dtype=torch.float32).repeat(self.d_inner, 1)
-        self.log_A = nn.Parameter(torch.log(A))
-        self.D = nn.Parameter(torch.ones(self.d_inner))
-        self.out_proj = nn.Linear(self.d_inner, d_model, bias=False)
-
-    def forward(self, x):
-        batch_size, seq_len, d_model = x.shape
-        x_and_res = self.in_proj(x)
-        (x_in, res) = x_and_res.split(split_size=[self.d_inner, self.d_inner], dim=-1)
-        x_conv = self.act(self.conv1d(x_in.permute(0, 2, 1))[:, :, :seq_len].permute(0, 2, 1))
-        x_dbl = self.x_proj(x_conv)
-        (dt, B, C) = x_dbl.split(split_size=[self.dt_rank, 16, 16], dim=-1)
-        dt = F.softplus(self.dt_proj(dt))
-        A = -torch.exp(self.log_A)
-        h = torch.zeros(batch_size, self.d_inner, 16, device=x.device)
-        y = []
-        for t in range(seq_len):
-            dt_t, B_t, C_t = dt[:, t, :].unsqueeze(-1), B[:, t, :].unsqueeze(1), C[:, t, :].unsqueeze(1)
-            h = torch.exp(A * dt_t) * h + dt_t * B_t * x_conv[:, t, :].unsqueeze(-1)
-            y.append(torch.sum(h * C_t, dim=-1) + self.D * x_conv[:, t, :])
-        return self.out_proj(torch.stack(y, dim=1) * F.silu(res))
-
-class StockMambaModel(nn.Module):
-    def __init__(self, input_dim=2, d_model=64, n_layers=2):
-        super().__init__()
-        self.encoder = nn.Linear(input_dim, d_model)
-        self.layers = nn.ModuleList([MambaBlock(d_model=d_model) for _ in range(n_layers)])
-        self.norm = nn.LayerNorm(d_model)
-    def forward(self, x):
-        x = self.encoder(x)
-        for layer in self.layers: x = layer(x)
-        return self.norm(x)
-
-class DenoiseNetwork(nn.Module):
-    def __init__(self, condition_dim=64, target_dim=1, hidden_dim=128):
-        super().__init__()
-        self.time_mlp = nn.Sequential(nn.Linear(1, hidden_dim), nn.SiLU(), nn.Linear(hidden_dim, hidden_dim))
-        self.cond_proj = nn.Linear(condition_dim, hidden_dim)
-        self.input_proj = nn.Linear(target_dim, hidden_dim)
-        self.mid_layers = nn.Sequential(nn.Linear(hidden_dim, hidden_dim), nn.SiLU(), nn.Linear(hidden_dim, hidden_dim), nn.SiLU())
-        self.final_proj = nn.Linear(hidden_dim, target_dim)
-    def forward(self, x, t, condition):
-        return self.final_proj(self.mid_layers(self.input_proj(x) + self.time_mlp(t) + self.cond_proj(condition)))
-
-class DiffusionManager(nn.Module):
-    def __init__(self, denoise_net, mamba_model, n_steps=100, device='cpu'):
-        super().__init__()
-        self.denoise_net = denoise_net
-        self.mamba_model = mamba_model
-        self.n_steps = n_steps
-        self.device = device
-        self.beta = torch.linspace(1e-4, 0.02, n_steps).to(device)
-        self.alpha = 1. - self.beta
-        self.alpha_bar = torch.cumprod(self.alpha, dim=0)
-
-    @torch.no_grad()
-    def sample(self, x_history, n_samples=100):
-        batch_size = x_history.shape[0]
-        condition = self.mamba_model(x_history)[:, -1, :].repeat_interleave(n_samples, dim=0)
-        x = torch.randn(batch_size * n_samples, 1, device=self.device)
-        
-        for t in reversed(range(self.n_steps)):
-            t_input = (torch.ones(batch_size * n_samples, 1, device=self.device) * t) / self.n_steps
-            pred_noise = self.denoise_net(x, t_input, condition)
-            alpha, alpha_bar, beta = self.alpha[t], self.alpha_bar[t], self.beta[t]
-            noise = torch.randn_like(x) if t > 0 else 0
-            x = (1 / torch.sqrt(alpha)) * (x - ((1 - alpha) / torch.sqrt(1 - alpha_bar)) * pred_noise) + torch.sqrt(beta) * noise
-        return x.view(batch_size, n_samples)
+st.title("🐍 MarketMamba V3.1: 終極量化決策中心")
+st.markdown("基於 128 維度 Mamba 與 30 天擴散軌跡的自動化資金配置系統。")
 
 # ==========================================
-# 2. 載入模型 (加入快取機制，避免每次點擊都重載)
+# 1. 載入 V3.1 雲端資料庫 (Google Drive 直讀)
 # ==========================================
-@st.cache_resource
-def load_models():
-    # 本機推論一律用 CPU 就夠了，不用管 CUDA
-    device = torch.device('cpu') 
-    mamba_path = 'models/mamba_core_phase2.pth'
-    diffusion_path = 'models/diffusion_v1.pth'
+# 加入 ttl=3600，讓網頁每小時自動去雲端抓取最新資料
+@st.cache_data(ttl=3600, show_spinner="正在從雲端硬碟同步最新預測資料...")
+def load_v3_data():
+    # ⚠️ 請在這裡貼上你剛剛在 Google Drive 取得的 File ID ⚠️
+    kelly_file_id = "18fbj6kS4HfvojNrdSRiGz1SXF3qmYTm1" 
+    traj_file_id = "1bVd5EWp-tN8QYr9yjkPSgkmM_vp5-YF2"
     
-    # 初始化空模型
-    mamba_model = StockMambaModel(input_dim=2, d_model=64, n_layers=2).to(device)
-    denoise_net = DenoiseNetwork(condition_dim=64, target_dim=1, hidden_dim=128).to(device)
-    diffusion = DiffusionManager(denoise_net, mamba_model, n_steps=100, device=device).to(device)
+    # Pandas 支援直接讀取 Google Drive 的下載連結
+    kelly_url = f"https://drive.google.com/uc?id={kelly_file_id}"
+    traj_url = f"https://drive.google.com/uc?id={traj_file_id}"
     
-    # 載入權重
-    if os.path.exists(mamba_path) and os.path.exists(diffusion_path):
-        # 處理 Mamba 權重
-        mamba_ckpt = torch.load(mamba_path, map_location=device)
-        if 'model_state_dict' in mamba_ckpt:
-            mamba_model.load_state_dict(mamba_ckpt['model_state_dict'], strict=False)
-        else:
-            mamba_model.load_state_dict(mamba_ckpt)
-            
-        # 處理 Diffusion 權重
-        diffusion.load_state_dict(torch.load(diffusion_path, map_location=device))
-        
-        diffusion.eval()
-        return diffusion, True
-    else:
-        return None, False
+    try:
+        df_kelly = pd.read_csv(kelly_url)
+        df_traj = pd.read_csv(traj_url)
+        return df_kelly, df_traj, True
+    except Exception as e:
+        st.error(f"讀取雲端資料失敗，請檢查 File ID 或共用權限設定。詳細錯誤：{e}")
+        return None, None, False
 
-diffusion_model, is_loaded = load_models()
+df_kelly, df_traj, data_loaded = load_v3_data()
 
 # ==========================================
-# 3. 網頁互動區塊
+# 2. 側邊欄導覽列
 # ==========================================
 with st.sidebar:
-    st.header("⚙️ 預測參數設定")
-    # 新增股票代號輸入框 (預設為台積電)
-    ticker_input = st.text_input("🔍 輸入股票代號 (台股請加 .TW)", value="2330.TW")
-    n_samples = st.slider("生成預測路徑數量 (信心區間解析度)", min_value=50, max_value=500, value=100, step=50)
-    st.info("💡 採樣數量越高，生成的機率雲圖會越平滑。")
-
-st.success("✅ Mamba 與 Diffusion 核心已成功上線！")
-    
-# 建立兩個分頁
-tab1, tab2 = st.tabs(["🎯 單股預測終端", "🔥 飆股雷達掃描"])
-    
-# 將原本的單股預測程式碼，全部縮排收進 tab1 裡面
-with tab1:
-    st.subheader("📊 動態單股預測")
-    if st.button("🚀 生成未來走勢機率雲", type="primary"):
-        with st.spinner(f"🧠 正在從 Yahoo Finance 抓取 {ticker_input} 最新 K 線，Diffusion 演算中..."):
-            
-            # ==========================================
-            # 1. 透過 yfinance 抓取即時歷史資料
-            # ==========================================
-            try:
-                # 抓取過去一年的日 K 線資料
-                stock_data = yf.Ticker(ticker_input)
-                df = stock_data.history(period="1y")
-                
-                if df.empty:
-                    st.error(f"❌ 找不到代號 {ticker_input} 的資料，請確認輸入是否正確！")
-                    st.stop()
-                    
-            except Exception as e:
-                st.error(f"❌ 抓取資料失敗: {e}")
-                st.stop()
-            
-            # 為了確保欄位名稱一致，將 yfinance 輸出的欄位轉為所需格式
-            df = df[['Close', 'Volume']].copy()
-            
-            # 計算與訓練時一模一樣的特徵
-            df['Log_Ret'] = np.log((df['Close'] + 1e-8) / (df['Close'].shift(1) + 1e-8))
-            df['Log_Vol'] = np.log(df['Volume'] + 1)
-            df.replace([np.inf, -np.inf], np.nan, inplace=True)
-            df.dropna(inplace=True)
-            
-            # 如果資料不足 60 筆則擋下
-            if len(df) < 60:
-                st.error("❌ 該股票的歷史資料不足 60 筆，無法進行預測！")
-                st.stop()
-            
-            # 取出最後 60 筆原始收盤價用來畫圖
-            recent_df = df.tail(60).copy()
-            historical_prices = recent_df['Close'].values
-            current_price = historical_prices[-1]
-            
-            # 重新擬合標準化 (還原訓練時的資料分佈)
-            scaler = StandardScaler()
-            scaled_data = scaler.fit_transform(df[['Log_Ret', 'Log_Vol']].values)
-            scaled_data = np.clip(scaled_data, -5, 5) # 終極防護罩
-            
-            # 抓取最後 60 步的特徵餵給模型
-            recent_scaled = scaled_data[-60:]
-            real_history_tensor = torch.FloatTensor(recent_scaled).unsqueeze(0).to(diffusion_model.device)
-            
-            # ==========================================
-            # 2. 推論與數值還原
-            # ==========================================
-            # 預測出標準化後的 Log Return
-            predictions = diffusion_model.sample(real_history_tensor, n_samples=n_samples)
-            preds_scaled = predictions.cpu().numpy().flatten()
-            
-            # 反標準化：(預測值 * 標準差) + 平均數
-            preds_log_ret = (preds_scaled * scaler.scale_[0]) + scaler.mean_[0]
-            
-            # 轉換回真實股價：P_t = P_{t-1} * exp(Log_Ret)
-            predicted_prices = current_price * np.exp(preds_log_ret)
-            
-            # 計算 KDE 尋找「最密集的眾數」 (你要求的最大可能性落點)
-            kde = gaussian_kde(predicted_prices)
-            price_range = np.linspace(min(predicted_prices), max(predicted_prices), 1000)
-            kde_mode_price = price_range[np.argmax(kde(price_range))]
-            
-            # ==========================================
-            # 📈 繪製專業走勢預測圖
-            # ==========================================
-            fig, ax = plt.subplots(figsize=(12, 6))
-            
-            # A. 歷史走勢
-            days_past = np.arange(-59, 1)
-            ax.plot(days_past, historical_prices, color='#1f77b4', linewidth=2.5, label='真實歷史走勢 (最後 60 筆)')
-            ax.axvline(x=0, color='gray', linestyle='--', alpha=0.5, label='最新收盤價')
-            ax.scatter(0, current_price, color='black', s=50, zorder=5) 
-            
-            # B. 未來預測分佈
-            day_future = np.ones_like(predicted_prices) * 1 
-            ax.scatter(day_future, predicted_prices, color='#ff7f0e', alpha=0.3, label='Diffusion 預測路徑')
-            ax.boxplot(predicted_prices, positions=[1], widths=1.5, patch_artist=True,
-                       boxprops=dict(facecolor='#ff7f0e', alpha=0.5, color='#ff7f0e'),
-                       medianprops=dict(color='red', linewidth=2),
-                       whis=[5, 95], showfliers=False) 
-                       
-            # 標示出「最密集的眾數」
-            ax.scatter(1, kde_mode_price, color='purple', s=100, marker='*', zorder=10, label=f'最高機率落點 ({kde_mode_price:.2f})')
-            
-            # C. 圖表美化
-            ax.set_title(f"{ticker_input} 走勢與未來機率預測\n最新收盤價: {current_price:.2f}", fontsize=16, fontweight='bold')
-            ax.set_xlabel("時間步數 (分鐘/日)", fontsize=12)
-            ax.set_ylabel("股價 (TWD)", fontsize=12)
-            ax.set_xticks([-60, -40, -20, 0, 1])
-            ax.set_xticklabels(['T-60', 'T-40', 'T-20', 'T=0', 'T+1'])
-            ax.legend(loc='upper left')
-            ax.grid(True, linestyle=':', alpha=0.6)
-            
-            st.pyplot(fig)
-            
-            # ==========================================
-            # 📊 顯示數據統計
-            # ==========================================
-            mean_pred_price = np.mean(predicted_prices)
-            p05_price = np.percentile(predicted_prices, 5)
-            p95_price = np.percentile(predicted_prices, 95)
-            
-            col1, col2, col3, col4 = st.columns(4)
-            col1.metric("當前收盤價", f"{current_price:.2f}")
-            col2.metric("⭐ 最高機率目標價", f"{kde_mode_price:.2f}", f"{(kde_mode_price - current_price):.2f}")
-            col3.metric("保守情境 (5%)", f"{p05_price:.2f}", f"{(p05_price - current_price):.2f}")
-
-            col4.metric("樂觀情境 (95%)", f"{p95_price:.2f}", f"{(p95_price - current_price):.2f}")
-
-with tab2:
-        st.subheader("🚀 台灣指標股潛力掃描雷達")
-        st.write("自動掃描重點觀察清單，並依據 Mamba-Diffusion 預測之「最高機率漲幅」進行排序。")
+    st.header("📌 導覽選單")
+    if data_loaded:
+        st.success("✅ V3.1 雲端數據庫已連線")
+    else:
+        st.error("⚠️ 無法連線至雲端數據庫")
         
-        # 1. 改用字典來儲存代號與對應的中文名稱
-        watchlist = {
-            "2330.TW": "台積電",
-            "2454.TW": "聯發科",
-            "2317.TW": "鴻海",
-            "2308.TW": "台達電",
-            "2382.TW": "廣達",
-            "3231.TW": "緯創",
-            "2881.TW": "富邦金",
-            "2891.TW": "中信金"
-        }
-        
-        if st.button("啟動雷達掃描", type="primary", key="radar_btn"):
-            results = []
-            progress_text = "雷達掃描中，請稍候..."
-            my_bar = st.progress(0, text=progress_text)
-            
-            # 使用 .items() 來同時抓取代號 (ticker) 與名稱 (name)
-            for i, (ticker, name) in enumerate(watchlist.items()):
-                try:
-                    df = yf.Ticker(ticker).history(period="6mo")
-                    if len(df) < 60:
-                        continue
-                        
-                    df = df[['Close', 'Volume']].copy()
-                    df['Log_Ret'] = np.log((df['Close'] + 1e-8) / (df['Close'].shift(1) + 1e-8))
-                    df['Log_Vol'] = np.log(df['Volume'] + 1)
-                    df.replace([np.inf, -np.inf], np.nan, inplace=True)
-                    df.dropna(inplace=True)
-                    
-                    current_price = df['Close'].iloc[-1]
-                    
-                    scaler = StandardScaler()
-                    scaled_data = scaler.fit_transform(df[['Log_Ret', 'Log_Vol']].values)
-                    scaled_data = np.clip(scaled_data, -5, 5)
-                    recent_scaled = scaled_data[-60:]
-                    real_history_tensor = torch.FloatTensor(recent_scaled).unsqueeze(0).to(diffusion_model.device)
-                    
-                    predictions = diffusion_model.sample(real_history_tensor, n_samples=100)
-                    preds_scaled = predictions.cpu().numpy().flatten()
-                    preds_log_ret = (preds_scaled * scaler.scale_[0]) + scaler.mean_[0]
-                    predicted_prices = current_price * np.exp(preds_log_ret)
-                    
-                    kde = gaussian_kde(predicted_prices)
-                    price_range = np.linspace(min(predicted_prices), max(predicted_prices), 500)
-                    kde_mode_price = price_range[np.argmax(kde(price_range))]
-                    
-                    expected_return_pct = ((kde_mode_price - current_price) / current_price) * 100
-                    
-                    # 2. 儲存結果時加入中文名稱，並把代號的 .TW 拿掉讓畫面更乾淨
-                    results.append({
-                        "股票名稱": name,
-                        "代號": ticker.replace(".TW", ""), 
-                        "最新收盤價": current_price,
-                        "目標預測價": kde_mode_price,
-                        "預期漲幅 (%)": expected_return_pct
-                    })
-                    
-                except Exception as e:
-                    pass
-                
-                # 進度條也順便加上中文名稱
-                my_bar.progress((i + 1) / len(watchlist), text=f"正在分析: {name} ({ticker}) ({i+1}/{len(watchlist)})")
-            
-            my_bar.empty()
-            if results:
-                results_df = pd.DataFrame(results)
-                results_df = results_df.sort_values(by="預期漲幅 (%)", ascending=False).reset_index(drop=True)
-                
-                st.success("✅ 掃描完成！以下為潛力排行榜：")
-                
-                # 3. 終極美化：加上顏色並限制小數點位數
-                st.dataframe(
-                    results_df.style.map(
-                        lambda x: 'color: red;' if x > 0 else 'color: green;', 
-                        subset=['預期漲幅 (%)']
-                    ).format({
-                        "最新收盤價": "{:.2f}",
-                        "目標預測價": "{:.2f}",
-                        "預期漲幅 (%)": "{:.2f}%"  # 順便補上百分比符號
-                    }),
-                    use_container_width=True
-                )
+    page = st.radio("前往頁面", ["📊 今日凱利資金盤", "📈 個股軌跡透視", "🤖 持股監視與實盤 (開發中)"])
+    
+    st.divider()
+    st.info("💡 系統運作邏輯：\n每天收盤後由後端 A100 GPU 進行離線推論，覆蓋 Google Drive 檔案。前端網頁定時自動同步，實現 0 延遲秒開體驗。")
 
+# ==========================================
+# 3. 頁面內容路由
+# ==========================================
+if not data_loaded:
+    st.stop() # 如果資料沒抓到，就停止渲染後面的畫面
 
+# ------------------------------------------
+# 頁面 1: 凱利資金盤 (Top Picks)
+# ------------------------------------------
+if page == "📊 今日凱利資金盤":
+    st.subheader("🎯 今日最佳防禦型飆股 (Top 10)")
+    st.write("根據未來 15 天預期報酬與變異數，套用半凱利公式 (最高上限 20%) 給出的資金配置建議。")
+    
+    # 抓取前 10 名，並美化數字顯示
+    top_picks = df_kelly.head(10).copy()
+    
+    # 建立一個美化版的 DataFrame 給前端展示
+    display_df = top_picks[['Ticker', 'Exp_Return_15D', 'Volatility_Risk', 'Sharpe_Score', 'Suggested_Weight']].copy()
+    
+    # 格式化百分比
+    display_df['Exp_Return_15D'] = (display_df['Exp_Return_15D'] * 100).apply(lambda x: f"{x:.2f}%")
+    display_df['Volatility_Risk'] = (display_df['Volatility_Risk'] * 100).apply(lambda x: f"{x:.2f}%")
+    display_df['Suggested_Weight'] = (display_df['Suggested_Weight'] * 100).apply(lambda x: f"{x:.2f}%")
+    display_df['Sharpe_Score'] = display_df['Sharpe_Score'].apply(lambda x: f"{x:.4f}")
+    
+    # 修改欄位名稱為中文，讓使用者體驗更好
+    display_df.columns = ['股票代號', '預期報酬 (15天)', '波動風險', '夏普 CP 值', '建議資金配置比例']
+    
+    st.dataframe(display_df, use_container_width=True, hide_index=True)
 
+# ------------------------------------------
+# 頁面 2: 個股軌跡透視
+# ------------------------------------------
+elif page == "📈 個股軌跡透視":
+    st.subheader("🔭 平行宇宙軌跡觀測儀")
+    st.write("在這裡，我們將利用 `df_traj` 畫出大腦預測的未來 30 天走勢折線圖。")
+    
+    # 建立一個選擇器，讓使用者挑選 Top 10 裡面的股票來觀測
+    target_ticker = st.selectbox("請選擇要觀測的股票", df_kelly.head(10)['Ticker'].astype(str).tolist())
+    st.info(f"🚧 稍後我們要在這裡把 {target_ticker} 的 30 天未來軌跡圖畫出來！")
 
+# ------------------------------------------
+# 頁面 3: 持股監視與實盤
+# ------------------------------------------
+elif page == "🤖 持股監視與實盤 (開發中)":
+    st.subheader("🤖 我的虛擬量化基金")
+    st.write("這是我們預計實作「持股動態健檢」與「自動化 Paper Trading 績效曲線」的地方！")
