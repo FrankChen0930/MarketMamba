@@ -7,6 +7,7 @@ import os
 import seaborn as sns
 import yfinance as yf
 import plotly.graph_objects as go
+import json
 
 # ==========================================
 # 0. 網頁基本設定 & 字型處理
@@ -52,21 +53,26 @@ df_kelly, df_traj, data_loaded = load_v3_data()
 # ==========================================
 # 2. 狀態管理 (Session State) 與 側邊欄設計
 # ==========================================
-# 初始化頁面與目標股票的記憶體
 if 'current_page' not in st.session_state:
     st.session_state['current_page'] = "📊 今日凱利資金盤"
 if 'target_ticker' not in st.session_state:
     st.session_state['target_ticker'] = None
 
-# 常見台股代號對照表 (可以自己擴充，降低 API 負擔)
-TW_STOCK_DICT = {
-    "2330.TW": "台積電", "2317.TW": "鴻海", "2454.TW": "聯發科", 
-    "2308.TW": "台達電", "2382.TW": "廣達", "3231.TW": "緯創",
-    "2881.TW": "富邦金", "2891.TW": "中信金", "2603.TW": "長榮"
-}
+# ⚡ 動態讀取外部字典檔 (加入快取，避免每次點擊都重新讀檔)
+@st.cache_data
+def load_ticker_mapping():
+    try:
+        # 未來如果上傳到 GitHub，這裡可以直接改成 requests.get("你的 GitHub Raw 網址").json()
+        with open("ticker_mapping.json", "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        st.warning(f"找不到 ticker_mapping.json，將直接顯示股票代號。")
+        return {}
+
+TW_STOCK_DICT = load_ticker_mapping()
 
 def get_stock_name(ticker):
-    # 先查本地字典，沒有再給預設值，避免網頁卡頓
+    # 從外部載入的字典中尋找，找不到就回傳原始代號
     return TW_STOCK_DICT.get(ticker, ticker)
 
 with st.sidebar:
@@ -523,6 +529,7 @@ elif page == "🤖 百萬實盤機器人":
         fig.add_trace(go.Scatter(x=hist_df['date'], y=hist_df['equity'], mode='lines+markers', line=dict(color='#00fa9a', width=3)))
         fig.update_layout(title="📈 基金淨值成長曲線", template="plotly_dark", yaxis_title="總淨值 (TWD)")
         st.plotly_chart(fig, use_container_width=True)
+
 
 
 
