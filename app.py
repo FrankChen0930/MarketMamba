@@ -28,28 +28,23 @@ st.title("🐍 MarketMamba V3.1: 終極量化決策中心")
 st.markdown("基於 128 維度 Mamba 與 30 天擴散軌跡的自動化資金配置系統。")
 
 # ==========================================
-# 1. 載入 V3.1 雲端資料庫 (Google Drive 直讀)
+# 1. 載入核心預測數據 (加入 TTL 自動刷新機制)
 # ==========================================
-# 加入 ttl=3600，讓網頁每小時自動去雲端抓取最新資料
-@st.cache_data(ttl=3600, show_spinner="正在從雲端硬碟同步最新預測資料...")
-def load_v3_data():
-    # ⚠️ 請在這裡貼上你剛剛在 Google Drive 取得的 File ID ⚠️
-    kelly_file_id = "18fbj6kS4HfvojNrdSRiGz1SXF3qmYTm1" 
-    traj_file_id = "1bVd5EWp-tN8QYr9yjkPSgkmM_vp5-YF2"
-    
-    # Pandas 支援直接讀取 Google Drive 的下載連結
-    kelly_url = f"https://drive.google.com/uc?id={kelly_file_id}"
-    traj_url = f"https://drive.google.com/uc?id={traj_file_id}"
-    
+# ttl=3600 代表快取只存活 1 小時。1 小時後只要有人打開網頁，
+# Streamlit 就會強制去硬碟裡抓最新的 CSV，完美對接 Colab 的每日更新！
+@st.cache_data(ttl=3600)
+def load_prediction_data():
     try:
-        df_kelly = pd.read_csv(kelly_url)
-        df_traj = pd.read_csv(traj_url)
-        return df_kelly, df_traj, True
+        # 因為 CSV 檔已經被 Colab 推送到同一個 GitHub 倉庫的根目錄
+        # Streamlit 雲端可以直接用相對路徑讀取它們！
+        df_k = pd.read_csv("df_kelly.csv")
+        df_t = pd.read_csv("df_traj.csv")
+        return df_k, df_t, True
     except Exception as e:
-        st.error(f"讀取雲端資料失敗，請檢查 File ID 或共用權限設定。詳細錯誤：{e}")
-        return None, None, False
+        st.error(f"⚠️ 尚未讀取到預測資料，請確認 Colab 是否已成功推送 CSV 檔案。錯誤: {e}")
+        return pd.DataFrame(), pd.DataFrame(), False
 
-df_kelly, df_traj, data_loaded = load_v3_data()
+df_kelly, df_traj, data_loaded = load_prediction_data()
 
 # ==========================================
 # 2. 狀態管理 (Session State) 與 側邊欄設計
@@ -497,4 +492,5 @@ elif page == "🤖 百萬實盤機器人":
         fig.add_trace(go.Scatter(x=hist_df['date'], y=hist_df['equity'], mode='lines+markers', line=dict(color='#00fa9a', width=3)))
         fig.update_layout(title="📈 基金淨值成長曲線", template="plotly_dark", yaxis_title="總淨值 (TWD)")
         st.plotly_chart(fig, use_container_width=True)
+
 
