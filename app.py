@@ -50,20 +50,55 @@ def load_v3_data():
 df_kelly, df_traj, data_loaded = load_v3_data()
 
 # ==========================================
-# 2. 側邊欄導覽列
+# 2. 狀態管理 (Session State) 與 側邊欄設計
 # ==========================================
+# 初始化頁面與目標股票的記憶體
+if 'current_page' not in st.session_state:
+    st.session_state['current_page'] = "📊 今日凱利資金盤"
+if 'target_ticker' not in st.session_state:
+    st.session_state['target_ticker'] = None
+
+# 常見台股代號對照表 (可以自己擴充，降低 API 負擔)
+TW_STOCK_DICT = {
+    "2330.TW": "台積電", "2317.TW": "鴻海", "2454.TW": "聯發科", 
+    "2308.TW": "台達電", "2382.TW": "廣達", "3231.TW": "緯創",
+    "2881.TW": "富邦金", "2891.TW": "中信金", "2603.TW": "長榮"
+}
+
+def get_stock_name(ticker):
+    # 先查本地字典，沒有再給預設值，避免網頁卡頓
+    return TW_STOCK_DICT.get(ticker, ticker)
+
 with st.sidebar:
-    st.header("📌 導覽選單")
+    st.header("📌 功能選單")
     if data_loaded:
         st.success("✅ V3.1 雲端數據庫已連線")
-    else:
-        st.error("⚠️ 無法連線至雲端數據庫")
         
-    page = st.radio("前往頁面", ["📊 今日凱利資金盤", "📈 個股軌跡透視", "💼 我的持股健檢", "🤖 百萬實盤機器人"])
+    st.markdown("---")
     
-    st.divider()
-    st.info("💡 系統運作邏輯：\n每天收盤後由後端 A100 GPU 進行離線推論，覆蓋 Google Drive 檔案。前端網頁定時自動同步，實現 0 延遲秒開體驗。")
+    # 使用 button 創造「方塊化」的視覺效果，點擊後更改 session_state
+    if st.button("📊 今日凱利資金盤", use_container_width=True, 
+                 type="primary" if st.session_state['current_page'] == "📊 今日凱利資金盤" else "secondary"):
+        st.session_state['current_page'] = "📊 今日凱利資金盤"
+        st.rerun()
+        
+    if st.button("📈 個股軌跡透視", use_container_width=True,
+                 type="primary" if st.session_state['current_page'] == "📈 個股軌跡透視" else "secondary"):
+        st.session_state['current_page'] = "📈 個股軌跡透視"
+        st.rerun()
+        
+    if st.button("💼 我的持股健檢", use_container_width=True,
+                 type="primary" if st.session_state['current_page'] == "💼 我的持股健檢" else "secondary"):
+        st.session_state['current_page'] = "💼 我的持股健檢"
+        st.rerun()
+        
+    if st.button("🤖 百萬實盤機器人", use_container_width=True,
+                 type="primary" if st.session_state['current_page'] == "🤖 百萬實盤機器人" else "secondary"):
+        st.session_state['current_page'] = "🤖 百萬實盤機器人"
+        st.rerun()
 
+# 讀取當前頁面
+page = st.session_state['current_page']
 # ==========================================
 # 3. 頁面內容路由
 # ==========================================
@@ -75,81 +110,96 @@ if not data_loaded:
 # ------------------------------------------
 if page == "📊 今日凱利資金盤":
     st.subheader("🎯 今日最佳防禦型飆股 (Top 10)")
-    st.write("根據未來 15 天預期報酬與變異數，套用半凱利公式 (最高上限 20%) 給出的資金配置建議。")
+    st.write("點擊表格中的任意一行，系統將自動為您跳轉至該股的「詳細軌跡透視」頁面。")
     
-    # 抓取前 10 名，並美化數字顯示
+    # 抓取 Top 10 與對應的軌跡資料
     top_picks = df_kelly.head(10).copy()
+    display_df = top_picks[['Ticker', 'Volatility_Risk', 'Sharpe_Score', 'Suggested_Weight']].copy()
     
-    # 建立一個美化版的 DataFrame 給前端展示
-    display_df = top_picks[['Ticker', 'Exp_Return_15D', 'Volatility_Risk', 'Sharpe_Score', 'Suggested_Weight']].copy()
+    # 加上中文名稱
+    display_df.insert(0, '股票名稱', display_df['Ticker'].apply(get_stock_name))
     
-    # 格式化百分比
-    display_df['Exp_Return_15D'] = (display_df['Exp_Return_15D'] * 100).apply(lambda x: f"{x:.2f}%")
-    display_df['Volatility_Risk'] = (display_df['Volatility_Risk'] * 100).apply(lambda x: f"{x:.2f}%")
-    display_df['Suggested_Weight'] = (display_df['Suggested_Weight'] * 100).apply(lambda x: f"{x:.2f}%")
-    display_df['Sharpe_Score'] = display_df['Sharpe_Score'].apply(lambda x: f"{x:.4f}")
+    # 從 df_traj 裡面挖出 5~30 天的資料
+    for day in [5, 10, 15, 20, 25, 30]:
+        # 把 df_traj 裡面對應天數的數值 map 過來
+        day_values = df_traj.set_index('Ticker')[f'Day_{day}'].reindex(display_df['Ticker']).values
+        display_df[f'預期報酬 ({day}天)'] = (day_values * 100)
+        
+    # 格式化數字 (保留浮點數格式給 pandas，方便 Streamlit 渲染顏色)
+    display_df['Volatility_Risk'] = display_df['Volatility_Risk'] * 100
+    display_df['Suggested_Weight'] = display_df['Suggested_Weight'] * 100
     
-    # 修改欄位名稱為中文，讓使用者體驗更好
-    display_df.columns = ['股票代號', '預期報酬 (15天)', '波動風險', '夏普 CP 值', '建議資金配置比例']
-    
-    st.dataframe(display_df, use_container_width=True, hide_index=True)
+    # 重新命名欄位
+    display_df = display_df.rename(columns={
+        'Ticker': '代號', 'Volatility_Risk': '波動風險(%)', 
+        'Sharpe_Score': '夏普CP值', 'Suggested_Weight': '資金佔比(%)'
+    })
 
+    # 使用 dataframe 的 on_select 事件來捕捉使用者的點擊 (Streamlit 1.35+ 支援)
+    event = st.dataframe(
+        display_df.style.background_gradient(cmap='RdYlGn', subset=[f'預期報酬 ({d}天)' for d in [5,10,15,20,25,30]]),
+        use_container_width=True,
+        hide_index=True,
+        selection_mode="single-row",
+        on_select="rerun" 
+    )
+    
+    # 如果使用者點擊了某一行，執行跳轉動作
+    if len(event.selection.rows) > 0:
+        selected_idx = event.selection.rows[0]
+        selected_ticker = display_df.iloc[selected_idx]['代號']
+        
+        # 寫入 Session State 並強制跳轉頁面
+        st.session_state['target_ticker'] = selected_ticker
+        st.session_state['current_page'] = "📈 個股軌跡透視"
+        st.rerun()
 # ------------------------------------------
-# 頁面 2: 個股軌跡透視 (Plotly 專業互動版)
+# 頁面 2: 個股軌跡透視
 # ------------------------------------------
 elif page == "📈 個股軌跡透視":
-    st.subheader("🔭 平行宇宙軌跡觀測儀 (專業互動版)")
-    st.write("結合歷史真實 K 線與未來 30 天擴散機率雲，支援滑鼠懸停與拖曳縮放。")
+    st.subheader("🔭 平行宇宙軌跡觀測儀")
     
-    # 建立選擇器
-    top_1_ticker = str(df_kelly['Ticker'].iloc[0])
     all_tickers = df_traj['Ticker'].astype(str).tolist()
-    default_idx = all_tickers.index(top_1_ticker) if top_1_ticker in all_tickers else 0
+    
+    # 如果從表格跳轉過來，帶入目標代號；否則預設第一檔
+    if st.session_state['target_ticker'] in all_tickers:
+        default_idx = all_tickers.index(st.session_state['target_ticker'])
+    else:
+        default_idx = 0
+        
     target_ticker = st.selectbox("🔍 請選擇要觀測的股票代號", all_tickers, index=default_idx)
+    st.session_state['target_ticker'] = target_ticker # 更新狀態
     
-    # 抓出預測軌跡與該股的波動風險
-    stock_traj = df_traj[df_traj['Ticker'].astype(str) == target_ticker].iloc[0]
-    volatility = df_kelly[df_kelly['Ticker'].astype(str) == target_ticker]['Volatility_Risk'].iloc[0]
+    stock_name = get_stock_name(target_ticker)
     
-    traj_values = stock_traj[[f'Day_{i}' for i in range(1, 31)]].values 
-    
-    # ==========================================
-    # ⚡ 透過 yfinance 抓取「過去 20 天」的真實歷史
-    # ==========================================
+    # ⚡ 透過 yfinance 抓取「個股基礎資訊」與「歷史股價」
     @st.cache_data(ttl=3600)
-    def fetch_history_data(ticker):
+    def fetch_stock_info(ticker):
         for suffix in ['.TW', '.TWO']:
             try:
-                hist = yf.Ticker(f"{ticker}{suffix}").history(period="1mo") # 抓一個月歷史
+                stock = yf.Ticker(f"{ticker}{suffix}")
+                hist = stock.history(period="1mo")
+                info = stock.info
                 if not hist.empty:
-                    return hist, suffix
+                    return hist, info, suffix
             except:
                 continue
-        return None, None
+        return None, {}, None
+
+    with st.spinner("正在同步個股資訊與建構機率雲..."):
+        hist_df, stock_info, suffix = fetch_stock_info(target_ticker)
         
-    with st.spinner("正在同步市場即時報價與建構機率雲..."):
-        hist_df, suffix = fetch_history_data(target_ticker)
-        
-    if hist_df is None:
-        st.warning(f"⚠️ 無法抓取 {target_ticker} 的歷史股價。")
-    else:
-        current_price = hist_df['Close'].iloc[-1]
-        last_date = hist_df.index[-1]
-        
-        # 1. 計算未來的真實日期 (避開六日)
-        future_dates = pd.bdate_range(start=last_date + pd.Timedelta(days=1), periods=30)
-        
-        # 2. 計算未來的目標均價
-        future_mean_prices = current_price * (1 + traj_values)
-        
-        # 3. 利用波動率 (Volatility) 展開機率分布漏斗
-        # 隨著天數增加，不確定性 (標準差) 會以根號時間放大
-        time_scale = np.sqrt(np.arange(1, 31) / 30.0) 
-        upper_bound_95 = future_mean_prices * (1 + (volatility * 1.5 * time_scale))
-        lower_bound_95 = future_mean_prices * (1 - (volatility * 1.5 * time_scale))
-        
-        upper_bound_68 = future_mean_prices * (1 + (volatility * 0.8 * time_scale))
-        lower_bound_68 = future_mean_prices * (1 - (volatility * 0.8 * time_scale))
+    # 顯示個股資訊卡片
+    if stock_info:
+        st.markdown(f"### {stock_name} ({target_ticker}) 個股速覽")
+        col1, col2, col3, col4 = st.columns(4)
+        col1.metric("今日收盤價", f"{hist_df['Close'].iloc[-1]:.2f}")
+        col2.metric("本益比 (P/E)", stock_info.get('trailingPE', 'N/A'))
+        col3.metric("市值 (億)", f"{stock_info.get('marketCap', 0) / 100000000:.2f}" if stock_info.get('marketCap') else 'N/A')
+        col4.metric("產業別", stock_info.get('industry', 'N/A'))
+        st.divider()
+
+    # ... (下方保留你原本畫 Plotly 機率雲圖的程式碼) ...
         
         # ==========================================
         # 📈 使用 Plotly 繪製專業互動圖表
@@ -462,6 +512,7 @@ elif page == "🤖 百萬實盤機器人":
         fig.add_trace(go.Scatter(x=hist_df['date'], y=hist_df['equity'], mode='lines+markers', line=dict(color='#00fa9a', width=3)))
         fig.update_layout(title="📈 基金淨值成長曲線", template="plotly_dark", yaxis_title="總淨值 (TWD)")
         st.plotly_chart(fig, use_container_width=True)
+
 
 
 
