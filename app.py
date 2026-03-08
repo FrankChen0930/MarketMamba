@@ -97,11 +97,51 @@ if page == "📊 今日凱利資金盤":
 # ------------------------------------------
 elif page == "📈 個股軌跡透視":
     st.subheader("🔭 平行宇宙軌跡觀測儀")
-    st.write("在這裡，我們將利用 `df_traj` 畫出大腦預測的未來 30 天走勢折線圖。")
+    st.write("在這裡，我們將利用大腦預測的未來 30 天走勢，畫出預期累積報酬率的變化。")
     
-    # 建立一個選擇器，讓使用者挑選 Top 10 裡面的股票來觀測
-    target_ticker = st.selectbox("請選擇要觀測的股票", df_kelly.head(10)['Ticker'].astype(str).tolist())
-    st.info(f"🚧 稍後我們要在這裡把 {target_ticker} 的 30 天未來軌跡圖畫出來！")
+    # 建立一個選擇器，讓使用者挑選全市場的股票來觀測 (預設先帶入 Top 10 的第一檔)
+    top_1_ticker = str(df_kelly['Ticker'].iloc[0])
+    all_tickers = df_traj['Ticker'].astype(str).tolist()
+    
+    # 防呆機制：確保預設股票有在清單內
+    default_idx = all_tickers.index(top_1_ticker) if top_1_ticker in all_tickers else 0
+    target_ticker = st.selectbox("🔍 請選擇要觀測的股票代號", all_tickers, index=default_idx)
+    
+    # 抓出這檔股票的 30 天軌跡資料
+    stock_traj = df_traj[df_traj['Ticker'].astype(str) == target_ticker].iloc[0]
+    
+    # 準備畫圖資料：取出 Day_1 到 Day_30 的數值，並轉成百分比
+    days = np.arange(1, 31)
+    traj_values = stock_traj[[f'Day_{i}' for i in range(1, 31)]].values * 100 
+    
+    # ==========================================
+    # 📈 使用 Matplotlib 畫出專業折線圖
+    # ==========================================
+    fig, ax = plt.subplots(figsize=(10, 5))
+    
+    # 畫出走勢線
+    ax.plot(days, traj_values, marker='o', markersize=4, linestyle='-', color='#d62728', linewidth=2)
+    
+    # 圖表美化
+    ax.set_title(f"股票 {target_ticker} - 未來 30 天預期累積報酬率軌跡", fontsize=16, fontweight='bold')
+    ax.set_xlabel("未來天數 (Trading Days)", fontsize=12)
+    ax.set_ylabel("預期累積報酬率 (%)", fontsize=12)
+    
+    # 畫一條 0% 的基準線
+    ax.axhline(0, color='gray', linestyle='--', linewidth=1.5, alpha=0.7)
+    ax.grid(True, linestyle=':', alpha=0.6)
+    
+    # 在最後一天標註最終數值
+    final_return = traj_values[-1]
+    ax.annotate(f'{final_return:.2f}%', 
+                xy=(30, final_return), 
+                xytext=(30.2, final_return),
+                fontsize=12, fontweight='bold', color='#d62728')
+                
+    # 讓 Streamlit 顯示圖表
+    st.pyplot(fig)
+    
+    st.info("💡 解讀指南：這是 30 個平行宇宙預測出來的「平均期望軌跡」。\n\n你可以觀察它是在前幾天就見高點（代表短線衝刺），還是會一路緩步向上（適合波段持有）。")
 
 # ------------------------------------------
 # 頁面 3: 持股監視與實盤
@@ -109,3 +149,4 @@ elif page == "📈 個股軌跡透視":
 elif page == "🤖 持股監視與實盤 (開發中)":
     st.subheader("🤖 我的虛擬量化基金")
     st.write("這是我們預計實作「持股動態健檢」與「自動化 Paper Trading 績效曲線」的地方！")
+
