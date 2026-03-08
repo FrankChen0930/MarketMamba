@@ -59,24 +59,34 @@ if 'current_page' not in st.session_state:
 if 'target_ticker' not in st.session_state:
     st.session_state['target_ticker'] = None
 
-# ⚡ 動態讀取外部字典檔 (改用 GitHub Raw 網址直讀)
+# ⚡ 動態讀取外部字典檔 (加入「去後綴」清洗機制)
 @st.cache_data(ttl=3600)
 def load_ticker_mapping():
     try:
         url = "https://raw.githubusercontent.com/FrankChen0930/MarketMamba/main/ticker_mapping.json"
         res = requests.get(url)
         res.raise_for_status() 
-        return res.json()
+        raw_dict = res.json()
+        
+        # 魔法在這裡：我們建立一個「乾淨版」字典
+        # 把所有的 .TW 和 .TWO 都拔掉，只留純數字當 Key
+        clean_dict = {}
+        for k, v in raw_dict.items():
+            clean_key = str(k).replace(".TW", "").replace(".TWO", "")
+            clean_dict[clean_key] = v
+            
+        return clean_dict
     except Exception as e:
-        st.warning(f"⚠️ 找不到 ticker_mapping.json，將直接顯示股票代號。錯誤: {e}")
+        st.warning(f"⚠️ 找不到 ticker_mapping.json。錯誤: {e}")
         return {}
 
-# 宣告全域變數 (這兩行就是剛剛消失導致報錯的主角！)
 TW_STOCK_DICT = load_ticker_mapping()
 
 def get_stock_name(ticker):
-    return TW_STOCK_DICT.get(ticker, ticker)
-
+    # 查詢時，也把傳進來的代號洗乾淨再去對照
+    clean_ticker = str(ticker).replace(".TW", "").replace(".TWO", "")
+    return TW_STOCK_DICT.get(clean_ticker, ticker)
+    
 # --- 側邊欄 UI ---
 with st.sidebar:
     st.header("📌 功能選單")
@@ -532,6 +542,7 @@ elif page == "🤖 百萬實盤機器人":
         fig.add_trace(go.Scatter(x=hist_df['date'], y=hist_df['equity'], mode='lines+markers', line=dict(color='#00fa9a', width=3)))
         fig.update_layout(title="📈 基金淨值成長曲線", template="plotly_dark", yaxis_title="總淨值 (TWD)")
         st.plotly_chart(fig, use_container_width=True)
+
 
 
 
