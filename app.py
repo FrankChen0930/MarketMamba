@@ -154,7 +154,7 @@ if page == "📊 今日凱利資金盤":
         st.session_state['current_page'] = "📈 個股軌跡透視"
         st.rerun()
 # ------------------------------------------
-# 頁面 2: 個股軌跡透視
+# 頁面 2: 個股軌跡透視 (資訊卡片 + Plotly 雲圖融合版)
 # ------------------------------------------
 elif page == "📈 個股軌跡透視":
     st.subheader("🔭 平行宇宙軌跡觀測儀")
@@ -162,7 +162,7 @@ elif page == "📈 個股軌跡透視":
     all_tickers = df_traj['Ticker'].astype(str).tolist()
     
     # 如果從表格跳轉過來，帶入目標代號；否則預設第一檔
-    if st.session_state['target_ticker'] in all_tickers:
+    if st.session_state.get('target_ticker') in all_tickers:
         default_idx = all_tickers.index(st.session_state['target_ticker'])
     else:
         default_idx = 0
@@ -186,11 +186,16 @@ elif page == "📈 個股軌跡透視":
                 continue
         return None, {}, None
 
-    with st.spinner("正在同步個股資訊與建構機率雲..."):
+    with st.spinner(f"正在同步 {stock_name} 的個股資訊與建構機率雲..."):
         hist_df, stock_info, suffix = fetch_stock_info(target_ticker)
         
-    # 顯示個股資訊卡片
-    if stock_info:
+    # ==========================================
+    # 確保有抓到資料，才開始畫圖與計算 (解決 NameError 的關鍵)
+    # ==========================================
+    if hist_df is None:
+        st.warning(f"⚠️ 無法從 Yahoo Finance 抓取 {target_ticker} 的歷史股價，請稍後再試。")
+    else:
+        # 1. 顯示個股資訊卡片
         st.markdown(f"### {stock_name} ({target_ticker}) 個股速覽")
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("今日收盤價", f"{hist_df['Close'].iloc[-1]:.2f}")
@@ -199,70 +204,76 @@ elif page == "📈 個股軌跡透視":
         col4.metric("產業別", stock_info.get('industry', 'N/A'))
         st.divider()
 
-    # ... (下方保留你原本畫 Plotly 機率雲圖的程式碼) ...
+        # 2. 準備大腦預測軌跡資料
+        stock_traj = df_traj[df_traj['Ticker'].astype(str) == target_ticker].iloc[0]
+        volatility = df_kelly[df_kelly['Ticker'].astype(str) == target_ticker]['Volatility_Risk'].iloc[0]
+        traj_values = stock_traj[[f'Day_{i}' for i in range(1, 31)]].values 
+        
+        current_price = hist_df['Close'].iloc[-1]
+        last_date = hist_df.index[-1]
+        
+        # 3. 計算未來的真實日期 (這裡就是剛剛消失的 future_dates！)
+        future_dates = pd.bdate_range(start=last_date + pd.Timedelta(days=1), periods=30)
+        future_mean_prices = current_price * (1 + traj_values)
+        
+        # 4. 計算機率雲漏斗的邊界
+        time_scale = np.sqrt(np.arange(1, 31) / 30.0) 
+        upper_bound_95 = future_mean_prices * (1 + (volatility * 1.5 * time_scale))
+        lower_bound_95 = future_mean_prices * (1 - (volatility * 1.5 * time_scale))
+        upper_bound_68 = future_mean_prices * (1 + (volatility * 0.8 * time_scale))
+        lower_bound_68 = future_mean_prices * (1 - (volatility * 0.8 * time_scale))
         
         # ==========================================
         # 📈 使用 Plotly 繪製專業互動圖表
         # ==========================================
+        import plotly.graph_objects as go
         fig = go.Figure()
 
-        # A. 畫出歷史真實股價 (左半邊)
+        # A. 歷史真實股價
         fig.add_trace(go.Scatter(
             x=hist_df.index, y=hist_df['Close'],
-            mode='lines', name='歷史真實股價',
-            line=dict(color='#00d2ff', width=3)
+            mode='lines', name='歷史真實股價', line=dict(color='#00d2ff', width=3)
         ))
 
-        # B. 畫出未來 95% 機率區間 (最外層，透明度最高)
+        # B. 95% 機率雲
         fig.add_trace(go.Scatter(
             x=list(future_dates) + list(future_dates)[::-1],
             y=list(upper_bound_95) + list(lower_bound_95)[::-1],
             fill='toself', fillcolor='rgba(255, 127, 14, 0.1)',
-            line=dict(color='rgba(255,255,255,0)'),
-            hoverinfo="skip", name='95% 機率雲'
+            line=dict(color='rgba(255,255,255,0)'), hoverinfo="skip", name='95% 機率雲'
         ))
 
-        # C. 畫出未來 68% 機率區間 (內層，透明度較低)
+        # C. 68% 機率雲
         fig.add_trace(go.Scatter(
             x=list(future_dates) + list(future_dates)[::-1],
             y=list(upper_bound_68) + list(lower_bound_68)[::-1],
             fill='toself', fillcolor='rgba(255, 127, 14, 0.25)',
-            line=dict(color='rgba(255,255,255,0)'),
-            hoverinfo="skip", name='68% 機率雲'
+            line=dict(color='rgba(255,255,255,0)'), hoverinfo="skip", name='68% 機率雲'
         ))
 
-        # D. 畫出未來預測平均軌跡 (中心虛線)
+        # D. 預測平均軌跡
         fig.add_trace(go.Scatter(
             x=future_dates, y=future_mean_prices,
             mode='lines+markers', name='預測平均軌跡',
-            line=dict(color='#ff7f0e', width=3, dash='dot'),
-            marker=dict(size=5)
+            line=dict(color='#ff7f0e', width=3, dash='dot'), marker=dict(size=5)
         ))
         
-        # E. 連接歷史與未來的橋樑
+        # E. 連接點
         fig.add_trace(go.Scatter(
             x=[last_date, future_dates[0]], y=[current_price, future_mean_prices[0]],
             mode='lines', line=dict(color='#ff7f0e', width=3, dash='dot'), showlegend=False
         ))
 
-        # 圖表版面美化 (暗黑科技風)
         fig.update_layout(
-            title=f"<b>{target_ticker}{suffix} 股價預測與機率分布</b>",
-            yaxis_title="股價 (TWD)",
-            xaxis_title="日期",
-            template="plotly_dark", # 瞬間變身專業看盤軟體
-            hovermode="x unified",  # 滑鼠游標會顯示整條線的資訊
+            title=f"<b>{stock_name} ({target_ticker}{suffix}) 股價預測與機率分布</b>",
+            yaxis_title="股價 (TWD)", xaxis_title="日期",
+            template="plotly_dark", hovermode="x unified",
             legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
             margin=dict(l=40, r=40, t=60, b=40)
         )
-        
-        # 加上目前股價的水平基準線
         fig.add_hline(y=current_price, line_dash="dash", line_color="gray", annotation_text="今日收盤價")
 
-        # 在 Streamlit 中渲染 Plotly 圖表
         st.plotly_chart(fig, use_container_width=True)
-        
-        st.info("💡 操作提示：你可以用滑鼠在圖表上框選放大特定區域，或是將游標停留在未來日期上查看精準的預測價位。淺橘色區域代表未來可能發生的震盪範圍！")
 
 # ------------------------------------------
 # 頁面 3: 持股監視與實盤
@@ -512,6 +523,7 @@ elif page == "🤖 百萬實盤機器人":
         fig.add_trace(go.Scatter(x=hist_df['date'], y=hist_df['equity'], mode='lines+markers', line=dict(color='#00fa9a', width=3)))
         fig.update_layout(title="📈 基金淨值成長曲線", template="plotly_dark", yaxis_title="總淨值 (TWD)")
         st.plotly_chart(fig, use_container_width=True)
+
 
 
 
