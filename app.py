@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 import os
 import seaborn as sns
+import yfinance as yf
 
 # ==========================================
 # 0. 網頁基本設定 & 字型處理
@@ -97,51 +98,83 @@ if page == "📊 今日凱利資金盤":
 # ------------------------------------------
 elif page == "📈 個股軌跡透視":
     st.subheader("🔭 平行宇宙軌跡觀測儀")
-    st.write("在這裡，我們將利用大腦預測的未來 30 天走勢，畫出預期累積報酬率的變化。")
+    st.write("在這裡，我們將利用大腦預測的未來 30 天走勢，同時觀測「累積報酬率」與「實際股價」的變化。")
     
-    # 建立一個選擇器，讓使用者挑選全市場的股票來觀測 (預設先帶入 Top 10 的第一檔)
+    # 建立一個選擇器，預設帶入 Top 10 的第一檔
     top_1_ticker = str(df_kelly['Ticker'].iloc[0])
     all_tickers = df_traj['Ticker'].astype(str).tolist()
-    
-    # 防呆機制：確保預設股票有在清單內
     default_idx = all_tickers.index(top_1_ticker) if top_1_ticker in all_tickers else 0
     target_ticker = st.selectbox("🔍 請選擇要觀測的股票代號", all_tickers, index=default_idx)
     
-    # 抓出這檔股票的 30 天軌跡資料
+    # 抓出軌跡資料
     stock_traj = df_traj[df_traj['Ticker'].astype(str) == target_ticker].iloc[0]
-    
-    # 準備畫圖資料：取出 Day_1 到 Day_30 的數值，並轉成百分比
     days = np.arange(1, 31)
     traj_values = stock_traj[[f'Day_{i}' for i in range(1, 31)]].values * 100 
     
     # ==========================================
-    # 📈 使用 Matplotlib 畫出專業折線圖
+    # ⚡ 透過 yfinance 抓取最新股價以推算未來價格
     # ==========================================
-    fig, ax = plt.subplots(figsize=(10, 5))
+    @st.cache_data(ttl=3600)
+    def fetch_current_price(ticker):
+        # 智慧判斷：台股有上市 (.TW) 跟上櫃 (.TWO) 之分，我們讓程式自動試探
+        for suffix in ['.TW', '.TWO']:
+            try:
+                hist = yf.Ticker(f"{ticker}{suffix}").history(period="5d")
+                if not hist.empty:
+                    return hist['Close'].iloc[-1], suffix
+            except:
+                continue
+        return None, None
+        
+    with st.spinner("正在同步市場最新即時報價..."):
+        current_price, suffix = fetch_current_price(target_ticker)
+        
+    # ==========================================
+    # 📈 繪製雙圖表 (報酬率 vs 股價)
+    # ==========================================
+    if current_price is None:
+        st.warning(f"⚠️ 無法從 Yahoo Finance 抓取 {target_ticker} 的即時股價，僅顯示報酬率預測。")
+        price_values = None
+    else:
+        st.success(f"✅ 成功抓取 {target_ticker}{suffix} 最新收盤價： **{current_price:.2f} TWD**")
+        # 數學還原：未來股價 = 目前股價 * (1 + 累積報酬率/100)
+        price_values = current_price * (1 + traj_values / 100)
+        
+    # 使用 Streamlit 雙欄位並排顯示 (左邊報酬率，右邊股價)
+    col1, col2 = st.columns(2)
     
-    # 畫出走勢線
-    ax.plot(days, traj_values, marker='o', markersize=4, linestyle='-', color='#d62728', linewidth=2)
-    
-    # 圖表美化
-    ax.set_title(f"股票 {target_ticker} - 未來 30 天預期累積報酬率軌跡", fontsize=16, fontweight='bold')
-    ax.set_xlabel("未來天數 (Trading Days)", fontsize=12)
-    ax.set_ylabel("預期累積報酬率 (%)", fontsize=12)
-    
-    # 畫一條 0% 的基準線
-    ax.axhline(0, color='gray', linestyle='--', linewidth=1.5, alpha=0.7)
-    ax.grid(True, linestyle=':', alpha=0.6)
-    
-    # 在最後一天標註最終數值
-    final_return = traj_values[-1]
-    ax.annotate(f'{final_return:.2f}%', 
-                xy=(30, final_return), 
-                xytext=(30.2, final_return),
-                fontsize=12, fontweight='bold', color='#d62728')
-                
-    # 讓 Streamlit 顯示圖表
-    st.pyplot(fig)
-    
-    st.info("💡 解讀指南：這是 30 個平行宇宙預測出來的「平均期望軌跡」。\n\n你可以觀察它是在前幾天就見高點（代表短線衝刺），還是會一路緩步向上（適合波段持有）。")
+    with col1:
+        fig1, ax1 = plt.subplots(figsize=(8, 4))
+        ax1.plot(days, traj_values, marker='o', markersize=4, linestyle='-', color='#1f77b4', linewidth=2)
+        ax1.set_title(f"預期累積報酬率 (%)", fontsize=14, fontweight='bold')
+        ax1.set_xlabel("未來天數 (Trading Days)", fontsize=10)
+        ax1.set_ylabel("報酬率 (%)", fontsize=10)
+        ax1.axhline(0, color='gray', linestyle='--', linewidth=1.5, alpha=0.7)
+        ax1.grid(True, linestyle=':', alpha=0.6)
+        
+        final_ret = traj_values[-1]
+        ax1.annotate(f'{final_ret:.2f}%', xy=(30, final_ret), xytext=(28, final_ret),
+                     fontsize=11, fontweight='bold', color='#1f77b4')
+        st.pyplot(fig1)
+        
+    with col2:
+        if price_values is not None:
+            fig2, ax2 = plt.subplots(figsize=(8, 4))
+            ax2.plot(days, price_values, marker='o', markersize=4, linestyle='-', color='#ff7f0e', linewidth=2)
+            ax2.set_title(f"預期目標股價 (TWD)", fontsize=14, fontweight='bold')
+            ax2.set_xlabel("未來天數 (Trading Days)", fontsize=10)
+            ax2.set_ylabel("股價 (TWD)", fontsize=10)
+            # 畫一條現在股價的基準線
+            ax2.axhline(current_price, color='gray', linestyle='--', linewidth=1.5, alpha=0.7, label='目前股價')
+            ax2.grid(True, linestyle=':', alpha=0.6)
+            
+            final_price = price_values[-1]
+            ax2.annotate(f'{final_price:.2f}', xy=(30, final_price), xytext=(28, final_price),
+                         fontsize=11, fontweight='bold', color='#ff7f0e')
+            ax2.legend()
+            st.pyplot(fig2)
+            
+    st.info("💡 解讀指南：左圖(報酬率)適合用來跨股票比較 CP 值；右圖(實際股價)適合用來設定你在看盤軟體裡的「停利/停損」掛單價位！")
 
 # ------------------------------------------
 # 頁面 3: 持股監視與實盤
@@ -149,4 +182,5 @@ elif page == "📈 個股軌跡透視":
 elif page == "🤖 持股監視與實盤 (開發中)":
     st.subheader("🤖 我的虛擬量化基金")
     st.write("這是我們預計實作「持股動態健檢」與「自動化 Paper Trading 績效曲線」的地方！")
+
 
