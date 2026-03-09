@@ -33,6 +33,34 @@
 > * `yfinance` 抓取美股與台股量價，基本無嚴格頻率限制。
 > * `FinMind` 免費版限制為 **600 次 / 小時**。實盤每日更新全台股 1700 檔時，務必加上 `time.sleep(6.5)` 避免 IP 被封鎖。
 
+## 🏗️ MarketMamba V4.0 資料工程與時序對齊規範 (Data Engineering Protocol)
+
+為了處理龐大的 7 年期 (2019-01-01 至今) 高維度混合頻率資料，本專案制定以下嚴格的資料庫建置規範，以確保資料的純淨度並徹底根絕未來函數 (Lookahead Bias)。
+
+### 🗂️ 第一層：資料夾分層架構 (Google Drive 儲存規範)
+資料庫分為「原始資料湖 (Raw Data Lake)」與「最終特徵倉儲 (Processed Feature Warehouse)」兩大層級：
+
+* **`MarketMamba_DB/Raw/` (原始資料層 - 依更新頻率分類)**
+    * `/Daily_Macro/`: 美股大盤、VIX、匯率等每日宏觀數據。
+    * `/Daily_Market/`: 每日全市場籌碼打包 (三大法人、融資券、當沖、借券等)。
+    * `/Weekly_Holdings/`: 每週五更新之集保大戶/散戶股權分散表。
+    * `/Monthly_Revenue/`: 每月 10 日前公布之月營收資料。
+    * `/Quarterly_Financials/`: 每季公布之財報 (損益表、資產負債表等)。
+* **`MarketMamba_DB/Processed_Features/` (最終特徵層)**
+    * 存放以單一股票代號命名的 `.parquet` 檔案 (例如 `2330_features.parquet`)。
+    * 此層資料已完成所有混頻對齊與缺失值填補，可直接輸入 Mamba 模型訓練。
+
+### ⏱️ 第二層：混頻時序對齊守則 (Mixed-Frequency Alignment Rules)
+所有對齊皆以「台股每日交易日曆 (Trading Calendar)」為絕對左表 (Left Anchor)。
+
+1.  **日頻資料 (Daily)**
+    * **對齊方式：** 相同日期直接 `merge`。
+    * **跨時區 (美股)：** 美股收盤時間晚於台股，必須將美股日期 `+1 天` (轉為台股可見日)，再使用 `pd.merge_asof(direction='backward')` 向後尋找最近的值，並標記 `US_Market_Closed`。
+2.  **週頻資料 (Weekly - 例：集保股權)**
+    * **對齊方式：** 由於資料在每週五盤後公布，下週一至週四的觀測值必須等於「上週五」的數值。使用 `pd.merge_asof(direction='backward')` 進行時間戳記對齊。
+3.  **月頻/季頻基本面 (Monthly/Quarterly - 例：營收、財報)**
+    * **防漏準則 (Lookahead Bias Prevention)：** 絕對禁止使用「資料所屬年月」進行對齊。
+    * **對齊方式：** 必須以 **「公告日 / 發布日 (Announcement Date)」** 作為真實時間戳記。在兩次公告日之間的空白交易日，採用 **向後填充 (Forward Fill, `ffill`)** 延續上一次的已知數據。
 
 # 🐍 MarketMamba 演進史：從踩坑到穩健的量化架構
 
