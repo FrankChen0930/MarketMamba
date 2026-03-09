@@ -183,17 +183,25 @@ elif page == "📈 個股軌跡透視":
     
     stock_name = get_stock_name(target_ticker)
     
-    # 🌟 修正點 1：徹底洗淨字串，強制輪詢上市與上櫃
+    # 🌟 修正點：將 .info 獨立包裝，防止基本面報錯拖累歷史股價
     @st.cache_data(ttl=3600)
     def fetch_stock_info(ticker):
         clean_ticker = str(ticker).split('.')[0].strip()
         for suffix in ['.TW', '.TWO']:
             try:
                 stock = yf.Ticker(f"{clean_ticker}{suffix}")
+                # 1. 先抓股價 (這最重要，不能失敗)
                 hist = stock.history(period="1mo")
-                info = stock.info
+                
                 if not hist.empty:
-                    return hist, info, suffix
+                    # 2. 股價抓成功了，再來嘗試抓基本面 (加上獨立的 Try-Except)
+                    info_data = {}
+                    try:
+                        info_data = stock.info
+                    except:
+                        pass # 就算 Yahoo 的基本面 API 壞掉，也不要拋出錯誤
+                        
+                    return hist, info_data, suffix
             except:
                 continue
         return None, {}, None
@@ -470,3 +478,4 @@ elif page == "🤖 百萬實盤機器人":
         fig.add_trace(go.Scatter(x=hist_df['date'], y=hist_df['equity'], mode='lines+markers', line=dict(color='#00fa9a', width=3)))
         fig.update_layout(title="📈 基金淨值成長曲線", template="plotly_dark", yaxis_title="總淨值 (TWD)")
         st.plotly_chart(fig, use_container_width=True)
+
