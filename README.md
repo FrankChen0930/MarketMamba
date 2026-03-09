@@ -8,22 +8,24 @@
 
 ### 📊 MarketMamba V4.0 全維度多模態資料庫 (The Omniscient Mamba Matrix)
 
-本專案基於 **Mamba (State Space Model)** 的高維度吞吐優勢，將台股微觀籌碼與美股宏觀視野完美融合。
-**資料獲取戰略 (Hit and Run)：** 歷史 5 年資料依賴一個月 FinMind Sponsor 權限進行「單日全市場光速打包」；實盤推論階段退回免費方案，採每日增量更新，達成 0 元實盤維運。
+### 📊 MarketMamba V4.0 全知全能資料矩陣 (The Ultimate Mamba Matrix)
 
-| 數據板塊 (Domain) | 核心特徵欄位 (High-Dimensional Features) | 資料來源 (Source) | 戰略價值與模型作用 (Alpha / Mamba Use Case) |
+本專案將發揮 Mamba 模型處理高維度矩陣的絕對優勢，將台股微觀籌碼、高頻特徵與國際實體宏觀完美融合。
+**戰略 (Hit and Run)：** 歷史 5 年資料庫依賴一個月 Sponsor VIP 權限進行「全市場巨量打包」；實盤階段退回免費方案，採每日增量更新，達成 0 元維運。
+
+| 數據板塊 (Domain) | 核心特徵欄位 (High-Dimensional Features) | 資料表來源 (FinMind API / Others) | Mamba 大腦之戰略作用 (Alpha Value) |
 | :--- | :--- | :--- | :--- |
-| **1. 國際宏觀與跨市資金**<br>*(The Macro Vision)* | `US_SOX` (費半), `US_QQQ` (納斯達克)<br>`US_TNX` (10年美債), `US_VIX` (恐慌指數)<br>`USD_TWD` (台幣匯率) | `yfinance`<br>`TaiwanExchangeRate` | 建立台股的「上帝視角」。衡量全球科技股風險偏好與外資熱錢匯出入動能。 |
-| **2. 工業級時序防漏工程**<br>*(Time Alignment)* | `US_Market_Closed` (美股休市標記)<br>`TW_Typhoon_Day` (台股颱風假標記) | 本地端計算<br>(基於 `pd.merge_asof`) | 根絕 Lookahead Bias，讓模型學會辨識「因休市導致的數據停滯」，而非誤判為市場無波動。 |
-| **3. 台股量價與動能**<br>*(Price Action)* | `Open`, `High`, `Low`, `Close`, `Volume`<br>`Foreign_Impact_Ratio` (自建: 外資影響力) | `yfinance`<br>本地端計算 | 捕捉市場基礎價格動能，並將成交量與籌碼融合為「影響力權重」。 |
-| **4. 法人與國家隊籌碼**<br>*(Smart Money)* | `Foreign_Buy` (外資), `Trust_Buy` (投信),<br>`Dealer_Buy` (自營商), `Gov_Bank_Buy` (八大行庫) | FinMind (三大法人)<br>FinMind (八大行庫) | 追蹤市場大資金的流向，以及國家隊暴跌時的「護盤底線」。 |
-| **5. 散戶情緒與信用擴張**<br>*(Retail Sentiment)* | `Margin_Balance` (融資), `Short_Balance` (融券)<br>`Day_Trading_Ratio` (當沖成交佔比) | FinMind (融資融券)<br>FinMind (當沖統計) | 衡量散戶瘋狂程度，避開當沖過熱標的，捕捉「融資斷頭」或「軋空」行情。 |
-| **6. 大戶流向與暗黑做空**<br>*(Whales & Shorting)* | `Whale_Hold_Ratio` (集保大戶持股比例)<br>`Securities_Lending` (借券賣出餘額) | FinMind (股權分散)<br>FinMind (借券餘額) | 洞悉籌碼集中度，抓出「千張大戶吃貨」的飆股，並提早發覺外資暗黑做空力道。 |
-| **7. 主力照妖鏡**<br>*(Micro-Structure)* | `Broker_Branch_Vol` (各分點券商買賣明細) | FinMind (分點資料) | 台灣特有數據：精準抓出「地緣券商吃貨 (公司派內部人)」與「隔日沖倒貨」。 |
-| **8. 財報與營收基本面**<br>*(Fundamentals)* | 月營收 YoY/MoM, 現金流量表<br>`EPS`, `ROE`, `Gross_Margin` (損益表/資產負債) | FinMind (月營收)<br>FinMind (財務報表) | 避開長線地雷股，篩選具備「實質獲利與現金流」的護城河公司。 |
-| **9. 價值與防禦底線**<br>*(Value & Defense)* | `PE` (本益比), `PB` (淨值比), `DY` (殖利率)<br>`Cash_Dividend` (現金股利) | FinMind (個股 PER)<br>FinMind (股利政策) | 建立價值投資防禦底線，捕捉高殖利率資金避風港效應，避免買在泡沫高點。 |
-| **10. 期權系統風險面**<br>*(Systemic Risk)* | 期貨與選擇權三大法人未平倉淨額 | FinMind (期權三大法人) | 提前判斷台股大盤崩盤或軋空，作為投資組合的資金水位控制開關。 |
-| **11. (V5 預留) 另類數據**<br>*(Alternative Data)* | `FinBERT_Sentiment` (PTT/新聞情緒分數) | 未來實作 (網路爬蟲) | 將非結構化文字轉為情緒張量，進一步擴展 Mamba 的多模態輸入。 |
+| **1. 國際宏觀與熱錢** | `US_Money_Supply` (美印鈔量), `G8_Rate` (央行利率)<br>`Gold/Oil` (金油價格), `USD_TWD` (台幣匯率)<br>`US_SOX`, `US_QQQ`, `US_VIX` | `yfinance`<br>FinMind (總體經濟/國際市場) | 建立全球熱錢與通膨的「上帝視角」，從根本預判外資匯出入動能。 |
+| **2. 台股量價與防漏** | `Open`, `High`, `Low`, `Close`, `Volume`<br>`US_Market_Closed`, `TW_Typhoon_Day` | `yfinance`<br>本地端 `pd.merge_asof` 計算 | 捕捉價格動能，並嚴格標記休市日以根絕未來數據洩漏 (Lookahead Bias)。 |
+| **3. 除權息失真防護** | `Ex_Dividend_Drop` (除息蒸發點數標記) | FinMind (除權除息結果表) | 告知模型當日價格落差為「配息」而非「暴跌」，防止 Mamba 誤判停損。 |
+| **4. 法人與國家隊** | 三大法人買賣超, `Gov_Bank_Buy` (八大行庫) | FinMind (三大法人 / 八大行庫) | 追蹤市場大資金流向，以及國家隊暴跌時的護盤底線。 |
+| **5. 散戶信用與情緒** | `Margin/Short` (融資券), `Day_Trading` (當沖佔比) | FinMind (融資融券 / 當沖統計) | 衡量散戶瘋狂程度，避開當沖過熱標的，捕捉融資斷頭潮。 |
+| **6. 大戶與暗黑做空** | 大戶/散戶持股比例, `Securities_Lending` (借券) | FinMind (股權分散 / 借券明細) | 抓出千張大戶默默吃貨的飆股，提早發覺外資暗黑做空力道。 |
+| **7. 主力分點照妖鏡** | `Broker_Branch_Vol` (各分點券商買賣明細) | FinMind (台股分點資料) | 台灣特有：精準抓出「地緣券商吃貨 (公司派)」與「隔日沖大戶倒貨」。 |
+| **8. 盤中微觀流動性** | `Bid_Ask_Spread` (日均價差), `Order_Imbalance` (委託不平衡) | FinMind (每 5 秒委託成交統計) | 將高頻特徵降維，讓模型具備「流動性嗅覺」，避開買了賣不掉的殭屍股。 |
+| **9. 基本面與現金流** | 月營收 YoY/MoM, 現金流量表, 綜合損益表 | FinMind (月營收 / 財務報表) | 破解假帳地雷，篩選具備實質獲利與強大現金流的護城河公司。 |
+| **10. 價值與防禦底線** | `PE` (本益比), `PB` (淨值比), `DY` (殖利率) | FinMind (個股 PER) | 建立價值投資防禦底線，避免模型在多頭末期追高泡沫股。 |
+| **11. 期權極致微觀** | `Futures_Broker_OI` (期貨各特定券商未平倉) | FinMind (期貨各券商每日交易) | 放大鏡檢視特定外資在期交所的空單佈局，作為系統崩盤的終極預警。 |
 > **⚠️ 終極打包策略：**
 > 以上所有 FinMind 來源，皆為政府/證交所免費公開資訊。本專案僅利用 Sponsor 權限的「單日全市場打包」特權，將 5 年歷史資料在 Colab 中一次性高速壓縮為 `.parquet` 本地特徵庫。
 
