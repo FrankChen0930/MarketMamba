@@ -6,22 +6,24 @@
 
 本專案旨在解決傳統金融時間序列預測中「雜訊過高」與「無法量化不確定性」的痛點，透過多重平行宇宙的預測軌跡，尋找市場中的高勝率投資組合。
 
-### 📊 MarketMamba V4.0 全知全能資料庫 (The Omniscient Data Inventory)
+### 📊 MarketMamba V4.0 全維度多模態資料庫 (The Omniscient Mamba Matrix)
 
-本專案採取 **「Hit and Run (打帶跑) 戰略」**：歷史 5 年資料庫依賴一個月 FinMind Sponsor 權限進行光速建置與全市場打包；建置完成後，實盤推論階段退回免費方案，採每日增量更新，達成 0 元實盤維運。
+本專案基於 **Mamba (State Space Model)** 的高維度吞吐優勢，將台股微觀籌碼與美股宏觀視野完美融合。
+**資料獲取戰略 (Hit and Run)：** 歷史 5 年資料依賴一個月 FinMind Sponsor 權限進行「單日全市場光速打包」；實盤推論階段退回免費方案，採每日增量更新，達成 0 元實盤維運。
 
-| 數據板塊 (Domain) | 核心特徵欄位 (Key Features) | 資料表來源 (FinMind API) | 戰略價值 (Alpha Source) |
+| 數據板塊 (Domain) | 核心特徵欄位 (High-Dimensional Features) | 資料來源 (Source) | 戰略價值與模型作用 (Alpha / Mamba Use Case) |
 | :--- | :--- | :--- | :--- |
-| **1. 國際宏觀與資金** | `US_SOX`, `US_QQQ`, `US_VIX`, `USD_TWD` (台幣匯率) | `yfinance`, `TaiwanExchangeRate` | 衡量全球科技股風險偏好與外資熱錢匯出入動能。 |
-| **2. 台股量價技術面** | `Open`, `High`, `Low`, `Close`, `Volume` | `yfinance` | 捕捉市場價格與動能基準。 |
-| **3. 法人與國家隊** | 三大法人買賣超, `Gov_Bank_Buy` (八大行庫) | `TaiwanStockInstitutionalInvestorsBuySell`, `TaiwanStockGovernmentBankBuySell` | 追蹤市場大資金的流向與國家隊護盤底線。 |
-| **4. 主力與分點追蹤** | `Broker_Branch_Vol` (各分點券商買賣明細) | `TaiwanStockInfo` 下之分點資料 | 照妖鏡級別：精準抓出「地緣券商吃貨」與「隔日沖倒貨」。 |
-| **5. 大戶與散戶流向** | 集保大戶/散戶持股比例, `Margin/Short` (融資券) | `TaiwanStockHoldingSharesPer`, `TaiwanStockMarginPurchaseShortSale` | 洞悉籌碼集中度，抓出千張大戶吃貨與散戶斷頭潮。 |
-| **6. 隱藏做空與投機** | 借券賣出餘額, `Day_Trading_Ratio` (當沖成交佔比) | `TaiwanStockSecuritiesLending`, `TaiwanStockDayTrading` | 提早發覺外資暗黑做空力道，避開當沖過熱的人踩人標的。 |
-| **7. 期權系統風險面** | 期貨與選擇權三大法人未平倉淨額 | 期貨/選擇權三大法人買賣表 | 提前判斷台股大盤崩盤或軋空，作為系統性風險開關。 |
-| **8. 財報與營收基本面** | 月營收 YoY/MoM, 損益表, 資產負債表, 現金流量表 | `TaiwanStockMonthRevenue`, `TaiwanStockFinancialStatements` 等 | 避開長線地雷股，篩選具備「實質獲利與現金流」的護城河公司。 |
-| **9. 價值與防禦底線** | `PE` (本益比), `PB` (淨值比), `DY` (殖利率), 股利政策 | `TaiwanStockPER`, `TaiwanStockDividend` | 建立價值投資防禦底線，捕捉高殖利率資金避風港效應。 |
-
+| **1. 國際宏觀與跨市資金**<br>*(The Macro Vision)* | `US_SOX` (費半), `US_QQQ` (納斯達克)<br>`US_TNX` (10年美債), `US_VIX` (恐慌指數)<br>`USD_TWD` (台幣匯率) | `yfinance`<br>`TaiwanExchangeRate` | 建立台股的「上帝視角」。衡量全球科技股風險偏好與外資熱錢匯出入動能。 |
+| **2. 工業級時序防漏工程**<br>*(Time Alignment)* | `US_Market_Closed` (美股休市標記)<br>`TW_Typhoon_Day` (台股颱風假標記) | 本地端計算<br>(基於 `pd.merge_asof`) | 根絕 Lookahead Bias，讓模型學會辨識「因休市導致的數據停滯」，而非誤判為市場無波動。 |
+| **3. 台股量價與動能**<br>*(Price Action)* | `Open`, `High`, `Low`, `Close`, `Volume`<br>`Foreign_Impact_Ratio` (自建: 外資影響力) | `yfinance`<br>本地端計算 | 捕捉市場基礎價格動能，並將成交量與籌碼融合為「影響力權重」。 |
+| **4. 法人與國家隊籌碼**<br>*(Smart Money)* | `Foreign_Buy` (外資), `Trust_Buy` (投信),<br>`Dealer_Buy` (自營商), `Gov_Bank_Buy` (八大行庫) | FinMind (三大法人)<br>FinMind (八大行庫) | 追蹤市場大資金的流向，以及國家隊暴跌時的「護盤底線」。 |
+| **5. 散戶情緒與信用擴張**<br>*(Retail Sentiment)* | `Margin_Balance` (融資), `Short_Balance` (融券)<br>`Day_Trading_Ratio` (當沖成交佔比) | FinMind (融資融券)<br>FinMind (當沖統計) | 衡量散戶瘋狂程度，避開當沖過熱標的，捕捉「融資斷頭」或「軋空」行情。 |
+| **6. 大戶流向與暗黑做空**<br>*(Whales & Shorting)* | `Whale_Hold_Ratio` (集保大戶持股比例)<br>`Securities_Lending` (借券賣出餘額) | FinMind (股權分散)<br>FinMind (借券餘額) | 洞悉籌碼集中度，抓出「千張大戶吃貨」的飆股，並提早發覺外資暗黑做空力道。 |
+| **7. 主力照妖鏡**<br>*(Micro-Structure)* | `Broker_Branch_Vol` (各分點券商買賣明細) | FinMind (分點資料) | 台灣特有數據：精準抓出「地緣券商吃貨 (公司派內部人)」與「隔日沖倒貨」。 |
+| **8. 財報與營收基本面**<br>*(Fundamentals)* | 月營收 YoY/MoM, 現金流量表<br>`EPS`, `ROE`, `Gross_Margin` (損益表/資產負債) | FinMind (月營收)<br>FinMind (財務報表) | 避開長線地雷股，篩選具備「實質獲利與現金流」的護城河公司。 |
+| **9. 價值與防禦底線**<br>*(Value & Defense)* | `PE` (本益比), `PB` (淨值比), `DY` (殖利率)<br>`Cash_Dividend` (現金股利) | FinMind (個股 PER)<br>FinMind (股利政策) | 建立價值投資防禦底線，捕捉高殖利率資金避風港效應，避免買在泡沫高點。 |
+| **10. 期權系統風險面**<br>*(Systemic Risk)* | 期貨與選擇權三大法人未平倉淨額 | FinMind (期權三大法人) | 提前判斷台股大盤崩盤或軋空，作為投資組合的資金水位控制開關。 |
+| **11. (V5 預留) 另類數據**<br>*(Alternative Data)* | `FinBERT_Sentiment` (PTT/新聞情緒分數) | 未來實作 (網路爬蟲) | 將非結構化文字轉為情緒張量，進一步擴展 Mamba 的多模態輸入。 |
 > **⚠️ 終極打包策略：**
 > 以上所有 FinMind 來源，皆為政府/證交所免費公開資訊。本專案僅利用 Sponsor 權限的「單日全市場打包」特權，將 5 年歷史資料在 Colab 中一次性高速壓縮為 `.parquet` 本地特徵庫。
 
