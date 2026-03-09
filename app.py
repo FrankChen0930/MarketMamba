@@ -4,18 +4,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 import os
-import seaborn as sns
 import yfinance as yf
 import plotly.graph_objects as go
 import json
 import requests
+from datetime import datetime, timezone, timedelta
 
 # ==========================================
 # 0. 網頁基本設定 & 字型處理
 # ==========================================
 st.set_page_config(page_title="MarketMamba 量化決策中心", page_icon="🐍", layout="wide")
 
-# 動態載入字型檔 (確保你的資料夾裡有 NotoSansTC-Regular.ttf)
 font_path = "NotoSansTC-Regular.ttf" 
 if os.path.exists(font_path):
     fm.fontManager.addfont(font_path)
@@ -28,15 +27,11 @@ st.title("🐍 MarketMamba V3.1: 終極量化決策中心")
 st.markdown("基於 128 維度 Mamba 與 30 天擴散軌跡的自動化資金配置系統。")
 
 # ==========================================
-# 1. 載入核心預測數據 (加入 TTL 自動刷新機制)
+# 1. 載入核心預測數據
 # ==========================================
-# ttl=3600 代表快取只存活 1 小時。1 小時後只要有人打開網頁，
-# Streamlit 就會強制去硬碟裡抓最新的 CSV，完美對接 Colab 的每日更新！
 @st.cache_data(ttl=3600)
 def load_prediction_data():
     try:
-        # 因為 CSV 檔已經被 Colab 推送到同一個 GitHub 倉庫的根目錄
-        # Streamlit 雲端可以直接用相對路徑讀取它們！
         df_k = pd.read_csv("df_kelly.csv")
         df_t = pd.read_csv("df_traj.csv")
         return df_k, df_t, True
@@ -54,7 +49,6 @@ if 'current_page' not in st.session_state:
 if 'target_ticker' not in st.session_state:
     st.session_state['target_ticker'] = None
 
-# ⚡ 動態讀取外部字典檔 (使用最強的 split 切割法)
 @st.cache_data(ttl=3600)
 def load_ticker_mapping():
     try:
@@ -63,31 +57,24 @@ def load_ticker_mapping():
         res.raise_for_status() 
         raw_dict = res.json()
         
-        # 魔法在這裡：用 split('.')[0] 切割。
-        # "6846.TWO" -> "6846", "2330.TW" -> "2330", "6846.0" -> "6846"
         clean_dict = {}
         for k, v in raw_dict.items():
             clean_key = str(k).split('.')[0].strip()
             clean_dict[clean_key] = v
-            
         return clean_dict
     except Exception as e:
-        st.warning(f"⚠️ 找不到 ticker_mapping.json。錯誤: {e}")
         return {}
 
 TW_STOCK_DICT = load_ticker_mapping()
 
 def get_stock_name(ticker):
-    # 查詢時，同樣用 split 切割法洗乾淨
     clean_ticker = str(ticker).split('.')[0].strip()
     return TW_STOCK_DICT.get(clean_ticker, str(ticker))
 
 def format_ticker(ticker):
-    # 將代號與中文名稱完美組合，例如 "2330.TW 台積電"
     name = get_stock_name(ticker)
     return f"{ticker} {name}" if name else str(ticker)
 
-# 抓取更新時間
 @st.cache_data(ttl=3600)
 def get_update_time():
     try:
@@ -108,32 +95,23 @@ with st.sidebar:
         
     st.markdown("---")
     
-    # 使用 button 創造「方塊化」的視覺效果，點擊後更改 session_state
-    if st.button("📊 今日凱利資金盤", use_container_width=True, 
-                 type="primary" if st.session_state['current_page'] == "📊 今日凱利資金盤" else "secondary"):
+    if st.button("📊 今日凱利資金盤", use_container_width=True, type="primary" if st.session_state['current_page'] == "📊 今日凱利資金盤" else "secondary"):
         st.session_state['current_page'] = "📊 今日凱利資金盤"
         st.rerun()
         
-    if st.button("📈 個股軌跡透視", use_container_width=True,
-                 type="primary" if st.session_state['current_page'] == "📈 個股軌跡透視" else "secondary"):
+    if st.button("📈 個股軌跡透視", use_container_width=True, type="primary" if st.session_state['current_page'] == "📈 個股軌跡透視" else "secondary"):
         st.session_state['current_page'] = "📈 個股軌跡透視"
         st.rerun()
         
-    if st.button("💼 我的持股健檢", use_container_width=True,
-                 type="primary" if st.session_state['current_page'] == "💼 我的持股健檢" else "secondary"):
+    if st.button("💼 我的持股健檢", use_container_width=True, type="primary" if st.session_state['current_page'] == "💼 我的持股健檢" else "secondary"):
         st.session_state['current_page'] = "💼 我的持股健檢"
         st.rerun()
         
-    if st.button("🤖 百萬實盤機器人", use_container_width=True,
-                 type="primary" if st.session_state['current_page'] == "🤖 百萬實盤機器人" else "secondary"):
+    if st.button("🤖 百萬實盤機器人", use_container_width=True, type="primary" if st.session_state['current_page'] == "🤖 百萬實盤機器人" else "secondary"):
         st.session_state['current_page'] = "🤖 百萬實盤機器人"
         st.rerun()
 
-# 讀取當前頁面
 page = st.session_state['current_page']
-# ==========================================
-# 3. 頁面內容路由
-# ==========================================
 if not data_loaded:
     st.stop() 
 
@@ -159,34 +137,29 @@ if page == "📊 今日凱利資金盤":
         'Sharpe_Score': '夏普CP值', 'Suggested_Weight': '資金佔比(%)'
     })
     
-    # 【關鍵升級】：將表格內的代號換成「代號+名稱」
     display_df['股票標的'] = display_df['股票標的'].apply(format_ticker)
     
-    # 🎨 專業 UI 升級：定義台股專屬紅綠文字上色邏輯
     def color_tw_returns(val):
         if isinstance(val, (int, float)):
             if val > 0:
-                return 'color: #ff4b4b; font-weight: bold;' # 漲：亮紅色
+                return 'color: #ff4b4b; font-weight: bold;' 
             elif val < 0:
-                return 'color: #00fa9a; font-weight: bold;' # 跌：亮綠色
+                return 'color: #00fa9a; font-weight: bold;' 
         return ''
 
-    # 設定要格式化的欄位
     return_cols = [f'預期報酬 ({d}天)' for d in [5,10,15,20,25,30]]
     
-    # 套用顏色，並把數字格式化為帶有 % 的字串
     styled_df = display_df.style.applymap(color_tw_returns, subset=return_cols) \
                                 .format({col: "{:.2f}%" for col in return_cols}) \
                                 .format({"波動風險(%)": "{:.2f}%", "資金佔比(%)": "{:.2f}%", "夏普CP值": "{:.4f}"})
 
     event = st.dataframe(
-        styled_df, # 改用我們洗盡鉛華的極簡風格
+        styled_df, 
         use_container_width=True, hide_index=True, selection_mode="single-row", on_select="rerun" 
     )
     
     if len(event.selection.rows) > 0:
         selected_idx = event.selection.rows[0]
-        # 【關鍵升級】：因為現在欄位變成 "2330.TW 台積電"，我們只要空白前面的 "2330.TW"
         selected_ticker = str(display_df.iloc[selected_idx]['股票標的']).split(' ')[0]
         st.session_state['target_ticker'] = selected_ticker
         st.session_state['current_page'] = "📈 個股軌跡透視"
@@ -205,17 +178,18 @@ elif page == "📈 個股軌跡透視":
     else:
         default_idx = 0
         
-    # 【關鍵升級】：使用 format_func 讓下拉選單顯示中文，但背後仍傳遞純代碼
     target_ticker = st.selectbox("🔍 請選擇要觀測的股票", all_tickers, index=default_idx, format_func=format_ticker)
     st.session_state['target_ticker'] = target_ticker 
     
     stock_name = get_stock_name(target_ticker)
     
+    # 🌟 修正點 1：徹底洗淨字串，強制輪詢上市與上櫃
     @st.cache_data(ttl=3600)
     def fetch_stock_info(ticker):
+        clean_ticker = str(ticker).split('.')[0].strip()
         for suffix in ['.TW', '.TWO']:
             try:
-                stock = yf.Ticker(f"{ticker}{suffix}")
+                stock = yf.Ticker(f"{clean_ticker}{suffix}")
                 hist = stock.history(period="1mo")
                 info = stock.info
                 if not hist.empty:
@@ -228,7 +202,7 @@ elif page == "📈 個股軌跡透視":
         hist_df, stock_info, suffix = fetch_stock_info(target_ticker)
         
     if hist_df is None:
-        st.warning(f"⚠️ 無法從 Yahoo Finance 抓取 {target_ticker} 的歷史股價，請稍後再試。")
+        st.warning(f"⚠️ 無法從 Yahoo Finance 抓取 {target_ticker} 的歷史股價，可能是剛上市或已下市。")
     else:
         st.markdown(f"### {stock_name} ({target_ticker}) 個股速覽")
         col1, col2, col3, col4 = st.columns(4)
@@ -237,17 +211,14 @@ elif page == "📈 個股軌跡透視":
         col3.metric("市值 (億)", f"{stock_info.get('marketCap', 0) / 100000000:.2f}" if stock_info.get('marketCap') else 'N/A')
         col4.metric("產業別", stock_info.get('industry', 'N/A'))
         
-        # 準備大腦預測軌跡資料
         stock_traj = df_traj[df_traj['Ticker'].astype(str) == target_ticker].iloc[0]
         volatility = df_kelly[df_kelly['Ticker'].astype(str) == target_ticker]['Volatility_Risk'].iloc[0]
         traj_values = stock_traj[[f'Day_{i}' for i in range(1, 31)]].values 
         
-        # 📅 專業 UI 升級：新增多天期預期報酬看板
         st.markdown("#### 📅 擴散模型預期報酬 (多天期解析)")
         ret_cols = st.columns(6)
         for idx, d in enumerate([5, 10, 15, 20, 25, 30]):
             val = traj_values[d-1] * 100
-            # 依據正負值給予不同的箭頭與顏色
             delta_color = "normal" if val > 0 else "inverse" 
             ret_cols[idx].metric(f"{d} 天後", f"{val:.2f}%", delta_color=delta_color)
 
@@ -265,15 +236,10 @@ elif page == "📈 個股軌跡透視":
         upper_bound_68 = future_mean_prices * (1 + (volatility * 0.8 * time_scale))
         lower_bound_68 = future_mean_prices * (1 - (volatility * 0.8 * time_scale))
         
-        import plotly.graph_objects as go
         fig = go.Figure()
-
         fig.add_trace(go.Scatter(x=hist_df.index, y=hist_df['Close'], mode='lines', name='歷史真實股價', line=dict(color='#00d2ff', width=3)))
-        
-        # 🎨 專業 UI 升級：調亮機率雲的透明度 (0.1 -> 0.25, 0.25 -> 0.55)
         fig.add_trace(go.Scatter(x=list(future_dates) + list(future_dates)[::-1], y=list(upper_bound_95) + list(lower_bound_95)[::-1], fill='toself', fillcolor='rgba(255, 127, 14, 0.25)', line=dict(color='rgba(255,255,255,0)'), hoverinfo="skip", name='95% 機率雲'))
         fig.add_trace(go.Scatter(x=list(future_dates) + list(future_dates)[::-1], y=list(upper_bound_68) + list(lower_bound_68)[::-1], fill='toself', fillcolor='rgba(255, 127, 14, 0.55)', line=dict(color='rgba(255,255,255,0)'), hoverinfo="skip", name='68% 機率雲'))
-        
         fig.add_trace(go.Scatter(x=future_dates, y=future_mean_prices, mode='lines+markers', name='預測平均軌跡', line=dict(color='#ff7f0e', width=3, dash='dot'), marker=dict(size=5)))
         fig.add_trace(go.Scatter(x=[last_date, future_dates[0]], y=[current_price, future_mean_prices[0]], mode='lines', line=dict(color='#ff7f0e', width=3, dash='dot'), showlegend=False))
 
@@ -298,11 +264,13 @@ elif page == "💼 我的持股健檢":
     if 'portfolio' not in st.session_state:
         st.session_state['portfolio'] = pd.DataFrame(columns=['股票代號', '持有成本', '持有股數'])
 
+    # 🌟 修正點 2：健檢頁面的抓價也強制洗淨字串與輪詢
     @st.cache_data(ttl=3600)
     def get_latest_close(ticker):
+        clean_ticker = str(ticker).split('.')[0].strip()
         for suffix in ['.TW', '.TWO']:
             try:
-                hist = yf.Ticker(f"{ticker}{suffix}").history(period="1d")
+                hist = yf.Ticker(f"{clean_ticker}{suffix}").history(period="1d")
                 if not hist.empty:
                     return float(hist['Close'].iloc[-1])
             except:
@@ -314,7 +282,6 @@ elif page == "💼 我的持股健檢":
         
         with col1:
             all_tickers_clean = df_kelly['Ticker'].astype(str).tolist()
-            # 【關鍵升級】：下拉選單加上中文
             new_ticker = st.selectbox("股票標的", all_tickers_clean, format_func=format_ticker)
             
         with st.spinner("獲取最新股價中..."):
@@ -358,7 +325,6 @@ elif page == "💼 我的持股健檢":
         analysis_df['預期 15 天報酬'] = (analysis_df['Exp_Return_15D'] * 100).apply(lambda x: f"{x:.2f}%" if pd.notna(x) else "N/A")
         analysis_df['夏普分數'] = analysis_df['Sharpe_Score'].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
         
-        # 【關鍵升級】：將表格內的代號替換為有中文的版本
         analysis_df['股票標的'] = analysis_df['股票代號'].apply(format_ticker)
         
         display_cols = ['股票標的', '持有成本', '持有股數', '預期 15 天報酬', '夏普分數', 'AI 操作建議']
@@ -381,11 +347,6 @@ elif page == "💼 我的持股健檢":
 # 頁面 4: 百萬實盤機器人 (Paper Trading)
 # ------------------------------------------
 elif page == "🤖 百萬實盤機器人":
-    import json
-    import os
-    from datetime import datetime
-    import plotly.graph_objects as go
-    
     st.subheader("🤖 MarketMamba 全自動百萬實盤基金")
     st.write("初始資金 1,000,000 TWD。機器人將嚴格依照 V3.1 凱利資金盤的建議，每天自動進行部位的建倉與再平衡 (Rebalancing)。")
     
@@ -396,7 +357,7 @@ elif page == "🤖 百萬實盤機器人":
             with open(LEDGER_FILE, 'r') as f:
                 return json.load(f)
         else:
-            return {"start_date": datetime.now().strftime("%Y-%m-%d"), "cash": 1000000.0, "holdings": {}, "history": []}
+            return {"start_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"), "cash": 1000000.0, "holdings": {}, "history": []}
             
     def save_ledger(ledger):
         with open(LEDGER_FILE, 'w') as f:
@@ -404,17 +365,20 @@ elif page == "🤖 百萬實盤機器人":
             
     ledger = load_ledger()
     
+    # 🌟 修正點 3：實盤機器人的全域抓價引擎，徹底消滅硬刻的 .TW
     @st.cache_data(ttl=3600)
     def get_current_prices(tickers):
         prices = {}
         for ticker in tickers:
-            try:
-                suffix = ".TW" if not ticker.endswith(".TW") and not ticker.endswith(".TWO") else ""
-                hist = yf.Ticker(f"{ticker}{suffix}").history(period="1d")
-                if not hist.empty:
-                    prices[ticker] = float(hist['Close'].iloc[-1])
-            except:
-                pass
+            clean_ticker = str(ticker).split('.')[0].strip()
+            for suffix in ['.TW', '.TWO']:
+                try:
+                    hist = yf.Ticker(f"{clean_ticker}{suffix}").history(period="1d")
+                    if not hist.empty:
+                        prices[ticker] = float(hist['Close'].iloc[-1])
+                        break # 找到了就換下一檔股票
+                except:
+                    continue
         return prices
 
     current_holdings = list(ledger["holdings"].keys())
@@ -472,7 +436,8 @@ elif page == "🤖 百萬實盤機器人":
                         ledger["holdings"][ticker] = {"shares": shares_to_buy, "cost": current_price}
                     st.toast(f"🟢 買進建倉: {format_ticker(ticker)} ({shares_to_buy} 股)")
             
-            today_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+            # 使用新的時區寫法解決警告
+            today_str = (datetime.now(timezone.utc) + timedelta(hours=8)).strftime("%Y-%m-%d %H:%M")
             ledger["history"].append({"date": today_str, "equity": current_total_funds})
             save_ledger(ledger)
             
@@ -486,7 +451,7 @@ elif page == "🤖 百萬實盤機器人":
             current_p = live_prices.get(t, d['cost'])
             profit_pct = (current_p - d['cost']) / d['cost'] * 100
             holding_list.append({
-                "股票標的": format_ticker(t), # 【關鍵升級】：機器人帳本也加入中文
+                "股票標的": format_ticker(t), 
                 "持有股數": d["shares"],
                 "平均成本": d["cost"],
                 "最新報價": current_p,
@@ -494,7 +459,7 @@ elif page == "🤖 百萬實盤機器人":
             })
             
         st.dataframe(pd.DataFrame(holding_list).style.applymap(
-            lambda x: 'color: red;' if '-' in str(x) else 'color: green;', subset=['未實現損益']
+            lambda x: 'color: #ff4b4b; font-weight: bold;' if '-' in str(x) else 'color: #00fa9a; font-weight: bold;', subset=['未實現損益']
         ), use_container_width=True, hide_index=True)
     else:
         st.info("🤖 機器人目前空手，請點擊上方按鈕執行建倉！")
@@ -505,6 +470,3 @@ elif page == "🤖 百萬實盤機器人":
         fig.add_trace(go.Scatter(x=hist_df['date'], y=hist_df['equity'], mode='lines+markers', line=dict(color='#00fa9a', width=3)))
         fig.update_layout(title="📈 基金淨值成長曲線", template="plotly_dark", yaxis_title="總淨值 (TWD)")
         st.plotly_chart(fig, use_container_width=True)
-
-
-
