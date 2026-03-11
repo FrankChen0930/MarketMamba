@@ -263,16 +263,31 @@ elif page == "📈 個股軌跡透視":
         st.plotly_chart(fig, use_container_width=True)
 
 # ------------------------------------------
-# 頁面 3: 持股監視與實盤
+# 頁面 3: 持股監視與實盤 (記憶升級版)
 # ------------------------------------------
 elif page == "💼 我的持股健檢":
     st.subheader("💼 我的專屬量化基金 (Portfolio)")
-    st.write("輸入你目前持有的股票，MarketMamba 將每天自動為你進行 AI 健檢與退場評估。")
+    st.write("輸入持股後，請將最新的「網頁網址」加入瀏覽器我的最愛，未來點擊書籤即可自動還原持股！")
     
-    if 'portfolio' not in st.session_state:
-        st.session_state['portfolio'] = pd.DataFrame(columns=['股票代號', '持有成本', '持有股數'])
+    import json
 
-    # 🌟 修正點 2：健檢頁面的抓價也強制洗淨字串與輪詢
+    # 🌟 升級點 1：從網址列讀取記憶
+    if 'portfolio' not in st.session_state:
+        if "saved_portfolio" in st.query_params:
+            try:
+                # 將網址裡的字串轉回 DataFrame
+                port_data = json.loads(st.query_params["saved_portfolio"])
+                st.session_state['portfolio'] = pd.DataFrame(port_data)
+            except:
+                st.session_state['portfolio'] = pd.DataFrame(columns=['股票代號', '持有成本', '持有股數'])
+        else:
+            st.session_state['portfolio'] = pd.DataFrame(columns=['股票代號', '持有成本', '持有股數'])
+
+    # 🌟 升級點 2：建立一個將 DataFrame 存入網址的函數
+    def save_portfolio_to_url():
+        port_json = st.session_state['portfolio'].to_json(orient='records')
+        st.query_params["saved_portfolio"] = port_json
+
     @st.cache_data(ttl=3600)
     def get_latest_close(ticker):
         clean_ticker = str(ticker).split('.')[0].strip()
@@ -306,35 +321,33 @@ elif page == "💼 我的持股健檢":
             if st.button("新增", type="primary"):
                 new_row = pd.DataFrame({'股票代號': [new_ticker], '持有成本': [new_cost], '持有股數': [new_shares]})
                 st.session_state['portfolio'] = pd.concat([st.session_state['portfolio'], new_row], ignore_index=True)
-                st.success(f"已新增 {format_ticker(new_ticker)}！")
+                
+                # 🚨 寫入網址列！
+                save_portfolio_to_url()
+                
+                st.success(f"已新增！請記得更新您的瀏覽器書籤 ⭐️")
                 st.rerun() 
 
     if not st.session_state['portfolio'].empty:
         st.divider()
         st.subheader("🏥 AI 庫存持股健檢報告")
         
+        # ... (中間產生 analysis_df 的程式碼維持不變) ...
         my_portfolio = st.session_state['portfolio'].copy()
         kelly_subset = df_kelly[['Ticker', 'Exp_Return_15D', 'Sharpe_Score']].copy()
         kelly_subset['Ticker'] = kelly_subset['Ticker'].astype(str)
-        
         analysis_df = pd.merge(my_portfolio, kelly_subset, left_on='股票代號', right_on='Ticker', how='left')
         
         def get_action_signal(row):
-            if pd.isna(row['Exp_Return_15D']):
-                return "⚪ 缺乏預測資料"
-            elif row['Exp_Return_15D'] < 0:
-                return "🔴 趨勢轉弱 (建議停損/了結)"
-            elif row['Sharpe_Score'] > 0.5:
-                return "🟢 強勢護城河 (建議續抱)"
-            else:
-                return "🟡 波動加劇 (嚴設停損)"
+            if pd.isna(row['Exp_Return_15D']): return "⚪ 缺乏預測資料"
+            elif row['Exp_Return_15D'] < 0: return "🔴 趨勢轉弱 (建議停損/了結)"
+            elif row['Sharpe_Score'] > 0.5: return "🟢 強勢護城河 (建議續抱)"
+            else: return "🟡 波動加劇 (嚴設停損)"
                 
         analysis_df['AI 操作建議'] = analysis_df.apply(get_action_signal, axis=1)
         analysis_df['預期 15 天報酬'] = (analysis_df['Exp_Return_15D'] * 100).apply(lambda x: f"{x:.2f}%" if pd.notna(x) else "N/A")
         analysis_df['夏普分數'] = analysis_df['Sharpe_Score'].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
-        
         analysis_df['股票標的'] = analysis_df['股票代號'].apply(format_ticker)
-        
         display_cols = ['股票標的', '持有成本', '持有股數', '預期 15 天報酬', '夏普分數', 'AI 操作建議']
         
         st.dataframe(
@@ -347,6 +360,8 @@ elif page == "💼 我的持股健檢":
         
         if st.button("🗑️ 清空庫存"):
             st.session_state['portfolio'] = pd.DataFrame(columns=['股票代號', '持有成本', '持有股數'])
+            # 🚨 同步清空網址記憶！
+            save_portfolio_to_url()
             st.rerun()
     else:
         st.info("👆 目前庫存為空，請從上方新增持股來啟動 MarketMamba 的 AI 健檢功能。")
@@ -414,3 +429,4 @@ elif page == "🤖 百萬實盤機器人":
         fig.add_trace(go.Scatter(x=hist_df['date'], y=hist_df['equity'], mode='lines+markers', line=dict(color='#00fa9a', width=3)))
         fig.update_layout(title="📈 基金淨值成長曲線", template="plotly_dark", yaxis_title="總淨值 (TWD)")
         st.plotly_chart(fig, use_container_width=True)
+
