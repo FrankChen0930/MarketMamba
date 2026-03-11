@@ -352,43 +352,26 @@ elif page == "💼 我的持股健檢":
         st.info("👆 目前庫存為空，請從上方新增持股來啟動 MarketMamba 的 AI 健檢功能。")
 
 # ------------------------------------------
-# 頁面 4: 百萬實盤機器人 (Paper Trading)
+# 頁面 4: 百萬實盤機器人 (全自動 Read-Only 版)
 # ------------------------------------------
 elif page == "🤖 百萬實盤機器人":
-    st.subheader("🤖 MarketMamba 全自動百萬實盤基金")
-    st.write("初始資金 1,000,000 TWD。機器人將嚴格依照 V3.1 凱利資金盤的建議，每天自動進行部位的建倉與再平衡 (Rebalancing)。")
+    st.subheader("🤖 MarketMamba V4.0 全自動百萬實盤基金")
+    st.write("初始資金 1,000,000 TWD。機器人已部署於雲端伺服器，每日收盤後將自動依照 V4.0 上帝視角進行調倉與結算。")
     
-    LEDGER_FILE = "robot_ledger.json"
-    
-    def load_ledger():
-        if os.path.exists(LEDGER_FILE):
-            with open(LEDGER_FILE, 'r') as f:
-                return json.load(f)
-        else:
-            return {"start_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"), "cash": 1000000.0, "holdings": {}, "history": []}
+    @st.cache_data(ttl=600) # 10分鐘快取
+    def load_cloud_ledger():
+        try:
+            url = "https://raw.githubusercontent.com/FrankChen0930/MarketMamba/main/robot_ledger.json"
+            res = requests.get(url)
+            res.raise_for_status()
+            return res.json()
+        except Exception as e:
+            st.warning("⚠️ 尚未讀取到雲端帳本，可能雲端機器人尚未完成首次建倉。")
+            return {"start_date": "", "cash": 1000000.0, "holdings": {}, "history": []}
             
-    def save_ledger(ledger):
-        with open(LEDGER_FILE, 'w') as f:
-            json.dump(ledger, f, indent=4)
-            
-    ledger = load_ledger()
+    ledger = load_cloud_ledger()
     
-    # 🌟 修正點 3：實盤機器人的全域抓價引擎，徹底消滅硬刻的 .TW
-    @st.cache_data(ttl=3600)
-    def get_current_prices(tickers):
-        prices = {}
-        for ticker in tickers:
-            clean_ticker = str(ticker).split('.')[0].strip()
-            for suffix in ['.TW', '.TWO']:
-                try:
-                    hist = yf.Ticker(f"{clean_ticker}{suffix}").history(period="1d")
-                    if not hist.empty:
-                        prices[ticker] = float(hist['Close'].iloc[-1])
-                        break # 找到了就換下一檔股票
-                except:
-                    continue
-        return prices
-
+    # 這裡的抓價引擎只用來算「盤中未實現損益」，不影響真實帳本
     current_holdings = list(ledger["holdings"].keys())
     live_prices = get_current_prices(current_holdings) if current_holdings else {}
     
@@ -405,55 +388,8 @@ elif page == "🤖 百萬實盤機器人":
     col2.metric("💵 可用現金", f"${ledger['cash']:,.0f}")
     col3.metric("📈 股票市值", f"${stock_value:,.0f}")
     
-    st.subheader("⚙️ 機器人操作台")
-    if st.button("🚀 執行今日建倉 / 調倉 (Rebalance)", type="primary"):
-        with st.spinner("機器人正在比對最新凱利名單，並送出虛擬委託單..."):
-            top_10 = df_kelly.head(10)
-            target_tickers = top_10['Ticker'].astype(str).tolist()
-            target_weights = top_10['Suggested_Weight'].values
-            target_prices = get_current_prices(target_tickers)
-            
-            for t in list(ledger["holdings"].keys()):
-                if t not in target_tickers:
-                    shares_to_sell = ledger["holdings"][t]["shares"]
-                    sell_price = live_prices.get(t, ledger["holdings"][t]["cost"])
-                    ledger["cash"] += shares_to_sell * sell_price
-                    del ledger["holdings"][t]
-                    st.toast(f"🔴 賣出剔除名單: {format_ticker(t)}")
-            
-            current_total_funds = ledger["cash"]
-            for t, data in ledger["holdings"].items():
-                 current_total_funds += data["shares"] * live_prices.get(t, data["cost"])
-            
-            for ticker, weight in zip(target_tickers, target_weights):
-                if ticker not in target_prices: continue
-                target_value = current_total_funds * weight
-                current_price = target_prices[ticker]
-                target_shares = int(target_value // current_price) 
-                current_shares = ledger["holdings"].get(ticker, {}).get("shares", 0)
-                shares_to_buy = target_shares - current_shares
-                
-                if shares_to_buy > 0 and ledger["cash"] >= (shares_to_buy * current_price):
-                    ledger["cash"] -= (shares_to_buy * current_price)
-                    if ticker in ledger["holdings"]:
-                        old_cost = ledger["holdings"][ticker]["cost"]
-                        old_shares = ledger["holdings"][ticker]["shares"]
-                        new_avg_cost = ((old_cost * old_shares) + (current_price * shares_to_buy)) / target_shares
-                        ledger["holdings"][ticker] = {"shares": target_shares, "cost": new_avg_cost}
-                    else:
-                        ledger["holdings"][ticker] = {"shares": shares_to_buy, "cost": current_price}
-                    st.toast(f"🟢 買進建倉: {format_ticker(ticker)} ({shares_to_buy} 股)")
-            
-            # 使用新的時區寫法解決警告
-            today_str = (datetime.now(timezone.utc) + timedelta(hours=8)).strftime("%Y-%m-%d %H:%M")
-            ledger["history"].append({"date": today_str, "equity": current_total_funds})
-            save_ledger(ledger)
-            
-            st.success("✅ 今日調倉完畢！機器人已為明天的開盤做好準備。")
-            st.rerun()
-
     if ledger["holdings"]:
-        st.write("📋 **機器人目前庫存**")
+        st.write("📋 **今日機器人最新庫存**")
         holding_list = []
         for t, d in ledger["holdings"].items():
             current_p = live_prices.get(t, d['cost'])
@@ -461,8 +397,8 @@ elif page == "🤖 百萬實盤機器人":
             holding_list.append({
                 "股票標的": format_ticker(t), 
                 "持有股數": d["shares"],
-                "平均成本": d["cost"],
-                "最新報價": current_p,
+                "平均成本": f"{d['cost']:.2f}",
+                "最新報價": f"{current_p:.2f}",
                 "未實現損益": f"{profit_pct:.2f}%"
             })
             
@@ -470,7 +406,7 @@ elif page == "🤖 百萬實盤機器人":
             lambda x: 'color: #ff4b4b; font-weight: bold;' if '-' in str(x) else 'color: #00fa9a; font-weight: bold;', subset=['未實現損益']
         ), use_container_width=True, hide_index=True)
     else:
-        st.info("🤖 機器人目前空手，請點擊上方按鈕執行建倉！")
+        st.info("🤖 機器人目前空手觀望中。")
         
     if len(ledger["history"]) > 0:
         hist_df = pd.DataFrame(ledger["history"])
@@ -478,4 +414,3 @@ elif page == "🤖 百萬實盤機器人":
         fig.add_trace(go.Scatter(x=hist_df['date'], y=hist_df['equity'], mode='lines+markers', line=dict(color='#00fa9a', width=3)))
         fig.update_layout(title="📈 基金淨值成長曲線", template="plotly_dark", yaxis_title="總淨值 (TWD)")
         st.plotly_chart(fig, use_container_width=True)
-
