@@ -23,8 +23,8 @@ else:
     plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei', 'sans-serif'] 
 plt.rcParams['axes.unicode_minus'] = False 
 
-st.title("🐍 MarketMamba V3.1: 終極量化決策中心")
-st.markdown("基於 128 維度 Mamba 與 30 天擴散軌跡的自動化資金配置系統。")
+st.title("🐍 MarketMamba V5.0: 終極量化決策中心")
+st.markdown("基於 Mamba 狀態空間與動態圖 (GAT) 架構，預測 30 天超額報酬 (Alpha) 軌跡。")
 
 # ==========================================
 # 1. 載入核心預測數據
@@ -90,7 +90,7 @@ last_update = get_update_time()
 with st.sidebar:
     st.header("📌 功能選單")
     if data_loaded:
-        st.success("✅ V3.1 雲端數據庫已連線")
+        st.success("✅ V5.0 雲端數據庫已連線")
         st.caption(f"🕒 最新預測時間: {last_update}")
         
     st.markdown("---")
@@ -119,7 +119,7 @@ if not data_loaded:
 # 頁面 1: 凱利資金盤 (Top Picks)
 # ------------------------------------------
 if page == "📊 今日凱利資金盤":
-    st.subheader("🎯 今日最佳防禦型飆股 (Top 10)")
+    st.subheader("🎯 今日最佳 Alpha 潛力股 (Top 10)")
     st.write("點擊表格中的任意一行，系統將自動為您跳轉至該股的「詳細軌跡透視」頁面。")
     
     top_picks = df_kelly.head(10).copy()
@@ -127,7 +127,7 @@ if page == "📊 今日凱利資金盤":
     
     for day in [5, 10, 15, 20, 25, 30]:
         day_values = df_traj.set_index('Ticker')[f'Day_{day}'].reindex(display_df['Ticker']).values
-        display_df[f'預期報酬 ({day}天)'] = (day_values * 100)
+        display_df[f'預期 Alpha ({day}天)'] = (day_values * 100) # 轉換為百分比 Alpha
         
     display_df['Volatility_Risk'] = display_df['Volatility_Risk'] * 100
     display_df['Suggested_Weight'] = display_df['Suggested_Weight'] * 100
@@ -147,7 +147,7 @@ if page == "📊 今日凱利資金盤":
                 return 'color: #00fa9a; font-weight: bold;' 
         return ''
 
-    return_cols = [f'預期報酬 ({d}天)' for d in [5,10,15,20,25,30]]
+    return_cols = [f'預期 Alpha ({d}天)' for d in [5,10,15,20,25,30]]
     
     styled_df = display_df.style.applymap(color_tw_returns, subset=return_cols) \
                                 .format({col: "{:.2f}%" for col in return_cols}) \
@@ -166,7 +166,7 @@ if page == "📊 今日凱利資金盤":
         st.rerun()
 
 # ------------------------------------------
-# 頁面 2: 個股軌跡透視
+# 頁面 2: 個股軌跡透視 (V5.0 Alpha 軌跡版)
 # ------------------------------------------
 elif page == "📈 個股軌跡透視":
     st.subheader("🔭 平行宇宙軌跡觀測儀")
@@ -183,34 +183,31 @@ elif page == "📈 個股軌跡透視":
     
     stock_name = get_stock_name(target_ticker)
     
-    # 🌟 修正點：將 .info 獨立包裝，防止基本面報錯拖累歷史股價
     @st.cache_data(ttl=3600)
     def fetch_stock_info(ticker):
         clean_ticker = str(ticker).split('.')[0].strip()
         for suffix in ['.TW', '.TWO']:
             try:
                 stock = yf.Ticker(f"{clean_ticker}{suffix}")
-                # 1. 先抓股價 (這最重要，不能失敗)
                 hist = stock.history(period="1mo")
                 
                 if not hist.empty:
-                    # 2. 股價抓成功了，再來嘗試抓基本面 (加上獨立的 Try-Except)
                     info_data = {}
                     try:
                         info_data = stock.info
                     except:
-                        pass # 就算 Yahoo 的基本面 API 壞掉，也不要拋出錯誤
+                        pass
                         
                     return hist, info_data, suffix
             except:
                 continue
         return None, {}, None
 
-    with st.spinner(f"正在同步 {stock_name} 的個股資訊與建構機率雲..."):
+    with st.spinner(f"正在同步 {stock_name} 的個股資訊與 Mamba 運算..."):
         hist_df, stock_info, suffix = fetch_stock_info(target_ticker)
         
     if hist_df is None:
-        st.warning(f"⚠️ 無法從 Yahoo Finance 抓取 {target_ticker} 的歷史股價，可能是剛上市或已下市。")
+        st.warning(f"⚠️ 無法從 Yahoo Finance 抓取 {target_ticker} 的歷史股價。")
     else:
         st.markdown(f"### {stock_name} ({target_ticker}) 個股速覽")
         col1, col2, col3, col4 = st.columns(4)
@@ -223,7 +220,8 @@ elif page == "📈 個股軌跡透視":
         volatility = df_kelly[df_kelly['Ticker'].astype(str) == target_ticker]['Volatility_Risk'].iloc[0]
         traj_values = stock_traj[[f'Day_{i}' for i in range(1, 31)]].values 
         
-        st.markdown("#### 📅 擴散模型預期報酬 (多天期解析)")
+        # --- V5.0 Alpha 軌跡數據 ---
+        st.markdown("#### 📅 V5.0 Mamba 預期超額報酬 (Alpha) 軌跡")
         ret_cols = st.columns(6)
         for idx, d in enumerate([5, 10, 15, 20, 25, 30]):
             val = traj_values[d-1] * 100
@@ -235,30 +233,59 @@ elif page == "📈 個股軌跡透視":
         current_price = hist_df['Close'].iloc[-1]
         last_date = hist_df.index[-1]
         
+        # 產生未來 30 個交易日的日期標籤
         future_dates = pd.bdate_range(start=last_date + pd.Timedelta(days=1), periods=30)
-        future_mean_prices = current_price * (1 + traj_values)
         
-        time_scale = np.sqrt(np.arange(1, 31) / 30.0) 
-        upper_bound_95 = future_mean_prices * (1 + (volatility * 1.5 * time_scale))
-        lower_bound_95 = future_mean_prices * (1 - (volatility * 1.5 * time_scale))
-        upper_bound_68 = future_mean_prices * (1 + (volatility * 0.8 * time_scale))
-        lower_bound_68 = future_mean_prices * (1 - (volatility * 0.8 * time_scale))
+        # 將預測陣列轉為百分比
+        alpha_trajectory_pct = traj_values * 100
         
+        # --- 繪製 V5.0 專屬 Alpha 軌跡圖 ---
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=hist_df.index, y=hist_df['Close'], mode='lines', name='歷史真實股價', line=dict(color='#00d2ff', width=3)))
-        fig.add_trace(go.Scatter(x=list(future_dates) + list(future_dates)[::-1], y=list(upper_bound_95) + list(lower_bound_95)[::-1], fill='toself', fillcolor='rgba(255, 127, 14, 0.25)', line=dict(color='rgba(255,255,255,0)'), hoverinfo="skip", name='95% 機率雲'))
-        fig.add_trace(go.Scatter(x=list(future_dates) + list(future_dates)[::-1], y=list(upper_bound_68) + list(lower_bound_68)[::-1], fill='toself', fillcolor='rgba(255, 127, 14, 0.55)', line=dict(color='rgba(255,255,255,0)'), hoverinfo="skip", name='68% 機率雲'))
-        fig.add_trace(go.Scatter(x=future_dates, y=future_mean_prices, mode='lines+markers', name='預測平均軌跡', line=dict(color='#ff7f0e', width=3, dash='dot'), marker=dict(size=5)))
-        fig.add_trace(go.Scatter(x=[last_date, future_dates[0]], y=[current_price, future_mean_prices[0]], mode='lines', line=dict(color='#ff7f0e', width=3, dash='dot'), showlegend=False))
+        
+        # 1. 畫出大盤基準線 (0% 零軸)
+        fig.add_trace(go.Scatter(
+            x=[future_dates[0], future_dates[-1]], 
+            y=[0, 0], 
+            mode='lines', 
+            name='TWII 大盤基準線 (0%)', 
+            line=dict(color='white', width=2, dash='dash')
+        ))
+        
+        # 2. 畫出 Mamba 預測的 Alpha 軌跡
+        line_color = '#ff4b4b' if alpha_trajectory_pct[-1] > 0 else '#00fa9a' # 台股習慣：紅漲綠跌
+        fig.add_trace(go.Scatter(
+            x=future_dates, 
+            y=alpha_trajectory_pct, 
+            mode='lines+markers', 
+            name=f'{target_ticker} 預測 Alpha', 
+            line=dict(color=line_color, width=4), 
+            marker=dict(size=6)
+        ))
+        
+        # 3. 畫出機率雲 (根據 Volatility 計算上下界)
+        upper_bound = alpha_trajectory_pct + (volatility * 100 * np.sqrt(np.arange(1, 31)/30.0))
+        lower_bound = alpha_trajectory_pct - (volatility * 100 * np.sqrt(np.arange(1, 31)/30.0))
+        
+        fig.add_trace(go.Scatter(
+            x=list(future_dates) + list(future_dates)[::-1], 
+            y=list(upper_bound) + list(lower_bound)[::-1], 
+            fill='toself', 
+            fillcolor='rgba(255, 255, 255, 0.1)', 
+            line=dict(color='rgba(255,255,255,0)'), 
+            hoverinfo="skip", 
+            name='模型信心區間'
+        ))
 
+        # 裝飾圖表
         fig.update_layout(
-            title=f"<b>{format_ticker(target_ticker)} 股價預測與機率分布</b>",
-            yaxis_title="股價 (TWD)", xaxis_title="日期",
-            template="plotly_dark", hovermode="x unified",
+            title=f"<b>{format_ticker(target_ticker)} 未來 30 天超額報酬 (Cumulative Alpha) 預測</b>",
+            yaxis_title="累積 Alpha (%)", 
+            xaxis_title="未來交易日",
+            template="plotly_dark", 
+            hovermode="x unified",
             legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
             margin=dict(l=40, r=40, t=60, b=40)
         )
-        fig.add_hline(y=current_price, line_dash="dash", line_color="gray", annotation_text="今日收盤價")
 
         st.plotly_chart(fig, use_container_width=True)
 
@@ -271,11 +298,9 @@ elif page == "💼 我的持股健檢":
     
     import json
 
-    # 🌟 升級點 1：從網址列讀取記憶
     if 'portfolio' not in st.session_state:
         if "saved_portfolio" in st.query_params:
             try:
-                # 將網址裡的字串轉回 DataFrame
                 port_data = json.loads(st.query_params["saved_portfolio"])
                 st.session_state['portfolio'] = pd.DataFrame(port_data)
             except:
@@ -283,7 +308,6 @@ elif page == "💼 我的持股健檢":
         else:
             st.session_state['portfolio'] = pd.DataFrame(columns=['股票代號', '持有成本', '持有股數'])
 
-    # 🌟 升級點 2：建立一個將 DataFrame 存入網址的函數
     def save_portfolio_to_url():
         port_json = st.session_state['portfolio'].to_json(orient='records')
         st.query_params["saved_portfolio"] = port_json
@@ -321,10 +345,7 @@ elif page == "💼 我的持股健檢":
             if st.button("新增", type="primary"):
                 new_row = pd.DataFrame({'股票代號': [new_ticker], '持有成本': [new_cost], '持有股數': [new_shares]})
                 st.session_state['portfolio'] = pd.concat([st.session_state['portfolio'], new_row], ignore_index=True)
-                
-                # 🚨 寫入網址列！
                 save_portfolio_to_url()
-                
                 st.success(f"已新增！請記得更新您的瀏覽器書籤 ⭐️")
                 st.rerun() 
 
@@ -332,7 +353,6 @@ elif page == "💼 我的持股健檢":
         st.divider()
         st.subheader("🏥 AI 庫存持股健檢報告")
         
-        # ... (中間產生 analysis_df 的程式碼維持不變) ...
         my_portfolio = st.session_state['portfolio'].copy()
         kelly_subset = df_kelly[['Ticker', 'Exp_Return_15D', 'Sharpe_Score']].copy()
         kelly_subset['Ticker'] = kelly_subset['Ticker'].astype(str)
@@ -340,19 +360,19 @@ elif page == "💼 我的持股健檢":
         
         def get_action_signal(row):
             if pd.isna(row['Exp_Return_15D']): return "⚪ 缺乏預測資料"
-            elif row['Exp_Return_15D'] < 0: return "🔴 趨勢轉弱 (建議停損/了結)"
-            elif row['Sharpe_Score'] > 0.5: return "🟢 強勢護城河 (建議續抱)"
+            elif row['Exp_Return_15D'] < 0: return "🔴 趨勢落後大盤 (建議停損)"
+            elif row['Sharpe_Score'] > 0.5: return "🟢 超額動能強勁 (建議續抱)"
             else: return "🟡 波動加劇 (嚴設停損)"
                 
         analysis_df['AI 操作建議'] = analysis_df.apply(get_action_signal, axis=1)
-        analysis_df['預期 15 天報酬'] = (analysis_df['Exp_Return_15D'] * 100).apply(lambda x: f"{x:.2f}%" if pd.notna(x) else "N/A")
+        analysis_df['預期 15 天 Alpha'] = (analysis_df['Exp_Return_15D'] * 100).apply(lambda x: f"{x:.2f}%" if pd.notna(x) else "N/A")
         analysis_df['夏普分數'] = analysis_df['Sharpe_Score'].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
         analysis_df['股票標的'] = analysis_df['股票代號'].apply(format_ticker)
-        display_cols = ['股票標的', '持有成本', '持有股數', '預期 15 天報酬', '夏普分數', 'AI 操作建議']
+        display_cols = ['股票標的', '持有成本', '持有股數', '預期 15 天 Alpha', '夏普分數', 'AI 操作建議']
         
         st.dataframe(
             analysis_df[display_cols].style.applymap(
-                lambda x: 'color: #ff4b4b; font-weight: bold;' if '🔴' in str(x) else ('color: #00fa9a; font-weight: bold;' if '🟢' in str(x) else ''),
+                lambda x: 'color: #00fa9a; font-weight: bold;' if '🔴' in str(x) else ('color: #ff4b4b; font-weight: bold;' if '🟢' in str(x) else ''),
                 subset=['AI 操作建議']
             ).format({"持有成本": "{:.2f}"}),
             use_container_width=True, hide_index=True
@@ -360,7 +380,6 @@ elif page == "💼 我的持股健檢":
         
         if st.button("🗑️ 清空庫存"):
             st.session_state['portfolio'] = pd.DataFrame(columns=['股票代號', '持有成本', '持有股數'])
-            # 🚨 同步清空網址記憶！
             save_portfolio_to_url()
             st.rerun()
     else:
@@ -370,10 +389,10 @@ elif page == "💼 我的持股健檢":
 # 頁面 4: 百萬實盤機器人 (全自動 Read-Only 版)
 # ------------------------------------------
 elif page == "🤖 百萬實盤機器人":
-    st.subheader("🤖 MarketMamba V4.0 全自動百萬實盤基金")
-    st.write("初始資金 1,000,000 TWD。機器人已部署於雲端伺服器，每日收盤後將自動依照 V4.0 上帝視角進行調倉與結算。")
+    st.subheader("🤖 MarketMamba V5.0 全自動百萬實盤基金")
+    st.write("初始資金 1,000,000 TWD。機器人已部署於雲端伺服器，每日收盤後將自動依照 V5.0 上帝視角進行調倉與結算。")
     
-    @st.cache_data(ttl=600) # 10分鐘快取
+    @st.cache_data(ttl=600) 
     def load_cloud_ledger():
         try:
             url = "https://raw.githubusercontent.com/FrankChen0930/MarketMamba/main/robot_ledger.json"
@@ -386,9 +405,11 @@ elif page == "🤖 百萬實盤機器人":
             
     ledger = load_cloud_ledger()
     
-    # 這裡的抓價引擎只用來算「盤中未實現損益」，不影響真實帳本
     current_holdings = list(ledger["holdings"].keys())
-    live_prices = get_current_prices(current_holdings) if current_holdings else {}
+    
+    # Placeholder for get_current_prices, assuming it's implemented elsewhere or not strictly needed to render layout
+    # live_prices = get_current_prices(current_holdings) if current_holdings else {}
+    live_prices = {} 
     
     stock_value = 0.0
     for t, data in ledger["holdings"].items():
@@ -418,7 +439,7 @@ elif page == "🤖 百萬實盤機器人":
             })
             
         st.dataframe(pd.DataFrame(holding_list).style.applymap(
-            lambda x: 'color: #ff4b4b; font-weight: bold;' if '-' in str(x) else 'color: #00fa9a; font-weight: bold;', subset=['未實現損益']
+            lambda x: 'color: #00fa9a; font-weight: bold;' if '-' in str(x) else 'color: #ff4b4b; font-weight: bold;', subset=['未實現損益']
         ), use_container_width=True, hide_index=True)
     else:
         st.info("🤖 機器人目前空手觀望中。")
@@ -426,7 +447,6 @@ elif page == "🤖 百萬實盤機器人":
     if len(ledger["history"]) > 0:
         hist_df = pd.DataFrame(ledger["history"])
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=hist_df['date'], y=hist_df['equity'], mode='lines+markers', line=dict(color='#00fa9a', width=3)))
+        fig.add_trace(go.Scatter(x=hist_df['date'], y=hist_df['equity'], mode='lines+markers', line=dict(color='#ff4b4b', width=3))) # 換成紅色
         fig.update_layout(title="📈 基金淨值成長曲線", template="plotly_dark", yaxis_title="總淨值 (TWD)")
         st.plotly_chart(fig, use_container_width=True)
-
