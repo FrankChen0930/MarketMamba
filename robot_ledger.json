@@ -1,22 +1,26 @@
 {
     "start_date": "2026-03-11",
-    "cash": 195223.90519161205,
+    "cash": 125.00519161202828,
     "holdings": {
-        "006203": {
-            "shares": 1413,
-            "avg_cost": 138.1
+        "0052": {
+            "shares": 4308,
+            "avg_cost": 45.3
         },
-        "00668K": {
-            "shares": 11446,
-            "avg_cost": 17.05
+        "8109": {
+            "shares": 1961,
+            "avg_cost": 99.5
         },
-        "00636K": {
-            "shares": 22907,
-            "avg_cost": 8.52
+        "1586": {
+            "shares": 8504,
+            "avg_cost": 22.95
         },
-        "00657K": {
-            "shares": 9817,
-            "avg_cost": 19.88
+        "8183": {
+            "shares": 5361,
+            "avg_cost": 36.4
+        },
+        "8103": {
+            "shares": 2285,
+            "avg_cost": 85.4
         }
     },
     "history": [
