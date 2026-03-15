@@ -413,7 +413,7 @@ elif page == "🤖 百萬實盤機器人":
     
     stock_value = 0.0
     for t, data in ledger["holdings"].items():
-        price = live_prices.get(t, data["cost"]) 
+        price = live_prices.get(t, data.get("avg_cost", data.get("cost", 0)))
         stock_value += price * data["shares"]
         
     total_equity = ledger["cash"] + stock_value
