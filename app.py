@@ -428,12 +428,12 @@ elif page == "🤖 百萬實盤機器人":
         st.write("📋 **今日機器人最新庫存**")
         holding_list = []
         for t, d in ledger["holdings"].items():
-            current_p = live_prices.get(t, d['cost'])
-            profit_pct = (current_p - d['cost']) / d['cost'] * 100
+            current_p = live_prices.get(t, d.get("avg_cost", data.get("cost", 0)))
+            profit_pct = (current_p - d['cost']) / d.get("avg_cost", data.get("cost", 0)) * 100
             holding_list.append({
                 "股票標的": format_ticker(t), 
                 "持有股數": d["shares"],
-                "平均成本": f"{d['cost']:.2f}",
+                "平均成本": f"{d.get("avg_cost", data.get("cost", 0)):.2f}",
                 "最新報價": f"{current_p:.2f}",
                 "未實現損益": f"{profit_pct:.2f}%"
             })
