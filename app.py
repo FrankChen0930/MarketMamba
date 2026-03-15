@@ -429,7 +429,7 @@ elif page == "🤖 百萬實盤機器人":
         holding_list = []
         for t, d in ledger["holdings"].items():
             current_p = live_prices.get(t, d.get("avg_cost", data.get("cost", 0)))
-            profit_pct = (current_p - d['cost']) / d.get("avg_cost", data.get("cost", 0)) * 100
+            profit_pct = (current_p - d.get("avg_cost", data.get("cost", 0))) / d.get("avg_cost", data.get("cost", 0)) * 100
             holding_list.append({
                 "股票標的": format_ticker(t), 
                 "持有股數": d["shares"],
