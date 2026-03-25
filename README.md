@@ -136,6 +136,41 @@ V5.0 是一次徹底的架構重構，我們摒棄了傳統時間序列模型「
 ### 決策最後一哩路：強化學習交易員 (RL Trading Agent)
 * **PPO 代理人：** 將 Mamba 生成的 30 天平行宇宙機率雲，作為狀態空間 (State) 輸入給強化學習模型 (PPO)。訓練一個 AI 交易員，讓它在模擬環境中學習如何根據不確定性進行「滿倉、減碼、空手」的最佳動態部位控管，取代靜態的凱利公式。
 
+## 🚀 Roadmap: MarketMamba v6.0 (Multimodal & Narrative Integration)
+
+> **Current Status:** v5.0 (Dynamic GAT + Mamba) is undergoing live paper trading. v6.0 aims to bridge the gap between "Price Action" and "Market Narrative."
+
+### 📌 Evolution Objective
+To enhance model stability and predictive power during "Black Swan" events (e.g., geopolitical conflicts, policy shifts) by integrating multi-language sentiment analysis and fundamental logic.
+
+### 🏗️ Proposed Architecture: Dual-Stream Mamba
+The v6.0 architecture will evolve into a hybrid system:
+
+1. **Numerical Stream (Legacy v5.0):**
+   - **Mamba Blocks:** Capturing long-range dependencies in OHLCV and technical indicators.
+   - **Dynamic GAT:** Modeling intra-day correlations between "sibling stocks" based on feature similarity.
+
+2. **Contextual Stream (New v6.0):**
+   - **Twin-FinBERT Encoders:** Utilizing specialized models for Chinese (Taiwan market) and English (US macro/tech) financial news.
+   - **Cross-Attention Fusion:** A gating mechanism that allows the hidden state to "attend" to specific high-impact news embeddings (e.g., revenue beats, default risks).
+
+---
+
+### 🗺️ Technical Development Path
+
+| Phase | Milestone | Key Feature |
+| :--- | :--- | :--- |
+| **Phase 1** | **7-Year News Archive** | Scraping historical data (2019-2026) using local multi-threading for FinBERT pre-processing. |
+| **Phase 2** | **Sentiment Embedding** | Converting raw text into 128-dim dense vectors. Implementing "Forward Fill" for sparse news days. |
+| **Phase 3** | **Knowledge Graph (KG)** | Replacing similarity-based GAT with a "Supply Chain Graph" (e.g., Tesla -> Samsung -> Wafer Equipment). |
+| **Phase 4** | **Macro-Syncing** | Incorporating real-time US tech stock sentiment as a leading indicator for the Taiwan market. |
+
+### ⚖️ Anti-Bias & Alignment Protocol
+To prevent **Look-ahead Bias** and **Data Leakage**, v6.0 strictly adheres to:
+- **Publication Alignment:** Financial reports are aligned to the "Official Disclosure Date," not the fiscal quarter end.
+- **Time-Zone Normalization:** Overnight US news is correctly mapped to the next day's Taiwan Open (T+1).
+- **Sentiment Divergence:** The model learns to detect "Divergence Signals" (e.g., Positive News + Price Drop = Distribution Signal).
+
 ---
 *The pursuit of Alpha never stops.*
 ---
