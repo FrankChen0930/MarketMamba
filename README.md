@@ -136,40 +136,40 @@ V5.0 是一次徹底的架構重構，我們摒棄了傳統時間序列模型「
 ### 決策最後一哩路：強化學習交易員 (RL Trading Agent)
 * **PPO 代理人：** 將 Mamba 生成的 30 天平行宇宙機率雲，作為狀態空間 (State) 輸入給強化學習模型 (PPO)。訓練一個 AI 交易員，讓它在模擬環境中學習如何根據不確定性進行「滿倉、減碼、空手」的最佳動態部位控管，取代靜態的凱利公式。
 
-## 🚀 Roadmap: MarketMamba v6.0 (Multimodal & Narrative Integration)
+## 🚀 開發藍圖：MarketMamba v6.0 (多模態消息面與敘事整合)
 
-> **Current Status:** v5.0 (Dynamic GAT + Mamba) is undergoing live paper trading. v6.0 aims to bridge the gap between "Price Action" and "Market Narrative."
+> **當前進度：** v5.0 (動態圖 GAT + Mamba) 正在進行實戰模擬投資（Paper Trading）。v6.0 的核心目標是銜接「數值價量」與「市場敘事」之間的資訊斷層。
 
-### 📌 Evolution Objective
-To enhance model stability and predictive power during "Black Swan" events (e.g., geopolitical conflicts, policy shifts) by integrating multi-language sentiment analysis and fundamental logic.
+### 📌 進化目標
+旨在解決純數值模型在面對「黑天鵝事件」（如地緣政治衝突、政策轉向）時的預測盲點。透過引入多語系情緒分析與基本面邏輯，提升模型在極端盤勢下的穩定性。
 
-### 🏗️ Proposed Architecture: Dual-Stream Mamba
-The v6.0 architecture will evolve into a hybrid system:
+### 🏗️ 預期架構：雙流混合 Mamba (Dual-Stream Mamba)
+v6.0 將從單一數值流演進為雙軌並行的混合系統：
 
-1. **Numerical Stream (Legacy v5.0):**
-   - **Mamba Blocks:** Capturing long-range dependencies in OHLCV and technical indicators.
-   - **Dynamic GAT:** Modeling intra-day correlations between "sibling stocks" based on feature similarity.
+1. **數值流 (繼承自 v5.0):**
+   - **Mamba Blocks:** 負責捕捉 OHLCV 與技術指標的長程時間依賴性。
+   - **動態圖 (Dynamic GAT):** 根據特徵相似度，模擬「兄弟股」之間的盤中連動效應。
 
-2. **Contextual Stream (New v6.0):**
-   - **Twin-FinBERT Encoders:** Utilizing specialized models for Chinese (Taiwan market) and English (US macro/tech) financial news.
-   - **Cross-Attention Fusion:** A gating mechanism that allows the hidden state to "attend" to specific high-impact news embeddings (e.g., revenue beats, default risks).
+2. **語境流 (v6.0 新增):**
+   - **雙生 FinBERT 編碼器:** 同時部署針對台股（中文）與美股總經/科技新聞（英文）微調的專用模型。
+   - **交叉注意力融合 (Cross-Attention):** 引入門控機制，讓模型隱藏狀態能根據情緒強度，動態調整不同消息的權重（例如：營收創高、違約風險）。
 
 ---
 
-### 🗺️ Technical Development Path
+### 🗺️ 技術開發路徑 (Roadmap)
 
-| Phase | Milestone | Key Feature |
+| 階段 | 里程碑 | 核心功能 |
 | :--- | :--- | :--- |
-| **Phase 1** | **7-Year News Archive** | Scraping historical data (2019-2026) using local multi-threading for FinBERT pre-processing. |
-| **Phase 2** | **Sentiment Embedding** | Converting raw text into 128-dim dense vectors. Implementing "Forward Fill" for sparse news days. |
-| **Phase 3** | **Knowledge Graph (KG)** | Replacing similarity-based GAT with a "Supply Chain Graph" (e.g., Tesla -> Samsung -> Wafer Equipment). |
-| **Phase 4** | **Macro-Syncing** | Incorporating real-time US tech stock sentiment as a leading indicator for the Taiwan market. |
+| **第一階段** | **七年歷史新聞庫** | 在本地環境利用多執行緒爬取 2019-2026 歷史資料，並進行 FinBERT 預處理。 |
+| **第二階段** | **情緒嵌入 (Embedding)** | 將原始文本轉化為 128 維稠密向量。針對無新聞的日子實作「前向填充 (Forward Fill)」。 |
+| **第三階段** | **知識圖譜 (KG) 導入** | 將 GAT 的相似度連線優化為「產業上下游」硬性關係（例如：特斯拉 -> 三星 -> 設備商）。 |
+| **第四階段** | **美股領先指標同步** | 將美股科技股即時情緒納入特徵，強化對台股（衛星市場）的領先預測力。 |
 
-### ⚖️ Anti-Bias & Alignment Protocol
-To prevent **Look-ahead Bias** and **Data Leakage**, v6.0 strictly adheres to:
-- **Publication Alignment:** Financial reports are aligned to the "Official Disclosure Date," not the fiscal quarter end.
-- **Time-Zone Normalization:** Overnight US news is correctly mapped to the next day's Taiwan Open (T+1).
-- **Sentiment Divergence:** The model learns to detect "Divergence Signals" (e.g., Positive News + Price Drop = Distribution Signal).
+### ⚖️ 數據對齊與防偏誤協定
+為防止 **Look-ahead Bias (先見偏誤)**，v6.0 嚴格執行以下對齊標準：
+- **公告日對齊：** 財報數據必須以「正式公告日期」為基準，而非會計季度末。
+- **時區標準化：** 隔夜美股消息必須正確對齊至隔日的台股開盤 (T+1)。
+- **情緒背離偵測：** 模型將學習辨識「利多不漲」等背離訊號（例如：強烈利多 + 股價下跌 = 出貨訊號）。
 
 ---
 *The pursuit of Alpha never stops.*
