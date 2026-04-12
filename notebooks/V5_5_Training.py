@@ -59,7 +59,7 @@ print(f"   VRAM: {vram:.1f} GB")
 
 # 根據 GPU 自動建議 batch size
 if 'A100' in gpu_name:
-    SUGGESTED_BATCH = 256  # A100 40GB → 256, 80GB → 512
+    SUGGESTED_BATCH = 512  # A100 80GB → 512
     print(f"   💎 A100 偵測到！建議 batch_size = {SUGGESTED_BATCH}")
 elif 'V100' in gpu_name:
     SUGGESTED_BATCH = 128

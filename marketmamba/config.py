@@ -178,10 +178,10 @@ MODEL_CONFIG = {
     'input_dim':         len(FEATURE_COLS),       # 84 (V5.5)
     'input_dim_v5':      len(FEATURE_COLS_V5),    # 46 (V5.0 向下相容)
     'seq_len':           120,
-    'd_model':           128,
+    'd_model':           256,       # 128 → 256 (A100 升級)
     'pred_days':         30,
-    'num_mamba_layers':  4,
-    'd_state':           16,
+    'num_mamba_layers':  6,         # 4 → 6 (更深時序理解)
+    'd_state':           32,        # 16 → 32 (更大狀態空間)
     'd_conv':            4,
     'expand':            2,
     'dropout_rate':      0.4,
