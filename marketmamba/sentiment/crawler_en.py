@@ -84,8 +84,22 @@ def _parse_rss(url: str, params: dict = None, days: int = 3,
     articles = []
     cutoff = datetime.now() - timedelta(days=days)
 
+    # 清洗 XML 內容 (修復 Finviz 等不標準 RSS 的非法字元)
+    content = res.content
     try:
-        root = ElementTree.fromstring(res.content)
+        # 嘗試先用 text 做清洗
+        text = res.text
+        # 移除非法 XML 字元 (控制字元 0x00-0x08, 0x0B-0x0C, 0x0E-0x1F)
+        import re
+        text = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', '', text)
+        # 修復未轉義的 HTML entity (& 單獨出現時)
+        text = re.sub(r'&(?!amp;|lt;|gt;|quot;|apos;|#\d+;|#x[0-9a-fA-F]+;)', '&amp;', text)
+        content = text.encode('utf-8')
+    except Exception:
+        pass
+
+    try:
+        root = ElementTree.fromstring(content)
         for item in root.findall('.//item'):
             title = item.findtext('title', '').strip()
             link = item.findtext('link', '')
@@ -132,7 +146,27 @@ def _parse_rss(url: str, params: dict = None, days: int = 3,
                 'feed': source_label,
             })
     except ElementTree.ParseError as e:
-        logger.warning(f"⚠️ {source_label} XML 解析錯誤: {e}")
+        logger.warning(f"⚠️ {source_label} XML 清洗後仍解析失敗: {e}，嘗試 regex fallback")
+        # Regex 備援：從 HTML/XML 殘片中撈標題和連結
+        try:
+            import re
+            text = res.text
+            titles = re.findall(r'<title>([^<]+)</title>', text)
+            for t in titles[1:]:  # 跳過第一個 (通常是 feed 標題)
+                t = t.strip()
+                if t and len(t) > 10:
+                    articles.append({
+                        'title': t,
+                        'source': source_label,
+                        'pub_date': datetime.now().strftime('%Y-%m-%d'),
+                        'link': '',
+                        'whitelisted': False,
+                        'feed': source_label,
+                    })
+            if articles:
+                logger.info(f"  🔧 Regex fallback 成功撈取 {len(articles)} 篇")
+        except Exception:
+            pass
 
     return articles
 

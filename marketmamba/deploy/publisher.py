@@ -14,14 +14,23 @@ from marketmamba.config import (
 logger = logging.getLogger('MarketMamba.publisher')
 
 
+def _ensure_update_time(output_dir: str) -> None:
+    """確保 update_time.txt 存在 (推送前自動生成)"""
+    path = os.path.join(output_dir, 'update_time.txt')
+    tw_time = get_now_str()
+    with open(path, 'w') as f:
+        f.write(tw_time)
+    logger.info(f"🕒 update_time.txt 已生成: {tw_time}")
+
+
 def push_to_github(github_token: str = None) -> bool:
     """
     自動推送更新至 GitHub
 
     流程：
-    1. 克隆 Repo 到暫存目錄
-    2. 從輸出目錄複製更新的檔案
-    3. 寫入 update_time.txt
+    1. 確保 update_time.txt 已生成
+    2. 克隆 Repo 到暫存目錄
+    3. 從輸出目錄複製更新的檔案 (跳過不存在的)
     4. git add → commit → push
 
     Args:
@@ -53,6 +62,10 @@ def push_to_github(github_token: str = None) -> bool:
         token=github_token, user=GITHUB_USER
     )
 
+    # 0. 先確保 update_time.txt 存在
+    output_dir = get_repo_output_dir()
+    _ensure_update_time(output_dir)
+
     # 1. 克隆
     work_dir = '/content/repo_publish' if is_colab() else os.path.join(os.getcwd(), '_repo_publish')
     os.system(f"rm -rf {work_dir}")
@@ -61,16 +74,22 @@ def push_to_github(github_token: str = None) -> bool:
         logger.error("❌ git clone 失敗")
         return False
 
-    # 2. 複製更新的檔案
-    output_dir = get_repo_output_dir()
+    # 2. 複製更新的檔案 (跳過不存在的，不再報 warning)
+    copied = []
+    skipped = []
     for filename in GITHUB_PUSH_FILES:
         src = os.path.join(output_dir, filename)
         if os.path.exists(src):
             os.system(f'cp "{src}" "{work_dir}/"')
+            copied.append(filename)
         else:
-            logger.warning(f"⚠️ 找不到: {src}")
+            skipped.append(filename)
 
-    # 3. 寫入更新時間
+    if skipped:
+        logger.info(f"⏭️ 跳過未生成的檔案: {', '.join(skipped)}")
+    logger.info(f"📦 已複製 {len(copied)} 個檔案")
+
+    # 3. 確保 work_dir 也有 update_time.txt
     tw_time = get_now_str()
     with open(os.path.join(work_dir, "update_time.txt"), "w") as f:
         f.write(tw_time)
@@ -82,9 +101,10 @@ def push_to_github(github_token: str = None) -> bool:
     os.system(f"git config user.name '{GITHUB_USER}'")
     os.system(f"git config user.email '{GITHUB_EMAIL}'")
 
-    # 加入所有檔案
-    files_to_add = ' '.join(GITHUB_PUSH_FILES + ['update_time.txt'])
-    os.system(f"git add {files_to_add}")
+    # 只 add 實際存在的檔案
+    files_to_add = copied + ['update_time.txt']
+    for f in files_to_add:
+        os.system(f"git add {f}")
 
     # Commit + Push
     os.system(f"git commit -m '🤖 Auto-update: V5.5 Pipeline ({tw_time})'")

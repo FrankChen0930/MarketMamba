@@ -301,13 +301,33 @@ elif page == "📐 傳統型態學雷達":
 elif page == "💼 我的持股健檢":
     st.subheader("💼 我的專屬量化基金 (Portfolio)")
     
-    if 'portfolio' not in st.session_state:
+    # 持股持久化：GitHub 雲端載入 → session → 匯出/匯入 JSON
+    @st.cache_data(ttl=600)
+    def load_cloud_portfolio():
         try:
-            st.session_state['portfolio'] = pd.DataFrame(json.loads(st.query_params["saved_portfolio"]))
+            url = "https://raw.githubusercontent.com/FrankChen0930/MarketMamba/main/user_portfolio.json"
+            res = requests.get(url, timeout=5)
+            if res.status_code == 200:
+                return pd.DataFrame(res.json()), True
         except:
-            st.session_state['portfolio'] = pd.DataFrame(columns=['股票代號', '持有成本', '持有股數'])
+            pass
+        return pd.DataFrame(columns=['股票代號', '持有成本', '持有股數']), False
 
-    def save_portfolio(): st.query_params["saved_portfolio"] = st.session_state['portfolio'].to_json(orient='records')
+    if 'portfolio' not in st.session_state:
+        cloud_pf, found = load_cloud_portfolio()
+        if found and not cloud_pf.empty:
+            st.session_state['portfolio'] = cloud_pf
+        else:
+            try:
+                st.session_state['portfolio'] = pd.DataFrame(json.loads(st.query_params["saved_portfolio"]))
+            except:
+                st.session_state['portfolio'] = pd.DataFrame(columns=['股票代號', '持有成本', '持有股數'])
+
+    def save_portfolio():
+        try:
+            st.query_params["saved_portfolio"] = st.session_state['portfolio'].to_json(orient='records')
+        except:
+            pass
 
     @st.cache_data(ttl=3600)
     def get_latest_close(ticker):
@@ -354,10 +374,35 @@ elif page == "💼 我的持股健檢":
                 subset=['AI 操作建議']
             ).format({"持有成本": "{:.2f}"}), use_container_width=True, hide_index=True
         )
-        if st.button("🗑️ 清空庫存"):
-            st.session_state['portfolio'] = pd.DataFrame(columns=['股票代號', '持有成本', '持有股數'])
-            save_portfolio()
-            st.rerun()
+        # 持股匯出 / 清空
+        st.divider()
+        st.markdown("##### 💾 持股紀錄管理")
+        st.caption("⚠️ 為避免 Streamlit 斷線導致紀錄遺失，建議定期匯出持股備份")
+        btn_col1, btn_col2, btn_col3 = st.columns(3)
+        with btn_col1:
+            portfolio_json = st.session_state['portfolio'].to_json(orient='records', force_ascii=False)
+            st.download_button("📥 匯出持股 (JSON)", data=portfolio_json, file_name="my_portfolio.json", mime="application/json", use_container_width=True)
+        with btn_col3:
+            if st.button("🗑️ 清空庫存", use_container_width=True):
+                st.session_state['portfolio'] = pd.DataFrame(columns=['股票代號', '持有成本', '持有股數'])
+                save_portfolio()
+                st.rerun()
+
+    # 匯入區塊 (不受 portfolio 是否為空影響)
+    with st.expander("📤 匯入持股紀錄", expanded=False):
+        uploaded = st.file_uploader("上傳之前匯出的 JSON 檔案", type=['json'], key="portfolio_upload")
+        if uploaded is not None:
+            try:
+                imported = pd.DataFrame(json.loads(uploaded.read()))
+                if all(col in imported.columns for col in ['股票代號', '持有成本', '持有股數']):
+                    st.session_state['portfolio'] = imported
+                    save_portfolio()
+                    st.success(f"✅ 成功匯入 {len(imported)} 筆持股！")
+                    st.rerun()
+                else:
+                    st.error("❌ JSON 格式錯誤，需包含：股票代號、持有成本、持有股數")
+            except Exception as e:
+                st.error(f"❌ 匯入失敗: {e}")
 
 # ------------------------------------------
 # 頁面 5: 百萬實盤機器人
