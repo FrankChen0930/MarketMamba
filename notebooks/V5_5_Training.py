@@ -164,7 +164,7 @@ else:
 
         # 執行 FinBERT
         from marketmamba.sentiment.integrator import compute_sentiment_features
-        df = compute_sentiment_features(df)
+        df = compute_sentiment_features(df, precomputed_news=all_news)
 
     else:
         # 方案 3: 什麼都沒有 → 即時爬取 + 分析

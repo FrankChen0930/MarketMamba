@@ -26,17 +26,19 @@ def _decay_sentiment(series: pd.Series, half_life: int = SENTIMENT_HALF_LIFE) ->
     score_t = score_{t-1} × 0.5^(1/half_life)
 
     無新聞的日子繼承前日情緒但逐步衰減至 0
+    (使用 Numpy 加速運算，避免 Pandas iloc 的效能瓶頸)
     """
     decay_factor = 0.5 ** (1 / half_life)
-    result = series.copy()
+    vals = series.values.copy()
 
-    for i in range(1, len(result)):
-        if pd.isna(result.iloc[i]) or result.iloc[i] == 0:
-            prev = result.iloc[i - 1]
-            if not pd.isna(prev):
-                result.iloc[i] = prev * decay_factor
+    for i in range(1, len(vals)):
+        # 若為 0 或 NaN 代表當日無新聞，進行衰減
+        if np.isnan(vals[i]) or vals[i] == 0:
+            prev = vals[i - 1]
+            if not np.isnan(prev) and prev != 0:
+                vals[i] = prev * decay_factor
 
-    return result.fillna(0)
+    return pd.Series(vals, index=series.index).fillna(0)
 
 
 def _is_geopolitical(title: str) -> bool:
@@ -47,12 +49,13 @@ def _is_geopolitical(title: str) -> bool:
 
 def compute_sentiment_features(df: pd.DataFrame,
                                ticker_name_map: dict = None,
-                               top_n_stocks: int = 50) -> pd.DataFrame:
+                               top_n_stocks: int = 50,
+                               precomputed_news: dict = None) -> pd.DataFrame:
     """
     完整的情緒特徵計算管線
 
     步驟：
-    1. 爬取中英文新聞
+    1. 爬取中英文新聞 (若無預載資料)
     2. 雙軌 FinBERT 分析
     3. 按 (stock_id, Date) 聚合情緒分數與 embedding
     4. 地緣政治分類
@@ -75,25 +78,35 @@ def compute_sentiment_features(df: pd.DataFrame,
     from marketmamba.sentiment.finbert_en import FinBERTEnglish
     from marketmamba.sentiment.finbert_cn import FinBERTChinese
 
-    # === 1. 爬取新聞 ===
-    print("  🌐 爬取英文新聞...")
-    en_news = crawl_all_en_news()
+    # === 1. 載入或爬取新聞 ===
+    if precomputed_news:
+        print("  ✅ 使用本機預載的新聞資料，跳過重複爬取...")
+        en_news = {
+            'market': precomputed_news.get('market_en', []),
+            'geopolitical': precomputed_news.get('geopolitical', [])
+        }
+        cn_news = {
+            'market_tw': precomputed_news.get('market_tw', []),
+            'stocks': precomputed_news.get('stocks', {})
+        }
+    else:
+        print("  🌐 正在即時爬取新聞...")
+        en_news = crawl_all_en_news()
 
-    # 準備個股新聞爬取清單
-    stock_list = []
-    if ticker_name_map:
-        # 只爬最活躍的前 N 支
-        top_stocks = (
-            df.groupby('stock_id')['Volume'].mean()
-            .nlargest(top_n_stocks).index.tolist()
-        )
-        stock_list = [
-            (sid, ticker_name_map.get(sid, sid))
-            for sid in top_stocks if sid in ticker_name_map
-        ]
+        # 準備個股新聞爬取清單
+        stock_list = []
+        if ticker_name_map:
+            top_stocks = (
+                df.groupby('stock_id')['Volume'].mean()
+                .nlargest(top_n_stocks).index.tolist()
+            )
+            stock_list = [
+                (sid, ticker_name_map.get(sid, sid))
+                for sid in top_stocks if sid in ticker_name_map
+            ]
 
-    print("  🇹🇼 爬取中文新聞...")
-    cn_news = crawl_all_cn_news(stock_list=stock_list)
+        print("  🇹🇼 爬取中文新聞...")
+        cn_news = crawl_all_cn_news(stock_list=stock_list)
 
     # === 2. FinBERT 分析 ===
     print("  🧠 FinBERT-EN 情緒分析...")
