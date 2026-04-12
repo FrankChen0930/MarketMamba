@@ -205,7 +205,7 @@ TRAIN_CONFIG = {
 # FinBERT 設定
 # ==========================================
 FINBERT_EN_MODEL = "ProsusAI/finbert"
-FINBERT_CN_MODEL = "hw2942/chinese-finbert-for-sentiment-analysis"
+FINBERT_CN_MODEL = "lxyuan/distilbert-base-multilingual-cased-sentiments-student"
 FINBERT_EMBED_DIM = 16       # 768 → 16 維投影
 SENTIMENT_HALF_LIFE = 3      # 情緒衰減半衰期 (天)
 
