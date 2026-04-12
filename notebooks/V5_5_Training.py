@@ -92,58 +92,92 @@ print(f"📅 時間範圍: {df['Date'].min()} ~ {df['Date'].max()}")
 print(f"📈 股票數量: {df['stock_id'].nunique()}")
 
 
-# %% Cell 3 (選配): 載入本機預爬的新聞情緒快取
+# %% Cell 3: 消息面情緒特徵
 # ==========================================
-# 📰 載入本機預爬的新聞快取 (V5.5 情緒模式)
+# 📰 情緒特徵注入 (自動偵測最佳資料來源)
 # ==========================================
-# ⚠️ 前提：你已經在本機執行過 scripts/crawl_local.py
-#    並將 News_Cache 資料夾上傳到 Google Drive:
-#    MyDrive/MarketMamba_V5/News_Cache/
+# 策略：
+#   1. 先找 Drive 上的 processed 快取 (本機預跑 FinBERT 的結果)
+#   2. 若只有 raw 快取 → 在 Colab 跑 FinBERT
+#   3. 若都沒有 → 在 Colab 即時爬取 + FinBERT
+#   4. 無論哪種方式，歷史資料的情緒欄位都是 0 (正常)
 #
-# ⚠️ 關於訓練時的新聞資料：
-#    Google News RSS 只能抓最近 ~30 天的新聞，
-#    所以 2019~2025 的歷史資料不會有情緒特徵。
-#    ✅ 這是正常的！模型會學到：
-#       - 情緒欄位 = 0 → 「沒有消息面訊號」→ 主要依賴量價籌碼
-#       - 情緒欄位 ≠ 0 → 「有消息面訊號」→ 加權考慮
-#    隨著每天累積新聞快取，訓練資料會越來越豐富。
-#
-# 方案 A: 不用情緒特徵 (V5.0 相容) → 跳過此 Cell
-# 方案 B: 啟用情緒特徵 → 取消下面的註解
+# ⚠️ 如果你要跳過情緒引擎 (純 V5.0 模式)，直接不執行這個 Cell 即可
 
-# import json, numpy as np
-# from marketmamba.config import NEWS_CACHE_DIR, SENTIMENT_SCALAR_COLS, SENTIMENT_EMBED_EN_COLS, SENTIMENT_EMBED_CN_COLS
-#
-# # 讀取本機預爬的分數
-# cache_files = sorted([
-#     f for f in os.listdir(os.path.join(NEWS_CACHE_DIR, 'processed'))
-#     if f.endswith('_sentiment_scores.json')
-# ]) if os.path.exists(os.path.join(NEWS_CACHE_DIR, 'processed')) else []
-#
-# if cache_files:
-#     # 初始化情緒欄位為 0
-#     for col in SENTIMENT_SCALAR_COLS + SENTIMENT_EMBED_EN_COLS + SENTIMENT_EMBED_CN_COLS:
-#         if col not in df.columns:
-#             df[col] = 0.0
-#
-#     for cache_file in cache_files:
-#         date_str = cache_file[:10]
-#         with open(os.path.join(NEWS_CACHE_DIR, 'processed', cache_file)) as f:
-#             scores = json.load(f)
-#
-#         mask = df['Date'] == pd.to_datetime(date_str)
-#         df.loc[mask, 'Sent_Market_US'] = scores.get('market_us_score', 0)
-#         df.loc[mask, 'Sent_Geopolitical'] = scores.get('geopolitical_score', 0)
-#         df.loc[mask, 'Sent_Market_TW'] = scores.get('market_tw_score', 0)
-#
-#         for stock_id, sdata in scores.get('stocks', {}).items():
-#             stock_mask = mask & (df['stock_id'].astype(str) == stock_id)
-#             df.loc[stock_mask, 'Sent_Stock_CN'] = sdata.get('score', 0)
-#             df.loc[stock_mask, 'News_Volume_Stock'] = np.log1p(sdata.get('count', 0))
-#
-#     print(f"✅ 已載入 {len(cache_files)} 天的情緒快取")
-# else:
-#     print("⚠️ 未找到新聞快取，情緒欄位全部為 0 (模型退回 V5.0 模式)")
+import json, glob
+import numpy as np
+from marketmamba.config import (
+    NEWS_CACHE_DIR, SENTIMENT_SCALAR_COLS,
+    SENTIMENT_EMBED_EN_COLS, SENTIMENT_EMBED_CN_COLS,
+)
+
+# === 初始化所有情緒欄位為 0 ===
+all_sentiment_cols = SENTIMENT_SCALAR_COLS + SENTIMENT_EMBED_EN_COLS + SENTIMENT_EMBED_CN_COLS
+for col in all_sentiment_cols:
+    if col not in df.columns:
+        df[col] = 0.0
+
+# === 偵測可用的情緒資料來源 ===
+processed_dir = os.path.join(NEWS_CACHE_DIR, 'processed')
+raw_dir = os.path.join(NEWS_CACHE_DIR, 'raw')
+
+# 列出所有搜尋路徑 (幫助 debug)
+print(f"🔍 搜尋情緒快取...")
+print(f"   NEWS_CACHE_DIR: {NEWS_CACHE_DIR}")
+print(f"   processed 目錄: {processed_dir} → 存在: {os.path.exists(processed_dir)}")
+print(f"   raw 目錄: {raw_dir} → 存在: {os.path.exists(raw_dir)}")
+
+# 方案 1: 有 processed 快取 (最快)
+score_files = sorted(glob.glob(os.path.join(processed_dir, '*_sentiment_scores.json'))) if os.path.exists(processed_dir) else []
+
+if score_files:
+    print(f"✅ 找到 {len(score_files)} 天的情緒分數快取，直接載入...")
+    for score_file in score_files:
+        date_str = os.path.basename(score_file)[:10]
+        with open(score_file) as f:
+            scores = json.load(f)
+
+        mask = df['Date'] == pd.to_datetime(date_str)
+        df.loc[mask, 'Sent_Market_US'] = scores.get('market_us_score', 0)
+        df.loc[mask, 'Sent_Geopolitical'] = scores.get('geopolitical_score', 0)
+        df.loc[mask, 'Sent_Market_TW'] = scores.get('market_tw_score', 0)
+
+        for stock_id, sdata in scores.get('stocks', {}).items():
+            stock_mask = mask & (df['stock_id'].astype(str) == stock_id)
+            df.loc[stock_mask, 'Sent_Stock_CN'] = sdata.get('score', 0)
+            df.loc[stock_mask, 'News_Volume_Stock'] = np.log1p(sdata.get('count', 0))
+
+    print(f"✅ 已載入 {len(score_files)} 天的情緒快取")
+
+else:
+    # 方案 2: 有 raw 快取 → 在 Colab 跑 FinBERT
+    raw_files = sorted(glob.glob(os.path.join(raw_dir, '*_news_bundle.json'))) if os.path.exists(raw_dir) else []
+
+    if raw_files:
+        print(f"📰 找到 {len(raw_files)} 天的原始新聞，在 Colab 執行 FinBERT 分析...")
+        # 用最新一天的新聞跑 integrator
+        latest_raw = raw_files[-1]
+        with open(latest_raw) as f:
+            all_news = json.load(f)
+        print(f"   來源: {os.path.basename(latest_raw)}")
+        print(f"   新聞數: 市場EN={len(all_news.get('market_en',[]))} 地緣={len(all_news.get('geopolitical',[]))} 台股={len(all_news.get('market_tw',[]))} 個股={len(all_news.get('stocks',{}))}")
+
+        # 執行 FinBERT
+        from marketmamba.sentiment.integrator import compute_sentiment_features
+        df = compute_sentiment_features(df)
+
+    else:
+        # 方案 3: 什麼都沒有 → 即時爬取 + 分析
+        print("⚠️ 未找到任何新聞快取")
+        print("   🌐 啟動即時爬取 + FinBERT 分析 (可能需要 5~10 分鐘)...")
+        from marketmamba.sentiment.integrator import compute_sentiment_features
+        df = compute_sentiment_features(df)
+
+# 確認情緒特徵狀態
+non_zero_ratio = (df[SENTIMENT_SCALAR_COLS] != 0).any(axis=1).mean()
+print(f"\n📊 情緒特徵狀態:")
+print(f"   有消息面訊號的樣本比例: {non_zero_ratio:.2%}")
+print(f"   （歷史資料為 0 是正常的，模型會自動學習區分）")
 
 
 # %% Cell 4: 開始訓練
@@ -153,15 +187,14 @@ print(f"📈 股票數量: {df['stock_id'].nunique()}")
 from marketmamba.models.trainer import train_model
 
 # ===========================
-# 訓練參數設定 (GPU 自動適配)
+# 🎛️ 訓練參數設定 (請自行調整)
 # ===========================
 TRAIN_PARAMS = {
     'epochs': 50,                   # 訓練輪數
-    'batch_size': SUGGESTED_BATCH,  # 自動偵測 (A100=256, T4=64)
+    'batch_size': 256,              # ← 自己決定 (A100 80GB 建議 256~512)
     'lr': 1e-4,                     # 學習率
     'early_stop_patience': 7,       # 連續 N 輪無改善就停止
     'val_ratio': 0.15,              # 驗證集比例
-    # 'use_v5_compat': True,        # 取消註解 = 強制 V5.0 模式 (46 維)
 }
 
 print(f"🔧 訓練設定: batch_size={TRAIN_PARAMS['batch_size']} (GPU: {gpu_name})")
