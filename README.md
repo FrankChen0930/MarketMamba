@@ -1,177 +1,199 @@
-# 🐍 MarketMamba: 深度生成式量化交易預測引擎
+# MarketMamba V5.5 — 終極量化決策系統
 
-![MarketMamba Banner](Parallel_Universes_Plot.png) *(可替換為你的宇宙觀測圖路徑)*
+> Mamba SSM + KG-Enhanced GAT + 雙軌 FinBERT 情緒引擎
 
-**MarketMamba** 是一個結合了 **狀態空間模型 (Mamba)**、**圖神經網路 (GAT)** 與 **擴散模型 (Diffusion / DDPM)** 的先進量化交易預測系統。
-
-本專案旨在解決傳統金融時間序列預測中「雜訊過高」與「無法量化不確定性」的痛點，透過多重平行宇宙的預測軌跡，尋找市場中的高勝率投資組合。
-
-### 📊 MarketMamba V4.0 全知全能資料矩陣 (The Ultimate Mamba Matrix)
-
-本專案將發揮 Mamba 模型處理高維度矩陣的絕對優勢，將台股微觀籌碼、高頻特徵與國際實體宏觀完美融合。
-**戰略 (Hit and Run)：** 歷史 5 年資料庫依賴一個月 Sponsor VIP 權限進行「全市場巨量打包」；實盤階段退回免費方案，採每日增量更新，達成 0 元維運。
-
-| 數據板塊 (Domain) | 核心特徵欄位 (High-Dimensional Features) | 資料表來源 (FinMind API / Others) | Mamba 大腦之戰略作用 (Alpha Value) |
-| :--- | :--- | :--- | :--- |
-| **1. 國際宏觀與熱錢** | `US_Money_Supply`, `G8_Rate`<br>`Gold/Oil`, `USD_TWD`<br>`US_SOX`, `US_QQQ`, `US_VIX` | `yfinance`<br>FinMind (總體經濟/國際市場) | 建立全球熱錢與通膨的「上帝視角」，從根本預判外資匯出入動能。 |
-| **2. 台股量價與防漏** | `Open`, `High`, `Low`, `Close`, `Volume`<br>`US_Market_Closed`, `TW_Typhoon_Day` | `yfinance`<br>本地端 `pd.merge_asof` 計算 | 捕捉價格動能，並嚴格標記休市日以根絕未來數據洩漏 (Lookahead Bias)。 |
-| **3. 除權息失真防護** | `Ex_Dividend_Drop` (除息蒸發點數) | FinMind (除權除息結果表) | 告知模型當日價格落差為「配息」而非「暴跌」，防止 Mamba 誤判停損。 |
-| **4. 法人與國家隊** | 三大法人買賣超, `Gov_Bank_Buy` | FinMind (三大法人 / 八大行庫) | 追蹤市場大資金流向，以及國家隊暴跌時的護盤底線。 |
-| **5. 散戶信用與情緒** | `Margin/Short` (融資券), `Day_Trading` | FinMind (融資融券 / 當沖統計) | 衡量散戶瘋狂程度，避開當沖過熱標的，捕捉融資斷頭潮。 |
-| **6. 大戶與暗黑做空** | 大戶/散戶持股比例, `Securities_Lending` | FinMind (股權分散 / 借券明細) | 抓出千張大戶默默吃貨的飆股，提早發覺外資暗黑做空力道。 |
-| **7. 主力分點照妖鏡** | `Broker_Branch_Vol` | FinMind (台股分點資料) | 台灣特有：精準抓出「地緣券商吃貨 (公司派)」與「隔日沖大戶倒貨」。 |
-| **8. 盤中微觀流動性** | `Bid_Ask_Spread`, `Order_Imbalance` | FinMind (每 5 秒委託成交統計) | 將高頻特徵降維，讓模型具備「流動性嗅覺」，避開買了賣不掉的殭屍股。 |
-| **9. 基本面與現金流** | 月營收 YoY/MoM, 現金流, 綜合損益 | FinMind (月營收 / 財務報表) | 破解假帳地雷，篩選具備實質獲利與強大現金流的護城河公司。 |
-| **10. 價值與防禦底線** | `PE` (本益比), `PB` (淨值比), `DY` | FinMind (個股 PER) | 建立價值投資防禦底線，避免模型在多頭末期追高泡沫股。 |
-| **11. 期權極致微觀** | `Futures_Broker_OI` | FinMind (期貨各券商每日交易) | 放大鏡檢視特定外資在期交所的空單佈局，作為系統崩盤的終極預警。 |
-
-> **⚠️ 終極打包策略：** 以上所有 FinMind 來源皆為免費公開資訊。本專案利用 Sponsor 權限的單日特權，將 5 年歷史資料在 Colab 中一次性高速壓縮為 `.parquet` 本地特徵庫。
-> **⚠️ 開發者備註：** `FinMind` 免費版限制為 **300 次 / 小時**。
+自動化台股量化投資系統，結合深度學習時序預測、知識圖譜強化的圖注意力網路、
+以及雙語消息面情緒分析，產出 30 天 Alpha 軌跡預測與凱利資金配置建議。
 
 ---
 
-## 🏗️ MarketMamba V4.0 資料工程與時序對齊規範 (Data Engineering Protocol)
+## 🏗️ 專案架構
 
-為了處理龐大的 7 年期 (2019-01-01 至今) 高維度混合頻率資料，本專案制定以下嚴格的資料庫建置規範，以確保資料的純淨度並徹底根絕未來函數 (Lookahead Bias)。
-
-### 🗂️ 第一層：資料夾分層架構 (Google Drive 儲存規範)
-* **`MarketMamba_DB/Raw/` (原始資料層)**
-  * `/Daily_Macro/`, `/Daily_Market/`, `/Weekly_Holdings/`, `/Monthly_Revenue/`, `/Quarterly_Financials/`
-* **`MarketMamba_DB/Processed_Features/` (最終特徵層)**
-  * 存放以單一股票代號命名的 `.parquet` 檔案 (例如 `2330_features.parquet`)。此層資料已完成所有混頻對齊與缺失值填補，可直接輸入 Mamba 模型。
-
-### ⏱️ 第二層：混頻時序對齊守則 (Mixed-Frequency Alignment Rules)
-所有對齊皆以「台股每日交易日曆 (Trading Calendar)」為絕對左表 (Left Anchor)。
-1. **日頻資料 (Daily)：** 相同日期直接 `merge`。美股日期 `+1 天` (轉為台股可見日) 後使用 `merge_asof(direction='backward')` 對齊。
-2. **週頻資料 (Weekly)：** 使用 `merge_asof(direction='backward')` 進行時間戳記對齊，確保觀測值為上週五數據。
-3. **月頻/季頻基本面 (Monthly/Quarterly)：** 絕對禁止使用「所屬年月」對齊，必須以 **「公告日 (Announcement Date)」** 作為時間戳記，並使用向後填充 (`ffill`)。
-
-***
-
-# 🐍 MarketMamba 演進史：從踩坑到穩健的量化架構
-
-## 🔴 V1 版本：貪婪的賭徒 (The Greedy Gambler)
-* **設計理念：** 結合 Mamba (時間)、GAT (空間) 與 DDPM (不確定性)，打造深度生成式量化引擎。
-* **致命失敗：** 1. **OOM 記憶體核彈：** 1930 檔股票全連接圖產生近 370 萬條邊，導致 GPU 頻繁 `CUDA Out of Memory`。
-  2. **盲目的貪婪：** 模型只追求「預期獲利最高」，忽略了擴散模型的「波動率 ($\sigma$)」，導致投資組合在黑天鵝事件中崩盤（測試期模擬報酬 -8.95%）。
-
-## 🟢 V2 版本：甦醒的巨獸 (The Awakened Behemoth)
-* **工程升級：** 導入 Lazy Loading 動態切片技術化解 RAM 危機；實施 GNN 稀疏化限制每檔股票僅連線 Top 10，將訓練速度暴降至 3 分鐘/Epoch。
-* **邏輯進化：** Mamba 感受野擴張至 120 天，並導入總經指標。最關鍵的是，改採 **「夏普分數 ($\mu / \sigma$)」** 選股法，成功將模擬報酬逆轉為正 (+1.87%)。
-
-## 🔵 V3.1 終極對齊版：平行軌跡與凱利資金盤 (The Ultimate Aligned Version)
-* **架構升級：** 擴散模型升級為 3D 張量，生成未來 30 天連續軌跡。
-* **縮放對齊：** 導入 `SCALE_FACTOR = 10.0` 解決擴散模型處理微小金融數值的尺度幻覺陷阱。
-* **資金盤決策：** 結合修改版凱利公式 ($f = \mu / \sigma^2 \times 0.5$) 進行資產配置，達成「預測 + 下單佔比」的全自動化決策。
-
-***
-
-# 🚀 MarketMamba V4.0 演進史：從完美藍圖到實戰洗禮 (The Pure Quant Edition)
-
-## 💡 第一階段：完美的開發藍圖與資料庫基石 (The Ideal Blueprint)
-在 V4.0 開發初期，我們建構了頂級的本地 Parquet 資料庫，並制定了極具野心的架構藍圖：
-* **資料集規模：** 總筆數 `3,711,525` 筆，涵蓋 `2,782` 檔標的，時間橫跨 2019 至 2026 年。
-* **多模態特徵 (56維度)：** 包含宏觀國際、微觀籌碼、基本面估值與超額報酬 (Alpha_1d)。
-* **安檢報告 (QA)：** 缺失值與無限值皆為 `0`，並設立 60 日 IPO 隔離牆。
-* **構想中的架構：** 深度 Mamba 擴容 (`d_model=256~512`) 搭配全局注意力機制 (Global Attention)，並使用高達 2.5 倍的方向感知損失函數 (Directional-Aware Loss) 逼迫模型提高勝率。
-
-## 🔴 第二階段：實戰危機與巨獸搶救大作戰 (The Reality & Surgery)
-然而，「過早的最佳化是萬惡之源」。當藍圖投入 A100 進行全市場實盤訓練時，我們遭遇了量化領域最殘酷的兩大災難：
-
-### 💥 危機一：全連接注意力的坍塌 (Attention Collapse)
-* **災難現象：** 全市場 1900 檔股票的預測軌跡一模一樣（停滯在 `-6.65%`）。
-* **大腦斷層掃描：** Mamba 獨立思考層極度健康 (變異數 `0.2135`)，但 Attention 層完全死水 (變異數 `0.0000`)。
-* **微創手術 (The Surgery)：** 因強行全連接導致模型被雜訊淹沒。我們利用殘差連接 (Residual Connection) 直接 **切除** 壞死的 Attention 層，凍結練了 24 小時的 Mamba 權重，僅重新訓練全新的 Output Head，成功找回個股的獨立特徵。
-
-### 💥 危機二：安全常數陷阱 (The Safe Constant Trap)
-* **災難現象：** 切除 Attention 後，預測軌跡變成了一條完美的水平直線，死鎖在微小的 `0.0075`。
-* **解除封印 (Brave Mode)：** 源自於 `方向感知損失函數` 嚴厲的做錯懲罰，引發了模型的恐懼而選擇盲猜安全常數。我們在最終微調階段拔除方向懲罰，回歸純粹的 `MSE Loss`，並使用「差異化學習率」讓模型重新勇敢學習市場的高低起伏。
-
-## 🏆 第三階段：V4.0 最終上線型態 (The Production Baseline)
-經過兩次史詩級的除錯與搶救，目前的 **MarketMamba V4.0 (V4_GodMode_Production)** 暫時擱置了全局 Attention，將 Mamba 對於「120 天長時間序列」的特徵萃取能力推展到極致。這個 **「純血 Mamba 完全體」** 徹底擺脫了坍塌危機，成為本專案強悍且穩定的實盤基準線，目前已成功對接 Streamlit 前端與 GitHub 全自動推播管線。
-
-***
-
-# 🚀 接下來的 Immediate Plan：V4.1 除權息還原股價升級
-
-在 V4.0 穩定運行的同時，我們發現了資料源底層的一個致命隱患，這將是我們下一個優先解決的升級項目。
-
-## ⚠️ 發現的問題 (The Ex-Dividend Trap)
-台股具有「高殖利率」特性。當遇到大型股票除息時，原始股價 (`Close`) 會在一夜之間出現巨大的「假性跳水」。
-1. **目標變數污染：** 模型會將該次除息誤判為 `Future_5d_Return = -20%` 的暴跌，導致學習到錯誤的特徵映射。
-2. **技術指標失真：** 均線、布林通道與乖離率會因為假性跳水而嚴重扭曲。
-
-## 🎯 V4.1 解決方案 (The Adjusted Price Protocol)
-全面將 V4.0 的基石資料從「原始股價」替換為「還原權息股價 (Adjusted Price)」。
-1. **API 替換：** 將 FinMind 呼叫的 dataset 參數由 `TaiwanStockPrice` 更改為 `TaiwanStockAdjustedPrice`。
-2. **資料庫重建：** 在 Google Drive 建立全新的 `Raw/Daily_Adjusted_Price` 資料夾。
-3. **特徵大融合與重算：** 確保所有依賴價格的衍生特徵 (`Return_1d`, `MA_5`, `Future_5d_Return`) 皆使用 `AdjustedClose` 進行計算。
-*(預期結果：消滅除權息導致的報酬率異常，大幅提升模型在每年 6~8 月除權息旺季的預測穩定度。)*
-
-***
-
-## 🚀 V5.0 機構級動態圖門控架構 (MarketMamba_V5)
-**Status: Deployed & Fine-Tuned** | **Core Strategy: Cross-Sectional Alpha Trajectory**
-
-V5.0 是一次徹底的架構重構，我們摒棄了傳統時間序列模型「單打獨鬥」與「只預測單一數值」的侷限性，將模型升級為具備全市場上帝視角的 30 天軌跡預測引擎。
-
-### 🧠 核心架構升級 (Architecture)
-* **Time-Series Engine:** 採用 4 層 **Mamba (State Space Model)** 架構，完美捕捉 120 天長序列的微小特徵變化，解決 Transformer 記憶體消耗過大的痛點。
-* **Cross-Sectional Engine:** 導入 **Dynamic GAT (動態圖神經網路)**。模型在每個時間步會自動在全市場中尋找 $K=10$ 檔特徵最相似的「兄弟股」，並透過注意力機制 (Attention) 互相參考動能，完美還原真實股市中「族群連動」與「資金輪動」的物理現象。
-
-### 🎯 預測目標 (Prediction Target)
-* **不再是單一漲跌幅**，而是直接輸出 **未來 30 天的累積 Alpha (超額報酬) 軌跡**。
-* 基準指標採用純正的 **加權股價指數 (TWII)**，模型預測的 $Y$ 值為個股完全剝離大盤漲跌後的真實動能。
-
-### 🛡️ 秘密武器：防坍塌軌跡損失函數 (EnhancedAntiCollapseLoss)
-在量化金融預測中，模型極易因為 MSE (均方誤差) 的特性而陷入「預測一條趨近於 0 的平滑死魚線」以求安全下莊的陷阱。V5.0 獨創了帶有波動率懲罰的自定義 Loss：
-* $Loss = MSE(Y_{pred}, Y_{true}) + \lambda \cdot \max(0, (\alpha \cdot \sigma_{true}) - \sigma_{pred})$
-* 強制要求模型預測的軌跡必須達到真實市場波動的 50% ($\alpha = 0.5$)，否則將給予嚴厲懲罰。這徹底逼迫模型放棄裝死，勇敢給出具備真實起伏的交易訊號。
-
-### 🏭 頂級資料工程 (Data Pipeline & Inference)
-* **VIP 國家隊與除權息防護網**：整合 FinMind API，獨家加入「八大行庫 20 日累積淨買賣超」與「除權息標籤」，讓模型具備解讀政府護盤底線與除息價格斷層的能力。
-* **高包容力上帝視角對齊**：推論階段實作了「智慧日期對齊引擎」，能動態包容歷史資料的小破洞，確保全市場近 1700 檔股票能在 FP32 全精度下，穩定且安全地構建 GAT 關聯矩陣而不發生崩潰。
-
-***
-### 決策最後一哩路：強化學習交易員 (RL Trading Agent)
-* **PPO 代理人：** 將 Mamba 生成的 30 天平行宇宙機率雲，作為狀態空間 (State) 輸入給強化學習模型 (PPO)。訓練一個 AI 交易員，讓它在模擬環境中學習如何根據不確定性進行「滿倉、減碼、空手」的最佳動態部位控管，取代靜態的凱利公式。
-
-## 🚀 開發藍圖：MarketMamba v6.0 (多模態消息面與敘事整合)
-
-> **當前進度：** v5.0 (動態圖 GAT + Mamba) 正在進行實戰模擬投資（Paper Trading）。v6.0 的核心目標是銜接「數值價量」與「市場敘事」之間的資訊斷層。
-
-### 📌 進化目標
-旨在解決純數值模型在面對「黑天鵝事件」（如地緣政治衝突、政策轉向）時的預測盲點。透過引入多語系情緒分析與基本面邏輯，提升模型在極端盤勢下的穩定性。
-
-### 🏗️ 預期架構：雙流混合 Mamba (Dual-Stream Mamba)
-v6.0 將從單一數值流演進為雙軌並行的混合系統：
-
-1. **數值流 (繼承自 v5.0):**
-   - **Mamba Blocks:** 負責捕捉 OHLCV 與技術指標的長程時間依賴性。
-   - **動態圖 (Dynamic GAT):** 根據特徵相似度，模擬「兄弟股」之間的盤中連動效應。
-
-2. **語境流 (v6.0 新增):**
-   - **雙生 FinBERT 編碼器:** 同時部署針對台股（中文）與美股總經/科技新聞（英文）微調的專用模型。
-   - **交叉注意力融合 (Cross-Attention):** 引入門控機制，讓模型隱藏狀態能根據情緒強度，動態調整不同消息的權重（例如：營收創高、違約風險）。
+```
+MarketMamba/
+├── marketmamba/                  # 核心 Python 套件
+│   ├── config.py                # 全域設定 (路徑/Token/超參數)
+│   ├── data/
+│   │   ├── fetcher.py           # FinMind + yfinance 資料擷取
+│   │   ├── merger.py            # 跨頻率時序融合 + IFRS 修復
+│   │   ├── feature_engineer.py  # 特徵煉金 (技術指標/VIP/營收YoY)
+│   │   └── cleaner.py          # 終極清洗 (NaN/Inf/IPO隔離)
+│   ├── models/
+│   │   ├── architecture.py      # MarketMambaV55 (84維) / V5 (46維)
+│   │   ├── inference.py         # 推論 + 夏普/凱利 + 自動版本偵測
+│   │   └── trainer.py          # 訓練迴圈 + Early Stopping
+│   ├── pattern/
+│   │   ├── detectors.py         # 六大型態偵測函數
+│   │   └── scanner.py          # 全市場多時間框架掃描
+│   ├── sentiment/               # 🆕 雙軌情緒引擎
+│   │   ├── crawler_en.py        # Google News RSS 英文爬蟲
+│   │   ├── crawler_cn.py        # Google News RSS 中文爬蟲
+│   │   ├── finbert_en.py        # ProsusAI/finbert 英文情緒
+│   │   ├── finbert_cn.py        # chinese-finbert 中文情緒
+│   │   ├── auto_labeler.py      # 股價反應自動標籤產生器
+│   │   └── integrator.py       # 情緒特徵整合 + 指數衰減
+│   ├── knowledge/               # 🆕 知識圖譜
+│   │   ├── sector_mapping.py    # TWSE 24 大產業分類
+│   │   └── graph_builder.py    # KG + cosine 混合邊建構
+│   ├── robot/
+│   │   └── portfolio_manager.py # 調倉 + 帳本管理
+│   └── deploy/
+│       └── publisher.py         # GitHub 推送
+├── notebooks/
+│   ├── V5_5_Pipeline.py         # 📋 日常推論管線 (Colab 用)
+│   └── V5_5_Training.py        # 📋 模型訓練管線 (Colab 用)
+├── app.py                       # Streamlit 前端
+├── requirements.txt
+└── README.md
+```
 
 ---
 
-### 🗺️ 技術開發路徑 (Roadmap)
+## 🚀 快速開始
 
-| 階段 | 里程碑 | 核心功能 |
-| :--- | :--- | :--- |
-| **第一階段** | **七年歷史新聞庫** | 在本地環境利用多執行緒爬取 2019-2026 歷史資料，並進行 FinBERT 預處理。 |
-| **第二階段** | **情緒嵌入 (Embedding)** | 將原始文本轉化為 128 維稠密向量。針對無新聞的日子實作「前向填充 (Forward Fill)」。 |
-| **第三階段** | **知識圖譜 (KG) 導入** | 將 GAT 的相似度連線優化為「產業上下游」硬性關係（例如：特斯拉 -> 三星 -> 設備商）。 |
-| **第四階段** | **美股領先指標同步** | 將美股科技股即時情緒納入特徵，強化對台股（衛星市場）的領先預測力。 |
+### Colab 日常推論 (每日收盤後)
 
-### ⚖️ 數據對齊與防偏誤協定
-為防止 **Look-ahead Bias (先見偏誤)**，v6.0 嚴格執行以下對齊標準：
-- **公告日對齊：** 財報數據必須以「正式公告日期」為基準，而非會計季度末。
-- **時區標準化：** 隔夜美股消息必須正確對齊至隔日的台股開盤 (T+1)。
-- **情緒背離偵測：** 模型將學習辨識「利多不漲」等背離訊號（例如：強烈利多 + 股價下跌 = 出貨訊號）。
+1. 打開 Google Colab，新增一個 Notebook
+2. 將 Runtime 類型改為 **GPU (T4)**
+3. 打開 `notebooks/V5_5_Pipeline.py`
+4. 依序將每個 `# %% Cell` 區塊複製貼入獨立的 Cell
+5. 從第一個 Cell 開始依序執行
+
+```python
+# Cell 1: 環境建置 (克隆 Repo + 安裝依賴 + 掛載 Drive)
+# Cell 2: 資料同步 (FinMind + yfinance)
+# Cell 3: 跨頻融合 + 特徵工程
+# Cell 4: 消息面情緒 (可選，首次可跳過)
+# Cell 5: AI 推論 (Mamba + GAT)
+# Cell 6: 型態掃描
+# Cell 7: 機器人調倉
+# Cell 8: 推送 GitHub → 觸發 Streamlit 更新
+```
+
+### Colab 模型訓練 (需要重訓時)
+
+打開 `notebooks/V5_5_Training.py`，同樣的方式操作：
+
+```python
+# Cell 1: 環境建置
+# Cell 2: 資料同步 + 特徵工程
+# Cell 3: 加入情緒特徵 (可選，启用後 input_dim 46→84)
+# Cell 4: 開始訓練 (tqdm 進度條即時顯示)
+# Cell 5: Loss 曲線視覺化
+# Cell 6: 用新模型跑推論驗證
+# Cell 7: 推送預測結果
+```
+
+### 本機開發
+
+```bash
+# 克隆
+git clone https://github.com/FrankChen0930/MarketMamba.git
+cd MarketMamba
+
+# 安裝依賴
+pip install -r requirements.txt
+
+# 啟動前端
+streamlit run app.py
+```
 
 ---
-*The pursuit of Alpha never stops.*
+
+## 🧠 V5.5 vs V5.0 差異
+
+| 維度 | V5.0 | V5.5 |
+|------|------|------|
+| 輸入維度 | 46 (量價籌碼) | **84** (+38 情緒特徵) |
+| 圖建構 | 純 cosine similarity KNN | **KG-Enhanced** (cosine + 產業分類) |
+| 消息面 | ❌ 無 | ✅ 雙軌 FinBERT (EN+CN) |
+| 情緒衰減 | — | 指數衰減 (半衰期 3 天) |
+| 季報對齊 | +90 天粗估 | **IFRS 法定截止日** |
+| 錯誤處理 | `except: pass` | `logger.warning()` + 分類策略 |
+| 帳本日期 | 混亂 (有的 YYYY-MM-DD HH:MM) | 統一 **YYYY-MM-DD** |
+
+### 向下相容
+
+推論引擎會自動偵測特徵矩陣中是否含有情緒特徵：
+- **有** → V5.5 模式 (84 維輸入，KG-GAT)
+- **無** → 自動退回 V5.0 模式 (46 維輸入，cosine KNN)
+
+現有的 `V5_DynamicGAT_Production.pth` 權重可直接使用，無需重訓。
+
 ---
-*Built with passion and tons of coffee. ☕*
+
+## 📰 消息面情緒引擎
+
+### 雙軌 FinBERT
+
+| 模型 | 用途 | 來源 |
+|------|------|------|
+| `ProsusAI/finbert` | 英文國際新聞 | Reuters, CNBC, Bloomberg |
+| `hw2942/chinese-finbert-for-sentiment-analysis` | 中文台股新聞 | 鉅亨網, UDN, 工商時報 |
+
+### 情緒特徵清單 (38 維)
+
+| 類型 | 欄位 | 說明 |
+|------|------|------|
+| 標量 (6) | `Sent_Stock_CN/EN` | 個股情緒 [-1, +1] |
+| | `Sent_Market_TW/US` | 大盤情緒 |
+| | `Sent_Geopolitical` | 地緣政治風險 |
+| | `News_Volume_Stock` | 新聞數量 (log) |
+| Embedding (32) | `Sent_Embed_EN_0~15` | 英文 FinBERT [CLS] 投影 |
+| | `Sent_Embed_CN_0~15` | 中文 FinBERT [CLS] 投影 |
+
+### Auto-Labeling (自動標籤)
+
+用新聞發布後 5 天的累積 Alpha 來自動標註情緒：
+- Alpha > +1% → Positive
+- Alpha < -1% → Negative
+- 其他 → Neutral
+
+累積 ≥ 1000 條標註後，可微調 FinBERT 提升精度。
+
+---
+
+## 🕸️ 知識圖譜 GAT
+
+混合邊建構公式：
+
+```
+edge_score = 0.7 × cosine_similarity + 0.3 × sector_similarity
+```
+
+- `cosine_similarity`：Mamba 最後時間步輸出特徵的相似度
+- `sector_similarity`：TWSE 產業分類 (同產業=0.5, 不同=0.0)
+
+覆蓋 24 大產業分類，含半導體、金融、航運等主要板塊。
+
+---
+
+## 📐 型態學雷達
+
+六大經典結構 × 四時間框架：
+
+| 型態 | 訊號 | 特色 |
+|------|------|------|
+| 🟡 標準 W底 | 做多 | 動態傾斜頸線 |
+| 🟢 破底翻 | 強多 | 假跌破 (Spring) |
+| 🔴 M頭 | 偏空 | 容許 15% 假突破誘多 |
+| 🟣 頭肩底 | 做多 | 傾斜頸線 + 等幅測距 |
+| 🔵 收斂三角 | 方向未定 | 1/2~3/4 時間密碼 |
+| 💀 上飄旗跌破 | 做空 | 波段跌幅測距 |
+
+---
+
+## ⚙️ 技術棧
+
+- **時序模型**：Mamba SSM (mamba_ssm 2.3.0)
+- **圖網路**：GATv2Conv (PyTorch Geometric)
+- **情緒分析**：HuggingFace Transformers (FinBERT)
+- **資料源**：FinMind API + yfinance
+- **前端**：Streamlit
+- **部署**：GitHub → Streamlit Cloud
+
+---
+
+## 📝 License
+
+MIT License © 2024-2026 FrankChen
