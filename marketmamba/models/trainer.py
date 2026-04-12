@@ -32,6 +32,7 @@ class AlphaTrajectoryDataset(Dataset):
 
     對每支股票的時序切片成 (seq_len) 視窗，
     標籤為未來 pred_days 天的累積 Alpha 軌跡
+    (使用記憶體最佳化：紀錄 index，動態切片)
     """
 
     def __init__(self, df: pd.DataFrame,
@@ -40,7 +41,9 @@ class AlphaTrajectoryDataset(Dataset):
                  pred_days: int = 30):
         self.seq_len = seq_len
         self.pred_days = pred_days
-        self.samples = []  # list of (features_array, labels_array)
+        
+        self.stock_data = {}      # {stock_id: {'features': np.ndarray, 'alpha': np.ndarray}}
+        self.valid_indices = []   # list of (stock_id, start_idx)
 
         grouped = df.sort_values(['stock_id', 'Date']).groupby('stock_id')
         total_window = seq_len + pred_days
@@ -49,37 +52,42 @@ class AlphaTrajectoryDataset(Dataset):
             if len(group) < total_window:
                 continue
 
-            features = group[feature_cols].values
+            features = group[feature_cols].values.astype(np.float32)
             returns = group['Return_1d'].values
             twii_returns = group['TWII_Return_1d'].values
-            alpha_daily = returns - twii_returns
+            alpha_daily = (returns - twii_returns).astype(np.float32)
 
-            # 滑動視窗
+            self.stock_data[stock_id] = {
+                'features': features,
+                'alpha': alpha_daily
+            }
+
+            # 記錄每天為起點的 index
             for i in range(len(group) - total_window + 1):
-                x = features[i: i + seq_len].copy()
+                self.valid_indices.append((stock_id, i))
 
-                # 逐視窗 Z-Score 標準化
-                x_mean = x.mean(axis=0)
-                x_std = x.std(axis=0) + 1e-8
-                x = (x - x_mean) / x_std
-
-                # 未來 pred_days 天的累積 Alpha
-                future_alpha = alpha_daily[i + seq_len: i + total_window]
-                y = np.cumsum(future_alpha)
-
-                self.samples.append((
-                    x.astype(np.float32),
-                    y.astype(np.float32),
-                ))
-
-        logger.info(f"📦 Dataset 建構完成: {len(self.samples)} 個樣本")
+        logger.info(f"📦 Dataset 建構完成: {len(self.valid_indices)} 個樣本")
 
     def __len__(self):
-        return len(self.samples)
+        return len(self.valid_indices)
 
     def __getitem__(self, idx):
-        x, y = self.samples[idx]
-        return torch.from_numpy(x), torch.from_numpy(y)
+        stock_id, start_idx = self.valid_indices[idx]
+        data = self.stock_data[stock_id]
+
+        # 取得特徵視窗
+        x = data['features'][start_idx : start_idx + self.seq_len].copy()
+
+        # 逐視窗 Z-Score 標準化
+        x_mean = x.mean(axis=0)
+        x_std = x.std(axis=0) + 1e-8
+        x = (x - x_mean) / x_std
+
+        # 未來 pred_days 天的累積 Alpha
+        future_alpha = data['alpha'][start_idx + self.seq_len : start_idx + self.seq_len + self.pred_days]
+        y = np.cumsum(future_alpha)
+
+        return torch.from_numpy(x).float(), torch.from_numpy(y).float()
 
 
 # ==========================================
