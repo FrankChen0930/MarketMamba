@@ -72,20 +72,46 @@ else:
 
 # %% Cell 2: 準備訓練資料
 # ==========================================
-# 📊 資料同步 + 特徵工程
+# 📊 資料同步 + 特徵工程 (帶快取加速)
 # ==========================================
-from marketmamba.data.fetcher import run_full_data_sync
-from marketmamba.data.merger import merge_all_data
-from marketmamba.data.feature_engineer import build_features
-from marketmamba.data.cleaner import clean_data
+# 首次執行：全量同步 + 特徵工程 → 存檔為單一 parquet (~20 分鐘)
+# 重啟後再執行：直接讀快取 (~10 秒)
+# 需要重新從零跑：把 FORCE_REBUILD 改為 True
+# ==========================================
 
-# 資料同步
-trading_days = run_full_data_sync()
+import os
+from marketmamba.config import PROCESSED_DIR
 
-# 特徵工程
-df = merge_all_data()
-df = build_features(df)
-df = clean_data(df)
+FORCE_REBUILD = False  # ← 改為 True 強制重建整個矩陣
+MATRIX_CACHE = os.path.join(PROCESSED_DIR, 'V55_Mamba_Matrix.parquet')
+
+if not FORCE_REBUILD and os.path.exists(MATRIX_CACHE):
+    # ⚡ 快速載入 (10 秒內)
+    import pandas as pd
+    print(f"⚡ 偵測到快取矩陣，直接載入...")
+    print(f"   路徑: {MATRIX_CACHE}")
+    df = pd.read_parquet(MATRIX_CACHE)
+    print(f"   ✅ 載入完成！")
+else:
+    # 🐌 首次完整建構 (~20 分鐘)
+    from marketmamba.data.fetcher import run_full_data_sync
+    from marketmamba.data.merger import merge_all_data
+    from marketmamba.data.feature_engineer import build_features
+    from marketmamba.data.cleaner import clean_data
+
+    # 資料同步
+    trading_days = run_full_data_sync()
+
+    # 特徵工程
+    df = merge_all_data()
+    df = build_features(df)
+    df = clean_data(df)
+
+    # 💾 儲存快取 (下次重啟直接讀這個)
+    os.makedirs(PROCESSED_DIR, exist_ok=True)
+    df.to_parquet(MATRIX_CACHE, engine='pyarrow')
+    print(f"\n💾 已儲存快取矩陣: {MATRIX_CACHE}")
+    print(f"   下次重啟直接讀取，不用再跑 20 分鐘！")
 
 print(f"\n📊 訓練矩陣: {df.shape[0]:,} 列 × {df.shape[1]} 欄")
 print(f"📅 時間範圍: {df['Date'].min()} ~ {df['Date'].max()}")
