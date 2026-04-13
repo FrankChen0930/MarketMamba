@@ -1,18 +1,20 @@
 """
-MarketMamba V5.5 — 訓練模組 (A100 極速版)
+MarketMamba V5.5 — 訓練模組 (記憶體最佳化版)
 負責：DataLoader 建構、訓練迴圈、Early Stopping、模型儲存
 
-核心最佳化：
-  1. Z-Score 預標準化 per-stock (不再 per-window)，建構 <10 秒
-  2. Zero-copy Dataset：__getitem__ 只做 numpy slice，無額外計算
-  3. AMP 混合精度 (FP16) + Tensor Core 加速
-  4. cuDNN benchmark + non_blocking transfer
-  5. 預建構張量快取到 Drive (重啟秒讀)
+記憶體最佳化：
+  - DataFrame 提前轉 float32 (省 50% RAM)
+  - valid_indices 用 numpy int32 array 存 (省 95% RAM)
+  - 建構完立即釋放 df
+  - DataLoader num_workers=2 避免 fork 記憶體翻倍
+  - AMP FP16 訓練
 """
 
+import gc
 import os
 import random
 import logging
+import pickle
 from typing import Optional
 
 import numpy as np
@@ -32,30 +34,40 @@ logger = logging.getLogger('MarketMamba.trainer')
 
 
 # ==========================================
-# 高速 Dataset (Zero-Copy Sliding Window)
+# 高速 + 低記憶體 Dataset
 # ==========================================
 class FastAlphaDataset(Dataset):
     """
     極速滑動視窗 Dataset
 
-    核心：Z-Score 在 __init__ 時 per-stock 一次算完
-    __getitem__ 只做 numpy slice + cumsum(30)，幾乎零開銷
+    記憶體：stock_arrays 在所有 workers 間共享 (不複製)
+    __getitem__: numpy slice + cumsum(30)，零開銷
     """
 
-    def __init__(self, stock_arrays: dict, seq_len: int, pred_days: int,
-                 valid_indices: list):
+    def __init__(self, stock_ids: list, stock_arrays: dict,
+                 seq_len: int, pred_days: int,
+                 idx_stock: np.ndarray, idx_start: np.ndarray):
+        """
+        Args:
+            stock_ids: 所有股票 ID 清單 (用 int index 對應)
+            stock_arrays: {stock_id: (features, alpha)}
+            idx_stock: (N,) int16 — 指向 stock_ids 的 index
+            idx_start: (N,) int16 — 窗口起始位置
+        """
+        self.stock_ids = stock_ids
         self.stock_arrays = stock_arrays
         self.seq_len = seq_len
         self.pred_days = pred_days
-        self.valid_indices = valid_indices
+        self.idx_stock = idx_stock
+        self.idx_start = idx_start
 
     def __len__(self):
-        return len(self.valid_indices)
+        return len(self.idx_stock)
 
     def __getitem__(self, idx):
-        stock_id, start = self.valid_indices[idx]
-        start = int(start)  # 確保 int (快取載入可能變 str)
-        features, alpha = self.stock_arrays[stock_id]
+        sid = self.stock_ids[self.idx_stock[idx]]
+        start = int(self.idx_start[idx])
+        features, alpha = self.stock_arrays[sid]
 
         x = features[start : start + self.seq_len].copy()
         y = np.cumsum(alpha[start + self.seq_len : start + self.seq_len + self.pred_days]).copy()
@@ -66,49 +78,62 @@ class FastAlphaDataset(Dataset):
 def _prepare_stock_arrays(df: pd.DataFrame,
                           feature_cols: list[str],
                           seq_len: int,
-                          pred_days: int) -> tuple[dict, list]:
+                          pred_days: int) -> tuple:
     """
-    預計算每支股票的標準化特徵 + Alpha 序列
-
-    Z-Score 標準化在這裡 per-stock 一次完成，不再 per-window
-    (與原版 V5.0 一致的標準化方式)
+    預計算每支股票的標準化特徵 + Alpha 序列 (記憶體最佳化版)
 
     Returns:
-        stock_arrays: {stock_id: (features_normed, alpha_daily)}
-        valid_indices: [(stock_id, start_idx), ...]
+        stock_ids: list[str]
+        stock_arrays: {stock_id: (features_f32, alpha_f32)}
+        idx_stock: np.ndarray int16 (指向 stock_ids)
+        idx_start: np.ndarray int16 (窗口起始位置)
     """
     total_window = seq_len + pred_days
     stock_arrays = {}
-    valid_indices = []
+    stock_ids = []
 
-    grouped = df.sort_values(['stock_id', 'Date']).groupby('stock_id')
-    stock_count = 0
+    # 暫存 indices，最後轉 numpy
+    tmp_stock_idx = []
+    tmp_start_idx = []
+
+    # 排序一次就好 (inplace 省記憶體)
+    df.sort_values(['stock_id', 'Date'], inplace=True)
+    grouped = df.groupby('stock_id')
 
     for stock_id, group in tqdm(grouped, desc="📦 預處理股票", unit="stock"):
         if len(group) < total_window:
             continue
 
-        features = group[feature_cols].values.astype(np.float32)
+        features = group[feature_cols].values  # 已經是 float32 (從外面轉好的)
 
-        # Per-stock Z-Score (向量化，一次算完整支股票)
+        # Per-stock Z-Score
         f_mean = features.mean(axis=0)
         f_std = features.std(axis=0) + 1e-8
-        features = (features - f_mean) / f_std
+        features = ((features - f_mean) / f_std).astype(np.float32)
 
         returns = group['Return_1d'].values.astype(np.float32)
         twii_returns = group['TWII_Return_1d'].values.astype(np.float32)
         alpha_daily = returns - twii_returns
 
-        stock_arrays[stock_id] = (features, alpha_daily)
+        sid_idx = len(stock_ids)
+        stock_ids.append(str(stock_id))
+        stock_arrays[str(stock_id)] = (features, alpha_daily)
 
         n_windows = len(group) - total_window + 1
-        for i in range(n_windows):
-            valid_indices.append((stock_id, i))
+        tmp_stock_idx.extend([sid_idx] * n_windows)
+        tmp_start_idx.extend(range(n_windows))
 
-        stock_count += 1
+    # 轉為 numpy (比 list of tuples 省 95% 記憶體)
+    idx_stock = np.array(tmp_stock_idx, dtype=np.int16)
+    idx_start = np.array(tmp_start_idx, dtype=np.int16)
 
-    print(f"   ✅ {stock_count} 支股票, {len(valid_indices):,} 個樣本")
-    return stock_arrays, valid_indices
+    del tmp_stock_idx, tmp_start_idx
+    gc.collect()
+
+    print(f"   ✅ {len(stock_ids)} 支股票, {len(idx_stock):,} 個樣本")
+    print(f"   📏 indices 記憶體: {(idx_stock.nbytes + idx_start.nbytes) / 1024**2:.1f} MB")
+
+    return stock_ids, stock_arrays, idx_stock, idx_start
 
 
 # ==========================================
@@ -128,7 +153,7 @@ def train_model(
     use_v5_compat: bool = False,
 ) -> tuple:
     """
-    完整訓練管線 (A100 極速版)
+    完整訓練管線 (記憶體最佳化版)
 
     Returns:
         (model, history_dict)
@@ -152,7 +177,7 @@ def train_model(
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     use_amp = (device.type == 'cuda')
-    n_workers = min(4, os.cpu_count() or 2)
+    n_workers = min(2, os.cpu_count() or 1)  # T4 用 2 就夠，避免 fork 爆 RAM
 
     print(f"🔧 訓練設定:")
     print(f"   特徵維度: {len(feature_cols)}")
@@ -160,84 +185,99 @@ def train_model(
     print(f"   Early Stop: {early_stop_patience} epochs")
     print(f"   AMP: {'✅' if use_amp else '❌'}, Workers: {n_workers}")
 
-    # === 確保欄位存在 ===
+    # === 確保欄位存在 + 轉 float32 省 RAM ===
     for col in feature_cols:
         if col not in df.columns:
             df[col] = 0.0
+
+    # 提前轉 float32 (省 50% RAM)
+    float_cols = [c for c in df.columns if df[c].dtype == np.float64]
+    if float_cols:
+        df[float_cols] = df[float_cols].astype(np.float32)
+        print(f"   📉 已將 {len(float_cols)} 欄轉為 float32 (省 RAM)")
+
     df = df.replace([np.inf, -np.inf], np.nan).fillna(0.0)
 
     # === 建構 Dataset (快取機制) ===
-    import pickle
     cache_path = os.path.join(PROCESSED_DIR, 'V55_train_cache.pkl')
 
-    stock_arrays = None
+    stock_ids = None
 
-    # 嘗試讀快取
     if os.path.exists(cache_path):
         try:
             print("⚡ 偵測到訓練快取，直接載入...")
             with open(cache_path, 'rb') as f:
                 cached = pickle.load(f)
+            stock_ids = cached['stock_ids']
             stock_arrays = cached['stock_arrays']
-            valid_indices = cached['valid_indices']
-            print(f"   ✅ {len(stock_arrays)} 支股票, {len(valid_indices):,} 個樣本")
+            idx_stock = cached['idx_stock']
+            idx_start = cached['idx_start']
+            print(f"   ✅ {len(stock_ids)} 支股票, {len(idx_stock):,} 個樣本")
         except Exception as e:
             print(f"   ⚠️ 快取載入失敗 ({e})，重新建構...")
-            stock_arrays = None
+            stock_ids = None
 
-    if stock_arrays is None:
+    if stock_ids is None:
         print("📦 建構訓練資料集...")
-        stock_arrays, valid_indices = _prepare_stock_arrays(
+        stock_ids, stock_arrays, idx_stock, idx_start = _prepare_stock_arrays(
             df, feature_cols,
             seq_len=MODEL_CONFIG['seq_len'],
             pred_days=MODEL_CONFIG['pred_days'],
         )
 
-        # 儲存快取 (pickle 保證型態正確)
+        # 儲存快取
         try:
             os.makedirs(PROCESSED_DIR, exist_ok=True)
             with open(cache_path, 'wb') as f:
-                pickle.dump({'stock_arrays': stock_arrays, 'valid_indices': valid_indices}, f)
+                pickle.dump({
+                    'stock_ids': stock_ids,
+                    'stock_arrays': stock_arrays,
+                    'idx_stock': idx_stock,
+                    'idx_start': idx_start,
+                }, f)
             cache_mb = os.path.getsize(cache_path) / 1024**2
             print(f"   💾 快取已儲存: {cache_mb:.0f} MB (下次秒讀)")
         except Exception as e:
             print(f"   ⚠️ 快取儲存失敗: {e}")
 
-    if len(valid_indices) == 0:
+    # 釋放 df 記憶體 (不再需要)
+    del df
+    gc.collect()
+
+    if len(idx_stock) == 0:
         raise ValueError("❌ 資料集為空！請檢查資料是否足夠")
 
-    # Train/Val 切分
-    n_total = len(valid_indices)
+    # Train/Val 切分 (用 numpy 操作，不建新 list)
+    n_total = len(idx_stock)
     val_size = int(n_total * val_ratio)
     train_size = n_total - val_size
 
-    rng = random.Random(seed)
-    shuffled = list(range(n_total))
-    rng.shuffle(shuffled)
-
-    train_indices = [valid_indices[i] for i in shuffled[:train_size]]
-    val_indices = [valid_indices[i] for i in shuffled[train_size:]]
+    perm = np.random.RandomState(seed).permutation(n_total)
+    train_perm = perm[:train_size]
+    val_perm = perm[train_size:]
 
     print(f"   訓練集: {train_size:,} 樣本, 驗證集: {val_size:,} 樣本")
 
     train_set = FastAlphaDataset(
-        stock_arrays, MODEL_CONFIG['seq_len'], MODEL_CONFIG['pred_days'], train_indices
+        stock_ids, stock_arrays,
+        MODEL_CONFIG['seq_len'], MODEL_CONFIG['pred_days'],
+        idx_stock[train_perm], idx_start[train_perm],
     )
     val_set = FastAlphaDataset(
-        stock_arrays, MODEL_CONFIG['seq_len'], MODEL_CONFIG['pred_days'], val_indices
+        stock_ids, stock_arrays,
+        MODEL_CONFIG['seq_len'], MODEL_CONFIG['pred_days'],
+        idx_stock[val_perm], idx_start[val_perm],
     )
 
     train_loader = DataLoader(
         train_set, batch_size=batch_size, shuffle=True,
         num_workers=n_workers, pin_memory=True,
         persistent_workers=(n_workers > 0),
-        prefetch_factor=4 if n_workers > 0 else None,
     )
     val_loader = DataLoader(
         val_set, batch_size=batch_size * 2, shuffle=False,
         num_workers=n_workers, pin_memory=True,
         persistent_workers=(n_workers > 0),
-        prefetch_factor=4 if n_workers > 0 else None,
     )
 
     # === 建構模型 ===
@@ -337,7 +377,6 @@ def train_model(
         history['val_loss'].append(avg_val)
         history['lr'].append(current_lr)
 
-        # GPU 即時用量
         gpu_info = ""
         if torch.cuda.is_available():
             alloc = torch.cuda.memory_allocated() / 1024**3
@@ -350,7 +389,6 @@ def train_model(
             f"{'🟢 Best!' if avg_val < best_val_loss else ''}"
         )
 
-        # Early Stopping
         if avg_val < best_val_loss:
             best_val_loss = avg_val
             patience_counter = 0
