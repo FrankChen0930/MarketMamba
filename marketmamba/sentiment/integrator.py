@@ -27,22 +27,31 @@ logger = logging.getLogger('MarketMamba.integrator')
 
 def _decay_sentiment(series: pd.Series, half_life: int = SENTIMENT_HALF_LIFE) -> pd.Series:
     """
-    情緒分數指數衰減：模擬消息效應隨時間遞減
+    情緒分數指數衰減：模擬消息效應隨時間遞減 (向量化版本)
 
-    score_t = score_{t-1} × 0.5^(1/half_life)
-
-    無新聞的日子繼承前日情緒但逐步衰減至 0
+    從最後一個非零值開始，往後每天乘以 decay_factor
+    大幅加速：不再逐元素 Python loop
     """
+    vals = series.values.copy().astype(np.float64)
+
+    # 快速檢查：全部為零就直接返回
+    nonzero_mask = (vals != 0) & ~np.isnan(vals)
+    if not nonzero_mask.any():
+        return pd.Series(np.zeros(len(vals)), index=series.index)
+
     decay_factor = 0.5 ** (1 / half_life)
-    vals = series.values.copy()
 
-    for i in range(1, len(vals)):
-        if np.isnan(vals[i]) or vals[i] == 0:
-            prev = vals[i - 1]
-            if not np.isnan(prev) and prev != 0:
-                vals[i] = prev * decay_factor
+    # 找到所有有值的位置，從每個位置開始向後衰減
+    nonzero_indices = np.where(nonzero_mask)[0]
+    last_nz = nonzero_indices[-1]
 
-    return pd.Series(vals, index=series.index).fillna(0)
+    # 只衰減最後一個有值位置之後的部分
+    if last_nz < len(vals) - 1:
+        remaining = len(vals) - last_nz - 1
+        decay_powers = decay_factor ** np.arange(1, remaining + 1)
+        vals[last_nz + 1:] = vals[last_nz] * decay_powers
+
+    return pd.Series(np.nan_to_num(vals, nan=0.0), index=series.index)
 
 
 def _is_geopolitical(title: str) -> bool:
@@ -217,14 +226,22 @@ def compute_sentiment_features(df: pd.DataFrame,
         for i, col in enumerate(SENTIMENT_EMBED_CN_COLS):
             df.loc[stock_mask, col] = sent_data['embed_cn'][i]
 
-    # === 6. Forward Fill + 指數衰減 ===
+    # === 6. Forward Fill + 指數衰減 (智慧跳過) ===
     print("  ⏳ 情緒衰減計算...")
     all_sentiment_cols = SENTIMENT_SCALAR_COLS + SENTIMENT_EMBED_EN_COLS + SENTIMENT_EMBED_CN_COLS
+    skipped, processed = 0, 0
     for col in tqdm(all_sentiment_cols, desc="  衰減處理", unit="col"):
-        if col in df.columns:
-            df[col] = df.groupby('stock_id')[col].transform(
-                lambda x: _decay_sentiment(x)
-            )
+        if col not in df.columns:
+            continue
+        # 智慧跳過：整欄全為 0 就不用做 groupby (99% 的情況)
+        if (df[col] == 0).all() or df[col].isna().all():
+            skipped += 1
+            continue
+        df[col] = df.groupby('stock_id')[col].transform(
+            lambda x: _decay_sentiment(x)
+        )
+        processed += 1
+    print(f"     處理: {processed} 欄, 跳過: {skipped} 欄 (全為零)")
 
     df[all_sentiment_cols] = df[all_sentiment_cols].fillna(0)
 
