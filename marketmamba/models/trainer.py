@@ -78,15 +78,16 @@ class FastAlphaDataset(Dataset):
 def _prepare_stock_arrays(df: pd.DataFrame,
                           feature_cols: list[str],
                           seq_len: int,
-                          pred_days: int) -> tuple:
+                          pred_days: int,
+                          stride: int = 1) -> tuple:
     """
     預計算每支股票的標準化特徵 + Alpha 序列 (記憶體最佳化版)
 
+    Args:
+        stride: 窗口步幅。stride=10 表示每 10 天取一個樣本 (減少 90% 重複)
+
     Returns:
-        stock_ids: list[str]
-        stock_arrays: {stock_id: (features_f32, alpha_f32)}
-        idx_stock: np.ndarray int16 (指向 stock_ids)
-        idx_start: np.ndarray int16 (窗口起始位置)
+        stock_ids, stock_arrays, idx_stock, idx_start
     """
     total_window = seq_len + pred_days
     stock_arrays = {}
@@ -120,8 +121,9 @@ def _prepare_stock_arrays(df: pd.DataFrame,
         stock_arrays[str(stock_id)] = (features, alpha_daily)
 
         n_windows = len(group) - total_window + 1
-        tmp_stock_idx.extend([sid_idx] * n_windows)
-        tmp_start_idx.extend(range(n_windows))
+        window_starts = list(range(0, n_windows, stride))  # 步幅跳窗
+        tmp_stock_idx.extend([sid_idx] * len(window_starts))
+        tmp_start_idx.extend(window_starts)
 
     # 轉為 numpy (比 list of tuples 省 95% 記憶體)
     idx_stock = np.array(tmp_stock_idx, dtype=np.int16)
@@ -130,7 +132,7 @@ def _prepare_stock_arrays(df: pd.DataFrame,
     del tmp_stock_idx, tmp_start_idx
     gc.collect()
 
-    print(f"   ✅ {len(stock_ids)} 支股票, {len(idx_stock):,} 個樣本")
+    print(f"   ✅ {len(stock_ids)} 支股票, {len(idx_stock):,} 個樣本 (stride={stride})")
     print(f"   📏 indices 記憶體: {(idx_stock.nbytes + idx_start.nbytes) / 1024**2:.1f} MB")
 
     return stock_ids, stock_arrays, idx_stock, idx_start
@@ -151,6 +153,7 @@ def train_model(
     save_path: str = None,
     seed: int = None,
     use_v5_compat: bool = False,
+    window_stride: int = None,
 ) -> tuple:
     """
     完整訓練管線 (記憶體最佳化版)
@@ -167,6 +170,7 @@ def train_model(
     early_stop_patience = early_stop_patience or cfg['early_stop_patience']
     val_ratio = val_ratio or cfg['val_ratio']
     seed = seed or cfg['seed']
+    window_stride = window_stride or cfg.get('window_stride', 10)
 
     if use_v5_compat:
         feature_cols = FEATURE_COLS_V5
@@ -183,7 +187,7 @@ def train_model(
     print(f"   特徵維度: {len(feature_cols)}")
     print(f"   Epochs: {epochs}, Batch: {batch_size}, LR: {lr}")
     print(f"   Early Stop: {early_stop_patience} epochs")
-    print(f"   AMP: {'✅' if use_amp else '❌'}, Workers: {n_workers}")
+    print(f"   AMP: {'✅' if use_amp else '❌'}, Workers: {n_workers}, Stride: {window_stride}")
 
     # === 確保欄位存在 + 轉 float32 省 RAM ===
     for col in feature_cols:
@@ -223,6 +227,7 @@ def train_model(
             df, feature_cols,
             seq_len=MODEL_CONFIG['seq_len'],
             pred_days=MODEL_CONFIG['pred_days'],
+            stride=window_stride,
         )
 
         # 儲存快取

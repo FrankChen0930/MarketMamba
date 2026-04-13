@@ -191,12 +191,13 @@ MODEL_CONFIG = {
 # 訓練超參數預設值
 TRAIN_CONFIG = {
     'epochs':            50,
-    'batch_size':        512,
+    'batch_size':        1024,
     'learning_rate':     1e-4,
     'weight_decay':      1e-5,
     'early_stop_patience': 7,
     'val_ratio':         0.15,
     'min_stock_days':    120,  # 最少需要 120 天資料才納入訓練
+    'window_stride':     10,   # 滑動窗口步幅 (每 10 天取一個樣本，省 90% 訓練時間)
     'seed':              42,
 }
 
