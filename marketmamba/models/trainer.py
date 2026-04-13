@@ -54,10 +54,11 @@ class FastAlphaDataset(Dataset):
 
     def __getitem__(self, idx):
         stock_id, start = self.valid_indices[idx]
+        start = int(start)  # 確保 int (快取載入可能變 str)
         features, alpha = self.stock_arrays[stock_id]
 
-        x = features[start : start + self.seq_len]
-        y = np.cumsum(alpha[start + self.seq_len : start + self.seq_len + self.pred_days])
+        x = features[start : start + self.seq_len].copy()
+        y = np.cumsum(alpha[start + self.seq_len : start + self.seq_len + self.pred_days]).copy()
 
         return torch.from_numpy(x), torch.from_numpy(y)
 
@@ -166,19 +167,19 @@ def train_model(
     df = df.replace([np.inf, -np.inf], np.nan).fillna(0.0)
 
     # === 建構 Dataset (快取機制) ===
-    cache_path = os.path.join(PROCESSED_DIR, 'V55_train_cache.npz')
-    indices_path = os.path.join(PROCESSED_DIR, 'V55_train_indices.npz')
+    import pickle
+    cache_path = os.path.join(PROCESSED_DIR, 'V55_train_cache.pkl')
 
     stock_arrays = None
 
     # 嘗試讀快取
-    if os.path.exists(cache_path) and os.path.exists(indices_path):
+    if os.path.exists(cache_path):
         try:
             print("⚡ 偵測到訓練快取，直接載入...")
-            cache = np.load(cache_path, allow_pickle=True)
-            idx_data = np.load(indices_path, allow_pickle=True)
-            stock_arrays = cache['stock_arrays'].item()
-            valid_indices = idx_data['valid_indices'].tolist()
+            with open(cache_path, 'rb') as f:
+                cached = pickle.load(f)
+            stock_arrays = cached['stock_arrays']
+            valid_indices = cached['valid_indices']
             print(f"   ✅ {len(stock_arrays)} 支股票, {len(valid_indices):,} 個樣本")
         except Exception as e:
             print(f"   ⚠️ 快取載入失敗 ({e})，重新建構...")
@@ -192,12 +193,13 @@ def train_model(
             pred_days=MODEL_CONFIG['pred_days'],
         )
 
-        # 儲存快取
+        # 儲存快取 (pickle 保證型態正確)
         try:
             os.makedirs(PROCESSED_DIR, exist_ok=True)
-            np.savez(cache_path, stock_arrays=stock_arrays)
-            np.savez(indices_path, valid_indices=valid_indices)
-            print(f"   💾 快取已儲存 (下次秒讀)")
+            with open(cache_path, 'wb') as f:
+                pickle.dump({'stock_arrays': stock_arrays, 'valid_indices': valid_indices}, f)
+            cache_mb = os.path.getsize(cache_path) / 1024**2
+            print(f"   💾 快取已儲存: {cache_mb:.0f} MB (下次秒讀)")
         except Exception as e:
             print(f"   ⚠️ 快取儲存失敗: {e}")
 
