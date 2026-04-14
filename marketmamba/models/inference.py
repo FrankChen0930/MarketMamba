@@ -197,28 +197,47 @@ def run_inference(df: pd.DataFrame = None,
         else:
             input_dim = len(feature_cols)
 
-    # 3. 組裝張量
-    test_x, final_tickers, latest_vol = prepare_tensors(df, feature_cols)
-
-    # 4. 載入模型
+    # 3. 載入 checkpoint 並自動偵測架構
     if model_path is None:
         if input_dim == MODEL_CONFIG['input_dim_v5']:
             model_path = os.path.join(MODEL_DIR, 'V5_DynamicGAT_Production.pth')
         else:
             model_path = os.path.join(MODEL_DIR, 'V5_5_Production.pth')
 
-    if input_dim == MODEL_CONFIG['input_dim_v5']:
-        from marketmamba.models.architecture import MarketMambaV5
-        model = MarketMambaV5(input_dim=input_dim)
-    else:
-        from marketmamba.models.architecture import MarketMambaV55
-        model = MarketMambaV55(input_dim=input_dim)
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    state_dict = torch.load(model_path, map_location=device, weights_only=True)
 
-    if torch.cuda.is_available():
-        model = model.cuda()
+    # 從 checkpoint 自動偵測模型超參數 (不依賴 MODEL_CONFIG)
+    ckpt_d_model = state_dict['embedding.0.weight'].shape[0]
+    ckpt_input_dim = state_dict['embedding.0.weight'].shape[1]
+    ckpt_seq_len = state_dict['pos_encoder.pe'].shape[1]
+    ckpt_num_layers = sum(1 for k in state_dict if k.startswith('mamba_layers.') and k.endswith('.D'))
+    ckpt_d_state = state_dict['mamba_layers.0.A_log'].shape[1]
+    ckpt_d_conv = state_dict['mamba_layers.0.conv1d.weight'].shape[2]
+    ckpt_pred_days = state_dict['trajectory_head.3.weight'].shape[0]
 
-    model.load_state_dict(torch.load(model_path, map_location='cuda' if torch.cuda.is_available() else 'cpu'))
+    print(f"   Checkpoint 架構: d_model={ckpt_d_model}, layers={ckpt_num_layers}, "
+          f"d_state={ckpt_d_state}, seq_len={ckpt_seq_len}, input_dim={ckpt_input_dim}")
+
+    # 用 checkpoint 的超參數建構模型 (確保 100% 匹配)
+    from marketmamba.models.architecture import MarketMambaV55
+    model = MarketMambaV55(
+        input_dim=ckpt_input_dim,
+        seq_len=ckpt_seq_len,
+        d_model=ckpt_d_model,
+        pred_days=ckpt_pred_days,
+        num_mamba_layers=ckpt_num_layers,
+        d_state=ckpt_d_state,
+        d_conv=ckpt_d_conv,
+    )
+    model.to(device)
+    model.load_state_dict(state_dict)
     model.eval()
+
+    # 4. 組裝張量 (使用 checkpoint 的 seq_len)
+    test_x, final_tickers, latest_vol = prepare_tensors(
+        df, feature_cols, min_days=ckpt_seq_len
+    )
 
     # 5. 推論
     print("⚡ 執行 One-Forward-Pass 軌跡預測...")

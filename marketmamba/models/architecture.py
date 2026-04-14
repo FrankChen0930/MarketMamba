@@ -177,9 +177,17 @@ class MarketMambaV55(nn.Module):
 # V5.0 向下相容版本 (46 維，無知識圖譜)
 # ==========================================
 class MarketMambaV5(MarketMambaV55):
-    """V5.0 相容版本：46 維輸入，純 cosine similarity KNN"""
+    """V5.0 相容版本：46 維輸入，純 cosine similarity KNN，並固定使用舊版超參數以載入權重"""
 
     def __init__(self, input_dim: int = MODEL_CONFIG['input_dim_v5'], **kwargs):
+        legacy_defaults = {
+            'seq_len': 120,
+            'd_model': 128,
+            'num_mamba_layers': 4,
+            'd_state': 16,
+        }
+        for k, v in legacy_defaults.items():
+            kwargs.setdefault(k, v)
         super().__init__(input_dim=input_dim, use_knowledge_graph=False, **kwargs)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
