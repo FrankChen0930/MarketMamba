@@ -144,6 +144,11 @@ with st.sidebar:
             st.session_state['current_page'] = p
             st.rerun()
 
+    st.markdown("---")
+    if st.button("🔄 強制刷新最新數據", use_container_width=True):
+        st.cache_data.clear()
+        st.rerun()
+
 page = st.session_state['current_page']
 if not data_loaded:
     st.stop() 
