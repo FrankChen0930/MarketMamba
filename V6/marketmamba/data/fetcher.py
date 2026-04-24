@@ -369,7 +369,7 @@ def _finmind_fetch(
     end_date:   str,
     stock_id:   str | None = None,
 ) -> Optional[pd.DataFrame]:
-    """Generic FinMind API call. Returns None on failure."""
+    """Generic FinMind API call (single chunk). Returns None on failure."""
     if not FINMIND_TOKEN:
         logger.warning("FINMIND_TOKEN not set; skipping FinMind fetch")
         return None
@@ -380,18 +380,57 @@ def _finmind_fetch(
         "token":      FINMIND_TOKEN,
     }
     if stock_id:
-        params["stock_id"] = stock_id  # required for per-stock queries like TaiwanStockPrice
+        params["stock_id"] = stock_id
     try:
         resp = requests.get(FINMIND_BASE, params=params, timeout=60)
         resp.raise_for_status()
         data = resp.json()
         if data.get("status") != 200:
-            logger.warning(f"FinMind {dataset}: {data.get('msg')}")
+            logger.debug(f"FinMind {dataset}: {data.get('msg')} (stock={stock_id})")
             return None
         return pd.DataFrame(data["data"])
     except Exception as e:
-        logger.warning(f"FinMind {dataset} error: {e}")
+        logger.debug(f"FinMind {dataset} chunk error: {e}")
         return None
+
+
+def _finmind_fetch_chunked(
+    dataset:    str,
+    start_date: str,
+    end_date:   str,
+    stock_id:   str | None = None,
+    chunk_years: int = 1,
+) -> Optional[pd.DataFrame]:
+    """
+    Fetch FinMind data in yearly chunks to respect free tier date limits.
+    FinMind free tier rejects requests spanning > ~1825 days.
+    Splits the [start_date, end_date] range into 'chunk_years'-year windows.
+    """
+    from datetime import datetime as _dt
+    _start = _dt.strptime(start_date, "%Y-%m-%d")
+    _end   = _dt.strptime(end_date,   "%Y-%m-%d")
+
+    frames = []
+    current = _start
+    while current <= _end:
+        chunk_end = min(
+            _dt(current.year + chunk_years - 1, 12, 31),
+            _end,
+        )
+        df = _finmind_fetch(
+            dataset,
+            start_date=current.strftime("%Y-%m-%d"),
+            end_date=chunk_end.strftime("%Y-%m-%d"),
+            stock_id=stock_id,
+        )
+        if df is not None and not df.empty:
+            frames.append(df)
+        current = _dt(current.year + chunk_years, 1, 1)
+        time.sleep(0.6)  # ~60 req/min free tier
+
+    if not frames:
+        return None
+    return pd.concat(frames, ignore_index=True)
 
 
 def fetch_margin_finmind(date_str: str) -> Optional[pd.DataFrame]:
@@ -512,7 +551,8 @@ def run_full_data_sync(
         df_prices, missing_tickers = fetch_prices_yfinance(tse_ids, otc_ids, start, end)
         # Fallback for missing
         if missing_tickers:
-            missing_ids = [t.replace(".TW", "").replace(".TWO", "") for t in missing_tickers]
+        # Fallback for missing — MUST replace .TWO before .TW to avoid '6516O' artefact
+            missing_ids = [t.replace(".TWO", "").replace(".TW", "") for t in missing_tickers]
             df_fallback = fetch_prices_finmind(missing_ids, start, end)
             if not df_fallback.empty:
                 df_prices = pd.concat([df_prices, df_fallback], ignore_index=True)
@@ -522,19 +562,17 @@ def run_full_data_sync(
         df_prices = pd.read_parquet(price_cache)
         logger.info(f"Prices loaded from cache: {len(df_prices):,} rows")
 
-    # --- Step 2: Institutional Investors ---
+    # --- Step 2: Institutional Investors (chunked — 14 years > FinMind free tier limit) ---
     inst_cache = PROCESSED_DIR / "institutional_raw.parquet"
     if force_rebuild or not inst_cache.exists():
-        logger.info("Fetching institutional data (bulk) via FinMind...")
-        df_inst = _finmind_fetch(
+        logger.info("Fetching institutional data via FinMind (chunked yearly)...")
+        df_inst = _finmind_fetch_chunked(
             "TaiwanStockInstitutionalInvestors",
             start_date=start,
             end_date=end,
         )
         if df_inst is not None and not df_inst.empty:
-            # Rename FinMind column names → V6 standard names
             col_map = {
-                "stock_id":                     "stock_id",
                 "date":                         "Date",
                 "Foreign_Investor_Buy":          "Foreign_Buy",
                 "Foreign_Investor_Sell":         "Foreign_Sell",
@@ -552,17 +590,16 @@ def run_full_data_sync(
     else:
         logger.info(f"Institutional loaded from cache: {(PROCESSED_DIR / 'institutional_raw.parquet').stat().st_size // 1024:,} KB")
 
-    # --- Step 3: Margin / Short Sale --- (bulk FinMind fetch)
+    # --- Step 3: Margin / Short Sale (chunked — 14 years > FinMind free tier limit) ---
     margin_cache = PROCESSED_DIR / "margin_raw.parquet"
     if force_rebuild or not margin_cache.exists():
-        logger.info("Fetching margin data (bulk) via FinMind...")
-        df_margin = _finmind_fetch(
+        logger.info("Fetching margin data via FinMind (chunked yearly)...")
+        df_margin = _finmind_fetch_chunked(
             "TaiwanStockMarginPurchaseShortSale",
             start_date=start,
             end_date=end,
         )
         if df_margin is not None and not df_margin.empty:
-            # FinMind uses 'date' → rename to 'Date' for consistency
             if "date" in df_margin.columns:
                 df_margin = df_margin.rename(columns={"date": "Date"})
             df_margin.to_parquet(margin_cache)
@@ -669,32 +706,40 @@ def _sync_macro_data(start: str, end: str, force: bool = False) -> None:
 
 
 def _sync_monthly_data(force: bool = False) -> None:
-    """Fetch monthly revenue and fundamental data from FinMind (FinMind is only source)."""
+    """Fetch monthly revenue and quarterly financials from FinMind in yearly chunks."""
+    today = date.today().strftime("%Y-%m-%d")
+
     revenue_cache = PROCESSED_DIR / "revenue_raw.parquet"
     if not force and revenue_cache.exists():
         logger.info("Monthly revenue loaded from cache")
-        return
-
-    df_rev = _finmind_fetch(
-        "TaiwanStockMonthRevenue",
-        start_date=DATA_START_DATE,
-        end_date=date.today().strftime("%Y-%m-%d"),
-    )
-    if df_rev is not None and not df_rev.empty:
-        df_rev.to_parquet(revenue_cache)
-        logger.info(f"Revenue saved: {df_rev.shape}")
+    else:
+        logger.info("Fetching monthly revenue via FinMind (chunked yearly)...")
+        df_rev = _finmind_fetch_chunked(
+            "TaiwanStockMonthRevenue",
+            start_date=DATA_START_DATE,
+            end_date=today,
+        )
+        if df_rev is not None and not df_rev.empty:
+            df_rev.to_parquet(revenue_cache)
+            logger.info(f"Revenue saved: {df_rev.shape}")
+        else:
+            logger.warning("Revenue data unavailable from FinMind")
 
     fin_cache = PROCESSED_DIR / "financials_raw.parquet"
     if not force and fin_cache.exists():
-        return
-    df_fin = _finmind_fetch(
-        "TaiwanStockFinancialStatements",
-        start_date=DATA_START_DATE,
-        end_date=date.today().strftime("%Y-%m-%d"),
-    )
-    if df_fin is not None and not df_fin.empty:
-        df_fin.to_parquet(fin_cache)
-        logger.info(f"Financials saved: {df_fin.shape}")
+        logger.info("Financial statements loaded from cache")
+    else:
+        logger.info("Fetching financial statements via FinMind (chunked yearly)...")
+        df_fin = _finmind_fetch_chunked(
+            "TaiwanStockFinancialStatements",
+            start_date=DATA_START_DATE,
+            end_date=today,
+        )
+        if df_fin is not None and not df_fin.empty:
+            df_fin.to_parquet(fin_cache)
+            logger.info(f"Financials saved: {df_fin.shape}")
+        else:
+            logger.warning("Financial statements unavailable from FinMind")
 
 
 # ============================================================
