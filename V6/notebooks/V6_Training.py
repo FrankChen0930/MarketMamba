@@ -71,35 +71,98 @@ for _d in [
 os.system("pip install -q yfinance requests pandas numpy scipy python-dotenv anthropic openai pyarrow")
 os.system("pip install -q torch-geometric")
 
-# 4. Mamba SSM kernel
-# Strategy: try pip binary first → then compile from source (works for any CUDA version)
-# NOTE: compilation from source takes ~10 minutes but is the most reliable fallback.
-print("Installing mamba_ssm (this may take a few minutes)...")
+# 4. Mamba SSM kernel - Drive-Cache Strategy
+# ============================================
+# Layer 1: Google Drive pre-built wheel  (fast, ~10 sec - used on 2nd+ session)
+# Layer 2: Binary pip install            (fast if PyPI has a matching wheel)
+# Layer 3: Compile from source           (slow, ~40 min - only runs once per runtime version)
+#           └─ saves wheel to Drive so future sessions skip compilation entirely
+#
+# The wheel is keyed by CUDA + PyTorch + Python version.
+# Recompilation only needed if Colab upgrades its runtime stack.
 
-# Step A: try binary pip install
-rc = os.system("pip install -q mamba-ssm causal-conv1d 2>/dev/null")
+import glob, shutil, torch
 
-if rc != 0:
-    print("Binary install failed — compiling from source (CUDA 12.8 compatible, ~10 min)...")
-    # --no-build-isolation: use the already-installed PyTorch/CUDA headers
-    # This is the universal fix for mismatched CUDA versions
-    rc2 = os.system(
-        "pip install mamba-ssm causal-conv1d "
-        "--no-build-isolation "
-        "--no-cache-dir "
-        "-q 2>&1 | tail -5"
+_cuda_ver  = (torch.version.cuda or "unknown").replace(".", "")    # e.g. "128"
+_torch_ver = torch.__version__.split("+")[0].replace(".", "")       # e.g. "210"
+_py_ver    = f"cp{sys.version_info.major}{sys.version_info.minor}"  # e.g. "cp312"
+_wheel_key = f"cu{_cuda_ver}torch{_torch_ver}{_py_ver}"            # e.g. "cu128torch210cp312"
+
+DRIVE_WHEEL_DIR = "/content/drive/MyDrive/MarketMamba/mamba_wheels"
+WHEEL_BUILD_DIR = "/tmp/mamba_wheels"
+os.makedirs(WHEEL_BUILD_DIR, exist_ok=True)
+
+print(f"Mamba wheel key: {_wheel_key}")
+print("Installing mamba_ssm...")
+
+_installed = False
+
+# --- Layer 1: Drive cache ---
+if os.path.exists(DRIVE_WHEEL_DIR):
+    _key_wheels = [
+        f for f in glob.glob(f"{DRIVE_WHEEL_DIR}/*.whl")
+        if _wheel_key in f
+    ]
+    if _key_wheels:
+        print(f"  Found {len(_key_wheels)} cached wheel(s) in Drive - installing (fast path)...")
+        for whl in _key_wheels:
+            os.system(f"pip install -q {whl}")
+        _installed = True
+        print("  Installed from Drive cache")
+    else:
+        _all_wheels = glob.glob(f"{DRIVE_WHEEL_DIR}/*.whl")
+        print(f"  No wheel matching key={_wheel_key} in Drive")
+        if _all_wheels:
+            print(f"  (Other runtime wheels present: {[os.path.basename(w) for w in _all_wheels]})")
+else:
+    print(f"  Drive wheel dir not found: {DRIVE_WHEEL_DIR}")
+
+# --- Layer 2: Binary pip install ---
+if not _installed:
+    rc = os.system("pip install -q mamba-ssm causal-conv1d 2>/dev/null")
+    if rc == 0:
+        _installed = True
+        print("  Binary pip install succeeded")
+
+# --- Layer 3: Compile from source + save to Drive ---
+if not _installed:
+    print("  Compiling from source (~40 min). This only happens once per Colab runtime version.")
+    print("  Wheel will be saved to Drive so next session takes ~10 sec.")
+
+    rc3 = os.system(
+        f"pip wheel mamba-ssm causal-conv1d "
+        f"--no-build-isolation "
+        f"--no-cache-dir "
+        f"-w {WHEEL_BUILD_DIR}/ "
+        f"2>&1 | tail -5"
     )
-    if rc2 != 0:
-        print("Source build also failed — check CUDA is available on this runtime")
 
-# Verify
+    if rc3 == 0:
+        os.system(f"pip install -q {WHEEL_BUILD_DIR}/*.whl")
+
+        # Save mamba_ssm + causal_conv1d wheels to Drive (skip dependency wheels)
+        os.makedirs(DRIVE_WHEEL_DIR, exist_ok=True)
+        for whl_path in glob.glob(f"{WHEEL_BUILD_DIR}/*.whl"):
+            whl_name = os.path.basename(whl_path)
+            if any(pkg in whl_name.lower() for pkg in ["mamba_ssm", "causal_conv1d"]):
+                stem, ext = whl_name.rsplit(".", 1)
+                tagged = f"{stem}___{_wheel_key}.{ext}"
+                shutil.copy2(whl_path, f"{DRIVE_WHEEL_DIR}/{tagged}")
+                print(f"  Saved to Drive: {tagged}")
+        _installed = True
+    else:
+        print("  Source build failed - make sure GPU runtime is enabled in Colab")
+
+# --- Verify ---
 try:
     from mamba_ssm import Mamba
     print("mamba_ssm OK")
 except ImportError as e:
     print(f"WARNING: mamba_ssm not available: {e}")
-    print("You can still run Cells 0-4 (data sync) without mamba_ssm.")
-    print("Training (Cell 6+) will fail until mamba_ssm is installed.")
+    print("  Cells 0-4 (data sync) can still run without it.")
+    print("  Cell 6+ (training) requires mamba_ssm.")
+
+
 
 # 5. Python path
 # IMPORTANT: V6 must end up at sys.path[0] so its 'marketmamba' package
