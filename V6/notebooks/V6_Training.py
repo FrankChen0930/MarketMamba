@@ -163,24 +163,43 @@ except ImportError as e:
         # PyTorch 2.10+ changed internal APIs - mamba_ssm 2.3.x not yet updated.
         # Fix: install the latest mamba_ssm directly from GitHub main branch.
         print(f"mamba_ssm import failed (PyTorch API change): {_err_str}")
-        print("  Upgrading to latest mamba_ssm from GitHub (may take ~5-10 min)...")
+
+        # Remove the incompatible old wheel from Drive so it stops being tried
+        _stale = [f for f in glob.glob(f"{DRIVE_WHEEL_DIR}/*.whl")
+                  if ("mamba_ssm" in f or "causal_conv1d" in f) and _wheel_key in f]
+        for _s in _stale:
+            os.remove(_s)
+            print(f"  Removed incompatible cached wheel: {os.path.basename(_s)}")
+
+        print("  Installing latest mamba_ssm from GitHub (~5-10 min)...")
         rc_git = os.system(
-            "pip install -q git+https://github.com/state-spaces/mamba.git "
-            "--no-build-isolation --no-cache-dir 2>&1 | tail -5"
+            f"pip wheel git+https://github.com/state-spaces/mamba.git "
+            f"git+https://github.com/Dao-AILab/causal-conv1d.git "
+            f"--no-build-isolation --no-cache-dir "
+            f"-w {WHEEL_BUILD_DIR}/ "
+            f"2>&1 | tail -5"
         )
         if rc_git == 0:
-            # Save the new wheel to Drive so next session is faster
-            import importlib
-            try:
-                import mamba_ssm
-                importlib.reload(mamba_ssm)
-                from mamba_ssm import Mamba
-                print("mamba_ssm OK (from GitHub latest)")
-            except ImportError as e2:
-                print(f"WARNING: still cannot import mamba_ssm: {e2}")
-                print("  Cells 0-4 (data sync) can still run.")
-        else:
-            print("  GitHub install failed too - proceeding without mamba_ssm")
+            os.system(f"pip install -q {WHEEL_BUILD_DIR}/*.whl")
+            # Save to Drive so next session skips this step entirely
+            os.makedirs(DRIVE_WHEEL_DIR, exist_ok=True)
+            for whl_path in glob.glob(f"{WHEEL_BUILD_DIR}/*.whl"):
+                whl_name = os.path.basename(whl_path)
+                if any(pkg in whl_name.lower() for pkg in ["mamba_ssm", "causal_conv1d"]):
+                    stem, ext = whl_name.rsplit(".", 1)
+                    tagged = f"{stem}___{_wheel_key}.{ext}"
+                    shutil.copy2(whl_path, f"{DRIVE_WHEEL_DIR}/{tagged}")
+                    print(f"  Saved GitHub wheel to Drive: {tagged}")
+
+        import importlib
+        try:
+            if "mamba_ssm" in sys.modules:
+                importlib.reload(sys.modules["mamba_ssm"])
+            from mamba_ssm import Mamba
+            print("mamba_ssm OK (from GitHub latest)")
+        except ImportError as e2:
+            print(f"WARNING: still cannot import mamba_ssm: {e2}")
+            print("  Cells 0-4 (data sync) can still run.")
     else:
         print(f"WARNING: mamba_ssm not available: {_err_str}")
         print("  Cells 0-4 (data sync) can still run without it.")
