@@ -183,12 +183,24 @@ def fetch_prices_yfinance(
 
         for ticker in batch:
             try:
-                # Handle both multi-ticker (MultiIndex) and single-ticker DataFrames
                 if isinstance(raw.columns, pd.MultiIndex):
-                    df_t = raw[ticker].dropna(subset=["Close"])
+                    # Detect which level contains ticker names
+                    # Old yfinance (group_by='ticker'): level 0 = Ticker, level 1 = Price
+                    # New yfinance (>= 0.2.18):         level 0 = Price,  level 1 = Ticker
+                    lvl0_vals = raw.columns.get_level_values(0).unique()
+                    lvl1_vals = raw.columns.get_level_values(1).unique()
+                    if ticker in lvl0_vals:
+                        df_t = raw[ticker]           # old API
+                    elif ticker in lvl1_vals:
+                        df_t = raw.xs(ticker, axis=1, level=1)  # new API
+                    else:
+                        all_missing.append(ticker)
+                        continue
+                    df_t = df_t.dropna(subset=["Close"])
                 else:
+                    # Single-level columns (single ticker batch)
                     df_t = raw.dropna(subset=["Close"]) if len(batch) == 1 else pd.DataFrame()
-            except KeyError:
+            except (KeyError, ValueError):
                 all_missing.append(ticker)
                 continue
             if df_t.empty:
@@ -417,40 +429,54 @@ def fetch_prices_finmind(
     end: str,
 ) -> pd.DataFrame:
     """
-    Per-stock fallback price fetch for tickers missing from yfinance.
-    Queries FinMind TaiwanStockPrice one stock at a time (stock_id is required).
-    Skips delisted stocks silently; only fetches stocks with rate-limit failures.
+    Per-stock fallback price fetch for rate-limited tickers.
+    Splits into YEARLY chunks to respect FinMind free tier 1825-day limit.
+    Skips any stock where FinMind returns an error (likely delisted).
     """
+    from datetime import datetime as _dt
+
+    def _yearly_fetch(sid: str, y_start: str, y_end: str) -> pd.DataFrame | None:
+        df = _finmind_fetch("TaiwanStockPrice", start_date=y_start, end_date=y_end, stock_id=sid)
+        return df if (df is not None and not df.empty) else None
+
+    start_year = int(start[:4])
+    end_year   = int(end[:4])
+
     frames = []
     skipped = 0
     for i, sid in enumerate(stock_ids):
-        df = _finmind_fetch(
-            "TaiwanStockPrice",
-            start_date=start,
-            end_date=end,
-            stock_id=sid,    # REQUIRED: FinMind rejects queries without stock_id
-        )
-        if df is not None and not df.empty:
+        stock_frames = []
+        for yr in range(start_year, end_year + 1):
+            y_start = f"{yr}-01-01" if yr > start_year else start
+            y_end   = f"{yr}-12-31" if yr < end_year   else end
+            chunk = _yearly_fetch(sid, y_start, y_end)
+            if chunk is not None:
+                stock_frames.append(chunk)
+            time.sleep(0.3)  # ~60 req/min free tier
+
+        if stock_frames:
+            df_stock = pd.concat(stock_frames, ignore_index=True)
             # Normalise column names to V6 standard
-            if "date" in df.columns:
-                df = df.rename(columns={"date": "Date"})
-            if "stock_id" not in df.columns:
-                df["stock_id"] = sid
-            frames.append(df[["Date", "stock_id",
-                               "open",  "max",    "min",    "close",   "Trading_Volume"]]
-                          .rename(columns={"open":  "Open",
-                                           "max":   "High",
-                                           "min":   "Low",
-                                           "close": "Close",
-                                           "Trading_Volume": "Volume"}))
+            if "date" in df_stock.columns:
+                df_stock = df_stock.rename(columns={"date": "Date"})
+            if "stock_id" not in df_stock.columns:
+                df_stock["stock_id"] = sid
+            # Map FinMind OHLCV column names
+            col_map = {"open": "Open", "max": "High", "min": "Low",
+                       "close": "Close", "Trading_Volume": "Volume"}
+            df_stock.rename(columns={k: v for k, v in col_map.items()
+                                     if k in df_stock.columns}, inplace=True)
+            keep = [c for c in ["Date", "stock_id", "Open", "High", "Low", "Close", "Volume"]
+                    if c in df_stock.columns]
+            frames.append(df_stock[keep])
         else:
             skipped += 1
-        if i % 30 == 29:
-            time.sleep(1.5)  # stay under FinMind rate limit (~60 req/min free tier)
-    logger.info(f"FinMind price fallback: {len(frames)} fetched, {skipped} skipped")
-    if not frames:
-        return pd.DataFrame()
-    return pd.concat(frames, ignore_index=True)
+
+        if i % 10 == 9:
+            time.sleep(1.0)  # extra pause every 10 stocks
+
+    logger.info(f"FinMind price fallback: {len(frames)} fetched, {skipped} skipped (likely delisted)")
+    return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
 
 
 # ============================================================
@@ -618,8 +644,16 @@ def _sync_macro_data(start: str, end: str, force: bool = False) -> None:
         df_t = yf.download(ticker, start=start, end=end, auto_adjust=True, progress=False)
         if df_t.empty:
             continue
+        # --- FIX: flatten MultiIndex from new yfinance API ---
+        # New yfinance (>= 0.2.18) returns MultiIndex (Price, Ticker) for all downloads
+        if isinstance(df_t.columns, pd.MultiIndex):
+            df_t.columns = df_t.columns.get_level_values(0)
+            df_t = df_t.loc[:, ~df_t.columns.duplicated()]  # drop duplicate col names
+        # ---
         df_t = df_t[["Close"]].rename(columns={"Close": col}).reset_index()
-        df_t.rename(columns={"Date": "Date"}, inplace=True)
+        if "Date" not in df_t.columns and "index" in df_t.columns:
+            df_t.rename(columns={"index": "Date"}, inplace=True)
+        df_t["Date"] = pd.to_datetime(df_t["Date"])
         frames.append(df_t)
 
     if not frames:
