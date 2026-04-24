@@ -1,0 +1,37 @@
+# MarketMamba — Root .gitignore
+# ================================
+
+# Secrets — NEVER commit
+.env
+*.env
+secrets.py
+
+# Model checkpoints (too large)
+**/*.pt
+**/*.pth
+**/*.ckpt
+
+# Data directories (regenerate locally)
+**/Data/processed_v6/
+**/Data/raw_v6/
+**/Data/cache_v6/
+**/Data/*.parquet
+**/Data/*.csv
+
+# V6 result archives
+V6/results/20*/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

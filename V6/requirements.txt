@@ -1,0 +1,37 @@
+# MarketMamba V6 — Python Dependencies
+# ======================================
+# Core
+numpy>=1.26.0
+pandas>=2.2.0
+scipy>=1.13.0
+
+# Deep Learning
+torch>=2.3.0
+# mamba_ssm   — install via pre-built wheel (CUDA-specific)
+# causal_conv1d — install via pre-built wheel (CUDA-specific)
+
+# Graph Neural Networks
+torch-geometric>=2.5.0
+torch-scatter>=2.1.0
+torch-sparse>=0.6.18
+
+# Data Sources
+yfinance>=0.2.40
+requests>=2.32.0
+FinMind>=0.8.6   # fallback data source
+
+# Feature Engineering
+ta-lib>=0.4.28   # optional, used only if RSI/ATR via TA-Lib preferred
+
+# LLM APIs
+anthropic>=0.28.0
+openai>=1.40.0   # optional fallback
+
+# Utilities
+tqdm>=4.66.0
+python-dotenv>=1.0.0
+pyarrow>=16.0.0   # for parquet I/O
+
+# Frontend (Streamlit dashboard — not needed for pure inference)
+# streamlit>=1.35.0
+# plotly>=5.22.0
