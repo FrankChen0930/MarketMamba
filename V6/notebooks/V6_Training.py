@@ -72,18 +72,25 @@ os.system("pip install -q yfinance requests pandas numpy scipy python-dotenv ant
 os.system("pip install -q torch-geometric")
 
 # 4. Mamba SSM kernel
-#    Try direct pip first (works on newer Colab / PyTorch 2.3+)
-import subprocess
-print("Installing mamba_ssm...")
+# Strategy: try pip binary first → then compile from source (works for any CUDA version)
+# NOTE: compilation from source takes ~10 minutes but is the most reliable fallback.
+print("Installing mamba_ssm (this may take a few minutes)...")
+
+# Step A: try binary pip install
 rc = os.system("pip install -q mamba-ssm causal-conv1d 2>/dev/null")
+
 if rc != 0:
-    print("pip install failed - trying pre-built wheel...")
-    os.makedirs("/content/mamba_core", exist_ok=True)
-    os.chdir("/content/mamba_core")
-    # Wheel for CUDA 12.2 + PyTorch 2.3 + Python 3.10
-    os.system("wget -q https://github.com/state-spaces/mamba/releases/download/v2.2.2/mamba_ssm-2.2.2+cu122torch2.3cxx11abiFALSE-cp310-cp310-linux_x86_64.whl -O mamba_ssm.whl")
-    os.system("pip install -q mamba_ssm.whl")
-    os.chdir("/content")
+    print("Binary install failed — compiling from source (CUDA 12.8 compatible, ~10 min)...")
+    # --no-build-isolation: use the already-installed PyTorch/CUDA headers
+    # This is the universal fix for mismatched CUDA versions
+    rc2 = os.system(
+        "pip install mamba-ssm causal-conv1d "
+        "--no-build-isolation "
+        "--no-cache-dir "
+        "-q 2>&1 | tail -5"
+    )
+    if rc2 != 0:
+        print("Source build also failed — check CUDA is available on this runtime")
 
 # Verify
 try:
@@ -91,11 +98,23 @@ try:
     print("mamba_ssm OK")
 except ImportError as e:
     print(f"WARNING: mamba_ssm not available: {e}")
-    print("Training will fail. Check that your Colab runtime has CUDA enabled.")
+    print("You can still run Cells 0-4 (data sync) without mamba_ssm.")
+    print("Training (Cell 6+) will fail until mamba_ssm is installed.")
 
 # 5. Python path
-sys.path.insert(0, "/content/MarketMamba/V6")
-sys.path.insert(0, "/content/MarketMamba")
+# IMPORTANT: V6 must end up at sys.path[0] so its 'marketmamba' package
+# takes priority over the OLD V5.5 'marketmamba' in /content/MarketMamba/.
+# Insert in REVERSE order: the last insert wins position 0.
+sys.path.insert(0, "/content/MarketMamba")    # pushed to [1] by next line
+sys.path.insert(0, "/content/MarketMamba/V6") # ends up at [0] <- V6 wins
+
+# Sanity check: confirm the right config is loaded
+_config_path = "/content/MarketMamba/V6/marketmamba/config.py"
+if not os.path.exists(_config_path):
+    print(f"ERROR: V6 config not found at {_config_path}")
+    print("The git clone may not have the V6 directory. Check the repo.")
+else:
+    print(f"V6 package path: OK")
 
 # 6. Mount Google Drive (for data snapshot backup)
 from google.colab import drive
