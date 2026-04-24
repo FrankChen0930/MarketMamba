@@ -37,7 +37,7 @@ for _d in [PROCESSED_DIR, MODELS_DIR, RESULTS_DIR]:
 # ============================================================
 # Data / Universe Settings
 # ============================================================
-DATA_START_DATE = "2012-01-01"   # Extended from V5.5's 2019
+DATA_START_DATE = "2005-01-01"   # Maximum coverage: institutional data starts 2005-01-01
 DATA_END_DATE   = None           # None = today
 
 # Stock universe filters (applied during data fetch)
