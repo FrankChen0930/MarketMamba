@@ -85,8 +85,38 @@ def _fetch_universe_from_finmind() -> pd.DataFrame:
     if data.get("status") != 200:
         raise RuntimeError(f"FinMind error: {data.get('msg')}")
     df = pd.DataFrame(data["data"])
-    # Filter: only ordinary stocks (stock_id is 4 digits)
+    logger.info(f"  TaiwanStockInfo columns: {list(df.columns)}")
+
+    # Filter: only ordinary 4-digit stock IDs
     df = df[df["stock_id"].str.match(r"^\d{4}$")].copy()
+
+    # --- Determine exchange type ---
+    # FinMind uses 'type' column (not 'market'), with values 'twse' / 'tpex'
+    # Possible column names across different FinMind API versions:
+    _market_col = None
+    for _candidate in ["type", "market", "market_category", "exchange"]:
+        if _candidate in df.columns:
+            _market_col = _candidate
+            break
+
+    if _market_col:
+        # Map FinMind exchange codes → our TSE / OTC convention
+        _market_map = {
+            "twse": "TSE", "TSE": "TSE", "sii": "TSE", "上市": "TSE",
+            "tpex": "OTC", "OTC": "OTC", "otc": "OTC", "上櫃": "OTC",
+        }
+        df["market"] = df[_market_col].map(_market_map).fillna("TSE")
+        logger.info(f"  Market column '{_market_col}' mapped → TSE/OTC")
+    else:
+        # No exchange column found — default everything to TSE
+        # yfinance will fail on OTC suffix and we'll catch it via the missing list
+        logger.warning("  No market/type column in TaiwanStockInfo — defaulting all to TSE")
+        df["market"] = "TSE"
+
+    tse_count = (df["market"] == "TSE").sum()
+    otc_count  = (df["market"] == "OTC").sum()
+    logger.info(f"  Universe: {tse_count} TSE + {otc_count} OTC stocks")
+
     return df[["stock_id", "stock_name", "industry_category", "market"]].reset_index(drop=True)
 
 
@@ -427,20 +457,23 @@ def run_full_data_sync(
     else:
         logger.info(f"Institutional loaded from cache: {(PROCESSED_DIR / 'institutional_raw.parquet').stat().st_size // 1024:,} KB")
 
-    # --- Step 3: Margin / Short Sale ---
+    # --- Step 3: Margin / Short Sale --- (bulk FinMind fetch)
     margin_cache = PROCESSED_DIR / "margin_raw.parquet"
     if force_rebuild or not margin_cache.exists():
-        trading_days = _get_trading_days(df_prices)
-        margin_frames = []
-        for day in trading_days:
-            df_m = fetch_margin_finmind(day)
-            if df_m is not None:
-                margin_frames.append(df_m)
-        if margin_frames:
-            df_margin = pd.concat(margin_frames, ignore_index=True)
+        logger.info("Fetching margin data (bulk) via FinMind...")
+        df_margin = _finmind_fetch(
+            "TaiwanStockMarginPurchaseShortSale",
+            start_date=start,
+            end_date=end,
+        )
+        if df_margin is not None and not df_margin.empty:
+            # FinMind uses 'date' → rename to 'Date' for consistency
+            if "date" in df_margin.columns:
+                df_margin = df_margin.rename(columns={"date": "Date"})
             df_margin.to_parquet(margin_cache)
             logger.info(f"Margin saved: {len(df_margin):,} rows")
         else:
+            logger.warning("Margin data unavailable from FinMind")
             df_margin = pd.DataFrame()
     else:
         df_margin = pd.read_parquet(margin_cache)
