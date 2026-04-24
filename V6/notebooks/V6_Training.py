@@ -158,9 +158,33 @@ try:
     from mamba_ssm import Mamba
     print("mamba_ssm OK")
 except ImportError as e:
-    print(f"WARNING: mamba_ssm not available: {e}")
-    print("  Cells 0-4 (data sync) can still run without it.")
-    print("  Cell 6+ (training) requires mamba_ssm.")
+    _err_str = str(e)
+    if "is_opaque_value" in _err_str or "torch._library" in _err_str or "opaque_object" in _err_str:
+        # PyTorch 2.10+ changed internal APIs - mamba_ssm 2.3.x not yet updated.
+        # Fix: install the latest mamba_ssm directly from GitHub main branch.
+        print(f"mamba_ssm import failed (PyTorch API change): {_err_str}")
+        print("  Upgrading to latest mamba_ssm from GitHub (may take ~5-10 min)...")
+        rc_git = os.system(
+            "pip install -q git+https://github.com/state-spaces/mamba.git "
+            "--no-build-isolation --no-cache-dir 2>&1 | tail -5"
+        )
+        if rc_git == 0:
+            # Save the new wheel to Drive so next session is faster
+            import importlib
+            try:
+                import mamba_ssm
+                importlib.reload(mamba_ssm)
+                from mamba_ssm import Mamba
+                print("mamba_ssm OK (from GitHub latest)")
+            except ImportError as e2:
+                print(f"WARNING: still cannot import mamba_ssm: {e2}")
+                print("  Cells 0-4 (data sync) can still run.")
+        else:
+            print("  GitHub install failed too - proceeding without mamba_ssm")
+    else:
+        print(f"WARNING: mamba_ssm not available: {_err_str}")
+        print("  Cells 0-4 (data sync) can still run without it.")
+        print("  Cell 6+ (training) requires mamba_ssm.")
 
 
 
@@ -171,13 +195,28 @@ except ImportError as e:
 sys.path.insert(0, "/content/MarketMamba")    # pushed to [1] by next line
 sys.path.insert(0, "/content/MarketMamba/V6") # ends up at [0] <- V6 wins
 
-# Sanity check: confirm the right config is loaded
+# CRITICAL: purge any cached 'marketmamba' module Python already loaded.
+# Without this, Python ignores the new sys.path and keeps using the old V5.5 package.
+# This happens when torch, pip, or any earlier import accidentally triggered a
+# marketmamba import and cached it in sys.modules.
+_purged = [k for k in list(sys.modules.keys()) if k == "marketmamba" or k.startswith("marketmamba.")]
+for _k in _purged:
+    del sys.modules[_k]
+if _purged:
+    print(f"  Purged {len(_purged)} cached marketmamba module(s): {_purged}")
+
+# Sanity check
 _config_path = "/content/MarketMamba/V6/marketmamba/config.py"
 if not os.path.exists(_config_path):
     print(f"ERROR: V6 config not found at {_config_path}")
-    print("The git clone may not have the V6 directory. Check the repo.")
 else:
-    print(f"V6 package path: OK")
+    # Quick import test to confirm the right package is now visible
+    import importlib.util
+    _spec = importlib.util.spec_from_file_location("marketmamba.config", _config_path)
+    _mod  = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(_mod)
+    assert hasattr(_mod, "MODELS_DIR"), "V6 config missing MODELS_DIR"
+    print(f"V6 package path: OK (MODELS_DIR confirmed)")
 
 # 6. Mount Google Drive (for data snapshot backup)
 from google.colab import drive
@@ -193,6 +232,22 @@ print(f"Environment ready | GPU: {gpu} ({vram:.0f} GB) | Torch: {torch.__version
 # ==========================================
 # V6 Paths - adjust if needed
 # ==========================================
+import sys
+
+# Safety: re-purge sys.modules at the start of every cell that imports marketmamba.
+# Colab cells share the same Python process but can be re-run independently,
+# so this ensures we always pick up the V6 package.
+for _k in list(sys.modules.keys()):
+    if _k == "marketmamba" or _k.startswith("marketmamba."):
+        del sys.modules[_k]
+
+# Ensure V6 is still first in sys.path (idempotent)
+for _p in ["/content/MarketMamba/V6", "/content/MarketMamba"]:
+    while _p in sys.path:
+        sys.path.remove(_p)
+sys.path.insert(0, "/content/MarketMamba")
+sys.path.insert(0, "/content/MarketMamba/V6")
+
 from marketmamba.config import (
     PROCESSED_DIR, MODELS_DIR, DATA_START_DATE, SEQ_LEN, INPUT_DIM
 )
