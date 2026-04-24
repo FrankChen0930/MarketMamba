@@ -140,41 +140,83 @@ def fetch_prices_yfinance(
     id_map = {f"{s}.TW": s for s in tse_ids}
     id_map.update({f"{s}.TWO": s for s in otc_ids})
 
-    logger.info(f"yfinance: downloading {len(all_tickers)} tickers [{start} → {end}]")
+    logger.info(f"yfinance: downloading {len(all_tickers)} tickers [{start} -> {end}]")
 
-    # yfinance batch download
-    raw = yf.download(
-        all_tickers,
-        start=start,
-        end=end,
-        auto_adjust=True,
-        progress=False,
-        group_by="ticker",
-        threads=True,
-    )
+    # yfinance batch download — split into chunks to avoid rate limits
+    BATCH_SIZE = 200  # yfinance starts rate-limiting above ~300 tickers at once
+    all_records = []
+    all_missing = []
 
-    records = []
-    missing = []
-    for ticker in all_tickers:
-        try:
-            df_t = raw[ticker].dropna(subset=["Close"])
-        except KeyError:
-            missing.append(ticker)
+    for batch_start in range(0, len(all_tickers), BATCH_SIZE):
+        batch = all_tickers[batch_start: batch_start + BATCH_SIZE]
+        logger.info(f"  Batch {batch_start // BATCH_SIZE + 1}: {len(batch)} tickers...")
+
+        for attempt in range(3):  # retry up to 3 times on rate limit
+            try:
+                raw = yf.download(
+                    batch,
+                    start=start,
+                    end=end,
+                    auto_adjust=True,
+                    progress=False,
+                    group_by="ticker",
+                    threads=True,
+                )
+                break
+            except Exception as e:
+                if "Too Many Requests" in str(e) or "429" in str(e):
+                    wait = 30 * (attempt + 1)
+                    logger.warning(f"  Rate limited, waiting {wait}s...")
+                    time.sleep(wait)
+                else:
+                    logger.warning(f"  yfinance batch error: {e}")
+                    raw = None
+                    break
+        else:
+            # All 3 retries failed
+            all_missing.extend(batch)
             continue
-        if df_t.empty:
-            missing.append(ticker)
+
+        if raw is None or raw.empty:
+            all_missing.extend(batch)
             continue
-        df_t = df_t.reset_index()
-        df_t["stock_id"] = id_map[ticker]
-        df_t.rename(columns={"index": "Date"}, inplace=True)
-        df_t["Date"] = pd.to_datetime(df_t["Date"]).dt.date
-        records.append(df_t[["Date", "stock_id", "Open", "High", "Low", "Close", "Volume"]])
 
-    if missing:
-        logger.warning(f"yfinance missing {len(missing)} tickers, will fallback to FinMind")
+        for ticker in batch:
+            try:
+                # Handle both multi-ticker (MultiIndex) and single-ticker DataFrames
+                if isinstance(raw.columns, pd.MultiIndex):
+                    df_t = raw[ticker].dropna(subset=["Close"])
+                else:
+                    df_t = raw.dropna(subset=["Close"]) if len(batch) == 1 else pd.DataFrame()
+            except KeyError:
+                all_missing.append(ticker)
+                continue
+            if df_t.empty:
+                all_missing.append(ticker)
+                continue
+            df_t = df_t.reset_index()
+            df_t["stock_id"] = id_map[ticker]
+            df_t["Date"] = pd.to_datetime(df_t["Date"]).dt.date
+            all_records.append(df_t[["Date", "stock_id", "Open", "High", "Low", "Close", "Volume"]])
 
-    df_prices = pd.concat(records, ignore_index=True) if records else pd.DataFrame()
-    return df_prices, missing
+        if batch_start + BATCH_SIZE < len(all_tickers):
+            time.sleep(3)  # polite pause between batches
+
+    # Deduplicate: some delisted tickers appear in both TSE and OTC lists
+    delisted_count  = sum(1 for t in all_missing if t in ["YFTzMissingError", "YFPricesMissingError"])
+    rate_limit_count = len(all_missing) - delisted_count
+    if all_missing:
+        logger.warning(
+            f"yfinance: {len(all_missing)} tickers unavailable "
+            f"(many are delisted — this is expected for 2012+ historical data)"
+        )
+    if all_records:
+        df_prices = pd.concat(all_records, ignore_index=True)
+    else:
+        df_prices = pd.DataFrame()
+        logger.warning("yfinance returned no usable data")
+
+    return df_prices, all_missing
 
 
 # ============================================================
@@ -309,17 +351,24 @@ def fetch_institutional_tpex(date_str: str) -> Optional[pd.DataFrame]:
 # Layer 3: FinMind — Margin, Short, Banks, etc.
 # ============================================================
 
-def _finmind_fetch(dataset: str, start_date: str, end_date: str) -> Optional[pd.DataFrame]:
+def _finmind_fetch(
+    dataset:    str,
+    start_date: str,
+    end_date:   str,
+    stock_id:   str | None = None,
+) -> Optional[pd.DataFrame]:
     """Generic FinMind API call. Returns None on failure."""
     if not FINMIND_TOKEN:
         logger.warning("FINMIND_TOKEN not set; skipping FinMind fetch")
         return None
     params = {
-        "dataset": dataset,
+        "dataset":    dataset,
         "start_date": start_date,
-        "end_date": end_date,
-        "token": FINMIND_TOKEN,
+        "end_date":   end_date,
+        "token":      FINMIND_TOKEN,
     }
+    if stock_id:
+        params["stock_id"] = stock_id  # required for per-stock queries like TaiwanStockPrice
     try:
         resp = requests.get(FINMIND_BASE, params=params, timeout=60)
         resp.raise_for_status()
@@ -368,17 +417,37 @@ def fetch_prices_finmind(
     end: str,
 ) -> pd.DataFrame:
     """
-    Fallback price fetch for stocks missing from yfinance.
-    Batches requests to avoid FinMind rate limits.
+    Per-stock fallback price fetch for tickers missing from yfinance.
+    Queries FinMind TaiwanStockPrice one stock at a time (stock_id is required).
+    Skips delisted stocks silently; only fetches stocks with rate-limit failures.
     """
     frames = []
+    skipped = 0
     for i, sid in enumerate(stock_ids):
-        df = _finmind_fetch("TaiwanStockPrice", start_date=start, end_date=end)
+        df = _finmind_fetch(
+            "TaiwanStockPrice",
+            start_date=start,
+            end_date=end,
+            stock_id=sid,    # REQUIRED: FinMind rejects queries without stock_id
+        )
         if df is not None and not df.empty:
-            df["stock_id"] = sid
-            frames.append(df)
-        if i % 50 == 49:
-            time.sleep(2)  # polite rate limit
+            # Normalise column names to V6 standard
+            if "date" in df.columns:
+                df = df.rename(columns={"date": "Date"})
+            if "stock_id" not in df.columns:
+                df["stock_id"] = sid
+            frames.append(df[["Date", "stock_id",
+                               "open",  "max",    "min",    "close",   "Trading_Volume"]]
+                          .rename(columns={"open":  "Open",
+                                           "max":   "High",
+                                           "min":   "Low",
+                                           "close": "Close",
+                                           "Trading_Volume": "Volume"}))
+        else:
+            skipped += 1
+        if i % 30 == 29:
+            time.sleep(1.5)  # stay under FinMind rate limit (~60 req/min free tier)
+    logger.info(f"FinMind price fallback: {len(frames)} fetched, {skipped} skipped")
     if not frames:
         return pd.DataFrame()
     return pd.concat(frames, ignore_index=True)
