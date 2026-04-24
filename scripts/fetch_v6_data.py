@@ -135,13 +135,16 @@ log.info(f"  → {len(trading_days)} trading days to process")
 #  and NO stock_id (Sponsor tier: returns all stocks at once).
 #
 #  Datasets per day:
-#    A. TaiwanStockPrice                   (OHLCV)
+#    A. TaiwanStockPriceAdj               (OHLCV, dividend-adjusted)  ← replaces unadjusted
 #    B. TaiwanStockInstitutionalInvestorsBuySell  (三大法人)
 #    C. TaiwanStockMarginPurchaseShortSale (融資融券)
-#    D. TaiwanStockPER                     (PER / PBR / DY)    [Free OK]
+#    D. TaiwanStockPER                     (PER / PBR / DY)
 #    E. TaiwanStockDayTrading              (當沖, from 2014)
+#    F. TaiwanStockSecuritiesLending       (借券, short-interest proxy)
+#    G. TaiwanStockMarketValue             (市值, needed for Market_Cap_Log, from 2004)
 #
 DAILY_CACHE = CACHE_DIR / "daily"
+MKT_VALUE_START = "2004-01-01"
 
 def _save_daily(date_str: str, df: pd.DataFrame, tag: str) -> None:
     path = DAILY_CACHE / f"{date_str}_{tag}.parquet"
@@ -151,15 +154,19 @@ def _daily_done(date_str: str, tag: str) -> bool:
     return (DAILY_CACHE / f"{date_str}_{tag}.parquet").exists()
 
 DAYTRADE_START = "2014-01-01"
-log.info("📦  Starting per-day download (price, chip, margin, PER, day-trading)...")
+log.info("📦  Starting per-day download (adj_price, chip, margin, PER, daytrade, securities, mktval)...")
 
 for date_str in tqdm(trading_days, desc="Daily data"):
     tasks = [
-        ("price",  "TaiwanStockPrice"),
-        ("chip",   "TaiwanStockInstitutionalInvestorsBuySell"),
-        ("margin", "TaiwanStockMarginPurchaseShortSale"),
-        ("per",    "TaiwanStockPER"),
+        # NOTE: use TaiwanStockPriceAdj (還原股價) to avoid ex-dividend artifacts in ML training
+        ("adj_price", "TaiwanStockPriceAdj"),
+        ("chip",      "TaiwanStockInstitutionalInvestorsBuySell"),
+        ("margin",    "TaiwanStockMarginPurchaseShortSale"),
+        ("per",       "TaiwanStockPER"),
+        ("securities","TaiwanStockSecuritiesLending"),
     ]
+    if date_str >= MKT_VALUE_START:
+        tasks.append(("mktval", "TaiwanStockMarketValue"))
     if date_str >= DAYTRADE_START:
         tasks.append(("daytrade", "TaiwanStockDayTrading"))
 
@@ -213,6 +220,8 @@ for month_str in tqdm(month_starts, desc="Monthly revenue"):
 
 # ── 7. Per-quarter financials ─────────────────────────────────────────────────
 QUARTERLY_CACHE = CACHE_DIR / "quarterly"
+(QUARTERLY_CACHE / "balance_sheet").mkdir(exist_ok=True)
+(QUARTERLY_CACHE / "cashflow").mkdir(exist_ok=True)
 
 log.info("📦  Starting per-quarter financial statements download...")
 quarter_ends = (
@@ -221,12 +230,65 @@ quarter_ends = (
 )
 
 for q_str in tqdm(quarter_ends, desc="Quarterly financials"):
+    # Income statement
     path = QUARTERLY_CACHE / f"{q_str}_financials.parquet"
-    if path.exists():
-        continue
-    df = _fm_get("TaiwanStockFinancialStatements", start_date=q_str, end_date=q_str)
-    if df is not None and not df.empty:
-        df.to_parquet(path)
+    if not path.exists():
+        df = _fm_get("TaiwanStockFinancialStatements", start_date=q_str, end_date=q_str)
+        if df is not None and not df.empty:
+            df.to_parquet(path)
+
+    # Balance sheet (ROE, Book Value, Debt/Equity) — from 2011-12-01
+    bs_path = QUARTERLY_CACHE / "balance_sheet" / f"{q_str}_balance.parquet"
+    if not bs_path.exists() and q_str >= "2011-12-01":
+        df = _fm_get("TaiwanStockBalanceSheet", start_date=q_str, end_date=q_str)
+        if df is not None and not df.empty:
+            df.to_parquet(bs_path)
+
+    # Cash flow statement (FCF quality) — from 2008-06-01
+    cf_path = QUARTERLY_CACHE / "cashflow" / f"{q_str}_cashflow.parquet"
+    if not cf_path.exists() and q_str >= "2008-06-01":
+        df = _fm_get("TaiwanStockCashFlowsStatement", start_date=q_str, end_date=q_str)
+        if df is not None and not df.empty:
+            df.to_parquet(cf_path)
+
+# ── 7b. Bulk low-frequency macro supplements ─────────────────────────────────
+# These are fetched in bulk (not per-day), so a single call covers years of data.
+
+# Taiwan Business Indicator (景氣燈號: red/green lamp) — monthly, Backer/Sponsor
+biz_path = PROCESSED_DIR / "business_indicator.parquet"
+if not biz_path.exists():
+    log.info("📦  Fetching TaiwanBusinessIndicator (景氣燈號)...")
+    df_biz = _fm_get("TaiwanBusinessIndicator", start_date="2004-01-01", end_date=END_DATE)
+    if df_biz is not None and not df_biz.empty:
+        if "date" in df_biz.columns:
+            df_biz = df_biz.rename(columns={"date": "Date"})
+        df_biz["Date"] = pd.to_datetime(df_biz["Date"])
+        df_biz.to_parquet(biz_path)
+        log.info(f"    business_indicator: {df_biz.shape}")
+
+# FED interest rate — free, bulk, critical macro signal
+fed_path = PROCESSED_DIR / "fed_rate.parquet"
+if not fed_path.exists():
+    log.info("📦  Fetching FED interest rate...")
+    df_fed = _fm_get("InterestRate", start_date="2004-01-01", end_date=END_DATE, stock_id="FED")
+    if df_fed is not None and not df_fed.empty:
+        if "date" in df_fed.columns:
+            df_fed = df_fed.rename(columns={"date": "Date"})
+        df_fed["Date"] = pd.to_datetime(df_fed["Date"])
+        df_fed.to_parquet(fed_path)
+        log.info(f"    fed_rate: {df_fed.shape}")
+
+# CNN Fear & Greed Index — Backer/Sponsor, bulk, from 2011
+cnn_path = PROCESSED_DIR / "fear_greed.parquet"
+if not cnn_path.exists():
+    log.info("📦  Fetching CNN Fear & Greed Index...")
+    df_cnn = _fm_get("CnnFearGreedIndex", start_date="2011-01-01", end_date=END_DATE)
+    if df_cnn is not None and not df_cnn.empty:
+        if "date" in df_cnn.columns:
+            df_cnn = df_cnn.rename(columns={"date": "Date"})
+        df_cnn["Date"] = pd.to_datetime(df_cnn["Date"])
+        df_cnn.to_parquet(cnn_path)
+        log.info(f"    fear_greed: {df_cnn.shape}")
 
 # ── 8. Macro data ─────────────────────────────────────────────────────────────
 import yfinance as yf
@@ -297,6 +359,32 @@ def _fetch_macro() -> None:
         df_macro = pd.merge_asof(df_macro.sort_values("Date"), df_oil.sort_values("Date"),
                                  on="Date", direction="backward")
 
+    # 8e. Merge FED rate into macro
+    if fed_path.exists():
+        df_fed = pd.read_parquet(fed_path)[["Date", "interest_rate"]].rename(
+            columns={"interest_rate": "FED_Rate"})
+        df_macro = pd.merge_asof(df_macro.sort_values("Date"),
+                                 df_fed.sort_values("Date"),
+                                 on="Date", direction="backward")
+
+    # 8f. Merge CNN Fear & Greed into macro
+    if cnn_path.exists():
+        df_cnn = pd.read_parquet(cnn_path)[["Date", "fear_greed"]].rename(
+            columns={"fear_greed": "CNN_FearGreed"})
+        df_macro = pd.merge_asof(df_macro.sort_values("Date"),
+                                 df_cnn.sort_values("Date"),
+                                 on="Date", direction="backward")
+
+    # 8g. Merge business indicator into macro
+    if biz_path.exists():
+        df_biz2 = pd.read_parquet(biz_path)[["Date", "monitoring"]].rename(
+            columns={"monitoring": "TW_Business_Signal"})
+        df_biz2["TW_Business_Signal"] = pd.to_numeric(
+            df_biz2["TW_Business_Signal"], errors="coerce")
+        df_macro = pd.merge_asof(df_macro.sort_values("Date"),
+                                 df_biz2.sort_values("Date"),
+                                 on="Date", direction="backward")
+
     df_macro = df_macro.ffill().bfill().sort_values("Date").reset_index(drop=True)
     df_macro.to_parquet(macro_cache)
     log.info(f"  Macro saved: {df_macro.shape}")
@@ -327,9 +415,10 @@ def _read_parquet_dir(cache_subdir: Path, suffix: str) -> pd.DataFrame:
             pass
     return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
 
-# 9a. Prices  ─────────────────────────────────────────────────────────────────
-log.info("  Assembling prices_raw.parquet ...")
-df_price = _read_parquet_dir(DAILY_CACHE, "price")
+# 9a. Prices (adjusted)  ───────────────────────────────────────────────────────
+# Using TaiwanStockPriceAdj (還原股價) — critical for ML to avoid ex-dividend artifacts
+log.info("  Assembling prices_raw.parquet (adjusted) ...")
+df_price = _read_parquet_dir(DAILY_CACHE, "adj_price")
 if not df_price.empty:
     if "date" in df_price.columns:
         df_price = df_price.rename(columns={"date": "Date"})
@@ -428,7 +517,56 @@ if not df_per.empty:
     df_per[keep].to_parquet(PROCESSED_DIR / "per_raw.parquet")
     log.info(f"    per_raw: {df_per.shape}")
 
-# 9e. Day Trading ─────────────────────────────────────────────────────────────
+# 9e. Securities Lending (借券 / short interest)  ────────────────────────────
+log.info("  Assembling securities_raw.parquet ...")
+df_sec = _read_parquet_dir(DAILY_CACHE, "securities")
+if not df_sec.empty:
+    if "date" in df_sec.columns:
+        df_sec = df_sec.rename(columns={"date": "Date"})
+    df_sec["Date"] = pd.to_datetime(df_sec["Date"])
+    df_sec["volume"] = pd.to_numeric(df_sec.get("volume", 0), errors="coerce").fillna(0)
+    # Aggregate: total securities lent per stock per day
+    df_sec_agg = (df_sec.groupby(["Date","stock_id"])["volume"]
+                  .sum().reset_index().rename(columns={"volume":"Securities_Lending"}))
+    df_sec_agg.to_parquet(PROCESSED_DIR / "securities_raw.parquet")
+    log.info(f"    securities_raw: {df_sec_agg.shape}")
+
+# 9e2. Market Value (市值 → Market_Cap_Log)  ──────────────────────────────────
+log.info("  Assembling market_value_raw.parquet ...")
+df_mv = _read_parquet_dir(DAILY_CACHE, "mktval")
+if not df_mv.empty:
+    if "date" in df_mv.columns:
+        df_mv = df_mv.rename(columns={"date": "Date"})
+    df_mv["Date"] = pd.to_datetime(df_mv["Date"])
+    df_mv["market_value"] = pd.to_numeric(df_mv.get("market_value", 0), errors="coerce")
+    df_mv[["Date","stock_id","market_value"]].to_parquet(PROCESSED_DIR / "market_value_raw.parquet")
+    log.info(f"    market_value_raw: {df_mv.shape}")
+
+# 9e3. Balance Sheet (資產負債表)  ────────────────────────────────────────────
+log.info("  Assembling balance_sheet_raw.parquet ...")
+bs_files = sorted((QUARTERLY_CACHE / "balance_sheet").glob("*.parquet"))
+if bs_files:
+    df_bs = pd.concat([pd.read_parquet(f) for f in tqdm(bs_files, desc="Balance sheets", leave=False)],
+                      ignore_index=True)
+    if "date" in df_bs.columns:
+        df_bs = df_bs.rename(columns={"date": "Date"})
+    df_bs["Date"] = pd.to_datetime(df_bs["Date"])
+    df_bs.to_parquet(PROCESSED_DIR / "balance_sheet_raw.parquet")
+    log.info(f"    balance_sheet_raw: {df_bs.shape}")
+
+# 9e4. Cash Flow Statement  ───────────────────────────────────────────────────
+log.info("  Assembling cashflow_raw.parquet ...")
+cf_files = sorted((QUARTERLY_CACHE / "cashflow").glob("*.parquet"))
+if cf_files:
+    df_cf = pd.concat([pd.read_parquet(f) for f in tqdm(cf_files, desc="Cash flows", leave=False)],
+                      ignore_index=True)
+    if "date" in df_cf.columns:
+        df_cf = df_cf.rename(columns={"date": "Date"})
+    df_cf["Date"] = pd.to_datetime(df_cf["Date"])
+    df_cf.to_parquet(PROCESSED_DIR / "cashflow_raw.parquet")
+    log.info(f"    cashflow_raw: {df_cf.shape}")
+
+# 9f. Day Trading ─────────────────────────────────────────────────────────────
 log.info("  Assembling daytrade_raw.parquet ...")
 df_dt = _read_parquet_dir(DAILY_CACHE, "daytrade")
 if not df_dt.empty:
