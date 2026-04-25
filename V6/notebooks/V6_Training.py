@@ -288,7 +288,16 @@ print(f"FinMind token: {FINMIND_TOKEN[:30]}... (OK)")
 DRIVE_SNAPSHOT = "/content/drive/MyDrive/MarketMamba_V6/processed_v6.zip"
 DRIVE_DATA_PATH = DRIVE_SNAPSHOT   # kept for Cell 3 backup reference
 
-import os
+import os, time
+
+# Force Drive to sync the directory before checking (Colab lazy-mounts)
+_v6_dir = "/content/drive/MyDrive/MarketMamba_V6"
+try:
+    _files_in_dir = os.listdir(_v6_dir) if os.path.isdir(_v6_dir) else []
+    print(f"Drive MarketMamba_V6/ contents: {_files_in_dir}")
+except Exception as _e:
+    print(f"Cannot list {_v6_dir}: {_e}")
+
 if os.path.exists(DRIVE_SNAPSHOT):
     print("Restoring data snapshot from Drive...")
     os.makedirs(str(PROCESSED_DIR), exist_ok=True)
