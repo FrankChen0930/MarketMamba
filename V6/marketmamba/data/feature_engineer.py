@@ -29,12 +29,19 @@ logger = logging.getLogger(__name__)
 # ============================================================
 
 def build_features(
-    df_price:  pd.DataFrame,
-    df_inst:   pd.DataFrame,
-    df_margin: pd.DataFrame,
-    df_rev:    pd.DataFrame,
-    df_fin:    pd.DataFrame,
-    df_macro:  pd.DataFrame,
+    df_price:         pd.DataFrame,
+    df_inst:          pd.DataFrame | None = None,
+    df_margin:        pd.DataFrame | None = None,
+    df_per:           pd.DataFrame | None = None,
+    df_securities:    pd.DataFrame | None = None,
+    df_market_value:  pd.DataFrame | None = None,
+    df_daytrade:      pd.DataFrame | None = None,
+    df_holdings:      pd.DataFrame | None = None,
+    df_rev:           pd.DataFrame | None = None,
+    df_fin:           pd.DataFrame | None = None,
+    df_balance_sheet: pd.DataFrame | None = None,
+    df_cashflow:      pd.DataFrame | None = None,
+    df_macro:         pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     """
     Merge all raw data sources and compute the 46-dim feature matrix.
@@ -63,9 +70,12 @@ def build_features(
     df = _merge_institutional(df, df_inst)
     df = _merge_margin(df, df_margin)
     df = _add_technical_b_features(df)
+    df = _merge_daytrade(df, df_daytrade)
 
     # -- Group C: Fundamentals --
-    df = _merge_fundamentals(df, df_rev, df_fin)
+    df = _merge_per_pbr(df, df_per)
+    df = _merge_market_value_feature(df, df_market_value)
+    df = _merge_fundamentals(df, df_rev, df_fin, df_balance_sheet)
 
     # -- Group D: Macro --
     df = _merge_macro(df, df_macro)
@@ -158,42 +168,36 @@ def _merge_institutional(df: pd.DataFrame, df_inst: pd.DataFrame) -> pd.DataFram
 
 
 def _merge_margin(df: pd.DataFrame, df_margin: pd.DataFrame) -> pd.DataFrame:
-    """Merge margin purchase / short sale data, forward-fill gaps."""
+    """Merge margin purchase / short sale data.
+    Columns in margin_raw.parquet are already renamed by fetch_v6_data.py."""
+    EXPECTED = ["Margin_Purchase", "Margin_Repay", "Short_Sale",
+                "Short_Cover", "Margin_Balance", "Short_Balance"]
     if df_margin is None or df_margin.empty:
-        for col in ["Margin_Purchase", "Margin_Repay", "Short_Sale",
-                    "Short_Cover", "Margin_Balance", "Short_Balance"]:
+        for col in EXPECTED:
             df[col] = 0.0
         return df
 
-    df_margin = df_margin.copy()
-    df_margin["Date"] = pd.to_datetime(df_margin["Date"])
-    margin_cols = ["Margin_Purchase", "Margin_Repay", "Short_Sale",
-                   "Short_Cover", "MarginPurchaseBalance", "ShortSaleBalance"]
+    df_m = df_margin.copy()
+    df_m["Date"] = pd.to_datetime(df_m["Date"])
 
-    # Map FinMind column names → V6 names
-    col_map = {
-        "MarginPurchase":        "Margin_Purchase",
-        "MarginRepay":           "Margin_Repay",
-        "ShortSale":             "Short_Sale",
-        "ShortCover":            "Short_Cover",
-        "MarginPurchaseBalance": "Margin_Balance",
-        "ShortSaleBalance":      "Short_Balance",
+    # Support BOTH already-renamed cols AND original FinMind names
+    legacy_map = {
+        "MarginPurchaseBuy":          "Margin_Purchase",
+        "MarginPurchaseSell":         "Margin_Repay",
+        "ShortSaleSell":              "Short_Sale",
+        "ShortSaleBuy":               "Short_Cover",
+        "MarginPurchaseTodayBalance": "Margin_Balance",
+        "ShortSaleTodayBalance":      "Short_Balance",
     }
-    df_margin.rename(columns=col_map, inplace=True)
-    valid_cols = [c for c in col_map.values() if c in df_margin.columns]
+    df_m.rename(columns=legacy_map, inplace=True)
+    valid = [c for c in EXPECTED if c in df_m.columns]
 
-    df = df.merge(df_margin[["Date", "stock_id"] + valid_cols],
+    df = df.merge(df_m[["Date", "stock_id"] + valid],
                   on=["Date", "stock_id"], how="left")
-
-    # Forward-fill within each stock (handles Forward Fill fallback days)
-    for col in valid_cols:
+    for col in valid:
         df[col] = df.groupby("stock_id")[col].transform(
-            lambda x: x.ffill().fillna(0.0)
-        )
-
-    # Ensure all expected columns exist
-    for col in ["Margin_Purchase", "Margin_Repay", "Short_Sale",
-                "Short_Cover", "Margin_Balance", "Short_Balance"]:
+            lambda x: x.ffill().fillna(0.0))
+    for col in EXPECTED:
         if col not in df.columns:
             df[col] = 0.0
     return df
@@ -228,10 +232,67 @@ def _add_technical_b_features(df: pd.DataFrame) -> pd.DataFrame:
                   (x.rolling(60, min_periods=20).std() + 1e-9)
     )
 
-    # Day trade volume (placeholder — will be filled from FinMind if available)
     if "Day_Trade_Volume" not in df.columns:
         df["Day_Trade_Volume"] = 0.0
+    return df
 
+
+def _merge_daytrade(df: pd.DataFrame, df_daytrade: pd.DataFrame | None) -> pd.DataFrame:
+    """Merge Day_Trade_Volume ratio from daytrade_raw.parquet."""
+    if df_daytrade is None or df_daytrade.empty:
+        return df
+    dt = df_daytrade[["Date", "stock_id", "Day_Trade_Volume"]].copy()
+    dt["Date"] = pd.to_datetime(dt["Date"])
+    dt["Day_Trade_Volume"] = pd.to_numeric(dt["Day_Trade_Volume"], errors="coerce").clip(0, 1)
+    df = df.merge(dt, on=["Date", "stock_id"], how="left", suffixes=("", "_dt"))
+    if "Day_Trade_Volume_dt" in df.columns:
+        df["Day_Trade_Volume"] = df["Day_Trade_Volume_dt"].fillna(df["Day_Trade_Volume"])
+        df.drop(columns=["Day_Trade_Volume_dt"], inplace=True)
+    else:
+        df["Day_Trade_Volume"] = df["Day_Trade_Volume"].fillna(0.0)
+    return df
+
+
+def _merge_per_pbr(df: pd.DataFrame, df_per: pd.DataFrame | None) -> pd.DataFrame:
+    """Merge PER/PBR/DY from per_raw.parquet (daily, direct join)."""
+    if df_per is None or df_per.empty:
+        return df
+    p = df_per.copy()
+    p["Date"] = pd.to_datetime(p["Date"])
+    for c in ["PER", "PBR", "DY", "dividend_yield"]:
+        if c in p.columns:
+            p[c] = pd.to_numeric(p[c], errors="coerce")
+    if "dividend_yield" in p.columns and "DY" not in p.columns:
+        p = p.rename(columns={"dividend_yield": "DY"})
+    keep = ["Date", "stock_id"] + [c for c in ["PER", "PBR", "DY"] if c in p.columns]
+    df = df.merge(p[keep], on=["Date", "stock_id"], how="left", suffixes=("", "_per"))
+    for c in ["PER", "PBR"]:
+        dup = c + "_per"
+        if dup in df.columns:
+            df[c] = df[dup].combine_first(df.get(c))
+            df.drop(columns=[dup], inplace=True)
+    # Forward-fill PER/PBR within each stock (not updated every day)
+    for c in ["PER", "PBR"]:
+        if c in df.columns:
+            df[c] = df.groupby("stock_id")[c].transform(lambda x: x.ffill())
+    return df
+
+
+def _merge_market_value_feature(df: pd.DataFrame, df_mv: pd.DataFrame | None) -> pd.DataFrame:
+    """Compute Market_Cap_Log from market_value_raw.parquet."""
+    if df_mv is None or df_mv.empty:
+        return df
+    mv = df_mv[["Date", "stock_id", "market_value"]].copy()
+    mv["Date"] = pd.to_datetime(mv["Date"])
+    mv["market_value"] = pd.to_numeric(mv["market_value"], errors="coerce").clip(lower=0)
+    mv["Market_Cap_Log"] = np.log1p(mv["market_value"])
+    df = df.merge(mv[["Date", "stock_id", "Market_Cap_Log"]],
+                  on=["Date", "stock_id"], how="left", suffixes=("", "_mv"))
+    if "Market_Cap_Log_mv" in df.columns:
+        df["Market_Cap_Log"] = df["Market_Cap_Log_mv"].combine_first(df.get("Market_Cap_Log"))
+        df.drop(columns=["Market_Cap_Log_mv"], inplace=True)
+    df["Market_Cap_Log"] = df.groupby("stock_id")["Market_Cap_Log"].transform(
+        lambda x: x.ffill().fillna(0.0))
     return df
 
 
@@ -241,8 +302,9 @@ def _add_technical_b_features(df: pd.DataFrame) -> pd.DataFrame:
 
 def _merge_fundamentals(
     df: pd.DataFrame,
-    df_rev: pd.DataFrame,
-    df_fin: pd.DataFrame,
+    df_rev:          pd.DataFrame | None = None,
+    df_fin:          pd.DataFrame | None = None,
+    df_balance_sheet: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     """
     Merge monthly revenue and quarterly financial statements.
@@ -265,15 +327,16 @@ def _merge_fundamentals(
         df = _merge_revenue(df, df_rev)
 
     if df_fin is not None and not df_fin.empty:
-        df = _merge_financial_statements(df, df_fin)
+        df = _merge_financial_statements(df, df_fin, df_balance_sheet)
 
     return df
 
 
 def _merge_revenue(df: pd.DataFrame, df_rev: pd.DataFrame) -> pd.DataFrame:
     df_rev = df_rev.copy()
-    # FinMind column: date (year-month), stock_id, revenue
-    df_rev["date"] = pd.to_datetime(df_rev["date"])
+    # Support both 'date' (raw FinMind) and 'Date' (already renamed by merger)
+    date_col = "Date" if "Date" in df_rev.columns else "date"
+    df_rev["date"] = pd.to_datetime(df_rev[date_col])
     # Revenue is published on the 10th of following month; safe to use from 11th onward
     df_rev["available_from"] = df_rev["date"] + pd.offsets.MonthEnd(0) + pd.Timedelta(days=11)
 
@@ -295,40 +358,77 @@ def _merge_revenue(df: pd.DataFrame, df_rev: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def _merge_financial_statements(df: pd.DataFrame, df_fin: pd.DataFrame) -> pd.DataFrame:
-    """Merge quarterly EPS, PER, PBR, gross margin, ROE with look-ahead protection."""
+def _merge_financial_statements(
+    df: pd.DataFrame,
+    df_fin: pd.DataFrame,
+    df_balance_sheet: pd.DataFrame | None = None,
+) -> pd.DataFrame:
+    """Merge quarterly EPS, Gross_Margin, ROE with look-ahead protection.
+    Handles FinMind long format: columns = [Date, stock_id, type, value, origin_name]"""
     df_fin = df_fin.copy()
-    df_fin["date"] = pd.to_datetime(df_fin["date"])
-    # Financials available ~45 days after quarter end
-    df_fin["available_from"] = df_fin["date"] + pd.Timedelta(days=45)
-    df_fin = df_fin.sort_values(["stock_id", "date"])
+    date_col = "Date" if "Date" in df_fin.columns else "date"
+    df_fin["Date"] = pd.to_datetime(df_fin[date_col])
+    df_fin["available_from"] = df_fin["Date"] + pd.Timedelta(days=45)
 
-    fin_cols = [c for c in ["EPS", "PER", "PBR", "Gross_Margin", "ROE", "Book_Value"] if c in df_fin.columns]
+    # -- Detect wide vs long format --
+    is_long = "type" in df_fin.columns and "value" in df_fin.columns
+
+    if is_long:
+        # Pivot long → wide, extracting key financial items
+        TYPE_MAP = {
+            # EPS variants
+            "EPS": "EPS", "AfterTax_EPS": "EPS", "BasicEPS": "EPS",
+            # Revenue / Gross
+            "Operating_Revenue": "Revenue", "OperatingRevenue": "Revenue",
+            "Gross_Profit": "GrossProfit", "GrossProfit": "GrossProfit",
+            # ROE
+            "ROE": "ROE",
+            # Book value
+            "Total_Equity": "Book_Value", "TotalEquity": "Book_Value",
+            "StockholdersEquity": "Book_Value",
+        }
+        df_fin["mapped"] = df_fin["type"].map(TYPE_MAP)
+        df_fin = df_fin[df_fin["mapped"].notna()].copy()
+        if df_fin.empty:
+            logger.warning("financial_statements: no recognisable type values found")
+            return df
+        df_fin["value"] = pd.to_numeric(df_fin["value"], errors="coerce")
+        # Take last value per (stock_id, Date, mapped)
+        df_wide = (df_fin.groupby(["stock_id", "Date", "available_from", "mapped"])["value"]
+                   .last().unstack("mapped").reset_index())
+        # Compute derived columns
+        if "GrossProfit" in df_wide.columns and "Revenue" in df_wide.columns:
+            df_wide["Gross_Margin"] = df_wide["GrossProfit"] / df_wide["Revenue"].replace(0, np.nan)
+        df_fin = df_wide
+        fin_cols = [c for c in ["EPS", "Gross_Margin", "ROE", "Book_Value"] if c in df_fin.columns]
+    else:
+        fin_cols = [c for c in ["EPS", "Gross_Margin", "ROE", "Book_Value"] if c in df_fin.columns]
+
     if not fin_cols:
         return df
 
-    merged_rows = []
+    df_fin = df_fin.sort_values(["stock_id", "available_from"])
+    for col in fin_cols:
+        vals_by_stock = df_fin.groupby("stock_id").apply(
+            lambda g: _asof_lookup(df.loc[df["stock_id"] == g.name, "Date"],
+                                   g["available_from"].reset_index(drop=True),
+                                   g[col].reset_index(drop=True))
+        )
+    # Vectorised as-of per stock
+    result_rows = []
     for sid, sub_df in df.groupby("stock_id"):
         sub_fin = df_fin[df_fin["stock_id"] == sid].sort_values("available_from")
         sub_df = sub_df.copy()
         for col in fin_cols:
-            sub_df[col] = _asof_lookup(sub_df["Date"], sub_fin["available_from"], sub_fin[col])
-        merged_rows.append(sub_df)
+            sub_df[col] = _asof_lookup(sub_df["Date"],
+                                        sub_fin["available_from"].reset_index(drop=True),
+                                        sub_fin[col].reset_index(drop=True))
+        result_rows.append(sub_df)
+    if result_rows:
+        df = pd.concat(result_rows, ignore_index=True)
 
-    if merged_rows:
-        df = pd.concat(merged_rows, ignore_index=True)
-
-    # EPS_Surprise = EPS_this_quarter / EPS_same_quarter_last_year - 1
     if "EPS" in df.columns:
-        df["EPS_Surprise"] = (
-            df.groupby("stock_id")["EPS"].pct_change(4).fillna(0)
-        )
-
-    # Market_Cap_Log
-    if "Market_Cap_Log" not in df.columns or (df["Market_Cap_Log"] == 0).all():
-        if "PBR" in df.columns and "Book_Value" in df.columns:
-            market_cap = df["PBR"] * df["Book_Value"]
-            df["Market_Cap_Log"] = np.log1p(market_cap.clip(lower=0))
+        df["EPS_Surprise"] = df.groupby("stock_id")["EPS"].pct_change(4).fillna(0)
 
     return df
 
@@ -337,40 +437,51 @@ def _merge_financial_statements(df: pd.DataFrame, df_fin: pd.DataFrame) -> pd.Da
 # Group D — Macro (8 dims)
 # ============================================================
 
-def _merge_macro(df: pd.DataFrame, df_macro: pd.DataFrame) -> pd.DataFrame:
-    macro_defaults = {
+def _merge_macro(df: pd.DataFrame, df_macro: pd.DataFrame | None) -> pd.DataFrame:
+    """Merge macro data. Handles our macro_raw.parquet column names:
+    TWII_Close, US_SOX, US_QQQ, US_VIX, US_TNX, Gold, Oil, USD_TWD, FED_Rate, ..."""
+    DEFAULTS = {
         "TWII_Return": 0.0, "SPX_Return": 0.0,
         "VIX": 20.0, "TNX": 4.0,
         "Gold_Return": 0.0, "Oil_Return": 0.0,
         "USD_TWD": 30.0, "Market_Closed": 0.0,
     }
-    for col, default in macro_defaults.items():
+    for col, default in DEFAULTS.items():
         if col not in df.columns:
             df[col] = default
 
     if df_macro is None or df_macro.empty:
         return df
 
-    df_macro = df_macro.copy()
-    df_macro["Date"] = pd.to_datetime(df_macro["Date"])
+    m = df_macro.copy()
+    m["Date"] = pd.to_datetime(m["Date"])
 
-    # Compute returns for index-type columns
-    for raw_col, ret_col in [("SPX", "SPX_Return"), ("Gold", "Gold_Return"), ("Oil", "Oil_Return")]:
-        if raw_col in df_macro.columns:
-            df_macro[ret_col] = df_macro[raw_col].pct_change(1).fillna(0)
+    # Rename to canonical names used in features
+    rename_map = {
+        "TWII_Close": "TWII",
+        "US_QQQ":     "SPX",    # QQQ as SPX proxy
+        "US_VIX":     "VIX",
+        "US_TNX":     "TNX",
+    }
+    m.rename(columns=rename_map, inplace=True)
 
-    if "TWII" in df_macro.columns:
-        df_macro["TWII_Return"] = df_macro["TWII"].pct_change(1).fillna(0)
+    # Compute pct-change returns
+    for raw, ret in [("TWII", "TWII_Return"), ("SPX", "SPX_Return"),
+                     ("Gold", "Gold_Return"), ("Oil", "Oil_Return")]:
+        if raw in m.columns:
+            m[ret] = m[raw].pct_change(1).fillna(0)
 
-    macro_cols = [c for c in macro_defaults if c in df_macro.columns]
-    df = df.merge(df_macro[["Date"] + macro_cols], on="Date", how="left", suffixes=("", "_macro"))
+    # Market_Closed: 0 on trading days (df already aligned to trading days)
+    m["Market_Closed"] = 0.0
 
-    for col in macro_cols:
-        merged_col = col + "_macro" if col + "_macro" in df.columns else col
-        df[col] = df.get(merged_col, df.get(col, macro_defaults[col])).fillna(macro_defaults[col])
-        if merged_col != col and merged_col in df.columns:
-            df.drop(columns=[merged_col], inplace=True)
-
+    want = [c for c in DEFAULTS if c in m.columns]
+    df = df.merge(m[["Date"] + want], on="Date", how="left", suffixes=("", "_m"))
+    for col in want:
+        dup = col + "_m"
+        if dup in df.columns:
+            df[col] = df[dup].combine_first(df[col])
+            df.drop(columns=[dup], inplace=True)
+        df[col] = df[col].fillna(DEFAULTS[col])
     return df
 
 
