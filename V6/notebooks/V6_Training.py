@@ -23,8 +23,8 @@ Steps:
 # ==========================================
 import os
 
-# FinMind token (required for data sync)
-os.environ["FINMIND_TOKEN"] = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiRnJhbmtDaGVuIiwiZW1haWwiOiJhMDk2NjQ2OTk2NEBnbWFpbC5jb20ifQ.rwJBGSwJyHDqXeVZKCMkKulKVk48Y2klu4pyUgiJyrE"
+# FinMind Sponsor token (update after each renewal)
+os.environ["FINMIND_TOKEN"] = "YOUR_SPONSOR_TOKEN_HERE"  # <-- paste new token
 
 # LLM API key (optional - skip to disable LLM report)
 os.environ["ANTHROPIC_API_KEY"] = ""   # paste your key if you have one
@@ -280,40 +280,65 @@ from marketmamba.config import FINMIND_TOKEN
 assert FINMIND_TOKEN, "FINMIND_TOKEN not loaded in config! Check Cell 0."
 print(f"FinMind token: {FINMIND_TOKEN[:30]}... (OK)")
 
-# Optional: restore data snapshot from Drive to speed up sync
-DRIVE_DATA_PATH = "/content/drive/MyDrive/MarketMamba/data_snapshot_v6.tar.gz"
+# ── Drive snapshot restore ───────────────────────────────────────────────────
+# Upload Data/processed_v6.zip to:
+#   /MyDrive/MarketMamba_V6/processed_v6.zip
+# This cell restores it so Cell 3+ can skip all FinMind fetching.
+
+DRIVE_SNAPSHOT = "/content/drive/MyDrive/MarketMamba_V6/processed_v6.zip"
+DRIVE_DATA_PATH = DRIVE_SNAPSHOT   # kept for Cell 3 backup reference
+
 import os
-if os.path.exists(DRIVE_DATA_PATH):
-    print("Copying data snapshot from Drive...")
+if os.path.exists(DRIVE_SNAPSHOT):
+    print("Restoring data snapshot from Drive...")
     os.makedirs(str(PROCESSED_DIR), exist_ok=True)
-    os.system(f"tar xzf {DRIVE_DATA_PATH} -C /")
-    print("Snapshot loaded - incremental sync will be much faster")
+    rc = os.system(f"unzip -q -o {DRIVE_SNAPSHOT} -d {PROCESSED_DIR}")
+    if rc == 0:
+        n = len(list(PROCESSED_DIR.glob("*.parquet")))
+        print(f"Snapshot restored: {n} parquet files in {PROCESSED_DIR}")
+    else:
+        print("unzip failed - trying python fallback...")
+        import zipfile
+        with zipfile.ZipFile(DRIVE_SNAPSHOT, 'r') as zf:
+            zf.extractall(PROCESSED_DIR)
+        print("Snapshot restored via Python zipfile")
 else:
-    print("No Drive snapshot found - will do full sync (30-60 min first time)")
+    print(f"Drive snapshot not found at: {DRIVE_SNAPSHOT}")
+    print("Please upload Data/processed_v6.zip to that Drive path.")
+    print("Cell 3 will fail if prices_raw.parquet is missing.")
 
 
-# %% Cell 3: Full Data Sync (2012 to today)
+# %% Cell 3: Verify Data Snapshot
 # ==========================================
-# Hybrid Data Fetch
+# Data was fetched locally and uploaded to Drive.
+# This cell just verifies the parquet files are present
+# and extracts the trading day list.
 # ==========================================
-# First run: ~30-60 min (2012 full history)
-# Subsequent: ~2-5 min (incremental)
+import pandas as pd
+from pathlib import Path
 
-from marketmamba.data.fetcher import run_full_data_sync
+FORCE_REBUILD = False   # Set True to force feature re-engineering in Cell 4
 
-FORCE_REBUILD = False   # Set True to re-download everything from scratch
+prices_path = PROCESSED_DIR / "prices_raw.parquet"
+if not prices_path.exists():
+    raise FileNotFoundError(
+        "prices_raw.parquet not found!\n"
+        "Make sure you:\n"
+        "  1. Uploaded Data/processed_v6.zip to /MyDrive/MarketMamba_V6/ on Drive\n"
+        "  2. Re-ran Cell 2 (it unzips the snapshot)"
+    )
 
-trading_days = run_full_data_sync(force_rebuild=FORCE_REBUILD)
-print(f"\nData sync complete")
-print(f"   Trading days: {len(trading_days)}")
-print(f"   Range: {trading_days[0]} -> {trading_days[-1]}")
+df_cal = pd.read_parquet(prices_path, columns=["Date"]).drop_duplicates()
+trading_days = sorted(df_cal["Date"].astype(str).unique().tolist())
 
-# Back up to Drive
-print("\nBacking up processed data to Drive...")
-os.makedirs("/content/drive/MyDrive/MarketMamba", exist_ok=True)
-os.system(f"tar czf /tmp/data_snapshot_v6.tar.gz -C / {str(PROCESSED_DIR).lstrip('/')}")
-os.system(f"cp /tmp/data_snapshot_v6.tar.gz {DRIVE_DATA_PATH}")
-print("Backup complete")
+print(f"Data snapshot verified")
+print(f"  Trading days : {len(trading_days):,}")
+print(f"  Range        : {trading_days[0]} -> {trading_days[-1]}")
+
+# List all available parquet files
+print("\nAvailable raw files:")
+for f in sorted(PROCESSED_DIR.glob("*.parquet")):
+    print(f"  {f.name:<40} {f.stat().st_size / 1_048_576:.1f} MB")
 
 
 # %% Cell 4: Feature Matrix + KG Cache
@@ -339,12 +364,19 @@ else:
     print(f"   Close NaN: {integrity.get('close_na_pct', 0):.1%}")
 
     df = build_features(
-        df_price  = data["prices"],
-        df_inst   = data["inst"],
-        df_margin = data["margin"],
-        df_rev    = data["revenue"],
-        df_fin    = data["financials"],
-        df_macro  = data["macro"],
+        df_price         = data["prices"],
+        df_inst          = data["inst"],
+        df_margin        = data["margin"],
+        df_per           = data["per"],
+        df_securities    = data["securities"],
+        df_market_value  = data["market_value"],
+        df_daytrade      = data["daytrade"],
+        df_holdings      = data["holdings"],
+        df_rev           = data["revenue"],
+        df_fin           = data["financials"],
+        df_balance_sheet = data["balance_sheet"],
+        df_cashflow      = data["cashflow"],
+        df_macro         = data["macro"],
     )
     df = clean_and_scale(df)
     df.to_parquet(MATRIX_CACHE)
@@ -459,7 +491,7 @@ if RUN_FULL_WF:
     wf_summary = run_walk_forward(
         df           = df,
         train_fn     = train_fold,
-        train_start  = "2012-01-01",
+        train_start  = "2005-01-01",   # matches DATA_START_DATE
         save_results = True,
     )
     wf_summary.print_report()

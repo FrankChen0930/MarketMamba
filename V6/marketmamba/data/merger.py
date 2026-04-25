@@ -36,12 +36,19 @@ def merge_all_data() -> dict[str, pd.DataFrame]:
 
     Returns:
         {
-          'prices'    : pd.DataFrame,
-          'inst'      : pd.DataFrame | None,
-          'margin'    : pd.DataFrame | None,
-          'revenue'   : pd.DataFrame | None,
-          'financials': pd.DataFrame | None,
-          'macro'     : pd.DataFrame | None,
+          'prices'       : pd.DataFrame,          # adjusted OHLCV
+          'inst'         : pd.DataFrame | None,   # 三大法人
+          'margin'       : pd.DataFrame | None,   # 融資融券
+          'per'          : pd.DataFrame | None,   # PER/PBR/DY
+          'securities'   : pd.DataFrame | None,   # 借券 (short interest)
+          'market_value' : pd.DataFrame | None,   # 個股市値
+          'daytrade'     : pd.DataFrame | None,   # 當沖比率
+          'holdings'     : pd.DataFrame | None,   # 大戶持股分級
+          'revenue'      : pd.DataFrame | None,   # 月營收
+          'financials'   : pd.DataFrame | None,   # 綜合損益表
+          'balance_sheet': pd.DataFrame | None,   # 資產負債表
+          'cashflow'     : pd.DataFrame | None,   # 現金流量表
+          'macro'        : pd.DataFrame | None,   # 宏觀指標
         }
     """
     def _load(name: str) -> pd.DataFrame | None:
@@ -50,23 +57,35 @@ def merge_all_data() -> dict[str, pd.DataFrame]:
             logger.warning(f"Raw data not found: {path}")
             return None
         df = pd.read_parquet(path)
+        # Normalise date column to 'Date'
+        if "date" in df.columns and "Date" not in df.columns:
+            df = df.rename(columns={"date": "Date"})
+        if "Date" in df.columns:
+            df["Date"] = pd.to_datetime(df["Date"])
         logger.info(f"  {name}: {df.shape[0]:,} rows")
         return df
 
     logger.info("Loading raw data sources...")
     data = {
-        "prices":     _load("prices"),
-        "inst":       _load("institutional"),
-        "margin":     _load("margin"),
-        "revenue":    _load("revenue"),
-        "financials": _load("financials"),
-        "macro":      _load("macro"),
+        "prices":        _load("prices"),
+        "inst":          _load("institutional"),
+        "margin":        _load("margin"),
+        "per":           _load("per"),
+        "securities":    _load("securities"),
+        "market_value":  _load("market_value"),
+        "daytrade":      _load("daytrade"),
+        "holdings":      _load("holdings"),
+        "revenue":       _load("revenue"),
+        "financials":    _load("financials"),
+        "balance_sheet": _load("balance_sheet"),
+        "cashflow":      _load("cashflow"),
+        "macro":         _load("macro"),
     }
 
     if data["prices"] is None:
         raise FileNotFoundError(
             "prices_raw.parquet not found. "
-            "Run fetcher.run_full_data_sync() first."
+            "Restore the Drive snapshot (Cell 2) before running this cell."
         )
 
     return data
