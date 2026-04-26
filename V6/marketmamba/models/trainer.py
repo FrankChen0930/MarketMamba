@@ -23,7 +23,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch import Tensor
-from torch.cuda.amp import GradScaler, autocast
+from torch.amp import GradScaler, autocast
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import OneCycleLR
 from torch.utils.data import DataLoader, Dataset
@@ -152,10 +152,10 @@ class TemporalCrossSectionDataset(Dataset):
             Y_list.append(targets)
 
         if not X_list:
-            # Return zero tensors so the training loop can detect and skip
             return (
                 torch.zeros(1, self.seq_len, INPUT_DIM, dtype=torch.float32),
                 torch.zeros(1, len(PRED_HORIZONS), dtype=torch.float32),
+                [],
             )
 
         X = torch.from_numpy(np.array(X_list))   # (N, T, D)
@@ -165,8 +165,9 @@ class TemporalCrossSectionDataset(Dataset):
         if self.n_sample is not None and X.shape[0] > self.n_sample:
             idx_s = torch.randperm(X.shape[0])[: self.n_sample]
             X, Y = X[idx_s], Y[idx_s]
+            stocks_today = [stocks_today[i] for i in idx_s.tolist()]
 
-        return X, Y
+        return X, Y, list(stocks_today)
 
 
 # ============================================================
@@ -176,13 +177,10 @@ class TemporalCrossSectionDataset(Dataset):
 def _identity_collate(batch):
     """
     Custom collate for full-cross-section batches.
-
-    DataLoader wraps each __getitem__ result in a list of length batch_size.
-    With batch_size=1, batch = [(X, Y)] where X is already (N, T, D).
-    We just unwrap the list — no stacking, no extra batch dimension.
+    batch = [(X, Y, stock_ids)] with batch_size=1.
     """
     assert len(batch) == 1, "batch_size must be 1 for cross-section dataset"
-    return batch[0]  # returns (X, Y) directly, shape (N, T, D), (N, 3)
+    return batch[0]  # returns (X, Y, stock_ids)
 
 
 def make_dataloader(dataset: TemporalCrossSectionDataset, shuffle: bool = True) -> DataLoader:
@@ -269,8 +267,7 @@ def load_kg_edges(
     if not KG_CACHE_PATH.exists():
         logger.warning(
             f"KG cache not found at {KG_CACHE_PATH}. "
-            "No cross-stock edges will be used. "
-            "Run knowledge.graph_builder.build_knowledge_graph() to create it."
+            "No cross-stock edges will be used."
         )
         return (
             torch.zeros((2, 0), dtype=torch.long, device=device),
@@ -302,6 +299,58 @@ def load_kg_edges(
     edge_index = torch.tensor([rows, cols], dtype=torch.long,    device=device)
     edge_attr  = torch.tensor(attrs,        dtype=torch.float32, device=device)
     logger.info(f"KG: {edge_index.shape[1]} edges loaded for {len(stock_ids)} stocks")
+    return edge_index, edge_attr
+
+
+def build_kg_adjacency() -> dict | None:
+    """
+    Pre-build KG adjacency dict for fast per-batch edge lookup.
+    Returns: {src_stock_id: [(dst_stock_id, edge_attr), ...]} or None if no KG.
+    """
+    if not KG_CACHE_PATH.exists():
+        return None
+    data      = np.load(KG_CACHE_PATH, allow_pickle=True)
+    all_ids   = list(data["stock_ids"])
+    all_edges = data["edge_index"]
+    all_attrs = data["edge_attr"]
+    adj: dict[str, list] = {}
+    for i in range(all_edges.shape[1]):
+        src = all_ids[all_edges[0, i]]
+        dst = all_ids[all_edges[1, i]]
+        adj.setdefault(src, []).append((dst, float(all_attrs[i])))
+    logger.info(f"KG adjacency built: {len(all_ids)} nodes, {all_edges.shape[1]} edges")
+    return adj
+
+
+def get_batch_edges(
+    batch_stocks: list[str],
+    kg_adj:       dict | None,
+    device:       torch.device,
+) -> tuple[Tensor, Tensor]:
+    """
+    Build a LOCAL edge_index for the current batch from the pre-built KG adj dict.
+    All indices are in [0, len(batch_stocks)) — no out-of-bounds possible.
+    """
+    empty = (
+        torch.zeros((2, 0), dtype=torch.long,    device=device),
+        torch.zeros(0,       dtype=torch.float32, device=device),
+    )
+    if kg_adj is None or not batch_stocks:
+        return empty
+
+    local = {sid: i for i, sid in enumerate(batch_stocks)}
+    rows, cols, attrs = [], [], []
+    for src in batch_stocks:
+        for dst, attr in kg_adj.get(src, []):
+            if dst in local:
+                rows.append(local[src])
+                cols.append(local[dst])
+                attrs.append(attr)
+    if not rows:
+        return empty
+
+    edge_index = torch.tensor([rows, cols], dtype=torch.long,    device=device)
+    edge_attr  = torch.tensor(attrs,        dtype=torch.float32, device=device)
     return edge_index, edge_attr
 
 
@@ -385,11 +434,10 @@ def train_model(
         pct_start=WARMUP_PCT,
         anneal_strategy="cos",
     )
-    scaler = GradScaler(enabled=AMP_ENABLED and device_str == "cuda")
+    scaler = GradScaler('cuda', enabled=AMP_ENABLED and device_str == "cuda")
 
-    # KG edges (global — same for all dates, loaded once)
-    all_stock_ids = df["stock_id"].unique().tolist()
-    edge_index, edge_attr = load_kg_edges(all_stock_ids, device)
+    # KG adjacency dict (pre-built once, O(1) per-stock lookup per batch)
+    kg_adj = build_kg_adjacency()
 
     history  = TrainingHistory()
     best_val = float("inf")
@@ -405,13 +453,15 @@ def train_model(
         epoch_bd: dict[str, list] = {k: [] for k in
                                       ["mse_20d", "mse_5d", "mse_60d", "listnet_20d"]}
 
-        for X, Y in train_loader:
+        for X, Y, batch_stocks in train_loader:
             if X.shape[0] <= 1:   # skip empty / degenerate cross-sections
                 continue
             X, Y = X.to(device), Y.to(device)
+            # Build batch-local edge_index (indices in [0, N_batch)) — no out-of-bounds
+            edge_index, edge_attr = get_batch_edges(batch_stocks, kg_adj, device)
 
             optimizer.zero_grad()
-            with autocast(enabled=AMP_ENABLED and device_str == "cuda"):
+            with autocast('cuda', enabled=AMP_ENABLED and device_str == "cuda"):
                 preds       = model(X, edge_index, edge_attr)
                 loss, brkdn = multi_horizon_loss(preds, Y)
 
@@ -436,11 +486,12 @@ def train_model(
         model.eval()
         val_losses, val_ics = [], []
         with torch.no_grad():
-            for X, Y in val_loader:
+            for X, Y, batch_stocks in val_loader:
                 if X.shape[0] <= 1:
                     continue
                 X, Y = X.to(device), Y.to(device)
-                with autocast(enabled=AMP_ENABLED and device_str == "cuda"):
+                edge_index, edge_attr = get_batch_edges(batch_stocks, kg_adj, device)
+                with autocast('cuda', enabled=AMP_ENABLED and device_str == "cuda"):
                     preds      = model(X, edge_index, edge_attr)
                     loss, _    = multi_horizon_loss(preds, Y)
                 val_losses.append(loss.item())
