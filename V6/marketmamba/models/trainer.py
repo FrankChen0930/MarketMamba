@@ -89,23 +89,26 @@ class TemporalCrossSectionDataset(Dataset):
 
         self._df = df
 
-        # Sorted unique dates for window slicing
-        all_dates        = sorted(df["Date"].unique())
-        self._all_dates  = all_dates
-        self._date_to_idx = {d: i for i, d in enumerate(all_dates)}
+        # Global date index — normalize to pd.Timestamp so dict keys are resolution-independent.
+        # pandas 2.x may return datetime64[us] from unique() but datetime64[ns] from .values,
+        # causing hash mismatches. pd.Timestamp is always compatible with both.
+        all_dates         = sorted(pd.Timestamp(d) for d in df["Date"].unique())
+        self._all_dates   = all_dates
+        self._date_to_idx = {d: i for i, d in enumerate(all_dates)}   # keys: pd.Timestamp
 
-        # Pre-build per-date stock lists (just IDs, not tensors)
-        # This is fast: just groupby + list(), no tensor allocation
         date_stocks = df.groupby("Date")["stock_id"].apply(list).to_dict()
+        # Normalize groupby keys (pandas 2.x returns Timestamp, older versions differ)
+        date_stocks = {pd.Timestamp(k): v for k, v in date_stocks.items()}
+        self._date_stocks = {dt: [str(s) for s in sl] for dt, sl in date_stocks.items()}
 
-        # Validate dates: require enough history AND at least one stock
+        # Valid dates
         self.valid_dates = []
         for ds in dates:
             dt     = pd.Timestamp(ds)
             dt_idx = self._date_to_idx.get(dt)
             if dt_idx is None or dt_idx < seq_len:
                 continue
-            if dt in date_stocks and len(date_stocks[dt]) > 0:
+            if dt in self._date_stocks and len(self._date_stocks[dt]) > 0:
                 self.valid_dates.append(ds)
 
         # Pre-index per-stock numpy arrays (eliminates pandas in __getitem__)
@@ -114,13 +117,16 @@ class TemporalCrossSectionDataset(Dataset):
         self._stock_index: dict[str, dict] = {}
         for sid, grp in df.groupby("stock_id"):
             grp  = grp.sort_values("Date")
-            didx = np.array([self._date_to_idx[d] for d in grp["Date"].values], dtype=np.int32)
+            # Convert each date to pd.Timestamp for consistent dict lookup
+            didx = np.array(
+                [self._date_to_idx[pd.Timestamp(d)] for d in grp["Date"].values],
+                dtype=np.int32,
+            )
             self._stock_index[str(sid)] = {
                 "date_idx": didx,
                 "feats":    grp[FEATURE_COLS].values.astype(np.float32),
                 "targets":  grp[TARGET_COLS].values.astype(np.float32),
             }
-        self._date_stocks = {dt: [str(s) for s in sl] for dt, sl in date_stocks.items()}
 
         logger.info(
             f"Dataset [{mode}]: {len(self.valid_dates)} valid days "
