@@ -474,28 +474,51 @@ def train_model(
         epoch_bd: dict[str, list] = {k: [] for k in
                                       ["mse_20d", "mse_5d", "mse_60d", "listnet_20d"]}
 
-        for X, Y, batch_stocks in train_loader:
+        for batch_idx, (X, Y, batch_stocks) in enumerate(train_loader):
             if X.shape[0] <= 1:   # skip empty / degenerate cross-sections
                 continue
+
+            # Timing diagnostic for first batch of first epoch
+            if epoch == 1 and batch_idx == 0:
+                logger.info(f"  [diag] First batch: X={tuple(X.shape)} "
+                            f"stocks={len(batch_stocks)} | {time.time()-t0:.1f}s since epoch start")
+
             X, Y = X.to(device), Y.to(device)
-            # Build batch-local edge_index (indices in [0, N_batch)) — no out-of-bounds
             edge_index, edge_attr = get_batch_edges(batch_stocks, kg_adj, device)
+
+            if epoch == 1 and batch_idx == 0:
+                logger.info(f"  [diag] KG edges: {edge_index.shape[1]}")
 
             optimizer.zero_grad()
             with autocast('cuda', enabled=AMP_ENABLED and device_str == "cuda"):
                 preds       = model(X, edge_index, edge_attr)
                 loss, brkdn = multi_horizon_loss(preds, Y)
 
+            if epoch == 1 and batch_idx == 0:
+                logger.info(f"  [diag] Forward OK. loss={loss.item():.4f} | "
+                            f"batch took {time.time()-t0:.1f}s total")
+
             scaler.scale(loss).backward()
             scaler.unscale_(optimizer)
             nn.utils.clip_grad_norm_(model.parameters(), GRAD_CLIP_NORM)
-            scaler.step(optimizer)   # optimizer first
+            scaler.step(optimizer)
             scaler.update()
-            scheduler.step()         # scheduler after — correct order per PyTorch docs
+            scheduler.step()
 
             train_losses.append(brkdn["loss_total"])
             for k in epoch_bd:
                 epoch_bd[k].append(brkdn.get(k, 0.0))
+
+            # Progress every 200 batches
+            if (batch_idx + 1) % 200 == 0:
+                elapsed = time.time() - t0
+                total_b = len(train_loader)
+                eta     = elapsed / (batch_idx + 1) * (total_b - batch_idx - 1)
+                logger.info(
+                    f"  Ep {epoch:03d} [{batch_idx+1}/{total_b}] "
+                    f"loss={float(np.mean(train_losses)):.5f} | "
+                    f"{elapsed:.0f}s | ETA {eta:.0f}s"
+                )
 
         if not train_losses:
             logger.warning(f"Epoch {epoch}: no valid training batches")
