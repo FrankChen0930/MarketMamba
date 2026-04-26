@@ -113,7 +113,8 @@ class TemporalCrossSectionDataset(Dataset):
 
         # Pre-index per-stock numpy arrays (eliminates pandas in __getitem__)
         # Memory: ~1.9 GB for 1754 stocks x 5500 dates x 49 features x float32
-        print(f"Dataset [{mode}]: pre-indexing {df[chr(39)}stock_id{chr(39)}].nunique()} stocks...", flush=True)
+        n_stocks_total = df["stock_id"].nunique()
+        print(f"[Dataset init] pre-indexing {n_stocks_total} stocks...", flush=True)
         self._stock_index: dict[str, dict] = {}
         for sid, grp in df.groupby("stock_id"):
             grp  = grp.sort_values("Date")
