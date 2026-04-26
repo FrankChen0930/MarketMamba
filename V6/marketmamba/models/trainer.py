@@ -113,7 +113,7 @@ class TemporalCrossSectionDataset(Dataset):
 
         # Pre-index per-stock numpy arrays (eliminates pandas in __getitem__)
         # Memory: ~1.9 GB for 1754 stocks x 5500 dates x 49 features x float32
-        logger.info(f"Dataset [{mode}]: pre-indexing {df['stock_id'].nunique()} stocks...")
+        print(f"Dataset [{mode}]: pre-indexing {df[chr(39)}stock_id{chr(39)}].nunique()} stocks...", flush=True)
         self._stock_index: dict[str, dict] = {}
         for sid, grp in df.groupby("stock_id"):
             grp  = grp.sort_values("Date")
@@ -128,10 +128,7 @@ class TemporalCrossSectionDataset(Dataset):
                 "targets":  grp[TARGET_COLS].values.astype(np.float32),
             }
 
-        logger.info(
-            f"Dataset [{mode}]: {len(self.valid_dates)} valid days "
-            f"| {len(self._stock_index)} stocks pre-indexed"
-        )
+        print(f"[Dataset init] {len(self.valid_dates)} valid days | {len(self._stock_index)} stocks pre-indexed", flush=True)
 
     def __len__(self) -> int:
         return len(self.valid_dates)
@@ -457,8 +454,10 @@ def train_model(
     )
     scaler = GradScaler('cuda', enabled=AMP_ENABLED and device_str == "cuda")
 
-    # KG adjacency dict (pre-built once, O(1) per-stock lookup per batch)
-    kg_adj = build_kg_adjacency()
+    # KG disabled during training: get_batch_edges Python loop is a bottleneck
+    # when KG has many edges (e.g. full correlation graph). Re-enable once pipeline
+    # is verified stable by setting use_kg=True in train_model call.
+    kg_adj = None  # build_kg_adjacency() -- disabled for speed
 
     history  = TrainingHistory()
     best_val = float("inf")
@@ -480,14 +479,13 @@ def train_model(
 
             # Timing diagnostic for first batch of first epoch
             if epoch == 1 and batch_idx == 0:
-                logger.info(f"  [diag] First batch: X={tuple(X.shape)} "
-                            f"stocks={len(batch_stocks)} | {time.time()-t0:.1f}s since epoch start")
+                print(f"  [diag] First batch: X={tuple(X.shape)} stocks={len(batch_stocks)} | {time.time()-t0:.1f}s since epoch start", flush=True)
 
             X, Y = X.to(device), Y.to(device)
             edge_index, edge_attr = get_batch_edges(batch_stocks, kg_adj, device)
 
             if epoch == 1 and batch_idx == 0:
-                logger.info(f"  [diag] KG edges: {edge_index.shape[1]}")
+                print(f"  [diag] KG edges: {edge_index.shape[1]}", flush=True)
 
             optimizer.zero_grad()
             with autocast('cuda', enabled=AMP_ENABLED and device_str == "cuda"):
@@ -495,9 +493,13 @@ def train_model(
                 loss, brkdn = multi_horizon_loss(preds, Y)
 
             if epoch == 1 and batch_idx == 0:
-                logger.info(f"  [diag] Forward OK. loss={loss.item():.4f} | "
-                            f"batch took {time.time()-t0:.1f}s total")
+                print(f"  [diag] Forward OK. loss={loss.item():.4f} | batch took {time.time()-t0:.1f}s total", flush=True)
 
+            # Check for NaN loss before backward
+            if torch.isnan(loss) or torch.isinf(loss):
+                if epoch == 1 and batch_idx < 5:
+                    print(f'  [WARN] NaN/Inf loss at batch {batch_idx}: {loss.item()}', flush=True)
+                continue
             scaler.scale(loss).backward()
             scaler.unscale_(optimizer)
             nn.utils.clip_grad_norm_(model.parameters(), GRAD_CLIP_NORM)
@@ -514,11 +516,7 @@ def train_model(
                 elapsed = time.time() - t0
                 total_b = len(train_loader)
                 eta     = elapsed / (batch_idx + 1) * (total_b - batch_idx - 1)
-                logger.info(
-                    f"  Ep {epoch:03d} [{batch_idx+1}/{total_b}] "
-                    f"loss={float(np.mean(train_losses)):.5f} | "
-                    f"{elapsed:.0f}s | ETA {eta:.0f}s"
-                )
+                print(f"  Ep {epoch:03d} [{batch_idx+1}/{total_b}] loss={float(np.mean(train_losses)):.5f} | {elapsed:.0f}s | ETA {eta:.0f}s", flush=True)
 
         if not train_losses:
             logger.warning(f"Epoch {epoch}: no valid training batches")
