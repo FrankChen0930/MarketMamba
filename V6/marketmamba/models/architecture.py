@@ -216,8 +216,8 @@ class GraphAttentionLayer(nn.Module):
             heads=n_heads,
             edge_dim=1,
             dropout=DROPOUT,
-            add_self_loops=True,
-            concat=True,   # output: N × (heads × head_dim) = N × d_model
+            add_self_loops=False,  # we manage nodes explicitly; self-loops cause issues with empty edge_index
+            concat=True,
         )
         self.norm = nn.LayerNorm(d_model)
         self.drop = nn.Dropout(DROPOUT)
@@ -228,8 +228,17 @@ class GraphAttentionLayer(nn.Module):
         edge_index: Tensor,
         edge_attr:  Tensor,
     ) -> Tensor:
+        N = h.size(0)
+        # Safety bounds-check: filter any edge whose endpoint >= N
+        if edge_index.shape[1] > 0:
+            valid = (edge_index[0] < N) & (edge_index[1] < N)
+            edge_index = edge_index[:, valid]
+            edge_attr  = edge_attr[valid]
+        # If no edges, skip graph layer (identity)
+        if edge_index.shape[1] == 0:
+            return h
         # Residual + pre-norm
-        h_in = h
+        h_in   = h
         h_attn = self.gat(self.norm(h), edge_index, edge_attr.unsqueeze(-1))
         return h_in + self.drop(h_attn)
 

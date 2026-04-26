@@ -130,7 +130,7 @@ class TemporalCrossSectionDataset(Dataset):
         # Stocks present on the target date
         stocks_today = self._df.loc[self._df["Date"] == dt, "stock_id"].values
 
-        X_list, Y_list = [], []
+        X_list, Y_list, valid_stocks = [], [], []
         for sid in stocks_today:
             df_s = df_window[df_window["stock_id"] == sid].sort_values("Date")
             n    = len(df_s)
@@ -139,17 +139,16 @@ class TemporalCrossSectionDataset(Dataset):
 
             feats = df_s[FEATURE_COLS].values.astype(np.float32)
             if n < self.seq_len:
-                # Pad at the beginning with zeros
                 pad   = np.zeros((self.seq_len - n, INPUT_DIM), dtype=np.float32)
                 feats = np.vstack([pad, feats])
             else:
                 feats = feats[-self.seq_len:]
 
-            # Target from the last row (= target date)
             targets = df_s[TARGET_COLS].iloc[-1].values.astype(np.float32)
 
             X_list.append(feats)
             Y_list.append(targets)
+            valid_stocks.append(str(sid))   # track filtered stocks (str for dict lookup)
 
         if not X_list:
             return (
@@ -165,9 +164,9 @@ class TemporalCrossSectionDataset(Dataset):
         if self.n_sample is not None and X.shape[0] > self.n_sample:
             idx_s = torch.randperm(X.shape[0])[: self.n_sample]
             X, Y = X[idx_s], Y[idx_s]
-            stocks_today = [stocks_today[i] for i in idx_s.tolist()]
+            valid_stocks = [valid_stocks[i] for i in idx_s.tolist()]
 
-        return X, Y, list(stocks_today)
+        return X, Y, valid_stocks
 
 
 # ============================================================
