@@ -108,47 +108,64 @@ class TemporalCrossSectionDataset(Dataset):
             if dt in date_stocks and len(date_stocks[dt]) > 0:
                 self.valid_dates.append(ds)
 
+        # Pre-index per-stock numpy arrays (eliminates pandas in __getitem__)
+        # Memory: ~1.9 GB for 1754 stocks x 5500 dates x 49 features x float32
+        logger.info(f"Dataset [{mode}]: pre-indexing {df['stock_id'].nunique()} stocks...")
+        self._stock_index: dict[str, dict] = {}
+        for sid, grp in df.groupby("stock_id"):
+            grp  = grp.sort_values("Date")
+            didx = np.array([self._date_to_idx[d] for d in grp["Date"].values], dtype=np.int32)
+            self._stock_index[str(sid)] = {
+                "date_idx": didx,
+                "feats":    grp[FEATURE_COLS].values.astype(np.float32),
+                "targets":  grp[TARGET_COLS].values.astype(np.float32),
+            }
+        self._date_stocks = {dt: [str(s) for s in sl] for dt, sl in date_stocks.items()}
+
         logger.info(
-            f"Dataset [{mode}]: {len(self.valid_dates)} valid trading days "
-            f"(lazy loading — tensors built on demand)"
+            f"Dataset [{mode}]: {len(self.valid_dates)} valid days "
+            f"| {len(self._stock_index)} stocks pre-indexed"
         )
 
     def __len__(self) -> int:
         return len(self.valid_dates)
 
-    def __getitem__(self, idx: int) -> tuple[Tensor, Tensor]:
-        date_str = self.valid_dates[idx]
-        dt       = pd.Timestamp(date_str)
-        dt_idx   = self._date_to_idx[dt]
+    def __getitem__(self, idx: int) -> tuple[Tensor, Tensor, list]:
+        date_str  = self.valid_dates[idx]
+        dt        = pd.Timestamp(date_str)
+        dt_idx    = self._date_to_idx[dt]
+        win_start = max(0, dt_idx - self.seq_len + 1)
 
-        # Window: seq_len days ending at dt (inclusive)
-        window_dates = set(self._all_dates[max(0, dt_idx - self.seq_len + 1): dt_idx + 1])
-
-        # Get rows for the window (fast boolean mask)
-        df_window = self._df[self._df["Date"].isin(window_dates)]
-
-        # Stocks present on the target date
-        stocks_today = self._df.loc[self._df["Date"] == dt, "stock_id"].values
+        stocks_today = self._date_stocks.get(dt, [])
 
         X_list, Y_list, valid_stocks = [], [], []
         for sid in stocks_today:
-            df_s = df_window[df_window["stock_id"] == sid].sort_values("Date")
-            n    = len(df_s)
-            if n < int(self.seq_len * 0.8):   # require at least 80% of history
+            stock = self._stock_index.get(sid)
+            if stock is None:
+                continue
+            didx = stock["date_idx"]
+
+            # O(n_dates_per_stock) numpy mask -- no pandas
+            mask = (didx >= win_start) & (didx <= dt_idx)
+            n    = int(mask.sum())
+            if n < int(self.seq_len * 0.8):
                 continue
 
-            feats = df_s[FEATURE_COLS].values.astype(np.float32)
+            feats = stock["feats"][mask]
             if n < self.seq_len:
                 pad   = np.zeros((self.seq_len - n, INPUT_DIM), dtype=np.float32)
                 feats = np.vstack([pad, feats])
             else:
                 feats = feats[-self.seq_len:]
 
-            targets = df_s[TARGET_COLS].iloc[-1].values.astype(np.float32)
+            target_mask = didx == dt_idx
+            if not target_mask.any():
+                continue
+            targets = stock["targets"][target_mask][-1]
 
             X_list.append(feats)
             Y_list.append(targets)
-            valid_stocks.append(str(sid))   # track filtered stocks (str for dict lookup)
+            valid_stocks.append(sid)
 
         if not X_list:
             return (
@@ -157,13 +174,12 @@ class TemporalCrossSectionDataset(Dataset):
                 [],
             )
 
-        X = torch.from_numpy(np.array(X_list))   # (N, T, D)
-        Y = torch.from_numpy(np.array(Y_list))   # (N, 3)
+        X = torch.from_numpy(np.array(X_list))
+        Y = torch.from_numpy(np.array(Y_list))
 
-        # Optional sub-sampling (reduces GPU memory during training)
         if self.n_sample is not None and X.shape[0] > self.n_sample:
             idx_s = torch.randperm(X.shape[0])[: self.n_sample]
-            X, Y = X[idx_s], Y[idx_s]
+            X, Y  = X[idx_s], Y[idx_s]
             valid_stocks = [valid_stocks[i] for i in idx_s.tolist()]
 
         return X, Y, valid_stocks
@@ -467,9 +483,9 @@ def train_model(
             scaler.scale(loss).backward()
             scaler.unscale_(optimizer)
             nn.utils.clip_grad_norm_(model.parameters(), GRAD_CLIP_NORM)
-            scaler.step(optimizer)
+            scaler.step(optimizer)   # optimizer first
             scaler.update()
-            scheduler.step()
+            scheduler.step()         # scheduler after — correct order per PyTorch docs
 
             train_losses.append(brkdn["loss_total"])
             for k in epoch_bd:
