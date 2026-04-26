@@ -421,6 +421,7 @@ def train_model(
     early_stop:      int   = EARLY_STOP,
     checkpoint_name: str   = "v6_best.pt",
     device_str:      str   = "cuda" if torch.cuda.is_available() else "cpu",
+    on_epoch_end     = None,   # optional callback(history, epoch, epochs)
 ) -> tuple[MarketMambaV6, TrainingHistory]:
     """
     Train MarketMamba V6 on a (train_dates, val_dates) split.
@@ -554,11 +555,15 @@ def train_model(
         history.lr.append(cur_lr)
         history.breakdown.append({k: float(np.mean(v)) for k, v in epoch_bd.items()})
 
-        logger.info(
+        elapsed_ep = time.time() - t0
+        print(
             f"Epoch {epoch:03d}/{epochs} | "
             f"train={avg_train:.5f} val={avg_val:.5f} IC={avg_ic:+.4f} "
-            f"lr={cur_lr:.2e} | {time.time()-t0:.1f}s"
+            f"lr={cur_lr:.2e} | {elapsed_ep:.0f}s",
+            flush=True,
         )
+        if on_epoch_end is not None:
+            on_epoch_end(history, epoch, epochs)
 
         if avg_val < best_val:
             best_val = avg_val
@@ -568,18 +573,19 @@ def train_model(
                  "val_loss": avg_val, "val_ic": avg_ic, "history": history},
                 ckpt_path,
             )
-            logger.info(f"  ✅ Checkpoint saved → {ckpt_path.name}")
+            print(f"  ✅ Checkpoint saved → {ckpt_path.name}", flush=True)
         else:
             no_impr += 1
             if no_impr >= early_stop:
-                logger.info(f"Early stop at epoch {epoch}")
+                print(f"  🛑 Early stop at epoch {epoch}", flush=True)
                 break
 
     # Reload best weights
     ckpt = torch.load(ckpt_path, map_location=device)
     model.load_state_dict(ckpt["state_dict"])
-    logger.info(
-        f"Training done. Best epoch={history.best_epoch}, "
-        f"val_loss={history.best_val_loss:.5f}"
+    print(
+        f"Training done. Best epoch={history.best_epoch} | "
+        f"val_loss={history.best_val_loss:.5f}",
+        flush=True,
     )
     return model, history

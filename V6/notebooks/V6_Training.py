@@ -453,37 +453,80 @@ print(f"  Val  : {val_dates[0]}  -> {val_dates[-1]}")
 
 QUICK_EPOCHS = 20   # Use 20 for quick test; set 60 for full training
 
+# ── Live visualization callback ────────────────────────────────────────────────
+import matplotlib
+matplotlib.use("Agg")   # Colab-safe: prevents blank inline figure issues
+import matplotlib.pyplot as plt
+from IPython.display import clear_output, display
+
+def live_plot(history, epoch, epochs):
+    """Updates training charts in-place after each epoch."""
+    clear_output(wait=True)
+
+    ep = list(range(1, len(history.train_loss) + 1))
+
+    fig, axes = plt.subplots(1, 3, figsize=(16, 4))
+    fig.patch.set_facecolor("#1a1a2e")
+    for ax in axes:
+        ax.set_facecolor("#16213e")
+        ax.tick_params(colors="#eee")
+        ax.title.set_color("#eee")
+        for spine in ax.spines.values():
+            spine.set_edgecolor("#444")
+
+    # Loss
+    axes[0].plot(ep, history.train_loss, color="#ff6b6b", linewidth=2, label="Train")
+    axes[0].plot(ep, history.val_loss,   color="#00fa9a", linewidth=2, label="Val")
+    axes[0].set_title("Loss")
+    axes[0].legend(facecolor="#222", labelcolor="#eee")
+    axes[0].grid(alpha=0.2)
+
+    # Val IC
+    axes[1].plot(ep, history.val_ic, color="#a29bfe", linewidth=2)
+    axes[1].axhline(0.0,  color="#636e72", linestyle="--", linewidth=1)
+    axes[1].axhline(0.05, color="#00cec9", linestyle="--", linewidth=1, label="IC=0.05")
+    best_ic = max(history.val_ic)
+    axes[1].set_title(f"Val IC   best={best_ic:+.4f}")
+    axes[1].legend(facecolor="#222", labelcolor="#eee")
+    axes[1].grid(alpha=0.2)
+
+    # Learning Rate
+    axes[2].plot(ep, history.lr, color="#fdcb6e", linewidth=2)
+    axes[2].set_title("Learning Rate")
+    axes[2].set_yscale("log")
+    axes[2].grid(alpha=0.2)
+
+    best_val = min(history.val_loss)
+    no_impr  = epoch - history.best_epoch
+    suptitle = (
+        f"Epoch {epoch}/{epochs}  |  "
+        f"train={history.train_loss[-1]:.5f}  val={history.val_loss[-1]:.5f}  "
+        f"IC={history.val_ic[-1]:+.4f}  |  "
+        f"best_epoch={history.best_epoch}  ({no_impr} ep no-improve)"
+    )
+    fig.suptitle(suptitle, color="#eee", fontsize=11)
+    plt.tight_layout()
+    display(fig)
+    plt.close(fig)
+
+# ── Run training ───────────────────────────────────────────────────────────────
 model, history = train_model(
     df              = df,
     train_dates     = train_dates,
     val_dates       = val_dates,
     epochs          = QUICK_EPOCHS,
     checkpoint_name = "v6_quick_test.pt",
+    on_epoch_end    = live_plot,        # live chart after each epoch
 )
 
-# Show results
-import matplotlib.pyplot as plt
-fig, axes = plt.subplots(1, 3, figsize=(15, 4))
+# ── Final summary ─────────────────────────────────────────────────────────────
+live_plot(history, QUICK_EPOCHS, QUICK_EPOCHS)   # final static version
 
-axes[0].plot(history.train_loss, label="Train", color="#ff4b4b")
-axes[0].plot(history.val_loss,   label="Val",   color="#00fa9a")
-axes[0].set_title("Loss Curve"); axes[0].legend(); axes[0].grid(alpha=0.3)
-
-axes[1].plot(history.val_ic, color="#6c5ce7")
-axes[1].axhline(0.05, color="green", linestyle="--", label="IC=0.05 threshold")
-axes[1].set_title("Val IC (20d Spearman)"); axes[1].legend(); axes[1].grid(alpha=0.3)
-
-axes[2].plot(history.lr, color="#fdcb6e")
-axes[2].set_title("Learning Rate"); axes[2].grid(alpha=0.3)
-
-plt.tight_layout()
-plt.show()
-
-print(f"\nBest Epoch: {history.best_epoch} / {QUICK_EPOCHS}")
-print(f"  Val Loss: {history.best_val_loss:.5f}")
-print(f"  Best Val IC: {max(history.val_ic):.4f}")
+print(f"\nBest Epoch : {history.best_epoch} / {QUICK_EPOCHS}")
+print(f"Val Loss   : {history.best_val_loss:.5f}")
+print(f"Best Val IC: {max(history.val_ic):+.4f}")
 model_n_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-print(f"  Model params: {model_n_params:,}")
+print(f"Model params: {model_n_params:,}")
 
 
 # %% Cell 7: Full Walk-Forward Validation
