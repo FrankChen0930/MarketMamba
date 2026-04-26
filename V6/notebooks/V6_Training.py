@@ -451,7 +451,14 @@ print(f"Quick Fold: train={len(train_dates)} days | val={len(val_dates)} days")
 print(f"  Train: {train_dates[0]} -> {train_dates[-1]}")
 print(f"  Val  : {val_dates[0]}  -> {val_dates[-1]}")
 
-QUICK_EPOCHS = 20   # Use 20 for quick test; set 60 for full training
+QUICK_EPOCHS    = 60    # Overnight: 60 epochs with early stopping (patience=10)
+N_SAMPLE_TRAIN  = 500   # Subsample 500/2888 stocks per batch → ~20 min/epoch, ~20h total
+
+# Override config at runtime (no need to edit config.py)
+from marketmamba import config as _cfg
+_cfg.N_SAMPLE_TRAIN = N_SAMPLE_TRAIN
+print(f"N_SAMPLE_TRAIN overridden → {_cfg.N_SAMPLE_TRAIN}")
+
 
 # ── Live visualization callback ────────────────────────────────────────────────
 import matplotlib
