@@ -186,13 +186,19 @@ class TemporalCrossSectionDataset(Dataset):
             X, Y  = X[idx_s], Y[idx_s]
             valid_stocks = [valid_stocks[i] for i in idx_s.tolist()]
 
-        # Cross-sectional z-score: normalize targets within each date's cross-section.
-        # MSE on raw returns is dominated by magnitude variance (loss ~4-8).
-        # After z-scoring, loss ~1.0 and gradients target rank ordering quality.
+        # Cross-sectional z-score: normalize targets per-column, skipping NaN.
+        # IMPORTANT: use NaN-aware mean/std so NaN targets remain NaN
+        # (multi_horizon_loss uses valid masks to skip them).
+        # A plain Y.mean() would propagate NaN to all values → all valid masks False
+        # → loss = torch.tensor(0.0) with no grad_fn → backward() crashes.
         if Y.shape[0] > 1:
-            Y_mean = Y.mean(dim=0, keepdim=True)
-            Y_std  = Y.std(dim=0, keepdim=True).clamp(min=1e-6)
-            Y = (Y - Y_mean) / Y_std
+            for h in range(Y.shape[1]):
+                col  = Y[:, h]
+                mask = ~torch.isnan(col)
+                if mask.sum() > 1:
+                    mu    = col[mask].mean()
+                    sigma = col[mask].std().clamp(min=1e-6)
+                    Y[mask, h] = (col[mask] - mu) / sigma
 
         return X, Y, valid_stocks
 
@@ -573,6 +579,9 @@ def train_model(
             if epoch == 1 and batch_idx == 0:
                 print(f"  [diag] Forward OK. loss={loss.item():.4f} | batch took {time.time()-t0:.1f}s total", flush=True)
 
+            # Guard: if all targets were NaN, loss has no grad_fn → skip batch
+            if not loss.requires_grad:
+                continue
             # Check for NaN loss before backward
             if torch.isnan(loss) or torch.isinf(loss):
                 if epoch == 1 and batch_idx < 5:
