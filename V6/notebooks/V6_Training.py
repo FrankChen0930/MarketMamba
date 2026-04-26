@@ -84,38 +84,46 @@ os.system("pip install -q torch-geometric")
 import glob, shutil, torch
 
 _cuda_ver  = (torch.version.cuda or "unknown").replace(".", "")    # e.g. "128"
-_torch_ver = torch.__version__.split("+")[0].replace(".", "")       # e.g. "210"
+_torch_ver = torch.__version__.split("+")[0].replace(".", "")       # e.g. "2100"
 _py_ver    = f"cp{sys.version_info.major}{sys.version_info.minor}"  # e.g. "cp312"
-_wheel_key = f"cu{_cuda_ver}torch{_torch_ver}{_py_ver}"            # e.g. "cu128torch210cp312"
+_wheel_key = f"cu{_cuda_ver}torch{_torch_ver}{_py_ver}"            # e.g. "cu128torch2100cp312"
 
-DRIVE_WHEEL_DIR = "/content/drive/MyDrive/MarketMamba/mamba_wheels"
-WHEEL_BUILD_DIR = "/tmp/mamba_wheels"
+# Wheels stored in a VERSION SUBDIRECTORY so filenames stay PEP-427 compliant.
+# Drive/mamba_wheels/<key>/mamba_ssm-2.3.1-cp312-cp312-linux_x86_64.whl
+DRIVE_WHEEL_BASE = "/content/drive/MyDrive/MarketMamba/mamba_wheels"
+DRIVE_WHEEL_DIR  = f"{DRIVE_WHEEL_BASE}/{_wheel_key}"  # key = subdir, not filename suffix
+WHEEL_BUILD_DIR  = "/tmp/mamba_wheels"
 os.makedirs(WHEEL_BUILD_DIR, exist_ok=True)
 
-print(f"Mamba wheel key: {_wheel_key}")
+print(f"Mamba wheel key : {_wheel_key}")
+print(f"Drive wheel dir : {DRIVE_WHEEL_DIR}")
 print("Installing mamba_ssm...")
 
 _installed = False
 
-# --- Layer 1: Drive cache ---
-if os.path.exists(DRIVE_WHEEL_DIR):
-    _key_wheels = [
-        f for f in glob.glob(f"{DRIVE_WHEEL_DIR}/*.whl")
-        if _wheel_key in f
-    ]
-    if _key_wheels:
-        print(f"  Found {len(_key_wheels)} cached wheel(s) in Drive - installing (fast path)...")
-        for whl in _key_wheels:
-            os.system(f"pip install -q {whl}")
-        _installed = True
-        print("  Installed from Drive cache")
-    else:
-        _all_wheels = glob.glob(f"{DRIVE_WHEEL_DIR}/*.whl")
-        print(f"  No wheel matching key={_wheel_key} in Drive")
-        if _all_wheels:
-            print(f"  (Other runtime wheels present: {[os.path.basename(w) for w in _all_wheels]})")
+# --- Layer 1: Drive cache (subdir keeps original PEP-427 filenames) ---
+_cached = glob.glob(f"{DRIVE_WHEEL_DIR}/*.whl") if os.path.isdir(DRIVE_WHEEL_DIR) else []
+if _cached:
+    print(f"  Found {len(_cached)} cached wheel(s) - installing (fast path)...")
+    for whl in _cached:
+        rc1 = os.system(f"pip install -q {whl}")
+        print(f"    {os.path.basename(whl)} (rc={rc1})")
+    # Verify the install actually worked before claiming success
+    try:
+        import importlib, importlib.util
+        if importlib.util.find_spec("mamba_ssm") is not None:
+            _installed = True
+            print("  Installed from Drive cache")
+        else:
+            print("  Drive cache install FAILED (module not found) - falling through...")
+    except Exception:
+        print("  Drive cache install FAILED - falling through...")
 else:
-    print(f"  Drive wheel dir not found: {DRIVE_WHEEL_DIR}")
+    _all = glob.glob(f"{DRIVE_WHEEL_BASE}/**/*.whl", recursive=True)
+    print(f"  No wheel for key={_wheel_key} in Drive")
+    if _all:
+        keys = list(set(os.path.basename(os.path.dirname(w)) for w in _all))
+        print(f"  (Other cached keys: {keys})")
 
 # --- Layer 2: Binary pip install ---
 if not _installed:
@@ -138,17 +146,17 @@ if not _installed:
     )
 
     if rc3 == 0:
-        os.system(f"pip install -q {WHEEL_BUILD_DIR}/*.whl")
+        rc_inst = os.system(f"pip install -q {WHEEL_BUILD_DIR}/*.whl")
+        print(f"  Install rc={rc_inst}")
 
-        # Save mamba_ssm + causal_conv1d wheels to Drive (skip dependency wheels)
+        # Save mamba_ssm + causal_conv1d to Drive SUBDIR (keep original filename)
         os.makedirs(DRIVE_WHEEL_DIR, exist_ok=True)
         for whl_path in glob.glob(f"{WHEEL_BUILD_DIR}/*.whl"):
             whl_name = os.path.basename(whl_path)
             if any(pkg in whl_name.lower() for pkg in ["mamba_ssm", "causal_conv1d"]):
-                stem, ext = whl_name.rsplit(".", 1)
-                tagged = f"{stem}___{_wheel_key}.{ext}"
-                shutil.copy2(whl_path, f"{DRIVE_WHEEL_DIR}/{tagged}")
-                print(f"  Saved to Drive: {tagged}")
+                dest = f"{DRIVE_WHEEL_DIR}/{whl_name}"   # original name, no suffix mangling
+                shutil.copy2(whl_path, dest)
+                print(f"  Saved to Drive: {dest}")
         _installed = True
     else:
         print("  Source build failed - make sure GPU runtime is enabled in Colab")
@@ -164,12 +172,10 @@ except ImportError as e:
         # Fix: install the latest mamba_ssm directly from GitHub main branch.
         print(f"mamba_ssm import failed (PyTorch API change): {_err_str}")
 
-        # Remove the incompatible old wheel from Drive so it stops being tried
-        _stale = [f for f in glob.glob(f"{DRIVE_WHEEL_DIR}/*.whl")
-                  if ("mamba_ssm" in f or "causal_conv1d" in f) and _wheel_key in f]
-        for _s in _stale:
-            os.remove(_s)
-            print(f"  Removed incompatible cached wheel: {os.path.basename(_s)}")
+        # Remove the incompatible wheel subdir from Drive
+        if os.path.isdir(DRIVE_WHEEL_DIR):
+            shutil.rmtree(DRIVE_WHEEL_DIR)
+            print(f"  Removed incompatible cached wheel dir: {DRIVE_WHEEL_DIR}")
 
         print("  Installing latest mamba_ssm from GitHub (~5-10 min)...")
         rc_git = os.system(
@@ -181,15 +187,13 @@ except ImportError as e:
         )
         if rc_git == 0:
             os.system(f"pip install -q {WHEEL_BUILD_DIR}/*.whl")
-            # Save to Drive so next session skips this step entirely
+            # Save to Drive SUBDIR (original filename)
             os.makedirs(DRIVE_WHEEL_DIR, exist_ok=True)
             for whl_path in glob.glob(f"{WHEEL_BUILD_DIR}/*.whl"):
                 whl_name = os.path.basename(whl_path)
                 if any(pkg in whl_name.lower() for pkg in ["mamba_ssm", "causal_conv1d"]):
-                    stem, ext = whl_name.rsplit(".", 1)
-                    tagged = f"{stem}___{_wheel_key}.{ext}"
-                    shutil.copy2(whl_path, f"{DRIVE_WHEEL_DIR}/{tagged}")
-                    print(f"  Saved GitHub wheel to Drive: {tagged}")
+                    shutil.copy2(whl_path, f"{DRIVE_WHEEL_DIR}/{whl_name}")
+                    print(f"  Saved GitHub wheel to Drive: {whl_name}")
 
         import importlib
         try:
