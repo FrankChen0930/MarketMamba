@@ -238,12 +238,12 @@ def make_dataloader(dataset: TemporalCrossSectionDataset, shuffle: bool = True) 
 def listnet_loss(pred: Tensor, target: Tensor, eps: float = 1e-10) -> Tensor:
     """
     ListNet ranking loss (top-1 probability).
-    Optimises the KL divergence between softmax distributions.
-    Fully differentiable; no Heaviside or step functions.
+    Uses MEAN instead of SUM so the scale is independent of N (number of stocks).
+    This prevents val_loss > train_loss when N_val != N_train.
     """
     pred_prob   = F.softmax(pred,   dim=0)
     target_prob = F.softmax(target, dim=0)
-    return -(target_prob * torch.log(pred_prob + eps)).sum()
+    return -(target_prob * torch.log(pred_prob + eps)).mean()  # mean, not sum
 
 
 def multi_horizon_loss(
@@ -505,6 +505,7 @@ def train_model(
     checkpoint_name: str   = "v6_best.pt",
     device_str:      str   = "cuda" if torch.cuda.is_available() else "cpu",
     on_epoch_end     = None,   # optional callback(history, epoch, epochs)
+    ic_mode:         bool  = True,   # if True, early stop on IC; if False, on val_loss
 ) -> tuple[MarketMambaV6, TrainingHistory]:
     """
     Train MarketMamba V6 on a (train_dates, val_dates) split.
@@ -650,20 +651,38 @@ def train_model(
         if on_epoch_end is not None:
             on_epoch_end(history, epoch, epochs)
 
-        if avg_val < best_val:
-            best_val = avg_val
-            no_impr  = 0
-            torch.save(
-                {"epoch": epoch, "state_dict": model.state_dict(),
-                 "val_loss": avg_val, "val_ic": avg_ic, "history": history},
-                ckpt_path,
-            )
-            print(f"  ✅ Checkpoint saved → {ckpt_path.name}", flush=True)
+        if ic_mode:
+            # IC-based checkpointing: save when IC improves
+            if avg_ic > best_val:   # best_val repurposed as best_ic tracker
+                best_val = avg_ic
+                no_impr  = 0
+                torch.save(
+                    {"epoch": epoch, "state_dict": model.state_dict(),
+                     "val_loss": avg_val, "val_ic": avg_ic, "history": history},
+                    ckpt_path,
+                )
+                print(f"  ✅ Checkpoint saved (IC={avg_ic:+.4f}) → {ckpt_path.name}", flush=True)
+            else:
+                no_impr += 1
+                if no_impr >= early_stop:
+                    print(f"  🛑 Early stop at epoch {epoch} (IC no-improve {early_stop} ep)", flush=True)
+                    break
         else:
-            no_impr += 1
-            if no_impr >= early_stop:
-                print(f"  🛑 Early stop at epoch {epoch}", flush=True)
-                break
+            # Val-loss-based checkpointing (legacy)
+            if avg_val < best_val:
+                best_val = avg_val
+                no_impr  = 0
+                torch.save(
+                    {"epoch": epoch, "state_dict": model.state_dict(),
+                     "val_loss": avg_val, "val_ic": avg_ic, "history": history},
+                    ckpt_path,
+                )
+                print(f"  ✅ Checkpoint saved → {ckpt_path.name}", flush=True)
+            else:
+                no_impr += 1
+                if no_impr >= early_stop:
+                    print(f"  🛑 Early stop at epoch {epoch}", flush=True)
+                    break
 
     # Reload best weights (weights_only=False required for TrainingHistory dataclass in PyTorch 2.6)
     torch.serialization.add_safe_globals([TrainingHistory])
