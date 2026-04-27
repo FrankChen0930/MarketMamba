@@ -665,12 +665,14 @@ def train_model(
                 print(f"  🛑 Early stop at epoch {epoch}", flush=True)
                 break
 
-    # Reload best weights
-    ckpt = torch.load(ckpt_path, map_location=device)
+    # Reload best weights (weights_only=False required for TrainingHistory dataclass in PyTorch 2.6)
+    torch.serialization.add_safe_globals([TrainingHistory])
+    ckpt = torch.load(ckpt_path, map_location=device, weights_only=False)
     model.load_state_dict(ckpt["state_dict"])
     print(
         f"Training done. Best epoch={history.best_epoch} | "
-        f"val_loss={history.best_val_loss:.5f}",
+        f"val_loss={history.best_val_loss:.5f} | "
+        f"best_val_ic={max(history.val_ic):+.4f}",
         flush=True,
     )
     return model, history
