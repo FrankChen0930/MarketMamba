@@ -433,31 +433,37 @@ else:
     print("Baseline skipped (SKIP_BASELINE=True)")
 
 
-# %% Cell 6: Train V6 - Single Fold (Quick Test)
+# %% Cell 6: Train V6 - Final High-Quality Training
 # ==========================================
-# Quick single-fold training to verify pipeline works
-# Use this before committing to the full Walk-Forward
+# Architecture verified (IC=+0.0744 on Quick Fold).
+# Now train with maximum data and quality settings:
+#   - Full training window: 2005~2023
+#   - True out-of-sample val: 2024~today
+#   - N_SAMPLE_TRAIN = None → all stocks (test memory first)
+#   - IC-based early stopping (saves best-IC model, not best-loss)
+#   - Listnet uses mean (N-invariant scale)
 # ==========================================
 from marketmamba.models.trainer import train_model
 
 all_dates = sorted(df["Date"].astype(str).unique().tolist())
-cutoff_train_end = "2022-12-31"
-cutoff_val_end   = "2023-12-31"
+cutoff_train_end = "2023-12-31"   # one full extra year vs Quick Fold
+cutoff_val_end   = "2099-12-31"   # everything after → 2024~today
 
 train_dates = [d for d in all_dates if d <= cutoff_train_end]
-val_dates   = [d for d in all_dates if cutoff_train_end < d <= cutoff_val_end]
+val_dates   = [d for d in all_dates if d >  cutoff_train_end]
 
-print(f"Quick Fold: train={len(train_dates)} days | val={len(val_dates)} days")
+print(f"Final Training: train={len(train_dates)} days | val={len(val_dates)} days")
 print(f"  Train: {train_dates[0]} -> {train_dates[-1]}")
 print(f"  Val  : {val_dates[0]}  -> {val_dates[-1]}")
 
-QUICK_EPOCHS    = 60    # Overnight: 60 epochs with early stopping (patience=10)
-N_SAMPLE_TRAIN  = 500   # Subsample 500/2888 stocks per batch → ~20 min/epoch, ~20h total
+FINAL_EPOCHS   = 100   # IC-based early stop (patience=15) decides actual stopping point
+N_SAMPLE_TRAIN = None  # Use ALL stocks — if OOM, change to 2000 then 1500
+EARLY_STOP_IC  = 15    # patience: stop if IC doesn't improve for 15 consecutive epochs
 
-# Override config at runtime (no need to edit config.py)
+# Override config at runtime
 from marketmamba import config as _cfg
 _cfg.N_SAMPLE_TRAIN = N_SAMPLE_TRAIN
-print(f"N_SAMPLE_TRAIN overridden → {_cfg.N_SAMPLE_TRAIN}")
+print(f"N_SAMPLE_TRAIN → {_cfg.N_SAMPLE_TRAIN} (None = all stocks)")
 
 
 # ── Live visualization callback ────────────────────────────────────────────────
@@ -517,19 +523,22 @@ def live_plot(history, epoch, epochs):
     plt.close(fig)
 
 # ── Run training ───────────────────────────────────────────────────────────────
+# NOTE: If OOM on first batch, interrupt and set N_SAMPLE_TRAIN=2000 above, then retry
 model, history = train_model(
     df              = df,
     train_dates     = train_dates,
     val_dates       = val_dates,
-    epochs          = QUICK_EPOCHS,
-    checkpoint_name = "v6_quick_test.pt",
-    on_epoch_end    = live_plot,        # live chart after each epoch
+    epochs          = FINAL_EPOCHS,
+    early_stop      = EARLY_STOP_IC,
+    checkpoint_name = "v6_final.pt",     # separate file from quick test
+    on_epoch_end    = live_plot,
+    ic_mode         = True,              # IC-based early stop + checkpointing
 )
 
 # ── Final summary ─────────────────────────────────────────────────────────────
-live_plot(history, QUICK_EPOCHS, QUICK_EPOCHS)   # final static version
+live_plot(history, len(history.train_loss), FINAL_EPOCHS)   # final static version
 
-print(f"\nBest Epoch : {history.best_epoch} / {QUICK_EPOCHS}")
+print(f"\nBest Epoch : {history.best_epoch} / {len(history.train_loss)}")
 print(f"Val Loss   : {history.best_val_loss:.5f}")
 print(f"Best Val IC: {max(history.val_ic):+.4f}")
 model_n_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
