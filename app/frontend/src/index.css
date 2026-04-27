@@ -1,0 +1,198 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+/* ── Design Tokens ──────────────────────────── */
+:root {
+  --bg-base:       #0d1117;
+  --bg-panel:      #161b22;
+  --bg-panel-2:    #1c2128;
+  --bg-hover:      #21262d;
+
+  --border:        rgba(48, 54, 61, 0.8);
+  --border-bright: rgba(0, 212, 255, 0.25);
+
+  --text-primary:  #e6edf3;
+  --text-secondary:#8b949e;
+  --text-muted:    #484f58;
+
+  --accent-blue:   #00d4ff;
+  --accent-green:  #00ff88;
+  --accent-red:    #ff4757;
+  --accent-amber:  #ffa500;
+  --accent-purple: #bd93f9;
+
+  --positive:      #00ff88;
+  --negative:      #ff4757;
+
+  --font-mono:     'JetBrains Mono', monospace;
+  --font-sans:     'Inter', sans-serif;
+
+  --radius-sm:     6px;
+  --radius-md:     10px;
+  --radius-lg:     16px;
+
+  --shadow-panel: 0 4px 24px rgba(0, 0, 0, 0.4);
+  --shadow-glow-blue: 0 0 20px rgba(0, 212, 255, 0.15);
+  --shadow-glow-green: 0 0 20px rgba(0, 255, 136, 0.15);
+}
+
+/* ── Reset ──────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 14px; scroll-behavior: smooth; }
+
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Scrollbar ──────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: var(--bg-panel-2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--bg-hover); }
+
+/* ── Glass Panel ────────────────────────────── */
+.glass {
+  background: rgba(22, 27, 34, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-panel);
+}
+
+.glass:hover {
+  border-color: var(--border-bright);
+  transition: border-color 0.2s ease;
+}
+
+/* ── Typography ─────────────────────────────── */
+.mono { font-family: var(--font-mono); }
+
+.text-positive { color: var(--positive); }
+.text-negative { color: var(--negative); }
+.text-muted    { color: var(--text-muted); }
+.text-secondary{ color: var(--text-secondary); }
+.text-accent   { color: var(--accent-blue); }
+
+/* ── Stat Badge ─────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.badge-positive { background: rgba(0, 255, 136, 0.1); color: var(--positive); border: 1px solid rgba(0, 255, 136, 0.25); }
+.badge-negative { background: rgba(255, 71, 87, 0.1); color: var(--negative); border: 1px solid rgba(255, 71, 87, 0.25); }
+.badge-neutral  { background: rgba(139, 148, 158, 0.1); color: var(--text-secondary); border: 1px solid var(--border); }
+.badge-blue     { background: rgba(0, 212, 255, 0.1); color: var(--accent-blue); border: 1px solid rgba(0, 212, 255, 0.25); }
+
+/* ── Animations ─────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 6px rgba(0, 212, 255, 0.3); }
+  50%       { box-shadow: 0 0 18px rgba(0, 212, 255, 0.6); }
+}
+
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes skeleton-shine {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.animate-fade-up { animation: fadeInUp 0.4s ease forwards; }
+
+.skeleton-block {
+  background: linear-gradient(
+    90deg,
+    var(--bg-panel)   25%,
+    var(--bg-hover)   50%,
+    var(--bg-panel)   75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shine 1.5s ease-in-out infinite;
+}
+
+/* ── Divider ────────────────────────────────── */
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  margin: 12px 0;
+}
+
+/* ── Button ─────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.btn-primary {
+  background: rgba(0, 212, 255, 0.15);
+  color: var(--accent-blue);
+  border-color: rgba(0, 212, 255, 0.3);
+}
+.btn-primary:hover { background: rgba(0, 212, 255, 0.25); box-shadow: var(--shadow-glow-blue); }
+
+.btn-ghost { background: transparent; color: var(--text-secondary); border-color: var(--border); }
+.btn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+/* ── Table ──────────────────────────────────── */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th {
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+.data-table td {
+  padding: 9px 12px;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(48, 54, 61, 0.4);
+  font-family: var(--font-mono);
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tbody tr:hover { background: var(--bg-hover); cursor: pointer; transition: background 0.1s; }
+
+/* ── Number card ────────────────────────────── */
+.stat-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.stat-card:hover { border-color: var(--border-bright); box-shadow: var(--shadow-glow-blue); }
+.stat-card .label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+.stat-card .value { font-family: var(--font-mono); font-size: 22px; font-weight: 700; }
+.stat-card .sub   { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }

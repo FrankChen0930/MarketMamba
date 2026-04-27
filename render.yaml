@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: marketmamba-api
+    runtime: python
+    rootDir: app/backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ALLOWED_ORIGINS
+        value: https://marketmamba.vercel.app
+      - key: GITHUB_RESULTS_URL
+        value: https://raw.githubusercontent.com/FrankChen0930/MarketMamba/main/V6/results/df_kelly.csv
+    healthCheckPath: /api/health
