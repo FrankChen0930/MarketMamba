@@ -17,8 +17,10 @@ secrets.py
 **/Data/cache_v6/
 **/Data/*.parquet
 **/Data/*.csv
+Data/processed_v6.zip
+Data/raw_cache/
 
-# V6 result archives
+# V6 result archives (dated subdirs only — root CSVs are committed)
 V6/results/20*/
 
 # Python cache
@@ -27,6 +29,11 @@ __pycache__/
 *.pyo
 .ipynb_checkpoints/
 *.ipynb_checkpoints
+
+# Frontend build artifacts
+node_modules/
+dist/
+.vite/
 
 # Logs
 logs/
