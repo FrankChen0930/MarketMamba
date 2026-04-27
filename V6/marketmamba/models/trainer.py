@@ -519,8 +519,13 @@ def train_model(
     )
 
     # Datasets & DataLoaders (lazy loading)
-    train_ds = TemporalCrossSectionDataset(df, train_dates, mode="train")
-    val_ds   = TemporalCrossSectionDataset(df, val_dates,   mode="val")
+    # Read N_SAMPLE_TRAIN from live config (not the import-time snapshot),
+    # so that notebook overrides like `config.N_SAMPLE_TRAIN = None` take effect.
+    import marketmamba.config as _live_cfg
+    _n_sample = _live_cfg.N_SAMPLE_TRAIN
+    print(f"[train_model] n_sample_train={_n_sample} ({'all stocks' if _n_sample is None else f'{_n_sample} per batch'})", flush=True)
+    train_ds = TemporalCrossSectionDataset(df, train_dates, mode="train", n_sample=_n_sample)
+    val_ds   = TemporalCrossSectionDataset(df, val_dates,   mode="val",   n_sample=None)  # always full cross-section for val
     train_loader = make_dataloader(train_ds, shuffle=True)
     val_loader   = make_dataloader(val_ds,   shuffle=False)
 
