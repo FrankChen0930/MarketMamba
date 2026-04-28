@@ -102,6 +102,26 @@ export default function AppLayout() {
         </div>
       </nav>
 
+      {/* ── Mobile Status Strip (hidden on desktop via CSS) ── */}
+      <div className="mobile-status-bar">
+        <div className="msb-left">
+          <span className="msb-label">Model IC</span>
+          <span className={`msb-value ${market ? 'text-positive' : ''}`}>
+            {market ? `+${market.model_ic.toFixed(4)}` : '—'}
+          </span>
+        </div>
+        <div className="msb-right">
+          <div className="status-dot" style={{
+            background: market?.run_status === 'completed' ? 'var(--positive)' : 'var(--accent-amber)',
+            boxShadow: `0 0 5px ${market?.run_status === 'completed' ? 'var(--positive)' : 'var(--accent-amber)'}`,
+            width: 6, height: 6,
+          }} />
+          <span className="msb-label">
+            {market?.run_status === 'completed' ? 'Live' : 'Mock'}
+          </span>
+        </div>
+      </div>
+
       {/* ── Ticker ── */}
       <TickerBar />
 
