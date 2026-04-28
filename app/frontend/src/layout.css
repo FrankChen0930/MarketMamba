@@ -218,15 +218,76 @@
 .page-subtitle { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
 
 /* ── Responsive ─────────────────────────────── */
+
+/* ── Tablet (≤ 1024px) ── */
 @media (max-width: 1024px) {
   .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(2, 1fr); }
   .grid-main { grid-template-columns: 1fr; }
 }
 
-@media (max-width: 640px) {
-  .topbar { padding: 0 12px; }
-  .topbar-brand .brand-text { display: none; }
-  .page-content { padding: 12px; }
-  .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
-  .nav-tab span:not(.tab-icon) { display: none; }
+/* ── Mobile Status Bar (only visible < 640px) ── */
+.mobile-status-bar {
+  display: none; /* hidden on desktop */
 }
+
+/* ── Mobile (≤ 640px) ── */
+@media (max-width: 640px) {
+  /* Topbar */
+  .topbar { padding: 0 12px; height: 50px; }
+  .topbar-brand { margin-right: 8px; }
+  .topbar-brand .brand-text { display: none; }
+  .topbar-right { display: none; } /* replaced by mobile-status-bar */
+
+  /* Nav tabs: spread icons evenly, no text */
+  .nav-tabs { justify-content: space-around; gap: 0; }
+  .nav-tab  { padding: 6px 10px; flex: 1; justify-content: center; }
+  .nav-tab span:not(.tab-icon) { display: none; }
+  .nav-tab .tab-icon { font-size: 17px; }
+
+  /* Mobile status strip (Model IC + status dot) */
+  .mobile-status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 12px;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+  }
+  .mobile-status-bar .msb-left  { display: flex; align-items: center; gap: 6px; }
+  .mobile-status-bar .msb-right { display: flex; align-items: center; gap: 5px; }
+  .mobile-status-bar .msb-label { color: var(--text-muted); text-transform: uppercase; }
+  .mobile-status-bar .msb-value { font-family: var(--font-mono); font-weight: 600; }
+
+  /* Ticker */
+  .ticker-bar { height: 24px; }
+  .ticker-item { padding: 0 16px; font-size: 10px; gap: 4px; }
+
+  /* Page */
+  .page-content { padding: 10px; }
+  .page-header  { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .page-title   { font-size: 16px; }
+
+  /* Grids */
+  .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+
+  /* Panels */
+  .panel-header { padding: 10px 12px; }
+  .panel-title  { font-size: 12px; }
+  .panel-body   { padding: 10px; }
+
+  /* Stat cards */
+  .stat-card        { padding: 12px 14px; }
+  .stat-card .value { font-size: 18px; }
+
+  /* Tables — horizontal scroll on mobile */
+  .panel-body-flush,
+  .panel-body { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .data-table th, .data-table td { padding: 7px 10px; font-size: 12px; white-space: nowrap; }
+}
+
+
+
