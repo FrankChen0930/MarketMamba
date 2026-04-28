@@ -494,12 +494,14 @@ def live_plot(history, epoch, epochs):
     axes[0].legend(facecolor="#222", labelcolor="#eee")
     axes[0].grid(alpha=0.2)
 
-    # Val IC
+    # Val IC — use best_ic_epoch for accurate no_impr display
     axes[1].plot(ep, history.val_ic, color="#a29bfe", linewidth=2)
     axes[1].axhline(0.0,  color="#636e72", linestyle="--", linewidth=1)
     axes[1].axhline(0.05, color="#00cec9", linestyle="--", linewidth=1, label="IC=0.05")
     best_ic = max(history.val_ic)
-    axes[1].set_title(f"Val IC   best={best_ic:+.4f}")
+    best_ic_ep = history.best_ic_epoch   # argmax(val_ic) — correct for ic_mode
+    axes[1].axvline(best_ic_ep, color="#fdcb6e", linestyle=":", linewidth=1, label=f"best ep={best_ic_ep}")
+    axes[1].set_title(f"Val IC   best={best_ic:+.4f} @ ep{best_ic_ep}")
     axes[1].legend(facecolor="#222", labelcolor="#eee")
     axes[1].grid(alpha=0.2)
 
@@ -509,13 +511,13 @@ def live_plot(history, epoch, epochs):
     axes[2].set_yscale("log")
     axes[2].grid(alpha=0.2)
 
-    best_val = min(history.val_loss)
-    no_impr  = epoch - history.best_epoch
+    # no_impr: epochs since best IC (not best loss)
+    no_impr = epoch - best_ic_ep
     suptitle = (
         f"Epoch {epoch}/{epochs}  |  "
         f"train={history.train_loss[-1]:.5f}  val={history.val_loss[-1]:.5f}  "
         f"IC={history.val_ic[-1]:+.4f}  |  "
-        f"best_epoch={history.best_epoch}  ({no_impr} ep no-improve)"
+        f"best_IC_epoch={best_ic_ep}  ({no_impr} ep no-improve)"
     )
     fig.suptitle(suptitle, color="#eee", fontsize=11)
     plt.tight_layout()
@@ -580,11 +582,17 @@ import shutil
 
 PUSH_TO_GITHUB = False   # Set True when model is validated
 
-quick_ckpt = MODELS_DIR / "v6_quick_test.pt"
+# Cell 6 saves the best-IC checkpoint as 'v6_final.pt'
+# Cell 7 (walk-forward) saves fold checkpoints as 'v6_wf_fold.pt'
+final_ckpt = MODELS_DIR / "v6_final.pt"
 best_ckpt  = MODELS_DIR / "v6_best.pt"
-if quick_ckpt.exists():
-    shutil.copy(quick_ckpt, best_ckpt)
-    print(f"Model checkpoint: {best_ckpt}")
+
+if final_ckpt.exists():
+    shutil.copy(final_ckpt, best_ckpt)
+    print(f"✅ Checkpoint ready: {best_ckpt}")
+else:
+    print(f"❌ v6_final.pt not found at {MODELS_DIR}")
+    print("   Make sure Cell 6 completed successfully (should print '✅ Checkpoint saved')")
 
 from google.colab import files
 if best_ckpt.exists():

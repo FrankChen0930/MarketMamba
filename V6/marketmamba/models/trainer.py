@@ -484,11 +484,21 @@ class TrainingHistory:
 
     @property
     def best_epoch(self) -> int:
+        """Epoch with minimum val_loss (for loss-mode display)."""
         return int(np.argmin(self.val_loss)) + 1 if self.val_loss else 0
+
+    @property
+    def best_ic_epoch(self) -> int:
+        """Epoch with maximum val_ic (for ic_mode checkpointing)."""
+        return int(np.argmax(self.val_ic)) + 1 if self.val_ic else 0
 
     @property
     def best_val_loss(self) -> float:
         return min(self.val_loss) if self.val_loss else float("inf")
+
+    @property
+    def best_val_ic(self) -> float:
+        return max(self.val_ic) if self.val_ic else 0.0
 
 
 # ============================================================
