@@ -550,9 +550,12 @@ def train_model(
     kg_csr, stock_to_idx = build_kg_csr()
 
     history  = TrainingHistory()
-    best_val = float("inf")
+    # ic_mode  → maximize IC  → start at -inf so first epoch always saves
+    # loss mode → minimize loss → start at +inf so first epoch always saves
+    best_val = float("-inf") if ic_mode else float("inf")
     no_impr  = 0
     ckpt_path = MODELS_DIR / checkpoint_name
+    MODELS_DIR.mkdir(parents=True, exist_ok=True)   # ensure dir exists before torch.save
 
     for epoch in range(1, epochs + 1):
         t0 = time.time()
@@ -690,13 +693,24 @@ def train_model(
                     break
 
     # Reload best weights (weights_only=False required for TrainingHistory dataclass in PyTorch 2.6)
+    if not ckpt_path.exists():
+        # No checkpoint saved — this happens if IC never exceeded -inf (all-negative IC run)
+        # Return the current model weights as-is rather than crashing.
+        print(
+            f"⚠️  No checkpoint found at {ckpt_path}. "
+            "This means IC never improved (all epochs had negative/zero IC). "
+            "Returning final epoch weights instead of best-IC weights.",
+            flush=True,
+        )
+        return model, history
+
     torch.serialization.add_safe_globals([TrainingHistory])
     ckpt = torch.load(ckpt_path, map_location=device, weights_only=False)
     model.load_state_dict(ckpt["state_dict"])
     print(
-        f"Training done. Best epoch={history.best_epoch} | "
-        f"val_loss={history.best_val_loss:.5f} | "
-        f"best_val_ic={max(history.val_ic):+.4f}",
+        f"Training done. Best epoch={ckpt['epoch']} | "
+        f"val_loss={ckpt['val_loss']:.5f} | "
+        f"best_val_ic={ckpt['val_ic']:+.4f}",
         flush=True,
     )
     return model, history
