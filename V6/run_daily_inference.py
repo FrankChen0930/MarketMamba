@@ -226,21 +226,40 @@ def main(target_date: str | None = None, skip_push: bool = False) -> None:
 
     # -- Step 2: Feature matrix --
     logger.info("\n[Step 2/5] Building feature matrix...")
-    prices  = pd.read_parquet(PROCESSED_DIR / "prices_raw.parquet")
-    inst    = pd.read_parquet(PROCESSED_DIR / "institutional_raw.parquet") \
-              if (PROCESSED_DIR / "institutional_raw.parquet").exists() else None
-    margin  = pd.read_parquet(PROCESSED_DIR / "margin_raw.parquet") \
-              if (PROCESSED_DIR / "margin_raw.parquet").exists() else None
-    revenue = pd.read_parquet(PROCESSED_DIR / "revenue_raw.parquet") \
-              if (PROCESSED_DIR / "revenue_raw.parquet").exists() else None
-    financials = pd.read_parquet(PROCESSED_DIR / "financials_raw.parquet") \
-                 if (PROCESSED_DIR / "financials_raw.parquet").exists() else None
-    macro   = pd.read_parquet(PROCESSED_DIR / "macro_raw.parquet") \
-              if (PROCESSED_DIR / "macro_raw.parquet").exists() else None
 
-    df = build_features(prices, inst, margin, revenue, financials, macro)
+    def _read(name: str):
+        path = PROCESSED_DIR / name
+        return pd.read_parquet(path) if path.exists() else None
+
+    prices       = _read("prices_raw.parquet")
+    inst         = _read("institutional_raw.parquet")
+    margin       = _read("margin_raw.parquet")
+    per          = _read("per_raw.parquet")
+    market_value = _read("market_value_raw.parquet")
+    daytrade     = _read("daytrade_raw.parquet")
+    revenue      = _read("revenue_raw.parquet")
+    financials   = _read("financials_raw.parquet")
+    balance_sheet = _read("balance_sheet_raw.parquet")
+    macro        = _read("macro_raw.parquet")
+
+    if prices is None:
+        raise FileNotFoundError(f"prices_raw.parquet not found in {PROCESSED_DIR}")
+
+    df = build_features(
+        df_price=prices,
+        df_inst=inst,
+        df_margin=margin,
+        df_per=per,
+        df_market_value=market_value,
+        df_daytrade=daytrade,
+        df_rev=revenue,
+        df_fin=financials,
+        df_balance_sheet=balance_sheet,
+        df_macro=macro,
+    )
     df = clean_and_scale(df)
     logger.info(f"Feature matrix: {df.shape}")
+
 
     # -- Step 3: Inference --
     logger.info("\n[Step 3/5] Running V6 inference...")
