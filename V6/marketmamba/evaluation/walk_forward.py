@@ -240,7 +240,7 @@ def run_inference_for_eval(
     all_preds, all_targets = [], []
 
     with torch.no_grad():
-        for X, Y in test_ds:
+        for X, Y, _stock_ids in test_ds:   # dataset returns (X, Y, stock_ids)
             X = X.to(device)
             preds = model(X, edge_index, edge_attr)
             all_preds.append(preds[:, horizon_idx].cpu().numpy())
@@ -324,7 +324,7 @@ def run_walk_forward(
         model.eval()
         test_dates_used = []
         with torch.no_grad():
-            for i, (X, Y) in enumerate(test_ds):
+            for i, (X, Y, _stock_ids) in enumerate(test_ds):   # dataset returns (X, Y, stock_ids)
                 X = X.to(device)
                 preds = model(X, edge_index, edge_attr)
                 pred_np   = preds[:, eval_horizon_idx].cpu().numpy()
