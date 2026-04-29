@@ -110,14 +110,14 @@ def run_inference(
     edge_index, edge_attr = load_kg_edges(df["stock_id"].unique().tolist(), device)
 
     # -- Inference with MC-Dropout uncertainty --
-    X, _ = test_ds[0]
+    X, _, valid_stocks = test_ds[0]   # __getitem__ returns (X, Y, stock_ids)
     X = X.to(device)
 
     N_MC = 30   # MC-Dropout samples
     preds_mc = []
     model.train()   # enable dropout for MC
     with torch.no_grad():
-        for _ in range(N_MC):
+        for _mc in range(N_MC):
             p = model(X, edge_index, edge_attr)   # (N, 3)
             preds_mc.append(p.cpu())
     model.eval()
@@ -126,9 +126,9 @@ def run_inference(
     pred_mean   = preds_stack.mean(dim=0).numpy()    # (N, 3)
     pred_std    = preds_stack.std(dim=0).numpy()     # (N, 3)  ← uncertainty
 
-    # -- Get stock IDs for this cross-section --
-    mask = df["Date"] == latest_date
-    stocks_today = df.loc[mask, "stock_id"].values[:len(pred_mean)]
+    # Use valid_stocks from dataset (correctly ordered to match X rows)
+    stocks_today = valid_stocks[:len(pred_mean)]
+
 
     # -- Build df_kelly --
     df_kelly = pd.DataFrame({
