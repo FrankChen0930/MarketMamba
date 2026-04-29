@@ -213,8 +213,8 @@ def main(target_date: str | None = None, skip_push: bool = False) -> None:
     device_str = "cuda" if torch.cuda.is_available() else "cpu"
     logger.info(f"  Device: {device_str}")
     if device_str == "cuda":
-        import torch
         logger.info(f"  GPU   : {torch.cuda.get_device_name(0)}")
+
 
     # -- Step 1: Data update --
     logger.info("\n[Step 1/5] Hybrid data update...")
