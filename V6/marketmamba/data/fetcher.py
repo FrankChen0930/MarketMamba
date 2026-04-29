@@ -753,13 +753,29 @@ def _get_trading_days(df_prices: pd.DataFrame) -> list[str]:
 
 
 def _append_to_parquet(path: Path, df_new: pd.DataFrame, date_str: str) -> None:
-    """Append new rows to an existing parquet, replacing rows for date_str if present."""
+    """
+    Append new rows to an existing parquet, replacing rows for date_str if present.
+    Always normalizes the Date column to YYYY-MM-DD string to prevent schema conflicts
+    (e.g., existing parquet may have Date as int64/datetime, new data as string).
+    """
     if df_new.empty:
         return
+
+    # Normalize df_new Date to string
+    df_new = df_new.copy()
+    if "Date" in df_new.columns:
+        df_new["Date"] = pd.to_datetime(df_new["Date"]).dt.strftime("%Y-%m-%d")
+
     if path.exists():
         df_old = pd.read_parquet(path)
-        df_old = df_old[pd.to_datetime(df_old["Date"]).dt.strftime("%Y-%m-%d") != date_str]
+        # Normalize df_old Date to string (it might be int64/datetime from original sync)
+        if "Date" in df_old.columns:
+            df_old["Date"] = pd.to_datetime(df_old["Date"]).dt.strftime("%Y-%m-%d")
+        # Remove any existing rows for this date before appending
+        df_old = df_old[df_old["Date"] != date_str]
         df = pd.concat([df_old, df_new], ignore_index=True)
     else:
         df = df_new
+
     df.to_parquet(path)
+
