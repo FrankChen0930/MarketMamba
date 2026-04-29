@@ -204,7 +204,7 @@ def run_inference(
 # Main Pipeline
 # ============================================================
 
-def main(target_date: str | None = None) -> None:
+def main(target_date: str | None = None, skip_push: bool = False) -> None:
     today = target_date or datetime.today().strftime("%Y-%m-%d")
     logger.info(f"\n{'='*55}")
     logger.info(f"  MarketMamba V6 — Daily Inference  [{today}]")
@@ -269,14 +269,64 @@ def main(target_date: str | None = None) -> None:
     except Exception as e:
         logger.warning(f"LLM report skipped: {e}")
 
-    # -- Step 5: Archive (rolling 90-day history) --
-    logger.info("\n[Step 5/5] Archiving results...")
+    # -- Step 5a: Archive (rolling 90-day history) --
+    logger.info("\n[Step 5/5] Archiving + pushing results...")
     _archive_results(df_kelly, today)
+
+    # -- Step 5b: Push to GitHub (backend auto-updates) --
+    if not skip_push:
+        pushed = _push_to_github(RESULTS_DIR, today)
+        if pushed:
+            logger.info("  Backend will serve real data on next cache refresh (≤1h)")
+    else:
+        logger.info("  --skip-push: skipping git push (dry run)")
 
     logger.info(f"\n{'='*55}")
     logger.info(f"  ✅ V6 Inference complete [{today}]")
     logger.info(f"  Results: {RESULTS_DIR}")
     logger.info(f"{'='*55}\n")
+
+
+def _push_to_github(results_dir: Path, date_str: str) -> bool:
+    """
+    Git add + commit + push results to GitHub.
+    Render backend will pick up the new df_kelly.csv on next cache refresh (≤1h).
+    Returns True on success, False on failure (non-fatal — results saved locally).
+    """
+    import subprocess
+
+    repo_root = results_dir.parent.parent.parent   # MarketMamba/
+    try:
+        subprocess.run(
+            ["git", "add", "V6/results/df_kelly.csv", "V6/results/df_traj.csv"],
+            cwd=repo_root, check=True, capture_output=True,
+        )
+        # Check if there's anything to commit
+        diff = subprocess.run(
+            ["git", "diff", "--cached", "--quiet"],
+            cwd=repo_root,
+        )
+        if diff.returncode == 0:
+            logger.info("No changes in results — git push skipped (already up to date)")
+            return True
+
+        subprocess.run(
+            ["git", "commit", "-m", f"inference: daily results {date_str}"],
+            cwd=repo_root, check=True, capture_output=True,
+        )
+        subprocess.run(
+            ["git", "push", "origin", "main"],
+            cwd=repo_root, check=True, capture_output=True,
+        )
+        logger.info("✅ Results pushed to GitHub (branch: main)")
+        return True
+    except subprocess.CalledProcessError as e:
+        logger.warning(
+            f"⚠️  git push failed — results saved locally but NOT on GitHub.\n"
+            f"   Error: {e.stderr.decode() if e.stderr else str(e)}\n"
+            f"   Manual fix: git add V6/results/ && git push"
+        )
+        return False
 
 
 def _archive_results(df_kelly: pd.DataFrame, date_str: str) -> None:
@@ -298,6 +348,7 @@ def _archive_results(df_kelly: pd.DataFrame, date_str: str) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MarketMamba V6 Daily Inference")
-    parser.add_argument("--date", type=str, default=None, help="Target date YYYY-MM-DD (default: today)")
+    parser.add_argument("--date",      type=str,  default=None, help="Target date YYYY-MM-DD (default: today)")
+    parser.add_argument("--skip-push", action="store_true",     help="Skip git push (dry run / test mode)")
     args = parser.parse_args()
-    main(target_date=args.date)
+    main(target_date=args.date, skip_push=args.skip_push)
