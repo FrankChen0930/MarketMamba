@@ -109,22 +109,31 @@ def run_inference(
     # -- Load KG edges --
     edge_index, edge_attr = load_kg_edges(df["stock_id"].unique().tolist(), device)
 
-    # -- Inference with MC-Dropout uncertainty --
+    # -- Inference with MC-Dropout uncertainty (mini-batch to fit 6 GB VRAM) --
     X, _, valid_stocks = test_ds[0]   # __getitem__ returns (X, Y, stock_ids)
-    X = X.to(device)
 
-    N_MC = 30   # MC-Dropout samples
-    preds_mc = []
+    N = X.shape[0]
+    INFER_BATCH = 128   # stocks per GPU step (tune down to 64 if still OOM)
+    N_MC        = 30    # MC-Dropout samples
+
+    pred_mean_acc = torch.zeros(N, 3)
+    pred_std_acc  = torch.zeros(N, 3)
+
     model.train()   # enable dropout for MC
     with torch.no_grad():
-        for _mc in range(N_MC):
-            p = model(X, edge_index, edge_attr)   # (N, 3)
-            preds_mc.append(p.cpu())
+        for batch_start in range(0, N, INFER_BATCH):
+            x_b = X[batch_start: batch_start + INFER_BATCH].to(device)
+            mc_preds = []
+            for _mc in range(N_MC):
+                p = model(x_b, edge_index, edge_attr)   # (B, 3)
+                mc_preds.append(p.cpu())
+            mc_stack = torch.stack(mc_preds, dim=0)      # (N_MC, B, 3)
+            pred_mean_acc[batch_start: batch_start + INFER_BATCH] = mc_stack.mean(0)
+            pred_std_acc [batch_start: batch_start + INFER_BATCH] = mc_stack.std(0)
     model.eval()
 
-    preds_stack = torch.stack(preds_mc, dim=0)       # (N_MC, N, 3)
-    pred_mean   = preds_stack.mean(dim=0).numpy()    # (N, 3)
-    pred_std    = preds_stack.std(dim=0).numpy()     # (N, 3)  ← uncertainty
+    pred_mean = pred_mean_acc.numpy()   # (N, 3)
+    pred_std  = pred_std_acc.numpy()    # (N, 3)
 
     # Use valid_stocks from dataset (correctly ordered to match X rows)
     stocks_today = valid_stocks[:len(pred_mean)]
