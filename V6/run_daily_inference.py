@@ -245,6 +245,16 @@ def main(target_date: str | None = None, skip_push: bool = False) -> None:
     if prices is None:
         raise FileNotFoundError(f"prices_raw.parquet not found in {PROCESSED_DIR}")
 
+    # For inference, only the last ~2 years is needed to cover all rolling windows
+    # (MA_60, ATR_14, SEQ_LEN=60, etc.). Loading 14 years causes OOM on local machine.
+    INFERENCE_LOOKBACK_DAYS = 730  # 2 calendar years ≈ 500 trading days
+    prices["Date"] = pd.to_datetime(prices["Date"])
+    cutoff = prices["Date"].max() - pd.Timedelta(days=INFERENCE_LOOKBACK_DAYS)
+    prices = prices[prices["Date"] >= cutoff].copy()
+    logger.info(f"Prices trimmed to last 2y: {len(prices):,} rows "
+                f"({prices['Date'].min().date()} → {prices['Date'].max().date()})")
+
+
     df = build_features(
         df_price=prices,
         df_inst=inst,
@@ -259,6 +269,7 @@ def main(target_date: str | None = None, skip_push: bool = False) -> None:
     )
     df = clean_and_scale(df)
     logger.info(f"Feature matrix: {df.shape}")
+
 
 
     # -- Step 3: Inference --
