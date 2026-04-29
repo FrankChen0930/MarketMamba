@@ -646,16 +646,24 @@ def run_daily_update(target_date: str | None = None) -> str:
     # Institutional — TWSE/TPEX direct (~16:30)
     df_tse = fetch_institutional_twse(today)
     df_otc = fetch_institutional_tpex(today)
-    inst_today = pd.concat([x for x in [df_tse, df_otc] if x is not None], ignore_index=True)
-    if not inst_today.empty:
-        inst_today["Date"] = today
-        _append_to_parquet(PROCESSED_DIR / "institutional_raw.parquet", inst_today, today)
+    inst_frames = [x for x in [df_tse, df_otc] if x is not None]
+    if inst_frames:
+        inst_today = pd.concat(inst_frames, ignore_index=True)
+        if not inst_today.empty:
+            inst_today["Date"] = today
+            _append_to_parquet(PROCESSED_DIR / "institutional_raw.parquet", inst_today, today)
+    else:
+        logger.warning(
+            f"No institutional data for {today} "
+            f"(market may be closed or data not yet published — will use forward-fill)"
+        )
 
     # Margin — FinMind or Forward Fill
     fetch_margin_finmind(today)  # caches to CACHE_DIR automatically
 
     logger.info(f"=== Daily update done: {today} ===")
     return today
+
 
 
 # ============================================================
