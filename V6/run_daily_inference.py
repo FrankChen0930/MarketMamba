@@ -150,6 +150,7 @@ def run_inference(
     })
 
     # Liquidity filter: remove stocks below minimum daily volume
+    mask = df["Date"] == latest_date   # date mask for looking up today's OHLCV
     df_today = df[mask][["stock_id", "Volume", "ATR_14"]].copy()
     df_kelly  = df_kelly.merge(
         df_today.rename(columns={"stock_id": "Ticker"}),
