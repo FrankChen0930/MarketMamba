@@ -215,7 +215,24 @@ def run_inference(
 # ============================================================
 
 def main(target_date: str | None = None, skip_push: bool = False) -> None:
-    today = target_date or datetime.today().strftime("%Y-%m-%d")
+    # ── Time-aware date selection ─────────────────────────────────────────────
+    # Taiwan market closes at 13:30; data is reliable after ~14:00.
+    # Running before 14:00 would fetch incomplete/empty data → use yesterday.
+    if target_date is not None:
+        today = target_date
+    else:
+        from zoneinfo import ZoneInfo
+        from datetime import timedelta
+        now_twn = datetime.now(ZoneInfo("Asia/Taipei"))
+        if now_twn.hour < 14:
+            today = (now_twn - timedelta(days=1)).strftime("%Y-%m-%d")
+            logger.info(
+                f"⏰ Before 14:00 Taiwan time ({now_twn.strftime('%H:%M')}) — "
+                f"using yesterday's date: {today}"
+            )
+        else:
+            today = now_twn.strftime("%Y-%m-%d")
+
     logger.info(f"\n{'='*55}")
     logger.info(f"  MarketMamba V6 — Daily Inference  [{today}]")
     logger.info(f"{'='*55}")
