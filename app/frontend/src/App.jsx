@@ -6,6 +6,7 @@ import Dashboard    from './pages/Dashboard';
 import QuantAnalysis from './pages/QuantAnalysis';
 import MarketView   from './pages/MarketView';
 import Portfolio    from './pages/Portfolio';
+import ModelStatus  from './pages/ModelStatus';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="quant"       element={<QuantAnalysis />} />
           <Route path="market"      element={<MarketView />} />
           <Route path="portfolio"   element={<Portfolio />} />
+          <Route path="model"       element={<ModelStatus />} />
         </Route>
       </Routes>
     </BrowserRouter>
@@ -23,3 +25,4 @@ function App() {
 }
 
 export default App;
+

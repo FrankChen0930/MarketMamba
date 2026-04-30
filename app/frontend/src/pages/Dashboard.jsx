@@ -1,20 +1,19 @@
 import React, { useState } from 'react';
-import {
-  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine
-} from 'recharts';
 import { useApi } from '../hooks/useApi';
 import { fetchSignals } from '../api/signals';
 import { fetchMarket } from '../api/market';
-import { fetchICHistory } from '../api/performance';
 import StockModal from '../components/StockModal';
 import SectorHeatmap from '../components/SectorHeatmap';
 import { SkeletonCard, SkeletonTable, SkeletonBlock, ApiError } from '../components/SkeletonLoader';
 
-// ── Sub-components ────────────────────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
-function StatCard({ label, value, sub, valueClass }) {
+function StatCard({ label, value, sub, valueClass, accent }) {
   return (
-    <div className="stat-card animate-fade-up">
+    <div className="stat-card animate-fade-up" style={accent ? {
+      borderColor: accent,
+      background: `color-mix(in srgb, ${accent} 5%, var(--bg-panel))`
+    } : {}}>
       <div className="label">{label}</div>
       <div className={`value ${valueClass || ''}`}>{value}</div>
       {sub && <div className="sub">{sub}</div>}
@@ -24,82 +23,71 @@ function StatCard({ label, value, sub, valueClass }) {
 
 function SignalBadge({ signal }) {
   const cls = signal === 'BUY' ? 'badge-positive' : signal === 'SELL' ? 'badge-negative' : 'badge-neutral';
-  return <span className={`badge ${cls}`}>{signal}</span>;
+  const label = signal === 'BUY' ? '多' : signal === 'SELL' ? '空' : '觀望';
+  return <span className={`badge ${cls}`}>{label}</span>;
 }
 
-function AlphaBar({ value, max = 0.25 }) {
+function ConfBadge({ conf }) {
+  const color = conf === '高信心' ? 'var(--positive)' : conf === '中信心' ? 'var(--accent-amber)' : 'var(--text-muted)';
+  return <span style={{ fontSize: 11, color }}>{conf}</span>;
+}
+
+function AlphaBar({ value, max = 0.3 }) {
   const pct = Math.min(Math.abs(value) / max * 100, 100);
   const color = value >= 0 ? 'var(--positive)' : 'var(--negative)';
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <div style={{ width: 60, height: 6, background: 'var(--bg-hover)', borderRadius: 3, overflow: 'hidden' }}>
+      <div style={{ width: 52, height: 5, background: 'var(--bg-hover)', borderRadius: 3, overflow: 'hidden' }}>
         <div style={{
           width: `${pct}%`, height: '100%', background: color,
-          borderRadius: 3, transition: 'width 0.5s ease', boxShadow: `0 0 6px ${color}`
+          borderRadius: 3, boxShadow: `0 0 5px ${color}`
         }} />
       </div>
-      <span className={`mono ${value >= 0 ? 'text-positive' : 'text-negative'}`} style={{ fontSize: 12, minWidth: 56 }}>
+      <span className={`mono ${value >= 0 ? 'text-positive' : 'text-negative'}`} style={{ fontSize: 11, minWidth: 52 }}>
         {value >= 0 ? '+' : ''}{(value * 100).toFixed(2)}%
       </span>
     </div>
   );
 }
 
-const CustomTooltip = ({ active, payload, label }) => {
-  if (!active || !payload?.length) return null;
+function MacroRow({ label, value, change, isUp }) {
   return (
-    <div className="glass" style={{ padding: '10px 14px', fontSize: 12 }}>
-      <div style={{ color: 'var(--text-muted)', marginBottom: 6 }}>Epoch {label}</div>
-      {payload.map(p => (
-        <div key={p.dataKey} style={{ color: p.color, fontFamily: 'var(--font-mono)' }}>
-          {p.name}: {p.value?.toFixed(4)}
-        </div>
-      ))}
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: '1px solid var(--border)' }}>
+      <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>{label}</span>
+      <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <span className="mono" style={{ fontSize: 13, color: 'var(--text-primary)' }}>{value}</span>
+        {change !== undefined && (
+          <span className={`mono ${isUp ? 'text-positive' : 'text-negative'}`} style={{ fontSize: 11 }}>
+            {isUp ? '▲' : '▼'} {Math.abs(change).toFixed(2)}%
+          </span>
+        )}
+      </div>
     </div>
   );
-};
+}
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
+// ── Main ─────────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('top');
   const [selectedStock, setSelectedStock] = useState(null);
 
   const { data: signalData, loading: sigLoading, error: sigError, refetch: refetchSigs } = useApi(() => fetchSignals());
-  const { data: market, loading: mktLoading, error: mktError } = useApi(fetchMarket);
-  const { data: icHistory, loading: icLoading } = useApi(fetchICHistory);
+  const { data: market, loading: mktLoading } = useApi(fetchMarket);
 
   const signals    = signalData?.signals || [];
-  const topSignals = signals.filter(s => s.alpha_20d > 0).slice(0, 10);
-  const botSignals = signals.filter(s => s.alpha_20d < 0).slice(0, 5);
+  const topSignals = signals.filter(s => s.alpha_20d > 0).slice(0, 15);
+  const botSignals = signals.filter(s => s.alpha_20d < 0).slice(0, 8);
   const displayed  = activeTab === 'top' ? topSignals : botSignals;
-  const lastIc     = icHistory?.[icHistory.length - 1];
 
-  const loading = sigLoading || mktLoading || icLoading;
-  const error   = sigError || mktError;
+  const loading = sigLoading || mktLoading;
+  const taiex   = market?.taiex;
+  const taiexUp = (taiex?.change ?? 0) >= 0;
 
-  // ── Training Status Banner ─────────────────────────────────────────────────
-  const trainingBanner = market?.training_status === 'training' && (
-    <div style={{
-      background: 'rgba(0,212,255,0.06)',
-      border: '1px solid rgba(0,212,255,0.2)',
-      borderRadius: 8, padding: '10px 16px',
-      display: 'flex', alignItems: 'center', gap: 12,
-      fontSize: 12,
-    }}>
-      <span style={{ animation: 'pulse-glow 2s infinite', display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: 'var(--accent-blue)', flexShrink: 0 }} />
-      <span style={{ color: 'var(--text-secondary)' }}>
-        Final Training 進行中（Epoch {market.training_epoch || '?'}/100）· 推論功能將在訓練完成後啟用
-      </span>
-    </div>
-  );
-
-  if (error) return (
+  if (sigError) return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div className="page-header">
-        <div><div className="page-title">今日選股訊號</div></div>
-      </div>
-      <ApiError message={error} onRetry={refetchSigs} />
+      <div className="page-header"><div className="page-title">今日選股訊號</div></div>
+      <ApiError message={sigError} onRetry={refetchSigs} />
     </div>
   );
 
@@ -112,92 +100,118 @@ export default function Dashboard() {
         <div>
           <div className="page-title">今日選股訊號</div>
           <div className="page-subtitle">
-            MarketMamba V6 Alpha · {market?.last_run || '—'} 推論完成
+            MarketMamba V6 Alpha · 推論日期：{signalData?.date || market?.last_run || '—'}
           </div>
         </div>
         <button className="btn btn-primary" onClick={refetchSigs}>🔄 重新整理</button>
       </div>
 
-      {trainingBanner}
-
-      {/* ── Stat Cards ── */}
+      {/* ── Macro Stat Cards ── */}
       <div className="grid-4">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
         ) : <>
           <StatCard
-            label="加權指數" value={market?.taiex.value.toLocaleString()}
-            sub={<span className={market?.taiex.change >= 0 ? 'text-positive' : 'text-negative'}>
-              {market?.taiex.change >= 0 ? '▲' : '▼'} {Math.abs(market?.taiex.change_pct ?? 0).toFixed(2)}%
+            label="加權指數 TAIEX"
+            value={taiex?.value ? taiex.value.toLocaleString('zh-TW', { maximumFractionDigits: 0 }) : '—'}
+            sub={<span className={taiexUp ? 'text-positive' : 'text-negative'}>
+              {taiexUp ? '▲' : '▼'} {Math.abs(taiex?.change_pct ?? 0).toFixed(2)}%
+              &nbsp;({taiexUp ? '+' : ''}{(taiex?.change ?? 0).toFixed(0)})
+            </span>}
+            accent={taiexUp ? 'var(--positive)' : 'var(--negative)'}
+          />
+          <StatCard
+            label="漲 / 跌家數"
+            value={`${market?.advancing ?? '—'} / ${market?.declining ?? '—'}`}
+            sub={`總計 ${((market?.advancing ?? 0) + (market?.declining ?? 0)).toLocaleString()} 檔`}
+          />
+          <StatCard
+            label="VIX 恐慌指數"
+            value={market?.vix ? market.vix.toFixed(2) : '—'}
+            sub={<span style={{ color: market?.vix > 20 ? 'var(--negative)' : 'var(--positive)' }}>
+              {market?.vix > 30 ? '⚠️ 高度恐慌' : market?.vix > 20 ? '⚡ 波動偏高' : '✓ 市場平靜'}
             </span>}
           />
           <StatCard
-            label="上漲 / 下跌"
-            value={`${market?.advancing ?? '—'} / ${market?.declining ?? '—'}`}
-            sub="今日漲跌家數"
+            label="USD / TWD"
+            value={market?.usd_twd ? market.usd_twd.toFixed(3) : '—'}
+            sub={<span className={market?.spx_change >= 0 ? 'text-positive' : 'text-negative'}>
+              SPX {market?.spx_change >= 0 ? '▲' : '▼'} {Math.abs(market?.spx_change ?? 0).toFixed(2)}%
+            </span>}
           />
-          <StatCard
-            label="Model Val IC"
-            value={lastIc ? `+${lastIc.val_ic.toFixed(4)}` : '—'}
-            valueClass="text-positive"
-            sub={lastIc ? `Epoch ${lastIc.epoch} best` : 'Training…'}
-          />
-          <StatCard label="今日成交金額" value="2,841億" sub="台股整體" />
         </>}
       </div>
 
       {/* ── Main Area ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 16, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 330px', gap: 16, alignItems: 'start' }}>
 
         {/* Signal Table */}
         <div className="panel">
           <div className="panel-header">
             <div className="panel-title">
               <span className="panel-title-icon">⚡</span> Alpha 排名訊號
+              {!loading && <span className="badge badge-neutral" style={{ marginLeft: 8, fontSize: 10 }}>
+                可投資 {signals.filter(s => s.alpha_20d > 0).length} 檔
+              </span>}
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
-              {['top', 'bot'].map(tab => (
+              {[['top','多方 Top'], ['bot','空方 Bot']].map(([tab, label]) => (
                 <button
                   key={tab}
                   className={`btn ${activeTab === tab ? 'btn-primary' : 'btn-ghost'}`}
                   style={{ padding: '4px 12px', fontSize: 12 }}
                   onClick={() => setActiveTab(tab)}
                 >
-                  {tab === 'top' ? '多方 Top' : '空方 Bot'}
+                  {label}
                 </button>
               ))}
             </div>
           </div>
           <div className="panel-body-flush">
-            {loading ? <SkeletonTable rows={8} cols={6} /> : (
+            {loading ? <SkeletonTable rows={10} cols={7} /> : (
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>排名</th><th>股票</th><th>產業</th>
-                    <th>Alpha 強度</th><th>量比</th><th>訊號</th>
+                    <th style={{ width: 32 }}>#</th>
+                    <th>股票</th>
+                    <th>產業</th>
+                    <th>20d Alpha 強度</th>
+                    <th>Sharpe</th>
+                    <th>建倉比重</th>
+                    <th>訊號</th>
                   </tr>
                 </thead>
                 <tbody>
                   {displayed.map((s, i) => (
                     <tr
                       key={s.stock_id}
-                      style={{ animationDelay: `${i * 0.04}s`, cursor: 'pointer' }}
+                      style={{ animationDelay: `${i * 0.035}s`, cursor: 'pointer' }}
                       className="animate-fade-up"
                       onClick={() => setSelectedStock(s)}
                     >
-                      <td style={{ color: 'var(--text-muted)', fontSize: 11 }}>#{s.rank}</td>
+                      <td style={{ color: 'var(--text-muted)', fontSize: 11 }}>{s.rank}</td>
                       <td>
-                        <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{s.name}</div>
-                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{s.stock_id}</div>
+                        <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>{s.name}</div>
+                        <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{s.stock_id}</div>
                       </td>
                       <td><span className="badge badge-neutral" style={{ fontSize: 10 }}>{s.sector}</span></td>
                       <td><AlphaBar value={s.alpha_20d} /></td>
                       <td>
-                        <span className={`mono ${s.vol_ratio > 1 ? 'text-positive' : 'text-muted'}`} style={{ fontSize: 12 }}>
-                          {s.vol_ratio.toFixed(2)}x
+                        <span className={`mono ${s.uncertainty < 0.03 ? 'text-positive' : 'text-secondary'}`} style={{ fontSize: 12 }}>
+                          {(s.alpha_20d / Math.max(s.uncertainty, 0.001)).toFixed(1)}
                         </span>
                       </td>
-                      <td><SignalBadge signal={s.signal} /></td>
+                      <td>
+                        <span className="mono" style={{ fontSize: 12 }}>
+                          {s.suggested_weight ? `${(s.suggested_weight * 100).toFixed(1)}%` : '—'}
+                        </span>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                          <SignalBadge signal={s.signal} />
+                          <ConfBadge conf={s.confidence} />
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -206,71 +220,88 @@ export default function Dashboard() {
           </div>
           {!loading && (
             <div style={{ padding: '8px 16px', fontSize: 11, color: 'var(--text-muted)', borderTop: '1px solid var(--border)' }}>
-              點擊任一股票查看詳細 Alpha 分析
+              點擊股票查看 5d / 20d / 60d Alpha 詳情 · 數據截止 {signalData?.date || '—'}
             </div>
           )}
         </div>
 
-        {/* Right Side */}
+        {/* Right Panel */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-          {/* IC Sparkline */}
+          {/* Macro indicators */}
           <div className="panel">
             <div className="panel-header">
-              <div className="panel-title"><span>📉</span> Val IC 趨勢</div>
-              {lastIc && <span className="badge badge-positive">+{lastIc.val_ic.toFixed(4)}</span>}
+              <div className="panel-title"><span>🌐</span> 全球市場</div>
+              <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>即時</span>
             </div>
-            <div className="panel-body" style={{ paddingTop: 8 }}>
-              {icLoading ? <SkeletonBlock height={120} /> : (
-                <ResponsiveContainer width="100%" height={120}>
-                  <LineChart data={icHistory || []}>
-                    <XAxis dataKey="epoch" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
-                    <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} domain={[0, 0.12]} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <ReferenceLine y={0.05} stroke="rgba(0,255,136,0.3)" strokeDasharray="4 4" />
-                    <Line type="monotone" dataKey="val_ic" stroke="var(--accent-blue)" strokeWidth={2} dot={false} name="Val IC" />
-                  </LineChart>
-                </ResponsiveContainer>
-              )}
-              <div className="divider" />
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)' }}>
-                <span>IC=0.05 門檻</span>
-                <span className="text-positive">✓ 已達標</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Market Status */}
-          <div className="panel">
-            <div className="panel-header">
-              <div className="panel-title"><span>🌐</span> 系統狀態</div>
-            </div>
-            <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {mktLoading ? Array.from({ length: 4 }).map((_, i) => (
-                <SkeletonBlock key={i} height={14} width={`${60 + i * 10}%`} />
-              )) : [
-                { label: '推論狀態', value: market?.run_status === 'completed' ? '✅ 已完成' : '⏳ 訓練中', cls: market?.run_status === 'completed' ? 'text-positive' : 'text-accent' },
-                { label: '訓練 Epoch', value: `${market?.training_epoch || '?'} / 100`, cls: '' },
-                { label: '最佳 IC',    value: lastIc ? `+${lastIc.val_ic.toFixed(4)}` : '—', cls: 'text-positive' },
-                { label: '資料截止',   value: signalData?.date || '—', cls: '' },
-              ].map(item => (
-                <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
-                  <span style={{ color: 'var(--text-muted)' }}>{item.label}</span>
-                  <span className={`mono ${item.cls}`}>{item.value}</span>
+            <div className="panel-body">
+              {mktLoading ? <SkeletonBlock height={120} /> : (<>
+                <MacroRow
+                  label="S&P 500"
+                  value="—"
+                  change={market?.spx_change}
+                  isUp={(market?.spx_change ?? 0) >= 0}
+                />
+                <MacroRow
+                  label="黃金 (Gold)"
+                  value="—"
+                  change={market?.gold_change}
+                  isUp={(market?.gold_change ?? 0) >= 0}
+                />
+                <MacroRow
+                  label="VIX 恐慌"
+                  value={market?.vix?.toFixed(2) ?? '—'}
+                />
+                <MacroRow
+                  label="USD / TWD"
+                  value={market?.usd_twd?.toFixed(3) ?? '—'}
+                />
+                <div style={{ paddingTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  <span className="badge badge-neutral" style={{ fontSize: 10 }}>
+                    漲 {market?.advancing ?? '—'} 跌 {market?.declining ?? '—'}
+                  </span>
+                  <span className="badge badge-blue" style={{ fontSize: 10 }}>
+                    {signalData?.date || market?.last_run || '—'}
+                  </span>
                 </div>
-              ))}
+              </>)}
             </div>
           </div>
 
-          {/* Sector Heatmap */}
+          {/* Sector Heatmap — driven by real signals */}
           <div className="panel">
             <div className="panel-header">
               <div className="panel-title"><span>🏭</span> 產業強弱</div>
+              <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>模型 Alpha 加權</span>
             </div>
             <div className="panel-body">
-              {sigLoading ? <SkeletonBlock height={120} /> : (
+              {sigLoading ? <SkeletonBlock height={140} /> : (
                 <SectorHeatmap signals={signals} />
               )}
+            </div>
+          </div>
+
+          {/* Top 5 Alpha stocks condensed */}
+          <div className="panel" style={{ borderColor: 'rgba(0,255,136,0.15)', background: 'rgba(0,255,136,0.02)' }}>
+            <div className="panel-header">
+              <div className="panel-title"><span>🏆</span> 今日 Top 5</div>
+            </div>
+            <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {sigLoading ? <SkeletonBlock height={100} /> : topSignals.slice(0, 5).map((s, i) => (
+                <div key={s.stock_id} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
+                  onClick={() => setSelectedStock(s)}>
+                  <span style={{ color: 'var(--accent-amber)', fontSize: 12, minWidth: 16, fontFamily: 'var(--font-mono)' }}>
+                    {i + 1}
+                  </span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600 }}>{s.name}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{s.stock_id} · {s.sector}</div>
+                  </div>
+                  <span className="text-positive mono" style={{ fontSize: 12 }}>
+                    +{(s.alpha_20d * 100).toFixed(2)}%
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
 
