@@ -183,5 +183,6 @@ GITHUB_RESULTS_KEEP_DAYS = 90   # Rolling window for df_kelly history
 
 # LLM settings (loaded from env)
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-LLM_MODEL         = "claude-haiku-4-5"
-LLM_MAX_TOKENS    = 600
+LLM_MODEL         = "claude-sonnet-4-6"
+LLM_MAX_TOKENS    = 800
+
