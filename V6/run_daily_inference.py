@@ -377,9 +377,13 @@ def _push_to_github(results_dir: Path, date_str: str) -> bool:
     git_env = {**os.environ, "GIT_DISCOVERY_ACROSS_FILESYSTEM": "1"}
     try:
         subprocess.run(
-            ["git", "add", "V6/results/df_kelly.csv", "V6/results/df_traj.csv"],
+            ["git", "add",
+             "V6/results/df_kelly.csv",
+             "V6/results/df_traj.csv",
+             "V6/results/market_summary.json"],
             cwd=repo_root, check=True, capture_output=True, env=git_env,
         )
+
         # Check if there's anything to commit
         diff = subprocess.run(
             ["git", "diff", "--cached", "--quiet"],
