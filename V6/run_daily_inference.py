@@ -149,11 +149,20 @@ def run_inference(
         "Uncertainty":   pred_std[:, 1],    # 20d uncertainty
     })
 
-    # Liquidity filter: remove stocks below minimum daily volume
-    mask     = df["Date"] == latest_date
-    # deduplicate: keep one row per stock (some dates may have duplicate entries)
-    df_today = (df[mask][["stock_id", "Volume", "ATR_14", "Close"]]
-                .drop_duplicates("stock_id", keep="last").copy())
+    # Liquidity filter — use RAW prices (Volume/Close are z-scored in feature matrix)
+    mask = df["Date"] == latest_date
+    try:
+        _raw = pd.read_parquet(
+            PROCESSED_DIR / "prices_raw.parquet",
+            columns=["Date", "stock_id", "Volume", "Close"],
+        )
+        _raw["Date"] = pd.to_datetime(_raw["Date"])
+        df_today = (_raw[_raw["Date"] == latest_date]
+                    .drop_duplicates("stock_id", keep="last")[["stock_id", "Volume", "Close"]])
+    except Exception:
+        # Fallback: use z-scored values (threshold must be relaxed to 0)
+        df_today = (df[mask][["stock_id", "Volume", "Close"]]
+                    .drop_duplicates("stock_id", keep="last").copy())
     df_kelly = df_kelly.merge(
         df_today.rename(columns={"stock_id": "Ticker"}),
         on="Ticker", how="left",
@@ -297,6 +306,11 @@ def main(target_date: str | None = None, skip_push: bool = False) -> None:
         df_macro=macro,
     )
     df = clean_and_scale(df)
+    # Deduplicate: institutional_raw is long-format (4 rows/stock/date) → 4x duplication
+    n_before = len(df)
+    df = df.drop_duplicates(subset=["Date", "stock_id"], keep="last")
+    if len(df) < n_before:
+        logger.info(f"Deduped feature matrix: {n_before:,} → {len(df):,} rows")
     logger.info(f"Feature matrix: {df.shape}")
 
 
