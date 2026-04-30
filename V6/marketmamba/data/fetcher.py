@@ -639,16 +639,35 @@ def run_daily_update(target_date: str | None = None) -> str:
 
     tse_ids, otc_ids = load_ticker_universe()
 
-    # Price — yfinance first, FinMind fallback if empty
-    df_prices, missing = fetch_prices_yfinance(tse_ids, otc_ids, today, today)
-    if df_prices.empty:
-        logger.info("yfinance returned no data → falling back to FinMind for today's prices...")
-        all_ids = tse_ids + otc_ids
-        df_prices = fetch_prices_finmind(all_ids, today, today)
+    # Price — skip if today's data already in parquet
+    price_path = PROCESSED_DIR / "prices_raw.parquet"
+    already_have_today = False
+    if price_path.exists():
+        _existing = pd.read_parquet(price_path, columns=["Date"])
+        _existing["Date"] = pd.to_datetime(_existing["Date"]).dt.strftime("%Y-%m-%d")
+        already_have_today = ((_existing["Date"] == today).any())
+
+    if already_have_today:
+        logger.info(f"Prices for {today} already in parquet — skipping download")
+    else:
+        df_prices, missing = fetch_prices_yfinance(tse_ids, otc_ids, today, today)
         if df_prices.empty:
-            logger.warning("FinMind also returned no price data — prices not updated for today")
-    if not df_prices.empty:
-        _append_to_parquet(PROCESSED_DIR / "prices_raw.parquet", df_prices, today)
+            # Single FinMind call for ALL stocks on this date (much faster than per-stock)
+            logger.info("yfinance empty → FinMind single-batch price fetch...")
+            df_fm = _finmind_fetch("TaiwanStockPrice", start_date=today, end_date=today)
+            if df_fm is not None and not df_fm.empty:
+                col_map = {"date": "Date", "open": "Open", "max": "High",
+                           "min": "Low", "close": "Close", "Trading_Volume": "Volume"}
+                df_fm.rename(columns=col_map, inplace=True)
+                keep = [c for c in ["Date","stock_id","Open","High","Low","Close","Volume"]
+                        if c in df_fm.columns]
+                df_prices = df_fm[keep]
+                logger.info(f"FinMind prices: {len(df_prices)} rows for {today}")
+            else:
+                logger.warning("FinMind also returned no price data — prices not updated today")
+        if not df_prices.empty:
+            _append_to_parquet(price_path, df_prices, today)
+
 
     # Institutional — TWSE/TPEX direct (~16:30)
     df_tse = fetch_institutional_twse(today)
