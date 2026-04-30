@@ -398,7 +398,10 @@ def _push_to_github(results_dir: Path, date_str: str) -> bool:
             cwd=repo_root, check=True, capture_output=True, env=git_env,
         )
         logger.info("✅ Results pushed to GitHub (branch: main)")
+        # Notify Render backend to refresh its cache immediately
+        _refresh_render_cache()
         return True
+
 
     except subprocess.CalledProcessError as e:
         logger.warning(
@@ -407,6 +410,28 @@ def _push_to_github(results_dir: Path, date_str: str) -> bool:
             f"   Manual fix: git add V6/results/ && git push"
         )
         return False
+
+
+def _refresh_render_cache() -> None:
+    """
+    POST to Render backend to invalidate the 1-hour signals cache immediately
+    after a git push so the dashboard shows fresh results within seconds.
+    Set RENDER_BACKEND_URL in .env, e.g. https://marketmamba-api.onrender.com
+    """
+    import os, urllib.request
+    url = os.getenv("RENDER_BACKEND_URL", "").rstrip("/")
+    if not url:
+        return
+    endpoint = f"{url}/api/signals/cache/refresh"
+    try:
+        req = urllib.request.Request(endpoint, method="POST")
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            logger.info(f"📡 Render cache refreshed: {resp.status}")
+    except Exception as e:
+        logger.warning(f"Cache refresh failed (non-fatal): {e}")
+
+
+
 
 
 def _archive_results(df_kelly: pd.DataFrame, date_str: str) -> None:
@@ -424,6 +449,8 @@ def _archive_results(df_kelly: pd.DataFrame, date_str: str) -> None:
         if d.is_dir() and d.name < cutoff:
             shutil.rmtree(d)
             logger.info(f"Removed old archive: {d.name}")
+
+
 
 
 if __name__ == "__main__":
