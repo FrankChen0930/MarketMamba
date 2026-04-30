@@ -639,9 +639,16 @@ def run_daily_update(target_date: str | None = None) -> str:
 
     tse_ids, otc_ids = load_ticker_universe()
 
-    # Price — yfinance (available ~13:45)
+    # Price — yfinance first, FinMind fallback if empty
     df_prices, missing = fetch_prices_yfinance(tse_ids, otc_ids, today, today)
-    _append_to_parquet(PROCESSED_DIR / "prices_raw.parquet", df_prices, today)
+    if df_prices.empty:
+        logger.info("yfinance returned no data → falling back to FinMind for today's prices...")
+        all_ids = tse_ids + otc_ids
+        df_prices = fetch_prices_finmind(all_ids, today, today)
+        if df_prices.empty:
+            logger.warning("FinMind also returned no price data — prices not updated for today")
+    if not df_prices.empty:
+        _append_to_parquet(PROCESSED_DIR / "prices_raw.parquet", df_prices, today)
 
     # Institutional — TWSE/TPEX direct (~16:30)
     df_tse = fetch_institutional_twse(today)
