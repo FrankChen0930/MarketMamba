@@ -142,7 +142,8 @@ async def get_ticker():
     # Try to grab top stocks from GitHub signals
     if GITHUB_RESULTS_URL:
         try:
-            import httpx
+            import httpx, sys, pathlib
+            sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
             from stock_info import get_stock_info, get_stock_name
             async with httpx.AsyncClient(timeout=8) as client:
                 r = await client.get(GITHUB_RESULTS_URL)
@@ -163,6 +164,7 @@ async def get_ticker():
                     ))
         except Exception as e:
             logger.warning(f"Ticker build failed: {e}")
+
 
     _ticker_cache = TickerResponse(items=items)
     _ticker_cache_time = datetime.now()

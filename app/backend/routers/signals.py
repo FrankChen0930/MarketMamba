@@ -39,8 +39,11 @@ async def _load_from_github() -> Optional[SignalsResponse]:
     if not GITHUB_RESULTS_URL:
         return None
     try:
+        import sys, pathlib
+        sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
         import httpx
         from stock_info import get_stock_info, get_stock_name, get_stock_sector
+
 
         async with httpx.AsyncClient(timeout=10) as client:
             r = await client.get(GITHUB_RESULTS_URL)
