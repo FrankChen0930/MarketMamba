@@ -9,7 +9,8 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import signals, performance, market, portfolio
+from routers import signals, performance, market, portfolio, reports
+
 
 app = FastAPI(
     title="MarketMamba V6 API",
@@ -39,6 +40,8 @@ app.include_router(signals.router,     prefix="/api")
 app.include_router(performance.router, prefix="/api")
 app.include_router(market.router,      prefix="/api")
 app.include_router(portfolio.router,   prefix="/api")
+app.include_router(reports.router,     prefix="/api")
+
 
 
 @app.get("/api/health")

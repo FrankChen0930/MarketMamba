@@ -88,7 +88,13 @@ class MarketStatusResponse(BaseModel):
     last_run: str
     run_status: str        # "completed" / "running" / "not_ready"
     training_epoch: Optional[int] = None
-    training_status: str = "training"
+    training_status: str = "completed"
+    # Macro indicators (from yfinance)
+    spx_change: float = 0.0   # S&P 500 % change today
+    vix: float = 0.0           # VIX current level
+    gold_change: float = 0.0   # Gold futures % change
+    usd_twd: float = 0.0       # USD/TWD exchange rate
+
 
 
 class TickerItem(BaseModel):

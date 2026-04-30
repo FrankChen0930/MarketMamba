@@ -40,6 +40,8 @@ async def _load_from_github() -> Optional[SignalsResponse]:
         return None
     try:
         import httpx
+        from stock_info import get_stock_info, get_stock_name, get_stock_sector
+
         async with httpx.AsyncClient(timeout=10) as client:
             r = await client.get(GITHUB_RESULTS_URL)
             if r.status_code != 200:
@@ -47,22 +49,23 @@ async def _load_from_github() -> Optional[SignalsResponse]:
                 return None
 
         df = pd.read_csv(io.StringIO(r.text))
-
-        # df_kelly.csv columns: Ticker, Date, Exp_Alpha_5d, Exp_Alpha_20d,
-        #   Exp_Alpha_60d, Uncertainty, Sharpe_Score, Confidence, Suggested_Weight, ...
         df = df.sort_values("Sharpe_Score", ascending=False).reset_index(drop=True)
+
+        # Load name + sector lookup (cached 24h)
+        info = await get_stock_info()
 
         signals = []
         for i, row in df.iterrows():
             try:
+                ticker = str(row["Ticker"])
                 signal_str = "BUY" if row.get("Sharpe_Score", 0) > 0.5 else (
                     "SELL" if row.get("Sharpe_Score", 0) < -0.5 else "HOLD"
                 )
                 signals.append(SignalItem(
                     rank=i + 1,
-                    stock_id=str(row["Ticker"]),
-                    name=str(row.get("Name", row["Ticker"])),
-                    sector=str(row.get("Sector", "未分類")),
+                    stock_id=ticker,
+                    name=get_stock_name(ticker, info),
+                    sector=get_stock_sector(ticker, info),
                     alpha_5d=float(row.get("Exp_Alpha_5d", 0)),
                     alpha_20d=float(row.get("Exp_Alpha_20d", 0)),
                     alpha_60d=float(row.get("Exp_Alpha_60d", 0)),
@@ -87,6 +90,7 @@ async def _load_from_github() -> Optional[SignalsResponse]:
     except Exception as e:
         logger.error(f"Failed to load from GitHub: {e}")
         return None
+
 
 
 async def _get_signals() -> SignalsResponse:
