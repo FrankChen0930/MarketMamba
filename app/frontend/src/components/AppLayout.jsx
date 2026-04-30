@@ -8,6 +8,7 @@ const TABS = [
   { to: '/',         icon: '📊', label: '今日選股' },
   { to: '/quant',    icon: '📈', label: '量化分析' },
   { to: '/market',   icon: '🤖', label: 'AI 日報' },
+  { to: '/sim',      icon: '🎮', label: '模擬機器人' },
   ...(USER_MODE === 'personal'
     ? [
         { to: '/portfolio', icon: '💼', label: '持倉追蹤' },
@@ -15,6 +16,7 @@ const TABS = [
       ]
     : []),
 ];
+
 
 // Fallback ticker items shown while API loads
 const FALLBACK_TICKER = [

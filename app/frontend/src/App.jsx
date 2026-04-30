@@ -7,6 +7,8 @@ import QuantAnalysis from './pages/QuantAnalysis';
 import MarketView   from './pages/MarketView';
 import Portfolio    from './pages/Portfolio';
 import ModelStatus  from './pages/ModelStatus';
+import InvestmentSim from './pages/InvestmentSim';
+
 
 function App() {
   return (
@@ -18,6 +20,8 @@ function App() {
           <Route path="market"      element={<MarketView />} />
           <Route path="portfolio"   element={<Portfolio />} />
           <Route path="model"       element={<ModelStatus />} />
+          <Route path="sim"         element={<InvestmentSim />} />
+
         </Route>
       </Routes>
     </BrowserRouter>

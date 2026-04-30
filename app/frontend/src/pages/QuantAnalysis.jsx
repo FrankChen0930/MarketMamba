@@ -12,6 +12,56 @@ import { SkeletonBlock, SkeletonCard, ApiError } from '../components/SkeletonLoa
 
 // ── Static quant data (real market indicators) ────────────────────────────────
 
+// ── Pattern Recognition Definitions (from V5.5 scanner.py) ──────────────────
+
+const PATTERN_DEFS = [
+  {
+    id: 'w_bottom', name: 'W 底（雙底）', icon: 'W',
+    bullish: true,
+    desc: '股價形成兩個相近低點，中間有明顯反彈，頸線突破後目標為頸線距底部高度的延伸。',
+    conds: ['兩個低點價差 < 5%', '頸線明顯（中間反彈 > 3%）', '突破頸線成交量放大'],
+    riskReward: '1:2',
+  },
+  {
+    id: 'spring_w', name: '彈簧型 W 底', icon: '⚡',
+    bullish: true,
+    desc: '第二個低點略低於第一低點（洗盤），形成假突破後快速反彈，確認支撐有效。',
+    conds: ['第二低 < 第一低（但差距 < 2%）', '假跌破後快速拉回', '量能萎縮至極低點'],
+    riskReward: '1:2.5',
+  },
+  {
+    id: 'm_top', name: 'M 頭（雙頭）', icon: 'M',
+    bullish: false,
+    desc: '股價形成兩個相近高點，中間有明顯回落，跌破頸線後空方目標為頸線距頭部高度的延伸。',
+    conds: ['兩個高點價差 < 5%', '頸線明顯（中間回落 > 3%）', '跌破頸線量能配合'],
+    riskReward: '1:2',
+  },
+  {
+    id: 'hns_bottom', name: '頭肩底', icon: '⛰️',
+    bullish: true,
+    desc: '左肩→頭部（最低）→右肩的三底結構，右肩低點高於頭部，頸線突破確認反轉。',
+    conds: ['三底結構明顯', '頭部為最低點', '右肩量能小於左肩'],
+    riskReward: '1:3',
+  },
+  {
+    id: 'triangle', name: '三角收斂', icon: '△',
+    bullish: null,
+    desc: '高低點同步收窄形成三角形，突破方向決定後市。對稱三角偏中性，上升/下降三角有方向偏好。',
+    conds: ['至少 4 個觸點（2高 2低）', '收斂角度明顯', '突破時量能放大'],
+    riskReward: '1:2',
+  },
+  {
+    id: 'bear_flag', name: '熊旗（下降旗形）', icon: '🚩',
+    bullish: false,
+    desc: '急速下跌後出現短暫旗形整理，整理結束後繼續下跌，為空方持續型態。',
+    conds: ['旗桿清晰（急跌 > 5%）', '整理期量縮', '跌破旗形下軌確認'],
+    riskReward: '1:2',
+  },
+];
+
+const SCALES = ['短線 1-2週', '中線 約1個月', '長線 2-3個月', '半年大底'];
+
+
 // 技術面評分 (based on market conditions 2026-04)
 const TECH_RADAR = [
   { subject: 'RSI 動能', A: 58 },
@@ -21,6 +71,7 @@ const TECH_RADAR = [
   { subject: 'MA 排列', A: 70 },
   { subject: 'ATR 波動', A: 40 },
 ];
+
 
 // 台股大盤技術指標 (^TWII 近期數值，估算)
 const TAIEX_TECH = [
@@ -118,7 +169,9 @@ export default function QuantAnalysis() {
     { id: 'chip', label: '籌碼面' },
     { id: 'breadth', label: '市場廣度' },
     { id: 'model', label: '模型 Alpha' },
+    { id: 'pattern', label: '傳統型態學' },
   ];
+
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -442,6 +495,119 @@ export default function QuantAnalysis() {
           </div>
         </div>
       )}
+
+      {tab === 'pattern' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Empty state banner */}
+          <div style={{
+            padding: '14px 18px', borderRadius: 10,
+            background: 'rgba(255,165,0,0.06)', border: '1px solid rgba(255,165,0,0.25)',
+            display: 'flex', alignItems: 'center', gap: 14,
+          }}>
+            <span style={{ fontSize: 24 }}>⚡</span>
+            <div>
+              <div style={{ fontSize: 13, color: 'var(--accent-amber)', fontWeight: 600 }}>
+                當前市場波動過大，掃描結果為空
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 3 }}>
+                傳統型態學需要穩定的趨勢結構才能成立。市場劇烈波動期間（如近期關稅衝擊）
+                型態容易被破壞，建議等待市場趨穩後再參考。掃描引擎自 V5.5 繼承，支援 6 大型態 × 4 個時間框架。
+              </div>
+            </div>
+          </div>
+
+          {/* Pattern KPIs */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
+            {[
+              { label: '掃描型態種類', value: '6', desc: 'W底/M頭/頭肩底/三角/熊旗' },
+              { label: '時間框架', value: '4', desc: '短線/中線/長線/半年' },
+              { label: '今日匹配股數', value: '0', desc: '⚠️ 市場波動過大' },
+              { label: '最低分數門檻', value: '60', desc: 'Score ≥ 60 才入選' },
+            ].map(m => (
+              <div key={m.label} className="stat-card">
+                <div className="label">{m.label}</div>
+                <div className="value mono" style={{ color: m.value === '0' ? 'var(--text-muted)' : 'var(--text-primary)' }}>
+                  {m.value}
+                </div>
+                <div className="sub">{m.desc}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Pattern definition cards */}
+          <div className="panel">
+            <div className="panel-header">
+              <div className="panel-title"><span>📐</span> 支援型態定義</div>
+              <span className="badge badge-neutral" style={{ fontSize: 10 }}>V5.5 繼承</span>
+            </div>
+            <div className="panel-body">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                {PATTERN_DEFS.map(p => (
+                  <div key={p.id} style={{
+                    padding: '14px 16px', borderRadius: 8,
+                    background: 'var(--bg-panel-2)',
+                    borderLeft: `3px solid ${p.bullish === true ? 'var(--positive)' : p.bullish === false ? 'var(--negative)' : 'var(--accent-amber)'}`,
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                      <span style={{
+                        width: 32, height: 32, borderRadius: 6,
+                        background: p.bullish === true ? 'rgba(0,255,136,0.1)' : p.bullish === false ? 'rgba(255,71,87,0.1)' : 'rgba(255,165,0,0.1)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 15, fontWeight: 700,
+                        color: p.bullish === true ? 'var(--positive)' : p.bullish === false ? 'var(--negative)' : 'var(--accent-amber)',
+                      }}>
+                        {p.icon}
+                      </span>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{p.name}</div>
+                        <div style={{ fontSize: 10, color: p.bullish === true ? 'var(--positive)' : p.bullish === false ? 'var(--negative)' : 'var(--accent-amber)' }}>
+                          {p.bullish === true ? '多方型態' : p.bullish === false ? '空方型態' : '中性觀察'} · 風報比 {p.riskReward}
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>
+                      {p.desc}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                      {p.conds.map((c, i) => (
+                        <div key={i} style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', gap: 6 }}>
+                          <span style={{ color: 'var(--accent-blue)' }}>›</span>
+                          <span>{c}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Scale definitions */}
+          <div className="panel">
+            <div className="panel-header">
+              <div className="panel-title"><span>⏱️</span> 掃描時間框架</div>
+            </div>
+            <div className="panel-body">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
+                {[
+                  { scale: '短線', period: '1~2週', order: 3, desc: '極值計算 order=3，適合短線操作' },
+                  { scale: '中線', period: '約1個月', order: 8, desc: '極值計算 order=8，波段操作主力' },
+                  { scale: '長線', period: '2~3個月', order: 15, desc: '極值計算 order=15，趨勢型操作' },
+                  { scale: '半年', period: '半年大底', order: 30, desc: '極值計算 order=30，重大反轉訊號' },
+                ].map(s => (
+                  <div key={s.scale} style={{ padding: '12px', background: 'var(--bg-panel-2)', borderRadius: 8 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--accent-blue)' }}>{s.scale}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', margin: '4px 0' }}>{s.period}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>order={s.order}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{s.desc}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
