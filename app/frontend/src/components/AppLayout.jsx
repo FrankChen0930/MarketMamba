@@ -7,9 +7,12 @@ const USER_MODE = import.meta.env.VITE_USER_MODE || 'personal';
 const TABS = [
   { to: '/',         icon: '📊', label: '今日選股' },
   { to: '/quant',    icon: '📈', label: '量化分析' },
-  { to: '/market',   icon: '🤖', label: 'AI 消息面' },
+  { to: '/market',   icon: '🤖', label: 'AI 日報' },
   ...(USER_MODE === 'personal'
-    ? [{ to: '/portfolio', icon: '💼', label: '持倉追蹤' }]
+    ? [
+        { to: '/portfolio', icon: '💼', label: '持倉追蹤' },
+        { to: '/model',     icon: '🧠', label: '模型狀態' },
+      ]
     : []),
 ];
 
@@ -79,15 +82,23 @@ export default function AppLayout() {
 
         <div className="topbar-right">
           <div className="topbar-stat">
-            <span className="ts-label">Model IC</span>
-            <span className="ts-value text-positive mono">
-              {market ? `+${market.model_ic.toFixed(4)}` : '—'}
+            <span className="ts-label">VIX</span>
+            <span className={`ts-value mono ${(market?.vix || 0) > 20 ? 'text-negative' : 'text-positive'}`}>
+              {market?.vix ? market.vix.toFixed(2) : '—'}
             </span>
           </div>
           <div className="topbar-stat">
-            <span className="ts-label">最後推論</span>
-            <span className="ts-value mono" style={{ fontSize: 11 }}>
-              {market?.last_run || '—'}
+            <span className="ts-label">USD/TWD</span>
+            <span className="ts-value mono">
+              {market?.usd_twd ? market.usd_twd.toFixed(3) : '—'}
+            </span>
+          </div>
+          <div className="topbar-stat">
+            <span className="ts-label">漲/跌</span>
+            <span className="ts-value mono">
+              <span className="text-positive">{market?.advancing ?? '—'}</span>
+              <span style={{ color: 'var(--text-muted)' }}>/</span>
+              <span className="text-negative">{market?.declining ?? '—'}</span>
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -102,12 +113,12 @@ export default function AppLayout() {
         </div>
       </nav>
 
-      {/* ── Mobile Status Strip (hidden on desktop via CSS) ── */}
+      {/* ── Mobile Status Strip ── */}
       <div className="mobile-status-bar">
         <div className="msb-left">
-          <span className="msb-label">Model IC</span>
-          <span className={`msb-value ${market ? 'text-positive' : ''}`}>
-            {market ? `+${market.model_ic.toFixed(4)}` : '—'}
+          <span className="msb-label">VIX</span>
+          <span className={`msb-value ${(market?.vix || 0) > 20 ? 'text-negative' : 'text-positive'}`}>
+            {market?.vix ? market.vix.toFixed(2) : '—'}
           </span>
         </div>
         <div className="msb-right">

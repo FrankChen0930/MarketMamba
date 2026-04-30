@@ -1,162 +1,281 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApi } from '../hooks/useApi';
 import { fetchMarket } from '../api/market';
 import { SkeletonBlock, ApiError } from '../components/SkeletonLoader';
 
-// Static mock news (will be replaced by Claude API later)
-const NEWS = [
-  { time: '09:12', title: '台積電法說會：Q2 業績指引優於市場預期，AI 需求持續旺盛', sentiment: 'positive', impact: '高', stocks: ['2330', '3034'] },
-  { time: '10:34', title: '聯準會官員暗示年內降息可能延後，科技股承壓', sentiment: 'negative', impact: '中', stocks: [] },
-  { time: '11:05', title: '鴻海與 NVIDIA 合作擴大 AI 伺服器生產線', sentiment: 'positive', impact: '中', stocks: ['2317'] },
-  { time: '13:22', title: '航運業運費連續三週下滑，長榮、萬海面臨壓力', sentiment: 'negative', impact: '中', stocks: ['2603', '2615'] },
-  { time: '14:18', title: '台灣 3 月出口年增 28.4%，連三個月創新高', sentiment: 'positive', impact: '高', stocks: [] },
-];
+const API_BASE = import.meta.env.VITE_API_URL || 'https://marketmamba-api.onrender.com';
 
-const SENTIMENT_SCORES = [
-  { name: '市場整體', score: 64, label: '偏多' },
-  { name: '半導體',   score: 81, label: '強多' },
-  { name: '金融',     score: 49, label: '中性' },
-  { name: '航運',     score: 24, label: '偏空' },
-  { name: '傳產',     score: 38, label: '偏空' },
-];
+// Fetch Claude report
+async function fetchReport() {
+  const r = await fetch(`${API_BASE}/api/reports/latest`);
+  if (!r.ok) throw new Error(`${r.status}`);
+  return r.json();
+}
 
-const MARKET_STATE_CONFIG = {
-  completed:  { label: 'LIVE',    color: 'var(--positive)',  desc: '推論已完成，訊號有效' },
-  not_ready:  { label: 'PENDING', color: 'var(--accent-amber)', desc: 'Final Training 進行中，使用模擬訊號' },
-  running:    { label: 'RUNNING', color: 'var(--accent-blue)',  desc: '推論正在執行中...' },
-};
+// Parse markdown-ish report text into sections
+function parseReport(text) {
+  if (!text) return [];
+  const lines = text.split('\n');
+  const sections = [];
+  let cur = null;
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    if (trimmed.startsWith('## ') || trimmed.startsWith('# ')) {
+      if (cur) sections.push(cur);
+      cur = { title: trimmed.replace(/^#+\s*/, ''), lines: [] };
+    } else if (trimmed.startsWith('---')) {
+      // divider, ignore
+    } else {
+      if (!cur) cur = { title: '', lines: [] };
+      cur.lines.push(trimmed);
+    }
+  }
+  if (cur) sections.push(cur);
+  return sections;
+}
 
-function SentimentBar({ score }) {
-  const color = score >= 60 ? 'var(--positive)' : score >= 40 ? 'var(--accent-amber)' : 'var(--negative)';
+function ReportSection({ title, lines }) {
+  const emojiTitle = title;
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-      <div style={{ flex: 1, height: 6, background: 'var(--bg-hover)', borderRadius: 3, overflow: 'hidden' }}>
-        <div style={{ width: `${score}%`, height: '100%', background: color, borderRadius: 3, boxShadow: `0 0 6px ${color}` }} />
+    <div style={{ marginBottom: 20 }}>
+      {title && (
+        <div style={{
+          fontSize: 14, fontWeight: 700, color: 'var(--text-primary)',
+          marginBottom: 10, paddingBottom: 6, borderBottom: '1px solid var(--border)'
+        }}>
+          {emojiTitle}
+        </div>
+      )}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {lines.map((line, i) => {
+          const isItem = line.startsWith('- ') || line.startsWith('• ');
+          const text = isItem ? line.replace(/^[-•]\s*/, '') : line;
+          const isBold = text.includes('**');
+          const parsed = text.replace(/\*\*([^*]+)\*\*/g, (_, m) => `<strong style="color:var(--text-primary)">${m}</strong>`);
+          return (
+            <div key={i} style={{
+              fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7,
+              paddingLeft: isItem ? 14 : 0,
+              borderLeft: isItem ? '2px solid var(--border)' : 'none',
+            }} dangerouslySetInnerHTML={{ __html: parsed }} />
+          );
+        })}
       </div>
-      <span className="mono" style={{ fontSize: 12, minWidth: 28, color }}>{score}</span>
+    </div>
+  );
+}
+
+function Top10Table({ top10 }) {
+  if (!top10?.length) return null;
+  return (
+    <div className="panel">
+      <div className="panel-header">
+        <div className="panel-title"><span>🏆</span> 今日推薦股票（Top 10）</div>
+        <span className="badge badge-positive">AI 精選</span>
+      </div>
+      <div className="panel-body-flush">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>#</th><th>代號</th>
+              <th>20d Alpha</th><th>Sharpe</th><th>建議比重</th><th>信心</th>
+            </tr>
+          </thead>
+          <tbody>
+            {top10.map((s, i) => (
+              <tr key={s.Ticker} style={{ animationDelay: `${i * 0.04}s` }} className="animate-fade-up">
+                <td style={{ color: 'var(--accent-amber)', fontSize: 12 }}>{i + 1}</td>
+                <td className="mono" style={{ fontWeight: 700 }}>{s.Ticker}</td>
+                <td className="mono text-positive">+{((s.Exp_Alpha_20d || 0) * 100).toFixed(2)}%</td>
+                <td className="mono text-positive">{(s.Sharpe_Score || 0).toFixed(2)}</td>
+                <td className="mono">{s.Suggested_Weight ? `${(s.Suggested_Weight * 100).toFixed(1)}%` : '—'}</td>
+                <td>
+                  <span style={{
+                    fontSize: 11,
+                    color: s.Confidence === '高信心' ? 'var(--positive)' : 'var(--accent-amber)'
+                  }}>{s.Confidence}</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
 
 export default function MarketView() {
-  const { data: market, loading, error, refetch } = useApi(fetchMarket);
-  const state = MARKET_STATE_CONFIG[market?.run_status] || MARKET_STATE_CONFIG.not_ready;
+  const { data: market, loading: mktLoading } = useApi(fetchMarket);
+  const { data: report, loading: repLoading, error: repError } = useApi(fetchReport);
 
-  if (error) return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div className="page-header"><div className="page-title">AI 消息面分析</div></div>
-      <ApiError message={error} onRetry={refetch} />
-    </div>
-  );
+  const sections = parseReport(report?.summary || '');
+  const loading = mktLoading || repLoading;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div className="page-header">
         <div>
-          <div className="page-title">AI 消息面分析</div>
-          <div className="page-subtitle">Claude AI 整合 · 僅供參考，不影響量化訊號</div>
+          <div className="page-title">AI 市場日報</div>
+          <div className="page-subtitle">
+            Claude 量化策略分析 · {report?.date || market?.last_run || '—'} · 僅供參考
+          </div>
         </div>
-        <span className="badge badge-neutral" style={{ fontSize: 12 }}>⚠️ LLM 生成，有幻覺風險</span>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {report?.model && (
+            <span className="badge badge-blue" style={{ fontSize: 11 }}>
+              {report.model}
+            </span>
+          )}
+          <span className="badge badge-neutral" style={{ fontSize: 11 }}>⚠️ LLM 生成，不構成投資建議</span>
+        </div>
       </div>
 
-      {/* Market State Card — 參考六維度 AI 分析頁 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-        {loading ? Array.from({ length: 3 }).map((_, i) => (
+      {/* ── Macro Snapshot ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+        {mktLoading ? Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="stat-card"><SkeletonBlock height={40} /></div>
-        )) : <>
-          <div className="stat-card" style={{ borderColor: state.color, background: `color-mix(in srgb, ${state.color} 6%, var(--bg-panel))` }}>
-            <div className="label">系統狀態</div>
-            <div className="value mono" style={{ color: state.color, fontSize: 18 }}>{state.label}</div>
-            <div className="sub">{state.desc}</div>
+        )) : [
+          {
+            label: 'TAIEX',
+            value: market?.taiex?.value?.toLocaleString('zh-TW', { maximumFractionDigits: 0 }) || '—',
+            sub: market?.taiex ? (
+              <span className={market.taiex.change >= 0 ? 'text-positive' : 'text-negative'}>
+                {market.taiex.change >= 0 ? '▲' : '▼'} {Math.abs(market.taiex.change_pct).toFixed(2)}%
+              </span>
+            ) : null,
+            accent: (market?.taiex?.change ?? 0) >= 0 ? 'var(--positive)' : 'var(--negative)',
+          },
+          {
+            label: 'VIX 恐慌指數',
+            value: market?.vix?.toFixed(2) || '—',
+            sub: <span style={{ color: (market?.vix || 0) > 20 ? 'var(--negative)' : 'var(--positive)' }}>
+              {(market?.vix || 0) > 30 ? '高度恐慌' : (market?.vix || 0) > 20 ? '波動偏高' : '市場平穩'}
+            </span>,
+          },
+          {
+            label: 'S&P 500 今日',
+            value: market?.spx_change !== undefined ? `${market.spx_change >= 0 ? '+' : ''}${market.spx_change.toFixed(2)}%` : '—',
+            sub: <span className={(market?.spx_change ?? 0) >= 0 ? 'text-positive' : 'text-negative'}>
+              美股參考
+            </span>,
+          },
+          {
+            label: '黃金 今日漲跌',
+            value: market?.gold_change !== undefined ? `${market.gold_change >= 0 ? '+' : ''}${market.gold_change.toFixed(2)}%` : '—',
+            sub: <span style={{ color: 'var(--text-muted)' }}>USD/TWD {market?.usd_twd?.toFixed(3)}</span>,
+          },
+        ].map(card => (
+          <div key={card.label} className="stat-card" style={card.accent ? {
+            borderColor: card.accent, background: `color-mix(in srgb, ${card.accent} 5%, var(--bg-panel))`
+          } : {}}>
+            <div className="label">{card.label}</div>
+            <div className="value mono" style={{ fontSize: 18 }}>{card.value}</div>
+            {card.sub && <div className="sub">{card.sub}</div>}
           </div>
-          <div className="stat-card">
-            <div className="label">訓練進度</div>
-            <div className="value mono" style={{ fontSize: 18 }}>
-              Ep {market?.training_epoch || '?'} / 100
-            </div>
-            <div className="sub">Val IC: +{market?.model_ic.toFixed(4)}</div>
-          </div>
-          <div className="stat-card">
-            <div className="label">LLM 狀態</div>
-            <div className="value mono" style={{ fontSize: 18, color: 'var(--accent-amber)' }}>PENDING</div>
-            <div className="sub">Claude API 待申請</div>
-          </div>
-        </>}
+        ))}
       </div>
 
-      {/* News + Sentiment */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 16 }}>
+      {/* ── Main Content ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 16, alignItems: 'start' }}>
 
-        {/* News Feed */}
-        <div className="panel">
+        {/* Claude Report */}
+        <div className="panel" style={{ borderColor: 'rgba(0,212,255,0.15)', background: 'rgba(0,212,255,0.02)' }}>
           <div className="panel-header">
-            <div className="panel-title"><span>📰</span> 今日市場新聞</div>
-            <span className="badge badge-blue">Claude 摘要（mock）</span>
+            <div className="panel-title">
+              <span>🤖</span> Claude AI 市場分析報告
+            </div>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+              {report?.date || '—'}
+            </span>
           </div>
-          <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {NEWS.map((n, i) => (
-              <div key={i} style={{
-                padding: '12px 14px', background: 'var(--bg-panel-2)', borderRadius: 8,
-                borderLeft: `3px solid ${n.sentiment === 'positive' ? 'var(--positive)' : 'var(--negative)'}`,
-                animationDelay: `${i * 0.07}s`,
-              }} className="animate-fade-up">
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span className="mono" style={{ fontSize: 11, color: 'var(--text-muted)' }}>{n.time}</span>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <span className={`badge ${n.sentiment === 'positive' ? 'badge-positive' : 'badge-negative'}`} style={{ fontSize: 10 }}>
-                      {n.sentiment === 'positive' ? '利多' : '利空'}
-                    </span>
-                    <span className="badge badge-neutral" style={{ fontSize: 10 }}>影響 {n.impact}</span>
-                  </div>
-                </div>
-                <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5 }}>{n.title}</div>
-                {n.stocks.length > 0 && (
-                  <div style={{ marginTop: 6, display: 'flex', gap: 4 }}>
-                    {n.stocks.map(s => <span key={s} className="badge badge-blue" style={{ fontSize: 10 }}>{s}</span>)}
-                  </div>
-                )}
+          <div className="panel-body">
+            {repLoading ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {Array.from({ length: 4 }).map((_, i) => <SkeletonBlock key={i} height={60} />)}
               </div>
-            ))}
+            ) : repError || !report?.available ? (
+              <div style={{
+                padding: '24px', textAlign: 'center',
+                color: 'var(--text-muted)', fontSize: 13
+              }}>
+                <div style={{ fontSize: 24, marginBottom: 12 }}>⏳</div>
+                <div>今日報告生成中</div>
+                <div style={{ fontSize: 11, marginTop: 8 }}>推論完成後 Claude 將自動生成分析</div>
+              </div>
+            ) : sections.length > 0 ? (
+              <div>
+                {sections.map((s, i) => (
+                  <ReportSection key={i} title={s.title} lines={s.lines} />
+                ))}
+              </div>
+            ) : (
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>
+                {report?.summary}
+              </p>
+            )}
+            <div className="divider" />
+            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+              ⚠️ 本報告由 Claude AI 自動生成，僅供學術研究，不構成投資建議
+            </div>
           </div>
         </div>
 
-        {/* Sentiment + AI Summary */}
+        {/* Right: market data from report */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div className="panel">
-            <div className="panel-header">
-              <div className="panel-title"><span>🎭</span> 情緒指標</div>
-            </div>
-            <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {SENTIMENT_SCORES.map(s => (
-                <div key={s.name}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5, fontSize: 12 }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>{s.name}</span>
-                    <span style={{ color: 'var(--text-muted)' }}>{s.label}</span>
+
+          {/* Market summary from report */}
+          {report?.market_data && (
+            <div className="panel">
+              <div className="panel-header">
+                <div className="panel-title"><span>📡</span> 推論時市場快照</div>
+              </div>
+              <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {[
+                  { label: '台股漲跌', value: `${(report.market_data.twii_change >= 0 ? '+' : '')}${(report.market_data.twii_change || 0).toFixed(2)}%`, up: report.market_data.twii_change >= 0 },
+                  { label: '美股 S&P 500', value: `${(report.market_data.spx_change >= 0 ? '+' : '')}${(report.market_data.spx_change || 0).toFixed(2)}%`, up: report.market_data.spx_change >= 0 },
+                  { label: 'VIX', value: (report.market_data.vix || 0).toFixed(2) },
+                  { label: '黃金', value: `${(report.market_data.gold_change >= 0 ? '+' : '')}${(report.market_data.gold_change || 0).toFixed(2)}%`, up: report.market_data.gold_change >= 0 },
+                  { label: 'USD/TWD', value: (report.market_data.usd_twd || 0).toFixed(3) },
+                ].map(r => (
+                  <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
+                    <span style={{ color: 'var(--text-muted)' }}>{r.label}</span>
+                    <span className={`mono ${r.up === true ? 'text-positive' : r.up === false ? 'text-negative' : ''}`}>
+                      {r.value}
+                    </span>
                   </div>
-                  <SentimentBar score={s.score} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Risk reminders */}
+          <div className="panel" style={{ borderColor: 'rgba(255,165,0,0.2)', background: 'rgba(255,165,0,0.03)' }}>
+            <div className="panel-header">
+              <div className="panel-title"><span>⚠️</span> 風險提示</div>
+            </div>
+            <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[
+                'AI 報告為自動生成，可能包含錯誤',
+                '所有信號僅供研究，非投資建議',
+                '過去績效不代表未來表現',
+                '請在完整風控框架下操作',
+              ].map((tip, i) => (
+                <div key={i} style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', gap: 8 }}>
+                  <span style={{ color: 'var(--accent-amber)' }}>›</span>
+                  <span>{tip}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="panel" style={{ borderColor: 'rgba(0,212,255,0.2)', background: 'rgba(0,212,255,0.03)' }}>
-            <div className="panel-header">
-              <div className="panel-title"><span>🤖</span> AI 每日摘要</div>
-            </div>
-            <div className="panel-body">
-              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-                今日市場整體偏樂觀，台積電法說會提振半導體族群信心。
-                AI 伺服器需求延續旺季格局，電子供應鏈受惠。
-                航運受運費下滑壓力，建議觀望。
-              </p>
-              <div className="divider" />
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                ⚠️ 以上為 Claude AI 生成，僅作參考，不構成投資建議
-              </div>
-            </div>
-          </div>
         </div>
       </div>
+
+      {/* Top 10 table */}
+      {!repLoading && report?.top10?.length > 0 && (
+        <Top10Table top10={report.top10} />
+      )}
     </div>
   );
 }
