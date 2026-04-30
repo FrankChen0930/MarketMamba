@@ -372,7 +372,7 @@ def _push_to_github(results_dir: Path, date_str: str) -> bool:
     import os
     import subprocess
 
-    repo_root = results_dir.parent.parent.parent   # MarketMamba/
+    repo_root = results_dir.parent.parent   # V6/results → V6 → MarketMamba (.git is here)
     # WSL2: git can't find repo across /mnt filesystem boundary without this
     git_env = {**os.environ, "GIT_DISCOVERY_ACROSS_FILESYSTEM": "1"}
     try:
