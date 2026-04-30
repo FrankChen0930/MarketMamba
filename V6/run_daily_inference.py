@@ -150,22 +150,23 @@ def run_inference(
     })
 
     # Liquidity filter: remove stocks below minimum daily volume
-    mask = df["Date"] == latest_date   # date mask for looking up today's OHLCV
-    df_today = df[mask][["stock_id", "Volume", "ATR_14"]].copy()
-    df_kelly  = df_kelly.merge(
+    mask     = df["Date"] == latest_date
+    # deduplicate: keep one row per stock (some dates may have duplicate entries)
+    df_today = (df[mask][["stock_id", "Volume", "ATR_14", "Close"]]
+                .drop_duplicates("stock_id", keep="last").copy())
+    df_kelly = df_kelly.merge(
         df_today.rename(columns={"stock_id": "Ticker"}),
         on="Ticker", how="left",
     )
-    # 1000萬台幣流動性門檻（FinMind Volume 單位: 股；假設均價 ~Close 可從 df 取）
-    df_close = df[mask][["stock_id", "Close"]].rename(columns={"stock_id": "Ticker"})
-    df_kelly = df_kelly.merge(df_close, on="Ticker", how="left")
-    df_kelly["Turnover_5D"] = df_kelly["Volume"] * df_kelly["Close"]  # approx
+    df_kelly["Turnover_5D"] = df_kelly["Volume"].fillna(0) * df_kelly["Close"].fillna(0)
 
     # Hard liquidity filter
     MIN_TURNOVER = 1e7   # 1000萬台幣
-    low_liq_mask = df_kelly["Turnover_5D"].fillna(0) < MIN_TURNOVER
-    if low_liq_mask.sum() > 0:
-        logger.info(f"Liquidity filter: removed {low_liq_mask.sum()} illiquid stocks")
+    low_liq_mask = df_kelly["Turnover_5D"] < MIN_TURNOVER
+    n_filtered = int(low_liq_mask.sum())
+    if n_filtered > 0:
+        logger.info(f"Liquidity filter: removed {n_filtered} illiquid stocks "
+                    f"out of {len(df_kelly)}")
     df_kelly.loc[low_liq_mask, "Exp_Alpha_20d"] = -999.0
 
     # Slippage penalty (rough estimate: 0.4% for small-mid cap)
@@ -192,8 +193,9 @@ def run_inference(
     total = positive.sum()
     df_kelly["Suggested_Weight"] = (positive / (total + 1e-9)).round(4)
 
-    # Sort by Sharpe
+    # Sort by Sharpe — exclude penalised stocks from Top 10 display
     df_kelly = df_kelly.sort_values("Sharpe_Score", ascending=False).reset_index(drop=True)
+
 
     # -- Build df_traj: multi-horizon trajectory --
     df_traj = pd.DataFrame({
@@ -311,11 +313,14 @@ def main(target_date: str | None = None, skip_push: bool = False) -> None:
     df_traj.to_csv(traj_path,  index=False, encoding="utf-8-sig")
 
     logger.info(f"\n🎯 Top 10 Alpha Stocks [{today}]:")
+    top10 = df_kelly[df_kelly["Exp_Alpha_20d"] > -999].head(10)
     print(
-        df_kelly.head(10)[
-            ["Ticker", "Exp_Alpha_20d", "Sharpe_Score", "Confidence", "Suggested_Weight"]
-        ].to_string(index=False)
+        top10[["Ticker", "Exp_Alpha_20d", "Sharpe_Score", "Confidence", "Suggested_Weight"]]
+        .to_string(index=False)
     )
+    logger.info(f"Total investable stocks: {(df_kelly['Exp_Alpha_20d'] > -999).sum()} "
+                f"/ {len(df_kelly)} total")
+
 
     # -- Step 4: LLM Report --
     logger.info("\n[Step 4/5] Generating LLM market report...")
