@@ -369,18 +369,21 @@ def _push_to_github(results_dir: Path, date_str: str) -> bool:
     Render backend will pick up the new df_kelly.csv on next cache refresh (≤1h).
     Returns True on success, False on failure (non-fatal — results saved locally).
     """
+    import os
     import subprocess
 
     repo_root = results_dir.parent.parent.parent   # MarketMamba/
+    # WSL2: git can't find repo across /mnt filesystem boundary without this
+    git_env = {**os.environ, "GIT_DISCOVERY_ACROSS_FILESYSTEM": "1"}
     try:
         subprocess.run(
             ["git", "add", "V6/results/df_kelly.csv", "V6/results/df_traj.csv"],
-            cwd=repo_root, check=True, capture_output=True,
+            cwd=repo_root, check=True, capture_output=True, env=git_env,
         )
         # Check if there's anything to commit
         diff = subprocess.run(
             ["git", "diff", "--cached", "--quiet"],
-            cwd=repo_root,
+            cwd=repo_root, env=git_env,
         )
         if diff.returncode == 0:
             logger.info("No changes in results — git push skipped (already up to date)")
@@ -388,14 +391,15 @@ def _push_to_github(results_dir: Path, date_str: str) -> bool:
 
         subprocess.run(
             ["git", "commit", "-m", f"inference: daily results {date_str}"],
-            cwd=repo_root, check=True, capture_output=True,
+            cwd=repo_root, check=True, capture_output=True, env=git_env,
         )
         subprocess.run(
             ["git", "push", "origin", "main"],
-            cwd=repo_root, check=True, capture_output=True,
+            cwd=repo_root, check=True, capture_output=True, env=git_env,
         )
         logger.info("✅ Results pushed to GitHub (branch: main)")
         return True
+
     except subprocess.CalledProcessError as e:
         logger.warning(
             f"⚠️  git push failed — results saved locally but NOT on GitHub.\n"
