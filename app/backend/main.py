@@ -45,18 +45,22 @@ app.include_router(reports.router,     prefix="/api")
 
 
 @app.get("/")
+@app.head("/")
 async def root():
     """Root endpoint — Uptime Robot ping target"""
     return {"status": "ok", "service": "MarketMamba V6"}
 
 
 @app.get("/health")
+@app.head("/health")
 @app.get("/api/health")
+@app.head("/api/health")
 async def health():
-    """Health check — used by Uptime Robot and monitoring"""
+    """Health check — GET and HEAD both supported (Uptime Robot compatibility)"""
     return {"status": "ok", "service": "MarketMamba V6", "version": "6.0.0"}
 
 
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+
