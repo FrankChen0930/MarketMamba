@@ -44,14 +44,17 @@ app.include_router(reports.router,     prefix="/api")
 
 
 
+@app.get("/")
+async def root():
+    """Root endpoint — Uptime Robot ping target"""
+    return {"status": "ok", "service": "MarketMamba V6"}
+
+
+@app.get("/health")
 @app.get("/api/health")
 async def health():
-    return {
-        "status": "ok",
-        "service": "MarketMamba V6",
-        "version": "6.0.0",
-        "allowed_origins": ALLOWED_ORIGINS,
-    }
+    """Health check — used by Uptime Robot and monitoring"""
+    return {"status": "ok", "service": "MarketMamba V6", "version": "6.0.0"}
 
 
 if __name__ == "__main__":

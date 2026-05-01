@@ -1,18 +1,12 @@
 """
 MarketMamba V6 — LLM Report Generator
 ========================================
-Generates a daily market commentary by calling Claude (or GPT) API
+Generates a daily market commentary by calling Claude API
 AFTER MarketMamba's quantitative inference has completed.
 
-MarketMamba role : pure quant (46D features, no sentiment in model)
-LLM role        : market context, narrative, risk commentary
-
-This module is completely decoupled from the model.
-Swapping LLM provider only requires changing the generate_market_report() function.
-
-Usage:
-    from marketmamba.llm.report_generator import generate_market_report
-    report = generate_market_report(df_kelly_top10, market_data)
+Role separation:
+  MarketMamba : pure quant (46D features, no sentiment in model)
+  LLM         : market context, narrative, per-stock analysis, risk commentary
 """
 
 from __future__ import annotations
@@ -35,23 +29,46 @@ from marketmamba.config import (
 
 logger = logging.getLogger(__name__)
 
+# ── Static ticker name lookup (offline-safe) ──────────────────────────────────
+
+_TICKER_MAP: dict[str, str] = {}
+
+def _load_ticker_map() -> dict[str, str]:
+    global _TICKER_MAP
+    if _TICKER_MAP:
+        return _TICKER_MAP
+    candidates = [
+        Path(__file__).parent.parent.parent.parent / "app" / "backend" / "ticker_mapping.json",
+        Path(__file__).parent.parent.parent / "ticker_mapping.json",
+        Path("/mnt/d/Desktop/work/ProjectForMe/MarketMamba/app/backend/ticker_mapping.json"),
+    ]
+    for p in candidates:
+        if p.exists():
+            try:
+                raw = json.loads(p.read_text(encoding="utf-8"))
+                _TICKER_MAP = {k.split(".")[0]: v for k, v in raw.items() if isinstance(v, str)}
+                logger.info(f"Loaded {len(_TICKER_MAP)} ticker names for LLM context")
+                return _TICKER_MAP
+            except Exception:
+                pass
+    return {}
+
+def _get_name(ticker: str) -> str:
+    m = _load_ticker_map()
+    return m.get(str(ticker), str(ticker))
+
 
 # ============================================================
-# Data Structures
+# Market Data Builder
 # ============================================================
 
-def build_market_data(
-    df_prices: pd.DataFrame | None = None,
-) -> dict[str, Any]:
-    """
-    Assemble today's market summary dict.
-    Falls back gracefully if any source is unavailable.
-    """
+def build_market_data(df_prices: pd.DataFrame | None = None) -> dict[str, Any]:
+    """Assemble today's market snapshot. Falls back gracefully."""
     import yfinance as yf
 
     today = datetime.today().strftime("%Y-%m-%d")
 
-    def _safe_return(ticker: str) -> float:
+    def _safe_pct(ticker: str) -> float:
         try:
             df = yf.download(ticker, period="2d", auto_adjust=True, progress=False)
             if len(df) >= 2:
@@ -60,19 +77,27 @@ def build_market_data(
             pass
         return 0.0
 
-    market_data = {
-        "date":         today,
-        "twii_change":  _safe_return("^TWII"),
-        "spx_change":   _safe_return("^GSPC"),
-        "vix":          _safe_return("^VIX"),
-        "gold_change":  _safe_return("GC=F"),
-        "usd_twd":      _safe_return("TWD=X"),
+    def _safe_price(ticker: str) -> float:
+        try:
+            df = yf.download(ticker, period="1d", auto_adjust=True, progress=False)
+            if len(df) >= 1:
+                return float(df["Close"].iloc[-1])
+        except Exception:
+            pass
+        return 0.0
+
+    return {
+        "date":        today,
+        "twii_change": _safe_pct("^TWII"),
+        "spx_change":  _safe_pct("^GSPC"),
+        "vix":         _safe_price("^VIX"),
+        "gold_change": _safe_pct("GC=F"),
+        "usd_twd":     _safe_price("TWD=X"),
     }
-    return market_data
 
 
 # ============================================================
-# Claude API (primary)
+# Claude API
 # ============================================================
 
 def _call_claude(prompt: str) -> str:
@@ -81,11 +106,9 @@ def _call_claude(prompt: str) -> str:
     except ImportError:
         logger.error("anthropic package not installed. Run: pip install anthropic")
         return ""
-
     if not ANTHROPIC_API_KEY:
-        logger.error("ANTHROPIC_API_KEY not set in environment")
+        logger.error("ANTHROPIC_API_KEY not set")
         return ""
-
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
     try:
         response = client.messages.create(
@@ -98,10 +121,6 @@ def _call_claude(prompt: str) -> str:
         logger.warning(f"Claude API error: {e}")
         return ""
 
-
-# ============================================================
-# GPT Fallback
-# ============================================================
 
 def _call_openai(prompt: str) -> str:
     try:
@@ -125,52 +144,80 @@ def _call_openai(prompt: str) -> str:
 
 
 # ============================================================
-# Prompt Builder
+# Prompt Builder — Enriched for Sonnet 4.6
 # ============================================================
 
 def _build_prompt(top10_rows: list[dict], market_data: dict) -> str:
-    date_str    = market_data.get("date", "今日")
-    twii_chg    = market_data.get("twii_change", 0.0)
-    spx_chg     = market_data.get("spx_change", 0.0)
-    vix         = market_data.get("vix", 0.0)
-    gold_chg    = market_data.get("gold_change", 0.0)
+    date_str   = market_data.get("date", "今日")
+    twii_chg   = market_data.get("twii_change", 0.0)
+    spx_chg    = market_data.get("spx_change", 0.0)
+    vix        = market_data.get("vix", 0.0)
+    gold_chg   = market_data.get("gold_change", 0.0)
+    usd_twd    = market_data.get("usd_twd", 0.0)
 
-    top10_text = "\n".join([
-        f"  {i+1}. {row.get('Ticker','?')} | "
-        f"預期Alpha(20d)={row.get('Exp_Alpha_20d', 0):+.2%} | "
-        f"Sharpe={row.get('Sharpe_Score', 0):.2f} | "
-        f"建議比重={row.get('Suggested_Weight', 0):.1%}"
-        for i, row in enumerate(top10_rows)
-    ])
+    # Build per-stock lines with company names
+    top10_lines = []
+    for i, row in enumerate(top10_rows):
+        ticker = str(row.get("Ticker", "?"))
+        name   = _get_name(ticker)
+        alpha  = row.get("Exp_Alpha_20d", 0)
+        sharpe = row.get("Sharpe_Score", 0)
+        weight = row.get("Suggested_Weight", 0)
+        conf   = row.get("Confidence", "中信心")
+        top10_lines.append(
+            f"  {i+1:2d}. {ticker} {name} | "
+            f"20d Alpha={alpha:+.2%} | Sharpe={sharpe:.2f} | "
+            f"建議比重={weight:.1%} | 信心={conf}"
+        )
+    top10_text = "\n".join(top10_lines)
 
-    prompt = f"""
-你是一位資深台灣股市量化策略分析師。
-今天是 {date_str}，以下是今日市場與量化模型的數據摘要，請根據這些資訊撰寫分析報告。
+    prompt = f"""你是一位資深台灣股市量化策略分析師，擅長結合宏觀數據、基本面分析與技術面判讀。
+今天是 {date_str}，請根據以下量化模型輸出與市場數據，撰寫一份完整的每日市場分析報告。
 
-【今日市場數據】
-- 台股加權指數：{twii_chg:+.2f}%
-- 美股 S&P 500 ：{spx_chg:+.2f}%
-- VIX 恐慌指數：{vix:+.2f}%（日變化）
-- 黃金：{gold_chg:+.2f}%
+═══════════════════════════════════════
+【今日全球市場快照】
+═══════════════════════════════════════
+- 台股加權指數（TAIEX）：{twii_chg:+.2f}%
+- 美股 S&P 500：{spx_chg:+.2f}%
+- VIX 恐慌指數：{vix:.2f}
+- 黃金（期貨）：{gold_chg:+.2f}%
+- USD/TWD 匯率：{usd_twd:.3f}
 
-【量化模型 Top 10 選股】（基於 Mamba+GAT 多尺度時序模型）
+═══════════════════════════════════════
+【MarketMamba V6 量化模型 Top 10 選股】
+（模型：Mamba+GAT 多尺度時序 + 知識圖譜，46維特徵）
+═══════════════════════════════════════
 {top10_text}
 
-請用繁體中文撰寫一份簡潔的市場背景摘要，格式如下（不超過250字）：
+═══════════════════════════════════════
 
-🌐 **今日市場氛圍**
-（一句話描述整體情緒：風險偏好/避險氛圍）
+請用**繁體中文**撰寫以下四個章節的報告，每個章節都要有實質內容：
 
-⚠️ **需關注的宏觀風險**
-（條列 1-2 點最重要的外部風險，若無則標示「當前無特別風險」）
+## 🌐 今日市場氛圍與大盤解讀
+根據 TAIEX、SPX、VIX、黃金的數據，分析今日整體市場情緒。
+- 說明當前風險偏好方向（Risk-on / Risk-off）
+- VIX 的位置代表什麼含義
+- 台美股市聯動性分析（今日是跟隨美股還是獨立走勢？）
+- 匯率對台股外資行為的潛在影響
 
-📊 **量化信號解讀**
-（根據模型選股的產業分布或集中度，給出簡短觀察）
+## ⚠️ 宏觀風險與注意事項
+- 列出 2-3 個當前最需要關注的宏觀或市場結構風險
+- 若 VIX 偏高，說明波動背景
+- 對量化信號的執行影響評估（高波動期信號可靠性下降說明）
 
-💡 **操作建議方向**
-（配合量化信號的執行提示，不超過2句）
+## 📊 量化選股分析
+針對 Top 10 選股給出有意義的分析：
+- 產業分布觀察（這 10 檔集中在哪些產業？代表什麼輪動信號？）
+- 挑出 3-4 檔最值得關注的個股，說明它們入選的可能原因（結合台灣市場知識，非臆測）
+- 模型 Alpha 與 Sharpe 分布的整體解讀
 
-語氣：專業、客觀、簡潔，避免過度樂觀或恐慌性措辭。
+## 💡 操作策略建議
+- 配合今日市場環境，給出分批建倉 / 觀望 / 減碼的方向建議
+- 建議的資金配置比例（保守/積極）
+- 特別提示：哪類股票在當前環境應避開
+
+語氣要求：**專業、客觀、有邏輯支撐**，避免過度樂觀或恐慌，不做無根據的漲跌預測。
+字數控制在 600-800 字之間。報告末尾加一行：「⚠️ 本報告由 AI 自動生成，僅供研究參考，不構成投資建議。」
 """
     return prompt.strip()
 
@@ -185,15 +232,15 @@ def generate_market_report(
     save:        bool = True,
 ) -> dict[str, Any]:
     """
-    Generate a daily LLM market commentary.
+    Generate a daily LLM market commentary with enriched per-stock analysis.
 
     Args:
-        df_kelly    : full kelly/alpha output from inference (must include 'Ticker', 'Sharpe_Score', etc.)
-        market_data : dict from build_market_data() — if None, fetched automatically
-        save        : whether to write market_summary.json
+        df_kelly    : full alpha output from inference
+        market_data : dict from build_market_data() — fetched if None
+        save        : whether to write market_summary.json (and dated archive)
 
     Returns:
-        dict with keys: date, summary, top10, market_data
+        dict with keys: date, summary, top10, market_data, model
     """
     if market_data is None:
         market_data = build_market_data()
@@ -202,13 +249,16 @@ def generate_market_report(
     if df_kelly.empty:
         top10_rows = []
     else:
-        sort_col = "Sharpe_Score" if "Sharpe_Score" in df_kelly.columns else df_kelly.columns[0]
-        top10 = df_kelly.nlargest(10, sort_col)
+        sort_col   = "Sharpe_Score" if "Sharpe_Score" in df_kelly.columns else df_kelly.columns[0]
+        top10      = df_kelly.nlargest(10, sort_col)
         top10_rows = top10.to_dict("records")
+        # Inject company names into top10_rows for frontend display
+        for row in top10_rows:
+            row["Name"] = _get_name(str(row.get("Ticker", "")))
 
     prompt = _build_prompt(top10_rows, market_data)
+    logger.info(f"Calling {LLM_MODEL} for market report ({len(prompt)} chars prompt)...")
 
-    # Try Claude first, then OpenAI
     summary_text = _call_claude(prompt)
     if not summary_text:
         logger.info("Claude unavailable, trying OpenAI fallback...")
@@ -226,9 +276,18 @@ def generate_market_report(
     }
 
     if save:
+        # Save latest (for frontend)
         LLM_REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
         with open(LLM_REPORT_PATH, "w", encoding="utf-8") as f:
             json.dump(result, f, ensure_ascii=False, indent=2)
         logger.info(f"LLM report saved → {LLM_REPORT_PATH}")
+
+        # Archive by date (for historical analysis)
+        archive_dir = LLM_REPORT_PATH.parent / "archive"
+        archive_dir.mkdir(exist_ok=True)
+        dated_path = archive_dir / f"market_summary_{market_data['date']}.json"
+        with open(dated_path, "w", encoding="utf-8") as f:
+            json.dump(result, f, ensure_ascii=False, indent=2)
+        logger.info(f"LLM report archived → {dated_path}")
 
     return result
