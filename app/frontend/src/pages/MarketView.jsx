@@ -71,22 +71,29 @@ function Top10Table({ top10 }) {
   return (
     <div className="panel">
       <div className="panel-header">
-        <div className="panel-title"><span>🏆</span> 今日推薦股票（Top 10）</div>
-        <span className="badge badge-positive">AI 精選</span>
+        <div className="panel-title"><span>🏆</span> 今日 AI 精選 Top 10</div>
+        <span className="badge badge-positive">Claude 推薦</span>
       </div>
       <div className="panel-body-flush">
         <table className="data-table">
           <thead>
             <tr>
-              <th>#</th><th>代號</th>
-              <th>20d Alpha</th><th>Sharpe</th><th>建議比重</th><th>信心</th>
+              <th>#</th><th>股票</th><th>20d Alpha</th>
+              <th>Sharpe</th><th>建議比重</th><th>信心</th>
             </tr>
           </thead>
           <tbody>
             {top10.map((s, i) => (
               <tr key={s.Ticker} style={{ animationDelay: `${i * 0.04}s` }} className="animate-fade-up">
                 <td style={{ color: 'var(--accent-amber)', fontSize: 12 }}>{i + 1}</td>
-                <td className="mono" style={{ fontWeight: 700 }}>{s.Ticker}</td>
+                <td>
+                  <div style={{ fontWeight: 600, fontSize: 13 }}>
+                    {s.Name && s.Name !== s.Ticker ? s.Name : s.Ticker}
+                  </div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                    {s.Ticker}
+                  </div>
+                </td>
                 <td className="mono text-positive">+{((s.Exp_Alpha_20d || 0) * 100).toFixed(2)}%</td>
                 <td className="mono text-positive">{(s.Sharpe_Score || 0).toFixed(2)}</td>
                 <td className="mono">{s.Suggested_Weight ? `${(s.Suggested_Weight * 100).toFixed(1)}%` : '—'}</td>
@@ -94,7 +101,7 @@ function Top10Table({ top10 }) {
                   <span style={{
                     fontSize: 11,
                     color: s.Confidence === '高信心' ? 'var(--positive)' : 'var(--accent-amber)'
-                  }}>{s.Confidence}</span>
+                  }}>{s.Confidence || '—'}</span>
                 </td>
               </tr>
             ))}
@@ -104,6 +111,7 @@ function Top10Table({ top10 }) {
     </div>
   );
 }
+
 
 export default function MarketView() {
   const { data: market, loading: mktLoading } = useApi(fetchMarket);
