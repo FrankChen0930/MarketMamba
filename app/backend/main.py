@@ -19,13 +19,16 @@ app = FastAPI(
 )
 
 # ── CORS ─────────────────────────────────────────────────────────────────────
-# Local dev: allow Vite (5173) and any localhost
-# Production: set ALLOWED_ORIGINS env var in Render Dashboard
-_raw = os.getenv(
-    "ALLOWED_ORIGINS",
-    "http://localhost:5173,http://localhost:3000,http://localhost:1420"
-)
-ALLOWED_ORIGINS = [o.strip() for o in _raw.split(",") if o.strip()]
+# Always allow localhost for dev. Production origins from Render env var.
+_LOCALHOST_ORIGINS = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:3000",
+    "http://localhost:1420",
+]
+_env_raw  = os.getenv("ALLOWED_ORIGINS", "")
+_env_list = [o.strip() for o in _env_raw.split(",") if o.strip()]
+ALLOWED_ORIGINS = list(set(_LOCALHOST_ORIGINS + _env_list))
 
 app.add_middleware(
     CORSMiddleware,
