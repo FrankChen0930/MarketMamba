@@ -44,6 +44,7 @@ app.include_router(performance.router, prefix="/api")
 app.include_router(market.router,      prefix="/api")
 app.include_router(portfolio.router,   prefix="/api")
 app.include_router(reports.router,     prefix="/api")
+app.include_router(fin_news.router,    prefix="/api")
 
 
 
