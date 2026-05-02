@@ -9,7 +9,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import signals, performance, market, portfolio, reports
+from routers import signals, performance, market, portfolio, reports, fin_news
 
 
 app = FastAPI(
