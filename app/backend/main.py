@@ -25,6 +25,9 @@ _LOCALHOST_ORIGINS = [
     "http://localhost:5174",
     "http://localhost:3000",
     "http://localhost:1420",
+    # Vercel deployments
+    "https://personal-os-eight-zeta.vercel.app",
+    "https://personal-os.vercel.app",
 ]
 _env_raw  = os.getenv("ALLOWED_ORIGINS", "")
 _env_list = [o.strip() for o in _env_raw.split(",") if o.strip()]
