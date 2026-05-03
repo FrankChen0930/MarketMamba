@@ -17,6 +17,7 @@ Run via Windows Task Scheduler:
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 import sys
 from datetime import datetime
@@ -449,12 +450,65 @@ def _archive_results(df_kelly: pd.DataFrame, date_str: str) -> None:
     dated_dir.mkdir(parents=True, exist_ok=True)
     df_kelly.to_csv(dated_dir / "df_kelly.csv", index=False, encoding="utf-8-sig")
 
+    # Update lightweight history index for the dashboard
+    _update_history_index(df_kelly, date_str)
+
     # Remove entries older than 90 days
     cutoff = (datetime.today() - timedelta(days=90)).strftime("%Y-%m-%d")
     for d in sorted(RESULTS_DIR.iterdir()):
         if d.is_dir() and d.name < cutoff:
             shutil.rmtree(d)
             logger.info(f"Removed old archive: {d.name}")
+
+
+def _update_history_index(df_kelly: pd.DataFrame, date_str: str) -> None:
+    """
+    Maintain V6/results/history_index.json — a lightweight log of each
+    rebalancing day (top 10 positions only). Served by the backend as the
+    timeline on the Investment Sim page.
+    """
+    history_path = RESULTS_DIR / "history_index.json"
+
+    # Load existing entries
+    history: list = []
+    if history_path.exists():
+        try:
+            with open(history_path, encoding="utf-8") as f:
+                history = json.load(f).get("history", [])
+        except Exception:
+            history = []
+
+    # Remove today if already present (idempotent)
+    history = [h for h in history if h.get("date") != date_str]
+
+    # Build today's entry — top 10 by Sharpe, exclude penalised rows
+    investable = df_kelly[df_kelly["Exp_Alpha_20d"] > -999]
+    top10 = investable.head(10)
+
+    cols_needed = ["Ticker", "Exp_Alpha_20d", "Sharpe_Score", "Confidence", "Suggested_Weight"]
+    available   = [c for c in cols_needed if c in top10.columns]
+    portfolio   = []
+    for _, row in top10[available].iterrows():
+        portfolio.append({
+            "ticker":     str(row.get("Ticker", "")),
+            "alpha":      round(float(row.get("Exp_Alpha_20d", 0)), 6),
+            "sharpe":     round(float(row.get("Sharpe_Score",  0)), 3),
+            "confidence": str(row.get("Confidence", "")),
+            "weight":     round(float(row.get("Suggested_Weight", 0)), 4),
+        })
+
+    entry = {
+        "date":             date_str,
+        "total_investable": int(len(investable)),
+        "portfolio":        portfolio,
+    }
+    history.insert(0, entry)
+    history = history[:60]   # keep last 60 trading days
+
+    with open(history_path, "w", encoding="utf-8") as f:
+        json.dump({"last_updated": date_str, "history": history}, f,
+                  ensure_ascii=False, indent=2)
+    logger.info(f"History index updated → {history_path} ({len(history)} entries)")
 
 
 

@@ -4,7 +4,7 @@ import {
   CartesianGrid, Legend, BarChart, Bar
 } from 'recharts';
 import { useApi } from '../hooks/useApi';
-import { fetchSignals } from '../api/signals';
+import { fetchSignals, fetchRebalanceHistory } from '../api/signals';
 import { fetchMarket } from '../api/market';
 import { SkeletonBlock } from '../components/SkeletonLoader';
 
@@ -138,7 +138,131 @@ function BotCard({ name, color, emoji, portfolio, equity }) {
   );
 }
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
+// ── RebalanceHistory ──────────────────────────────────────────────────────────
+
+const CONF_COLOR = { '高信心': '#00ff88', '中信心': '#ffa500', '低信心': '#ff4757' };
+
+function RebalanceHistory() {
+  const { data, loading } = useApi(fetchRebalanceHistory);
+  const history = data?.history ?? [];
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  if (loading) {
+    return (
+      <div className="panel">
+        <div className="panel-header">
+          <div className="panel-title"><span>📅</span> 調倉紀錄</div>
+        </div>
+        <div className="panel-body">
+          <SkeletonBlock height={200} />
+        </div>
+      </div>
+    );
+  }
+
+  if (!history.length) {
+    return (
+      <div className="panel">
+        <div className="panel-header">
+          <div className="panel-title"><span>📅</span> 調倉紀錄</div>
+          <span className="badge badge-neutral" style={{ fontSize: 10 }}>尚無歷史資料</span>
+        </div>
+        <div className="panel-body" style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 13, padding: '24px 0' }}>
+          每次執行 run_daily_inference.py 後自動新增一筆記錄
+        </div>
+      </div>
+    );
+  }
+
+  const current  = history[activeIdx];
+  const previous = history[activeIdx + 1];
+  const prevTickers = new Set((previous?.portfolio ?? []).map(p => p.ticker));
+  const currTickers = new Set(current.portfolio.map(p => p.ticker));
+
+  // Delta vs previous date
+  const newIn  = current.portfolio.filter(p => !prevTickers.has(p.ticker)).map(p => p.ticker);
+  const newOut = previous ? [...prevTickers].filter(t => !currTickers.has(t)) : [];
+
+  return (
+    <div className="panel">
+      <div className="panel-header">
+        <div className="panel-title"><span>📅</span> 調倉紀錄</div>
+        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>共 {history.length} 次調倉</span>
+      </div>
+
+      {/* Date Tabs */}
+      <div style={{ display: 'flex', gap: 6, padding: '0 16px 12px', flexWrap: 'wrap', borderBottom: '1px solid var(--border)' }}>
+        {history.map((h, i) => (
+          <button
+            key={h.date}
+            onClick={() => setActiveIdx(i)}
+            className={`btn ${i === activeIdx ? 'btn-primary' : 'btn-ghost'}`}
+            style={{ padding: '4px 12px', fontSize: 11 }}
+          >
+            {h.date}
+          </button>
+        ))}
+      </div>
+
+      <div className="panel-body">
+        {/* Meta */}
+        <div style={{ display: 'flex', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+            可投資股數：<strong style={{ color: 'var(--text-primary)' }}>{current.total_investable}</strong>
+          </span>
+          {newIn.length > 0 && (
+            <span style={{ fontSize: 12, color: '#00ff88' }}>
+              🟢 新進：{newIn.join('、')}
+            </span>
+          )}
+          {newOut.length > 0 && (
+            <span style={{ fontSize: 12, color: '#ff4757' }}>
+              🔴 移出：{newOut.join('、')}
+            </span>
+          )}
+          {!previous && (
+            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>（最早記錄，無法比較變動）</span>
+          )}
+        </div>
+
+        {/* Holdings Table */}
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>#</th><th>股票代號</th><th>比重</th>
+              <th>Alpha 20d</th><th>Sharpe</th><th>信心</th>
+            </tr>
+          </thead>
+          <tbody>
+            {current.portfolio.map((p, i) => {
+              const isNew = newIn.includes(p.ticker);
+              return (
+                <tr key={p.ticker} style={isNew ? { background: 'rgba(0,255,136,0.04)' } : undefined}>
+                  <td className="mono" style={{ color: 'var(--text-muted)', fontSize: 11 }}>{i + 1}</td>
+                  <td>
+                    <span style={{ fontWeight: 600, fontSize: 12 }}>{p.ticker}</span>
+                    {isNew && <span style={{ marginLeft: 6, fontSize: 10, color: '#00ff88' }}>NEW</span>}
+                  </td>
+                  <td className="mono" style={{ fontSize: 11 }}>{p.weight ? `${(p.weight * 100).toFixed(1)}%` : '—'}</td>
+                  <td className={`mono ${p.alpha >= 0 ? 'text-positive' : 'text-negative'}`} style={{ fontSize: 11 }}>
+                    {p.alpha >= 0 ? '+' : ''}{(p.alpha * 100).toFixed(2)}%
+                  </td>
+                  <td className="mono" style={{ fontSize: 11 }}>{p.sharpe?.toFixed(2)}</td>
+                  <td>
+                    <span style={{ fontSize: 10, color: CONF_COLOR[p.confidence] ?? 'var(--text-muted)' }}>
+                      {p.confidence || '—'}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 
 export default function InvestmentSim() {
   const [activeBot, setActiveBot] = useState('both');
@@ -408,6 +532,11 @@ export default function InvestmentSim() {
           </div>
         </div>
       </div>
+
+      {/* ── Rebalance History ── */}
+      <RebalanceHistory />
+
     </div>
   );
 }
+
