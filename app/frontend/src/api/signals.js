@@ -8,3 +8,7 @@ export const fetchSignalsByDate = (date) =>
 
 export const runInference = () =>
   client.post('/signals/run-inference').then((r) => r.data);
+
+export const fetchRebalanceHistory = () =>
+  client.get('/signals/history').then((r) => r.data);
+

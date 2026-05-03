@@ -33,6 +33,12 @@ CACHE_TTL = timedelta(hours=1)
 _cache: Optional[SignalsResponse] = None
 _cache_time: Optional[datetime] = None
 
+# History index cache
+_history_cache: Optional[dict] = None
+_history_cache_time: Optional[datetime] = None
+
+GITHUB_HISTORY_URL = GITHUB_RESULTS_URL.replace("df_kelly.csv", "history_index.json") if GITHUB_RESULTS_URL else ""
+
 
 async def _load_from_github() -> Optional[SignalsResponse]:
     """Fetch df_kelly.csv from GitHub raw URL and parse into SignalsResponse."""
@@ -158,10 +164,42 @@ async def run_inference():
 @router.post("/cache/refresh", response_model=InferenceStatus)
 async def refresh_cache():
     """強制重新從 GitHub 載入最新結果（PersonalOS push 完後呼叫）"""
-    global _cache, _cache_time
+    global _cache, _cache_time, _history_cache, _history_cache_time
     _cache = None
     _cache_time = None
+    _history_cache = None
+    _history_cache_time = None
     result = await _load_from_github()
     if result:
         return InferenceStatus(status="ok", message=f"Refreshed: {result.total_stocks} signals for {result.date}")
     return InferenceStatus(status="fallback", message="GitHub not available, using mock data")
+
+
+@router.get("/history")
+async def get_rebalance_history():
+    """調倉紀錄 — 從 GitHub history_index.json 讀取過去每日 rebalancing 結果"""
+    global _history_cache, _history_cache_time
+
+    # Serve from cache
+    if (_history_cache and _history_cache_time
+            and datetime.now() - _history_cache_time < CACHE_TTL):
+        return _history_cache
+
+    if not GITHUB_HISTORY_URL:
+        return {"history": [], "note": "GITHUB_RESULTS_URL not configured"}
+
+    try:
+        import httpx
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.get(GITHUB_HISTORY_URL)
+            if r.status_code == 200:
+                data = r.json()
+                _history_cache = data
+                _history_cache_time = datetime.now()
+                logger.info(f"History index loaded: {len(data.get('history',[]))} entries")
+                return data
+            logger.warning(f"history_index.json fetch failed: {r.status_code}")
+    except Exception as e:
+        logger.warning(f"History load error: {e}")
+
+    return {"history": [], "last_updated": None}
