@@ -1,6 +1,82 @@
 {
-  "last_updated": "2026-04-30",
+  "last_updated": "2026-05-04",
   "history": [
+    {
+      "date": "2026-05-04",
+      "total_investable": 1413,
+      "portfolio": [
+        {
+          "ticker": "1256",
+          "alpha": 0.199964,
+          "sharpe": 10.0,
+          "confidence": "高信心",
+          "weight": 0.0103
+        },
+        {
+          "ticker": "4953",
+          "alpha": 0.139744,
+          "sharpe": 10.0,
+          "confidence": "高信心",
+          "weight": 0.0103
+        },
+        {
+          "ticker": "3209",
+          "alpha": 0.225307,
+          "sharpe": 8.958,
+          "confidence": "中信心",
+          "weight": 0.0092
+        },
+        {
+          "ticker": "6574",
+          "alpha": 0.163589,
+          "sharpe": 8.569,
+          "confidence": "高信心",
+          "weight": 0.0088
+        },
+        {
+          "ticker": "00891",
+          "alpha": 0.234498,
+          "sharpe": 8.196,
+          "confidence": "中信心",
+          "weight": 0.0084
+        },
+        {
+          "ticker": "3025",
+          "alpha": 0.131418,
+          "sharpe": 8.047,
+          "confidence": "高信心",
+          "weight": 0.0083
+        },
+        {
+          "ticker": "6679",
+          "alpha": 0.103753,
+          "sharpe": 7.156,
+          "confidence": "高信心",
+          "weight": 0.0073
+        },
+        {
+          "ticker": "6146",
+          "alpha": 0.16102,
+          "sharpe": 6.95,
+          "confidence": "中信心",
+          "weight": 0.0071
+        },
+        {
+          "ticker": "2439",
+          "alpha": 0.070711,
+          "sharpe": 6.889,
+          "confidence": "高信心",
+          "weight": 0.0071
+        },
+        {
+          "ticker": "2471",
+          "alpha": 0.13732,
+          "sharpe": 6.661,
+          "confidence": "中信心",
+          "weight": 0.0068
+        }
+      ]
+    },
     {
       "date": "2026-04-30",
       "total_investable": 1313,
