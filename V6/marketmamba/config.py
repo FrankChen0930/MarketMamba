@@ -48,32 +48,43 @@ MIN_AVG_VOLUME_5D  = 1e7        # 1000萬台幣日均量（實盤流動性門檻
 # Feature Engineering
 # ============================================================
 SEQ_LEN    = 252    # One full trading year (V5.5 was 180)
-INPUT_DIM  = 46     # Pure quant, no sentiment (V5.5 was 84)
+INPUT_DIM  = 56     # V6.1 expanded pure quant (V6.0 was 46)
 
 # Factor groups for FactorGroupedEmbedding
 # Indices are 0-based positions in the final feature tensor
 FEATURE_GROUPS = {
-    "price_momentum": [           # Group A — 12 dims
+    "price_momentum": [           # Group A — 12 dims (unchanged)
         "Open", "High", "Low", "Close", "Volume",
         "Return_1d", "Return_5d", "Return_20d",
         "MA_20", "MA_60", "RSI_14", "ATR_14",
     ],
-    "institutional_flow": [       # Group B — 16 dims
+    "institutional_flow": [       # Group B — 20 dims (was 16, +4)
         "Foreign_Buy", "Foreign_Sell", "Foreign_Net",
         "Investment_Trust_Net", "Dealer_Net",
         "Margin_Purchase", "Margin_Repay",
         "Short_Sale", "Short_Cover",
         "Margin_Balance", "Short_Balance",
         "Day_Trade_Volume", "KD_K", "KD_D", "OBV", "Volatility_20d",
+        "Holdings_Large_Pct",        # V6.1: 千張以上大戶持股占比
+        "Holdings_Large_Change",     # V6.1: 大戶持股比例週變化
+        "Securities_Balance",        # V6.1: 借券餘額
+        "Foreign_Holding_Pct",       # V6.1: 外資累計持股比例
     ],
-    "fundamentals": [             # Group C — 10 dims
+    "fundamentals": [             # Group C — 12 dims (was 10, +2)
         "PER", "PBR", "Revenue_MoM", "Revenue_YoY",
         "EPS", "EPS_Surprise", "Gross_Margin", "ROE",
         "Market_Cap_Log", "Book_Value",
+        "Dividend_Yield_Fwd",        # V6.1: 預期股利殖利率
+        "Free_Cash_Flow",            # V6.1: 自由現金流
     ],
-    "macro_environment": [        # Group D — 8 dims
+    "macro_environment": [        # Group D — 12 dims (was 8, +4, -Market_Closed)
         "TWII_Return", "SPX_Return", "VIX", "TNX",
-        "Gold_Return", "Oil_Return", "USD_TWD", "Market_Closed",
+        "Gold_Return", "Oil_Return", "USD_TWD",
+        "Futures_OI_Foreign",        # V6.1: 外資期貨未平倉淨口數
+        "Options_PC_Ratio",          # V6.1: 選擇權 Put/Call 比
+        "Fear_Greed",                # V6.1: CNN 恐懼貪婪指數
+        "Business_Signal",           # V6.1: 台灣景氣燈號 (取代 Market_Closed)
+        "FED_Rate",                  # V6.1: FED 利率水位
     ],
 }
 
@@ -113,12 +124,12 @@ MULTI_SCALE_SEQLENS = [20, 60, 252]  # Must match PRED_HORIZONS[0], [1], SEQ_LEN
 # Training
 # ============================================================
 BATCH_SIZE     = 1          # Each sample = one full cross-section
-LR             = 1e-4
+LR             = 7e-5       # V6.1: reduced from 1e-4 to prevent early-warmup peak
 EPOCHS         = 60
 EARLY_STOP     = 10
 VAL_RATIO      = 0.15
 GRAD_CLIP_NORM = 1.0
-WARMUP_PCT     = 0.1        # OneCycleLR: first 10% steps do linear warmup
+WARMUP_PCT     = 0.15       # V6.1: extended from 0.1 to smooth warmup-to-decay transition
 AMP_ENABLED    = True       # FP16 mixed-precision
 
 # Multi-horizon loss weights

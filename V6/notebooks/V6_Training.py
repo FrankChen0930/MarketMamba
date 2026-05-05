@@ -357,13 +357,31 @@ for f in sorted(PROCESSED_DIR.glob("*.parquet")):
 # %% Cell 4: Feature Matrix + KG Cache
 # ==========================================
 # Feature Engineering + Knowledge Graph
+# ── Drive Persistence Strategy ──
+# All expensive computation results are auto-backed-up to Drive.
+# On reconnect, they restore in seconds instead of rebuilding from scratch.
 # ==========================================
 import pandas as pd
+import shutil
 from marketmamba.data.merger import merge_all_data, validate_data_integrity
 from marketmamba.data.feature_engineer import build_features, clean_and_scale
 from marketmamba.knowledge.graph_builder import build_knowledge_graph
 
+# ── Drive backup paths ──
+DRIVE_V6_DIR = "/content/drive/MyDrive/MarketMamba_V6"
+os.makedirs(DRIVE_V6_DIR, exist_ok=True)
+DRIVE_FEATURE_CACHE = f"{DRIVE_V6_DIR}/V6_Feature_Matrix.parquet"
+DRIVE_KG_CACHE      = f"{DRIVE_V6_DIR}/knowledge_graph_cache.npz"
+DRIVE_CKPT_DIR      = f"{DRIVE_V6_DIR}/checkpoints"
+os.makedirs(DRIVE_CKPT_DIR, exist_ok=True)
+
 MATRIX_CACHE = PROCESSED_DIR / "V6_Feature_Matrix.parquet"
+
+# ── Restore feature matrix from Drive if local copy missing ──
+if not MATRIX_CACHE.exists() and os.path.exists(DRIVE_FEATURE_CACHE):
+    print("Restoring feature matrix from Drive backup...")
+    shutil.copy(DRIVE_FEATURE_CACHE, str(MATRIX_CACHE))
+    print(f"  Restored ({os.path.getsize(DRIVE_FEATURE_CACHE) / 1e9:.2f} GB)")
 
 if MATRIX_CACHE.exists() and not FORCE_REBUILD:
     print("Loading cached feature matrix...")
@@ -390,18 +408,38 @@ else:
         df_balance_sheet = data["balance_sheet"],
         df_cashflow      = data["cashflow"],
         df_macro         = data["macro"],
+        # V6.1 new data sources
+        df_futures_inst  = data.get("futures_inst"),
+        df_options_inst  = data.get("options_inst"),
+        df_dividend      = data.get("dividend"),
+        df_foreign_shareholding = data.get("foreign_shareholding"),
+        df_fear_greed    = data.get("fear_greed"),
+        df_business_indicator = data.get("business_indicator"),
+        df_fed_rate      = data.get("fed_rate"),
     )
     df = clean_and_scale(df)
     df.to_parquet(MATRIX_CACHE)
     print(f"Feature matrix saved: {df.shape}")
 
+    # ── Auto-backup to Drive ──
+    print("Backing up feature matrix to Drive...")
+    shutil.copy(str(MATRIX_CACHE), DRIVE_FEATURE_CACHE)
+    print(f"  ✅ Feature matrix backed up → Drive ({os.path.getsize(DRIVE_FEATURE_CACHE) / 1e9:.2f} GB)")
+
 print(f"\nFeature matrix: {df.shape[0]:,} rows x {df.shape[1]} columns")
 print(f"Date range: {df['Date'].min()} -> {df['Date'].max()}")
 print(f"Stocks: {df['stock_id'].nunique()}")
 
-# Knowledge Graph
+# ── Knowledge Graph ──
 KG_REBUILD = False
 from marketmamba.config import KG_CACHE_PATH
+
+# Restore KG from Drive if local copy missing
+if not KG_CACHE_PATH.exists() and os.path.exists(DRIVE_KG_CACHE):
+    print("Restoring KG cache from Drive backup...")
+    os.makedirs(str(KG_CACHE_PATH.parent), exist_ok=True)
+    shutil.copy(DRIVE_KG_CACHE, str(KG_CACHE_PATH))
+    print("  Restored")
 
 if not KG_CACHE_PATH.exists() or KG_REBUILD:
     print("\nBuilding Knowledge Graph...")
@@ -417,6 +455,10 @@ if not KG_CACHE_PATH.exists() or KG_REBUILD:
 
     build_knowledge_graph(df_universe, data_for_kg["prices"], force_rebuild=KG_REBUILD)
     print(f"KG built -> {KG_CACHE_PATH}")
+
+    # ── Auto-backup KG to Drive ──
+    shutil.copy(str(KG_CACHE_PATH), DRIVE_KG_CACHE)
+    print(f"  ✅ KG cache backed up → Drive")
 else:
     print(f"KG loaded from cache -> {KG_CACHE_PATH}")
 
@@ -552,14 +594,25 @@ print(f"Model params: {model_n_params:,}")
 # Expanding-Window Walk-Forward (36 folds)
 # WARNING: This takes 4-8 hours on A100
 # Start only after Cell 6 confirms pipeline works
+# ── PERSISTENCE: Per-fold results saved to Drive ──
+# If Colab disconnects, set RESUME_FROM_FOLD to skip completed folds
 # ==========================================
-RUN_FULL_WF = False   # Set True when ready for the full run
+RUN_FULL_WF = False        # Set True when ready for the full run
+RESUME_FROM_FOLD = 1       # Change to N+1 to skip first N completed folds
 
 if RUN_FULL_WF:
+    import json
     from marketmamba.evaluation.walk_forward import run_walk_forward
 
+    DRIVE_WF_DIR = f"{DRIVE_V6_DIR}/wf_results"
+    os.makedirs(DRIVE_WF_DIR, exist_ok=True)
+
     def train_fold(df, train_dates, val_dates):
-        m, _ = train_model(df, train_dates, val_dates, epochs=40, checkpoint_name="v6_wf_fold.pt")
+        m, h = train_model(df, train_dates, val_dates, epochs=40, checkpoint_name="v6_wf_fold.pt")
+        # Auto-backup fold checkpoint to Drive
+        fold_ckpt = MODELS_DIR / "v6_wf_fold.pt"
+        if fold_ckpt.exists():
+            shutil.copy(str(fold_ckpt), f"{DRIVE_CKPT_DIR}/v6_wf_fold.pt")
         return m
 
     wf_summary = run_walk_forward(
@@ -567,8 +620,15 @@ if RUN_FULL_WF:
         train_fn     = train_fold,
         train_start  = "2005-01-01",   # matches DATA_START_DATE
         save_results = True,
+        resume_from_fold = RESUME_FROM_FOLD,
     )
     wf_summary.print_report()
+
+    # Save full results to Drive
+    wf_results_path = MODELS_DIR / "walk_forward_results.parquet"
+    if wf_results_path.exists():
+        shutil.copy(str(wf_results_path), f"{DRIVE_WF_DIR}/walk_forward_results.parquet")
+        print(f"✅ Walk-Forward results backed up → Drive")
 else:
     print("Full Walk-Forward skipped (RUN_FULL_WF=False)")
     print("Set RUN_FULL_WF=True when ready for the full 4-8 hour run")

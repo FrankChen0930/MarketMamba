@@ -813,3 +813,210 @@ def _append_to_parquet(path: Path, df_new: pd.DataFrame, date_str: str) -> None:
 
     df.to_parquet(path)
 
+
+# ============================================================
+# V6.1 New Data Sources (Phase 2)
+# ============================================================
+
+def fetch_futures_institutional(
+    start: str = DATA_START_DATE,
+    end:   str | None = None,
+    force: bool = False,
+) -> pd.DataFrame | None:
+    """
+    Fetch 期貨三大法人 (Futures Institutional Investors) from FinMind.
+    Dataset: TaiwanFuturesInstitutionalInvestors
+
+    Key output columns:
+      - Date, institutional_investors (外資/投信/自營商)
+      - long_deal_volume, short_deal_volume  (多空成交口數)
+      - long_open_interest, short_open_interest  (多空未平倉口數)
+
+    For the model, we compute:
+      - Futures_OI_Foreign = 外資 (long_open_interest - short_open_interest)
+    """
+    cache_path = PROCESSED_DIR / "futures_institutional_raw.parquet"
+    if not force and cache_path.exists():
+        logger.info(f"Futures institutional loaded from cache: {cache_path}")
+        return pd.read_parquet(cache_path)
+
+    end = end or date.today().strftime("%Y-%m-%d")
+    logger.info(f"Fetching futures institutional data [{start} → {end}]...")
+
+    df = _finmind_fetch_chunked(
+        "TaiwanFuturesInstitutionalInvestors",
+        start_date=start,
+        end_date=end,
+    )
+    if df is None or df.empty:
+        logger.warning("Futures institutional data unavailable")
+        return None
+
+    if "date" in df.columns:
+        df = df.rename(columns={"date": "Date"})
+    df["Date"] = pd.to_datetime(df["Date"])
+
+    # Filter for 台指期 (TX) which is the most relevant futures contract
+    if "futures_id" in df.columns:
+        df = df[df["futures_id"].str.contains("TX", case=False, na=False)].copy()
+
+    df.to_parquet(cache_path)
+    logger.info(f"Futures institutional saved: {df.shape}")
+    return df
+
+
+def fetch_options_institutional(
+    start: str = DATA_START_DATE,
+    end:   str | None = None,
+    force: bool = False,
+) -> pd.DataFrame | None:
+    """
+    Fetch 選擇權三大法人 (Options Institutional Investors) from FinMind.
+    Dataset: TaiwanOptionInstitutionalInvestors
+
+    For the model, we compute:
+      - Options_PC_Ratio = Put volume / Call volume (Put/Call ratio)
+    """
+    cache_path = PROCESSED_DIR / "options_institutional_raw.parquet"
+    if not force and cache_path.exists():
+        logger.info(f"Options institutional loaded from cache: {cache_path}")
+        return pd.read_parquet(cache_path)
+
+    end = end or date.today().strftime("%Y-%m-%d")
+    logger.info(f"Fetching options institutional data [{start} → {end}]...")
+
+    df = _finmind_fetch_chunked(
+        "TaiwanOptionInstitutionalInvestors",
+        start_date=start,
+        end_date=end,
+    )
+    if df is None or df.empty:
+        logger.warning("Options institutional data unavailable")
+        return None
+
+    if "date" in df.columns:
+        df = df.rename(columns={"date": "Date"})
+    df["Date"] = pd.to_datetime(df["Date"])
+
+    df.to_parquet(cache_path)
+    logger.info(f"Options institutional saved: {df.shape}")
+    return df
+
+
+def fetch_total_return_index(
+    start: str = DATA_START_DATE,
+    end:   str | None = None,
+    force: bool = False,
+) -> pd.DataFrame | None:
+    """
+    Fetch 加權股價報酬指數 (Total Return Index, includes dividends).
+    Dataset: TaiwanStockTotalReturnIndex
+
+    This is the correct benchmark for Alpha computation — includes
+    reinvested dividends, unlike the raw TAIEX/TWII.
+    """
+    cache_path = PROCESSED_DIR / "total_return_index_raw.parquet"
+    if not force and cache_path.exists():
+        logger.info(f"Total return index loaded from cache: {cache_path}")
+        return pd.read_parquet(cache_path)
+
+    end = end or date.today().strftime("%Y-%m-%d")
+    logger.info(f"Fetching total return index [{start} → {end}]...")
+
+    df = _finmind_fetch_chunked(
+        "TaiwanStockTotalReturnIndex",
+        start_date=start,
+        end_date=end,
+    )
+    if df is None or df.empty:
+        logger.warning("Total return index data unavailable")
+        return None
+
+    if "date" in df.columns:
+        df = df.rename(columns={"date": "Date"})
+    df["Date"] = pd.to_datetime(df["Date"])
+
+    df.to_parquet(cache_path)
+    logger.info(f"Total return index saved: {df.shape}")
+    return df
+
+
+def fetch_dividends(
+    start: str = DATA_START_DATE,
+    end:   str | None = None,
+    force: bool = False,
+) -> pd.DataFrame | None:
+    """
+    Fetch 股利政策 (Dividend announcements) from FinMind.
+    Dataset: TaiwanStockDividend
+
+    Key output columns:
+      - stock_id, date, CashEarningsDistribution (現金股利)
+      - StockEarningsDistribution (股票股利)
+
+    For the model: Dividend_Yield_Fwd = announced cash dividend / current price
+    """
+    cache_path = PROCESSED_DIR / "dividend_raw.parquet"
+    if not force and cache_path.exists():
+        logger.info(f"Dividends loaded from cache: {cache_path}")
+        return pd.read_parquet(cache_path)
+
+    end = end or date.today().strftime("%Y-%m-%d")
+    logger.info(f"Fetching dividend data [{start} → {end}]...")
+
+    df = _finmind_fetch_chunked(
+        "TaiwanStockDividend",
+        start_date=start,
+        end_date=end,
+    )
+    if df is None or df.empty:
+        logger.warning("Dividend data unavailable")
+        return None
+
+    if "date" in df.columns:
+        df = df.rename(columns={"date": "Date"})
+    df["Date"] = pd.to_datetime(df["Date"])
+
+    df.to_parquet(cache_path)
+    logger.info(f"Dividends saved: {df.shape}")
+    return df
+
+
+def fetch_foreign_shareholding(
+    start: str = DATA_START_DATE,
+    end:   str | None = None,
+    force: bool = False,
+) -> pd.DataFrame | None:
+    """
+    Fetch 外資持股比例 (Foreign Investor Shareholding %) from FinMind.
+    Dataset: TaiwanStockShareholding
+
+    Unlike institutional_raw (which shows daily BUY/SELL flow),
+    this shows the CUMULATIVE holding percentage — a more stable
+    signal of foreign investor conviction.
+    """
+    cache_path = PROCESSED_DIR / "foreign_shareholding_raw.parquet"
+    if not force and cache_path.exists():
+        logger.info(f"Foreign shareholding loaded from cache: {cache_path}")
+        return pd.read_parquet(cache_path)
+
+    end = end or date.today().strftime("%Y-%m-%d")
+    logger.info(f"Fetching foreign shareholding data [{start} → {end}]...")
+
+    df = _finmind_fetch_chunked(
+        "TaiwanStockShareholding",
+        start_date=start,
+        end_date=end,
+    )
+    if df is None or df.empty:
+        logger.warning("Foreign shareholding data unavailable")
+        return None
+
+    if "date" in df.columns:
+        df = df.rename(columns={"date": "Date"})
+    df["Date"] = pd.to_datetime(df["Date"])
+
+    df.to_parquet(cache_path)
+    logger.info(f"Foreign shareholding saved: {df.shape}")
+    return df
+

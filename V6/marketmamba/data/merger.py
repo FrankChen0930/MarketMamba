@@ -65,6 +65,20 @@ def merge_all_data() -> dict[str, pd.DataFrame]:
         logger.info(f"  {name}: {df.shape[0]:,} rows")
         return df
 
+    def _load_plain(name: str) -> pd.DataFrame | None:
+        """Load non-_raw suffixed files (fear_greed.parquet, etc.)"""
+        path = PROCESSED_DIR / f"{name}.parquet"
+        if not path.exists():
+            logger.warning(f"Data not found: {path}")
+            return None
+        df = pd.read_parquet(path)
+        if "date" in df.columns and "Date" not in df.columns:
+            df = df.rename(columns={"date": "Date"})
+        if "Date" in df.columns:
+            df["Date"] = pd.to_datetime(df["Date"])
+        logger.info(f"  {name}: {df.shape[0]:,} rows")
+        return df
+
     logger.info("Loading raw data sources...")
     data = {
         "prices":        _load("prices"),
@@ -80,6 +94,14 @@ def merge_all_data() -> dict[str, pd.DataFrame]:
         "balance_sheet": _load("balance_sheet"),
         "cashflow":      _load("cashflow"),
         "macro":         _load("macro"),
+        # V6.1 new data sources
+        "futures_inst":       _load("futures_institutional"),
+        "options_inst":       _load("options_institutional"),
+        "dividend":           _load("dividend"),
+        "foreign_shareholding": _load("foreign_shareholding"),
+        "fear_greed":         _load_plain("fear_greed"),
+        "business_indicator": _load_plain("business_indicator"),
+        "fed_rate":           _load_plain("fed_rate"),
     }
 
     if data["prices"] is None:

@@ -260,6 +260,7 @@ def run_walk_forward(
     eval_horizon_idx: int = 1,   # 1 = 20d alpha (primary)
     device_str:      str = "cuda" if torch.cuda.is_available() else "cpu",
     save_results:    bool = True,
+    resume_from_fold: int = 1,   # skip folds before this number (for Colab resume)
 ) -> WalkForwardSummary:
     """
     Full Expanding-Window Walk-Forward evaluation.
@@ -272,6 +273,7 @@ def run_walk_forward(
         eval_horizon_idx : which pred horizon to evaluate (0=5d, 1=20d, 2=60d)
         device_str   : 'cuda' or 'cpu'
         save_results : save fold results to MODELS_DIR/walk_forward_results.parquet
+        resume_from_fold : skip folds with fold_id < this value (for resuming after disconnect)
 
     Returns:
         WalkForwardSummary with per-fold IC metrics
@@ -291,6 +293,12 @@ def run_walk_forward(
 
     for spec in folds_spec:
         fold_id = spec["fold_id"]
+
+        # Resume support: skip already-completed folds
+        if fold_id < resume_from_fold:
+            logger.info(f"  Fold {fold_id:02d}: SKIPPED (resume_from_fold={resume_from_fold})")
+            continue
+
         logger.info(
             f"\n{'='*55}\n"
             f"  Fold {fold_id:02d}: train=[{spec['train_start']} → {spec['train_end']}] "
