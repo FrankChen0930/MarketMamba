@@ -1,8 +1,8 @@
 """
-MarketMamba V6 — Model Architecture
-=====================================
+MarketMamba V6.1 — Model Architecture
+=======================================
 Core components:
-  FactorGroupedEmbedding  : factor-aware input projection (46D → d_model)
+  FactorGroupedEmbedding  : factor-aware input projection (56D → d_model, proportional allocation)
   MultiScaleMambaEncoder  : parallel short/mid/long Mamba branches + adaptive fusion
   MarketMambaV6           : full model = Embedding → MultiScaleMamba → GATv2 → MultiHead
 
@@ -81,17 +81,23 @@ class FactorGroupedEmbedding(nn.Module):
     """
     Projects each factor group into its own sub-space, then concatenates.
 
+    V6.1 — Proportional Allocation (方案 B):
+      Instead of equal d_model // 4, each group gets sub_dim proportional
+      to its input dimension count. This ensures that information-dense
+      groups (like B: 20 institutional features) get more representation
+      space than sparse groups (like A: 12 price features).
+
     Groups (from config.FEATURE_GROUPS):
-      A: price_momentum      (12 dims) → d_model // 4
-      B: institutional_flow  (16 dims) → d_model // 4
-      C: fundamentals        (10 dims) → d_model // 4
-      D: macro_environment   ( 8 dims) → d_model // 4
+      A: price_momentum      (12 dims) → d_model * 12/56
+      B: institutional_flow  (20 dims) → d_model * 20/56
+      C: fundamentals        (12 dims) → d_model * 12/56
+      D: macro_environment   (12 dims) → d_model * 12/56
     Concat → LayerNorm → d_model
 
     Benefits:
       - Different factor types learn in their own sub-space
+      - Proportional allocation matches information density per group
       - No cross-contamination between price signals and macro signals
-      - Initialisation is cleaner than a single large linear
     """
     def __init__(
         self,
@@ -99,12 +105,25 @@ class FactorGroupedEmbedding(nn.Module):
         d_model: int = D_MODEL,
     ):
         super().__init__()
-        sub_dim = d_model // 4   # 64 per group (for d_model=256)
+        total_features = sum(group_dims.values())
 
-        self.proj_A = nn.Linear(group_dims["price_momentum"],     sub_dim)
-        self.proj_B = nn.Linear(group_dims["institutional_flow"], sub_dim)
-        self.proj_C = nn.Linear(group_dims["fundamentals"],       sub_dim)
-        self.proj_D = nn.Linear(group_dims["macro_environment"],  sub_dim)
+        # Proportional sub_dim allocation (方案 B)
+        # Calculate proportional dims, ensuring they sum to d_model
+        raw_dims = {k: int(d_model * v / total_features) for k, v in group_dims.items()}
+        # Assign remainder to the largest group to guarantee exact sum
+        remainder = d_model - sum(raw_dims.values())
+        largest_group = max(group_dims, key=group_dims.get)
+        raw_dims[largest_group] += remainder
+
+        sub_A = raw_dims["price_momentum"]
+        sub_B = raw_dims["institutional_flow"]
+        sub_C = raw_dims["fundamentals"]
+        sub_D = raw_dims["macro_environment"]
+
+        self.proj_A = nn.Linear(group_dims["price_momentum"],     sub_A)
+        self.proj_B = nn.Linear(group_dims["institutional_flow"], sub_B)
+        self.proj_C = nn.Linear(group_dims["fundamentals"],       sub_C)
+        self.proj_D = nn.Linear(group_dims["macro_environment"],  sub_D)
         self.norm   = nn.LayerNorm(d_model)
         self.drop   = nn.Dropout(DROPOUT)
 
@@ -120,7 +139,7 @@ class FactorGroupedEmbedding(nn.Module):
         }
 
     def forward(self, x: Tensor) -> Tensor:
-        # x: (N, T, 46)
+        # x: (N, T, INPUT_DIM)
         sA, eA = self._slices["A"]
         sB, eB = self._slices["B"]
         sC, eC = self._slices["C"]
@@ -276,11 +295,11 @@ class MultiHorizonHead(nn.Module):
 
 class MarketMambaV6(nn.Module):
     """
-    MarketMamba V6 — Pure-Quant Multi-Scale SSM + Graph Attention
+    MarketMamba V6.1 — Pure-Quant Multi-Scale SSM + Graph Attention
 
     Architecture:
-      (N, 252, 46)
-        → FactorGroupedEmbedding       → (N, 252, d_model)
+      (N, 252, 56)
+        → FactorGroupedEmbedding       → (N, 252, d_model)   ← proportional sub_dim
         → MultiScaleMambaEncoder       → (N, d_model)   ← temporal encoding
         → GraphAttentionLayer          → (N, d_model)   ← cross-stock relations
         → Gating Fusion (temporal + graph)
