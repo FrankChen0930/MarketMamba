@@ -41,67 +41,134 @@ else:
     os.system("cd /content/MarketMamba && git pull origin main")
     print("  Repo updated")
 
-# 2. Install dependencies
+# 2. Mount Drive FIRST — needed for cached wheels and data
+from google.colab import drive
+drive.mount("/content/drive")
+
+# 3. Install dependencies
 os.system("pip install -q yfinance requests pandas numpy scipy python-dotenv anthropic openai pyarrow")
 os.system("pip install -q torch-geometric")
 
-# 3. Install mamba_ssm (cached on Drive)
+# 4. Install mamba_ssm — 3-layer strategy:
+#    Layer 1 (fastest, ~10s): Drive-cached pre-built wheel
+#    Layer 2 (fast):          pip binary-only (no source compile)
+#    Layer 3 (slow, ~40min):  compile from source → save to Drive for next time
 import torch
-_cuda = (torch.version.cuda or "?").replace(".", "")
-_torch = torch.__version__.split("+")[0].replace(".", "")
-_py = f"cp{sys.version_info.major}{sys.version_info.minor}"
-_key = f"cu{_cuda}torch{_torch}{_py}"
 
-DRIVE_WHEEL_DIR = f"/content/drive/MyDrive/MarketMamba/mamba_wheels/{_key}"
-_cached = glob.glob(f"{DRIVE_WHEEL_DIR}/*.whl") if os.path.isdir(DRIVE_WHEEL_DIR) else []
+_cuda  = (torch.version.cuda or "?").replace(".", "")
+_torch = torch.__version__.split("+")[0].replace(".", "")
+_py    = f"cp{sys.version_info.major}{sys.version_info.minor}"
+_key   = f"cu{_cuda}torch{_torch}{_py}"
+
+DRIVE_WHEEL_BASE = "/content/drive/MyDrive/MarketMamba/mamba_wheels"
+DRIVE_WHEEL_DIR  = f"{DRIVE_WHEEL_BASE}/{_key}"
+WHEEL_BUILD_DIR  = "/tmp/mamba_wheels"
+os.makedirs(WHEEL_BUILD_DIR, exist_ok=True)
+
+print(f"  Mamba wheel key: {_key}")
+print(f"  Drive wheel dir: {DRIVE_WHEEL_DIR}")
 
 _installed = False
+
+# --- Layer 1: Drive cache (fastest path) ---
+_cached = glob.glob(f"{DRIVE_WHEEL_DIR}/*.whl") if os.path.isdir(DRIVE_WHEEL_DIR) else []
 if _cached:
-    print(f"  Installing mamba_ssm from Drive cache ({len(_cached)} wheels)...")
+    print(f"  [Layer 1] Found {len(_cached)} cached wheel(s) — installing...")
     for whl in _cached:
-        os.system(f"pip install -q {whl}")
+        rc = os.system(f"pip install -q {whl}")
+        print(f"    {os.path.basename(whl)} (rc={rc})")
     try:
-        import importlib.util
-        if importlib.util.find_spec("mamba_ssm"):
+        import importlib, importlib.util
+        if importlib.util.find_spec("mamba_ssm") is not None:
             _installed = True
-            print("  ✅ mamba_ssm from cache")
-    except: pass
+            print("  ✅ mamba_ssm installed from Drive cache")
+        else:
+            print("  ⚠️ Drive cache install failed (module not found)")
+    except Exception:
+        print("  ⚠️ Drive cache install failed")
+else:
+    # Show what keys ARE cached (helps debug version mismatches)
+    _all = glob.glob(f"{DRIVE_WHEEL_BASE}/**/*.whl", recursive=True)
+    if _all:
+        keys = list(set(os.path.basename(os.path.dirname(w)) for w in _all))
+        print(f"  [Layer 1] No wheel for key={_key}")
+        print(f"    Available keys: {keys}")
+    else:
+        print(f"  [Layer 1] No cached wheels on Drive")
 
+# --- Layer 2: Binary pip install (no source compile!) ---
 if not _installed:
-    print("  Installing mamba_ssm from pip...")
-    rc = os.system("pip install -q mamba-ssm causal-conv1d 2>/dev/null")
-    if rc == 0: _installed = True
-
-if not _installed:
-    print("  Compiling mamba_ssm from source (~40 min, will cache to Drive)...")
-    WHEEL_DIR = "/tmp/mamba_wheels"
-    os.makedirs(WHEEL_DIR, exist_ok=True)
-    rc = os.system(f"pip wheel mamba-ssm causal-conv1d --no-build-isolation --no-cache-dir -w {WHEEL_DIR}/ 2>&1 | tail -5")
+    print("  [Layer 2] Trying pip binary install (no source compile)...")
+    rc = os.system("pip install -q --only-binary :all: mamba-ssm causal-conv1d 2>/dev/null")
     if rc == 0:
-        os.system(f"pip install -q {WHEEL_DIR}/*.whl")
+        try:
+            import importlib.util
+            if importlib.util.find_spec("mamba_ssm") is not None:
+                _installed = True
+                print("  ✅ mamba_ssm from pip binary")
+        except: pass
+    if not _installed:
+        print("  No binary wheel available on PyPI for this runtime")
+
+# --- Layer 3: Compile from source + save to Drive ---
+if not _installed:
+    print("  [Layer 3] Compiling from source (~40 min). Will cache to Drive.")
+    rc = os.system(
+        f"pip wheel mamba-ssm causal-conv1d "
+        f"--no-build-isolation --no-cache-dir "
+        f"-w {WHEEL_BUILD_DIR}/ "
+        f"2>&1 | tail -5"
+    )
+    if rc == 0:
+        os.system(f"pip install -q {WHEEL_BUILD_DIR}/*.whl")
         os.makedirs(DRIVE_WHEEL_DIR, exist_ok=True)
-        for whl in glob.glob(f"{WHEEL_DIR}/*.whl"):
+        for whl in glob.glob(f"{WHEEL_BUILD_DIR}/*.whl"):
             name = os.path.basename(whl)
             if any(p in name.lower() for p in ["mamba_ssm", "causal_conv1d"]):
                 shutil.copy2(whl, f"{DRIVE_WHEEL_DIR}/{name}")
-                print(f"  Cached: {name}")
+                print(f"    Cached to Drive: {name}")
         _installed = True
+    else:
+        print("  ⚠️ Source build failed")
 
+# --- Verify + handle PyTorch API change ---
 try:
     from mamba_ssm import Mamba
-    print("  ✅ mamba_ssm OK")
+    print("  ✅ mamba_ssm import OK")
 except ImportError as e:
     _err = str(e)
-    if "is_opaque_value" in _err or "torch._library" in _err:
-        print(f"  ⚠️ PyTorch API change: {_err[:80]}")
-        print("  Installing from GitHub...")
-        os.system("pip wheel git+https://github.com/state-spaces/mamba.git git+https://github.com/Dao-AILab/causal-conv1d.git --no-build-isolation --no-cache-dir -w /tmp/mamba_wheels/ 2>&1 | tail -5")
-        os.system("pip install -q /tmp/mamba_wheels/*.whl")
+    if "is_opaque_value" in _err or "torch._library" in _err or "opaque_object" in _err:
+        print(f"  ⚠️ PyTorch API change detected")
+        print("  Installing latest mamba_ssm from GitHub (~5-10 min)...")
+        # Remove incompatible cached wheel
+        if os.path.isdir(DRIVE_WHEEL_DIR):
+            shutil.rmtree(DRIVE_WHEEL_DIR)
+            print(f"    Removed incompatible cache: {DRIVE_WHEEL_DIR}")
+        rc = os.system(
+            f"pip wheel git+https://github.com/state-spaces/mamba.git "
+            f"git+https://github.com/Dao-AILab/causal-conv1d.git "
+            f"--no-build-isolation --no-cache-dir "
+            f"-w {WHEEL_BUILD_DIR}/ 2>&1 | tail -5"
+        )
+        if rc == 0:
+            os.system(f"pip install -q {WHEEL_BUILD_DIR}/*.whl")
+            # Save to Drive
+            os.makedirs(DRIVE_WHEEL_DIR, exist_ok=True)
+            for whl in glob.glob(f"{WHEEL_BUILD_DIR}/*.whl"):
+                name = os.path.basename(whl)
+                if any(p in name.lower() for p in ["mamba_ssm", "causal_conv1d"]):
+                    shutil.copy2(whl, f"{DRIVE_WHEEL_DIR}/{name}")
+                    print(f"    Cached GitHub wheel: {name}")
+        try:
+            from mamba_ssm import Mamba
+            print("  ✅ mamba_ssm OK (from GitHub)")
+        except ImportError as e2:
+            print(f"  ❌ Still cannot import: {e2}")
     else:
         print(f"  ⚠️ mamba_ssm not available: {_err[:80]}")
         print("  Data processing cells will still work.")
 
-# 4. Python path — V6 MUST take priority
+# 5. Python path — V6 MUST take priority
 for _k in list(sys.modules.keys()):
     if _k == "marketmamba" or _k.startswith("marketmamba."):
         del sys.modules[_k]
@@ -110,11 +177,7 @@ for _p in ["/content/MarketMamba/V6", "/content/MarketMamba"]:
 sys.path.insert(0, "/content/MarketMamba")
 sys.path.insert(0, "/content/MarketMamba/V6")
 
-# 5. Mount Drive
-from google.colab import drive
-drive.mount("/content/drive")
-
-gpu = torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU"
+gpu  = torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU"
 vram = torch.cuda.get_device_properties(0).total_memory / 1024**3 if torch.cuda.is_available() else 0
 print(f"\n✅ Environment ready | GPU: {gpu} ({vram:.0f} GB) | Torch: {torch.__version__}")
 
