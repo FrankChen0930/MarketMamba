@@ -319,31 +319,72 @@ print(f"\n✅ Feature matrix: {df.shape[0]:,} rows × {df.shape[1]} cols ({n_fea
 print(f"   Date range: {df['Date'].min()} → {df['Date'].max()}")
 print(f"   Stocks: {df['stock_id'].nunique():,}")
 
-# ── Knowledge Graph ──
+
+# %% Cell 3b: Knowledge Graph (lightweight — no merge_all_data)
+# ==========================================
+# Only reads prices_raw.parquet + stock_info.parquet
+# Much faster than Cell 3 — should complete in 1-2 minutes
+# ==========================================
+import pandas as pd
+import shutil, os
+from marketmamba.knowledge.graph_builder import build_knowledge_graph
+from marketmamba.config import PROCESSED_DIR, KG_CACHE_PATH
+
+DRIVE_V6_DIR = "/content/drive/MyDrive/MarketMamba_V6"
+DRIVE_KG_CACHE = f"{DRIVE_V6_DIR}/knowledge_graph_cache.npz"
+
 KG_REBUILD = False
 
+# Restore from Drive if available
 if not KG_CACHE_PATH.exists() and os.path.exists(DRIVE_KG_CACHE):
-    print("\nRestoring KG from Drive...")
+    print("Restoring KG from Drive...")
     os.makedirs(str(KG_CACHE_PATH.parent), exist_ok=True)
     shutil.copy(DRIVE_KG_CACHE, str(KG_CACHE_PATH))
+    print("  ✅ KG restored from Drive")
 
 if not KG_CACHE_PATH.exists() or KG_REBUILD:
-    print("\nBuilding Knowledge Graph...")
-    data_for_kg = merge_all_data()
-    df_universe = data_for_kg["prices"][["stock_id"]].drop_duplicates()
-    try:
-        from marketmamba.data.fetcher import _fetch_universe_from_finmind
-        df_univ = _fetch_universe_from_finmind()
-        df_universe = df_universe.merge(df_univ[["stock_id", "industry_category"]], on="stock_id", how="left")
-    except Exception as e:
-        print(f"  Could not fetch sector info: {e}")
-        df_universe["industry_category"] = "Unknown"
+    print("Building Knowledge Graph (lightweight)...")
 
-    build_knowledge_graph(df_universe, data_for_kg["prices"], force_rebuild=KG_REBUILD)
-    shutil.copy(str(KG_CACHE_PATH), DRIVE_KG_CACHE)
-    print(f"  ✅ KG built & backed up to Drive")
+    # Load ONLY prices — no need for merge_all_data() (saves 580MB + 5 min)
+    df_prices = pd.read_parquet(PROCESSED_DIR / "prices_raw.parquet")
+    df_universe = df_prices[["stock_id"]].drop_duplicates()
+    print(f"  Universe: {len(df_universe)} stocks")
+
+    # Load sector info from local parquet (fetched locally, much more reliable)
+    stock_info_path = PROCESSED_DIR / "stock_info.parquet"
+    if stock_info_path.exists():
+        df_info = pd.read_parquet(stock_info_path)
+        df_universe = df_universe.merge(
+            df_info[["stock_id", "industry_category"]], on="stock_id", how="left"
+        )
+        df_universe["industry_category"] = df_universe["industry_category"].fillna("Unknown")
+        n_sectors = df_universe["industry_category"].nunique()
+        print(f"  Sector info loaded: {n_sectors} industries")
+    else:
+        # Fallback: try FinMind API (may fail on Colab)
+        try:
+            from marketmamba.data.fetcher import _fetch_universe_from_finmind
+            df_univ = _fetch_universe_from_finmind()
+            df_universe = df_universe.merge(
+                df_univ[["stock_id", "industry_category"]], on="stock_id", how="left"
+            )
+            print("  Sector info from FinMind API")
+        except Exception as e:
+            print(f"  Could not fetch sector info: {e}")
+            df_universe["industry_category"] = "Unknown"
+
+    build_knowledge_graph(df_universe, df_prices, force_rebuild=KG_REBUILD)
+
+    # Backup to Drive
+    if KG_CACHE_PATH.exists():
+        shutil.copy(str(KG_CACHE_PATH), DRIVE_KG_CACHE)
+        print(f"  ✅ KG built & backed up to Drive")
+
+    # Free memory
+    del df_prices, df_universe
+    import gc; gc.collect()
 else:
-    print(f"\n✅ KG loaded from cache")
+    print(f"✅ KG loaded from cache")
 
 
 # %% Cell 4: Train V6.1 Model
