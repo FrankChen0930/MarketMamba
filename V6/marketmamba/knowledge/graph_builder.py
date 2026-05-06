@@ -69,9 +69,23 @@ def build_sector_edges(
     for sector, indices in sector_map.items():
         if len(indices) < 2:
             continue
-        for i in indices:
-            for j in indices:
-                if i != j:
+        # Cap: each stock connects to at most MAX_SECTOR_NEIGHBORS in same sector
+        # (prevents O(N²) blowup for large sectors like "其他")
+        MAX_SECTOR_NEIGHBORS = 15
+        if len(indices) <= MAX_SECTOR_NEIGHBORS + 1:
+            # Small sector: full connectivity
+            for i in indices:
+                for j in indices:
+                    if i != j:
+                        edges.append((i, j))
+                        weights.append(weight)
+        else:
+            # Large sector: each node connects to random subset
+            import random
+            for i in indices:
+                neighbors = random.sample([j for j in indices if j != i],
+                                          min(MAX_SECTOR_NEIGHBORS, len(indices) - 1))
+                for j in neighbors:
                     edges.append((i, j))
                     weights.append(weight)
 
