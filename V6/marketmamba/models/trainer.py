@@ -676,6 +676,10 @@ def train_model(
                 no_impr  = 0
                 torch.save(
                     {"epoch": epoch, "state_dict": model.state_dict(),
+                     "optimizer": optimizer.state_dict(),
+                     "scheduler": scheduler.state_dict(),
+                     "scaler": scaler.state_dict(),
+                     "best_val": best_val, "no_impr": no_impr,
                      "val_loss": avg_val, "val_ic": avg_ic, "history": history},
                     ckpt_path,
                 )
@@ -692,6 +696,10 @@ def train_model(
                 no_impr  = 0
                 torch.save(
                     {"epoch": epoch, "state_dict": model.state_dict(),
+                     "optimizer": optimizer.state_dict(),
+                     "scheduler": scheduler.state_dict(),
+                     "scaler": scaler.state_dict(),
+                     "best_val": best_val, "no_impr": no_impr,
                      "val_loss": avg_val, "val_ic": avg_ic, "history": history},
                     ckpt_path,
                 )
