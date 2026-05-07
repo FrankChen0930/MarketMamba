@@ -455,6 +455,7 @@ def live_plot(history, epoch, epochs):
 
 # ── Train ──
 print("\n🚀 Starting training...")
+print(f"   ⚡ Checkpoints auto-backup to Drive on every IC improvement")
 model, history = train_model(
     df              = df,
     train_dates     = train_dates,
@@ -464,6 +465,7 @@ model, history = train_model(
     checkpoint_name = "v6_final.pt",
     on_epoch_end    = live_plot,
     ic_mode         = True,
+    checkpoint_backup_dir = DRIVE_CKPT_DIR,   # ← immediate Drive backup!
 )
 
 # ── Save summary ──
@@ -472,13 +474,7 @@ print(f"\n✅ Training complete!")
 print(f"   Best Epoch: {history.best_epoch} / {len(history.train_loss)}")
 print(f"   Val Loss:   {history.best_val_loss:.5f}")
 print(f"   Best IC:    {max(history.val_ic):+.4f}")
-
-# Auto-backup checkpoint to Drive
-import shutil
-ckpt = MODELS_DIR / "v6_final.pt"
-if ckpt.exists():
-    shutil.copy(str(ckpt), f"{DRIVE_CKPT_DIR}/v6_final.pt")
-    print(f"   ✅ Checkpoint backed up to Drive")
+print(f"   Checkpoint: {DRIVE_CKPT_DIR}/v6_final.pt (already on Drive)")
 
 
 # %% Cell 4b: Resume Training (run this instead of Cell 4 after reconnect)

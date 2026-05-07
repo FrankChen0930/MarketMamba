@@ -516,6 +516,7 @@ def train_model(
     device_str:      str   = "cuda" if torch.cuda.is_available() else "cpu",
     on_epoch_end     = None,   # optional callback(history, epoch, epochs)
     ic_mode:         bool  = True,   # if True, early stop on IC; if False, on val_loss
+    checkpoint_backup_dir: str | None = None,  # Drive path for immediate backup on save
 ) -> tuple[MarketMambaV6, TrainingHistory]:
     """
     Train MarketMamba V6 on a (train_dates, val_dates) split.
@@ -683,7 +684,15 @@ def train_model(
                      "val_loss": avg_val, "val_ic": avg_ic, "history": history},
                     ckpt_path,
                 )
-                print(f"  ✅ Checkpoint saved (IC={avg_ic:+.4f}) → {ckpt_path.name}", flush=True)
+                # Immediate backup to Drive (survives Colab disconnect)
+                if checkpoint_backup_dir:
+                    import shutil, os
+                    os.makedirs(checkpoint_backup_dir, exist_ok=True)
+                    _bak = os.path.join(checkpoint_backup_dir, checkpoint_name)
+                    shutil.copy(str(ckpt_path), _bak)
+                    print(f"  ✅ Checkpoint saved (IC={avg_ic:+.4f}) → {ckpt_path.name} + Drive", flush=True)
+                else:
+                    print(f"  ✅ Checkpoint saved (IC={avg_ic:+.4f}) → {ckpt_path.name}", flush=True)
             else:
                 no_impr += 1
                 if no_impr >= early_stop:
@@ -703,7 +712,14 @@ def train_model(
                      "val_loss": avg_val, "val_ic": avg_ic, "history": history},
                     ckpt_path,
                 )
-                print(f"  ✅ Checkpoint saved → {ckpt_path.name}", flush=True)
+                if checkpoint_backup_dir:
+                    import shutil, os
+                    os.makedirs(checkpoint_backup_dir, exist_ok=True)
+                    _bak = os.path.join(checkpoint_backup_dir, checkpoint_name)
+                    shutil.copy(str(ckpt_path), _bak)
+                    print(f"  ✅ Checkpoint saved → {ckpt_path.name} + Drive", flush=True)
+                else:
+                    print(f"  ✅ Checkpoint saved → {ckpt_path.name}", flush=True)
             else:
                 no_impr += 1
                 if no_impr >= early_stop:
