@@ -537,6 +537,8 @@ def _merge_foreign_shareholding(df: pd.DataFrame, df_fs: pd.DataFrame | None) ->
         return df
 
     fs = df_fs.copy()
+    if "date" in fs.columns and "Date" not in fs.columns:
+        fs.rename(columns={"date": "Date"}, inplace=True)
     fs["Date"] = pd.to_datetime(fs["Date"])
 
     # Find percentage column
@@ -576,6 +578,8 @@ def _merge_dividend_feature(df: pd.DataFrame, df_div: pd.DataFrame | None) -> pd
         return df
 
     div = df_div.copy()
+    if "date" in div.columns and "Date" not in div.columns:
+        div.rename(columns={"date": "Date"}, inplace=True)
     div["Date"] = pd.to_datetime(div["Date"])
 
     # Find cash dividend column
@@ -819,6 +823,8 @@ def _merge_macro(
             # Monthly data — as-of merge
             bi = bi.sort_values("Date")
             bi_dedup = bi.drop_duplicates(subset=["Date"], keep="last")
+            bi_dedup["Date"] = bi_dedup["Date"].astype("datetime64[ns]")
+            df["Date"] = df["Date"].astype("datetime64[ns]")
             df = pd.merge_asof(df.sort_values("Date"), bi_dedup[["Date", "Business_Signal"]],
                                on="Date", direction="backward", suffixes=("", "_bi"))
             if "Business_Signal_bi" in df.columns:
@@ -837,6 +843,8 @@ def _merge_macro(
             fr["FED_Rate"] = pd.to_numeric(fr[rate_col[0]], errors="coerce")
             fr = fr.sort_values("Date")
             fr_dedup = fr.drop_duplicates(subset=["Date"], keep="last")
+            fr_dedup["Date"] = fr_dedup["Date"].astype("datetime64[ns]")
+            df["Date"] = df["Date"].astype("datetime64[ns]")
             df = pd.merge_asof(df.sort_values("Date"), fr_dedup[["Date", "FED_Rate"]],
                                on="Date", direction="backward", suffixes=("", "_fr"))
             if "FED_Rate_fr" in df.columns:
