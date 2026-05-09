@@ -85,7 +85,9 @@ def run_inference(
             "Please train V6 first using V6/notebooks/V6_Training.py on Colab."
         )
 
-    ckpt = torch.load(model_path, map_location=device)
+    from marketmamba.models.trainer import TrainingHistory
+    torch.serialization.add_safe_globals([TrainingHistory])
+    ckpt = torch.load(model_path, map_location=device, weights_only=False)
     model = MarketMambaV6()
     model.load_state_dict(ckpt["state_dict"])
     model.to(device).eval()
@@ -270,6 +272,7 @@ def main(target_date: str | None = None, skip_push: bool = False) -> None:
         path = PROCESSED_DIR / name
         return pd.read_parquet(path) if path.exists() else None
 
+    # V6.0 core sources
     prices       = _read("prices_raw.parquet")
     inst         = _read("institutional_raw.parquet")
     margin       = _read("margin_raw.parquet")
@@ -280,6 +283,18 @@ def main(target_date: str | None = None, skip_push: bool = False) -> None:
     financials   = _read("financials_raw.parquet")
     balance_sheet = _read("balance_sheet_raw.parquet")
     macro        = _read("macro_raw.parquet")
+
+    # V6.1 additional sources
+    securities   = _read("securities_raw.parquet")
+    holdings     = _read("holdings_raw.parquet")
+    cashflow     = _read("cashflow_raw.parquet")
+    dividend     = _read("dividend_raw.parquet")
+    foreign_shareholding = _read("foreign_shareholding_raw.parquet")
+    fear_greed   = _read("fear_greed.parquet")
+    business_indicator = _read("business_indicator.parquet")
+    fed_rate     = _read("fed_rate.parquet")
+    futures_inst = _read("futures_institutional_raw.parquet")
+    options_inst = _read("options_institutional_raw.parquet")
 
     if prices is None:
         raise FileNotFoundError(f"prices_raw.parquet not found in {PROCESSED_DIR}")
@@ -293,18 +308,43 @@ def main(target_date: str | None = None, skip_push: bool = False) -> None:
     logger.info(f"Prices trimmed to last 2y: {len(prices):,} rows "
                 f"({prices['Date'].min().date()} → {prices['Date'].max().date()})")
 
+    # Trim other time-series data to same window (save memory)
+    def _trim(df_src):
+        if df_src is None: return None
+        if "Date" in df_src.columns:
+            df_src["Date"] = pd.to_datetime(df_src["Date"])
+            return df_src[df_src["Date"] >= cutoff].copy()
+        return df_src
+
+    inst     = _trim(inst)
+    margin   = _trim(margin)
+    daytrade = _trim(daytrade)
+    holdings = _trim(holdings)
+    securities = _trim(securities)
+    foreign_shareholding = _trim(foreign_shareholding)
 
     df = build_features(
-        df_price=prices,
-        df_inst=inst,
-        df_margin=margin,
-        df_per=per,
-        df_market_value=market_value,
-        df_daytrade=daytrade,
-        df_rev=revenue,
-        df_fin=financials,
-        df_balance_sheet=balance_sheet,
-        df_macro=macro,
+        df_price         = prices,
+        df_inst          = inst,
+        df_margin        = margin,
+        df_per           = per,
+        df_securities    = securities,
+        df_market_value  = market_value,
+        df_daytrade      = daytrade,
+        df_holdings      = holdings,
+        df_rev           = revenue,
+        df_fin           = financials,
+        df_balance_sheet = balance_sheet,
+        df_cashflow      = cashflow,
+        df_macro         = macro,
+        # V6.1 new data sources
+        df_futures_inst  = futures_inst,
+        df_options_inst  = options_inst,
+        df_dividend      = dividend,
+        df_foreign_shareholding = foreign_shareholding,
+        df_fear_greed    = fear_greed,
+        df_business_indicator = business_indicator,
+        df_fed_rate      = fed_rate,
     )
     df = clean_and_scale(df)
     # Deduplicate: institutional_raw is long-format (4 rows/stock/date) → 4x duplication
