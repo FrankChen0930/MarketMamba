@@ -227,11 +227,13 @@ async def run_inference():
 @router.post("/cache/refresh", response_model=InferenceStatus)
 async def refresh_cache():
     """強制重新從 GitHub 載入最新結果（PersonalOS push 完後呼叫）"""
-    global _cache, _cache_time, _history_cache, _history_cache_time
+    global _cache, _cache_time, _history_cache, _history_cache_time, _scanner_cache, _scanner_cache_time
     _cache = None
     _cache_time = None
     _history_cache = None
     _history_cache_time = None
+    _scanner_cache = None
+    _scanner_cache_time = None
     result = await _load_from_github()
     if result:
         return InferenceStatus(status="ok", message=f"Refreshed: {result.total_stocks} signals for {result.date}")
