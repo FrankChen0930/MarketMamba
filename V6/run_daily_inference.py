@@ -434,6 +434,8 @@ def _push_to_github(results_dir: Path, date_str: str) -> bool:
              "V6/results/df_kelly.csv",
              "V6/results/df_traj.csv",
              "V6/results/market_summary.json",
+             "V6/results/action_signals.json",
+             "V6/results/history_index.json",
              "V6/results/archive/"],   # push archived history too
 
             cwd=repo_root, check=True, capture_output=True, env=git_env,

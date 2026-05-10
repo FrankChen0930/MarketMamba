@@ -154,6 +154,8 @@ async def get_scanner_signals():
             and datetime.now() - _scanner_cache_time < CACHE_TTL):
         return _scanner_cache
 
+    data = None
+
     # Try GitHub first (production)
     if GITHUB_SCANNER_URL:
         try:
@@ -162,29 +164,48 @@ async def get_scanner_signals():
                 r = await client.get(GITHUB_SCANNER_URL)
                 if r.status_code == 200:
                     data = r.json()
-                    _scanner_cache = data
-                    _scanner_cache_time = datetime.now()
                     logger.info(f"Scanner signals loaded from GitHub: {len(data.get('buy_signals',[]))} BUY")
-                    return data
-                logger.warning(f"action_signals.json fetch failed: {r.status_code}")
+                else:
+                    logger.warning(f"action_signals.json fetch failed: {r.status_code}")
         except Exception as e:
             logger.warning(f"Scanner GitHub load error: {e}")
 
     # Fallback: local file (dev mode)
-    if _LOCAL_SCANNER_PATH.exists():
+    if data is None and _LOCAL_SCANNER_PATH.exists():
         try:
             import json as _json
             with open(_LOCAL_SCANNER_PATH, encoding="utf-8") as f:
                 data = _json.load(f)
-            _scanner_cache = data
-            _scanner_cache_time = datetime.now()
             logger.info(f"Scanner signals loaded from local: {len(data.get('buy_signals',[]))} BUY")
-            return data
         except Exception as e:
             logger.warning(f"Scanner local load error: {e}")
 
-    return {"buy_signals": [], "exit_signals": [], "watch_list": [],
-            "date": None, "market_regime": "UNKNOWN"}
+    if data is None:
+        return {"buy_signals": [], "exit_signals": [], "watch_list": [],
+                "date": None, "market_regime": "UNKNOWN"}
+
+    # Enrich with stock names
+    data = await _enrich_scanner_names(data)
+    _scanner_cache = data
+    _scanner_cache_time = datetime.now()
+    return data
+
+
+async def _enrich_scanner_names(data: dict) -> dict:
+    """Add stock names to scanner signal entries."""
+    try:
+        from stock_info import get_stock_info, get_stock_name, get_stock_sector
+        info = await get_stock_info()
+
+        for section in ("buy_signals", "exit_signals", "watch_list"):
+            for item in data.get(section, []):
+                ticker = item.get("ticker", "")
+                if ticker and "name" not in item:
+                    item["name"] = get_stock_name(ticker, info)
+                    item["sector"] = get_stock_sector(ticker, info)
+    except Exception as e:
+        logger.warning(f"Scanner name enrichment failed (non-fatal): {e}")
+    return data
 
 
 @router.get("/{date}", response_model=SignalsResponse)
