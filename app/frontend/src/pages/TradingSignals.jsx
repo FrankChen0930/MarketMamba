@@ -48,7 +48,9 @@ function SignalCard({ signal, type, onClick }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
           <div>
             <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>
-              {signal.ticker}
+              {signal.name && signal.name !== signal.ticker ? (
+                <>{signal.name} <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 400 }}>{signal.ticker}</span></>
+              ) : signal.ticker}
               <span style={{
                 marginLeft: 8, fontSize: 11,
                 color: isBuy ? 'var(--positive)' : isExit ? 'var(--negative)' : 'var(--accent-amber)',
@@ -247,7 +249,7 @@ export default function TradingSignals() {
               {buySignals.map((s, i) => (
                 <div key={s.ticker} style={{ animationDelay: `${i * 0.05}s` }}>
                   <SignalCard signal={s} type="buy" onClick={() => setSelectedStock({
-                    stock_id: s.ticker, name: s.ticker, sector: '—',
+                    stock_id: s.ticker, name: s.name || s.ticker, sector: s.sector || '—',
                     alpha_5d: 0, alpha_20d: s.alpha_20d, alpha_60d: 0,
                     uncertainty: s.uncertainty, vol_ratio: 1, signal: 'BUY',
                     suggested_weight: s.suggested_weight, confidence: s.confidence,
@@ -298,7 +300,7 @@ export default function TradingSignals() {
             {watchList.map((s, i) => (
               <div key={s.ticker} style={{ animationDelay: `${i * 0.05}s` }}>
                 <SignalCard signal={s} type="watch" onClick={() => setSelectedStock({
-                  stock_id: s.ticker, name: s.ticker, sector: '—',
+                  stock_id: s.ticker, name: s.name || s.ticker, sector: s.sector || '—',
                   alpha_5d: 0, alpha_20d: s.alpha_20d, alpha_60d: 0,
                   uncertainty: s.uncertainty, vol_ratio: 1, signal: 'HOLD',
                   suggested_weight: s.suggested_weight, confidence: s.confidence,
