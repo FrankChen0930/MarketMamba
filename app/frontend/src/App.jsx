@@ -8,6 +8,7 @@ import MarketView   from './pages/MarketView';
 import Portfolio    from './pages/Portfolio';
 import ModelStatus  from './pages/ModelStatus';
 import InvestmentSim from './pages/InvestmentSim';
+import TradingSignals from './pages/TradingSignals';
 
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
           <Route path="portfolio"   element={<Portfolio />} />
           <Route path="model"       element={<ModelStatus />} />
           <Route path="sim"         element={<InvestmentSim />} />
+          <Route path="scanner"     element={<TradingSignals />} />
 
         </Route>
       </Routes>

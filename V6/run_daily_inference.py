@@ -387,10 +387,22 @@ def main(target_date: str | None = None, skip_push: bool = False) -> None:
         logger.warning(f"LLM report skipped: {e}")
 
     # -- Step 5a: Archive (rolling 90-day history) --
-    logger.info("\n[Step 5/5] Archiving + pushing results...")
+    logger.info("\n[Step 5/6] Archiving results...")
     _archive_results(df_kelly, today)
 
-    # -- Step 5b: Push to GitHub (backend auto-updates) --
+    # -- Step 5b: Signal Scanner --
+    logger.info("\n[Step 6/6] Running Signal Scanner...")
+    try:
+        from marketmamba.signals.scanner import run_scan
+        scan_result = run_scan(df_kelly_path=RESULTS_DIR / "df_kelly.csv")
+        n_buy = len(scan_result.get("buy_signals", []))
+        n_exit = len(scan_result.get("exit_signals", []))
+        n_watch = len(scan_result.get("watch_list", []))
+        logger.info(f"  Scanner: {n_buy} BUY · {n_exit} EXIT · {n_watch} WATCH")
+    except Exception as e:
+        logger.warning(f"Signal Scanner failed (non-fatal): {e}")
+
+    # -- Push to GitHub (backend auto-updates) --
     if not skip_push:
         pushed = _push_to_github(RESULTS_DIR, today)
         if pushed:
@@ -504,8 +516,8 @@ def _archive_results(df_kelly: pd.DataFrame, date_str: str) -> None:
 def _update_history_index(df_kelly: pd.DataFrame, date_str: str) -> None:
     """
     Maintain V6/results/history_index.json — a lightweight log of each
-    rebalancing day (top 10 positions only). Served by the backend as the
-    timeline on the Investment Sim page.
+    rebalancing day (top 50 positions). Used by the Signal Scanner for
+    rank stability tracking and by the Investment Sim page.
     """
     history_path = RESULTS_DIR / "history_index.json"
 
@@ -521,20 +533,22 @@ def _update_history_index(df_kelly: pd.DataFrame, date_str: str) -> None:
     # Remove today if already present (idempotent)
     history = [h for h in history if h.get("date") != date_str]
 
-    # Build today's entry — top 10 by Sharpe, exclude penalised rows
+    # Build today's entry — top 50 by Sharpe for scanner rank stability
     investable = df_kelly[df_kelly["Exp_Alpha_20d"] > -999]
-    top10 = investable.head(10)
+    top50 = investable.head(50)
 
-    cols_needed = ["Ticker", "Exp_Alpha_20d", "Sharpe_Score", "Confidence", "Suggested_Weight"]
-    available   = [c for c in cols_needed if c in top10.columns]
+    cols_needed = ["Ticker", "Exp_Alpha_20d", "Sharpe_Score", "Confidence", "Suggested_Weight", "Uncertainty"]
+    available   = [c for c in cols_needed if c in top50.columns]
     portfolio   = []
-    for _, row in top10[available].iterrows():
+    for i, (_, row) in enumerate(top50[available].iterrows()):
         portfolio.append({
+            "rank":       i + 1,
             "ticker":     str(row.get("Ticker", "")),
             "alpha":      round(float(row.get("Exp_Alpha_20d", 0)), 6),
             "sharpe":     round(float(row.get("Sharpe_Score",  0)), 3),
             "confidence": str(row.get("Confidence", "")),
             "weight":     round(float(row.get("Suggested_Weight", 0)), 4),
+            "uncertainty":round(float(row.get("Uncertainty", 0)), 6),
         })
 
     entry = {

@@ -145,6 +145,48 @@ async def get_signals(
     )
 
 
+@router.get("/scanner")
+async def get_scanner_signals():
+    """交易訊號掃描 — 入場/退場/觀察信號"""
+    global _scanner_cache, _scanner_cache_time
+
+    if (_scanner_cache and _scanner_cache_time
+            and datetime.now() - _scanner_cache_time < CACHE_TTL):
+        return _scanner_cache
+
+    # Try GitHub first (production)
+    if GITHUB_SCANNER_URL:
+        try:
+            import httpx
+            async with httpx.AsyncClient(timeout=10) as client:
+                r = await client.get(GITHUB_SCANNER_URL)
+                if r.status_code == 200:
+                    data = r.json()
+                    _scanner_cache = data
+                    _scanner_cache_time = datetime.now()
+                    logger.info(f"Scanner signals loaded from GitHub: {len(data.get('buy_signals',[]))} BUY")
+                    return data
+                logger.warning(f"action_signals.json fetch failed: {r.status_code}")
+        except Exception as e:
+            logger.warning(f"Scanner GitHub load error: {e}")
+
+    # Fallback: local file (dev mode)
+    if _LOCAL_SCANNER_PATH.exists():
+        try:
+            import json as _json
+            with open(_LOCAL_SCANNER_PATH, encoding="utf-8") as f:
+                data = _json.load(f)
+            _scanner_cache = data
+            _scanner_cache_time = datetime.now()
+            logger.info(f"Scanner signals loaded from local: {len(data.get('buy_signals',[]))} BUY")
+            return data
+        except Exception as e:
+            logger.warning(f"Scanner local load error: {e}")
+
+    return {"buy_signals": [], "exit_signals": [], "watch_list": [],
+            "date": None, "market_regime": "UNKNOWN"}
+
+
 @router.get("/{date}", response_model=SignalsResponse)
 async def get_signals_by_date(date: str):
     """指定日期訊號（目前只保存最新一次）"""
@@ -203,3 +245,17 @@ async def get_rebalance_history():
         logger.warning(f"History load error: {e}")
 
     return {"history": [], "last_updated": None}
+
+
+# ── Scanner Signals ────────────────────────────────────────────────────────────
+
+GITHUB_SCANNER_URL = GITHUB_RESULTS_URL.replace("df_kelly.csv", "action_signals.json") if GITHUB_RESULTS_URL else ""
+
+# Local fallback for dev mode
+import pathlib as _pathlib
+_LOCAL_SCANNER_PATH = _pathlib.Path(__file__).resolve().parent.parent.parent.parent / "V6" / "results" / "action_signals.json"
+
+_scanner_cache: Optional[dict] = None
+_scanner_cache_time: Optional[datetime] = None
+
+

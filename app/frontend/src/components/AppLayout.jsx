@@ -6,6 +6,7 @@ const USER_MODE = import.meta.env.VITE_USER_MODE || 'personal';
 
 const TABS = [
   { to: '/',         icon: '📊', label: '今日選股' },
+  { to: '/scanner',  icon: '🎯', label: '交易訊號' },
   { to: '/quant',    icon: '📈', label: '量化分析' },
   { to: '/market',   icon: '🤖', label: 'AI 日報' },
   { to: '/sim',      icon: '🎮', label: '模擬機器人' },
