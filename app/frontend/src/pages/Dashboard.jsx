@@ -76,7 +76,7 @@ export default function Dashboard() {
   const { data: market, loading: mktLoading } = useApi(fetchMarket);
 
   const signals    = signalData?.signals || [];
-  const topSignals = signals.filter(s => s.alpha_20d > 0).slice(0, 15);
+  const topSignals = signals.filter(s => s.alpha_20d > 0).slice(0, 50);
   const botSignals = signals.filter(s => s.alpha_20d < 0).slice(0, 8);
   const displayed  = activeTab === 'top' ? topSignals : botSignals;
 
@@ -143,7 +143,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── Main Area ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 330px', gap: 16, alignItems: 'start' }}>
+      <div className="dashboard-main-grid">
 
         {/* Signal Table */}
         <div className="panel">
