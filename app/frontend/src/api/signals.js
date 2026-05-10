@@ -12,3 +12,5 @@ export const runInference = () =>
 export const fetchRebalanceHistory = () =>
   client.get('/signals/history').then((r) => r.data);
 
+export const fetchScannerSignals = () =>
+  client.get('/signals/scanner').then((r) => r.data);
