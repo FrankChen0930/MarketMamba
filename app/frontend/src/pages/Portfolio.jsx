@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import { useApi } from '../hooks/useApi';
 import { fetchPortfolio } from '../api/portfolio';
+import { fetchScannerSignals } from '../api/signals';
 import { SkeletonCard, SkeletonBlock, ApiError } from '../components/SkeletonLoader';
 
 const COLORS = ['var(--accent-blue)', 'var(--positive)', 'var(--accent-amber)', 'var(--accent-purple)'];
@@ -51,9 +52,15 @@ function buildPnlHistory(positions) {
 
 export default function Portfolio() {
   const { data: portfolio, loading, error, refetch } = useApi(fetchPortfolio);
+  const { data: scannerData } = useApi(fetchScannerSignals);
   const positions = portfolio?.positions || [];
   const totalPnl  = portfolio?.total_pnl ?? 0;
   const pnlHistory = buildPnlHistory(positions);
+
+  // Cross-reference exit signals with holdings
+  const exitSignals = scannerData?.exit_signals || [];
+  const exitTickers = new Set(exitSignals.map(e => e.ticker));
+  const holdingExits = exitSignals.filter(e => positions.some(p => p.stock_id === e.ticker));
 
   // Pie chart data
   const pieData = positions.map((p, i) => ({
@@ -191,6 +198,9 @@ export default function Portfolio() {
                     <span className={`badge ${p.model_signal === 'BUY' ? 'badge-positive' : p.model_signal === 'SELL' ? 'badge-negative' : 'badge-neutral'}`}>
                       {p.model_signal}
                     </span>
+                    {exitTickers.has(p.stock_id) && (
+                      <span style={{ marginLeft: 6, fontSize: 10, color: 'var(--negative)', fontWeight: 600 }}>🔴 退場</span>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -198,6 +208,34 @@ export default function Portfolio() {
           </table>
         </div>
       </div>
+
+      {/* Exit Signals Panel */}
+      {holdingExits.length > 0 && (
+        <div className="panel" style={{ borderColor: 'rgba(255,71,87,0.3)', background: 'rgba(255,71,87,0.04)' }}>
+          <div className="panel-header">
+            <div className="panel-title"><span>🔴</span> 退場警告</div>
+            <span className="badge badge-negative">{holdingExits.length} 檔觸發</span>
+          </div>
+          <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {holdingExits.map(e => (
+              <div key={e.ticker} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 14px', background: 'rgba(255,71,87,0.06)', borderRadius: 8, border: '1px solid rgba(255,71,87,0.15)' }}>
+                <div>
+                  <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                    {positions.find(p => p.stock_id === e.ticker)?.name || e.ticker}
+                  </span>
+                  <span className="mono" style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>{e.ticker}</span>
+                </div>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  {e.reasons?.map((r, i) => (
+                    <span key={i} style={{ fontSize: 12, color: 'var(--negative)' }}>🔴 {r}</span>
+                  ))}
+                  {e.current_rank && <span className="mono" style={{ fontSize: 11, color: 'var(--text-muted)' }}>Rank #{e.current_rank}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Disclaimer */}
       <div className="panel" style={{ borderColor: 'rgba(255,165,0,0.3)', background: 'rgba(255,165,0,0.04)' }}>
