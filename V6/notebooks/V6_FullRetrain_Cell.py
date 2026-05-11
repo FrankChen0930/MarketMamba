@@ -128,7 +128,9 @@ else:
     FINAL_EPOCHS   = 100
     EARLY_STOP_IC  = 15
 
-N_SAMPLE_TRAIN = None   # All stocks. If OOM → set 2000
+N_SAMPLE_TRAIN = 2000   # Sample 2000 stocks per batch to prevent OOM
+                        # Full Retrain uses ALL dates (incl. 2024-2026) which have more
+                        # listed stocks per cross-section → needs sampling to fit in GPU memory
 
 from marketmamba import config as _cfg
 _cfg.N_SAMPLE_TRAIN = N_SAMPLE_TRAIN
