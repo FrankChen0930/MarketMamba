@@ -1,148 +1,229 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApi } from '../hooks/useApi';
 import { fetchScannerSignals } from '../api/signals';
-import MetricTooltip from '../components/MetricTooltip';
 import StockModal from '../components/StockModal';
 import { SkeletonCard, SkeletonBlock, ApiError } from '../components/SkeletonLoader';
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Entry Rules Modal ────────────────────────────────────────────────────────
 
-function ConditionDot({ met, label, metricKey }) {
+function EntryRulesModal({ regime, onClose }) {
+  useEffect(() => {
+    const h = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [onClose]);
+
+  const S = { section: { marginBottom: 20 }, th: { fontSize: 12, color: 'var(--text-muted)', padding: '8px 12px', borderBottom: '1px solid var(--border)', textAlign: 'left' }, td: { fontSize: 12, padding: '8px 12px', borderBottom: '1px solid rgba(48,54,61,0.4)' } };
+
   return (
-    <div style={{
-      display: 'flex', alignItems: 'center', gap: 5,
-      fontSize: 12, color: met ? 'var(--positive)' : 'var(--text-muted)',
-    }}>
-      <span style={{ fontSize: 13 }}>{met ? '✅' : '❌'}</span>
-      <span>{label}</span>
-      <MetricTooltip metricKey={metricKey} />
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div onClick={e => e.stopPropagation()} className="panel" style={{ width: 600, maxWidth: '90vw', maxHeight: '85vh', overflowY: 'auto', border: '1px solid var(--border-bright)', boxShadow: 'var(--shadow-glow-blue)', animation: 'fadeInUp 0.2s ease forwards' }}>
+        <div className="panel-header" style={{ justifyContent: 'space-between' }}>
+          <div style={{ fontSize: 16, fontWeight: 700 }}>📋 入場 / 退場規則</div>
+          <button onClick={onClose} className="btn btn-ghost" style={{ padding: '4px 10px', fontSize: 16, lineHeight: 1 }}>✕</button>
+        </div>
+        <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+
+          {/* Entry conditions */}
+          <div style={S.section}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--positive)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span>🟢</span> 入場條件（滿足 {regime === 'CAUTIOUS' ? '3' : '2'}/4 觸發推薦）
+            </div>
+            <table className="data-table" style={{ width: '100%' }}>
+              <thead><tr><th style={S.th}>#</th><th style={S.th}>條件</th><th style={S.th}>判斷邏輯</th><th style={S.th}>資料來源</th></tr></thead>
+              <tbody>
+                {[
+                  ['1', '排名穩定性', 'Top 10 連續 ≥2 天 或 Top 50 連續 ≥3 天', 'history_index.json'],
+                  ['2', '高信心', 'Uncertainty < 0.02（MC-Dropout）', 'df_kelly.csv'],
+                  ['3', '相對低點', 'RSI < 40 或 當前價 < 20日均線', 'prices_raw.parquet'],
+                  ['4', '機構淨買入', '外資/投信 連續 2 天淨買入', 'institutional_raw.parquet'],
+                ].map(([n, name, logic, src]) => (
+                  <tr key={n}>
+                    <td style={{ ...S.td, color: 'var(--accent-amber)', fontWeight: 600 }}>{n}</td>
+                    <td style={{ ...S.td, fontWeight: 600, color: 'var(--text-primary)' }}>{name}</td>
+                    <td style={{ ...S.td, color: 'var(--text-secondary)', fontSize: 11 }}>{logic}</td>
+                    <td style={{ ...S.td, fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)' }}>{src}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Market regime */}
+          <div style={S.section}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent-amber)', marginBottom: 8 }}>🌐 大盤環境過濾</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              {[
+                { env: 'TWII > 60日均線', label: '正常市場', threshold: '滿足 2/4 即推薦', active: regime !== 'CAUTIOUS' },
+                { env: 'TWII < 60日均線', label: '保守模式', threshold: '需滿足 3/4 才推薦', active: regime === 'CAUTIOUS' },
+              ].map(r => (
+                <div key={r.label} style={{ padding: '10px 14px', borderRadius: 8, background: r.active ? 'rgba(0,212,255,0.06)' : 'var(--bg-panel-2)', border: r.active ? '1px solid rgba(0,212,255,0.3)' : '1px solid transparent' }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{r.env}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: r.active ? 'var(--accent-blue)' : 'var(--text-secondary)' }}>{r.label}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{r.threshold}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="divider" />
+
+          {/* Exit conditions */}
+          <div style={S.section}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--negative)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span>🔴</span> 退場條件（任一觸發）
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {[
+                { cond: 'Alpha 排名連續 2 天掉出 Top 50', action: '🔴 退場' },
+                { cond: '觸及 Trailing Stop', action: '🔴 退場' },
+                { cond: '外資連續 3 天淨賣出', action: '⚠️ 減碼觀察' },
+                { cond: '大盤跌破 60MA', action: '⚠️ 全倉減碼至 50%' },
+              ].map(r => (
+                <div key={r.cond} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '6px 12px', background: 'rgba(255,71,87,0.04)', borderRadius: 6 }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>{r.cond}</span>
+                  <span style={{ color: 'var(--negative)', fontWeight: 600, flexShrink: 0, marginLeft: 12 }}>{r.action}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Trailing Stop */}
+          <div style={S.section}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent-amber)', marginBottom: 8 }}>📉 Trailing Stop 機制</div>
+            <table className="data-table" style={{ width: '100%' }}>
+              <thead><tr><th style={S.th}>持倉報酬</th><th style={S.th}>止損線位置</th></tr></thead>
+              <tbody>
+                {[['< +5%', '固定 -5%（成本價）'], ['≥ +5%', '成本 +2%（鎖利）'], ['≥ +10%', '成本 +6%'], ['≥ +15%', '成本 +10%']].map(([ret, stop]) => (
+                  <tr key={ret}><td style={S.td}>{ret}</td><td style={{ ...S.td, color: 'var(--accent-amber)', fontFamily: 'var(--font-mono)' }}>{stop}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Position sizing */}
+          <div style={S.section}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent-blue)', marginBottom: 8 }}>💰 部位管理</div>
+            <table className="data-table" style={{ width: '100%' }}>
+              <thead><tr><th style={S.th}>Sharpe Score</th><th style={S.th}>建議配置</th></tr></thead>
+              <tbody>
+                {[['> 3（高）', '15-20% 資金'], ['1-3（中）', '5-10% 資金'], ['< 1（低）', '不買']].map(([s, alloc]) => (
+                  <tr key={s}><td style={S.td}>{s}</td><td style={{ ...S.td, fontWeight: 600 }}>{alloc}</td></tr>
+                ))}
+              </tbody>
+            </table>
+            <div style={{ fontSize: 11, color: 'var(--accent-amber)', marginTop: 8, padding: '6px 10px', background: 'rgba(255,165,0,0.06)', borderRadius: 6 }}>
+              ⚠️ 同一產業（sector）不超過 30% 總部位，避免集中風險
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
-function SignalCard({ signal, type, onClick }) {
-  const isBuy = type === 'buy';
-  const isExit = type === 'exit';
-  const borderColor = isBuy ? 'rgba(0,255,136,0.25)' : isExit ? 'rgba(255,71,87,0.25)' : 'var(--border)';
-  const bgTint = isBuy ? 'rgba(0,255,136,0.03)' : isExit ? 'rgba(255,71,87,0.03)' : 'transparent';
 
+// ── Signal Card (Buy) ────────────────────────────────────────────────────────
+
+function SignalCard({ signal, onClick }) {
   return (
-    <div
-      className="panel animate-fade-up"
-      onClick={onClick}
-      style={{
-        borderColor, background: bgTint,
-        cursor: 'pointer', transition: 'all 0.2s',
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = isBuy ? 'rgba(0,255,136,0.5)' : isExit ? 'rgba(255,71,87,0.5)' : 'var(--border-bright)';
-        e.currentTarget.style.boxShadow = isBuy ? 'var(--shadow-glow-green)' : isExit ? '0 0 20px rgba(255,71,87,0.15)' : 'var(--shadow-glow-blue)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = borderColor;
-        e.currentTarget.style.boxShadow = 'none';
-      }}
+    <div className="panel animate-fade-up" onClick={onClick}
+      style={{ borderColor: 'rgba(0,255,136,0.25)', background: 'rgba(0,255,136,0.03)', cursor: 'pointer', transition: 'all 0.2s' }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,255,136,0.5)'; e.currentTarget.style.boxShadow = 'var(--shadow-glow-green)'; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(0,255,136,0.25)'; e.currentTarget.style.boxShadow = 'none'; }}
     >
       <div className="panel-body" style={{ padding: '16px 20px' }}>
-        {/* Top row: ticker + alpha */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
           <div>
             <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>
-              {signal.name && signal.name !== signal.ticker ? (
-                <>{signal.name} <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 400 }}>{signal.ticker}</span></>
-              ) : signal.ticker}
-              <span style={{
-                marginLeft: 8, fontSize: 11,
-                color: isBuy ? 'var(--positive)' : isExit ? 'var(--negative)' : 'var(--accent-amber)',
-                background: isBuy ? 'rgba(0,255,136,0.1)' : isExit ? 'rgba(255,71,87,0.1)' : 'rgba(255,165,0,0.1)',
-                padding: '2px 8px', borderRadius: 99,
-                fontFamily: 'var(--font-mono)', fontWeight: 600,
-              }}>
-                {isBuy ? '買入推薦' : isExit ? '退場警告' : '觀察中'}
-              </span>
+              {signal.name && signal.name !== signal.ticker ? <>{signal.name} <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 400 }}>{signal.ticker}</span></> : signal.ticker}
+              <span style={{ marginLeft: 8, fontSize: 11, color: 'var(--positive)', background: 'rgba(0,255,136,0.1)', padding: '2px 8px', borderRadius: 99, fontFamily: 'var(--font-mono)', fontWeight: 600 }}>買入推薦</span>
             </div>
-            {signal.confidence && (
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
-                {signal.confidence} · 滿足 {signal.conditions_met}/{signal.conditions_total} 條件
-              </div>
-            )}
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+              {signal.confidence} · 滿足 {signal.conditions_met}/{signal.conditions_total} 條件
+            </div>
           </div>
           {signal.alpha_20d != null && (
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Alpha 20d <MetricTooltip metricKey="alpha" />
-              </div>
-              <div className="mono" style={{
-                fontSize: 20, fontWeight: 700,
-                color: signal.alpha_20d >= 0 ? 'var(--positive)' : 'var(--negative)',
-              }}>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Alpha 20d</div>
+              <div className="mono" style={{ fontSize: 20, fontWeight: 700, color: signal.alpha_20d >= 0 ? 'var(--positive)' : 'var(--negative)' }}>
                 {signal.alpha_20d >= 0 ? '+' : ''}{(signal.alpha_20d * 100).toFixed(1)}%
               </div>
             </div>
           )}
         </div>
-
         {/* Conditions grid */}
         {signal.rank_stability && (
-          <div style={{
-            display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px',
-            padding: '10px 14px', background: 'var(--bg-panel-2)',
-            borderRadius: 'var(--radius-sm)', marginBottom: 12,
-          }}>
-            <ConditionDot met={signal.rank_stability?.met} label={signal.rank_stability?.detail} metricKey="rank_stability" />
-            <ConditionDot met={signal.high_confidence?.met} label={signal.high_confidence?.detail} metricKey="high_confidence" />
-            <ConditionDot met={signal.relative_low?.met} label={signal.relative_low?.detail} metricKey="relative_low" />
-            <ConditionDot met={signal.institutional_buy?.met} label={signal.institutional_buy?.detail} metricKey="institutional_buy" />
-          </div>
-        )}
-
-        {/* Exit reasons */}
-        {isExit && signal.reasons && (
-          <div style={{
-            padding: '10px 14px', background: 'rgba(255,71,87,0.06)',
-            borderRadius: 'var(--radius-sm)', marginBottom: 12,
-            border: '1px solid rgba(255,71,87,0.15)',
-          }}>
-            {signal.reasons.map((r, i) => (
-              <div key={i} style={{ fontSize: 12, color: 'var(--negative)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span>🔴</span> {r}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', padding: '10px 14px', background: 'var(--bg-panel-2)', borderRadius: 'var(--radius-sm)', marginBottom: 12 }}>
+            {[
+              { met: signal.rank_stability?.met, label: signal.rank_stability?.detail },
+              { met: signal.high_confidence?.met, label: signal.high_confidence?.detail },
+              { met: signal.relative_low?.met, label: signal.relative_low?.detail },
+              { met: signal.institutional_buy?.met, label: signal.institutional_buy?.detail?.includes('無此股') ? '— 無資料' : signal.institutional_buy?.detail },
+            ].map((c, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: c.label === '— 無資料' ? 'var(--text-muted)' : c.met ? 'var(--positive)' : 'var(--text-muted)' }}>
+                <span style={{ fontSize: 13 }}>{c.label === '— 無資料' ? '➖' : c.met ? '✅' : '❌'}</span>
+                <span>{c.label}</span>
               </div>
             ))}
           </div>
         )}
-
-        {/* Bottom metrics row */}
+        {/* Bottom metrics */}
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-          {signal.sharpe != null && (
-            <div style={{ fontSize: 12 }}>
-              <span style={{ color: 'var(--text-muted)' }}>Sharpe </span>
-              <MetricTooltip metricKey="sharpe" />
-              <span className="mono" style={{
-                color: signal.sharpe > 3 ? 'var(--positive)' : 'var(--text-secondary)',
-                fontWeight: 600,
-              }}>{signal.sharpe.toFixed(1)}</span>
-            </div>
-          )}
-          {signal.uncertainty != null && (
-            <div style={{ fontSize: 12 }}>
-              <span style={{ color: 'var(--text-muted)' }}>不確定度 </span>
-              <MetricTooltip metricKey="uncertainty" />
-              <span className="mono" style={{
-                color: signal.uncertainty < 0.02 ? 'var(--positive)' : 'var(--accent-amber)',
-                fontWeight: 600,
-              }}>±{(signal.uncertainty * 100).toFixed(1)}%</span>
-            </div>
-          )}
-          {signal.suggested_weight != null && (
-            <div style={{ fontSize: 12 }}>
-              <span style={{ color: 'var(--text-muted)' }}>Kelly </span>
-              <MetricTooltip metricKey="kelly" />
-              <span className="mono" style={{ color: 'var(--accent-blue)', fontWeight: 600 }}>
-                {(signal.suggested_weight * 100).toFixed(1)}%
-              </span>
-            </div>
-          )}
+          {signal.sharpe != null && <div style={{ fontSize: 12 }}><span style={{ color: 'var(--text-muted)' }}>Sharpe </span><span className="mono" style={{ color: signal.sharpe > 3 ? 'var(--positive)' : 'var(--text-secondary)', fontWeight: 600 }}>{signal.sharpe.toFixed(1)}</span></div>}
+          {signal.uncertainty != null && <div style={{ fontSize: 12 }}><span style={{ color: 'var(--text-muted)' }}>不確定度 </span><span className="mono" style={{ color: signal.uncertainty < 0.02 ? 'var(--positive)' : 'var(--accent-amber)', fontWeight: 600 }}>±{(signal.uncertainty * 100).toFixed(1)}%</span></div>}
+          {signal.suggested_weight != null && <div style={{ fontSize: 12 }}><span style={{ color: 'var(--text-muted)' }}>Kelly </span><span className="mono" style={{ color: 'var(--accent-blue)', fontWeight: 600 }}>{(signal.suggested_weight * 100).toFixed(1)}%</span></div>}
         </div>
+      </div>
+    </div>
+  );
+}
+
+
+// ── Watch List Table ─────────────────────────────────────────────────────────
+
+function WatchListTable({ watchList, onSelectStock }) {
+  if (!watchList?.length) return null;
+  const fmtInst = (d) => d?.includes('無此股') ? '— 無資料' : d;
+  return (
+    <div className="panel">
+      <div className="panel-header">
+        <div className="panel-title"><span>👀</span> 觀察清單</div>
+        <span className="badge badge-neutral" style={{ fontSize: 10 }}>差 1 個條件 · {watchList.length} 檔</span>
+      </div>
+      <div className="panel-body-flush" style={{ overflowX: 'auto' }}>
+        <table className="data-table" style={{ minWidth: 700 }}>
+          <thead>
+            <tr>
+              <th style={{ minWidth: 110 }}>股票</th>
+              <th>排名穩定性</th>
+              <th>模型信心</th>
+              <th>相對低點</th>
+              <th>機構買賣超</th>
+              <th style={{ textAlign: 'right' }}>Alpha 20d</th>
+            </tr>
+          </thead>
+          <tbody>
+            {watchList.map((s, i) => (
+              <tr key={s.ticker} className="animate-fade-up" style={{ animationDelay: `${i * 0.03}s`, cursor: 'pointer' }}
+                onClick={() => onSelectStock({ stock_id: s.ticker, name: s.name || s.ticker, sector: s.sector || '—', alpha_5d: 0, alpha_20d: s.alpha_20d, alpha_60d: 0, uncertainty: s.uncertainty, vol_ratio: 1, signal: 'HOLD', suggested_weight: s.suggested_weight, confidence: s.confidence, rank: '-' })}>
+                <td>
+                  <div style={{ fontWeight: 600, fontSize: 13 }}>{s.name && s.name !== s.ticker ? s.name : s.ticker}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{s.ticker}</div>
+                </td>
+                <td><span style={{ fontSize: 12, color: s.rank_stability?.met ? 'var(--positive)' : 'var(--text-muted)' }}>{s.rank_stability?.met ? '✅' : '❌'} {s.rank_stability?.detail}</span></td>
+                <td><span style={{ fontSize: 12, color: s.high_confidence?.met ? 'var(--positive)' : 'var(--text-muted)' }}>{s.high_confidence?.met ? '✅' : '❌'} {s.high_confidence?.detail}</span></td>
+                <td><span style={{ fontSize: 12, color: s.relative_low?.met ? 'var(--positive)' : 'var(--text-muted)' }}>{s.relative_low?.met ? '✅' : '❌'} {s.relative_low?.detail}</span></td>
+                <td><span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{fmtInst(s.institutional_buy?.detail) === '— 無資料' ? '➖ 無資料' : (s.institutional_buy?.met ? '✅' : '❌') + ' ' + s.institutional_buy?.detail}</span></td>
+                <td style={{ textAlign: 'right' }}>
+                  <span className="mono" style={{ fontSize: 13, fontWeight: 600, color: s.alpha_20d >= 0 ? 'var(--positive)' : 'var(--negative)' }}>
+                    {s.alpha_20d >= 0 ? '+' : ''}{(s.alpha_20d * 100).toFixed(1)}%
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
@@ -154,6 +235,7 @@ function SignalCard({ signal, type, onClick }) {
 export default function TradingSignals() {
   const { data, loading, error, refetch } = useApi(fetchScannerSignals);
   const [selectedStock, setSelectedStock] = useState(null);
+  const [showRules, setShowRules] = useState(false);
 
   const buySignals = data?.buy_signals || [];
   const exitSignals = data?.exit_signals || [];
@@ -173,14 +255,13 @@ export default function TradingSignals() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {selectedStock && <StockModal stock={selectedStock} onClose={() => setSelectedStock(null)} />}
+      {showRules && <EntryRulesModal regime={data?.market_regime} onClose={() => setShowRules(false)} />}
 
       {/* Page Header */}
       <div className="page-header">
         <div>
           <div className="page-title">🎯 交易訊號掃描</div>
-          <div className="page-subtitle">
-            MarketMamba V6.1 Signal Scanner · {data?.date || '—'}
-          </div>
+          <div className="page-subtitle">MarketMamba V6.1 Signal Scanner · {data?.date || '—'}</div>
         </div>
         <button className="btn btn-primary" onClick={refetch}>🔄 重新掃描</button>
       </div>
@@ -188,73 +269,49 @@ export default function TradingSignals() {
       {/* Market Regime Strip */}
       <div className="grid-4">
         {loading ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />) : <>
-          <div className="stat-card" style={{
-            borderColor: regimeColor,
-            background: `color-mix(in srgb, ${regimeColor} 5%, var(--bg-panel))`,
-          }}>
-            <div className="label">
-              大盤環境 <MetricTooltip metricKey="market_regime" />
-            </div>
-            <div className="value" style={{ color: regimeColor }}>
-              {regimeIcon} {regimeLabel}
-            </div>
+          <div className="stat-card" style={{ borderColor: regimeColor, background: `color-mix(in srgb, ${regimeColor} 5%, var(--bg-panel))` }}>
+            <div className="label">大盤環境</div>
+            <div className="value" style={{ color: regimeColor }}>{regimeIcon} {regimeLabel}</div>
             <div className="sub">TWII vs MA60: {data?.twii_vs_ma60 || '—'}</div>
           </div>
 
-          <div className="stat-card">
-            <div className="label">入場門檻</div>
+          <div className="stat-card" style={{ cursor: 'pointer', transition: 'border-color 0.2s' }}
+            onClick={() => setShowRules(true)}
+            onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-blue)'}
+            onMouseLeave={e => e.currentTarget.style.borderColor = ''}>
+            <div className="label" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>入場門檻 <span style={{ fontSize: 10, color: 'var(--accent-blue)' }}>📋 點擊查看規則</span></div>
             <div className="value mono">{data?.entry_threshold || '—'}</div>
             <div className="sub">滿足條件數 / 總條件</div>
           </div>
 
-          <div className="stat-card" style={{
-            borderColor: buySignals.length > 0 ? 'rgba(0,255,136,0.3)' : 'var(--border)',
-          }}>
+          <div className="stat-card" style={{ borderColor: buySignals.length > 0 ? 'rgba(0,255,136,0.3)' : 'var(--border)' }}>
             <div className="label">🔥 買入推薦</div>
             <div className="value mono text-positive">{buySignals.length} 檔</div>
             <div className="sub">滿足入場條件</div>
           </div>
 
-          <div className="stat-card" style={{
-            borderColor: exitSignals.length > 0 ? 'rgba(255,71,87,0.3)' : 'var(--border)',
-          }}>
+          <div className="stat-card" style={{ borderColor: exitSignals.length > 0 ? 'rgba(255,71,87,0.3)' : 'var(--border)' }}>
             <div className="label">⚠️ 退場警告</div>
-            <div className="value mono" style={{
-              color: exitSignals.length > 0 ? 'var(--negative)' : 'var(--text-secondary)',
-            }}>{exitSignals.length} 檔</div>
+            <div className="value mono" style={{ color: exitSignals.length > 0 ? 'var(--negative)' : 'var(--text-secondary)' }}>{exitSignals.length} 檔</div>
             <div className="sub">觸發退場條件</div>
           </div>
         </>}
       </div>
 
-      {/* Buy Signals Section */}
+      {/* Buy Signals */}
       {!loading && (
         <div>
-          <div style={{
-            fontSize: 14, fontWeight: 700, color: 'var(--positive)',
-            marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8,
-          }}>
-            <span style={{ fontSize: 18 }}>🔥</span>
-            買入推薦
+          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--positive)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 18 }}>🔥</span> 買入推薦
             <span className="badge badge-positive" style={{ fontSize: 10 }}>{buySignals.length} 檔</span>
           </div>
           {buySignals.length === 0 ? (
-            <div className="panel">
-              <div className="panel-body" style={{ textAlign: 'center', padding: 32, color: 'var(--text-muted)' }}>
-                目前沒有股票達到入場條件 — 等待更好的機會 🧘
-              </div>
-            </div>
+            <div className="panel"><div className="panel-body" style={{ textAlign: 'center', padding: 32, color: 'var(--text-muted)' }}>目前沒有股票達到入場條件 — 等待更好的機會 🧘</div></div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: 12 }}>
               {buySignals.map((s, i) => (
                 <div key={s.ticker} style={{ animationDelay: `${i * 0.05}s` }}>
-                  <SignalCard signal={s} type="buy" onClick={() => setSelectedStock({
-                    stock_id: s.ticker, name: s.name || s.ticker, sector: s.sector || '—',
-                    alpha_5d: 0, alpha_20d: s.alpha_20d, alpha_60d: 0,
-                    uncertainty: s.uncertainty, vol_ratio: 1, signal: 'BUY',
-                    suggested_weight: s.suggested_weight, confidence: s.confidence,
-                    rank: buySignals.indexOf(s) + 1,
-                  })} />
+                  <SignalCard signal={s} onClick={() => setSelectedStock({ stock_id: s.ticker, name: s.name || s.ticker, sector: s.sector || '—', alpha_5d: 0, alpha_20d: s.alpha_20d, alpha_60d: 0, uncertainty: s.uncertainty, vol_ratio: 1, signal: 'BUY', suggested_weight: s.suggested_weight, confidence: s.confidence, rank: i + 1 })} />
                 </div>
               ))}
             </div>
@@ -262,55 +319,31 @@ export default function TradingSignals() {
         </div>
       )}
 
-      {/* Exit Signals Section */}
+      {/* Exit Signals */}
       {!loading && exitSignals.length > 0 && (
         <div>
-          <div style={{
-            fontSize: 14, fontWeight: 700, color: 'var(--negative)',
-            marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8,
-          }}>
-            <span style={{ fontSize: 18 }}>🔴</span>
-            退場警告
+          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--negative)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 18 }}>🔴</span> 退場警告
             <span className="badge badge-negative" style={{ fontSize: 10 }}>{exitSignals.length} 檔</span>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: 12 }}>
-            {exitSignals.map((s, i) => (
-              <div key={s.ticker} style={{ animationDelay: `${i * 0.05}s` }}>
-                <SignalCard signal={s} type="exit" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {exitSignals.map(s => (
+              <div key={s.ticker} className="panel" style={{ borderColor: 'rgba(255,71,87,0.25)', background: 'rgba(255,71,87,0.03)' }}>
+                <div className="panel-body" style={{ padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <span style={{ fontWeight: 700 }}>{s.ticker}</span>
+                    {s.reasons?.map((r, i) => <span key={i} style={{ fontSize: 12, color: 'var(--negative)', marginLeft: 12 }}>🔴 {r}</span>)}
+                  </div>
+                  {s.current_rank && <span className="mono" style={{ fontSize: 12, color: 'var(--text-muted)' }}>Rank #{s.current_rank}</span>}
+                </div>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Watch List Section */}
-      {!loading && watchList.length > 0 && (
-        <div>
-          <div style={{
-            fontSize: 14, fontWeight: 700, color: 'var(--accent-amber)',
-            marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8,
-          }}>
-            <span style={{ fontSize: 18 }}>👀</span>
-            觀察清單
-            <span className="badge badge-neutral" style={{ fontSize: 10 }}>
-              差 1 個條件 · {watchList.length} 檔
-            </span>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: 12 }}>
-            {watchList.map((s, i) => (
-              <div key={s.ticker} style={{ animationDelay: `${i * 0.05}s` }}>
-                <SignalCard signal={s} type="watch" onClick={() => setSelectedStock({
-                  stock_id: s.ticker, name: s.name || s.ticker, sector: s.sector || '—',
-                  alpha_5d: 0, alpha_20d: s.alpha_20d, alpha_60d: 0,
-                  uncertainty: s.uncertainty, vol_ratio: 1, signal: 'HOLD',
-                  suggested_weight: s.suggested_weight, confidence: s.confidence,
-                  rank: '-',
-                })} />
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Watch List Table */}
+      {!loading && <WatchListTable watchList={watchList} onSelectStock={setSelectedStock} />}
 
       {/* How it works */}
       {!loading && (
@@ -320,11 +353,8 @@ export default function TradingSignals() {
             <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
               <strong style={{ color: 'var(--accent-blue)' }}>運作原理：</strong>
               掃描模型 Top 50 股票，評估 4 個維度的入場條件（排名穩定性、模型信心、相對低點、機構資金方向）。
-              {data?.market_regime === 'CAUTIOUS'
-                ? '目前大盤低於 60 日均線，進入保守模式，需滿足 3/4 條件才推薦。'
-                : '正常市場環境下，滿足 2/4 條件即推薦買入。'
-              }
-              點擊每個指標旁的 <strong>?</strong> 查看詳細說明。
+              {data?.market_regime === 'CAUTIOUS' ? '目前大盤低於 60 日均線，進入保守模式，需滿足 3/4 條件才推薦。' : '正常市場環境下，滿足 2/4 條件即推薦買入。'}
+              點擊上方 <strong>「入場門檻」</strong> 查看完整規則。
             </div>
           </div>
         </div>

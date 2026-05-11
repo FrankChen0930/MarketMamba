@@ -9,6 +9,8 @@ import { useApi } from '../hooks/useApi';
 import { fetchSignals } from '../api/signals';
 import { fetchMarket } from '../api/market';
 import { SkeletonBlock, SkeletonCard, ApiError } from '../components/SkeletonLoader';
+import MetricTooltip from '../components/MetricTooltip';
+
 
 // ── Static quant data (real market indicators) ────────────────────────────────
 
@@ -195,18 +197,18 @@ export default function QuantAnalysis() {
 
       {/* ── KPI row ── */}
       <div className="grid-4">
-        <KpiCard label="加權指數 RSI(14)" value="54.3"
+        <KpiCard label={<>加權指數 RSI(14) <MetricTooltip metricKey="rsi" /></>} value="54.3"
           desc="中性區間 (30-70)"
           valueColor="var(--accent-amber)" />
-        <KpiCard label="外資近5日淨買"
+        <KpiCard label={<>外資近5日淨買 <MetricTooltip metricKey="foreign_net" /></>}
           value={`+${INSTITUTIONAL.find(i=>i.name==='外資')?.net.toFixed(1)}億`}
           desc="連續買超"
           valueColor="var(--positive)" />
-        <KpiCard label="漲跌比 (今日)"
+        <KpiCard label={<>漲跌比 (今日) <MetricTooltip metricKey="ad_ratio" /></>}
           value={`${BREADTH_DATA.at(-1)?.adv}:${BREADTH_DATA.at(-1)?.dec}`}
           desc={`A/D Ratio ${BREADTH_DATA.at(-1)?.ratio.toFixed(2)}`}
           valueColor="var(--positive)" />
-        <KpiCard label="融資餘額"
+        <KpiCard label={<>融資餘額 <MetricTooltip metricKey="margin_balance" /></>}
           value="2,841億"
           desc="月增 +3.2%，注意槓桿"
           valueColor="var(--accent-amber)" />
@@ -228,7 +230,7 @@ export default function QuantAnalysis() {
                 <tbody>
                   {TAIEX_TECH.map(r => (
                     <tr key={r.label}>
-                      <td style={{ color: 'var(--text-secondary)' }}>{r.label}</td>
+                      <td style={{ color: 'var(--text-secondary)' }}>{r.label} <MetricTooltip metricKey={r.label.toLowerCase().includes('rsi') ? 'rsi' : r.label.toLowerCase().includes('macd') ? 'macd' : r.label.toLowerCase().includes('kd') ? 'kd' : r.label.toLowerCase().includes('bollinger') ? 'bollinger' : r.label.includes('乖離率') ? 'bias' : r.label.includes('ATR') ? 'atr' : r.label.includes('OBV') ? 'obv' : r.label.includes('MA') ? 'ma_alignment' : undefined} /></td>
                       <td className="mono" style={{ color: 'var(--text-primary)' }}>{r.value}</td>
                       <td><span style={{ fontSize: 11, color: r.color }}>{r.status}</span></td>
                     </tr>
@@ -263,7 +265,7 @@ export default function QuantAnalysis() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
                 {RISK_METRICS.map(r => (
                   <div key={r.label} style={{ padding: '10px 14px', background: 'var(--bg-panel-2)', borderRadius: 8 }}>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{r.label}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{r.label} <MetricTooltip metricKey={r.label.includes('波動率') ? 'realized_vol' : r.label.includes('Beta') ? 'beta' : r.label.includes('外資持股') ? 'foreign_holding' : r.label.includes('融資餘額') ? 'margin_balance' : r.label.includes('融券') ? 'short_balance' : r.label.includes('資券') ? 'margin_ratio' : undefined} /></div>
                     <div className="mono" style={{ fontSize: 16, color: 'var(--text-primary)' }}>{r.value}</div>
                     <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 3 }}>{r.desc}</div>
                   </div>
@@ -344,7 +346,7 @@ export default function QuantAnalysis() {
                   { label: '資券比', value: '10.0x', sub: '偏高，留意軋空', color: 'var(--accent-amber)' },
                 ].map(m => (
                   <div key={m.label}>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>{m.label}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>{m.label} <MetricTooltip metricKey={m.label === '融資餘額' ? 'margin_balance' : m.label === '融資維持率' ? 'margin_maint' : m.label === '融券餘額' ? 'short_balance' : 'margin_ratio'} /></div>
                     <div className="mono" style={{ fontSize: 20, color: m.color }}>{m.value}</div>
                     <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{m.sub}</div>
                   </div>
@@ -421,7 +423,7 @@ export default function QuantAnalysis() {
           {/* Sector Alpha from signals */}
           <div className="panel">
             <div className="panel-header">
-              <div className="panel-title"><span>🎯</span> 產業平均 Alpha（模型輸出）</div>
+              <div className="panel-title"><span>🎯</span> 產業平均 Alpha <MetricTooltip metricKey="sector_alpha" />（模型輸出）</div>
               <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>基於 {signals.length} 檔股票</span>
             </div>
             <div className="panel-body">
@@ -445,7 +447,7 @@ export default function QuantAnalysis() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <div className="panel">
               <div className="panel-header">
-                <div className="panel-title"><span>📋</span> 信心分佈</div>
+                <div className="panel-title"><span>📋</span> 信心分佈 <MetricTooltip metricKey="confidence_dist" /></div>
               </div>
               <div className="panel-body">
                 {['高信心', '中信心', '低信心'].map(conf => {

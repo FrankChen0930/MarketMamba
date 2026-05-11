@@ -7,6 +7,8 @@ import { useApi } from '../hooks/useApi';
 import { fetchPerformance } from '../api/performance';
 import { fetchMarket } from '../api/market';
 import { SkeletonBlock, SkeletonCard, ApiError } from '../components/SkeletonLoader';
+import MetricTooltip from '../components/MetricTooltip';
+
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -55,24 +57,24 @@ export default function ModelStatus() {
       <div className="grid-4">
         {loading ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />) : <>
           <div className="stat-card">
-            <div className="label">平均 IC（Walk-Forward）</div>
+            <div className="label">平均 IC（Walk-Forward） <MetricTooltip metricKey="ic" /></div>
             <div className="value mono text-positive" style={{ fontSize: 20 }}>+{avgIC.toFixed(4)}</div>
             <div className="sub">目標 ≥ 0.05 ✓</div>
           </div>
           <div className="stat-card">
-            <div className="label">平均 ICIR</div>
+            <div className="label">平均 ICIR <MetricTooltip metricKey="icir" /></div>
             <div className="value mono text-positive" style={{ fontSize: 20 }}>{avgICIR.toFixed(2)}</div>
             <div className="sub">目標 ≥ 0.5 ✓</div>
           </div>
           <div className="stat-card">
-            <div className="label">平均年化 Sharpe</div>
+            <div className="label">平均年化 Sharpe <MetricTooltip metricKey="sharpe" /></div>
             <div className="value mono text-positive" style={{ fontSize: 20 }}>{avgSharpe.toFixed(2)}</div>
             <div className="sub">Walk-Forward 均值</div>
           </div>
           <div className="stat-card">
             <div className="label">最後推論日期</div>
             <div className="value mono" style={{ fontSize: 16 }}>{market?.last_run || '—'}</div>
-            <div className="sub">模型 checkpoint: v6_best.pt</div>
+            <div className="sub">checkpoint: v6_best.pt · epoch 14 · val_loss 1.647</div>
           </div>
         </>}
       </div>
@@ -81,7 +83,7 @@ export default function ModelStatus() {
       <div className="panel">
         <div className="panel-header">
           <div className="panel-title"><span>📈</span> 訓練 IC 學習曲線（Fold 1）</div>
-          <span className="badge badge-blue">40 epochs · 真實數據</span>
+          <span className="badge badge-blue">14 epochs · val_ic 0.0825</span>
         </div>
         <div className="panel-body">
           {loading ? <SkeletonBlock height={200} /> : (
@@ -157,7 +159,7 @@ export default function ModelStatus() {
           <table className="data-table">
             <thead>
               <tr>
-                <th>期數</th><th>訓練期間</th><th>IC</th><th>ICIR</th>
+                <th>期數</th><th>訓練期間</th><th>IC <MetricTooltip metricKey="ic" /></th><th>ICIR <MetricTooltip metricKey="icir" /></th>
                 <th>年化 Sharpe</th><th>超額報酬</th><th>評級</th>
               </tr>
             </thead>
@@ -196,6 +198,7 @@ export default function ModelStatus() {
               { label: 'KG 節點', value: '2,890', desc: '股票 + 產業節點' },
               { label: 'KG 邊數', value: '42,905', desc: '供應鏈 + 相關性邊' },
               { label: '訓練資料', value: '2012–2024', desc: '約 3,000 股 × 12年' },
+              { label: '參數量', value: '11.5M', desc: '11,456,643 trainable params' },
             ].map(m => (
               <div key={m.label} style={{ padding: '10px 14px', background: 'var(--bg-panel-2)', borderRadius: 8 }}>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{m.label}</div>

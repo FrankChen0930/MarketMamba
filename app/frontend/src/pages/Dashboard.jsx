@@ -5,6 +5,8 @@ import { fetchMarket } from '../api/market';
 import StockModal from '../components/StockModal';
 import SectorHeatmap from '../components/SectorHeatmap';
 import { SkeletonCard, SkeletonTable, SkeletonBlock, ApiError } from '../components/SkeletonLoader';
+import MetricTooltip from '../components/MetricTooltip';
+
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -76,7 +78,7 @@ export default function Dashboard() {
   const { data: market, loading: mktLoading } = useApi(fetchMarket);
 
   const signals    = signalData?.signals || [];
-  const topSignals = signals.filter(s => s.alpha_20d > 0).slice(0, 50);
+  const topSignals = signals.filter(s => s.alpha_20d > 0).slice(0, 15);
   const botSignals = signals.filter(s => s.alpha_20d < 0).slice(0, 8);
   const displayed  = activeTab === 'top' ? topSignals : botSignals;
 
@@ -126,7 +128,7 @@ export default function Dashboard() {
             sub={`總計 ${((market?.advancing ?? 0) + (market?.declining ?? 0)).toLocaleString()} 檔`}
           />
           <StatCard
-            label="VIX 恐慌指數"
+            label={<>VIX 恐慌指數 <MetricTooltip metricKey="vix" /></>}
             value={market?.vix ? market.vix.toFixed(2) : '—'}
             sub={<span style={{ color: market?.vix > 20 ? 'var(--negative)' : 'var(--positive)' }}>
               {market?.vix > 30 ? '⚠️ 高度恐慌' : market?.vix > 20 ? '⚡ 波動偏高' : '✓ 市場平靜'}
@@ -143,7 +145,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── Main Area ── */}
-      <div className="dashboard-main-grid">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 330px', gap: 16, alignItems: 'start' }}>
 
         {/* Signal Table */}
         <div className="panel">
@@ -175,9 +177,9 @@ export default function Dashboard() {
                     <th style={{ width: 32 }}>#</th>
                     <th>股票</th>
                     <th>產業</th>
-                    <th>20d Alpha 強度</th>
-                    <th>Sharpe</th>
-                    <th>建倉比重</th>
+                    <th>20d Alpha 強度 <MetricTooltip metricKey="alpha" /></th>
+                    <th>Sharpe <MetricTooltip metricKey="sharpe" /></th>
+                    <th>建倉比重 <MetricTooltip metricKey="kelly" /></th>
                     <th>訊號</th>
                   </tr>
                 </thead>
