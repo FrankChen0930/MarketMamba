@@ -3,9 +3,9 @@
 # Use ALL data for training. No early stopping.
 # Fixed epoch count = best epoch from validated run.
 #
-# 💡 IMPORTANT: This cell replaces Cell 4 in the Colab notebook.
-#    Copy-paste this entire cell into a NEW Colab cell and run it
-#    INSTEAD of Cell 4 (the normal training cell).
+# 💡 IMPORTANT: This is a SELF-CONTAINED script.
+#    Run it in Colab with:  %run /content/MarketMamba/V6/notebooks/V6_FullRetrain_Cell.py
+#    Or copy-paste into a new Colab cell (after Cell 1 + Cell 2 have run).
 #
 # 📝 HOW IT WORKS:
 #    Phase ① (already done): Normal train/val split → found best epoch = 14
@@ -19,9 +19,83 @@
 #    - Val set is kept only for monitoring loss/IC curves (not for decisions)
 # ==========================================
 
+import os, sys, shutil
+import pandas as pd
 import torch
+
+# ── Ensure Python path is set (same as Cell 1) ──
+for _k in list(sys.modules.keys()):
+    if _k == "marketmamba" or _k.startswith("marketmamba."):
+        del sys.modules[_k]
+for _p in ["/content/MarketMamba/V6", "/content/MarketMamba"]:
+    while _p in sys.path: sys.path.remove(_p)
+sys.path.insert(0, "/content/MarketMamba")
+sys.path.insert(0, "/content/MarketMamba/V6")
+
 from marketmamba.models.trainer import train_model
-from marketmamba.config import MODELS_DIR
+from marketmamba.config import PROCESSED_DIR, MODELS_DIR
+
+# ── Load Feature Matrix (same logic as Cell 3) ──
+DRIVE_V6_DIR = "/content/drive/MyDrive/MarketMamba_V6"
+os.makedirs(DRIVE_V6_DIR, exist_ok=True)
+DRIVE_FEATURE_CACHE = f"{DRIVE_V6_DIR}/V6_Feature_Matrix.parquet"
+DRIVE_CKPT_DIR = f"{DRIVE_V6_DIR}/checkpoints"
+os.makedirs(DRIVE_CKPT_DIR, exist_ok=True)
+
+MATRIX_CACHE = PROCESSED_DIR / "V6_Feature_Matrix.parquet"
+
+# Restore from Drive if not in local cache
+if not MATRIX_CACHE.exists() and os.path.exists(DRIVE_FEATURE_CACHE):
+    print("Restoring feature matrix from Drive...")
+    os.makedirs(str(PROCESSED_DIR), exist_ok=True)
+    shutil.copy(DRIVE_FEATURE_CACHE, str(MATRIX_CACHE))
+    print(f"  Restored ({os.path.getsize(DRIVE_FEATURE_CACHE) / 1e9:.2f} GB)")
+
+if MATRIX_CACHE.exists():
+    print("Loading cached feature matrix...")
+    df = pd.read_parquet(MATRIX_CACHE)
+    n_features = df.shape[1] - 5
+    print(f"✅ Feature matrix: {df.shape[0]:,} rows × {df.shape[1]} cols ({n_features} features)")
+    print(f"   Date range: {df['Date'].min()} → {df['Date'].max()}")
+    print(f"   Stocks: {df['stock_id'].nunique():,}")
+else:
+    raise FileNotFoundError(
+        f"Feature matrix not found at {MATRIX_CACHE}!\n"
+        "Please run Cell 2 (Restore Data) and Cell 3 (Build Feature Matrix) first."
+    )
+
+# ── Build KG if needed (same logic as Cell 3b) ──
+from marketmamba.knowledge.graph_builder import build_knowledge_graph
+from marketmamba.config import KG_CACHE_PATH
+
+DRIVE_KG_CACHE = f"{DRIVE_V6_DIR}/knowledge_graph_cache.npz"
+if not KG_CACHE_PATH.exists() and os.path.exists(DRIVE_KG_CACHE):
+    print("Restoring KG from Drive...")
+    os.makedirs(str(KG_CACHE_PATH.parent), exist_ok=True)
+    shutil.copy(DRIVE_KG_CACHE, str(KG_CACHE_PATH))
+    print("  ✅ KG restored from Drive")
+
+if not KG_CACHE_PATH.exists():
+    print("Building Knowledge Graph...")
+    df_prices = pd.read_parquet(PROCESSED_DIR / "prices_raw.parquet")
+    df_universe = df_prices[["stock_id"]].drop_duplicates()
+    stock_info_path = PROCESSED_DIR / "stock_info.parquet"
+    if stock_info_path.exists():
+        df_info = pd.read_parquet(stock_info_path)
+        df_universe = df_universe.merge(
+            df_info[["stock_id", "industry_category"]], on="stock_id", how="left"
+        )
+        df_universe["industry_category"] = df_universe["industry_category"].fillna("Unknown")
+    else:
+        df_universe["industry_category"] = "Unknown"
+    build_knowledge_graph(df_universe, df_prices, force_rebuild=True)
+    if KG_CACHE_PATH.exists():
+        shutil.copy(str(KG_CACHE_PATH), DRIVE_KG_CACHE)
+        print("  ✅ KG built & backed up to Drive")
+    del df_prices, df_universe
+    import gc; gc.collect()
+else:
+    print("✅ KG loaded from cache")
 
 # ── Full Retrain Configuration ──────────────────────────────────────
 FULL_RETRAIN       = True
