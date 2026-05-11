@@ -82,17 +82,11 @@ export default function Portfolio() {
         <div>
           <div className="page-title">持倉追蹤</div>
           <div className="page-subtitle">
-            永豐證券帳戶 · {portfolio?.data_source === 'mock' ? '模擬資料' : '即時同步'}
+            永豐證券帳戶 · Shioaji 同步
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <div className="status-dot" style={{
-            background: portfolio?.data_source === 'mock' ? 'var(--accent-amber)' : 'var(--positive)',
-            boxShadow: `0 0 6px ${portfolio?.data_source === 'mock' ? 'var(--accent-amber)' : 'var(--positive)'}`,
-          }} />
-          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-            {portfolio?.data_source === 'mock' ? 'Mock 資料' : '連線中'}
-          </span>
+          <button className="btn btn-primary" onClick={refetch}>🔄 重新整理</button>
         </div>
       </div>
 
@@ -121,6 +115,19 @@ export default function Portfolio() {
           </div>
         </>}
       </div>
+
+      {/* Empty state */}
+      {!loading && positions.length === 0 && (
+        <div className="panel">
+          <div className="panel-body" style={{ textAlign: 'center', padding: '48px 24px' }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>🏖️</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>目前空手</div>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', maxWidth: 320, margin: '0 auto' }}>
+              尚無持倉部位。持倉資料透過 Shioaji 自動同步，每日 17:00 更新。
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* P&L Curve + Donut */}
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
