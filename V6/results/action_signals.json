@@ -1,20 +1,171 @@
 {
-  "date": "2026-05-12",
+  "date": "2026-05-13",
   "scan_version": "1.0",
   "market_regime": "NORMAL",
   "twii_vs_ma60": "N/A",
   "entry_threshold": "2/4",
   "total_scanned": 50,
-  "buy_signals": [],
+  "buy_signals": [
+    {
+      "ticker": "8182",
+      "alpha_20d": 0.6407,
+      "sharpe": 4.645,
+      "confidence": "低信心",
+      "uncertainty": 0.1371,
+      "suggested_weight": 0.0303,
+      "conditions_met": 2,
+      "conditions_total": 4,
+      "rank_stability": {
+        "met": true,
+        "detail": "Top 10 連續 2 天",
+        "top10_streak": 2,
+        "top50_streak": 2
+      },
+      "high_confidence": {
+        "met": false,
+        "detail": "Uncertainty=0.1371 (需 <0.02)"
+      },
+      "relative_low": {
+        "met": true,
+        "detail": "RSI=45, 價格<MA20 (36.0<38.6)",
+        "rsi": 44.9,
+        "below_ma20": true
+      },
+      "institutional_buy": {
+        "met": false,
+        "detail": "無此股機構資料"
+      }
+    },
+    {
+      "ticker": "6021",
+      "alpha_20d": 0.1843,
+      "sharpe": 4.527,
+      "confidence": "中信心",
+      "uncertainty": 0.0398,
+      "suggested_weight": 0.0295,
+      "conditions_met": 2,
+      "conditions_total": 4,
+      "rank_stability": {
+        "met": true,
+        "detail": "Top 10 連續 5 天",
+        "top10_streak": 5,
+        "top50_streak": 5
+      },
+      "high_confidence": {
+        "met": false,
+        "detail": "Uncertainty=0.0398 (需 <0.02)"
+      },
+      "relative_low": {
+        "met": true,
+        "detail": "RSI=46, 價格<MA20 (32.4<34.0)",
+        "rsi": 46.2,
+        "below_ma20": true
+      },
+      "institutional_buy": {
+        "met": false,
+        "detail": "無此股機構資料"
+      }
+    },
+    {
+      "ticker": "6494",
+      "alpha_20d": 0.0694,
+      "sharpe": 1.236,
+      "confidence": "低信心",
+      "uncertainty": 0.0529,
+      "suggested_weight": 0.0081,
+      "conditions_met": 2,
+      "conditions_total": 4,
+      "rank_stability": {
+        "met": true,
+        "detail": "Top 50 連續 3 天",
+        "top10_streak": 0,
+        "top50_streak": 3
+      },
+      "high_confidence": {
+        "met": false,
+        "detail": "Uncertainty=0.0529 (需 <0.02)"
+      },
+      "relative_low": {
+        "met": true,
+        "detail": "RSI=52, 價格<MA20 (54.7<54.9)",
+        "rsi": 51.8,
+        "below_ma20": true
+      },
+      "institutional_buy": {
+        "met": false,
+        "detail": "無此股機構資料"
+      }
+    }
+  ],
   "exit_signals": [],
   "watch_list": [
     {
-      "ticker": "8182",
-      "alpha_20d": 0.6623,
-      "sharpe": 9.695,
+      "ticker": "00952",
+      "alpha_20d": 0.3982,
+      "sharpe": 5.803,
       "confidence": "低信心",
       "uncertainty": 0.0679,
-      "suggested_weight": 0.0313,
+      "suggested_weight": 0.0378,
+      "conditions_met": 1,
+      "conditions_total": 4,
+      "rank_stability": {
+        "met": true,
+        "detail": "Top 10 連續 2 天",
+        "top10_streak": 2,
+        "top50_streak": 2
+      },
+      "high_confidence": {
+        "met": false,
+        "detail": "Uncertainty=0.0679 (需 <0.02)"
+      },
+      "relative_low": {
+        "met": false,
+        "detail": "RSI=73, 價格>MA20",
+        "rsi": 72.6,
+        "below_ma20": false
+      },
+      "institutional_buy": {
+        "met": false,
+        "detail": "無此股機構資料"
+      }
+    },
+    {
+      "ticker": "6768",
+      "alpha_20d": 0.3946,
+      "sharpe": 4.246,
+      "confidence": "低信心",
+      "uncertainty": 0.092,
+      "suggested_weight": 0.0277,
+      "conditions_met": 1,
+      "conditions_total": 4,
+      "rank_stability": {
+        "met": true,
+        "detail": "Top 10 連續 2 天",
+        "top10_streak": 2,
+        "top50_streak": 2
+      },
+      "high_confidence": {
+        "met": false,
+        "detail": "Uncertainty=0.0920 (需 <0.02)"
+      },
+      "relative_low": {
+        "met": false,
+        "detail": "RSI=59, 價格>MA20",
+        "rsi": 58.6,
+        "below_ma20": false
+      },
+      "institutional_buy": {
+        "met": false,
+        "detail": "無此股機構資料"
+      }
+    },
+    {
+      "ticker": "3010",
+      "alpha_20d": 0.1994,
+      "sharpe": 4.199,
+      "confidence": "中信心",
+      "uncertainty": 0.0465,
+      "suggested_weight": 0.0274,
       "conditions_met": 1,
       "conditions_total": 4,
       "rank_stability": {
@@ -25,12 +176,12 @@
       },
       "high_confidence": {
         "met": false,
-        "detail": "Uncertainty=0.0679 (需 <0.02)"
+        "detail": "Uncertainty=0.0465 (需 <0.02)"
       },
       "relative_low": {
         "met": true,
-        "detail": "RSI=50, 價格<MA20 (37.1<38.6)",
-        "rsi": 49.5,
+        "detail": "RSI=47, 價格<MA20 (132.0<134.2)",
+        "rsi": 47.1,
         "below_ma20": true
       },
       "institutional_buy": {
@@ -39,28 +190,28 @@
       }
     },
     {
-      "ticker": "6021",
-      "alpha_20d": 0.57,
-      "sharpe": 7.201,
-      "confidence": "低信心",
-      "uncertainty": 0.0786,
-      "suggested_weight": 0.0233,
+      "ticker": "00928",
+      "alpha_20d": 0.1641,
+      "sharpe": 4.041,
+      "confidence": "中信心",
+      "uncertainty": 0.0396,
+      "suggested_weight": 0.0263,
       "conditions_met": 1,
       "conditions_total": 4,
       "rank_stability": {
         "met": true,
-        "detail": "Top 10 連續 4 天",
-        "top10_streak": 4,
-        "top50_streak": 4
+        "detail": "Top 10 連續 2 天",
+        "top10_streak": 2,
+        "top50_streak": 2
       },
       "high_confidence": {
         "met": false,
-        "detail": "Uncertainty=0.0786 (需 <0.02)"
+        "detail": "Uncertainty=0.0396 (需 <0.02)"
       },
       "relative_low": {
         "met": false,
-        "detail": "RSI=66, 價格>MA20",
-        "rsi": 66.2,
+        "detail": "RSI=78, 價格>MA20",
+        "rsi": 77.7,
         "below_ma20": false
       },
       "institutional_buy": {
@@ -69,28 +220,58 @@
       }
     },
     {
-      "ticker": "2248",
-      "alpha_20d": 0.2334,
-      "sharpe": 4.749,
+      "ticker": "6924",
+      "alpha_20d": 0.1759,
+      "sharpe": 3.936,
       "confidence": "中信心",
-      "uncertainty": 0.0483,
-      "suggested_weight": 0.0153,
+      "uncertainty": 0.0437,
+      "suggested_weight": 0.0257,
+      "conditions_met": 1,
+      "conditions_total": 4,
+      "rank_stability": {
+        "met": true,
+        "detail": "Top 10 連續 2 天",
+        "top10_streak": 2,
+        "top50_streak": 3
+      },
+      "high_confidence": {
+        "met": false,
+        "detail": "Uncertainty=0.0437 (需 <0.02)"
+      },
+      "relative_low": {
+        "met": false,
+        "detail": "RSI=99, 價格>MA20",
+        "rsi": 98.8,
+        "below_ma20": false
+      },
+      "institutional_buy": {
+        "met": false,
+        "detail": "無此股機構資料"
+      }
+    },
+    {
+      "ticker": "4137",
+      "alpha_20d": 0.1068,
+      "sharpe": 3.785,
+      "confidence": "中信心",
+      "uncertainty": 0.0271,
+      "suggested_weight": 0.0247,
       "conditions_met": 1,
       "conditions_total": 4,
       "rank_stability": {
         "met": false,
-        "detail": "Top 50 1 天 (需 ≥3)",
+        "detail": "Top 50 2 天 (需 ≥3)",
         "top10_streak": 0,
-        "top50_streak": 1
+        "top50_streak": 2
       },
       "high_confidence": {
         "met": false,
-        "detail": "Uncertainty=0.0483 (需 <0.02)"
+        "detail": "Uncertainty=0.0271 (需 <0.02)"
       },
       "relative_low": {
         "met": true,
-        "detail": "RSI=43, 價格<MA20 (54.1<55.7)",
-        "rsi": 42.7,
+        "detail": "RSI=22, 價格<MA20 (105.0<107.0)",
+        "rsi": 22.3,
         "below_ma20": true
       },
       "institutional_buy": {
@@ -99,12 +280,12 @@
       }
     },
     {
-      "ticker": "6146",
-      "alpha_20d": 0.3476,
-      "sharpe": 4.541,
-      "confidence": "低信心",
-      "uncertainty": 0.0757,
-      "suggested_weight": 0.0147,
+      "ticker": "4915",
+      "alpha_20d": 0.1553,
+      "sharpe": 3.282,
+      "confidence": "中信心",
+      "uncertainty": 0.0461,
+      "suggested_weight": 0.0214,
       "conditions_met": 1,
       "conditions_total": 4,
       "rank_stability": {
@@ -115,12 +296,12 @@
       },
       "high_confidence": {
         "met": false,
-        "detail": "Uncertainty=0.0757 (需 <0.02)"
+        "detail": "Uncertainty=0.0461 (需 <0.02)"
       },
       "relative_low": {
         "met": true,
-        "detail": "RSI=48, 價格<MA20 (215.0<219.8)",
-        "rsi": 48.4,
+        "detail": "RSI=26, 價格<MA20 (70.6<72.8)",
+        "rsi": 26.0,
         "below_ma20": true
       },
       "institutional_buy": {
@@ -130,11 +311,41 @@
     },
     {
       "ticker": "6919",
-      "alpha_20d": 0.5413,
-      "sharpe": 4.391,
+      "alpha_20d": 0.1964,
+      "sharpe": 2.751,
       "confidence": "低信心",
-      "uncertainty": 0.1224,
-      "suggested_weight": 0.0142,
+      "uncertainty": 0.0699,
+      "suggested_weight": 0.0179,
+      "conditions_met": 1,
+      "conditions_total": 4,
+      "rank_stability": {
+        "met": false,
+        "detail": "Top 50 2 天 (需 ≥3)",
+        "top10_streak": 0,
+        "top50_streak": 2
+      },
+      "high_confidence": {
+        "met": false,
+        "detail": "Uncertainty=0.0699 (需 <0.02)"
+      },
+      "relative_low": {
+        "met": true,
+        "detail": "RSI=41, 價格<MA20 (99.3<103.3)",
+        "rsi": 40.7,
+        "below_ma20": true
+      },
+      "institutional_buy": {
+        "met": false,
+        "detail": "無此股機構資料"
+      }
+    },
+    {
+      "ticker": "2204",
+      "alpha_20d": 0.1474,
+      "sharpe": 2.715,
+      "confidence": "低信心",
+      "uncertainty": 0.0528,
+      "suggested_weight": 0.0177,
       "conditions_met": 1,
       "conditions_total": 4,
       "rank_stability": {
@@ -145,12 +356,12 @@
       },
       "high_confidence": {
         "met": false,
-        "detail": "Uncertainty=0.1224 (需 <0.02)"
+        "detail": "Uncertainty=0.0528 (需 <0.02)"
       },
       "relative_low": {
         "met": true,
-        "detail": "RSI=28, 價格<MA20 (97.1<103.9)",
-        "rsi": 28.0,
+        "detail": "RSI=35, 價格<MA20 (52.9<54.1)",
+        "rsi": 34.8,
         "below_ma20": true
       },
       "institutional_buy": {
@@ -160,10 +371,70 @@
     },
     {
       "ticker": "6592",
-      "alpha_20d": 0.589,
-      "sharpe": 4.105,
+      "alpha_20d": 0.1994,
+      "sharpe": 2.692,
       "confidence": "低信心",
-      "uncertainty": 0.1425,
+      "uncertainty": 0.0726,
+      "suggested_weight": 0.0175,
+      "conditions_met": 1,
+      "conditions_total": 4,
+      "rank_stability": {
+        "met": false,
+        "detail": "Top 50 2 天 (需 ≥3)",
+        "top10_streak": 0,
+        "top50_streak": 2
+      },
+      "high_confidence": {
+        "met": false,
+        "detail": "Uncertainty=0.0726 (需 <0.02)"
+      },
+      "relative_low": {
+        "met": true,
+        "detail": "RSI=35, 價格<MA20 (59.9<61.3)",
+        "rsi": 35.4,
+        "below_ma20": true
+      },
+      "institutional_buy": {
+        "met": false,
+        "detail": "無此股機構資料"
+      }
+    },
+    {
+      "ticker": "6146",
+      "alpha_20d": 0.0915,
+      "sharpe": 2.525,
+      "confidence": "中信心",
+      "uncertainty": 0.0347,
+      "suggested_weight": 0.0165,
+      "conditions_met": 1,
+      "conditions_total": 4,
+      "rank_stability": {
+        "met": false,
+        "detail": "Top 50 2 天 (需 ≥3)",
+        "top10_streak": 0,
+        "top50_streak": 2
+      },
+      "high_confidence": {
+        "met": false,
+        "detail": "Uncertainty=0.0347 (需 <0.02)"
+      },
+      "relative_low": {
+        "met": true,
+        "detail": "RSI=50, 價格<MA20 (215.0<219.6)",
+        "rsi": 49.5,
+        "below_ma20": true
+      },
+      "institutional_buy": {
+        "met": false,
+        "detail": "無此股機構資料"
+      }
+    },
+    {
+      "ticker": "2387",
+      "alpha_20d": 0.0678,
+      "sharpe": 2.038,
+      "confidence": "中信心",
+      "uncertainty": 0.0313,
       "suggested_weight": 0.0133,
       "conditions_met": 1,
       "conditions_total": 4,
@@ -175,12 +446,12 @@
       },
       "high_confidence": {
         "met": false,
-        "detail": "Uncertainty=0.1425 (需 <0.02)"
+        "detail": "Uncertainty=0.0313 (需 <0.02)"
       },
       "relative_low": {
         "met": true,
-        "detail": "RSI=35, 價格<MA20 (60.2<61.5)",
-        "rsi": 35.3,
+        "detail": "RSI=22, 價格<MA20 (38.1<40.5)",
+        "rsi": 21.8,
         "below_ma20": true
       },
       "institutional_buy": {
@@ -189,102 +460,12 @@
       }
     },
     {
-      "ticker": "8938",
-      "alpha_20d": 0.1693,
-      "sharpe": 3.517,
+      "ticker": "1342",
+      "alpha_20d": 0.063,
+      "sharpe": 1.889,
       "confidence": "中信心",
-      "uncertainty": 0.047,
-      "suggested_weight": 0.0114,
-      "conditions_met": 1,
-      "conditions_total": 4,
-      "rank_stability": {
-        "met": false,
-        "detail": "Top 50 1 天 (需 ≥3)",
-        "top10_streak": 0,
-        "top50_streak": 1
-      },
-      "high_confidence": {
-        "met": false,
-        "detail": "Uncertainty=0.0470 (需 <0.02)"
-      },
-      "relative_low": {
-        "met": true,
-        "detail": "RSI=30, 價格<MA20 (55.8<56.6)",
-        "rsi": 30.1,
-        "below_ma20": true
-      },
-      "institutional_buy": {
-        "met": false,
-        "detail": "無此股機構資料"
-      }
-    },
-    {
-      "ticker": "4137",
-      "alpha_20d": 0.2405,
-      "sharpe": 3.191,
-      "confidence": "低信心",
-      "uncertainty": 0.0741,
-      "suggested_weight": 0.0103,
-      "conditions_met": 1,
-      "conditions_total": 4,
-      "rank_stability": {
-        "met": false,
-        "detail": "Top 50 1 天 (需 ≥3)",
-        "top10_streak": 0,
-        "top50_streak": 1
-      },
-      "high_confidence": {
-        "met": false,
-        "detail": "Uncertainty=0.0741 (需 <0.02)"
-      },
-      "relative_low": {
-        "met": true,
-        "detail": "RSI=33, 價格<MA20 (105.0<107.0)",
-        "rsi": 33.0,
-        "below_ma20": true
-      },
-      "institutional_buy": {
-        "met": false,
-        "detail": "無此股機構資料"
-      }
-    },
-    {
-      "ticker": "3511",
-      "alpha_20d": 0.2361,
-      "sharpe": 3.138,
-      "confidence": "低信心",
-      "uncertainty": 0.074,
-      "suggested_weight": 0.0101,
-      "conditions_met": 1,
-      "conditions_total": 4,
-      "rank_stability": {
-        "met": false,
-        "detail": "Top 50 1 天 (需 ≥3)",
-        "top10_streak": 0,
-        "top50_streak": 1
-      },
-      "high_confidence": {
-        "met": false,
-        "detail": "Uncertainty=0.0740 (需 <0.02)"
-      },
-      "relative_low": {
-        "met": true,
-        "detail": "RSI=43, 價格<MA20 (20.9<22.2)",
-        "rsi": 42.7,
-        "below_ma20": true
-      },
-      "institutional_buy": {
-        "met": false,
-        "detail": "無此股機構資料"
-      }
-    },
-    {
-      "ticker": "2243",
-      "alpha_20d": 0.2085,
-      "sharpe": 3.053,
-      "confidence": "低信心",
-      "uncertainty": 0.067,
-      "suggested_weight": 0.0099,
+      "uncertainty": 0.0312,
+      "suggested_weight": 0.0123,
       "conditions_met": 1,
       "conditions_total": 4,
       "rank_stability": {
@@ -295,12 +476,12 @@
       },
       "high_confidence": {
         "met": false,
-        "detail": "Uncertainty=0.0670 (需 <0.02)"
+        "detail": "Uncertainty=0.0312 (需 <0.02)"
       },
       "relative_low": {
         "met": true,
-        "detail": "RSI=43, 價格<MA20 (22.2<25.1)",
-        "rsi": 42.7,
+        "detail": "RSI=54, 價格<MA20 (94.3<94.4)",
+        "rsi": 54.3,
         "below_ma20": true
       },
       "institutional_buy": {
@@ -309,12 +490,12 @@
       }
     },
     {
-      "ticker": "2527",
-      "alpha_20d": 0.196,
-      "sharpe": 2.467,
-      "confidence": "低信心",
-      "uncertainty": 0.0778,
-      "suggested_weight": 0.008,
+      "ticker": "5608",
+      "alpha_20d": 0.0702,
+      "sharpe": 1.791,
+      "confidence": "中信心",
+      "uncertainty": 0.037,
+      "suggested_weight": 0.0117,
       "conditions_met": 1,
       "conditions_total": 4,
       "rank_stability": {
@@ -325,12 +506,72 @@
       },
       "high_confidence": {
         "met": false,
-        "detail": "Uncertainty=0.0778 (需 <0.02)"
+        "detail": "Uncertainty=0.0370 (需 <0.02)"
       },
       "relative_low": {
         "met": true,
-        "detail": "RSI=47, 價格<MA20 (33.7<34.4)",
-        "rsi": 47.0,
+        "detail": "RSI=26, 價格<MA20 (14.8<15.2)",
+        "rsi": 25.9,
+        "below_ma20": true
+      },
+      "institutional_buy": {
+        "met": false,
+        "detail": "無此股機構資料"
+      }
+    },
+    {
+      "ticker": "4590",
+      "alpha_20d": 0.0653,
+      "sharpe": 1.646,
+      "confidence": "中信心",
+      "uncertainty": 0.0372,
+      "suggested_weight": 0.0107,
+      "conditions_met": 1,
+      "conditions_total": 4,
+      "rank_stability": {
+        "met": false,
+        "detail": "Top 50 1 天 (需 ≥3)",
+        "top10_streak": 0,
+        "top50_streak": 1
+      },
+      "high_confidence": {
+        "met": false,
+        "detail": "Uncertainty=0.0372 (需 <0.02)"
+      },
+      "relative_low": {
+        "met": true,
+        "detail": "RSI=37, 價格<MA20 (74.7<77.6)",
+        "rsi": 37.0,
+        "below_ma20": true
+      },
+      "institutional_buy": {
+        "met": false,
+        "detail": "無此股機構資料"
+      }
+    },
+    {
+      "ticker": "2031",
+      "alpha_20d": 0.0357,
+      "sharpe": 1.426,
+      "confidence": "中信心",
+      "uncertainty": 0.0222,
+      "suggested_weight": 0.0093,
+      "conditions_met": 1,
+      "conditions_total": 4,
+      "rank_stability": {
+        "met": false,
+        "detail": "Top 50 1 天 (需 ≥3)",
+        "top10_streak": 0,
+        "top50_streak": 1
+      },
+      "high_confidence": {
+        "met": false,
+        "detail": "Uncertainty=0.0222 (需 <0.02)"
+      },
+      "relative_low": {
+        "met": true,
+        "detail": "RSI=34, 價格<MA20 (38.5<39.9)",
+        "rsi": 34.5,
         "below_ma20": true
       },
       "institutional_buy": {
