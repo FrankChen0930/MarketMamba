@@ -19,9 +19,20 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import queue as _queue_mod
 import sys
+import threading
+import time
 from datetime import datetime
 from pathlib import Path
+
+try:
+    import tkinter as tk
+    from tkinter import ttk
+    from tkinter import font as tkfont
+    _TK_AVAILABLE = True
+except ImportError:
+    _TK_AVAILABLE = False
 
 # Make package importable when run as __main__
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -48,6 +59,306 @@ logging.basicConfig(
     handlers=[logging.StreamHandler(sys.stdout)],
 )
 logger = logging.getLogger("V6.Inference")
+
+
+# ============================================================
+# 進度視窗（tkinter）
+# ============================================================
+
+_BG      = "#F4F6F8"   # 淺灰背景
+_BG_CARD = "#FFFFFF"   # 白色卡片
+_FG      = "#1C1C2E"   # 深色文字
+_FG_DIM  = "#8A8FA8"   # 灰色輔助文字
+_ACCENT  = "#3B6FE8"   # 藍色強調
+_SEP     = "#E8EAF0"   # 分隔線
+_COLORS  = {
+    "pending": "#B0B8C8",
+    "running": "#3B6FE8",
+    "done":    "#22A96A",
+    "failed":  "#E53935",
+    "skipped": "#F59E0B",
+}
+_ICONS = {
+    "pending": "○", "running": "◉",
+    "done":    "✓", "failed":  "✗", "skipped": "—",
+}
+_STEPS_ZH = [
+    "資料更新",
+    "特徵矩陣建構",
+    "模型推論 (Mamba+GAT)",
+    "LLM 市場報告",
+    "歸檔",
+    "信號掃描",
+    "推送 GitHub",
+]
+
+
+def _fmt_time(secs: float) -> str:
+    m, s = divmod(int(secs), 60)
+    return f"{m}m {s:02d}s" if m else f"{s}s"
+
+
+_ui_queue: "_queue_mod.Queue | None" = None
+
+
+def _step_update(idx: int, status: str, note: str = "") -> None:
+    """Push a step state change to the UI queue (no-op when UI is not running)."""
+    if _ui_queue is not None:
+        _ui_queue.put(("step", idx, status, note))
+
+
+def _ui_set_info(date_str: str, device_str: str) -> None:
+    if _ui_queue is not None:
+        _ui_queue.put(("info", date_str, device_str))
+
+
+class _UiLogHandler(logging.Handler):
+    """將 log 導向 UI queue（僅在 UI 啟動時有效）。"""
+    def emit(self, record: logging.LogRecord) -> None:
+        if _ui_queue is not None:
+            _ui_queue.put(("log", self.format(record)))
+
+
+class ProgressWindow:
+    """
+    每日推論進度視窗。
+    - 成功：3 秒倒數後自動關閉
+    - 失敗：視窗保持開啟、跳到最前、失敗步驟整行標紅
+    """
+
+    def __init__(self) -> None:
+        self.root = tk.Tk()
+        self.root.title("MarketMamba V6  每日推論")
+        self.root.configure(bg=_BG)
+        self.root.resizable(False, False)
+
+        global _ui_queue
+        self._q: _queue_mod.Queue = _queue_mod.Queue()
+        _ui_queue = self._q
+
+        self._step_status:  list = ["pending"] * len(_STEPS_ZH)
+        self._step_t_start: list = [None]      * len(_STEPS_ZH)
+        self._pipe_start          = None
+        self._finished: bool      = False
+        self._has_error: bool     = False
+
+        self._build()
+
+        # 置中顯示
+        self.root.update_idletasks()
+        sw = self.root.winfo_screenwidth()
+        sh = self.root.winfo_screenheight()
+        ww = self.root.winfo_reqwidth()
+        wh = self.root.winfo_reqheight()
+        self.root.geometry(f"{ww}x{wh}+{(sw - ww) // 2}+{(sh - wh) // 2}")
+        self.root.protocol("WM_DELETE_WINDOW", self._on_close)
+
+    # ── 介面建構 ──────────────────────────────────────────────────────────
+    def _build(self) -> None:
+        root  = self.root
+        PAD   = 24   # 外邊距
+
+        # 自動選字體：優先 Ubuntu，次 DejaVu Sans
+        fam = "Ubuntu"
+        try:
+            tkfont.Font(family="Ubuntu", size=10).actual()
+        except Exception:
+            fam = "DejaVu Sans"
+
+        f_h1     = tkfont.Font(family=fam, size=15, weight="bold")
+        f_meta   = tkfont.Font(family=fam, size=10)
+        f_step   = tkfont.Font(family=fam, size=12)
+        f_icon   = tkfont.Font(family=fam, size=13, weight="bold")
+        f_time   = tkfont.Font(family=fam, size=11)
+        f_status = tkfont.Font(family=fam, size=11)
+
+        # ── 頂部白色標題卡 ──
+        top_card = tk.Frame(root, bg=_BG_CARD)
+        top_card.pack(fill="x")
+        inner = tk.Frame(top_card, bg=_BG_CARD)
+        inner.pack(fill="x", padx=PAD, pady=(18, 14))
+        tk.Label(inner, text="MarketMamba V6", font=f_h1,
+                 bg=_BG_CARD, fg=_ACCENT).pack(anchor="w")
+        self._lbl_meta = tk.Label(inner, text="", font=f_meta, bg=_BG_CARD, fg=_FG_DIM)
+        self._lbl_meta.pack(anchor="w", pady=(3, 0))
+
+        # 分隔線
+        tk.Frame(root, bg=_SEP, height=1).pack(fill="x")
+
+        # ── 步驟列表（白色卡片）──
+        steps_card = tk.Frame(root, bg=_BG_CARD)
+        steps_card.pack(fill="x")
+
+        self._step_row:      list[tk.Frame] = []
+        self._step_icon_lbl: list[tk.Label] = []
+        self._step_name_lbl: list[tk.Label] = []
+        self._step_time_lbl: list[tk.Label] = []
+
+        for i, name in enumerate(_STEPS_ZH):
+            row = tk.Frame(steps_card, bg=_BG_CARD)
+            row.pack(fill="x", padx=PAD, pady=(6, 0))
+            self._step_row.append(row)
+
+            icon = tk.Label(row, text=_ICONS["pending"], font=f_icon,
+                            bg=_BG_CARD, fg=_COLORS["pending"], width=2, anchor="w")
+            icon.pack(side="left")
+            self._step_icon_lbl.append(icon)
+
+            name_lbl = tk.Label(row, text=name, font=f_step,
+                                bg=_BG_CARD, fg=_FG, anchor="w")
+            name_lbl.pack(side="left", padx=(8, 0))
+            self._step_name_lbl.append(name_lbl)
+
+            time_lbl = tk.Label(row, text="—", font=f_time,
+                                bg=_BG_CARD, fg=_FG_DIM, anchor="e")
+            time_lbl.pack(side="right")
+            self._step_time_lbl.append(time_lbl)
+
+        tk.Frame(steps_card, bg=_BG_CARD, height=12).pack()   # 底部留白
+
+        # 分隔線
+        tk.Frame(root, bg=_SEP, height=1).pack(fill="x")
+
+        # ── 細進度條（Canvas，避免 ttk 主題問題）──
+        self._pb_canvas = tk.Canvas(root, height=5, bg=_BG,
+                                     highlightthickness=0)
+        self._pb_canvas.pack(fill="x")
+        self._pb_canvas.bind("<Configure>", self._redraw_pb)
+        self._pb_pct = 0.0
+
+        # ── 狀態 / 計時 ──
+        foot = tk.Frame(root, bg=_BG)
+        foot.pack(fill="x", padx=PAD, pady=(10, 20))
+        self._lbl_status = tk.Label(foot, text="準備中…", font=f_status,
+                                     bg=_BG, fg=_ACCENT, anchor="w")
+        self._lbl_status.pack(side="left")
+        self._lbl_total = tk.Label(foot, text="", font=f_status,
+                                    bg=_BG, fg=_FG_DIM, anchor="e")
+        self._lbl_total.pack(side="right")
+
+    def _redraw_pb(self, _event=None) -> None:
+        c = self._pb_canvas
+        w, h = c.winfo_width(), 5
+        c.delete("all")
+        c.create_rectangle(0, 0, w, h, fill=_SEP, outline="")
+        if self._pb_pct > 0:
+            c.create_rectangle(0, 0, max(h, int(w * self._pb_pct / 100)), h,
+                                fill=_ACCENT, outline="")
+
+    # ── 執行緒入口 ────────────────────────────────────────────────────────
+    def run_with(self, fn, *args, **kwargs) -> None:
+        def _worker():
+            try:
+                fn(*args, **kwargs)
+            except Exception as exc:
+                self._q.put(("fatal", str(exc)))
+            finally:
+                self._q.put(("finished",))
+
+        threading.Thread(target=_worker, daemon=True).start()
+        self.root.after(50, self._poll)
+        self.root.mainloop()
+
+    # ── 內部更新 ──────────────────────────────────────────────────────────
+    def _poll(self) -> None:
+        try:
+            while True:
+                self._dispatch(self._q.get_nowait())
+        except _queue_mod.Empty:
+            pass
+        self._tick()
+        if not self._finished:
+            self.root.after(200, self._poll)
+
+    def _dispatch(self, msg: tuple) -> None:
+        kind = msg[0]
+        if kind == "info":
+            _, date_str, device_str = msg
+            self._lbl_meta.config(text=f"{date_str}  ·  {device_str}")
+            self._pipe_start = time.monotonic()
+            self._lbl_status.config(text="推論執行中…", fg=_ACCENT)
+        elif kind == "step":
+            _, idx, status, note = msg
+            self._apply_step(idx, status)
+        elif kind == "log":
+            pass   # log 只寫 inference.log，不佔用視窗空間
+        elif kind == "fatal":
+            _, err = msg
+            self._has_error = True
+            self._lbl_status.config(text=f"錯誤：{err[:72]}", fg=_COLORS["failed"])
+        elif kind == "finished":
+            self._finished = True
+            self._tick()
+            n_fail = sum(1 for s in self._step_status if s == "failed")
+            total  = time.monotonic() - (self._pipe_start or time.monotonic())
+            if n_fail == 0 and not self._has_error:
+                # ✅ 成功 → 倒數 3 秒自動關閉
+                self._countdown(3, total)
+            else:
+                # ❌ 失敗 → 保持視窗、拉到最前
+                self._lbl_status.config(
+                    text="推論發生錯誤，請查閱 V6/logs/inference.log",
+                    fg=_COLORS["failed"])
+                self._lbl_total.config(text=f"總耗時 {_fmt_time(total)}", fg=_FG_DIM)
+                self.root.title("❌ MarketMamba — 推論失敗")
+                self.root.lift()
+                self.root.focus_force()
+                self.root.attributes("-topmost", True)
+
+    def _countdown(self, n: int, total: float) -> None:
+        if not self.root.winfo_exists():
+            return
+        if n <= 0:
+            global _ui_queue
+            _ui_queue = None
+            try:
+                self.root.destroy()
+            except Exception:
+                pass
+            return
+        self._lbl_status.config(
+            text=f"全部完成  （{n} 秒後關閉）",
+            fg=_COLORS["done"])
+        self._lbl_total.config(text=f"總耗時 {_fmt_time(total)}", fg=_FG_DIM)
+        self.root.after(1000, self._countdown, n - 1, total)
+
+    def _apply_step(self, idx: int, status: str) -> None:
+        self._step_status[idx] = status
+        if status == "running":
+            self._step_t_start[idx] = time.monotonic()
+        color = _COLORS[status]
+        self._step_icon_lbl[idx].config(text=_ICONS[status], fg=color)
+        if status in ("done", "failed", "skipped") and self._step_t_start[idx]:
+            elapsed = _fmt_time(time.monotonic() - self._step_t_start[idx])
+            tc = _FG_DIM if status == "done" else color
+            self._step_time_lbl[idx].config(text=elapsed, fg=tc)
+        if status == "failed":
+            # 整行背景變紅
+            ERR_BG = "#FFF0F0"
+            for w in [self._step_row[idx], self._step_icon_lbl[idx],
+                      self._step_name_lbl[idx], self._step_time_lbl[idx]]:
+                w.configure(bg=ERR_BG)
+        # 進度條
+        done = sum(1 for s in self._step_status if s in ("done", "failed", "skipped"))
+        self._pb_pct = done / len(_STEPS_ZH) * 100
+        self._redraw_pb()
+
+    def _tick(self) -> None:
+        now = time.monotonic()
+        for i, (status, t0) in enumerate(zip(self._step_status, self._step_t_start)):
+            if status == "running" and t0 is not None:
+                self._step_time_lbl[i].config(
+                    text=_fmt_time(now - t0) + "…", fg=_COLORS["running"])
+        if self._pipe_start and not self._finished:
+            self._lbl_total.config(text=f"總耗時 {_fmt_time(now - self._pipe_start)}")
+
+    def _on_close(self) -> None:
+        if not self._finished:
+            self.root.iconify()   # 推論仍在執行中，最小化
+        else:
+            global _ui_queue
+            _ui_queue = None
+            self.root.destroy()
 
 
 # ============================================================
@@ -152,6 +463,13 @@ def run_inference(
         "Uncertainty":   pred_std[:, 1],    # 20d uncertainty
     })
 
+    # S1: Clip extreme predictions to prevent outlier distortion
+    _ALPHA_CLIP = 2.0
+    df_kelly["Exp_Alpha_5d"]  = df_kelly["Exp_Alpha_5d"].clip(-_ALPHA_CLIP, _ALPHA_CLIP)
+    df_kelly["Exp_Alpha_20d"] = df_kelly["Exp_Alpha_20d"].clip(-_ALPHA_CLIP, _ALPHA_CLIP)
+    df_kelly["Exp_Alpha_60d"] = df_kelly["Exp_Alpha_60d"].clip(-_ALPHA_CLIP, _ALPHA_CLIP)
+    df_kelly["Uncertainty"]   = df_kelly["Uncertainty"].clip(0.0, None)
+
     # Liquidity filter — use RAW prices (Volume/Close are z-scored in feature matrix)
     mask = df["Date"] == latest_date
     try:
@@ -187,8 +505,8 @@ def run_inference(
         df_kelly["Exp_Alpha_20d"] - df_kelly["Slippage_Est"]
     ).clip(lower=-1.0)
 
-    # Sharpe score = Net Alpha / Uncertainty (proxy for risk-adjusted rank)
-    df_kelly["Sharpe_Score"] = (
+    # Signal Quality = Net Alpha / Uncertainty (proxy for risk-adjusted rank)
+    df_kelly["Signal_Quality"] = (
         df_kelly["Net_Alpha_20d"] / (df_kelly["Uncertainty"] + 1e-6)
     ).clip(lower=-10.0, upper=10.0)
 
@@ -200,13 +518,13 @@ def run_inference(
         right=False,
     )
 
-    # Kelly weight (simplified, proportional to Sharpe clipped at 0)
-    positive = df_kelly["Sharpe_Score"].clip(lower=0)
+    # Kelly weight (simplified, proportional to Signal Quality clipped at 0)
+    positive = df_kelly["Signal_Quality"].clip(lower=0)
     total = positive.sum()
     df_kelly["Suggested_Weight"] = (positive / (total + 1e-9)).round(4)
 
     # Sort by Sharpe — exclude penalised stocks from Top 10 display
-    df_kelly = df_kelly.sort_values("Sharpe_Score", ascending=False).reset_index(drop=True)
+    df_kelly = df_kelly.sort_values("Signal_Quality", ascending=False).reset_index(drop=True)
 
 
     # -- Build df_traj: multi-horizon trajectory --
@@ -229,9 +547,8 @@ def run_inference(
 # ============================================================
 
 def main(target_date: str | None = None, skip_push: bool = False) -> None:
-    # ── Time-aware date selection ─────────────────────────────────────────────
-    # Taiwan market closes at 13:30; data is reliable after ~14:00.
-    # Running before 14:00 would fetch incomplete/empty data → use yesterday.
+    # ── 時間感知日期選擇 ──────────────────────────────────────────────────────
+    # 台股 13:30 收盤，14:00 前執行時使用昨日日期
     if target_date is not None:
         today = target_date
     else:
@@ -241,179 +558,260 @@ def main(target_date: str | None = None, skip_push: bool = False) -> None:
         if now_twn.hour < 14:
             today = (now_twn - timedelta(days=1)).strftime("%Y-%m-%d")
             logger.info(
-                f"⏰ Before 14:00 Taiwan time ({now_twn.strftime('%H:%M')}) — "
-                f"using yesterday's date: {today}"
+                f"⏰ 台灣時間 {now_twn.strftime('%H:%M')} — 尚未收盤，使用昨日日期：{today}"
             )
         else:
             today = now_twn.strftime("%Y-%m-%d")
 
     logger.info(f"\n{'='*55}")
-    logger.info(f"  MarketMamba V6 — Daily Inference  [{today}]")
+    logger.info(f"  MarketMamba V6 — 每日推論  [{today}]")
     logger.info(f"{'='*55}")
 
     device_str = "cuda" if torch.cuda.is_available() else "cpu"
-    logger.info(f"  Device: {device_str}")
+    logger.info(f"  裝置：{device_str}")
+    gpu_name = ""
     if device_str == "cuda":
-        logger.info(f"  GPU   : {torch.cuda.get_device_name(0)}")
+        gpu_name = torch.cuda.get_device_name(0)
+        logger.info(f"  GPU：{gpu_name}")
 
+    pipeline_start = time.monotonic()
+    _ui_set_info(today, f"{device_str}" + (f" ({gpu_name})" if gpu_name else ""))
 
-    # -- Step 1: Data update --
-    logger.info("\n[Step 1/5] Hybrid data update...")
+    _fmt = _fmt_time   # 本地別名
+
     try:
-        run_daily_update(target_date=today)
-    except Exception as e:
-        logger.error(f"Data update failed: {e}")
+        # ── 步驟 1：資料更新 ─────────────────────────────────────────────────
+        t0 = time.monotonic()
+        logger.info(f"\n{'─'*50}")
+        logger.info(f"[1/7] 資料更新  [{datetime.now().strftime('%H:%M:%S')}]")
+        logger.info(f"{'─'*50}")
+        _step_update(0, "running")
+        try:
+            run_daily_update(target_date=today)
+        except Exception as e:
+            logger.error(f"資料更新失敗：{e}")
+            _step_update(0, "failed", str(e)[:60])
+            raise
+        elapsed = time.monotonic() - t0
+        logger.info(f"[1/7] ✓ 完成 ({_fmt(elapsed)})")
+        _step_update(0, "done")
+
+        # ── 步驟 2：特徵矩陣建構 ─────────────────────────────────────────────
+        t0 = time.monotonic()
+        logger.info(f"\n{'─'*50}")
+        logger.info(f"[2/7] 特徵矩陣建構  [{datetime.now().strftime('%H:%M:%S')}]")
+        logger.info(f"{'─'*50}")
+        _step_update(1, "running")
+
+        def _read(name: str):
+            path = PROCESSED_DIR / name
+            return pd.read_parquet(path) if path.exists() else None
+
+        # V6.0 核心數據
+        prices       = _read("prices_raw.parquet")
+        inst         = _read("institutional_raw.parquet")
+        margin       = _read("margin_raw.parquet")
+        per          = _read("per_raw.parquet")
+        market_value = _read("market_value_raw.parquet")
+        daytrade     = _read("daytrade_raw.parquet")
+        revenue      = _read("revenue_raw.parquet")
+        financials   = _read("financials_raw.parquet")
+        balance_sheet = _read("balance_sheet_raw.parquet")
+        macro        = _read("macro_raw.parquet")
+
+        # V6.1 新增數據
+        securities   = _read("securities_raw.parquet")
+        holdings     = _read("holdings_raw.parquet")
+        cashflow     = _read("cashflow_raw.parquet")
+        dividend     = _read("dividend_raw.parquet")
+        foreign_shareholding = _read("foreign_shareholding_raw.parquet")
+        fear_greed   = _read("fear_greed.parquet")
+        business_indicator = _read("business_indicator.parquet")
+        fed_rate     = _read("fed_rate.parquet")
+        futures_inst = _read("futures_institutional_raw.parquet")
+        options_inst = _read("options_institutional_raw.parquet")
+
+        if prices is None:
+            raise FileNotFoundError(f"prices_raw.parquet 不存在：{PROCESSED_DIR}")
+
+        # 只保留近 2 年，避免 OOM（覆蓋所有滾動窗口 MA_60 / ATR_14 / SEQ_LEN=60）
+        INFERENCE_LOOKBACK_DAYS = 730
+        prices["Date"] = pd.to_datetime(prices["Date"])
+        cutoff = prices["Date"].max() - pd.Timedelta(days=INFERENCE_LOOKBACK_DAYS)
+        prices = prices[prices["Date"] >= cutoff].copy()
+        logger.info(f"股價資料截取近 2 年：{len(prices):,} 筆 "
+                    f"({prices['Date'].min().date()} → {prices['Date'].max().date()})")
+
+        def _trim(df_src):
+            if df_src is None: return None
+            if "Date" in df_src.columns:
+                df_src["Date"] = pd.to_datetime(df_src["Date"])
+                return df_src[df_src["Date"] >= cutoff].copy()
+            return df_src
+
+        inst     = _trim(inst)
+        margin   = _trim(margin)
+        daytrade = _trim(daytrade)
+        holdings = _trim(holdings)
+        securities = _trim(securities)
+        foreign_shareholding = _trim(foreign_shareholding)
+
+        df = build_features(
+            df_price         = prices,
+            df_inst          = inst,
+            df_margin        = margin,
+            df_per           = per,
+            df_securities    = securities,
+            df_market_value  = market_value,
+            df_daytrade      = daytrade,
+            df_holdings      = holdings,
+            df_rev           = revenue,
+            df_fin           = financials,
+            df_balance_sheet = balance_sheet,
+            df_cashflow      = cashflow,
+            df_macro         = macro,
+            df_futures_inst  = futures_inst,
+            df_options_inst  = options_inst,
+            df_dividend      = dividend,
+            df_foreign_shareholding = foreign_shareholding,
+            df_fear_greed    = fear_greed,
+            df_business_indicator = business_indicator,
+            df_fed_rate      = fed_rate,
+        )
+        df = clean_and_scale(df)
+        # 去重：institutional_raw 長格式（4 rows/stock/date）→ 4 倍重複
+        n_before = len(df)
+        df = df.drop_duplicates(subset=["Date", "stock_id"], keep="last")
+        if len(df) < n_before:
+            logger.info(f"去重後：{n_before:,} → {len(df):,} 筆")
+
+        # S2: Data freshness check — warn if prices >3 calendar days stale
+        from zoneinfo import ZoneInfo
+        _latest_price = pd.Timestamp(df["Date"].max()).date()
+        _today_twn    = datetime.now(ZoneInfo("Asia/Taipei")).date()
+        _stale_days   = (_today_twn - _latest_price).days
+        _freshness_note = ""
+        if _stale_days > 3:
+            logger.warning(
+                f"⚠️ 資料可能過舊：最新股價 {_latest_price}（{_stale_days} 天前），"
+                "可能遇到連假或資料延遲"
+            )
+            _freshness_note = f" ⚠️ {_stale_days}天前"
+
+        elapsed = time.monotonic() - t0
+        logger.info(f"特徵矩陣：{df.shape}")
+        logger.info(f"[2/7] ✓ 完成 ({_fmt(elapsed)})")
+        _step_update(1, "done", f"{df.shape[0]:,} × {df.shape[1]} 特徵{_freshness_note}")
+
+        # ── 步驟 3：模型推論 ─────────────────────────────────────────────────
+        t0 = time.monotonic()
+        logger.info(f"\n{'─'*50}")
+        logger.info(f"[3/7] 模型推論  [{datetime.now().strftime('%H:%M:%S')}]")
+        logger.info(f"{'─'*50}")
+        _step_update(2, "running")
+        df_kelly, df_traj = run_inference(df, device_str=device_str)
+
+        RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+        df_kelly.to_csv(RESULTS_DIR / "df_kelly.csv", index=False, encoding="utf-8-sig")
+        df_traj.to_csv(RESULTS_DIR  / "df_traj.csv",  index=False, encoding="utf-8-sig")
+
+        elapsed      = time.monotonic() - t0
+        investable   = df_kelly[df_kelly["Exp_Alpha_20d"] > -999]
+        n_investable = len(investable)
+        top10        = investable.head(10)
+
+        logger.info(f"\n🎯 Top 10 Alpha 股票 [{today}]：")
+        print(
+            top10[["Ticker", "Exp_Alpha_20d", "Signal_Quality", "Confidence", "Suggested_Weight"]]
+            .to_string(index=False)
+        )
+        logger.info(f"可投資股票：{n_investable} / {len(df_kelly)}")
+        logger.info(f"[3/7] ✓ 完成 ({_fmt(elapsed)})")
+
+        top_ticker = top10.iloc[0]["Ticker"]       if len(top10) > 0 else "—"
+        top_alpha  = top10.iloc[0]["Exp_Alpha_20d"] if len(top10) > 0 else 0.0
+        _step_update(2, "done",
+                     f"可投資 {n_investable}/{len(df_kelly)} · Top：{top_ticker} α={top_alpha:+.4f}")
+
+        # ── 步驟 4：LLM 市場報告 ─────────────────────────────────────────────
+        t0 = time.monotonic()
+        logger.info(f"\n{'─'*50}")
+        logger.info(f"[4/7] LLM 市場報告  [{datetime.now().strftime('%H:%M:%S')}]")
+        logger.info(f"{'─'*50}")
+        _step_update(3, "running")
+        try:
+            market_data = build_market_data()
+            report = generate_market_report(df_kelly, market_data, save=True)
+            elapsed = time.monotonic() - t0
+            logger.info(f"\n📝 報告摘要：\n{report['summary'][:300]}...")
+            logger.info(f"[4/7] ✓ 完成 ({_fmt(elapsed)})")
+            _step_update(3, "done")
+        except Exception as e:
+            elapsed = time.monotonic() - t0
+            logger.warning(f"LLM 報告略過：{e} ({_fmt(elapsed)})")
+            _step_update(3, "skipped", str(e)[:60])
+
+        # ── 步驟 5：歸檔 ─────────────────────────────────────────────────────
+        t0 = time.monotonic()
+        logger.info(f"\n{'─'*50}")
+        logger.info(f"[5/7] 歸檔  [{datetime.now().strftime('%H:%M:%S')}]")
+        logger.info(f"{'─'*50}")
+        _step_update(4, "running")
+        _archive_results(df_kelly, today)
+        elapsed = time.monotonic() - t0
+        logger.info(f"[5/7] ✓ 完成 ({_fmt(elapsed)})")
+        _step_update(4, "done")
+
+        # ── 步驟 6：信號掃描 ─────────────────────────────────────────────────
+        t0 = time.monotonic()
+        logger.info(f"\n{'─'*50}")
+        logger.info(f"[6/7] 信號掃描  [{datetime.now().strftime('%H:%M:%S')}]")
+        logger.info(f"{'─'*50}")
+        _step_update(5, "running")
+        n_buy = n_exit = n_watch = 0
+        try:
+            from marketmamba.signals.scanner import run_scan
+            scan_result = run_scan(df_kelly_path=RESULTS_DIR / "df_kelly.csv")
+            n_buy   = len(scan_result.get("buy_signals",  []))
+            n_exit  = len(scan_result.get("exit_signals", []))
+            n_watch = len(scan_result.get("watch_list",   []))
+            elapsed = time.monotonic() - t0
+            logger.info(f"  掃描結果：{n_buy} BUY · {n_exit} EXIT · {n_watch} WATCH ({_fmt(elapsed)})")
+            logger.info(f"[6/7] ✓ 完成 ({_fmt(elapsed)})")
+            _step_update(5, "done", f"{n_buy} BUY · {n_exit} EXIT · {n_watch} WATCH")
+        except Exception as e:
+            elapsed = time.monotonic() - t0
+            logger.warning(f"信號掃描失敗（非致命）：{e} ({_fmt(elapsed)})")
+            _step_update(5, "failed", str(e)[:60])
+
+        # ── 步驟 7：推送 GitHub ───────────────────────────────────────────────
+        logger.info(f"\n{'─'*50}")
+        logger.info(f"[7/7] 推送 GitHub  [{datetime.now().strftime('%H:%M:%S')}]")
+        logger.info(f"{'─'*50}")
+        pushed = False
+        if not skip_push:
+            _step_update(6, "running")
+            pushed = _push_to_github(RESULTS_DIR, today)
+            if pushed:
+                logger.info("  後端將在下次快取刷新後（≤1h）提供最新數據")
+                _step_update(6, "done")
+            else:
+                _step_update(6, "failed", "git push 失敗，請手動推送")
+        else:
+            logger.info("  --skip-push：略過 git push（dry run 模式）")
+            _step_update(6, "skipped", "--skip-push 模式")
+
+        total = time.monotonic() - pipeline_start
+        logger.info(f"\n{'='*55}")
+        logger.info(f"  ✅ 每日推論完成  [{today}]")
+        logger.info(f"  結果路徑：{RESULTS_DIR}")
+        logger.info(f"  總耗時：{_fmt(total)}")
+        logger.info(f"{'='*55}\n")
+
+    except Exception as exc:
+        total = time.monotonic() - pipeline_start
+        logger.error(f"推論失敗，已執行 {_fmt(total)}：{exc}", exc_info=True)
         raise
-
-    # -- Step 2: Feature matrix --
-    logger.info("\n[Step 2/5] Building feature matrix...")
-
-    def _read(name: str):
-        path = PROCESSED_DIR / name
-        return pd.read_parquet(path) if path.exists() else None
-
-    # V6.0 core sources
-    prices       = _read("prices_raw.parquet")
-    inst         = _read("institutional_raw.parquet")
-    margin       = _read("margin_raw.parquet")
-    per          = _read("per_raw.parquet")
-    market_value = _read("market_value_raw.parquet")
-    daytrade     = _read("daytrade_raw.parquet")
-    revenue      = _read("revenue_raw.parquet")
-    financials   = _read("financials_raw.parquet")
-    balance_sheet = _read("balance_sheet_raw.parquet")
-    macro        = _read("macro_raw.parquet")
-
-    # V6.1 additional sources
-    securities   = _read("securities_raw.parquet")
-    holdings     = _read("holdings_raw.parquet")
-    cashflow     = _read("cashflow_raw.parquet")
-    dividend     = _read("dividend_raw.parquet")
-    foreign_shareholding = _read("foreign_shareholding_raw.parquet")
-    fear_greed   = _read("fear_greed.parquet")
-    business_indicator = _read("business_indicator.parquet")
-    fed_rate     = _read("fed_rate.parquet")
-    futures_inst = _read("futures_institutional_raw.parquet")
-    options_inst = _read("options_institutional_raw.parquet")
-
-    if prices is None:
-        raise FileNotFoundError(f"prices_raw.parquet not found in {PROCESSED_DIR}")
-
-    # For inference, only the last ~2 years is needed to cover all rolling windows
-    # (MA_60, ATR_14, SEQ_LEN=60, etc.). Loading 14 years causes OOM on local machine.
-    INFERENCE_LOOKBACK_DAYS = 730  # 2 calendar years ≈ 500 trading days
-    prices["Date"] = pd.to_datetime(prices["Date"])
-    cutoff = prices["Date"].max() - pd.Timedelta(days=INFERENCE_LOOKBACK_DAYS)
-    prices = prices[prices["Date"] >= cutoff].copy()
-    logger.info(f"Prices trimmed to last 2y: {len(prices):,} rows "
-                f"({prices['Date'].min().date()} → {prices['Date'].max().date()})")
-
-    # Trim other time-series data to same window (save memory)
-    def _trim(df_src):
-        if df_src is None: return None
-        if "Date" in df_src.columns:
-            df_src["Date"] = pd.to_datetime(df_src["Date"])
-            return df_src[df_src["Date"] >= cutoff].copy()
-        return df_src
-
-    inst     = _trim(inst)
-    margin   = _trim(margin)
-    daytrade = _trim(daytrade)
-    holdings = _trim(holdings)
-    securities = _trim(securities)
-    foreign_shareholding = _trim(foreign_shareholding)
-
-    df = build_features(
-        df_price         = prices,
-        df_inst          = inst,
-        df_margin        = margin,
-        df_per           = per,
-        df_securities    = securities,
-        df_market_value  = market_value,
-        df_daytrade      = daytrade,
-        df_holdings      = holdings,
-        df_rev           = revenue,
-        df_fin           = financials,
-        df_balance_sheet = balance_sheet,
-        df_cashflow      = cashflow,
-        df_macro         = macro,
-        # V6.1 new data sources
-        df_futures_inst  = futures_inst,
-        df_options_inst  = options_inst,
-        df_dividend      = dividend,
-        df_foreign_shareholding = foreign_shareholding,
-        df_fear_greed    = fear_greed,
-        df_business_indicator = business_indicator,
-        df_fed_rate      = fed_rate,
-    )
-    df = clean_and_scale(df)
-    # Deduplicate: institutional_raw is long-format (4 rows/stock/date) → 4x duplication
-    n_before = len(df)
-    df = df.drop_duplicates(subset=["Date", "stock_id"], keep="last")
-    if len(df) < n_before:
-        logger.info(f"Deduped feature matrix: {n_before:,} → {len(df):,} rows")
-    logger.info(f"Feature matrix: {df.shape}")
-
-
-
-    # -- Step 3: Inference --
-    logger.info("\n[Step 3/5] Running V6 inference...")
-    df_kelly, df_traj = run_inference(df, device_str=device_str)
-
-    # Save results
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    kelly_path = RESULTS_DIR / "df_kelly.csv"
-    traj_path  = RESULTS_DIR / "df_traj.csv"
-    df_kelly.to_csv(kelly_path, index=False, encoding="utf-8-sig")
-    df_traj.to_csv(traj_path,  index=False, encoding="utf-8-sig")
-
-    logger.info(f"\n🎯 Top 10 Alpha Stocks [{today}]:")
-    top10 = df_kelly[df_kelly["Exp_Alpha_20d"] > -999].head(10)
-    print(
-        top10[["Ticker", "Exp_Alpha_20d", "Sharpe_Score", "Confidence", "Suggested_Weight"]]
-        .to_string(index=False)
-    )
-    logger.info(f"Total investable stocks: {(df_kelly['Exp_Alpha_20d'] > -999).sum()} "
-                f"/ {len(df_kelly)} total")
-
-
-    # -- Step 4: LLM Report --
-    logger.info("\n[Step 4/5] Generating LLM market report...")
-    try:
-        market_data = build_market_data()
-        report = generate_market_report(df_kelly, market_data, save=True)
-        logger.info(f"\n📝 LLM Report preview:\n{report['summary'][:300]}...")
-    except Exception as e:
-        logger.warning(f"LLM report skipped: {e}")
-
-    # -- Step 5a: Archive (rolling 90-day history) --
-    logger.info("\n[Step 5/6] Archiving results...")
-    _archive_results(df_kelly, today)
-
-    # -- Step 5b: Signal Scanner --
-    logger.info("\n[Step 6/6] Running Signal Scanner...")
-    try:
-        from marketmamba.signals.scanner import run_scan
-        scan_result = run_scan(df_kelly_path=RESULTS_DIR / "df_kelly.csv")
-        n_buy = len(scan_result.get("buy_signals", []))
-        n_exit = len(scan_result.get("exit_signals", []))
-        n_watch = len(scan_result.get("watch_list", []))
-        logger.info(f"  Scanner: {n_buy} BUY · {n_exit} EXIT · {n_watch} WATCH")
-    except Exception as e:
-        logger.warning(f"Signal Scanner failed (non-fatal): {e}")
-
-    # -- Push to GitHub (backend auto-updates) --
-    if not skip_push:
-        pushed = _push_to_github(RESULTS_DIR, today)
-        if pushed:
-            logger.info("  Backend will serve real data on next cache refresh (≤1h)")
-    else:
-        logger.info("  --skip-push: skipping git push (dry run)")
-
-    logger.info(f"\n{'='*55}")
-    logger.info(f"  ✅ V6 Inference complete [{today}]")
-    logger.info(f"  Results: {RESULTS_DIR}")
-    logger.info(f"{'='*55}\n")
 
 
 def _push_to_github(results_dir: Path, date_str: str) -> bool:
@@ -539,7 +937,7 @@ def _update_history_index(df_kelly: pd.DataFrame, date_str: str) -> None:
     investable = df_kelly[df_kelly["Exp_Alpha_20d"] > -999]
     top50 = investable.head(50)
 
-    cols_needed = ["Ticker", "Exp_Alpha_20d", "Sharpe_Score", "Confidence", "Suggested_Weight", "Uncertainty"]
+    cols_needed = ["Ticker", "Exp_Alpha_20d", "Signal_Quality", "Confidence", "Suggested_Weight", "Uncertainty"]
     available   = [c for c in cols_needed if c in top50.columns]
     portfolio   = []
     for i, (_, row) in enumerate(top50[available].iterrows()):
@@ -547,7 +945,7 @@ def _update_history_index(df_kelly: pd.DataFrame, date_str: str) -> None:
             "rank":       i + 1,
             "ticker":     str(row.get("Ticker", "")),
             "alpha":      round(float(row.get("Exp_Alpha_20d", 0)), 6),
-            "sharpe":     round(float(row.get("Sharpe_Score",  0)), 3),
+            "sharpe":     round(float(row.get("Signal_Quality",  0)), 3),
             "confidence": str(row.get("Confidence", "")),
             "weight":     round(float(row.get("Suggested_Weight", 0)), 4),
             "uncertainty":round(float(row.get("Uncertainty", 0)), 6),
@@ -570,8 +968,25 @@ def _update_history_index(df_kelly: pd.DataFrame, date_str: str) -> None:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="MarketMamba V6 Daily Inference")
-    parser.add_argument("--date",      type=str,  default=None, help="Target date YYYY-MM-DD (default: today)")
-    parser.add_argument("--skip-push", action="store_true",     help="Skip git push (dry run / test mode)")
+    parser = argparse.ArgumentParser(description="MarketMamba V6 每日推論")
+    parser.add_argument("--date",      type=str,  default=None,
+                        help="目標日期 YYYY-MM-DD（預設：今日）")
+    parser.add_argument("--skip-push", action="store_true",
+                        help="略過 git push（dry run / 測試模式）")
+    parser.add_argument("--no-gui",    action="store_true",
+                        help="停用 tkinter 進度視窗（純文字模式）")
     args = parser.parse_args()
-    main(target_date=args.date, skip_push=args.skip_push)
+
+    if _TK_AVAILABLE and not args.no_gui:
+        try:
+            ui = ProgressWindow()
+            _handler = _UiLogHandler()
+            _handler.setFormatter(logging.Formatter("%(levelname)s %(name)s — %(message)s"))
+            logging.getLogger().addHandler(_handler)
+            ui.run_with(main, target_date=args.date, skip_push=args.skip_push)
+        except Exception as e:
+            # 無 DISPLAY 環境（Task Scheduler headless、WSLg 未啟動等）→ 降級為文字模式
+            logger.warning(f"進度視窗無法開啟，切換為文字模式：{e}")
+            main(target_date=args.date, skip_push=args.skip_push)
+    else:
+        main(target_date=args.date, skip_push=args.skip_push)

@@ -447,7 +447,14 @@ def _merge_holdings(df: pd.DataFrame, df_holdings: pd.DataFrame | None) -> pd.Da
     """Merge 大戶持股分級 data → Holdings_Large_Pct + Holdings_Large_Change.
 
     holdings_raw.parquet contains weekly data (集保戶股權分散表).
-    We compute the percentage of shares held by large holders (千張以上).
+    Columns: [Week, stock_id, Whale_Hold_Ratio, Retail_Hold_Ratio]
+
+    DATA NOTE: Whale_Hold_Ratio is all-zero in the current parquet (data quality issue
+    from the fetcher storing an empty column). We use the available Retail_Hold_Ratio
+    as a proxy instead:
+      Holdings_Large_Pct = 1.0 - (Retail_Hold_Ratio / 100.0)
+    This gives the non-retail (i.e. large holder) fraction, which is the
+    economically meaningful signal we want.
     """
     if df_holdings is None or df_holdings.empty:
         df["Holdings_Large_Pct"] = 0.0
@@ -460,29 +467,38 @@ def _merge_holdings(df: pd.DataFrame, df_holdings: pd.DataFrame | None) -> pd.Da
         h = h.rename(columns={"Week": "Date"})
     h["Date"] = pd.to_datetime(h["Date"])
 
-    # holdings_raw has columns: [Week/Date, stock_id, Whale_Hold_Ratio, Retail_Hold_Ratio]
-    # We need the row corresponding to the largest holding level (千張以上 / 1000+)
-    pct_col = [c for c in h.columns if "percent" in c.lower() or "pct" in c.lower() or "ratio" in c.lower()]
-    level_col = [c for c in h.columns if "level" in c.lower() or "holding" in c.lower()]
-
-    if pct_col and level_col:
-        # Filter for largest holder level (typically the last level or '1000+')
-        h[pct_col[0]] = pd.to_numeric(h[pct_col[0]], errors="coerce")
-        # Take the maximum level per (stock_id, Date) as the large holder percentage
-        h_large = h.groupby(["Date", "stock_id"])[pct_col[0]].max().rename("Holdings_Large_Pct").reset_index()
-    elif len(h.columns) >= 4:
-        # Fallback: use the last numeric column as percentage
+    # ------------------------------------------------------------------
+    # Strategy: use Retail_Hold_Ratio if available (Whale_Hold_Ratio is
+    # all-zero due to a data fetcher issue). Large_Pct = 1 - Retail/100.
+    # Fallback: scan for any usable numeric ratio column.
+    # ------------------------------------------------------------------
+    if "Retail_Hold_Ratio" in h.columns:
+        h["Retail_Hold_Ratio"] = pd.to_numeric(h["Retail_Hold_Ratio"], errors="coerce")
+        # Aggregate per (Date, stock_id) — should already be unique but guard anyway
+        retail_agg = (
+            h.groupby(["Date", "stock_id"])["Retail_Hold_Ratio"]
+            .mean()
+            .reset_index()
+        )
+        retail_agg["Holdings_Large_Pct"] = (1.0 - retail_agg["Retail_Hold_Ratio"] / 100.0).clip(0.0, 1.0)
+        h_large = retail_agg[["Date", "stock_id", "Holdings_Large_Pct"]]
+    else:
+        # Generic fallback: pick first numeric ratio/percent column that isn't all zero
+        ratio_cols = [c for c in h.columns if any(k in c.lower() for k in ["ratio", "pct", "percent"])]
         num_cols = h.select_dtypes(include="number").columns.tolist()
-        if num_cols:
-            h_large = h.groupby(["Date", "stock_id"])[num_cols[-1]].max().rename("Holdings_Large_Pct").reset_index()
-        else:
+        candidate_cols = [c for c in (ratio_cols + num_cols) if h[c].fillna(0).abs().sum() > 0]
+        if not candidate_cols:
+            logger.warning("_merge_holdings: no usable ratio column found — setting Holdings_Large_Pct=0")
             df["Holdings_Large_Pct"] = 0.0
             df["Holdings_Large_Change"] = 0.0
             return df
-    else:
-        df["Holdings_Large_Pct"] = 0.0
-        df["Holdings_Large_Change"] = 0.0
-        return df
+        col = candidate_cols[0]
+        h[col] = pd.to_numeric(h[col], errors="coerce")
+        # Assume the column is already a 'large holder' percentage (0-100 scale)
+        h_agg = h.groupby(["Date", "stock_id"])[col].mean().reset_index()
+        h_agg["Holdings_Large_Pct"] = (h_agg[col] / 100.0).clip(0.0, 1.0)
+        h_large = h_agg[["Date", "stock_id", "Holdings_Large_Pct"]]
+        logger.info(f"_merge_holdings: using fallback column '{col}' for Holdings_Large_Pct")
 
     # Left merge (weekly → daily), then forward fill per stock
     h_large = h_large.sort_values(["stock_id", "Date"])
@@ -494,7 +510,7 @@ def _merge_holdings(df: pd.DataFrame, df_holdings: pd.DataFrame | None) -> pd.Da
     df["Holdings_Large_Pct"] = df.groupby("stock_id")["Holdings_Large_Pct"].transform(
         lambda x: x.ffill().fillna(0.0))
 
-    # Week-over-week change
+    # Week-over-week change (5 trading days ≈ 1 week)
     df["Holdings_Large_Change"] = df.groupby("stock_id")["Holdings_Large_Pct"].diff(5).fillna(0.0)
 
     return df
@@ -531,7 +547,13 @@ def _merge_securities(df: pd.DataFrame, df_sec: pd.DataFrame | None) -> pd.DataF
 
 
 def _merge_foreign_shareholding(df: pd.DataFrame, df_fs: pd.DataFrame | None) -> pd.DataFrame:
-    """Merge 外資持股比例 → Foreign_Holding_Pct (cumulative %)."""
+    """Merge 外資持股比例 → Foreign_Holding_Pct (cumulative %).
+
+    DATA NOTE: foreign_shareholding_raw.parquet contains multiple ratio columns.
+    We MUST use ForeignInvestmentSharesRatio (外資實際持股%) NOT
+    ForeignInvestmentRemainRatio (剩餘可買空間%) — they are semantically opposite.
+    A generic 'first ratio column' heuristic would pick the wrong one.
+    """
     if df_fs is None or df_fs.empty:
         df["Foreign_Holding_Pct"] = 0.0
         return df
@@ -541,17 +563,41 @@ def _merge_foreign_shareholding(df: pd.DataFrame, df_fs: pd.DataFrame | None) ->
         fs.rename(columns={"date": "Date"}, inplace=True)
     fs["Date"] = pd.to_datetime(fs["Date"])
 
-    # Find percentage column
-    pct_col = [c for c in fs.columns if "percent" in c.lower() or "pct" in c.lower() or "ratio" in c.lower() or "shareholding" in c.lower()]
-    if not pct_col:
-        num_cols = fs.select_dtypes(include="number").columns.tolist()
-        pct_col = num_cols[:1] if num_cols else []
+    # Explicit column priority — DO NOT use generic "ratio" heuristic here:
+    # ForeignInvestmentSharesRatio  = 外資實際持股比例 (0-100%) ← CORRECT
+    # ForeignInvestmentRemainRatio  = 剩餘投資空間比例 (0-100%) ← WRONG (opposite concept)
+    PREFERRED_COLS = [
+        "ForeignInvestmentSharesRatio",   # 外資實際持股% (primary)
+        "ForeignInvestmentSharesRatio".lower(),
+        "foreign_investment_shares_ratio",
+    ]
+    chosen_col = None
+    for cname in PREFERRED_COLS:
+        if cname in fs.columns:
+            chosen_col = cname
+            break
 
-    if not pct_col:
-        df["Foreign_Holding_Pct"] = 0.0
-        return df
+    # Fallback: if column not found, warn and use generic heuristic but exclude "Remain"
+    if chosen_col is None:
+        candidates = [
+            c for c in fs.select_dtypes(include="number").columns
+            if "remain" not in c.lower() and "upper" not in c.lower()
+               and "limit" not in c.lower() and "chinese" not in c.lower()
+               and ("ratio" in c.lower() or "pct" in c.lower() or "percent" in c.lower())
+        ]
+        if candidates:
+            chosen_col = candidates[0]
+            logger.warning(
+                f"_merge_foreign_shareholding: ForeignInvestmentSharesRatio not found, "
+                f"falling back to '{chosen_col}'"
+            )
+        else:
+            logger.warning("_merge_foreign_shareholding: no usable shareholding ratio column found")
+            df["Foreign_Holding_Pct"] = 0.0
+            return df
 
-    fs["Foreign_Holding_Pct"] = pd.to_numeric(fs[pct_col[0]], errors="coerce")
+    logger.info(f"_merge_foreign_shareholding: using '{chosen_col}' as Foreign_Holding_Pct")
+    fs["Foreign_Holding_Pct"] = pd.to_numeric(fs[chosen_col], errors="coerce")
     df = df.merge(fs[["Date", "stock_id", "Foreign_Holding_Pct"]],
                   on=["Date", "stock_id"], how="left", suffixes=("", "_fsp"))
     if "Foreign_Holding_Pct_fsp" in df.columns:
@@ -705,7 +751,15 @@ def _merge_macro(
 ) -> pd.DataFrame:
     """Merge macro data including V6.1 additions.
     Handles our macro_raw.parquet column names:
-    TWII_Close, US_SOX, US_QQQ, US_VIX, US_TNX, Gold, Oil, USD_TWD, FED_Rate, ..."""
+    TWII_Close, US_SOX, US_QQQ, US_VIX, US_TNX, Gold, Oil, USD_TWD, FED_Rate,
+    CNN_FearGreed, TW_Biz_Signal.
+
+    DATA NOTE: FED_Rate is read directly from macro_raw (complete 2005-2026 data).
+    The standalone fed_rate.parquet is broken (only 8 rows, all 2004-01-01) and
+    is used only as a fallback if macro_raw does not contain a FED_Rate column.
+    Similarly, CNN_FearGreed and TW_Biz_Signal in macro_raw are preferred over
+    the separate fear_greed.parquet / business_indicator.parquet.
+    """
     DEFAULTS = {
         "TWII_Return": 0.0, "SPX_Return": 0.0,
         "VIX": 20.0, "TNX": 4.0,
@@ -728,10 +782,15 @@ def _merge_macro(
 
         # Rename to canonical names used in features
         rename_map = {
-            "TWII_Close": "TWII",
-            "US_QQQ":     "SPX",    # QQQ as SPX proxy
-            "US_VIX":     "VIX",
-            "US_TNX":     "TNX",
+            "TWII_Close":    "TWII",
+            "US_QQQ":        "SPX",       # QQQ as SPX proxy
+            "US_VIX":        "VIX",
+            "US_TNX":        "TNX",
+            # V6.1 macro fields embedded in macro_raw — prefer these over
+            # the separate broken parquet files (fed_rate, fear_greed, business_indicator)
+            "CNN_FearGreed": "Fear_Greed",
+            "TW_Biz_Signal": "Business_Signal",
+            # FED_Rate is already named correctly in macro_raw
         }
         m.rename(columns=rename_map, inplace=True)
 
@@ -741,8 +800,12 @@ def _merge_macro(
             if raw in m.columns:
                 m[ret] = m[raw].pct_change(1).fillna(0)
 
-        want = [c for c in ["TWII_Return", "SPX_Return", "VIX", "TNX",
-                            "Gold_Return", "Oil_Return", "USD_TWD"] if c in m.columns]
+        # Columns to merge from macro_raw (now includes FED_Rate, Fear_Greed, Business_Signal)
+        want = [c for c in [
+            "TWII_Return", "SPX_Return", "VIX", "TNX",
+            "Gold_Return", "Oil_Return", "USD_TWD",
+            "FED_Rate", "Fear_Greed", "Business_Signal",
+        ] if c in m.columns]
         df = df.merge(m[["Date"] + want], on="Date", how="left", suffixes=("", "_m"))
         for col in want:
             dup = col + "_m"
@@ -750,6 +813,21 @@ def _merge_macro(
                 df[col] = df[dup].combine_first(df[col])
                 df.drop(columns=[dup], inplace=True)
             df[col] = df[col].fillna(DEFAULTS.get(col, 0.0))
+
+        # Log which V6.1 macro fields were sourced from macro_raw
+        sourced = [c for c in ["FED_Rate", "Fear_Greed", "Business_Signal"] if c in want]
+        if sourced:
+            logger.info(f"macro_raw supplied V6.1 fields: {sourced} (skipping broken separate parquets)")
+
+    # Track whether Business_Signal was successfully set by macro_raw
+    # (i.e., not all still at default value 23.0). Used below as fallback guard.
+    _business_from_macro = (
+        df_macro is not None
+        and not df_macro.empty
+        and "TW_Biz_Signal" in df_macro.columns
+        and "Business_Signal" in df.columns
+        and not (df["Business_Signal"] == DEFAULTS["Business_Signal"]).all()
+    )
 
     # -- V6.1: Futures OI Foreign --
     if df_futures_inst is not None and not df_futures_inst.empty:
@@ -810,47 +888,80 @@ def _merge_macro(
                 df.drop(columns=["Fear_Greed_fg"], inplace=True)
             df["Fear_Greed"] = df["Fear_Greed"].ffill().fillna(50.0)
 
-    # -- V6.1: Business Indicator (景氣燈號) --
-    if df_business_indicator is not None and not df_business_indicator.empty:
+    # -- V6.1: Business Indicator (景氣燈號) — FALLBACK ONLY --
+    # PRIMARY source: macro_raw.TW_Biz_Signal (dates = actual publication dates, correctly aligned).
+    # This block is a fallback: only runs if macro_raw did NOT supply Business_Signal.
+    #
+    # LOOK-AHEAD FIX: business_indicator.parquet uses month-start dates (e.g. 2026-01-01),
+    # but NDEV publishes the report ~60 days after period end (Jan data → late March).
+    # We shift the available date by +60 days to prevent look-ahead bias.
+    if not _business_from_macro and df_business_indicator is not None and not df_business_indicator.empty:
         bi = df_business_indicator.copy()
         bi["Date"] = pd.to_datetime(bi["Date"])
-        # The score column is typically 'score' or 'composite_index'
-        score_col = [c for c in bi.columns if "score" in c.lower() or "composite" in c.lower() or "signal" in c.lower()]
+
+        # Detect score column (monitoring score or composite)
+        score_col = [c for c in bi.columns if "score" in c.lower() or "composite" in c.lower()
+                     or "signal" in c.lower() or "monitoring" in c.lower()]
         if not score_col:
             score_col = [c for c in bi.columns if c not in ["Date", "date"]][:1]
+
         if score_col:
             bi["Business_Signal"] = pd.to_numeric(bi[score_col[0]], errors="coerce")
-            # Monthly data — as-of merge
             bi = bi.sort_values("Date")
-            bi_dedup = bi.drop_duplicates(subset=["Date"], keep="last")
-            bi_dedup["Date"] = bi_dedup["Date"].astype("datetime64[ns]")
+            bi_dedup = bi.drop_duplicates(subset=["Date"], keep="last").copy()
+
+            # Apply 60-day publication lag: Jan data (Date=Jan 1) not available until ~Mar 2
+            bi_dedup["available_from"] = (
+                bi_dedup["Date"] + pd.DateOffset(months=2)
+            ).dt.normalize()  # keeps day=1, adds 2 months: Jan→Mar, Feb→Apr, ...
+
+            bi_dedup["available_from"] = bi_dedup["available_from"].astype("datetime64[ns]")
             df["Date"] = df["Date"].astype("datetime64[ns]")
-            df = pd.merge_asof(df.sort_values("Date"), bi_dedup[["Date", "Business_Signal"]],
-                               on="Date", direction="backward", suffixes=("", "_bi"))
+
+            # merge_asof on available_from (not Date) to enforce publication lag
+            df = pd.merge_asof(
+                df.sort_values("Date"),
+                bi_dedup[["available_from", "Business_Signal"]].rename(
+                    columns={"available_from": "Date"}
+                ).sort_values("Date"),
+                on="Date",
+                direction="backward",
+                suffixes=("", "_bi"),
+            )
             if "Business_Signal_bi" in df.columns:
                 df["Business_Signal"] = df["Business_Signal_bi"].combine_first(df["Business_Signal"])
                 df.drop(columns=["Business_Signal_bi"], inplace=True)
             df["Business_Signal"] = df["Business_Signal"].ffill().fillna(23.0)
+            logger.info("business_indicator.parquet used as fallback (60-day lag applied)")
+    elif _business_from_macro:
+        logger.debug("Business_Signal already sourced from macro_raw — skipping business_indicator.parquet")
 
     # -- V6.1: FED Rate --
-    if df_fed_rate is not None and not df_fed_rate.empty:
-        fr = df_fed_rate.copy()
-        fr["Date"] = pd.to_datetime(fr["Date"])
-        rate_col = [c for c in fr.columns if "rate" in c.lower() or "value" in c.lower()]
-        if not rate_col:
-            rate_col = [c for c in fr.columns if c not in ["Date", "date"]][:1]
-        if rate_col:
-            fr["FED_Rate"] = pd.to_numeric(fr[rate_col[0]], errors="coerce")
-            fr = fr.sort_values("Date")
-            fr_dedup = fr.drop_duplicates(subset=["Date"], keep="last")
-            fr_dedup["Date"] = fr_dedup["Date"].astype("datetime64[ns]")
-            df["Date"] = df["Date"].astype("datetime64[ns]")
-            df = pd.merge_asof(df.sort_values("Date"), fr_dedup[["Date", "FED_Rate"]],
-                               on="Date", direction="backward", suffixes=("", "_fr"))
-            if "FED_Rate_fr" in df.columns:
-                df["FED_Rate"] = df["FED_Rate_fr"].combine_first(df["FED_Rate"])
-                df.drop(columns=["FED_Rate_fr"], inplace=True)
-            df["FED_Rate"] = df["FED_Rate"].ffill().fillna(4.0)
+    # PRIMARY: FED_Rate is already sourced from macro_raw above (complete 2005-2026).
+    # FALLBACK only: if macro_raw didn't have FED_Rate, try the separate fed_rate parquet.
+    if "FED_Rate" not in df.columns or (df["FED_Rate"] == DEFAULTS["FED_Rate"]).all():
+        if df_fed_rate is not None and not df_fed_rate.empty:
+            fr = df_fed_rate.copy()
+            fr["Date"] = pd.to_datetime(fr["Date"])
+            rate_col = [c for c in fr.columns if "rate" in c.lower() or "value" in c.lower()]
+            if not rate_col:
+                rate_col = [c for c in fr.columns if c not in ["Date", "date"]][:1]
+            if rate_col:
+                fr["FED_Rate"] = pd.to_numeric(fr[rate_col[0]], errors="coerce")
+                fr = fr.sort_values("Date")
+                fr_dedup = fr.drop_duplicates(subset=["Date"], keep="last")
+                # Only use if the fallback has more than one unique date (i.e. not the broken 8-row file)
+                if fr_dedup["Date"].nunique() > 1:
+                    fr_dedup["Date"] = fr_dedup["Date"].astype("datetime64[ns]")
+                    df["Date"] = df["Date"].astype("datetime64[ns]")
+                    df = pd.merge_asof(df.sort_values("Date"), fr_dedup[["Date", "FED_Rate"]],
+                                       on="Date", direction="backward", suffixes=("", "_fr"))
+                    if "FED_Rate_fr" in df.columns:
+                        df["FED_Rate"] = df["FED_Rate_fr"].combine_first(df["FED_Rate"])
+                        df.drop(columns=["FED_Rate_fr"], inplace=True)
+                    df["FED_Rate"] = df["FED_Rate"].ffill().fillna(DEFAULTS["FED_Rate"])
+                else:
+                    logger.warning("fed_rate.parquet appears broken (<=1 unique date) — keeping macro_raw values")
 
     return df
 

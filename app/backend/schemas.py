@@ -22,6 +22,7 @@ class SignalsResponse(BaseModel):
     model_version: str
     total_stocks: int
     signals: List[SignalItem]
+    freshness_warning: Optional[str] = None
 
 
 class ICPoint(BaseModel):

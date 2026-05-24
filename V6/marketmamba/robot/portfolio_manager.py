@@ -123,7 +123,7 @@ def apply_slippage_penalty(df: pd.DataFrame) -> pd.DataFrame:
 
 def compute_kelly_weights(
     df:              pd.DataFrame,
-    sharpe_col:      str   = "Sharpe_Score",
+    sharpe_col:      str   = "Signal_Quality",
     max_weight:      float = MAX_WEIGHT_PER_STOCK,
     min_weight:      float = MIN_WEIGHT_TO_ENTER,
     max_stocks:      int   = MAX_PORTFOLIO_STOCKS,
@@ -246,7 +246,7 @@ def rebalance(
     df = apply_slippage_penalty(df)
 
     # Step 3: Kelly weights
-    sharpe_col = "Sharpe_Score" if "Sharpe_Score" in df.columns else df.columns[0]
+    sharpe_col = "Signal_Quality" if "Signal_Quality" in df.columns else df.columns[0]
     df = compute_kelly_weights(df, sharpe_col=sharpe_col)
 
     # Step 4: Extract positions
@@ -259,7 +259,7 @@ def rebalance(
             sector       = str(row.get("Sector", "Unknown")),
             weight       = float(row["Final_Weight"]),
             exp_alpha    = float(row.get("Exp_Alpha_20d", row.get("Net_Alpha_20d", 0))),
-            sharpe_score = float(row.get("Sharpe_Score", 0)),
+            sharpe_score = float(row.get("Signal_Quality", 0)),
             confidence   = str(row.get("Confidence", "中信心")),
             entry_price  = float(row.get("Close", 0)),
             entry_date   = date_str,

@@ -149,7 +149,7 @@ async def get_ticker():
                 r = await client.get(GITHUB_RESULTS_URL)
             if r.status_code == 200:
                 df = pd.read_csv(io.StringIO(r.text))
-                df = df.sort_values("Sharpe_Score", ascending=False).head(7)
+                df = df.sort_values("Signal_Quality", ascending=False).head(7)
                 info = await get_stock_info()
                 for _, row in df.iterrows():
                     ticker = str(row["Ticker"])
