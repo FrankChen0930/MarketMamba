@@ -105,7 +105,19 @@ export default function Dashboard() {
             MarketMamba V6 Alpha · 推論日期：{signalData?.date || market?.last_run || '—'}
           </div>
         </div>
-        <button className="btn btn-primary" onClick={refetchSigs}>🔄 重新整理</button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {signalData?.freshness_warning && (
+            <span style={{
+              fontSize: 11, padding: '3px 10px', borderRadius: 12,
+              background: 'rgba(245, 158, 11, 0.12)',
+              color: 'var(--accent-amber)',
+              border: '1px solid rgba(245, 158, 11, 0.25)',
+            }}>
+              ⚠️ {signalData.freshness_warning}
+            </span>
+          )}
+          <button className="btn btn-primary" onClick={refetchSigs}>🔄 重新整理</button>
+        </div>
       </div>
 
       {/* ── Macro Stat Cards ── */}

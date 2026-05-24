@@ -8,9 +8,10 @@ Data source priority:
 PersonalOS workflow:
   run_daily_inference.py → saves V6/results/df_kelly.csv → git push → backend reads here
 """
-import os
+import asyncio
 import io
 import logging
+import os
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -32,6 +33,7 @@ CACHE_TTL = timedelta(hours=1)
 
 _cache: Optional[SignalsResponse] = None
 _cache_time: Optional[datetime] = None
+_cache_lock: asyncio.Lock = asyncio.Lock()
 
 # History index cache
 _history_cache: Optional[dict] = None
@@ -58,7 +60,7 @@ async def _load_from_github() -> Optional[SignalsResponse]:
                 return None
 
         df = pd.read_csv(io.StringIO(r.text))
-        df = df.sort_values("Sharpe_Score", ascending=False).reset_index(drop=True)
+        df = df.sort_values("Signal_Quality", ascending=False).reset_index(drop=True)
 
         # Load name + sector lookup (cached 24h)
         info = await get_stock_info()
@@ -67,8 +69,8 @@ async def _load_from_github() -> Optional[SignalsResponse]:
         for i, row in df.iterrows():
             try:
                 ticker = str(row["Ticker"])
-                signal_str = "BUY" if row.get("Sharpe_Score", 0) > 0.5 else (
-                    "SELL" if row.get("Sharpe_Score", 0) < -0.5 else "HOLD"
+                signal_str = "BUY" if row.get("Signal_Quality", 0) > 0.5 else (
+                    "SELL" if row.get("Signal_Quality", 0) < -0.5 else "HOLD"
                 )
                 signals.append(SignalItem(
                     rank=i + 1,
@@ -89,11 +91,22 @@ async def _load_from_github() -> Optional[SignalsResponse]:
 
         date_str = str(df["Date"].iloc[0]) if "Date" in df.columns else datetime.today().strftime("%Y-%m-%d")
         logger.info(f"Loaded {len(signals)} signals from GitHub ({date_str})")
+
+        # S5: Freshness warning if inference date is >3 calendar days old
+        freshness_warning = None
+        try:
+            delta = (datetime.today().date() - datetime.strptime(date_str, "%Y-%m-%d").date()).days
+            if delta > 3:
+                freshness_warning = f"推論數據已 {delta} 天，請確認每日推論是否正常執行"
+        except Exception:
+            pass
+
         return SignalsResponse(
             date=date_str,
             model_version="V6",
             total_stocks=len(signals),
             signals=signals,
+            freshness_warning=freshness_warning,
         )
 
     except Exception as e:
@@ -106,16 +119,20 @@ async def _get_signals() -> SignalsResponse:
     """Return signals with cache. Falls back to mock data."""
     global _cache, _cache_time
 
-    # Return cache if still fresh
+    # Fast path: cache is fresh, no lock needed
     if _cache and _cache_time and datetime.now() - _cache_time < CACHE_TTL:
         return _cache
 
-    # Try GitHub
-    result = await _load_from_github()
-    if result:
-        _cache = result
-        _cache_time = datetime.now()
-        return _cache
+    # Slow path: acquire lock to prevent concurrent GitHub fetches
+    async with _cache_lock:
+        # Double-check after acquiring lock — another coroutine may have already refreshed
+        if _cache and _cache_time and datetime.now() - _cache_time < CACHE_TTL:
+            return _cache
+        result = await _load_from_github()
+        if result:
+            _cache = result
+            _cache_time = datetime.now()
+            return _cache
 
     # Fallback: mock data (training in progress)
     return MOCK_SIGNALS
@@ -228,15 +245,16 @@ async def run_inference():
 async def refresh_cache():
     """強制重新從 GitHub 載入最新結果（PersonalOS push 完後呼叫）"""
     global _cache, _cache_time, _history_cache, _history_cache_time, _scanner_cache, _scanner_cache_time
-    _cache = None
-    _cache_time = None
-    _history_cache = None
-    _history_cache_time = None
-    _scanner_cache = None
-    _scanner_cache_time = None
-    result = await _load_from_github()
-    if result:
-        return InferenceStatus(status="ok", message=f"Refreshed: {result.total_stocks} signals for {result.date}")
+    async with _cache_lock:
+        _cache = None
+        _cache_time = None
+        _history_cache = None
+        _history_cache_time = None
+        _scanner_cache = None
+        _scanner_cache_time = None
+        result = await _load_from_github()
+        if result:
+            return InferenceStatus(status="ok", message=f"Refreshed: {result.total_stocks} signals for {result.date}")
     return InferenceStatus(status="fallback", message="GitHub not available, using mock data")
 
 

@@ -51,14 +51,18 @@ function ReportSection({ title, lines }) {
         {lines.map((line, i) => {
           const isItem = line.startsWith('- ') || line.startsWith('• ');
           const text = isItem ? line.replace(/^[-•]\s*/, '') : line;
-          const isBold = text.includes('**');
-          const parsed = text.replace(/\*\*([^*]+)\*\*/g, (_, m) => `<strong style="color:var(--text-primary)">${m}</strong>`);
+          const parts = text.split(/\*\*([^*]+)\*\*/g);
           return (
             <div key={i} style={{
               fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7,
               paddingLeft: isItem ? 14 : 0,
               borderLeft: isItem ? '2px solid var(--border)' : 'none',
-            }} dangerouslySetInnerHTML={{ __html: parsed }} />
+            }}>
+              {parts.map((p, j) => j % 2 === 1
+                ? <strong key={j} style={{ color: 'var(--text-primary)' }}>{p}</strong>
+                : p
+              )}
+            </div>
           );
         })}
       </div>
@@ -79,7 +83,7 @@ function Top10Table({ top10 }) {
           <thead>
             <tr>
               <th>#</th><th>股票</th><th>20d Alpha</th>
-              <th>Sharpe</th><th>建議比重</th><th>信心</th>
+              <th>信號強度</th><th>建議比重</th><th>信心</th>
             </tr>
           </thead>
           <tbody>
@@ -95,7 +99,7 @@ function Top10Table({ top10 }) {
                   </div>
                 </td>
                 <td className="mono text-positive">+{((s.Exp_Alpha_20d || 0) * 100).toFixed(2)}%</td>
-                <td className="mono text-positive">{(s.Sharpe_Score || 0).toFixed(2)}</td>
+                <td className="mono text-positive">{(s.Signal_Quality || 0).toFixed(2)}</td>
                 <td className="mono">{s.Suggested_Weight ? `${(s.Suggested_Weight * 100).toFixed(1)}%` : '—'}</td>
                 <td>
                   <span style={{

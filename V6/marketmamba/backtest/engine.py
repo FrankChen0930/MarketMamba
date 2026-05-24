@@ -80,7 +80,7 @@ def load_historical_predictions(
     Archives are stored as RESULTS_DIR / YYYY-MM-DD / df_kelly.csv
 
     Returns:
-        DataFrame with [Date, Ticker, Exp_Alpha_20d, Sharpe_Score, Final_Weight, ...]
+        DataFrame with [Date, Ticker, Exp_Alpha_20d, Signal_Quality, Final_Weight, ...]
     """
     frames = []
     for dated_dir in sorted(ARCHIVE_DIR.iterdir()):
@@ -158,7 +158,7 @@ def simulate_top_n_equal_weight(
     df:          pd.DataFrame,
     n:           int   = 10,
     date_col:    str   = "Date",
-    rank_col:    str   = "Sharpe_Score",
+    rank_col:    str   = "Signal_Quality",
     return_col:  str   = "Realised_Return",
     bench_col:   str | None = "TWII_Return",
 ) -> BacktestResult:

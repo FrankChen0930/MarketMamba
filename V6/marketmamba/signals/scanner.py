@@ -108,12 +108,12 @@ def _check_rank_stability(rank_history: list) -> dict:
     return {"met": met, "detail": detail, "top10_streak": top10_streak, "top50_streak": top50_streak}
 
 
-def _check_confidence(uncertainty: float) -> dict:
-    """High confidence = uncertainty < 0.02."""
-    met = uncertainty < 0.02
+def _check_confidence(uncertainty: float, threshold: float = 0.02) -> dict:
+    """High confidence = uncertainty < threshold (dynamic: 30th-percentile of today's df_kelly)."""
+    met = uncertainty < threshold
     return {
         "met": met,
-        "detail": f"Uncertainty={uncertainty:.4f}" + (" ✓" if met else f" (需 <0.02)")
+        "detail": f"Uncertainty={uncertainty:.4f}" + (f" ✓ (<{threshold:.4f})" if met else f" (需 <{threshold:.4f})")
     }
 
 
@@ -285,6 +285,10 @@ def run_scan(
     history = _load_history_index()
     date_str = str(df_kelly["Date"].iloc[0]) if "Date" in df_kelly.columns else "unknown"
 
+    # I1: Dynamic uncertainty threshold = 30th percentile of today's cross-section
+    unc_q30 = float(df_kelly["Uncertainty"].quantile(0.30)) if "Uncertainty" in df_kelly.columns else 0.02
+    logger.info(f"  Uncertainty Q30 threshold: {unc_q30:.4f}")
+
     # Price data (trimmed to recent)
     prices_path = DATA_DIR / "prices_raw.parquet"
     if prices_path.exists():
@@ -315,11 +319,19 @@ def run_scan(
     buy_signals = []
     watch_list = []
 
+    # I4: Weighted entry scoring (replaces binary 2/4 threshold)
+    _W_RANK  = 30   # rank stability weight
+    _W_CONF  = 25   # low uncertainty (Q30) weight
+    _W_INST  = 25   # institutional consecutive buy weight
+    _W_LOW   = 20   # relative low (RSI/MA20) weight
+    _BUY_SCORE   = 55 if market["regime"] == "NORMAL" else 70
+    _WATCH_SCORE = 30
+
     for _, row in top50.iterrows():
         ticker = str(row["Ticker"])
         uncertainty = float(row.get("Uncertainty", 1.0))
         alpha_20d = float(row.get("Exp_Alpha_20d", 0))
-        sharpe = float(row.get("Sharpe_Score", 0))
+        sharpe = float(row.get("Signal_Quality", 0))
         confidence = str(row.get("Confidence", ""))
         weight = float(row.get("Suggested_Weight", 0))
 
@@ -329,10 +341,12 @@ def run_scan(
 
         rank_hist = _get_rank_history(history, ticker)
         c1 = _check_rank_stability(rank_hist)
-        c2 = _check_confidence(uncertainty)
+        c2 = _check_confidence(uncertainty, unc_q30)
         c3 = _check_relative_low(prices_df, ticker)
         c4 = _check_institutional(inst_df, ticker)
 
+        # I4: Weighted composite score
+        score = _W_RANK * c1["met"] + _W_CONF * c2["met"] + _W_INST * c4["met"] + _W_LOW * c3["met"]
         conditions_met = sum([c1["met"], c2["met"], c3["met"], c4["met"]])
 
         signal_entry = {
@@ -342,6 +356,7 @@ def run_scan(
             "confidence": confidence,
             "uncertainty": round(uncertainty, 4),
             "suggested_weight": round(weight, 4),
+            "score": score,
             "conditions_met": conditions_met,
             "conditions_total": 4,
             "rank_stability": c1,
@@ -350,10 +365,10 @@ def run_scan(
             "institutional_buy": c4,
         }
 
-        if conditions_met >= entry_threshold:
+        if score >= _BUY_SCORE:
             buy_signals.append(signal_entry)
-            logger.info(f"  🔥 BUY: {ticker} ({conditions_met}/4)")
-        elif conditions_met == entry_threshold - 1:
+            logger.info(f"  🔥 BUY: {ticker} (score={score})")
+        elif score >= _WATCH_SCORE:
             watch_list.append(signal_entry)
 
     # ── Check exit signals for current holdings ───────────────────────────
@@ -384,16 +399,42 @@ def run_scan(
                 logger.info(f"  🔴 EXIT: {ticker} — {', '.join(reasons)}")
 
     # ── Build output ──────────────────────────────────────────────────────
+    # I3: Portfolio-level risk limits
+    _MAX_POSITIONS = 15
+    _MIN_POSITIONS = 5
+    _MAX_WEIGHT    = 0.10   # 10% single-stock cap
+
+    buy_signals = sorted(buy_signals, key=lambda x: x.get("score", 0), reverse=True)
+    if len(buy_signals) > _MAX_POSITIONS:
+        logger.info(f"  Portfolio cap: trimmed {len(buy_signals)} → {_MAX_POSITIONS} positions")
+        buy_signals = buy_signals[:_MAX_POSITIONS]
+
+    for sig in buy_signals:
+        if sig.get("suggested_weight", 0) > _MAX_WEIGHT:
+            sig["suggested_weight"] = _MAX_WEIGHT
+    total_w = sum(s.get("suggested_weight", 0) for s in buy_signals)
+    if total_w > 0:
+        for sig in buy_signals:
+            sig["suggested_weight"] = round(sig["suggested_weight"] / total_w, 4)
+
+    portfolio_check = {
+        "n_positions": len(buy_signals),
+        "warnings": ([] if len(buy_signals) >= _MIN_POSITIONS else
+                     [f"持倉不足 {_MIN_POSITIONS} 檔（{len(buy_signals)} 檔），建議觀望"]),
+    }
+
     result = {
         "date": date_str,
-        "scan_version": "1.0",
+        "scan_version": "1.2",
         "market_regime": market["regime"],
         "twii_vs_ma60": market.get("twii_vs_ma60", "N/A"),
-        "entry_threshold": f"{entry_threshold}/4",
+        "entry_threshold": f"≥{_BUY_SCORE}分",
+        "uncertainty_threshold": round(unc_q30, 6),
         "total_scanned": len(top50),
         "buy_signals": buy_signals,
         "exit_signals": exit_signals,
         "watch_list": watch_list,
+        "portfolio_check": portfolio_check,
     }
 
     with open(output_path, "w", encoding="utf-8") as f:

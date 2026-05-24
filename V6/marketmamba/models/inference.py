@@ -248,7 +248,7 @@ def _add_derived_columns(df: pd.DataFrame) -> pd.DataFrame:
     df.loc[df.get("Turnover_5D", pd.Series(dtype=float)).fillna(0) < MIN_TURNOVER, "Net_Alpha_20d"] = -999.0
 
     # Sharpe score
-    df["Sharpe_Score"] = (
+    df["Signal_Quality"] = (
         df["Net_Alpha_20d"] / (df["Uncertainty_20d"].clip(lower=1e-6))
     ).clip(lower=-10.0, upper=10.0)
 
@@ -261,12 +261,12 @@ def _add_derived_columns(df: pd.DataFrame) -> pd.DataFrame:
     )
 
     # Suggested weight (proportional to positive Sharpe)
-    pos = df["Sharpe_Score"].clip(lower=0)
+    pos = df["Signal_Quality"].clip(lower=0)
     total = pos.sum()
     df["Suggested_Weight"] = (pos / (total + 1e-9)).round(4)
 
     # Sort by Sharpe
-    df = df.sort_values("Sharpe_Score", ascending=False).reset_index(drop=True)
+    df = df.sort_values("Signal_Quality", ascending=False).reset_index(drop=True)
     return df
 
 

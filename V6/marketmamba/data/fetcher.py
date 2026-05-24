@@ -364,12 +364,13 @@ def fetch_institutional_tpex(date_str: str) -> Optional[pd.DataFrame]:
 # ============================================================
 
 def _finmind_fetch(
-    dataset:    str,
-    start_date: str,
-    end_date:   str,
-    stock_id:   str | None = None,
+    dataset:     str,
+    start_date:  str,
+    end_date:    str,
+    stock_id:    str | None = None,
+    max_retries: int = 3,
 ) -> Optional[pd.DataFrame]:
-    """Generic FinMind API call (single chunk). Returns None on failure."""
+    """Generic FinMind API call with exponential backoff retry. Returns None on failure."""
     if not FINMIND_TOKEN:
         logger.warning("FINMIND_TOKEN not set; skipping FinMind fetch")
         return None
@@ -381,17 +382,34 @@ def _finmind_fetch(
     }
     if stock_id:
         params["stock_id"] = stock_id
-    try:
-        resp = requests.get(FINMIND_BASE, params=params, timeout=60)
-        resp.raise_for_status()
-        data = resp.json()
-        if data.get("status") != 200:
-            logger.debug(f"FinMind {dataset}: {data.get('msg')} (stock={stock_id})")
-            return None
-        return pd.DataFrame(data["data"])
-    except Exception as e:
-        logger.debug(f"FinMind {dataset} chunk error: {e}")
-        return None
+
+    for attempt in range(max_retries):
+        try:
+            resp = requests.get(FINMIND_BASE, params=params, timeout=60)
+            resp.raise_for_status()
+            data = resp.json()
+            if data.get("status") != 200:
+                logger.debug(f"FinMind {dataset}: {data.get('msg')} (stock={stock_id})")
+                return None
+            return pd.DataFrame(data["data"])
+        except requests.exceptions.HTTPError as e:
+            code = e.response.status_code if e.response is not None else 0
+            if code in (429, 503) and attempt < max_retries - 1:
+                wait = 2 ** attempt
+                logger.warning(f"FinMind rate limit ({code}), retry {attempt+1}/{max_retries} in {wait}s")
+                time.sleep(wait)
+            else:
+                logger.debug(f"FinMind {dataset} HTTP error: {e}")
+                return None
+        except Exception as e:
+            if attempt < max_retries - 1:
+                wait = 2 ** attempt
+                logger.debug(f"FinMind {dataset} attempt {attempt+1} failed ({e}), retry in {wait}s")
+                time.sleep(wait)
+            else:
+                logger.debug(f"FinMind {dataset} chunk error: {e}")
+                return None
+    return None
 
 
 def _finmind_fetch_chunked(

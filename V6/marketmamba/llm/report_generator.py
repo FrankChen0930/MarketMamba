@@ -161,7 +161,7 @@ def _build_prompt(top10_rows: list[dict], market_data: dict) -> str:
         ticker = str(row.get("Ticker", "?"))
         name   = _get_name(ticker)
         alpha  = row.get("Exp_Alpha_20d", 0)
-        sharpe = row.get("Sharpe_Score", 0)
+        sharpe = row.get("Signal_Quality", 0)
         weight = row.get("Suggested_Weight", 0)
         conf   = row.get("Confidence", "中信心")
         top10_lines.append(
@@ -249,7 +249,7 @@ def generate_market_report(
     if df_kelly.empty:
         top10_rows = []
     else:
-        sort_col   = "Sharpe_Score" if "Sharpe_Score" in df_kelly.columns else df_kelly.columns[0]
+        sort_col   = "Signal_Quality" if "Signal_Quality" in df_kelly.columns else df_kelly.columns[0]
         top10      = df_kelly.nlargest(10, sort_col)
         top10_rows = top10.to_dict("records")
         # Inject company names into top10_rows for frontend display
