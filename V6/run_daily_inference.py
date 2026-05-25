@@ -89,6 +89,7 @@ _STEPS_ZH = [
     "LLM 市場報告",
     "歸檔",
     "信號掃描",
+    "模擬回測",
     "推送 GitHub",
 ]
 
@@ -784,22 +785,44 @@ def main(target_date: str | None = None, skip_push: bool = False) -> None:
             logger.warning(f"信號掃描失敗（非致命）：{e} ({_fmt(elapsed)})")
             _step_update(5, "failed", str(e)[:60])
 
-        # ── 步驟 7：推送 GitHub ───────────────────────────────────────────────
+        # ── 步驟 7：模擬回測 ─────────────────────────────────────────────────────
+        t0 = time.monotonic()
         logger.info(f"\n{'─'*50}")
-        logger.info(f"[7/7] 推送 GitHub  [{datetime.now().strftime('%H:%M:%S')}]")
+        logger.info(f"[7/8] 模擬回測  [{datetime.now().strftime('%H:%M:%S')}]")
+        logger.info(f"{'─'*50}")
+        _step_update(6, "running")
+        try:
+            from marketmamba.backtest.sim_engine import compute_sim_backtest
+            bt = compute_sim_backtest(
+                history_path=RESULTS_DIR / "history_index.json",
+                output_path=RESULTS_DIR / "sim_backtest.json",
+                prices_df=prices,   # reuse already-loaded raw prices from step 2
+            )
+            elapsed = time.monotonic() - t0
+            ret_str = f"{bt['total_return_pct']:+.2f}%" if bt.get("trading_days", 0) > 0 else "無資料"
+            logger.info(f"[7/8] ✓ 完成 ({_fmt(elapsed)}) — 累積報酬 {ret_str}")
+            _step_update(6, "done", f"{bt.get('trading_days',0)} 天  {ret_str}")
+        except Exception as e:
+            elapsed = time.monotonic() - t0
+            logger.warning(f"模擬回測失敗（非致命）：{e} ({_fmt(elapsed)})")
+            _step_update(6, "skipped", str(e)[:60])
+
+        # ── 步驟 8：推送 GitHub ───────────────────────────────────────────────
+        logger.info(f"\n{'─'*50}")
+        logger.info(f"[8/8] 推送 GitHub  [{datetime.now().strftime('%H:%M:%S')}]")
         logger.info(f"{'─'*50}")
         pushed = False
         if not skip_push:
-            _step_update(6, "running")
+            _step_update(7, "running")
             pushed = _push_to_github(RESULTS_DIR, today)
             if pushed:
                 logger.info("  後端將在下次快取刷新後（≤1h）提供最新數據")
-                _step_update(6, "done")
+                _step_update(7, "done")
             else:
-                _step_update(6, "failed", "git push 失敗，請手動推送")
+                _step_update(7, "failed", "git push 失敗，請手動推送")
         else:
             logger.info("  --skip-push：略過 git push（dry run 模式）")
-            _step_update(6, "skipped", "--skip-push 模式")
+            _step_update(7, "skipped", "--skip-push 模式")
 
         total = time.monotonic() - pipeline_start
         logger.info(f"\n{'='*55}")
@@ -834,6 +857,7 @@ def _push_to_github(results_dir: Path, date_str: str) -> bool:
              "V6/results/market_summary.json",
              "V6/results/action_signals.json",
              "V6/results/history_index.json",
+             "V6/results/sim_backtest.json",
              "V6/results/archive/"],   # push archived history too
 
             cwd=repo_root, check=True, capture_output=True, env=git_env,
