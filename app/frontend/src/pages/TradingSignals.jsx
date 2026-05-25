@@ -3,6 +3,7 @@ import { useApi } from '../hooks/useApi';
 import { fetchScannerSignals } from '../api/signals';
 import StockModal from '../components/StockModal';
 import { SkeletonCard, SkeletonBlock, ApiError } from '../components/SkeletonLoader';
+import MetricTooltip from '../components/MetricTooltip';
 
 // ── Entry Rules Modal ────────────────────────────────────────────────────────
 
@@ -126,11 +127,17 @@ function EntryRulesModal({ regime, onClose }) {
 // ── Signal Card (Buy) ────────────────────────────────────────────────────────
 
 function SignalCard({ signal, onClick }) {
+  const isOOD = signal.alpha_20d > 1.0;
+  const borderColor = isOOD ? 'rgba(245,158,11,0.35)' : 'rgba(0,255,136,0.25)';
+  const bgColor     = isOOD ? 'rgba(245,158,11,0.03)' : 'rgba(0,255,136,0.03)';
+  const hoverBorder = isOOD ? 'rgba(245,158,11,0.65)' : 'rgba(0,255,136,0.5)';
+  const hoverShadow = isOOD ? '0 0 16px rgba(245,158,11,0.2)' : 'var(--shadow-glow-green)';
+
   return (
     <div className="panel animate-fade-up" onClick={onClick}
-      style={{ borderColor: 'rgba(0,255,136,0.25)', background: 'rgba(0,255,136,0.03)', cursor: 'pointer', transition: 'all 0.2s' }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,255,136,0.5)'; e.currentTarget.style.boxShadow = 'var(--shadow-glow-green)'; }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(0,255,136,0.25)'; e.currentTarget.style.boxShadow = 'none'; }}
+      style={{ borderColor, background: bgColor, cursor: 'pointer', transition: 'all 0.2s' }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = hoverBorder; e.currentTarget.style.boxShadow = hoverShadow; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = borderColor; e.currentTarget.style.boxShadow = 'none'; }}
     >
       <div className="panel-body" style={{ padding: '16px 20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
@@ -144,9 +151,17 @@ function SignalCard({ signal, onClick }) {
             </div>
           </div>
           {signal.alpha_20d != null && (
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Alpha 20d</div>
-              <div className="mono" style={{ fontSize: 20, fontWeight: 700, color: signal.alpha_20d >= 0 ? 'var(--positive)' : 'var(--negative)' }}>
+            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+              {isOOD && (
+                <div style={{ background: '#f59e0b', color: '#1a1a1a', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, marginBottom: 6, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                  ⚠️ 異常Alpha
+                </div>
+              )}
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}>
+                Alpha 20d
+                {isOOD && <MetricTooltip metricKey="alpha_ood" />}
+              </div>
+              <div className="mono" style={{ fontSize: 20, fontWeight: 700, color: isOOD ? '#f59e0b' : (signal.alpha_20d >= 0 ? 'var(--positive)' : 'var(--negative)') }}>
                 {signal.alpha_20d >= 0 ? '+' : ''}{(signal.alpha_20d * 100).toFixed(1)}%
               </div>
             </div>
