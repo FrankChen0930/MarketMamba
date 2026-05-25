@@ -112,7 +112,10 @@ V6/results/df_kelly.csv + action_signals.json
 
 ### 2.2 後端穩定性問題
 
-**[SYS-01] 🔴 全域可變快取（race condition 風險）**
+~~**[SYS-01] 🔴 全域可變快取（race condition 風險）**~~ ✅ 已完成 (S3)
+
+> ✅ **已完成（2026-05-25）**：`signals.py` 已加入 `asyncio.Lock`（`_cache_lock`），並實作 double-check locking pattern：快取失效時先取鎖，取鎖後再次檢查快取，防止 thundering herd；`refresh_cache()` 也改用 `async with _cache_lock`。
+
 - `signals.py` 使用模組級別全域變數 `_cache`、`_cache_time`、`_scanner_cache` 等
 - FastAPI 使用 async 並發處理請求，多個請求同時到達在快取失效瞬間，可能觸發多次 GitHub fetch（thundering herd）
 - **建議**：使用 `asyncio.Lock()` 保護快取更新，或改用 Redis/Memcached
@@ -157,7 +160,10 @@ async def _get_signals():
 
 ### 2.3 每日推論管線風險
 
-**[SYS-07] 🔴 推論失敗無告警機制**
+**[SYS-07] 🔴 推論失敗無告警機制** ⚡ 部分完成 (S5)
+
+> ⚡ **部分完成（2026-05-25）**：Dashboard 已加入 `freshness_warning` 黃色警告徽章（推論日期 >3 天時顯示 ⚠️）。推播告警（Line Notify/Telegram）因 Line Notify 已於 2025-03 停止服務而未實作，Telegram 整合尚未建立。
+
 - `run_daily_inference.py` 執行失敗時，只記錄 log 到 stdout
 - 若 Task Scheduler 執行失敗（網路斷線、FinMind API 限速、VRAM OOM），隔日 Dashboard 依然顯示昨日舊數據
 - 用戶**無從得知**數據是否已更新（Topbar 只顯示日期，沒有「距今 X 小時」提示）
@@ -182,7 +188,10 @@ async def _get_signals():
 
 ### 2.4 資料管線風險
 
-**[SYS-11] 🟠 FinMind API 無速率限制保護**
+~~**[SYS-11] 🟠 FinMind API 無速率限制保護**~~ ✅ 已完成 (S2)
+
+> ✅ **已完成（2026-05-25）**：`data/fetcher.py` 的 `_finmind_fetch()` 已加入指數退避重試（最多 3 次，HTTP 429/503 及一般例外均觸發，等待時間為 2^attempt 秒）。
+
 - `data/fetcher.py` 尚未看到明確的 rate limit handler
 - FinMind 免費方案有請求上限，批次更新 2888 支股票時可能被封鎖
 - **建議**：加入 exponential backoff retry 和每分鐘請求計數器
@@ -200,8 +209,8 @@ async def _get_signals():
 |--------|------|------|--------|
 | P0 | UX-01 靜態假數據（量化分析頁） | 用戶信任度崩潰 | 中 |
 | P0 | UX-02 假P&L曲線 | 數據誤導 | 小 |
-| P0 | SYS-07 推論失敗無告警 | 靜默故障 | 小 |
-| P1 | SYS-01 快取 race condition | 服務穩定性 | 中 |
+| ~~P0~~ | ~~SYS-07 推論失敗無告警~~ | ~~靜默故障~~ | ⚡ 部分完成 (S5：Dashboard 警告已加，推播未完成) |
+| ~~P1~~ | ~~SYS-01 快取 race condition~~ | ~~服務穩定性~~ | ✅ 已完成 (S3) |
 | P1 | SYS-03/04 yfinance 串行阻塞 | 冷啟動體驗 | 中 |
 | ~~P1~~ | ~~UX-04 Render 冷啟動 UX~~ | ~~首訪體驗~~ | ✅ 已解決（UptimeRobot） |
 | P1 | UX-05 Scanner 空狀態模糊 | 功能可信度 | 小 |
@@ -234,7 +243,7 @@ async def _get_signals():
 1. **UX-01** QuantAnalysis 靜態數據加上「數據更新於 YYYY-MM-DD」紅色警示 Banner
 2. **UX-02** Portfolio 損益曲線改為「資料不足」空狀態，移除 `Math.sin()` 假曲線
 3. **UX-05** Scanner 空狀態分辨「市場無訊號」vs「系統尚未就緒」
-4. **SYS-07** 推論完成後發送 Line Notify 告警（成功/失敗各一條）
+4. ~~**SYS-07** 推論完成後發送 Line Notify 告警（成功/失敗各一條）~~ ⚡ 部分完成：Dashboard `freshness_warning` 已加入；推播告警待實作（Line Notify 已停服，需改用其他管道）
 
 ### 短期改善（兩週內）
 5. **SYS-04** Ticker API 改為並行 yfinance 請求（`asyncio.gather`）
@@ -242,10 +251,10 @@ async def _get_signals():
 7. **UX-03** 後端補充 `spx_price`、`gold_price` 欄位
 
 ### 中期架構改善（一個月內）
-9. **SYS-01** 使用 `asyncio.Lock()` 保護全域快取
+9. ~~**SYS-01** 使用 `asyncio.Lock()` 保護全域快取~~ ✅ 已完成 (S3)
 10. **UX-08** 前端加入 768px 斷點響應式佈局
 11. **SYS-06** FinNews analyze 端點加入 4 小時 TTL 快取
-12. **SYS-11** FinMind fetcher 加入 retry + rate limit 保護
+12. ~~**SYS-11** FinMind fetcher 加入 retry + rate limit 保護~~ ✅ 已完成 (S2)
 
 ---
 
