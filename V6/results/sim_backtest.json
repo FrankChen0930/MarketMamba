@@ -1,0 +1,126 @@
+{
+  "generated_date": "2026-05-25",
+  "initial_capital": 1000000,
+  "period_start": "2026-04-29",
+  "period_end": "2026-05-24",
+  "trading_days": 16,
+  "total_return_pct": -0.25,
+  "max_drawdown_pct": -1.73,
+  "sharpe": -0.5,
+  "win_days": 5,
+  "lose_days": 7,
+  "flat_days": 4,
+  "avg_deployed_pct": 45.9,
+  "best_day": {
+    "date": "2026-05-21",
+    "pct": 1.36
+  },
+  "worst_day": {
+    "date": "2026-05-15",
+    "pct": -0.978
+  },
+  "equity_curve": [
+    {
+      "date": "2026-04-29",
+      "equity": 1000000,
+      "pnl": 0,
+      "daily_return_pct": 0.0
+    },
+    {
+      "date": "2026-04-30",
+      "equity": 997712,
+      "pnl": -2288,
+      "daily_return_pct": -0.229
+    },
+    {
+      "date": "2026-05-04",
+      "equity": 1000201,
+      "pnl": 201,
+      "daily_return_pct": 0.249
+    },
+    {
+      "date": "2026-05-05",
+      "equity": 1000829,
+      "pnl": 829,
+      "daily_return_pct": 0.063
+    },
+    {
+      "date": "2026-05-09",
+      "equity": 1000829,
+      "pnl": 829,
+      "daily_return_pct": 0.0
+    },
+    {
+      "date": "2026-05-10",
+      "equity": 1000829,
+      "pnl": 829,
+      "daily_return_pct": 0.0
+    },
+    {
+      "date": "2026-05-11",
+      "equity": 1000829,
+      "pnl": 829,
+      "daily_return_pct": 0.0
+    },
+    {
+      "date": "2026-05-12",
+      "equity": 1000066,
+      "pnl": 66,
+      "daily_return_pct": -0.076
+    },
+    {
+      "date": "2026-05-13",
+      "equity": 995344,
+      "pnl": -4656,
+      "daily_return_pct": -0.472
+    },
+    {
+      "date": "2026-05-14",
+      "equity": 995036,
+      "pnl": -4964,
+      "daily_return_pct": -0.031
+    },
+    {
+      "date": "2026-05-15",
+      "equity": 985305,
+      "pnl": -14695,
+      "daily_return_pct": -0.978
+    },
+    {
+      "date": "2026-05-18",
+      "equity": 988520,
+      "pnl": -11480,
+      "daily_return_pct": 0.326
+    },
+    {
+      "date": "2026-05-19",
+      "equity": 985996,
+      "pnl": -14004,
+      "daily_return_pct": -0.255
+    },
+    {
+      "date": "2026-05-20",
+      "equity": 983552,
+      "pnl": -16448,
+      "daily_return_pct": -0.248
+    },
+    {
+      "date": "2026-05-21",
+      "equity": 996931,
+      "pnl": -3069,
+      "daily_return_pct": 1.36
+    },
+    {
+      "date": "2026-05-22",
+      "equity": 997523,
+      "pnl": -2477,
+      "daily_return_pct": 0.059
+    },
+    {
+      "date": "2026-05-24",
+      "equity": 997523,
+      "pnl": -2477,
+      "daily_return_pct": 0.0
+    }
+  ]
+}
