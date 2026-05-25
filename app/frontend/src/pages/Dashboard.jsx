@@ -71,16 +71,18 @@ function MacroRow({ label, value, change, isUp }) {
 // ── Main ─────────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState('top');
+  const [activeTab, setActiveTab] = useState('20d');
   const [selectedStock, setSelectedStock] = useState(null);
 
   const { data: signalData, loading: sigLoading, error: sigError, refetch: refetchSigs } = useApi(() => fetchSignals());
   const { data: market, loading: mktLoading } = useApi(fetchMarket);
 
   const signals    = signalData?.signals || [];
-  const topSignals = signals.filter(s => s.alpha_20d > 0).slice(0, 15);
-  const botSignals = signals.filter(s => s.alpha_20d < 0).slice(0, 8);
-  const displayed  = activeTab === 'top' ? topSignals : botSignals;
+  const sig5d  = [...signals].sort((a, b) => (b.alpha_5d  ?? 0) - (a.alpha_5d  ?? 0)).slice(0, 50);
+  const sig20d = [...signals].sort((a, b) => (b.alpha_20d ?? 0) - (a.alpha_20d ?? 0)).slice(0, 50);
+  const sig60d = [...signals].sort((a, b) => (b.alpha_60d ?? 0) - (a.alpha_60d ?? 0)).slice(0, 50);
+  const displayed  = activeTab === '5d' ? sig5d : activeTab === '60d' ? sig60d : sig20d;
+  const topSignals = sig20d;
 
   const loading = sigLoading || mktLoading;
   const taiex   = market?.taiex;
@@ -169,7 +171,7 @@ export default function Dashboard() {
               </span>}
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
-              {[['top','多方 Top'], ['bot','空方 Bot']].map(([tab, label]) => (
+              {[['5d','5日 Alpha'], ['20d','20日 Alpha'], ['60d','60日 Alpha']].map(([tab, label]) => (
                 <button
                   key={tab}
                   className={`btn ${activeTab === tab ? 'btn-primary' : 'btn-ghost'}`}
@@ -189,7 +191,7 @@ export default function Dashboard() {
                     <th style={{ width: 32 }}>#</th>
                     <th>股票</th>
                     <th>產業</th>
-                    <th>20d Alpha 強度 <MetricTooltip metricKey="alpha" /></th>
+                    <th>{activeTab} Alpha 強度 <MetricTooltip metricKey="alpha" /></th>
                     <th>Sharpe <MetricTooltip metricKey="sharpe" /></th>
                     <th>建倉比重 <MetricTooltip metricKey="kelly" /></th>
                     <th>訊號</th>
@@ -209,7 +211,7 @@ export default function Dashboard() {
                         <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{s.stock_id}</div>
                       </td>
                       <td><span className="badge badge-neutral" style={{ fontSize: 10 }}>{s.sector}</span></td>
-                      <td><AlphaBar value={s.alpha_20d} /></td>
+                      <td><AlphaBar value={activeTab === '5d' ? (s.alpha_5d ?? 0) : activeTab === '60d' ? (s.alpha_60d ?? 0) : (s.alpha_20d ?? 0)} /></td>
                       <td>
                         <span className={`mono ${s.uncertainty < 0.03 ? 'text-positive' : 'text-secondary'}`} style={{ fontSize: 12 }}>
                           {(s.alpha_20d / Math.max(s.uncertainty, 0.001)).toFixed(1)}

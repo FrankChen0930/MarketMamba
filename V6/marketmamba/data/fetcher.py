@@ -451,14 +451,21 @@ def _finmind_fetch_chunked(
     return pd.concat(frames, ignore_index=True)
 
 
-def fetch_margin_finmind(date_str: str) -> Optional[pd.DataFrame]:
+def fetch_margin_finmind(
+    date_str: str,
+    allow_forward_fill: bool = True,
+) -> tuple[Optional[pd.DataFrame], bool]:
     """
     Fetch margin purchase / short sale data from FinMind.
-    If not yet updated and MARGIN_FORWARD_FILL=True, returns yesterday's cached data.
+
+    Returns:
+        (df, is_forward_filled)
+        df=None if data is unavailable; is_forward_filled=True when yesterday's
+        cached data was substituted.
     """
     cache_path = CACHE_DIR / f"margin_{date_str}.parquet"
     if cache_path.exists():
-        return pd.read_parquet(cache_path)
+        return pd.read_parquet(cache_path), False
 
     df = _finmind_fetch(
         "TaiwanStockMarginPurchaseShortSale",
@@ -467,17 +474,16 @@ def fetch_margin_finmind(date_str: str) -> Optional[pd.DataFrame]:
     )
 
     if df is None or df.empty:
-        if MARGIN_FORWARD_FILL:
-            # Try to load yesterday's data
+        if allow_forward_fill and MARGIN_FORWARD_FILL:
             yesterday = (datetime.strptime(date_str, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
             yesterday_cache = CACHE_DIR / f"margin_{yesterday}.parquet"
             if yesterday_cache.exists():
                 logger.warning(f"Margin: FinMind not ready for {date_str}, using Forward Fill from {yesterday}")
-                return pd.read_parquet(yesterday_cache)
-        return None
+                return pd.read_parquet(yesterday_cache), True
+        return None, False
 
     df.to_parquet(cache_path)
-    return df
+    return df, False
 
 
 def fetch_prices_finmind(
@@ -644,40 +650,58 @@ def run_full_data_sync(
 # Daily Update — Inference Mode (Fast Path)
 # ============================================================
 
-def run_daily_update(target_date: str | None = None) -> str:
+def run_daily_update(
+    target_date: str | None = None,
+    allow_forward_fill: bool = True,
+) -> dict:
     """
     Lightweight update for daily inference.
     Only fetches today's data; uses cache for history.
 
+    Args:
+        target_date       : Target trading date 'YYYY-MM-DD'. Defaults to today.
+        allow_forward_fill: If True, use yesterday's margin data when FinMind is
+                            not yet updated. If False, margin is treated as missing.
+
     Returns:
-        The trading date string that was fetched ('YYYY-MM-DD').
+        {
+          "missing"       : list[str]  — sources with no data for today at all
+          "forward_filled": list[str]  — sources where yesterday's data was substituted
+        }
     """
+    _MIN_PRICE_ROWS = 2000   # below this, treat the price cache as incomplete
+
     today = target_date or date.today().strftime("%Y-%m-%d")
-    logger.info(f"=== V6 Daily Update: {today} ===")
+    logger.info(f"=== V6 Daily Update: {today} (forward_fill={allow_forward_fill}) ===")
+
+    missing: list[str] = []
+    forward_filled: list[str] = []
 
     tse_ids, otc_ids = load_ticker_universe()
 
-    # Price — skip if today's data already in parquet
+    # ── Price / Volume ────────────────────────────────────────────────────────
     price_path = PROCESSED_DIR / "prices_raw.parquet"
-    already_have_today = False
+
+    _today_price_rows = 0
     if price_path.exists():
         _existing = pd.read_parquet(price_path, columns=["Date"])
         _existing["Date"] = pd.to_datetime(_existing["Date"]).dt.strftime("%Y-%m-%d")
-        already_have_today = ((_existing["Date"] == today).any())
+        _today_price_rows = int((_existing["Date"] == today).sum())
 
-    if already_have_today:
-        logger.info(f"Prices for {today} already in parquet — skipping download")
+    if _today_price_rows >= _MIN_PRICE_ROWS:
+        logger.info(
+            f"Prices for {today} already in parquet ({_today_price_rows:,} rows) — skipping download"
+        )
     else:
-        df_prices, missing = fetch_prices_yfinance(tse_ids, otc_ids, today, today)
+        df_prices, _missing_tickers = fetch_prices_yfinance(tse_ids, otc_ids, today, today)
         if df_prices.empty:
-            # Single FinMind call for ALL stocks on this date (much faster than per-stock)
             logger.info("yfinance empty → FinMind single-batch price fetch...")
             df_fm = _finmind_fetch("TaiwanStockPrice", start_date=today, end_date=today)
             if df_fm is not None and not df_fm.empty:
                 col_map = {"date": "Date", "open": "Open", "max": "High",
                            "min": "Low", "close": "Close", "Trading_Volume": "Volume"}
                 df_fm.rename(columns=col_map, inplace=True)
-                keep = [c for c in ["Date","stock_id","Open","High","Low","Close","Volume"]
+                keep = [c for c in ["Date", "stock_id", "Open", "High", "Low", "Close", "Volume"]
                         if c in df_fm.columns]
                 df_prices = df_fm[keep]
                 logger.info(f"FinMind prices: {len(df_prices)} rows for {today}")
@@ -685,9 +709,18 @@ def run_daily_update(target_date: str | None = None) -> str:
                 logger.warning("FinMind also returned no price data — prices not updated today")
         if not df_prices.empty:
             _append_to_parquet(price_path, df_prices, today)
+            _today_price_rows += len(df_prices)
 
+    if _today_price_rows < _MIN_PRICE_ROWS:
+        logger.error(
+            f"Price data incomplete for {today}: only {_today_price_rows} rows "
+            f"(need ≥ {_MIN_PRICE_ROWS})"
+        )
+        missing.append("prices")
+    else:
+        logger.info(f"Price data OK: {_today_price_rows:,} rows for {today}")
 
-    # Institutional — TWSE/TPEX direct (~16:30)
+    # ── Institutional Investors ───────────────────────────────────────────────
     df_tse = fetch_institutional_twse(today)
     df_otc = fetch_institutional_tpex(today)
     inst_frames = [x for x in [df_tse, df_otc] if x is not None]
@@ -696,17 +729,30 @@ def run_daily_update(target_date: str | None = None) -> str:
         if not inst_today.empty:
             inst_today["Date"] = today
             _append_to_parquet(PROCESSED_DIR / "institutional_raw.parquet", inst_today, today)
+            logger.info(f"Institutional data OK: {len(inst_today)} rows for {today}")
     else:
         logger.warning(
             f"No institutional data for {today} "
-            f"(market may be closed or data not yet published — will use forward-fill)"
+            f"(market may be closed or data not yet published)"
         )
+        missing.append("institutional")
 
-    # Margin — FinMind or Forward Fill
-    fetch_margin_finmind(today)  # caches to CACHE_DIR automatically
+    # ── Margin / Short Sale ───────────────────────────────────────────────────
+    df_margin, margin_ff = fetch_margin_finmind(today, allow_forward_fill=allow_forward_fill)
+    if df_margin is None:
+        logger.warning(f"Margin data unavailable for {today}")
+        missing.append("margin")
+    elif margin_ff:
+        logger.warning(f"Margin data: using forward-fill for {today}")
+        forward_filled.append("margin")
+    else:
+        logger.info(f"Margin data OK for {today}")
 
-    logger.info(f"=== Daily update done: {today} ===")
-    return today
+    logger.info(
+        f"=== Daily update done: {today} | "
+        f"missing={missing or 'none'} | fwd_fill={forward_filled or 'none'} ==="
+    )
+    return {"missing": missing, "forward_filled": forward_filled}
 
 
 

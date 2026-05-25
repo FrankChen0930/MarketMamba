@@ -159,12 +159,25 @@ class ProgressWindow:
         root  = self.root
         PAD   = 24   # 外邊距
 
-        # 自動選字體：優先 Ubuntu，次 DejaVu Sans
-        fam = "Ubuntu"
-        try:
-            tkfont.Font(family="Ubuntu", size=10).actual()
-        except Exception:
-            fam = "DejaVu Sans"
+        # 自動選字體：CJK 字型優先，確保中文顯示正常
+        _CJK_FONTS = [
+            "Noto Sans CJK TC",
+            "Noto Sans CJK SC",
+            "WenQuanYi Zen Hei",
+            "WenQuanYi Micro Hei",
+            "Ubuntu",
+            "DejaVu Sans",
+        ]
+        fam = "TkDefaultFont"
+        for _f in _CJK_FONTS:
+            try:
+                _actual = tkfont.Font(family=_f, size=10).actual()["family"]
+                _key = _f.split()[0].lower()  # "noto", "wenquanyi", "ubuntu", "dejavu"
+                if _key in _actual.lower():
+                    fam = _f
+                    break
+            except Exception:
+                continue
 
         f_h1     = tkfont.Font(family=fam, size=15, weight="bold")
         f_meta   = tkfont.Font(family=fam, size=10)
@@ -547,7 +560,7 @@ def run_inference(
 # Main Pipeline
 # ============================================================
 
-def main(target_date: str | None = None, skip_push: bool = False) -> None:
+def main(target_date: str | None = None, skip_push: bool = False, forward_fill: bool = False) -> None:
     # ── 時間感知日期選擇 ──────────────────────────────────────────────────────
     # 台股 13:30 收盤，14:00 前執行時使用昨日日期
     if target_date is not None:
@@ -584,18 +597,54 @@ def main(target_date: str | None = None, skip_push: bool = False) -> None:
         # ── 步驟 1：資料更新 ─────────────────────────────────────────────────
         t0 = time.monotonic()
         logger.info(f"\n{'─'*50}")
-        logger.info(f"[1/7] 資料更新  [{datetime.now().strftime('%H:%M:%S')}]")
+        logger.info(f"[1/8] 資料更新  [{datetime.now().strftime('%H:%M:%S')}]")
         logger.info(f"{'─'*50}")
         _step_update(0, "running")
-        try:
-            run_daily_update(target_date=today)
-        except Exception as e:
-            logger.error(f"資料更新失敗：{e}")
-            _step_update(0, "failed", str(e)[:60])
-            raise
+
+        _MAX_FETCH_ATTEMPTS = 2
+        _RETRY_WAIT_SEC     = 15 * 60   # 15 分鐘
+        freshness: dict = {"missing": [], "forward_filled": []}
+
+        for _fetch_attempt in range(_MAX_FETCH_ATTEMPTS):
+            try:
+                freshness = run_daily_update(
+                    target_date=today,
+                    allow_forward_fill=forward_fill,
+                )
+            except Exception as e:
+                logger.error(f"資料更新失敗：{e}")
+                _step_update(0, "failed", str(e)[:60])
+                raise
+
+            _missing = freshness.get("missing", [])
+            if not _missing:
+                break   # 所有來源都有今日資料
+
+            if _fetch_attempt < _MAX_FETCH_ATTEMPTS - 1:
+                _wait_msg = (
+                    f"缺少 {'、'.join(_missing)}，"
+                    f"{_RETRY_WAIT_SEC // 60} 分後重試…"
+                )
+                logger.warning(_wait_msg)
+                _step_update(0, "running", _wait_msg)
+                time.sleep(_RETRY_WAIT_SEC)
+                logger.info(f"[1/8] 重試資料取得（第 {_fetch_attempt + 2} 次）…")
+            else:
+                _missing_str = "、".join(_missing)
+                _err = (
+                    f"資料不完整（已重試 {_MAX_FETCH_ATTEMPTS} 次）：缺少 {_missing_str}\n"
+                    f"建議：(1) 再等 30 分鐘後重跑  "
+                    f"(2) 加 --forward-fill 使用前日資料補齊後立即推論"
+                )
+                logger.error(_err)
+                _step_update(0, "failed", f"缺少 {_missing_str}")
+                raise RuntimeError(_err)
+
         elapsed = time.monotonic() - t0
-        logger.info(f"[1/7] ✓ 完成 ({_fmt(elapsed)})")
-        _step_update(0, "done")
+        _fwd = freshness.get("forward_filled", [])
+        _done_note = f"Forward-Fill：{'、'.join(_fwd)}" if _fwd else ""
+        logger.info(f"[1/8] ✓ 完成 ({_fmt(elapsed)})" + (f" — {_done_note}" if _done_note else ""))
+        _step_update(0, "done", _done_note)
 
         # ── 步驟 2：特徵矩陣建構 ─────────────────────────────────────────────
         t0 = time.monotonic()
@@ -993,13 +1042,22 @@ def _update_history_index(df_kelly: pd.DataFrame, date_str: str) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MarketMamba V6 每日推論")
-    parser.add_argument("--date",      type=str,  default=None,
+    parser.add_argument("--date",         type=str,  default=None,
                         help="目標日期 YYYY-MM-DD（預設：今日）")
-    parser.add_argument("--skip-push", action="store_true",
+    parser.add_argument("--skip-push",    action="store_true",
                         help="略過 git push（dry run / 測試模式）")
-    parser.add_argument("--no-gui",    action="store_true",
+    parser.add_argument("--no-gui",       action="store_true",
                         help="停用 tkinter 進度視窗（純文字模式）")
+    parser.add_argument("--forward-fill", "--ff", action="store_true",
+                        dest="forward_fill",
+                        help="寬鬆模式：資料缺漏時以前日資料補齊後繼續推論（預設：嚴格模式，缺漏即停止）")
     args = parser.parse_args()
+
+    _main_kwargs = dict(
+        target_date  = args.date,
+        skip_push    = args.skip_push,
+        forward_fill = args.forward_fill,
+    )
 
     if _TK_AVAILABLE and not args.no_gui:
         try:
@@ -1007,10 +1065,10 @@ if __name__ == "__main__":
             _handler = _UiLogHandler()
             _handler.setFormatter(logging.Formatter("%(levelname)s %(name)s — %(message)s"))
             logging.getLogger().addHandler(_handler)
-            ui.run_with(main, target_date=args.date, skip_push=args.skip_push)
+            ui.run_with(main, **_main_kwargs)
         except Exception as e:
             # 無 DISPLAY 環境（Task Scheduler headless、WSLg 未啟動等）→ 降級為文字模式
             logger.warning(f"進度視窗無法開啟，切換為文字模式：{e}")
-            main(target_date=args.date, skip_push=args.skip_push)
+            main(**_main_kwargs)
     else:
-        main(target_date=args.date, skip_push=args.skip_push)
+        main(**_main_kwargs)

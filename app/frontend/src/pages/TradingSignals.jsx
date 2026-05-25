@@ -334,29 +334,6 @@ export default function TradingSignals() {
         </div>
       )}
 
-      {/* Exit Signals */}
-      {!loading && exitSignals.length > 0 && (
-        <div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--negative)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 18 }}>🔴</span> 退場警告
-            <span className="badge badge-negative" style={{ fontSize: 10 }}>{exitSignals.length} 檔</span>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {exitSignals.map(s => (
-              <div key={s.ticker} className="panel" style={{ borderColor: 'rgba(255,71,87,0.25)', background: 'rgba(255,71,87,0.03)' }}>
-                <div className="panel-body" style={{ padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <span style={{ fontWeight: 700 }}>{s.ticker}</span>
-                    {s.reasons?.map((r, i) => <span key={i} style={{ fontSize: 12, color: 'var(--negative)', marginLeft: 12 }}>🔴 {r}</span>)}
-                  </div>
-                  {s.current_rank && <span className="mono" style={{ fontSize: 12, color: 'var(--text-muted)' }}>Rank #{s.current_rank}</span>}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Watch List Table */}
       {!loading && <WatchListTable watchList={watchList} onSelectStock={setSelectedStock} />}
 
