@@ -37,6 +37,11 @@ const METRIC_INFO = {
     desc: '模型預測該股票相對大盤（加權指數）的超額報酬。正值代表預期跑贏大盤，負值代表預期跑輸。',
     threshold: '以 20d Alpha 為主要參考',
   },
+  alpha_ood: {
+    title: '異常高 Alpha (OOD 警告)',
+    desc: '預測值超過 100% 代表模型遭遇 OOD 樣本（Out-of-Distribution，訓練資料分布外），數字本身不可靠，但部分此類股票可能具備成為強勢股的條件，建議人工複核後再決策。',
+    threshold: 'alpha_20d > 100% 時觸發；數值僅供方向性參考，勿直接用於倉位計算',
+  },
   uncertainty: {
     title: '不確定度',
     desc: '模型對預測結果的不確定程度。透過 MC-Dropout 多次推論取標準差。越低代表模型越有信心。',
