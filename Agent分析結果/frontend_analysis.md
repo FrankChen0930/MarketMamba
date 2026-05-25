@@ -161,7 +161,9 @@ function buildPnlHistory(positions) {
 
 ---
 
-#### 4. `MarketView.jsx` 有 XSS 安全疑慮
+#### ~~4. `MarketView.jsx` 有 XSS 安全疑慮~~ ✅ 已完成 (S4)
+
+> ✅ **已完成（2026-05-25）**：已移除 `dangerouslySetInnerHTML`，改用 React 元素渲染 `**bold**` 語法（`.split(/\*\*([^*]+)\*\*/g)` + 條件式 `<strong>`），徹底消除 XSS 風險。
 
 ```js
 // ⚠️ dangerouslySetInnerHTML 接受 LLM 生成的內容，有 XSS 風險
@@ -286,7 +288,9 @@ export function useApi(fetchFn, { fallback = null, deps = [] } = {}) {
 }
 ```
 
-#### 建議 B：修復 MarketView 的 XSS 漏洞
+#### ~~建議 B：修復 MarketView 的 XSS 漏洞~~ ✅ 已完成 (S4)
+
+> ✅ **已完成（2026-05-25）**：採用了「完全避免 innerHTML」方案，使用 React 元素渲染，實作與下方第二種方案相同。
 
 ```js
 // 使用 DOMPurify 清理 LLM 內容，或改用 React 渲染代替 dangerouslySetInnerHTML
