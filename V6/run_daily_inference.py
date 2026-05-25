@@ -477,11 +477,6 @@ def run_inference(
         "Uncertainty":   pred_std[:, 1],    # 20d uncertainty
     })
 
-    # S1: Clip extreme predictions to prevent outlier distortion
-    _ALPHA_CLIP = 2.0
-    df_kelly["Exp_Alpha_5d"]  = df_kelly["Exp_Alpha_5d"].clip(-_ALPHA_CLIP, _ALPHA_CLIP)
-    df_kelly["Exp_Alpha_20d"] = df_kelly["Exp_Alpha_20d"].clip(-_ALPHA_CLIP, _ALPHA_CLIP)
-    df_kelly["Exp_Alpha_60d"] = df_kelly["Exp_Alpha_60d"].clip(-_ALPHA_CLIP, _ALPHA_CLIP)
     df_kelly["Uncertainty"]   = df_kelly["Uncertainty"].clip(0.0, None)
 
     # Liquidity filter — use RAW prices (Volume/Close are z-scored in feature matrix)

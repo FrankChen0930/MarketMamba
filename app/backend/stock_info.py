@@ -92,9 +92,10 @@ async def _fetch_one(url: str, market: str) -> dict[str, dict]:
 
         result = {}
         for row in data:
-            ticker = str(row.get("公司代號", "")).strip()
-            name   = str(row.get("公司簡稱", "")).strip()
-            code   = str(row.get("產業別", "")).strip().lstrip("0") or "20"
+            # Support both Chinese (TWSE) and English (OTC) column names
+            ticker = str(row.get("公司代號") or row.get("SecuritiesCompanyCode") or "").strip()
+            name   = str(row.get("公司簡稱") or row.get("CompanyAbbreviation") or "").strip()
+            code   = str(row.get("產業別") or row.get("SecuritiesIndustryCode") or "").strip().lstrip("0") or "20"
             sector_code = code.zfill(2) if code.isdigit() else code
             sector = _SECTOR_MAP.get(sector_code, "其他")
             if ticker and name:

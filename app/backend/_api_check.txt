@@ -1,0 +1,15 @@
+TSE total rows: 1088
+OTC total rows: 888
+OTC keys: ['Date', 'SecuritiesCompanyCode', 'CompanyName', 'CompanyAbbreviation', 'Registration', 'SecuritiesIndustryCode']
+TSE 00878: NOT FOUND
+TSE 0050: NOT FOUND
+TSE 00929: NOT FOUND
+TSE 006208: NOT FOUND
+TSE 00919: NOT FOUND
+
+Combined total: 1976
+  00878: TSE=N/A OTC=N/A
+  0050: TSE=N/A OTC=N/A
+  00929: TSE=N/A OTC=N/A
+  2330: TSE=台積電 OTC=N/A
+  2317: TSE=鴻海 OTC=N/A

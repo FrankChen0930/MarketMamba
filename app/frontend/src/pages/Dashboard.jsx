@@ -78,9 +78,16 @@ export default function Dashboard() {
   const { data: market, loading: mktLoading } = useApi(fetchMarket);
 
   const signals    = signalData?.signals || [];
-  const sig5d  = [...signals].sort((a, b) => (b.alpha_5d  ?? 0) - (a.alpha_5d  ?? 0)).slice(0, 50);
-  const sig20d = [...signals].sort((a, b) => (b.alpha_20d ?? 0) - (a.alpha_20d ?? 0)).slice(0, 50);
-  const sig60d = [...signals].sort((a, b) => (b.alpha_60d ?? 0) - (a.alpha_60d ?? 0)).slice(0, 50);
+  // 排除流動性不足（alpha_20d = -999 sentinel）
+  const _investable = signals.filter(s => (s.alpha_20d ?? -999) > -99);
+  // Alpha 同值時以 Signal_Quality rank 為第二排序鍵，避免 clip 到 200% 的股票亂序
+  const _byAlpha = (key) => [..._investable].sort((a, b) => {
+    const d = (b[key] ?? 0) - (a[key] ?? 0);
+    return d !== 0 ? d : (a.rank ?? 9999) - (b.rank ?? 9999);
+  }).slice(0, 50);
+  const sig5d  = _byAlpha('alpha_5d');
+  const sig20d = _byAlpha('alpha_20d');
+  const sig60d = _byAlpha('alpha_60d');
   const displayed  = activeTab === '5d' ? sig5d : activeTab === '60d' ? sig60d : sig20d;
   const topSignals = sig20d;
 
@@ -167,7 +174,7 @@ export default function Dashboard() {
             <div className="panel-title">
               <span className="panel-title-icon">⚡</span> Alpha 排名訊號
               {!loading && <span className="badge badge-neutral" style={{ marginLeft: 8, fontSize: 10 }}>
-                可投資 {signals.filter(s => s.alpha_20d > 0).length} 檔
+                可投資 {_investable.filter(s => s.alpha_20d > 0).length} 檔
               </span>}
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
@@ -205,9 +212,11 @@ export default function Dashboard() {
                       className="animate-fade-up"
                       onClick={() => setSelectedStock(s)}
                     >
-                      <td style={{ color: 'var(--text-muted)', fontSize: 11 }}>{s.rank}</td>
+                      <td style={{ color: 'var(--text-muted)', fontSize: 11 }}>{i + 1}</td>
                       <td>
-                        <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>{s.name}</div>
+                        <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>
+                          {s.name || s.stock_id}
+                        </div>
                         <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{s.stock_id}</div>
                       </td>
                       <td><span className="badge badge-neutral" style={{ fontSize: 10 }}>{s.sector}</span></td>
