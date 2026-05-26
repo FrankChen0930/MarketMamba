@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid, ReferenceLine, BarChart, Bar, Cell, Legend,
@@ -288,6 +288,170 @@ function IcPanel() {
   );
 }
 
+// ── Strategy Guide ────────────────────────────────────────────────────────────
+
+function StrategyGuide() {
+  const [open, setOpen] = useState(false);
+
+  const Rule = ({ icon, title, items }) => (
+    <div style={{
+      flex: '1 1 180px',
+      background: 'rgba(255,255,255,0.03)',
+      border: '1px solid var(--border)',
+      borderRadius: 8,
+      padding: '14px 16px',
+    }}>
+      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10 }}>
+        <span style={{ marginRight: 6 }}>{icon}</span>{title}
+      </div>
+      <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+        {items.map((item, i) => (
+          <li key={i} style={{
+            fontSize: 12, color: 'var(--text-secondary)',
+            lineHeight: 1.8, display: 'flex', gap: 6, alignItems: 'flex-start',
+          }}>
+            <span style={{ color: 'var(--text-muted)', flexShrink: 0, marginTop: 1 }}>›</span>
+            <span dangerouslySetInnerHTML={{ __html: item }} />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
+  const Concept = ({ term, color, children }) => (
+    <div style={{
+      background: 'rgba(255,255,255,0.02)',
+      border: `1px solid ${color}33`,
+      borderLeft: `3px solid ${color}`,
+      borderRadius: 6,
+      padding: '12px 16px',
+      flex: '1 1 280px',
+    }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color, marginBottom: 6 }}>{term}</div>
+      <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.7 }}>{children}</div>
+    </div>
+  );
+
+  return (
+    <div className="panel" style={{ borderColor: 'rgba(0,212,255,0.15)' }}>
+      <div
+        className="panel-header"
+        onClick={() => setOpen(o => !o)}
+        style={{ cursor: 'pointer', userSelect: 'none' }}
+      >
+        <div className="panel-title"><span>⚙️</span> 投資策略說明</div>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+            訊號驅動 · 含交易成本 · 量化選股驗證
+          </span>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▼</span>
+        </div>
+      </div>
+
+      {open && (
+        <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+          {/* Rule blocks */}
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <Rule icon="🟢" title="進場條件" items={[
+              `Signal_Quality 排名進入全市場 <strong style="color:var(--positive)">Top-20</strong>`,
+              `以當日收盤價建倉（信號日即執行）`,
+              `最多同時持有 <strong>15 檔</strong>，有空位才建新倉`,
+              `單次建倉至少佔淨值 <strong>2%</strong> 以上才執行`,
+            ]} />
+            <Rule icon="🔴" title="退場條件（任一觸發）" items={[
+              `排名跌出 <strong style="color:var(--negative)">Top-35</strong>（訊號弱化）`,
+              `Signal_Quality &lt; 0.5（淨 Alpha 轉負）`,
+              `持有超過 <strong>30 個交易日</strong>（時間停損）`,
+              `退場以當日收盤價計算損益`,
+            ]} />
+            <Rule icon="⚖️" title="倉位管理" items={[
+              `按 <strong>Kelly 加權比例</strong>（Signal_Quality 比例分配）`,
+              `單股上限 <strong>12%</strong>，防止過度集中`,
+              `帳戶保留至少 <strong>5% 現金</strong>緩衝`,
+              `新倉依可用資金均分，不強制賣現有持股`,
+            ]} />
+            <Rule icon="💸" title="交易成本" items={[
+              `買進：手續費 <strong>0.15%</strong>`,
+              `賣出：手續費 0.15% + 證交稅 0.30% = <strong>0.45%</strong>`,
+              `一來一回 round-trip 合計約 <strong>0.6%</strong>`,
+              `每次換倉都完整計算，不低估摩擦成本`,
+            ]} />
+          </div>
+
+          {/* Flow diagram */}
+          <div style={{
+            background: 'rgba(255,255,255,0.02)',
+            border: '1px solid var(--border)',
+            borderRadius: 8,
+            padding: '14px 20px',
+          }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 10 }}>整體流程</div>
+            <div style={{ display: 'flex', gap: 0, alignItems: 'center', flexWrap: 'wrap', rowGap: 8 }}>
+              {[
+                { label: 'Mamba+GAT 推論', sub: '每日 17:00', color: CLR_BLUE },
+                { arrow: true },
+                { label: 'Signal_Quality 排名', sub: 'Alpha / 不確定度', color: CLR_BLUE },
+                { arrow: true },
+                { label: '進退場判斷', sub: 'Top-20 / Top-35', color: CLR_AMB },
+                { arrow: true },
+                { label: '倉位計算', sub: 'Kelly 加權', color: CLR_AMB },
+                { arrow: true },
+                { label: '執行交易', sub: '含成本紀錄', color: PNL_POS },
+                { arrow: true },
+                { label: '績效追蹤', sub: 'vs TWII / IC', color: PNL_POS },
+              ].map((step, i) =>
+                step.arrow ? (
+                  <span key={i} style={{ color: 'var(--text-muted)', fontSize: 14, padding: '0 6px' }}>→</span>
+                ) : (
+                  <div key={i} style={{
+                    background: `${step.color}15`,
+                    border: `1px solid ${step.color}40`,
+                    borderRadius: 6,
+                    padding: '6px 12px',
+                    textAlign: 'center',
+                  }}>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: step.color }}>{step.label}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{step.sub}</div>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+
+          {/* Concept explanations */}
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <Concept term="Signal_Quality 是什麼？" color={CLR_BLUE}>
+              模型對每支股票計算的「風險調整後超額報酬信心度」。
+              公式：<code style={{ color: CLR_AMB, fontSize: 11 }}>Signal_Quality = Net_Alpha_20d / (Uncertainty + ε)</code>，
+              其中 Net_Alpha 是扣除滑點後的預期 20 天超額報酬，Uncertainty 由 MC-Dropout（30 次採樣）估算。
+              數值越高代表「預期報酬強且模型信心高」，是排名的核心依據。
+            </Concept>
+            <Concept term="IC / ICIR 是什麼？" color={CLR_AMB}>
+              IC（Information Coefficient）= 預測 Alpha 排名與實際報酬排名的 Spearman 相關係數，
+              衡量「模型預測方向是否準確」。ICIR = IC 均值 / IC 標準差，衡量「預測是否穩定」。
+              業界標準：IC &gt; 0.02 為有效，ICIR &gt; 0.4 為良好。
+              IC &gt; 0 的天數比例（目前 72.7%）代表模型大多數時候方向是對的。
+            </Concept>
+            <Concept term="觀察清單的意義" color="var(--text-secondary)">
+              排名介於第 21–35 名之間、尚未建倉的股票。這些股票距離進場門檻（Top-20）只差一步，
+              若隔天排名上升便可能觸發買進訊號。觀察清單讓你預判「明天可能進場的候選股」，
+              也可以搭配自己的基本面判斷進行手動參考。
+            </Concept>
+          </div>
+
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', padding: '8px 12px', background: 'rgba(255,71,87,0.05)', borderRadius: 6, border: '1px solid rgba(255,71,87,0.15)' }}>
+            ⚠️ 本模擬以歸檔 df_kelly.csv 回測，假設信號日即可以收盤價成交，不考慮市場衝擊與流動性限制。
+            所有數據僅供量化模型驗證使用，不構成任何投資建議。
+          </div>
+
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 // ── Transactions Panel ────────────────────────────────────────────────────────
 
 function TransactionsPanel({ transactions, loading }) {
@@ -511,21 +675,8 @@ export default function InvestmentSim() {
       {/* ── Transactions ── */}
       <TransactionsPanel transactions={txs} loading={loading} />
 
-      {/* ── Methodology ── */}
-      <div className="panel" style={{ borderColor: 'rgba(0,212,255,0.15)', background: 'rgba(0,212,255,0.02)' }}>
-        <div className="panel-body" style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-          <span style={{ fontSize: 18 }}>💡</span>
-          <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-            <strong style={{ color: CLR_BLUE }}>模擬邏輯：</strong>
-            Signal_Quality 排名進入 Top-20 時以當日收盤價建倉，跌出 Top-35 或超過 30 天時賣出。
-            含交易成本（買入 0.15%，賣出 0.45% = 手續費 + 證交稅），最多持有 15 檔，帳戶保留 5% 現金。
-            <br />
-            <strong style={{ color: CLR_AMB }}>IC 分析：</strong>
-            預測 Alpha_5d 與實際 5 天後報酬的 Spearman 相關係數。ICIR &gt; 0.4 為業界標準良好門檻。
-            <strong style={{ color: PNL_NEG, marginLeft: 4 }}>⚠️ 僅供模型驗證參考，不構成投資建議。</strong>
-          </div>
-        </div>
-      </div>
+      {/* ── Strategy Guide ── */}
+      <StrategyGuide />
 
     </div>
   );
