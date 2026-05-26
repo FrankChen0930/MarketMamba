@@ -1,5 +1,5 @@
 {
-  "generated_date": "2026-05-25",
+  "generated_date": "2026-05-26",
   "initial_capital": 1000000,
   "period_start": "2026-04-29",
   "period_end": "2026-05-25",
@@ -10,7 +10,7 @@
   "win_days": 5,
   "lose_days": 7,
   "flat_days": 5,
-  "avg_deployed_pct": 45.9,
+  "avg_deployed_pct": 46.4,
   "best_day": {
     "date": "2026-05-21",
     "pct": 1.36
