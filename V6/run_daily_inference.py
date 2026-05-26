@@ -836,20 +836,45 @@ def main(target_date: str | None = None, skip_push: bool = False, forward_fill: 
         logger.info(f"{'─'*50}")
         _step_update(6, "running")
         try:
-            from marketmamba.backtest.sim_engine import compute_sim_backtest
-            bt = compute_sim_backtest(
-                history_path=RESULTS_DIR / "history_index.json",
-                output_path=RESULTS_DIR / "sim_backtest.json",
-                prices_df=prices,   # reuse already-loaded raw prices from step 2
-            )
+            from marketmamba.backtest.sim_engine_v2 import run_robot_backtest, run_daily_update
+            sim_out = RESULTS_DIR / "sim_backtest.json"
+            if sim_out.exists():
+                bt = run_daily_update(
+                    date=today,
+                    df_today=df_kelly,
+                    prices_df=prices,
+                    output_path=sim_out,
+                )
+            else:
+                bt = run_robot_backtest(
+                    results_dir=RESULTS_DIR,
+                    prices_df=prices,
+                    output_path=sim_out,
+                )
             elapsed = time.monotonic() - t0
-            ret_str = f"{bt['total_return_pct']:+.2f}%" if bt.get("trading_days", 0) > 0 else "無資料"
-            logger.info(f"[7/8] ✓ 完成 ({_fmt(elapsed)}) — 累積報酬 {ret_str}")
-            _step_update(6, "done", f"{bt.get('trading_days',0)} 天  {ret_str}")
+            s = bt.get("summary", {})
+            ret_str = f"{s.get('total_return_pct', 0):+.2f}%" if bt.get("trading_days", 0) > 0 else "無資料"
+            pos_str = f"{s.get('current_positions', 0)} 持倉"
+            logger.info(f"[7/8] ✓ 完成 ({_fmt(elapsed)}) — 累積報酬 {ret_str}  {pos_str}")
+            _step_update(6, "done", f"{bt.get('trading_days',0)} 天  {ret_str}  {pos_str}")
         except Exception as e:
             elapsed = time.monotonic() - t0
             logger.warning(f"模擬回測失敗（非致命）：{e} ({_fmt(elapsed)})")
             _step_update(6, "skipped", str(e)[:60])
+
+        # IC analysis (non-blocking, best-effort)
+        try:
+            from marketmamba.backtest.ic_analyzer import run_ic_analysis
+            ic_result = run_ic_analysis(
+                results_dir=RESULTS_DIR,
+                prices_df=prices,
+                output_path=RESULTS_DIR / "ic_analysis.json",
+            )
+            s5 = ic_result.get("horizon_summary", {}).get("5d", {})
+            ic_str = f"IC_5d={s5.get('mean_ic','N/A')}  ICIR={s5.get('icir','N/A')}"
+            logger.info(f"  IC分析：{ic_str}")
+        except Exception as e:
+            logger.warning(f"IC分析失敗（非致命）：{e}")
 
         # ── 步驟 8：推送 GitHub ───────────────────────────────────────────────
         logger.info(f"\n{'─'*50}")

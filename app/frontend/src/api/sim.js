@@ -1,4 +1,4 @@
 import client from './client';
 
-export const fetchSimBacktest = () =>
-  client.get('/sim/backtest').then((r) => r.data);
+export const fetchSimBacktest  = () => client.get('/sim/backtest').then((r) => r.data);
+export const fetchIcAnalysis   = () => client.get('/sim/ic').then((r) => r.data);

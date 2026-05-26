@@ -3,136 +3,2788 @@
   "initial_capital": 1000000,
   "period_start": "2026-04-29",
   "period_end": "2026-05-26",
-  "trading_days": 18,
-  "total_return_pct": -0.43,
-  "max_drawdown_pct": -1.73,
-  "sharpe": -0.84,
-  "win_days": 5,
-  "lose_days": 8,
-  "flat_days": 5,
-  "avg_deployed_pct": 47.3,
-  "best_day": {
-    "date": "2026-05-21",
-    "pct": 1.36
+  "trading_days": 19,
+  "summary": {
+    "total_return_pct": -2.67,
+    "benchmark_return_pct": 11.05,
+    "excess_return_pct": -13.72,
+    "max_drawdown_pct": -5.82,
+    "sharpe": -2.57,
+    "win_rate_pct": 27.4,
+    "total_trades": 95,
+    "avg_hold_days": 0.1,
+    "current_positions": 15,
+    "cash": 150141,
+    "portfolio_value": 973341,
+    "deployed_pct": 84.6
   },
-  "worst_day": {
-    "date": "2026-05-15",
-    "pct": -0.978
-  },
+  "current_holdings": [
+    {
+      "ticker": "009803",
+      "entry_date": "2026-05-21",
+      "entry_price": 20.04,
+      "current_price": 21.36,
+      "shares": 5000,
+      "market_value": 106800,
+      "weight_pct": 11.0,
+      "pnl": 6450,
+      "pnl_pct": 6.43,
+      "days_held": 4,
+      "signal_quality": 4.03,
+      "rank": 20
+    },
+    {
+      "ticker": "2527",
+      "entry_date": "2026-05-26",
+      "entry_price": 35.15,
+      "current_price": 35.15,
+      "shares": 3000,
+      "market_value": 105450,
+      "weight_pct": 10.8,
+      "pnl": -158,
+      "pnl_pct": -0.15,
+      "days_held": 0,
+      "signal_quality": 5.54,
+      "rank": 6
+    },
+    {
+      "ticker": "00964",
+      "entry_date": "2026-05-20",
+      "entry_price": 13.87,
+      "current_price": 14.4,
+      "shares": 7000,
+      "market_value": 100800,
+      "weight_pct": 10.4,
+      "pnl": 3564,
+      "pnl_pct": 3.67,
+      "days_held": 5,
+      "signal_quality": 4.59,
+      "rank": 12
+    },
+    {
+      "ticker": "009802",
+      "entry_date": "2026-05-20",
+      "entry_price": 16.73,
+      "current_price": 19.6,
+      "shares": 4000,
+      "market_value": 78400,
+      "weight_pct": 8.1,
+      "pnl": 11380,
+      "pnl_pct": 16.98,
+      "days_held": 5,
+      "signal_quality": 6.55,
+      "rank": 2
+    },
+    {
+      "ticker": "6742",
+      "entry_date": "2026-05-26",
+      "entry_price": 59.6,
+      "current_price": 59.6,
+      "shares": 1000,
+      "market_value": 59600,
+      "weight_pct": 6.1,
+      "pnl": -89,
+      "pnl_pct": -0.15,
+      "days_held": 0,
+      "signal_quality": 4.75,
+      "rank": 9
+    },
+    {
+      "ticker": "009808",
+      "entry_date": "2026-05-25",
+      "entry_price": 29.4,
+      "current_price": 29.32,
+      "shares": 2000,
+      "market_value": 58640,
+      "weight_pct": 6.0,
+      "pnl": -248,
+      "pnl_pct": -0.42,
+      "days_held": 1,
+      "signal_quality": 5.67,
+      "rank": 5
+    },
+    {
+      "ticker": "00962",
+      "entry_date": "2026-05-25",
+      "entry_price": 14.47,
+      "current_price": 14.42,
+      "shares": 4000,
+      "market_value": 57680,
+      "weight_pct": 5.9,
+      "pnl": -287,
+      "pnl_pct": -0.49,
+      "days_held": 1,
+      "signal_quality": 3.64,
+      "rank": 27
+    },
+    {
+      "ticker": "009800",
+      "entry_date": "2026-05-25",
+      "entry_price": 13.06,
+      "current_price": 13.01,
+      "shares": 4000,
+      "market_value": 52040,
+      "weight_pct": 5.3,
+      "pnl": -278,
+      "pnl_pct": -0.53,
+      "days_held": 1,
+      "signal_quality": 4.25,
+      "rank": 15
+    },
+    {
+      "ticker": "009804",
+      "entry_date": "2026-05-25",
+      "entry_price": 22.4,
+      "current_price": 22.52,
+      "shares": 2000,
+      "market_value": 45040,
+      "weight_pct": 4.6,
+      "pnl": 173,
+      "pnl_pct": 0.39,
+      "days_held": 1,
+      "signal_quality": 6.71,
+      "rank": 1
+    },
+    {
+      "ticker": "00643",
+      "entry_date": "2026-05-25",
+      "entry_price": 20.33,
+      "current_price": 20.45,
+      "shares": 2000,
+      "market_value": 40900,
+      "weight_pct": 4.2,
+      "pnl": 179,
+      "pnl_pct": 0.44,
+      "days_held": 1,
+      "signal_quality": 4.85,
+      "rank": 8
+    },
+    {
+      "ticker": "2851",
+      "entry_date": "2026-05-20",
+      "entry_price": 34.9,
+      "current_price": 35.15,
+      "shares": 1000,
+      "market_value": 35150,
+      "weight_pct": 3.6,
+      "pnl": 198,
+      "pnl_pct": 0.57,
+      "days_held": 5,
+      "signal_quality": 6.23,
+      "rank": 3
+    },
+    {
+      "ticker": "4174",
+      "entry_date": "2026-05-25",
+      "entry_price": 30.35,
+      "current_price": 29.45,
+      "shares": 1000,
+      "market_value": 29450,
+      "weight_pct": 3.0,
+      "pnl": -946,
+      "pnl_pct": -3.11,
+      "days_held": 1,
+      "signal_quality": 5.53,
+      "rank": 7
+    },
+    {
+      "ticker": "4534",
+      "entry_date": "2026-05-25",
+      "entry_price": 26.65,
+      "current_price": 26.6,
+      "shares": 1000,
+      "market_value": 26600,
+      "weight_pct": 2.7,
+      "pnl": -90,
+      "pnl_pct": -0.34,
+      "days_held": 1,
+      "signal_quality": 5.74,
+      "rank": 4
+    },
+    {
+      "ticker": "3577",
+      "entry_date": "2026-05-25",
+      "entry_price": 160.0,
+      "current_price": 153.5,
+      "shares": 100,
+      "market_value": 15350,
+      "weight_pct": 1.6,
+      "pnl": -674,
+      "pnl_pct": -4.21,
+      "days_held": 1,
+      "signal_quality": 3.17,
+      "rank": 34
+    },
+    {
+      "ticker": "9917",
+      "entry_date": "2026-05-25",
+      "entry_price": 113.0,
+      "current_price": 113.0,
+      "shares": 100,
+      "market_value": 11300,
+      "weight_pct": 1.2,
+      "pnl": -17,
+      "pnl_pct": -0.15,
+      "days_held": 1,
+      "signal_quality": 3.8,
+      "rank": 24
+    }
+  ],
+  "watchlist": [
+    {
+      "ticker": "00944",
+      "rank": 28,
+      "signal_quality": 3.59,
+      "close": 19.64,
+      "days_in_watch": 1
+    },
+    {
+      "ticker": "00952",
+      "rank": 31,
+      "signal_quality": 3.28,
+      "close": 18.49,
+      "days_in_watch": 1
+    },
+    {
+      "ticker": "7842",
+      "rank": 33,
+      "signal_quality": 3.24,
+      "close": 121.0,
+      "days_in_watch": 1
+    },
+    {
+      "ticker": "8926",
+      "rank": 30,
+      "signal_quality": 3.38,
+      "close": 68.7,
+      "days_in_watch": 1
+    },
+    {
+      "ticker": "6914",
+      "rank": 25,
+      "signal_quality": 3.72,
+      "close": 141.0,
+      "days_in_watch": 1
+    },
+    {
+      "ticker": "00921",
+      "rank": 35,
+      "signal_quality": 3.16,
+      "close": 22.2,
+      "days_in_watch": 1
+    },
+    {
+      "ticker": "8038",
+      "rank": 29,
+      "signal_quality": 3.41,
+      "close": 41.25,
+      "days_in_watch": 1
+    },
+    {
+      "ticker": "6906",
+      "rank": 22,
+      "signal_quality": 3.95,
+      "close": 101.5,
+      "days_in_watch": 1
+    },
+    {
+      "ticker": "00783",
+      "rank": 23,
+      "signal_quality": 3.81,
+      "close": 30.05,
+      "days_in_watch": 1
+    },
+    {
+      "ticker": "6901",
+      "rank": 21,
+      "signal_quality": 4.03,
+      "close": 12.8,
+      "days_in_watch": 1
+    }
+  ],
   "equity_curve": [
     {
       "date": "2026-04-29",
-      "equity": 1000000,
-      "pnl": 0,
-      "daily_return_pct": 0.0
+      "equity": 999289,
+      "cash": 525579,
+      "positions_value": 473710,
+      "daily_return_pct": -0.071,
+      "n_positions": 15
     },
     {
       "date": "2026-04-30",
-      "equity": 997712,
-      "pnl": -2288,
-      "daily_return_pct": -0.229
+      "equity": 993280,
+      "cash": 449980,
+      "positions_value": 543300,
+      "daily_return_pct": -0.601,
+      "n_positions": 15
     },
     {
       "date": "2026-05-04",
-      "equity": 1000201,
-      "pnl": 201,
-      "daily_return_pct": 0.249
+      "equity": 993869,
+      "cash": 382319,
+      "positions_value": 611550,
+      "daily_return_pct": 0.059,
+      "n_positions": 15
     },
     {
       "date": "2026-05-05",
-      "equity": 1000829,
-      "pnl": 829,
-      "daily_return_pct": 0.063
+      "equity": 1006645,
+      "cash": 463635,
+      "positions_value": 543010,
+      "daily_return_pct": 1.286,
+      "n_positions": 15
     },
     {
       "date": "2026-05-09",
-      "equity": 1000829,
-      "pnl": 829,
-      "daily_return_pct": 0.0
+      "equity": 995332,
+      "cash": 995332,
+      "positions_value": 0,
+      "daily_return_pct": -1.124,
+      "n_positions": 0
     },
     {
       "date": "2026-05-10",
-      "equity": 1000829,
-      "pnl": 829,
-      "daily_return_pct": 0.0
+      "equity": 995332,
+      "cash": 995332,
+      "positions_value": 0,
+      "daily_return_pct": -0.0,
+      "n_positions": 0
     },
     {
       "date": "2026-05-11",
-      "equity": 1000829,
-      "pnl": 829,
-      "daily_return_pct": 0.0
+      "equity": 994762,
+      "cash": 614762,
+      "positions_value": 380000,
+      "daily_return_pct": -0.057,
+      "n_positions": 15
     },
     {
       "date": "2026-05-12",
-      "equity": 1000066,
-      "pnl": 66,
-      "daily_return_pct": -0.076
+      "equity": 995337,
+      "cash": 417787,
+      "positions_value": 577550,
+      "daily_return_pct": 0.058,
+      "n_positions": 15
     },
     {
       "date": "2026-05-13",
-      "equity": 995344,
-      "pnl": -4656,
-      "daily_return_pct": -0.472
+      "equity": 982624,
+      "cash": 349824,
+      "positions_value": 632800,
+      "daily_return_pct": -1.277,
+      "n_positions": 15
     },
     {
       "date": "2026-05-14",
-      "equity": 995036,
-      "pnl": -4964,
-      "daily_return_pct": -0.031
+      "equity": 980016,
+      "cash": 248366,
+      "positions_value": 731650,
+      "daily_return_pct": -0.265,
+      "n_positions": 15
     },
     {
       "date": "2026-05-15",
-      "equity": 985305,
-      "pnl": -14695,
-      "daily_return_pct": -0.978
+      "equity": 966178,
+      "cash": 215488,
+      "positions_value": 750690,
+      "daily_return_pct": -1.412,
+      "n_positions": 15
     },
     {
       "date": "2026-05-18",
-      "equity": 988520,
-      "pnl": -11480,
-      "daily_return_pct": 0.326
+      "equity": 963870,
+      "cash": 307550,
+      "positions_value": 656320,
+      "daily_return_pct": -0.239,
+      "n_positions": 15
     },
     {
       "date": "2026-05-19",
-      "equity": 985996,
-      "pnl": -14004,
-      "daily_return_pct": -0.255
+      "equity": 957029,
+      "cash": 187099,
+      "positions_value": 769930,
+      "daily_return_pct": -0.71,
+      "n_positions": 15
     },
     {
       "date": "2026-05-20",
-      "equity": 983552,
-      "pnl": -16448,
-      "daily_return_pct": -0.248
+      "equity": 948043,
+      "cash": 195573,
+      "positions_value": 752470,
+      "daily_return_pct": -0.939,
+      "n_positions": 15
     },
     {
       "date": "2026-05-21",
-      "equity": 996931,
-      "pnl": -3069,
-      "daily_return_pct": 1.36
+      "equity": 967662,
+      "cash": 72592,
+      "positions_value": 895070,
+      "daily_return_pct": 2.069,
+      "n_positions": 15
     },
     {
       "date": "2026-05-22",
-      "equity": 997523,
-      "pnl": -2477,
-      "daily_return_pct": 0.059
+      "equity": 967456,
+      "cash": 89276,
+      "positions_value": 878180,
+      "daily_return_pct": -0.021,
+      "n_positions": 15
     },
     {
       "date": "2026-05-24",
-      "equity": 997523,
-      "pnl": -2477,
-      "daily_return_pct": 0.0
+      "equity": 967184,
+      "cash": 149404,
+      "positions_value": 817780,
+      "daily_return_pct": -0.028,
+      "n_positions": 14
     },
     {
       "date": "2026-05-25",
-      "equity": 997523,
-      "pnl": -2477,
-      "daily_return_pct": 0.0
+      "equity": 978286,
+      "cash": 225346,
+      "positions_value": 752940,
+      "daily_return_pct": 1.148,
+      "n_positions": 15
     },
     {
       "date": "2026-05-26",
-      "equity": 995707,
-      "pnl": -4293,
-      "daily_return_pct": -0.182
+      "equity": 973341,
+      "cash": 150141,
+      "positions_value": 823200,
+      "daily_return_pct": -0.505,
+      "n_positions": 15
+    }
+  ],
+  "benchmark_curve": [
+    {
+      "date": "2026-04-29",
+      "level": 100.0
+    },
+    {
+      "date": "2026-04-30",
+      "level": 99.041
+    },
+    {
+      "date": "2026-05-04",
+      "level": 103.566
+    },
+    {
+      "date": "2026-05-05",
+      "level": 103.729
+    },
+    {
+      "date": "2026-05-06",
+      "level": 104.67
+    },
+    {
+      "date": "2026-05-07",
+      "level": 106.692
+    },
+    {
+      "date": "2026-05-08",
+      "level": 105.853
+    },
+    {
+      "date": "2026-05-11",
+      "level": 106.327
+    },
+    {
+      "date": "2026-05-12",
+      "level": 106.602
+    },
+    {
+      "date": "2026-05-13",
+      "level": 105.269
+    },
+    {
+      "date": "2026-05-14",
+      "level": 106.229
+    },
+    {
+      "date": "2026-05-15",
+      "level": 104.755
+    },
+    {
+      "date": "2026-05-18",
+      "level": 104.041
+    },
+    {
+      "date": "2026-05-19",
+      "level": 102.219
+    },
+    {
+      "date": "2026-05-20",
+      "level": 101.825
+    },
+    {
+      "date": "2026-05-21",
+      "level": 105.253
+    },
+    {
+      "date": "2026-05-22",
+      "level": 107.543
+    },
+    {
+      "date": "2026-05-25",
+      "level": 111.045
+    }
+  ],
+  "transactions": [
+    {
+      "date": "2026-04-29",
+      "action": "BUY",
+      "ticker": "5288",
+      "price": 170.5,
+      "shares": 100,
+      "value": 17050.0,
+      "fee": 26.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=1, SQ=9.21)"
+    },
+    {
+      "date": "2026-04-29",
+      "action": "BUY",
+      "ticker": "6994",
+      "price": 63.5,
+      "shares": 1000,
+      "value": 63500.0,
+      "fee": 95.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=2, SQ=8.87)"
+    },
+    {
+      "date": "2026-04-29",
+      "action": "BUY",
+      "ticker": "3356",
+      "price": 52.7,
+      "shares": 1000,
+      "value": 52700.0,
+      "fee": 79.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=3, SQ=8.52)"
+    },
+    {
+      "date": "2026-04-29",
+      "action": "BUY",
+      "ticker": "3209",
+      "price": 51.1,
+      "shares": 1000,
+      "value": 51100.0,
+      "fee": 77.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=4, SQ=8.25)"
+    },
+    {
+      "date": "2026-04-29",
+      "action": "BUY",
+      "ticker": "3530",
+      "price": 65.6,
+      "shares": 100,
+      "value": 6560.0,
+      "fee": 10.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=5, SQ=7.31)"
+    },
+    {
+      "date": "2026-04-29",
+      "action": "BUY",
+      "ticker": "3432",
+      "price": 21.3,
+      "shares": 2000,
+      "value": 42600.0,
+      "fee": 64.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=6, SQ=7.15)"
+    },
+    {
+      "date": "2026-04-29",
+      "action": "BUY",
+      "ticker": "3023",
+      "price": 282.5,
+      "shares": 100,
+      "value": 28250.0,
+      "fee": 42.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=7, SQ=7.08)"
+    },
+    {
+      "date": "2026-04-29",
+      "action": "BUY",
+      "ticker": "6735",
+      "price": 132.0,
+      "shares": 100,
+      "value": 13200.0,
+      "fee": 20.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=8, SQ=6.96)"
+    },
+    {
+      "date": "2026-04-29",
+      "action": "BUY",
+      "ticker": "3617",
+      "price": 190.5,
+      "shares": 100,
+      "value": 19050.0,
+      "fee": 29.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=9, SQ=6.90)"
+    },
+    {
+      "date": "2026-04-29",
+      "action": "BUY",
+      "ticker": "3135",
+      "price": 144.5,
+      "shares": 100,
+      "value": 14450.0,
+      "fee": 22.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=10, SQ=6.82)"
+    },
+    {
+      "date": "2026-04-29",
+      "action": "BUY",
+      "ticker": "3227",
+      "price": 206.5,
+      "shares": 100,
+      "value": 20650.0,
+      "fee": 31.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=11, SQ=6.78)"
+    },
+    {
+      "date": "2026-04-29",
+      "action": "BUY",
+      "ticker": "4953",
+      "price": 118.5,
+      "shares": 100,
+      "value": 11850.0,
+      "fee": 18.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=12, SQ=6.65)"
+    },
+    {
+      "date": "2026-04-29",
+      "action": "BUY",
+      "ticker": "2243",
+      "price": 28.2,
+      "shares": 2000,
+      "value": 56400.0,
+      "fee": 85.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=13, SQ=6.60)"
+    },
+    {
+      "date": "2026-04-29",
+      "action": "BUY",
+      "ticker": "7821",
+      "price": 48.0,
+      "shares": 1000,
+      "value": 48000.0,
+      "fee": 72.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=14, SQ=6.53)"
+    },
+    {
+      "date": "2026-04-29",
+      "action": "BUY",
+      "ticker": "6679",
+      "price": 283.5,
+      "shares": 100,
+      "value": 28350.0,
+      "fee": 43.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=15, SQ=6.48)"
+    },
+    {
+      "date": "2026-04-30",
+      "action": "SELL",
+      "ticker": "6994",
+      "price": 63.9,
+      "shares": 1000,
+      "value": 63900.0,
+      "fee": 288.0,
+      "pnl": 17.0,
+      "reason": "跌出Top-35 (rank=55)"
+    },
+    {
+      "date": "2026-04-30",
+      "action": "SELL",
+      "ticker": "3530",
+      "price": 64.6,
+      "shares": 100,
+      "value": 6460.0,
+      "fee": 29.0,
+      "pnl": -139.0,
+      "reason": "跌出Top-35 (rank=39)"
+    },
+    {
+      "date": "2026-04-30",
+      "action": "SELL",
+      "ticker": "3432",
+      "price": 19.4,
+      "shares": 2000,
+      "value": 38800.0,
+      "fee": 175.0,
+      "pnl": -4038.0,
+      "reason": "跌出Top-35 (rank=2015)"
+    },
+    {
+      "date": "2026-04-30",
+      "action": "SELL",
+      "ticker": "3023",
+      "price": 283.5,
+      "shares": 100,
+      "value": 28350.0,
+      "fee": 128.0,
+      "pnl": -70.0,
+      "reason": "跌出Top-35 (rank=57)"
+    },
+    {
+      "date": "2026-04-30",
+      "action": "SELL",
+      "ticker": "6735",
+      "price": 121.5,
+      "shares": 100,
+      "value": 12150.0,
+      "fee": 55.0,
+      "pnl": -1124.0,
+      "reason": "跌出Top-35 (rank=149)"
+    },
+    {
+      "date": "2026-04-30",
+      "action": "BUY",
+      "ticker": "3416",
+      "price": 157.5,
+      "shares": 100,
+      "value": 15750.0,
+      "fee": 24.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=1, SQ=7.93)"
+    },
+    {
+      "date": "2026-04-30",
+      "action": "BUY",
+      "ticker": "8091",
+      "price": 192.0,
+      "shares": 100,
+      "value": 19200.0,
+      "fee": 29.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=4, SQ=7.66)"
+    },
+    {
+      "date": "2026-04-30",
+      "action": "BUY",
+      "ticker": "3577",
+      "price": 87.3,
+      "shares": 1000,
+      "value": 87300.0,
+      "fee": 131.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=5, SQ=7.49)"
+    },
+    {
+      "date": "2026-04-30",
+      "action": "BUY",
+      "ticker": "3528",
+      "price": 79.9,
+      "shares": 1000,
+      "value": 79900.0,
+      "fee": 120.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=8, SQ=6.85)"
+    },
+    {
+      "date": "2026-04-30",
+      "action": "BUY",
+      "ticker": "6146",
+      "price": 221.0,
+      "shares": 100,
+      "value": 22100.0,
+      "fee": 33.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=10, SQ=6.78)"
+    },
+    {
+      "date": "2026-05-04",
+      "action": "SELL",
+      "ticker": "3135",
+      "price": 155.5,
+      "shares": 100,
+      "value": 15550.0,
+      "fee": 70.0,
+      "pnl": 1008.0,
+      "reason": "跌出Top-35 (rank=132)"
+    },
+    {
+      "date": "2026-05-04",
+      "action": "SELL",
+      "ticker": "7821",
+      "price": 47.3,
+      "shares": 1000,
+      "value": 47300.0,
+      "fee": 213.0,
+      "pnl": -985.0,
+      "reason": "跌出Top-35 (rank=77)"
+    },
+    {
+      "date": "2026-05-04",
+      "action": "SELL",
+      "ticker": "3577",
+      "price": 88.9,
+      "shares": 1000,
+      "value": 88900.0,
+      "fee": 400.0,
+      "pnl": 1069.0,
+      "reason": "跌出Top-35 (rank=69)"
+    },
+    {
+      "date": "2026-05-04",
+      "action": "BUY",
+      "ticker": "1256",
+      "price": 166.5,
+      "shares": 100,
+      "value": 16650.0,
+      "fee": 25.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=1, SQ=10.00)"
+    },
+    {
+      "date": "2026-05-04",
+      "action": "BUY",
+      "ticker": "6574",
+      "price": 103.5,
+      "shares": 1000,
+      "value": 103500.0,
+      "fee": 155.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=4, SQ=8.57)"
+    },
+    {
+      "date": "2026-05-04",
+      "action": "BUY",
+      "ticker": "00891",
+      "price": 32.75,
+      "shares": 3000,
+      "value": 98250.0,
+      "fee": 147.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=5, SQ=8.20)"
+    },
+    {
+      "date": "2026-05-05",
+      "action": "SELL",
+      "ticker": "6679",
+      "price": 287.0,
+      "shares": 100,
+      "value": 28700.0,
+      "fee": 129.0,
+      "pnl": 178.0,
+      "reason": "跌出Top-35 (rank=38)"
+    },
+    {
+      "date": "2026-05-05",
+      "action": "SELL",
+      "ticker": "3416",
+      "price": 157.5,
+      "shares": 100,
+      "value": 15750.0,
+      "fee": 71.0,
+      "pnl": -94.0,
+      "reason": "跌出Top-35 (rank=54)"
+    },
+    {
+      "date": "2026-05-05",
+      "action": "SELL",
+      "ticker": "8091",
+      "price": 191.0,
+      "shares": 100,
+      "value": 19100.0,
+      "fee": 86.0,
+      "pnl": -215.0,
+      "reason": "跌出Top-35 (rank=39)"
+    },
+    {
+      "date": "2026-05-05",
+      "action": "SELL",
+      "ticker": "6146",
+      "price": 225.5,
+      "shares": 100,
+      "value": 22550.0,
+      "fee": 101.0,
+      "pnl": 315.0,
+      "reason": "跌出Top-35 (rank=74)"
+    },
+    {
+      "date": "2026-05-05",
+      "action": "SELL",
+      "ticker": "1256",
+      "price": 165.0,
+      "shares": 100,
+      "value": 16500.0,
+      "fee": 74.0,
+      "pnl": -249.0,
+      "reason": "跌出Top-35 (rank=1736)"
+    },
+    {
+      "date": "2026-05-05",
+      "action": "SELL",
+      "ticker": "6574",
+      "price": 107.0,
+      "shares": 1000,
+      "value": 107000.0,
+      "fee": 481.0,
+      "pnl": 2863.0,
+      "reason": "跌出Top-35 (rank=1483)"
+    },
+    {
+      "date": "2026-05-05",
+      "action": "BUY",
+      "ticker": "6690",
+      "price": 170.5,
+      "shares": 100,
+      "value": 17050.0,
+      "fee": 26.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=1, SQ=9.98)"
+    },
+    {
+      "date": "2026-05-05",
+      "action": "BUY",
+      "ticker": "2850",
+      "price": 131.0,
+      "shares": 100,
+      "value": 13100.0,
+      "fee": 20.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=3, SQ=9.37)"
+    },
+    {
+      "date": "2026-05-05",
+      "action": "BUY",
+      "ticker": "6525",
+      "price": 102.5,
+      "shares": 100,
+      "value": 10250.0,
+      "fee": 15.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=4, SQ=8.88)"
+    },
+    {
+      "date": "2026-05-05",
+      "action": "BUY",
+      "ticker": "3432",
+      "price": 22.6,
+      "shares": 3000,
+      "value": 67800.0,
+      "fee": 102.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=5, SQ=8.59)"
+    },
+    {
+      "date": "2026-05-05",
+      "action": "BUY",
+      "ticker": "6023",
+      "price": 100.0,
+      "shares": 100,
+      "value": 10000.0,
+      "fee": 15.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=7, SQ=7.95)"
+    },
+    {
+      "date": "2026-05-05",
+      "action": "BUY",
+      "ticker": "2465",
+      "price": 89.5,
+      "shares": 100,
+      "value": 8950.0,
+      "fee": 13.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=9, SQ=7.56)"
+    },
+    {
+      "date": "2026-05-09",
+      "action": "SELL",
+      "ticker": "5288",
+      "price": 170.5,
+      "shares": 100,
+      "value": 17050.0,
+      "fee": 77.0,
+      "pnl": -102.0,
+      "reason": "跌出Top-35 (rank=39) [無價格,以成本清]"
+    },
+    {
+      "date": "2026-05-09",
+      "action": "SELL",
+      "ticker": "3356",
+      "price": 52.7,
+      "shares": 1000,
+      "value": 52700.0,
+      "fee": 237.0,
+      "pnl": -316.0,
+      "reason": "跌出Top-35 (rank=71) [無價格,以成本清]"
+    },
+    {
+      "date": "2026-05-09",
+      "action": "SELL",
+      "ticker": "3209",
+      "price": 51.1,
+      "shares": 1000,
+      "value": 51100.0,
+      "fee": 230.0,
+      "pnl": -307.0,
+      "reason": "跌出Top-35 (rank=379) [無價格,以成本清]"
+    },
+    {
+      "date": "2026-05-09",
+      "action": "SELL",
+      "ticker": "3617",
+      "price": 190.5,
+      "shares": 100,
+      "value": 19050.0,
+      "fee": 86.0,
+      "pnl": -114.0,
+      "reason": "跌出Top-35 (rank=126) [無價格,以成本清]"
+    },
+    {
+      "date": "2026-05-09",
+      "action": "SELL",
+      "ticker": "3227",
+      "price": 206.5,
+      "shares": 100,
+      "value": 20650.0,
+      "fee": 93.0,
+      "pnl": -124.0,
+      "reason": "跌出Top-35 (rank=1395) [無價格,以成本清]"
+    },
+    {
+      "date": "2026-05-09",
+      "action": "SELL",
+      "ticker": "4953",
+      "price": 118.5,
+      "shares": 100,
+      "value": 11850.0,
+      "fee": 53.0,
+      "pnl": -71.0,
+      "reason": "跌出Top-35 (rank=303) [無價格,以成本清]"
+    },
+    {
+      "date": "2026-05-09",
+      "action": "SELL",
+      "ticker": "2243",
+      "price": 28.2,
+      "shares": 2000,
+      "value": 56400.0,
+      "fee": 254.0,
+      "pnl": -338.0,
+      "reason": "跌出Top-35 (rank=452) [無價格,以成本清]"
+    },
+    {
+      "date": "2026-05-09",
+      "action": "SELL",
+      "ticker": "3528",
+      "price": 79.9,
+      "shares": 1000,
+      "value": 79900.0,
+      "fee": 360.0,
+      "pnl": -479.0,
+      "reason": "跌出Top-35 (rank=136) [無價格,以成本清]"
+    },
+    {
+      "date": "2026-05-09",
+      "action": "SELL",
+      "ticker": "00891",
+      "price": 32.75,
+      "shares": 3000,
+      "value": 98250.0,
+      "fee": 442.0,
+      "pnl": -590.0,
+      "reason": "跌出Top-35 (rank=295) [無價格,以成本清]"
+    },
+    {
+      "date": "2026-05-09",
+      "action": "SELL",
+      "ticker": "6690",
+      "price": 170.5,
+      "shares": 100,
+      "value": 17050.0,
+      "fee": 77.0,
+      "pnl": -102.0,
+      "reason": "跌出Top-35 (rank=894) [無價格,以成本清]"
+    },
+    {
+      "date": "2026-05-09",
+      "action": "SELL",
+      "ticker": "2850",
+      "price": 131.0,
+      "shares": 100,
+      "value": 13100.0,
+      "fee": 59.0,
+      "pnl": -79.0,
+      "reason": "跌出Top-35 (rank=324) [無價格,以成本清]"
+    },
+    {
+      "date": "2026-05-09",
+      "action": "SELL",
+      "ticker": "6525",
+      "price": 102.5,
+      "shares": 100,
+      "value": 10250.0,
+      "fee": 46.0,
+      "pnl": -62.0,
+      "reason": "跌出Top-35 (rank=238) [無價格,以成本清]"
+    },
+    {
+      "date": "2026-05-09",
+      "action": "SELL",
+      "ticker": "3432",
+      "price": 22.6,
+      "shares": 3000,
+      "value": 67800.0,
+      "fee": 305.0,
+      "pnl": -407.0,
+      "reason": "跌出Top-35 (rank=2096) [無價格,以成本清]"
+    },
+    {
+      "date": "2026-05-09",
+      "action": "SELL",
+      "ticker": "6023",
+      "price": 100.0,
+      "shares": 100,
+      "value": 10000.0,
+      "fee": 45.0,
+      "pnl": -60.0,
+      "reason": "跌出Top-35 (rank=264) [無價格,以成本清]"
+    },
+    {
+      "date": "2026-05-09",
+      "action": "SELL",
+      "ticker": "2465",
+      "price": 89.5,
+      "shares": 100,
+      "value": 8950.0,
+      "fee": 40.0,
+      "pnl": -54.0,
+      "reason": "跌出Top-35 (rank=1231) [無價格,以成本清]"
+    },
+    {
+      "date": "2026-05-11",
+      "action": "BUY",
+      "ticker": "6021",
+      "price": 35.4,
+      "shares": 2000,
+      "value": 70800.0,
+      "fee": 106.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=1, SQ=7.98)"
+    },
+    {
+      "date": "2026-05-11",
+      "action": "BUY",
+      "ticker": "6874",
+      "price": 85.0,
+      "shares": 100,
+      "value": 8500.0,
+      "fee": 13.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=2, SQ=6.91)"
+    },
+    {
+      "date": "2026-05-11",
+      "action": "BUY",
+      "ticker": "9958",
+      "price": 103.5,
+      "shares": 100,
+      "value": 10350.0,
+      "fee": 16.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=3, SQ=6.79)"
+    },
+    {
+      "date": "2026-05-11",
+      "action": "BUY",
+      "ticker": "6651",
+      "price": 133.5,
+      "shares": 100,
+      "value": 13350.0,
+      "fee": 20.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=4, SQ=6.34)"
+    },
+    {
+      "date": "2026-05-11",
+      "action": "BUY",
+      "ticker": "3508",
+      "price": 21.0,
+      "shares": 3000,
+      "value": 63000.0,
+      "fee": 94.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=5, SQ=6.31)"
+    },
+    {
+      "date": "2026-05-11",
+      "action": "BUY",
+      "ticker": "7788",
+      "price": 182.5,
+      "shares": 100,
+      "value": 18250.0,
+      "fee": 27.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=6, SQ=5.27)"
+    },
+    {
+      "date": "2026-05-11",
+      "action": "BUY",
+      "ticker": "4127",
+      "price": 43.75,
+      "shares": 1000,
+      "value": 43750.0,
+      "fee": 66.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=7, SQ=5.01)"
+    },
+    {
+      "date": "2026-05-11",
+      "action": "BUY",
+      "ticker": "2243",
+      "price": 21.65,
+      "shares": 2000,
+      "value": 43300.0,
+      "fee": 65.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=8, SQ=4.75)"
+    },
+    {
+      "date": "2026-05-11",
+      "action": "BUY",
+      "ticker": "3032",
+      "price": 77.7,
+      "shares": 100,
+      "value": 7770.0,
+      "fee": 12.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=9, SQ=4.61)"
+    },
+    {
+      "date": "2026-05-11",
+      "action": "BUY",
+      "ticker": "6494",
+      "price": 58.5,
+      "shares": 100,
+      "value": 5850.0,
+      "fee": 9.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=10, SQ=4.43)"
+    },
+    {
+      "date": "2026-05-11",
+      "action": "BUY",
+      "ticker": "3071",
+      "price": 30.9,
+      "shares": 1000,
+      "value": 30900.0,
+      "fee": 46.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=11, SQ=4.41)"
+    },
+    {
+      "date": "2026-05-11",
+      "action": "BUY",
+      "ticker": "4590",
+      "price": 75.8,
+      "shares": 100,
+      "value": 7580.0,
+      "fee": 11.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=12, SQ=4.40)"
+    },
+    {
+      "date": "2026-05-11",
+      "action": "BUY",
+      "ticker": "3171",
+      "price": 67.6,
+      "shares": 100,
+      "value": 6760.0,
+      "fee": 10.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=13, SQ=4.37)"
+    },
+    {
+      "date": "2026-05-11",
+      "action": "BUY",
+      "ticker": "8349",
+      "price": 42.4,
+      "shares": 1000,
+      "value": 42400.0,
+      "fee": 64.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=14, SQ=4.32)"
+    },
+    {
+      "date": "2026-05-11",
+      "action": "BUY",
+      "ticker": "4974",
+      "price": 74.4,
+      "shares": 100,
+      "value": 7440.0,
+      "fee": 11.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=15, SQ=4.18)"
+    },
+    {
+      "date": "2026-05-12",
+      "action": "SELL",
+      "ticker": "6874",
+      "price": 84.5,
+      "shares": 100,
+      "value": 8450.0,
+      "fee": 38.0,
+      "pnl": -101.0,
+      "reason": "跌出Top-35 (rank=1800)"
+    },
+    {
+      "date": "2026-05-12",
+      "action": "SELL",
+      "ticker": "9958",
+      "price": 104.5,
+      "shares": 100,
+      "value": 10450.0,
+      "fee": 47.0,
+      "pnl": 37.0,
+      "reason": "跌出Top-35 (rank=71)"
+    },
+    {
+      "date": "2026-05-12",
+      "action": "SELL",
+      "ticker": "6651",
+      "price": 133.5,
+      "shares": 100,
+      "value": 13350.0,
+      "fee": 60.0,
+      "pnl": -80.0,
+      "reason": "跌出Top-35 (rank=607)"
+    },
+    {
+      "date": "2026-05-12",
+      "action": "SELL",
+      "ticker": "3508",
+      "price": 21.1,
+      "shares": 3000,
+      "value": 63300.0,
+      "fee": 285.0,
+      "pnl": -79.0,
+      "reason": "跌出Top-35 (rank=2311)"
+    },
+    {
+      "date": "2026-05-12",
+      "action": "SELL",
+      "ticker": "7788",
+      "price": 184.0,
+      "shares": 100,
+      "value": 18400.0,
+      "fee": 83.0,
+      "pnl": 40.0,
+      "reason": "跌出Top-35 (rank=208)"
+    },
+    {
+      "date": "2026-05-12",
+      "action": "SELL",
+      "ticker": "4127",
+      "price": 48.1,
+      "shares": 1000,
+      "value": 48100.0,
+      "fee": 216.0,
+      "pnl": 4068.0,
+      "reason": "跌出Top-35 (rank=294)"
+    },
+    {
+      "date": "2026-05-12",
+      "action": "SELL",
+      "ticker": "3032",
+      "price": 78.7,
+      "shares": 100,
+      "value": 7870.0,
+      "fee": 35.0,
+      "pnl": 53.0,
+      "reason": "跌出Top-35 (rank=94)"
+    },
+    {
+      "date": "2026-05-12",
+      "action": "SELL",
+      "ticker": "3071",
+      "price": 30.1,
+      "shares": 1000,
+      "value": 30100.0,
+      "fee": 135.0,
+      "pnl": -982.0,
+      "reason": "跌出Top-35 (rank=351)"
+    },
+    {
+      "date": "2026-05-12",
+      "action": "SELL",
+      "ticker": "4590",
+      "price": 76.4,
+      "shares": 100,
+      "value": 7640.0,
+      "fee": 34.0,
+      "pnl": 14.0,
+      "reason": "跌出Top-35 (rank=80)"
+    },
+    {
+      "date": "2026-05-12",
+      "action": "SELL",
+      "ticker": "3171",
+      "price": 67.2,
+      "shares": 100,
+      "value": 6720.0,
+      "fee": 30.0,
+      "pnl": -80.0,
+      "reason": "跌出Top-35 (rank=1759)"
+    },
+    {
+      "date": "2026-05-12",
+      "action": "SELL",
+      "ticker": "8349",
+      "price": 41.9,
+      "shares": 1000,
+      "value": 41900.0,
+      "fee": 189.0,
+      "pnl": -752.0,
+      "reason": "跌出Top-35 (rank=1812)"
+    },
+    {
+      "date": "2026-05-12",
+      "action": "SELL",
+      "ticker": "4974",
+      "price": 73.6,
+      "shares": 100,
+      "value": 7360.0,
+      "fee": 33.0,
+      "pnl": -124.0,
+      "reason": "跌出Top-35 (rank=141)"
+    },
+    {
+      "date": "2026-05-12",
+      "action": "BUY",
+      "ticker": "8182",
+      "price": 37.15,
+      "shares": 2000,
+      "value": 74300.0,
+      "fee": 111.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=1, SQ=9.70)"
+    },
+    {
+      "date": "2026-05-12",
+      "action": "BUY",
+      "ticker": "6924",
+      "price": 113.0,
+      "shares": 100,
+      "value": 11300.0,
+      "fee": 17.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=2, SQ=7.78)"
+    },
+    {
+      "date": "2026-05-12",
+      "action": "BUY",
+      "ticker": "00928",
+      "price": 37.44,
+      "shares": 2000,
+      "value": 74880.0,
+      "fee": 112.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=3, SQ=7.39)"
+    },
+    {
+      "date": "2026-05-12",
+      "action": "BUY",
+      "ticker": "00952",
+      "price": 17.86,
+      "shares": 4000,
+      "value": 71440.0,
+      "fee": 107.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=5, SQ=6.54)"
+    },
+    {
+      "date": "2026-05-12",
+      "action": "BUY",
+      "ticker": "009804",
+      "price": 21.33,
+      "shares": 3000,
+      "value": 63990.0,
+      "fee": 96.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=6, SQ=6.02)"
+    },
+    {
+      "date": "2026-05-12",
+      "action": "BUY",
+      "ticker": "009808",
+      "price": 28.99,
+      "shares": 2000,
+      "value": 57980.0,
+      "fee": 87.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=7, SQ=5.90)"
+    },
+    {
+      "date": "2026-05-12",
+      "action": "BUY",
+      "ticker": "00901",
+      "price": 42.47,
+      "shares": 1000,
+      "value": 42470.0,
+      "fee": 64.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=8, SQ=5.45)"
+    },
+    {
+      "date": "2026-05-12",
+      "action": "BUY",
+      "ticker": "6768",
+      "price": 90.4,
+      "shares": 100,
+      "value": 9040.0,
+      "fee": 14.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=9, SQ=5.44)"
+    },
+    {
+      "date": "2026-05-12",
+      "action": "BUY",
+      "ticker": "00912",
+      "price": 31.05,
+      "shares": 1000,
+      "value": 31050.0,
+      "fee": 47.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=10, SQ=5.40)"
+    },
+    {
+      "date": "2026-05-12",
+      "action": "BUY",
+      "ticker": "8045",
+      "price": 73.8,
+      "shares": 100,
+      "value": 7380.0,
+      "fee": 11.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=11, SQ=4.77)"
+    },
+    {
+      "date": "2026-05-12",
+      "action": "BUY",
+      "ticker": "2248",
+      "price": 54.1,
+      "shares": 100,
+      "value": 5410.0,
+      "fee": 8.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=12, SQ=4.75)"
+    },
+    {
+      "date": "2026-05-12",
+      "action": "BUY",
+      "ticker": "1342",
+      "price": 95.0,
+      "shares": 100,
+      "value": 9500.0,
+      "fee": 14.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=13, SQ=4.57)"
+    },
+    {
+      "date": "2026-05-13",
+      "action": "SELL",
+      "ticker": "2243",
+      "price": 21.7,
+      "shares": 2000,
+      "value": 43400.0,
+      "fee": 195.0,
+      "pnl": -160.0,
+      "reason": "跌出Top-35 (rank=133)"
+    },
+    {
+      "date": "2026-05-13",
+      "action": "SELL",
+      "ticker": "6494",
+      "price": 54.7,
+      "shares": 100,
+      "value": 5470.0,
+      "fee": 25.0,
+      "pnl": -413.0,
+      "reason": "跌出Top-35 (rank=49)"
+    },
+    {
+      "date": "2026-05-13",
+      "action": "SELL",
+      "ticker": "009808",
+      "price": 28.62,
+      "shares": 2000,
+      "value": 57240.0,
+      "fee": 258.0,
+      "pnl": -1085.0,
+      "reason": "跌出Top-35 (rank=43)"
+    },
+    {
+      "date": "2026-05-13",
+      "action": "SELL",
+      "ticker": "00901",
+      "price": 41.64,
+      "shares": 1000,
+      "value": 41640.0,
+      "fee": 187.0,
+      "pnl": -1081.0,
+      "reason": "跌出Top-35 (rank=52)"
+    },
+    {
+      "date": "2026-05-13",
+      "action": "SELL",
+      "ticker": "8045",
+      "price": 73.8,
+      "shares": 100,
+      "value": 7380.0,
+      "fee": 33.0,
+      "pnl": -44.0,
+      "reason": "跌出Top-35 (rank=39)"
+    },
+    {
+      "date": "2026-05-13",
+      "action": "SELL",
+      "ticker": "2248",
+      "price": 54.3,
+      "shares": 100,
+      "value": 5430.0,
+      "fee": 24.0,
+      "pnl": -13.0,
+      "reason": "跌出Top-35 (rank=2291)"
+    },
+    {
+      "date": "2026-05-13",
+      "action": "BUY",
+      "ticker": "3530",
+      "price": 68.4,
+      "shares": 1000,
+      "value": 68400.0,
+      "fee": 103.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=2, SQ=4.85)"
+    },
+    {
+      "date": "2026-05-13",
+      "action": "BUY",
+      "ticker": "1735",
+      "price": 26.75,
+      "shares": 3000,
+      "value": 80250.0,
+      "fee": 120.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=4, SQ=4.59)"
+    },
+    {
+      "date": "2026-05-13",
+      "action": "BUY",
+      "ticker": "3010",
+      "price": 132.0,
+      "shares": 100,
+      "value": 13200.0,
+      "fee": 20.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=7, SQ=4.20)"
+    },
+    {
+      "date": "2026-05-13",
+      "action": "BUY",
+      "ticker": "1537",
+      "price": 126.5,
+      "shares": 100,
+      "value": 12650.0,
+      "fee": 19.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=10, SQ=3.90)"
+    },
+    {
+      "date": "2026-05-13",
+      "action": "BUY",
+      "ticker": "00892",
+      "price": 42.46,
+      "shares": 1000,
+      "value": 42460.0,
+      "fee": 64.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=11, SQ=3.84)"
+    },
+    {
+      "date": "2026-05-13",
+      "action": "BUY",
+      "ticker": "4137",
+      "price": 105.0,
+      "shares": 100,
+      "value": 10500.0,
+      "fee": 16.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=12, SQ=3.79)"
+    },
+    {
+      "date": "2026-05-14",
+      "action": "SELL",
+      "ticker": "1342",
+      "price": 93.5,
+      "shares": 100,
+      "value": 9350.0,
+      "fee": 42.0,
+      "pnl": -206.0,
+      "reason": "跌出Top-35 (rank=59)"
+    },
+    {
+      "date": "2026-05-14",
+      "action": "BUY",
+      "ticker": "8938",
+      "price": 55.3,
+      "shares": 2000,
+      "value": 110600.0,
+      "fee": 166.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=7, SQ=3.94)"
+    },
+    {
+      "date": "2026-05-15",
+      "action": "SELL",
+      "ticker": "6021",
+      "price": 31.55,
+      "shares": 2000,
+      "value": 63100.0,
+      "fee": 284.0,
+      "pnl": -8090.0,
+      "reason": "跌出Top-35 (rank=2392)"
+    },
+    {
+      "date": "2026-05-15",
+      "action": "BUY",
+      "ticker": "1307",
+      "price": 31.85,
+      "shares": 3000,
+      "value": 95550.0,
+      "fee": 143.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=9, SQ=3.43)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "SELL",
+      "ticker": "8182",
+      "price": 36.6,
+      "shares": 2000,
+      "value": 73200.0,
+      "fee": 329.0,
+      "pnl": -1541.0,
+      "reason": "跌出Top-35 (rank=1193)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "SELL",
+      "ticker": "6924",
+      "price": 145.0,
+      "shares": 100,
+      "value": 14500.0,
+      "fee": 65.0,
+      "pnl": 3118.0,
+      "reason": "跌出Top-35 (rank=983)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "SELL",
+      "ticker": "00928",
+      "price": 35.7,
+      "shares": 2000,
+      "value": 71400.0,
+      "fee": 321.0,
+      "pnl": -3914.0,
+      "reason": "跌出Top-35 (rank=53)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "SELL",
+      "ticker": "00952",
+      "price": 17.16,
+      "shares": 4000,
+      "value": 68640.0,
+      "fee": 309.0,
+      "pnl": -3216.0,
+      "reason": "跌出Top-35 (rank=42)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "SELL",
+      "ticker": "6768",
+      "price": 84.4,
+      "shares": 100,
+      "value": 8440.0,
+      "fee": 38.0,
+      "pnl": -652.0,
+      "reason": "跌出Top-35 (rank=133)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "SELL",
+      "ticker": "3530",
+      "price": 67.5,
+      "shares": 1000,
+      "value": 67500.0,
+      "fee": 304.0,
+      "pnl": -1306.0,
+      "reason": "跌出Top-35 (rank=442)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "SELL",
+      "ticker": "1735",
+      "price": 25.3,
+      "shares": 3000,
+      "value": 75900.0,
+      "fee": 342.0,
+      "pnl": -4812.0,
+      "reason": "跌出Top-35 (rank=2381)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "SELL",
+      "ticker": "3010",
+      "price": 125.0,
+      "shares": 100,
+      "value": 12500.0,
+      "fee": 56.0,
+      "pnl": -776.0,
+      "reason": "跌出Top-35 (rank=128)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "SELL",
+      "ticker": "1537",
+      "price": 125.5,
+      "shares": 100,
+      "value": 12550.0,
+      "fee": 56.0,
+      "pnl": -175.0,
+      "reason": "跌出Top-35 (rank=1833)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "SELL",
+      "ticker": "00892",
+      "price": 41.14,
+      "shares": 1000,
+      "value": 41140.0,
+      "fee": 185.0,
+      "pnl": -1569.0,
+      "reason": "跌出Top-35 (rank=239)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "SELL",
+      "ticker": "4137",
+      "price": 103.5,
+      "shares": 100,
+      "value": 10350.0,
+      "fee": 47.0,
+      "pnl": -212.0,
+      "reason": "跌出Top-35 (rank=730)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "SELL",
+      "ticker": "8938",
+      "price": 54.4,
+      "shares": 2000,
+      "value": 108800.0,
+      "fee": 490.0,
+      "pnl": -2456.0,
+      "reason": "跌出Top-35 (rank=1447)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "SELL",
+      "ticker": "1307",
+      "price": 31.8,
+      "shares": 3000,
+      "value": 95400.0,
+      "fee": 429.0,
+      "pnl": -723.0,
+      "reason": "跌出Top-35 (rank=446)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "BUY",
+      "ticker": "7842",
+      "price": 102.0,
+      "shares": 100,
+      "value": 10200.0,
+      "fee": 15.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=1, SQ=6.91)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "BUY",
+      "ticker": "00770",
+      "price": 64.0,
+      "shares": 1000,
+      "value": 64000.0,
+      "fee": 96.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=2, SQ=6.41)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "BUY",
+      "ticker": "00728",
+      "price": 57.7,
+      "shares": 1000,
+      "value": 57700.0,
+      "fee": 87.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=3, SQ=6.34)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "BUY",
+      "ticker": "7507",
+      "price": 24.9,
+      "shares": 2000,
+      "value": 49800.0,
+      "fee": 75.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=5, SQ=5.28)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "BUY",
+      "ticker": "2530",
+      "price": 20.9,
+      "shares": 2000,
+      "value": 41800.0,
+      "fee": 63.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=7, SQ=4.97)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "BUY",
+      "ticker": "00963",
+      "price": 12.61,
+      "shares": 4000,
+      "value": 50440.0,
+      "fee": 76.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=8, SQ=4.88)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "BUY",
+      "ticker": "00984A",
+      "price": 14.63,
+      "shares": 4000,
+      "value": 58520.0,
+      "fee": 88.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=9, SQ=4.87)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "BUY",
+      "ticker": "9946",
+      "price": 16.8,
+      "shares": 3000,
+      "value": 50400.0,
+      "fee": 76.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=10, SQ=4.49)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "BUY",
+      "ticker": "6994",
+      "price": 51.0,
+      "shares": 1000,
+      "value": 51000.0,
+      "fee": 76.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=11, SQ=4.44)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "BUY",
+      "ticker": "4534",
+      "price": 22.5,
+      "shares": 2000,
+      "value": 45000.0,
+      "fee": 68.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=12, SQ=4.30)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "BUY",
+      "ticker": "5515",
+      "price": 39.8,
+      "shares": 1000,
+      "value": 39800.0,
+      "fee": 60.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=13, SQ=4.17)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "BUY",
+      "ticker": "009803",
+      "price": 19.7,
+      "shares": 2000,
+      "value": 39400.0,
+      "fee": 59.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=14, SQ=4.16)"
+    },
+    {
+      "date": "2026-05-18",
+      "action": "BUY",
+      "ticker": "7818",
+      "price": 63.8,
+      "shares": 100,
+      "value": 6380.0,
+      "fee": 10.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=15, SQ=4.10)"
+    },
+    {
+      "date": "2026-05-19",
+      "action": "SELL",
+      "ticker": "7842",
+      "price": 102.0,
+      "shares": 100,
+      "value": 10200.0,
+      "fee": 46.0,
+      "pnl": -61.0,
+      "reason": "跌出Top-35 (rank=401)"
+    },
+    {
+      "date": "2026-05-19",
+      "action": "SELL",
+      "ticker": "7507",
+      "price": 24.75,
+      "shares": 2000,
+      "value": 49500.0,
+      "fee": 223.0,
+      "pnl": -597.0,
+      "reason": "跌出Top-35 (rank=697)"
+    },
+    {
+      "date": "2026-05-19",
+      "action": "SELL",
+      "ticker": "2530",
+      "price": 20.7,
+      "shares": 2000,
+      "value": 41400.0,
+      "fee": 186.0,
+      "pnl": -649.0,
+      "reason": "跌出Top-35 (rank=1905)"
+    },
+    {
+      "date": "2026-05-19",
+      "action": "SELL",
+      "ticker": "9946",
+      "price": 16.7,
+      "shares": 3000,
+      "value": 50100.0,
+      "fee": 225.0,
+      "pnl": -601.0,
+      "reason": "跌出Top-35 (rank=1121)"
+    },
+    {
+      "date": "2026-05-19",
+      "action": "SELL",
+      "ticker": "6994",
+      "price": 52.3,
+      "shares": 1000,
+      "value": 52300.0,
+      "fee": 235.0,
+      "pnl": 988.0,
+      "reason": "跌出Top-35 (rank=93)"
+    },
+    {
+      "date": "2026-05-19",
+      "action": "SELL",
+      "ticker": "4534",
+      "price": 22.0,
+      "shares": 2000,
+      "value": 44000.0,
+      "fee": 198.0,
+      "pnl": -1266.0,
+      "reason": "跌出Top-35 (rank=519)"
+    },
+    {
+      "date": "2026-05-19",
+      "action": "SELL",
+      "ticker": "5515",
+      "price": 39.8,
+      "shares": 1000,
+      "value": 39800.0,
+      "fee": 179.0,
+      "pnl": -239.0,
+      "reason": "跌出Top-35 (rank=188)"
+    },
+    {
+      "date": "2026-05-19",
+      "action": "BUY",
+      "ticker": "6818",
+      "price": 62.2,
+      "shares": 1000,
+      "value": 62200.0,
+      "fee": 93.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=1, SQ=8.95)"
+    },
+    {
+      "date": "2026-05-19",
+      "action": "BUY",
+      "ticker": "6026",
+      "price": 15.0,
+      "shares": 6000,
+      "value": 90000.0,
+      "fee": 135.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=2, SQ=7.24)"
+    },
+    {
+      "date": "2026-05-19",
+      "action": "BUY",
+      "ticker": "7777",
+      "price": 34.65,
+      "shares": 2000,
+      "value": 69300.0,
+      "fee": 104.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=9, SQ=4.96)"
+    },
+    {
+      "date": "2026-05-19",
+      "action": "BUY",
+      "ticker": "00960",
+      "price": 17.5,
+      "shares": 3000,
+      "value": 52500.0,
+      "fee": 79.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=10, SQ=4.94)"
+    },
+    {
+      "date": "2026-05-19",
+      "action": "BUY",
+      "ticker": "2387",
+      "price": 38.3,
+      "shares": 1000,
+      "value": 38300.0,
+      "fee": 57.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=12, SQ=4.24)"
+    },
+    {
+      "date": "2026-05-19",
+      "action": "BUY",
+      "ticker": "5607",
+      "price": 47.95,
+      "shares": 1000,
+      "value": 47950.0,
+      "fee": 72.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=13, SQ=4.18)"
+    },
+    {
+      "date": "2026-05-19",
+      "action": "BUY",
+      "ticker": "5880",
+      "price": 22.8,
+      "shares": 2000,
+      "value": 45600.0,
+      "fee": 68.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=14, SQ=4.11)"
+    },
+    {
+      "date": "2026-05-20",
+      "action": "SELL",
+      "ticker": "009804",
+      "price": 20.09,
+      "shares": 3000,
+      "value": 60270.0,
+      "fee": 271.0,
+      "pnl": -4087.0,
+      "reason": "跌出Top-35 (rank=55)"
+    },
+    {
+      "date": "2026-05-20",
+      "action": "SELL",
+      "ticker": "00963",
+      "price": 12.71,
+      "shares": 4000,
+      "value": 50840.0,
+      "fee": 229.0,
+      "pnl": 96.0,
+      "reason": "跌出Top-35 (rank=56)"
+    },
+    {
+      "date": "2026-05-20",
+      "action": "SELL",
+      "ticker": "009803",
+      "price": 19.2,
+      "shares": 2000,
+      "value": 38400.0,
+      "fee": 173.0,
+      "pnl": -1232.0,
+      "reason": "跌出Top-35 (rank=44)"
+    },
+    {
+      "date": "2026-05-20",
+      "action": "SELL",
+      "ticker": "6818",
+      "price": 60.1,
+      "shares": 1000,
+      "value": 60100.0,
+      "fee": 270.0,
+      "pnl": -2464.0,
+      "reason": "跌出Top-35 (rank=335)"
+    },
+    {
+      "date": "2026-05-20",
+      "action": "SELL",
+      "ticker": "7777",
+      "price": 32.75,
+      "shares": 2000,
+      "value": 65500.0,
+      "fee": 295.0,
+      "pnl": -4199.0,
+      "reason": "跌出Top-35 (rank=165)"
+    },
+    {
+      "date": "2026-05-20",
+      "action": "SELL",
+      "ticker": "2387",
+      "price": 38.5,
+      "shares": 1000,
+      "value": 38500.0,
+      "fee": 173.0,
+      "pnl": -31.0,
+      "reason": "跌出Top-35 (rank=66)"
+    },
+    {
+      "date": "2026-05-20",
+      "action": "SELL",
+      "ticker": "5607",
+      "price": 48.05,
+      "shares": 1000,
+      "value": 48050.0,
+      "fee": 216.0,
+      "pnl": -188.0,
+      "reason": "跌出Top-35 (rank=145)"
+    },
+    {
+      "date": "2026-05-20",
+      "action": "SELL",
+      "ticker": "5880",
+      "price": 22.7,
+      "shares": 2000,
+      "value": 45400.0,
+      "fee": 204.0,
+      "pnl": -473.0,
+      "reason": "跌出Top-35 (rank=52)"
+    },
+    {
+      "date": "2026-05-20",
+      "action": "BUY",
+      "ticker": "00964",
+      "price": 13.87,
+      "shares": 7000,
+      "value": 97090.0,
+      "fee": 146.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=1, SQ=6.60)"
+    },
+    {
+      "date": "2026-05-20",
+      "action": "BUY",
+      "ticker": "009802",
+      "price": 16.73,
+      "shares": 4000,
+      "value": 66920.0,
+      "fee": 100.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=7, SQ=4.64)"
+    },
+    {
+      "date": "2026-05-20",
+      "action": "BUY",
+      "ticker": "6996",
+      "price": 192.0,
+      "shares": 100,
+      "value": 19200.0,
+      "fee": 29.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=8, SQ=4.57)"
+    },
+    {
+      "date": "2026-05-20",
+      "action": "BUY",
+      "ticker": "2851",
+      "price": 34.9,
+      "shares": 1000,
+      "value": 34900.0,
+      "fee": 52.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=9, SQ=4.49)"
+    },
+    {
+      "date": "2026-05-20",
+      "action": "BUY",
+      "ticker": "009808",
+      "price": 26.9,
+      "shares": 2000,
+      "value": 53800.0,
+      "fee": 81.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=10, SQ=4.09)"
+    },
+    {
+      "date": "2026-05-20",
+      "action": "BUY",
+      "ticker": "6407",
+      "price": 30.85,
+      "shares": 1000,
+      "value": 30850.0,
+      "fee": 46.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=12, SQ=3.89)"
+    },
+    {
+      "date": "2026-05-20",
+      "action": "BUY",
+      "ticker": "2530",
+      "price": 20.9,
+      "shares": 2000,
+      "value": 41800.0,
+      "fee": 63.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=13, SQ=3.80)"
+    },
+    {
+      "date": "2026-05-20",
+      "action": "BUY",
+      "ticker": "3556",
+      "price": 51.6,
+      "shares": 1000,
+      "value": 51600.0,
+      "fee": 77.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=14, SQ=3.72)"
+    },
+    {
+      "date": "2026-05-21",
+      "action": "SELL",
+      "ticker": "00728",
+      "price": 58.45,
+      "shares": 1000,
+      "value": 58450.0,
+      "fee": 263.0,
+      "pnl": 400.0,
+      "reason": "跌出Top-35 (rank=1996)"
+    },
+    {
+      "date": "2026-05-21",
+      "action": "SELL",
+      "ticker": "009808",
+      "price": 27.9,
+      "shares": 2000,
+      "value": 55800.0,
+      "fee": 251.0,
+      "pnl": 1668.0,
+      "reason": "跌出Top-35 (rank=1941)"
+    },
+    {
+      "date": "2026-05-21",
+      "action": "SELL",
+      "ticker": "6407",
+      "price": 31.5,
+      "shares": 1000,
+      "value": 31500.0,
+      "fee": 142.0,
+      "pnl": 462.0,
+      "reason": "跌出Top-35 (rank=60)"
+    },
+    {
+      "date": "2026-05-21",
+      "action": "SELL",
+      "ticker": "3556",
+      "price": 54.0,
+      "shares": 1000,
+      "value": 54000.0,
+      "fee": 243.0,
+      "pnl": 2080.0,
+      "reason": "跌出Top-35 (rank=38)"
+    },
+    {
+      "date": "2026-05-21",
+      "action": "BUY",
+      "ticker": "009803",
+      "price": 20.04,
+      "shares": 5000,
+      "value": 100200.0,
+      "fee": 150.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=1, SQ=5.71)"
+    },
+    {
+      "date": "2026-05-21",
+      "action": "BUY",
+      "ticker": "7832",
+      "price": 12.35,
+      "shares": 7000,
+      "value": 86450.0,
+      "fee": 130.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=7, SQ=4.81)"
+    },
+    {
+      "date": "2026-05-21",
+      "action": "BUY",
+      "ticker": "6901",
+      "price": 14.1,
+      "shares": 5000,
+      "value": 70500.0,
+      "fee": 106.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=11, SQ=4.12)"
+    },
+    {
+      "date": "2026-05-21",
+      "action": "BUY",
+      "ticker": "2314",
+      "price": 16.05,
+      "shares": 4000,
+      "value": 64200.0,
+      "fee": 96.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=12, SQ=4.03)"
+    },
+    {
+      "date": "2026-05-22",
+      "action": "SELL",
+      "ticker": "00960",
+      "price": 17.76,
+      "shares": 3000,
+      "value": 53280.0,
+      "fee": 240.0,
+      "pnl": 461.0,
+      "reason": "跌出Top-35 (rank=2049)"
+    },
+    {
+      "date": "2026-05-22",
+      "action": "SELL",
+      "ticker": "7832",
+      "price": 11.95,
+      "shares": 7000,
+      "value": 83650.0,
+      "fee": 376.0,
+      "pnl": -3306.0,
+      "reason": "跌出Top-35 (rank=553)"
+    },
+    {
+      "date": "2026-05-22",
+      "action": "BUY",
+      "ticker": "00728",
+      "price": 59.05,
+      "shares": 1000,
+      "value": 59050.0,
+      "fee": 89.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=3, SQ=5.63)"
+    },
+    {
+      "date": "2026-05-22",
+      "action": "BUY",
+      "ticker": "6818",
+      "price": 60.4,
+      "shares": 1000,
+      "value": 60400.0,
+      "fee": 91.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=4, SQ=5.46)"
+    },
+    {
+      "date": "2026-05-24",
+      "action": "SELL",
+      "ticker": "6818",
+      "price": 60.4,
+      "shares": 1000,
+      "value": 60400.0,
+      "fee": 272.0,
+      "pnl": -362.0,
+      "reason": "跌出Top-35 (rank=37) [無價格,以成本清]"
+    },
+    {
+      "date": "2026-05-25",
+      "action": "SELL",
+      "ticker": "00912",
+      "price": 31.74,
+      "shares": 1000,
+      "value": 31740.0,
+      "fee": 143.0,
+      "pnl": 501.0,
+      "reason": "跌出Top-35 (rank=56)"
+    },
+    {
+      "date": "2026-05-25",
+      "action": "SELL",
+      "ticker": "00770",
+      "price": 66.25,
+      "shares": 1000,
+      "value": 66250.0,
+      "fee": 298.0,
+      "pnl": 1856.0,
+      "reason": "跌出Top-35 (rank=223)"
+    },
+    {
+      "date": "2026-05-25",
+      "action": "SELL",
+      "ticker": "00984A",
+      "price": 15.2,
+      "shares": 4000,
+      "value": 60800.0,
+      "fee": 274.0,
+      "pnl": 1919.0,
+      "reason": "跌出Top-35 (rank=9999)"
+    },
+    {
+      "date": "2026-05-25",
+      "action": "SELL",
+      "ticker": "7818",
+      "price": 65.9,
+      "shares": 100,
+      "value": 6590.0,
+      "fee": 30.0,
+      "pnl": 171.0,
+      "reason": "跌出Top-35 (rank=50)"
+    },
+    {
+      "date": "2026-05-25",
+      "action": "SELL",
+      "ticker": "6026",
+      "price": 15.6,
+      "shares": 6000,
+      "value": 93600.0,
+      "fee": 421.0,
+      "pnl": 3044.0,
+      "reason": "跌出Top-35 (rank=235)"
+    },
+    {
+      "date": "2026-05-25",
+      "action": "SELL",
+      "ticker": "6996",
+      "price": 187.5,
+      "shares": 100,
+      "value": 18750.0,
+      "fee": 84.0,
+      "pnl": -563.0,
+      "reason": "跌出Top-35 (rank=258)"
+    },
+    {
+      "date": "2026-05-25",
+      "action": "SELL",
+      "ticker": "6901",
+      "price": 13.3,
+      "shares": 5000,
+      "value": 66500.0,
+      "fee": 299.0,
+      "pnl": -4405.0,
+      "reason": "跌出Top-35 (rank=265)"
+    },
+    {
+      "date": "2026-05-25",
+      "action": "SELL",
+      "ticker": "2314",
+      "price": 16.4,
+      "shares": 4000,
+      "value": 65600.0,
+      "fee": 295.0,
+      "pnl": 1008.0,
+      "reason": "跌出Top-35 (rank=53)"
+    },
+    {
+      "date": "2026-05-25",
+      "action": "SELL",
+      "ticker": "00728",
+      "price": 61.2,
+      "shares": 1000,
+      "value": 61200.0,
+      "fee": 275.0,
+      "pnl": 1786.0,
+      "reason": "跌出Top-35 (rank=70)"
+    },
+    {
+      "date": "2026-05-25",
+      "action": "BUY",
+      "ticker": "009808",
+      "price": 29.4,
+      "shares": 2000,
+      "value": 58800.0,
+      "fee": 88.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=1, SQ=6.52)"
+    },
+    {
+      "date": "2026-05-25",
+      "action": "BUY",
+      "ticker": "4195",
+      "price": 17.9,
+      "shares": 3000,
+      "value": 53700.0,
+      "fee": 81.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=2, SQ=6.14)"
+    },
+    {
+      "date": "2026-05-25",
+      "action": "BUY",
+      "ticker": "009804",
+      "price": 22.4,
+      "shares": 2000,
+      "value": 44800.0,
+      "fee": 67.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=3, SQ=5.87)"
+    },
+    {
+      "date": "2026-05-25",
+      "action": "BUY",
+      "ticker": "00962",
+      "price": 14.47,
+      "shares": 4000,
+      "value": 57880.0,
+      "fee": 87.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=6, SQ=5.49)"
+    },
+    {
+      "date": "2026-05-25",
+      "action": "BUY",
+      "ticker": "009800",
+      "price": 13.06,
+      "shares": 4000,
+      "value": 52240.0,
+      "fee": 78.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=8, SQ=5.17)"
+    },
+    {
+      "date": "2026-05-25",
+      "action": "BUY",
+      "ticker": "9917",
+      "price": 113.0,
+      "shares": 100,
+      "value": 11300.0,
+      "fee": 17.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=9, SQ=4.91)"
+    },
+    {
+      "date": "2026-05-25",
+      "action": "BUY",
+      "ticker": "4534",
+      "price": 26.65,
+      "shares": 1000,
+      "value": 26650.0,
+      "fee": 40.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=10, SQ=4.79)"
+    },
+    {
+      "date": "2026-05-25",
+      "action": "BUY",
+      "ticker": "4174",
+      "price": 30.35,
+      "shares": 1000,
+      "value": 30350.0,
+      "fee": 46.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=11, SQ=4.47)"
+    },
+    {
+      "date": "2026-05-25",
+      "action": "BUY",
+      "ticker": "00643",
+      "price": 20.33,
+      "shares": 2000,
+      "value": 40660.0,
+      "fee": 61.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=12, SQ=4.47)"
+    },
+    {
+      "date": "2026-05-25",
+      "action": "BUY",
+      "ticker": "3577",
+      "price": 160.0,
+      "shares": 100,
+      "value": 16000.0,
+      "fee": 24.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=13, SQ=4.41)"
+    },
+    {
+      "date": "2026-05-26",
+      "action": "SELL",
+      "ticker": "2530",
+      "price": 19.0,
+      "shares": 2000,
+      "value": 38000.0,
+      "fee": 171.0,
+      "pnl": -4034.0,
+      "reason": "跌出Top-35 (rank=77)"
+    },
+    {
+      "date": "2026-05-26",
+      "action": "SELL",
+      "ticker": "4195",
+      "price": 17.5,
+      "shares": 3000,
+      "value": 52500.0,
+      "fee": 236.0,
+      "pnl": -1517.0,
+      "reason": "跌出Top-35 (rank=826)"
+    },
+    {
+      "date": "2026-05-26",
+      "action": "BUY",
+      "ticker": "2527",
+      "price": 35.15,
+      "shares": 3000,
+      "value": 105450.0,
+      "fee": 158.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=6, SQ=5.54)"
+    },
+    {
+      "date": "2026-05-26",
+      "action": "BUY",
+      "ticker": "6742",
+      "price": 59.6,
+      "shares": 1000,
+      "value": 59600.0,
+      "fee": 89.0,
+      "pnl": 0.0,
+      "reason": "Top-20進場 (rank=9, SQ=4.75)"
     }
   ]
 }
