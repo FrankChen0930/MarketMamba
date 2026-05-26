@@ -2,15 +2,15 @@
   "generated_date": "2026-05-26",
   "initial_capital": 1000000,
   "period_start": "2026-04-29",
-  "period_end": "2026-05-25",
-  "trading_days": 17,
-  "total_return_pct": -0.25,
+  "period_end": "2026-05-26",
+  "trading_days": 18,
+  "total_return_pct": -0.43,
   "max_drawdown_pct": -1.73,
-  "sharpe": -0.49,
+  "sharpe": -0.84,
   "win_days": 5,
-  "lose_days": 7,
+  "lose_days": 8,
   "flat_days": 5,
-  "avg_deployed_pct": 46.4,
+  "avg_deployed_pct": 47.3,
   "best_day": {
     "date": "2026-05-21",
     "pct": 1.36
@@ -127,6 +127,12 @@
       "equity": 997523,
       "pnl": -2477,
       "daily_return_pct": 0.0
+    },
+    {
+      "date": "2026-05-26",
+      "equity": 995707,
+      "pnl": -4293,
+      "daily_return_pct": -0.182
     }
   ]
 }
