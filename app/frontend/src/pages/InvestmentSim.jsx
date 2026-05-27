@@ -4,7 +4,7 @@ import {
   CartesianGrid, ReferenceLine, BarChart, Bar, Cell, Legend,
 } from 'recharts';
 import { useApi } from '../hooks/useApi';
-import { fetchSimBacktest, fetchIcAnalysis } from '../api/sim';
+import { fetchSimBacktest, fetchIcAnalysis, fetchScannerBacktest } from '../api/sim';
 import { SkeletonBlock, SkeletonCard, ApiError } from '../components/SkeletonLoader';
 
 
@@ -529,9 +529,368 @@ function TransactionsPanel({ transactions, loading }) {
 }
 
 
+// ── Scanner Robot ─────────────────────────────────────────────────────────────
+
+const TRAILING_TIERS = [
+  { threshold: 0.15, stopPct:  10, label: '峰值≥+15%' },
+  { threshold: 0.10, stopPct:   6, label: '峰值≥+10%' },
+  { threshold: 0.05, stopPct:   2, label: '峰值≥+5%'  },
+  { threshold: -99,  stopPct:  -5, label: '預設'       },
+];
+
+function ScannerHoldingRow({ h }) {
+  const conds = [
+    { met: h.rank_stability_met,    label: '排名穩定' },
+    { met: h.high_confidence_met,   label: '高信心'   },
+    { met: h.relative_low_met,      label: '相對低點' },
+    { met: h.institutional_buy_met, label: '機構買入' },
+  ];
+  const stopColor = h.trailing_stop_price >= h.current_price
+    ? 'var(--negative)'
+    : h.trailing_stop_pct >= 0
+    ? 'var(--positive)'
+    : 'var(--accent-amber)';
+
+  return (
+    <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)' }}>
+      {/* Top row */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+        <div>
+          <span style={{ fontWeight: 700, fontSize: 14 }}>{h.ticker}</span>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>
+            入場 {h.entry_date?.slice(5)} @ {h.entry_price?.toFixed(2)}
+          </span>
+          <span style={{ marginLeft: 8, fontSize: 10, background: 'rgba(0,212,255,0.12)', color: 'var(--accent-blue)', borderRadius: 99, padding: '1px 7px', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+            {h.entry_score}分 · {h.conditions_met}/4
+          </span>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <div className="mono" style={{ fontSize: 14, fontWeight: 700, color: h.pnl_pct >= 0 ? 'var(--positive)' : 'var(--negative)' }}>
+            {h.pnl_pct >= 0 ? '+' : ''}{h.pnl_pct?.toFixed(2)}%
+          </div>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+            現價 {h.current_price?.toFixed(2)} · {h.days_held}天
+          </div>
+        </div>
+      </div>
+      {/* Conditions */}
+      <div style={{ display: 'flex', gap: 10, marginBottom: 6, flexWrap: 'wrap' }}>
+        {conds.map((c, i) => (
+          <span key={i} style={{ fontSize: 11, color: c.met ? 'var(--positive)' : 'var(--text-muted)' }}>
+            {c.met ? '✅' : '❌'} {c.label}
+          </span>
+        ))}
+      </div>
+      {/* Trailing stop */}
+      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+        止損：
+        <span style={{ color: stopColor, fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+          {h.trailing_stop_price?.toFixed(2)}
+        </span>
+        <span style={{ marginLeft: 4 }}>
+          ({h.trailing_stop_pct >= 0 ? '+' : ''}{h.trailing_stop_pct}% 鎖利)
+        </span>
+        {h.peak_pnl_pct > 0 && (
+          <span style={{ marginLeft: 8, color: 'var(--positive)' }}>
+            峰值 +{h.peak_pnl_pct?.toFixed(1)}%
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ScannerHoldingsPanel({ holdings, loading }) {
+  if (loading) return (
+    <div className="panel">
+      <div className="panel-header"><div className="panel-title"><span>💼</span> Scanner 持倉</div></div>
+      <div className="panel-body"><SkeletonBlock height={160} /></div>
+    </div>
+  );
+  return (
+    <div className="panel">
+      <div className="panel-header">
+        <div className="panel-title"><span>💼</span> Scanner 持倉</div>
+        <span className="badge badge-neutral">{holdings.length} 檔</span>
+      </div>
+      <div className="panel-body" style={{ padding: 0 }}>
+        {!holdings.length ? (
+          <div style={{ padding: '24px 20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
+            目前無持倉 · 等待 Scanner BUY 訊號進場
+          </div>
+        ) : (
+          holdings.map(h => <ScannerHoldingRow key={h.ticker} h={h} />)
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ScannerWatchlistPanel({ watchlist, loading }) {
+  if (loading) return null;
+  if (!watchlist?.length) return null;
+  return (
+    <div className="panel">
+      <div className="panel-header">
+        <div className="panel-title"><span>👀</span> 觀察清單</div>
+        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Scanner watch_list · 差 1 個條件</span>
+      </div>
+      <div className="panel-body" style={{ padding: 0 }}>
+        <table className="data-table">
+          <thead><tr><th>代號</th><th style={{ textAlign: 'right' }}>觀察天數</th></tr></thead>
+          <tbody>
+            {watchlist.map(w => (
+              <tr key={w.ticker}>
+                <td style={{ fontWeight: 600, fontSize: 13 }}>{w.ticker}</td>
+                <td className="mono" style={{ textAlign: 'right', fontSize: 12, color: 'var(--accent-amber)' }}>{w.days_in_watch} 天</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function ScannerStrategyGuide() {
+  const [open, setOpen] = useState(false);
+  const S = { row: { display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '6px 12px', borderRadius: 6, marginBottom: 4 } };
+
+  return (
+    <div className="panel" style={{ borderColor: 'rgba(0,212,255,0.15)' }}>
+      <div className="panel-header" onClick={() => setOpen(o => !o)} style={{ cursor: 'pointer', userSelect: 'none' }}>
+        <div className="panel-title"><span>⚙️</span> Scanner 策略說明</div>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>4條件加權入場 · Trailing Stop退場</span>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▼</span>
+        </div>
+      </div>
+
+      {open && (
+        <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          {/* Entry conditions */}
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--positive)', marginBottom: 10 }}>🟢 入場條件（加權評分，正常市場 ≥55分）</div>
+            <table className="data-table" style={{ width: '100%' }}>
+              <thead><tr><th>條件</th><th>邏輯</th><th style={{ textAlign: 'right' }}>配分</th></tr></thead>
+              <tbody>
+                {[
+                  ['排名穩定性', 'Top 10 連續 ≥2 天 或 Top 50 連續 ≥3 天', 30],
+                  ['高信心', 'Uncertainty < 當日 Q30 分位數', 25],
+                  ['機構淨買入', '外資/投信連續 ≥2 天淨買', 25],
+                  ['相對低點', 'RSI < 40 或 價格 < MA20', 20],
+                ].map(([name, logic, pts]) => (
+                  <tr key={name}>
+                    <td style={{ fontWeight: 600 }}>{name}</td>
+                    <td style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{logic}</td>
+                    <td className="mono" style={{ textAlign: 'right', color: 'var(--accent-amber)', fontWeight: 700 }}>{pts}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8, padding: '6px 10px', background: 'rgba(255,165,0,0.05)', borderRadius: 6 }}>
+              保守模式（TWII &lt; MA60）：門檻提高至 ≥70 分
+            </div>
+          </div>
+
+          {/* Exit conditions */}
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--negative)', marginBottom: 10 }}>🔴 退場條件（任一觸發）</div>
+            {[
+              { cond: 'Scanner EXIT 訊號（排名掉出 Top 50 連 2 天）', color: 'var(--negative)' },
+              { cond: 'Scanner EXIT 訊號（外資連續 3 天淨賣出）', color: 'var(--negative)' },
+              { cond: 'Trailing Stop 觸及（見下表）', color: 'var(--negative)' },
+            ].map(r => (
+              <div key={r.cond} style={{ ...S.row, background: 'rgba(255,71,87,0.04)' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>🔴 {r.cond}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Trailing stop tiers */}
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent-amber)', marginBottom: 8 }}>📉 Trailing Stop 機制（以峰值報酬決定止損線）</div>
+            <table className="data-table" style={{ width: '100%' }}>
+              <thead><tr><th>峰值報酬</th><th>止損線位置</th></tr></thead>
+              <tbody>
+                {[
+                  ['< +5%', '固定 −5%（成本價）'],
+                  ['≥ +5%', '成本 +2%（開始鎖利）'],
+                  ['≥ +10%', '成本 +6%'],
+                  ['≥ +15%', '成本 +10%'],
+                ].map(([ret, stop]) => (
+                  <tr key={ret}>
+                    <td>{ret}</td>
+                    <td className="mono" style={{ color: 'var(--accent-amber)', fontWeight: 600 }}>{stop}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
+              ⚠ 止損線只會往上調整（鎖利），不會因為報酬下滑而向下重置。
+            </div>
+          </div>
+
+          {/* Position sizing */}
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent-blue)', marginBottom: 8 }}>💰 倉位管理</div>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.8 }}>
+              按 Scanner <code style={{ color: 'var(--accent-amber)', fontSize: 11 }}>suggested_weight</code> 比例分配；單股上限 15%；最多同時持有 10 檔；維持 5% 現金緩衝。
+            </div>
+          </div>
+
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', padding: '8px 12px', background: 'rgba(255,71,87,0.05)', borderRadius: 6, border: '1px solid rgba(255,71,87,0.15)' }}>
+            ⚠️ 本模擬從首次推論日開始累積，假設以當日收盤價成交，不考慮市場衝擊。僅供量化策略驗證，不構成任何投資建議。
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ScannerRobotTab() {
+  const { data, loading, error, refetch } = useApi(fetchScannerBacktest);
+  const [viewDays, setViewDays] = useState(0);
+
+  const s          = data?.summary        ?? {};
+  const curve      = data?.equity_curve   ?? [];
+  const bench      = data?.benchmark_curve ?? [];
+  const holdings   = data?.current_holdings ?? [];
+  const watchlist  = data?.watchlist       ?? [];
+  const txs        = data?.transactions    ?? [];
+  const meta       = data?.scanner_meta   ?? {};
+  const hasData    = curve.length >= 2;
+  const tradingDays = data?.trading_days ?? 0;
+
+  const initialEquity = curve[0]?.equity ?? 1;
+  const benchMap      = Object.fromEntries(bench.map(b => [b.date, b.level]));
+  const displayCurve  = (viewDays > 0 ? curve.slice(-viewDays) : curve).map(pt => ({
+    ...pt,
+    port_idx:  parseFloat((pt.equity / initialEquity * 100).toFixed(3)),
+    bench_idx: benchMap[pt.date] ?? null,
+  }));
+
+  const retColor  = pos(s.total_return_pct);
+  const ddColor   = (s.max_drawdown_pct ?? 0) < -5 ? PNL_NEG : (s.max_drawdown_pct ?? 0) < -2 ? CLR_AMB : 'var(--text-secondary)';
+  const regimeColor = meta.market_regime === 'CAUTIOUS' ? CLR_AMB : 'var(--positive)';
+
+  // Not yet available
+  if (!loading && (error || data?.error)) {
+    return (
+      <div className="panel" style={{ borderColor: 'rgba(0,212,255,0.2)' }}>
+        <div className="panel-body" style={{ textAlign: 'center', padding: '40px 0' }}>
+          <div style={{ fontSize: 32, marginBottom: 12 }}>🌱</div>
+          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>
+            Scanner 機器人尚未啟動
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.8 }}>
+            今日 17:00 推論完成後將自動建立機器人並開始追蹤<br />
+            機器人將依 Scanner 每日 BUY/EXIT 訊號自動操作
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Controls */}
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'flex-end' }}>
+        <select value={viewDays} onChange={e => setViewDays(Number(e.target.value))}
+          style={{ background: 'var(--bg-panel-2)', border: '1px solid var(--border)', borderRadius: 6, padding: '5px 10px', fontSize: 12, color: 'var(--text-primary)' }}>
+          <option value={0}>全部</option>
+          <option value={20}>近 20 天</option>
+          <option value={40}>近 40 天</option>
+        </select>
+        <button className="btn btn-ghost" style={{ fontSize: 12 }} onClick={refetch}>🔄 刷新</button>
+      </div>
+
+      {/* Summary cards */}
+      {loading ? (
+        <div className="grid-4">{[0,1,2,3].map(i => <SkeletonCard key={i} />)}</div>
+      ) : (
+        <div className="grid-4">
+          <StatCard label="累積報酬" value={tradingDays > 0 ? `${s.total_return_pct >= 0 ? '+' : ''}${s.total_return_pct?.toFixed(2)}%` : '—'}
+            sub={s.benchmark_return_pct != null ? `大盤 ${s.benchmark_return_pct >= 0 ? '+' : ''}${s.benchmark_return_pct?.toFixed(2)}% / 超額 ${(s.excess_return_pct ?? 0) >= 0 ? '+' : ''}${s.excess_return_pct?.toFixed(2)}%` : '尚無基準資料'}
+            color={tradingDays > 0 ? retColor : 'var(--text-muted)'} />
+          <StatCard label="最大回撤" value={tradingDays > 0 ? `${s.max_drawdown_pct?.toFixed(2)}%` : '—'}
+            sub={tradingDays > 0 ? `夏普 ${s.sharpe?.toFixed(2)} · 勝率 ${s.win_rate_pct?.toFixed(0)}%` : `已追蹤 ${tradingDays} 個交易日`}
+            color={tradingDays > 0 ? ddColor : 'var(--text-muted)'} />
+          <StatCard label="目前持倉" value={`${s.current_positions ?? 0} 檔`}
+            sub={`已部署 ${s.deployed_pct?.toFixed(1) ?? 0}% · 現金 ${((s.cash ?? 0) / 10000).toFixed(1)}萬`}
+            color={CLR_BLUE} />
+          <div className="stat-card" style={{ borderColor: regimeColor }}>
+            <div className="label">大盤環境</div>
+            <div className="value" style={{ color: regimeColor }}>{meta.market_regime === 'CAUTIOUS' ? '🟡 保守模式' : '🟢 正常市場'}</div>
+            <div className="sub">{meta.entry_threshold ?? '—'} · {meta.scan_date ?? '—'}</div>
+          </div>
+        </div>
+      )}
+
+      {/* Equity curve */}
+      {!loading && (hasData ? (
+        <div className="panel">
+          <div className="panel-header">
+            <div className="panel-title"><span>💹</span> 資產曲線 vs TWII（基準值 = 100）</div>
+            <div style={{ display: 'flex', gap: 16, fontSize: 11 }}>
+              <span style={{ color: 'var(--positive)' }}>● Scanner 機器人</span>
+              {bench.length > 0 && <span style={{ color: CLR_AMB }}>● 大盤 TWII</span>}
+            </div>
+          </div>
+          <div className="panel-body">
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart data={displayCurve}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(48,54,61,0.5)" />
+                <XAxis dataKey="date" tick={{ fontSize: 9, fill: 'var(--text-muted)' }}
+                  tickFormatter={v => v.slice(5)} interval="preserveStartEnd" />
+                <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
+                  tickFormatter={v => v.toFixed(1)} domain={['auto', 'auto']} />
+                <Tooltip content={<EquityTooltip />} />
+                <ReferenceLine y={100} stroke="var(--border)" strokeDasharray="4 4" strokeWidth={1} />
+                <Line type="monotone" dataKey="port_idx" name="Scanner機器人"
+                  stroke="var(--positive)" strokeWidth={2} dot={false}
+                  activeDot={{ r: 4, fill: 'var(--positive)' }} />
+                {bench.length > 0 && (
+                  <Line type="monotone" dataKey="bench_idx" name="TWII"
+                    stroke={CLR_AMB} strokeWidth={1.5} dot={false} strokeDasharray="4 2"
+                    activeDot={{ r: 3, fill: CLR_AMB }} connectNulls />
+                )}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      ) : (
+        <div className="panel" style={{ borderColor: 'rgba(0,212,255,0.15)' }}>
+          <div className="panel-body" style={{ textAlign: 'center', padding: '28px 0' }}>
+            <div style={{ fontSize: 26, marginBottom: 10 }}>🌱</div>
+            <div style={{ fontSize: 13, color: 'var(--text-primary)', marginBottom: 4 }}>機器人已啟動 · 正在累積歷史資料</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+              已追蹤 {tradingDays} 個交易日 · 需要至少 2 個交易日才能繪製曲線
+            </div>
+          </div>
+        </div>
+      ))}
+
+      {/* Holdings */}
+      <ScannerHoldingsPanel holdings={holdings} loading={loading} />
+
+      {/* Watchlist */}
+      <ScannerWatchlistPanel watchlist={watchlist} loading={loading} />
+
+      {/* Strategy guide */}
+      <ScannerStrategyGuide />
+
+      {/* Transactions */}
+      <TransactionsPanel transactions={txs} loading={loading} />
+    </div>
+  );
+}
+
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function InvestmentSim() {
+  const [activeTab, setActiveTab] = useState('alpha');
   const { data, loading, error, refetch } = useApi(fetchSimBacktest);
   const [viewDays, setViewDays] = useState(0);
 
@@ -555,13 +914,6 @@ export default function InvestmentSim() {
   const retColor = pos(s.total_return_pct);
   const ddColor  = (s.max_drawdown_pct ?? 0) < -5 ? PNL_NEG : (s.max_drawdown_pct ?? 0) < -2 ? CLR_AMB : 'var(--text-secondary)';
 
-  if (error) return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div className="page-header"><div className="page-title">🤖 投資模擬機器人</div></div>
-      <ApiError message={error} onRetry={refetch} />
-    </div>
-  );
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
@@ -569,26 +921,54 @@ export default function InvestmentSim() {
       <div className="page-header">
         <div>
           <div className="page-title">🤖 投資模擬機器人</div>
-          <div className="page-subtitle">
-            訊號驅動持倉模擬 · Top-20 進場 / Top-35 退場 · 含交易成本
-            {data?.period_start && ` · ${data.period_start} → ${data.period_end}`}
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <select value={viewDays} onChange={e => setViewDays(Number(e.target.value))}
-            style={{ background: 'var(--bg-panel-2)', border: '1px solid var(--border)', borderRadius: 6, padding: '5px 10px', fontSize: 12, color: 'var(--text-primary)' }}>
-            <option value={0}>全部</option>
-            <option value={20}>近 20 天</option>
-            <option value={40}>近 40 天</option>
-          </select>
-          <button className="btn btn-ghost" style={{ fontSize: 12 }} onClick={refetch}>
-            🔄 刷新
-          </button>
+          <div className="page-subtitle">量化訊號驅動持倉模擬 · 含交易成本</div>
         </div>
       </div>
 
+      {/* ── Tab Switcher ── */}
+      <div style={{ display: 'flex', gap: 6, background: 'var(--bg-panel-2)', padding: '5px', borderRadius: 10, width: 'fit-content', border: '1px solid var(--border)' }}>
+        {[
+          { key: 'alpha',   icon: '🤖', label: 'Alpha 機器人',   sub: 'SQ 排名驅動' },
+          { key: 'scanner', icon: '🎯', label: 'Scanner 機器人', sub: '4條件訊號驅動' },
+        ].map(tab => (
+          <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+            style={{
+              padding: '8px 20px', borderRadius: 7, border: 'none', cursor: 'pointer',
+              background: activeTab === tab.key ? 'var(--bg-panel)' : 'transparent',
+              color: activeTab === tab.key ? 'var(--accent-blue)' : 'var(--text-muted)',
+              fontWeight: activeTab === tab.key ? 600 : 400,
+              boxShadow: activeTab === tab.key ? 'var(--shadow)' : 'none',
+              transition: 'all 0.15s', textAlign: 'left',
+            }}>
+            <div style={{ fontSize: 13 }}>{tab.icon} {tab.label}</div>
+            <div style={{ fontSize: 10, color: activeTab === tab.key ? 'var(--text-secondary)' : 'var(--text-muted)', fontWeight: 400, marginTop: 1 }}>{tab.sub}</div>
+          </button>
+        ))}
+      </div>
+
+      {/* ── Scanner Tab ── */}
+      {activeTab === 'scanner' && <ScannerRobotTab />}
+
+      {/* ── Alpha Tab (existing content below) ── */}
+      {activeTab === 'alpha' && (<>
+
+      {/* ── Alpha Header controls ── */}
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'flex-end' }}>
+        <select value={viewDays} onChange={e => setViewDays(Number(e.target.value))}
+          style={{ background: 'var(--bg-panel-2)', border: '1px solid var(--border)', borderRadius: 6, padding: '5px 10px', fontSize: 12, color: 'var(--text-primary)' }}>
+          <option value={0}>全部</option>
+          <option value={20}>近 20 天</option>
+          <option value={40}>近 40 天</option>
+        </select>
+        <button className="btn btn-ghost" style={{ fontSize: 12 }} onClick={refetch}>
+          🔄 刷新
+        </button>
+      </div>
+
       {/* ── Summary Cards ── */}
-      {loading ? (
+      {error ? (
+        <ApiError message={error} onRetry={refetch} />
+      ) : loading ? (
         <div className="grid-4">{[0,1,2,3].map(i => <SkeletonCard key={i} />)}</div>
       ) : !hasData ? (
         <div className="panel">
@@ -678,6 +1058,7 @@ export default function InvestmentSim() {
       {/* ── Strategy Guide ── */}
       <StrategyGuide />
 
+      </>)}
     </div>
   );
 }

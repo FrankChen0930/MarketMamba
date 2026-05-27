@@ -39,7 +39,12 @@ _sim_cache:      Optional[dict] = None
 _sim_cache_time: Optional[datetime] = None
 _ic_cache:       Optional[dict] = None
 _ic_cache_time:  Optional[datetime] = None
+_scanner_cache:      Optional[dict] = None
+_scanner_cache_time: Optional[datetime] = None
 CACHE_TTL = timedelta(hours=1)
+
+GITHUB_SCANNER_URL  = _GITHUB_BASE + "scanner_backtest.json" if _GITHUB_BASE else ""
+_LOCAL_SCANNER_PATH = _LOCAL_RESULTS / "scanner_backtest.json"
 
 
 async def _load_json(github_url: str, local_path: pathlib.Path) -> Optional[dict]:
@@ -130,10 +135,49 @@ async def get_ic_analysis():
     }
 
 
+@router.get("/scanner-backtest")
+async def get_scanner_backtest():
+    """
+    Scanner 機器人回測結果。
+    基於 4 條件加權入場 + Trailing Stop 退場。
+    資料從 scanner_backtest.json 讀取（每日推論後自動更新）。
+    """
+    global _scanner_cache, _scanner_cache_time
+
+    if _scanner_cache and _scanner_cache_time and datetime.now() - _scanner_cache_time < CACHE_TTL:
+        return _scanner_cache
+
+    data = await _load_json(GITHUB_SCANNER_URL, _LOCAL_SCANNER_PATH)
+    if data:
+        _scanner_cache      = data
+        _scanner_cache_time = datetime.now()
+        s = data.get("summary", {})
+        logger.info(
+            f"scanner_backtest loaded: {data.get('trading_days', 0)} days  "
+            f"return={s.get('total_return_pct', 0):+.2f}%  "
+            f"positions={s.get('current_positions', 0)}"
+        )
+        return data
+
+    return {
+        "robot_type":    "scanner",
+        "trading_days":  0,
+        "summary":       {},
+        "current_holdings": [],
+        "watchlist":     [],
+        "equity_curve":  [],
+        "benchmark_curve": [],
+        "transactions":  [],
+        "scanner_meta":  {},
+        "error": "Scanner backtest not yet available. Run daily inference first.",
+    }
+
+
 @router.post("/cache/refresh")
 async def refresh_sim_cache():
     """手動清除 sim 快取，下次請求時重新從 GitHub 拉取。"""
-    global _sim_cache, _sim_cache_time, _ic_cache, _ic_cache_time
-    _sim_cache = _sim_cache_time = None
-    _ic_cache  = _ic_cache_time  = None
-    return {"status": "ok", "message": "Sim + IC cache cleared"}
+    global _sim_cache, _sim_cache_time, _ic_cache, _ic_cache_time, _scanner_cache, _scanner_cache_time
+    _sim_cache     = _sim_cache_time     = None
+    _ic_cache      = _ic_cache_time      = None
+    _scanner_cache = _scanner_cache_time = None
+    return {"status": "ok", "message": "Sim + IC + Scanner cache cleared"}
