@@ -836,6 +836,10 @@ def main(target_date: str | None = None, skip_push: bool = False, forward_fill: 
         logger.info(f"{'─'*50}")
         _step_update(6, "running")
         try:
+            # Archive scanner result (generated in step 6) before running backtests
+            _archive_scanner_result(today)
+
+            # ── Alpha Robot backtest ──
             from marketmamba.backtest.sim_engine_v2 import run_robot_backtest, run_daily_update
             sim_out = RESULTS_DIR / "sim_backtest.json"
             if sim_out.exists():
@@ -854,9 +858,40 @@ def main(target_date: str | None = None, skip_push: bool = False, forward_fill: 
             elapsed = time.monotonic() - t0
             s = bt.get("summary", {})
             ret_str = f"{s.get('total_return_pct', 0):+.2f}%" if bt.get("trading_days", 0) > 0 else "無資料"
-            pos_str = f"{s.get('current_positions', 0)} 持倉"
-            logger.info(f"[7/8] ✓ 完成 ({_fmt(elapsed)}) — 累積報酬 {ret_str}  {pos_str}")
-            _step_update(6, "done", f"{bt.get('trading_days',0)} 天  {ret_str}  {pos_str}")
+            pos_str = f"{s.get('current_positions', 0)} Alpha持倉"
+            logger.info(f"  Alpha 機器人：{ret_str}  {pos_str}")
+
+            # ── Scanner Robot backtest ──
+            sc_ret_str = "無資料"
+            sc_pos_str = "0 Scanner持倉"
+            try:
+                from marketmamba.backtest.scanner_engine import (
+                    run_scanner_backtest, run_scanner_daily_update
+                )
+                scanner_out = RESULTS_DIR / "scanner_backtest.json"
+                if scanner_out.exists():
+                    sc_bt = run_scanner_daily_update(
+                        date=today,
+                        prices_df=prices,
+                        output_path=scanner_out,
+                        results_dir=RESULTS_DIR,
+                    )
+                else:
+                    sc_bt = run_scanner_backtest(
+                        results_dir=RESULTS_DIR,
+                        prices_df=prices,
+                        output_path=scanner_out,
+                    )
+                sc_s = sc_bt.get("summary", {})
+                sc_ret_str = f"{sc_s.get('total_return_pct', 0):+.2f}%" if sc_bt.get("trading_days", 0) > 0 else "無資料"
+                sc_pos_str = f"{sc_s.get('current_positions', 0)} Scanner持倉"
+                logger.info(f"  Scanner 機器人：{sc_ret_str}  {sc_pos_str}")
+            except Exception as e_sc:
+                logger.warning(f"Scanner 回測失敗（非致命）：{e_sc}")
+
+            elapsed = time.monotonic() - t0
+            logger.info(f"[7/8] ✓ 完成 ({_fmt(elapsed)})")
+            _step_update(6, "done", f"Alpha {ret_str} {pos_str} · Scanner {sc_ret_str} {sc_pos_str}")
         except Exception as e:
             elapsed = time.monotonic() - t0
             logger.warning(f"模擬回測失敗（非致命）：{e} ({_fmt(elapsed)})")
@@ -927,7 +962,10 @@ def _push_to_github(results_dir: Path, date_str: str) -> bool:
              "V6/results/action_signals.json",
              "V6/results/history_index.json",
              "V6/results/sim_backtest.json",
-             "V6/results/archive/"],   # push archived history too
+             "V6/results/scanner_backtest.json",   # Scanner Robot backtest
+             "V6/results/ic_analysis.json",        # IC analysis
+             f"V6/results/{date_str}/",            # today's dated archive (df_kelly + action_signals)
+             "V6/results/archive/"],               # legacy archive dir
 
             cwd=repo_root, check=True, capture_output=True, env=git_env,
         )
@@ -994,6 +1032,19 @@ def _archive_results(df_kelly: pd.DataFrame, date_str: str) -> None:
     dated_dir = RESULTS_DIR / date_str
     dated_dir.mkdir(parents=True, exist_ok=True)
     df_kelly.to_csv(dated_dir / "df_kelly.csv", index=False, encoding="utf-8-sig")
+
+
+def _archive_scanner_result(date_str: str) -> None:
+    """Copy action_signals.json (generated in step 6) into the dated archive dir."""
+    import shutil
+    src = RESULTS_DIR / "action_signals.json"
+    if not src.exists():
+        logger.warning("action_signals.json not found — scanner archive skipped")
+        return
+    dated_dir = RESULTS_DIR / date_str
+    dated_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(src, dated_dir / "action_signals.json")
+    logger.info(f"Scanner result archived → {dated_dir.name}/action_signals.json")
 
     # Update lightweight history index for the dashboard
     _update_history_index(df_kelly, date_str)
