@@ -958,19 +958,12 @@ def _push_to_github(results_dir: Path, date_str: str) -> bool:
     # WSL2: git can't find repo across /mnt filesystem boundary without this
     git_env = {**os.environ, "GIT_DISCOVERY_ACROSS_FILESYSTEM": "1"}
     try:
+        # Add the entire results directory — this handles any new files
+        # (e.g. scanner_backtest.json on first run) without failing on
+        # missing paths. Individual file listing caused CalledProcessError
+        # when a file didn't exist yet.
         subprocess.run(
-            ["git", "add",
-             "V6/results/df_kelly.csv",
-             "V6/results/df_traj.csv",
-             "V6/results/market_summary.json",
-             "V6/results/action_signals.json",
-             "V6/results/history_index.json",
-             "V6/results/sim_backtest.json",
-             "V6/results/scanner_backtest.json",   # Scanner Robot backtest
-             "V6/results/ic_analysis.json",        # IC analysis
-             f"V6/results/{date_str}/",            # today's dated archive (df_kelly + action_signals)
-             "V6/results/archive/"],               # legacy archive dir
-
+            ["git", "add", "V6/results/"],
             cwd=repo_root, check=True, capture_output=True, env=git_env,
         )
 
