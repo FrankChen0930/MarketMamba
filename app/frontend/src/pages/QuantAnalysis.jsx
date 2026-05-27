@@ -1,127 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis,
   BarChart, Bar, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, Cell, Legend,
-  LineChart, Line
+  LineChart, Line,
 } from 'recharts';
 import { useApi } from '../hooks/useApi';
 import { fetchSignals } from '../api/signals';
-import { fetchMarket } from '../api/market';
-import { SkeletonBlock, SkeletonCard, ApiError } from '../components/SkeletonLoader';
+import { fetchQuant, fetchPatterns } from '../api/quant';
+import { SkeletonBlock, SkeletonCard, SkeletonTable, ApiError } from '../components/SkeletonLoader';
 import MetricTooltip from '../components/MetricTooltip';
 
 
-// ── Static quant data (real market indicators) ────────────────────────────────
-
-// ── Pattern Recognition Definitions (from V5.5 scanner.py) ──────────────────
-
-const PATTERN_DEFS = [
-  {
-    id: 'w_bottom', name: 'W 底（雙底）', icon: 'W',
-    bullish: true,
-    desc: '股價形成兩個相近低點，中間有明顯反彈，頸線突破後目標為頸線距底部高度的延伸。',
-    conds: ['兩個低點價差 < 5%', '頸線明顯（中間反彈 > 3%）', '突破頸線成交量放大'],
-    riskReward: '1:2',
-  },
-  {
-    id: 'spring_w', name: '彈簧型 W 底', icon: '⚡',
-    bullish: true,
-    desc: '第二個低點略低於第一低點（洗盤），形成假突破後快速反彈，確認支撐有效。',
-    conds: ['第二低 < 第一低（但差距 < 2%）', '假跌破後快速拉回', '量能萎縮至極低點'],
-    riskReward: '1:2.5',
-  },
-  {
-    id: 'm_top', name: 'M 頭（雙頭）', icon: 'M',
-    bullish: false,
-    desc: '股價形成兩個相近高點，中間有明顯回落，跌破頸線後空方目標為頸線距頭部高度的延伸。',
-    conds: ['兩個高點價差 < 5%', '頸線明顯（中間回落 > 3%）', '跌破頸線量能配合'],
-    riskReward: '1:2',
-  },
-  {
-    id: 'hns_bottom', name: '頭肩底', icon: '⛰️',
-    bullish: true,
-    desc: '左肩→頭部（最低）→右肩的三底結構，右肩低點高於頭部，頸線突破確認反轉。',
-    conds: ['三底結構明顯', '頭部為最低點', '右肩量能小於左肩'],
-    riskReward: '1:3',
-  },
-  {
-    id: 'triangle', name: '三角收斂', icon: '△',
-    bullish: null,
-    desc: '高低點同步收窄形成三角形，突破方向決定後市。對稱三角偏中性，上升/下降三角有方向偏好。',
-    conds: ['至少 4 個觸點（2高 2低）', '收斂角度明顯', '突破時量能放大'],
-    riskReward: '1:2',
-  },
-  {
-    id: 'bear_flag', name: '熊旗（下降旗形）', icon: '🚩',
-    bullish: false,
-    desc: '急速下跌後出現短暫旗形整理，整理結束後繼續下跌，為空方持續型態。',
-    conds: ['旗桿清晰（急跌 > 5%）', '整理期量縮', '跌破旗形下軌確認'],
-    riskReward: '1:2',
-  },
-];
-
-const SCALES = ['短線 1-2週', '中線 約1個月', '長線 2-3個月', '半年大底'];
-
-
-// 技術面評分 (based on market conditions 2026-04)
-const TECH_RADAR = [
-  { subject: 'RSI 動能', A: 58 },
-  { subject: 'MACD 趨勢', A: 62 },
-  { subject: 'KD 隨機', A: 45 },
-  { subject: 'Bollinger', A: 55 },
-  { subject: 'MA 排列', A: 70 },
-  { subject: 'ATR 波動', A: 40 },
-];
-
-
-// 台股大盤技術指標 (^TWII 近期數值，估算)
-const TAIEX_TECH = [
-  { label: 'RSI(14)', value: '54.3', status: '中性', color: 'var(--accent-amber)' },
-  { label: 'MACD', value: '+12.4', status: '偏多', color: 'var(--positive)' },
-  { label: 'KD(9,3,3) K', value: '61.2', status: '偏多', color: 'var(--positive)' },
-  { label: 'KD D值', value: '55.8', status: '中性', color: 'var(--accent-amber)' },
-  { label: 'Bollinger %B', value: '0.58', status: '上軌趨近', color: 'var(--accent-amber)' },
-  { label: '乖離率(20MA)', value: '+1.8%', status: '輕微偏離', color: 'var(--accent-amber)' },
-  { label: 'ATR(14)', value: '187.4', status: '波動正常', color: 'var(--text-muted)' },
-  { label: 'OBV 趨勢', value: '上升', status: '量能配合', color: 'var(--positive)' },
-];
-
-// 籌碼面 (三大法人近5日，億台幣)
-const INSTITUTIONAL = [
-  { name: '外資', buy: 352.4, sell: 289.1, net: 63.3 },
-  { name: '投信', buy: 45.2,  sell: 31.8,  net: 13.4 },
-  { name: '自營商', buy: 87.6, sell: 91.2, net: -3.6 },
-];
-
-// 市場廣度指標
-const BREADTH_DATA = [
-  { day: '04/24', adv: 1124, dec: 852, ratio: 1.32 },
-  { day: '04/25', adv: 987,  dec: 921, ratio: 1.07 },
-  { day: '04/28', adv: 1342, dec: 623, ratio: 2.15 },
-  { day: '04/29', adv: 1089, dec: 874, ratio: 1.25 },
-  { day: '04/30', adv: 1156, dec: 812, ratio: 1.42 },
-];
-
-// 資金輪動 — 產業資金流入強度
-const SECTOR_FLOW = [
-  { sector: '半導體', flow: 87, pct: '+2.3%' },
-  { sector: '電子零組件', flow: 71, pct: '+1.8%' },
-  { sector: '電腦周邊', flow: 58, pct: '+0.9%' },
-  { sector: '金融保險', flow: 42, pct: '+0.4%' },
-  { sector: '航運', flow: -28, pct: '-1.2%' },
-  { sector: '鋼鐵', flow: -15, pct: '-0.6%' },
-];
-
-// 風險指標
-const RISK_METRICS = [
-  { label: '10日實現波動率', value: '14.8%', desc: '年化，偏低' },
-  { label: '台股 Beta (vs SPX)', value: '0.82', desc: '相關性中等' },
-  { label: '外資持股比例', value: '43.2%', desc: '近6月均值' },
-  { label: '融資餘額', value: '2,841億', desc: '月增 +3.2%' },
-  { label: '融券餘額', value: '284億', desc: '月減 -1.8%' },
-  { label: '融資融券比', value: '10.0x', desc: '市場槓桿偏高' },
-];
+// ── Tiny helpers ──────────────────────────────────────────────────────────────
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -137,28 +28,80 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
-function KpiCard({ label, value, desc, valueColor }) {
+function KpiCard({ label, value, desc, valueColor, loading }) {
+  if (loading) return <SkeletonCard />;
   return (
     <div className="stat-card">
       <div className="label">{label}</div>
-      <div className="value mono" style={{ fontSize: 18, color: valueColor || 'var(--text-primary)' }}>{value}</div>
+      <div className="value mono" style={{ fontSize: 18, color: valueColor || 'var(--text-primary)' }}>{value ?? '—'}</div>
       {desc && <div className="sub">{desc}</div>}
     </div>
   );
 }
 
+// Pattern type icon map
+const PAT_ICON = { w_bottom: 'W', spring_w: '⚡', hs_bottom: '⛰️', triangle: '△' };
+const PAT_ICONS_COLOR = 'var(--positive)';  // all bullish
+
+// Score bar
+function ScoreBar({ score }) {
+  const color = score >= 85 ? 'var(--positive)' : score >= 70 ? 'var(--accent-amber)' : 'var(--text-muted)';
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      <div style={{ width: 48, height: 5, background: 'var(--bg-hover)', borderRadius: 3, overflow: 'hidden' }}>
+        <div style={{ width: `${score}%`, height: '100%', background: color, borderRadius: 3 }} />
+      </div>
+      <span className="mono" style={{ fontSize: 11, color }}>{score}</span>
+    </div>
+  );
+}
+
+
+// ── Main Component ────────────────────────────────────────────────────────────
+
 export default function QuantAnalysis() {
   const [tab, setTab] = useState('tech');
-  const { data: signalData } = useApi(fetchSignals);
-  const { data: market, loading } = useApi(fetchMarket);
 
-  const signals = signalData?.signals || [];
-  // Sector alpha distribution from model signals
+  // Signals (for model-alpha tab)
+  const { data: signalData }  = useApi(fetchSignals);
+  // Quant market data (tech / chip / breadth tabs)
+  const { data: quant, loading: quantLoading, error: quantError } = useApi(fetchQuant);
+
+  // Pattern data: lazy-load only when tab is active
+  const [patternData, setPatternData]       = useState(null);
+  const [patternLoading, setPatternLoading] = useState(false);
+  const [patternError, setPatternError]     = useState(null);
+
+  useEffect(() => {
+    if (tab === 'pattern' && !patternData && !patternLoading) {
+      setPatternLoading(true);
+      fetchPatterns()
+        .then(d => { setPatternData(d); setPatternLoading(false); })
+        .catch(e => { setPatternError(e.message); setPatternLoading(false); });
+    }
+  }, [tab]);
+
+  // ── Derived data ────────────────────────────────────────────────────────────
+  const signals    = signalData?.signals || [];
+  const tech       = quant?.taiex_technicals || {};
+  const techTable  = tech.table          || [];
+  const techRadar  = tech.tech_radar     || [];
+  const riskMetrics = tech.risk_metrics  || [];
+
+  const instSummary  = quant?.institutional_summary || {};
+  const breadthHist  = quant?.breadth_history       || [];
+  const marginSummary = quant?.margin_summary       || {};
+  const sectorFlow    = quant?.sector_flow          || [];
+
+  const lastBreadth   = breadthHist.at(-1) || {};
+  const maxFlow       = Math.max(...sectorFlow.map(s => Math.abs(s.net_5d_bn || 0)), 1);
+
+  // Sector alpha from model signals
   const sectorAlpha = Object.values(
     signals.reduce((acc, s) => {
       if (!acc[s.sector]) acc[s.sector] = { sector: s.sector, count: 0, totalAlpha: 0 };
       acc[s.sector].count++;
-      acc[s.sector].totalAlpha += s.alpha_20d;
+      acc[s.sector].totalAlpha += (s.alpha_20d || 0);
       return acc;
     }, {})
   )
@@ -167,22 +110,27 @@ export default function QuantAnalysis() {
     .slice(0, 8);
 
   const TABS = [
-    { id: 'tech', label: '技術指標' },
-    { id: 'chip', label: '籌碼面' },
+    { id: 'tech',    label: '技術指標' },
+    { id: 'chip',    label: '籌碼面'   },
     { id: 'breadth', label: '市場廣度' },
-    { id: 'model', label: '模型 Alpha' },
+    { id: 'model',   label: '模型 Alpha' },
     { id: 'pattern', label: '傳統型態學' },
   ];
 
+  const dataDate = quant?.date || signalData?.date || '—';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+      {/* ── Page Header ── */}
       <div className="page-header">
         <div>
           <div className="page-title">量化分析儀表板</div>
-          <div className="page-subtitle">技術面 · 籌碼面 · 市場廣度 · Alpha 因子</div>
+          <div className="page-subtitle">
+            技術面 · 籌碼面 · 市場廣度 · Alpha 因子 · 型態掃描 · 資料日期：{dataDate}
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 6 }}>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {TABS.map(t => (
             <button key={t.id}
               className={`btn ${tab === t.id ? 'btn-primary' : 'btn-ghost'}`}
@@ -195,64 +143,106 @@ export default function QuantAnalysis() {
         </div>
       </div>
 
-      {/* ── KPI row ── */}
+      {/* ── KPI Row (live data) ── */}
       <div className="grid-4">
-        <KpiCard label={<>加權指數 RSI(14) <MetricTooltip metricKey="rsi" /></>} value="54.3"
-          desc="中性區間 (30-70)"
-          valueColor="var(--accent-amber)" />
-        <KpiCard label={<>外資近5日淨買 <MetricTooltip metricKey="foreign_net" /></>}
-          value={`+${INSTITUTIONAL.find(i=>i.name==='外資')?.net.toFixed(1)}億`}
-          desc="連續買超"
-          valueColor="var(--positive)" />
-        <KpiCard label={<>漲跌比 (今日) <MetricTooltip metricKey="ad_ratio" /></>}
-          value={`${BREADTH_DATA.at(-1)?.adv}:${BREADTH_DATA.at(-1)?.dec}`}
-          desc={`A/D Ratio ${BREADTH_DATA.at(-1)?.ratio.toFixed(2)}`}
-          valueColor="var(--positive)" />
-        <KpiCard label={<>融資餘額 <MetricTooltip metricKey="margin_balance" /></>}
-          value="2,841億"
-          desc="月增 +3.2%，注意槓桿"
-          valueColor="var(--accent-amber)" />
+        <KpiCard
+          loading={quantLoading}
+          label={<>加權指數 RSI(14) <MetricTooltip metricKey="rsi" /></>}
+          value={tech.rsi_14 != null ? String(tech.rsi_14) : '—'}
+          desc={tech.rsi_14 > 70 ? '⚠️ 超買' : tech.rsi_14 < 30 ? '🔥 超賣' : '中性區間 (30–70)'}
+          valueColor={tech.rsi_14 > 70 ? 'var(--negative)' : tech.rsi_14 < 30 ? 'var(--positive)' : 'var(--accent-amber)'}
+        />
+        <KpiCard
+          loading={quantLoading}
+          label={<>外資近5日淨買 <MetricTooltip metricKey="foreign_net" /></>}
+          value={instSummary.foreign_net_5d_bn != null
+            ? `${instSummary.foreign_net_5d_bn >= 0 ? '+' : ''}${instSummary.foreign_net_5d_bn?.toFixed(1)}億`
+            : '—'}
+          desc={instSummary.foreign_net_5d_bn >= 0 ? '外資買超' : '外資賣超'}
+          valueColor={instSummary.foreign_net_5d_bn >= 0 ? 'var(--positive)' : 'var(--negative)'}
+        />
+        <KpiCard
+          loading={quantLoading}
+          label={<>漲跌比 (最新) <MetricTooltip metricKey="ad_ratio" /></>}
+          value={lastBreadth.adv
+            ? `${lastBreadth.adv}:${lastBreadth.dec}`
+            : '—'}
+          desc={lastBreadth.ratio != null ? `A/D Ratio ${lastBreadth.ratio?.toFixed(2)}` : ''}
+          valueColor={(lastBreadth.ratio || 0) >= 1 ? 'var(--positive)' : 'var(--negative)'}
+        />
+        <KpiCard
+          loading={quantLoading}
+          label={<>融資餘額 <MetricTooltip metricKey="margin_balance" /></>}
+          value={marginSummary.margin_balance_bn != null
+            ? `${marginSummary.margin_balance_bn?.toFixed(0)}億`
+            : '—'}
+          desc={marginSummary.margin_ratio != null
+            ? `資券比 ${marginSummary.margin_ratio}x`
+            : '信用交易'}
+          valueColor="var(--accent-amber)"
+        />
       </div>
 
-      {/* ── Tab Content ── */}
 
+      {/* ══════════════════════════════════════════════════════════════════════
+          技術指標 Tab
+      ══════════════════════════════════════════════════════════════════════ */}
       {tab === 'tech' && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-          {/* Tech indicators table */}
+
+          {/* Tech table */}
           <div className="panel">
             <div className="panel-header">
               <div className="panel-title"><span>📊</span> 大盤技術指標</div>
-              <span className="badge badge-neutral" style={{ fontSize: 10 }}>TAIEX 即時</span>
+              <span className="badge badge-neutral" style={{ fontSize: 10 }}>TAIEX ^TWII</span>
             </div>
             <div className="panel-body-flush">
-              <table className="data-table">
-                <thead><tr><th>指標</th><th>數值</th><th>狀態</th></tr></thead>
-                <tbody>
-                  {TAIEX_TECH.map(r => (
-                    <tr key={r.label}>
-                      <td style={{ color: 'var(--text-secondary)' }}>{r.label} <MetricTooltip metricKey={r.label.toLowerCase().includes('rsi') ? 'rsi' : r.label.toLowerCase().includes('macd') ? 'macd' : r.label.toLowerCase().includes('kd') ? 'kd' : r.label.toLowerCase().includes('bollinger') ? 'bollinger' : r.label.includes('乖離率') ? 'bias' : r.label.includes('ATR') ? 'atr' : r.label.includes('OBV') ? 'obv' : r.label.includes('MA') ? 'ma_alignment' : undefined} /></td>
-                      <td className="mono" style={{ color: 'var(--text-primary)' }}>{r.value}</td>
-                      <td><span style={{ fontSize: 11, color: r.color }}>{r.status}</span></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              {quantLoading ? <SkeletonTable rows={8} cols={3} /> : quantError ? (
+                <div style={{ padding: 16, color: 'var(--text-muted)', fontSize: 12 }}>
+                  資料暫不可用：{quantError}
+                </div>
+              ) : (
+                <table className="data-table">
+                  <thead><tr><th>指標</th><th>數值</th><th>狀態</th></tr></thead>
+                  <tbody>
+                    {techTable.map(r => (
+                      <tr key={r.label}>
+                        <td style={{ color: 'var(--text-secondary)' }}>{r.label}</td>
+                        <td className="mono" style={{ color: 'var(--text-primary)' }}>{r.value}</td>
+                        <td><span style={{ fontSize: 11, color: r.color }}>{r.status}</span></td>
+                      </tr>
+                    ))}
+                    {techTable.length === 0 && (
+                      <tr><td colSpan={3} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 20 }}>
+                        暫無資料（每日推論後生成）
+                      </td></tr>
+                    )}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
 
-          {/* Tech radar */}
+          {/* Radar */}
           <div className="panel">
             <div className="panel-header">
               <div className="panel-title"><span>🕸️</span> 技術面評分雷達</div>
             </div>
             <div className="panel-body" style={{ display: 'flex', justifyContent: 'center' }}>
-              <ResponsiveContainer width="100%" height={250}>
-                <RadarChart data={TECH_RADAR}>
-                  <PolarGrid stroke="var(--border)" />
-                  <PolarAngleAxis dataKey="subject" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
-                  <Radar name="評分" dataKey="A" stroke="var(--accent-blue)" fill="var(--accent-blue)" fillOpacity={0.15} />
-                </RadarChart>
-              </ResponsiveContainer>
+              {quantLoading ? <SkeletonBlock height={250} /> : (
+                <ResponsiveContainer width="100%" height={250}>
+                  <RadarChart data={techRadar.length > 0 ? techRadar : [
+                    { subject: 'RSI 動能', A: 50 }, { subject: 'MACD 趨勢', A: 50 },
+                    { subject: 'KD 隨機', A: 50 },  { subject: 'Bollinger', A: 50 },
+                    { subject: 'MA 排列', A: 50 },  { subject: 'ATR 波動', A: 50 },
+                  ]}>
+                    <PolarGrid stroke="var(--border)" />
+                    <PolarAngleAxis dataKey="subject" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
+                    <Radar name="評分" dataKey="A" stroke="var(--accent-blue)"
+                      fill="var(--accent-blue)" fillOpacity={0.15} />
+                  </RadarChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
 
@@ -262,22 +252,59 @@ export default function QuantAnalysis() {
               <div className="panel-title"><span>⚠️</span> 風險與槓桿指標</div>
             </div>
             <div className="panel-body">
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-                {RISK_METRICS.map(r => (
-                  <div key={r.label} style={{ padding: '10px 14px', background: 'var(--bg-panel-2)', borderRadius: 8 }}>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{r.label} <MetricTooltip metricKey={r.label.includes('波動率') ? 'realized_vol' : r.label.includes('Beta') ? 'beta' : r.label.includes('外資持股') ? 'foreign_holding' : r.label.includes('融資餘額') ? 'margin_balance' : r.label.includes('融券') ? 'short_balance' : r.label.includes('資券') ? 'margin_ratio' : undefined} /></div>
-                    <div className="mono" style={{ fontSize: 16, color: 'var(--text-primary)' }}>{r.value}</div>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 3 }}>{r.desc}</div>
-                  </div>
-                ))}
-              </div>
+              {quantLoading ? <SkeletonBlock height={80} /> : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+                  {(riskMetrics.length > 0 ? riskMetrics : [
+                    { label: '10日實現波動率', value: '—', desc: '年化' },
+                    { label: '台股 Beta (vs SPX)', value: '—', desc: '近60日' },
+                    { label: 'MA 20', value: '—', desc: '20日均線' },
+                    { label: 'MA 60', value: '—', desc: '60日均線' },
+                  ]).map(r => (
+                    <div key={r.label} style={{
+                      padding: '10px 14px', background: 'var(--bg-panel-2)', borderRadius: 8
+                    }}>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{r.label}</div>
+                      <div className="mono" style={{ fontSize: 16, color: 'var(--text-primary)' }}>{r.value}</div>
+                      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 3 }}>{r.desc}</div>
+                    </div>
+                  ))}
+                  {/* Margin from live summary */}
+                  {marginSummary.margin_balance_bn != null && (
+                    <>
+                      <div style={{ padding: '10px 14px', background: 'var(--bg-panel-2)', borderRadius: 8 }}>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>
+                          融資餘額 <MetricTooltip metricKey="margin_balance" />
+                        </div>
+                        <div className="mono" style={{ fontSize: 16, color: 'var(--accent-amber)' }}>
+                          {marginSummary.margin_balance_bn?.toFixed(0)}億
+                        </div>
+                        <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 3 }}>{quant?.date}</div>
+                      </div>
+                      <div style={{ padding: '10px 14px', background: 'var(--bg-panel-2)', borderRadius: 8 }}>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>
+                          融券餘額 <MetricTooltip metricKey="short_balance" />
+                        </div>
+                        <div className="mono" style={{ fontSize: 16, color: 'var(--text-muted)' }}>
+                          {marginSummary.short_balance_bn?.toFixed(0)}億
+                        </div>
+                        <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 3 }}>資券比 {marginSummary.margin_ratio}x</div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
       )}
 
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          籌碼面 Tab
+      ══════════════════════════════════════════════════════════════════════ */}
       {tab === 'chip' && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+
           {/* 三大法人 */}
           <div className="panel">
             <div className="panel-header">
@@ -285,49 +312,76 @@ export default function QuantAnalysis() {
               <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>億台幣</span>
             </div>
             <div className="panel-body-flush">
-              <table className="data-table">
-                <thead><tr><th>法人</th><th>買超</th><th>賣超</th><th>淨值</th></tr></thead>
-                <tbody>
-                  {INSTITUTIONAL.map(r => (
-                    <tr key={r.name}>
-                      <td style={{ fontWeight: 600 }}>{r.name}</td>
-                      <td className="mono text-positive">+{r.buy.toFixed(1)}</td>
-                      <td className="mono text-negative">-{r.sell.toFixed(1)}</td>
-                      <td className={`mono ${r.net >= 0 ? 'text-positive' : 'text-negative'}`}>
-                        {r.net >= 0 ? '+' : ''}{r.net.toFixed(1)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              {quantLoading ? <SkeletonTable rows={4} cols={2} /> : (
+                <table className="data-table">
+                  <thead><tr><th>法人</th><th>近5日淨值</th></tr></thead>
+                  <tbody>
+                    {[
+                      { name: '外資',   net: instSummary.foreign_net_5d_bn         },
+                      { name: '投信',   net: instSummary.investment_trust_net_5d_bn },
+                      { name: '自營商', net: instSummary.dealer_net_5d_bn           },
+                    ].map(r => (
+                      <tr key={r.name}>
+                        <td style={{ fontWeight: 600 }}>{r.name}</td>
+                        <td className={`mono ${(r.net || 0) >= 0 ? 'text-positive' : 'text-negative'}`}>
+                          {r.net != null ? `${r.net >= 0 ? '+' : ''}${r.net.toFixed(1)}億` : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+              {/* 5-day history */}
+              {!quantLoading && instSummary.history?.length > 0 && (
+                <div style={{ padding: '8px 16px' }}>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 6 }}>外資每日淨買（億）</div>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    {instSummary.history.map(h => {
+                      const v = h.foreign_net;
+                      const color = v >= 0 ? 'var(--positive)' : 'var(--negative)';
+                      return (
+                        <div key={h.date} style={{ flex: 1, textAlign: 'center' }}>
+                          <div className="mono" style={{ fontSize: 10, color }}>{v >= 0 ? '+' : ''}{v?.toFixed(0)}</div>
+                          <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>{h.date_label}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* 資金輪動 bar */}
+          {/* 產業資金輪動 */}
           <div className="panel">
             <div className="panel-header">
               <div className="panel-title"><span>🔄</span> 產業資金輪動</div>
-              <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>近5日強度</span>
+              <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>外資近5日（億）</span>
             </div>
             <div className="panel-body">
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {SECTOR_FLOW.map(s => {
-                  const max = 100;
-                  const pct = Math.abs(s.flow) / max * 100;
-                  const color = s.flow >= 0 ? 'var(--positive)' : 'var(--negative)';
-                  return (
-                    <div key={s.sector}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
-                        <span style={{ color: 'var(--text-secondary)' }}>{s.sector}</span>
-                        <span className="mono" style={{ color }}>{s.pct}</span>
+              {quantLoading ? <SkeletonBlock height={160} /> : sectorFlow.length === 0 ? (
+                <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>暫無資料</div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {sectorFlow.map(s => {
+                    const pct = Math.abs(s.net_5d_bn) / maxFlow * 100;
+                    const color = s.net_5d_bn >= 0 ? 'var(--positive)' : 'var(--negative)';
+                    return (
+                      <div key={s.sector}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
+                          <span style={{ color: 'var(--text-secondary)' }}>{s.sector}</span>
+                          <span className="mono" style={{ color }}>
+                            {s.net_5d_bn >= 0 ? '+' : ''}{s.net_5d_bn?.toFixed(1)}億
+                          </span>
+                        </div>
+                        <div style={{ height: 5, background: 'var(--bg-hover)', borderRadius: 3, overflow: 'hidden' }}>
+                          <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: 3 }} />
+                        </div>
                       </div>
-                      <div style={{ height: 5, background: 'var(--bg-hover)', borderRadius: 3, overflow: 'hidden' }}>
-                        <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: 3 }} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
 
@@ -338,104 +392,144 @@ export default function QuantAnalysis() {
               <span className="badge badge-neutral" style={{ fontSize: 10 }}>信用交易</span>
             </div>
             <div className="panel-body">
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, textAlign: 'center' }}>
-                {[
-                  { label: '融資餘額', value: '2,841億', sub: '月增 +3.2%', color: 'var(--accent-amber)' },
-                  { label: '融資維持率', value: '143%', sub: '安全邊際充足', color: 'var(--positive)' },
-                  { label: '融券餘額', value: '284億', sub: '月減 -1.8%', color: 'var(--text-muted)' },
-                  { label: '資券比', value: '10.0x', sub: '偏高，留意軋空', color: 'var(--accent-amber)' },
-                ].map(m => (
-                  <div key={m.label}>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>{m.label} <MetricTooltip metricKey={m.label === '融資餘額' ? 'margin_balance' : m.label === '融資維持率' ? 'margin_maint' : m.label === '融券餘額' ? 'short_balance' : 'margin_ratio'} /></div>
-                    <div className="mono" style={{ fontSize: 20, color: m.color }}>{m.value}</div>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{m.sub}</div>
+              {quantLoading ? <SkeletonBlock height={60} /> : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, textAlign: 'center' }}>
+                  <div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>
+                      融資餘額 <MetricTooltip metricKey="margin_balance" />
+                    </div>
+                    <div className="mono" style={{ fontSize: 20, color: 'var(--accent-amber)' }}>
+                      {marginSummary.margin_balance_bn != null ? `${marginSummary.margin_balance_bn?.toFixed(0)}億` : '—'}
+                    </div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{quant?.date}</div>
                   </div>
-                ))}
-              </div>
+                  <div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>
+                      融券餘額 <MetricTooltip metricKey="short_balance" />
+                    </div>
+                    <div className="mono" style={{ fontSize: 20, color: 'var(--text-muted)' }}>
+                      {marginSummary.short_balance_bn != null ? `${marginSummary.short_balance_bn?.toFixed(0)}億` : '—'}
+                    </div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{quant?.date}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>
+                      資券比 <MetricTooltip metricKey="margin_ratio" />
+                    </div>
+                    <div className="mono" style={{
+                      fontSize: 20,
+                      color: (marginSummary.margin_ratio || 0) > 10 ? 'var(--accent-amber)' : 'var(--positive)',
+                    }}>
+                      {marginSummary.margin_ratio != null ? `${marginSummary.margin_ratio}x` : '—'}
+                    </div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
+                      {(marginSummary.margin_ratio || 0) > 12 ? '偏高，留意軋空' : '正常範圍'}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
       )}
 
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          市場廣度 Tab
+      ══════════════════════════════════════════════════════════════════════ */}
       {tab === 'breadth' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {/* A/D Line */}
+
           <div className="panel">
             <div className="panel-header">
               <div className="panel-title"><span>📶</span> 漲跌家數（近5日）</div>
               <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>市場廣度</span>
             </div>
             <div className="panel-body">
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={BREADTH_DATA} barCategoryGap="30%">
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(48,54,61,0.5)" />
-                  <XAxis dataKey="day" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
-                  <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend wrapperStyle={{ fontSize: 11 }} />
-                  <Bar dataKey="adv" name="上漲" fill="var(--positive)" fillOpacity={0.8} radius={[3,3,0,0]} />
-                  <Bar dataKey="dec" name="下跌" fill="var(--negative)" fillOpacity={0.8} radius={[3,3,0,0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              {quantLoading ? <SkeletonBlock height={200} /> : breadthHist.length === 0 ? (
+                <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>暫無資料</div>
+              ) : (
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={breadthHist} barCategoryGap="30%">
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(48,54,61,0.5)" />
+                    <XAxis dataKey="date_label" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
+                    <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
+                    <Bar dataKey="adv" name="上漲" fill="var(--positive)" fillOpacity={0.8} radius={[3,3,0,0]} />
+                    <Bar dataKey="dec" name="下跌" fill="var(--negative)" fillOpacity={0.8} radius={[3,3,0,0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
 
-          {/* A/D Ratio trend */}
           <div className="panel">
             <div className="panel-header">
               <div className="panel-title"><span>📈</span> 漲跌比（A/D Ratio）趨勢</div>
               <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>&gt;1 = 多方市場廣度</span>
             </div>
             <div className="panel-body">
-              <ResponsiveContainer width="100%" height={160}>
-                <LineChart data={BREADTH_DATA}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(48,54,61,0.5)" />
-                  <XAxis dataKey="day" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
-                  <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} domain={[0.5, 2.5]} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Line type="monotone" dataKey="ratio" name="A/D Ratio"
-                    stroke="var(--accent-blue)" strokeWidth={2} dot={{ r: 4 }} />
-                </LineChart>
-              </ResponsiveContainer>
+              {quantLoading ? <SkeletonBlock height={160} /> : (
+                <ResponsiveContainer width="100%" height={160}>
+                  <LineChart data={breadthHist}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(48,54,61,0.5)" />
+                    <XAxis dataKey="date_label" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
+                    <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} domain={[0.5, 'auto']} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Line type="monotone" dataKey="ratio" name="A/D Ratio"
+                      stroke="var(--accent-blue)" strokeWidth={2} dot={{ r: 4 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
 
-          {/* Market breadth KPIs */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
-            {[
-              { label: '52週新高', value: '47', desc: '創高股數', color: 'var(--positive)' },
-              { label: '52週新低', value: '12', desc: '創低股數', color: 'var(--negative)' },
-              { label: '站上MA20', value: '61%', desc: '多頭排列', color: 'var(--positive)' },
-              { label: '成交量比 5MA', value: '1.18x', desc: '量能放大', color: 'var(--accent-amber)' },
-            ].map(m => (
-              <div key={m.label} className="stat-card">
-                <div className="label">{m.label}</div>
-                <div className="value mono" style={{ color: m.color }}>{m.value}</div>
-                <div className="sub">{m.desc}</div>
+          {/* Breadth KPI cards from live data */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+            {quantLoading ? [1,2].map(i => <SkeletonCard key={i} />) : <>
+              <div className="stat-card">
+                <div className="label">今日上漲</div>
+                <div className="value mono text-positive">{lastBreadth.adv ?? '—'} 家</div>
+                <div className="sub">{lastBreadth.date_label || lastBreadth.date}</div>
               </div>
-            ))}
+              <div className="stat-card">
+                <div className="label">今日下跌</div>
+                <div className="value mono text-negative">{lastBreadth.dec ?? '—'} 家</div>
+                <div className="sub">A/D Ratio {lastBreadth.ratio?.toFixed(2) ?? '—'}</div>
+              </div>
+            </>}
           </div>
         </div>
       )}
 
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          模型 Alpha Tab
+      ══════════════════════════════════════════════════════════════════════ */}
       {tab === 'model' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {/* Sector Alpha from signals */}
           <div className="panel">
             <div className="panel-header">
-              <div className="panel-title"><span>🎯</span> 產業平均 Alpha <MetricTooltip metricKey="sector_alpha" />（模型輸出）</div>
-              <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>基於 {signals.length} 檔股票</span>
+              <div className="panel-title">
+                <span>🎯</span> 產業平均 Alpha <MetricTooltip metricKey="sector_alpha" />（模型輸出）
+              </div>
+              <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+                基於 {signals.length} 檔股票
+              </span>
             </div>
             <div className="panel-body">
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={sectorAlpha} layout="vertical">
                   <XAxis type="number" tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
                     tickFormatter={v => `${v.toFixed(1)}%`} />
-                  <YAxis type="category" dataKey="sector" tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} width={80} />
+                  <YAxis type="category" dataKey="sector"
+                    tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} width={80} />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="avgAlpha" name="平均Alpha%" radius={[0,3,3,0]}>
                     {sectorAlpha.map((entry, i) => (
-                      <Cell key={i} fill={entry.avgAlpha >= 0 ? 'var(--positive)' : 'var(--negative)'} fillOpacity={0.8} />
+                      <Cell key={i} fill={entry.avgAlpha >= 0 ? 'var(--positive)' : 'var(--negative)'}
+                        fillOpacity={0.8} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -443,7 +537,6 @@ export default function QuantAnalysis() {
             </div>
           </div>
 
-          {/* Top signal concentration */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <div className="panel">
               <div className="panel-header">
@@ -475,7 +568,7 @@ export default function QuantAnalysis() {
               </div>
               <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {(() => {
-                  const alphas = signals.map(s => s.alpha_20d);
+                  const alphas = signals.map(s => s.alpha_20d || 0);
                   const mean = alphas.length ? alphas.reduce((a, b) => a + b, 0) / alphas.length : 0;
                   const pos = alphas.filter(a => a > 0).length;
                   const neg = alphas.filter(a => a < 0).length;
@@ -498,112 +591,227 @@ export default function QuantAnalysis() {
         </div>
       )}
 
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          傳統型態學 Tab  ← NOW LIVE DATA
+      ══════════════════════════════════════════════════════════════════════ */}
       {tab === 'pattern' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {/* Empty state banner */}
-          <div style={{
-            padding: '14px 18px', borderRadius: 10,
-            background: 'rgba(255,165,0,0.06)', border: '1px solid rgba(255,165,0,0.25)',
-            display: 'flex', alignItems: 'center', gap: 14,
-          }}>
-            <span style={{ fontSize: 24 }}>⚡</span>
-            <div>
-              <div style={{ fontSize: 13, color: 'var(--accent-amber)', fontWeight: 600 }}>
-                當前市場波動過大，掃描結果為空
-              </div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 3 }}>
-                傳統型態學需要穩定的趨勢結構才能成立。市場劇烈波動期間（如近期關稅衝擊）
-                型態容易被破壞，建議等待市場趨穩後再參考。掃描引擎自 V5.5 繼承，支援 6 大型態 × 4 個時間框架。
-              </div>
-            </div>
-          </div>
 
-          {/* Pattern KPIs */}
+          {/* Summary KPI row */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
-            {[
-              { label: '掃描型態種類', value: '6', desc: 'W底/M頭/頭肩底/三角/熊旗' },
-              { label: '時間框架', value: '4', desc: '短線/中線/長線/半年' },
-              { label: '今日匹配股數', value: '0', desc: '⚠️ 市場波動過大' },
-              { label: '最低分數門檻', value: '60', desc: 'Score ≥ 60 才入選' },
-            ].map(m => (
-              <div key={m.label} className="stat-card">
-                <div className="label">{m.label}</div>
-                <div className="value mono" style={{ color: m.value === '0' ? 'var(--text-muted)' : 'var(--text-primary)' }}>
-                  {m.value}
+            {patternLoading ? [1,2,3,4].map(i => <SkeletonCard key={i} />) : <>
+              <div className="stat-card">
+                <div className="label">掃描股票數</div>
+                <div className="value mono">{patternData?.total_scanned ?? '—'}</div>
+                <div className="sub">{patternData?.date || '每日推論後更新'}</div>
+              </div>
+              <div className="stat-card">
+                <div className="label">型態匹配</div>
+                <div className="value mono" style={{ color: (patternData?.patterns_found || 0) > 0 ? 'var(--positive)' : 'var(--text-muted)' }}>
+                  {patternData?.patterns_found ?? '—'} 個
                 </div>
-                <div className="sub">{m.desc}</div>
+                <div className="sub">Score ≥ 60</div>
               </div>
-            ))}
+              <div className="stat-card" style={{ borderColor: 'rgba(0,255,136,0.2)', background: 'rgba(0,255,136,0.03)' }}>
+                <div className="label">雙重確認</div>
+                <div className="value mono text-positive">{patternData?.dual_confirm_count ?? '—'}</div>
+                <div className="sub">型態 + Alpha 雙確認</div>
+              </div>
+              <div className="stat-card">
+                <div className="label">掃描耗時</div>
+                <div className="value mono">{patternData?.elapsed_seconds != null ? `${patternData.elapsed_seconds}s` : '—'}</div>
+                <div className="sub">全市場掃描</div>
+              </div>
+            </>}
           </div>
 
-          {/* Pattern definition cards */}
-          <div className="panel">
-            <div className="panel-header">
-              <div className="panel-title"><span>📐</span> 支援型態定義</div>
-              <span className="badge badge-neutral" style={{ fontSize: 10 }}>V5.5 繼承</span>
+          {/* Error or empty state */}
+          {patternError && (
+            <div style={{
+              padding: '14px 18px', borderRadius: 10,
+              background: 'rgba(255,71,87,0.06)', border: '1px solid rgba(255,71,87,0.25)',
+            }}>
+              <div style={{ fontSize: 13, color: 'var(--negative)', fontWeight: 600 }}>
+                型態資料載入失敗
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+                {patternError}（每日推論完成後自動生成）
+              </div>
             </div>
-            <div className="panel-body">
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                {PATTERN_DEFS.map(p => (
-                  <div key={p.id} style={{
-                    padding: '14px 16px', borderRadius: 8,
-                    background: 'var(--bg-panel-2)',
-                    borderLeft: `3px solid ${p.bullish === true ? 'var(--positive)' : p.bullish === false ? 'var(--negative)' : 'var(--accent-amber)'}`,
+          )}
+
+          {!patternLoading && !patternError && patternData && patternData.patterns_found === 0 && (
+            <div style={{
+              padding: '14px 18px', borderRadius: 10,
+              background: 'rgba(255,165,0,0.06)', border: '1px solid rgba(255,165,0,0.25)',
+              display: 'flex', alignItems: 'center', gap: 14,
+            }}>
+              <span style={{ fontSize: 24 }}>📊</span>
+              <div>
+                <div style={{ fontSize: 13, color: 'var(--accent-amber)', fontWeight: 600 }}>
+                  今日無符合條件的型態信號
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 3 }}>
+                  掃描了 {patternData.total_scanned} 支股票，目前無 Score ≥ 60 的多方型態。
+                  市場劇烈波動期間型態容易被破壞，建議等待趨勢穩定。
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Pattern Signals Table */}
+          {!patternLoading && !patternError && (patternData?.signals?.length || 0) > 0 && (
+            <div className="panel">
+              <div className="panel-header">
+                <div className="panel-title">
+                  <span>📐</span> 型態匹配股票
+                  <span className="badge badge-neutral" style={{ marginLeft: 8, fontSize: 10 }}>
+                    共 {patternData.signals.length} 個信號
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                    雙確認優先排序
+                  </span>
+                  <span className="badge" style={{
+                    background: 'rgba(0,255,136,0.12)', color: 'var(--positive)',
+                    border: '1px solid rgba(0,255,136,0.3)', fontSize: 10,
                   }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                      <span style={{
-                        width: 32, height: 32, borderRadius: 6,
-                        background: p.bullish === true ? 'rgba(0,255,136,0.1)' : p.bullish === false ? 'rgba(255,71,87,0.1)' : 'rgba(255,165,0,0.1)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 15, fontWeight: 700,
-                        color: p.bullish === true ? 'var(--positive)' : p.bullish === false ? 'var(--negative)' : 'var(--accent-amber)',
-                      }}>
-                        {p.icon}
-                      </span>
-                      <div>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{p.name}</div>
-                        <div style={{ fontSize: 10, color: p.bullish === true ? 'var(--positive)' : p.bullish === false ? 'var(--negative)' : 'var(--accent-amber)' }}>
-                          {p.bullish === true ? '多方型態' : p.bullish === false ? '空方型態' : '中性觀察'} · 風報比 {p.riskReward}
-                        </div>
-                      </div>
-                    </div>
-                    <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>
-                      {p.desc}
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                      {p.conds.map((c, i) => (
-                        <div key={i} style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', gap: 6 }}>
-                          <span style={{ color: 'var(--accent-blue)' }}>›</span>
-                          <span>{c}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+                    ✓ = Alpha ≤ 200 + 型態 ≥ 60
+                  </span>
+                </div>
+              </div>
+              <div className="panel-body-flush">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>股票</th>
+                      <th>型態</th>
+                      <th className="col-hide-mobile">時間框架</th>
+                      <th>分數</th>
+                      <th className="col-hide-mobile">關鍵價 / 目標 / 停損</th>
+                      <th className="col-hide-mobile">風報比</th>
+                      <th>Alpha 排名</th>
+                      <th>確認</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {patternData.signals.map((sig, idx) => (
+                      <tr key={`${sig.stock_id}_${sig.pattern_id}_${sig.timeframe}`}
+                        className="animate-fade-up"
+                        style={{ animationDelay: `${idx * 0.025}s` }}>
+                        <td>
+                          <div style={{ fontWeight: 600, fontSize: 13 }}>{sig.name || sig.stock_id}</div>
+                          <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{sig.stock_id}</div>
+                          <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{sig.sector}</div>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{
+                              width: 24, height: 24, borderRadius: 4,
+                              background: 'rgba(0,255,136,0.1)',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: 12, fontWeight: 700, color: 'var(--positive)',
+                            }}>
+                              {PAT_ICON[sig.pattern_id] || '?'}
+                            </span>
+                            <span style={{ fontSize: 12, color: 'var(--text-primary)' }}>{sig.pattern_name}</span>
+                          </div>
+                        </td>
+                        <td className="col-hide-mobile">
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{sig.timeframe_label}</span>
+                        </td>
+                        <td><ScoreBar score={sig.score} /></td>
+                        <td className="col-hide-mobile">
+                          <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', lineHeight: 1.7 }}>
+                            <span style={{ color: 'var(--text-secondary)' }}>關</span> {sig.key_price}<br/>
+                            <span style={{ color: 'var(--positive)' }}>目</span> {sig.target_price}<br/>
+                            <span style={{ color: 'var(--negative)' }}>損</span> {sig.stop_loss}
+                          </div>
+                        </td>
+                        <td className="col-hide-mobile">
+                          <span className="mono" style={{ fontSize: 12, color: 'var(--accent-amber)' }}>
+                            {sig.risk_reward}
+                          </span>
+                        </td>
+                        <td>
+                          <div style={{ fontSize: 12 }}>
+                            <span className="mono" style={{ color: sig.alpha_rank <= 50 ? 'var(--positive)' : 'var(--text-secondary)' }}>
+                              #{sig.alpha_rank}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: 10, color: sig.alpha_20d >= 0 ? 'var(--positive)' : 'var(--negative)' }}>
+                            {sig.alpha_20d >= 0 ? '+' : ''}{(sig.alpha_20d * 100).toFixed(2)}%
+                          </div>
+                        </td>
+                        <td>
+                          {sig.dual_confirm ? (
+                            <span style={{
+                              fontSize: 10, padding: '2px 8px', borderRadius: 10,
+                              background: 'rgba(0,255,136,0.12)',
+                              color: 'var(--positive)',
+                              border: '1px solid rgba(0,255,136,0.3)',
+                            }}>✓ 雙確認</span>
+                          ) : (
+                            <span style={{
+                              fontSize: 10, padding: '2px 8px', borderRadius: 10,
+                              background: 'rgba(255,255,255,0.04)',
+                              color: 'var(--text-muted)',
+                              border: '1px solid var(--border)',
+                            }}>型態</span>
+                          )}
+                          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 3 }}>
+                            {sig.confidence}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div style={{ padding: '8px 16px', fontSize: 11, color: 'var(--text-muted)', borderTop: '1px solid var(--border)' }}>
+                掃描範圍：W底 / 彈簧型W底 / 頭肩底 / 三角收斂 × 4 時間框架（短線/中線/長線/季線）·
+                資料截止 {patternData.date}
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Scale definitions */}
+          {/* Loading skeleton */}
+          {patternLoading && (
+            <div className="panel">
+              <div className="panel-header">
+                <div className="panel-title"><span>📐</span> 型態匹配股票</div>
+              </div>
+              <div className="panel-body"><SkeletonTable rows={8} cols={6} /></div>
+            </div>
+          )}
+
+          {/* Pattern info */}
           <div className="panel">
             <div className="panel-header">
-              <div className="panel-title"><span>⏱️</span> 掃描時間框架</div>
+              <div className="panel-title"><span>ℹ️</span> 掃描說明</div>
             </div>
             <div className="panel-body">
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
-                {[
-                  { scale: '短線', period: '1~2週', order: 3, desc: '極值計算 order=3，適合短線操作' },
-                  { scale: '中線', period: '約1個月', order: 8, desc: '極值計算 order=8，波段操作主力' },
-                  { scale: '長線', period: '2~3個月', order: 15, desc: '極值計算 order=15，趨勢型操作' },
-                  { scale: '半年', period: '半年大底', order: 30, desc: '極值計算 order=30，重大反轉訊號' },
-                ].map(s => (
-                  <div key={s.scale} style={{ padding: '12px', background: 'var(--bg-panel-2)', borderRadius: 8 }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--accent-blue)' }}>{s.scale}</div>
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)', margin: '4px 0' }}>{s.period}</div>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>order={s.order}</div>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{s.desc}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16, fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.8 }}>
+                <div>
+                  <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>支援型態（多方）</div>
+                  <div>• <b>W底</b>：兩低點差 &lt; 5%，頸線 &gt; 3%</div>
+                  <div>• <b>彈簧型W底</b>：第二低 0.5%–2% 低於第一，快速反彈</div>
+                  <div>• <b>頭肩底</b>：三底，中間最低，兩肩差 &lt; 10%</div>
+                  <div>• <b>三角收斂</b>：低高收斂，至少 4 觸點</div>
+                </div>
+                <div>
+                  <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>評分系統（100分）</div>
+                  <div>• 型態強度：40 分（形成品質）</div>
+                  <div>• 成交量：30 分（量能確認）</div>
+                  <div>• 位置：20 分（近頸線或突破）</div>
+                  <div>• RSI 動能：10 分</div>
+                  <div>• Alpha 加成：Top 200 +10 / Top 300 +5</div>
+                  <div style={{ marginTop: 8 }}>
+                    <b>雙重確認</b>：Score ≥ 60 且 Alpha 排名 ≤ 200
                   </div>
-                ))}
+                </div>
               </div>
             </div>
           </div>
@@ -612,4 +820,3 @@ export default function QuantAnalysis() {
     </div>
   );
 }
-
