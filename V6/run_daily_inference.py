@@ -840,10 +840,14 @@ def main(target_date: str | None = None, skip_push: bool = False, forward_fill: 
             _archive_scanner_result(today)
 
             # ── Alpha Robot backtest ──
-            from marketmamba.backtest.sim_engine_v2 import run_robot_backtest, run_daily_update
+            # NOTE: alias to avoid shadowing fetcher's run_daily_update in this scope
+            from marketmamba.backtest.sim_engine_v2 import (
+                run_robot_backtest,
+                run_daily_update as run_alpha_daily_update,
+            )
             sim_out = RESULTS_DIR / "sim_backtest.json"
             if sim_out.exists():
-                bt = run_daily_update(
+                bt = run_alpha_daily_update(
                     date=today,
                     df_today=df_kelly,
                     prices_df=prices,
