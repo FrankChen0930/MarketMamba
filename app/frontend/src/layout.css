@@ -279,7 +279,8 @@
   .page-title   { font-size: 16px; }
 
   /* Grids */
-  .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }   /* 2×2 on mobile */
+  .grid-3, .grid-2 { grid-template-columns: 1fr; }
 
   /* Panels */
   .panel-header { padding: 10px 12px; }
@@ -294,7 +295,93 @@
   .panel-body-flush,
   .panel-body { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .data-table th, .data-table td { padding: 7px 10px; font-size: 12px; white-space: nowrap; }
+
+  /* Hide non-essential table columns on mobile */
+  .col-hide-mobile { display: none !important; }
+
+  /* AlphaBar compact on mobile */
+  .alpha-bar-track { width: 32px !important; }
+  .alpha-bar-value { min-width: 40px !important; font-size: 10px !important; }
+
+  /* Dashboard right-panel: reorder Top5 → Macro → Sector on mobile */
+  .dash-right-panel {
+    display: flex !important;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .dash-panel-top5   { order: -2; }
+  .dash-panel-macro  { order: -1; }
+  .dash-panel-sector { order: 0; }
+
+  /* Panel header can wrap when space is tight */
+  .panel-header-wrap { flex-wrap: wrap; gap: 8px; }
 }
 
 
+/* ═══════════════════════════════════════════════
+   Dashboard Responsive Grid
+   ═══════════════════════════════════════════════ */
+
+/* ── AlphaBar ───────────────────────────────── */
+.alpha-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.alpha-bar-track {
+  width: 52px;
+  height: 5px;
+  background: var(--bg-hover);
+  border-radius: 3px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.alpha-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+}
+.alpha-bar-value {
+  font-size: 11px;
+  min-width: 52px;
+}
+
+/* ── Main 2-col layout ──────────────────────── */
+.dash-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 330px;
+  gap: 16px;
+  align-items: start;
+}
+
+/* Right panel: default flex column */
+.dash-right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* ── Tablet (641px – 1024px):
+      Main grid collapses to 1 col,
+      Right panel becomes a 3-col horizontal row  ── */
+@media (max-width: 1024px) {
+  .dash-main-grid {
+    grid-template-columns: 1fr;
+  }
+  .dash-right-panel {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  /* Grid children need min-width to avoid overflow */
+  .dash-right-panel > * { min-width: 0; }
+}
+
+/* ── Narrow tablet / large phone (641px – 767px):
+      Right panel drops to 2 cols           ── */
+@media (max-width: 767px) and (min-width: 641px) {
+  .dash-right-panel {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 

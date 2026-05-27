@@ -38,14 +38,13 @@ function AlphaBar({ value, max = 0.3 }) {
   const pct = Math.min(Math.abs(value) / max * 100, 100);
   const color = value >= 0 ? 'var(--positive)' : 'var(--negative)';
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <div style={{ width: 52, height: 5, background: 'var(--bg-hover)', borderRadius: 3, overflow: 'hidden' }}>
-        <div style={{
-          width: `${pct}%`, height: '100%', background: color,
-          borderRadius: 3, boxShadow: `0 0 5px ${color}`
+    <div className="alpha-bar">
+      <div className="alpha-bar-track">
+        <div className="alpha-bar-fill" style={{
+          width: `${pct}%`, background: color, boxShadow: `0 0 5px ${color}`
         }} />
       </div>
-      <span className={`mono ${value >= 0 ? 'text-positive' : 'text-negative'}`} style={{ fontSize: 11, minWidth: 52 }}>
+      <span className={`mono alpha-bar-value ${value >= 0 ? 'text-positive' : 'text-negative'}`}>
         {value >= 0 ? '+' : ''}{(value * 100).toFixed(2)}%
       </span>
     </div>
@@ -166,18 +165,18 @@ export default function Dashboard() {
       </div>
 
       {/* ── Main Area ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 330px', gap: 16, alignItems: 'start' }}>
+      <div className="dash-main-grid">
 
         {/* Signal Table */}
         <div className="panel">
-          <div className="panel-header">
+          <div className="panel-header panel-header-wrap">
             <div className="panel-title">
               <span className="panel-title-icon">⚡</span> Alpha 排名訊號
               {!loading && <span className="badge badge-neutral" style={{ marginLeft: 8, fontSize: 10 }}>
                 可投資 {_investable.filter(s => s.alpha_20d > 0).length} 檔
               </span>}
             </div>
-            <div style={{ display: 'flex', gap: 6 }}>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {[['5d','5日 Alpha'], ['20d','20日 Alpha'], ['60d','60日 Alpha']].map(([tab, label]) => (
                 <button
                   key={tab}
@@ -197,10 +196,10 @@ export default function Dashboard() {
                   <tr>
                     <th style={{ width: 32 }}>#</th>
                     <th>股票</th>
-                    <th>產業</th>
-                    <th>{activeTab} Alpha 強度 <MetricTooltip metricKey="alpha" /></th>
-                    <th>Sharpe <MetricTooltip metricKey="sharpe" /></th>
-                    <th>建倉比重 <MetricTooltip metricKey="kelly" /></th>
+                    <th className="col-hide-mobile">產業</th>
+                    <th>Alpha 強度 <MetricTooltip metricKey="alpha" /></th>
+                    <th className="col-hide-mobile">Sharpe <MetricTooltip metricKey="sharpe" /></th>
+                    <th className="col-hide-mobile">建倉比重 <MetricTooltip metricKey="kelly" /></th>
                     <th>訊號</th>
                   </tr>
                 </thead>
@@ -219,14 +218,14 @@ export default function Dashboard() {
                         </div>
                         <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{s.stock_id}</div>
                       </td>
-                      <td><span className="badge badge-neutral" style={{ fontSize: 10 }}>{s.sector}</span></td>
+                      <td className="col-hide-mobile"><span className="badge badge-neutral" style={{ fontSize: 10 }}>{s.sector}</span></td>
                       <td><AlphaBar value={activeTab === '5d' ? (s.alpha_5d ?? 0) : activeTab === '60d' ? (s.alpha_60d ?? 0) : (s.alpha_20d ?? 0)} /></td>
-                      <td>
+                      <td className="col-hide-mobile">
                         <span className={`mono ${s.uncertainty < 0.03 ? 'text-positive' : 'text-secondary'}`} style={{ fontSize: 12 }}>
                           {(s.alpha_20d / Math.max(s.uncertainty, 0.001)).toFixed(1)}
                         </span>
                       </td>
-                      <td>
+                      <td className="col-hide-mobile">
                         <span className="mono" style={{ fontSize: 12 }}>
                           {s.suggested_weight ? `${(s.suggested_weight * 100).toFixed(1)}%` : '—'}
                         </span>
@@ -251,10 +250,10 @@ export default function Dashboard() {
         </div>
 
         {/* Right Panel */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div className="dash-right-panel">
 
           {/* Macro indicators */}
-          <div className="panel">
+          <div className="panel dash-panel-macro">
             <div className="panel-header">
               <div className="panel-title"><span>🌐</span> 全球市場</div>
               <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>即時</span>
@@ -294,7 +293,7 @@ export default function Dashboard() {
           </div>
 
           {/* Sector Heatmap — driven by real signals */}
-          <div className="panel">
+          <div className="panel dash-panel-sector">
             <div className="panel-header">
               <div className="panel-title"><span>🏭</span> 產業強弱</div>
               <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>模型 Alpha 加權</span>
@@ -307,7 +306,7 @@ export default function Dashboard() {
           </div>
 
           {/* Top 5 Alpha stocks condensed */}
-          <div className="panel" style={{ borderColor: 'rgba(0,255,136,0.15)', background: 'rgba(0,255,136,0.02)' }}>
+          <div className="panel dash-panel-top5" style={{ borderColor: 'rgba(0,255,136,0.15)', background: 'rgba(0,255,136,0.02)' }}>
             <div className="panel-header">
               <div className="panel-title"><span>🏆</span> 今日 Top 5</div>
             </div>
