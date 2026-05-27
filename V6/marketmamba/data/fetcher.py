@@ -232,8 +232,148 @@ def fetch_prices_yfinance(
 
 
 # ============================================================
-# Layer 2: TWSE / TPEX Direct — Institutional Investors
+# Layer 2: TWSE / TPEX Direct — Prices + Institutional Investors
 # ============================================================
+
+def fetch_prices_twse_direct(date_str: str) -> Optional[pd.DataFrame]:
+    """
+    Fetch all TWSE stocks' daily OHLCV from TWSE MI_INDEX.
+    Available ~15:00 on trading day. No auth required.
+    """
+    date_compact = date_str.replace("-", "")
+    url = "https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX"
+    params = {"response": "json", "date": date_compact, "type": "ALLBUT0999"}
+    try:
+        resp = requests.get(url, params=params, timeout=30,
+                            headers={"User-Agent": "Mozilla/5.0"})
+        if resp.status_code != 200:
+            logger.warning(f"TWSE price: HTTP {resp.status_code}")
+            return None
+        data = resp.json()
+        if data.get("stat") != "OK":
+            logger.warning(f"TWSE price: stat={data.get('stat')}")
+            return None
+
+        # MI_INDEX returns a 'tables' list; the individual stock table is the
+        # one whose fields include 開盤價 (Open).
+        tables = data.get("tables", [])
+        target = next(
+            (t for t in tables
+             if isinstance(t.get("fields"), list)
+             and any("開盤" in f for f in t["fields"])
+             and len(t.get("data", [])) > 100),
+            None,
+        )
+        if target is None:
+            logger.warning("TWSE price: no price table found in response")
+            return None
+
+        fields = target["fields"]
+        rows   = target["data"]
+
+        def _col(name: str) -> int:
+            return next((i for i, f in enumerate(fields) if name in f), -1)
+
+        i_id    = _col("代號")
+        i_open  = _col("開盤")
+        i_high  = _col("最高")
+        i_low   = _col("最低")
+        i_close = _col("收盤")
+        i_vol   = _col("成交股數")
+
+        if any(x < 0 for x in [i_id, i_open, i_high, i_low, i_close]):
+            logger.warning(f"TWSE price: unexpected fields {fields}")
+            return None
+
+        def _num(s: str) -> Optional[float]:
+            try:
+                return float(str(s).replace(",", "").strip())
+            except (ValueError, TypeError):
+                return None
+
+        records = []
+        for row in rows:
+            try:
+                sid = str(row[i_id]).strip()
+                if not sid.isdigit():
+                    continue
+                c = _num(row[i_close])
+                if c is None:
+                    continue  # suspended / no trade
+                records.append({
+                    "Date":     date_str,
+                    "stock_id": sid,
+                    "Open":     _num(row[i_open])  or c,
+                    "High":     _num(row[i_high])  or c,
+                    "Low":      _num(row[i_low])   or c,
+                    "Close":    c,
+                    "Volume":   _num(row[i_vol])   or 0.0 if i_vol >= 0 else 0.0,
+                })
+            except (IndexError, ValueError):
+                continue
+
+        if not records:
+            return None
+        df = pd.DataFrame(records)
+        logger.info(f"TWSE direct prices: {len(df)} stocks for {date_str}")
+        return df
+
+    except Exception as e:
+        logger.warning(f"TWSE direct price fetch failed: {e}")
+        return None
+
+
+def fetch_prices_tpex_direct(date_str: str) -> Optional[pd.DataFrame]:
+    """
+    Fetch all TPEX (OTC) stocks' daily OHLCV from TPEX OpenAPI.
+    Available ~15:00 on trading day. No auth required.
+    """
+    url = "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_daily_close_quotes"
+    try:
+        resp = requests.get(url, params={"date": date_str}, timeout=30,
+                            headers={"User-Agent": "Mozilla/5.0"})
+        if resp.status_code != 200:
+            logger.warning(f"TPEX price: HTTP {resp.status_code}")
+            return None
+        rows = resp.json()
+        if not isinstance(rows, list) or not rows:
+            logger.warning("TPEX price: empty response")
+            return None
+
+        def _num(s) -> Optional[float]:
+            try:
+                return float(str(s).replace(",", "").strip())
+            except (ValueError, TypeError):
+                return None
+
+        records = []
+        for row in rows:
+            sid = str(row.get("SecuritiesCompanyCode", "")).strip()
+            if not sid.isdigit():
+                continue
+            c = _num(row.get("Close"))
+            if c is None:
+                continue
+            records.append({
+                "Date":     date_str,
+                "stock_id": sid,
+                "Open":     _num(row.get("Open"))  or c,
+                "High":     _num(row.get("High"))  or c,
+                "Low":      _num(row.get("Low"))   or c,
+                "Close":    c,
+                "Volume":   _num(row.get("TradingShares")) or 0.0,
+            })
+
+        if not records:
+            return None
+        df = pd.DataFrame(records)
+        logger.info(f"TPEX direct prices: {len(df)} stocks for {date_str}")
+        return df
+
+    except Exception as e:
+        logger.warning(f"TPEX direct price fetch failed: {e}")
+        return None
+
 
 def fetch_institutional_twse(date_str: str) -> Optional[pd.DataFrame]:
     """
@@ -693,20 +833,41 @@ def run_daily_update(
             f"Prices for {today} already in parquet ({_today_price_rows:,} rows) — skipping download"
         )
     else:
-        df_prices, _missing_tickers = fetch_prices_yfinance(tse_ids, otc_ids, today, today)
-        if df_prices.empty:
-            logger.info("yfinance empty → FinMind single-batch price fetch...")
-            df_fm = _finmind_fetch("TaiwanStockPrice", start_date=today, end_date=today)
-            if df_fm is not None and not df_fm.empty:
-                col_map = {"date": "Date", "open": "Open", "max": "High",
-                           "min": "Low", "close": "Close", "Trading_Volume": "Volume"}
-                df_fm.rename(columns=col_map, inplace=True)
-                keep = [c for c in ["Date", "stock_id", "Open", "High", "Low", "Close", "Volume"]
-                        if c in df_fm.columns]
-                df_prices = df_fm[keep]
-                logger.info(f"FinMind prices: {len(df_prices)} rows for {today}")
+        # yfinance end is exclusive — pass tomorrow to guarantee today is included.
+        # Passing start==end returns 0 days for past dates (the most common cause
+        # of "Price data incomplete" on re-runs or early-morning retries).
+        _yf_end = (date.fromisoformat(today) + timedelta(days=1)).isoformat()
+        df_prices, _missing_tickers = fetch_prices_yfinance(tse_ids, otc_ids, today, _yf_end)
+
+        # Even when yfinance returns some TSE data, OTC (.TWO) stocks may be
+        # entirely missing.  Check OTC coverage and supplement with TPEX direct
+        # if more than 70 % of OTC universe is absent.
+        _otc_got = set(df_prices["stock_id"].unique()) & set(otc_ids) if not df_prices.empty else set()
+        _otc_missing_ratio = 1.0 - len(_otc_got) / max(len(otc_ids), 1)
+
+        if df_prices.empty or _otc_missing_ratio > 0.70:
+            if df_prices.empty:
+                logger.info("yfinance empty → TWSE/TPEX direct price fetch...")
             else:
-                logger.warning("FinMind also returned no price data — prices not updated today")
+                logger.warning(
+                    f"yfinance OTC coverage too low ({len(_otc_got)}/{len(otc_ids)} stocks) "
+                    f"→ supplementing with TWSE/TPEX direct..."
+                )
+            frames = [] if df_prices.empty else [df_prices]
+            df_twse = fetch_prices_twse_direct(today)
+            if df_twse is not None and not df_twse.empty:
+                frames.append(df_twse)
+            df_tpex = fetch_prices_tpex_direct(today)
+            if df_tpex is not None and not df_tpex.empty:
+                frames.append(df_tpex)
+            if frames:
+                df_prices = pd.concat(frames, ignore_index=True).drop_duplicates(
+                    subset=["Date", "stock_id"]
+                )
+                logger.info(f"TWSE/TPEX direct prices: {len(df_prices)} rows for {today}")
+            else:
+                logger.warning("TWSE/TPEX direct also returned no price data")
+
         if not df_prices.empty:
             _append_to_parquet(price_path, df_prices, today)
             _today_price_rows += len(df_prices)
@@ -738,10 +899,11 @@ def run_daily_update(
         missing.append("institutional")
 
     # ── Margin / Short Sale ───────────────────────────────────────────────────
-    df_margin, margin_ff = fetch_margin_finmind(today, allow_forward_fill=allow_forward_fill)
+    # Margin always forward-fills from yesterday when today's data isn't ready.
+    # It is never treated as a blocking missing source.
+    df_margin, margin_ff = fetch_margin_finmind(today, allow_forward_fill=True)
     if df_margin is None:
-        logger.warning(f"Margin data unavailable for {today}")
-        missing.append("margin")
+        logger.warning(f"Margin data unavailable for {today} — skipping (non-critical)")
     elif margin_ff:
         logger.warning(f"Margin data: using forward-fill for {today}")
         forward_filled.append("margin")
