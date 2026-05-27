@@ -90,6 +90,8 @@ _STEPS_ZH = [
     "歸檔",
     "信號掃描",
     "模擬回測",
+    "量化市場資料",
+    "型態學掃描",
     "推送 GitHub",
 ]
 
@@ -592,7 +594,7 @@ def main(target_date: str | None = None, skip_push: bool = False, forward_fill: 
         # ── 步驟 1：資料更新 ─────────────────────────────────────────────────
         t0 = time.monotonic()
         logger.info(f"\n{'─'*50}")
-        logger.info(f"[1/8] 資料更新  [{datetime.now().strftime('%H:%M:%S')}]")
+        logger.info(f"[1/10] 資料更新  [{datetime.now().strftime('%H:%M:%S')}]")
         logger.info(f"{'─'*50}")
         _step_update(0, "running")
 
@@ -638,13 +640,13 @@ def main(target_date: str | None = None, skip_push: bool = False, forward_fill: 
         elapsed = time.monotonic() - t0
         _fwd = freshness.get("forward_filled", [])
         _done_note = f"Forward-Fill：{'、'.join(_fwd)}" if _fwd else ""
-        logger.info(f"[1/8] ✓ 完成 ({_fmt(elapsed)})" + (f" — {_done_note}" if _done_note else ""))
+        logger.info(f"[1/10] ✓ 完成 ({_fmt(elapsed)})" + (f" — {_done_note}" if _done_note else ""))
         _step_update(0, "done", _done_note)
 
         # ── 步驟 2：特徵矩陣建構 ─────────────────────────────────────────────
         t0 = time.monotonic()
         logger.info(f"\n{'─'*50}")
-        logger.info(f"[2/7] 特徵矩陣建構  [{datetime.now().strftime('%H:%M:%S')}]")
+        logger.info(f"[2/10] 特徵矩陣建構  [{datetime.now().strftime('%H:%M:%S')}]")
         logger.info(f"{'─'*50}")
         _step_update(1, "running")
 
@@ -745,13 +747,13 @@ def main(target_date: str | None = None, skip_push: bool = False, forward_fill: 
 
         elapsed = time.monotonic() - t0
         logger.info(f"特徵矩陣：{df.shape}")
-        logger.info(f"[2/7] ✓ 完成 ({_fmt(elapsed)})")
+        logger.info(f"[2/10] ✓ 完成 ({_fmt(elapsed)})")
         _step_update(1, "done", f"{df.shape[0]:,} × {df.shape[1]} 特徵{_freshness_note}")
 
         # ── 步驟 3：模型推論 ─────────────────────────────────────────────────
         t0 = time.monotonic()
         logger.info(f"\n{'─'*50}")
-        logger.info(f"[3/7] 模型推論  [{datetime.now().strftime('%H:%M:%S')}]")
+        logger.info(f"[3/10] 模型推論  [{datetime.now().strftime('%H:%M:%S')}]")
         logger.info(f"{'─'*50}")
         _step_update(2, "running")
         df_kelly, df_traj = run_inference(df, device_str=device_str)
@@ -771,7 +773,7 @@ def main(target_date: str | None = None, skip_push: bool = False, forward_fill: 
             .to_string(index=False)
         )
         logger.info(f"可投資股票：{n_investable} / {len(df_kelly)}")
-        logger.info(f"[3/7] ✓ 完成 ({_fmt(elapsed)})")
+        logger.info(f"[3/10] ✓ 完成 ({_fmt(elapsed)})")
 
         top_ticker = top10.iloc[0]["Ticker"]       if len(top10) > 0 else "—"
         top_alpha  = top10.iloc[0]["Exp_Alpha_20d"] if len(top10) > 0 else 0.0
@@ -781,7 +783,7 @@ def main(target_date: str | None = None, skip_push: bool = False, forward_fill: 
         # ── 步驟 4：LLM 市場報告 ─────────────────────────────────────────────
         t0 = time.monotonic()
         logger.info(f"\n{'─'*50}")
-        logger.info(f"[4/7] LLM 市場報告  [{datetime.now().strftime('%H:%M:%S')}]")
+        logger.info(f"[4/10] LLM 市場報告  [{datetime.now().strftime('%H:%M:%S')}]")
         logger.info(f"{'─'*50}")
         _step_update(3, "running")
         try:
@@ -789,7 +791,7 @@ def main(target_date: str | None = None, skip_push: bool = False, forward_fill: 
             report = generate_market_report(df_kelly, market_data, save=True)
             elapsed = time.monotonic() - t0
             logger.info(f"\n📝 報告摘要：\n{report['summary'][:300]}...")
-            logger.info(f"[4/7] ✓ 完成 ({_fmt(elapsed)})")
+            logger.info(f"[4/10] ✓ 完成 ({_fmt(elapsed)})")
             _step_update(3, "done")
         except Exception as e:
             elapsed = time.monotonic() - t0
@@ -799,18 +801,18 @@ def main(target_date: str | None = None, skip_push: bool = False, forward_fill: 
         # ── 步驟 5：歸檔 ─────────────────────────────────────────────────────
         t0 = time.monotonic()
         logger.info(f"\n{'─'*50}")
-        logger.info(f"[5/7] 歸檔  [{datetime.now().strftime('%H:%M:%S')}]")
+        logger.info(f"[5/10] 歸檔  [{datetime.now().strftime('%H:%M:%S')}]")
         logger.info(f"{'─'*50}")
         _step_update(4, "running")
         _archive_results(df_kelly, today)
         elapsed = time.monotonic() - t0
-        logger.info(f"[5/7] ✓ 完成 ({_fmt(elapsed)})")
+        logger.info(f"[5/10] ✓ 完成 ({_fmt(elapsed)})")
         _step_update(4, "done")
 
         # ── 步驟 6：信號掃描 ─────────────────────────────────────────────────
         t0 = time.monotonic()
         logger.info(f"\n{'─'*50}")
-        logger.info(f"[6/7] 信號掃描  [{datetime.now().strftime('%H:%M:%S')}]")
+        logger.info(f"[6/10] 信號掃描  [{datetime.now().strftime('%H:%M:%S')}]")
         logger.info(f"{'─'*50}")
         _step_update(5, "running")
         n_buy = n_exit = n_watch = 0
@@ -822,7 +824,7 @@ def main(target_date: str | None = None, skip_push: bool = False, forward_fill: 
             n_watch = len(scan_result.get("watch_list",   []))
             elapsed = time.monotonic() - t0
             logger.info(f"  掃描結果：{n_buy} BUY · {n_exit} EXIT · {n_watch} WATCH ({_fmt(elapsed)})")
-            logger.info(f"[6/7] ✓ 完成 ({_fmt(elapsed)})")
+            logger.info(f"[6/10] ✓ 完成 ({_fmt(elapsed)})")
             _step_update(5, "done", f"{n_buy} BUY · {n_exit} EXIT · {n_watch} WATCH")
         except Exception as e:
             elapsed = time.monotonic() - t0
@@ -832,7 +834,7 @@ def main(target_date: str | None = None, skip_push: bool = False, forward_fill: 
         # ── 步驟 7：模擬回測 ─────────────────────────────────────────────────────
         t0 = time.monotonic()
         logger.info(f"\n{'─'*50}")
-        logger.info(f"[7/8] 模擬回測  [{datetime.now().strftime('%H:%M:%S')}]")
+        logger.info(f"[7/10] 模擬回測  [{datetime.now().strftime('%H:%M:%S')}]")
         logger.info(f"{'─'*50}")
         _step_update(6, "running")
         try:
@@ -894,7 +896,7 @@ def main(target_date: str | None = None, skip_push: bool = False, forward_fill: 
                 logger.warning(f"Scanner 回測失敗（非致命）：{e_sc}")
 
             elapsed = time.monotonic() - t0
-            logger.info(f"[7/8] ✓ 完成 ({_fmt(elapsed)})")
+            logger.info(f"[7/10] ✓ 完成 ({_fmt(elapsed)})")
             _step_update(6, "done", f"Alpha {ret_str} {pos_str} · Scanner {sc_ret_str} {sc_pos_str}")
         except Exception as e:
             elapsed = time.monotonic() - t0
@@ -915,22 +917,62 @@ def main(target_date: str | None = None, skip_push: bool = False, forward_fill: 
         except Exception as e:
             logger.warning(f"IC分析失敗（非致命）：{e}")
 
-        # ── 步驟 8：推送 GitHub ───────────────────────────────────────────────
+        # ── 步驟 8：量化市場資料 ──────────────────────────────────────────────
+        t0 = time.monotonic()
         logger.info(f"\n{'─'*50}")
-        logger.info(f"[8/8] 推送 GitHub  [{datetime.now().strftime('%H:%M:%S')}]")
+        logger.info(f"[8/10] 量化市場資料  [{datetime.now().strftime('%H:%M:%S')}]")
+        logger.info(f"{'─'*50}")
+        _step_update(7, "running")
+        try:
+            from marketmamba.quant.market_data import run_market_data
+            run_market_data(date_str=today)
+            elapsed = time.monotonic() - t0
+            logger.info(f"[8/10] ✓ 完成 ({_fmt(elapsed)})")
+            _step_update(7, "done")
+        except Exception as e:
+            elapsed = time.monotonic() - t0
+            logger.warning(f"量化市場資料失敗（非致命）：{e} ({_fmt(elapsed)})")
+            _step_update(7, "skipped", str(e)[:60])
+
+        # ── 步驟 9：型態學掃描 ────────────────────────────────────────────────
+        t0 = time.monotonic()
+        logger.info(f"\n{'─'*50}")
+        logger.info(f"[9/10] 型態學掃描  [{datetime.now().strftime('%H:%M:%S')}]")
+        logger.info(f"{'─'*50}")
+        _step_update(8, "running")
+        try:
+            from marketmamba.quant.pattern_scanner import run_pattern_scan
+            pat_result = run_pattern_scan(
+                date_str=today,
+                df_kelly_path=RESULTS_DIR / "df_kelly.csv",
+            )
+            n_pat  = pat_result.get("patterns_found",     0)
+            n_dual = pat_result.get("dual_confirm_count", 0)
+            elapsed = time.monotonic() - t0
+            logger.info(f"  型態信號：{n_pat} 個（雙重確認 {n_dual} 個）")
+            logger.info(f"[9/10] ✓ 完成 ({_fmt(elapsed)})")
+            _step_update(8, "done", f"{n_pat} 型態 · {n_dual} 雙確認")
+        except Exception as e:
+            elapsed = time.monotonic() - t0
+            logger.warning(f"型態學掃描失敗（非致命）：{e} ({_fmt(elapsed)})")
+            _step_update(8, "skipped", str(e)[:60])
+
+        # ── 步驟 10：推送 GitHub ──────────────────────────────────────────────
+        logger.info(f"\n{'─'*50}")
+        logger.info(f"[10/10] 推送 GitHub  [{datetime.now().strftime('%H:%M:%S')}]")
         logger.info(f"{'─'*50}")
         pushed = False
         if not skip_push:
-            _step_update(7, "running")
+            _step_update(9, "running")
             pushed = _push_to_github(RESULTS_DIR, today)
             if pushed:
                 logger.info("  後端將在下次快取刷新後（≤1h）提供最新數據")
-                _step_update(7, "done")
+                _step_update(9, "done")
             else:
-                _step_update(7, "failed", "git push 失敗，請手動推送")
+                _step_update(9, "failed", "git push 失敗，請手動推送")
         else:
             logger.info("  --skip-push：略過 git push（dry run 模式）")
-            _step_update(7, "skipped", "--skip-push 模式")
+            _step_update(9, "skipped", "--skip-push 模式")
 
         total = time.monotonic() - pipeline_start
         logger.info(f"\n{'='*55}")
