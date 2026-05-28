@@ -27,23 +27,26 @@ function EntryRulesModal({ regime, onClose }) {
 
           {/* Entry conditions */}
           <div style={S.section}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--positive)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span>🟢</span> 入場條件（滿足 {regime === 'CAUTIOUS' ? '3' : '2'}/4 觸發推薦）
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--positive)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span>🟢</span> 入場條件（加權評分制，滿分 100）
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 10, padding: '6px 10px', background: 'rgba(0,255,136,0.04)', borderRadius: 6 }}>
+              每個條件符合即獲得對應分數，<strong style={{ color: 'var(--text-secondary)' }}>四條件分數加總</strong>達到門檻才進入買入推薦（非「滿足幾項」）
             </div>
             <table className="data-table" style={{ width: '100%' }}>
-              <thead><tr><th style={S.th}>#</th><th style={S.th}>條件</th><th style={S.th}>判斷邏輯</th><th style={S.th}>資料來源</th></tr></thead>
+              <thead><tr><th style={S.th}>#</th><th style={S.th}>條件</th><th style={{ ...S.th, textAlign: 'center' }}>分數</th><th style={S.th}>判斷邏輯</th></tr></thead>
               <tbody>
                 {[
-                  ['1', '排名穩定性', 'Top 10 連續 ≥2 天 或 Top 50 連續 ≥3 天', 'history_index.json'],
-                  ['2', '高信心', 'Uncertainty < 0.02（MC-Dropout）', 'df_kelly.csv'],
-                  ['3', '相對低點', 'RSI < 40 或 當前價 < 20日均線', 'prices_raw.parquet'],
-                  ['4', '機構淨買入', '外資/投信 連續 2 天淨買入', 'institutional_raw.parquet'],
-                ].map(([n, name, logic, src]) => (
+                  ['1', '排名穩定性', '30', 'Top 10 連續 ≥2 天 或 Top 50 連續 ≥3 天'],
+                  ['2', '高信心', '25', 'Uncertainty < 當日 Q30 分位數（MC-Dropout）'],
+                  ['3', '機構連續淨買', '25', '外資/投信 連續 2 天淨買入'],
+                  ['4', '相對低點', '20', 'RSI < 40 或 當前價 < 20日均線'],
+                ].map(([n, name, score, logic]) => (
                   <tr key={n}>
                     <td style={{ ...S.td, color: 'var(--accent-amber)', fontWeight: 600 }}>{n}</td>
                     <td style={{ ...S.td, fontWeight: 600, color: 'var(--text-primary)' }}>{name}</td>
+                    <td style={{ ...S.td, textAlign: 'center', fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--accent-blue)' }}>+{score}</td>
                     <td style={{ ...S.td, color: 'var(--text-secondary)', fontSize: 11 }}>{logic}</td>
-                    <td style={{ ...S.td, fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)' }}>{src}</td>
                   </tr>
                 ))}
               </tbody>
@@ -52,16 +55,17 @@ function EntryRulesModal({ regime, onClose }) {
 
           {/* Market regime */}
           <div style={S.section}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent-amber)', marginBottom: 8 }}>🌐 大盤環境過濾</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent-amber)', marginBottom: 8 }}>🌐 大盤環境 × 買入門檻</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               {[
-                { env: 'TWII > 60日均線', label: '正常市場', threshold: '滿足 2/4 即推薦', active: regime !== 'CAUTIOUS' },
-                { env: 'TWII < 60日均線', label: '保守模式', threshold: '需滿足 3/4 才推薦', active: regime === 'CAUTIOUS' },
+                { env: 'TWII > 60日均線', label: '正常市場', threshold: '總分 ≥ 55 → 買入推薦', sub: '≥ 30 → 觀察清單', active: regime !== 'CAUTIOUS' },
+                { env: 'TWII < 60日均線', label: '保守模式', threshold: '總分 ≥ 70 → 買入推薦', sub: '≥ 30 → 觀察清單', active: regime === 'CAUTIOUS' },
               ].map(r => (
                 <div key={r.label} style={{ padding: '10px 14px', borderRadius: 8, background: r.active ? 'rgba(0,212,255,0.06)' : 'var(--bg-panel-2)', border: r.active ? '1px solid rgba(0,212,255,0.3)' : '1px solid transparent' }}>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{r.env}</div>
                   <div style={{ fontSize: 13, fontWeight: 600, color: r.active ? 'var(--accent-blue)' : 'var(--text-secondary)' }}>{r.label}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{r.threshold}</div>
+                  <div style={{ fontSize: 11, color: r.active ? 'var(--positive)' : 'var(--text-muted)', marginTop: 4, fontWeight: r.active ? 600 : 400 }}>{r.threshold}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{r.sub}</div>
                 </div>
               ))}
             </div>
@@ -147,7 +151,7 @@ function SignalCard({ signal, onClick }) {
               <span style={{ marginLeft: 8, fontSize: 11, color: 'var(--positive)', background: 'rgba(0,255,136,0.1)', padding: '2px 8px', borderRadius: 99, fontFamily: 'var(--font-mono)', fontWeight: 600 }}>買入推薦</span>
             </div>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
-              {signal.confidence} · 滿足 {signal.conditions_met}/{signal.conditions_total} 條件
+              {signal.confidence} · 評分 <span style={{ color: 'var(--positive)', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{signal.score ?? '—'}</span>/100 · 符合 {signal.conditions_met}/{signal.conditions_total} 條件
             </div>
           </div>
           {signal.alpha_20d != null && (
@@ -204,13 +208,14 @@ function WatchListTable({ watchList, onSelectStock }) {
     <div className="panel">
       <div className="panel-header">
         <div className="panel-title"><span>👀</span> 觀察清單</div>
-        <span className="badge badge-neutral" style={{ fontSize: 10 }}>差 1 個條件 · {watchList.length} 檔</span>
+        <span className="badge badge-neutral" style={{ fontSize: 10 }}>評分未達門檻 · {watchList.length} 檔</span>
       </div>
       <div className="panel-body-flush" style={{ overflowX: 'auto' }}>
-        <table className="data-table" style={{ minWidth: 700 }}>
+        <table className="data-table" style={{ minWidth: 760 }}>
           <thead>
             <tr>
               <th style={{ minWidth: 110 }}>股票</th>
+              <th style={{ textAlign: 'center', minWidth: 70 }}>評分</th>
               <th>排名穩定性</th>
               <th>模型信心</th>
               <th>相對低點</th>
@@ -225,6 +230,10 @@ function WatchListTable({ watchList, onSelectStock }) {
                 <td>
                   <div style={{ fontWeight: 600, fontSize: 13 }}>{s.name && s.name !== s.ticker ? s.name : s.ticker}</div>
                   <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{s.ticker}</div>
+                </td>
+                <td style={{ textAlign: 'center' }}>
+                  <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 14, color: (s.score ?? 0) >= 45 ? 'var(--accent-amber)' : 'var(--text-secondary)' }}>{s.score ?? '—'}</div>
+                  <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>/ 100</div>
                 </td>
                 <td><span style={{ fontSize: 12, color: s.rank_stability?.met ? 'var(--positive)' : 'var(--text-muted)' }}>{s.rank_stability?.met ? '✅' : '❌'} {s.rank_stability?.detail}</span></td>
                 <td><span style={{ fontSize: 12, color: s.high_confidence?.met ? 'var(--positive)' : 'var(--text-muted)' }}>{s.high_confidence?.met ? '✅' : '❌'} {s.high_confidence?.detail}</span></td>
