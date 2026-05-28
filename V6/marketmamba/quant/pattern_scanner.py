@@ -594,17 +594,20 @@ def run_pattern_scan(
 
     kelly = pd.read_csv(df_kelly_path)
 
+    ticker_col = "Ticker" if "Ticker" in kelly.columns else "stock_id"
+    alpha_col  = "Exp_Alpha_20d" if "Exp_Alpha_20d" in kelly.columns else "alpha_20d"
+
     if "rank" not in kelly.columns:
-        kelly = kelly.sort_values("alpha_20d", ascending=False,
+        kelly = kelly.sort_values(alpha_col, ascending=False,
                                   na_position="last").reset_index(drop=True)
         kelly["rank"] = kelly.index + 1
 
     kelly_map: dict[str, dict] = {
-        str(row["stock_id"]): {
+        str(row[ticker_col]): {
             "rank":       int(row.get("rank", 9999)),
-            "alpha_20d":  float(row.get("alpha_20d", 0.0)),
-            "confidence": str(row.get("confidence", "低信心")),
-            "name":       str(row.get("name", row["stock_id"])),
+            "alpha_20d":  float(row.get(alpha_col, 0.0)),
+            "confidence": str(row.get("Confidence", row.get("confidence", "低信心"))),
+            "name":       str(row.get("name", row[ticker_col])),
             "sector":     str(row.get("sector", "其他")),
         }
         for _, row in kelly.iterrows()

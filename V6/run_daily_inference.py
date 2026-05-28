@@ -1086,7 +1086,10 @@ def _archive_scanner_result(date_str: str) -> None:
     logger.info(f"Scanner result archived → {dated_dir.name}/action_signals.json")
 
     # Update lightweight history index for the dashboard
-    _update_history_index(df_kelly, date_str)
+    kelly_path = RESULTS_DIR / "df_kelly.csv"
+    if kelly_path.exists():
+        import pandas as _pd
+        _update_history_index(_pd.read_csv(kelly_path), date_str)
 
     # Remove entries older than 90 days
     cutoff = (datetime.today() - timedelta(days=90)).strftime("%Y-%m-%d")
