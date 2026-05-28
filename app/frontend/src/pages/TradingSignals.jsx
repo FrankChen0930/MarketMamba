@@ -28,13 +28,13 @@ function EntryRulesModal({ regime, onClose }) {
           {/* Entry conditions */}
           <div style={S.section}>
             <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--positive)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span>🟢</span> 入場條件（加權評分制，滿分 100）
+              <span>🟢</span> 入場條件（滿足 {regime === 'CAUTIOUS' ? '3' : '2'}/4 觸發推薦）
             </div>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 10, padding: '6px 10px', background: 'rgba(0,255,136,0.04)', borderRadius: 6 }}>
-              每個條件符合即獲得對應分數，<strong style={{ color: 'var(--text-secondary)' }}>四條件分數加總</strong>達到門檻才進入買入推薦（非「滿足幾項」）
+              滿足任意 {regime === 'CAUTIOUS' ? '3' : '2'} 個條件即進入買入推薦；觀察清單顯示的「評分」為各條件分數加總，可比較同層股票的信號強度
             </div>
             <table className="data-table" style={{ width: '100%' }}>
-              <thead><tr><th style={S.th}>#</th><th style={S.th}>條件</th><th style={{ ...S.th, textAlign: 'center' }}>分數</th><th style={S.th}>判斷邏輯</th></tr></thead>
+              <thead><tr><th style={S.th}>#</th><th style={S.th}>條件</th><th style={{ ...S.th, textAlign: 'center' }}>參考分數</th><th style={S.th}>判斷邏輯</th></tr></thead>
               <tbody>
                 {[
                   ['1', '排名穩定性', '30', 'Top 10 連續 ≥2 天 或 Top 50 連續 ≥3 天'],
@@ -55,11 +55,11 @@ function EntryRulesModal({ regime, onClose }) {
 
           {/* Market regime */}
           <div style={S.section}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent-amber)', marginBottom: 8 }}>🌐 大盤環境 × 買入門檻</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent-amber)', marginBottom: 8 }}>🌐 大盤環境過濾</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               {[
-                { env: 'TWII > 60日均線', label: '正常市場', threshold: '總分 ≥ 55 → 買入推薦', sub: '≥ 30 → 觀察清單', active: regime !== 'CAUTIOUS' },
-                { env: 'TWII < 60日均線', label: '保守模式', threshold: '總分 ≥ 70 → 買入推薦', sub: '≥ 30 → 觀察清單', active: regime === 'CAUTIOUS' },
+                { env: 'TWII > 60日均線', label: '正常市場', threshold: '滿足 2/4 即推薦', sub: '1 項符合 → 觀察清單', active: regime !== 'CAUTIOUS' },
+                { env: 'TWII < 60日均線', label: '保守模式', threshold: '需滿足 3/4 才推薦', sub: '1-2 項符合 → 觀察清單', active: regime === 'CAUTIOUS' },
               ].map(r => (
                 <div key={r.label} style={{ padding: '10px 14px', borderRadius: 8, background: r.active ? 'rgba(0,212,255,0.06)' : 'var(--bg-panel-2)', border: r.active ? '1px solid rgba(0,212,255,0.3)' : '1px solid transparent' }}>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{r.env}</div>

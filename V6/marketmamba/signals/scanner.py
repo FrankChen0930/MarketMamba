@@ -319,13 +319,11 @@ def run_scan(
     buy_signals = []
     watch_list = []
 
-    # I4: Weighted entry scoring (replaces binary 2/4 threshold)
-    _W_RANK  = 30   # rank stability weight
-    _W_CONF  = 25   # low uncertainty (Q30) weight
-    _W_INST  = 25   # institutional consecutive buy weight
-    _W_LOW   = 20   # relative low (RSI/MA20) weight
-    _BUY_SCORE   = 55 if market["regime"] == "NORMAL" else 70
-    _WATCH_SCORE = 30
+    # Weighted score weights (for display/reference only — BUY/WATCH uses conditions_met)
+    _W_RANK  = 30
+    _W_CONF  = 25
+    _W_INST  = 25
+    _W_LOW   = 20
 
     for _, row in top50.iterrows():
         ticker = str(row["Ticker"])
@@ -345,9 +343,9 @@ def run_scan(
         c3 = _check_relative_low(prices_df, ticker)
         c4 = _check_institutional(inst_df, ticker)
 
-        # I4: Weighted composite score
-        score = _W_RANK * c1["met"] + _W_CONF * c2["met"] + _W_INST * c4["met"] + _W_LOW * c3["met"]
         conditions_met = sum([c1["met"], c2["met"], c3["met"], c4["met"]])
+        # Score kept for display purposes (shows relative strength within same conditions_met tier)
+        score = _W_RANK * c1["met"] + _W_CONF * c2["met"] + _W_INST * c4["met"] + _W_LOW * c3["met"]
 
         signal_entry = {
             "ticker": ticker,
@@ -365,10 +363,10 @@ def run_scan(
             "institutional_buy": c4,
         }
 
-        if score >= _BUY_SCORE:
+        if conditions_met >= entry_threshold:
             buy_signals.append(signal_entry)
-            logger.info(f"  🔥 BUY: {ticker} (score={score})")
-        elif score >= _WATCH_SCORE:
+            logger.info(f"  🔥 BUY: {ticker} (conditions={conditions_met}/4, score={score})")
+        elif conditions_met >= 1:
             watch_list.append(signal_entry)
 
     # ── Check exit signals for current holdings ───────────────────────────
@@ -428,7 +426,7 @@ def run_scan(
         "scan_version": "1.2",
         "market_regime": market["regime"],
         "twii_vs_ma60": market.get("twii_vs_ma60", "N/A"),
-        "entry_threshold": f"≥{_BUY_SCORE}分",
+        "entry_threshold": f"≥{entry_threshold}/4條件",
         "uncertainty_threshold": round(unc_q30, 6),
         "total_scanned": len(top50),
         "buy_signals": buy_signals,
