@@ -93,22 +93,6 @@ async def _yf_v8(symbol: str) -> Tuple[float, float]:
     return 0.0, 0.0
 
 
-# ── FRED CSV API (VIX) ────────────────────────────────────────────────────────
-
-async def _fred_vix() -> float:
-    """Latest VIX level from FRED VIXCLS series."""
-    import httpx
-    try:
-        async with httpx.AsyncClient(timeout=12) as client:
-            r = await client.get("https://fred.stlouisfed.org/graph/fredgraph.csv?id=VIXCLS")
-        if r.status_code == 200 and "DATE" in r.text:
-            df = pd.read_csv(io.StringIO(r.text), header=0, names=["date", "value"])
-            df = df[df["value"] != "."].tail(5)
-            return float(df["value"].iloc[-1]) if not df.empty else 0.0
-    except Exception as e:
-        logger.warning(f"FRED VIX: {e}")
-    return 0.0
-
 
 # ── Exchange rates (USD/TWD + JPY/TWD from single call) ──────────────────────
 
@@ -156,14 +140,14 @@ async def _build_market() -> MarketStatusResponse:
     (
         meta,
         (twii_price, twii_pct),
-        vix,
+        (vix, _),
         (_, spx_pct),
         (_, gold_pct),
         (usd_twd, jpy_twd),
     ) = await asyncio.gather(
         _load_kelly_meta(),
         _fetch_taiex(),
-        _fred_vix(),
+        _yf_v8("%5EVIX"),       # VIX — Yahoo Finance v8 (FRED fails on Render)
         _yf_v8("%5EGSPC"),      # S&P 500
         _yf_v8("GC%3DF"),       # Gold futures
         _fetch_fx(),
