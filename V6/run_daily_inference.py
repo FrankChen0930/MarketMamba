@@ -51,6 +51,7 @@ from marketmamba.config import (
 )
 from marketmamba.data.fetcher import run_daily_update, load_ticker_universe
 from marketmamba.data.feature_engineer import build_features, clean_and_scale
+from marketmamba.knowledge.graph_builder import update_correlation_edges
 from marketmamba.llm.report_generator import generate_market_report, build_market_data
 
 logging.basicConfig(
@@ -399,7 +400,7 @@ def run_inference(
         df_traj    : multi-horizon predicted trajectories (5d, 20d, 60d)
     """
     from marketmamba.models.architecture import MarketMambaV6
-    from marketmamba.models.trainer import TemporalCrossSectionDataset, load_kg_edges
+    from marketmamba.models.trainer import TemporalCrossSectionDataset, build_kg_csr, get_batch_edges_csr
 
     device = torch.device(device_str)
 
@@ -436,8 +437,8 @@ def run_inference(
     if len(test_ds) == 0:
         raise ValueError(f"No valid cross-section found for {latest_str}")
 
-    # -- Load KG edges --
-    edge_index, edge_attr = load_kg_edges(df["stock_id"].unique().tolist(), device)
+    # -- Build KG CSR (once; per-batch subgraph extracted inside loop) --
+    kg_csr, stock_to_idx = build_kg_csr()
 
     # -- Inference with MC-Dropout uncertainty (mini-batch to fit 6 GB VRAM) --
     X, _, valid_stocks = test_ds[0]   # __getitem__ returns (X, Y, stock_ids)
@@ -453,6 +454,8 @@ def run_inference(
     with torch.no_grad():
         for batch_start in range(0, N, INFER_BATCH):
             x_b = X[batch_start: batch_start + INFER_BATCH].to(device)
+            batch_stocks = valid_stocks[batch_start: batch_start + INFER_BATCH]
+            edge_index, edge_attr = get_batch_edges_csr(batch_stocks, kg_csr, stock_to_idx, device)
             mc_preds = []
             for _mc in range(N_MC):
                 p = model(x_b, edge_index, edge_attr)   # (B, 3)
@@ -749,6 +752,17 @@ def main(target_date: str | None = None, skip_push: bool = False, forward_fill: 
         logger.info(f"特徵矩陣：{df.shape}")
         logger.info(f"[2/10] ✓ 完成 ({_fmt(elapsed)})")
         _step_update(1, "done", f"{df.shape[0]:,} × {df.shape[1]} 特徵{_freshness_note}")
+
+        # ── KG 滾動相關性邊更新（Step 2 後、Step 3 前） ──────────────────────
+        t0 = time.monotonic()
+        logger.info(f"\n{'─'*50}")
+        logger.info(f"[KG] 更新滾動相關性邊  [{datetime.now().strftime('%H:%M:%S')}]")
+        logger.info(f"{'─'*50}")
+        try:
+            update_correlation_edges(prices)
+            logger.info(f"[KG] ✓ 完成 ({_fmt(time.monotonic() - t0)})")
+        except Exception as _kg_err:
+            logger.warning(f"[KG] 相關性邊更新失敗（非致命，使用舊快取繼續）：{_kg_err}")
 
         # ── 步驟 3：模型推論 ─────────────────────────────────────────────────
         t0 = time.monotonic()
