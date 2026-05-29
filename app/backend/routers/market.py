@@ -1,14 +1,15 @@
 """
 Market router — Real data sources
 ===================================
-TAIEX + macro data from yfinance (^TWII, ^GSPC, ^VIX, GC=F, TWD=X)
+TAIEX + macro data from stooq.com (free, no auth required, Render-friendly)
 run_status + date derived from df_kelly.csv on GitHub
 """
+import asyncio
 import io
 import logging
 import os
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, Tuple
 
 import pandas as pd
 from fastapi import APIRouter
@@ -28,29 +29,43 @@ _MARKET_TTL = timedelta(minutes=5)
 _ticker_cache: Optional[TickerResponse] = None
 _ticker_cache_time: Optional[datetime] = None
 
+# stooq symbol map
+_STOOQ = {
+    "twii":   "^twii",     # TAIEX 加權指數
+    "vix":    "^vix",      # VIX 恐慌指數
+    "spx":    "^spx",      # S&P 500
+    "gold":   "xauusd",    # 黃金現貨 (USD/oz)
+    "usdtwd": "usdtwd",    # USD/TWD 匯率
+}
 
-def _safe_yf_pct(ticker: str) -> float:
-    """Get today's % change for a yfinance ticker. Returns 0.0 on failure."""
+
+async def _stooq_df(symbol: str) -> pd.DataFrame:
+    """Fetch last 5 daily OHLC rows from stooq.com. Returns empty DF on failure."""
+    url = f"https://stooq.com/q/d/l/?s={symbol}&i=d"
     try:
-        import yfinance as yf
-        df = yf.download(ticker, period="2d", auto_adjust=True, progress=False, timeout=8)
-        if len(df) >= 2:
-            return float((df["Close"].iloc[-1] / df["Close"].iloc[-2] - 1) * 100)
-    except Exception:
-        pass
-    return 0.0
+        import httpx
+        async with httpx.AsyncClient(timeout=10, follow_redirects=True) as client:
+            r = await client.get(url, headers={"User-Agent": "Mozilla/5.0"})
+        if r.status_code == 200 and "Date" in r.text:
+            df = pd.read_csv(io.StringIO(r.text))
+            return df.dropna(subset=["Close"]).tail(5)
+    except Exception as e:
+        logger.warning(f"stooq {symbol}: {e}")
+    return pd.DataFrame()
 
 
-def _safe_yf_price(ticker: str) -> float:
-    """Get latest closing price for a yfinance ticker."""
-    try:
-        import yfinance as yf
-        df = yf.download(ticker, period="2d", auto_adjust=True, progress=False, timeout=8)
-        if not df.empty:
-            return float(df["Close"].iloc[-1])
-    except Exception:
-        pass
-    return 0.0
+async def _stooq_price(symbol: str) -> float:
+    df = await _stooq_df(symbol)
+    return float(df["Close"].iloc[-1]) if not df.empty else 0.0
+
+
+async def _stooq_price_and_pct(symbol: str) -> Tuple[float, float]:
+    df = await _stooq_df(symbol)
+    if df.empty:
+        return 0.0, 0.0
+    price = float(df["Close"].iloc[-1])
+    pct = (price / float(df["Close"].iloc[-2]) - 1) * 100 if len(df) >= 2 else 0.0
+    return price, pct
 
 
 async def _load_kelly_meta() -> dict:
@@ -74,34 +89,32 @@ async def _load_kelly_meta() -> dict:
 
 
 async def _build_market() -> MarketStatusResponse:
-    meta = await _load_kelly_meta()
+    # Parallel fetch: Kelly meta + all stooq prices
+    meta, (twii_price, twii_pct), vix, (_, spx_pct), (_, gold_pct), usd_twd = await asyncio.gather(
+        _load_kelly_meta(),
+        _stooq_price_and_pct(_STOOQ["twii"]),
+        _stooq_price(_STOOQ["vix"]),
+        _stooq_price_and_pct(_STOOQ["spx"]),
+        _stooq_price_and_pct(_STOOQ["gold"]),
+        _stooq_price(_STOOQ["usdtwd"]),
+    )
+
     run_date = meta.get("date", datetime.today().strftime("%Y-%m-%d"))
-
-    # TAIEX real-time
-    twii_price = _safe_yf_price("^TWII")
-    twii_pct   = _safe_yf_pct("^TWII")
     twii_change = round(twii_price * twii_pct / 100, 2) if twii_price else 0.0
-
-    # Macro
-    spx_pct  = _safe_yf_pct("^GSPC")
-    vix      = _safe_yf_price("^VIX")
-    gold_pct = _safe_yf_pct("GC=F")
-    usd_twd  = _safe_yf_price("TWD=X")
 
     return MarketStatusResponse(
         taiex=TaiexStatus(
-            value=round(twii_price, 1) if twii_price else 0.0,
+            value=round(twii_price, 1),
             change=twii_change,
             change_pct=round(twii_pct, 2),
         ),
         advancing=meta.get("advancing", 0),
         declining=meta.get("declining", 0),
-        model_ic=0.1235,          # Best WF fold IC (F03, real data)
+        model_ic=0.1235,
         last_run=run_date,
         run_status="completed" if run_date else "not_ready",
         training_epoch=None,
         training_status="completed",
-        # Macro fields
         spx_change=round(spx_pct, 2),
         vix=round(vix, 2),
         gold_change=round(gold_pct, 2),
@@ -127,19 +140,16 @@ async def get_ticker():
     if _ticker_cache and _ticker_cache_time and datetime.now() - _ticker_cache_time < timedelta(minutes=5):
         return _ticker_cache
 
-    items = []
-    # TAIEX first
-    twii_price = _safe_yf_price("^TWII")
-    twii_pct   = _safe_yf_pct("^TWII")
-    items.append(TickerItem(
+    twii_price, twii_pct = await _stooq_price_and_pct(_STOOQ["twii"])
+    items = [TickerItem(
         id="TAIEX", name="加權",
         price=f"{twii_price:,.0f}" if twii_price else "—",
         change=f"{twii_price * twii_pct / 100:+.1f}" if twii_price else "—",
         pct=f"{twii_pct:+.2f}%" if twii_pct else "—",
         up=twii_pct >= 0,
-    ))
+    )]
 
-    # Try to grab top stocks from GitHub signals
+    # Top stocks from GitHub signals
     if GITHUB_RESULTS_URL:
         try:
             import httpx, sys, pathlib
@@ -153,18 +163,16 @@ async def get_ticker():
                 info = await get_stock_info()
                 for _, row in df.iterrows():
                     ticker = str(row["Ticker"])
-                    pct = _safe_yf_pct(f"{ticker}.TW")
                     items.append(TickerItem(
                         id=ticker,
                         name=get_stock_name(ticker, info),
                         price="—",
-                        change=f"{pct:+.2f}%" if pct != 0 else "—",
-                        pct=f"{pct:+.2f}%" if pct != 0 else "—",
-                        up=pct >= 0,
+                        change="—",
+                        pct="—",
+                        up=True,
                     ))
         except Exception as e:
             logger.warning(f"Ticker build failed: {e}")
-
 
     _ticker_cache = TickerResponse(items=items)
     _ticker_cache_time = datetime.now()
