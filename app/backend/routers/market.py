@@ -1,9 +1,10 @@
 """
 Market router — Real data sources
 ===================================
-TAIEX : TWSE mis real-time API (gov, no IP restriction)
-VIX / SPX / Gold : FRED CSV API (US Fed, open data)
-USD/TWD : open.er-api.com (free, no auth)
+TAIEX    : TWSE mis API (gov) → Yahoo Finance v8 fallback
+SPX/Gold : Yahoo Finance v8 JSON API (direct HTTP, no library)
+VIX      : FRED CSV API
+USD/TWD, JPY/TWD : open.er-api.com
 advancing/declining + run_date : df_kelly.csv on GitHub
 """
 import asyncio
@@ -31,64 +32,106 @@ _MARKET_TTL = timedelta(minutes=5)
 _ticker_cache: Optional[TickerResponse] = None
 _ticker_cache_time: Optional[datetime] = None
 
-_HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; MarketMamba/1.0)"}
+_BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36"
 
+
+# ── TAIEX (TWSE real-time → Yahoo Finance v8 fallback) ────────────────────────
 
 async def _fetch_taiex() -> Tuple[float, float]:
-    """Return (current_price, pct_change) from TWSE real-time index API."""
+    """Return (current_price, pct_change). Tries TWSE first, then Yahoo v8."""
     import httpx
-    url = "https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=tse_t00.tw&json=1&delay=0"
+
+    # Primary: TWSE real-time index API
     try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            r = await client.get(url, headers=_HEADERS)
+        url = "https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=tse_t00.tw&json=1&delay=0"
+        headers = {
+            "User-Agent": _BROWSER_UA,
+            "Referer": "https://www.twse.com.tw",
+            "Accept": "application/json",
+        }
+        async with httpx.AsyncClient(timeout=8) as client:
+            r = await client.get(url, headers=headers)
         if r.status_code == 200:
-            msg = r.json()["msgArray"][0]
-            price = float(msg.get("z") or 0)
-            prev  = float(msg.get("y") or 0)
+            msg = r.json().get("msgArray", [{}])[0]
+            z = msg.get("z", "-")
+            y = msg.get("y", "0")
+            # z can be "-" when market is closed → fall back to yesterday's close
+            price = float(z) if z and z != "-" else float(y or 0)
+            prev  = float(y or 0)
+            if price and prev:
+                pct = (price / prev - 1) * 100
+                return price, pct
+    except Exception as e:
+        logger.warning(f"TWSE TAIEX: {e}")
+
+    # Fallback: Yahoo Finance v8 JSON API
+    return await _yf_v8("%5ETWII")
+
+
+# ── Yahoo Finance v8 JSON API (direct HTTP, no yfinance library) ───────────────
+
+async def _yf_v8(symbol: str) -> Tuple[float, float]:
+    """Return (price, pct_change) from Yahoo Finance v8 chart API."""
+    import httpx
+    url = f"https://query2.finance.yahoo.com/v8/finance/chart/{symbol}?interval=1d&range=5d"
+    headers = {
+        "User-Agent": _BROWSER_UA,
+        "Accept": "application/json",
+        "Accept-Language": "en-US,en;q=0.9",
+    }
+    try:
+        async with httpx.AsyncClient(timeout=10, follow_redirects=True) as client:
+            r = await client.get(url, headers=headers)
+        if r.status_code == 200:
+            meta  = r.json()["chart"]["result"][0]["meta"]
+            price = float(meta.get("regularMarketPrice") or 0)
+            prev  = float(meta.get("chartPreviousClose") or 0)
             pct   = (price / prev - 1) * 100 if prev else 0.0
             return price, pct
     except Exception as e:
-        logger.warning(f"TWSE TAIEX: {e}")
+        logger.warning(f"Yahoo v8 {symbol}: {e}")
     return 0.0, 0.0
 
 
-async def _fred_latest_and_pct(series_id: str) -> Tuple[float, float]:
-    """Return (latest_value, pct_change_from_prev) from FRED CSV API."""
+# ── FRED CSV API (VIX) ────────────────────────────────────────────────────────
+
+async def _fred_vix() -> float:
+    """Latest VIX level from FRED VIXCLS series."""
     import httpx
-    url = f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}"
     try:
         async with httpx.AsyncClient(timeout=12) as client:
-            r = await client.get(url)
-        if r.status_code == 200:
+            r = await client.get("https://fred.stlouisfed.org/graph/fredgraph.csv?id=VIXCLS")
+        if r.status_code == 200 and "DATE" in r.text:
             df = pd.read_csv(io.StringIO(r.text), header=0, names=["date", "value"])
             df = df[df["value"] != "."].tail(5)
-            if df.empty:
-                return 0.0, 0.0
-            latest = float(df["value"].iloc[-1])
-            prev   = float(df["value"].iloc[-2]) if len(df) >= 2 else 0.0
-            pct    = (latest / prev - 1) * 100 if prev else 0.0
-            return latest, pct
+            return float(df["value"].iloc[-1]) if not df.empty else 0.0
     except Exception as e:
-        logger.warning(f"FRED {series_id}: {e}")
-    return 0.0, 0.0
-
-
-async def _fetch_usd_twd() -> float:
-    """Return USD/TWD rate from open.er-api.com (free, no auth)."""
-    import httpx
-    url = "https://open.er-api.com/v6/latest/USD"
-    try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            r = await client.get(url)
-        if r.status_code == 200:
-            return float(r.json().get("rates", {}).get("TWD", 0))
-    except Exception as e:
-        logger.warning(f"ExchangeRate USD/TWD: {e}")
+        logger.warning(f"FRED VIX: {e}")
     return 0.0
 
 
+# ── Exchange rates (USD/TWD + JPY/TWD from single call) ──────────────────────
+
+async def _fetch_fx() -> Tuple[float, float]:
+    """Return (usd_twd, jpy_twd) from open.er-api.com. jpy_twd = 100 JPY in TWD."""
+    import httpx
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.get("https://open.er-api.com/v6/latest/USD")
+        if r.status_code == 200:
+            rates   = r.json().get("rates", {})
+            usd_twd = float(rates.get("TWD", 0))
+            jpy_usd = float(rates.get("JPY", 0))
+            jpy_twd = round(usd_twd / jpy_usd * 100, 3) if jpy_usd else 0.0
+            return usd_twd, jpy_twd
+    except Exception as e:
+        logger.warning(f"ExchangeRate FX: {e}")
+    return 0.0, 0.0
+
+
+# ── Kelly metadata from GitHub ────────────────────────────────────────────────
+
 async def _load_kelly_meta() -> dict:
-    """Read run date and signal stats from GitHub df_kelly.csv."""
     if not GITHUB_RESULTS_URL:
         return {}
     try:
@@ -101,28 +144,29 @@ async def _load_kelly_meta() -> dict:
         date_str  = str(df["Date"].iloc[0]) if "Date" in df.columns else ""
         advancing = int((df["Exp_Alpha_20d"] > 0).sum()) if "Exp_Alpha_20d" in df.columns else 0
         declining = int((df["Exp_Alpha_20d"] <= 0).sum()) if "Exp_Alpha_20d" in df.columns else 0
-        return {"date": date_str, "advancing": advancing, "declining": declining, "total": len(df)}
+        return {"date": date_str, "advancing": advancing, "declining": declining}
     except Exception as e:
-        logger.warning(f"Kelly meta load failed: {e}")
+        logger.warning(f"Kelly meta: {e}")
         return {}
 
 
+# ── Build market response ─────────────────────────────────────────────────────
+
 async def _build_market() -> MarketStatusResponse:
-    # Parallel fetch all data sources
     (
         meta,
         (twii_price, twii_pct),
-        (vix, _),
+        vix,
         (_, spx_pct),
         (_, gold_pct),
-        usd_twd,
+        (usd_twd, jpy_twd),
     ) = await asyncio.gather(
         _load_kelly_meta(),
         _fetch_taiex(),
-        _fred_latest_and_pct("VIXCLS"),    # VIX
-        _fred_latest_and_pct("SP500"),     # S&P 500
-        _fred_latest_and_pct("GOLDAMGBD228NLBM"),  # Gold
-        _fetch_usd_twd(),
+        _fred_vix(),
+        _yf_v8("%5EGSPC"),      # S&P 500
+        _yf_v8("GC%3DF"),       # Gold futures
+        _fetch_fx(),
     )
 
     run_date    = meta.get("date", datetime.today().strftime("%Y-%m-%d"))
@@ -145,8 +189,11 @@ async def _build_market() -> MarketStatusResponse:
         vix=round(vix, 2),
         gold_change=round(gold_pct, 2),
         usd_twd=round(usd_twd, 3),
+        jpy_twd=round(jpy_twd, 3),
     )
 
+
+# ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @router.get("", response_model=MarketStatusResponse)
 async def get_market_status():
@@ -161,7 +208,7 @@ async def get_market_status():
 
 @router.get("/ticker", response_model=TickerResponse)
 async def get_ticker():
-    """Ticker bar — top 8 stocks from signals + TAIEX"""
+    """Ticker bar — TAIEX + top stocks from signals"""
     global _ticker_cache, _ticker_cache_time
     if _ticker_cache and _ticker_cache_time and datetime.now() - _ticker_cache_time < timedelta(minutes=5):
         return _ticker_cache
@@ -175,7 +222,6 @@ async def get_ticker():
         up=twii_pct >= 0,
     )]
 
-    # Top stocks from GitHub signals
     if GITHUB_RESULTS_URL:
         try:
             import httpx, sys, pathlib
@@ -192,10 +238,7 @@ async def get_ticker():
                     items.append(TickerItem(
                         id=ticker,
                         name=get_stock_name(ticker, info),
-                        price="—",
-                        change="—",
-                        pct="—",
-                        up=True,
+                        price="—", change="—", pct="—", up=True,
                     ))
         except Exception as e:
             logger.warning(f"Ticker build failed: {e}")

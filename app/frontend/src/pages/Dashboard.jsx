@@ -278,6 +278,10 @@ export default function Dashboard() {
                   label="USD / TWD"
                   value={market?.usd_twd?.toFixed(3) ?? '—'}
                 />
+                <MacroRow
+                  label="100 JPY / TWD"
+                  value={market?.jpy_twd ? market.jpy_twd.toFixed(3) : '—'}
+                />
                 <div style={{ paddingTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   <span className="badge badge-neutral" style={{ fontSize: 10 }}>
                     漲 {market?.advancing ?? '—'} 跌 {market?.declining ?? '—'}
