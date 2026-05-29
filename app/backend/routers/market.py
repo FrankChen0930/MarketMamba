@@ -1,7 +1,8 @@
 """
 Market router — Real data sources
 ===================================
-TAIEX + macro data from stooq.com (free, no auth required, Render-friendly)
+TAIEX + macro data from Yahoo Finance v8 JSON API (direct HTTP, no yfinance library)
+VIX fallback: FRED CSV API
 run_status + date derived from df_kelly.csv on GitHub
 """
 import asyncio
@@ -29,43 +30,46 @@ _MARKET_TTL = timedelta(minutes=5)
 _ticker_cache: Optional[TickerResponse] = None
 _ticker_cache_time: Optional[datetime] = None
 
-# stooq symbol map
-_STOOQ = {
-    "twii":   "^twii",     # TAIEX 加權指數
-    "vix":    "^vix",      # VIX 恐慌指數
-    "spx":    "^spx",      # S&P 500
-    "gold":   "xauusd",    # 黃金現貨 (USD/oz)
-    "usdtwd": "usdtwd",    # USD/TWD 匯率
+_YF_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "Accept": "application/json",
 }
+_YF_BASE = "https://query1.finance.yahoo.com/v8/finance/chart"
 
 
-async def _stooq_df(symbol: str) -> pd.DataFrame:
-    """Fetch last 5 daily OHLC rows from stooq.com. Returns empty DF on failure."""
-    url = f"https://stooq.com/q/d/l/?s={symbol}&i=d"
+async def _yf_price_and_pct(symbol: str) -> Tuple[float, float]:
+    """Fetch regularMarketPrice and % change from Yahoo Finance v8 JSON API."""
+    import httpx
+    url = f"{_YF_BASE}/{symbol}?interval=1d&range=5d"
     try:
-        import httpx
         async with httpx.AsyncClient(timeout=10, follow_redirects=True) as client:
-            r = await client.get(url, headers={"User-Agent": "Mozilla/5.0"})
-        if r.status_code == 200 and "Date" in r.text:
-            df = pd.read_csv(io.StringIO(r.text))
-            return df.dropna(subset=["Close"]).tail(5)
+            r = await client.get(url, headers=_YF_HEADERS)
+        if r.status_code == 200:
+            meta = r.json()["chart"]["result"][0]["meta"]
+            price = float(meta.get("regularMarketPrice") or 0)
+            prev  = float(meta.get("chartPreviousClose") or 0)
+            pct   = (price / prev - 1) * 100 if prev else 0.0
+            return price, pct
     except Exception as e:
-        logger.warning(f"stooq {symbol}: {e}")
-    return pd.DataFrame()
+        logger.warning(f"yf_v8 {symbol}: {e}")
+    return 0.0, 0.0
 
 
-async def _stooq_price(symbol: str) -> float:
-    df = await _stooq_df(symbol)
-    return float(df["Close"].iloc[-1]) if not df.empty else 0.0
-
-
-async def _stooq_price_and_pct(symbol: str) -> Tuple[float, float]:
-    df = await _stooq_df(symbol)
-    if df.empty:
-        return 0.0, 0.0
-    price = float(df["Close"].iloc[-1])
-    pct = (price / float(df["Close"].iloc[-2]) - 1) * 100 if len(df) >= 2 else 0.0
-    return price, pct
+async def _fred_vix() -> float:
+    """Fetch latest VIX closing price from FRED CSV (free, no auth)."""
+    import httpx
+    url = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=VIXCLS"
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.get(url)
+        if r.status_code == 200:
+            df = pd.read_csv(io.StringIO(r.text))
+            df.columns = ["date", "value"]
+            df = df[df["value"] != "."].tail(5)
+            return float(df["value"].iloc[-1])
+    except Exception as e:
+        logger.warning(f"FRED VIX: {e}")
+    return 0.0
 
 
 async def _load_kelly_meta() -> dict:
@@ -79,7 +83,7 @@ async def _load_kelly_meta() -> dict:
             if r.status_code != 200:
                 return {}
         df = pd.read_csv(io.StringIO(r.text))
-        date_str = str(df["Date"].iloc[0]) if "Date" in df.columns else ""
+        date_str  = str(df["Date"].iloc[0]) if "Date" in df.columns else ""
         advancing = int((df["Exp_Alpha_20d"] > 0).sum()) if "Exp_Alpha_20d" in df.columns else 0
         declining = int((df["Exp_Alpha_20d"] <= 0).sum()) if "Exp_Alpha_20d" in df.columns else 0
         return {"date": date_str, "advancing": advancing, "declining": declining, "total": len(df)}
@@ -89,17 +93,21 @@ async def _load_kelly_meta() -> dict:
 
 
 async def _build_market() -> MarketStatusResponse:
-    # Parallel fetch: Kelly meta + all stooq prices
-    meta, (twii_price, twii_pct), vix, (_, spx_pct), (_, gold_pct), usd_twd = await asyncio.gather(
-        _load_kelly_meta(),
-        _stooq_price_and_pct(_STOOQ["twii"]),
-        _stooq_price(_STOOQ["vix"]),
-        _stooq_price_and_pct(_STOOQ["spx"]),
-        _stooq_price_and_pct(_STOOQ["gold"]),
-        _stooq_price(_STOOQ["usdtwd"]),
-    )
+    # Parallel fetch: Kelly meta + all market prices
+    meta, (twii_price, twii_pct), (vix_price, _), (_, spx_pct), (_, gold_pct), (usd_twd, _) = \
+        await asyncio.gather(
+            _load_kelly_meta(),
+            _yf_price_and_pct("%5ETWII"),   # TAIEX
+            _yf_price_and_pct("%5EVIX"),    # VIX (price only)
+            _yf_price_and_pct("%5EGSPC"),   # S&P 500
+            _yf_price_and_pct("GC%3DF"),    # Gold futures
+            _yf_price_and_pct("TWD%3DX"),   # USD/TWD
+        )
 
-    run_date = meta.get("date", datetime.today().strftime("%Y-%m-%d"))
+    # FRED as VIX fallback if Yahoo returned 0
+    vix = vix_price if vix_price else await _fred_vix()
+
+    run_date    = meta.get("date", datetime.today().strftime("%Y-%m-%d"))
     twii_change = round(twii_price * twii_pct / 100, 2) if twii_price else 0.0
 
     return MarketStatusResponse(
@@ -140,7 +148,7 @@ async def get_ticker():
     if _ticker_cache and _ticker_cache_time and datetime.now() - _ticker_cache_time < timedelta(minutes=5):
         return _ticker_cache
 
-    twii_price, twii_pct = await _stooq_price_and_pct(_STOOQ["twii"])
+    twii_price, twii_pct = await _yf_price_and_pct("%5ETWII")
     items = [TickerItem(
         id="TAIEX", name="加權",
         price=f"{twii_price:,.0f}" if twii_price else "—",
