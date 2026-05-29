@@ -88,8 +88,6 @@ export default function Dashboard() {
   const sig20d = _byAlpha('alpha_20d');
   const sig60d = _byAlpha('alpha_60d');
   const displayed  = activeTab === '5d' ? sig5d : activeTab === '60d' ? sig60d : sig20d;
-  const topSignals = sig20d;
-
   const loading = sigLoading || mktLoading;
   const taiex   = market?.taiex;
   const taiexUp = (taiex?.change ?? 0) >= 0;
@@ -302,30 +300,6 @@ export default function Dashboard() {
               {sigLoading ? <SkeletonBlock height={140} /> : (
                 <SectorHeatmap signals={signals} />
               )}
-            </div>
-          </div>
-
-          {/* Top 5 Alpha stocks condensed */}
-          <div className="panel dash-panel-top5" style={{ borderColor: 'rgba(0,255,136,0.15)', background: 'rgba(0,255,136,0.02)' }}>
-            <div className="panel-header">
-              <div className="panel-title"><span>🏆</span> 今日 Top 5</div>
-            </div>
-            <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {sigLoading ? <SkeletonBlock height={100} /> : topSignals.slice(0, 5).map((s, i) => (
-                <div key={s.stock_id} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
-                  onClick={() => setSelectedStock(s)}>
-                  <span style={{ color: 'var(--accent-amber)', fontSize: 12, minWidth: 16, fontFamily: 'var(--font-mono)' }}>
-                    {i + 1}
-                  </span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 12, fontWeight: 600 }}>{s.name}</div>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{s.stock_id} · {s.sector}</div>
-                  </div>
-                  <span className="text-positive mono" style={{ fontSize: 12 }}>
-                    +{(s.alpha_20d * 100).toFixed(2)}%
-                  </span>
-                </div>
-              ))}
             </div>
           </div>
 
