@@ -971,6 +971,12 @@ def main(target_date: str | None = None, skip_push: bool = False, forward_fill: 
             logger.warning(f"型態學掃描失敗（非致命）：{e} ({_fmt(elapsed)})")
             _step_update(8, "skipped", str(e)[:60])
 
+        # ── 追蹤記錄（Step 10 之前，失敗不影響主流程） ─────────────────────────
+        try:
+            _append_tracker_entry(today, df_kelly, pipeline_start)
+        except Exception as _trk_err:
+            logger.warning(f"[Tracker] 寫入失敗（非致命）：{_trk_err}")
+
         # ── 步驟 10：推送 GitHub ──────────────────────────────────────────────
         logger.info(f"\n{'─'*50}")
         logger.info(f"[10/10] 推送 GitHub  [{datetime.now().strftime('%H:%M:%S')}]")
@@ -1165,6 +1171,107 @@ def _update_history_index(df_kelly: pd.DataFrame, date_str: str) -> None:
     logger.info(f"History index updated → {history_path} ({len(history)} entries)")
 
 
+def _append_tracker_entry(
+    date_str:       str,
+    df_kelly:       "pd.DataFrame",
+    pipeline_start: float,
+) -> None:
+    """
+    Append one JSON record to V6/logs/model_tracker.jsonl.
+
+    Fields written:
+      date, val_ic, top50, ic_analysis, scanner_summary, inference_duration_sec
+
+    Called from main() just before Step 10 (git push).
+    All exceptions are caught by the caller — this function should not raise.
+    """
+    import json as _json
+
+    log_dir  = Path(__file__).parent / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    tracker_path = log_dir / "model_tracker.jsonl"
+
+    # ── checkpoint val_ic ────────────────────────────────────────────────────
+    ckpt_val_ic: "float | None" = None
+    ckpt_epoch:  "int | None"   = None
+    try:
+        from marketmamba.models.trainer import TrainingHistory as _TH
+        torch.serialization.add_safe_globals([_TH])
+        _ckpt = torch.load(
+            MODELS_DIR / "v6_best.pt",
+            map_location="cpu",
+            weights_only=False,
+        )
+        ckpt_val_ic = _ckpt.get("val_ic")
+        ckpt_epoch  = _ckpt.get("epoch")
+    except Exception as _e:
+        logger.debug(f"[Tracker] checkpoint read failed: {_e}")
+
+    # ── top 50 by Signal_Quality ─────────────────────────────────────────────
+    top50_records: list = []
+    try:
+        _investable = df_kelly[df_kelly["Exp_Alpha_20d"] > -999].copy()
+        _top50 = _investable.nlargest(50, "Signal_Quality")
+        _want  = ["Ticker", "Exp_Alpha_20d", "Signal_Quality",
+                  "Confidence", "Suggested_Weight"]
+        for _, _row in _top50[[c for c in _want if c in _top50.columns]].iterrows():
+            top50_records.append({
+                "ticker":    str(_row.get("Ticker", "")),
+                "alpha_20d": round(float(_row.get("Exp_Alpha_20d", 0)), 6),
+                "sharpe":    round(float(_row.get("Signal_Quality",  0)), 3),
+                "confidence":str(_row.get("Confidence", "")),
+                "weight":    round(float(_row.get("Suggested_Weight", 0)), 4),
+            })
+    except Exception as _e:
+        logger.debug(f"[Tracker] top50 build failed: {_e}")
+
+    # ── ic_analysis (horizon_summary only) ───────────────────────────────────
+    ic_analysis: dict = {}
+    try:
+        _ic_path = RESULTS_DIR / "ic_analysis.json"
+        if _ic_path.exists():
+            with open(_ic_path, encoding="utf-8") as _f:
+                _ic_data = _json.load(_f)
+            ic_analysis = {
+                "generated_date": _ic_data.get("generated_date"),
+                "period_start":   _ic_data.get("period_start"),
+                "period_end":     _ic_data.get("period_end"),
+                "horizon_summary": _ic_data.get("horizon_summary", {}),
+            }
+    except Exception as _e:
+        logger.debug(f"[Tracker] ic_analysis read failed: {_e}")
+
+    # ── scanner_summary from action_signals.json ─────────────────────────────
+    scanner_summary: dict = {}
+    try:
+        _sig_path = RESULTS_DIR / "action_signals.json"
+        if _sig_path.exists():
+            with open(_sig_path, encoding="utf-8") as _f:
+                _sig = _json.load(_f)
+            scanner_summary = {
+                "n_buy":        len(_sig.get("buy_signals",  [])),
+                "n_exit":       len(_sig.get("exit_signals", [])),
+                "n_watch":      len(_sig.get("watch_list",   [])),
+                "market_regime": _sig.get("market_regime", "UNKNOWN"),
+            }
+    except Exception as _e:
+        logger.debug(f"[Tracker] scanner_summary read failed: {_e}")
+
+    # ── assemble & append ────────────────────────────────────────────────────
+    record = {
+        "date":                 date_str,
+        "val_ic":               round(ckpt_val_ic, 6) if ckpt_val_ic is not None else None,
+        "checkpoint_epoch":     ckpt_epoch,
+        "top50":                top50_records,
+        "ic_analysis":          ic_analysis,
+        "scanner_summary":      scanner_summary,
+        "inference_duration_sec": int(time.monotonic() - pipeline_start),
+    }
+
+    with open(tracker_path, "a", encoding="utf-8") as _fh:
+        _fh.write(_json.dumps(record, ensure_ascii=False) + "\n")
+
+    logger.info(f"[Tracker] 記錄已寫入 → {tracker_path.name} ({date_str})")
 
 
 if __name__ == "__main__":
