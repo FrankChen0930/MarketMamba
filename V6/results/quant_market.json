@@ -1,15 +1,15 @@
 {
-  "date": "2026-06-01",
-  "generated_at": "2026-06-01T20:06:12",
+  "date": "2026-06-02",
+  "generated_at": "2026-06-03T01:32:44",
   "taiex_technicals": {
     "close": 45338.0,
     "ma_20": 42165.0,
     "ma_60": 37473.0,
     "ma_120": 37473.0,
     "rsi_14": 74.78,
-    "macd": 1688.23,
-    "macd_signal": 1516.4,
-    "macd_hist": 171.82,
+    "macd": 1688.2,
+    "macd_signal": 1516.36,
+    "macd_hist": 171.84,
     "kd_k": 85.82,
     "kd_d": 78.9,
     "bb_pct_b": 1.0248,
@@ -118,18 +118,11 @@
     ]
   },
   "institutional": {
-    "foreign_net_5d_bn": -13897.7,
+    "foreign_net_5d_bn": -7260.5,
     "investment_trust_net_5d_bn": 0.0,
-    "dealer_net_5d_bn": -1679.4,
-    "total_net_5d_bn": -15577.1,
+    "dealer_net_5d_bn": -1377.2,
+    "total_net_5d_bn": -8637.7,
     "history": [
-      {
-        "date": "2026-05-26",
-        "date_label": "05/26",
-        "foreign_net": -7349.8,
-        "investment_trust_net": 0.0,
-        "dealer_net": -190.1
-      },
       {
         "date": "2026-05-27",
         "date_label": "05/27",
@@ -157,17 +150,17 @@
         "foreign_net": 943.0,
         "investment_trust_net": 0.0,
         "dealer_net": -741.7
+      },
+      {
+        "date": "2026-06-02",
+        "date_label": "06/02",
+        "foreign_net": -712.6,
+        "investment_trust_net": 0.0,
+        "dealer_net": 112.2
       }
     ]
   },
   "breadth_history": [
-    {
-      "date": "2026-05-26",
-      "date_label": "05/26",
-      "adv": 2948,
-      "dec": 2949,
-      "ratio": 1.0
-    },
     {
       "date": "2026-05-27",
       "date_label": "05/27",
@@ -195,6 +188,13 @@
       "adv": 1247,
       "dec": 604,
       "ratio": 2.06
+    },
+    {
+      "date": "2026-06-02",
+      "date_label": "06/02",
+      "adv": 864,
+      "dec": 953,
+      "ratio": 0.91
     }
   ],
   "margin": {
@@ -206,7 +206,7 @@
   "sector_flow": [
     {
       "sector": "水泥工業",
-      "net_5d_bn": -13897.7,
+      "net_5d_bn": -7260.5,
       "direction": "out"
     }
   ]
