@@ -194,6 +194,10 @@ class MultiScaleMambaEncoder(nn.Module):
         )
         self.norm = nn.LayerNorm(d_model)
 
+        # Stores the last forward-pass scale weights for external monitoring.
+        # Shape: (N_stocks, 3) — updated each forward(), detached from grad graph.
+        self._last_scales: torch.Tensor | None = None
+
     def forward(self, x: Tensor) -> Tensor:
         # x: (N, 252, d_model) — full year window required
         h_short = self.mamba_short(x[:, -self.seq_short:, :])[:, -1, :]   # (N, d_model)
@@ -203,6 +207,7 @@ class MultiScaleMambaEncoder(nn.Module):
         # Adaptive scale fusion
         cat_h  = torch.cat([h_short, h_mid, h_long], dim=-1)   # (N, d_model*3)
         scales = self.scale_gate(cat_h)                          # (N, 3)
+        self._last_scales = scales.detach()                      # V6.2: expose for monitoring
 
         fused = (
             scales[:, 0:1] * h_short

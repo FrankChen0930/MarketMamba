@@ -52,12 +52,12 @@ def build_features(
     df_fed_rate:      pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     """
-    Merge all raw data sources and compute the 56-dim feature matrix (V6.1).
+    Merge all raw data sources and compute the 59-dim feature matrix (V6.2).
 
     Returns:
-        df : MultiIndex [Date, stock_id] with all 56 feature columns + target columns
+        df : MultiIndex [Date, stock_id] with all 59 feature columns + target columns
     """
-    logger.info("Building V6.1 feature matrix (56D)...")
+    logger.info("Building V6.2 feature matrix (59D)...")
 
     df = df_price.copy()
     df["Date"] = pd.to_datetime(df["Date"])
@@ -85,6 +85,10 @@ def build_features(
     # -- Group D: Macro --
     df = _merge_macro(df, df_macro, df_fear_greed, df_business_indicator,
                       df_fed_rate, df_futures_inst, df_options_inst)  # V6.1 expanded
+
+    # -- Group A addition: RS relative-strength vs TWII (V6.2) --
+    # Must run after _merge_macro so TWII_Return_5d/20d/60d are available.
+    df = _add_rs_features(df)
 
     # -- Targets: 5d / 20d / 60d Alpha vs TWII --
     df = _add_alpha_targets(df, df_macro)
@@ -137,6 +141,40 @@ def _add_price_momentum_features(df: pd.DataFrame) -> pd.DataFrame:
     df["Volatility_20d"] = log_ret.groupby(df["stock_id"]).transform(
         lambda x: x.rolling(20, min_periods=10).std()
     )
+
+    return df
+
+
+# ============================================================
+# Group A Addition — RS Relative Strength vs TWII (V6.2)
+# ============================================================
+
+def _add_rs_features(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Compute RS_5d, RS_20d, RS_60d = stock return - TWII return over the same window.
+
+    Prerequisites (both must already be in df before this function is called):
+      - Return_5d, Return_20d: computed by _add_price_momentum_features()
+      - TWII_Return_5d, TWII_Return_20d, TWII_Return_60d: merged by _merge_macro()
+
+    Return_60d is not in FEATURE_COLS so it is computed here as a temporary column.
+    """
+    g = df.groupby("stock_id", sort=False)
+
+    # Return_60d: temporary intermediate, not added to FEATURE_COLS
+    tmp_return_60d = g["Close"].pct_change(60)
+
+    twii_5d  = df.get("TWII_Return_5d",  pd.Series(0.0, index=df.index))
+    twii_20d = df.get("TWII_Return_20d", pd.Series(0.0, index=df.index))
+    twii_60d = df.get("TWII_Return_60d", pd.Series(0.0, index=df.index))
+
+    df["RS_5d"]  = df["Return_5d"]  - twii_5d
+    df["RS_20d"] = df["Return_20d"] - twii_20d
+    df["RS_60d"] = tmp_return_60d   - twii_60d
+
+    # Fill forward within stock then fill remaining NaN with 0
+    for col in ["RS_5d", "RS_20d", "RS_60d"]:
+        df[col] = df.groupby("stock_id")[col].transform(lambda x: x.ffill().fillna(0.0))
 
     return df
 
@@ -800,11 +838,21 @@ def _merge_macro(
             if raw in m.columns:
                 m[ret] = m[raw].pct_change(1).fillna(0)
 
+        # V6.2: multi-period TWII returns for RS feature computation.
+        # These are intermediate columns merged into df so _add_rs_features() can use them;
+        # they are NOT in FEATURE_COLS and will be excluded by the final column reorder.
+        if "TWII" in m.columns:
+            m["TWII_Return_5d"]  = m["TWII"].pct_change(5).fillna(0)
+            m["TWII_Return_20d"] = m["TWII"].pct_change(20).fillna(0)
+            m["TWII_Return_60d"] = m["TWII"].pct_change(60).fillna(0)
+
         # Columns to merge from macro_raw (now includes FED_Rate, Fear_Greed, Business_Signal)
+        # TWII_Return_5d/20d/60d are intermediate helpers for RS features (V6.2), not FEATURE_COLS.
         want = [c for c in [
             "TWII_Return", "SPX_Return", "VIX", "TNX",
             "Gold_Return", "Oil_Return", "USD_TWD",
             "FED_Rate", "Fear_Greed", "Business_Signal",
+            "TWII_Return_5d", "TWII_Return_20d", "TWII_Return_60d",
         ] if c in m.columns]
         df = df.merge(m[["Date"] + want], on="Date", how="left", suffixes=("", "_m"))
         for col in want:

@@ -50,6 +50,10 @@ logger = logging.getLogger(__name__)
 
 TARGET_COLS = [f"Alpha_{h}d" for h in PRED_HORIZONS]
 
+# V6.2: set True to activate zero-padding mask once scale_gate logs confirm
+# the model is not relying on padded timesteps.
+USE_PADDING_MASK = False
+
 
 # ============================================================
 # Dataset — LAZY LOADING (critical fix)
@@ -143,6 +147,10 @@ class TemporalCrossSectionDataset(Dataset):
         stocks_today = self._date_stocks.get(dt, [])
 
         X_list, Y_list, valid_stocks = [], [], []
+        # V6.2: padding_mask tracks which timesteps are real data (True) vs zero-pad (False).
+        # Only built when USE_PADDING_MASK is True; otherwise mask_list stays empty.
+        mask_list: list[np.ndarray] = []
+
         for sid in stocks_today:
             stock = self._stock_index.get(sid)
             if stock is None:
@@ -159,8 +167,17 @@ class TemporalCrossSectionDataset(Dataset):
             if n < self.seq_len:
                 pad   = np.zeros((self.seq_len - n, INPUT_DIM), dtype=np.float32)
                 feats = np.vstack([pad, feats])
+                if USE_PADDING_MASK:
+                    # False = padded (zero), True = real data
+                    pmask = np.concatenate([
+                        np.zeros(self.seq_len - n, dtype=bool),
+                        np.ones(n, dtype=bool),
+                    ])
+                    mask_list.append(pmask)
             else:
                 feats = feats[-self.seq_len:]
+                if USE_PADDING_MASK:
+                    mask_list.append(np.ones(self.seq_len, dtype=bool))
 
             target_mask = didx == dt_idx
             if not target_mask.any():
@@ -667,6 +684,14 @@ def train_model(
             f"lr={cur_lr:.2e} | {elapsed_ep:.0f}s",
             flush=True,
         )
+
+        # V6.2: log scale_gate fusion weights every 5 epochs.
+        # _last_scales is set by MultiScaleMambaEncoder.forward() during validation.
+        if epoch % 5 == 0 and model.encoder._last_scales is not None:
+            w = model.encoder._last_scales.mean(dim=0)   # (3,) — cross-section mean
+            logger.info(
+                f"Scale gates — Short: {w[0]:.3f}, Mid: {w[1]:.3f}, Long: {w[2]:.3f}"
+            )
         if on_epoch_end is not None:
             on_epoch_end(history, epoch, epochs)
 
