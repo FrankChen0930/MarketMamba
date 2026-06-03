@@ -1,15 +1,15 @@
 {
   "generated_date": "2026-06-03",
-  "archive_count": 24,
+  "archive_count": 25,
   "period_start": "2026-04-29",
-  "period_end": "2026-06-02",
+  "period_end": "2026-06-03",
   "horizon_summary": {
     "5d": {
-      "n_days": 16,
-      "mean_ic": 0.0196,
-      "icir": 0.126,
-      "t_stat": 0.5,
-      "ic_gt0_pct": 62.5
+      "n_days": 17,
+      "mean_ic": 0.0241,
+      "icir": 0.153,
+      "t_stat": 0.63,
+      "ic_gt0_pct": 64.7
     },
     "20d": {
       "n_days": 4,
@@ -29,62 +29,62 @@
     {
       "pred_date": "2026-04-30",
       "future_date": "2026-05-08",
-      "ic": 0.1351,
-      "n_stocks": 1313
+      "ic": 0.1083,
+      "n_stocks": 1133
     },
     {
       "pred_date": "2026-05-04",
       "future_date": "2026-05-11",
-      "ic": 0.0629,
-      "n_stocks": 1413
+      "ic": 0.0327,
+      "n_stocks": 1226
     },
     {
       "pred_date": "2026-05-05",
       "future_date": "2026-05-12",
-      "ic": 0.0994,
-      "n_stocks": 1348
+      "ic": 0.077,
+      "n_stocks": 1180
     },
     {
       "pred_date": "2026-05-11",
       "future_date": "2026-05-18",
-      "ic": 0.0831,
-      "n_stocks": 1467
+      "ic": 0.0864,
+      "n_stocks": 1291
     },
     {
       "pred_date": "2026-05-12",
       "future_date": "2026-05-19",
-      "ic": 0.2011,
-      "n_stocks": 1450
+      "ic": 0.2233,
+      "n_stocks": 1273
     },
     {
       "pred_date": "2026-05-13",
       "future_date": "2026-05-20",
-      "ic": 0.2176,
-      "n_stocks": 1393
+      "ic": 0.249,
+      "n_stocks": 1211
     },
     {
       "pred_date": "2026-05-14",
       "future_date": "2026-05-21",
-      "ic": 0.1207,
-      "n_stocks": 1406
+      "ic": 0.1498,
+      "n_stocks": 1236
     },
     {
       "pred_date": "2026-05-15",
       "future_date": "2026-05-22",
-      "ic": -0.1359,
-      "n_stocks": 1440
+      "ic": -0.1241,
+      "n_stocks": 1265
     },
     {
       "pred_date": "2026-05-18",
       "future_date": "2026-05-25",
-      "ic": -0.1799,
-      "n_stocks": 1205
+      "ic": -0.1862,
+      "n_stocks": 1108
     },
     {
       "pred_date": "2026-05-19",
       "future_date": "2026-05-26",
-      "ic": -0.2418,
-      "n_stocks": 1172
+      "ic": -0.2611,
+      "n_stocks": 1075
     },
     {
       "pred_date": "2026-05-20",
@@ -115,6 +115,12 @@
       "future_date": "2026-06-02",
       "ic": 0.2113,
       "n_stocks": 1179
+    },
+    {
+      "pred_date": "2026-05-27",
+      "future_date": "2026-06-03",
+      "ic": 0.1033,
+      "n_stocks": 1209
     }
   ],
   "ic_series_20d": [
@@ -146,59 +152,63 @@
   "rolling_ic_5d": [
     {
       "date": "2026-05-04",
-      "rolling_ic": 0.0888
+      "rolling_ic": 0.0698
     },
     {
       "date": "2026-05-05",
-      "rolling_ic": 0.0914
+      "rolling_ic": 0.0716
     },
     {
       "date": "2026-05-11",
-      "rolling_ic": 0.0898
+      "rolling_ic": 0.0745
     },
     {
       "date": "2026-05-12",
-      "rolling_ic": 0.1163
+      "rolling_ic": 0.1055
     },
     {
       "date": "2026-05-13",
-      "rolling_ic": 0.1328
+      "rolling_ic": 0.1337
     },
     {
       "date": "2026-05-14",
-      "rolling_ic": 0.1444
+      "rolling_ic": 0.1571
     },
     {
       "date": "2026-05-15",
-      "rolling_ic": 0.0973
+      "rolling_ic": 0.1169
     },
     {
       "date": "2026-05-18",
-      "rolling_ic": 0.0447
+      "rolling_ic": 0.0624
     },
     {
       "date": "2026-05-19",
-      "rolling_ic": -0.0439
+      "rolling_ic": -0.0345
     },
     {
       "date": "2026-05-20",
-      "rolling_ic": -0.1382
+      "rolling_ic": -0.1351
     },
     {
       "date": "2026-05-21",
-      "rolling_ic": -0.1924
+      "rolling_ic": -0.1952
     },
     {
       "date": "2026-05-22",
-      "rolling_ic": -0.1684
+      "rolling_ic": -0.1735
     },
     {
       "date": "2026-05-25",
-      "rolling_ic": -0.1139
+      "rolling_ic": -0.1177
     },
     {
       "date": "2026-05-26",
       "rolling_ic": -0.0233
+    },
+    {
+      "date": "2026-05-27",
+      "rolling_ic": 0.0482
     }
   ]
 }
