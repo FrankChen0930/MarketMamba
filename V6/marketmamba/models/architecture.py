@@ -198,11 +198,19 @@ class MultiScaleMambaEncoder(nn.Module):
         # Shape: (N_stocks, 3) — updated each forward(), detached from grad graph.
         self._last_scales: torch.Tensor | None = None
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor, padding_mask: Tensor | None = None) -> Tensor:
         # x: (N, 252, d_model) — full year window required
+        # padding_mask: (N, 252) bool, True=real data, False=zero-pad; or None
+
+        # Short/Mid branches take only the last 20/60 timesteps — always real data, no mask needed.
         h_short = self.mamba_short(x[:, -self.seq_short:, :])[:, -1, :]   # (N, d_model)
         h_mid   = self.mamba_mid(x[:, -self.seq_mid:,   :])[:, -1, :]
-        h_long  = self.mamba_long(x)[:, -1, :]
+
+        # Long branch uses all 252 steps; zero out padding outputs to cut their gradients.
+        h_long_seq = self.mamba_long(x)                                    # (N, 252, d_model)
+        if padding_mask is not None:
+            h_long_seq = h_long_seq * padding_mask.unsqueeze(-1).float()   # (N, 252, 1) broadcast
+        h_long = h_long_seq[:, -1, :]                                      # (N, d_model)
 
         # Adaptive scale fusion
         cat_h  = torch.cat([h_short, h_mid, h_long], dim=-1)   # (N, d_model*3)
@@ -350,9 +358,10 @@ class MarketMambaV6(nn.Module):
 
     def forward(
         self,
-        x:          Tensor,
-        edge_index: Tensor,
-        edge_attr:  Tensor,
+        x:            Tensor,
+        edge_index:   Tensor,
+        edge_attr:    Tensor,
+        padding_mask: Tensor | None = None,
     ) -> Tensor:
         """
         Args:
@@ -367,7 +376,7 @@ class MarketMambaV6(nn.Module):
         h = self.embedding(x)          # (N, 252, d_model)
 
         # Step 2: Multi-scale temporal encoding
-        h_temporal = self.encoder(h)   # (N, d_model)
+        h_temporal = self.encoder(h, padding_mask)   # (N, d_model)
 
         # Step 3: Cross-stock graph attention
         h_graph = self.graph_layer(h_temporal, edge_index, edge_attr)   # (N, d_model)

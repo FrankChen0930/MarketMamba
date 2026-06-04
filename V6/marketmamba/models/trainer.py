@@ -52,7 +52,7 @@ TARGET_COLS = [f"Alpha_{h}d" for h in PRED_HORIZONS]
 
 # V6.2: set True to activate zero-padding mask once scale_gate logs confirm
 # the model is not relying on padded timesteps.
-USE_PADDING_MASK = False
+USE_PADDING_MASK = True
 
 
 # ============================================================
@@ -193,6 +193,7 @@ class TemporalCrossSectionDataset(Dataset):
                 torch.zeros(1, self.seq_len, INPUT_DIM, dtype=torch.float32),
                 torch.zeros(1, len(PRED_HORIZONS), dtype=torch.float32),
                 [],
+                None,
             )
 
         X = torch.from_numpy(np.array(X_list))
@@ -202,6 +203,13 @@ class TemporalCrossSectionDataset(Dataset):
             idx_s = torch.randperm(X.shape[0])[: self.n_sample]
             X, Y  = X[idx_s], Y[idx_s]
             valid_stocks = [valid_stocks[i] for i in idx_s.tolist()]
+            if USE_PADDING_MASK and mask_list:
+                mask_list = [mask_list[i] for i in idx_s.tolist()]
+
+        if USE_PADDING_MASK and mask_list:
+            padding_mask = torch.from_numpy(np.array(mask_list))  # (N, seq_len) bool
+        else:
+            padding_mask = None
 
         # Cross-sectional z-score: normalize targets per-column, skipping NaN.
         # IMPORTANT: use NaN-aware mean/std so NaN targets remain NaN
@@ -217,7 +225,7 @@ class TemporalCrossSectionDataset(Dataset):
                     sigma = col[mask].std().clamp(min=1e-6)
                     Y[mask, h] = (col[mask] - mu) / sigma
 
-        return X, Y, valid_stocks
+        return X, Y, valid_stocks, padding_mask
 
 
 # ============================================================
@@ -594,7 +602,7 @@ def train_model(
         epoch_bd: dict[str, list] = {k: [] for k in
                                       ["mse_20d", "mse_5d", "mse_60d", "listnet_20d"]}
 
-        for batch_idx, (X, Y, batch_stocks) in enumerate(train_loader):
+        for batch_idx, (X, Y, batch_stocks, padding_mask) in enumerate(train_loader):
             if X.shape[0] <= 1:   # skip empty / degenerate cross-sections
                 continue
 
@@ -603,6 +611,8 @@ def train_model(
                 print(f"  [diag] First batch: X={tuple(X.shape)} stocks={len(batch_stocks)} | {time.time()-t0:.1f}s since epoch start", flush=True)
 
             X, Y = X.to(device), Y.to(device)
+            if padding_mask is not None:
+                padding_mask = padding_mask.to(device)
             edge_index, edge_attr = get_batch_edges_csr(batch_stocks, kg_csr, stock_to_idx, device)
 
             if epoch == 1 and batch_idx == 0:
@@ -610,7 +620,7 @@ def train_model(
 
             optimizer.zero_grad()
             with autocast('cuda', enabled=AMP_ENABLED and device_str == "cuda"):
-                preds       = model(X, edge_index, edge_attr)
+                preds       = model(X, edge_index, edge_attr, padding_mask=padding_mask)
                 loss, brkdn = multi_horizon_loss(preds, Y)
 
             if epoch == 1 and batch_idx == 0:
@@ -652,13 +662,15 @@ def train_model(
         model.eval()
         val_losses, val_ics = [], []
         with torch.no_grad():
-            for X, Y, batch_stocks in val_loader:
+            for X, Y, batch_stocks, padding_mask in val_loader:
                 if X.shape[0] <= 1:
                     continue
                 X, Y = X.to(device), Y.to(device)
+                if padding_mask is not None:
+                    padding_mask = padding_mask.to(device)
                 edge_index, edge_attr = get_batch_edges_csr(batch_stocks, kg_csr, stock_to_idx, device)
                 with autocast('cuda', enabled=AMP_ENABLED and device_str == "cuda"):
-                    preds      = model(X, edge_index, edge_attr)
+                    preds      = model(X, edge_index, edge_attr, padding_mask=padding_mask)
                     loss, _    = multi_horizon_loss(preds, Y)
                 val_losses.append(loss.item())
                 ic = compute_ic(
