@@ -697,12 +697,11 @@ def train_model(
             flush=True,
         )
 
-        # V6.2: log scale_gate fusion weights every 5 epochs.
-        # _last_scales is set by MultiScaleMambaEncoder.forward() during validation.
-        if epoch % 5 == 0 and model.encoder._last_scales is not None:
-            w = model.encoder._last_scales.mean(dim=0)   # (3,) — cross-section mean
-            logger.info(
-                f"Scale gates — Short: {w[0]:.3f}, Mid: {w[1]:.3f}, Long: {w[2]:.3f}"
+        if model.encoder._last_scales is not None:
+            w = model.encoder._last_scales.mean(dim=0).cpu()
+            print(
+                f"  [scale_gate] Short: {w[0]:.3f}, Mid: {w[1]:.3f}, Long: {w[2]:.3f}",
+                flush=True,
             )
         if on_epoch_end is not None:
             on_epoch_end(history, epoch, epochs)
