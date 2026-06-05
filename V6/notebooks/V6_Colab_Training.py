@@ -418,7 +418,7 @@ def live_plot(history, epoch, epochs):
     clear_output(wait=True)
     ep = list(range(1, len(history.train_loss) + 1))
 
-    fig, axes = plt.subplots(1, 3, figsize=(16, 4))
+    fig, axes = plt.subplots(1, 4, figsize=(22, 4))
     fig.patch.set_facecolor("#1a1a2e")
     for ax in axes:
         ax.set_facecolor("#16213e")
@@ -441,6 +441,15 @@ def live_plot(history, epoch, epochs):
 
     axes[2].plot(ep, history.lr, color="#fdcb6e", lw=2)
     axes[2].set_title("LR"); axes[2].set_yscale("log"); axes[2].grid(alpha=0.2)
+
+    sg = getattr(history, "scale_gates", [])
+    if sg:
+        ep_sg = list(range(1, len(sg) + 1))
+        axes[3].plot(ep_sg, [v[0] for v in sg], color="#ff7675", lw=2, label="Short")
+        axes[3].plot(ep_sg, [v[1] for v in sg], color="#74b9ff", lw=2, label="Mid")
+        axes[3].plot(ep_sg, [v[2] for v in sg], color="#a29bfe", lw=2, label="Long")
+        axes[3].set_ylim(0, 1)
+    axes[3].set_title("Scale Gate"); axes[3].legend(facecolor="#222", labelcolor="#eee"); axes[3].grid(alpha=0.2)
 
     no_impr = epoch - best_ep
     fig.suptitle(f"Ep {epoch}/{epochs} | train={history.train_loss[-1]:.5f} val={history.val_loss[-1]:.5f} IC={history.val_ic[-1]:+.4f} | best@{best_ep} ({no_impr}ep no-impr)", color="#eee", fontsize=11)
@@ -583,7 +592,7 @@ if prev_history:
 def live_plot_resume(h, epoch, total):
     clear_output(wait=True)
     ep = list(range(1, len(h.train_loss) + 1))
-    fig, axes = plt.subplots(1, 3, figsize=(16, 4))
+    fig, axes = plt.subplots(1, 4, figsize=(22, 4))
     fig.patch.set_facecolor("#1a1a2e")
     for ax in axes:
         ax.set_facecolor("#16213e"); ax.tick_params(colors="#eee")
@@ -609,6 +618,16 @@ def live_plot_resume(h, epoch, total):
 
     axes[2].plot(ep, h.lr, color="#fdcb6e", lw=2)
     axes[2].set_title("LR"); axes[2].set_yscale("log"); axes[2].grid(alpha=0.2)
+
+    sg = getattr(h, "scale_gates", [])
+    if sg:
+        ep_sg = list(range(1, len(sg) + 1))
+        axes[3].plot(ep_sg, [v[0] for v in sg], color="#ff7675", lw=2, label="Short")
+        axes[3].plot(ep_sg, [v[1] for v in sg], color="#74b9ff", lw=2, label="Mid")
+        axes[3].plot(ep_sg, [v[2] for v in sg], color="#a29bfe", lw=2, label="Long")
+        axes[3].axvline(resume_ep, color="#fdcb6e", ls="--", lw=1, alpha=0.5)
+        axes[3].set_ylim(0, 1)
+    axes[3].set_title("Scale Gate"); axes[3].legend(facecolor="#222", labelcolor="#eee"); axes[3].grid(alpha=0.2)
 
     total_ep = len(h.train_loss)
     no_impr = total_ep - best_ep

@@ -501,11 +501,12 @@ def compute_ic(pred: np.ndarray, target: np.ndarray) -> float:
 
 @dataclass
 class TrainingHistory:
-    train_loss: list[float] = field(default_factory=list)
-    val_loss:   list[float] = field(default_factory=list)
-    val_ic:     list[float] = field(default_factory=list)
-    lr:         list[float] = field(default_factory=list)
-    breakdown:  list[dict]  = field(default_factory=list)
+    train_loss:  list[float]       = field(default_factory=list)
+    val_loss:    list[float]       = field(default_factory=list)
+    val_ic:      list[float]       = field(default_factory=list)
+    lr:          list[float]       = field(default_factory=list)
+    breakdown:   list[dict]        = field(default_factory=list)
+    scale_gates: list[list[float]] = field(default_factory=list)  # [[short, mid, long], ...]
 
     @property
     def best_epoch(self) -> int:
@@ -703,6 +704,10 @@ def train_model(
                 f"  [scale_gate] Short: {w[0]:.3f}, Mid: {w[1]:.3f}, Long: {w[2]:.3f}",
                 flush=True,
             )
+            history.scale_gates.append([float(w[0]), float(w[1]), float(w[2])])
+        else:
+            history.scale_gates.append([0.333, 0.333, 0.334])
+
         if on_epoch_end is not None:
             on_epoch_end(history, epoch, epochs)
 
