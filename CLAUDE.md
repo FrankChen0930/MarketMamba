@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # MarketMamba — AI 助手指引
 
-> 最後更新：2026-06-03
+> 最後更新：2026-06-05
 
 ---
 
@@ -16,6 +16,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 4. **Line Notify 已於 2025 年 3 月底停止服務**，不可在任何腳本或文件中加入或建議使用 Line Notify 相關功能。
 5. **禁止修改 `V6/models/` 目錄下的任何檔案**（包含 `.pt` checkpoint），那是訓練好的模型權重，誤改無法復原。
 6. **推論腳本在 WSL2（Ubuntu）環境執行**，路徑以 `/mnt/d/...` 掛載，呼叫方式為 `wsl -d Ubuntu -- bash -lc "..."`。
+7. **輸出結果必須對人類可讀**：實作任何訓練 log、推論進度、診斷資訊時，數值必須明確顯示（例如 `scale_gate: [0.312, 0.487, 0.201]`），不可只實作邏輯而省略實際數字的輸出語句。如果一個功能「有做但看不到結果」，視同未完成。
+8. **每次任務完成並獲得我確認後，主動更新 CLAUDE.md 的 Current Status 區塊**：把剛完成的事移到「最近完成」；更新「進行中」與「下一步」；若有重要設計決策，記錄到「決策紀錄」；更新頂部的「最後更新」日期。
 
 ---
 
@@ -38,10 +40,16 @@ MarketMamba/
 │   │   │   └── feature_engineer.py ← 56/59 維特徵工程（見下方說明）
 │   │   ├── models/              ← Mamba + GATv2 架構（⚠️ 不可修改）
 │   │   ├── signals/
-│   │   │   └── scanner.py       ← 交易訊號掃描器（加權評分系統 v1.2）
+│   │   │   ├── scanner.py           ← 交易訊號掃描器（加權評分系統 v1.2）
+│   │   │   └── signal_conditions.py ← 共用進退場條件模組（V6.2 新增）
+│   │   ├── quant/
+│   │   │   └── pattern_scanner.py   ← 型態辨識（V6.2 重寫：5多方+2空方型態）
 │   │   ├── llm/
-│   │   │   └── report_generator.py ← Claude API 每日市場報告
-│   │   ├── backtest/engine.py   ← 回測引擎
+│   │   │   └── report_generator.py  ← Claude API 每日市場報告
+│   │   ├── backtest/
+│   │   │   ├── engine.py            ← 回測引擎
+│   │   │   ├── sim_engine_v2.py     ← 舊版模擬機器人
+│   │   │   └── sim_engine_v3.py     ← 有狀態日更模擬機器人（V6.2 新增）
 │   │   └── robot/portfolio_manager.py ← 持倉管理
 │   ├── run_daily_inference.py   ← 每日推論主入口（WSL2 執行）
 │   ├── notebooks/
@@ -75,7 +83,7 @@ MarketMamba/
       Group B institutional_flow(20 dims) → sub_dim 94
       Group C fundamentals      (12 dims) → sub_dim 54
       Group D macro_environment (12 dims) → sub_dim 54
-  ↓ MultiScaleMambaEncoder（3 分支並行：short 2層/mid 3層/long 3層，自適應融合）
+  ↓ MultiScaleMambaEncoder（3 分支並行：short 2層/mid 3層/long 3層，自適應融合；Long branch 套用 padding_mask）
   ↓ GATv2（知識圖譜引導，CSR 稀疏矩陣，~640K 條邊）
   ↓ Gating Fusion（gate = sigmoid(Linear(2×d_model → d_model))）
   ↓ MultiHorizonHead（3 個獨立 Linear → pred_5d/20d/60d）
@@ -92,6 +100,8 @@ MarketMamba/
 - **MC-Dropout**（N=30 次採樣）估算每股不確定性（`Uncertainty`）
 - **Alpha 截斷**：±2.0（防止離群值）
 - **Signal_Quality**：`Net_Alpha_20d / (Uncertainty + 1e-6)`，截斷至 [-10, +10]（舊版叫 `Sharpe_Score`，已全面改名）
+- **Zero-Padding Mask（V6.2）**：`USE_PADDING_MASK = True`（`trainer.py`）。Short/Mid branch 取最後 20/60 步，均為真實資料不需 mask；Long branch 使用完整 252 步，padding 位置乘 0 截斷梯度（`architecture.py:MultiScaleMambaEncoder.forward`）
+- **Scale Gate 監控**：每個 epoch validation 後 print `[scale_gate] Short/Mid/Long`，並儲存在 `TrainingHistory.scale_gates`；訓練圖表第 4 欄顯示三條線的 epoch 曲線
 
 ---
 
@@ -113,9 +123,9 @@ daily_inference.bat（Windows Task Scheduler）
 
 ---
 
-## 訊號掃描器（V6.1，`signals/scanner.py`，scan_version 1.2）
+## 訊號系統（V6.2）
 
-### 入場加權評分（I4，取代舊版二元 2/4）
+### `signals/scanner.py`（scan_version 1.2）— 產出 `action_signals.json`
 
 | 條件 | 權重 |
 |------|------|
@@ -123,12 +133,41 @@ daily_inference.bat（Windows Task Scheduler）
 | 不確定度低（< 當日 Q30 分位數） | 25 分 |
 | 機構連續淨買（≥2天） | 25 分 |
 | 相對低點（RSI<40 or 價格<MA20） | 20 分 |
-| **BUY 門檻**：正常市場 ≥55 分，謹慎市場 ≥70 分 | — |
 
-### 持倉風控（I3）
+### `signals/signal_conditions.py`（V6.2 新增）— 共用進退場條件
 
-- 最多 15 檔，單股建議比重上限 10%（自動正規化）
-- 不足 5 檔時輸出警告
+**進場評分（最高 150 分）**：Scanner 100 + 型態加分最高 40 + 雙確認 +10
+- 型態分數 60–74 → +20；75–89 → +30；≥90 → +40
+- 雙確認（型態 ≥60 且 Alpha rank ≤200）額外 +10
+- **門檻**：正常市場（TWII > MA60）≥70 分；保守模式 ≥90 分
+
+**四層退場（`check_exit_conditions()`）**：
+- 第一層（立即全出）：Trailing Stop / 型態失敗線跌破 / 外資連賣 3 天 / M頭或假突破確認 / 持有 >30 天
+- 第二層（立即全出）：排名連 2 天出 Top50 / Uncertainty 超進場 2 倍 / RS_20d 負值 3 天 / 排名穩定性消失
+- 第三層（減半倉）：RSI>75 且動能下滑 / 報酬 ≥+20% / Alpha_20d 連降 3 天
+- 第四層（換倉）：SQ 排名落後市場後 50% 且有新訊號且滿倉
+
+**Trailing Stop 四檔**：峰值 <+5%→止損 -5%；≥+5%→+2%；≥+10%→+6%；≥+15%→+10%
+
+**進場理由記憶**：`EntryRecord.main_conditions` 記錄進場時觸發條件，退場時優先檢查該條件是否消失
+
+### `quant/pattern_scanner.py`（V6.2 完整重寫）— 產出 `pattern_signals.json`
+
+**多方型態（5種）**：W底、彈簧型W底、頭肩底、收斂三角底部、上飄旗形
+**空方型態（2種）**：M頭（退場用）、假突破向下（退場用）
+
+每個多方訊號含 `failure_stop`（型態失敗退場價，供四層退場第一層使用）
+空方訊號輸出在 `bearish_signals` 列表（與 `signals` 分開）
+
+**評分**：型態強度 40 + 成交量 30 + 位置（波段跌幅）20 + RSI 10 + 漂亮加分 + Alpha 加成（Top200→+10, Top300→+5）
+
+### `backtest/sim_engine_v3.py`（V6.2 新增）— 有狀態日更模擬機器人
+
+- 每日結束後寫 `V6/results/sim_state.json`（持倉完整狀態），隔天讀取繼續
+- 交易紀錄 append 到 `V6/results/sim_trades.jsonl`
+- 入口：`run_daily_update(date)` 日更；`run_backtest(reset=True)` 全量回放
+- 進場評分使用 `signal_conditions.compute_entry_score()`（scanner + pattern 合計）
+- 退場使用 `signal_conditions.check_exit_conditions()` 四層邏輯
 
 ---
 
@@ -262,4 +301,31 @@ cd app/frontend && npm run dev   # → localhost:5173
 - **知識圖譜**（`knowledge/graph_builder.py`）構建耗時，快取在 `Data/cache_v6/knowledge_graph_cache.npz`。KG 的 node 數量可能多於當前訓練 universe（CSR 子圖提取會自動處理），不需重建。
 - **Google Colab 訓練**只在需要重訓時手動觸發，不要在本機嘗試訓練（VRAM 不足）。
 - **`history_index.json`** 由每日推論自動維護（保留最近 60 個交易日），訊號掃描器的排名穩定性判斷依賴它。
-- **`TemporalCrossSectionDataset`** 是 LAZY LOADING 設計——tensor 在 `__getitem__` 建立，不在 `__init__` 預建。每支股票至少需要 `SEQ_LEN × 0.8 = 202` 天資料才會被納入該交易日的 cross-section。
+- **`TemporalCrossSectionDataset`** 是 LAZY LOADING 設計——tensor 在 `__getitem__` 建立，不在 `__init__` 預建。每支股票至少需要 `SEQ_LEN × 0.8 = 202` 天資料才會被納入該交易日的 cross-section。`__getitem__` 回傳 4 個值：`(X, Y, stock_ids, padding_mask)`，其中 `padding_mask` 在 `USE_PADDING_MASK=True` 時為 bool tensor，`False` 代表 zero-padding 位置。
+- **Scale Gate 觀察**：訓練中途停止後 `model` 不在 notebook 全域變數（函式未 return）。若需查看 scale gate，從 checkpoint 重新載入：`ckpt = torch.load("V6/models/v6_best.pt", ...); model = MarketMambaV6().cuda(); model.load_state_dict(ckpt["state_dict"])`，再跑一個 val batch 填入 `_last_scales`。
+
+---
+
+## 🔄 Current Status
+
+> 最後更新：2026-06-05
+
+### 最近完成
+- 建立 CLAUDE.md 兩層架構（靜態規則 + 動態狀態）
+- 新增規則 7（輸出可讀性）與規則 8（任務完成後自動更新本區塊）
+- **V6.2 Zero-Padding Mask**：`USE_PADDING_MASK = True`，Long branch 套用 mask 截斷 padding 梯度，Short/Mid branch 不需 mask（`trainer.py`、`architecture.py`）
+- **Scale Gate 監控強化**：每個 epoch print 數值、儲存至 `TrainingHistory.scale_gates`、訓練圖表新增第 4 欄折線圖（`trainer.py`、`v6_colab_training.py`）
+- **訊號系統 V6.2 整修**：新增 `signal_conditions.py`（140 分進場評分 + 四層退場 + Trailing Stop + 進場理由記憶）；重寫 `pattern_scanner.py`（5 多方 + 2 空方型態 + `failure_stop`）；新增 `sim_engine_v3.py`（有狀態日更機器人，`sim_state.json` 持久化）
+
+### 進行中
+- V6.2 訓練中（觀察 scale_gate 是否因 padding mask 改善均衡性）
+
+### 下一步
+- [ ] 觀察新一輪訓練的 scale_gate 數值，確認 Short/Mid/Long 是否趨於均衡
+- [ ] 若 scale_gate 仍極度偏 Long，考慮在 MultiScaleMambaEncoder 加入 branch-level dropout 或 loss 正則化
+- [ ] `sim_engine_v3.py` 實際跑一次 backtest，驗證四層退場邏輯正確觸發
+
+### 決策紀錄
+- **padding mask 只加在 Long branch**：Short 取最後 20 步、Mid 取最後 60 步，在 ≥202 天資料的前提下這兩個 branch 輸入全為真實資料，不需 mask；只有 Long 使用完整 252 步才有 padding 問題
+- **scale_gate 改為 `print()` 而非 `logger.info()`**：Colab 預設 logging level = WARNING，`logger.info` 會靜默丟棄；`print(flush=True)` 永遠可見，與其他訓練 log 風格一致
+- **claude.ai Project 知識庫改放 OVERVIEW.md 等靜態文件，CLAUDE.md 動態狀態區塊僅供 Claude Code 使用，不需同步到 Project**
