@@ -441,7 +441,7 @@ def run_inference(
     kg_csr, stock_to_idx = build_kg_csr()
 
     # -- Inference with MC-Dropout uncertainty (mini-batch to fit 6 GB VRAM) --
-    X, _, valid_stocks = test_ds[0]   # __getitem__ returns (X, Y, stock_ids)
+    X, _, valid_stocks, _ = test_ds[0]   # __getitem__ returns (X, Y, stock_ids, padding_mask)
 
     N = X.shape[0]
     INFER_BATCH = 128   # stocks per GPU step (tune down to 64 if still OOM)

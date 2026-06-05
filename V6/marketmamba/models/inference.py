@@ -173,7 +173,7 @@ def run_inference(
     edge_index, edge_attr = load_kg_edges(stock_ids, device)
 
     # Inference
-    X, _ = test_ds[0]
+    X, _, _, _ = test_ds[0]   # (X, Y, stock_ids, padding_mask)
     pred_mean, pred_std = infer_cross_section(
         model, X, edge_index, edge_attr, device=device
     )
