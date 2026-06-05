@@ -700,16 +700,20 @@ def train_model(
 
         if model.encoder._last_scales is not None:
             w = model.encoder._last_scales.mean(dim=0).cpu()
-            print(
-                f"  [scale_gate] Short: {w[0]:.3f}, Mid: {w[1]:.3f}, Long: {w[2]:.3f}",
-                flush=True,
-            )
             history.scale_gates.append([float(w[0]), float(w[1]), float(w[2])])
         else:
             history.scale_gates.append([0.333, 0.333, 0.334])
 
         if on_epoch_end is not None:
             on_epoch_end(history, epoch, epochs)
+
+        # 印在 live_plot 之後，clear_output 不會清掉這行
+        if model.encoder._last_scales is not None:
+            w = model.encoder._last_scales.mean(dim=0).cpu()
+            print(
+                f"  [scale_gate] Short: {w[0]:.3f}, Mid: {w[1]:.3f}, Long: {w[2]:.3f}",
+                flush=True,
+            )
 
         if ic_mode:
             # IC-based checkpointing: save when IC improves
