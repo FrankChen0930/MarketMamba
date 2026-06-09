@@ -200,18 +200,35 @@ function SignalCard({ signal, onClick }) {
         </div>
         {/* Conditions grid */}
         {signal.rank_stability && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', padding: '10px 14px', background: 'var(--bg-panel-2)', borderRadius: 'var(--radius-sm)', marginBottom: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', padding: '10px 14px', background: 'var(--bg-panel-2)', borderRadius: 'var(--radius-sm)', marginBottom: 8 }}>
             {[
-              { met: signal.rank_stability?.met, label: signal.rank_stability?.detail },
-              { met: signal.high_confidence?.met, label: signal.high_confidence?.detail },
-              { met: signal.relative_low?.met, label: signal.relative_low?.detail },
-              { met: signal.institutional_buy?.met, label: signal.institutional_buy?.detail?.includes('無此股') ? '— 無資料' : signal.institutional_buy?.detail },
+              { met: signal.rank_stability?.met, label: signal.rank_stability?.detail, pts: 30 },
+              { met: signal.high_confidence?.met, label: signal.high_confidence?.detail, pts: 25 },
+              { met: signal.relative_low?.met, label: signal.relative_low?.detail, pts: 20 },
+              { met: signal.institutional_buy?.met, label: signal.institutional_buy?.detail?.includes('無此股') ? '— 無資料' : signal.institutional_buy?.detail, pts: 25 },
             ].map((c, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: c.label === '— 無資料' ? 'var(--text-muted)' : c.met ? 'var(--positive)' : 'var(--text-muted)' }}>
                 <span style={{ fontSize: 13 }}>{c.label === '— 無資料' ? '➖' : c.met ? '✅' : '❌'}</span>
-                <span>{c.label}</span>
+                <span style={{ flex: 1 }}>{c.label}</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: c.met ? 'var(--positive)' : 'var(--text-muted)', flexShrink: 0 }}>
+                  {c.met ? `+${c.pts}` : `+0`}
+                </span>
               </div>
             ))}
+          </div>
+        )}
+        {/* Score breakdown summary */}
+        {signal.base_score != null && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--text-muted)', padding: '4px 14px', marginBottom: 8 }}>
+            <span>基礎分</span>
+            <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--text-secondary)' }}>{signal.base_score}</span>
+            <span style={{ color: 'var(--border)' }}>/100</span>
+            {signal.pattern && <>
+              <span style={{ margin: '0 2px' }}>＋</span>
+              <span style={{ color: '#a78bfa' }}>型態加分</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#a78bfa' }}>+{signal.pattern.pattern_bonus}</span>
+            </>}
+            <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--positive)' }}>= {signal.score}/150</span>
           </div>
         )}
         {/* Pattern bonus row */}
@@ -274,7 +291,7 @@ function WatchListTable({ watchList, onSelectStock }) {
           <tbody>
             {watchList.map((s, i) => (
               <tr key={s.ticker} className="animate-fade-up" style={{ animationDelay: `${i * 0.03}s`, cursor: 'pointer' }}
-                onClick={() => onSelectStock({ stock_id: s.ticker, name: s.name || s.ticker, sector: s.sector || '—', alpha_5d: 0, alpha_20d: s.alpha_20d, alpha_60d: 0, uncertainty: s.uncertainty, vol_ratio: 1, signal: 'HOLD', suggested_weight: s.suggested_weight, confidence: s.confidence, rank: '-' })}>
+                onClick={() => onSelectStock({ stock_id: s.ticker, name: s.name || s.ticker, sector: s.sector || '—', alpha_5d: s.alpha_5d ?? 0, alpha_20d: s.alpha_20d, alpha_60d: s.alpha_60d ?? 0, uncertainty: s.uncertainty, vol_ratio: 1, signal: 'HOLD', suggested_weight: s.suggested_weight, confidence: s.confidence, rank: '-' })}>
                 <td>
                   <div style={{ fontWeight: 600, fontSize: 13 }}>{s.name && s.name !== s.ticker ? s.name : s.ticker}</div>
                   <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{s.ticker}</div>
@@ -389,7 +406,7 @@ export default function TradingSignals() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: 12 }}>
               {buySignals.map((s, i) => (
                 <div key={s.ticker} style={{ animationDelay: `${i * 0.05}s` }}>
-                  <SignalCard signal={s} onClick={() => setSelectedStock({ stock_id: s.ticker, name: s.name || s.ticker, sector: s.sector || '—', alpha_5d: 0, alpha_20d: s.alpha_20d, alpha_60d: 0, uncertainty: s.uncertainty, vol_ratio: 1, signal: 'BUY', suggested_weight: s.suggested_weight, confidence: s.confidence, rank: i + 1 })} />
+                  <SignalCard signal={s} onClick={() => setSelectedStock({ stock_id: s.ticker, name: s.name || s.ticker, sector: s.sector || '—', alpha_5d: s.alpha_5d ?? 0, alpha_20d: s.alpha_20d, alpha_60d: s.alpha_60d ?? 0, uncertainty: s.uncertainty, vol_ratio: 1, signal: 'BUY', suggested_weight: s.suggested_weight, confidence: s.confidence, rank: i + 1 })} />
                 </div>
               ))}
             </div>

@@ -406,7 +406,9 @@ def run_scan(
     for idx, row in top50.iterrows():
         ticker = str(row["Ticker"])
         uncertainty = float(row.get("Uncertainty", 1.0))
+        alpha_5d  = float(row.get("Exp_Alpha_5d",  0))
         alpha_20d = float(row.get("Exp_Alpha_20d", 0))
+        alpha_60d = float(row.get("Exp_Alpha_60d", 0))
         sharpe = float(row.get("Signal_Quality", 0))
         confidence = str(row.get("Confidence", ""))
         weight = float(row.get("Suggested_Weight", 0))
@@ -433,7 +435,9 @@ def run_scan(
 
         signal_entry = {
             "ticker": ticker,
+            "alpha_5d":  round(alpha_5d,  4),
             "alpha_20d": round(alpha_20d, 4),
+            "alpha_60d": round(alpha_60d, 4),
             "sharpe": round(sharpe, 3),
             "confidence": confidence,
             "uncertainty": round(uncertainty, 4),
@@ -452,4 +456,81 @@ def run_scan(
 
         if conditions_met >= entry_threshold:
             buy_signals.append(signal_entry)
-            pat_str = f", pattern={pattern_info['pattern_name']}({pattern_info['pattern_score']}) +{pattern_info['pattern_bon
+            pat_str = f", pattern={pattern_info['pattern_name']}({pattern_info['pattern_score']}) +{pattern_info['pattern_bonus']}" if pattern_info else ""
+            logger.info(f"  🔥 BUY: {ticker} (conditions={conditions_met}/4, score={composite_score}{pat_str})")
+        elif conditions_met >= 1:
+            watch_list.append(signal_entry)
+
+    # ── Check exit signals for current holdings ───────────────────────────
+    exit_signals = []
+    if portfolio_positions:
+        for pos in portfolio_positions:
+            ticker = pos.get("ticker") or pos.get("stock_id", "")
+            if not ticker:
+                continue
+
+            rank_hist = _get_rank_history(history, ticker)
+            exit_rank = _check_exit_rank(rank_hist)
+            exit_inst = _check_institutional(inst_df, ticker)
+
+            reasons = []
+            if exit_rank["met"]:
+                reasons.append("排名連續掉出 Top 50")
+            # Reverse institutional check: selling ≥3 days
+            # (reuse inst check but look for negative streaks)
+
+            if reasons:
+                exit_signals.append({
+                    "ticker": ticker,
+                    "reasons": reasons,
+                    "rank_exit": exit_rank,
+                    "current_rank": rank_hist[0]["rank"] if rank_hist else None,
+                })
+                logger.info(f"  🔴 EXIT: {ticker} — {', '.join(reasons)}")
+
+    # ── Build output ──────────────────────────────────────────────────────
+    # I3: Portfolio-level risk limits
+    _MAX_POSITIONS = 15
+    _MIN_POSITIONS = 5
+    _MAX_WEIGHT    = 0.10   # 10% single-stock cap
+
+    buy_signals = sorted(buy_signals, key=lambda x: x.get("score", 0), reverse=True)
+    if len(buy_signals) > _MAX_POSITIONS:
+        logger.info(f"  Portfolio cap: trimmed {len(buy_signals)} → {_MAX_POSITIONS} positions")
+        buy_signals = buy_signals[:_MAX_POSITIONS]
+
+    for sig in buy_signals:
+        if sig.get("suggested_weight", 0) > _MAX_WEIGHT:
+            sig["suggested_weight"] = _MAX_WEIGHT
+    total_w = sum(s.get("suggested_weight", 0) for s in buy_signals)
+    if total_w > 0:
+        for sig in buy_signals:
+            sig["suggested_weight"] = round(sig["suggested_weight"] / total_w, 4)
+
+    portfolio_check = {
+        "n_positions": len(buy_signals),
+        "warnings": ([] if len(buy_signals) >= _MIN_POSITIONS else
+                     [f"持倉不足 {_MIN_POSITIONS} 檔（{len(buy_signals)} 檔），建議觀望"]),
+    }
+
+    result = {
+        "date": date_str,
+        "scan_version": "1.3",
+        "market_regime": market["regime"],
+        "twii_vs_ma60": market.get("twii_vs_ma60", "N/A"),
+        "entry_threshold": f"≥{entry_threshold}/4條件",
+        "uncertainty_threshold": round(unc_q30, 6),
+        "total_scanned": len(top50),
+        "buy_signals": buy_signals,
+        "exit_signals": exit_signals,
+        "watch_list": watch_list,
+        "portfolio_check": portfolio_check,
+    }
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(result, f, ensure_ascii=False, indent=2, default=_json_default)
+    pattern_count = sum(1 for s in buy_signals + watch_list if s.get("pattern"))
+    logger.info(f"  Scanner output: {len(buy_signals)} BUY, {len(exit_signals)} EXIT, {len(watch_list)} WATCH, {pattern_count} with pattern bonus")
+    logger.info(f"  Saved → {output_path}")
+
+    return result
