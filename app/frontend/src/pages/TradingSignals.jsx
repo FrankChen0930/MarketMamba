@@ -356,4 +356,125 @@ export default function TradingSignals() {
           <div className="stat-card" style={{ cursor: 'pointer', transition: 'border-color 0.2s' }}
             onClick={() => setShowRules(true)}
             onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-blue)'}
-            onMouseLeave={e =>
+            onMouseLeave={e => e.currentTarget.style.borderColor = ''}>
+            <div className="label" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>入場門檻 <span style={{ fontSize: 10, color: 'var(--accent-blue)' }}>📋 點擊查看規則</span></div>
+            <div className="value mono">{data?.entry_threshold || '—'}</div>
+            <div className="sub">滿足條件數 / 總條件</div>
+          </div>
+
+          <div className="stat-card" style={{ borderColor: buySignals.length > 0 ? 'rgba(0,255,136,0.3)' : 'var(--border)' }}>
+            <div className="label">🔥 買入推薦</div>
+            <div className="value mono text-positive">{buySignals.length} 檔</div>
+            <div className="sub">滿足入場條件</div>
+          </div>
+
+          <div className="stat-card" style={{ borderColor: exitSignals.length > 0 ? 'rgba(255,71,87,0.3)' : 'var(--border)' }}>
+            <div className="label">⚠️ 退場警告</div>
+            <div className="value mono" style={{ color: exitSignals.length > 0 ? 'var(--negative)' : 'var(--text-secondary)' }}>{exitSignals.length} 檔</div>
+            <div className="sub">觸發退場條件</div>
+          </div>
+        </>}
+      </div>
+
+      {/* Buy Signals */}
+      {!loading && (
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--positive)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 18 }}>🔥</span> 買入推薦
+            <span className="badge badge-positive" style={{ fontSize: 10 }}>{buySignals.length} 檔</span>
+          </div>
+          {buySignals.length === 0 ? (
+            <div className="panel"><div className="panel-body" style={{ textAlign: 'center', padding: 32, color: 'var(--text-muted)' }}>目前沒有股票達到入場條件 — 等待更好的機會 🧘</div></div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: 12 }}>
+              {buySignals.map((s, i) => (
+                <div key={s.ticker} style={{ animationDelay: `${i * 0.05}s` }}>
+                  <SignalCard signal={s} onClick={() => setSelectedStock({ stock_id: s.ticker, name: s.name || s.ticker, sector: s.sector || '—', alpha_5d: 0, alpha_20d: s.alpha_20d, alpha_60d: 0, uncertainty: s.uncertainty, vol_ratio: 1, signal: 'BUY', suggested_weight: s.suggested_weight, confidence: s.confidence, rank: i + 1 })} />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Watch List Table */}
+      {!loading && <WatchListTable watchList={watchList} onSelectStock={setSelectedStock} />}
+
+      {/* How it works */}
+      {!loading && (
+        <div className="panel" style={{ borderColor: 'rgba(0,212,255,0.15)', background: 'rgba(0,212,255,0.02)' }}>
+          <div className="panel-body" style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+            <span style={{ fontSize: 20 }}>💡</span>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+              <strong style={{ color: 'var(--accent-blue)' }}>運作原理：</strong>
+              掃描模型 Top 50 股票，評估 4 個維度的入場條件（排名穩定性、模型信心、相對低點、機構資金方向）。
+              {data?.market_regime === 'CAUTIOUS' ? '目前大盤低於 60 日均線，進入保守模式，需滿足 3/4 條件才推薦。' : '正常市場環境下，滿足 2/4 條件即推薦買入。'}
+              點擊上方 <strong>「入場門檻」</strong> 查看完整規則。
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+e.currentTarget.style.borderColor = ''}>
+            <div className="label" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>入場門檻 <span style={{ fontSize: 10, color: 'var(--accent-blue)' }}>📋 點擊查看規則</span></div>
+            <div className="value mono">{data?.entry_threshold || '—'}</div>
+            <div className="sub">滿足條件數 / 總條件</div>
+          </div>
+
+          <div className="stat-card" style={{ borderColor: buySignals.length > 0 ? 'rgba(0,255,136,0.3)' : 'var(--border)' }}>
+            <div className="label">🔥 買入推薦</div>
+            <div className="value mono text-positive">{buySignals.length} 檔</div>
+            <div className="sub">滿足入場條件</div>
+          </div>
+
+          <div className="stat-card" style={{ borderColor: exitSignals.length > 0 ? 'rgba(255,71,87,0.3)' : 'var(--border)' }}>
+            <div className="label">⚠️ 退場警告</div>
+            <div className="value mono" style={{ color: exitSignals.length > 0 ? 'var(--negative)' : 'var(--text-secondary)' }}>{exitSignals.length} 檔</div>
+            <div className="sub">觸發退場條件</div>
+          </div>
+        </>}
+      </div>
+
+      {/* Buy Signals */}
+      {!loading && (
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--positive)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 18 }}>🔥</span> 買入推薦
+            <span className="badge badge-positive" style={{ fontSize: 10 }}>{buySignals.length} 檔</span>
+          </div>
+          {buySignals.length === 0 ? (
+            <div className="panel"><div className="panel-body" style={{ textAlign: 'center', padding: 32, color: 'var(--text-muted)' }}>目前沒有股票達到入場條件 — 等待更好的機會 🧘</div></div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: 12 }}>
+              {buySignals.map((s, i) => (
+                <div key={s.ticker} style={{ animationDelay: `${i * 0.05}s` }}>
+                  <SignalCard signal={s} onClick={() => setSelectedStock({ stock_id: s.ticker, name: s.name || s.ticker, sector: s.sector || '—', alpha_5d: 0, alpha_20d: s.alpha_20d, alpha_60d: 0, uncertainty: s.uncertainty, vol_ratio: 1, signal: 'BUY', suggested_weight: s.suggested_weight, confidence: s.confidence, rank: i + 1 })} />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Watch List Table */}
+      {!loading && <WatchListTable watchList={watchList} onSelectStock={setSelectedStock} />}
+
+      {/* How it works */}
+      {!loading && (
+        <div className="panel" style={{ borderColor: 'rgba(0,212,255,0.15)', background: 'rgba(0,212,255,0.02)' }}>
+          <div className="panel-body" style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+            <span style={{ fontSize: 20 }}>💡</span>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+              <strong style={{ color: 'var(--accent-blue)' }}>運作原理：</strong>
+              掃描模型 Top 50 股票，評估 4 個維度的入場條件（排名穩定性、模型信心、相對低點、機構資金方向）。
+              {data?.market_regime === 'CAUTIOUS' ? '目前大盤低於 60 日均線，進入保守模式，需滿足 3/4 條件才推薦。' : '正常市場環境下，滿足 2/4 條件即推薦買入。'}
+              點擊上方 <strong>「入場門檻」</strong> 查看完整規則。
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
