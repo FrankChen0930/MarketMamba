@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './index.css';
 import './layout.css';
 import AppLayout    from './components/AppLayout';
+import Home         from './pages/Home';
 import Dashboard    from './pages/Dashboard';
 import QuantAnalysis from './pages/QuantAnalysis';
 import MarketView   from './pages/MarketView';
@@ -16,7 +17,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<AppLayout />}>
-          <Route index              element={<Dashboard />} />
+          <Route index              element={<Home />} />
+          <Route path="dashboard"   element={<Dashboard />} />
           <Route path="quant"       element={<QuantAnalysis />} />
           <Route path="market"      element={<MarketView />} />
           <Route path="portfolio"   element={<Portfolio />} />
