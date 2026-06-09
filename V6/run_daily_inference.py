@@ -1096,6 +1096,7 @@ def _archive_results(df_kelly: pd.DataFrame, date_str: str) -> None:
 def _archive_scanner_result(date_str: str) -> None:
     """Copy action_signals.json (generated in step 6) into the dated archive dir."""
     import shutil
+    from datetime import timedelta
     src = RESULTS_DIR / "action_signals.json"
     if not src.exists():
         logger.warning("action_signals.json not found — scanner archive skipped")
