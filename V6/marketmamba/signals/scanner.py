@@ -1,13 +1,19 @@
 """
-Trading Signal Scanner — MarketMamba V6.1
+Trading Signal Scanner — MarketMamba V6.2
 =========================================
 Reads inference results + historical data to generate actionable BUY / SELL / WATCH signals.
 
 Entry conditions (2/4 triggers BUY in normal market, 3/4 in cautious):
   1. Rank Stability  — Top 10 ≥2 days OR Top 50 ≥3 days
-  2. High Confidence — Uncertainty < 0.02 (MC-Dropout)
+  2. High Confidence — Uncertainty < Q30 percentile (MC-Dropout)
   3. Relative Low    — RSI(14) < 40 OR Price < MA(20)
   4. Institutional Buy — Net foreign buy ≥2 consecutive days
+
+Pattern bonus (added on top of base 100-pt score, max total 150):
+  - pattern_score 60–74 → +20
+  - pattern_score 75–89 → +30
+  - pattern_score ≥90   → +40
+  - dual_confirm (pattern ≥60 AND alpha_rank ≤200) → extra +10
 
 Exit conditions (any triggers EXIT):
   - Rank drops out of Top 50 for 2 consecutive days
@@ -198,6 +204,75 @@ def _check_institutional(inst_df: pd.DataFrame, ticker: str) -> dict:
     }
 
 
+def _load_pattern_lookup() -> dict:
+    """Load pattern_signals.json and build {stock_id: best_bullish_signal} lookup.
+
+    Returns dict mapping ticker → pattern signal dict (with score, pattern_id,
+    pattern_name, failure_stop, dual_confirm).  Empty dict if file missing.
+    """
+    path = RESULTS_DIR / "pattern_signals.json"
+    if not path.exists():
+        logger.warning("  pattern_signals.json not found — pattern bonus disabled")
+        return {}
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+        lookup: dict = {}
+        for sig in data.get("signals", []):
+            sid = str(sig.get("stock_id", ""))
+            if not sid:
+                continue
+            # Keep the highest-score pattern per stock (list is already sorted desc)
+            if sid not in lookup:
+                lookup[sid] = sig
+        logger.info(f"  Pattern lookup: {len(lookup)} stocks with bullish patterns loaded")
+        return lookup
+    except Exception as e:
+        logger.warning(f"  Failed to load pattern_signals.json: {e}")
+        return {}
+
+
+def _apply_pattern_bonus(base_score: int, pattern_signal: dict | None, alpha_rank: int) -> tuple[int, dict | None]:
+    """Compute composite score = base_score + pattern_bonus + dual_confirm_bonus.
+
+    Returns (composite_score, pattern_info_dict_or_None).
+    pattern_info contains: pattern_score, pattern_id, pattern_name,
+                            failure_stop, dual_confirm, pattern_bonus.
+    """
+    if pattern_signal is None:
+        return base_score, None
+
+    p_score = int(pattern_signal.get("score", 0))
+
+    # Pattern bonus tiers
+    if p_score >= 90:
+        bonus = 40
+    elif p_score >= 75:
+        bonus = 30
+    elif p_score >= 60:
+        bonus = 20
+    else:
+        return base_score, None   # Below threshold, no bonus
+
+    # Dual-confirm: pattern ≥60 AND alpha rank ≤200
+    dual = p_score >= 60 and alpha_rank <= 200
+    if dual:
+        bonus += 10
+
+    composite = base_score + bonus
+
+    pattern_info = {
+        "pattern_score":   p_score,
+        "pattern_id":      str(pattern_signal.get("pattern_id", "")),
+        "pattern_name":    str(pattern_signal.get("pattern_name", "")),
+        "failure_stop":    pattern_signal.get("failure_stop"),
+        "target_price":    pattern_signal.get("target_price"),
+        "dual_confirm":    dual,
+        "pattern_bonus":   bonus,
+    }
+    return composite, pattern_info
+
+
 def _check_exit_rank(rank_history: list) -> dict:
     """Exit if rank drops out of Top 50 for 2 consecutive days."""
     out_of_50_streak = 0
@@ -285,6 +360,9 @@ def run_scan(
     history = _load_history_index()
     date_str = str(df_kelly["Date"].iloc[0]) if "Date" in df_kelly.columns else "unknown"
 
+    # Pattern lookup (V6.2): {stock_id → best bullish pattern signal}
+    pattern_lookup = _load_pattern_lookup()
+
     # I1: Dynamic uncertainty threshold = 30th percentile of today's cross-section
     unc_q30 = float(df_kelly["Uncertainty"].quantile(0.30)) if "Uncertainty" in df_kelly.columns else 0.02
     logger.info(f"  Uncertainty Q30 threshold: {unc_q30:.4f}")
@@ -315,23 +393,24 @@ def run_scan(
     logger.info(f"  Market regime: {market['regime']} (TWII vs MA60: {market['twii_vs_ma60']}) → entry ≥{entry_threshold}/4")
 
     # ── Scan Top 50 for entry signals ─────────────────────────────────────
-    top50 = df_kelly.head(50)
+    top50 = df_kelly.head(50).reset_index(drop=True)
     buy_signals = []
     watch_list = []
 
-    # Weighted score weights (for display/reference only — BUY/WATCH uses conditions_met)
+    # Weighted score weights (base 100 pts)
     _W_RANK  = 30
     _W_CONF  = 25
     _W_INST  = 25
     _W_LOW   = 20
 
-    for _, row in top50.iterrows():
+    for idx, row in top50.iterrows():
         ticker = str(row["Ticker"])
         uncertainty = float(row.get("Uncertainty", 1.0))
         alpha_20d = float(row.get("Exp_Alpha_20d", 0))
         sharpe = float(row.get("Signal_Quality", 0))
         confidence = str(row.get("Confidence", ""))
         weight = float(row.get("Suggested_Weight", 0))
+        alpha_rank = int(idx) + 1   # rank within df_kelly (1-indexed)
 
         # Skip if alpha is negative
         if alpha_20d <= 0:
@@ -344,8 +423,13 @@ def run_scan(
         c4 = _check_institutional(inst_df, ticker)
 
         conditions_met = sum([c1["met"], c2["met"], c3["met"], c4["met"]])
-        # Score kept for display purposes (shows relative strength within same conditions_met tier)
-        score = _W_RANK * c1["met"] + _W_CONF * c2["met"] + _W_INST * c4["met"] + _W_LOW * c3["met"]
+
+        # Base score (max 100)
+        base_score = _W_RANK * c1["met"] + _W_CONF * c2["met"] + _W_INST * c4["met"] + _W_LOW * c3["met"]
+
+        # V6.2: apply pattern bonus → composite score (max 150)
+        p_signal = pattern_lookup.get(ticker)
+        composite_score, pattern_info = _apply_pattern_bonus(base_score, p_signal, alpha_rank)
 
         signal_entry = {
             "ticker": ticker,
@@ -354,90 +438,18 @@ def run_scan(
             "confidence": confidence,
             "uncertainty": round(uncertainty, 4),
             "suggested_weight": round(weight, 4),
-            "score": score,
+            "score": composite_score,
+            "base_score": base_score,
             "conditions_met": conditions_met,
             "conditions_total": 4,
             "rank_stability": c1,
             "high_confidence": c2,
             "relative_low": c3,
             "institutional_buy": c4,
+            # Pattern fields (None if no qualifying pattern)
+            "pattern": pattern_info,
         }
 
         if conditions_met >= entry_threshold:
             buy_signals.append(signal_entry)
-            logger.info(f"  🔥 BUY: {ticker} (conditions={conditions_met}/4, score={score})")
-        elif conditions_met >= 1:
-            watch_list.append(signal_entry)
-
-    # ── Check exit signals for current holdings ───────────────────────────
-    exit_signals = []
-    if portfolio_positions:
-        for pos in portfolio_positions:
-            ticker = pos.get("ticker") or pos.get("stock_id", "")
-            if not ticker:
-                continue
-
-            rank_hist = _get_rank_history(history, ticker)
-            exit_rank = _check_exit_rank(rank_hist)
-            exit_inst = _check_institutional(inst_df, ticker)
-
-            reasons = []
-            if exit_rank["met"]:
-                reasons.append("排名連續掉出 Top 50")
-            # Reverse institutional check: selling ≥3 days
-            # (reuse inst check but look for negative streaks)
-
-            if reasons:
-                exit_signals.append({
-                    "ticker": ticker,
-                    "reasons": reasons,
-                    "rank_exit": exit_rank,
-                    "current_rank": rank_hist[0]["rank"] if rank_hist else None,
-                })
-                logger.info(f"  🔴 EXIT: {ticker} — {', '.join(reasons)}")
-
-    # ── Build output ──────────────────────────────────────────────────────
-    # I3: Portfolio-level risk limits
-    _MAX_POSITIONS = 15
-    _MIN_POSITIONS = 5
-    _MAX_WEIGHT    = 0.10   # 10% single-stock cap
-
-    buy_signals = sorted(buy_signals, key=lambda x: x.get("score", 0), reverse=True)
-    if len(buy_signals) > _MAX_POSITIONS:
-        logger.info(f"  Portfolio cap: trimmed {len(buy_signals)} → {_MAX_POSITIONS} positions")
-        buy_signals = buy_signals[:_MAX_POSITIONS]
-
-    for sig in buy_signals:
-        if sig.get("suggested_weight", 0) > _MAX_WEIGHT:
-            sig["suggested_weight"] = _MAX_WEIGHT
-    total_w = sum(s.get("suggested_weight", 0) for s in buy_signals)
-    if total_w > 0:
-        for sig in buy_signals:
-            sig["suggested_weight"] = round(sig["suggested_weight"] / total_w, 4)
-
-    portfolio_check = {
-        "n_positions": len(buy_signals),
-        "warnings": ([] if len(buy_signals) >= _MIN_POSITIONS else
-                     [f"持倉不足 {_MIN_POSITIONS} 檔（{len(buy_signals)} 檔），建議觀望"]),
-    }
-
-    result = {
-        "date": date_str,
-        "scan_version": "1.2",
-        "market_regime": market["regime"],
-        "twii_vs_ma60": market.get("twii_vs_ma60", "N/A"),
-        "entry_threshold": f"≥{entry_threshold}/4條件",
-        "uncertainty_threshold": round(unc_q30, 6),
-        "total_scanned": len(top50),
-        "buy_signals": buy_signals,
-        "exit_signals": exit_signals,
-        "watch_list": watch_list,
-        "portfolio_check": portfolio_check,
-    }
-
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(result, f, ensure_ascii=False, indent=2, default=_json_default)
-    logger.info(f"  Scanner output: {len(buy_signals)} BUY, {len(exit_signals)} EXIT, {len(watch_list)} WATCH")
-    logger.info(f"  Saved → {output_path}")
-
-    return result
+            pat_str = f", pattern={pattern_info['pattern_name']}({pattern_info['pattern_score']}) +{pattern_info['pattern_bon
