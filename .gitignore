@@ -6,6 +6,11 @@
 *.env
 secrets.py
 
+# 玉山證券 API 憑證與設定（含 API Key/Secret，2026-06-12 發現曾外流到 git 歷史）
+玉山/
+*.p12
+*.ini
+
 # Model checkpoints (too large)
 **/*.pt
 **/*.pth
