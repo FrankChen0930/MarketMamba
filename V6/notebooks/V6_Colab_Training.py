@@ -298,9 +298,15 @@ else:
         df_business_indicator = data.get("business_indicator"),
         df_fed_rate      = data.get("fed_rate"),
     )
-    df = clean_and_scale(df)
+    # D1 修復（V6.2 起）：Group D macro 改 expanding time-series z-score。
+    # 舊版 "cross" 會把同日同值的 macro 特徵 z-score 成全 0，模型 macro 分支無資訊。
+    # ⚠️ 注意：若 Drive 上有舊的 feature matrix 快取，必須刪除重建，否則吃到舊的全 0 macro。
+    df = clean_and_scale(df, macro_norm="ts")
     df.to_parquet(MATRIX_CACHE)
     print(f"  ✅ Feature matrix saved: {df.shape}")
+    _macro_chk = [c for c in ["VIX", "TWII_Return", "FED_Rate"] if c in df.columns]
+    print("  [D1 check] macro 非零確認:",
+          {c: f"absmax={df[c].abs().max():.3f}" for c in _macro_chk})
 
     # Auto-backup to Drive
     shutil.copy(str(MATRIX_CACHE), DRIVE_FEATURE_CACHE)
@@ -408,6 +414,41 @@ print(f"  Epochs: {FINAL_EPOCHS} (IC early stop patience={EARLY_STOP_IC})")
 print(f"  N_SAMPLE: {N_SAMPLE_TRAIN or 'ALL'}")
 print(f"  GPU: {torch.cuda.get_device_name(0)}")
 
+# ── Training status recorder（PersonalOS 模型狀態頁面資料來源）──
+# 每個 epoch 寫 training_status.json 到 Drive；訓練完成後手動複製到 V6/results/ 並 git push
+import time as _time
+from datetime import datetime as _dt
+from marketmamba.training_status import dump_training_status
+from marketmamba.config import INPUT_DIM, SEQ_LEN, D_MODEL, D_STATE, MULTI_SCALE_LAYERS, LOSS_WEIGHTS
+from marketmamba.models.trainer import USE_PADDING_MASK
+
+TRAINING_STATUS_PATH = f"{DRIVE_V6_DIR}/training_status.json"
+_train_meta = {
+    "model_version": "V6.2",
+    "started_at": _dt.now().isoformat(timespec="seconds"),
+    "early_stop_patience": EARLY_STOP_IC,
+    "config": {
+        "input_dim":          INPUT_DIM,
+        "seq_len":            SEQ_LEN,
+        "d_model":            D_MODEL,
+        "d_state":            D_STATE,
+        "multi_scale_layers": MULTI_SCALE_LAYERS,
+        "use_padding_mask":   bool(USE_PADDING_MASK),
+        "macro_norm":         "ts",   # D1: V6.2 起 Group D 用 time-series 標準化
+        "loss_weights":       LOSS_WEIGHTS,
+        "train_days":         len(train_dates),
+        "val_days":           len(val_dates),
+        "train_range":        [train_dates[0], train_dates[-1]],
+        "val_range":          [val_dates[0], val_dates[-1]],
+        "n_stocks":           int(df["stock_id"].nunique()),
+        "gpu":                torch.cuda.get_device_name(0),
+        "n_parameters":       None,   # 訓練結束後補上
+    },
+}
+_epoch_marks: list = [_time.time()]
+_epoch_secs:  list = []
+print(f"📄 Training status will be written to: {TRAINING_STATUS_PATH}")
+
 # ── Live plot callback ──
 import matplotlib
 matplotlib.use("Agg")
@@ -455,6 +496,14 @@ def live_plot(history, epoch, epochs):
     fig.suptitle(f"Ep {epoch}/{epochs} | train={history.train_loss[-1]:.5f} val={history.val_loss[-1]:.5f} IC={history.val_ic[-1]:+.4f} | best@{best_ep} ({no_impr}ep no-impr)", color="#eee", fontsize=11)
     plt.tight_layout(); display(fig); plt.close(fig)
 
+# ── Combined epoch callback: live plot + training_status.json ──
+def _on_epoch(h, e, t):
+    _epoch_marks.append(_time.time())
+    _epoch_secs.append(_epoch_marks[-1] - _epoch_marks[-2])
+    live_plot(h, e, t)
+    dump_training_status(h, e, t, "training", _train_meta,
+                         [TRAINING_STATUS_PATH], epoch_seconds=_epoch_secs)
+
 # ── Train ──
 print("\n🚀 Starting training...")
 print(f"   ⚡ Checkpoints auto-backup to Drive on every IC improvement")
@@ -465,7 +514,7 @@ model, history = train_model(
     epochs          = FINAL_EPOCHS,
     early_stop      = EARLY_STOP_IC,
     checkpoint_name = "v6_final.pt",
-    on_epoch_end    = live_plot,
+    on_epoch_end    = _on_epoch,
     ic_mode         = True,
     checkpoint_backup_dir = DRIVE_CKPT_DIR,   # ← immediate Drive backup!
 )
@@ -477,6 +526,14 @@ print(f"   Best Epoch: {history.best_epoch} / {len(history.train_loss)}")
 print(f"   Val Loss:   {history.best_val_loss:.5f}")
 print(f"   Best IC:    {max(history.val_ic):+.4f}")
 print(f"   Checkpoint: {DRIVE_CKPT_DIR}/v6_final.pt (already on Drive)")
+
+# ── Final training_status.json（補 n_parameters，標記完成狀態）──
+_train_meta["config"]["n_parameters"] = int(model.n_parameters)
+_final_status = "early_stopped" if len(history.train_loss) < FINAL_EPOCHS else "completed"
+dump_training_status(history, len(history.train_loss), FINAL_EPOCHS, _final_status,
+                     _train_meta, [TRAINING_STATUS_PATH], epoch_seconds=_epoch_secs)
+print(f"   📄 training_status.json → {TRAINING_STATUS_PATH}")
+print(f"   ⤷ 下載後放到 V6/results/training_status.json 並 git push，模型狀態頁面才會更新")
 
 # %% Cell 4b: Resume Training (run this instead of Cell 4 after reconnect)
 # ==========================================
@@ -583,11 +640,47 @@ from IPython.display import clear_output, display
 # Merge previous history
 history = TrainingHistory()
 if prev_history:
-    history.train_loss = list(prev_history.train_loss)
-    history.val_loss   = list(prev_history.val_loss)
-    history.val_ic     = list(prev_history.val_ic)
-    history.lr         = list(prev_history.lr)
-    history.breakdown  = list(prev_history.breakdown)
+    history.train_loss  = list(prev_history.train_loss)
+    history.val_loss    = list(prev_history.val_loss)
+    history.val_ic      = list(prev_history.val_ic)
+    history.lr          = list(prev_history.lr)
+    history.breakdown   = list(prev_history.breakdown)
+    history.scale_gates = list(getattr(prev_history, "scale_gates", []))  # V6.2: 保留 scale_gate 曲線
+
+# ── Training status recorder（與 Cell 4 相同機制）──
+import time as _time
+from datetime import datetime as _dt
+from marketmamba.training_status import dump_training_status
+from marketmamba.config import D_MODEL, D_STATE, MULTI_SCALE_LAYERS
+from marketmamba.models.trainer import USE_PADDING_MASK
+
+TRAINING_STATUS_PATH = f"{DRIVE_V6_DIR}/training_status.json"
+_train_meta = {
+    "model_version": "V6.2",
+    "started_at": _dt.now().isoformat(timespec="seconds"),
+    "early_stop_patience": EARLY_STOP_IC,
+    "config": {
+        "input_dim":          INPUT_DIM,
+        "seq_len":            SEQ_LEN,
+        "d_model":            D_MODEL,
+        "d_state":            D_STATE,
+        "multi_scale_layers": MULTI_SCALE_LAYERS,
+        "use_padding_mask":   bool(USE_PADDING_MASK),
+        "macro_norm":         "ts",   # D1: V6.2 起 Group D 用 time-series 標準化
+        "loss_weights":       LOSS_WEIGHTS,
+        "train_days":         len(train_dates),
+        "val_days":           len(val_dates),
+        "train_range":        [train_dates[0], train_dates[-1]],
+        "val_range":          [val_dates[0], val_dates[-1]],
+        "n_stocks":           int(df["stock_id"].nunique()),
+        "gpu":                torch.cuda.get_device_name(0),
+        "n_parameters":       int(model.n_parameters),
+        "resumed_from_epoch": int(start_epoch),
+    },
+}
+_epoch_marks = [_time.time()]
+_epoch_secs  = []
+print(f"📄 Training status will be written to: {TRAINING_STATUS_PATH}")
 
 def live_plot_resume(h, epoch, total):
     clear_output(wait=True)
@@ -701,6 +794,12 @@ for epoch in range(start_epoch + 1, start_epoch + RESUME_EPOCHS + 1):
     print(f"Epoch {epoch:03d} | train={avg_train:.5f} val={avg_val:.5f} IC={avg_ic:+.4f} lr={cur_lr:.2e} | {time.time()-t0:.0f}s", flush=True)
     live_plot_resume(history, epoch, start_epoch + RESUME_EPOCHS)
 
+    # training_status.json（每 epoch 更新到 Drive）
+    _epoch_marks.append(_time.time())
+    _epoch_secs.append(_epoch_marks[-1] - _epoch_marks[-2])
+    dump_training_status(history, epoch, start_epoch + RESUME_EPOCHS, "training",
+                         _train_meta, [TRAINING_STATUS_PATH], epoch_seconds=_epoch_secs)
+
     if avg_ic > best_val:
         best_val = avg_ic
         no_impr = 0
@@ -728,6 +827,13 @@ if ckpt_local.exists():
     print(f"\n✅ Resume training complete!")
     print(f"   Best epoch: {ckpt_final['epoch']} | IC: {ckpt_final['val_ic']:+.4f}")
 live_plot_resume(history, len(history.train_loss), start_epoch + RESUME_EPOCHS)
+
+# ── Final training_status.json ──
+_final_status = "early_stopped" if no_impr >= EARLY_STOP_IC else "completed"
+dump_training_status(history, len(history.train_loss), start_epoch + RESUME_EPOCHS,
+                     _final_status, _train_meta, [TRAINING_STATUS_PATH], epoch_seconds=_epoch_secs)
+print(f"   📄 training_status.json → {TRAINING_STATUS_PATH}")
+print(f"   ⤷ 下載後放到 V6/results/training_status.json 並 git push，模型狀態頁面才會更新")
 
 # %% Cell 5: Walk-Forward Validation (Optional)
 # ==========================================
