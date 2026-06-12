@@ -50,6 +50,7 @@ Thumbs.db
 
 # Personal Obsidian vault (private notes, not for public repo)
 market_mamba_note/
+obsidian_note/
 
 # Claude Code local settings (machine-specific permission grants)
 .claude/

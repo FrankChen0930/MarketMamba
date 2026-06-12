@@ -308,9 +308,14 @@ cd app/frontend && npm run dev   # → localhost:5173
 
 ## 🔄 Current Status
 
-> 最後更新：2026-06-12
+> 最後更新：2026-06-12（玉山 API 金鑰外洩修復完成）
 
 ### 最近完成
+- **安全修復：玉山 API 金鑰從 git 歷史移除（2026-06-12）**：
+  - 發現 commit `dcca0fb`（2026-05-29）曾將整個 `玉山/` 資料夾（含 `E125721827_20270525.p12` 憑證、`config.simulation.ini` 內含完整 API Key/Secret/帳號）推上公開 GitHub repo，雖然當時 `main` 最新檔案列表已不含該資料夾，但歷史紀錄仍可被任何人挖出
+  - 使用者已至玉山證券後台撤銷並重新申請該組 API Key/Secret/憑證
+  - 用 `git filter-repo --path 玉山/ --invert-paths --force` 將 `玉山/` 從整個 git 歷史移除，並 `git push origin main --force` 覆蓋遠端（commit 9aee4a9）
+  - `.gitignore` 新增 `玉山/`、`*.p12`、`*.ini`，新憑證已放回原路徑但不再被追蹤
 - **前端體驗修補（2026-06-12）**：
   - **SYS-04 / UX-06**：`app/backend/routers/market.py` 的 `get_ticker()` 不再寫死 `price="—"`；改成 `asyncio.gather()` 並行呼叫 `_yf_v8(f"{ticker}.TW")` 取得 top7 訊號股報價，查不到（非上市）再 fallback `.TWO`（上櫃），填入真實 price/change/pct/up
   - **UX-05**：`PersonalOS/src/renderer/src/pages/MarketMamba/TradingSignals.jsx` 買入推薦空狀態改依 `data?.date` 區分：有日期但 `buySignals.length === 0` → 顯示「✅ 今日無股票達到入場條件」；無日期 → 顯示「⚠️ 今日訊號資料尚未生成，請稍後重新整理」
