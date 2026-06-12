@@ -11,7 +11,6 @@ Replace with real inference outputs when v6_final.pt is ready:
 import math
 from schemas import (
     SignalItem, SignalsResponse,
-    ICPoint, WFFold, CumRetPoint, PerformanceResponse,
     PortfolioItem, PortfolioResponse,
     TaiexStatus, MarketStatusResponse,
     TickerItem, TickerResponse,
@@ -87,41 +86,9 @@ MOCK_SIGNALS = SignalsResponse(
     ]
 )
 
-# ── Performance / IC History ──────────────────────────────────────────────────
-
-_ic_pts = [
-    ICPoint(epoch=i + 1,
-            train_loss=round(2.8 - i * 0.08 + (0.05 if i % 3 == 0 else -0.02), 4),
-            val_loss=round(2.5 - i * 0.05 + (0.04 if i % 4 == 0 else -0.01), 4),
-            val_ic=round(min(0.10, 0.01 + i * 0.005 + (0.003 if i % 2 == 0 else -0.001)), 4))
-    for i in range(20)
-]
-
-_cumret = [
-    CumRetPoint(
-        month=f"{'2024' if i < 12 else '2025'}-{str(i % 12 + 1).zfill(2)}",
-        model=round(100 * math.exp(0.012 * i + math.sin(i * 0.5) * 0.02), 2),
-        benchmark=round(100 * math.exp(0.006 * i + math.sin(i * 0.3) * 0.015), 2),
-    )
-    for i in range(24)
-]
-
-MOCK_PERFORMANCE = PerformanceResponse(
-    ic_history=_ic_pts,
-    wf_folds=[
-        WFFold(fold="F01", period="2010-2012", ic=0.041, icir=0.52, sharpe=1.21, ret=0.148),
-        WFFold(fold="F02", period="2012-2014", ic=0.058, icir=0.71, sharpe=1.87, ret=0.213),
-        WFFold(fold="F03", period="2014-2016", ic=0.033, icir=0.44, sharpe=0.94, ret=0.087),
-        WFFold(fold="F04", period="2016-2018", ic=0.062, icir=0.78, sharpe=2.14, ret=0.261),
-        WFFold(fold="F05", period="2018-2020", ic=0.021, icir=0.29, sharpe=0.65, ret=0.041),
-        WFFold(fold="F06", period="2020-2022", ic=0.074, icir=0.89, sharpe=2.43, ret=0.318),
-        WFFold(fold="F07", period="2022-2024", ic=0.061, icir=0.76, sharpe=2.01, ret=0.234),
-    ],
-    cumret=_cumret,
-    best_val_ic=0.0744,
-    best_epoch=15,
-    training_status="training",
-)
+# ── Performance mock 已移除（2026-06-12）──────────────────────────────────────
+# /performance 改為讀取 GitHub raw 的 training_status.json + ic_analysis.json 真實資料，
+# 無資料時回傳空欄位由前端顯示「尚無訓練紀錄」，不再使用合成假資料。
 
 # ── Portfolio ─────────────────────────────────────────────────────────────────
 

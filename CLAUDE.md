@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # MarketMamba — AI 助手指引
 
-> 最後更新：2026-06-12（前端體驗修補完成）
+> 最後更新：2026-06-13（V6.2 重訓準備完成、暫停中）
 
 ---
 
@@ -308,9 +308,37 @@ cd app/frontend && npm run dev   # → localhost:5173
 
 ## 🔄 Current Status
 
-> 最後更新：2026-06-12（玉山 API 金鑰外洩修復完成）
+> 最後更新：2026-06-13（V6.2 重訓準備完成、因移動筆電暫停）
 
 ### 最近完成
+- **V6.2 重訓準備完成、訓練暫停（2026-06-13）**：
+  - Colab Cell 3 重建 59 維 feature matrix 成功（8,712,228 rows × 64 cols、2,515 支、2005–2026-06-02），D1 檢查通過（VIX/TWII_Return/FED_Rate 非零，absmax=3.0 為 ±3σ 截斷邊界，預期行為），已快取至 Drive（3.0 GB）
+  - Cell 4 首次執行因 `training_status.py` 為新檔案漏推 GitHub 而 ModuleNotFoundError，已補推（commit 2f7ea4e）
+  - **GitHub main 目前是 59 維 config（供 Colab 拉取）；本機工作目錄已還原 56 維且不 commit**（V6.1 推論用）。⚠️ 訓練期間本機禁用 `git add -A`/`git commit -a`，否則 56 維會覆蓋遠端、Colab 斷線重連拉到錯的 config
+  - **使用者這兩天移動筆電，重訓暫停**，移動完成後從 Cell 0→1→2→3（讀 Drive 快取）→3b→4 重新開始
+- **O2 + D1 完成（2026-06-12）**：
+  - **O2**：`run_daily_inference.py` 的 Confidence 從固定 bins（0.02/0.05）改當日 Q30/Q70 分位數制（與 scanner 邏輯一致，對分布漂移免疫），印出門檻與三級數量
+  - **D1**：`clean_and_scale()` 新增 `macro_norm` 參數——`"cross"`（預設，V6.1 行為不變）/`"ts"`（Group D 12 維改 expanding time-series z-score：shift(1) 無 look-ahead、min 252 天、clip ±3σ，並印出最後交易日 macro z 值）。已驗證：前 252 天歸 0、同日同值、第 N 天 z 值與手算只用前 N-1 天完全一致
+  - Colab Cell 3 改用 `macro_norm="ts"` 並加 D1 非零檢查輸出；`_train_meta` 記錄 macro_norm 進 training_status.json
+  - **⚠️ 部署 checklist**：推論端維持 `"cross"`（V6.1 checkpoint 的 proj_D 未訓練，提前切換=注入隨機噪音）；V6.2 checkpoint 上線時必須同步改 `clean_and_scale(df, macro_norm="ts")`（程式內已留註解標記位置）
+- **P0 推論修復完成並驗證（2026-06-12）**：`V6/run_daily_inference.py`
+  - **P0-1 兩段式推論**：Mamba encoder 維持 128 股分批，GAT 改為一次吃完整 cross-section 圖（舊版每批只取批內 KG 邊，跨批邊全丟、GAT 幾乎退化成 identity）
+  - **P0-2**：推論傳入 `padding_mask`（對 V6.1 checkpoint 數值零影響，為 V6.2 部署鋪路）+ MC-Dropout 以日期為 seed（`torch.manual_seed(YYYYMMDD)`），同日重跑可重現
+  - **P0-3**：新增剔除統計輸出（clean_and_scale NaN 剔除數、cross-section 歷史不足剔除數）
+  - **驗證結果（2026-06-12 實跑比對）**：Alpha rank 相關 0.98（模型輸出穩定）；最終 SQ 排名相關 0.92、Top10 重疊 4/10、Top50 重疊 30/50 = GAT 實質貢獻；**Uncertainty 整體 -34%**（Q50 0.046→0.032）——舊版因 GAT 失效而系統性高估不確定性；新進 Top50 呈營建/金融產業群聚，符合 GAT 沿 KG 邊傳播訊號的預期
+  - **一次性轉換成本**：排名穩定性判斷（scanner 30 分權重）跨新舊排名計算，買入訊號 3–5 個交易日內可能短暫偏少，不需處理
+- **整體架構分析報告（2026-06-12）**：`docs/architecture-analysis-2026-06-12.md`，資料→模型→輸出全面分析。兩大發現：(1) **D1**：`clean_and_scale()` 對 Group D macro 特徵做 per-date cross-sectional z-score，同日全股票同值 → std=0 → 整組 12 維恆為 0，模型 macro 分支無資訊（需重訓修復，改 time-series 標準化）；(2) **M1**：推論時 `INFER_BATCH=128` 只取批內 KG 邊，GAT 圖被切碎與訓練不一致。升級建議 P0~P3 見報告
+- **模型訓練狀態記錄 + 模型狀態頁面改版（2026-06-12）**：
+  - 新增 `V6/marketmamba/training_status.py`：`dump_training_status()` 將 TrainingHistory 寫成 `training_status.json`（含學習曲線、scale_gates、epoch 耗時、config 快照）
+  - `v6_colab_training.py` Cell 4 / 4b：每 epoch 寫 JSON 到 Drive（`MyDrive/MarketMamba_V6/training_status.json`）；訓練完成補 n_parameters 與最終狀態；順手修了 resume 時 scale_gates 曲線遺失
+  - **資料流定案**：Colab → Drive（訓練中）→ 訓練完成後手動複製到 `V6/results/` → git push → Render（30 分 TTL，`POST /api/performance/cache/refresh` 可強制刷新）
+  - 後端 `performance.py` 整支重寫：刪除全部寫死資料（V5 世代 WF folds、固定學習曲線、math.sin 假累積報酬圖），改讀 `training_status.json` + `ic_analysis.json` 真實資料；`schemas.py` 同步改新結構；`mock_data.py` 移除 MOCK_PERFORMANCE
+  - `ModelStatus.jsx`（PersonalOS 與 app/frontend 兩份同步改版）：動態訓練狀態 badge、真實學習曲線、新增 Scale Gate 三分支面板、線上 IC 時序面板、架構摘要由 config 快照動態帶出
+- **repo 整理（2026-06-12）**：
+  - `HANDOFF.md`（2026-04-27 舊交接文件）、`signal_scanner_plan.md`（V6.1 規劃，已在 V6.2 實作完成）移至 `archive/docs_old/`
+  - `obsidian_note/`（含高度個人化內容）改為 `.gitignore` 排除、`git rm -r --cached`，保留本機 Obsidian 使用但不再公開於 GitHub
+  - `OVERVIEW.md`/`PROJECT.md` 維持不動（分別供 claude.ai Project 知識庫與外部整合系統使用）
+  - `archive/`（33MB 舊 notebook）維持不動，使用者表示僅為紀念用途、空間不大暫不處理
 - **安全修復：玉山 API 金鑰從 git 歷史移除（2026-06-12）**：
   - 發現 commit `dcca0fb`（2026-05-29）曾將整個 `玉山/` 資料夾（含 `E125721827_20270525.p12` 憑證、`config.simulation.ini` 內含完整 API Key/Secret/帳號）推上公開 GitHub repo，雖然當時 `main` 最新檔案列表已不含該資料夾，但歷史紀錄仍可被任何人挖出
   - 使用者已至玉山證券後台撤銷並重新申請該組 API Key/Secret/憑證
@@ -348,9 +376,13 @@ cd app/frontend && npm run dev   # → localhost:5173
   - 完整改寫 `PersonalOS/src/renderer/src/pages/MarketMamba/Portfolio.jsx`：`ExitConditionModal` 升級為四層退場 UI（L1 停損、L2 信號惡化、L3 減倉、L4 換倉）；Trailing Stop 由前端從 avg_price 計算；風險分數改用四層觸發加權
 
 ### 進行中
-- V6.2 訓練中（觀察 scale_gate 是否因 padding mask 改善均衡性）
+- **V6.2 重訓暫停**（使用者移動筆電，需關機）。準備工作已全部完成：feature matrix 59D 已快取 Drive、training_status.py 已推 GitHub、config 已切 59（遠端）/56（本機）。恢復時：Colab 跑 Cell 0→1→2→3（會直接讀 Drive 快取，數分鐘）→3b→4
 
 ### 下一步
+- [ ] **V6.2 重訓（暫停中，移動筆電後恢復）**：Cell 4 全新訓練（不可用 Cell 4b resume 舊 checkpoint——維度不符）；訓練中觀察 scale_gate 與 training_status.json 寫入
+- [ ] **V6.2 部署 checklist**：config INPUT_DIM=59 + FEATURE_GROUPS 取消 RS 注釋；`run_daily_inference.py` 的 `clean_and_scale` 改 `macro_norm="ts"`（程式內有註解標記）；checkpoint 換新
+- [ ] 觀察 3–5 個交易日：排名穩定性恢復情況、買入訊號數量是否回歸正常
+- [ ] 下次重訓後驗證模型狀態頁面：Drive JSON → V6/results → push → 頁面顯示
 - [ ] 驗證 Telegram 通知實際送達（使用者已自行測試 `send_telegram_notification()`，待下次真實失敗時確認格式可讀）
 - [ ] 觀察下次推論異常變慢/超時時，warm-up 檢查 + 自動 `wsl --shutdown` 重試是否成功避開 60 分鐘卡死（`PersonalOS/scripts/logs/daily_*.log`）
 - [ ] **6/10 當天使用者人不在家、電腦無人操作**（已排除遊戲/Blender 佔用 GPU 的可能）。新懷疑方向改為系統層級因素：(a) 電腦睡眠後被排程喚醒，WSL2 VM 冷啟動卡住 (b) Windows Update 背景安裝撞期 (c) Avira 排程全機掃描佔用磁碟 I/O (d) WSL2 VM 閒置過久喚醒卡死（已知通病）。下次卡住時比對 Windows 事件檢視器（Power-Troubleshooter / Kernel-Power）的睡眠喚醒時間點 + Windows Update / Avira 排程時間
@@ -364,6 +396,8 @@ cd app/frontend && npm run dev   # → localhost:5173
 > **PR 3（持倉四層退場 / Portfolio 頁面）**：使用者已確認頁面內容完成，視為驗收通過
 
 ### 決策紀錄
+- **training_status.json 採 Drive 手動同步而非 Colab 直接 push GitHub**：使用者不想在 Colab 放 GitHub token；代價是頁面只在訓練完成、手動放入 V6/results 並 push 後更新
+- **模型狀態頁面的假資料全面移除**：無資料時顯示空狀態提示，不再用合成數字；WF 面板移除，待 walk-forward 例行化後以真實 fold 結果加回
 - **padding mask 只加在 Long branch**：Short 取最後 20 步、Mid 取最後 60 步，在 ≥202 天資料的前提下這兩個 branch 輸入全為真實資料，不需 mask；只有 Long 使用完整 252 步才有 padding 問題
 - **scale_gate 改為 `print()` 而非 `logger.info()`**：Colab 預設 logging level = WARNING，`logger.info` 會靜默丟棄；`print(flush=True)` 永遠可見，與其他訓練 log 風格一致
 - **claude.ai Project 知識庫改放 OVERVIEW.md 等靜態文件，CLAUDE.md 動態狀態區塊僅供 Claude Code 使用，不需同步到 Project**

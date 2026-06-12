@@ -37,6 +37,7 @@ except ImportError:
 # Make package importable when run as __main__
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+import numpy as np
 import pandas as pd
 import torch
 
@@ -437,36 +438,64 @@ def run_inference(
     if len(test_ds) == 0:
         raise ValueError(f"No valid cross-section found for {latest_str}")
 
-    # -- Build KG CSR (once; per-batch subgraph extracted inside loop) --
+    # -- Build KG CSR --
     kg_csr, stock_to_idx = build_kg_csr()
 
-    # -- Inference with MC-Dropout uncertainty (mini-batch to fit 6 GB VRAM) --
-    X, _, valid_stocks, _ = test_ds[0]   # __getitem__ returns (X, Y, stock_ids, padding_mask)
+    # -- Cross-section data（P0-2：取回 padding_mask 一併傳入模型）--
+    X, _, valid_stocks, padding_mask = test_ds[0]   # (X, Y, stock_ids, padding_mask)
+
+    # P0-3: 剔除原因統計 — 數值明確輸出
+    n_universe_today   = int((df["Date"] == latest_date).sum())
+    n_included         = len(valid_stocks)
+    n_excluded_history = n_universe_today - n_included
+    logger.info(
+        f"[cross-section] 今日 universe: {n_universe_today} | 納入推論: {n_included} | "
+        f"歷史不足 {int(SEQ_LEN * 0.8)} 天剔除: {n_excluded_history}"
+    )
 
     N = X.shape[0]
-    INFER_BATCH = 128   # stocks per GPU step (tune down to 64 if still OOM)
+    INFER_BATCH = 128   # stocks per GPU step for Mamba stage (tune down to 64 if OOM)
     N_MC        = 30    # MC-Dropout samples
 
-    pred_mean_acc = torch.zeros(N, 3)
-    pred_std_acc  = torch.zeros(N, 3)
+    # P0-2: 固定每日 seed — MC-Dropout 抽樣可重現，消除同日重跑/邊界股的排名抖動
+    mc_seed = int(latest_date.strftime("%Y%m%d"))
+    torch.manual_seed(mc_seed)
+    if device.type == "cuda":
+        torch.cuda.manual_seed_all(mc_seed)
+    logger.info(f"[MC-Dropout] N_MC={N_MC} | seed={mc_seed}（日期制，可重現）")
 
-    model.train()   # enable dropout for MC
+    # P0-1: 兩段式推論 —— Mamba encoder 分批（VRAM 瓶頸在 252 步序列），
+    # GAT 一次吃「完整 cross-section 圖」。舊版以 128 股一批取批內邊，
+    # 跨批 KG 邊全部丟失、與訓練（整批完整圖）不一致，GAT 幾乎退化成 identity。
+    edge_index, edge_attr = get_batch_edges_csr(valid_stocks, kg_csr, stock_to_idx, device)
+    logger.info(f"[KG] 推論完整圖邊數: {edge_index.shape[1]:,}（N={N} 支股票）")
+
+    pred_mc = torch.zeros(N_MC, N, 3)
+
+    model.train()   # enable dropout for MC sampling
     with torch.no_grad():
-        for batch_start in range(0, N, INFER_BATCH):
-            x_b = X[batch_start: batch_start + INFER_BATCH].to(device)
-            batch_stocks = valid_stocks[batch_start: batch_start + INFER_BATCH]
-            edge_index, edge_attr = get_batch_edges_csr(batch_stocks, kg_csr, stock_to_idx, device)
-            mc_preds = []
-            for _mc in range(N_MC):
-                p = model(x_b, edge_index, edge_attr)   # (B, 3)
-                mc_preds.append(p.cpu())
-            mc_stack = torch.stack(mc_preds, dim=0)      # (N_MC, B, 3)
-            pred_mean_acc[batch_start: batch_start + INFER_BATCH] = mc_stack.mean(0)
-            pred_std_acc [batch_start: batch_start + INFER_BATCH] = mc_stack.std(0)
+        for mc in range(N_MC):
+            # Stage 1: temporal encoding（分批；無跨股依賴）
+            h_parts = []
+            for bs in range(0, N, INFER_BATCH):
+                x_b  = X[bs: bs + INFER_BATCH].to(device)
+                pm_b = (padding_mask[bs: bs + INFER_BATCH].to(device)
+                        if padding_mask is not None else None)
+                h_emb = model.embedding(x_b)                    # (B, 252, d_model)
+                h_parts.append(model.encoder(h_emb, pm_b))      # (B, d_model)
+            h_temporal = torch.cat(h_parts, dim=0)              # (N, d_model)
+
+            # Stage 2: 完整圖 GAT + gating fusion + heads
+            # （與 architecture.MarketMambaV6.forward 的 Step 3–5 完全一致）
+            h_graph = model.graph_layer(h_temporal, edge_index, edge_attr)
+            gate_w  = model.gate(torch.cat([h_temporal, h_graph], dim=-1))
+            h_fused = model.norm_fuse(gate_w * h_temporal + (1 - gate_w) * h_graph)
+            h_fused = model.dropout(h_fused)
+            pred_mc[mc] = model.head(h_fused).cpu()             # (N, 3)
     model.eval()
 
-    pred_mean = pred_mean_acc.numpy()   # (N, 3)
-    pred_std  = pred_std_acc.numpy()    # (N, 3)
+    pred_mean = pred_mc.mean(dim=0).numpy()   # (N, 3)
+    pred_std  = pred_mc.std(dim=0).numpy()    # (N, 3)
 
     # Use valid_stocks from dataset (correctly ordered to match X rows)
     stocks_today = valid_stocks[:len(pred_mean)]
@@ -524,12 +553,20 @@ def run_inference(
         df_kelly["Net_Alpha_20d"] / (df_kelly["Uncertainty"] + 1e-6)
     ).clip(lower=-10.0, upper=10.0)
 
-    # Confidence label
-    df_kelly["Confidence"] = pd.cut(
-        df_kelly["Uncertainty"],
-        bins=[0, 0.02, 0.05, 1.0],
-        labels=["高信心", "中信心", "低信心"],
-        right=False,
+    # Confidence label — O2（2026-06-12）：固定 bins (0.02/0.05) 改為當日分位數制。
+    # P0 完整圖 GAT 修復後 Uncertainty 分布整體 -34%，固定門檻已失真；
+    # 分位數制與 scanner 的 Q30 邏輯一致，對模型版本/分布漂移免疫。
+    _q30 = float(df_kelly["Uncertainty"].quantile(0.30))
+    _q70 = float(df_kelly["Uncertainty"].quantile(0.70))
+    df_kelly["Confidence"] = np.where(
+        df_kelly["Uncertainty"] <= _q30, "高信心",
+        np.where(df_kelly["Uncertainty"] >= _q70, "低信心", "中信心"),
+    )
+    _conf_counts = df_kelly["Confidence"].value_counts().to_dict()
+    logger.info(
+        f"[Confidence] 分位數制 Q30={_q30:.4f} / Q70={_q70:.4f} | "
+        f"高信心 {_conf_counts.get('高信心', 0)} / 中信心 {_conf_counts.get('中信心', 0)} / "
+        f"低信心 {_conf_counts.get('低信心', 0)} 支"
     )
 
     # Kelly weight (simplified, proportional to Signal Quality clipped at 0)
@@ -728,7 +765,19 @@ def main(target_date: str | None = None, skip_push: bool = False, forward_fill: 
             df_business_indicator = business_indicator,
             df_fed_rate      = fed_rate,
         )
+        # P0-3: clean_and_scale 剔除統計（最後一個交易日的 NaN 剔除量，數值明確輸出）
+        _last_dt = df["Date"].max()
+        _n_last_before = int((df["Date"] == _last_dt).sum())
+        # ⚠️ D1 部署 checklist：V6.2 checkpoint 上線時，這裡必須同步改成
+        #    clean_and_scale(df, macro_norm="ts")，與訓練端一致。
+        #    V6.1 checkpoint 以全 0 macro 訓練（proj_D 未訓練），提前切換會注入隨機噪音。
         df = clean_and_scale(df)
+        _n_last_after = int((df["Date"] == _last_dt).sum())
+        logger.info(
+            f"[clean_and_scale] 最後交易日 {pd.Timestamp(_last_dt).date()}："
+            f"{_n_last_before} → {_n_last_after} 支"
+            f"（NaN>30% 特徵剔除 {_n_last_before - _n_last_after} 支）"
+        )
         # 去重：institutional_raw 長格式（4 rows/stock/date）→ 4 倍重複
         n_before = len(df)
         df = df.drop_duplicates(subset=["Date", "stock_id"], keep="last")

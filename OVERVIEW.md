@@ -1,13 +1,13 @@
 # MarketMamba — 系統全覽
 
 > 台股 AI 選股系統：Mamba SSM + KG-Enhanced GATv2 · 每日自動化推論 · 全棧 Web Dashboard  
-> 最後更新：2026-06-05
+> 最後更新：2026-06-13
 
 ---
 
 ## 一句話定位
 
-MarketMamba 是個人量化投資自動化系統，每日收盤後（17:00）對台股全市場（~2,888 支）進行深度學習推論，輸出 Alpha 訊號排名，並透過 Web Dashboard 呈現選股結果、持倉追蹤與 LLM 市場報告。
+MarketMamba 是個人量化投資自動化系統，每日收盤後（17:00）對台股全市場（~2,515 支）進行深度學習推論，輸出 Alpha 訊號排名，並透過 Web Dashboard 呈現選股結果、持倉追蹤與 LLM 市場報告。
 
 ---
 
@@ -34,6 +34,8 @@ MarketMamba 是個人量化投資自動化系統，每日收盤後（17:00）對
 | **Group D — 宏觀環境** | 12 | TAIEX / SPX / 黃金 報酬率、VIX、美元指數、台幣匯率、PMI、聯邦基準利率等 |
 
 > V6.2 訓練版（`INPUT_DIM=59`）額外啟用 RS_5d/RS_20d/RS_60d 三個相對強度特徵。
+>
+> **標準化（D1 修復，2026-06-12）**：股票級特徵採 per-date cross-sectional z-score；Group D 宏觀特徵自 V6.2 起改 expanding time-series z-score（shift(1) 無 look-ahead、min 252 天、clip ±3σ）。舊版 cross-sectional 會把同日同值的宏觀特徵歸零，V6.1 的 macro 分支實際上沒有資訊輸入。
 
 訓練資料時間範圍：**2005–今**，約 2,515 支台股。
 
@@ -70,11 +72,16 @@ MarketMamba 是個人量化投資自動化系統，每日收盤後（17:00）對
 
 ### 不確定性估算
 
-使用 **MC-Dropout**（N=30 次採樣）估算每股不確定度（`Uncertainty`）。
+使用 **MC-Dropout**（N=30 次採樣）估算每股不確定度（`Uncertainty`）。2026-06-12 起以推論日期為亂數種子（`torch.manual_seed(YYYYMMDD)`），同日重跑結果可重現。
+
+### 推論方式（P0 修復，2026-06-12）
+
+兩段式推論：Mamba encoder 以 128 股分批跑（VRAM 瓶頸在 252 步序列），GAT 一次吃**完整 cross-section 圖**。舊版每批只取批內 KG 邊、跨批邊全部丟失，GAT 在推論時幾乎退化成 identity；修復後驗證 Uncertainty 整體 -34%、Top50 換血 20 支、新進者呈產業群聚（GAT 沿 KG 邊傳播訊號的預期行為）。
 
 ### 關鍵衍生指標
 
 - **Signal_Quality**（舊名 Sharpe_Score）= `Net_Alpha_20d / (Uncertainty + 1e-6)`，截斷至 [-10, +10]
+- **Confidence**：當日 Uncertainty 的 Q30/Q70 分位數分級（高/中/低信心；2026-06-12 起，原固定 bins 已棄用）
 - **Alpha 截斷**：±2.0，防止離群值
 - **流動性過濾**：`alpha_20d = -999` 表示流動性不足，前端自動排除
 
@@ -94,13 +101,14 @@ MarketMamba 是個人量化投資自動化系統，每日收盤後（17:00）對
       資料新鮮度檢查（不足 5 日則警告）
 
   [Step 2 / 17:05] 特徵工程
-      build_features() → 46 維特徵矩陣
+      build_features() → 56 維特徵矩陣（V6.2 部署後 59 維）
       update_correlation_edges() → 更新 KG 相關性邊
-      clean_and_scale() → 標準化
+      clean_and_scale() → 標準化（含剔除統計輸出）
 
   [Step 3 / 17:10] 模型推論（RTX 3060，CUDA）
+      兩段式推論：Mamba 分批 → GAT 完整 cross-section 圖
       MarketMambaV6 → df_kelly.csv（全市場 Alpha 排名）
-      MC-Dropout × 30 → Uncertainty 欄位
+      MC-Dropout × 30（日期 seed，可重現）→ Uncertainty 欄位
       df_traj.csv（多期預測軌跡）
 
   [Step 4 / 17:15] LLM 報告
@@ -330,20 +338,18 @@ signal_conditions.py → compute_entry_score()
 
 ### 6. 模型狀態（`/model`）
 
-**用途**：呈現模型訓練結果、Walk-Forward 驗證績效與模型架構摘要。
+**用途**：呈現模型訓練狀態（真實資料）、線上 IC 表現與模型架構摘要。2026-06-12 全面改版：移除所有寫死/合成資料，改讀 `training_status.json`（Colab 訓練逐 epoch 記錄）+ `ic_analysis.json`（每日推論線上 IC）。
+
+**資料流**：Colab 訓練 → 每 epoch 寫 JSON 到 Google Drive → 訓練完成手動複製到 `V6/results/` → git push → Render（30 分 TTL，`POST /api/performance/cache/refresh` 強制刷新）。
 
 **資訊面板**：
-- KPI 卡（4 張）：
-  - 平均 IC（Walk-Forward 均值，目標 ≥ 0.05）
-  - 平均 ICIR（目標 ≥ 0.5）
-  - 平均年化 Sharpe
-  - 最後推論日期（checkpoint: v6_best.pt，epoch 14，val_loss 1.647）
-- 訓練 IC 學習曲線：Train Loss、Val Loss、Val IC 三條折線，標記 IC=0.05 目標線
-- Walk-Forward IC 分佈柱狀圖（每個 Fold 的 IC 值）
-- 累積超額報酬 vs TAIEX 折線圖（Model vs 大盤對比）
-- Walk-Forward 詳細結果表（4 個真實 Fold）：
-  - 欄位：期數、訓練期間、IC、ICIR、年化 Sharpe、超額報酬、評級（≥0.05 達標）
-- 模型架構摘要：骨幹架構、輸入特徵維度、預測目標、KG 節點/邊數、訓練資料範圍、參數量
+- 標頭 badge：動態訓練狀態（⚙️ 訓練中 ep X/Y / ✓ 訓練完成 / 早停）
+- KPI 卡（4 張）：訓練 Best Val IC（目標 ≥ 0.05）、線上 IC 5d（mean + ICIR + 天數）、線上 IC 20d、最後推論日期
+- 訓練學習曲線：Train Loss、Val Loss、Val IC 三條折線，標記 IC=0.05 目標線
+- Scale Gate 面板：Short/Mid/Long 三分支權重的 epoch 曲線（觀察是否偏 Long）
+- 線上 IC 時序柱狀圖（5d，正藍負紅，標記 0.05 參考線）
+- 模型架構摘要：由 training_status.json 的 config 快照動態帶出（維度、參數量、訓練/驗證範圍、GPU、padding mask、macro_norm）
+- 無資料時顯示空狀態提示（不再顯示合成數字）；Walk-Forward 面板已移除，待 WF 例行化後以真實 fold 結果加回
 
 ---
 
@@ -405,7 +411,8 @@ MarketMamba/
 │   │   ├── config.py            ← 全域超參數 & 路徑
 │   │   ├── data/
 │   │   │   ├── fetcher.py       ← FinMind + yfinance 爬蟲
-│   │   │   └── feature_engineer.py ← 46 維特徵工程（V6.1 共 56 欄含中間欄）
+│   │   │   └── feature_engineer.py ← 特徵工程（V6.1=56 維 / V6.2=59 維，macro_norm 參數）
+│   │   ├── training_status.py   ← 訓練狀態 JSON 記錄（模型狀態頁面資料源）
 │   │   ├── models/              ← Mamba + GATv2（⚠️ 禁止修改）
 │   │   ├── signals/
 │   │   │   ├── scanner.py           ← 交易訊號掃描器（加權評分 v1.2）

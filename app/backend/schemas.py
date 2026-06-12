@@ -32,28 +32,52 @@ class ICPoint(BaseModel):
     val_ic: float
 
 
-class WFFold(BaseModel):
-    fold: str
-    period: str
+class ScaleGatePoint(BaseModel):
+    epoch: int
+    short: float
+    mid: float
+    long: float
+
+
+class OnlineICPoint(BaseModel):
+    pred_date: str
+    future_date: str
     ic: float
+    n_stocks: int
+
+
+class OnlineICSummary(BaseModel):
+    horizon: str           # "5d" / "20d"
+    n_days: int
+    mean_ic: float
     icir: float
-    sharpe: float
-    ret: float
+    t_stat: float
+    ic_gt0_pct: float
 
 
-class CumRetPoint(BaseModel):
-    month: str
-    model: float
-    benchmark: float
+class TrainingInfo(BaseModel):
+    """來自 V6/results/training_status.json（Colab 訓練時逐 epoch 寫出）"""
+    model_version: str
+    status: str            # "training" / "completed" / "early_stopped"
+    started_at: Optional[str] = None
+    updated_at: Optional[str] = None
+    epoch: int
+    epochs_max: int
+    best_val_ic: Optional[float] = None
+    best_ic_epoch: int = 0
+    best_val_loss: Optional[float] = None
+    early_stop_patience: Optional[int] = None
+    config: dict = {}
 
 
 class PerformanceResponse(BaseModel):
-    ic_history: List[ICPoint]
-    wf_folds: List[WFFold]
-    cumret: List[CumRetPoint]
-    best_val_ic: float
-    best_epoch: int
-    training_status: str   # "training" / "completed"
+    training: Optional[TrainingInfo] = None      # None = 尚無 training_status.json
+    ic_history: List[ICPoint] = []               # 訓練學習曲線（真實）
+    scale_gates: List[ScaleGatePoint] = []       # Scale Gate 三分支 epoch 曲線
+    online_ic: List[OnlineICPoint] = []          # 線上 5d IC 時序（ic_analysis.json）
+    online_summary: List[OnlineICSummary] = []   # 線上 IC 統計摘要
+    online_period: Optional[str] = None          # 線上 IC 統計區間
+    data_sources: dict = {}                      # 各資料來源載入狀態（除錯用）
 
 
 class PortfolioItem(BaseModel):
