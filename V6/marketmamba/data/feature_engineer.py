@@ -19,7 +19,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from marketmamba.config import FEATURE_COLS, PROCESSED_DIR, SEQ_LEN
+from marketmamba.config import FEATURE_COLS, FEATURE_GROUPS, PROCESSED_DIR, SEQ_LEN
 
 logger = logging.getLogger(__name__)
 
@@ -1088,7 +1088,7 @@ def _asof_lookup(dates: pd.Series, ref_dates: pd.Series, values: pd.Series) -> p
     return pd.Series(result.astype(np.float64), index=dates.index)
 
 
-def clean_and_scale(df: pd.DataFrame) -> pd.DataFrame:
+def clean_and_scale(df: pd.DataFrame, macro_norm: str = "cross") -> pd.DataFrame:
     """
     Final cleaning step:
       1. Drop rows with too many NaN features
@@ -1097,12 +1097,28 @@ def clean_and_scale(df: pd.DataFrame) -> pd.DataFrame:
 
     This is intentionally cross-sectional, not time-series — we want relative
     ranks within a day, not absolute magnitudes.
+
+    Args:
+        macro_norm:
+          "cross"（預設）：V6.1 行為——所有特徵 per-date cross-sectional z-score。
+            ⚠️ D1 已知問題：Group D macro 特徵同日全股票同值 → std=0 → 恆為 0。
+            V6.1 checkpoint 即以全 0 macro 訓練（proj_D 權重未訓練），
+            **推論端在 V6.2 checkpoint 部署前必須維持 "cross"**。
+          "ts"（V6.2 重訓起）：Group D 改 expanding time-series z-score——
+            每日用「前一日為止」的歷史均值/標準差標準化（shift(1) 無 look-ahead），
+            至少 252 天歷史才輸出非零值，z 值截斷 ±3σ。其餘特徵維持 cross-sectional。
     """
+    assert macro_norm in ("cross", "ts"), f"macro_norm must be 'cross' or 'ts', got {macro_norm!r}"
+
     # Drop rows where > 30% of feature columns are NaN
     threshold = int(0.7 * len(FEATURE_COLS))
     df = df.dropna(subset=FEATURE_COLS, thresh=threshold).copy()
 
+    macro_cols = set(FEATURE_GROUPS["macro_environment"]) if macro_norm == "ts" else set()
+
     for col in FEATURE_COLS:
+        if col in macro_cols:
+            continue   # D1: macro 走 time-series 路徑（下方）
         # Cross-sectional winsorize
         df[col] = df.groupby("Date")[col].transform(
             lambda x: x.clip(lower=x.quantile(0.01), upper=x.quantile(0.99))
@@ -1110,6 +1126,27 @@ def clean_and_scale(df: pd.DataFrame) -> pd.DataFrame:
         # Cross-sectional z-score
         df[col] = df.groupby("Date")[col].transform(
             lambda x: (x - x.mean()) / (x.std() + 1e-9)
+        )
+
+    if macro_cols:
+        MIN_HIST = 252   # 至少一年歷史才開始輸出非零 z 值
+        latest_dt = df["Date"].max()
+        latest_vals = {}
+        for col in sorted(macro_cols):
+            # macro 同日全股票同值 → 以日為單位的序列計算 expanding 統計
+            s  = df.groupby("Date")[col].first().sort_index()
+            mu = s.expanding(min_periods=MIN_HIST).mean().shift(1)   # shift(1)：只用過去資料
+            sd = s.expanding(min_periods=MIN_HIST).std().shift(1)
+            z  = ((s - mu) / (sd + 1e-9)).clip(-3.0, 3.0)
+            df[col] = df["Date"].map(z)
+            latest_vals[col] = float(z.get(latest_dt, float("nan")))
+        # 規則 7：數值明確輸出（最後交易日的 macro z 值）
+        logger.info(
+            f"[clean_and_scale] macro_norm=ts（expanding z-score, min {MIN_HIST}d, shift(1), clip ±3σ）"
+        )
+        logger.info(
+            "[clean_and_scale] 最後交易日 macro z 值: "
+            + ", ".join(f"{k}={v:+.3f}" for k, v in latest_vals.items())
         )
 
     # Fill any remaining NaNs with 0 (cross-sectional mean after z-score)

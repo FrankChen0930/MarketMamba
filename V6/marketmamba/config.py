@@ -48,7 +48,7 @@ MIN_AVG_VOLUME_5D  = 1e7        # 1000萬台幣日均量（實盤流動性門檻
 # Feature Engineering
 # ============================================================
 SEQ_LEN    = 252    # One full trading year (V5.5 was 180)
-INPUT_DIM  = 56     # V6.1 推論用；V6.2 訓練完成後改回 59（新增 RS_5d/RS_20d/RS_60d）
+INPUT_DIM  = 59     # V6.1 推論用；V6.2 訓練完成後改回 59（新增 RS_5d/RS_20d/RS_60d）
 
 # Factor groups for FactorGroupedEmbedding
 # Indices are 0-based positions in the final feature tensor
@@ -58,7 +58,7 @@ FEATURE_GROUPS = {
         "Return_1d", "Return_5d", "Return_20d",
         "MA_20", "MA_60", "RSI_14", "ATR_14",
         # ── V6.2 新增：訓練完成後取消下面三行，並將 INPUT_DIM 改回 59 ──
-        # "RS_5d", "RS_20d", "RS_60d",             # V6.2: relative strength vs TWII
+         "RS_5d", "RS_20d", "RS_60d",             # V6.2: relative strength vs TWII
     ],
     "institutional_flow": [       # Group B — 20 dims (was 16, +4)
         "Foreign_Buy", "Foreign_Sell", "Foreign_Net",
