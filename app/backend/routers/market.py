@@ -217,13 +217,33 @@ async def get_ticker():
                 df = pd.read_csv(io.StringIO(r.text))
                 df = df.sort_values("Signal_Quality", ascending=False).head(7)
                 info = await get_stock_info()
-                for _, row in df.iterrows():
-                    ticker = str(row["Ticker"])
-                    items.append(TickerItem(
-                        id=ticker,
-                        name=get_stock_name(ticker, info),
-                        price="—", change="—", pct="—", up=True,
-                    ))
+                tickers = [str(row["Ticker"]) for _, row in df.iterrows()]
+
+                async def _fetch_stock_quote(ticker: str) -> Tuple[float, float]:
+                    """嘗試上市（.TW），若查不到再試上櫃（.TWO）"""
+                    price, pct = await _yf_v8(f"{ticker}.TW")
+                    if not price:
+                        price, pct = await _yf_v8(f"{ticker}.TWO")
+                    return price, pct
+
+                quotes = await asyncio.gather(*[_fetch_stock_quote(t) for t in tickers])
+
+                for ticker, (price, pct) in zip(tickers, quotes):
+                    if price:
+                        items.append(TickerItem(
+                            id=ticker,
+                            name=get_stock_name(ticker, info),
+                            price=f"{price:,.2f}",
+                            change=f"{price * pct / 100:+.2f}",
+                            pct=f"{pct:+.2f}%",
+                            up=pct >= 0,
+                        ))
+                    else:
+                        items.append(TickerItem(
+                            id=ticker,
+                            name=get_stock_name(ticker, info),
+                            price="—", change="—", pct="—", up=True,
+                        ))
         except Exception as e:
             logger.warning(f"Ticker build failed: {e}")
 

@@ -1,199 +1,275 @@
-# MarketMamba V5.5 — 終極量化決策系統
+# MarketMamba V6
 
-> Mamba SSM + KG-Enhanced GAT + 雙軌 FinBERT 情緒引擎
+> **Mamba SSM + GATv2 Knowledge Graph · Daily Alpha Signal Generation · Full-Stack Web Dashboard**
+>
+> A personal quantitative investment automation system for Taiwan stock market (~2,500 stocks), running daily inference at market close and surfacing results through a live web dashboard.
 
-自動化台股量化投資系統，結合深度學習時序預測、知識圖譜強化的圖注意力網路、
-以及雙語消息面情緒分析，產出 30 天 Alpha 軌跡預測與凱利資金配置建議。
+**Live Demo** → [marketmamba.vercel.app](https://marketmamba.vercel.app)
 
 ---
 
-## 🏗️ 專案架構
+## What This Does
+
+Every trading day at 17:00, an automated pipeline:
+
+1. Fetches the latest price, institutional flow, and fundamental data
+2. Rebuilds a 56-factor feature matrix for all ~2,500 listed stocks
+3. Runs **MarketMambaV6** (Mamba SSM + GATv2) to predict 5d/20d/60d Alpha for every stock
+4. Generates an AI market report via Claude API
+5. Scans for entry/exit signals and chart pattern formations
+6. Pushes results to GitHub → auto-deploys to Render/Vercel
+
+---
+
+## Model Architecture — MarketMambaV6
+
+~4M parameters, trained on Google Colab A100, inferred locally on RTX 3060 (WSL2).
+
+```
+Input: (N_stocks, SEQ_LEN=252, INPUT_DIM=56)
+  ↓
+FactorGroupedEmbedding
+  Group A: Price & Momentum     (12 dims) → sub_dim 54
+  Group B: Institutional Flow   (20 dims) → sub_dim 94
+  Group C: Fundamentals         (12 dims) → sub_dim 54
+  Group D: Macro Environment    (12 dims) → sub_dim 54
+  All projected → Concat → d_model=256
+  ↓
+MultiScaleMambaEncoder (3 parallel branches, adaptive fusion)
+  Short branch: last  20 steps × 2 Mamba layers
+  Mid   branch: last  60 steps × 3 Mamba layers
+  Long  branch: full 252 steps × 3 Mamba layers  ← zero-padding mask applied
+  Fusion: scale_gate = Softmax(Linear(d_model×3 → 3))
+  ↓
+GATv2 (Knowledge Graph-guided cross-sectional interaction)
+  ~640K edges, CSR sparse matrix
+  ↓
+Gating Fusion
+  gate = Sigmoid(Linear(d_model×2 → d_model))
+  ↓
+MultiHorizonHead
+  3 independent Linear layers → pred_5d / pred_20d / pred_60d
+
+Output: [Alpha_5d, Alpha_20d, Alpha_60d]
+```
+
+### Key Design Decisions
+
+**Multi-Scale Mamba**: Three time horizons capture different market dynamics — short (20 steps ≈ 1 month) for momentum, mid (60 steps ≈ 1 quarter) for trend, long (252 steps ≈ 1 year) for structural patterns. An adaptive `scale_gate` fuses the branches dynamically per-batch.
+
+**GATv2 Knowledge Graph**: 4 edge types — TWSE sector classification, corporate group affiliation, supply chain relationships (TPEX data), and daily-rolling Pearson correlation edges. Edges are rebuilt into a CSR sparse matrix each inference cycle, enabling O(1) batch-level subgraph extraction.
+
+**Zero-Padding Mask (V6.2)**: The Long branch (full 252 steps) may contain zero-padded positions for stocks with shorter histories. Short/Mid branches always slice the last 20/60 real steps, so no mask is needed there. Padding positions are multiplied by 0 to cut gradient flow during training.
+
+**Uncertainty Estimation**: MC-Dropout (N=30 samples) produces per-stock uncertainty. `Signal_Quality = Net_Alpha_20d / (Uncertainty + 1e-6)`, clipped to [−10, +10].
+
+### 56-Dimensional Feature Groups
+
+| Group | Dims | Content |
+|-------|------|---------|
+| Price & Momentum | 12 | OHLCV, MA5/10/20/60, 1d/5d returns, RSI(14), ATR |
+| Institutional Flow | 20 | Foreign/Investment Trust/Dealer net buy (abs + ratio), margin balance, short balance, KD(9,3), OBV, volume ratio |
+| Fundamentals | 12 | Monthly revenue YoY, EPS, P/E, P/B, ROE, market cap, dividend yield, FCF |
+| Macro Environment | 12 | TAIEX/SPX/Gold returns, VIX, DXY, TWD/USD, PMI, Fed rate |
+
+V6.2 training adds RS_5d/RS_20d/RS_60d (relative strength vs market), expanding to 59 dims.
+
+---
+
+## Signal System
+
+### Entry Scoring (max 150 points)
+
+| Condition | Points |
+|-----------|--------|
+| Rank stability (Top10 ≥2 days or Top50 ≥3 days) | 30 |
+| Low uncertainty (< daily Q30 percentile) | 25 |
+| Institutional consecutive net-buy ≥2 days | 25 |
+| Relative low (RSI<40 or price<MA20) | 20 |
+| Pattern score 60–74 | +20 |
+| Pattern score 75–89 | +30 |
+| Pattern score ≥90 | +40 |
+| Double-confirmation (pattern≥60 AND alpha rank≤200) | +10 |
+
+Entry threshold: ≥70 pts (normal market, TWII > MA60) / ≥90 pts (conservative mode)
+
+### 4-Layer Exit Logic
+
+| Layer | Trigger | Action |
+|-------|---------|--------|
+| 1 | Trailing stop hit / pattern failure price breached / foreign sell 3 days / M-top confirmed / held >30 days | Exit all |
+| 2 | Rank drops out of Top50 for 2 days / Uncertainty doubles / RS_20d negative 3 days | Exit all |
+| 3 | RSI>75 + fading momentum / return ≥+20% / Alpha_20d declining 3 days | Halve position |
+| 4 | SQ rank in bottom 50% + new signals available + fully invested | Rotate |
+
+**Trailing Stop (ratchet — only moves up):**
+
+| Peak return | Stop level |
+|-------------|-----------|
+| < +5% | Entry − 5% |
+| ≥ +5% | Entry + 2% |
+| ≥ +10% | Entry + 6% |
+| ≥ +15% | Entry + 10% |
+
+### Chart Pattern Scanner
+
+**Bullish (entry scoring boost)**: W-bottom, Spring W-bottom (false breakdown), Head & Shoulders Bottom, Converging Triangle Bottom, Ascending Flag
+
+**Bearish (exit trigger)**: M-top (neckline break confirmed), False Breakout Down
+
+Each bullish signal includes a `failure_stop` price fed directly into Layer-1 exit logic.
+
+---
+
+## Daily Inference Pipeline
+
+```
+17:00  Windows Task Scheduler
+         └─ daily_inference.bat
+              └─ WSL2 Ubuntu → run_daily_inference.py
+
+  [1]  Data fetch      yfinance + FinMind API + TWSE direct HTTP
+  [2]  Feature build   56-factor matrix + update_correlation_edges()
+  [3]  Inference       MarketMambaV6 → df_kelly.csv, df_traj.csv
+                       MC-Dropout ×30 → Uncertainty column
+  [4]  LLM report      Claude API → market_summary.json
+  [5]  Archive         Rolling 90-day; history_index.json (60 trading days)
+  [6]  Signal scan     scanner.py + pattern_scanner.py → action_signals.json
+  [7]  Push            git push → GitHub → Render cache refresh
+```
+
+Progress shown via tkinter window (WSLg). Auto-closes in 3s on success; stays on top on failure.
+
+### Output Files (`V6/results/`)
+
+| File | Content |
+|------|---------|
+| `df_kelly.csv` | Full-market Alpha rankings (~2,500 stocks) |
+| `df_traj.csv` | Multi-horizon prediction trajectories |
+| `action_signals.json` | BUY / EXIT / WATCH signals |
+| `pattern_signals.json` | Pattern scan results with `failure_stop` |
+| `history_index.json` | Daily Top-50 history (60 trading days) |
+| `market_summary.json` | Claude LLM market analysis |
+| `model_tracker.jsonl` | Daily append: date / val_ic / top50 / duration |
+
+---
+
+## Web Dashboard
+
+**Frontend** (Vite + React) → Vercel: [marketmamba.vercel.app](https://marketmamba.vercel.app)
+
+**Backend** (FastAPI) → Render: [marketmamba-api.onrender.com](https://marketmamba-api.onrender.com)
+
+Data flow: GitHub `V6/results/` → Render pulls on startup (1hr TTL, `asyncio.Lock`) → REST API → Frontend
+
+| Page | Route | Description |
+|------|-------|-------------|
+| Dashboard | `/` | Top-50 Alpha ranking table, sector heatmap, global market sidebar |
+| Scanner | `/scanner` | Entry/exit signal cards with 4-condition breakdown per stock |
+| Quant Analysis | `/quant` | 5 tabs: technicals, institutional flow, market breadth, model alpha, chart patterns |
+| Portfolio | `/portfolio` | Real holdings via Sinopac Shioaji API, cross-referenced with exit signals |
+| AI Daily Report | `/market` | Claude-generated market analysis + LLM Top-10 picks |
+| Model Status | `/model` | IC/ICIR metrics, training curves, Walk-Forward validation results |
+| Sim Robot | `/sim` | Backtest: Alpha robot (SQ Top-20) + Scanner robot (4-condition scoring) |
+
+---
+
+## Training History
+
+| Run | Config | Best Val IC | Notes |
+|-----|--------|-------------|-------|
+| V6.1 | INPUT_DIM=56 | 0.0825 | GATv2 effectively inactive (edge indexing bug) |
+| V6.2 R1 | +RS features (59 dims) | 0.0950 | scale_gate Long-dominant (0.989); RS features not fully utilized |
+| V6.2 R2 | +Zero-Padding Mask | In progress | Targeting balanced scale_gate |
+
+**Validated**: Look-ahead bias is protected — `_merge_financials()` uses `available_from = Date + 45 days` per IFRS reporting deadlines.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Sequence model | Mamba SSM (`mamba-ssm 2.3.0`) |
+| Graph neural network | GATv2Conv (`PyTorch Geometric`) |
+| Data sources | FinMind API + yfinance + TWSE direct HTTP |
+| LLM reports | Anthropic Claude API |
+| Frontend | Vite + React + Recharts |
+| Backend | FastAPI + Uvicorn |
+| Portfolio sync | Sinopac `shioaji` |
+| Training | Google Colab A100 |
+| Inference | RTX 3060 (WSL2 Ubuntu) |
+| Frontend deploy | Vercel |
+| Backend deploy | Render |
+
+---
+
+## Repository Structure
 
 ```
 MarketMamba/
-├── marketmamba/                  # 核心 Python 套件
-│   ├── config.py                # 全域設定 (路徑/Token/超參數)
-│   ├── data/
-│   │   ├── fetcher.py           # FinMind + yfinance 資料擷取
-│   │   ├── merger.py            # 跨頻率時序融合 + IFRS 修復
-│   │   ├── feature_engineer.py  # 特徵煉金 (技術指標/VIP/營收YoY)
-│   │   └── cleaner.py          # 終極清洗 (NaN/Inf/IPO隔離)
-│   ├── models/
-│   │   ├── architecture.py      # MarketMambaV55 (84維) / V5 (46維)
-│   │   ├── inference.py         # 推論 + 夏普/凱利 + 自動版本偵測
-│   │   └── trainer.py          # 訓練迴圈 + Early Stopping
-│   ├── pattern/
-│   │   ├── detectors.py         # 六大型態偵測函數
-│   │   └── scanner.py          # 全市場多時間框架掃描
-│   ├── sentiment/               # 🆕 雙軌情緒引擎
-│   │   ├── crawler_en.py        # Google News RSS 英文爬蟲
-│   │   ├── crawler_cn.py        # Google News RSS 中文爬蟲
-│   │   ├── finbert_en.py        # ProsusAI/finbert 英文情緒
-│   │   ├── finbert_cn.py        # chinese-finbert 中文情緒
-│   │   ├── auto_labeler.py      # 股價反應自動標籤產生器
-│   │   └── integrator.py       # 情緒特徵整合 + 指數衰減
-│   ├── knowledge/               # 🆕 知識圖譜
-│   │   ├── sector_mapping.py    # TWSE 24 大產業分類
-│   │   └── graph_builder.py    # KG + cosine 混合邊建構
-│   ├── robot/
-│   │   └── portfolio_manager.py # 調倉 + 帳本管理
-│   └── deploy/
-│       └── publisher.py         # GitHub 推送
-├── notebooks/
-│   ├── V5_5_Pipeline.py         # 📋 日常推論管線 (Colab 用)
-│   └── V5_5_Training.py        # 📋 模型訓練管線 (Colab 用)
-├── app.py                       # Streamlit 前端
-├── requirements.txt
-└── README.md
+├── V6/
+│   ├── marketmamba/
+│   │   ├── config.py                  ← Global hyperparams & paths
+│   │   ├── data/
+│   │   │   ├── fetcher.py             ← FinMind + yfinance crawler
+│   │   │   └── feature_engineer.py   ← 56-factor feature engineering
+│   │   ├── models/                    ← ⚠️ Do NOT modify checkpoints
+│   │   │   ├── architecture.py        ← MarketMambaV6 model definition
+│   │   │   └── trainer.py             ← Training loop
+│   │   ├── signals/
+│   │   │   ├── scanner.py             ← Weighted entry/exit scanner (v1.2)
+│   │   │   └── signal_conditions.py  ← 150-pt entry scoring + 4-layer exit
+│   │   ├── quant/
+│   │   │   └── pattern_scanner.py    ← 5 bullish + 2 bearish patterns
+│   │   ├── knowledge/
+│   │   │   └── graph_builder.py      ← KG construction
+│   │   ├── llm/
+│   │   │   └── report_generator.py   ← Claude API daily report
+│   │   └── backtest/
+│   │       └── sim_engine_v3.py      ← Stateful daily simulation robot
+│   ├── run_daily_inference.py         ← Daily inference entry point (WSL2)
+│   ├── results/                       ← Daily outputs (git-pushed)
+│   └── models/                        ← ⚠️ Trained checkpoints
+│
+├── app/
+│   ├── backend/                       ← FastAPI (Render)
+│   └── frontend/                      ← Vite + React (Vercel)
+│
+└── archive/                           ← V3–V5.5 (reference only)
 ```
 
 ---
 
-## 🚀 快速開始
-
-### Colab 日常推論 (每日收盤後)
-
-1. 打開 Google Colab，新增一個 Notebook
-2. 將 Runtime 類型改為 **GPU (T4)**
-3. 打開 `notebooks/V5_5_Pipeline.py`
-4. 依序將每個 `# %% Cell` 區塊複製貼入獨立的 Cell
-5. 從第一個 Cell 開始依序執行
-
-```python
-# Cell 1: 環境建置 (克隆 Repo + 安裝依賴 + 掛載 Drive)
-# Cell 2: 資料同步 (FinMind + yfinance)
-# Cell 3: 跨頻融合 + 特徵工程
-# Cell 4: 消息面情緒 (可選，首次可跳過)
-# Cell 5: AI 推論 (Mamba + GAT)
-# Cell 6: 型態掃描
-# Cell 7: 機器人調倉
-# Cell 8: 推送 GitHub → 觸發 Streamlit 更新
-```
-
-### Colab 模型訓練 (需要重訓時)
-
-打開 `notebooks/V5_5_Training.py`，同樣的方式操作：
-
-```python
-# Cell 1: 環境建置
-# Cell 2: 資料同步 + 特徵工程
-# Cell 3: 加入情緒特徵 (可選，启用後 input_dim 46→84)
-# Cell 4: 開始訓練 (tqdm 進度條即時顯示)
-# Cell 5: Loss 曲線視覺化
-# Cell 6: 用新模型跑推論驗證
-# Cell 7: 推送預測結果
-```
-
-### 本機開發
+## Running Locally
 
 ```bash
-# 克隆
+# Clone
 git clone https://github.com/FrankChen0930/MarketMamba.git
 cd MarketMamba
 
-# 安裝依賴
-pip install -r requirements.txt
+# Daily inference (WSL2)
+wsl -d Ubuntu -- bash -lc "
+  source ~/miniconda3/etc/profile.d/conda.sh && conda activate mamba_env &&
+  cd /mnt/d/Desktop/work/ProjectForMe/MarketMamba &&
+  python V6/run_daily_inference.py"
 
-# 啟動前端
-streamlit run app.py
+# Frontend dev server
+cd app/frontend && npm install && npm run dev   # → localhost:5173
+
+# Backend dev server
+cd app/backend && pip install -r requirements.txt && uvicorn main:app --reload
+```
+
+**Environment variables** (`V6/.env`):
+```
+FINMIND_TOKEN=...
+ANTHROPIC_API_KEY=...
+RENDER_BACKEND_URL=https://marketmamba-api.onrender.com
 ```
 
 ---
 
-## 🧠 V5.5 vs V5.0 差異
+## License
 
-| 維度 | V5.0 | V5.5 |
-|------|------|------|
-| 輸入維度 | 46 (量價籌碼) | **84** (+38 情緒特徵) |
-| 圖建構 | 純 cosine similarity KNN | **KG-Enhanced** (cosine + 產業分類) |
-| 消息面 | ❌ 無 | ✅ 雙軌 FinBERT (EN+CN) |
-| 情緒衰減 | — | 指數衰減 (半衰期 3 天) |
-| 季報對齊 | +90 天粗估 | **IFRS 法定截止日** |
-| 錯誤處理 | `except: pass` | `logger.warning()` + 分類策略 |
-| 帳本日期 | 混亂 (有的 YYYY-MM-DD HH:MM) | 統一 **YYYY-MM-DD** |
-
-### 向下相容
-
-推論引擎會自動偵測特徵矩陣中是否含有情緒特徵：
-- **有** → V5.5 模式 (84 維輸入，KG-GAT)
-- **無** → 自動退回 V5.0 模式 (46 維輸入，cosine KNN)
-
-現有的 `V5_DynamicGAT_Production.pth` 權重可直接使用，無需重訓。
-
----
-
-## 📰 消息面情緒引擎
-
-### 雙軌 FinBERT
-
-| 模型 | 用途 | 來源 |
-|------|------|------|
-| `ProsusAI/finbert` | 英文國際新聞 | Reuters, CNBC, Bloomberg |
-| `hw2942/chinese-finbert-for-sentiment-analysis` | 中文台股新聞 | 鉅亨網, UDN, 工商時報 |
-
-### 情緒特徵清單 (38 維)
-
-| 類型 | 欄位 | 說明 |
-|------|------|------|
-| 標量 (6) | `Sent_Stock_CN/EN` | 個股情緒 [-1, +1] |
-| | `Sent_Market_TW/US` | 大盤情緒 |
-| | `Sent_Geopolitical` | 地緣政治風險 |
-| | `News_Volume_Stock` | 新聞數量 (log) |
-| Embedding (32) | `Sent_Embed_EN_0~15` | 英文 FinBERT [CLS] 投影 |
-| | `Sent_Embed_CN_0~15` | 中文 FinBERT [CLS] 投影 |
-
-### Auto-Labeling (自動標籤)
-
-用新聞發布後 5 天的累積 Alpha 來自動標註情緒：
-- Alpha > +1% → Positive
-- Alpha < -1% → Negative
-- 其他 → Neutral
-
-累積 ≥ 1000 條標註後，可微調 FinBERT 提升精度。
-
----
-
-## 🕸️ 知識圖譜 GAT
-
-混合邊建構公式：
-
-```
-edge_score = 0.7 × cosine_similarity + 0.3 × sector_similarity
-```
-
-- `cosine_similarity`：Mamba 最後時間步輸出特徵的相似度
-- `sector_similarity`：TWSE 產業分類 (同產業=0.5, 不同=0.0)
-
-覆蓋 24 大產業分類，含半導體、金融、航運等主要板塊。
-
----
-
-## 📐 型態學雷達
-
-六大經典結構 × 四時間框架：
-
-| 型態 | 訊號 | 特色 |
-|------|------|------|
-| 🟡 標準 W底 | 做多 | 動態傾斜頸線 |
-| 🟢 破底翻 | 強多 | 假跌破 (Spring) |
-| 🔴 M頭 | 偏空 | 容許 15% 假突破誘多 |
-| 🟣 頭肩底 | 做多 | 傾斜頸線 + 等幅測距 |
-| 🔵 收斂三角 | 方向未定 | 1/2~3/4 時間密碼 |
-| 💀 上飄旗跌破 | 做空 | 波段跌幅測距 |
-
----
-
-## ⚙️ 技術棧
-
-- **時序模型**：Mamba SSM (mamba_ssm 2.3.0)
-- **圖網路**：GATv2Conv (PyTorch Geometric)
-- **情緒分析**：HuggingFace Transformers (FinBERT)
-- **資料源**：FinMind API + yfinance
-- **前端**：Streamlit
-- **部署**：GitHub → Streamlit Cloud
-
----
-
-## 📝 License
-
-MIT License © 2024-2026 FrankChen
+MIT License © 2024–2026 FrankChen

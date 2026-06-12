@@ -244,7 +244,7 @@ async def run_inference():
 @router.post("/cache/refresh", response_model=InferenceStatus)
 async def refresh_cache():
     """強制重新從 GitHub 載入最新結果（PersonalOS push 完後呼叫）"""
-    global _cache, _cache_time, _history_cache, _history_cache_time, _scanner_cache, _scanner_cache_time
+    global _cache, _cache_time, _history_cache, _history_cache_time, _scanner_cache, _scanner_cache_time, _exit_check_cache, _exit_check_cache_time
     async with _cache_lock:
         _cache = None
         _cache_time = None
@@ -252,6 +252,8 @@ async def refresh_cache():
         _history_cache_time = None
         _scanner_cache = None
         _scanner_cache_time = None
+        _exit_check_cache = None
+        _exit_check_cache_time = None
         result = await _load_from_github()
         if result:
             return InferenceStatus(status="ok", message=f"Refreshed: {result.total_stocks} signals for {result.date}")
@@ -291,12 +293,59 @@ async def get_rebalance_history():
 # ── Scanner Signals ────────────────────────────────────────────────────────────
 
 GITHUB_SCANNER_URL = GITHUB_RESULTS_URL.replace("df_kelly.csv", "action_signals.json") if GITHUB_RESULTS_URL else ""
+GITHUB_EXIT_CHECK_URL = GITHUB_RESULTS_URL.replace("df_kelly.csv", "portfolio_exit_check.json") if GITHUB_RESULTS_URL else ""
 
 # Local fallback for dev mode
 import pathlib as _pathlib
-_LOCAL_SCANNER_PATH = _pathlib.Path(__file__).resolve().parent.parent.parent.parent / "V6" / "results" / "action_signals.json"
+_LOCAL_SCANNER_PATH    = _pathlib.Path(__file__).resolve().parent.parent.parent.parent / "V6" / "results" / "action_signals.json"
+_LOCAL_EXIT_CHECK_PATH = _pathlib.Path(__file__).resolve().parent.parent.parent.parent / "V6" / "results" / "portfolio_exit_check.json"
 
 _scanner_cache: Optional[dict] = None
 _scanner_cache_time: Optional[datetime] = None
 
+_exit_check_cache: Optional[dict] = None
+_exit_check_cache_time: Optional[datetime] = None
+
+
+@router.get("/portfolio/exit-check")
+async def get_portfolio_exit_check():
+    """持倉退場指標 — 每日推論後計算的 Top-300 股票 streak 數據"""
+    global _exit_check_cache, _exit_check_cache_time
+
+    if (_exit_check_cache and _exit_check_cache_time
+            and datetime.now() - _exit_check_cache_time < CACHE_TTL):
+        return _exit_check_cache
+
+    data = None
+
+    # Try GitHub first (production)
+    if GITHUB_EXIT_CHECK_URL:
+        try:
+            import httpx
+            async with httpx.AsyncClient(timeout=10) as client:
+                r = await client.get(GITHUB_EXIT_CHECK_URL)
+                if r.status_code == 200:
+                    data = r.json()
+                    logger.info(f"Portfolio exit check loaded from GitHub: {data.get('top_n','?')} stocks")
+                else:
+                    logger.warning(f"portfolio_exit_check.json fetch failed: {r.status_code}")
+        except Exception as e:
+            logger.warning(f"Portfolio exit check GitHub load error: {e}")
+
+    # Fallback: local file (dev mode)
+    if data is None and _LOCAL_EXIT_CHECK_PATH.exists():
+        try:
+            import json as _json
+            with open(_LOCAL_EXIT_CHECK_PATH, encoding="utf-8") as f:
+                data = _json.load(f)
+            logger.info(f"Portfolio exit check loaded from local: {data.get('top_n','?')} stocks")
+        except Exception as e:
+            logger.warning(f"Portfolio exit check local load error: {e}")
+
+    if data is None:
+        return {"stocks": {}, "date": None, "top_n": 0, "note": "portfolio_exit_check.json not yet generated"}
+
+    _exit_check_cache = data
+    _exit_check_cache_time = datetime.now()
+    return data
 

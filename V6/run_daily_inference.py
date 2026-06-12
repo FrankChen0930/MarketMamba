@@ -855,6 +855,17 @@ def main(target_date: str | None = None, skip_push: bool = False, forward_fill: 
             # Archive scanner result (generated in step 6) before running backtests
             _archive_scanner_result(today)
 
+            # ── Portfolio exit check ──
+            try:
+                from marketmamba.backtest.portfolio_checker import run_portfolio_check
+                run_portfolio_check(
+                    results_dir=RESULTS_DIR,
+                    data_dir=PROCESSED_DIR,
+                    date_str=today,
+                )
+            except Exception as e_pc:
+                logger.warning(f"Portfolio exit check 失敗（非致命）：{e_pc}")
+
             # ── Alpha Robot backtest ──
             # NOTE: alias to avoid shadowing fetcher's run_daily_update in this scope
             from marketmamba.backtest.sim_engine_v2 import (
@@ -1042,15 +1053,42 @@ def _push_to_github(results_dir: Path, date_str: str) -> bool:
             ["git", "commit", "-m", f"inference: daily results {date_str}"],
             cwd=repo_root, check=True, capture_output=True, env=git_env,
         )
-        subprocess.run(
-            ["git", "push", "origin", "main"],
-            cwd=repo_root, check=True, capture_output=True, env=git_env,
-        )
-        logger.info("✅ Results pushed to GitHub (branch: main)")
-        # Notify Render backend to refresh its cache immediately
-        _refresh_render_cache()
-        return True
 
+        # git push 失敗多半是暫時性網路問題，重試最多 3 次（間隔 10 秒），
+        # 每次都印出明確的嘗試次數與結果，方便事後從 log 確認是否觸發過重試
+        max_attempts = 3
+        retry_delay_sec = 10
+        last_error = None
+        for attempt in range(1, max_attempts + 1):
+            try:
+                subprocess.run(
+                    ["git", "push", "origin", "main"],
+                    cwd=repo_root, check=True, capture_output=True, env=git_env,
+                )
+                if attempt > 1:
+                    logger.info(f"✅ git push 第 {attempt} 次嘗試成功")
+                logger.info("✅ Results pushed to GitHub (branch: main)")
+                # Notify Render backend to refresh its cache immediately
+                _refresh_render_cache()
+                return True
+            except subprocess.CalledProcessError as e:
+                last_error = e
+                err_msg = e.stderr.decode(errors="replace") if e.stderr else str(e)
+                if attempt < max_attempts:
+                    logger.warning(
+                        f"⚠️  git push 第 {attempt}/{max_attempts} 次嘗試失敗，"
+                        f"{retry_delay_sec} 秒後重試。錯誤：{err_msg.strip()[:200]}"
+                    )
+                    time.sleep(retry_delay_sec)
+                else:
+                    logger.warning(
+                        f"⚠️  git push 已重試 {max_attempts} 次仍失敗 — "
+                        f"結果已存在本機但尚未推送到 GitHub。\n"
+                        f"   最後一次錯誤：{err_msg.strip()[:200]}\n"
+                        f"   手動修復：git add V6/results/ && git push"
+                    )
+
+        return False
 
     except subprocess.CalledProcessError as e:
         logger.warning(

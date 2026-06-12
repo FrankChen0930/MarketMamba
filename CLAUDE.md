@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # MarketMamba — AI 助手指引
 
-> 最後更新：2026-06-05
+> 最後更新：2026-06-12（前端體驗修補完成）
 
 ---
 
@@ -308,24 +308,59 @@ cd app/frontend && npm run dev   # → localhost:5173
 
 ## 🔄 Current Status
 
-> 最後更新：2026-06-05
+> 最後更新：2026-06-12
 
 ### 最近完成
+- **前端體驗修補（2026-06-12）**：
+  - **SYS-04 / UX-06**：`app/backend/routers/market.py` 的 `get_ticker()` 不再寫死 `price="—"`；改成 `asyncio.gather()` 並行呼叫 `_yf_v8(f"{ticker}.TW")` 取得 top7 訊號股報價，查不到（非上市）再 fallback `.TWO`（上櫃），填入真實 price/change/pct/up
+  - **UX-05**：`PersonalOS/src/renderer/src/pages/MarketMamba/TradingSignals.jsx` 買入推薦空狀態改依 `data?.date` 區分：有日期但 `buySignals.length === 0` → 顯示「✅ 今日無股票達到入場條件」；無日期 → 顯示「⚠️ 今日訊號資料尚未生成，請稍後重新整理」
+  - **UX-02 確認已解決**：檢查 `Portfolio.jsx` 第 566-570 行的 `chartData`，發現 PR 3 改寫時已改為真實「持有成本 vs 目前市值」長條圖，原本的 `Math.sin` 假資料已不存在，無需再修改
+- **SYS-08：git push 失敗 retry 邏輯（2026-06-12）**：
+  - 修改 `V6/run_daily_inference.py` 的 `_push_to_github()`：`git push origin main` 失敗時自動重試最多 3 次，每次間隔 10 秒；每次嘗試的成功/失敗都用 `logger.warning`/`logger.info` 印出明確次數與錯誤訊息（截取前 200 字元）；3 次都失敗才回傳 `False` 並提示手動修復指令
+  - `git add` / `git commit` 失敗仍視為非暫時性錯誤，不重試（維持原行為）
+- **推論穩定性強化 + Telegram 後台告警 + 自動化頁面美化（2026-06-12）**：
+  - `PersonalOS/scripts/run_daily.py` 的 `run_wsl_inference()` 重構：
+    - 新增 `_wsl_warmup()`：主推論前先跑 `wsl -d Ubuntu -e echo ok`（30s timeout）確認 VM 有反應，沒反應就直接記錄並跳過本次推論，不浪費 60 分鐘
+    - 新增 `_wsl_shutdown()` + 重試邏輯：第一次嘗試逾時（60 分鐘）→ 執行 `wsl --shutdown` 重啟 VM → 等 10 秒 → 重試第二次（60 分鐘）
+    - 所有步驟（暖機結果、各次嘗試耗時、是否觸發 shutdown）都用 `log()` 印出明確時間戳與數值
+  - **SYS-07 完成**：新增 `send_telegram_notification()`，讀取 `.env` 的 `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID`，於 `main()` 失敗通知區塊與 Windows Toast 並行發送，內容含各失敗任務狀態/耗時/錯誤摘要，若有觸發 wsl 重試也會註明
+  - 通知分工定案：**PWA 推播**（後續開發）負責 PersonalOS 前端一般通知；**Telegram**負責背景排程（WSL2 推論等）告警，兩者並存
+  - `PersonalOS/src/renderer/src/pages/Automation/AdminOps.jsx` 整頁改寫：「純模型推論」與「完整每日自動化」改為**階段卡片清單**（⚪待執行/⚙️執行中動畫/✅完成/❌失敗），取代單條 progress bar；原始輸出改為預設收合的「詳細輸出」，並自動過濾 `UserWarning`/`FutureWarning`/cuDNN 等套件雜訊行（可勾選顯示）；「完整每日自動化」idle 時顯示 4 步驟預覽清單
+- **6/10 推論失敗診斷 + 自動化逾時診斷強化（2026-06-11）**：
+  - 診斷出 6/10、6/2 的推論失敗都是同一模式：`PersonalOS/scripts/run_daily.py` 的 `run_wsl_inference()` 透過 `wsl -d Ubuntu -e bash -c "...python V6/run_daily_inference.py..."` 執行，外層 60 分鐘 `subprocess.run(timeout=3600)` 超時被砍掉，且 60 分鐘內**完全沒有任何輸出**（連 conda activate 訊息都沒有），`tee` 緩衝區未 flush 導致 `inference.log` 也沒留下任何 6/10 紀錄
+  - 正常推論耗時 9~14 分鐘（6/3=610s、6/8=768s、6/9=815s），但 6/1=2237s（37分，壓線過關）、6/2 與 6/10 都是 60 分超時失敗——約每週一次的偶發性嚴重變慢，疑似 WSL2 啟動/CUDA 初始化卡死，可能與本機 GPU 是否同時被遊戲/Blender 等占用有關（待使用者觀察確認）
+  - 修改 `PersonalOS/scripts/run_daily.py` 的 `run_wsl_inference()`：呼叫 wsl 前後各印一行明確時間戳；`TimeoutExpired` 分支補抓 `e.stdout`/`e.stderr`（最多印最後 30 行），用來判斷下次卡死時究竟卡在哪一步
 - 建立 CLAUDE.md 兩層架構（靜態規則 + 動態狀態）
 - 新增規則 7（輸出可讀性）與規則 8（任務完成後自動更新本區塊）
 - **V6.2 Zero-Padding Mask**：`USE_PADDING_MASK = True`，Long branch 套用 mask 截斷 padding 梯度，Short/Mid branch 不需 mask（`trainer.py`、`architecture.py`）
 - **Scale Gate 監控強化**：每個 epoch print 數值、儲存至 `TrainingHistory.scale_gates`、訓練圖表新增第 4 欄折線圖（`trainer.py`、`v6_colab_training.py`）
 - **訊號系統 V6.2 整修**：新增 `signal_conditions.py`（140 分進場評分 + 四層退場 + Trailing Stop + 進場理由記憶）；重寫 `pattern_scanner.py`（5 多方 + 2 空方型態 + `failure_stop`）；新增 `sim_engine_v3.py`（有狀態日更機器人，`sim_state.json` 持久化）
+- **PR 3 — 持倉四層退場 checker（2026-06-09）**：
+  - 新建 `V6/marketmamba/backtest/portfolio_checker.py`：讀最近 5 天 df_kelly archives 計算 streak（rank_out50_streak、alpha_20d_declining_days）+ prices_raw 計算 inst_sell_streak + pattern_signals 取 bearish/failure_stop，輸出 `portfolio_exit_check.json`（Top 300）
+  - 修改 `V6/run_daily_inference.py`：Step 7 新增 `run_portfolio_check()` 呼叫
+  - 修改 `app/backend/routers/signals.py`：新增 `GET /api/signals/portfolio/exit-check`，同 1h TTL cache 模式；`/cache/refresh` 一併清空
+  - 修改 `PersonalOS/src/renderer/src/api/mm.js`：新增 `fetchPortfolioExitCheck()`
+  - 完整改寫 `PersonalOS/src/renderer/src/pages/MarketMamba/Portfolio.jsx`：`ExitConditionModal` 升級為四層退場 UI（L1 停損、L2 信號惡化、L3 減倉、L4 換倉）；Trailing Stop 由前端從 avg_price 計算；風險分數改用四層觸發加權
 
 ### 進行中
 - V6.2 訓練中（觀察 scale_gate 是否因 padding mask 改善均衡性）
 
 ### 下一步
+- [ ] 驗證 Telegram 通知實際送達（使用者已自行測試 `send_telegram_notification()`，待下次真實失敗時確認格式可讀）
+- [ ] 觀察下次推論異常變慢/超時時，warm-up 檢查 + 自動 `wsl --shutdown` 重試是否成功避開 60 分鐘卡死（`PersonalOS/scripts/logs/daily_*.log`）
+- [ ] **6/10 當天使用者人不在家、電腦無人操作**（已排除遊戲/Blender 佔用 GPU 的可能）。新懷疑方向改為系統層級因素：(a) 電腦睡眠後被排程喚醒，WSL2 VM 冷啟動卡住 (b) Windows Update 背景安裝撞期 (c) Avira 排程全機掃描佔用磁碟 I/O (d) WSL2 VM 閒置過久喚醒卡死（已知通病）。下次卡住時比對 Windows 事件檢視器（Power-Troubleshooter / Kernel-Power）的睡眠喚醒時間點 + Windows Update / Avira 排程時間
 - [ ] 觀察新一輪訓練的 scale_gate 數值，確認 Short/Mid/Long 是否趨於均衡
 - [ ] 若 scale_gate 仍極度偏 Long，考慮在 MultiScaleMambaEncoder 加入 branch-level dropout 或 loss 正則化
 - [ ] `sim_engine_v3.py` 實際跑一次 backtest，驗證四層退場邏輯正確觸發
+- [ ] 觀察下次 git push 是否曾觸發過 SYS-08 重試（從 `inference.log` 確認訊息格式可讀）
+- [ ] 部署後驗證 Ticker Bar 個股報價是否正確顯示（含至少一支上櫃股票，確認 `.TWO` fallback 有效）
+
+> **PWA 推播通知**：使用者表示暫時不需要，已擱置，待之後有需求再提出
+> **PR 3（持倉四層退場 / Portfolio 頁面）**：使用者已確認頁面內容完成，視為驗收通過
 
 ### 決策紀錄
 - **padding mask 只加在 Long branch**：Short 取最後 20 步、Mid 取最後 60 步，在 ≥202 天資料的前提下這兩個 branch 輸入全為真實資料，不需 mask；只有 Long 使用完整 252 步才有 padding 問題
 - **scale_gate 改為 `print()` 而非 `logger.info()`**：Colab 預設 logging level = WARNING，`logger.info` 會靜默丟棄；`print(flush=True)` 永遠可見，與其他訓練 log 風格一致
 - **claude.ai Project 知識庫改放 OVERVIEW.md 等靜態文件，CLAUDE.md 動態狀態區塊僅供 Claude Code 使用，不需同步到 Project**
+- **PR 3 的 rs_20d / rsi 欄位留 null**：df_kelly.csv 目前不含 RS_20d（那是 feature matrix 的中間產物），前端顯示四層時這兩個欄位以 0 fallback，不影響 L1~L4 主要條件判斷；待 V6.2 模型若輸出 RS 相關信號時再補
+- **portfolio_exit_check 的 inst_sell_streak 從 prices_raw 計算而非 action_signals**：prices_raw 含原始 Foreign_Buy/Foreign_Sell，精確度更高；action_signals 的 institutional_buy 只是 scanner 的 boolean flag
