@@ -675,8 +675,8 @@ def train_model(
                     loss, _    = multi_horizon_loss(preds, Y)
                 val_losses.append(loss.item())
                 ic = compute_ic(
-                    preds[:, 1].cpu().numpy(),
-                    Y[:, 1].cpu().numpy(),
+                    preds[:, 0].cpu().numpy(),
+                    Y[:, 0].cpu().numpy(),
                 )
                 val_ics.append(ic)
 

@@ -136,10 +136,10 @@ AMP_ENABLED    = True       # FP16 mixed-precision
 
 # Multi-horizon loss weights
 LOSS_WEIGHTS = {
-    "mse_20d":    1.0,
-    "mse_5d":     0.3,
+    "mse_20d":    0.3,
+    "mse_5d":     1.0,
     "mse_60d":    0.3,
-    "listnet_20d": 0.5,
+    "listnet_20d": 0.0,
 }
 
 # Cross-section sub-sampling during training (set None to use all stocks)
