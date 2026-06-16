@@ -101,7 +101,7 @@ def build_features(
             df[c] = 0.0
 
     # Reorder to match FEATURE_COLS order
-    meta_cols = ["Date", "stock_id", "Alpha_5d", "Alpha_20d", "Alpha_60d"]
+    meta_cols = ["Date", "stock_id", "Alpha_5d", "Alpha_10d", "Alpha_20d", "Alpha_60d"]
     df = df[meta_cols + FEATURE_COLS].copy()
 
     logger.info(f"Feature matrix: {df.shape[0]:,} rows × {len(FEATURE_COLS)} features")
@@ -1034,6 +1034,7 @@ def _add_alpha_targets(df: pd.DataFrame, df_macro: pd.DataFrame) -> pd.DataFrame
         return fwd
 
     df["Fwd_5d"]  = g["Close"].transform(lambda x: _fwd_cum_return(x, 5))
+    df["Fwd_10d"] = g["Close"].transform(lambda x: _fwd_cum_return(x, 10))   # V6.2 雙模型：短線 10d 標籤
     df["Fwd_20d"] = g["Close"].transform(lambda x: _fwd_cum_return(x, 20))
     df["Fwd_60d"] = g["Close"].transform(lambda x: _fwd_cum_return(x, 60))
 
@@ -1042,22 +1043,25 @@ def _add_alpha_targets(df: pd.DataFrame, df_macro: pd.DataFrame) -> pd.DataFrame
         df_macro = df_macro.copy()
         df_macro["Date"] = pd.to_datetime(df_macro["Date"])
         df_macro["TWII_Fwd_5d"]  = _fwd_cum_return(df_macro["TWII"], 5)
+        df_macro["TWII_Fwd_10d"] = _fwd_cum_return(df_macro["TWII"], 10)
         df_macro["TWII_Fwd_20d"] = _fwd_cum_return(df_macro["TWII"], 20)
         df_macro["TWII_Fwd_60d"] = _fwd_cum_return(df_macro["TWII"], 60)
         df = df.merge(
-            df_macro[["Date", "TWII_Fwd_5d", "TWII_Fwd_20d", "TWII_Fwd_60d"]],
+            df_macro[["Date", "TWII_Fwd_5d", "TWII_Fwd_10d", "TWII_Fwd_20d", "TWII_Fwd_60d"]],
             on="Date", how="left",
         )
         df["Alpha_5d"]  = df["Fwd_5d"]  - df["TWII_Fwd_5d"].fillna(0)
+        df["Alpha_10d"] = df["Fwd_10d"] - df["TWII_Fwd_10d"].fillna(0)
         df["Alpha_20d"] = df["Fwd_20d"] - df["TWII_Fwd_20d"].fillna(0)
         df["Alpha_60d"] = df["Fwd_60d"] - df["TWII_Fwd_60d"].fillna(0)
-        df.drop(columns=["TWII_Fwd_5d", "TWII_Fwd_20d", "TWII_Fwd_60d"], inplace=True)
+        df.drop(columns=["TWII_Fwd_5d", "TWII_Fwd_10d", "TWII_Fwd_20d", "TWII_Fwd_60d"], inplace=True)
     else:
         df["Alpha_5d"]  = df["Fwd_5d"]
+        df["Alpha_10d"] = df["Fwd_10d"]
         df["Alpha_20d"] = df["Fwd_20d"]
         df["Alpha_60d"] = df["Fwd_60d"]
 
-    df.drop(columns=["Fwd_5d", "Fwd_20d", "Fwd_60d"], inplace=True)
+    df.drop(columns=["Fwd_5d", "Fwd_10d", "Fwd_20d", "Fwd_60d"], inplace=True)
     return df
 
 
