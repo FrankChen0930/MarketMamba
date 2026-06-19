@@ -49,19 +49,41 @@ INFER_BATCH = 128
 
 
 def _build_feature_df() -> pd.DataFrame:
-    """載入快取 raw → 建 59 維特徵 → clean_and_scale(macro_norm='ts'，與雙模型訓練對齊)。"""
+    """載入快取 raw → 個股大表 trim 近 2 年（避免 OOM，照 V6.1 run_daily）→ 建 59 維特徵 →
+    clean_and_scale(macro_norm='ts')。
+    ⚠️ trim 後 macro ts 以近 2 年 expanding 計算（非訓練的完整歷史）——因 macro 為橫斷面常數、
+       對「排名」影響為二階，先求 pipeline 跑通；若排名異常再升級成完整歷史 macro ts。"""
     data = merge_all_data()
+
+    # 個股大表 trim 近 2 年（覆蓋 MA_60 / ATR_14 / SEQ_LEN=252 滾動窗）
+    LOOKBACK_DAYS = 730
+    prices = data["prices"].copy()
+    prices["Date"] = pd.to_datetime(prices["Date"])
+    cutoff = prices["Date"].max() - pd.Timedelta(days=LOOKBACK_DAYS)
+    prices = prices[prices["Date"] >= cutoff].copy()
+    logger.info(f"個股資料 trim 近 {LOOKBACK_DAYS} 天：prices {len(prices):,} 筆 "
+                f"({prices['Date'].min().date()} → {prices['Date'].max().date()})")
+
+    def _trim(d):
+        if d is None or "Date" not in getattr(d, "columns", []):
+            return d
+        d = d.copy()
+        d["Date"] = pd.to_datetime(d["Date"])
+        return d[d["Date"] >= cutoff].copy()
+
     df = build_features(
-        df_price=data["prices"], df_inst=data["inst"], df_margin=data["margin"],
-        df_per=data["per"], df_securities=data["securities"], df_market_value=data["market_value"],
-        df_daytrade=data["daytrade"], df_holdings=data["holdings"], df_rev=data["revenue"],
-        df_fin=data["financials"], df_balance_sheet=data["balance_sheet"], df_cashflow=data["cashflow"],
-        df_macro=data["macro"], df_futures_inst=data["futures_inst"], df_options_inst=data["options_inst"],
-        df_dividend=data["dividend"], df_foreign_shareholding=data["foreign_shareholding"],
+        df_price=prices, df_inst=_trim(data["inst"]), df_margin=_trim(data["margin"]),
+        df_per=_trim(data["per"]), df_securities=_trim(data["securities"]),
+        df_market_value=_trim(data["market_value"]), df_daytrade=_trim(data["daytrade"]),
+        df_holdings=_trim(data["holdings"]), df_rev=_trim(data["revenue"]),
+        df_fin=_trim(data["financials"]), df_balance_sheet=_trim(data["balance_sheet"]),
+        df_cashflow=_trim(data["cashflow"]), df_macro=data["macro"],
+        df_futures_inst=_trim(data["futures_inst"]), df_options_inst=_trim(data["options_inst"]),
+        df_dividend=_trim(data["dividend"]), df_foreign_shareholding=_trim(data["foreign_shareholding"]),
         df_fear_greed=data["fear_greed"], df_business_indicator=data["business_indicator"],
         df_fed_rate=data["fed_rate"],
     )
-    df = clean_and_scale(df, macro_norm="ts")     # 雙模型用 ts 訓練 → 對齊（與 V6.1 的 "cross" 無關）
+    df = clean_and_scale(df, macro_norm="ts")
     df = df.drop_duplicates(subset=["Date", "stock_id"], keep="last")
     return df
 
