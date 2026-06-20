@@ -121,7 +121,7 @@ def _mc_infer(model, X, padding_mask, edge_index, edge_attr, device, multiscale,
     return pred_mc.mean(dim=0).numpy(), pred_mc.std(dim=0).numpy()
 
 
-def run_dual_inference(out_dir: Path | None = None, device_str: str | None = None):
+def run_dual_inference(out_dir: Path | None = None, device_str: str | None = None, push: bool = False):
     device = torch.device(device_str or ("cuda" if torch.cuda.is_available() else "cpu"))
     out_dir = Path(out_dir) if out_dir else RESULTS_DIR
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -180,8 +180,32 @@ def run_dual_inference(out_dir: Path | None = None, device_str: str | None = Non
     df_trend.to_csv(out_dir / "df_trend.csv", index=False)
     logger.info(f"✅ df_trend.csv（{len(df_trend)} 支，依 SQ_20d 排序）→ {out_dir / 'df_trend.csv'}")
 
+    if push:
+        _git_push(out_dir)
     return df_short, df_trend
 
 
+def _git_push(out_dir: Path):
+    """只 git add df_short/trend.csv + commit + push（不碰其他 dirty 檔，例如本機 56 維 config）。"""
+    import subprocess
+    repo = MODELS_DIR.parent.parent          # .../MarketMamba（ROOT_DIR=V6 → parent=MarketMamba）
+    files = [str((out_dir / f).relative_to(repo)) for f in ("df_short.csv", "df_trend.csv")]
+    try:
+        subprocess.run(["git", "add", *files], cwd=repo, check=True, capture_output=True, text=True)
+        msg = f"dual inference {pd.Timestamp.now():%Y-%m-%d}"
+        c = subprocess.run(["git", "commit", "-m", msg], cwd=repo, capture_output=True, text=True)
+        if c.returncode != 0 and "nothing to commit" not in (c.stdout + c.stderr):
+            logger.warning(f"git commit: {(c.stdout + c.stderr)[:200]}")
+        subprocess.run(["git", "push", "origin", "main"], cwd=repo, check=True,
+                       capture_output=True, text=True, timeout=120)
+        logger.info("✅ df_short/trend.csv 已 git push origin main")
+    except Exception as e:
+        logger.error(f"git push 失敗（CSV 已存本機、不影響）：{str(e)[:200]}")
+
+
 if __name__ == "__main__":
-    run_dual_inference()
+    import argparse
+    _ap = argparse.ArgumentParser()
+    _ap.add_argument("--push", action="store_true", help="跑完自動 git push df_short/trend.csv")
+    _args = _ap.parse_args()
+    run_dual_inference(push=_args.push)
