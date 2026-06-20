@@ -10,6 +10,7 @@ import Portfolio    from './pages/Portfolio';
 import ModelStatus  from './pages/ModelStatus';
 import InvestmentSim from './pages/InvestmentSim';
 import TradingSignals from './pages/TradingSignals';
+import DualSignals    from './pages/DualSignals';
 
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
           <Route path="model"       element={<ModelStatus />} />
           <Route path="sim"         element={<InvestmentSim />} />
           <Route path="scanner"     element={<TradingSignals />} />
+          <Route path="dual"        element={<DualSignals />} />
 
         </Route>
       </Routes>

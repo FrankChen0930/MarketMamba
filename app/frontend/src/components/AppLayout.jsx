@@ -8,6 +8,7 @@ const TABS = [
   { to: '/',           icon: '🏠', label: '首頁' },
   { to: '/dashboard',  icon: '📊', label: '每日排名' },
   { to: '/scanner',    icon: '🎯', label: '交易訊號' },
+  { to: '/dual',       icon: '🔀', label: '雙模型' },
   { to: '/quant',      icon: '📈', label: '量化分析' },
   { to: '/market',     icon: '🤖', label: 'AI 日報' },
   { to: '/sim',        icon: '🎮', label: '模擬機器人' },
