@@ -180,6 +180,13 @@ def run_dual_inference(out_dir: Path | None = None, device_str: str | None = Non
     df_trend.to_csv(out_dir / "df_trend.csv", index=False)
     logger.info(f"✅ df_trend.csv（{len(df_trend)} 支，依 SQ_20d 排序）→ {out_dir / 'df_trend.csv'}")
 
+    # 歸檔每日輸出（dated 副本，供之後的篩選/模擬機器人累積歷史用；本機留存、不進 push）
+    arch = out_dir / "archive"
+    arch.mkdir(parents=True, exist_ok=True)
+    df_short.to_csv(arch / f"df_short_{latest_str}.csv", index=False)
+    df_trend.to_csv(arch / f"df_trend_{latest_str}.csv", index=False)
+    logger.info(f"📦 已歸檔 {latest_str} → {arch}")
+
     if push:
         _git_push(out_dir)
     return df_short, df_trend

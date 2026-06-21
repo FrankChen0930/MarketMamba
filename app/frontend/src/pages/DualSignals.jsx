@@ -51,6 +51,12 @@ const TREND_COLS = [
   { key: 'Unc_20d',   label: '不確定性',  color: false, d: 4 },
   { key: 'SQ_20d',    label: 'SQ',        color: true,  d: 2 },
 ];
+const CONSENSUS_COLS = [
+  { key: 'Score_5d',  label: 'Score 5d',  color: true, d: 4 },
+  { key: 'SQ_5d',     label: 'SQ 5d',     color: true, d: 2 },
+  { key: 'Score_20d', label: 'Score 20d', color: true, d: 4 },
+  { key: 'SQ_20d',    label: 'SQ 20d',    color: true, d: 2 },
+];
 
 export default function DualSignals() {
   const { data, loading, error, refetch } = useApi(fetchDualSignals);
@@ -61,7 +67,14 @@ export default function DualSignals() {
 
   const short = data?.short || [];
   const trend = data?.trend || [];
-  const rows  = tab === 'short' ? short : trend;
+  // 精選 = 短線 ∩ 趨勢（兩個模型都看好），依 SQ_5d + SQ_20d 排序
+  const tMap = new Map(trend.map((t) => [t.stock_id, t]));
+  const consensus = short
+    .filter((s) => tMap.has(s.stock_id))
+    .map((s) => ({ ...s, ...tMap.get(s.stock_id) }))
+    .sort((a, b) => (b.SQ_5d + b.SQ_20d) - (a.SQ_5d + a.SQ_20d));
+  const rows = tab === 'short' ? short : tab === 'trend' ? trend : consensus;
+  const cols = tab === 'short' ? SHORT_COLS : tab === 'trend' ? TREND_COLS : CONSENSUS_COLS;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -78,7 +91,7 @@ export default function DualSignals() {
           </div>
 
           <div style={{ display: 'flex', gap: 4, marginBottom: 14, borderBottom: '1px solid var(--border)' }}>
-            {[['short', `短線 5d/10d · ${short.length}`], ['trend', `趨勢 20d/60d · ${trend.length}`]].map(([k, label]) => (
+            {[['short', `短線 · ${short.length}`], ['trend', `趨勢 · ${trend.length}`], ['consensus', `⭐ 精選 · ${consensus.length}`]].map(([k, label]) => (
               <button
                 key={k}
                 onClick={() => setTab(k)}
@@ -100,7 +113,7 @@ export default function DualSignals() {
               {data?.note || '尚無資料'}
             </div>
           ) : (
-            <Table rows={rows} cols={tab === 'short' ? SHORT_COLS : TREND_COLS} />
+            <Table rows={rows} cols={cols} />
           )}
         </div>
       </div>
