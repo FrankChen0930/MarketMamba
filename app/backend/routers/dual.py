@@ -114,3 +114,18 @@ async def get_dual_signals(top: Optional[int] = 100):
     if top:
         data = {**data, "short": data["short"][:top], "trend": data["trend"][:top]}
     return data
+
+
+@router.post("/cache/refresh")
+async def refresh_dual_cache():
+    """清除雙模型快取，下次請求會重新從 GitHub 抓 df_short/trend.csv。
+
+    每日自動化在 push 完 df_short/trend.csv 後呼叫，讓前端立即看到當日資料
+    （不必等 1h TTL 自然過期）。比照 signals.py 的 /cache/refresh。
+    """
+    global _cache, _cache_time
+    async with _cache_lock:
+        _cache = None
+        _cache_time = None
+    logger.info("Dual cache cleared via /dual/cache/refresh")
+    return {"status": "ok", "message": "dual cache cleared"}
