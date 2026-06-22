@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # MarketMamba — AI 助手指引
 
-> 最後更新：2026-06-13（V6.2 重訓準備完成、暫停中）
+> 最後更新：2026-06-14（V6.2 第三次重訓「5d 主導實驗」訓練中）
 
 ---
 
@@ -18,6 +18,36 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 6. **推論腳本在 WSL2（Ubuntu）環境執行**，路徑以 `/mnt/d/...` 掛載，呼叫方式為 `wsl -d Ubuntu -- bash -lc "..."`。
 7. **輸出結果必須對人類可讀**：實作任何訓練 log、推論進度、診斷資訊時，數值必須明確顯示（例如 `scale_gate: [0.312, 0.487, 0.201]`），不可只實作邏輯而省略實際數字的輸出語句。如果一個功能「有做但看不到結果」，視同未完成。
 8. **每次任務完成並獲得我確認後，主動更新 CLAUDE.md 的 Current Status 區塊**：把剛完成的事移到「最近完成」；更新「進行中」與「下一步」；若有重要設計決策，記錄到「決策紀錄」；更新頂部的「最後更新」日期。
+
+---
+
+## 協作偏好 / 開發習慣（2026-06-19 整理，供 Claude Code 接手）
+
+> 從長期協作歸納的工作風格，補充上面「互動規則」。
+
+**工作節奏**
+- 計畫先行、確認後執行：動程式前先列「改哪些檔、改什麼、為什麼」，等我 OK 才動手（規則 2，我很在意）。
+- 診斷先做、production 一次到位：先用便宜的隔離實驗收集資訊（**一次只改一個變因**，結果才可歸因），問清楚了才動正式程式、且只動一次，避免「改來改去」。
+- 收尾要記錄：段落完成且我確認後，更新 Current Status + 決策紀錄；重要實驗也記 obsidian `03 架構筆記/訓練紀錄.md`。
+
+**隔離原則（最重要）**
+- 線上 V6.1 是紅線、**絕不能弄壞**（家人每天看 dashboard）。新東西一律**附加、並行、不動既有**：新 router／新頁／新檔，不改既有 endpoint／頁面／資料流。
+- 診斷實驗一律在 `V6/experimental/` 副本；受保護的 `marketmamba/models/` 不碰，要動需我逐次明確授權。
+- 改動若可能碰到線上，先用隔離方式（獨立 process、獨立輸出檔、`try/except` 包住）並說明為何安全。
+
+**驗證與誠實**
+- 凡事先驗證再相信：輸出做健檢（筆數／NaN／分布／前幾名合理性）、數字程式化核對、語法／邏輯抽驗。出乎意料的好結果要主動點出可疑處 + 給確認方式，不報喜不報憂。
+- 誠實勝過順從：tradeoff、限制、真正的資料依賴（如 sim 需先累積歷史）直說，別硬做沒意義的事。當思考夥伴、不是 yes-man；歡迎對我 push back。
+
+**執行分工**
+- 我自己跑 Colab 訓練／WSL 推論／git push；你負責準備好程式 + 給**可直接複製貼上的指令**（含 wsl/conda 殼）。沙箱跑不了本系統推論（無 torch/GPU/資料），runtime 除錯靠我貼 log 給你判讀。
+- git：指定檔案 `git add <檔>`、**不要 `git add -A`**（本機有 56 維 config 等 dirty 檔不能上）。
+
+**領域脈絡**
+- 我以**短線操作**為主（驅動了 5d／雙模型方向）。訓練 Colab A100、推論本機 RTX 3060 + WSL2。
+- **56 維（本機 V6.1）vs 59 維（Colab／雙模型）config 分裂**是反覆出現的坑：本機 `config.py` 是 56 維、遠端／Colab 是 59 維，動到要小心。
+- 兩個 repo：**MarketMamba**（量化系統）、**PersonalOS**（個人自動化 + dashboard host；排程 `scripts/run_daily.py`、交易日 gate `scripts/trading_day.py` 查 TWSE）。
+- 預算（Colab 費）不是主要限制，但討厭浪費的重訓。
 
 ---
 
@@ -301,6 +331,7 @@ cd app/frontend && npm run dev   # → localhost:5173
 - **知識圖譜**（`knowledge/graph_builder.py`）構建耗時，快取在 `Data/cache_v6/knowledge_graph_cache.npz`。KG 的 node 數量可能多於當前訓練 universe（CSR 子圖提取會自動處理），不需重建。
 - **Google Colab 訓練**只在需要重訓時手動觸發，不要在本機嘗試訓練（VRAM 不足）。
 - **`history_index.json`** 由每日推論自動維護（保留最近 60 個交易日），訊號掃描器的排名穩定性判斷依賴它。
+- **`marketmamba/models/inference.py` 已棄用（D4）**：實際線上推論是 `V6/run_daily_inference.py:run_inference()`，兩者欄位已分歧（前者輸出 `Uncertainty_5d/20d/60d`+`Slippage`，後者 `Uncertainty`+`Slippage_Est`）。因 models/ 目錄受保護不直接修改檔案，修推論一律改 `run_daily_inference.py`，不要動 `models/inference.py`
 - **`TemporalCrossSectionDataset`** 是 LAZY LOADING 設計——tensor 在 `__getitem__` 建立，不在 `__init__` 預建。每支股票至少需要 `SEQ_LEN × 0.8 = 202` 天資料才會被納入該交易日的 cross-section。`__getitem__` 回傳 4 個值：`(X, Y, stock_ids, padding_mask)`，其中 `padding_mask` 在 `USE_PADDING_MASK=True` 時為 bool tensor，`False` 代表 zero-padding 位置。
 - **Scale Gate 觀察**：訓練中途停止後 `model` 不在 notebook 全域變數（函式未 return）。若需查看 scale gate，從 checkpoint 重新載入：`ckpt = torch.load("V6/models/v6_best.pt", ...); model = MarketMambaV6().cuda(); model.load_state_dict(ckpt["state_dict"])`，再跑一個 val batch 填入 `_last_scales`。
 
@@ -308,9 +339,26 @@ cd app/frontend && npm run dev   # → localhost:5173
 
 ## 🔄 Current Status
 
-> 最後更新：2026-06-13（V6.2 重訓準備完成、因移動筆電暫停）
+> 最後更新：2026-06-14（V6.2 第三次重訓「5d 主導實驗」訓練中）
 
 ### 最近完成
+- **每日自動化 + 單日篩選上線（2026-06-19）**：`run_dual_inference.py` 加 `--push`（只 add 兩 CSV）+ **每日歸檔** dated 副本到 `V6/results/archive/`（本機留存、供 sim/穩定性累積歷史）；PersonalOS `run_daily.py` 在 `run_full()` V6.1 推論成功後呼叫 `run_wsl_dual()`（獨立 process、自動 push、失敗不影響 V6.1、休市日自動不跑——交易日 gate `trading_day.py` 完好沒被改）；前端 `DualSignals.jsx` 加「⭐ 精選」分頁（短線∩趨勢共識股）。**後續轉 Claude Code**：剩跨日穩定 filter + dual 模擬機器人（讀 `results/archive/`，待累積幾週資料；比照 `sim_engine_v3` 回放）
+- **Phase 2 步驟 5 完成、雙模型 Vercel 前端上線 → Phase 2 全數完成（2026-06-19）**：新增 `app/backend/routers/dual.py`（唯讀 `/api/dual/signals`，1h cache 比照 df_kelly、重用 `GITHUB_RESULTS_URL` 換檔名得 short/trend）+ 前端「🔀 雙模型」新頁（`pages/DualSignals.jsx`，短線/趨勢 tab + rank-score 語意說明）+ `api/dual.js`、`App.jsx` 路由、`AppLayout.jsx` nav。**全程附加，`signals/market/...` 與 V6.1 頁面一個字沒動**。雙模型從訓練→並行推論→前端全鏈路上線、與 V6.1 並存當安全網。未做：每日自動化（run_dual 排程 + 自動 push CSV）留後續
+- **Phase 2 步驟 4 `run_dual_inference.py` 跑通、雙模型推論上線（2026-06-19）**：獨立並行推論——自切 59 維 config（不動 V6.1 的 56 維）、個股大表 trim 近 2 年解 OOM（照 V6.1）、MC-dropout 兩段式、`clean_and_scale(macro_norm="ts")`。輸出 `df_short.csv`(5d/10d) + `df_trend.csv`(20d/60d)，rank-score 語意、依 SQ 排序。**健檢過**：各 1948 支、無 NaN、不確定性全正、`load_state_dict` 成功（驗證 59 維切換正確）、短線/趨勢前段名單不同。小觀察：趨勢 Score_20d 平均 +0.05（短線 ~0）= macro 2 年近似的水位平移、**排名不變**（排序對常數免疫），印證「macro 近似對選股 OK」。OOM 根因＝原本沒 trim、把整份 prices 8.7M + inst 32M 丟進 build
+- **Phase 2 步驟 3 趨勢模型完成、雙模型齊備（2026-06-15，ep13 峰、Colab ep15 斷線）**：多尺度 `MarketMambaV6` + 20d 主導 + rank。**best 20d IC = 0.0961 @ep13**（60d 0.1030、5d 0.089），比歷史 z-score 20d 的 0.051 **近翻倍**，存 `v6_trend.pt`。過擬合 ep9 起但 IC 峰在 ep13、斷線無妨。**白賺發現：scale_gate ep3 就 100% 塌 Long**——趨勢多尺度也沒加值、實質單尺度 Long（Phase 3 可砍）。**至此雙模型齊備：短線 `v6_short.pt`(5d 0.0951) + 趨勢 `v6_trend.pt`(20d 0.0961)，rank 目標把兩者各自翻倍**
+- **Phase 2 步驟 2 短線模型大勝（2026-06-15，ep8 峰）**：單尺度（window 60、1.66M 參數）+ 5d/10d 頭 + listnet + **訓練時 rank 目標**。**best 5d IC = 0.0951 @ep8**（10d 0.0943）——比舊 z-score 目標的 0.049 **近乎翻倍**、追平歷史多尺度 20d 水準，乾淨 out-of-sample（val 2024–26）。功臣＝rank 目標（對齊 Spearman IC + 對台股 ±10% 厚尾離群免疫；z-score 會被暴漲跌股主導 MSE）。ep8 後過擬合（val_loss 升、IC ep10→0.080、ep12→0.067），best=ep8 存 `v6_short.pt`。附帶：單尺度 ~33 分/epoch、比多尺度 ~75 分快一倍。**按「明顯勝直接 production」規則 → 這就是 production 短線模型、免控制組**
+- **Phase 1 ② 方案B deep supervision 完成（2026-06-15，ep6 峰、ep8 停）**：每分支輔助頭各自預測 5d。**ep6 三分支 aux IC 全擠在 ~0.05（Short 0.053 / Mid 0.048 / Long 0.055）**——(1) **Short 是被 gate 餓死、不是沒料**（給直接梯度就跟 Mid/Long 一樣好），推翻「Short 死」；(2) **三尺度對 5d 冗餘**（三條 aux IC 完全同步爬升/觸頂/回落，融合主 IC 0.047 沒贏單分支）→ 多尺度對 5d 沒加值、**短線模型單一分支就夠**；(3) gate 照樣全塌 Mid。附帶：DS 主 IC 峰 0.0474 略勝 baseline 0.0434，但沒明顯延後過擬合（DS 當正則只有小 bonus、可選）
+- **Phase 1 ① listnet_5d 完成（2026-06-14，跑到 ep12 停）**：baseline + listnet_5d=0.5（runtime monkeypatch `multi_horizon_loss`，production 零修改、無 push）。**best 5d IC 0.0434→0.0487@ep7（幾乎追平 20d 的 0.051）**——5d 加排名損失更好預測。代價：**gate 整個塌到 Long 0.975（Mid 被丟）**，坐實「估值走 Mid、排序走 Long」、0.5 力道太大；val_loss 1.553→1.641 過擬合比 baseline 兇、IC 峰高但脆。帶走：listnet 權重=Mid↔Long 旋鈕（之後可試 0.2）、過擬合是 baseline+本輪共同主題（production 短線模型需處理正則/早停峰值）、Short 兩損失皆≈0 砍定
+- **V6.2 第三次重訓（5d 主導）baseline 定稿、Phase 0 完成（2026-06-14）**：跑到 ep11 停。**gate 收斂 = Short 0.004 / Mid 0.80 / Long 0.20**——5d 目標下模型自選 Mid（3 月回看）主 + Long 輔、Short 死；證明 scale gate 會隨 horizon 表態、多尺度（Mid+Long）有效，**推翻「gate 永遠只會塌成單分支」**。**best 5d IC 0.0434@ep5（無 listnet）**，5d 可預測成立。過擬合 ep4–5 起（val_loss 最低 ep4、之後升、train 續降）。Short 真死/餓死留給 Phase 1 方案B 判定
+- **V6.2 第二次重訓觀察 → 轉向 5d 主導重訓（2026-06-14）**：
+  - **第二次重訓（padding mask + D1 macro ts）實跑至 ep7 後停止檢視**：scale_gate 仍在 **ep4 崩到 Long 0.987、ep7 = [0.0006, 0.0023, 0.997]**（Short/Mid <0.5%）——**`USE_PADDING_MASK=True` 沒能阻止偏 Long，推翻「padding 零值被當訊號」是唯一主因的假設**；val 已現過擬合起點（val_loss 最低 ep4、val_ic 最高 0.051@ep5 後雙雙轉差、train_loss 續降）；best IC 0.051 為 20d 且僅 ep7 中途值。觀察整理 `docs/training-observation-2026-06-14.md`
+  - **關鍵領悟（兩條尺度軸）**：Scale Gate 的 Short/Mid/Long 是「看多長**歷史**」（輸入回看 20/60/252 步），5d/20d/60d 是「預測多遠**未來**」（輸出 horizon）。loss 主目標是 20d（趨勢），模型把 gate 押 Long 其實合理——硬加 gate 正則＝跟做對的模型作對。改採「把目標換短 + 讓 gate 自己表態」當診斷
+  - **停掉第二次、改第三次重訓（5d 主導實驗）**：LOSS_WEIGHTS 改 `mse_5d=1.0 / mse_20d=0.3 / mse_60d=0.3 / listnet_20d=0.0`（listnet 寫死 20d，留著會把 gate 拉回 Long，故關掉；`listnet_5d` 列第二階段）；`trainer.py:678` val_ic 由 `preds[:,1]`(20d) 改 `preds[:,0]`(5d)，讓 early-stop / 最佳 checkpoint / headline IC 全部追 5d。commit `fb94fe3` 已推 origin/main
+  - **git 修復**：移動筆電遺留的 stale `.git/index.lock`（6/13）+ index 損毀，已 `rm lock` + 重建；用 stash 手術只把 2 檔改動疊在 59 維 LF 基底上 commit、push 後還原本機 56 維（trainer.py 本機僅 CRLF 差異，`stash pop` 衝突，取 committed LF+5d 版即可）
+- **sim_engine_v3 全量回放驗證 + O3 完成（2026-06-13）**：
+  - **回放驗證**：32 個交易日（04-29→06-12）完整跑通，+0.40%、最大回撤 -0.59%、勝率 56.2%、16 筆賣出。四層退場全部正確觸發：L1（M頭×5、型態失敗線×1、Trailing Stop×1）、L2（排名穩定性消失×4、連2天出Top50×3、Uncertainty 2倍×1）、L3（Alpha連3天降×1，因持倉僅100股無法減半而正確升級全出）、L4（未滿倉、正確不觸發）。註：回放中 pattern_signals.json/history_index.json 用的是當前版而非各日歸檔版（歷史日期有輕微 look-ahead），屬已知設計限制
+  - **O3**：`run_daily_inference.py` 新增 `Signal_Quality_Raw`（未截斷），排序改用 raw；下游 4 處重排序（sim_engine_v3、portfolio_checker×2、backend signals.py）改為「有 raw 用 raw」向下相容。顯示欄位 Signal_Quality 維持 ±10 截斷不變
+  - **Uncertainty 校準分析**：`docs/uncertainty-calibration-2026-06-13.md`——U 與誤差相關 +0.30（27/27 天為正）；SQ Top50 五日去市場報酬 +1.66%/日完勝純 Alpha 排名；**SQ 設計獲實證支持，conformal（U5）優先度調降**
 - **V6.2 重訓準備完成、訓練暫停（2026-06-13）**：
   - Colab Cell 3 重建 59 維 feature matrix 成功（8,712,228 rows × 64 cols、2,515 支、2005–2026-06-02），D1 檢查通過（VIX/TWII_Return/FED_Rate 非零，absmax=3.0 為 ±3σ 截斷邊界，預期行為），已快取至 Drive（3.0 GB）
   - Cell 4 首次執行因 `training_status.py` 為新檔案漏推 GitHub 而 ModuleNotFoundError，已補推（commit 2f7ea4e）
@@ -376,12 +424,20 @@ cd app/frontend && npm run dev   # → localhost:5173
   - 完整改寫 `PersonalOS/src/renderer/src/pages/MarketMamba/Portfolio.jsx`：`ExitConditionModal` 升級為四層退場 UI（L1 停損、L2 信號惡化、L3 減倉、L4 換倉）；Trailing Stop 由前端從 avg_price 計算；風險分數改用四層觸發加權
 
 ### 進行中
-- **V6.2 重訓暫停**（使用者移動筆電，需關機）。準備工作已全部完成：feature matrix 59D 已快取 Drive、training_status.py 已推 GitHub、config 已切 59（遠端）/56（本機）。恢復時：Colab 跑 Cell 0→1→2→3（會直接讀 Drive 快取，數分鐘）→3b→4
+- **Phase 2 步驟 4：`run_dual_inference.py`（並行推論）**。雙模型已備：`v6_short.pt`(單尺度 5d/10d, 5d IC 0.0951) + `v6_trend.pt`(多尺度 20d/60d, 20d IC 0.0961)。下一步寫獨立並行推論腳本：自建 59 維特徵、載兩 checkpoint、跑 cross-section 推論、輸出 `df_short/trend.csv` 獨立檔，與 V6.1→df_kelly→dashboard 完全隔離（失敗不影響線上）。**Claude 先讀 `run_daily_inference.py:run_inference` 內部（兩段式 Mamba+GAT、MC-dropout、clean_and_scale）再擬計畫**。注意：模型輸出是 rank-score 語意（非報酬）。整體 Phase 2：①✅②✅③✅④✅⑤✅ **全數完成**（雙模型訓練→並行推論→Vercel 前端全上線，與 V6.1 並存當安全網）。下一步可選：Phase 3（抬 IC——目標 vol-norm/特徵分離/窗口/集成）或每日自動化（run_dual 排程 + 自動 push CSV），皆不急
 
 ### 下一步
-- [ ] **V6.2 重訓（暫停中，移動筆電後恢復）**：Cell 4 全新訓練（不可用 Cell 4b resume 舊 checkpoint——維度不符）；訓練中觀察 scale_gate 與 training_status.json 寫入
+- **雙模型上線後路線（2026-06-19 定，依賴順序 ①→②→③）**：① **每日自動化** ✅（2026-06-19）——`run_dual_inference.py` 加 `--push`（只 add 兩 CSV）+ 每日**歸檔** dated 副本到 `V6/results/archive/`（本機留存、供 ②③ 累積歷史）；PersonalOS `run_daily.py` 在 `run_full()` V6.1 推論成功後呼叫 `run_wsl_dual()`（獨立 process、自動 push、失敗不影響 V6.1）。交易日 gate（`trading_day.py` 查 TWSE）完好沒被改。② 篩選：**單日「精選=短線∩趨勢」前端分頁 ✅**；跨日穩定 filter + ③ dual sim 待 archive 累積幾週後建（讀 `results/archive/`） ② **篩選條件**——在 dual rank-score 上做 SQ 門檻/低不確定性/short∩trend 交集/跨日排名穩定（需 ① 累積 history 才有「穩定性」） ③ **dual 模擬機器人**——比照 `sim_engine_v3` 跑紙上交易、結果進 InvestmentSim 頁（需 ② 定進退場）
+- **雙模型 Roadmap（2026-06-14 定案，不急著取代 V6.1）**：原則＝診斷實驗先做完（隔離在 `V6/experimental/` 副本、零 production 影響、一次一個變因），最後才動 production 雙模型、下游 plumbing 只做一次
+  - **Phase 0（✅完成）**：5d baseline ep11 停定稿——gate 收斂 Mid 0.80/Long 0.20/Short~0、best 5d IC 0.0434@ep5、過擬合 ep4–5 起
+  - **Phase 1（experimental 副本診斷）**：①✅ `listnet_5d`——5d IC 0.0434→0.0487（近 20d），但 gate 全塌 Long、過擬合加劇 ②✅ deep supervision——**Short 餓死非沒料、三尺度對 5d 冗餘 → 短線模型單分支即可**（主 IC 0.0474 略勝 baseline）③（可選，前提已削弱）3d 測試 ④（降級，B 已證冗餘）窗口階梯 {60,126,252}
+  - **Phase 2（雙模型「並行、不動資料流」上線——首發即優化版）**：安全網是 V6.1，雙模型不必先上保守版，故把便宜高把握的改進折進來：**目標改每日 cross-sectional rank** + **listnet**。短線=單尺度 5d/10d+listnet_5d、趨勢=多尺度 20d/60d+listnet_20d。獨立 `run_dual_inference.py` + 獨立輸出檔（自建 59 維），V6.1→df_kelly→dashboard 完全不動、失敗也不影響線上。短線 run 兼當 rank-vs-raw 證據（對照舊 multi-scale raw 0.049）。技術點：56 vs 59 特徵排列不同（RS 插 group A 中間）
+  - **Phase 3（雙模型上線後、有雙安全網才動）**：迭代抬 IC——**特徵分離**（短線快特徵/趨勢慢特徵，重建矩陣大工程）、窗口 90/120、listnet 權重 sweep、正則救峰值、多 seed 集成、趨勢單 vs 多尺度診斷
+- [ ] 若決定不走 5d 路線：把 LOSS_WEIGHTS / val_ic 改回 20d（remote main 目前是 5d 實驗設定）
+- [ ] **本機 git 善後**：第三次重訓 push 後 `git stash pop` 在 trainer.py 留下 CRLF 衝突——需 `git checkout HEAD -- V6/marketmamba/models/trainer.py` + `git restore --staged V6/marketmamba/config.py` + `git stash drop`
 - [ ] **V6.2 部署 checklist**：config INPUT_DIM=59 + FEATURE_GROUPS 取消 RS 注釋；`run_daily_inference.py` 的 `clean_and_scale` 改 `macro_norm="ts"`（程式內有註解標記）；checkpoint 換新
 - [ ] 觀察 3–5 個交易日：排名穩定性恢復情況、買入訊號數量是否回歸正常
+- [ ] P0 後累積 20+ 天 archive 重跑 Uncertainty 校準分析（`docs/uncertainty-calibration-2026-06-13.md`，結論：SQ 設計獲實證支持、conformal 優先度降低）
 - [ ] 下次重訓後驗證模型狀態頁面：Drive JSON → V6/results → push → 頁面顯示
 - [ ] 驗證 Telegram 通知實際送達（使用者已自行測試 `send_telegram_notification()`，待下次真實失敗時確認格式可讀）
 - [ ] 觀察下次推論異常變慢/超時時，warm-up 檢查 + 自動 `wsl --shutdown` 重試是否成功避開 60 分鐘卡死（`PersonalOS/scripts/logs/daily_*.log`）
@@ -396,6 +452,19 @@ cd app/frontend && npm run dev   # → localhost:5173
 > **PR 3（持倉四層退場 / Portfolio 頁面）**：使用者已確認頁面內容完成，視為驗收通過
 
 ### 決策紀錄
+- **雙模型輸出=rank-score、SQ=Score/Unc；趨勢分數 +0.05 水位偏移（2026-06-19）**：模型用 rank 目標訓練→輸出非報酬而是 rank-score，SQ（Score/Uncertainty）拿來排序選股。趨勢 Score_20d 平均 +0.05（短線 ~0）來自 macro 2 年近似的水位平移、**對排名無影響**（排序對常數免疫）。Phase 3 可選 polish：(a) 分數 per-cross-section 置中讓 SQ 好解讀、(b) macro ts 改完整歷史去掉偏移、(c) 前端標明 rank-score 語意
+- **dual inference 個股大表 trim 近 2 年（2026-06-19）**：root cause＝沒 trim 把整份 raw（prices 8.7M + inst 32M）丟 build_features → OOM 被砍（`python|tail` 隱藏了 `Killed`）。照 V6.1 trim 近 730 天解掉。眉角：macro ts 嚴格要完整歷史，但 macro 為橫斷面常數、對排名二階，先用 2 年近似（已實證只造成水位平移、不動排名）
+- **目標改純 cross-sectional rank、目標工程+listnet 折進 Phase 2（2026-06-15）**：安全網是 V6.1 不是雙模型，故雙模型首發即用優化版、不做「raw 先上再重訓」的浪費（省掉雙模型 ×2 的重訓）。目標選 A（每日橫斷面 rank、IC 對齊最強），不選 vol-norm；下游 rank-score 語意之後在前端加說明。`Alpha_5d/20d/60d` 改 rank、順便加 `Alpha_10d`。特徵分離等大工程留 Phase 3。短線訓練 run 兼當 rank vs raw 證據（對照舊 multi-scale raw 0.049），明顯勝直接當 production、含糊才補 raw 控制組
+- **短線模型放 `V6/experimental/`、不掛 DS 輔助頭（2026-06-15）**：單尺度短線模型類別放 experimental/（延續隔離、不碰受保護 models/），`run_dual_inference` 從那 import，穩了再考慮扶正；短線模型先不保留 deep supervision 輔助頭（B 顯示主 IC 只小升、效果有限），DS 列 Phase 3 可選。listnet_5d 保留（5d IC 0.049）
+- **雙模型採「並行、不動資料流」上線、V6.1 留當安全網（2026-06-15）**：雙模型走獨立 inference + 獨立輸出檔，現有 V6.1→df_kelly→dashboard 一律不動、不合併（家人在看），雙模型失敗不影響線上。先求上線（IC ~0.047 就先上）、上線後才在雙安全網下做抬 IC 的資料/架構嘗試（Phase 3）。技術點：59 維特徵需並行路徑自建（RS 插 group A、與 56 維排列不同）
+- **短線模型改用單一時間分支（2026-06-15，方案B 實證）**：deep supervision 顯示 20/60/252 三窗對 5d 完全冗餘（三分支 aux IC 同步爬到 ~0.05、融合主 IC 沒贏單分支），多尺度對 5d 沒加值 → 短線模型砍成單分支（省參數/算力）。連帶：④ 窗口階梯降級（連極端窗距都冗餘）、③ 3d 前提削弱列可選。DS 主 IC 略勝 baseline，可選擇在 production 短線模型保留輔助頭當輕度正則
+- **加碼窗口階梯實驗 {60,126,252}（2026-06-15）**：Short=20 大機率沒功能，改用「丟 20、補 60→252 空洞」的幾何階梯（間距 2.1×/2.0×，比原本 3×/4.2× 平均），給三分支更有機會各自有用。用 DS 版跑以直接拿每分支 aux IC、與 {20,60,252} 對照；layer 維持 [2,3,3]（一次一個變因）；≤252 純切片免重建資料。即使仍塌成單分支也是「多尺度對 5d 沒加值」的證據（穩賺）
+- **診斷實驗一律在 `V6/experimental/` 副本做、不動 production `marketmamba/`（2026-06-14）**：避免改來改去汙染雙模型主線；副本另開等於也不需動受保護的 `models/`、不必每次授權。只有確定上線的東西才回寫正式 package
+- **不急著取代 V6.1：實驗全做完 → 雙模型一起練好一起上線（2026-06-14）**：短線（5d/10d）+ 趨勢（20d/60d）兩模型一起在 Phase 2 做，下游合併輸出的 plumbing 只做一次，避免先趨勢後短線各接一遍
+- **改用 5d 主導目標、且不強制 gate 均衡（2026-06-14）**：使用者操作偏短線，且 20d 趨勢目標本就讓 gate 合理偏 Long。與其用正則硬壓 gate（違反「讓模型自己篩選」初衷），不如把目標換 5d、用 scale_gate 當「多尺度是否真有用」的試紙——散開＝多尺度成立；仍偏 Long＝可光明正大簡化成單分支
+- **本輪 listnet 關掉而非改 5d**：ListNet 在 trainer 寫死只算 20d，留著會把 gate/表徵拉回 20d/Long、汙染實驗；本輪設 0（代價：無排名損失、5d IC 略保守）。`listnet_5d` 列第二階段（要動受保護 trainer.py）
+- **trainer.py 例外修改授權（2026-06-14）**：為讓 early-stop/checkpoint/headline IC 追 5d，經使用者明確同意例外改 `marketmamba/models/trainer.py:678`（`preds[:,1]`→`preds[:,0]`）。純驗證指標 horizon、不影響 checkpoint 相容性
+- **padding mask 未能解 gate 偏 Long（2026-06-14 實證）**：第二次重訓 `USE_PADDING_MASK=True` 下 gate 仍 ep4 崩到 0.997，推翻「padding 零值被當訊號」為唯一主因；偏 Long 更可能來自 20d 趨勢目標本身偏好長回看
 - **training_status.json 採 Drive 手動同步而非 Colab 直接 push GitHub**：使用者不想在 Colab 放 GitHub token；代價是頁面只在訓練完成、手動放入 V6/results 並 push 後更新
 - **模型狀態頁面的假資料全面移除**：無資料時顯示空狀態提示，不再用合成數字；WF 面板移除，待 walk-forward 例行化後以真實 fold 結果加回
 - **padding mask 只加在 Long branch**：Short 取最後 20 步、Mid 取最後 60 步，在 ≥202 天資料的前提下這兩個 branch 輸入全為真實資料，不需 mask；只有 Long 使用完整 252 步才有 padding 問題
