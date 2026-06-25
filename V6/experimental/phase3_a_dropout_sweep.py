@@ -81,8 +81,8 @@ def build_dates(df, cutoff_train_end: str = "2023-12-31"):
 
 
 def _do_tag(do: float) -> str:
-    """0.2 -> 'do02'，0.15 -> 'do015'（檔名安全）。"""
-    return "do" + str(do).replace("0.", "").replace(".", "")
+    """0.2 -> 'do0p2'，0.1 -> 'do0p1'，0.3 -> 'do0p3'（檔名安全、不碰撞）。"""
+    return "do" + str(do).replace(".", "p")
 
 
 # ------------------------------------------------------------
