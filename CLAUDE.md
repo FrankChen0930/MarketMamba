@@ -339,9 +339,14 @@ cd app/frontend && npm run dev   # → localhost:5173
 
 ## 🔄 Current Status
 
-> 最後更新：2026-06-25（git 善後收齊 O3／文件 + Phase 3 起手：實驗 A dropout sweep 檔案備妥）
+> 最後更新：2026-06-25（Phase 3 實驗 A~D 檔案全備妥 + 預期結果文件）
 
 ### 最近完成
+- **Phase 3 實驗 B/C/D 檔案備妥 + 預期結果文件（2026-06-25）**：接續 A，再備三支隔離實驗（全推 main 供 Colab pull、皆不改 production、不覆蓋線上 checkpoint、每組落盤 Drive JSON）：
+  - **B `phase3_b_listnet_sweep.py`**：短線 listnet_5d sweep {0.0/0.25/0.5基準/1.0}（10d 保 1/2 比例）。weights 走 `train_short_model` 現成參數、dropout 用 monkeypatch 留可選。**0.0 是控制組**＝量出 listnet 在 rank-MSE 之上的邊際貢獻。釐清：Phase 1 的「listnet=Mid↔Long 旋鈕」是多尺度現象，短線單尺度無 gate、此處純排名強度
+  - **C `phase3_c_trend_single_scale.py`**：趨勢砍成單尺度 Long-only（`LongOnlyEncoder` 含 padding_mask + GAT + gating + 3頭，與 MarketMambaV6 逐行對齊），monkeypatch `trend_model.MarketMambaV6` 後重用 `train_trend_model`。單跑診斷、對照多尺度基準 20d IC 0.0961、印參數量與判定（gate 已塌 Long → 預期持平、可砍）
+  - **D `phase3_d_window_sweep.py`**：短線 window sweep {60基準/90/120}。window 是 `train_short_model` 直接參數（比 A/B 更乾淨）。≤200 不需 padding mask。前提：DS 已證多尺度對 5d 冗餘 → 預期持平、但屬便宜驗證（純切片免重建）
+  - **預期結果文件 `docs/phase3-experiment-plan-2026-06-25.md`**：A~F 每個實驗的假設＋推理＋不同結果代表什麼＋把握度（誠實標註待驗證、哪裡沒把握）+ 跨實驗判讀紀律。亦為履歷 case study 素材
 - **Phase 3 起手：實驗 A（正則救峰值）檔案備妥、待跑（2026-06-25）**：新增 `V6/experimental/phase3_a_dropout_sweep.py`（隔離、**不改** `short_model.py`，線上 dual 推論零影響）。設計＝**單一變因 dropout sweep**（基準 0.1 峰 0.0951@ep8 → 掃 0.2/0.3，其餘 window60/layers3/LR7e-5/wd1e-4/切分 train≤2023 全凍結）；monkeypatch `ShortModelV6` 固定 dropout 後交給現成 `train_short_model`，checkpoint 用獨立檔名 `v6_short_A_doXX.pt`（**不覆蓋** production `v6_short.pt`）；每組跑完落盤 Drive JSON（Colab 斷線可續）；尾端印峰值 IC／峰值 ep／峰後下滑對照表。**判讀**：峰值 IC>0.0951／峰值延後／崩壞變緩 任一改善＝dropout 有效、帶進趨勢模型。Colab 用法見檔頭 docstring。**尚未實跑**（使用者之後測試）
 - **git 善後：收齊已完成卻沒上的 O3／訓練診斷／文件（2026-06-25）**：這批改動一直躺在 working tree（跟本機 56 維 config dirty 檔混在一起沒乾淨 commit）。指定檔案提交（commit `09fca17`，**排除** 56 維 `config.py`）：O3 `Signal_Quality_Raw` 未截斷排序（`run_daily_inference`/`signals.py`/`sim_engine_v3`/`portfolio_checker`，向下相容 fallback；已驗證 df_kelly.csv 確含該欄、後端切過去安全）、`deep_supervision.py` 訓練進度列印+ETA、docs（training-observation/uncertainty-calibration）、補 06-25 dual 歸檔。本機 56 維 `config.py` 維持 dirty、未上
 - **修復雙模型前端不更新＝Render dual 快取沒被刷新（2026-06-22）**：症狀＝df_short/trend.csv 正確 push 上 GitHub（06-22、欄位對），但 Vercel 前端 dual 頁顯示舊資料。診斷：`/api/signals`(df_kelly) 回 06-22 ✅、`/api/dual/signals` 卻回 06-18 ❌——兩者讀同一 GitHub raw 來源，差別在刷新機制。**根因**：`dual.py` 與 `signals.py` 用同套 1h TTL 記憶體快取，但 dual 沒有 refresh 端點，且 `signals.py` 的 `/cache/refresh` 只清自己模組的 global（碰不到 dual.py 的 `_cache`），每日自動化 push 完 dual 從沒被刷新→只能等 1h TTL，在 Render free tier 下不可靠。**修法（方案 A，純附加）**：①`app/backend/routers/dual.py` 新增 `POST /api/dual/cache/refresh`（清自己 `_cache`，比照 signals.py，不動既有 `/signals`）；②`PersonalOS/scripts/run_daily.py` 加 `refresh_dual_cache()`，在 `run_full()` 的 `run_wsl_dual()` **成功 push 後**呼叫（須放 dual push 之後，現有 `signals/cache/refresh` 在 dual 之前且碰不到 dual）。已 push 部署
@@ -427,7 +432,7 @@ cd app/frontend && npm run dev   # → localhost:5173
   - 完整改寫 `PersonalOS/src/renderer/src/pages/MarketMamba/Portfolio.jsx`：`ExitConditionModal` 升級為四層退場 UI（L1 停損、L2 信號惡化、L3 減倉、L4 換倉）；Trailing Stop 由前端從 avg_price 計算；風險分數改用四層觸發加權
 
 ### 進行中
-- **Phase 3 起手：實驗 A（正則救峰值）— 檔案備妥、待使用者實跑**。Phase 2 已全數完成（雙模型訓練→並行推論→Vercel 前端→每日自動化＋歸檔，與 V6.1 並存當安全網）。Phase 3 目標＝抬 IC，**照 A→F 順序逐一做**（使用者 2026-06-25 拍板照表順序、一次一變因）：A 正則救峰值 → B listnet 權重 sweep → C 趨勢單尺度簡化 → D 窗口 90/120 → E 多 seed 集成 → F 特徵分離（大工程留最後）。**A 已寫成 `V6/experimental/phase3_a_dropout_sweep.py`**（dropout sweep 0.1/0.2/0.3、單尺度短線、不覆蓋 `v6_short.pt`、不改 `short_model.py`），待使用者在 Colab 跑完貼結果回來判讀（峰值 IC>0.0951／峰值延後／崩壞變緩 任一改善＝dropout 有效，再帶進趨勢模型）。② 跨日穩定 filter + ③ dual 模擬機器人仍卡在 archive 累積（目前僅 06-22/24/25 三天，需累積至 15+ 天）
+- **Phase 3 起手：實驗 A（正則救峰值）— 檔案備妥、待使用者實跑**。Phase 2 已全數完成（雙模型訓練→並行推論→Vercel 前端→每日自動化＋歸檔，與 V6.1 並存當安全網）。Phase 3 目標＝抬 IC，**照 A→F 順序逐一做**（使用者 2026-06-25 拍板照表順序、一次一變因）：A 正則救峰值 → B listnet 權重 sweep → C 趨勢單尺度簡化 → D 窗口 90/120 → E 多 seed 集成 → F 特徵分離（大工程留最後）。**A~D 四支檔案皆已寫好並推 main**（A dropout / B listnet / C 趨勢單尺度 / D 短線窗口；隔離、不覆蓋線上 checkpoint），預期結果見 `docs/phase3-experiment-plan-2026-06-25.md`。**待使用者在 Colab 實跑、貼結果回來判讀**（每個實驗收斂成一句結論＋為什麼）。E（多 seed 集成）/F（特徵分離）尚未建檔——E 需多 checkpoint 集成評估、F 需重建 feature matrix，待 A~D 結果出來再設計。② 跨日穩定 filter + ③ dual 模擬機器人仍卡在 archive 累積（目前僅 06-22/24/25 三天，需累積至 15+ 天）
 
 ### 下一步
 - **雙模型上線後路線（2026-06-19 定，依賴順序 ①→②→③）**：① **每日自動化** ✅（2026-06-19）——`run_dual_inference.py` 加 `--push`（只 add 兩 CSV）+ 每日**歸檔** dated 副本到 `V6/results/archive/`（本機留存、供 ②③ 累積歷史）；PersonalOS `run_daily.py` 在 `run_full()` V6.1 推論成功後呼叫 `run_wsl_dual()`（獨立 process、自動 push、失敗不影響 V6.1）。交易日 gate（`trading_day.py` 查 TWSE）完好沒被改。② 篩選：**單日「精選=短線∩趨勢」前端分頁 ✅**；跨日穩定 filter + ③ dual sim 待 archive 累積幾週後建（讀 `results/archive/`） ② **篩選條件**——在 dual rank-score 上做 SQ 門檻/低不確定性/short∩trend 交集/跨日排名穩定（需 ① 累積 history 才有「穩定性」） ③ **dual 模擬機器人**——比照 `sim_engine_v3` 跑紙上交易、結果進 InvestmentSim 頁（需 ② 定進退場）
