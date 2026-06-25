@@ -339,9 +339,11 @@ cd app/frontend && npm run dev   # → localhost:5173
 
 ## 🔄 Current Status
 
-> 最後更新：2026-06-22（修復雙模型前端快取不刷新）
+> 最後更新：2026-06-25（git 善後收齊 O3／文件 + Phase 3 起手：實驗 A dropout sweep 檔案備妥）
 
 ### 最近完成
+- **Phase 3 起手：實驗 A（正則救峰值）檔案備妥、待跑（2026-06-25）**：新增 `V6/experimental/phase3_a_dropout_sweep.py`（隔離、**不改** `short_model.py`，線上 dual 推論零影響）。設計＝**單一變因 dropout sweep**（基準 0.1 峰 0.0951@ep8 → 掃 0.2/0.3，其餘 window60/layers3/LR7e-5/wd1e-4/切分 train≤2023 全凍結）；monkeypatch `ShortModelV6` 固定 dropout 後交給現成 `train_short_model`，checkpoint 用獨立檔名 `v6_short_A_doXX.pt`（**不覆蓋** production `v6_short.pt`）；每組跑完落盤 Drive JSON（Colab 斷線可續）；尾端印峰值 IC／峰值 ep／峰後下滑對照表。**判讀**：峰值 IC>0.0951／峰值延後／崩壞變緩 任一改善＝dropout 有效、帶進趨勢模型。Colab 用法見檔頭 docstring。**尚未實跑**（使用者之後測試）
+- **git 善後：收齊已完成卻沒上的 O3／訓練診斷／文件（2026-06-25）**：這批改動一直躺在 working tree（跟本機 56 維 config dirty 檔混在一起沒乾淨 commit）。指定檔案提交（commit `09fca17`，**排除** 56 維 `config.py`）：O3 `Signal_Quality_Raw` 未截斷排序（`run_daily_inference`/`signals.py`/`sim_engine_v3`/`portfolio_checker`，向下相容 fallback；已驗證 df_kelly.csv 確含該欄、後端切過去安全）、`deep_supervision.py` 訓練進度列印+ETA、docs（training-observation/uncertainty-calibration）、補 06-25 dual 歸檔。本機 56 維 `config.py` 維持 dirty、未上
 - **修復雙模型前端不更新＝Render dual 快取沒被刷新（2026-06-22）**：症狀＝df_short/trend.csv 正確 push 上 GitHub（06-22、欄位對），但 Vercel 前端 dual 頁顯示舊資料。診斷：`/api/signals`(df_kelly) 回 06-22 ✅、`/api/dual/signals` 卻回 06-18 ❌——兩者讀同一 GitHub raw 來源，差別在刷新機制。**根因**：`dual.py` 與 `signals.py` 用同套 1h TTL 記憶體快取，但 dual 沒有 refresh 端點，且 `signals.py` 的 `/cache/refresh` 只清自己模組的 global（碰不到 dual.py 的 `_cache`），每日自動化 push 完 dual 從沒被刷新→只能等 1h TTL，在 Render free tier 下不可靠。**修法（方案 A，純附加）**：①`app/backend/routers/dual.py` 新增 `POST /api/dual/cache/refresh`（清自己 `_cache`，比照 signals.py，不動既有 `/signals`）；②`PersonalOS/scripts/run_daily.py` 加 `refresh_dual_cache()`，在 `run_full()` 的 `run_wsl_dual()` **成功 push 後**呼叫（須放 dual push 之後，現有 `signals/cache/refresh` 在 dual 之前且碰不到 dual）。已 push 部署
 - **每日自動化 + 單日篩選上線（2026-06-19）**：`run_dual_inference.py` 加 `--push`（只 add 兩 CSV）+ **每日歸檔** dated 副本到 `V6/results/archive/`（本機留存、供 sim/穩定性累積歷史）；PersonalOS `run_daily.py` 在 `run_full()` V6.1 推論成功後呼叫 `run_wsl_dual()`（獨立 process、自動 push、失敗不影響 V6.1、休市日自動不跑——交易日 gate `trading_day.py` 完好沒被改）；前端 `DualSignals.jsx` 加「⭐ 精選」分頁（短線∩趨勢共識股）。**後續轉 Claude Code**：剩跨日穩定 filter + dual 模擬機器人（讀 `results/archive/`，待累積幾週資料；比照 `sim_engine_v3` 回放）
 - **Phase 2 步驟 5 完成、雙模型 Vercel 前端上線 → Phase 2 全數完成（2026-06-19）**：新增 `app/backend/routers/dual.py`（唯讀 `/api/dual/signals`，1h cache 比照 df_kelly、重用 `GITHUB_RESULTS_URL` 換檔名得 short/trend）+ 前端「🔀 雙模型」新頁（`pages/DualSignals.jsx`，短線/趨勢 tab + rank-score 語意說明）+ `api/dual.js`、`App.jsx` 路由、`AppLayout.jsx` nav。**全程附加，`signals/market/...` 與 V6.1 頁面一個字沒動**。雙模型從訓練→並行推論→前端全鏈路上線、與 V6.1 並存當安全網。未做：每日自動化（run_dual 排程 + 自動 push CSV）留後續
@@ -425,7 +427,7 @@ cd app/frontend && npm run dev   # → localhost:5173
   - 完整改寫 `PersonalOS/src/renderer/src/pages/MarketMamba/Portfolio.jsx`：`ExitConditionModal` 升級為四層退場 UI（L1 停損、L2 信號惡化、L3 減倉、L4 換倉）；Trailing Stop 由前端從 avg_price 計算；風險分數改用四層觸發加權
 
 ### 進行中
-- **Phase 2 步驟 4：`run_dual_inference.py`（並行推論）**。雙模型已備：`v6_short.pt`(單尺度 5d/10d, 5d IC 0.0951) + `v6_trend.pt`(多尺度 20d/60d, 20d IC 0.0961)。下一步寫獨立並行推論腳本：自建 59 維特徵、載兩 checkpoint、跑 cross-section 推論、輸出 `df_short/trend.csv` 獨立檔，與 V6.1→df_kelly→dashboard 完全隔離（失敗不影響線上）。**Claude 先讀 `run_daily_inference.py:run_inference` 內部（兩段式 Mamba+GAT、MC-dropout、clean_and_scale）再擬計畫**。注意：模型輸出是 rank-score 語意（非報酬）。整體 Phase 2：①✅②✅③✅④✅⑤✅ **全數完成**（雙模型訓練→並行推論→Vercel 前端全上線，與 V6.1 並存當安全網）。下一步可選：Phase 3（抬 IC——目標 vol-norm/特徵分離/窗口/集成）或每日自動化（run_dual 排程 + 自動 push CSV），皆不急
+- **Phase 3 起手：實驗 A（正則救峰值）— 檔案備妥、待使用者實跑**。Phase 2 已全數完成（雙模型訓練→並行推論→Vercel 前端→每日自動化＋歸檔，與 V6.1 並存當安全網）。Phase 3 目標＝抬 IC，**照 A→F 順序逐一做**（使用者 2026-06-25 拍板照表順序、一次一變因）：A 正則救峰值 → B listnet 權重 sweep → C 趨勢單尺度簡化 → D 窗口 90/120 → E 多 seed 集成 → F 特徵分離（大工程留最後）。**A 已寫成 `V6/experimental/phase3_a_dropout_sweep.py`**（dropout sweep 0.1/0.2/0.3、單尺度短線、不覆蓋 `v6_short.pt`、不改 `short_model.py`），待使用者在 Colab 跑完貼結果回來判讀（峰值 IC>0.0951／峰值延後／崩壞變緩 任一改善＝dropout 有效，再帶進趨勢模型）。② 跨日穩定 filter + ③ dual 模擬機器人仍卡在 archive 累積（目前僅 06-22/24/25 三天，需累積至 15+ 天）
 
 ### 下一步
 - **雙模型上線後路線（2026-06-19 定，依賴順序 ①→②→③）**：① **每日自動化** ✅（2026-06-19）——`run_dual_inference.py` 加 `--push`（只 add 兩 CSV）+ 每日**歸檔** dated 副本到 `V6/results/archive/`（本機留存、供 ②③ 累積歷史）；PersonalOS `run_daily.py` 在 `run_full()` V6.1 推論成功後呼叫 `run_wsl_dual()`（獨立 process、自動 push、失敗不影響 V6.1）。交易日 gate（`trading_day.py` 查 TWSE）完好沒被改。② 篩選：**單日「精選=短線∩趨勢」前端分頁 ✅**；跨日穩定 filter + ③ dual sim 待 archive 累積幾週後建（讀 `results/archive/`） ② **篩選條件**——在 dual rank-score 上做 SQ 門檻/低不確定性/short∩trend 交集/跨日排名穩定（需 ① 累積 history 才有「穩定性」） ③ **dual 模擬機器人**——比照 `sim_engine_v3` 跑紙上交易、結果進 InvestmentSim 頁（需 ② 定進退場）
@@ -433,7 +435,9 @@ cd app/frontend && npm run dev   # → localhost:5173
   - **Phase 0（✅完成）**：5d baseline ep11 停定稿——gate 收斂 Mid 0.80/Long 0.20/Short~0、best 5d IC 0.0434@ep5、過擬合 ep4–5 起
   - **Phase 1（experimental 副本診斷）**：①✅ `listnet_5d`——5d IC 0.0434→0.0487（近 20d），但 gate 全塌 Long、過擬合加劇 ②✅ deep supervision——**Short 餓死非沒料、三尺度對 5d 冗餘 → 短線模型單分支即可**（主 IC 0.0474 略勝 baseline）③（可選，前提已削弱）3d 測試 ④（降級，B 已證冗餘）窗口階梯 {60,126,252}
   - **Phase 2（雙模型「並行、不動資料流」上線——首發即優化版）**：安全網是 V6.1，雙模型不必先上保守版，故把便宜高把握的改進折進來：**目標改每日 cross-sectional rank** + **listnet**。短線=單尺度 5d/10d+listnet_5d、趨勢=多尺度 20d/60d+listnet_20d。獨立 `run_dual_inference.py` + 獨立輸出檔（自建 59 維），V6.1→df_kelly→dashboard 完全不動、失敗也不影響線上。短線 run 兼當 rank-vs-raw 證據（對照舊 multi-scale raw 0.049）。技術點：56 vs 59 特徵排列不同（RS 插 group A 中間）
-  - **Phase 3（雙模型上線後、有雙安全網才動）**：迭代抬 IC——**特徵分離**（短線快特徵/趨勢慢特徵，重建矩陣大工程）、窗口 90/120、listnet 權重 sweep、正則救峰值、多 seed 集成、趨勢單 vs 多尺度診斷
+  - **Phase 3（進行中，雙安全網下迭代抬 IC，2026-06-25 拍板 A→F 順序、一次一變因）**：
+    - **A 正則救峰值（起手，檔案備妥待跑）**：`V6/experimental/phase3_a_dropout_sweep.py`，短線 dropout sweep 0.1/0.2/0.3，看峰值 IC 能否 >0.0951／延後／崩壞變緩。dropout 有效再帶進趨勢；不夠則下一變因試 weight_decay（1e-4→1e-3）
+    - **B** listnet 權重 sweep（Mid↔Long 旋鈕，試 0.2/0.5）→ **C** 趨勢單尺度簡化（gate ep3 就塌 Long、多尺度沒加值，砍成單尺度確認 IC 不掉、未來訓練更省）→ **D** 短線窗口 90/120（≤252 純切片免重建）→ **E** 多 seed 集成（對抗 IC 脆弱、部署穩定加成）→ **F** 特徵分離（短線快/趨勢慢特徵，重建 feature matrix 大工程、潛力最大、留最後）
 - [ ] 若決定不走 5d 路線：把 LOSS_WEIGHTS / val_ic 改回 20d（remote main 目前是 5d 實驗設定）
 - [ ] **本機 git 善後**：第三次重訓 push 後 `git stash pop` 在 trainer.py 留下 CRLF 衝突——需 `git checkout HEAD -- V6/marketmamba/models/trainer.py` + `git restore --staged V6/marketmamba/config.py` + `git stash drop`
 - [ ] **V6.2 部署 checklist**：config INPUT_DIM=59 + FEATURE_GROUPS 取消 RS 注釋；`run_daily_inference.py` 的 `clean_and_scale` 改 `macro_norm="ts"`（程式內有註解標記）；checkpoint 換新
@@ -453,6 +457,8 @@ cd app/frontend && npm run dev   # → localhost:5173
 > **PR 3（持倉四層退場 / Portfolio 頁面）**：使用者已確認頁面內容完成，視為驗收通過
 
 ### 決策紀錄
+- **Phase 3 照 A→F 順序逐一做、一次一變因（2026-06-25）**：使用者拍板照表順序（A 正則→B listnet→C 趨勢單尺度→D 窗口→E 集成→F 特徵分離），而非挑單一最高把握者先做——因「這些都要實驗才知道」、且想累積成可寫進履歷的 case study，故每個實驗都把「結論＋為什麼」整理清楚。診斷一律隔離在 `V6/experimental/`、不改 production、不覆蓋線上 checkpoint；Claude 備程式＋給可貼 Colab 指令，使用者自己跑訓練
+- **實驗檔不改 `short_model.py`、改用 monkeypatch（2026-06-25）**：`short_model.py` 被 `run_dual_inference.py` import 做線上推論，故 dropout sweep 不直接加參數到 `train_short_model`，而是在實驗檔內暫時把 `ShortModelV6` 包成固定 dropout 版（functools.partial）、跑完還原，線上零影響。checkpoint 用獨立檔名避免覆蓋 `v6_short.pt`
 - **雙模型輸出=rank-score、SQ=Score/Unc；趨勢分數 +0.05 水位偏移（2026-06-19）**：模型用 rank 目標訓練→輸出非報酬而是 rank-score，SQ（Score/Uncertainty）拿來排序選股。趨勢 Score_20d 平均 +0.05（短線 ~0）來自 macro 2 年近似的水位平移、**對排名無影響**（排序對常數免疫）。Phase 3 可選 polish：(a) 分數 per-cross-section 置中讓 SQ 好解讀、(b) macro ts 改完整歷史去掉偏移、(c) 前端標明 rank-score 語意
 - **dual inference 個股大表 trim 近 2 年（2026-06-19）**：root cause＝沒 trim 把整份 raw（prices 8.7M + inst 32M）丟 build_features → OOM 被砍（`python|tail` 隱藏了 `Killed`）。照 V6.1 trim 近 730 天解掉。眉角：macro ts 嚴格要完整歷史，但 macro 為橫斷面常數、對排名二階，先用 2 年近似（已實證只造成水位平移、不動排名）
 - **目標改純 cross-sectional rank、目標工程+listnet 折進 Phase 2（2026-06-15）**：安全網是 V6.1 不是雙模型，故雙模型首發即用優化版、不做「raw 先上再重訓」的浪費（省掉雙模型 ×2 的重訓）。目標選 A（每日橫斷面 rank、IC 對齊最強），不選 vol-norm；下游 rank-score 語意之後在前端加說明。`Alpha_5d/20d/60d` 改 rank、順便加 `Alpha_10d`。特徵分離等大工程留 Phase 3。短線訓練 run 兼當 rank vs raw 證據（對照舊 multi-scale raw 0.049），明顯勝直接當 production、含糊才補 raw 控制組
