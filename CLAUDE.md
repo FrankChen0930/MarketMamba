@@ -339,9 +339,10 @@ cd app/frontend && npm run dev   # → localhost:5173
 
 ## 🔄 Current Status
 
-> 最後更新：2026-06-14（V6.2 第三次重訓「5d 主導實驗」訓練中）
+> 最後更新：2026-06-22（修復雙模型前端快取不刷新）
 
 ### 最近完成
+- **修復雙模型前端不更新＝Render dual 快取沒被刷新（2026-06-22）**：症狀＝df_short/trend.csv 正確 push 上 GitHub（06-22、欄位對），但 Vercel 前端 dual 頁顯示舊資料。診斷：`/api/signals`(df_kelly) 回 06-22 ✅、`/api/dual/signals` 卻回 06-18 ❌——兩者讀同一 GitHub raw 來源，差別在刷新機制。**根因**：`dual.py` 與 `signals.py` 用同套 1h TTL 記憶體快取，但 dual 沒有 refresh 端點，且 `signals.py` 的 `/cache/refresh` 只清自己模組的 global（碰不到 dual.py 的 `_cache`），每日自動化 push 完 dual 從沒被刷新→只能等 1h TTL，在 Render free tier 下不可靠。**修法（方案 A，純附加）**：①`app/backend/routers/dual.py` 新增 `POST /api/dual/cache/refresh`（清自己 `_cache`，比照 signals.py，不動既有 `/signals`）；②`PersonalOS/scripts/run_daily.py` 加 `refresh_dual_cache()`，在 `run_full()` 的 `run_wsl_dual()` **成功 push 後**呼叫（須放 dual push 之後，現有 `signals/cache/refresh` 在 dual 之前且碰不到 dual）。已 push 部署
 - **每日自動化 + 單日篩選上線（2026-06-19）**：`run_dual_inference.py` 加 `--push`（只 add 兩 CSV）+ **每日歸檔** dated 副本到 `V6/results/archive/`（本機留存、供 sim/穩定性累積歷史）；PersonalOS `run_daily.py` 在 `run_full()` V6.1 推論成功後呼叫 `run_wsl_dual()`（獨立 process、自動 push、失敗不影響 V6.1、休市日自動不跑——交易日 gate `trading_day.py` 完好沒被改）；前端 `DualSignals.jsx` 加「⭐ 精選」分頁（短線∩趨勢共識股）。**後續轉 Claude Code**：剩跨日穩定 filter + dual 模擬機器人（讀 `results/archive/`，待累積幾週資料；比照 `sim_engine_v3` 回放）
 - **Phase 2 步驟 5 完成、雙模型 Vercel 前端上線 → Phase 2 全數完成（2026-06-19）**：新增 `app/backend/routers/dual.py`（唯讀 `/api/dual/signals`，1h cache 比照 df_kelly、重用 `GITHUB_RESULTS_URL` 換檔名得 short/trend）+ 前端「🔀 雙模型」新頁（`pages/DualSignals.jsx`，短線/趨勢 tab + rank-score 語意說明）+ `api/dual.js`、`App.jsx` 路由、`AppLayout.jsx` nav。**全程附加，`signals/market/...` 與 V6.1 頁面一個字沒動**。雙模型從訓練→並行推論→前端全鏈路上線、與 V6.1 並存當安全網。未做：每日自動化（run_dual 排程 + 自動 push CSV）留後續
 - **Phase 2 步驟 4 `run_dual_inference.py` 跑通、雙模型推論上線（2026-06-19）**：獨立並行推論——自切 59 維 config（不動 V6.1 的 56 維）、個股大表 trim 近 2 年解 OOM（照 V6.1）、MC-dropout 兩段式、`clean_and_scale(macro_norm="ts")`。輸出 `df_short.csv`(5d/10d) + `df_trend.csv`(20d/60d)，rank-score 語意、依 SQ 排序。**健檢過**：各 1948 支、無 NaN、不確定性全正、`load_state_dict` 成功（驗證 59 維切換正確）、短線/趨勢前段名單不同。小觀察：趨勢 Score_20d 平均 +0.05（短線 ~0）= macro 2 年近似的水位平移、**排名不變**（排序對常數免疫），印證「macro 近似對選股 OK」。OOM 根因＝原本沒 trim、把整份 prices 8.7M + inst 32M 丟進 build

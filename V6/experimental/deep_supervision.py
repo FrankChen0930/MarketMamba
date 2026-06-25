@@ -22,7 +22,6 @@ from __future__ import annotations
 import json
 import os
 import time
-from pathlib import Path
 
 import numpy as np
 import torch
@@ -189,12 +188,17 @@ def train_model_ds(
 
     for epoch in range(1, epochs + 1):
         t0 = time.time()
+        print(f"── Epoch {epoch:03d}/{epochs} 開始 ──", flush=True)
+
         # ── Train ──
         model.train()
         train_losses = []
-        for X, Y, batch_stocks, padding_mask in train_loader:
+        total_b = len(train_loader)
+        for batch_idx, (X, Y, batch_stocks, padding_mask) in enumerate(train_loader):
             if X.shape[0] <= 1:
                 continue
+            if epoch == 1 and batch_idx == 0:
+                print(f"  [diag] 第一個 batch: stocks={len(batch_stocks)} | {time.time()-t0:.0f}s", flush=True)
             X, Y = X.to(device), Y.to(device)
             if padding_mask is not None:
                 padding_mask = padding_mask.to(device)
@@ -214,6 +218,13 @@ def train_model_ds(
             scaler.update()
             scheduler.step()
             train_losses.append(brkdn["loss_total"])
+
+            # 每 200 個 batch 印一次進度 + ETA（一個 epoch 約 4681 個 batch）
+            if (batch_idx + 1) % 200 == 0:
+                elapsed = time.time() - t0
+                eta = elapsed / (batch_idx + 1) * (total_b - batch_idx - 1)
+                print(f"  Ep {epoch:03d} [{batch_idx+1}/{total_b}] "
+                      f"loss={float(np.mean(train_losses)):.5f} | {elapsed:.0f}s | ETA {eta:.0f}s", flush=True)
 
         if not train_losses:
             continue

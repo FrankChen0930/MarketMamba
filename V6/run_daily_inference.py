@@ -549,9 +549,15 @@ def run_inference(
     ).clip(lower=-1.0)
 
     # Signal Quality = Net Alpha / Uncertainty (proxy for risk-adjusted rank)
-    df_kelly["Signal_Quality"] = (
+    # O3（2026-06-13）：保留未截斷 raw 值供排序——舊版 ±10 截斷使 Top 區多檔並列
+    # 10.0 滿格、失去解析度；顯示欄位維持截斷不變，排序改用 raw。
+    df_kelly["Signal_Quality_Raw"] = (
         df_kelly["Net_Alpha_20d"] / (df_kelly["Uncertainty"] + 1e-6)
-    ).clip(lower=-10.0, upper=10.0)
+    )
+    df_kelly["Signal_Quality"] = df_kelly["Signal_Quality_Raw"].clip(lower=-10.0, upper=10.0)
+    _n_capped = int((df_kelly["Signal_Quality_Raw"] > 10.0).sum())
+    if _n_capped:
+        logger.info(f"[Signal_Quality] {_n_capped} 支 raw 值 >10（顯示截斷、排序用 raw 不受影響）")
 
     # Confidence label — O2（2026-06-12）：固定 bins (0.02/0.05) 改為當日分位數制。
     # P0 完整圖 GAT 修復後 Uncertainty 分布整體 -34%，固定門檻已失真；
@@ -575,7 +581,8 @@ def run_inference(
     df_kelly["Suggested_Weight"] = (positive / (total + 1e-9)).round(4)
 
     # Sort by Sharpe — exclude penalised stocks from Top 10 display
-    df_kelly = df_kelly.sort_values("Signal_Quality", ascending=False).reset_index(drop=True)
+    # O3：排序改用 raw 值（截斷值在 Top 區並列 10.0 無法區分先後）
+    df_kelly = df_kelly.sort_values("Signal_Quality_Raw", ascending=False).reset_index(drop=True)
 
 
     # -- Build df_traj: multi-horizon trajectory --

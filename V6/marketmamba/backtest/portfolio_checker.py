@@ -67,7 +67,9 @@ def run_portfolio_check(
 
     df_today = pd.read_csv(kelly_path)
     df_today["Ticker"] = df_today["Ticker"].astype(str)
-    df_today = df_today.sort_values("Signal_Quality", ascending=False).reset_index(drop=True)
+    # O3：優先用未截斷 raw 值排序（Top 區截斷並列 10.0 無法區分）
+    _sq_col = "Signal_Quality_Raw" if "Signal_Quality_Raw" in df_today.columns else "Signal_Quality"
+    df_today = df_today.sort_values(_sq_col, ascending=False).reset_index(drop=True)
     df_today["alpha_rank"] = df_today.index + 1
     total_stocks = len(df_today)
 
@@ -162,7 +164,8 @@ def _load_history_frames(
             try:
                 df = pd.read_csv(path)
                 df["Ticker"] = df["Ticker"].astype(str)
-                df = df.sort_values("Signal_Quality", ascending=False).reset_index(drop=True)
+                _c = "Signal_Quality_Raw" if "Signal_Quality_Raw" in df.columns else "Signal_Quality"
+                df = df.sort_values(_c, ascending=False).reset_index(drop=True)
                 df["alpha_rank"] = df.index + 1
                 frames.append({
                     "date":      d,

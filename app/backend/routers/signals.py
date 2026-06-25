@@ -60,7 +60,9 @@ async def _load_from_github() -> Optional[SignalsResponse]:
                 return None
 
         df = pd.read_csv(io.StringIO(r.text))
-        df = df.sort_values("Signal_Quality", ascending=False).reset_index(drop=True)
+        # O3：優先用未截斷 raw 值排序（Top 區截斷並列 10.0 無法區分）
+        _sq_col = "Signal_Quality_Raw" if "Signal_Quality_Raw" in df.columns else "Signal_Quality"
+        df = df.sort_values(_sq_col, ascending=False).reset_index(drop=True)
 
         # Load name + sector lookup (cached 24h)
         info = await get_stock_info()

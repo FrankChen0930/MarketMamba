@@ -202,8 +202,10 @@ def _sq_percentile(ticker: str, df_kelly: pd.DataFrame) -> float:
     """SQ 排名百分位：0 = 最佳, 1 = 最差。未找到回傳 1.0。"""
     if df_kelly.empty or "Signal_Quality" not in df_kelly.columns:
         return 0.5
+    # O3：優先用未截斷 raw 值排序（Top 區截斷並列 10.0 無法區分）
+    _sq_col = "Signal_Quality_Raw" if "Signal_Quality_Raw" in df_kelly.columns else "Signal_Quality"
     sorted_df = (
-        df_kelly.sort_values("Signal_Quality", ascending=False)
+        df_kelly.sort_values(_sq_col, ascending=False)
         .reset_index(drop=True)
     )
     total = len(sorted_df)
