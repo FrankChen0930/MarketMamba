@@ -1,39 +1,39 @@
 {
-  "date": "2026-06-25",
-  "generated_at": "2026-06-25T19:41:05",
+  "date": "2026-06-26",
+  "generated_at": "2026-06-26T19:45:51",
   "taiex_technicals": {
-    "close": 46255.0,
-    "ma_20": 45296.0,
-    "ma_60": 40889.0,
-    "ma_120": 40889.0,
-    "rsi_14": 59.77,
-    "macd": 1272.09,
-    "macd_signal": 1306.25,
-    "macd_hist": -34.16,
-    "kd_k": 71.92,
-    "kd_d": 76.7,
-    "bb_pct_b": 0.6875,
-    "bias_20ma": 2.12,
-    "atr_14": 1132.6,
+    "close": 44572.0,
+    "ma_20": 45342.0,
+    "ma_60": 41090.0,
+    "ma_120": 41090.0,
+    "rsi_14": 50.66,
+    "macd": 1080.4,
+    "macd_signal": 1261.08,
+    "macd_hist": -180.68,
+    "kd_k": 49.04,
+    "kd_d": 67.48,
+    "bb_pct_b": 0.3436,
+    "bias_20ma": -1.7,
+    "atr_14": 1180.35,
     "obv_trend": "up",
-    "realized_vol_10d": 26.79,
+    "realized_vol_10d": 34.47,
     "beta_vs_spx": 0.0,
     "tech_radar": [
       {
         "subject": "RSI 動能",
-        "A": 60
+        "A": 51
       },
       {
         "subject": "MACD 趨勢",
-        "A": 47
+        "A": 35
       },
       {
         "subject": "KD 隨機",
-        "A": 72
+        "A": 49
       },
       {
         "subject": "Bollinger",
-        "A": 69
+        "A": 34
       },
       {
         "subject": "MA 排列",
@@ -47,43 +47,43 @@
     "table": [
       {
         "label": "RSI(14)",
-        "value": "59.77",
+        "value": "50.66",
         "status": "中性",
         "color": "var(--accent-amber)"
       },
       {
         "label": "MACD",
-        "value": "+1272.1",
+        "value": "+1080.4",
         "status": "偏空",
         "color": "var(--negative)"
       },
       {
         "label": "KD(9,3,3) K",
-        "value": "71.92",
-        "status": "偏多",
-        "color": "var(--positive)"
+        "value": "49.04",
+        "status": "中性",
+        "color": "var(--accent-amber)"
       },
       {
         "label": "KD D值",
-        "value": "76.7",
+        "value": "67.48",
         "status": "死亡交叉",
         "color": "var(--negative)"
       },
       {
         "label": "Bollinger %B",
-        "value": "0.69",
+        "value": "0.34",
         "status": "帶內運行",
         "color": "var(--accent-amber)"
       },
       {
         "label": "乖離率(20MA)",
-        "value": "+2.12%",
+        "value": "-1.70%",
         "status": "正常",
         "color": "var(--accent-amber)"
       },
       {
         "label": "ATR(14)",
-        "value": "1132.6",
+        "value": "1180.3",
         "status": "波動正常",
         "color": "var(--text-muted)"
       },
@@ -97,7 +97,7 @@
     "risk_metrics": [
       {
         "label": "10日實現波動率",
-        "value": "26.8%",
+        "value": "34.5%",
         "desc": "年化"
       },
       {
@@ -107,29 +107,22 @@
       },
       {
         "label": "MA 20",
-        "value": "45,296",
+        "value": "45,342",
         "desc": "20日均線"
       },
       {
         "label": "MA 60",
-        "value": "40,889",
+        "value": "41,090",
         "desc": "60日均線"
       }
     ]
   },
   "institutional": {
-    "foreign_net_5d_bn": -3543418.0,
+    "foreign_net_5d_bn": -7198.3,
     "investment_trust_net_5d_bn": 0.0,
-    "dealer_net_5d_bn": -691896.1,
-    "total_net_5d_bn": -4235314.1,
+    "dealer_net_5d_bn": -10687.4,
+    "total_net_5d_bn": -17885.7,
     "history": [
-      {
-        "date": "2026-06-18",
-        "date_label": "06/18",
-        "foreign_net": -3536709.3,
-        "investment_trust_net": 0.0,
-        "dealer_net": -684064.9
-      },
       {
         "date": "2026-06-22",
         "date_label": "06/22",
@@ -157,17 +150,17 @@
         "foreign_net": 3465.1,
         "investment_trust_net": 0.0,
         "dealer_net": -2324.8
+      },
+      {
+        "date": "2026-06-26",
+        "date_label": "06/26",
+        "foreign_net": -489.5,
+        "investment_trust_net": 0.0,
+        "dealer_net": -2856.2
       }
     ]
   },
   "breadth_history": [
-    {
-      "date": "2026-06-18",
-      "date_label": "06/18",
-      "adv": 1101,
-      "dec": 667,
-      "ratio": 1.65
-    },
     {
       "date": "2026-06-22",
       "date_label": "06/22",
@@ -195,6 +188,13 @@
       "adv": 692,
       "dec": 1097,
       "ratio": 0.63
+    },
+    {
+      "date": "2026-06-26",
+      "date_label": "06/26",
+      "adv": 157,
+      "dec": 1727,
+      "ratio": 0.09
     }
   ],
   "margin": {
@@ -206,7 +206,7 @@
   "sector_flow": [
     {
       "sector": "水泥工業",
-      "net_5d_bn": -11752.7,
+      "net_5d_bn": -7198.3,
       "direction": "out"
     }
   ]
