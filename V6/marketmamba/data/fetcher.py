@@ -387,7 +387,9 @@ def fetch_institutional_twse(date_str: str) -> Optional[pd.DataFrame]:
         or None if data not yet published.
     """
     date_compact = date_str.replace("-", "")
-    params = {"date": date_compact, "response": "json"}
+    # selectType=ALLBUT0999 = 全部（不含權證/ETN）。沒有這個參數時 TWSE 只回
+    # 預設類股（水泥工業 7 支）——2026-04-25 起的每日更新就是因此只寫進 7 支股票。
+    params = {"date": date_compact, "selectType": "ALLBUT0999", "response": "json"}
     try:
         resp = requests.get(
             TWSE_INSTITUTIONAL_URL,
@@ -411,8 +413,13 @@ def fetch_institutional_twse(date_str: str) -> Optional[pd.DataFrame]:
 
     records = []
     for row in rows:
-        # TWSE T86 format: [股票代號, 股票名稱, 外資買, 外資賣, 外資淨, 投信買, 投信賣, 投信淨, 自營買, 自營賣, 自營淨, ...]
+        # TWSE T86 (selectType=ALLBUT0999) 19 欄：
+        # [0]代號 [1]名稱 [2]外陸資買(不含外資自營) [3]外陸資賣 [4]外陸資淨
+        # [5-7]外資自營買/賣/淨 [8]投信買 [9]投信賣 [10]投信淨
+        # [11]自營商淨 [12-17]自營自行/避險明細 [18]三大法人淨
         try:
+            if len(row) < 19:
+                continue
             stock_id = str(row[0]).strip()
             if not stock_id.isdigit() or len(stock_id) != 4:
                 continue
@@ -420,12 +427,14 @@ def fetch_institutional_twse(date_str: str) -> Optional[pd.DataFrame]:
                 return int(str(s).replace(",", "").replace("--", "0") or "0")
 
             records.append({
-                "stock_id":            stock_id,
-                "Foreign_Buy":         _parse_int(row[2]),
-                "Foreign_Sell":        _parse_int(row[3]),
-                "Foreign_Net":         _parse_int(row[4]),
-                "Investment_Trust_Net": _parse_int(row[7]),
-                "Dealer_Net":          _parse_int(row[10]),
+                "stock_id":              stock_id,
+                "Foreign_Buy":           _parse_int(row[2]),
+                "Foreign_Sell":          _parse_int(row[3]),
+                "Foreign_Net":           _parse_int(row[4]),
+                "Investment_Trust_Buy":  _parse_int(row[8]),
+                "Investment_Trust_Sell": _parse_int(row[9]),
+                "Investment_Trust_Net":  _parse_int(row[10]),
+                "Dealer_Net":            _parse_int(row[11]),
             })
         except (IndexError, ValueError):
             continue
@@ -438,26 +447,26 @@ def fetch_institutional_twse(date_str: str) -> Optional[pd.DataFrame]:
     return df
 
 
+# TPEX 網站 2024 改版後舊端點（.../3insti/daily_trade/3itrade_hedge.php）只回 HTML。
+# 新端點常數放這裡而非 config.py：本機 config.py 是刻意保持 56 維、不 commit 的
+# dirty 檔，改它無法安全推上 remote。
+TPEX_INSTITUTIONAL_URL_V2 = "https://www.tpex.org.tw/www/zh-tw/insti/dailyTrade"
+
+
 def fetch_institutional_tpex(date_str: str) -> Optional[pd.DataFrame]:
     """
-    Fetch OTC (TPEX) institutional investor data directly from TPEX.
+    Fetch OTC (TPEX) institutional investor data directly from TPEX (新版 API).
     Returns same schema as fetch_institutional_twse.
     """
-    # TPEX uses Republic of China calendar year (民國年)
-    dt = datetime.strptime(date_str, "%Y-%m-%d")
-    roc_year = dt.year - 1911
-    date_roc = f"{roc_year}/{dt.month:02d}/{dt.day:02d}"
-
     params = {
-        "l": "zh-tw",
-        "se": "EW",
-        "t": "D",
-        "d": date_roc,
-        "o": "json",
+        "type": "Daily",
+        "sect": "EW",
+        "date": date_str.replace("-", "/"),   # YYYY/MM/DD
+        "response": "json",
     }
     try:
         resp = requests.get(
-            TPEX_INSTITUTIONAL_URL,
+            TPEX_INSTITUTIONAL_URL_V2,
             params=params,
             headers=HEADERS,
             timeout=15,
@@ -468,25 +477,33 @@ def fetch_institutional_tpex(date_str: str) -> Optional[pd.DataFrame]:
         logger.warning(f"TPEX institutional fetch failed: {e}")
         return None
 
-    rows = data.get("aaData", [])
+    tables = data.get("tables", [])
+    rows = tables[0].get("data", []) if tables else []
     if not rows:
         return None
 
     records = []
     for row in rows:
+        # TPEX dailyTrade 24 欄（已用「買-賣=淨、分項加總=合計」數值驗證）：
+        # [2-4]外資及陸資買/賣/淨(不含外資自營) [5-7]外資自營 [8-10]外資合計
+        # [11-13]投信買/賣/淨 [14-16]自營自行 [17-19]自營避險 [20-22]自營合計 [23]三大法人淨
         try:
+            if len(row) < 24:
+                continue
             stock_id = str(row[0]).strip()
             if not stock_id.isdigit() or len(stock_id) != 4:
                 continue
             def _p(s: str) -> int:
                 return int(str(s).replace(",", "") or "0")
             records.append({
-                "stock_id":             stock_id,
-                "Foreign_Buy":          _p(row[2]),
-                "Foreign_Sell":         _p(row[3]),
-                "Foreign_Net":          _p(row[4]),
-                "Investment_Trust_Net": _p(row[10]),
-                "Dealer_Net":           _p(row[13]),
+                "stock_id":              stock_id,
+                "Foreign_Buy":           _p(row[2]),
+                "Foreign_Sell":          _p(row[3]),
+                "Foreign_Net":           _p(row[4]),
+                "Investment_Trust_Buy":  _p(row[11]),
+                "Investment_Trust_Sell": _p(row[12]),
+                "Investment_Trust_Net":  _p(row[13]),
+                "Dealer_Net":            _p(row[22]),
             })
         except (IndexError, ValueError):
             continue

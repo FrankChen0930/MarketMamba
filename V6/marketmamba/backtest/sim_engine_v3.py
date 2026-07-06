@@ -417,7 +417,9 @@ class SimEngine:
             if not prices.get(ticker, 0):
                 continue
 
-            scanner_score = int(sig.get("score", 0))
+            # base_score = scanner 4 條件原始分（0–100）。不可用 "score"——那是
+            # 已含型態加分的複合分數，丟進 compute_entry_score 會重複加型態分。
+            scanner_score = int(sig.get("base_score", sig.get("score", 0)))
             pat_sig = bullish_map.get(ticker)
             pat_score = int(pat_sig["score"]) if pat_sig else None
             dual_confirm = bool(pat_sig.get("dual_confirm", False)) if pat_sig else False

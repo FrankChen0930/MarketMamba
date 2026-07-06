@@ -32,6 +32,11 @@ _MARKET_TTL = timedelta(minutes=5)
 _ticker_cache: Optional[TickerResponse] = None
 _ticker_cache_time: Optional[datetime] = None
 
+# K-line cache: {f"{ticker}:{range}": (timestamp, payload)}
+_kline_cache: dict = {}
+_KLINE_TTL = timedelta(minutes=15)
+_KLINE_RANGES = {"3mo", "6mo", "1y", "2y"}
+
 _BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36"
 
 
@@ -92,6 +97,51 @@ async def _yf_v8(symbol: str) -> Tuple[float, float]:
         logger.warning(f"Yahoo v8 {symbol}: {e}")
     return 0.0, 0.0
 
+
+
+# ── Yahoo Finance v8 OHLCV (daily K-line for the frontend chart) ───────────────
+
+async def _yf_v8_ohlcv(symbol: str, range_: str) -> list:
+    """Return daily OHLCV candles from Yahoo Finance v8 chart API.
+
+    Each candle: {date, open, high, low, close, volume}. Empty list on failure.
+    """
+    import httpx
+    url = (
+        f"https://query2.finance.yahoo.com/v8/finance/chart/{symbol}"
+        f"?interval=1d&range={range_}"
+    )
+    headers = {
+        "User-Agent": _BROWSER_UA,
+        "Accept": "application/json",
+        "Accept-Language": "en-US,en;q=0.9",
+    }
+    try:
+        async with httpx.AsyncClient(timeout=10, follow_redirects=True) as client:
+            r = await client.get(url, headers=headers)
+        if r.status_code != 200:
+            return []
+        result = r.json()["chart"]["result"][0]
+        timestamps = result.get("timestamp") or []
+        quote = result["indicators"]["quote"][0]
+        candles = []
+        for i, ts in enumerate(timestamps):
+            o, h, l, c = (quote["open"][i], quote["high"][i],
+                          quote["low"][i], quote["close"][i])
+            if c is None or o is None:
+                continue   # 停牌 / 缺值日
+            candles.append({
+                "date":   datetime.fromtimestamp(ts).strftime("%Y-%m-%d"),
+                "open":   round(float(o), 2),
+                "high":   round(float(h), 2),
+                "low":    round(float(l), 2),
+                "close":  round(float(c), 2),
+                "volume": int(quote["volume"][i] or 0),
+            })
+        return candles
+    except Exception as e:
+        logger.warning(f"Yahoo v8 OHLCV {symbol}: {e}")
+        return []
 
 
 # ── Exchange rates (USD/TWD + JPY/TWD from single call) ──────────────────────
@@ -188,6 +238,39 @@ async def get_market_status():
     _market_cache = await _build_market()
     _market_cache_time = datetime.now()
     return _market_cache
+
+
+@router.get("/kline/{ticker}")
+async def get_kline(ticker: str, range: str = "6mo"):
+    """個股日 K 線（OHLCV）— Yahoo v8 proxy，上市 .TW 查不到 fallback 上櫃 .TWO。
+
+    回傳：{ticker, symbol, range, candles: [{date, open, high, low, close, volume}]}
+    per-ticker 15 分鐘記憶體快取，避免 Yahoo rate limit。
+    """
+    if range not in _KLINE_RANGES:
+        range = "6mo"
+    ticker = ticker.strip()
+    cache_key = f"{ticker}:{range}"
+
+    cached = _kline_cache.get(cache_key)
+    if cached and datetime.now() - cached[0] < _KLINE_TTL:
+        return cached[1]
+
+    symbol = f"{ticker}.TW"
+    candles = await _yf_v8_ohlcv(symbol, range)
+    if not candles:
+        symbol = f"{ticker}.TWO"
+        candles = await _yf_v8_ohlcv(symbol, range)
+
+    payload = {
+        "ticker":  ticker,
+        "symbol":  symbol if candles else None,
+        "range":   range,
+        "candles": candles,
+    }
+    if candles:   # 查無資料不快取，讓下次請求重試
+        _kline_cache[cache_key] = (datetime.now(), payload)
+    return payload
 
 
 @router.get("/ticker", response_model=TickerResponse)

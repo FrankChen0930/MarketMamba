@@ -1,13 +1,14 @@
 """
 Trading Signal Scanner — MarketMamba V6.2
 =========================================
-Reads inference results + historical data to generate actionable BUY / SELL / WATCH signals.
+Reads inference results + historical data to generate actionable BUY / WATCH signals.
 
-Entry conditions (2/4 triggers BUY in normal market, 3/4 in cautious):
-  1. Rank Stability  — Top 10 ≥2 days OR Top 50 ≥3 days
-  2. High Confidence — Uncertainty < Q30 percentile (MC-Dropout)
-  3. Relative Low    — RSI(14) < 40 OR Price < MA(20)
-  4. Institutional Buy — Net foreign buy ≥2 consecutive days
+Entry scoring (v1.4 — unified with signal_conditions.compute_entry_score, same as
+sim_engine_v3 / portfolio_checker; BUY = composite score ≥70 normal / ≥90 cautious):
+  1. Rank Stability    (30) — Top 10 ≥2 days OR Top 50 ≥3 days
+  2. High Confidence   (25) — Uncertainty < Q30 percentile (MC-Dropout)
+  3. Institutional Buy (25) — Net foreign buy ≥2 consecutive days
+  4. Relative Low      (20) — RSI(14) < 40 OR Price < MA(20)
 
 Pattern bonus (added on top of base 100-pt score, max total 150):
   - pattern_score 60–74 → +20
@@ -15,13 +16,14 @@ Pattern bonus (added on top of base 100-pt score, max total 150):
   - pattern_score ≥90   → +40
   - dual_confirm (pattern ≥60 AND alpha_rank ≤200) → extra +10
 
-Exit conditions (any triggers EXIT):
-  - Rank drops out of Top 50 for 2 consecutive days
-  - Foreign institutional selling ≥3 consecutive days
+Exit signals: NOT produced here. Full four-layer exit logic lives in
+signal_conditions.check_exit_conditions() (used by sim_engine_v3 and
+portfolio_checker → portfolio_exit_check.json). `exit_signals` in the output
+JSON is kept as an empty list for backward compatibility.
 
 Market regime filter:
-  - TWII > MA(60) → Normal (2/4 entry)
-  - TWII < MA(60) → Cautious (3/4 entry)
+  - TWII > MA(60) → Normal   (score ≥70)
+  - TWII < MA(60) → Cautious (score ≥90)
 """
 
 import json
@@ -31,6 +33,17 @@ from typing import Optional
 
 import numpy as np
 import pandas as pd
+
+from marketmamba.signals.signal_conditions import (
+    DUAL_CONFIRM_RANK,
+    ENTRY_THRESHOLD_CAUTIOUS,
+    ENTRY_THRESHOLD_NORMAL,
+    W_HIGH_CONFIDENCE,
+    W_INSTITUTIONAL,
+    W_RANK_STABILITY,
+    W_RELATIVE_LOW,
+    compute_entry_score,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -170,25 +183,18 @@ def _check_institutional(inst_df: pd.DataFrame, ticker: str) -> dict:
 
     stock_inst = stock_inst.sort_values("Date").tail(5)
 
-    # Look for net buy column
-    buy_col = None
-    for c in stock_inst.columns:
-        cl = c.lower()
-        if "foreign" in cl and ("buy" in cl or "net" in cl):
-            buy_col = c
-            break
-    if buy_col is None:
-        for c in stock_inst.columns:
-            if "buy" in c.lower():
-                buy_col = c
-                break
-
-    if buy_col is None:
+    # 「外資連買」必須用淨買超（Foreign_Net = 買-賣）判斷。
+    # 舊版名稱啟發式會先抓到 Foreign_Buy（總買進），大型股天天 >0 → 條件被灌水。
+    if "Foreign_Net" in stock_inst.columns:
+        net_values = stock_inst["Foreign_Net"].values
+    elif "Foreign_Buy" in stock_inst.columns and "Foreign_Sell" in stock_inst.columns:
+        net_values = (stock_inst["Foreign_Buy"].fillna(0) - stock_inst["Foreign_Sell"].fillna(0)).values
+    else:
         return {"met": False, "detail": "無淨買超欄位"}
 
     # Count consecutive days of net buy from most recent
     streak = 0
-    for val in reversed(stock_inst[buy_col].values):
+    for val in reversed(net_values):
         try:
             if float(val) > 0:
                 streak += 1
@@ -233,33 +239,20 @@ def _load_pattern_lookup() -> dict:
 
 
 def _apply_pattern_bonus(base_score: int, pattern_signal: dict | None, alpha_rank: int) -> tuple[int, dict | None]:
-    """Compute composite score = base_score + pattern_bonus + dual_confirm_bonus.
+    """Composite score via the shared signal_conditions.compute_entry_score().
 
     Returns (composite_score, pattern_info_dict_or_None).
     pattern_info contains: pattern_score, pattern_id, pattern_name,
-                            failure_stop, dual_confirm, pattern_bonus.
+                            failure_stop, dual_confirm, pattern_bonus
+                            (bonus shown includes the dual-confirm +10).
     """
-    if pattern_signal is None:
-        return base_score, None
+    p_score = int(pattern_signal.get("score", 0)) if pattern_signal else None
+    dual = p_score is not None and p_score >= 60 and alpha_rank <= DUAL_CONFIRM_RANK
+    composite, breakdown = compute_entry_score(base_score, p_score, alpha_rank, dual)
 
-    p_score = int(pattern_signal.get("score", 0))
-
-    # Pattern bonus tiers
-    if p_score >= 90:
-        bonus = 40
-    elif p_score >= 75:
-        bonus = 30
-    elif p_score >= 60:
-        bonus = 20
-    else:
-        return base_score, None   # Below threshold, no bonus
-
-    # Dual-confirm: pattern ≥60 AND alpha rank ≤200
-    dual = p_score >= 60 and alpha_rank <= 200
-    if dual:
-        bonus += 10
-
-    composite = base_score + bonus
+    bonus_total = breakdown["pattern_bonus"] + breakdown["dual_confirm_bonus"]
+    if pattern_signal is None or bonus_total == 0:
+        return composite, None
 
     pattern_info = {
         "pattern_score":   p_score,
@@ -268,38 +261,58 @@ def _apply_pattern_bonus(base_score: int, pattern_signal: dict | None, alpha_ran
         "failure_stop":    pattern_signal.get("failure_stop"),
         "target_price":    pattern_signal.get("target_price"),
         "dual_confirm":    dual,
-        "pattern_bonus":   bonus,
+        "pattern_bonus":   bonus_total,
     }
     return composite, pattern_info
 
 
-def _check_exit_rank(rank_history: list) -> dict:
-    """Exit if rank drops out of Top 50 for 2 consecutive days."""
-    out_of_50_streak = 0
-    for rh in rank_history:
-        if rh["rank"] is None or rh["rank"] > 50:
-            out_of_50_streak += 1
-        else:
-            break
+def _load_twii_from_macro(prices_df: pd.DataFrame) -> Optional[pd.DataFrame]:
+    """Fallback TWII source: macro_raw.parquet (TWII_Close).
 
-    met = out_of_50_streak >= 2
-    return {
-        "met": met,
-        "detail": f"連續 {out_of_50_streak} 天在 Top 50 外" if out_of_50_streak > 0 else "仍在 Top 50 內"
-    }
+    prices_raw only contains 4-digit stock ids (ticker universe filter), so the
+    index never appears there and the regime gate silently stayed NORMAL.
+    Freshness guard: macro must reach within 10 days of prices_raw's max date,
+    otherwise a stale close vs MA60 would give a silently wrong regime.
+    """
+    macro_path = DATA_DIR / "macro_raw.parquet"
+    if not macro_path.exists():
+        return None
+    try:
+        macro = pd.read_parquet(macro_path, columns=["Date", "TWII_Close"]).dropna()
+    except Exception as e:
+        logger.warning(f"  macro_raw.parquet unreadable for regime check: {e}")
+        return None
+    if macro.empty:
+        return None
+    macro["Date"] = pd.to_datetime(macro["Date"])
+    macro_max = macro["Date"].max()
+    ref_max = prices_df["Date"].max() if not prices_df.empty else pd.Timestamp.today()
+    lag_days = (ref_max - macro_max).days
+    if lag_days > 10:
+        logger.warning(
+            f"  TWII regime check skipped: macro_raw stale "
+            f"(last {macro_max.date()}, {lag_days} days behind prices) → regime=NORMAL"
+        )
+        return None
+    return macro.rename(columns={"TWII_Close": "Close"})
 
 
 def _get_market_regime(prices_df: pd.DataFrame) -> dict:
-    """Determine market regime from TWII vs 60-day MA."""
-    # Try to find TWII data
+    """Determine market regime from TWII vs 60-day MA.
+
+    threshold = BUY score threshold (shared with signal_conditions.entry_threshold):
+    NORMAL → ≥70, CAUTIOUS → ≥90.
+    """
+    # Try to find TWII data in prices_raw, then fall back to macro_raw
     twii = prices_df[prices_df["stock_id"].isin(["TAIEX", "^TWII", "0000"])]
     if twii.empty:
-        # Try macro data
-        return {"regime": "NORMAL", "twii_vs_ma60": "N/A", "threshold": 2}
+        twii = _load_twii_from_macro(prices_df)
+    if twii is None or twii.empty:
+        return {"regime": "NORMAL", "twii_vs_ma60": "N/A", "threshold": ENTRY_THRESHOLD_NORMAL}
 
     twii = twii.sort_values("Date").tail(80)
     if len(twii) < 60:
-        return {"regime": "NORMAL", "twii_vs_ma60": "N/A", "threshold": 2}
+        return {"regime": "NORMAL", "twii_vs_ma60": "N/A", "threshold": ENTRY_THRESHOLD_NORMAL}
 
     closes = twii["Close"]
     ma60 = closes.rolling(60).mean().iloc[-1]
@@ -307,7 +320,7 @@ def _get_market_regime(prices_df: pd.DataFrame) -> dict:
     pct = (current / ma60 - 1) * 100
 
     regime = "NORMAL" if current > ma60 else "CAUTIOUS"
-    threshold = 2 if regime == "NORMAL" else 3
+    threshold = ENTRY_THRESHOLD_NORMAL if regime == "NORMAL" else ENTRY_THRESHOLD_CAUTIOUS
 
     return {
         "regime": regime,
@@ -334,7 +347,6 @@ def _json_default(obj):
 
 def run_scan(
     df_kelly_path: Optional[Path] = None,
-    portfolio_positions: Optional[list] = None,
     output_path: Optional[Path] = None,
 ) -> dict:
     """
@@ -342,11 +354,11 @@ def run_scan(
 
     Args:
         df_kelly_path: Path to df_kelly.csv (default: V6/results/df_kelly.csv)
-        portfolio_positions: List of held stocks [{"ticker": "2330", ...}]
         output_path: Where to save output (default: V6/results/action_signals.json)
 
     Returns:
-        dict with buy_signals, exit_signals, watch_list
+        dict with buy_signals, watch_list (exit_signals kept as [] for compat;
+        real exit logic = signal_conditions four-layer / portfolio_exit_check.json)
     """
     if df_kelly_path is None:
         df_kelly_path = RESULTS_DIR / "df_kelly.csv"
@@ -387,21 +399,15 @@ def run_scan(
     else:
         inst_df = pd.DataFrame()
 
-    # Market regime
+    # Market regime → BUY score threshold (70 normal / 90 cautious)
     market = _get_market_regime(prices_df)
-    entry_threshold = market["threshold"]
-    logger.info(f"  Market regime: {market['regime']} (TWII vs MA60: {market['twii_vs_ma60']}) → entry ≥{entry_threshold}/4")
+    score_threshold = market["threshold"]
+    logger.info(f"  Market regime: {market['regime']} (TWII vs MA60: {market['twii_vs_ma60']}) → entry score ≥{score_threshold}")
 
     # ── Scan Top 50 for entry signals ─────────────────────────────────────
     top50 = df_kelly.head(50).reset_index(drop=True)
     buy_signals = []
     watch_list = []
-
-    # Weighted score weights (base 100 pts)
-    _W_RANK  = 30
-    _W_CONF  = 25
-    _W_INST  = 25
-    _W_LOW   = 20
 
     for idx, row in top50.iterrows():
         ticker = str(row["Ticker"])
@@ -426,8 +432,9 @@ def run_scan(
 
         conditions_met = sum([c1["met"], c2["met"], c3["met"], c4["met"]])
 
-        # Base score (max 100)
-        base_score = _W_RANK * c1["met"] + _W_CONF * c2["met"] + _W_INST * c4["met"] + _W_LOW * c3["met"]
+        # Base score (max 100) — weights shared with signal_conditions
+        base_score = (W_RANK_STABILITY  * c1["met"] + W_HIGH_CONFIDENCE * c2["met"]
+                      + W_INSTITUTIONAL * c4["met"] + W_RELATIVE_LOW    * c3["met"])
 
         # V6.2: apply pattern bonus → composite score (max 150)
         p_signal = pattern_lookup.get(ticker)
@@ -454,39 +461,16 @@ def run_scan(
             "pattern": pattern_info,
         }
 
-        if conditions_met >= entry_threshold:
+        if composite_score >= score_threshold:
             buy_signals.append(signal_entry)
             pat_str = f", pattern={pattern_info['pattern_name']}({pattern_info['pattern_score']}) +{pattern_info['pattern_bonus']}" if pattern_info else ""
-            logger.info(f"  🔥 BUY: {ticker} (conditions={conditions_met}/4, score={composite_score}{pat_str})")
+            logger.info(f"  🔥 BUY: {ticker} (score={composite_score}≥{score_threshold}, conditions={conditions_met}/4{pat_str})")
         elif conditions_met >= 1:
             watch_list.append(signal_entry)
 
-    # ── Check exit signals for current holdings ───────────────────────────
+    # Exit signals: intentionally always empty — real exit logic is the
+    # four-layer check in signal_conditions (→ portfolio_exit_check.json).
     exit_signals = []
-    if portfolio_positions:
-        for pos in portfolio_positions:
-            ticker = pos.get("ticker") or pos.get("stock_id", "")
-            if not ticker:
-                continue
-
-            rank_hist = _get_rank_history(history, ticker)
-            exit_rank = _check_exit_rank(rank_hist)
-            exit_inst = _check_institutional(inst_df, ticker)
-
-            reasons = []
-            if exit_rank["met"]:
-                reasons.append("排名連續掉出 Top 50")
-            # Reverse institutional check: selling ≥3 days
-            # (reuse inst check but look for negative streaks)
-
-            if reasons:
-                exit_signals.append({
-                    "ticker": ticker,
-                    "reasons": reasons,
-                    "rank_exit": exit_rank,
-                    "current_rank": rank_hist[0]["rank"] if rank_hist else None,
-                })
-                logger.info(f"  🔴 EXIT: {ticker} — {', '.join(reasons)}")
 
     # ── Build output ──────────────────────────────────────────────────────
     # I3: Portfolio-level risk limits
@@ -515,10 +499,11 @@ def run_scan(
 
     result = {
         "date": date_str,
-        "scan_version": "1.3",
+        "scan_version": "1.4",
         "market_regime": market["regime"],
         "twii_vs_ma60": market.get("twii_vs_ma60", "N/A"),
-        "entry_threshold": f"≥{entry_threshold}/4條件",
+        "entry_threshold": f"≥{score_threshold}分",
+        "entry_threshold_score": score_threshold,
         "uncertainty_threshold": round(unc_q30, 6),
         "total_scanned": len(top50),
         "buy_signals": buy_signals,

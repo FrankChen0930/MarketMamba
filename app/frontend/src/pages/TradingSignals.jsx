@@ -28,10 +28,10 @@ function EntryRulesModal({ regime, onClose }) {
           {/* Entry conditions */}
           <div style={S.section}>
             <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--positive)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span>🟢</span> 入場條件（滿足 {regime === 'CAUTIOUS' ? '3' : '2'}/4 觸發推薦）
+              <span>🟢</span> 入場評分（合計 ≥{regime === 'CAUTIOUS' ? '90' : '70'} 分觸發推薦）
             </div>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 10, padding: '6px 10px', background: 'rgba(0,255,136,0.04)', borderRadius: 6 }}>
-              滿足任意 {regime === 'CAUTIOUS' ? '3' : '2'} 個條件即進入買入推薦；觀察清單顯示的「評分」為各條件分數加總，可比較同層股票的信號強度
+              四條件分數＋型態加分合計 ≥{regime === 'CAUTIOUS' ? '90' : '70'} 分即進入買入推薦（與模擬機器人使用同一套評分標準）；至少符合一項條件但未達門檻的股票進入觀察清單
             </div>
             <table className="data-table" style={{ width: '100%' }}>
               <thead><tr><th style={S.th}>#</th><th style={S.th}>條件</th><th style={{ ...S.th, textAlign: 'center' }}>參考分數</th><th style={S.th}>判斷邏輯</th></tr></thead>
@@ -85,8 +85,8 @@ function EntryRulesModal({ regime, onClose }) {
             <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent-amber)', marginBottom: 8 }}>🌐 大盤環境過濾</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               {[
-                { env: 'TWII > 60日均線', label: '正常市場', threshold: '滿足 2/4 即推薦', sub: '1 項符合 → 觀察清單', active: regime !== 'CAUTIOUS' },
-                { env: 'TWII < 60日均線', label: '保守模式', threshold: '需滿足 3/4 才推薦', sub: '1-2 項符合 → 觀察清單', active: regime === 'CAUTIOUS' },
+                { env: 'TWII > 60日均線', label: '正常市場', threshold: '評分 ≥70 即推薦', sub: '未達門檻 → 觀察清單', active: regime !== 'CAUTIOUS' },
+                { env: 'TWII < 60日均線', label: '保守模式', threshold: '評分 ≥90 才推薦', sub: '未達門檻 → 觀察清單', active: regime === 'CAUTIOUS' },
               ].map(r => (
                 <div key={r.label} style={{ padding: '10px 14px', borderRadius: 8, background: r.active ? 'rgba(0,212,255,0.06)' : 'var(--bg-panel-2)', border: r.active ? '1px solid rgba(0,212,255,0.3)' : '1px solid transparent' }}>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{r.env}</div>
@@ -291,7 +291,7 @@ function WatchListTable({ watchList, onSelectStock }) {
           <tbody>
             {watchList.map((s, i) => (
               <tr key={s.ticker} className="animate-fade-up" style={{ animationDelay: `${i * 0.03}s`, cursor: 'pointer' }}
-                onClick={() => onSelectStock({ stock_id: s.ticker, name: s.name || s.ticker, sector: s.sector || '—', alpha_5d: s.alpha_5d ?? 0, alpha_20d: s.alpha_20d, alpha_60d: s.alpha_60d ?? 0, uncertainty: s.uncertainty, vol_ratio: 1, signal: 'HOLD', suggested_weight: s.suggested_weight, confidence: s.confidence, rank: '-' })}>
+                onClick={() => onSelectStock({ stock_id: s.ticker, name: s.name || s.ticker, sector: s.sector || '—', alpha_5d: s.alpha_5d ?? 0, alpha_20d: s.alpha_20d, alpha_60d: s.alpha_60d ?? 0, uncertainty: s.uncertainty, vol_ratio: 1, signal: 'HOLD', suggested_weight: s.suggested_weight, confidence: s.confidence, rank: '-', failure_stop: s.pattern?.failure_stop, target_price: s.pattern?.target_price })}>
                 <td>
                   <div style={{ fontWeight: 600, fontSize: 13 }}>{s.name && s.name !== s.ticker ? s.name : s.ticker}</div>
                   <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{s.ticker}</div>
@@ -376,7 +376,7 @@ export default function TradingSignals() {
             onMouseLeave={e => e.currentTarget.style.borderColor = ''}>
             <div className="label" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>入場門檻 <span style={{ fontSize: 10, color: 'var(--accent-blue)' }}>📋 點擊查看規則</span></div>
             <div className="value mono">{data?.entry_threshold || '—'}</div>
-            <div className="sub">滿足條件數 / 總條件</div>
+            <div className="sub">進場評分門檻（滿分 150）</div>
           </div>
 
           <div className="stat-card" style={{ borderColor: buySignals.length > 0 ? 'rgba(0,255,136,0.3)' : 'var(--border)' }}>
@@ -406,7 +406,7 @@ export default function TradingSignals() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: 12 }}>
               {buySignals.map((s, i) => (
                 <div key={s.ticker} style={{ animationDelay: `${i * 0.05}s` }}>
-                  <SignalCard signal={s} onClick={() => setSelectedStock({ stock_id: s.ticker, name: s.name || s.ticker, sector: s.sector || '—', alpha_5d: s.alpha_5d ?? 0, alpha_20d: s.alpha_20d, alpha_60d: s.alpha_60d ?? 0, uncertainty: s.uncertainty, vol_ratio: 1, signal: 'BUY', suggested_weight: s.suggested_weight, confidence: s.confidence, rank: i + 1 })} />
+                  <SignalCard signal={s} onClick={() => setSelectedStock({ stock_id: s.ticker, name: s.name || s.ticker, sector: s.sector || '—', alpha_5d: s.alpha_5d ?? 0, alpha_20d: s.alpha_20d, alpha_60d: s.alpha_60d ?? 0, uncertainty: s.uncertainty, vol_ratio: 1, signal: 'BUY', suggested_weight: s.suggested_weight, confidence: s.confidence, rank: i + 1, failure_stop: s.pattern?.failure_stop, target_price: s.pattern?.target_price })} />
                 </div>
               ))}
             </div>
@@ -424,8 +424,8 @@ export default function TradingSignals() {
             <span style={{ fontSize: 20 }}>💡</span>
             <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
               <strong style={{ color: 'var(--accent-blue)' }}>運作原理：</strong>
-              掃描模型 Top 50 股票，評估 4 個維度的入場條件（排名穩定性、模型信心、相對低點、機構資金方向）。
-              {data?.market_regime === 'CAUTIOUS' ? '目前大盤低於 60 日均線，進入保守模式，需滿足 3/4 條件才推薦。' : '正常市場環境下，滿足 2/4 條件即推薦買入。'}
+              掃描模型 Top 50 股票，評估 4 個維度的入場條件（排名穩定性、模型信心、相對低點、機構資金方向），加上型態加分後合計評分。
+              {data?.market_regime === 'CAUTIOUS' ? '目前大盤低於 60 日均線，進入保守模式，評分 ≥90 才推薦。' : '正常市場環境下，評分 ≥70 即推薦買入。'}
               點擊上方 <strong>「入場門檻」</strong> 查看完整規則。
             </div>
           </div>

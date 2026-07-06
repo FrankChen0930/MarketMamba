@@ -238,29 +238,32 @@ def _compute_inst_sell_streak(
     n_days: int,
 ) -> dict:
     """
-    從 prices_raw.parquet 讀取最近 n_days 天的 Foreign_Buy / Foreign_Sell，
-    計算連續機構淨賣出（Foreign_Buy - Foreign_Sell < 0）天數（newest first）。
+    從 institutional_raw.parquet 讀取最近 n_days 天的外資淨買賣，
+    計算連續機構淨賣出（Foreign_Net < 0）天數（newest first）。
+
+    註：舊版讀 prices_raw.parquet 的 Foreign_Buy/Foreign_Sell——但 prices_raw
+    只有 OHLCV 欄位，該讀取每天都 KeyError fallback、streak 恆為 0（條件空轉）。
     """
     result: dict[str, int] = {t: 0 for t in tickers}
-    prices_path = data_dir / "prices_raw.parquet"
+    inst_path = data_dir / "institutional_raw.parquet"
 
-    if not prices_path.exists():
-        print(f"[portfolio_checker] prices_raw.parquet 不存在，inst_sell_streak 全設為 0", flush=True)
+    if not inst_path.exists():
+        print(f"[portfolio_checker] institutional_raw.parquet 不存在，inst_sell_streak 全設為 0", flush=True)
         return result
 
     try:
-        df = pd.read_parquet(prices_path, columns=["stock_id", "date", "Foreign_Buy", "Foreign_Sell"])
+        df = pd.read_parquet(inst_path, columns=["stock_id", "Date", "Foreign_Buy", "Foreign_Sell"])
         df["stock_id"] = df["stock_id"].astype(str)
 
         cutoff = datetime.strptime(date_str, "%Y-%m-%d").date() - timedelta(days=n_days * 3)
-        df["date"] = pd.to_datetime(df["date"]).dt.date
-        df = df[(df["date"] >= cutoff) & (df["stock_id"].isin(tickers))].copy()
+        df["Date"] = pd.to_datetime(df["Date"]).dt.date
+        df = df[(df["Date"] >= cutoff) & (df["stock_id"].isin(tickers))].copy()
         df["net_foreign"] = df["Foreign_Buy"].fillna(0) - df["Foreign_Sell"].fillna(0)
 
         for ticker in tickers:
             sub = (
                 df[df["stock_id"] == ticker]
-                .sort_values("date", ascending=False)
+                .sort_values("Date", ascending=False)
                 .head(n_days)
             )
             streak = 0
@@ -275,7 +278,7 @@ def _compute_inst_sell_streak(
         print(f"[portfolio_checker] inst_sell_streak: {sell_cnt} 支有機構賣出紀錄", flush=True)
 
     except KeyError:
-        print(f"[portfolio_checker] prices_raw 缺少 Foreign_Buy/Foreign_Sell 欄位，inst_sell_streak 全設為 0", flush=True)
+        print(f"[portfolio_checker] institutional_raw 缺少 Foreign_Buy/Foreign_Sell 欄位，inst_sell_streak 全設為 0", flush=True)
     except Exception as e:
         print(f"[portfolio_checker] inst_sell_streak 計算失敗（非致命）：{e}", flush=True)
         logger.warning(f"inst_sell_streak 失敗：{e}")

@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import KLineChart from './KLineChart';
 
 const CONFIDENCE_COLOR = {
   '高信心': 'var(--positive)',
@@ -51,7 +52,8 @@ export default function StockModal({ stock, onClose }) {
         onClick={(e) => e.stopPropagation()}
         className="panel"
         style={{
-          width: 420, maxWidth: '90vw',
+          width: 720, maxWidth: '94vw',
+          maxHeight: '92vh', overflowY: 'auto',
           border: '1px solid var(--border-bright)',
           boxShadow: 'var(--shadow-glow-blue)',
           animation: 'fadeInUp 0.2s ease forwards',
@@ -84,8 +86,16 @@ export default function StockModal({ stock, onClose }) {
           >✕</button>
         </div>
 
-        {/* Alpha Bars */}
+        {/* K 線走勢 + Alpha Bars */}
         <div className="panel-body">
+          <KLineChart
+            ticker={stock.stock_id}
+            failureStop={stock.failure_stop}
+            targetPrice={stock.target_price}
+          />
+
+          <div className="divider" />
+
           <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>
             預測 Alpha（截面 z-score 超額報酬）
           </div>

@@ -998,6 +998,20 @@ def main(target_date: str | None = None, skip_push: bool = False, forward_fill: 
         except Exception as e:
             logger.warning(f"IC分析失敗（非致命）：{e}")
 
+        # Entry-condition contribution analysis (non-blocking, best-effort)
+        try:
+            from marketmamba.backtest.condition_analyzer import run_condition_analysis
+            cond_result = run_condition_analysis(
+                results_dir=RESULTS_DIR,
+                prices_df=prices,
+                output_path=RESULTS_DIR / "condition_analysis.json",
+            )
+            c5 = cond_result.get("horizons", {}).get("5d", {}).get("top50_baseline", {})
+            logger.info(f"  條件貢獻分析：baseline n={c5.get('n_days', 0)} 天"
+                        f"（詳細各條件數值見上方 print 輸出）")
+        except Exception as e:
+            logger.warning(f"條件貢獻分析失敗（非致命）：{e}")
+
         # ── 步驟 8：量化市場資料 ──────────────────────────────────────────────
         t0 = time.monotonic()
         logger.info(f"\n{'─'*50}")
