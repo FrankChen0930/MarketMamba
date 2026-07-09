@@ -1,39 +1,39 @@
 {
-  "date": "2026-07-08",
-  "generated_at": "2026-07-08T19:41:41",
+  "date": "2026-07-09",
+  "generated_at": "2026-07-09T19:41:49",
   "taiex_technicals": {
-    "close": 45734.0,
-    "ma_20": 45762.0,
-    "ma_60": 42727.0,
-    "ma_120": 42727.0,
-    "rsi_14": 52.98,
-    "macd": 724.03,
-    "macd_signal": 936.9,
-    "macd_hist": -212.87,
-    "kd_k": 49.44,
-    "kd_d": 52.9,
-    "bb_pct_b": 0.4944,
-    "bias_20ma": -0.06,
-    "atr_14": 1159.94,
+    "close": 45355.0,
+    "ma_20": 45869.0,
+    "ma_60": 42878.0,
+    "ma_120": 42878.0,
+    "rsi_14": 50.77,
+    "macd": 618.3,
+    "macd_signal": 873.19,
+    "macd_hist": -254.89,
+    "kd_k": 42.0,
+    "kd_d": 49.27,
+    "bb_pct_b": 0.3816,
+    "bias_20ma": -1.12,
+    "atr_14": 1127.93,
     "obv_trend": "up",
-    "realized_vol_10d": 29.28,
+    "realized_vol_10d": 29.36,
     "beta_vs_spx": 0.0,
     "tech_radar": [
       {
         "subject": "RSI 動能",
-        "A": 53
+        "A": 51
       },
       {
         "subject": "MACD 趨勢",
-        "A": 32
+        "A": 27
       },
       {
         "subject": "KD 隨機",
-        "A": 49
+        "A": 42
       },
       {
         "subject": "Bollinger",
-        "A": 49
+        "A": 38
       },
       {
         "subject": "MA 排列",
@@ -41,49 +41,49 @@
       },
       {
         "subject": "ATR 波動",
-        "A": 21
+        "A": 26
       }
     ],
     "table": [
       {
         "label": "RSI(14)",
-        "value": "52.98",
+        "value": "50.77",
         "status": "中性",
         "color": "var(--accent-amber)"
       },
       {
         "label": "MACD",
-        "value": "+724.0",
+        "value": "+618.3",
         "status": "偏空",
         "color": "var(--negative)"
       },
       {
         "label": "KD(9,3,3) K",
-        "value": "49.44",
+        "value": "42.0",
         "status": "中性",
         "color": "var(--accent-amber)"
       },
       {
         "label": "KD D值",
-        "value": "52.9",
+        "value": "49.27",
         "status": "死亡交叉",
         "color": "var(--negative)"
       },
       {
         "label": "Bollinger %B",
-        "value": "0.49",
+        "value": "0.38",
         "status": "帶內運行",
         "color": "var(--accent-amber)"
       },
       {
         "label": "乖離率(20MA)",
-        "value": "-0.06%",
+        "value": "-1.12%",
         "status": "正常",
         "color": "var(--accent-amber)"
       },
       {
         "label": "ATR(14)",
-        "value": "1159.9",
+        "value": "1127.9",
         "status": "波動正常",
         "color": "var(--text-muted)"
       },
@@ -97,7 +97,7 @@
     "risk_metrics": [
       {
         "label": "10日實現波動率",
-        "value": "29.3%",
+        "value": "29.4%",
         "desc": "年化"
       },
       {
@@ -107,29 +107,22 @@
       },
       {
         "label": "MA 20",
-        "value": "45,762",
+        "value": "45,869",
         "desc": "20日均線"
       },
       {
         "label": "MA 60",
-        "value": "42,727",
+        "value": "42,878",
         "desc": "60日均線"
       }
     ]
   },
   "institutional": {
-    "foreign_net_5d_bn": -56768544.0,
-    "investment_trust_net_5d_bn": 22551187.1,
-    "dealer_net_5d_bn": -26915151.2,
-    "total_net_5d_bn": -61132508.1,
+    "foreign_net_5d_bn": -111110052.2,
+    "investment_trust_net_5d_bn": 38664325.7,
+    "dealer_net_5d_bn": -27552822.1,
+    "total_net_5d_bn": -99998548.6,
     "history": [
-      {
-        "date": "2026-07-02",
-        "date_label": "07/02",
-        "foreign_net": -783101.4,
-        "investment_trust_net": 84457.4,
-        "dealer_net": 44314.9
-      },
       {
         "date": "2026-07-03",
         "date_label": "07/03",
@@ -154,20 +147,20 @@
       {
         "date": "2026-07-08",
         "date_label": "07/08",
-        "foreign_net": -17524088.4,
+        "foreign_net": -17536984.6,
         "investment_trust_net": 11891499.1,
-        "dealer_net": -3281995.2
+        "dealer_net": -3282165.9
+      },
+      {
+        "date": "2026-07-09",
+        "date_label": "07/09",
+        "foreign_net": -55111713.4,
+        "investment_trust_net": 16197595.9,
+        "dealer_net": -593185.2
       }
     ]
   },
   "breadth_history": [
-    {
-      "date": "2026-07-02",
-      "date_label": "07/02",
-      "adv": 1175,
-      "dec": 631,
-      "ratio": 1.86
-    },
     {
       "date": "2026-07-03",
       "date_label": "07/03",
@@ -195,6 +188,13 @@
       "adv": 733,
       "dec": 1073,
       "ratio": 0.68
+    },
+    {
+      "date": "2026-07-09",
+      "date_label": "07/09",
+      "adv": 735,
+      "dec": 1050,
+      "ratio": 0.7
     }
   ],
   "margin": {
@@ -206,42 +206,42 @@
   "sector_flow": [
     {
       "sector": "電子工業",
-      "net_5d_bn": -3358119.5,
+      "net_5d_bn": -3278174.7,
       "direction": "out"
     },
     {
       "sector": "半導體業",
-      "net_5d_bn": -1508061.7,
+      "net_5d_bn": -1740149.5,
       "direction": "out"
     },
     {
       "sector": "電子零組件業",
-      "net_5d_bn": -950196.2,
+      "net_5d_bn": -1073701.0,
       "direction": "out"
     },
     {
       "sector": "通信網路業",
-      "net_5d_bn": -316201.3,
-      "direction": "out"
-    },
-    {
-      "sector": "其他電子業",
-      "net_5d_bn": -254229.5,
+      "net_5d_bn": -217964.2,
       "direction": "out"
     },
     {
       "sector": "金融保險",
-      "net_5d_bn": 215418.5,
+      "net_5d_bn": 178878.9,
       "direction": "in"
     },
     {
-      "sector": "光電業",
-      "net_5d_bn": -204020.2,
+      "sector": "其他電子業",
+      "net_5d_bn": -135337.9,
       "direction": "out"
     },
     {
-      "sector": "電腦及週邊設備業",
-      "net_5d_bn": -143049.8,
+      "sector": "塑膠工業",
+      "net_5d_bn": -132825.2,
+      "direction": "out"
+    },
+    {
+      "sector": "ETF",
+      "net_5d_bn": -119393.7,
       "direction": "out"
     }
   ]
