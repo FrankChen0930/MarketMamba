@@ -24,11 +24,16 @@ router = APIRouter(prefix="/dual", tags=["Dual"])
 GITHUB_RESULTS_URL = os.getenv("GITHUB_RESULTS_URL", "")
 SHORT_URL = GITHUB_RESULTS_URL.replace("df_kelly.csv", "df_short.csv") if GITHUB_RESULTS_URL else ""
 TREND_URL = GITHUB_RESULTS_URL.replace("df_kelly.csv", "df_trend.csv") if GITHUB_RESULTS_URL else ""
+DUAL_IC_URL = GITHUB_RESULTS_URL.replace("df_kelly.csv", "dual_ic_analysis.json") if GITHUB_RESULTS_URL else ""
 CACHE_TTL = timedelta(hours=1)
 
 _cache: Optional[dict] = None
 _cache_time: Optional[datetime] = None
 _cache_lock: asyncio.Lock = asyncio.Lock()
+
+_ic_cache: Optional[dict] = None
+_ic_cache_time: Optional[datetime] = None
+_ic_cache_lock: asyncio.Lock = asyncio.Lock()
 
 
 async def _fetch_csv(url: str) -> Optional[pd.DataFrame]:
@@ -116,16 +121,62 @@ async def get_dual_signals(top: Optional[int] = 100):
     return data
 
 
+async def _fetch_json(url: str) -> Optional[dict]:
+    if not url:
+        return None
+    try:
+        import httpx
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.get(url)
+        if r.status_code != 200:
+            logger.warning(f"Dual IC fetch failed {url}: {r.status_code}")
+            return None
+        return r.json()
+    except Exception as e:
+        logger.error(f"Dual IC fetch error {url}: {e}")
+        return None
+
+
+@router.get("/ic")
+async def get_dual_ic():
+    """
+    雙模型（短線 5d/10d + 趨勢 20d/60d）用真實市場走勢驗證的效益分析。
+    包含各 horizon 的 IC/ICIR/Top50 實現超額報酬，資料來自 dual_ic_analysis.json
+    （每日推論後自動計算，horizon 尚未累積足夠天數時該欄位回傳 n_days=0）。
+    """
+    global _ic_cache, _ic_cache_time
+    if _ic_cache and _ic_cache_time and datetime.now() - _ic_cache_time < CACHE_TTL:
+        return _ic_cache
+
+    async with _ic_cache_lock:
+        if _ic_cache and _ic_cache_time and datetime.now() - _ic_cache_time < CACHE_TTL:
+            return _ic_cache
+        data = await _fetch_json(DUAL_IC_URL)
+        if data:
+            _ic_cache, _ic_cache_time = data, datetime.now()
+            return data
+
+    return {
+        "archive_count_short": 0, "archive_count_trend": 0,
+        "horizon_summary": {}, "ic_series_5d": [], "ic_series_10d": [],
+        "ic_series_20d": [], "ic_series_60d": [],
+        "note": "dual_ic_analysis.json 尚未產生（雙模型推論累積足夠 archive 天數後自動出現）",
+    }
+
+
 @router.post("/cache/refresh")
 async def refresh_dual_cache():
-    """清除雙模型快取，下次請求會重新從 GitHub 抓 df_short/trend.csv。
+    """清除雙模型快取，下次請求會重新從 GitHub 抓 df_short/trend.csv + dual_ic_analysis.json。
 
-    每日自動化在 push 完 df_short/trend.csv 後呼叫，讓前端立即看到當日資料
-    （不必等 1h TTL 自然過期）。比照 signals.py 的 /cache/refresh。
+    每日自動化在 push 完後呼叫，讓前端立即看到當日資料（不必等 1h TTL 自然過期）。
+    比照 signals.py 的 /cache/refresh。
     """
-    global _cache, _cache_time
+    global _cache, _cache_time, _ic_cache, _ic_cache_time
     async with _cache_lock:
         _cache = None
         _cache_time = None
+    async with _ic_cache_lock:
+        _ic_cache = None
+        _ic_cache_time = None
     logger.info("Dual cache cleared via /dual/cache/refresh")
-    return {"status": "ok", "message": "dual cache cleared"}
+    return {"status": "ok", "message": "dual + dual-ic cache cleared"}

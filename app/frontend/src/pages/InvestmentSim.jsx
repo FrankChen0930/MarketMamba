@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import { useApi } from '../hooks/useApi';
 import { fetchSimBacktest, fetchIcAnalysis, fetchScannerBacktest } from '../api/sim';
+import { fetchDualIc } from '../api/dual';
 import { SkeletonBlock, SkeletonCard, ApiError } from '../components/SkeletonLoader';
 
 
@@ -887,6 +888,130 @@ function ScannerRobotTab() {
 }
 
 
+// ── Dual Model 真實市場效益驗證（Tab）───────────────────────────────────────────
+
+function DualHorizonBlock({ label, sub, summary, series }) {
+  const n = summary?.n_days ?? 0;
+  const ready = n >= 20;
+  const icColor  = summary?.mean_ic == null ? 'var(--text-muted)' : pos(summary.mean_ic);
+  const topColor = summary?.mean_top50_excess_pct == null ? 'var(--text-muted)' : pos(summary.mean_top50_excess_pct);
+
+  return (
+    <div style={{ padding: '12px 14px', background: 'var(--bg-panel-2)', borderRadius: 8, minWidth: 220, flex: 1 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+        <div style={{ fontSize: 13, fontWeight: 600 }}>{label}</div>
+        <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{sub}</span>
+      </div>
+
+      {n === 0 ? (
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', padding: '8px 0' }}>
+          尚未累積足夠時間（需等到對應天數後的價格資料才能計算）
+        </div>
+      ) : (
+        <>
+          <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 8 }}>
+            <div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>平均 IC</div>
+              <div className="mono" style={{ fontSize: 15, fontWeight: 600, color: icColor }}>
+                {summary.mean_ic >= 0 ? '+' : ''}{summary.mean_ic?.toFixed(4)}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>ICIR</div>
+              <div className="mono" style={{ fontSize: 15, fontWeight: 600 }}>{summary.icir?.toFixed(2)}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>Top50 實現超額</div>
+              <div className="mono" style={{ fontSize: 15, fontWeight: 600, color: topColor }}>
+                {summary.mean_top50_excess_pct != null
+                  ? `${summary.mean_top50_excess_pct >= 0 ? '+' : ''}${summary.mean_top50_excess_pct.toFixed(2)}%`
+                  : '—'}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>樣本天數</div>
+              <div className="mono" style={{ fontSize: 15, fontWeight: 600 }}>{n} 天</div>
+            </div>
+          </div>
+
+          {!ready && (
+            <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginBottom: 8, padding: '5px 8px', background: 'rgba(255,255,255,0.03)', borderRadius: 5 }}>
+              ⏳ 樣本仍少（{n} 天），建議累積 20+ 天再參考結論
+            </div>
+          )}
+
+          {series?.length >= 3 && (
+            <ResponsiveContainer width="100%" height={60}>
+              <BarChart data={series} barCategoryGap="20%">
+                <XAxis dataKey="pred_date" tick={false} />
+                <YAxis hide />
+                <Tooltip content={<IcTooltip />} />
+                <ReferenceLine y={0} stroke="var(--border)" />
+                <Bar dataKey="ic" radius={[2, 2, 0, 0]}>
+                  {series.map((pt, i) => (
+                    <Cell key={i} fill={pt.ic >= 0 ? PNL_POS : PNL_NEG} opacity={0.75} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+function DualIcPanel() {
+  const { data, loading, error, refetch } = useApi(fetchDualIc);
+  const h = data?.horizon_summary ?? {};
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="panel">
+        <div className="panel-body" style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+          這裡驗證的是 <b>V6.2 雙模型</b>（短線 v6_short.pt + 趨勢 v6_trend.pt）用真實市場走勢反算的效益，
+          回答「照這組排名選股會不會賺錢」；跟目前真倉使用的 V6.1（20d 目標）是分開的兩件事，互不影響。
+          資料每日自動累積，不需要手動操作，樣本量會隨時間自然增加。
+        </div>
+      </div>
+
+      {error ? (
+        <ApiError message={error} onRetry={refetch} />
+      ) : loading ? (
+        <div className="panel"><div className="panel-body"><SkeletonBlock height={200} /></div></div>
+      ) : (
+        <>
+          <div className="panel">
+            <div className="panel-header">
+              <div className="panel-title"><span>⚡</span> 短線模型（5d / 10d）</div>
+              {data?.archive_count_short != null && (
+                <span className="badge badge-neutral" style={{ fontSize: 10 }}>archive {data.archive_count_short} 天</span>
+              )}
+            </div>
+            <div className="panel-body" style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+              <DualHorizonBlock label="5 天"  sub="Score_5d / SQ_5d"  summary={h['5d']}  series={data?.ic_series_5d} />
+              <DualHorizonBlock label="10 天" sub="Score_10d / SQ_5d" summary={h['10d']} series={data?.ic_series_10d} />
+            </div>
+          </div>
+
+          <div className="panel">
+            <div className="panel-header">
+              <div className="panel-title"><span>📈</span> 趨勢模型（20d / 60d）</div>
+              {data?.archive_count_trend != null && (
+                <span className="badge badge-neutral" style={{ fontSize: 10 }}>archive {data.archive_count_trend} 天</span>
+              )}
+            </div>
+            <div className="panel-body" style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+              <DualHorizonBlock label="20 天" sub="Score_20d / SQ_20d" summary={h['20d']} series={data?.ic_series_20d} />
+              <DualHorizonBlock label="60 天" sub="Score_60d / SQ_20d" summary={h['60d']} series={data?.ic_series_60d} />
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function InvestmentSim() {
@@ -930,6 +1055,7 @@ export default function InvestmentSim() {
         {[
           { key: 'alpha',   icon: '🤖', label: 'Alpha 機器人',   sub: 'SQ 排名驅動' },
           { key: 'scanner', icon: '🎯', label: 'Scanner 機器人', sub: '4條件訊號驅動' },
+          { key: 'dual',    icon: '🔬', label: '雙模型驗證',     sub: '真實市場效益追蹤' },
         ].map(tab => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
             style={{
@@ -948,6 +1074,9 @@ export default function InvestmentSim() {
 
       {/* ── Scanner Tab ── */}
       {activeTab === 'scanner' && <ScannerRobotTab />}
+
+      {/* ── Dual Model Validation Tab ── */}
+      {activeTab === 'dual' && <DualIcPanel />}
 
       {/* ── Alpha Tab (existing content below) ── */}
       {activeTab === 'alpha' && (<>

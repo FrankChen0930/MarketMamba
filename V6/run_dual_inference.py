@@ -187,16 +187,37 @@ def run_dual_inference(out_dir: Path | None = None, device_str: str | None = Non
     df_trend.to_csv(arch / f"df_trend_{latest_str}.csv", index=False)
     logger.info(f"📦 已歸檔 {latest_str} → {arch}")
 
+    # 雙模型 IC / Top50 效益分析（non-fatal best-effort，比照 V6.1 的 ic_analyzer 用法）。
+    # 注意：df（build_features 輸出）的 Close 已被 clean_and_scale z-score 過，
+    # 這裡必須改讀 prices_raw.parquet 拿真實股價，不可重用 df 裡的 Close。
+    # 5d/10d/20d/60d 各自在資料累積足夠天數後自動生效，不需要任何手動介入。
+    try:
+        from marketmamba.backtest.dual_ic_analyzer import run_dual_ic_analysis
+        from marketmamba.config import PROCESSED_DIR
+        raw_prices = pd.read_parquet(
+            PROCESSED_DIR / "prices_raw.parquet", columns=["Date", "stock_id", "Close"]
+        )
+        dual_ic_result = run_dual_ic_analysis(
+            archive_dir=arch,
+            prices_df=raw_prices,
+            output_path=out_dir / "dual_ic_analysis.json",
+        )
+        s5 = dual_ic_result.get("horizon_summary", {}).get("5d", {})
+        logger.info(f"  雙模型 IC 分析：5d n={s5.get('n_days', 0)} IC={s5.get('mean_ic', 'N/A')}")
+    except Exception as e:
+        logger.warning(f"雙模型 IC 分析失敗（非致命）：{e}")
+
     if push:
         _git_push(out_dir)
     return df_short, df_trend
 
 
 def _git_push(out_dir: Path):
-    """只 git add df_short/trend.csv + commit + push（不碰其他 dirty 檔，例如本機 56 維 config）。"""
+    """只 git add df_short/trend.csv(+dual_ic_analysis.json) + commit + push（不碰其他 dirty 檔，例如本機 56 維 config）。"""
     import subprocess
     repo = MODELS_DIR.parent.parent          # .../MarketMamba（ROOT_DIR=V6 → parent=MarketMamba）
-    files = [str((out_dir / f).relative_to(repo)) for f in ("df_short.csv", "df_trend.csv")]
+    _candidates = ["df_short.csv", "df_trend.csv", "dual_ic_analysis.json"]
+    files = [str((out_dir / f).relative_to(repo)) for f in _candidates if (out_dir / f).exists()]
     try:
         subprocess.run(["git", "add", *files], cwd=repo, check=True, capture_output=True, text=True)
         msg = f"dual inference {pd.Timestamp.now():%Y-%m-%d}"
