@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # MarketMamba — AI 助手指引
 
-> 最後更新：2026-06-14（V6.2 第三次重訓「5d 主導實驗」訓練中）
+> 最後更新：2026-07-15（方向二全數完成：Step 4 GRU 5d IC +0.1113 四階最高 + Step 5 對照表定稿；方向一 Step 8/9 完成、`/pipeline` 頁待驗收部署）
 
 ---
 
@@ -155,14 +155,18 @@ daily_inference.bat（Windows Task Scheduler）
 
 ## 訊號系統（V6.2）
 
-### `signals/scanner.py`（scan_version 1.2）— 產出 `action_signals.json`
+### `signals/scanner.py`（scan_version 1.4）— 產出 `action_signals.json`
 
 | 條件 | 權重 |
 |------|------|
 | 排名穩定（Top10 ≥2天 or Top50 ≥3天） | 30 分 |
 | 不確定度低（< 當日 Q30 分位數） | 25 分 |
-| 機構連續淨買（≥2天） | 25 分 |
+| 機構連續淨買（Foreign_Net ≥2天） | 25 分 |
 | 相對低點（RSI<40 or 價格<MA20） | 20 分 |
+
+- **BUY 判斷（2026-07-07 統一）**：複合分數（4 條件 + 型態加分）**≥70 分**（保守模式 ≥90），與 `signal_conditions.compute_entry_score()` / sim_engine_v3 同一套標準；權重常數 import 自 signal_conditions，不再自帶副本。條件數（x/4）保留為顯示資訊
+- 退場訊號**不在 scanner 產出**（`exit_signals` 恆為空列表、僅向下相容）；真正退場 = signal_conditions 四層 → `portfolio_exit_check.json`
+- regime 判斷（TWII vs MA60）：prices_raw 找不到指數時 fallback `macro_raw.parquet` 的 TWII_Close，**含 10 天新鮮度檢查**（macro 太舊會明講並維持 NORMAL）。⚠️ macro_raw 目前停在 2026-04-24（每日更新不含 macro），保守模式閘門實質尚未啟用
 
 ### `signals/signal_conditions.py`（V6.2 新增）— 共用進退場條件
 
@@ -339,9 +343,45 @@ cd app/frontend && npm run dev   # → localhost:5173
 
 ## 🔄 Current Status
 
-> 最後更新：2026-06-25（Phase 3 實驗 A~D 檔案全備妥 + 預期結果文件）
+> 最後更新：2026-07-15（方向二 Step 5 對照表 + 方向一 Step 8/9 完成，研究計畫方向一/二全部收線；Phase 3 模型實驗仍暫停中，等真倉驗證獲利再繼續）
 
 ### 最近完成
+- **方向二 Step 5 對照表 + 方向一 Step 8/9 前端頁完成（2026-07-15，使用者已驗收；僅剩 push 部署）**：
+  - **Step 5**：`docs/baseline-comparison-table-2026-07-15.md`（方向二最終交付物）——四階（Ridge/GBDT/GRU/Mamba）5d 主表：訊號層 IC（全市場+高流動分層）、組合層（年化/Sharpe/MDD/換手/成本×2）、可解釋性並排；20d 副表；引用紀律四條；判讀=「用可解釋性換到多少效益？答案是負的」+ 三條收斂證據（模型形式 ±0.01 內移動／序列 vs 扁平無差／架構紅利不成立）+ GBDT 教訓（IC 排名 ≠ 落袋排名，表格必須訊號層與組合層並排）
+  - **Step 8**：對照表精簡版嵌入 `docs/breadth-pipeline-page-draft-2026-07-12.md` §5.5（§5 與 §6 之間預留位置）
+  - **Step 9（選項 A，使用者拍板）**：`/breadth` 頁尚不存在（屬頁面樹重整計畫），先做**獨立頁** `app/frontend/src/pages/Pipeline.jsx` + 路由 `/pipeline` + nav 入口「🔬 Pipeline」，之後 `/breadth` 重整時再移入。內容=底稿 §1~§7 全部（三層 fallback、PIT、59 維特徵表、輸入規格、架構論述含 rank 目標消融、§5.5 對照表、驗證結果含樣本警語、§7 誠實限制八條摺疊卡片三態標記）。**純附加**：只動 `App.jsx`/`AppLayout.jsx` 各 +2 行，既有頁面零修改；`npx vite build` 通過。數字為靜態研究成果（核實日 2026-07-15）寫死在頁內，非每日更新資料
+  - 待辦：使用者本地 `npm run dev` 看過 `/pipeline` 頁 → 指定檔案 git push → Vercel 自動部署
+- **方向二 Step 4：階 3 序列模型（GRU）完成（2026-07-14~15，使用者已驗收）**：`V6/experimental/baseline_rnn.py`（直接切 `baseline_base_59d.parquet` 的 (60,59) 視窗、4 組網格 hidden{64,128}×lr val 日 IC 選組 + early stopping、full-train 重訓、分層 IC／成本×2 沿用標準輸出；RTX 3060 實跑 12.2 小時）。**5d test IC +0.1113（高流動組 +0.0867）四階最高**；20d +0.1081 追平 Ridge、勝 GBDT。**階 3 問題有了答案：Mamba 贏不是架構紅利**——~49K 參數的 2 層 GRU 吃同一份 59 維特徵、同 window 60、同 rank label，比 1.66M 參數 v6_short（+0.0870）高 +0.024；且 GRU 對 GBDT 僅 +0.0015 → 三條證據收斂「模型形式（線性/樹/RNN/SSM）只在 ±0.01 內移動，訊號來自特徵/label/廣度」。**組合層無 GBDT 反差：Top50 年化 +22.8%（Sharpe 1.13、換手 78%）> Ridge +18.7%，最強落袋 baseline 由 Ridge 換 GRU**；成本×2 仍轉負（−2.6%，四階同款脆弱）。兩個 horizon 都是最小 h64 勝出，h128 更快過擬合且 epoch 時間異常放大（37 秒→25~50 分、佔 12.2 小時中 ~11 小時，之後同類實驗砍 h128 可省一個數量級）。WF 本階未跑（協定定位便宜階為輔；h64-only 補跑方案記在報告）。報告 `docs/baseline-step4-rnn-2026-07-15.md`、完整數字 `V6/experimental/result/baseline_rnn_result.json`、模型 `result/gru_5d.pt`、log `result/rnn_run.log`
+- **方向二 Step 3：階 2 GBDT（LightGBM）完成（2026-07-13~14，使用者已驗收）**：`V6/experimental/baseline_gbdt.py`（共用 300 維快取、4 組網格 val 日 IC 選參控制多重測試、SHAP 用原生 pred_contrib、分層 IC／成本×2／等權基準為排查後標準輸出）。**5d test IC +0.1098（高流動組 +0.0802）小勝 Ridge +0.1015；20d +0.1004 反輸 Ridge +0.1081**——非線性紅利小且僅在短 horizon。**WF 46/46 fold 全正、mean +0.1285、每 fold 系統性高 Ridge 約 +0.014**（增量非 regime 僥倖；兩模型最弱段同落 2022-10~2023-07 熊市後段）。**組合層反差：GBDT IC 較高但 Top50 年化 +10.8% < Ridge +18.7%**（換手 84%、IC 增量集中小型股與中段排名、成本×2 轉負 −13.6%）→「IC 排名 ≠ 落袋排名」，以照 Top50 買為準最強 baseline 仍是 Ridge。報告 `docs/baseline-step3-gbdt-2026-07-13.md`、完整數字 `V6/experimental/result/baseline_gbdt_result.json`、模型 `result/gbdt_5d.txt`
+- **Baseline IC 0.1015 排查完成（2026-07-13，診斷 D0–D5 全數執行，使用者已驗收）**：新增隔離腳本 `V6/experimental/baseline_ic_diagnosis.py`（重建 Ridge 後 test IC +0.1015 分毫不差重現），結果報告 `docs/baseline-ic-diagnosis-results-2026-07-13.md`、完整數字 `V6/experimental/result/baseline_ic_diagnosis_result.json`。**結論：不是程式 bug、不需重抓資料**：
+  - **D0（資料錯誤→機械性反轉）排除**：排除 test 中 ±5 天內含超限報酬的列（2.08%）後 IC 反升至 +0.1046
+  - **D1 分層 IC**：流動性小/中/大 = +0.140/+0.100/+0.0705；市值小/中/大 = +0.133/+0.096/+0.0626——headline 被小型股墊高，但大市值高流動組仍 ≈ Mamba 水準（0.07）
+  - **D2 消融推翻「反轉主導」**：去短窗反轉 IC 僅 −0.006（+0.0954）；去全部價格技術特徵（只剩籌碼+基本面+宏觀 190 維）仍 +0.0717；單因子 −Return_5d 只有 +0.044 → 0.10 是幾十個弱訊號分散疊加（廣度效應也解釋 ICIR 1.2 / 46/46 fold「太乾淨」）
+  - **D3 證實假說 3b 基準錯配**：等權全 eligible 不排序就對 TWII −87.2%（TWII +118% 為權值股拉抬）；策略 +49.7% vs 等權宇宙 +44.1% vs 隨機 Top50 −33.0% → 對正確基準是正超額
+  - **D4 成本是真正脆弱點**：成本 ×2 → 年化 +18.7% 變 −5.4%；但 Top50 限流動性前 1/3 仍 +16%/年（Sharpe 0.82），存在可交易子集
+  - **D5 + 靜態稽核過**：籌碼特徵同日 ρ=1.000/前一日 0.12 無位移；營收/財報 available_from 延遲正確（+11天/+45天/+2月）
+  - **引用紀律（重要）**：方向二對外陳述 0.1015 必須分層（全市場 +0.1015 / 高流動 +0.0705 / 純籌碼基本面 +0.0717）+ 註明存活者偏差未量化；組合層基準改等權宇宙、「對 TWII −90%」不再單獨引用
+  - **附帶發現三個資料衛生問題（使用者已納入計畫、不急修）**：① 2026-04-30 起 327 筆 Close=0 損壞列（零成交日寫入 0 價，與「寫入端缺 gate」待辦同源）② 超限報酬 2025–26 偏多（多為 ① 的 inf 與減資/IPO 合法事件）③ prices_raw 還原/未還原混源接縫（yfinance auto_adjust 歷史 vs 日增量未還原，2412 的 2026-07-09 除息跳空實證；季度全量重抓價格可解）
+- **研究計畫三方向啟動：不需 Colab 的前四步完成（2026-07-12，使用者已驗收）**：依 `planing/研究計畫_主檔.md` 排序執行，全程未動 production、未動 `V6/models/`：
+  - **方向三-C 首輪分析（C1~C3 完成、C4 首輪結論已出）**：新增隔離腳本 `V6/experimental/conviction_c_analysis.py`（讀 50 天 df_kelly 歸檔 + prices_raw 真實股價，可重跑、樣本自動累積），報告 `docs/conviction-c-analysis-2026-07-11.md`。**核心發現：U 校準在 20d 大致成立（U 最低分位箱內 IC 0.120、最高兩分位 0.083–0.089；SQ Top50 +2.79%/20d t=3.94、比純 Alpha 排序多 +1.3%），但在 5d post-P0 樣本上反向（最有信心分位反而最差、SQ Top50 −1.09%/5d）**——惟 post-P0 5d 僅 14 天且窗口重疊（實質獨立觀察 ~3 個），不能定論。**結構性發現：dashboard 的 SQ 是 20d 訊號、使用者操作是 5d 週期，horizon 錯配**；5d 該看 v6_short 的 SQ_5d（archive 累積中，同款分析可套用）。另證實「低 U 硬門檻交集」不如「SQ 連續值」（交集組 +1.51 輸給高 U 對照組 +1.96）。數字已抽驗（手工重算 06-25 與腳本一致）
+  - **方向二 Step1 協定凍結（v1.0，四決定使用者拍板全採建議）**：`docs/baseline-experiment-protocol-draft-2026-07-11.md`——①切分：Phase 3 同 harness 單一切分為主（train ≤2023-12-31、test 2024-01~2026-06；Mamba 引用同 harness 重跑值 0.0870 不用歷史 0.0951）+ Ridge/GBDT 加跑 WF 為輔 ②label：rank(Alpha_5d) ③5d 主、20d 副 ④組合層 Top50 等權、5 日再平衡、買 0.15%/賣 0.45%。自此凍結，中途不改
+  - **方向一 1~7 底稿完成**：`docs/breadth-pipeline-page-draft-2026-07-12.md`（含 §5「為什麼 rank 目標」論述：Phase 0→1→2 消融證據 0.0434→0.0487→0.0951；§7 誠實限制八條）。**勘誤**：資料 fallback 實際是 yfinance → TWSE/TPEX direct → FinMind，計畫文件寫的「玉山證券」只用於持倉同步、不在研究管線
+  - **資料清理（使用者授權）**：prices_raw 刪除 2026-06-07（週日）整日 5,194 筆假資料（4,317 筆非 4 位數代碼 + 877 筆 4 位數，模式同 06-19 端午節事件；備份 `prices_raw_backup_20260712.parquet`，穩定後可刪）。877 筆 4 位數假資料曾讓週日混進交易日曆 → 刪除後重跑 C 分析，post-P0 數字不變、pre-P0 小幅修正、結論全部不變。**另發現重複寫入 07-07 起又出現（每日 ~1,550 筆）**，與非交易日假資料疑同源（每日更新寫入端缺 gate）、來源仍待查
+- **進場標準統一 + 機構資料管線修復 + 前端 K 線圖（2026-07-07，commit `b72afc2`）**：使用者暫停模型實驗期間，轉做「模型以外」的調整。K 線圖已驗收；scanner 新邏輯待 07-07 推論確認：
+  - **進場標準統一**：`scanner.py`（scan_version 1.4）BUY 判斷由「條件數 ≥2/4」改為**複合分數 ≥70（保守 ≥90）**，權重/型態加分改 import `signal_conditions.compute_entry_score()`——dashboard 訊號與 sim_engine_v3 從此同一套標準，sim 績效可直接回答「照 dashboard 買會不會賺」。前端 `TradingSignals.jsx` 規則文案同步改分數制。**性格變化**：高分型態股（1/4 條件+W底）能進榜、「2 條件無型態 50 分」降觀察清單
+  - **修四個實際 bug**：① sim_engine_v3 把複合分數當 base score 再加型態分（重複計算最多 +50，改用 `base_score`）② scanner「外資連買」誤用 Foreign_Buy 總買進（大型股天天>0）→ 改 Foreign_Net ③ portfolio_checker 讀 prices_raw 不存在的外資欄位 → 退場「外資連賣3天」恆為 0，改讀 institutional_raw ④ scanner 退場死碼移除（run_scan 從未收到 portfolio_positions、exit_signals 恆空；輸出保留空列表向下相容）
+  - **機構資料管線修復（重大）**：診斷發現 2026-04-25 起 institutional_raw 每日更新只寫進 7 支水泥股——**TWSE T86 缺 `selectType=ALLBUT0999` 參數**（預設只回水泥類）+ **TPEX 舊端點改版只回 HTML**。修 `fetcher.py`（TWSE 加參數+19 欄索引重對映、TPEX 換新端點 `/www/zh-tw/insti/dailyTrade` 24 欄、欄位語意用「買-賣=淨、分項加總=合計」數值驗證）；`V6/scripts/backfill_institutional.py` 回補 4/25→7/6 共 50 交易日（每日 ~1,900 筆，TWSE+TPEX）。**驗證**：修復前 28 天/888 筆訊號的機構條件 100% 「無此股機構資料」；修復後正常觸發（外資連買 3 天×10 支等）。附帶清理：06-19 端午節被 API 異常寫入的假資料已刪、prices_raw 去重 51,801 筆（5/26 起每天 ~800 筆重複寫入，值相同、來源待查）
+  - **條件貢獻分析器** `V6/marketmamba/backtest/condition_analyzer.py`：仿 dual_ic_analyzer，讀 `V6/results/{date}/action_signals.json` 歸檔，對四條件+型態各算前瞻 5d/20d 超額報酬、hit rate、對 Top50 基準的 edge、評分分桶（<40/40-69/≥70 直接檢驗 70 分門檻）。掛進 run_daily_inference（non-fatal）輸出 `condition_analysis.json`。**首測 28 天**：「排名穩定」正貢獻（edge +0.28%）、「相對低點」5d 負貢獻（-0.47%、hit 18%）——樣本少僅供方向，自動累積。機構條件歷史旗標全 False，其統計從 07-07 起才有意義
+  - **前端 K 線圖（已驗收 ✅）**：後端 `GET /api/market/kline/{ticker}`（Yahoo v8 OHLCV proxy、.TW→.TWO fallback、15 分快取）+ `KLineChart.jsx`（klinecharts v9：日K+成交量+MA5/20/60+十字游標+紅漲綠跌+3月/6月/1年切換），嵌入 `StockModal`（420→720 寬），有型態訊號時畫 failure_stop/目標價水平線。TradingSignals/Dashboard 點股即看
+- **雙模型真實市場效益追蹤上線（2026-07-06）**：使用者決定暫停 Phase 3 實驗，等真倉（V6.1）先驗證有沒有賺錢再繼續做實驗；釐清目前**真倉用的是 V6.1（20d 目標）**，雙模型（v6_short/v6_trend）現階段定位是**拿真實市場走勢驗證效益**，但雙模型自 6/19 上線以來從未真正算過「排名結果對實際報酬有沒有效」，只有訓練時的驗證集 IC（短線 0.095、趨勢 0.096）。新增自動化追蹤、之後不需要手動介入：
+  - 新增 `V6/marketmamba/backtest/dual_ic_analyzer.py`：仿 `ic_analyzer.py`，讀 `archive/df_short_*.csv`/`df_trend_*.csv` + `prices_raw.parquet` 真實股價，對 5d/10d/20d/60d 各自算 IC/ICIR/t值/IC>0比例 + **Top50 by SQ 的實現超額報酬**（比 IC 更直覺回答「照排名選會不會賺錢」）。輸出 `V6/results/dual_ic_analysis.json`
+  - `V6/run_dual_inference.py`：歸檔後呼叫分析器（non-fatal），輸出加入 `_git_push()` 清單一起推送。⚠️ 注意分析器必須讀 `prices_raw.parquet` 拿真實股價，不可誤用推論用的 `df`（Close 已被 `clean_and_scale` z-score 過）
+  - `app/backend/routers/dual.py` 新增 `GET /dual/ic`（1h TTL，比照現有 `/dual/signals`），`/dual/cache/refresh` 一併清空
+  - `PersonalOS` + `app/frontend` 的 `InvestmentSim.jsx`（投資模擬機器人頁面）新增第三分頁「🔬 雙模型驗證」：短線(5d/10d)+趨勢(20d/60d) 四個 horizon 各自的 IC/ICIR/Top50超額報酬/樣本天數，n_days<20 顯示「樣本仍少，建議 20+ 天再參考」、n_days=0 顯示「尚未累積足夠時間」——文案寫死、之後不需要再調整
+  - **首次實測**（4 天樣本，僅 5d 可算）：mean IC +0.129、ICIR 1.32、Top50 實現超額 +1.35%/期、4/4 天 IC>0——方向正面但 n=4 統計上毫無意義；10d/20d/60d 目前 0 天可算（20d 最早約 7 月中下旬才有第一筆）。頁面文案已講清楚這點，不需要之後再解釋
+  - **定位釐清**：V6.1（20d）= 真倉標的、雙模型 = 效益觀察對象，兩者獨立、互不影響
+- **Phase 3 實驗 A（dropout sweep）實跑完成、結論 dropout=0.2 有效（2026-06-27）**：Colab 跑完 0.1/0.2（0.3 best 已鎖、log 停 ep9），結果在 `V6/experimental/result/`（`phase3_A_dropout_sweep_result.json` + 三個 `status_short_A_doXp.json`）。**同 harness 對照（cutoff=2023-12-31、val 580 天 2024–2026，唯一變因 dropout）**：0.1 峰 5d IC **0.0870@ep3** / 0.2 **0.0959@ep4** / 0.3 **0.0961@ep3**。判讀：① **要跟「這次的 0.1 重跑（0.0870）」比、不是歷史 0.0951**——歷史 0.0951@ep8 沒重現（資料切分/seed 差異），同 harness 下 0.2/0.3 比 0.1 高 **+0.009（≈+10%）**、追平/微勝歷史 0.0951；② **val_loss 同步變好**（0.2 谷底 0.12331@ep4 與 IC 峰同 epoch、比 0.1 更低）→ 不是單點噪音；③ **過擬合起點延後**（val_loss 谷底 ep2→ep4、高 IC 平台變寬）＝弱版「峰值延後」達標，**但崩壞速度沒變慢**（峰後下滑 0.2 的 +0.0042 甚至比 0.1 的 +0.0029 快、峰仍偏早單尖）；④ **0.3 對 0.2 平手**（0.0961 vs 0.0959）、邊際遞減 → 選 **0.2**。對照規則「峰值升/延後/崩壞變緩 任一即有效」：峰值升 ✅ + 延後 ✅ 達標。**誠實補充**：改善屬邊際（同 harness +0.009、對歷史只追平）、0.096 仍單 epoch 尖峰，真偽待 Phase 3-E 多 seed 集成確認＝「方向可信、幅度待驗證」。**決定按計畫把 dropout=0.2 帶進趨勢模型、收 A 進 B**（未加跑 weight_decay 變因——+0.009＋延後已達「有效」門檻，不拖長 A）。0.3 那輪未跑完不影響結論（峰值早鎖），可不補
+- **Phase 4 設計筆記定稿：產業理解融合（2026-06-27）**：規劃將「產業/供應鏈理解」並行加一層融進系統（不碰 V6.1）。起因＝Threads「股癌資訊系統為何快」討論（方法1 建產業地圖、方法2 追變化）。已實際進站調查櫃買 ic.tpex 產業價值鏈平台 + 查證 FinMind/MOPS 資料源。兩塊：**4-A KG 豐富化（進模型）**＝爬 ic.tpex 30+ 鏈 → 公司×節點對應 → 建「同節點競品/相鄰節點上下游（有向、位置粒度）」邊，重訓生效；對不到 stock_id 者（KY/外國/改名）保留標記不連邊。**4-B 產業變化 Agent（獨立層）**＝守備清單用鏈分組，訊號用 FinMind（月營收/存貨/capex/法人）+ MOPS（法說會簡報PDF/重大訊息），LLM 比對本季 vs 上季語氣、整條鏈同向變化才提醒。付費報價催化劑（集邦TrendForce）有記錄、因成本暫緩。**完整計畫見 `docs/phase4-industry-chain-fusion-plan-2026-06-27.md`**。定位 Phase 4 等級，待 Phase 3 收完接續、與穩定性工作不衝突。尚未動工
 - **Phase 3 實驗 B/C/D 檔案備妥 + 預期結果文件（2026-06-25）**：接續 A，再備三支隔離實驗（全推 main 供 Colab pull、皆不改 production、不覆蓋線上 checkpoint、每組落盤 Drive JSON）：
   - **B `phase3_b_listnet_sweep.py`**：短線 listnet_5d sweep {0.0/0.25/0.5基準/1.0}（10d 保 1/2 比例）。weights 走 `train_short_model` 現成參數、dropout 用 monkeypatch 留可選。**0.0 是控制組**＝量出 listnet 在 rank-MSE 之上的邊際貢獻。釐清：Phase 1 的「listnet=Mid↔Long 旋鈕」是多尺度現象，短線單尺度無 gate、此處純排名強度
   - **C `phase3_c_trend_single_scale.py`**：趨勢砍成單尺度 Long-only（`LongOnlyEncoder` 含 padding_mask + GAT + gating + 3頭，與 MarketMambaV6 逐行對齊），monkeypatch `trend_model.MarketMambaV6` 後重用 `train_trend_model`。單跑診斷、對照多尺度基準 20d IC 0.0961、印參數量與判定（gate 已塌 Long → 預期持平、可砍）
@@ -432,10 +472,25 @@ cd app/frontend && npm run dev   # → localhost:5173
   - 完整改寫 `PersonalOS/src/renderer/src/pages/MarketMamba/Portfolio.jsx`：`ExitConditionModal` 升級為四層退場 UI（L1 停損、L2 信號惡化、L3 減倉、L4 換倉）；Trailing Stop 由前端從 avg_price 計算；風險分數改用四層觸發加權
 
 ### 進行中
-- **Phase 3 起手：實驗 A（正則救峰值）— 檔案備妥、待使用者實跑**。Phase 2 已全數完成（雙模型訓練→並行推論→Vercel 前端→每日自動化＋歸檔，與 V6.1 並存當安全網）。Phase 3 目標＝抬 IC，**照 A→F 順序逐一做**（使用者 2026-06-25 拍板照表順序、一次一變因）：A 正則救峰值 → B listnet 權重 sweep → C 趨勢單尺度簡化 → D 窗口 90/120 → E 多 seed 集成 → F 特徵分離（大工程留最後）。**A~D 四支檔案皆已寫好並推 main**（A dropout / B listnet / C 趨勢單尺度 / D 短線窗口；隔離、不覆蓋線上 checkpoint），預期結果見 `docs/phase3-experiment-plan-2026-06-25.md`。**待使用者在 Colab 實跑、貼結果回來判讀**（每個實驗收斂成一句結論＋為什麼）。E（多 seed 集成）/F（特徵分離）尚未建檔——E 需多 checkpoint 集成評估、F 需重建 feature matrix，待 A~D 結果出來再設計。② 跨日穩定 filter + ③ dual 模擬機器人仍卡在 archive 累積（目前僅 06-22/24/25 三天，需累積至 15+ 天）
+- **研究計畫三方向（`planing/研究計畫_主檔.md`）**：**方向一 ✅ 全部完成、方向二 ✅ 全部完成**（Step 2~5 + 交付；`/pipeline` 前端頁待驗收部署）；方向三-C 等 post-P0 樣本 ≥20 天（約 7 月底）重跑複驗；方向三-A/B（事件驅動/Meta-labeling）優先級最低、先做資料可行性評估再決定投入。平行可做：資料基礎升級計畫階段二（資料衛生三項 + baseline_common 序列輸出，見 `planing/資料基礎升級計畫_baseline_common扶正.md`）
+- **scanner 1.4 新邏輯待 07-07 推論驗證**：確認 ① BUY 數量合理（分數制 + 機構條件復活，乾跑 07-06 資料為 15 BUY/24 WATCH）② 機構連買明細正常顯示 ③ `condition_analysis.json` 有產出並被 push。條件貢獻分析的機構統計從 07-07 歸檔起才有意義（歷史旗標全 False）
+- **Phase 3 實驗暫停中（2026-07-06 使用者決定）**：等真倉（V6.1）先驗證有沒有賺錢再繼續做實驗。目前進度停在：~~A 正則救峰值 ✅（dropout=0.2 有效）~~ → B/C/D 三支檔案已寫好推 main、**尚未在 Colab 執行**（listnet 權重 sweep / 趨勢單尺度簡化 / 短線窗口 sweep，預期結果見 `docs/phase3-experiment-plan-2026-06-25.md`）→ E/F 未設計。恢復時：在 Colab 跑 B、貼結果回來判讀
+- **雙模型真實市場效益追蹤已上線（2026-07-06）**，取代原本卡在「archive 累積」的路線圖第②③步——不用再等，改成自動化每天算、頁面自動顯示，樣本量隨時間自然增加，不需要手動介入。目前 5d 樣本僅 4 天，10d/20d/60d 尚無資料
 
 ### 下一步
-- **雙模型上線後路線（2026-06-19 定，依賴順序 ①→②→③）**：① **每日自動化** ✅（2026-06-19）——`run_dual_inference.py` 加 `--push`（只 add 兩 CSV）+ 每日**歸檔** dated 副本到 `V6/results/archive/`（本機留存、供 ②③ 累積歷史）；PersonalOS `run_daily.py` 在 `run_full()` V6.1 推論成功後呼叫 `run_wsl_dual()`（獨立 process、自動 push、失敗不影響 V6.1）。交易日 gate（`trading_day.py` 查 TWSE）完好沒被改。② 篩選：**單日「精選=短線∩趨勢」前端分頁 ✅**；跨日穩定 filter + ③ dual sim 待 archive 累積幾週後建（讀 `results/archive/`） ② **篩選條件**——在 dual rank-score 上做 SQ 門檻/低不確定性/short∩trend 交集/跨日排名穩定（需 ① 累積 history 才有「穩定性」） ③ **dual 模擬機器人**——比照 `sim_engine_v3` 跑紙上交易、結果進 InvestmentSim 頁（需 ② 定進退場）
+- [ ] **`/pipeline` 頁驗收 + 部署**：本地 `cd app/frontend && npm run dev` 看 `localhost:5173/pipeline`，OK 後指定檔案 push（`docs/baseline-comparison-table-2026-07-15.md`、`docs/baseline-step4-rnn-2026-07-15.md`、`docs/breadth-pipeline-page-draft-2026-07-12.md`、`app/frontend/src/pages/Pipeline.jsx`、`App.jsx`、`AppLayout.jsx`、`planing/`、`CLAUDE.md`、`V6/experimental/baseline_rnn.py`、`result/baseline_rnn_result.json`；**不要 `git add -A`**）→ Vercel 自動部署
+- [ ] **資料基礎升級計畫階段二**（方向一/二收線後的下一個工程主線，不需 Colab）：資料衛生三項（Close=0 gate、還原接縫、超限複驗）+ baseline_common 序列輸出 (N,252,59) + KG 邊介面 + 協定 v2.0 版本化
+- [ ] **~7 月底重跑 `V6/experimental/conviction_c_analysis.py`**：post-P0 5d 屆時 ≥20 天、post-P0 20d 開始有樣本；同步對 `results/archive/df_short_*.csv` 的 SQ_5d/Unc_5d 做同款校準分析（horizon 對齊使用者操作週期，腳本小改即可）——5d 校準反向是否為真在此定奪，屆時再決定 deep ensembles/conformal 要不要做
+- [ ] **重複寫入來源追查 + 每日更新寫入端補「非交易日不寫入」gate**：07-07 起每日 ~1,550 筆重複；06-07（週日）、06-19（端午）兩次假資料同模式，疑同源
+- [ ] `Data/processed_v6/prices_raw_backup_20260712.parquet`（127MB）：推論穩定跑幾天後可刪（與既有兩個 institutional backup 一起）
+- [ ] **PersonalOS 同步 K 線圖**（Vercel 版已驗收）：複製 `KLineChart.jsx` + `StockModal.jsx` + `TradingSignals.jsx` 過去（注意 import 路徑差異 `../api/market` → `../../api/mm`），PersonalOS `npm install klinecharts@^9.8.10` + `npx vite build` + 重啟 exe
+- [ ] **macro_raw 停在 2026-04-24**：每日更新本來就不含 macro → regime 閘門（TWII vs MA60）恆為 N/A、保守模式從未啟用（scanner 已加 fallback+新鮮度檢查，macro 一更新就自動生效）。對 V6.1 推論無影響（Group D 被 cross z-score 歸零）、對雙模型排名免疫（橫斷面常數）。要啟用需把 macro 加進每日更新
+- [ ] **prices_raw 每日 ~800 筆重複寫入**（5/26 起、值完全相同，疑價格更新雙資料源重疊）：存量已清（51,801 筆），來源待查
+- [ ] 條件貢獻分析累積 20+ 天後回頭校準四條件權重（30/25/25/20）與 70/90 門檻；屆時也評估「發現 3：掃描池擴到 Top200（型態+分數過門檻才進 BUY）」要不要做
+- [ ] `Data/processed_v6/institutional_raw_backup_*.parquet` 兩個備份檔（各 ~148MB），scanner 穩定跑幾天後可刪
+- 若之後要恢復 Phase 3：見上方「進行中」，直接跑 B
+- **Phase 4 產業理解融合（2026-06-27 計畫定稿、待 Phase 3 完成後接續）**：細節全在 `docs/phase4-industry-chain-fusion-plan-2026-06-27.md`。4-A KG 豐富化（產業鏈上下游邊進模型）+ 4-B 產業變化 Agent（FinMind/MOPS 訊號 + LLM 語氣 diff，獨立層不碰 V6.1）。動工前仍須依規則 2 列實作計畫、確認後再動
+- **雙模型篩選條件**（原路線圖②，尚未做）：在 dual rank-score 上做 SQ 門檻/低不確定性/short∩trend 交集/跨日排名穩定（需要 history 累積才有「穩定性」可言）；③ 真正的 dual 模擬機器人（比照 sim_engine_v3 跑紙上交易含進退場）仍是之後才做——**目前的雙模型驗證只算 IC/Top50 超額，不是完整模擬交易**，兩者不要混淆
 - **雙模型 Roadmap（2026-06-14 定案，不急著取代 V6.1）**：原則＝診斷實驗先做完（隔離在 `V6/experimental/` 副本、零 production 影響、一次一個變因），最後才動 production 雙模型、下游 plumbing 只做一次
   - **Phase 0（✅完成）**：5d baseline ep11 停定稿——gate 收斂 Mid 0.80/Long 0.20/Short~0、best 5d IC 0.0434@ep5、過擬合 ep4–5 起
   - **Phase 1（experimental 副本診斷）**：①✅ `listnet_5d`——5d IC 0.0434→0.0487（近 20d），但 gate 全塌 Long、過擬合加劇 ②✅ deep supervision——**Short 餓死非沒料、三尺度對 5d 冗餘 → 短線模型單分支即可**（主 IC 0.0474 略勝 baseline）③（可選，前提已削弱）3d 測試 ④（降級，B 已證冗餘）窗口階梯 {60,126,252}
@@ -462,6 +517,16 @@ cd app/frontend && npm run dev   # → localhost:5173
 > **PR 3（持倉四層退場 / Portfolio 頁面）**：使用者已確認頁面內容完成，視為驗收通過
 
 ### 決策紀錄
+- **階 3 拍板：GRU 擇一 + window 60（2026-07-14 使用者拍板）**：循環單元 LSTM/GRU 擇一控制多重測試，選 GRU（同級替代、參數較少、3060 較快）；window 60 偏離協定 §3 字面的 252——對齊 5d 對照對象 v6_short 的 window 60，Phase 1 deep supervision 已實證長窗對 5d 冗餘，偏離理由記錄於腳本 docstring 與結果報告。loss 維持純 MSE on rank（不跟進 v6_short 的 listnet_5d，避免引入新自由度、破壞同場對照）
+- **Baseline IC 引用需分層、組合基準改等權宇宙、不為此重抓資料（2026-07-13 排查定案）**：0.1015 經 D0–D5 排查非 bug 非資料錯誤，但為「全市場含小型股」數字——對外引用一律附分層（高流動 0.0705 / 純籌碼基本面 0.0717）與存活者偏差未量化聲明；組合層以「等權 eligible 宇宙」為基準（TWII 僅脈絡）；「對 TWII −90%」已證實為基準錯配不再單獨引用。下市股回補維持先不動工（影響絕對水位不影響四階相對比較），等方向二跑完再評估
+- **Baseline 對照協定四決定（2026-07-12 使用者拍板）**：單一切分為主（同 Phase 3 harness，避免 36 次 Mamba WF 重訓）+ 便宜階 WF 為輔／rank label（與 production 線一致）／5d 主 horizon（使用者短線操作）／Top50 等權 5 日再平衡、0.15%/0.45% 成本。協定凍結後不中途改 label/切分（改了全部 baseline 重跑）。引用紀律：Mamba 端用同 harness 重跑值（0.0870）比較、不用歷史峰值（Phase 3-A 教訓）
+- **Conviction 線 DL 輔助訊號用 20d SQ 連續值、不用低 U 硬門檻交集（2026-07-12，方向三-C 首輪實證）**：20d 校準大致成立且 SQ Top50 贏純 Alpha +1.3%/20d，但「Alpha 前 20% ∩ U 後 20%」交集反而輸給高 U 對照組——U 除權（連續）優於 U 門檻（硬切）。5d 校準 post-P0 暫時反向 → **deep ensembles/conformal 先不做**，等 7 月底樣本夠重跑再定；屆時對齊 horizon 用 v6_short 的 SQ_5d 檢驗
+- **倖存者偏差（D3）不為 baseline 對照修復（2026-07-12）**：四階模型吃同一份有偏資料，相對比較仍公平；偏差抬高的是絕對數字（並可能輕微偏袒能利用「倖存者總會反彈」假型態的彈性模型，屬二階效應、已在協定與說明頁揭露）。完整修復需歷史成分股 + 已下市股的籌碼/基本面歷史，後者多半不可得，修了也不完整——成本效益不成立，維持揭露 + 流動性門檻緩解
+- **非交易日假資料一律整日刪除（2026-07-12）**：06-07（週日）5,194 筆與 06-19（端午）同模式；非交易日不存在合法資料，直接刪整日、先備份。根治靠寫入端補交易日 gate（待辦）
+- **進場標準統一為分數制、以 signal_conditions 為單一事實來源（2026-07-07）**：scanner 的「條件數 ≥2/4」與 sim 的「分數 ≥70」是兩套會分歧的標準（50 分 2 條件股 dashboard 顯示 BUY、sim 卻不買），統一成分數制後 sim 累積的績效才能直接回饋到使用者實際看的 dashboard 訊號。scanner 權重/型態加分一律 import signal_conditions、不再自帶副本（重複實作已實際造成 sim 型態分數重複計算 bug）。模型實驗暫停期間的主軸＝「不動模型，把模型輸出的使用方式調到最優」
+- **TPEX 新端點常數放 fetcher.py、不放 config.py（2026-07-07）**：本機 config.py 是刻意保持 56 維、不 commit 的 dirty 檔，改它無法安全推上 remote → 資料源 URL 這類需要上 remote 的常數直接定義在 fetcher.py
+- **交易所 API 欄位對映必須數值驗證（2026-07-07 教訓）**：TWSE T86 舊 parser 的投信/自營索引在 19 欄版面是錯位的（抓到外資自營商欄）；修 TPEX 24 欄時用「買-賣=淨、分項加總=合計」恆等式對活躍股驗證後才定案。另：長時間輪詢交易所 API 可能回異常資料（06-19 端午節竟回 1,075 筆），回補後要對照 prices_raw 交易日健檢
+- **Phase 3-A：選 dropout=0.2、收 A 進 B、不加跑 weight_decay（2026-06-27）**：dropout sweep 同 harness 對照（基準 0.1 重跑 0.0870，非歷史 0.0951）下 0.2/0.3 各 +0.009 且 0.3 對 0.2 平手（0.0961 vs 0.0959）→ 取較不激進的 **0.2**。判定「有效」＝峰值升 + 過擬合延後（val_loss 谷底 ep2→ep4）兩項達標，雖屬邊際改善，但已過規則門檻、不必在短線端加跑 wd 拖長 A。**dropout=0.2 帶進趨勢/後續模型**。關鍵紀律：**baseline 要用同 harness 重跑值比，不用歷史值**（歷史 0.0951 因切分/seed 沒重現，直接拿來比會誤判 dropout「沒效甚至變差」）。0.096 仍單 epoch 尖峰，幅度真偽留 Phase 3-E 多 seed 確認
 - **Phase 3 照 A→F 順序逐一做、一次一變因（2026-06-25）**：使用者拍板照表順序（A 正則→B listnet→C 趨勢單尺度→D 窗口→E 集成→F 特徵分離），而非挑單一最高把握者先做——因「這些都要實驗才知道」、且想累積成可寫進履歷的 case study，故每個實驗都把「結論＋為什麼」整理清楚。診斷一律隔離在 `V6/experimental/`、不改 production、不覆蓋線上 checkpoint；Claude 備程式＋給可貼 Colab 指令，使用者自己跑訓練
 - **實驗檔不改 `short_model.py`、改用 monkeypatch（2026-06-25）**：`short_model.py` 被 `run_dual_inference.py` import 做線上推論，故 dropout sweep 不直接加參數到 `train_short_model`，而是在實驗檔內暫時把 `ShortModelV6` 包成固定 dropout 版（functools.partial）、跑完還原，線上零影響。checkpoint 用獨立檔名避免覆蓋 `v6_short.pt`
 - **雙模型輸出=rank-score、SQ=Score/Unc；趨勢分數 +0.05 水位偏移（2026-06-19）**：模型用 rank 目標訓練→輸出非報酬而是 rank-score，SQ（Score/Uncertainty）拿來排序選股。趨勢 Score_20d 平均 +0.05（短線 ~0）來自 macro 2 年近似的水位平移、**對排名無影響**（排序對常數免疫）。Phase 3 可選 polish：(a) 分數 per-cross-section 置中讓 SQ 好解讀、(b) macro ts 改完整歷史去掉偏移、(c) 前端標明 rank-score 語意

@@ -1,0 +1,247 @@
+{
+  "models": {
+    "5d": {
+      "cell": "gru",
+      "window": 60,
+      "best_params": {
+        "hidden": 64,
+        "lr": 0.0003,
+        "epochs": 4
+      },
+      "grid_sweep": [
+        {
+          "hidden": 64,
+          "lr": 0.001,
+          "best_val_ic": 0.1021,
+          "best_epoch": 1
+        },
+        {
+          "hidden": 64,
+          "lr": 0.0003,
+          "best_val_ic": 0.1084,
+          "best_epoch": 4
+        },
+        {
+          "hidden": 128,
+          "lr": 0.001,
+          "best_val_ic": 0.1012,
+          "best_epoch": 2
+        },
+        {
+          "hidden": 128,
+          "lr": 0.0003,
+          "best_val_ic": 0.1079,
+          "best_epoch": 4
+        }
+      ],
+      "epoch_history_best_config": [
+        {
+          "epoch": 1,
+          "train_loss": 0.08335,
+          "sec": 37,
+          "val_ic": 0.0948
+        },
+        {
+          "epoch": 2,
+          "train_loss": 0.08221,
+          "sec": 37,
+          "val_ic": 0.0955
+        },
+        {
+          "epoch": 3,
+          "train_loss": 0.08194,
+          "sec": 37,
+          "val_ic": 0.1049
+        },
+        {
+          "epoch": 4,
+          "train_loss": 0.08174,
+          "sec": 37,
+          "val_ic": 0.1084
+        },
+        {
+          "epoch": 5,
+          "train_loss": 0.08153,
+          "sec": 37,
+          "val_ic": 0.1014
+        },
+        {
+          "epoch": 6,
+          "train_loss": 0.08137,
+          "sec": 37,
+          "val_ic": 0.1039
+        },
+        {
+          "epoch": 7,
+          "train_loss": 0.08115,
+          "sec": 37,
+          "val_ic": 0.0974
+        }
+      ],
+      "test_ic": {
+        "n_days": 580,
+        "mean_ic": 0.1113,
+        "ic_std": 0.0952,
+        "icir": 1.168,
+        "pct_pos": 0.91,
+        "t_naive": 28.13,
+        "t_newey_west": 16.81
+      },
+      "test_ic_by_liquidity": {
+        "L1_小量": {
+          "mean_ic": 0.1382,
+          "n_days": 580,
+          "avg_names_per_day": 711
+        },
+        "L2_中量": {
+          "mean_ic": 0.1097,
+          "n_days": 580,
+          "avg_names_per_day": 711
+        },
+        "L3_大量": {
+          "mean_ic": 0.0867,
+          "n_days": 580,
+          "avg_names_per_day": 711
+        }
+      },
+      "test_portfolio": {
+        "n_days": 592,
+        "n_rebalances": 116,
+        "n_bad_return_days": 0,
+        "ann_return": 0.2277,
+        "ann_sharpe": 1.134,
+        "max_drawdown": -0.257,
+        "avg_turnover_per_rebalance": 0.784,
+        "total_return": 0.6191,
+        "n_price_missing": 18,
+        "excess_vs_twii": -0.8041,
+        "excess_window": "2024-01-03 ~ 2026-04-24（macro TWII 覆蓋範圍）"
+      },
+      "test_portfolio_cost_x2": {
+        "n_days": 592,
+        "n_rebalances": 116,
+        "n_bad_return_days": 0,
+        "ann_return": -0.0261,
+        "ann_sharpe": -0.025,
+        "max_drawdown": -0.361,
+        "avg_turnover_per_rebalance": 0.784,
+        "total_return": -0.0603,
+        "n_price_missing": 18,
+        "excess_vs_twii": -1.3629,
+        "excess_window": "2024-01-03 ~ 2026-04-24（macro TWII 覆蓋範圍）"
+      }
+    },
+    "20d": {
+      "cell": "gru",
+      "window": 60,
+      "best_params": {
+        "hidden": 64,
+        "lr": 0.0003,
+        "epochs": 2
+      },
+      "grid_sweep": [
+        {
+          "hidden": 64,
+          "lr": 0.001,
+          "best_val_ic": 0.1319,
+          "best_epoch": 1
+        },
+        {
+          "hidden": 64,
+          "lr": 0.0003,
+          "best_val_ic": 0.1447,
+          "best_epoch": 2
+        },
+        {
+          "hidden": 128,
+          "lr": 0.001,
+          "best_val_ic": 0.1244,
+          "best_epoch": 1
+        },
+        {
+          "hidden": 128,
+          "lr": 0.0003,
+          "best_val_ic": 0.1362,
+          "best_epoch": 3
+        }
+      ],
+      "epoch_history_best_config": [
+        {
+          "epoch": 1,
+          "train_loss": 0.0828,
+          "sec": 38,
+          "val_ic": 0.1359
+        },
+        {
+          "epoch": 2,
+          "train_loss": 0.0813,
+          "sec": 39,
+          "val_ic": 0.1447
+        },
+        {
+          "epoch": 3,
+          "train_loss": 0.08067,
+          "sec": 38,
+          "val_ic": 0.1395
+        },
+        {
+          "epoch": 4,
+          "train_loss": 0.08013,
+          "sec": 38,
+          "val_ic": 0.1207
+        },
+        {
+          "epoch": 5,
+          "train_loss": 0.07965,
+          "sec": 42,
+          "val_ic": 0.1074
+        }
+      ],
+      "test_ic": {
+        "n_days": 580,
+        "mean_ic": 0.1081,
+        "ic_std": 0.121,
+        "icir": 0.893,
+        "pct_pos": 0.795,
+        "t_naive": 21.51,
+        "t_newey_west": 5.95
+      },
+      "test_ic_by_liquidity": {
+        "L1_小量": {
+          "mean_ic": 0.1423,
+          "n_days": 580,
+          "avg_names_per_day": 709
+        },
+        "L2_中量": {
+          "mean_ic": 0.1227,
+          "n_days": 580,
+          "avg_names_per_day": 708
+        },
+        "L3_大量": {
+          "mean_ic": 0.0881,
+          "n_days": 580,
+          "avg_names_per_day": 708
+        }
+      }
+    }
+  },
+  "protocol": {
+    "TRAIN_START": "2012-01-01",
+    "TRAIN_END": "2023-12-31",
+    "TEST_START": "2024-01-01",
+    "TEST_END": "2026-06-02",
+    "VAL_RATIO": 0.15,
+    "TOP_N": 50,
+    "REBALANCE_DAYS": 5,
+    "COST_BUY": 0.0015,
+    "COST_SELL": 0.0045
+  },
+  "notes": [
+    "cell=gru、window=60（2026-07-14 使用者拍板：GRU + 60，偏離協定 §3 字面 252——對齊 v6_short 的 window 60、Phase 1 DS 已證長窗對 5d 冗餘）",
+    "loss = 純 MSE on rank label（同階 1/2；v6_short 另有 listnet_5d，此處不跟進）",
+    "訓練列 day_stride=2（同階 1/2）；test IC 用全部交易日",
+    "網格 4 組（hidden×lr）val 日 IC 選組、early stopping patience 3；full-train 以 best epoch 重訓",
+    "存活者偏差 D3 未修復：絕對數字偏高，四階相對比較公平（協定 §2）；引用需配分層 IC"
+  ],
+  "generated_at": "2026-07-15 02:34"
+}

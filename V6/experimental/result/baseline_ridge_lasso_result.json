@@ -1,0 +1,820 @@
+{
+  "models": {
+    "5d": {
+      "ridge": {
+        "best_alpha": 10.0,
+        "val_ic_by_alpha": {
+          "1e+01": 0.1086,
+          "3e+01": 0.1086,
+          "1e+02": 0.1084,
+          "3e+02": 0.1082,
+          "1e+03": 0.108,
+          "3e+03": 0.1077,
+          "1e+04": 0.1072,
+          "3e+04": 0.1063,
+          "1e+05": 0.1043,
+          "3e+05": 0.1007,
+          "1e+06": 0.096,
+          "3e+06": 0.0915,
+          "1e+07": 0.0872
+        },
+        "test_ic": {
+          "n_days": 580,
+          "mean_ic": 0.1015,
+          "ic_std": 0.0834,
+          "icir": 1.217,
+          "pct_pos": 0.902,
+          "t_naive": 29.31,
+          "t_newey_west": 16.07
+        },
+        "top_coefficients": [
+          {
+            "feature": "RS_60d",
+            "coef_std": -0.25957
+          },
+          {
+            "feature": "Mom_60d",
+            "coef_std": 0.25323
+          },
+          {
+            "feature": "Close_lag1",
+            "coef_std": -0.2473
+          },
+          {
+            "feature": "Low",
+            "coef_std": 0.21162
+          },
+          {
+            "feature": "Close",
+            "coef_std": -0.17636
+          },
+          {
+            "feature": "High",
+            "coef_std": 0.16619
+          },
+          {
+            "feature": "RS_20d_lag20",
+            "coef_std": -0.14602
+          },
+          {
+            "feature": "Return_20d_lag20",
+            "coef_std": 0.1448
+          },
+          {
+            "feature": "MA_20",
+            "coef_std": -0.13161
+          },
+          {
+            "feature": "MA_60",
+            "coef_std": -0.09142
+          },
+          {
+            "feature": "Close_rmean5",
+            "coef_std": -0.08668
+          },
+          {
+            "feature": "MA_20_lag1",
+            "coef_std": 0.0664
+          },
+          {
+            "feature": "MA_60_lag1",
+            "coef_std": 0.06555
+          },
+          {
+            "feature": "High_lag1",
+            "coef_std": 0.06477
+          },
+          {
+            "feature": "RS_20d",
+            "coef_std": -0.06421
+          },
+          {
+            "feature": "MA_60_lag5",
+            "coef_std": 0.06083
+          },
+          {
+            "feature": "RS_5d",
+            "coef_std": -0.05635
+          },
+          {
+            "feature": "RS_20d_lag5",
+            "coef_std": -0.04754
+          },
+          {
+            "feature": "Return_20d_lag5",
+            "coef_std": 0.04555
+          },
+          {
+            "feature": "Low_lag1",
+            "coef_std": 0.04534
+          }
+        ],
+        "test_portfolio": {
+          "n_days": 592,
+          "n_rebalances": 116,
+          "n_bad_return_days": 0,
+          "ann_return": 0.1874,
+          "ann_sharpe": 0.998,
+          "max_drawdown": -0.2419,
+          "avg_turnover_per_rebalance": 0.77,
+          "total_return": 0.497,
+          "n_price_missing": 15,
+          "excess_vs_twii": -0.8993,
+          "excess_window": "2024-01-03 ~ 2026-04-24（macro TWII 覆蓋範圍）"
+        }
+      },
+      "lasso": {
+        "best_alpha": 1e-05,
+        "n_nonzero": 241,
+        "val_ic_by_alpha": {
+          "3.2e-03": 0.0898,
+          "1.4e-03": 0.0959,
+          "6.1e-04": 0.1028,
+          "2.7e-04": 0.1056,
+          "1.2e-04": 0.1066,
+          "5.2e-05": 0.1072,
+          "2.3e-05": 0.1077,
+          "1.0e-05": 0.1079
+        },
+        "test_ic": {
+          "n_days": 580,
+          "mean_ic": 0.1015,
+          "ic_std": 0.0842,
+          "icir": 1.206,
+          "pct_pos": 0.891,
+          "t_naive": 29.05,
+          "t_newey_west": 15.89
+        },
+        "top_coefficients": [
+          {
+            "feature": "Open",
+            "coef_std": 0.07
+          },
+          {
+            "feature": "MA_20",
+            "coef_std": -0.05698
+          },
+          {
+            "feature": "Close_lag1",
+            "coef_std": -0.04629
+          },
+          {
+            "feature": "Low",
+            "coef_std": 0.04148
+          },
+          {
+            "feature": "Close",
+            "coef_std": -0.04128
+          },
+          {
+            "feature": "KD_K_lag1",
+            "coef_std": 0.03723
+          },
+          {
+            "feature": "High",
+            "coef_std": 0.03532
+          },
+          {
+            "feature": "KD_K",
+            "coef_std": -0.03405
+          },
+          {
+            "feature": "Return_1d_rstd20",
+            "coef_std": -0.03004
+          },
+          {
+            "feature": "Volatility_20d",
+            "coef_std": 0.02833
+          },
+          {
+            "feature": "EPS",
+            "coef_std": 0.02401
+          },
+          {
+            "feature": "MA_20_lag20",
+            "coef_std": 0.017
+          },
+          {
+            "feature": "ATR_14",
+            "coef_std": -0.01675
+          },
+          {
+            "feature": "MA_60_lag20",
+            "coef_std": -0.01552
+          },
+          {
+            "feature": "ATR_14_lag1",
+            "coef_std": 0.01515
+          },
+          {
+            "feature": "Volatility_20d_lag1",
+            "coef_std": -0.01509
+          },
+          {
+            "feature": "RSI_14_rmean60",
+            "coef_std": 0.01489
+          },
+          {
+            "feature": "Margin_Balance",
+            "coef_std": 0.01383
+          },
+          {
+            "feature": "Close_lag5",
+            "coef_std": -0.01341
+          },
+          {
+            "feature": "RSI_14",
+            "coef_std": -0.01262
+          }
+        ],
+        "test_portfolio": {
+          "n_days": 592,
+          "n_rebalances": 116,
+          "n_bad_return_days": 0,
+          "ann_return": 0.1844,
+          "ann_sharpe": 0.998,
+          "max_drawdown": -0.2371,
+          "avg_turnover_per_rebalance": 0.772,
+          "total_return": 0.4882,
+          "n_price_missing": 9,
+          "excess_vs_twii": -0.9329,
+          "excess_window": "2024-01-03 ~ 2026-04-24（macro TWII 覆蓋範圍）"
+        }
+      }
+    },
+    "20d": {
+      "ridge": {
+        "best_alpha": 10.0,
+        "val_ic_by_alpha": {
+          "1e+01": 0.1367,
+          "3e+01": 0.1366,
+          "1e+02": 0.1365,
+          "3e+02": 0.1364,
+          "1e+03": 0.1363,
+          "3e+03": 0.1362,
+          "1e+04": 0.1359,
+          "3e+04": 0.1354,
+          "1e+05": 0.1338,
+          "3e+05": 0.1297,
+          "1e+06": 0.1237,
+          "3e+06": 0.118,
+          "1e+07": 0.1129
+        },
+        "test_ic": {
+          "n_days": 580,
+          "mean_ic": 0.1081,
+          "ic_std": 0.1081,
+          "icir": 1.0,
+          "pct_pos": 0.841,
+          "t_naive": 24.07,
+          "t_newey_west": 6.42
+        },
+        "top_coefficients": [
+          {
+            "feature": "RS_60d",
+            "coef_std": -0.32746
+          },
+          {
+            "feature": "Mom_60d",
+            "coef_std": 0.31846
+          },
+          {
+            "feature": "RS_20d_lag20",
+            "coef_std": -0.22274
+          },
+          {
+            "feature": "Return_20d_lag20",
+            "coef_std": 0.2197
+          },
+          {
+            "feature": "Close_lag1",
+            "coef_std": -0.168
+          },
+          {
+            "feature": "High",
+            "coef_std": 0.16089
+          },
+          {
+            "feature": "RS_20d",
+            "coef_std": -0.15083
+          },
+          {
+            "feature": "RS_20d_lag5",
+            "coef_std": -0.14125
+          },
+          {
+            "feature": "Return_20d_lag5",
+            "coef_std": 0.13451
+          },
+          {
+            "feature": "MA_20",
+            "coef_std": -0.12761
+          },
+          {
+            "feature": "Low",
+            "coef_std": 0.11832
+          },
+          {
+            "feature": "Close",
+            "coef_std": -0.10395
+          },
+          {
+            "feature": "High_lag1",
+            "coef_std": 0.0977
+          },
+          {
+            "feature": "Close_rmean60",
+            "coef_std": -0.09407
+          },
+          {
+            "feature": "Close_rmean5",
+            "coef_std": -0.08522
+          },
+          {
+            "feature": "Return_20d_lag1",
+            "coef_std": 0.07796
+          },
+          {
+            "feature": "RS_20d_lag1",
+            "coef_std": -0.07516
+          },
+          {
+            "feature": "MA_20_lag1",
+            "coef_std": 0.07462
+          },
+          {
+            "feature": "Return_20d",
+            "coef_std": 0.07143
+          },
+          {
+            "feature": "Mom_20d",
+            "coef_std": 0.07142
+          }
+        ]
+      },
+      "lasso": {
+        "best_alpha": 1e-05,
+        "n_nonzero": 239,
+        "val_ic_by_alpha": {
+          "3.2e-03": 0.1191,
+          "1.4e-03": 0.1266,
+          "6.1e-04": 0.134,
+          "2.7e-04": 0.1354,
+          "1.2e-04": 0.1351,
+          "5.2e-05": 0.1359,
+          "2.3e-05": 0.1362,
+          "1.0e-05": 0.1363
+        },
+        "test_ic": {
+          "n_days": 580,
+          "mean_ic": 0.1082,
+          "ic_std": 0.1091,
+          "icir": 0.991,
+          "pct_pos": 0.843,
+          "t_naive": 23.87,
+          "t_newey_west": 6.36
+        },
+        "top_coefficients": [
+          {
+            "feature": "High",
+            "coef_std": 0.05029
+          },
+          {
+            "feature": "Return_1d_rstd20",
+            "coef_std": -0.04058
+          },
+          {
+            "feature": "EPS",
+            "coef_std": 0.0307
+          },
+          {
+            "feature": "Volatility_20d",
+            "coef_std": 0.0306
+          },
+          {
+            "feature": "RSI_14_rmean60",
+            "coef_std": 0.02548
+          },
+          {
+            "feature": "MA_60_lag20",
+            "coef_std": -0.02536
+          },
+          {
+            "feature": "Close_lag1",
+            "coef_std": -0.02502
+          },
+          {
+            "feature": "MA_20",
+            "coef_std": -0.01867
+          },
+          {
+            "feature": "Close_lag5",
+            "coef_std": -0.01833
+          },
+          {
+            "feature": "Close_rmean5",
+            "coef_std": -0.01462
+          },
+          {
+            "feature": "Holdings_Large_Pct_lag20",
+            "coef_std": 0.01326
+          },
+          {
+            "feature": "Open_lag1",
+            "coef_std": 0.0121
+          },
+          {
+            "feature": "Foreign_Holding_Pct_rmean60",
+            "coef_std": 0.01067
+          },
+          {
+            "feature": "EPS_lag20",
+            "coef_std": -0.0101
+          },
+          {
+            "feature": "Volatility_20d_rmean60",
+            "coef_std": -0.00972
+          },
+          {
+            "feature": "KD_K_lag1",
+            "coef_std": 0.00923
+          },
+          {
+            "feature": "Holdings_Large_Pct",
+            "coef_std": -0.0091
+          },
+          {
+            "feature": "Foreign_Holding_Pct_lag1",
+            "coef_std": -0.00894
+          },
+          {
+            "feature": "Return_1d_rstd60",
+            "coef_std": -0.00878
+          },
+          {
+            "feature": "RS_60d",
+            "coef_std": -0.00794
+          }
+        ]
+      }
+    }
+  },
+  "walk_forward_ridge_5d": {
+    "alpha": 10.0,
+    "n_folds": 46,
+    "mean_fold_ic": 0.1141,
+    "fold_ic_std": 0.0159,
+    "pct_folds_positive": 1.0,
+    "min_fold_ic": 0.0541,
+    "max_fold_ic": 0.1377,
+    "folds": [
+      {
+        "test_start": "2015-01-01",
+        "test_end": "2015-07-01",
+        "n_train_rows": 554167,
+        "n_days": 58,
+        "mean_ic": 0.1276
+      },
+      {
+        "test_start": "2015-04-01",
+        "test_end": "2015-10-01",
+        "n_train_rows": 598860,
+        "n_days": 62,
+        "mean_ic": 0.105
+      },
+      {
+        "test_start": "2015-07-01",
+        "test_end": "2016-01-01",
+        "n_train_rows": 646876,
+        "n_days": 64,
+        "mean_ic": 0.1097
+      },
+      {
+        "test_start": "2015-10-01",
+        "test_end": "2016-04-01",
+        "n_train_rows": 698156,
+        "n_days": 61,
+        "mean_ic": 0.1315
+      },
+      {
+        "test_start": "2016-01-01",
+        "test_end": "2016-07-01",
+        "n_train_rows": 750013,
+        "n_days": 59,
+        "mean_ic": 0.1303
+      },
+      {
+        "test_start": "2016-04-01",
+        "test_end": "2016-10-01",
+        "n_train_rows": 797483,
+        "n_days": 61,
+        "mean_ic": 0.1182
+      },
+      {
+        "test_start": "2016-07-01",
+        "test_end": "2017-01-01",
+        "n_train_rows": 847064,
+        "n_days": 63,
+        "mean_ic": 0.1288
+      },
+      {
+        "test_start": "2016-10-01",
+        "test_end": "2017-04-01",
+        "n_train_rows": 898674,
+        "n_days": 61,
+        "mean_ic": 0.1265
+      },
+      {
+        "test_start": "2017-01-01",
+        "test_end": "2017-07-01",
+        "n_train_rows": 952318,
+        "n_days": 59,
+        "mean_ic": 0.1322
+      },
+      {
+        "test_start": "2017-04-01",
+        "test_end": "2017-10-01",
+        "n_train_rows": 1001984,
+        "n_days": 63,
+        "mean_ic": 0.1233
+      },
+      {
+        "test_start": "2017-07-01",
+        "test_end": "2018-01-01",
+        "n_train_rows": 1053657,
+        "n_days": 64,
+        "mean_ic": 0.1235
+      },
+      {
+        "test_start": "2017-10-01",
+        "test_end": "2018-04-01",
+        "n_train_rows": 1110829,
+        "n_days": 60,
+        "mean_ic": 0.1377
+      },
+      {
+        "test_start": "2018-01-01",
+        "test_end": "2018-07-01",
+        "n_train_rows": 1164906,
+        "n_days": 59,
+        "mean_ic": 0.1271
+      },
+      {
+        "test_start": "2018-04-01",
+        "test_end": "2018-10-01",
+        "n_train_rows": 1216117,
+        "n_days": 62,
+        "mean_ic": 0.1283
+      },
+      {
+        "test_start": "2018-07-01",
+        "test_end": "2019-01-01",
+        "n_train_rows": 1269168,
+        "n_days": 65,
+        "mean_ic": 0.1305
+      },
+      {
+        "test_start": "2018-10-01",
+        "test_end": "2019-04-01",
+        "n_train_rows": 1325804,
+        "n_days": 60,
+        "mean_ic": 0.1111
+      },
+      {
+        "test_start": "2019-01-01",
+        "test_end": "2019-07-01",
+        "n_train_rows": 1384241,
+        "n_days": 57,
+        "mean_ic": 0.125
+      },
+      {
+        "test_start": "2019-04-01",
+        "test_end": "2019-10-01",
+        "n_train_rows": 1432801,
+        "n_days": 62,
+        "mean_ic": 0.13
+      },
+      {
+        "test_start": "2019-07-01",
+        "test_end": "2020-01-01",
+        "n_train_rows": 1486895,
+        "n_days": 64,
+        "mean_ic": 0.1249
+      },
+      {
+        "test_start": "2019-10-01",
+        "test_end": "2020-04-01",
+        "n_train_rows": 1544776,
+        "n_days": 60,
+        "mean_ic": 0.1179
+      },
+      {
+        "test_start": "2020-01-01",
+        "test_end": "2020-07-01",
+        "n_train_rows": 1603270,
+        "n_days": 58,
+        "mean_ic": 0.0826
+      },
+      {
+        "test_start": "2020-04-01",
+        "test_end": "2020-10-01",
+        "n_train_rows": 1654784,
+        "n_days": 63,
+        "mean_ic": 0.0963
+      },
+      {
+        "test_start": "2020-07-01",
+        "test_end": "2021-01-01",
+        "n_train_rows": 1710373,
+        "n_days": 64,
+        "mean_ic": 0.1185
+      },
+      {
+        "test_start": "2020-10-01",
+        "test_end": "2021-04-01",
+        "n_train_rows": 1771866,
+        "n_days": 59,
+        "mean_ic": 0.1098
+      },
+      {
+        "test_start": "2021-01-01",
+        "test_end": "2021-07-01",
+        "n_train_rows": 1830059,
+        "n_days": 58,
+        "mean_ic": 0.1141
+      },
+      {
+        "test_start": "2021-04-01",
+        "test_end": "2021-10-01",
+        "n_train_rows": 1883225,
+        "n_days": 62,
+        "mean_ic": 0.1231
+      },
+      {
+        "test_start": "2021-07-01",
+        "test_end": "2022-01-01",
+        "n_train_rows": 1940442,
+        "n_days": 64,
+        "mean_ic": 0.1076
+      },
+      {
+        "test_start": "2021-10-01",
+        "test_end": "2022-04-01",
+        "n_train_rows": 2001510,
+        "n_days": 60,
+        "mean_ic": 0.1215
+      },
+      {
+        "test_start": "2022-01-01",
+        "test_end": "2022-07-01",
+        "n_train_rows": 2063129,
+        "n_days": 59,
+        "mean_ic": 0.1177
+      },
+      {
+        "test_start": "2022-04-01",
+        "test_end": "2022-10-01",
+        "n_train_rows": 2117582,
+        "n_days": 63,
+        "mean_ic": 0.091
+      },
+      {
+        "test_start": "2022-07-01",
+        "test_end": "2023-01-01",
+        "n_train_rows": 2177959,
+        "n_days": 64,
+        "mean_ic": 0.113
+      },
+      {
+        "test_start": "2022-10-01",
+        "test_end": "2023-04-01",
+        "n_train_rows": 2240562,
+        "n_days": 59,
+        "mean_ic": 0.1158
+      },
+      {
+        "test_start": "2023-01-01",
+        "test_end": "2023-07-01",
+        "n_train_rows": 2303513,
+        "n_days": 57,
+        "mean_ic": 0.1042
+      },
+      {
+        "test_start": "2023-04-01",
+        "test_end": "2023-10-01",
+        "n_train_rows": 2357506,
+        "n_days": 61,
+        "mean_ic": 0.1169
+      },
+      {
+        "test_start": "2023-07-01",
+        "test_end": "2024-01-01",
+        "n_train_rows": 2417865,
+        "n_days": 63,
+        "mean_ic": 0.1197
+      },
+      {
+        "test_start": "2023-10-01",
+        "test_end": "2024-04-01",
+        "n_train_rows": 2480691,
+        "n_days": 60,
+        "mean_ic": 0.1142
+      },
+      {
+        "test_start": "2024-01-01",
+        "test_end": "2024-07-01",
+        "n_train_rows": 2546088,
+        "n_days": 58,
+        "mean_ic": 0.099
+      },
+      {
+        "test_start": "2024-04-01",
+        "test_end": "2024-10-01",
+        "n_train_rows": 2603970,
+        "n_days": 62,
+        "mean_ic": 0.0939
+      },
+      {
+        "test_start": "2024-07-01",
+        "test_end": "2025-01-01",
+        "n_train_rows": 2666487,
+        "n_days": 63,
+        "mean_ic": 0.1148
+      },
+      {
+        "test_start": "2024-10-01",
+        "test_end": "2025-04-01",
+        "n_train_rows": 2733343,
+        "n_days": 58,
+        "mean_ic": 0.13
+      },
+      {
+        "test_start": "2025-01-01",
+        "test_end": "2025-07-01",
+        "n_train_rows": 2798702,
+        "n_days": 58,
+        "mean_ic": 0.1208
+      },
+      {
+        "test_start": "2025-04-01",
+        "test_end": "2025-10-01",
+        "n_train_rows": 2856420,
+        "n_days": 63,
+        "mean_ic": 0.0994
+      },
+      {
+        "test_start": "2025-07-01",
+        "test_end": "2026-01-01",
+        "n_train_rows": 2922969,
+        "n_days": 63,
+        "mean_ic": 0.0926
+      },
+      {
+        "test_start": "2025-10-01",
+        "test_end": "2026-04-01",
+        "n_train_rows": 2992203,
+        "n_days": 59,
+        "mean_ic": 0.1037
+      },
+      {
+        "test_start": "2026-01-01",
+        "test_end": "2026-06-02",
+        "n_train_rows": 3060079,
+        "n_days": 47,
+        "mean_ic": 0.0872
+      },
+      {
+        "test_start": "2026-04-01",
+        "test_end": "2026-06-02",
+        "n_train_rows": 3122180,
+        "n_days": 19,
+        "mean_ic": 0.0541
+      }
+    ],
+    "note": "IC 以 stride-2 抽樣日評估（每 fold 約 60 天）；Mamba 無對應 WF 數字（協定 §6 方案 B）"
+  },
+  "protocol": {
+    "TRAIN_START": "2012-01-01",
+    "TRAIN_END": "2023-12-31",
+    "TEST_START": "2024-01-01",
+    "TEST_END": "2026-06-02",
+    "VAL_RATIO": 0.15,
+    "MIN_HISTORY_DAYS": 202,
+    "TOP_N": 50,
+    "REBALANCE_DAYS": 5,
+    "COST_BUY": 0.0015,
+    "COST_SELL": 0.0045
+  },
+  "n_features": 300,
+  "train_rows_stride2": 3166100,
+  "test_rows_full": 1239353,
+  "notes": [
+    "訓練列以 day_stride=2（隔日）抽樣（5d 重疊窗冗餘高）；test IC 用全部交易日",
+    "與 Phase 3 harness 一致：train/test 邊界無 5d purge（邊界 label 重疊 5 天，佔比可忽略）",
+    "Alpha label 實為 raw forward return：macro_raw 只有 TWII_Close 欄、_add_alpha_targets 的 TWII 減基準分支從未觸發（Colab 訓練 Mamba 亦同路徑）——per-date rank 對當日常數平移免疫，label 與 Mamba 完全一致、日 IC 不受影響；組合層 excess_vs_twii 另以 macro TWII_Close 計算、只算到 2026-04-24（macro 停更日）",
+    "matrix 自 2010 起建（非 2005 全歷史）：macro ts z-score 以 2010 起 expanding——macro 為橫斷面常數，對排名類模型無影響（線性模型完全免疫、每日 IC 不變）",
+    "lag/rolling 以『列』為單位 shift（clean 後偶發缺日近似交易日 shift），衍生特徵 NaN→0",
+    "存活者偏差 D3 未修復：四階模型同資料相對比較公平，絕對數字偏高（協定 §2）"
+  ],
+  "generated_at": "2026-07-13 00:59"
+}
