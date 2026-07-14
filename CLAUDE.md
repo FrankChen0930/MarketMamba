@@ -272,7 +272,7 @@ df.to_parquet("Data/processed_v6/prices_raw.parquet")
 | 服務 | 網址 | 觸發方式 |
 |------|------|---------|
 | 後端（Render） | `https://marketmamba-api.onrender.com` | push to `main` 自動部署 |
-| 前端（Vercel） | `https://marketmamba.vercel.app` | push to `main` 自動部署 |
+| 前端（Vercel） | `https://market-mamba-pi.vercel.app` | push to `main` 自動部署 |
 | Render rootDir | `app/backend` | — |
 | Vercel rootDir | `app/frontend` | — |
 
@@ -299,7 +299,7 @@ RENDER_BACKEND_URL=https://marketmamba-api.onrender.com
 **Render 環境變數**：
 ```
 GITHUB_RESULTS_URL=https://raw.githubusercontent.com/FrankChen0930/MarketMamba/main/V6/results/df_kelly.csv
-ALLOWED_ORIGINS=https://marketmamba.vercel.app
+ALLOWED_ORIGINS=https://market-mamba-pi.vercel.app
 ```
 
 ---
