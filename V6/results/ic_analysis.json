@@ -1,22 +1,22 @@
 {
-  "generated_date": "2026-07-17",
-  "archive_count": 55,
+  "generated_date": "2026-07-20",
+  "archive_count": 56,
   "period_start": "2026-04-29",
-  "period_end": "2026-07-17",
+  "period_end": "2026-07-20",
   "horizon_summary": {
     "5d": {
-      "n_days": 47,
-      "mean_ic": 0.0537,
-      "icir": 0.347,
-      "t_stat": 2.38,
-      "ic_gt0_pct": 70.2
+      "n_days": 48,
+      "mean_ic": 0.0581,
+      "icir": 0.372,
+      "t_stat": 2.58,
+      "ic_gt0_pct": 70.8
     },
     "20d": {
-      "n_days": 32,
-      "mean_ic": 0.1115,
-      "icir": 1.36,
-      "t_stat": 7.69,
-      "ic_gt0_pct": 90.6
+      "n_days": 33,
+      "mean_ic": 0.1186,
+      "icir": 1.315,
+      "t_stat": 7.56,
+      "ic_gt0_pct": 90.9
     }
   },
   "ic_series_5d": [
@@ -301,6 +301,12 @@
       "future_date": "2026-07-17",
       "ic": 0.2726,
       "n_stocks": 1068
+    },
+    {
+      "pred_date": "2026-07-13",
+      "future_date": "2026-07-20",
+      "ic": 0.2649,
+      "n_stocks": 1145
     }
   ],
   "ic_series_20d": [
@@ -495,6 +501,12 @@
       "future_date": "2026-07-17",
       "ic": 0.2972,
       "n_stocks": 1126
+    },
+    {
+      "pred_date": "2026-06-18",
+      "future_date": "2026-07-20",
+      "ic": 0.346,
+      "n_stocks": 1166
     }
   ],
   "rolling_ic_5d": [
@@ -677,6 +689,10 @@
     {
       "date": "2026-07-09",
       "rolling_ic": 0.1828
+    },
+    {
+      "date": "2026-07-13",
+      "rolling_ic": 0.191
     }
   ]
 }
