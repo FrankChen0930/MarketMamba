@@ -48,7 +48,7 @@ SPECS = {
     "financials": ("financials_raw", "TaiwanStockFinancialStatements"),
 }
 BATCH = 150          # 每輪處理的股票數（_catch_up_monthly 內部會挑最舊的）
-MAX_ROUNDS = 30      # 安全上限，避免無限迴圈
+MAX_ROUNDS = 40      # 1,924 支 / BATCH 150 = 13 輪，留餘裕
 
 
 def main() -> None:
@@ -76,14 +76,23 @@ def main() -> None:
         log.info("=" * 74)
         t0 = time.time()
         total = 0
+        # 記住本次執行已試過哪些股票。
+        # ⚠️ 初版用「本輪淨增 0 就結束」判斷追平，是錯的——有些公司已停止申報，
+        #    抓了本來就回 0 列，於是回補在還剩上千支沒處理時提前中止
+        #    （實測 financials 只跑 2.3 分鐘、1,925/1,942 支仍停在 2025-12，
+        #      revenue 也只有 551/1,924 支更新到位）。
+        #    「這一輪沒收穫」≠「全部都追平了」。正確的終止條件是**全部試過一遍**。
+        attempted: set[str] = set()
         for rnd in range(1, MAX_ROUNDS + 1):
-            n = _catch_up_monthly(name, dataset, today, max_stocks=BATCH)
+            before = len(attempted)
+            n = _catch_up_monthly(name, dataset, today, max_stocks=BATCH,
+                                  skip=attempted, attempted_out=attempted)
             total += n
             log.info(f"  第 {rnd} 輪：淨增 {n:,} 列｜累計 {total:,}"
+                     f"｜已試 {len(attempted):,} 支"
                      f"｜已耗時 {(time.time() - t0) / 60:.1f} 分")
-            if n == 0:
-                # 連續一輪毫無新增 = 最舊的那批已經是最新的，全部追平
-                log.info("  本輪無新增，視為已追平，結束")
+            if len(attempted) == before:
+                log.info("  已無未試過的股票，全部處理完畢")
                 break
         d = pd.read_parquet(path)
         dcol = "date" if "date" in d.columns else "Date"

@@ -49,6 +49,27 @@ for _d in [RAW_DIR, CACHE_DIR]:
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; MarketMamba/6.0)"}
 FINMIND_BASE = "https://api.finmindtrade.com/api/v4/data"
 
+# FinMind 免費層（level=1 "Free"）的實測額度（2026-07-29 由 /v2/user_info 查得）：
+#     api_request_limit_hour = 600
+#     api_request_limit_day  = 600
+# 也就是**每日 600 次**。逐股補齊 ~1,900 支需要跨多天，這是「不訂閱 VIP」的實際節奏限制。
+FINMIND_FREE_DAILY_LIMIT = 600
+
+
+class FinMindQuotaExceeded(RuntimeError):
+    """
+    FinMind 拒絕服務：HTTP 402（當日額度用盡）或 403（IP 被封鎖）。
+
+    刻意用例外而不是回傳 None：這與「這支股票沒有新資料」是**完全不同的事**，
+    但兩者在舊版都表現為 `None`。2026-07-29 的回補因此連跑六輪、試了 900 支、
+    每輪淨增 0 列，日誌卻一切正常——問題被完美地偽裝成「已經追平了」。
+
+    ⚠️ 2026-07-29 教訓：短時間內密集打 ~1,000 次請求後，FinMind 直接回
+    `403 ip banned`（而非只是 402）。免費層的 600 次/日不是可以一次用完的預算，
+    **請求速率本身也會觸發封鎖**。因此每日滾動批量刻意設得遠低於額度，
+    且遇到本例外一律立即中止、不重試。
+    """
+
 # ============================================================
 # Ticker Universe Helpers
 # ============================================================
@@ -1646,6 +1667,16 @@ def _finmind_fetch(
             return pd.DataFrame(data["data"])
         except requests.exceptions.HTTPError as e:
             code = e.response.status_code if e.response is not None else 0
+            # ⚠️ 402 = 當日額度用盡（免費層 600 次/日）。這**不是**「這支沒資料」，
+            #    但舊版把它丟進下面的 debug 分支回 None，於是額度耗盡完全靜默：
+            #    2026-07-29 的回補因此連跑六輪、試了 900 支、每輪淨增 0，
+            #    而日誌看起來一切正常。額度問題必須大聲中止，不能偽裝成空資料。
+            if code in (402, 403):
+                raise FinMindQuotaExceeded(
+                    f"FinMind 拒絕服務（HTTP {code}"
+                    f"{'：當日額度用盡，免費層 600 次/日' if code == 402 else '：IP 被封鎖'}）："
+                    f"{dataset} stock={stock_id}"
+                ) from e
             if code in (429, 503) and attempt < max_retries - 1:
                 wait = 2 ** attempt
                 logger.warning(f"FinMind rate limit ({code}), retry {attempt+1}/{max_retries} in {wait}s")
@@ -2183,7 +2214,9 @@ def _live_universe() -> set[str]:
 
 
 def _catch_up_monthly(name: str, dataset: str, today: str,
-                      max_stocks: int = 120, sleep_s: float = 0.6) -> int:
+                      max_stocks: int = 120, sleep_s: float = 0.6,
+                      skip: set[str] | None = None,
+                      attempted_out: set[str] | None = None) -> int:
     """
     月/季頻資料源的**滾動逐股**增量補齊（`revenue_raw` 月營收、`financials_raw` 季財報）。
 
@@ -2227,7 +2260,16 @@ def _catch_up_monthly(name: str, dataset: str, today: str,
         per = per[per.index.isin(live)]
         logger.info(f"{name}: 現役宇宙過濾 {n_all:,} → {len(per):,} 支"
                     f"（排除已下市，它們不會再更新）")
+    # `skip` 讓呼叫端（回補腳本）記住本次執行已試過誰。
+    # ⚠️ 沒有這個機制時，回補腳本只能用「本輪淨增 0 就結束」判斷是否追平——
+    #    但有些公司已停止申報、抓了本來就回 0，於是整個回補在還剩上千支
+    #    沒處理時就提前中止（實測 financials 只跑 2.3 分鐘、1,925/1,942 支仍停在 2025-12）。
+    #    「這一輪沒收穫」≠「全部都追平了」。
+    if skip:
+        per = per[~per.index.isin(skip)]
     targets = per.index[:max_stocks].tolist()
+    if attempted_out is not None:
+        attempted_out.update(targets)
     if not targets:
         return 0
     logger.info(f"{name}: 最新 {per.max().date()}｜最舊 {per.min().date()}"
@@ -2235,15 +2277,25 @@ def _catch_up_monthly(name: str, dataset: str, today: str,
                 f"約 {int(np.ceil(len(per) / max(max_stocks, 1)))} 天輪一輪）")
 
     frames, n_fail = [], 0
+    quota_hit = False
     for sid in targets:
         start = (per[sid] - pd.Timedelta(days=7)).strftime("%Y-%m-%d")
         try:
             d = _finmind_fetch(dataset, start_date=start, end_date=today, stock_id=sid)
+        except FinMindQuotaExceeded as e:
+            # 額度用盡就立刻停，繼續打只是空轉（而且會讓日誌看起來像「沒有新資料」）
+            logger.warning(f"{name}: {e}｜本輪在第 {len(frames)} 支後中止，"
+                           f"已抓到的仍會寫入；明日額度重置後再續")
+            quota_hit = True
+            break
         except Exception:                                     # noqa: BLE001
             d, n_fail = None, n_fail + 1
         if d is not None and not d.empty:
             frames.append(d)
         time.sleep(sleep_s)
+    if quota_hit and attempted_out is not None:
+        # 沒真的試到的股票要還回去，否則下次會被 skip 跳過而永遠補不到
+        attempted_out.difference_update(set(targets[len(frames):]))
 
     if not frames:
         logger.warning(f"{name}: 本輪 {len(targets)} 支皆無新資料"
@@ -2516,10 +2568,17 @@ def run_daily_update(
     # revenue 因此停更 118 天。距上次資料未滿門檻天數會自動跳過，不會每天空打。
     # 逐股滾動：每天補「現役宇宙中資料最舊的 N 支」，約 16 天輪完一輪。
     # 月/季頻資料一個月才變一次，不需要每天全抓；這樣每天只多花約 1–2 分鐘。
-    for _nm, _ds, _n in (("revenue_raw", "TaiwanStockMonthRevenue", 120),
-                         ("financials_raw", "TaiwanStockFinancialStatements", 60)):
+    # ⚠️ 批量刻意設得遠低於免費層額度（600 次/日）：
+    #    2026-07-29 實測，短時間密集打 ~1,000 次後 FinMind 直接回 403 ip banned，
+    #    也就是**請求速率本身就會觸發封鎖**，不是把 600 次用完才擋。
+    #    80+40=120 次/日約占額度 20%，留足空間給臨時查詢，也不致觸發速率封鎖。
+    #    代價是追平較慢（~24 天），但月/季頻資料本來就不急。
+    for _nm, _ds, _n in (("revenue_raw", "TaiwanStockMonthRevenue", 80),
+                         ("financials_raw", "TaiwanStockFinancialStatements", 40)):
         try:
-            _catch_up_monthly(_nm, _ds, today, max_stocks=_n)
+            _catch_up_monthly(_nm, _ds, today, max_stocks=_n, sleep_s=1.0)
+        except FinMindQuotaExceeded as _e:
+            logger.warning(f"{_nm}: {_e}｜今日不再嘗試")
         except Exception as _e:                               # noqa: BLE001
             logger.warning(f"{_nm} 更新失敗（不影響推論）：{_e}")
 

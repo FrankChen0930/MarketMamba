@@ -10,7 +10,11 @@ df_universe = df_prices[["stock_id"]].drop_duplicates()
 
 stock_info = PROCESSED_DIR / "stock_info.parquet"
 if stock_info.exists():
-    df_info = pd.read_parquet(stock_info)
+    # 一律走 load_stock_info（B-5）：stock_info 是多次快照的累積，
+    # 直接 merge 會讓 universe 列膨脹 36.2%（846 支被複製），
+    # 且可能取到過期的產業別。
+    from marketmamba.data.hygiene import load_stock_info
+    df_info = load_stock_info(latest_only=True)
     df_universe = df_universe.merge(df_info[["stock_id", "industry_category"]], on="stock_id", how="left")
     df_universe["industry_category"] = df_universe["industry_category"].fillna("Unknown")
     n = df_universe["industry_category"].nunique()

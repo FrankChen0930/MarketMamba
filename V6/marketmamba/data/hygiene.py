@@ -24,6 +24,7 @@ import logging
 import re
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pyarrow.parquet as pq
 
@@ -45,15 +46,60 @@ _ETF_RE = re.compile(r"^00\d{2}$")
 _EMERGING_CACHE: set[str] | None = None
 
 
+def load_stock_info(latest_only: bool = True) -> pd.DataFrame:
+    """
+    讀取 `stock_info.parquet` 的**唯一權威入口**。所有消費端都應該走這裡（B-5）。
+
+    【為什麼是「提供存取函式」而不是「在源頭刪重複列」】
+      `stock_info` 是多次快照的累積（4,097 列 / 3,086 支），乍看是髒資料，
+      但那些重複列其實**帶有資訊**：它們記錄了市場別的變遷
+      （1563 巧新 2024-05 emerging → 2026-05 twse）。那是 PIT 相關的事實，
+      直接去重會把它永久刪掉。
+
+      所以源頭的修正不是刪資料，而是**把「正確的讀法」定義在一個地方**——
+      消費端不必記得去重，也不會有人漏掉，而歷史仍然保留。
+      （使用者 2026-07-28 的原則：「在源頭修 vs 靠每個消費端各自防禦，
+        源頭修一次比較省事、也比較不會有人漏掉」。）
+
+    【為什麼非做不可】未去重直接篩 `type == "emerging"` 會命中舊快照，
+      把已轉上市櫃的公司整支排除——實測 31 支、其中 30 支仍在交易。
+
+    Args:
+        latest_only: True（預設）時每支只留最新快照。
+                     False 回傳完整累積表，供需要市場別變遷史的分析使用。
+    """
+    from marketmamba.config import PROCESSED_DIR
+    p = Path(PROCESSED_DIR) / "stock_info.parquet"
+    if not p.exists():
+        return pd.DataFrame()
+    si = pd.read_parquet(p)
+    si["stock_id"] = si["stock_id"].astype(str)
+    if not latest_only:
+        return si
+    if "date" in si.columns:
+        # na_position="first" 讓沒有日期的舊列墊底，被有日期的新列取代
+        si["date"] = pd.to_datetime(si["date"], errors="coerce")
+        si = si.sort_values("date", na_position="first")
+    return si.drop_duplicates(subset=["stock_id"], keep="last").reset_index(drop=True)
+
+
 def _emerging_ids() -> set[str]:
     """
     取得興櫃股票代號集合（stock_info.type == "emerging"）。
 
-    ⚠️ 已知限制：`stock_info` 是**現況快照而非 PIT**。
-       因此「目前仍是興櫃」的股票會被全歷史排除（正確——它們從未上市櫃）；
-       但「曾是興櫃、後來轉上市櫃」的股票不在本名單中，其興櫃期間的資料
-       仍會留在宇宙裡。要真正處理需要逐日的歷史市場別，成本不成比例，
-       故在此明確揭露而非假裝已解決。
+    ⚠️ **必須取每支股票的最新快照**（2026-07-29 修正的實質 bug）。
+       `stock_info` 不是單一快照，而是**多次快照的累積**（`date` 欄有 2024-12-30、
+       2026-05-03 等多批）。初版直接對整張表篩 `type == "emerging"` 而未去重，
+       於是「舊快照是興櫃、後來已轉上市櫃」的股票被舊那一列命中，
+       **整支被排除在宇宙之外**——實測 31 支，其中 30 支今天仍在交易
+       （1563 巧新、2072 世紀風電、2248 華勝-KY 等 emerging → twse）。
+       這不是「興櫃期的資料留著」那種小瑕疵，是把已上市公司整支弄丟。
+
+    ⚠️ 殘留限制：即使取最新快照，本名單仍是**現況**而非 PIT——
+       「目前仍是興櫃」者被全歷史排除（正確，它們從未上市櫃），
+       但已轉上市櫃者的**興櫃期間資料**仍會留在宇宙裡。
+       不過這一項在 2026-07-29 之後實質已解：新的 `prices_raw` 來自交易所直連，
+       該股在交易所資料中的**首次出現日就是上市櫃日**，興櫃期本來就不在資料裡。
 
     背景：2026-05-25 資料源由 yfinance 切到交易所直連時，宇宙一日之間
     從 2,321 支掉到 1,968 支（少 353 支），其中 341 支正是興櫃——
@@ -68,10 +114,11 @@ def _emerging_ids() -> set[str]:
         from marketmamba.config import PROCESSED_DIR
         p = Path(PROCESSED_DIR) / "stock_info.parquet"
         if p.exists():
-            si = pd.read_parquet(p, columns=["stock_id", "type"])
+            si = load_stock_info(latest_only=True)          # ← 唯一權威入口（B-5）
             ids = set(si.loc[si["type"].astype(str).str.lower() == "emerging",
-                             "stock_id"].astype(str))
-            logger.info(f"[hygiene] 興櫃名單載入 {len(ids):,} 支（stock_info 現況快照）")
+                             "stock_id"])
+            logger.info(f"[hygiene] 興櫃名單載入 {len(ids):,} 支"
+                        f"（stock_info 取每支最新快照 {len(si):,} 支）")
         else:
             logger.warning("[hygiene] 找不到 stock_info.parquet，興櫃無法排除")
     except Exception as e:                                        # noqa: BLE001
@@ -266,6 +313,35 @@ def check_data_health(
         recent = per_day.tail(6)
         logger.info("  近 6 個交易日：" +
                     ", ".join(f"{d.date()}={int(n)}" for d, n in recent.items()))
+
+        # ── 交易日曆缺口 ────────────────────────────────────────────
+        # 既有的「停更天數」只看最新日期，中間漏掉的交易日完全看不出來——
+        # 而 prices_raw 缺過 2026-04-27/04-28 兩個真實交易日，是靠回補 margin 時
+        # 意外發現的。本檢查用「連續兩筆資料之間的工作日間隔」找洞：
+        # 台股最長連假（春節）約 9 天，故 >5 個工作日的空檔值得看一眼。
+        # 只掃近一年，避免把久遠的歷史缺口每天重報一次。
+        try:
+            days = per_day.index[per_day.index >= per_day.index.max()
+                                 - pd.Timedelta(days=365)]
+            if len(days) >= 2:
+                s = pd.Series(days)
+                # 兩個相鄰交易日之間的工作日數（扣掉週末）
+                bd = np.busday_count(
+                    s.iloc[:-1].values.astype("datetime64[D]"),
+                    s.iloc[1:].values.astype("datetime64[D]"))
+                holes = [(s.iloc[i], s.iloc[i + 1], int(bd[i]))
+                         for i in range(len(bd)) if bd[i] > 5]
+                if holes:
+                    warnings.append(f"交易日曆有 {len(holes)} 處 >5 個工作日的空檔")
+                    logger.warning(
+                        f"  ⚠️ 近一年有 {len(holes)} 處交易日空檔（可能漏抓，"
+                        f"也可能是連假）：" +
+                        "、".join(f"{a.date()}→{b.date()}({n} 工作日)"
+                                  for a, b, n in holes[:5]))
+                else:
+                    logger.info("  近一年交易日曆無 >5 工作日的空檔  ✓")
+        except Exception as e:                                # noqa: BLE001
+            logger.warning(f"  交易日曆缺口檢查失敗（不影響推論）：{e}")
 
     # ── 3. prices_raw 資料損壞 ─────────────────────────────────────────
     logger.info("[健檢 3/4] prices_raw 資料損壞")
