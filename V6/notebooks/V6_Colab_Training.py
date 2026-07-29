@@ -350,7 +350,11 @@ if not KG_CACHE_PATH.exists() or KG_REBUILD:
     # Load sector info from local parquet (fetched locally, much more reliable)
     stock_info_path = PROCESSED_DIR / "stock_info.parquet"
     if stock_info_path.exists():
-        df_info = pd.read_parquet(stock_info_path)
+        # 一律走 load_stock_info（B-5）：stock_info 是多次快照的累積，
+        # 直接 merge 會讓 universe 列膨脹 36.2%（846 支被複製），
+        # 且可能取到過期的產業別。
+        from marketmamba.data.hygiene import load_stock_info
+        df_info = load_stock_info(latest_only=True)
         df_universe = df_universe.merge(
             df_info[["stock_id", "industry_category"]], on="stock_id", how="left"
         )
@@ -397,8 +401,13 @@ from marketmamba.config import MODELS_DIR
 all_dates = sorted(df["Date"].astype(str).unique().tolist())
 cutoff_train_end = "2023-12-31"
 
-train_dates = [d for d in all_dates if d <= cutoff_train_end]
-val_dates   = [d for d in all_dates if d > cutoff_train_end]
+# 協定 v2.0：purge + embargo。舊寫法是
+#   train_dates = [d for d in all_dates if d <= cutoff]
+# train 尾端 PURGE_HORIZON 天的 label 整段落在 val 區間內，模型訓練時就看過了。
+# 多 horizon 模型（5d/20d/60d）以最長者為準 → horizon=60。
+from experimental.splitters import train_val_split_dates
+train_dates, val_dates = train_val_split_dates(
+    all_dates, cutoff_train_end, horizon=60, embargo_days=20, label="cell4")
 
 FINAL_EPOCHS   = 100
 N_SAMPLE_TRAIN = None   # All stocks. If OOM → set 2000
@@ -587,8 +596,10 @@ _cfg.N_SAMPLE_TRAIN = None   # All stocks
 
 all_dates = sorted(df["Date"].astype(str).unique().tolist())
 cutoff_train_end = "2023-12-31"
-train_dates = [d for d in all_dates if d <= cutoff_train_end]
-val_dates   = [d for d in all_dates if d > cutoff_train_end]
+# 協定 v2.0：purge + embargo（同 Cell 4，理由見該處註解）
+from experimental.splitters import train_val_split_dates
+train_dates, val_dates = train_val_split_dates(
+    all_dates, cutoff_train_end, horizon=60, embargo_days=20, label="cell4b")
 
 train_ds = TemporalCrossSectionDataset(df, train_dates, mode="train", n_sample=None)
 val_ds   = TemporalCrossSectionDataset(df, val_dates,   mode="val",   n_sample=None)

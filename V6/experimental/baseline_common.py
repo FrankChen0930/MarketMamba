@@ -21,6 +21,14 @@ baseline_common.py — 方向二 Baseline 對照：共用資料層 + 評估層
   python V6/experimental/baseline_common.py --build         # 建 base matrix + derived（一次性，~1hr）
   python V6/experimental/baseline_common.py --rebuild-roll  # 只重建 rolling part（G4 修正）
 
+  # 協定 v2.0（67 維 + 可得性旗標 + 2013 起點），寫到獨立的 baseline_cache_v2/
+  MM_PROTOCOL=v2 python V6/experimental/baseline_common.py --build
+  # PowerShell: $env:MM_PROTOCOL="v2"; python V6/experimental/baseline_common.py --build
+
+⚠️ 協定版本用**環境變數** `MM_PROTOCOL` 而不是 argparse：67 維的 config patch
+   必須發生在 import 期、早於任何 `from marketmamba...`（`architecture.py` 在
+   import 當下就綁定 GROUP_DIMS/INPUT_DIM），而 argparse 那時還沒執行。
+
 ⚠️ 2026-07-27 協定變更（v1.0 → v2.0）
   rolling 特徵（*_rmean / *_rstd 共 60 維）原本建在 clean_and_scale 之後的
   橫斷面 z-score 上，屬於「先橫斷面、再時序」的順序顛倒（資料品質檢查表 G4）。
@@ -45,16 +53,29 @@ if str(_V6_DIR) not in sys.path:
     sys.path.insert(0, str(_V6_DIR))
 
 # ── 59 維 config 自切（與 run_dual_inference.py 同款；必須在 import feature 模組之前）──
+import os                                                        # noqa: E402
+
 import marketmamba.config as cfg
 
-_RS = ["RS_5d", "RS_20d", "RS_60d"]
-if not all(r in cfg.FEATURE_GROUPS["price_momentum"] for r in _RS):
-    cfg.FEATURE_GROUPS["price_momentum"] = cfg.FEATURE_GROUPS["price_momentum"] + _RS
-cfg.INPUT_DIM = 59
-cfg.FEATURE_COLS = (cfg.FEATURE_GROUPS["price_momentum"] + cfg.FEATURE_GROUPS["institutional_flow"]
-                    + cfg.FEATURE_GROUPS["fundamentals"] + cfg.FEATURE_GROUPS["macro_environment"])
-cfg.GROUP_DIMS = {k: len(v) for k, v in cfg.FEATURE_GROUPS.items()}
-assert len(cfg.FEATURE_COLS) == 59, f"expected 59 features, got {len(cfg.FEATURE_COLS)}"
+# 協定版本：v1（59 維，凍結的既有結果）／v2（67 維 + 可得性旗標 + 2013 起點）
+# 用環境變數而不是 argparse，因為 config patch 必須發生在 import 期、
+# 早於任何 `from marketmamba...` 的 import——argparse 在那時還沒跑到。
+PROTOCOL_VERSION = os.environ.get("MM_PROTOCOL", "v1").lower()
+assert PROTOCOL_VERSION in ("v1", "v2"), f"MM_PROTOCOL 只能是 v1/v2，收到 {PROTOCOL_VERSION!r}"
+
+if PROTOCOL_VERSION == "v2":
+    from marketmamba.data.feature_spec import patch_config_67d   # noqa: E402
+    _DIM = patch_config_67d()
+else:
+    _RS = ["RS_5d", "RS_20d", "RS_60d"]
+    if not all(r in cfg.FEATURE_GROUPS["price_momentum"] for r in _RS):
+        cfg.FEATURE_GROUPS["price_momentum"] = cfg.FEATURE_GROUPS["price_momentum"] + _RS
+    cfg.INPUT_DIM = 59
+    cfg.FEATURE_COLS = (cfg.FEATURE_GROUPS["price_momentum"] + cfg.FEATURE_GROUPS["institutional_flow"]
+                        + cfg.FEATURE_GROUPS["fundamentals"] + cfg.FEATURE_GROUPS["macro_environment"])
+    cfg.GROUP_DIMS = {k: len(v) for k, v in cfg.FEATURE_GROUPS.items()}
+    _DIM = 59
+assert len(cfg.FEATURE_COLS) == _DIM, f"expected {_DIM} features, got {len(cfg.FEATURE_COLS)}"
 
 from marketmamba.config import PROCESSED_DIR                      # noqa: E402
 from marketmamba.data.feature_engineer import build_features, clean_and_scale  # noqa: E402
@@ -82,9 +103,29 @@ PROTOCOL = {
     "COST_SELL":    0.0045,
 }
 
-CACHE_DIR  = PROCESSED_DIR / "baseline_cache"
+if PROTOCOL_VERSION == "v2":
+    # ── 協定 v2.0（2026-07-29）：起點後移 + purge/embargo ───────────────
+    # TRAIN_START 2012 → 2013：實測 institutional_raw 對 prices 宇宙的
+    # (日期, 股票) 命中率是 2011 年 17%、2012 年 56%、2013 年 74%、之後 80–96%。
+    # 2013 之前 Group B 有 4~8 成的列是 fillna(0) 補出來的，而「淨買超為 0」
+    # 是合法值——模型在那段學到的是「這支有沒有被資料涵蓋」，不是籌碼訊號。
+    # MATRIX_START 2010 → 2011：train 前仍保留 2 年（252 天序列 + macro ts 暖機 + 60 天 rolling）。
+    PROTOCOL.update({
+        "MATRIX_START": "2011-01-01",
+        "TRAIN_START":  "2013-01-01",
+        "PURGE_HORIZON": 60,        # label 最長 horizon（多 horizon 模型取 max）
+        "EMBARGO_DAYS":  20,        # 見 experimental/splitters.py 的取值理由
+        "NEUTRALIZE":    "none",    # 預設關；由 F5 量出 IC delta 再決定
+        "FUNDAMENTALS_V2": True,
+        "AVAILABILITY_FLAGS": True,
+    })
+
+# v2 用獨立的快取目錄：既有 Ridge / GBDT / GRU 的結果都引用 v1 的 base matrix，
+# 覆蓋掉會讓那些已發表的數字失去可重現性。
+CACHE_DIR  = PROCESSED_DIR / ("baseline_cache" if PROTOCOL_VERSION == "v1"
+                              else "baseline_cache_v2")
 CHUNK_DIR  = CACHE_DIR / "chunks"
-BASE_PATH  = CACHE_DIR / "baseline_base_59d.parquet"
+BASE_PATH  = CACHE_DIR / f"baseline_base_{_DIM}d.parquet"
 ROW_GROUP  = 200_000                # 小 row group → 讀取時 date filter 可有效裁剪
 
 # ============================================================
@@ -102,8 +143,38 @@ ROLL_STD_WINDOWS  = [20, 60]                        # 12 × 2 = 24 維
 MOM_WINDOWS       = [5, 10, 20, 60]                 # 4 維（原始還原收盤價的累積報酬，再橫斷面標準化）
 
 
+# 可得性旗標**不做 lag**：一支股票的旗標在 13 年間通常只變一次
+# （該資料源開始有它的那一天），lag1/5/20 幾乎與原欄位完全相同——
+# 對 Ridge 是純共線性、對 GBDT 是浪費切分候選，
+# 也會讓 v1(300 維) vs v2 的比較多出 24 維無意義的差異。
+_NO_LAG_COLS = frozenset(c for c in FEATURE_COLS if c.startswith("Avail_"))
+
+
 def lag_names(n: int) -> list[str]:
-    return [f"{c}_lag{n}" for c in FEATURE_COLS]
+    return [f"{c}_lag{n}" for c in FEATURE_COLS if c not in _NO_LAG_COLS]
+
+
+def _filter_universe(pr: pd.DataFrame) -> pd.DataFrame:
+    """
+    協定 §2 的宇宙過濾。**v1 與 v2 刻意不同**。
+
+    v1 只做 `^\\d{4}$`。那個規則有個洞：**ETF 的 0050 / 0056 正好是 4 位數字**，
+    於是 23 支 ETF + 12 支興櫃（共 35 支、52,998 列 = 0.64%）會混進矩陣。
+    ETF 在橫斷面裡會污染 winsorize 與 z-score，中性化時又全部落進「Unknown」
+    產業組，而它們的 Alpha 對選股毫無意義。
+
+    v2 改用 `hygiene.filter_tradable_universe()`（與 `run_daily_inference._sanitize`
+    同一套規則），但 **v1 維持原樣不動**——已發表的 Ridge/GBDT/GRU 結果是在
+    那個宇宙下跑出來的，改了會讓它們無法重現。
+    """
+    pr = pr[pr["stock_id"].astype(str).str.match(r"^\d{4}$")]
+    if PROTOCOL_VERSION == "v2":
+        from marketmamba.data.hygiene import filter_tradable_universe
+        keep = set(filter_tradable_universe(
+            pd.DataFrame({"stock_id": sorted(pr["stock_id"].astype(str).unique())})
+        )["stock_id"])
+        pr = pr[pr["stock_id"].astype(str).isin(keep)]
+    return pr
 
 
 def roll_names() -> list[str]:
@@ -128,7 +199,11 @@ def _derived_parts() -> list[tuple[Path, list[str]]]:
     ]
 
 
-assert len(all_feature_names()) == 300, f"expected 300 dims, got {len(all_feature_names())}"
+# 扁平模型總維度 = base + 可 lag 欄位×3 + 60 rolling + 4 momentum
+#   v1: 59 + 59×3 + 64 = 300 ／ v2: 67 + 59×3 + 64 = 308（8 個旗標不 lag）
+_EXPECTED_FLAT_DIMS = _DIM + (_DIM - len(_NO_LAG_COLS)) * 3 + 64
+assert len(all_feature_names()) == _EXPECTED_FLAT_DIMS, \
+    f"expected {_EXPECTED_FLAT_DIMS} dims, got {len(all_feature_names())}"
 
 
 # ============================================================
@@ -202,7 +277,7 @@ def build_base_matrix(n_chunks: int = 5, force: bool = False) -> None:
     # ── prices：全檔載入（8.7M 列尚可）→ 協定 §2 過濾 ──
     prices = _load_raw("prices_raw")
     n0 = len(prices)
-    prices = prices[prices["stock_id"].astype(str).str.match(r"^\d{4}$")]
+    prices = _filter_universe(prices)
     prices = prices.drop_duplicates(subset=["stock_id", "Date"], keep="last")
     stocks = sorted(prices["stock_id"].unique())
     print(f"[build] prices_raw {n0:,} → 過濾後 {len(prices):,} 列 | {len(stocks)} 支 | "
@@ -223,7 +298,11 @@ def build_base_matrix(n_chunks: int = 5, force: bool = False) -> None:
         p = prices[prices["stock_id"].isin(chunk)].copy()
         kwargs = {k: _load_raw(v, stock_ids=chunk) for k, v in _STOCK_RAWS.items()}
         mk = {k: (v.copy() if v is not None else None) for k, v in market_kwargs.items()}
-        df = build_features(df_price=p, **kwargs, **mk)
+        df = build_features(
+            df_price=p, **kwargs, **mk,
+            fundamentals_v2=PROTOCOL.get("FUNDAMENTALS_V2", False),
+            availability_flags=PROTOCOL.get("AVAILABILITY_FLAGS", False),
+        )
         df = df[df["Date"] >= pd.Timestamp(PROTOCOL["MATRIX_START"])]
         keep = ["Date", "stock_id"] + FEATURE_COLS + ["Alpha_5d", "Alpha_20d"]
         df = _downcast_f32(df[keep])
@@ -234,11 +313,13 @@ def build_base_matrix(n_chunks: int = 5, force: bool = False) -> None:
         gc.collect()
 
     # ── 合併 → clean_and_scale（橫斷面統計需要完整 cross-section，必須在合併後做）──
-    print("[build] 合併 chunk + clean_and_scale(macro_norm='ts') ...", flush=True)
+    _neu = PROTOCOL.get("NEUTRALIZE", "none")
+    print(f"[build] 合併 chunk + clean_and_scale(macro_norm='ts', neutralize='{_neu}') ...",
+          flush=True)
     df = pd.concat([pd.read_parquet(CHUNK_DIR / f"base_chunk_{i}.parquet") for i in range(n_chunks)],
                    ignore_index=True)
     n_before = len(df)
-    df = clean_and_scale(df, macro_norm="ts")
+    df = clean_and_scale(df, macro_norm="ts", neutralize=_neu)
     print(f"[build] clean_and_scale：{n_before:,} → {len(df):,} 列（NaN 剔除 {n_before-len(df):,}）",
           flush=True)
     df = _downcast_f32(df)
@@ -423,7 +504,7 @@ def build_derived_roll(keys: pd.DataFrame | None = None, force: bool = False) ->
 
     # ── momentum：原始（還原）收盤價的累積報酬 → 每日橫斷面 winsorize + z-score ──
     pr = _load_raw("prices_raw")
-    pr = pr[pr["stock_id"].astype(str).str.match(r"^\d{4}$")]
+    pr = _filter_universe(pr)
     pr = pr.drop_duplicates(subset=["stock_id", "Date"], keep="last")
     pr = pr.sort_values(["stock_id", "Date"], kind="mergesort")
     g = pr.groupby("stock_id", sort=False)["Close"]
@@ -546,7 +627,7 @@ def ic_summary(ic: pd.Series, horizon: int) -> dict:
 def _load_close_pivot(date_from: str, date_to: str) -> pd.DataFrame:
     pr = _load_raw("prices_raw")
     pr = pr[(pr["Date"] >= pd.Timestamp(date_from)) & (pr["Date"] <= pd.Timestamp(date_to))]
-    pr = pr[pr["stock_id"].astype(str).str.match(r"^\d{4}$")]
+    pr = _filter_universe(pr)
     pr = pr.drop_duplicates(subset=["stock_id", "Date"], keep="last")
     px = pr.pivot(index="Date", columns="stock_id", values="Close").sort_index()
     return px.where(px > 0)                            # Close ≤ 0（停牌等髒資料）一律視為缺值

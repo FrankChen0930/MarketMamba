@@ -65,16 +65,34 @@ class SingleScaleEncoder(nn.Module):
 # 2. 短線模型：單尺度 + GAT + gating 融合 + 2 頭(5d/10d)
 # ============================================================
 class ShortModelV6(nn.Module):
+    """
+    Args:
+        use_gat:
+          True（預設，線上 `run_dual_inference.py` 走這條）：GAT + gating 融合。
+          False（決策2 消融用）：完全跳過 GAT 與 gate，直接用 h_temporal。
+
+          ⚠️ `use_gat=False` 的 state_dict **少了 graph_layer / gate / norm_fuse**，
+             與 `v6_short.pt` 不相容。消融一律用獨立的 checkpoint 檔名。
+
+    【為什麼要有這個開關】2026-07-29 實測發現線上知識圖譜是壞的
+    （42,864 個節點只有 2,510 是真股票、供應鏈邊來自 regex 抓 HTML 裡的 4 位數字、
+    2330 的鄰居是電器電纜與綠能環保）。在確認 GATv2 到底有沒有貢獻之前，
+    不應該投入更複雜的圖設計——所以要先能把它整個關掉做對照。
+    三組：無 GAT ／ 舊圖 GAT ／ v2 圖 GAT，其餘變因全凍結。
+    """
+
     def __init__(self, d_model: int = D_MODEL, d_state: int = D_STATE,
                  n_heads_gat: int = N_HEADS_GAT, dropout: float = DROPOUT,
-                 window: int = 60, n_layers: int = 3):
+                 window: int = 60, n_layers: int = 3, use_gat: bool = True):
         super().__init__()
+        self.use_gat     = use_gat
         self.embedding   = FactorGroupedEmbedding(d_model=d_model)
         self.encoder     = SingleScaleEncoder(d_model=d_model, d_state=d_state,
                                               window=window, n_layers=n_layers)
-        self.graph_layer = GraphAttentionLayer(d_model=d_model, n_heads=n_heads_gat)
-        self.gate = nn.Sequential(nn.Linear(d_model * 2, d_model), nn.Sigmoid())
-        self.norm_fuse = nn.LayerNorm(d_model)
+        if use_gat:
+            self.graph_layer = GraphAttentionLayer(d_model=d_model, n_heads=n_heads_gat)
+            self.gate = nn.Sequential(nn.Linear(d_model * 2, d_model), nn.Sigmoid())
+            self.norm_fuse = nn.LayerNorm(d_model)
         self.dropout   = nn.Dropout(dropout)
         self.head_5d   = nn.Linear(d_model, 1)
         self.head_10d  = nn.Linear(d_model, 1)
@@ -91,10 +109,14 @@ class ShortModelV6(nn.Module):
         # padding_mask 收下但不用（單尺度取最後 window 步全為真實資料）
         h = self.embedding(x)                              # (N, 252, d_model)
         h_temporal = self.encoder(h)                       # (N, d_model)
-        h_graph = self.graph_layer(h_temporal, edge_index, edge_attr)
-        gate_input  = torch.cat([h_temporal, h_graph], dim=-1)
-        gate_weight = self.gate(gate_input)
-        h_fused = self.norm_fuse(gate_weight * h_temporal + (1 - gate_weight) * h_graph)
+        if self.use_gat:
+            h_graph = self.graph_layer(h_temporal, edge_index, edge_attr)
+            gate_input  = torch.cat([h_temporal, h_graph], dim=-1)
+            gate_weight = self.gate(gate_input)
+            h_fused = self.norm_fuse(gate_weight * h_temporal + (1 - gate_weight) * h_graph)
+        else:
+            # 消融組：edge_index / edge_attr 仍照收（呼叫端簽章不變），但完全不用
+            h_fused = h_temporal
         h_fused = self.dropout(h_fused)
         return torch.cat([self.head_5d(h_fused), self.head_10d(h_fused)], dim=-1)  # (N, 2)
 
@@ -160,6 +182,8 @@ def train_short_model(
     device_str:      str = "cuda" if torch.cuda.is_available() else "cpu",
     checkpoint_backup_dir: str | None = None,
     status_path:     str | None = None,
+    use_gat:         bool = True,
+    kg_cache_path:   str | None = None,
 ):
     # ── 把資料集的 target 欄暫時指到 5d/10d（不動正式檔，跟 listnet_5d 同款 runtime 覆蓋）──
     import marketmamba.config as cfg
@@ -178,15 +202,33 @@ def train_short_model(
     train_loader = make_dataloader(train_ds, shuffle=True)
     val_loader   = make_dataloader(val_ds,   shuffle=False)
 
-    model = ShortModelV6(window=window, n_layers=n_layers).to(device)
-    print(f"[short] model params: {model.n_parameters:,}", flush=True)
+    model = ShortModelV6(window=window, n_layers=n_layers, use_gat=use_gat).to(device)
+    print(f"[short] model params: {model.n_parameters:,} | use_gat={use_gat}", flush=True)
 
     optimizer = AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
     total_steps = epochs * max(len(train_loader), 1)
     scheduler = OneCycleLR(optimizer, max_lr=lr, total_steps=total_steps,
                            pct_start=WARMUP_PCT, anneal_strategy="cos")
     scaler = GradScaler('cuda', enabled=AMP_ENABLED and device_str == "cuda")
-    kg_csr, stock_to_idx = build_kg_csr()
+
+    # 圖的來源：`build_kg_csr()` 在受保護的 trainer.py 裡讀 module-level KG_CACHE_PATH，
+    # 沿用本檔既有的 monkeypatch 慣例（上面第 190 行已經在這樣改 PRED_HORIZONS）。
+    if kg_cache_path is not None:
+        from pathlib import Path as _P
+        _orig_kg = T.KG_CACHE_PATH
+        T.KG_CACHE_PATH = _P(kg_cache_path)
+        print(f"[short] KG 來源改為 {kg_cache_path}", flush=True)
+        try:
+            kg_csr, stock_to_idx = build_kg_csr()
+        finally:
+            T.KG_CACHE_PATH = _orig_kg          # 還原，避免污染同一個 session 的後續實驗
+    else:
+        kg_csr, stock_to_idx = build_kg_csr()
+
+    if not use_gat:
+        # 消融組不需要圖；印出來是為了讓「這一輪確實沒用到 KG」看得見，
+        # 而不是靠讀程式碼推論（規則 7）
+        print("[short] use_gat=False → 本輪完全不使用知識圖譜邊", flush=True)
 
     history = TrainingHistory()
     history.val_ic_10d = []   # 額外記 10d IC

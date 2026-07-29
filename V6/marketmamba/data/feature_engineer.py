@@ -20,8 +20,29 @@ import numpy as np
 import pandas as pd
 
 from marketmamba.config import FEATURE_COLS, FEATURE_GROUPS, PROCESSED_DIR, SEQ_LEN
+from marketmamba.data.feature_spec import AVAIL_COLS, NEUTRALIZE_EXCLUDE
 
 logger = logging.getLogger(__name__)
+
+
+# ============================================================
+# 可得性旗標 helper（V6.3 / 決策1）
+# ============================================================
+
+def _mark_avail(df: pd.DataFrame, flag: str, observed: "pd.Series | bool") -> pd.DataFrame:
+    """
+    寫入一個可得性旗標欄。
+
+    語意：1 = 該來源對這筆 (日期, 股票) 有**真實觀測**（可能是 ffill 帶下來的，
+    但源頭確實存在過）；0 = 純粹捏造的填補值。詳見 `feature_spec.py` 的說明。
+
+    呼叫時機一律是「ffill 之後、fillna(0) 之前」——那個瞬間的 notna 才是正確語意。
+    """
+    if isinstance(observed, bool):
+        df[flag] = np.float32(1.0 if observed else 0.0)
+    else:
+        df[flag] = observed.fillna(False).to_numpy(dtype="float32")
+    return df
 
 
 # ============================================================
@@ -51,11 +72,23 @@ def build_features(
     df_business_indicator: pd.DataFrame | None = None,
     df_fed_rate:      pd.DataFrame | None = None,
     fundamentals_v2:  bool = False,
+    availability_flags: bool = False,
 ) -> pd.DataFrame:
     """
-    Merge all raw data sources and compute the 59-dim feature matrix (V6.2).
+    Merge all raw data sources and compute the 59-dim feature matrix (V6.2)
+    或 67 維（V6.3，`availability_flags=True` 且 config 已 patch 成 67 維時）。
 
     Args:
+        availability_flags:
+          False（預設，V6.1/V6.2 行為）：不產生可得性旗標，輸出維度不變。
+          True（V6.3 起）：額外產生 8 個 `Avail_*` 旗標欄，把「捏造的 0」與
+            「真實的 0」分開（決策1）。必須搭配
+            `feature_spec.patch_config_67d()`，且該 patch 要在 import
+            `marketmamba.models.*` 之前執行。
+          ⚠️ 若 config 已是 67 維但這裡傳 False，旗標欄會走 build_features 尾端的
+             「缺欄補 0」路徑而變成整欄 0——那等於告訴模型「所有資料一律不可得」。
+             故下方有顯式檢查會擋下這個組合。
+
         fundamentals_v2:
           False（預設，V6.1 行為）：維持現行基本面語意，與線上 v6_best.pt / v6_short.pt /
             v6_trend.pt 的訓練資料一致。
@@ -70,7 +103,24 @@ def build_features(
     Returns:
         df : MultiIndex [Date, stock_id] with all 59 feature columns + target columns
     """
-    logger.info("Building V6.2 feature matrix (59D)...")
+    _cfg_has_flags = any(c in FEATURE_COLS for c in AVAIL_COLS)
+    if _cfg_has_flags and not availability_flags:
+        raise ValueError(
+            "config 已 patch 成含 Avail_* 的 67 維，但 build_features(availability_flags=False)。"
+            "這個組合會讓旗標欄走尾端『缺欄補 0』路徑、整欄變成 0，"
+            "等於對模型宣告「所有資料一律不可得」，而且不會有任何錯誤訊息。"
+            "請傳 availability_flags=True。"
+        )
+    if availability_flags and not _cfg_has_flags:
+        logger.warning(
+            "availability_flags=True 但 config 尚未 patch 成 67 維——"
+            "旗標會被算出來，但 build_features 尾端重排欄位時會被丟掉。"
+            "請先呼叫 feature_spec.patch_config_67d()。"
+        )
+    logger.info(
+        f"Building feature matrix ({len(FEATURE_COLS)}D, "
+        f"fundamentals_v2={fundamentals_v2}, availability_flags={availability_flags})..."
+    )
 
     df = df_price.copy()
     df["Date"] = pd.to_datetime(df["Date"])
@@ -80,13 +130,14 @@ def build_features(
     df = _add_price_momentum_features(df)
 
     # -- Group B: Institutional / Margin / Technical --
-    df = _merge_institutional(df, df_inst)
-    df = _merge_margin(df, df_margin)
+    df = _merge_institutional(df, df_inst, availability_flags=availability_flags)
+    df = _merge_margin(df, df_margin, availability_flags=availability_flags)
     df = _add_technical_b_features(df)
-    df = _merge_daytrade(df, df_daytrade)
-    df = _merge_holdings(df, df_holdings)                        # V6.1
-    df = _merge_securities(df, df_securities)                    # V6.1
-    df = _merge_foreign_shareholding(df, df_foreign_shareholding)  # V6.1
+    df = _merge_daytrade(df, df_daytrade, availability_flags=availability_flags)
+    df = _merge_holdings(df, df_holdings, availability_flags=availability_flags)
+    df = _merge_securities(df, df_securities, availability_flags=availability_flags)
+    df = _merge_foreign_shareholding(df, df_foreign_shareholding,
+                                     availability_flags=availability_flags)
 
     # -- Group C: Fundamentals --
     df = _merge_per_pbr(df, df_per, fundamentals_v2=fundamentals_v2)
@@ -98,6 +149,12 @@ def build_features(
     df = _derive_valuation_fallback(df, fundamentals_v2=fundamentals_v2)
     df = _merge_dividend_feature(df, df_dividend)                # V6.1
     df = _add_free_cash_flow(df, df_cashflow)                    # V6.1
+
+    # Group C 的兩個旗標必須等所有 Group C 來源都合併完才算：
+    # PER/PBR 還會被 _derive_valuation_fallback 用自算值補上（B-1），
+    # 在個別 _merge_* 裡算會低估實際可得性。
+    if availability_flags:
+        df = _add_group_c_avail_flags(df)
 
     # -- Group D: Macro --
     df = _merge_macro(df, df_macro, df_fear_greed, df_business_indicator,
@@ -210,11 +267,14 @@ def _compute_rsi(series: pd.Series, period: int = 14) -> pd.Series:
 # Group B — Institutional / Technical (16 dims)
 # ============================================================
 
-def _merge_institutional(df: pd.DataFrame, df_inst: pd.DataFrame) -> pd.DataFrame:
+def _merge_institutional(df: pd.DataFrame, df_inst: pd.DataFrame,
+                         availability_flags: bool = False) -> pd.DataFrame:
     if df_inst is None or df_inst.empty:
         for col in ["Foreign_Buy", "Foreign_Sell", "Foreign_Net",
                     "Investment_Trust_Net", "Dealer_Net"]:
             df[col] = 0.0
+        if availability_flags:
+            df = _mark_avail(df, "Avail_Institutional", False)
         return df
 
     df_inst = df_inst.copy()
@@ -223,12 +283,16 @@ def _merge_institutional(df: pd.DataFrame, df_inst: pd.DataFrame) -> pd.DataFram
                   "Investment_Trust_Net", "Dealer_Net"]
     df = df.merge(df_inst[["Date", "stock_id"] + merge_cols],
                   on=["Date", "stock_id"], how="left")
+    if availability_flags:
+        # Foreign_Net 是這組的代表欄；join 沒命中時五欄同時為 NaN
+        df = _mark_avail(df, "Avail_Institutional", df["Foreign_Net"].notna())
     for col in merge_cols:
         df[col] = df[col].fillna(0.0)
     return df
 
 
-def _merge_margin(df: pd.DataFrame, df_margin: pd.DataFrame) -> pd.DataFrame:
+def _merge_margin(df: pd.DataFrame, df_margin: pd.DataFrame,
+                  availability_flags: bool = False) -> pd.DataFrame:
     """Merge margin purchase / short sale data.
     Columns in margin_raw.parquet are already renamed by fetch_v6_data.py."""
     EXPECTED = ["Margin_Purchase", "Margin_Repay", "Short_Sale",
@@ -236,6 +300,8 @@ def _merge_margin(df: pd.DataFrame, df_margin: pd.DataFrame) -> pd.DataFrame:
     if df_margin is None or df_margin.empty:
         for col in EXPECTED:
             df[col] = 0.0
+        if availability_flags:
+            df = _mark_avail(df, "Avail_Margin", False)
         return df
 
     df_m = df_margin.copy()
@@ -255,6 +321,12 @@ def _merge_margin(df: pd.DataFrame, df_margin: pd.DataFrame) -> pd.DataFrame:
 
     df = df.merge(df_m[["Date", "stock_id"] + valid],
                   on=["Date", "stock_id"], how="left")
+    if availability_flags:
+        # 取 ffill 之後、fillna(0) 之前的 notna：代表「這支曾有過真實融資融券資料」，
+        # 而不是「今天剛好有新公布」（後者只會反映公布頻率）
+        _obs = (df.groupby("stock_id")[valid[0]].transform(lambda x: x.ffill()).notna()
+                if valid else pd.Series(False, index=df.index))
+        df = _mark_avail(df, "Avail_Margin", _obs)
     for col in valid:
         df[col] = df.groupby("stock_id")[col].transform(
             lambda x: x.ffill().fillna(0.0))
@@ -298,18 +370,27 @@ def _add_technical_b_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def _merge_daytrade(df: pd.DataFrame, df_daytrade: pd.DataFrame | None) -> pd.DataFrame:
+def _merge_daytrade(df: pd.DataFrame, df_daytrade: pd.DataFrame | None,
+                    availability_flags: bool = False) -> pd.DataFrame:
     """Merge Day_Trade_Volume ratio from daytrade_raw.parquet."""
     if df_daytrade is None or df_daytrade.empty:
+        if availability_flags:
+            df = _mark_avail(df, "Avail_Daytrade", False)
         return df
     dt = df_daytrade[["Date", "stock_id", "Day_Trade_Volume"]].copy()
     dt["Date"] = pd.to_datetime(dt["Date"])
     dt["Day_Trade_Volume"] = pd.to_numeric(dt["Day_Trade_Volume"], errors="coerce").clip(0, 1)
     df = df.merge(dt, on=["Date", "stock_id"], how="left", suffixes=("", "_dt"))
     if "Day_Trade_Volume_dt" in df.columns:
+        if availability_flags:
+            # 必須看 _dt 欄：`Day_Trade_Volume` 已被 _add_technical_b_features
+            # 預先建成整欄 0.0，直接對它取 notna 會恆為 True
+            df = _mark_avail(df, "Avail_Daytrade", df["Day_Trade_Volume_dt"].notna())
         df["Day_Trade_Volume"] = df["Day_Trade_Volume_dt"].fillna(df["Day_Trade_Volume"])
         df.drop(columns=["Day_Trade_Volume_dt"], inplace=True)
     else:
+        if availability_flags:
+            df = _mark_avail(df, "Avail_Daytrade", df["Day_Trade_Volume"].notna())
         df["Day_Trade_Volume"] = df["Day_Trade_Volume"].fillna(0.0)
     return df
 
@@ -471,6 +552,44 @@ def _derive_valuation_fallback(df: pd.DataFrame,
         )
     if obs_cols:
         df = df.drop(columns=obs_cols)
+    return df
+
+
+def _add_group_c_avail_flags(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Group C 的兩個可得性旗標（V6.3 / 決策1）。
+
+    刻意放在 build_features 的 Group C 全部合併完之後，而不是塞進個別 `_merge_*`：
+      - `Avail_Valuation` 要等 `_derive_valuation_fallback` 把自算 PER/PBR 補完，
+        否則會把「官方沒有但自算補上」的列誤標成不可得（2026 年上櫃股全是這種）
+      - `Avail_Financials` 要等 `_merge_fundamentals` 的 as-of join 完成
+
+    此時這些欄位仍是 NaN（最終的 fillna(0) 在 `clean_and_scale`），
+    所以 `notna()` 正是「有真實觀測」的正確判準。
+    """
+    # 只看 PER/PBR，**刻意不含 Market_Cap_Log**。
+    # 初版把三者 OR 起來，結果旗標恆為 1（實測 2012–2026 每年都是 100%）——
+    # 因為 market_value 覆蓋率 94–99%，OR 之後永遠成立，旗標等於沒有資訊。
+    # 真正會缺、且缺得有系統的是 PER/PBR（2005 年 21%、2026 年因新來源只涵蓋上市掉到 73%）。
+    # Market_Cap_Log 自身覆蓋率夠高，不需要旗標保護。
+    val = pd.Series(False, index=df.index)
+    for c in ("PER", "PBR"):
+        if c in df.columns:
+            val = val | pd.to_numeric(df[c], errors="coerce").notna()
+    df = _mark_avail(df, "Avail_Valuation", val)
+
+    fin = pd.Series(False, index=df.index)
+    for c in ("EPS", "Book_Value", "ROE", "Gross_Margin"):
+        if c in df.columns:
+            fin = fin | pd.to_numeric(df[c], errors="coerce").notna()
+    df = _mark_avail(df, "Avail_Financials", fin)
+
+    n = len(df)
+    logger.info(
+        f"[availability] Avail_Valuation 可得 {int(val.sum()):,}/{n:,}"
+        f"（{val.mean():.1%}）｜Avail_Financials 可得 {int(fin.sum()):,}/{n:,}"
+        f"（{fin.mean():.1%}）"
+    )
     return df
 
 
@@ -767,7 +886,8 @@ def _merge_financial_statements(
 # V6.1 — Group B Additions (Holdings, Securities, Foreign Holding)
 # ============================================================
 
-def _merge_holdings(df: pd.DataFrame, df_holdings: pd.DataFrame | None) -> pd.DataFrame:
+def _merge_holdings(df: pd.DataFrame, df_holdings: pd.DataFrame | None,
+                    availability_flags: bool = False) -> pd.DataFrame:
     """Merge 大戶持股分級 data → Holdings_Large_Pct + Holdings_Large_Change.
 
     holdings_raw.parquet contains weekly data (集保戶股權分散表).
@@ -783,6 +903,8 @@ def _merge_holdings(df: pd.DataFrame, df_holdings: pd.DataFrame | None) -> pd.Da
     if df_holdings is None or df_holdings.empty:
         df["Holdings_Large_Pct"] = 0.0
         df["Holdings_Large_Change"] = 0.0
+        if availability_flags:
+            df = _mark_avail(df, "Avail_Holdings", False)
         return df
 
     h = df_holdings.copy()
@@ -815,6 +937,8 @@ def _merge_holdings(df: pd.DataFrame, df_holdings: pd.DataFrame | None) -> pd.Da
             logger.warning("_merge_holdings: no usable ratio column found — setting Holdings_Large_Pct=0")
             df["Holdings_Large_Pct"] = 0.0
             df["Holdings_Large_Change"] = 0.0
+            if availability_flags:
+                df = _mark_avail(df, "Avail_Holdings", False)
             return df
         col = candidate_cols[0]
         h[col] = pd.to_numeric(h[col], errors="coerce")
@@ -831,6 +955,10 @@ def _merge_holdings(df: pd.DataFrame, df_holdings: pd.DataFrame | None) -> pd.Da
         df["Holdings_Large_Pct"] = df["Holdings_Large_Pct_hld"].combine_first(df.get("Holdings_Large_Pct"))
         df.drop(columns=["Holdings_Large_Pct_hld"], inplace=True)
     df = df.sort_values(["stock_id", "Date"])
+    if availability_flags:
+        df = _mark_avail(
+            df, "Avail_Holdings",
+            df.groupby("stock_id")["Holdings_Large_Pct"].transform(lambda x: x.ffill()).notna())
     df["Holdings_Large_Pct"] = df.groupby("stock_id")["Holdings_Large_Pct"].transform(
         lambda x: x.ffill().fillna(0.0))
 
@@ -840,10 +968,13 @@ def _merge_holdings(df: pd.DataFrame, df_holdings: pd.DataFrame | None) -> pd.Da
     return df
 
 
-def _merge_securities(df: pd.DataFrame, df_sec: pd.DataFrame | None) -> pd.DataFrame:
+def _merge_securities(df: pd.DataFrame, df_sec: pd.DataFrame | None,
+                      availability_flags: bool = False) -> pd.DataFrame:
     """Merge 借券餘額 → Securities_Balance (daily short lending balance)."""
     if df_sec is None or df_sec.empty:
         df["Securities_Balance"] = 0.0
+        if availability_flags:
+            df = _mark_avail(df, "Avail_Securities", False)
         return df
 
     s = df_sec.copy()
@@ -857,6 +988,8 @@ def _merge_securities(df: pd.DataFrame, df_sec: pd.DataFrame | None) -> pd.DataF
 
     if not bal_col:
         df["Securities_Balance"] = 0.0
+        if availability_flags:
+            df = _mark_avail(df, "Avail_Securities", False)
         return df
 
     s["Securities_Balance"] = pd.to_numeric(s[bal_col[0]], errors="coerce").fillna(0)
@@ -865,12 +998,19 @@ def _merge_securities(df: pd.DataFrame, df_sec: pd.DataFrame | None) -> pd.DataF
     if "Securities_Balance_sec" in df.columns:
         df["Securities_Balance"] = df["Securities_Balance_sec"].combine_first(df.get("Securities_Balance"))
         df.drop(columns=["Securities_Balance_sec"], inplace=True)
+    if availability_flags:
+        # 這個旗標本身帶有經濟意義：借券餘額表只收錄有借券活動的股票，
+        # 「出現在表上」= 可被借券/放空，是獨立於數值的資訊
+        df = _mark_avail(
+            df, "Avail_Securities",
+            df.groupby("stock_id")["Securities_Balance"].transform(lambda x: x.ffill()).notna())
     df["Securities_Balance"] = df.groupby("stock_id")["Securities_Balance"].transform(
         lambda x: x.ffill().fillna(0.0))
     return df
 
 
-def _merge_foreign_shareholding(df: pd.DataFrame, df_fs: pd.DataFrame | None) -> pd.DataFrame:
+def _merge_foreign_shareholding(df: pd.DataFrame, df_fs: pd.DataFrame | None,
+                                availability_flags: bool = False) -> pd.DataFrame:
     """Merge 外資持股比例 → Foreign_Holding_Pct (cumulative %).
 
     DATA NOTE: foreign_shareholding_raw.parquet contains multiple ratio columns.
@@ -880,6 +1020,8 @@ def _merge_foreign_shareholding(df: pd.DataFrame, df_fs: pd.DataFrame | None) ->
     """
     if df_fs is None or df_fs.empty:
         df["Foreign_Holding_Pct"] = 0.0
+        if availability_flags:
+            df = _mark_avail(df, "Avail_ForeignShare", False)
         return df
 
     fs = df_fs.copy()
@@ -918,6 +1060,8 @@ def _merge_foreign_shareholding(df: pd.DataFrame, df_fs: pd.DataFrame | None) ->
         else:
             logger.warning("_merge_foreign_shareholding: no usable shareholding ratio column found")
             df["Foreign_Holding_Pct"] = 0.0
+            if availability_flags:
+                df = _mark_avail(df, "Avail_ForeignShare", False)
             return df
 
     logger.info(f"_merge_foreign_shareholding: using '{chosen_col}' as Foreign_Holding_Pct")
@@ -927,6 +1071,10 @@ def _merge_foreign_shareholding(df: pd.DataFrame, df_fs: pd.DataFrame | None) ->
     if "Foreign_Holding_Pct_fsp" in df.columns:
         df["Foreign_Holding_Pct"] = df["Foreign_Holding_Pct_fsp"].combine_first(df.get("Foreign_Holding_Pct"))
         df.drop(columns=["Foreign_Holding_Pct_fsp"], inplace=True)
+    if availability_flags:
+        df = _mark_avail(
+            df, "Avail_ForeignShare",
+            df.groupby("stock_id")["Foreign_Holding_Pct"].transform(lambda x: x.ffill()).notna())
     df["Foreign_Holding_Pct"] = df.groupby("stock_id")["Foreign_Holding_Pct"].transform(
         lambda x: x.ffill().fillna(0.0))
     return df
@@ -1378,7 +1526,95 @@ def _asof_lookup(dates: pd.Series, ref_dates: pd.Series, values: pd.Series) -> p
     return pd.Series(result.astype(np.float64), index=dates.index)
 
 
-def clean_and_scale(df: pd.DataFrame, macro_norm: str = "cross") -> pd.DataFrame:
+def _neutralize_cross_section(df: pd.DataFrame, cols: list[str], mode: str) -> pd.DataFrame:
+    """
+    橫斷面產業／市值中性化（F3）。在 winsorize 之後、z-score 之前執行。
+
+    【解決什麼】未中性化的因子會偷偷變成產業或規模的賭注：一個「價值因子」
+    可能只是「一直押傳產」，一個「動能因子」可能只是「一直押小型股」。
+    深度學習**不會**自動處理這件事——模型沒有理由把 beta 和 alpha 分開，
+    它只會學到「能預測報酬的東西」，包含那些你其實不想賭的系統性成分。
+
+    mode:
+      "industry"        產業內去均值。只有產業 dummy 時，對 dummy 迴歸取殘差
+                        在數學上等同於減去組內均值，用 groupby 快很多。
+      "industry_mktcap" 對 [產業 dummies, log 市值] 做 OLS 取殘差。
+                        設計矩陣每天只有一份，59 個特徵一次批次求解。
+
+    【PIT 限制，明確揭露】產業分類來自 `stock_info` 的現況快照，不是逐日的
+    PIT 歷史。實測（2026-07-29）2023→2026 的標籤變動幾乎全是交易所分類改版
+    （觀光事業→觀光餐旅、創新「版」→創新「板」是錯字修正、其他→運動休閒
+    是新增類別），真正的公司重新分類只有個位數，所以用最新分類回推歷史可接受。
+    但這是量測結果，不是假設，也不代表沒有影響。
+    """
+    from marketmamba.data.feature_spec import resolve_sector
+    from marketmamba.data.hygiene import load_stock_info
+
+    sec_map = resolve_sector(load_stock_info(latest_only=False))
+    if sec_map.empty:
+        logger.warning("[neutralize] 取不到產業分類，略過中性化")
+        return df
+
+    sector = df["stock_id"].astype(str).map(
+        dict(zip(sec_map["stock_id"], sec_map["sector"]))).fillna("Unknown")
+    n_unknown = int((sector == "Unknown").sum())
+    logger.info(f"[neutralize] mode={mode}｜{sector.nunique()} 個產業｜"
+                f"無產業別 {n_unknown:,} 列（{n_unknown / max(len(df), 1):.1%}，"
+                f"自成一組不與他人混合）")
+
+    if mode == "industry":
+        # grouper 建一次、55 個欄位一次 transform。
+        # 逐欄 `df.groupby([Date, sector])[col]` 會讓 pandas 每次重建分組索引，
+        # 實測在 141K 列 × 55 欄下慢一個數量級。
+        g = df.groupby([df["Date"], sector], sort=False)
+        df[cols] = df[cols].to_numpy() - g[cols].transform("mean").to_numpy()
+        return df
+
+    # ── industry_mktcap：逐日 OLS ──────────────────────────────
+    if "Market_Cap_Log" not in df.columns:
+        logger.warning("[neutralize] 缺 Market_Cap_Log，退回 industry-only")
+        return _neutralize_cross_section(df, cols, "industry")
+
+    mc = pd.to_numeric(df["Market_Cap_Log"], errors="coerce")
+    codes, _ = pd.factorize(sector)
+    vals = df[cols].to_numpy(dtype="float64", copy=True)
+    mc_v = mc.to_numpy(dtype="float64")
+    date_codes, _ = pd.factorize(df["Date"], sort=True)
+
+    order = np.argsort(date_codes, kind="stable")
+    bounds = np.searchsorted(date_codes[order], np.arange(date_codes.max() + 2))
+    n_skipped = 0
+    for d in range(len(bounds) - 1):
+        idx = order[bounds[d]:bounds[d + 1]]
+        if idx.size < 10:          # 橫斷面太小，迴歸沒有意義
+            n_skipped += 1
+            continue
+        s = codes[idx]
+        uniq = np.unique(s)
+        # 設計矩陣：產業 one-hot（含截距效果）+ log 市值
+        X = np.zeros((idx.size, uniq.size + 1), dtype="float64")
+        X[np.arange(idx.size), np.searchsorted(uniq, s)] = 1.0
+        m = mc_v[idx]
+        X[:, -1] = np.nan_to_num(m - np.nanmean(m), nan=0.0)
+
+        Y = vals[idx]
+        bad = ~np.isfinite(Y)
+        if bad.any():
+            Y = np.where(bad, 0.0, Y)   # NaN 暫代 0 參與迴歸，殘差後還原
+        beta, *_ = np.linalg.lstsq(X, Y, rcond=None)
+        resid = Y - X @ beta
+        if bad.any():
+            resid[bad] = np.nan
+        vals[idx] = resid
+
+    df[cols] = vals
+    if n_skipped:
+        logger.info(f"[neutralize] {n_skipped} 個交易日橫斷面 <10 支，未中性化")
+    return df
+
+
+def clean_and_scale(df: pd.DataFrame, macro_norm: str = "cross",
+                    neutralize: str = "none") -> pd.DataFrame:
     """
     Final cleaning step:
       1. Drop rows with too many NaN features
@@ -1397,23 +1633,61 @@ def clean_and_scale(df: pd.DataFrame, macro_norm: str = "cross") -> pd.DataFrame
           "ts"（V6.2 重訓起）：Group D 改 expanding time-series z-score——
             每日用「前一日為止」的歷史均值/標準差標準化（shift(1) 無 look-ahead），
             至少 252 天歷史才輸出非零值，z 值截斷 ±3σ。其餘特徵維持 cross-sectional。
+
+        neutralize（F3，V6.3）：
+          "none"（預設）：不做中性化，與 V6.1/V6.2 行為完全相同。
+          "industry"：產業內去均值。
+          "industry_mktcap"：對 [產業 dummies, log 市值] 取 OLS 殘差。
+          ⚠️ 中性化會改變 2005 年起所有歷史特徵值，必須與對應的 checkpoint 綁定，
+             理由同 fundamentals_v2 / macro_norm。預設關閉，
+             先用便宜模型（Ridge/GBDT）量出 IC delta 再決定要不要帶進重訓。
     """
     assert macro_norm in ("cross", "ts"), f"macro_norm must be 'cross' or 'ts', got {macro_norm!r}"
 
     # Drop rows where > 30% of feature columns are NaN
-    threshold = int(0.7 * len(FEATURE_COLS))
-    df = df.dropna(subset=FEATURE_COLS, thresh=threshold).copy()
+    #
+    # 判斷基準刻意**排除可得性旗標**：旗標永遠是 0/1、不可能是 NaN，
+    # 算進去會讓門檻變寬（67 維時 int(0.7×67)=46，8 個旗標白送 8 分），
+    # 於是在 59 維會被剔除的列到了 67 維反而存活——同一份原始資料、
+    # 兩種協定版本留下不同的列，之後比較 v1/v2 的 IC 就不是同一批樣本了。
+    _qual_cols = [c for c in FEATURE_COLS if c not in AVAIL_COLS]
+    threshold = int(0.7 * len(_qual_cols))
+    df = df.dropna(subset=_qual_cols, thresh=threshold).copy()
 
     macro_cols = set(FEATURE_GROUPS["macro_environment"]) if macro_norm == "ts" else set()
 
-    for col in FEATURE_COLS:
-        if col in macro_cols:
-            continue   # D1: macro 走 time-series 路徑（下方）
-        # Cross-sectional winsorize
+    # V6.3：可得性旗標一律**不做**任何標準化，保持原始 0/1。
+    # 若逐日 z-score：全市場都有資料的那天 std=0 → 整欄變 0；
+    # 全市場都沒資料的那天 std=0 → 也變 0。兩個相反的狀態變成同一個值，
+    # 而「整欄全缺」正是旗標要表達的事，等於自我抵銷。
+    avail_cols = [c for c in AVAIL_COLS if c in df.columns]
+    if avail_cols:
+        _stat = {c: (float(df[c].mean()), int(df[c].nunique())) for c in avail_cols}
+        logger.info(
+            "[clean_and_scale] 可得性旗標維持原始 0/1（不 winsorize、不 z-score）：\n  "
+            + "\n  ".join(f"{c}: 可得比例 {m:.1%}，相異值 {n}" for c, (m, n) in _stat.items())
+        )
+
+    cross_cols = [c for c in FEATURE_COLS if c not in macro_cols and c not in AVAIL_COLS]
+
+    # 順序：winsorize → （可選）中性化 → z-score
+    # winsorize 先做，是為了不讓離群值主導中性化迴歸的係數；
+    # z-score 最後做，才能讓殘差回到可比較的尺度。
+    for col in cross_cols:
         df[col] = df.groupby("Date")[col].transform(
             lambda x: x.clip(lower=x.quantile(0.01), upper=x.quantile(0.99))
         )
-        # Cross-sectional z-score
+
+    if neutralize != "none":
+        assert neutralize in ("industry", "industry_mktcap"), \
+            f"neutralize must be none/industry/industry_mktcap, got {neutralize!r}"
+        neu_cols = [c for c in cross_cols if c not in NEUTRALIZE_EXCLUDE]
+        logger.info(f"[clean_and_scale] neutralize={neutralize}："
+                    f"{len(neu_cols)}/{len(cross_cols)} 欄參與"
+                    f"（排除 {len(cross_cols) - len(neu_cols)} 欄：旗標／原始價量／市值／macro）")
+        df = _neutralize_cross_section(df, neu_cols, neutralize)
+
+    for col in cross_cols:
         df[col] = df.groupby("Date")[col].transform(
             lambda x: (x - x.mean()) / (x.std() + 1e-9)
         )

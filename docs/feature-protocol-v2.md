@@ -1,0 +1,280 @@
+# MarketMamba 特徵協定 v2.0
+
+> 凍結日：2026-07-29
+> 前身：`docs/baseline-experiment-protocol-draft-2026-07-11.md`（v1.0，59 維）
+> 起因：`MarketMamba_特徵工程規劃討論稿.md` 的決策1（特徵可得期間異質性）與決策2（GATv2 圖結構）
+> 狀態：**規格已凍結，數字待 F5/F6 補**。凍結後中途不改 label／切分／維度定義。
+
+---
+
+## 0. 一句話
+
+v1.0 是「為了公平比較四個模型」而生的資料層；v2.0 把它升級成**下一代訓練基礎**，
+新增三件 v1.0 沒有的東西：可得性旗標、產業/市值中性化、purged CV。
+
+**v1.0 的快取與已發表結果完全保留**（`baseline_cache/`、Ridge/GBDT/GRU 三階報告），
+v2.0 寫到 `baseline_cache_v2/`，靠環境變數 `MM_PROTOCOL=v2` 切換。
+
+---
+
+## 1. 特徵維度：59 → 67
+
+| 分組 | v1.0 | v2.0 | 新增 |
+|---|---|---|---|
+| A price_momentum | 15 | 15 | — |
+| B institutional_flow | 20 | **26** | 6 個 `Avail_*` 旗標 |
+| C fundamentals | 12 | **14** | 2 個 `Avail_*` 旗標 |
+| D macro_environment | 12 | 12 | — |
+| **合計** | **59** | **67** | 8 |
+
+切換方式：`marketmamba.data.feature_spec.patch_config_67d()`（runtime patch，
+**不改 `config.py`**——本機那份刻意保持 56 維、不進 git）。
+
+> ⚠️ **必須在 import 任何 `marketmamba.models.*` 之前呼叫。**
+> `architecture.py` 是 `from config import GROUP_DIMS, INPUT_DIM`，import 當下就綁值。
+> 事後才 patch，`FactorGroupedEmbedding` 會**靜靜地**沿用 59 維切片，不報錯、無徵兆，
+> 直到 IC 莫名其妙很差為止。`patch_config_67d(strict=True)` 會直接擋下這個順序錯誤。
+
+---
+
+## 2. 可得性旗標（決策1）
+
+### 2.1 為什麼
+
+各資料源對 `prices_raw` 宇宙的 (日期, 股票) 命中率實測（`V6/scripts/report_feature_availability.py`）：
+
+| 來源 | 2005 | 2011 | 2012 | 2013 | 2016 | 2019 | 2026 |
+|---|---|---|---|---|---|---|---|
+| institutional（Group B 骨幹 20 維） | 9.6 | 16.6 | **56.3** | **73.9** | 79.4 | 78.6 | 93.3 |
+| margin | 58.0 | 87.3 | 88.3 | 91.2 | 92.3 | 92.0 | 89.8 |
+| daytrade | 0 | 0 | 0 | 0 | 76.0 | 81.1 | 78.0 |
+| per | 20.7 | 96.8 | 96.3 | 96.7 | 96.9 | 96.0 | 72.9 |
+| securities | 0.3 | 4.1 | 4.5 | 5.4 | 9.9 | 8.2 | 48.8 |
+| foreign_shareholding | 0 | 0 | 0 | 0 | 0 | 94.0 | 92.2 |
+| holdings | 0 | 0 | 0 | 0 | 0 | 97 | 100 |
+
+缺失有**兩種性質完全不同**的形狀，而現行程式都用同一招 `fillna(0)`：
+
+- **整欄全缺**（daytrade 2014 前、holdings/foreign_shareholding 2018 前）
+  → 當日全市場同值 → 橫斷面 z-score 自動歸零 → 本身無害，
+  但模型無從知道「這一維今天是關著的」。
+- **部分缺**（institutional 2005–2011 僅 10–18%、securities 全期 0.3–48%）
+  → 被補的列與「淨買超恰為 0」「無借券餘額」這種**合法的 0** 無法區分
+  → 模型改為學習「這支有沒有被資料涵蓋」這個選擇性代理變數。
+
+### 2.2 語意
+
+```
+1 = 該來源對這筆 (日期, 股票) 有真實觀測（可能經 ffill 帶下來，但源頭存在過）
+0 = 純粹捏造的填補值
+```
+
+刻意不用「今天當場有沒有新觀測」：holdings 是週頻、margin 有公布延遲，
+那樣定義會讓旗標大部分日子是 0，反映的是公布頻率而不是資料有無。
+
+**已知限制**：旗標描述「值是不是真的」，**不描述新鮮度**。
+一支股票 2013 年有融資資料、2020 年被取消信用交易資格，旗標仍是 1。
+新鮮度是另一個維度，若之後證實需要，應另加欄位而不是改這個的語意。
+
+### 2.3 八個旗標
+
+| 旗標 | 保護的特徵 | 分組 |
+|---|---|---|
+| `Avail_Institutional` | Foreign_Buy/Sell/Net、Investment_Trust_Net、Dealer_Net | B |
+| `Avail_Margin` | Margin_Purchase/Repay、Short_Sale/Cover、Margin/Short_Balance | B |
+| `Avail_Daytrade` | Day_Trade_Volume | B |
+| `Avail_Holdings` | Holdings_Large_Pct / _Change | B |
+| `Avail_ForeignShare` | Foreign_Holding_Pct | B |
+| `Avail_Securities` | Securities_Balance | B |
+| `Avail_Valuation` | PER、PBR（**不含 Market_Cap_Log**） | C |
+| `Avail_Financials` | EPS、EPS_Surprise、Gross_Margin、ROE、Book_Value、Free_Cash_Flow | C |
+
+`Avail_Valuation` 刻意不含 `Market_Cap_Log`：它覆蓋率 94–99%，OR 進來旗標恆為 1、失去資訊。
+
+### 2.4 旗標**不做**任何標準化
+
+`clean_and_scale` 對 `Avail_*` 完全跳過 winsorize 與 z-score。
+若逐日 z-score：全市場都有資料的那天 std=0 → 整欄變 0；全都沒有的那天 std=0 → 也變 0。
+兩個相反狀態變成同一個值，而「整欄全缺」正是旗標要表達的事，等於自我抵銷。
+
+---
+
+## 3. 訓練起點：2012 → 2013
+
+| | v1.0 | v2.0 |
+|---|---|---|
+| RAW_START | 2009-01-01 | 2010-01-01 |
+| MATRIX_START | 2010-01-01 | 2011-01-01 |
+| TRAIN_START | 2012-01-01 | **2013-01-01** |
+| TRAIN_END | 2023-12-31 | 2023-12-31 |
+| TEST_START / END | 2024-01-01 / 2026-06-02 | 不變（與 Phase 3 harness 同窗）|
+
+理由：institutional 命中率 2011 年 17% → 2012 年 56% → 2013 年 74%。
+2013 之前 Group B 有四到八成的列是捏造的 0。
+MATRIX_START 留在 2011，讓 train 前仍有 2 年緩衝（252 天序列 + macro ts 252 天暖機 + 60 天 rolling）。
+
+---
+
+## 4. 產業／市值中性化（旗標式，**預設關閉**）
+
+`clean_and_scale(df, macro_norm="ts", neutralize=...)`，三種模式：
+
+- `"none"`（預設）：與 v1.0 完全相同
+- `"industry"`：產業內去均值
+- `"industry_mktcap"`：對 `[產業 dummies, log 市值]` 取 OLS 殘差
+
+順序：**winsorize → 中性化 → z-score**。
+winsorize 先做以免離群值主導迴歸係數；z-score 最後做讓殘差回到可比較的尺度。
+
+排除中性化的欄位（`feature_spec.NEUTRALIZE_EXCLUDE`）：
+`Avail_*` 旗標、原始 OHLCV 水位、`Market_Cap_Log`（自變數本身）、Group D macro（同日常數）。
+
+**預設關閉的理由**：中性化會改變 2005 年起所有歷史特徵值。
+先用便宜模型（Ridge/GBDT）量出 IC delta，證明有正貢獻才帶進 Colab 重訓。
+
+### 4.1 產業分類的三個處理（全部必要）
+
+1. **跨市場名稱正規化**（`feature_spec.canonical_sector`）
+   TPEX 用「運動休閒類」、TWSE 用「運動休閒」；「其他電子類」=「其他電子業」；
+   「金融業」=「金融保險」。不正規化的話，同一個產業會沿上市/上櫃被切成兩個
+   互不相連的群，而那條界線在經濟上毫無意義。
+
+2. **大類 vs 細類解析**（`feature_spec.resolve_sector`）
+   `stock_info` 在**同一個快照日期**同時提供早年大類與現行細類——實測 605 組
+   (股票, 日期) 有兩種以上標籤。`load_stock_info(latest_only=True)` 的
+   `drop_duplicates(keep="last")` 在日期相同時是依 parquet 列序任意挑一個，
+   於是 **2330 台積電被標成「電子工業」**（250 支的大雜燴）而不是「半導體業」。
+   優先序：現行細類 > 早年大類（電子工業／化學生技醫療）> 板別標籤（創新板股票／存託憑證）。
+
+3. **PIT 限制，明確揭露**
+   產業分類來自現況快照，不是逐日 PIT。實測 2023→2026 的標籤變動幾乎全是
+   交易所分類改版（觀光事業→觀光餐旅、創新「版」→創新「板」是錯字修正、
+   其他→運動休閒/綠能環保是新增類別），真正的公司重新分類只有個位數
+   → 用最新分類回推歷史可接受。**這是量測結果，不是假設。**
+
+---
+
+## 5. Purged CV + Embargo
+
+`V6/experimental/splitters.py`。
+
+| 參數 | 值 | 理由 |
+|---|---|---|
+| `horizon` | 該模型 label 的最長天數（多 horizon 取 max = 60；純 5d 模型用 5） | label 覆蓋 `[t, t+horizon]` |
+| `embargo_days` | **20 交易日** | 最長 rolling 特徵窗是 60 天，完全消除要留滿 60；20 天（1/3）是嚴謹度與樣本量的折衷。**這是選擇不是定理** |
+
+現行 `walk_forward.py` 是 expanding window、train/test **直接相鄰、零 purge**。
+實測對照：train 結束於 2023-12-29 時，其 60 日 label 一路延伸到 **2024-04-08**，
+等於測試期前三個月在訓練時就被看過。
+
+**誠實預期**：加上 purge/embargo 後報出來的 IC **會下降**。
+那是對的方向——現行數字含邊界洩漏。新舊都要留，對照表明講「舊 = 無 purge、新 = purge 60 + embargo 20」。
+
+`assert_no_leakage()` 是硬性驗收，不是印訊息。
+⚠️ 它需要**完整交易日曆**，不可以只傳 `train ∪ test`——被 purge 掉的那段不在陣列裡，
+`+horizon` 個位置會跨過缺口，把正確的切分誤報成洩漏（初版就是這樣錯的）。
+
+---
+
+## 6. 知識圖譜 v2（決策2）
+
+`V6/experimental/kg_builder_v2.py` → `Data/processed_v6/knowledge_graph_v2.npz`。
+**純新增**，V6.1 每日推論讀的仍是舊的 `knowledge_graph_cache.npz`。
+
+### 6.1 舊圖的問題（實測，不是推論）
+
+| 項目 | 舊圖 | v2 |
+|---|---|---|
+| 節點 | 42,864（**只有 2,510 是真股票**，其餘 ETF/權證） | 2,245（全為可交易真股票） |
+| 邊 | 642,451 | 32,083 |
+| 滾動相關性邊 | **0 條**（動態層從未生效，例外被 try/except 吞掉） | 不含（見 6.3） |
+| 供應鏈邊 | 358 條，來自 **regex 抓 HTML 裡所有 4 位數字** | 移除 |
+| 產業邊連法 | **未設 seed 的 `random.sample`**，每次重建都不同 | 決定性 |
+| 2330 的鄰居 | 電器電纜、化學工業、綠能環保（產業邊被垃圾擠光） | 聯電、聯發科、日月光、環球晶、創意 |
+
+### 6.2 v2 的產業邊
+
+每支股票連到同產業（正規化後）中的：
+- 市值最大的 5 支（產業龍頭，捕捉產業 beta 傳導）
+- 市值排序上最鄰近的 10 支（規模相近者最具可比性）
+
+排序鍵含 `stock_id` 決勝 → 同一份輸入永遠得到同一張圖。
+
+### 6.3 v2 **不含**的東西
+
+- **相關性邊**：那是選項 C。現行寫法還有 look-ahead（用整份資料最後 60 天算好、
+  套用到 2005 年的訓練樣本）。要做必須改成逐 fold 用該時點之前的資料重算。
+- **產業鏈邊**：留給 Phase 4-A 用正式節點對應表做，不再靠 regex 爬蟲。
+
+### 6.4 集團表大幅縮減
+
+舊表有大量事實錯誤，而且是權重最高（0.8）的邊，會優先擠掉正確的同業邊：
+
+| 錯誤 | 實際 |
+|---|---|
+| 鴻海集團含 2353 宏碁、6005 群益證 | 兩者皆為獨立公司 |
+| 國泰集團含 2884 玉山金、9910 豐泰 | 獨立金控／製鞋業 |
+| 富邦集團含 2883 開發金、5880 合庫金 | 皆為獨立金控 |
+| 遠東集團含 2401 凌陽科技 | 與遠東系無關（遠東新世紀是 1402） |
+| 友達集團含 3481 群創 | 是競爭對手 |
+| 「台積電生態圈」「聯發科生態圈」 | 不是集團，用 0.8 表達「從屬」在語意上就錯 |
+
+v2 只保留可確認的四組：台塑、遠東、統一、鴻海。
+
+### 6.5 GAT 消融（決策2 的實質答案）
+
+`V6/experimental/short_model.py` 加 `use_gat` 開關，三組對照、其餘變因全凍結：
+**無 GAT ／ 舊圖 GAT ／ v2 圖 GAT**。
+
+在確認 GATv2 到底有沒有貢獻之前，不投入選項 C（動態相關性）的工程量。
+
+---
+
+## 7. 驗收結果（2026-07-29 實測，40 支 × 2012 起 = 141,906 列）
+
+| # | 檢查 | 判準 | 實測 |
+|---|---|---|---|
+| 1a | `build_features` 新旗標全關 vs git HEAD | 最大絕對差 `0.000e+00` | **`0.000e+00`，不一致欄位 0** ✓ |
+| 1b | `clean_and_scale` 重構後 vs git HEAD（`cross` / `ts`）| 同上 | **兩者皆 `0.000e+00`** ✓ |
+| 2 | 旗標逐年可得比例 vs 原始來源命中率 | 一致 | institutional 2012→58%／2013→85%、daytrade 2014 前 0%、holdings 2018 前 0% ✓ |
+| 3 | 旗標經 `clean_and_scale` 後仍為 0/1 | 是 | 8/8 通過；對照組 `Return_5d` mean +0.0000 / std 0.9874（證明標準化確實有跑）✓ |
+| 4 | `neutralize="none"` 與現況相同 | 差 0 | **`0.000e+00`** ✓ |
+| 5 | 中性化殘差 | 產業內均值 ≈ 0、與 log 市值相關 ≈ 0 | `industry` 3.33e-16 / −0.0001；`industry_mktcap` 5.55e-14 / +0.0005 ✓ |
+| 6 | KG 鄰居抽驗 | 人工看得懂 | 2330 → 聯電/聯發科/日月光/環球晶/創意（舊圖為電器電纜/化學工業/綠能環保）✓ |
+| 7 | 切分無洩漏 | `assert_no_leakage` 全 fold 通過 | 39 個 fold 全通過；對照組正確抓出現行切分洩漏至 2024-04-08 ✓ |
+| 8 | config patch 順序保護 | 事後 patch 應拋錯 | `RuntimeError` 正確觸發，且 config 未被半途改壞 ✓ |
+
+### 7.1 死旗標偵測（40 支樣本，訓練窗 2013 起）
+
+| 旗標 | mean | std | 判定 |
+|---|---|---|---|
+| Avail_Institutional | 0.9051 | 0.2931 | OK |
+| Avail_Daytrade | 0.7715 | 0.4198 | OK |
+| Avail_Holdings | 0.6277 | 0.4835 | OK |
+| Avail_ForeignShare | 0.3239 | 0.4682 | OK |
+| Avail_Securities | 0.8868 | 0.3168 | OK |
+| **Avail_Margin** | 1.0000 | 0.0000 | **常數** |
+| **Avail_Valuation** | 1.0000 | 0.0000 | **常數** |
+| **Avail_Financials** | 1.0000 | 0.0000 | **常數** |
+
+常數欄不只沒資訊，還會佔掉 `FactorGroupedEmbedding` 的投影容量。
+但本測試僅 40 支、偏向老牌大型股，**最終取捨以 F5 全量建構的結果為準**
+（腳本已內建自動偵測）。若三者在全量下仍是常數，旗標縮到 5 個、INPUT_DIM 降為 64。
+
+---
+
+## 8. 附錄：特徵可得時間對照表（檢查表 G1）
+
+見 `V6/marketmamba/data/feature_spec.py` 的 `AVAILABILITY_TABLE`
+（每個特徵群 → 來源、資料起始、公告延遲、缺失語意），
+以及 `V6/scripts/report_feature_availability.py` 的表 1/1b 實測輸出。
+
+---
+
+## 9. 待補（F5/F6 跑完後回填）
+
+- [ ] R0–R5 逐項 IC delta（起點 2013 / 旗標 / fundamentals_v2 / 中性化 / purge）
+- [ ] 中性化最終取捨（`NEUTRALIZE` 定案）
+- [ ] 死旗標最終取捨（`Avail_Valuation` 與 `Avail_Margin` 在 2013+ 訓練窗內是否恆為 1）
+- [ ] GAT 三組消融結果
+- [ ] Group D 12 維消融結果
