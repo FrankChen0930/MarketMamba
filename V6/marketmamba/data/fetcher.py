@@ -1586,6 +1586,185 @@ def fetch_capital_reduction_tpex_direct(start: str, end: str) -> Optional[pd.Dat
     return _cap_reduction_parse(rows, fields, _roc_any)
 
 
+# ============================================================
+# TAIFEX 三大法人（期貨 / 選擇權）直連
+# ============================================================
+#
+# 為什麼改直連：FinMind 免費層對 `TaiwanFuturesInstitutionalInvestors` 與
+# `TaiwanOptionsInstitutionalInvestors` 回 HTTP 400 "Your level is register"
+# （2026-07-29 實測），也就是這兩個源在不訂閱的前提下**永遠拿不到**。
+# TAIFEX 自己的下載端點是公開的，而且是**不同主機**——不與 TWSE/TPEX 的
+# 速率限制互相排擠，也不受 FinMind 額度影響。
+
+TAIFEX_FUT_URL = "https://www.taifex.com.tw/cht/3/futContractsDateDown"
+TAIFEX_OPT_URL = "https://www.taifex.com.tw/cht/3/callsAndPutsDateDown"
+TAIFEX_HEADERS = {**HEADERS, "Referer": "https://www.taifex.com.tw/"}
+
+# 商品名稱 → 代碼。既有 parquet 用的是 FinMind 的代碼（TX / TXO），
+# 對不到的一律保留原始中文名（不猜、不丟）。
+TAIFEX_PRODUCT_CODE = {
+    "臺股期貨": "TX", "台股期貨": "TX",
+    "小型臺指期貨": "MTX", "小型台指期貨": "MTX",
+    "電子期貨": "TE", "金融期貨": "TF",
+    "臺指選擇權": "TXO", "台指選擇權": "TXO",
+    "電子選擇權": "TEO", "金融選擇權": "TFO",
+}
+
+# 中文欄名 → production 欄名。用**欄名對映**而非索引：
+# 雷區清單第 14 條（同一端點的版面會隨年份改變）在 TWT49U 上已經咬過一次。
+# 2026-07-29 實測的真實欄名（value 為 production 欄名，list 為候選中文欄名）。
+# ⚠️ 成交金額欄實際叫「多方**交易**契約金額(千元)」，中間有「交易」二字；
+#    初版少寫了它、又因為子字串比對方向相反而對不上，會靜默留下整欄 NaN。
+# 2026-07-29 實測的真實欄名。**期貨與選擇權用詞不同**（同一個交易所、同一組概念）：
+#     期貨    多方交易口數 / 空方交易口數 / 多方未平倉口數 …
+#     選擇權  買方交易口數 / 賣方交易口數 / 買方未平倉口數 …
+# 初版只寫了期貨那組，選擇權整整 8 個數值欄全部落空（且靜默留 NaN）。
+_TAIFEX_COLMAP = {
+    "long_deal_volume":                   ["多方交易口數", "買方交易口數"],
+    "long_deal_amount":                   ["多方交易契約金額(千元)", "買方交易契約金額(千元)"],
+    "short_deal_volume":                  ["空方交易口數", "賣方交易口數"],
+    "short_deal_amount":                  ["空方交易契約金額(千元)", "賣方交易契約金額(千元)"],
+    "long_open_interest_balance_volume":  ["多方未平倉口數", "買方未平倉口數"],
+    "long_open_interest_balance_amount":  ["多方未平倉契約金額(千元)", "買方未平倉契約金額(千元)"],
+    "short_open_interest_balance_volume": ["空方未平倉口數", "賣方未平倉口數"],
+    "short_open_interest_balance_amount": ["空方未平倉契約金額(千元)", "賣方未平倉契約金額(千元)"],
+}
+
+# TAIFEX 回 CALL/PUT，既有 parquet 是 買權/賣權。統一成既有值，
+# 否則下游任何 groupby("call_put") 會把同一類拆成兩組。
+_TAIFEX_CP = {"CALL": "買權", "PUT": "賣權", "call": "買權", "put": "賣權"}
+
+# TAIFEX 回「外資及陸資」，既有 parquet 是「外資」。統一成既有值。
+_TAIFEX_INST = {"外資及陸資": "外資"}
+
+# 既有 parquet 只涵蓋 TX / TXO（FinMind 的子集），每個交易日固定 3 列（三類法人）。
+# TAIFEX 一次回**所有商品**（單日 69 列）。若不過濾就併進去，
+# `Futures_OI_Foreign`（外資淨未平倉，跨商品加總）的**加總範圍會在接續日無聲改變**——
+# 特徵值突然跳一個量級，而且不會有任何錯誤訊息。
+TAIFEX_KEEP_FUTURES = {"TX"}
+TAIFEX_KEEP_OPTIONS = {"TXO"}
+
+
+def _taifex_post(url: str, start: str, end: str) -> Optional[str]:
+    """TAIFEX 下載端點一律走 POST + 表單。回傳 CSV 文字。"""
+    data = {"firstDate": start, "lastDate": end,
+            "queryStartDate": start, "queryEndDate": end,
+            "commodityId": ""}
+    try:
+        resp = requests.post(url, data=data, headers=TAIFEX_HEADERS, timeout=45)
+        resp.raise_for_status()
+    except Exception as e:                                    # noqa: BLE001
+        logger.warning(f"TAIFEX fetch failed {start}~{end}: {e}")
+        return None
+    # ⚠️ TAIFEX 回的是 **MS950（Big5）**，且 header 有正確宣告。
+    #    用 `apparent_encoding` 猜測在中文資料上不可靠（會把 Big5 猜成 GB2312 之類），
+    #    一律以 header 宣告為準、猜測只當退路。
+    ct = resp.headers.get("content-type", "")
+    enc = None
+    if "charset=" in ct.lower():
+        enc = ct.lower().split("charset=")[-1].strip()
+    resp.encoding = enc or resp.apparent_encoding or "utf-8"
+    text = resp.text
+    # 非交易日 / 無資料時回的是 HTML 錯誤頁（實測 2026-07-10、602 bytes），不是空 CSV。
+    if text.lstrip().lower().startswith(("<!doctype", "<html")):
+        return None
+    return text
+
+
+def _taifex_parse(text: str, date_str: str, is_option: bool) -> Optional[pd.DataFrame]:
+    """
+    解析 TAIFEX 三大法人 CSV。
+
+    刻意做三件事（全部來自本專案踩過的雷）：
+      ① 用**欄名**建立對映，缺任何必要欄就明講並放棄，不硬編索引
+      ② 硬性核對每一列的日期等於請求日期，不符者剔除
+      ③ 回傳前印出實際欄名，讓第一次執行就能發現版面不如預期
+    """
+    from io import StringIO
+    try:
+        df = pd.read_csv(StringIO(text))
+    except Exception as e:                                    # noqa: BLE001
+        logger.warning(f"TAIFEX CSV 解析失敗 {date_str}: {e}")
+        return None
+    if df.empty:
+        return None
+    df.columns = [str(c).strip() for c in df.columns]
+
+    def _find(*cands) -> str | None:
+        for c in cands:
+            if c in df.columns:
+                return c
+        for c in cands:                                       # 退而求其次：包含即可
+            for col in df.columns:
+                if c in col:
+                    return col
+        return None
+
+    c_date = _find("日期")
+    c_prod = _find("商品名稱", "商品代號")
+    c_inst = _find("身份別")
+    c_cp = _find("買賣權別", "權別") if is_option else None
+    if not all([c_date, c_prod, c_inst]) or (is_option and not c_cp):
+        logger.warning(f"TAIFEX 版面無法辨識（{date_str}），實際欄名："
+                       f"{list(df.columns)}")
+        return None
+
+    out = pd.DataFrame()
+    d = pd.to_datetime(df[c_date], errors="coerce")
+    want = pd.to_datetime(date_str)
+    ok = d.notna()
+    if date_str:                                              # 單日查詢才核對
+        n_bad = int((ok & (d != want)).sum())
+        if n_bad:
+            logger.warning(f"TAIFEX {date_str}: {n_bad} 列日期不符，已剔除")
+            ok &= (d == want)
+    df, d = df[ok], d[ok]
+    if df.empty:
+        return None
+
+    out["Date"] = d.values
+    prod = df[c_prod].astype(str).str.strip()
+    out["option_id" if is_option else "futures_id"] = prod.map(
+        lambda x: TAIFEX_PRODUCT_CODE.get(x, x)).values
+    if is_option:
+        _cp = df[c_cp].astype(str).str.strip()
+        out["call_put"] = _cp.map(lambda x: _TAIFEX_CP.get(x, x)).values
+    _inst = df[c_inst].astype(str).str.strip()
+    out["institutional_investors"] = _inst.map(
+        lambda x: _TAIFEX_INST.get(x, x)).values
+
+    n_mapped, missing = 0, []
+    for en, cands in _TAIFEX_COLMAP.items():
+        col = _find(*cands)
+        if col is None:
+            out[en] = pd.NA
+            missing.append(en)
+        else:
+            out[en] = pd.to_numeric(
+                df[col].astype(str).str.replace(",", "").str.strip(),
+                errors="coerce").values
+            n_mapped += 1
+    if missing:
+        logger.warning(f"TAIFEX {date_str}: 只對映到 {n_mapped}/"
+                       f"{len(_TAIFEX_COLMAP)} 個數值欄，缺 {missing}"
+                       f"｜實際欄名={list(df.columns)}")
+    return out
+
+
+def fetch_futures_institutional_direct(date_str: str) -> Optional[pd.DataFrame]:
+    """期貨三大法人（TAIFEX，逐日）。供 `Futures_OI_Foreign` 特徵使用。"""
+    t = _taifex_post(TAIFEX_FUT_URL, date_str.replace("-", "/"),
+                     date_str.replace("-", "/"))
+    return _taifex_parse(t, date_str, is_option=False) if t else None
+
+
+def fetch_options_institutional_direct(date_str: str) -> Optional[pd.DataFrame]:
+    """選擇權三大法人（TAIFEX，逐日）。供 `Options_PC_Ratio` 特徵使用。"""
+    t = _taifex_post(TAIFEX_OPT_URL, date_str.replace("-", "/"),
+                     date_str.replace("-", "/"))
+    return _taifex_parse(t, date_str, is_option=True) if t else None
+
+
 def fetch_shares_outstanding_mops() -> Optional[pd.DataFrame]:
     """
     上市/上櫃/興櫃公司基本資料（MOPS 公開資訊觀測站開放資料，含已發行普通股數）。
@@ -2194,6 +2373,82 @@ def _catch_up_generic(name: str, fetcher, today: str,
     return len(new), done
 
 
+def _catch_up_taifex(today: str, max_months: int = 6) -> tuple[int, int]:
+    """
+    期貨/選擇權三大法人的補缺口（TAIFEX 直連，2026-07-29 納入每日更新）。
+
+    【為什麼直連】FinMind 免費層對這兩個 dataset 回 400 "Your level is register"，
+    不訂閱就永遠拿不到。TAIFEX 端點公開、且是**不同主機**——不與 TWSE/TPEX
+    搶速率，也不受 FinMind 額度影響。
+
+    【區間查詢】TAIFEX 支援 `queryStartDate`/`queryEndDate`，一次一個月
+    （實測 2026/05 回 1,242 列 / 18 個交易日），比逐日省 20 倍請求。
+
+    【只保留 TX / TXO】既有 parquet 是 FinMind 的子集（每日 3 列），
+    而 TAIFEX 一次回所有商品（單日 69 列）。不過濾的話
+    `Futures_OI_Foreign`（跨商品加總）會在接續日無聲跳一個量級。
+
+    【歷史深度】TAIFEX 這兩個端點約只有 2.5 年（2023 下半年起），
+    更早的歷史仍靠既有 parquet（FinMind 抓的 2018-06 起），兩者在此銜接。
+    """
+    specs = [
+        ("futures_institutional_raw", TAIFEX_FUT_URL, False,
+         ["Date", "futures_id", "institutional_investors"], TAIFEX_KEEP_FUTURES,
+         "futures_id"),
+        ("options_institutional_raw", TAIFEX_OPT_URL, True,
+         ["Date", "option_id", "call_put", "institutional_investors"],
+         TAIFEX_KEEP_OPTIONS, "option_id"),
+    ]
+    totals = []
+    for name, url, is_opt, key, keep, idcol in specs:
+        path = PROCESSED_DIR / f"{name}.parquet"
+        if not path.exists():
+            totals.append(0)
+            continue
+        old = pd.read_parquet(path)
+        old["Date"] = pd.to_datetime(old["Date"])
+        last = old["Date"].max()
+        start = last + pd.Timedelta(days=1)
+        end = pd.to_datetime(today)
+        if start > end:
+            logger.info(f"{name}: 已最新（{last.date()}）")
+            totals.append(0)
+            continue
+
+        frames = []
+        cur, n_month = start, 0
+        while cur <= end and n_month < max_months:
+            chunk_end = min(cur + pd.offsets.MonthEnd(0), end)
+            t = _taifex_post(url, cur.strftime("%Y/%m/%d"),
+                             chunk_end.strftime("%Y/%m/%d"))
+            d = _taifex_parse(t, "", is_option=is_opt) if t else None
+            if d is not None and not d.empty:
+                d = d[d[idcol].isin(keep)]
+                if not d.empty:
+                    frames.append(d)
+            cur = chunk_end + pd.Timedelta(days=1)
+            n_month += 1
+            time.sleep(1.5)
+
+        if not frames:
+            logger.warning(f"{name}: {last.date()} 之後無新資料")
+            totals.append(0)
+            continue
+        new = pd.concat(frames, ignore_index=True)
+        for c in old.columns:
+            if c not in new.columns:
+                new[c] = pd.NA
+        out = pd.concat([old, new[old.columns]], ignore_index=True)
+        out = out.drop_duplicates(subset=key, keep="last")
+        out = out.sort_values(key).reset_index(drop=True)
+        out.to_parquet(path, index=False)
+        added = len(out) - len(old)
+        logger.info(f"{name}: 抓到 {len(new):,} 列 → 淨增 {added:,} 列"
+                    f"｜{last.date()} → {out['Date'].max().date()}")
+        totals.append(added)
+    return tuple(totals)                                      # type: ignore[return-value]
+
+
 def _live_universe() -> set[str]:
     """
     目前仍在交易的股票代號（取 `prices_raw` 最後一個交易日）。
@@ -2562,6 +2817,16 @@ def run_daily_update(
                     if _n_fs else "foreign_shareholding_raw: 無新增")
     except Exception as _e:                                   # noqa: BLE001
         logger.warning(f"foreign_shareholding_raw 更新失敗（不影響推論）：{_e}")
+
+    # ── 期貨/選擇權三大法人（2026-07-29 納入；TAIFEX 直連）────────────────────
+    # FinMind 免費層對這兩個 dataset 回 400，不訂閱就永遠拿不到。
+    # TAIFEX 是不同主機，不與 TWSE/TPEX 搶速率，也不受 FinMind 額度影響。
+    try:
+        _n_fut, _n_opt = _catch_up_taifex(today)
+        logger.info(f"TAIFEX 三大法人：期貨 +{_n_fut:,} 列｜選擇權 +{_n_opt:,} 列"
+                    if (_n_fut or _n_opt) else "TAIFEX 三大法人：無新增")
+    except Exception as _e:                                   # noqa: BLE001
+        logger.warning(f"TAIFEX 三大法人更新失敗（不影響推論）：{_e}")
 
     # ── 月/季頻資料源（2026-07-29 納入；FinMind 免費層仍可用）──────────────────
     # 這兩個源原本只在 force_rebuild 時整份重抓，平時走快取分支＝永遠不會更新，
