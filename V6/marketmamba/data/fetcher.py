@@ -1765,6 +1765,120 @@ def fetch_options_institutional_direct(date_str: str) -> Optional[pd.DataFrame]:
     return _taifex_parse(t, date_str, is_option=True) if t else None
 
 
+def fetch_dividends_mops_direct() -> Optional[pd.DataFrame]:
+    """
+    股利分派情形（MOPS 開放資料 `t187ap45_L`／`_O`，含**上市與上櫃**）。
+
+    【為什麼改直連】FinMind 的 `TaiwanStockDividend` 是**逐股查詢**，
+    ~2,000 次請求撞爆免費層的 600 次/日額度；MOPS 是兩個 CSV、兩次請求。
+
+    【`date` 欄的語意差異——必須明確記錄】
+      既有 `dividend_raw`（FinMind）的 `date` 實測是**除息交易日 + 6 天**
+      （median 6 天、p10/p90 = 6/8），也就是股利**發放後**才出現，
+      而真正的公告日（`AnnouncementDate`）比它早約 22 天。
+
+      MOPS 這張表沒有除息交易日，只有「董事會（擬議）股利分派日」＝真正的公告日。
+      本函式以它填 `date`。**後果**：新資料讓股利比歷史資料早約 28 天被特徵「看到」。
+
+      兩者都**不含未來資訊**（董事會決議當日即為公開資訊），差別只在時效——
+      歷史段是偏保守的遲鈍，新資料段較貼近實際可得時點。
+      `_merge_dividend_feature` 的 docstring 原本就寫「available once announced
+      (before ex-date)」，新做法其實才符合原意。接縫處會有一次時效性的變化，
+      這是刻意的取捨而非 bug。
+
+    【涵蓋範圍】MOPS 只提供**當年度**的申報快照（上市 1,142 列、上櫃 913 列），
+      不能回補歷史。歷史仍靠既有 parquet（FinMind 抓的 2005 起）。
+    """
+    from io import StringIO
+    frames = []
+    for sfx, market in (("L", "上市"), ("O", "上櫃")):
+        url = f"https://mopsfin.twse.com.tw/opendata/t187ap45_{sfx}.csv"
+        try:
+            resp = requests.get(url, headers=HEADERS, timeout=45)
+            resp.raise_for_status()
+        except Exception as e:                                # noqa: BLE001
+            logger.warning(f"MOPS 股利分派 {market} 抓取失敗：{e}")
+            continue
+        resp.encoding = "utf-8-sig"
+        try:
+            df = pd.read_csv(StringIO(resp.text))
+        except Exception as e:                                # noqa: BLE001
+            logger.warning(f"MOPS 股利分派 {market} 解析失敗：{e}")
+            continue
+        df.columns = [str(c).strip() for c in df.columns]
+
+        def _col(*names) -> str | None:
+            for n in names:
+                if n in df.columns:
+                    return n
+            for n in names:
+                for c in df.columns:
+                    if n in c:
+                        return c
+            return None
+
+        c_id = _col("公司代號")
+        c_date = _col("董事會（擬議）股利分派日", "董事會")
+        c_year = _col("股利年度")
+        if not all([c_id, c_date]):
+            logger.warning(f"MOPS 股利分派 {market} 版面無法辨識：{list(df.columns)}")
+            continue
+
+        def _num(col_name: str | None) -> pd.Series:
+            if col_name is None:
+                return pd.Series(0.0, index=df.index)
+            return pd.to_numeric(
+                df[col_name].astype(str).str.replace(",", ""), errors="coerce"
+            ).fillna(0.0)
+
+        out = pd.DataFrame({
+            "stock_id": df[c_id].astype(str).str.strip(),
+            # 民國 YYYMMDD（如 1150311）→ 西元
+            "date": pd.to_datetime(
+                df[c_date].astype(str).str.strip().map(_roc_compact_to_ad),
+                errors="coerce"),
+            "year": (df[c_year].astype(str).str.strip() + "年"
+                     if c_year else pd.NA),
+            # ⚠️ 欄位語意不可照欄名直譯。MOPS 把股利**依來源拆成三欄**
+            #    （盈餘分配／法定盈餘公積／資本公積），而既有 parquet（FinMind）
+            #    是把**總額全放在 `*EarningsDistribution`**、`*StatutorySurplus` 恆為 0
+            #    （實證：1101 台泥 113 年度 FinMind 記 1.00 全在第一欄）。
+            #    若照欄名對映，像台泥這種「全部由資本公積配發」的公司
+            #    會變成 0 元股利——而且不會有任何錯誤訊息。
+            "CashEarningsDistribution": (
+                _num(_col("盈餘分配之現金股利"))
+                + _num(_col("法定盈餘公積發放之現金"))
+                + _num(_col("資本公積發放之現金"))),
+            "CashStatutorySurplus": 0.0,
+            "StockEarningsDistribution": (
+                _num(_col("盈餘轉增資配股"))
+                + _num(_col("法定盈餘公積轉增資配股"))
+                + _num(_col("資本公積轉增資配股"))),
+            "StockStatutorySurplus": 0.0,
+        })
+        out = out[out["stock_id"].str.match(r"^\d{4}$") & out["date"].notna()]
+        if not out.empty:
+            frames.append(out)
+            logger.info(f"MOPS 股利分派 {market}：{len(out):,} 筆"
+                        f"（{out['date'].min().date()} → {out['date'].max().date()}）")
+
+    if not frames:
+        return None
+    return pd.concat(frames, ignore_index=True).drop_duplicates(
+        subset=["stock_id", "date"], keep="last")
+
+
+def _roc_compact_to_ad(s) -> str | None:
+    """民國緊湊格式 '1150311' / '990311' → '2026-03-11'。"""
+    t = str(s).strip()
+    if not t.isdigit() or len(t) not in (6, 7):
+        return None
+    try:
+        return f"{int(t[:-4]) + 1911:04d}-{t[-4:-2]}-{t[-2:]}"
+    except Exception:                                         # noqa: BLE001
+        return None
+
+
 def fetch_shares_outstanding_mops() -> Optional[pd.DataFrame]:
     """
     上市/上櫃/興櫃公司基本資料（MOPS 公開資訊觀測站開放資料，含已發行普通股數）。
@@ -2449,6 +2563,41 @@ def _catch_up_taifex(today: str, max_months: int = 6) -> tuple[int, int]:
     return tuple(totals)                                      # type: ignore[return-value]
 
 
+def _catch_up_dividends() -> int:
+    """
+    股利分派補齊（MOPS 直連，2026-07-29 納入每日更新）。
+
+    MOPS 提供的是**當年度申報快照**，所以做法是每天把快照併進來、
+    以 (stock_id, date) 去重——新的董事會決議會自然出現，已存在的不會重複。
+    不能回補歷史（歷史仍靠既有 parquet，FinMind 抓的 2005 起）。
+
+    ⚠️ 新列的除權息日期等欄位為 NA（MOPS 這張表沒有）。
+       目前無下游依賴：`_merge_dividend_feature` 只用 `date` 與現金股利欄，
+       而 B-3 的除權息因子已改用交易所官方表（`ex_rights_raw`），
+       不再需要從 `dividend_raw` 反推。
+    """
+    path = PROCESSED_DIR / "dividend_raw.parquet"
+    if not path.exists():
+        return 0
+    new = fetch_dividends_mops_direct()
+    if new is None or new.empty:
+        logger.warning("dividend_raw: MOPS 無資料")
+        return 0
+    old = pd.read_parquet(path)
+    old["date"] = pd.to_datetime(old["date"], errors="coerce")
+    for c in old.columns:
+        if c not in new.columns:
+            new[c] = pd.NA
+    out = pd.concat([old, new[old.columns]], ignore_index=True)
+    out = out.drop_duplicates(subset=["stock_id", "date"], keep="last")
+    out = out.sort_values(["stock_id", "date"]).reset_index(drop=True)
+    out.to_parquet(path, index=False)
+    added = len(out) - len(old)
+    logger.info(f"dividend_raw: MOPS {len(new):,} 筆 → 淨增 {added:,} 列"
+                f"｜最新 {out['date'].max().date()}")
+    return added
+
+
 def _live_universe() -> set[str]:
     """
     目前仍在交易的股票代號（取 `prices_raw` 最後一個交易日）。
@@ -2827,6 +2976,15 @@ def run_daily_update(
                     if (_n_fut or _n_opt) else "TAIFEX 三大法人：無新增")
     except Exception as _e:                                   # noqa: BLE001
         logger.warning(f"TAIFEX 三大法人更新失敗（不影響推論）：{_e}")
+
+    # ── 股利分派（2026-07-29 納入；MOPS 直連，含上市與上櫃）────────────────────
+    # FinMind 的 TaiwanStockDividend 是逐股查詢（~2,000 次），撞爆免費層額度；
+    # MOPS 是兩個 CSV、兩次請求。
+    try:
+        _n_div = _catch_up_dividends()
+        logger.info(f"dividend_raw: +{_n_div:,} 列" if _n_div else "dividend_raw: 無新增")
+    except Exception as _e:                                   # noqa: BLE001
+        logger.warning(f"dividend_raw 更新失敗（不影響推論）：{_e}")
 
     # ── 月/季頻資料源（2026-07-29 納入；FinMind 免費層仍可用）──────────────────
     # 這兩個源原本只在 force_rebuild 時整份重抓，平時走快取分支＝永遠不會更新，

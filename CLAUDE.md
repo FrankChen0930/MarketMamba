@@ -346,6 +346,10 @@ cd app/frontend && npm run dev   # → localhost:5173
 > 最後更新：2026-07-28（B-1/B-2/B-4/B-5 完成、B-3 全歷史還原重建執行中；剩 7 個資料源待改直連；Phase 3 模型實驗仍暫停中）
 
 ### 最近完成
+- **股利分派改 MOPS 直連（2026-07-29）**：FinMind 的 `TaiwanStockDividend` 是**逐股查詢**（~2,000 次）會撞爆免費層 600 次/日額度；MOPS `t187ap45_L`/`_O` 是**兩個 CSV、兩次請求**且含上市與上櫃。新增 `fetch_dividends_mops_direct` + `_catch_up_dividends`，接進 `run_daily_update`，淨增 2,023 列 → 最新 2026-07-27。**健檢警告 4 → 3**（整輪工作起點是 14）
+  - **踩到「拆開 vs 合併」的口徑陷阱**：MOPS 把現金股利**依來源拆三欄**（盈餘分配／法定盈餘公積／**資本公積**），而 FinMind 是**總額全放 `CashEarningsDistribution`**、`CashStatutorySurplus` 恆為 0。照欄名直譯的話，**全部由資本公積配發**的公司會變成 0 元股利——1101 台泥就是（實際 0.8 元），而且不會有任何錯誤訊息。改為三欄加總後，**量級交叉驗證 MOPS/FinMind 比值 median = 1.000**（82.8% 落在 0.5~2.0；不同年度本就不會恰為 1）
+  - **`date` 欄語意變化（刻意，已記錄）**：既有 `date` 實測是**除息交易日 + 6 天**（median 6、p10/p90 = 6/8）＝股利發放後才出現，而真正公告日早約 22 天；`_merge_dividend_feature` 的 docstring 寫的卻是「available once announced (before ex-date)」——**意圖與實作本來就不一致**。MOPS 只有董事會分派日（＝真正公告日），故新資料會比歷史早約 28 天被特徵看到。**兩者都不含未來資訊**，差別只在時效，新做法反而符合原意
+  - **新列的除權息日期欄為 NA**（MOPS 沒有）：無下游依賴——特徵只用 `date` 與現金股利欄，B-3 的因子已改用交易所官方 `ex_rights_raw`，不再從 `dividend_raw` 反推
 - **期貨/選擇權三大法人改 TAIFEX 直連（2026-07-29）**：FinMind 免費層對這兩個 dataset 回 400 "Your level is register"，不訂閱就**永遠拿不到**；TAIFEX 端點公開且是**不同主機**（不與 TWSE/TPEX 搶速率、不受 FinMind 額度影響）。新增 `fetch_futures_institutional_direct`／`fetch_options_institutional_direct`／`_catch_up_taifex`，接進 `run_daily_update`。回補 2026-05-05 → 07-29（期貨 +177 列、選擇權 +354 列）。**健檢警告 6 → 4**
   - **踩到四個對映陷阱**：① 成交金額欄實際叫「多方**交易**契約金額(千元)」，我少寫「交易」二字且子字串比對方向相反 → 靜默留 NaN ② **期貨與選擇權用詞不同**（期貨「多方/空方」、選擇權「買方/賣方」），初版只寫期貨那組，選擇權 8 個數值欄全落空 ③ 編碼是 **MS950（Big5）**，`apparent_encoding` 猜測在中文上不可靠，改以 header 宣告為準 ④ 非交易日回 **HTML 錯誤頁**而非空 CSV，需明確偵測
   - **兩個必須正規化的口徑差異**（不處理會讓特徵在接續日無聲跳階）：TAIFEX 回**所有商品**（單日 69 列）而既有 parquet 只有 TX/TXO（每日 3 列）→ `Futures_OI_Foreign` 是跨商品加總，不過濾會跳一個量級；法人別 TAIFEX 是「外資及陸資」、既有是「外資」
