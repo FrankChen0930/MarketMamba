@@ -346,6 +346,13 @@ cd app/frontend && npm run dev   # → localhost:5173
 > 最後更新：2026-07-28（B-1/B-2/B-4/B-5 完成、B-3 全歷史還原重建執行中；剩 7 個資料源待改直連；Phase 3 模型實驗仍暫停中）
 
 ### 最近完成
+- **`prices_raw` 切換 + 每日更新結構性修復（2026-07-29）**：
+  - **切換完成 ✅**：`V6/scripts/switch_to_adjusted_prices.py`。**原則「只改值、不改型別」**——新檔 `Date` 是 `timestamp[ns]`、production 是 `large_string`，照抄過去會讓每日更新的字串日期與之混型、`drop_duplicates` 靜默失效（＝重製問題 1 的 10,591 列重複）。故寫入前轉回字串、不帶 `src` 欄。切換後 schema 逐欄型別完全相同。備份 `prices_raw_backup_before_adj_20260729.parquet`
+  - **切換後驗證**：健檢重複 0／`Close<=0` 0；`build_features` + `clean_and_scale` 實跑通過（48,719 列 × 62 欄、無 inf、報酬 std 0.0197）；唯 4 個含 NaN 欄是 `Alpha_5d/10d/20d/60d` **標籤欄**（尾端本來就 NaN、新舊一致，非回歸）
+  - **修健檢的量測分母**：法人覆蓋率 96.1% → 89.5% 是**假摔**（分母多了 133 支 ETF，交易所本來就不出 ETF 的個股法人明細）。改用推論端同一套 `filter_tradable_universe` 後為 1,899 支 / **96.2%**。不修會留下永遠不消的假警報——**長期假警報會訓練人忽略警報，比沒有警報更危險**
+  - **commit `0cb262f`**：`fetcher.py`/`hygiene.py`/`feature_engineer.py`/`run_daily_inference.py` + 16 支腳本 + 4 份文件，7,460 行。已排除本機 56 維 `config.py`
+  - **`revenue`/`financials` 接進每日更新 ✅**：這兩個源原本只在 `force_rebuild=True` 時抓、平時走快取分支＝**永遠不會更新**（停更 118/119 天）。**FinMind 免費層的限制是「形狀」不是速率**——實測不帶 `data_id`（全市場）回 HTTP 400 "Your level is register"、帶 `data_id`（單股）回 200，所以只能逐股查 ~1,900 次。改為**滾動逐股補齊**（每天最舊的 120/60 支，約 16 天輪一輪，每天多花 1–2 分鐘）+ `V6/scripts/backfill_monthly_finmind.py` 一次追平。**踩到「補最舊 N 筆」的陷阱**：初版淨增 0 列，因為排序把已下市股票排最前（最舊停在 2002-02-01、永遠不會更新、每輪耗光額度）→ 加 `_live_universe()` 過濾（2,311 → 1,924 支）後單輪淨增 90 列
+  - **確認 FinMind 免費層已擋掉的**：`TaiwanFuturesInstitutionalInvestors`、`TaiwanStockHoldingSharesPer` 皆回 "Your level is register" → `futures_inst`/`options_inst` 需改 TAIFEX 直連、`holdings` 需 TDCC（**但 TDCC 開放資料忽略日期參數、只回最新一週**，歷史無來源）
 - **B-1~B-5 五項決策落地（2026-07-28，使用者逐項拍板後執行）**：
   - **B-2 興櫃全歷史一致排除 ✅**：`hygiene.py` 新增 `_emerging_ids()` + `filter_tradable_universe(exclude_emerging=True)`，`run_daily_inference.py` 呼叫端同步。**2026-05-22→05-25 的宇宙斷層由 −344 支（−14.9%）降到 −7 支（−0.4%）**，月底檔數從「5月2314→6月1976」跳水變成穩定 1933→1930；全歷史剔除 401 支 / 450,701 列。已知限制：`stock_info` 是現況快照非 PIT，「曾是興櫃後轉上市櫃」者的興櫃期資料仍在（明確揭露，不假裝解決）
   - **B-1 PER/PBR 自行推算 ✅**（`fundamentals_v2` 旗標下）：`PER = Close / EPS_TTM`、`PBR = market_value / Book_Value`（用市值÷權益而非股價÷每股淨值，避開股數換算 → 對減資/增資免疫）。**`EPS_TTM` 在季頻算好再走既有 as-of join**，每季受各自 `available_from` 保護（使用者特別指定；若在日頻 rolling 會重演 `EPS_Surprise` 那個 bug）。**踩到兩個坑**：① 初版只 `combine_first` 填 NaN 幾乎沒效果（+308 列），因為那 865 支不是缺值而是被 ffill **凍結**在 04-24 舊值 → 改三層優先序「官方觀測 > 自算 > 凍結 ffill」（為此在 `_merge_per_pbr` 加 `PER__obs`/`PBR__obs` 暫時欄位），實測 PBR 凍結列 96.6%、PER 56.0% 被取代 ② 我推測「交叉驗證分母被 ffill 污染」，**改成只用官方觀測列後仍是 0.9494 → 自己的量測推翻自己的推論**，那是真實系統差異。因自算值與官方值共存於同一橫斷面，5% 水位差會製造假排名 → 加**當日橫斷面校準**（只用當日資訊、無 look-ahead；係數 median PER 0.9512 / PBR 1.0013）。PBR 交叉驗證 median 1.0014、±10% 內 92.2%

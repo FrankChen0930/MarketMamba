@@ -2163,6 +2163,120 @@ def _catch_up_generic(name: str, fetcher, today: str,
     return len(new), done
 
 
+def _live_universe() -> set[str]:
+    """
+    目前仍在交易的股票代號（取 `prices_raw` 最後一個交易日）。
+
+    用途：月/季頻滾動補齊時排除已下市股票。它們的資料永遠停在下市那天，
+    若不排除會一直佔住「最舊」的名次、把額度耗光，活躍股反而永遠輪不到。
+    """
+    try:
+        path = PROCESSED_DIR / "prices_raw.parquet"
+        if not path.exists():
+            return set()
+        d = pd.read_parquet(path, columns=["Date", "stock_id"])
+        last = d["Date"].max()
+        return set(d.loc[d["Date"] == last, "stock_id"].astype(str))
+    except Exception as e:                                    # noqa: BLE001
+        logger.warning(f"_live_universe 讀取失敗，不做現役過濾：{e}")
+        return set()
+
+
+def _catch_up_monthly(name: str, dataset: str, today: str,
+                      max_stocks: int = 120, sleep_s: float = 0.6) -> int:
+    """
+    月/季頻資料源的**滾動逐股**增量補齊（`revenue_raw` 月營收、`financials_raw` 季財報）。
+
+    【為什麼需要】原本這兩個源只在 `run_full_data_sync(force_rebuild=True)` 時整份重抓，
+    平時走 `if not force and cache.exists(): 用快取`——也就是**永遠不會自己更新**。
+    revenue 因此停在 2026-04-01（落後 118 天）。這與 margin 的第二個根因同型：
+    「有 fetcher、但沒被接進每日流程」＝遲早停更。
+
+    【為什麼是逐股滾動，而不是一次抓全市場】
+    2026-07-29 實測 FinMind 免費層（register）對這兩個 dataset 的限制是**形狀**而非速率：
+
+        不帶 data_id（全市場）→ HTTP 400 "Your level is register"
+        帶 data_id（單股）    → HTTP 200 success
+
+    也就是說必須逐股查詢 ~2,000 次。那放不進每日推論路徑（會拖上數小時），
+    但月頻資料一個月只變一次，**不需要每天全抓**。
+    故改成每天只補「資料最舊的 N 支」，約 `2000/N` 天輪完一輪：
+    N=120 → 約 17 天輪一輪，遠短於月頻的更新週期，且每天只多花約 1–2 分鐘。
+
+    這也順帶讓補齊具備自我修復性：某天失敗的股票下次自然會因為「最舊」而排到前面。
+
+    大範圍初始回補請用 `V6/scripts/backfill_monthly_finmind.py`（過夜跑），
+    本函式只負責讓它**不再停更**。
+    """
+    path = PROCESSED_DIR / f"{name}.parquet"
+    if not path.exists():
+        return 0
+    old = pd.read_parquet(path)
+    dcol = "date" if "date" in old.columns else "Date"
+    old[dcol] = pd.to_datetime(old[dcol], errors="coerce")
+    old["stock_id"] = old["stock_id"].astype(str)
+
+    # 依「該股最新資料日期」排序，最舊的先補。
+    # ⚠️ 必須先限制在**現役宇宙**內：直接排序會把已下市股票排到最前面
+    #    （實測最舊是 2002-02-01），而它們永遠不會再有新資料，
+    #    每輪都會浪費在同一批身上、真正需要更新的活躍股永遠排不到。
+    per = old.groupby("stock_id")[dcol].max().sort_values()
+    live = _live_universe()
+    if live:
+        n_all = len(per)
+        per = per[per.index.isin(live)]
+        logger.info(f"{name}: 現役宇宙過濾 {n_all:,} → {len(per):,} 支"
+                    f"（排除已下市，它們不會再更新）")
+    targets = per.index[:max_stocks].tolist()
+    if not targets:
+        return 0
+    logger.info(f"{name}: 最新 {per.max().date()}｜最舊 {per.min().date()}"
+                f"｜本輪補最舊 {len(targets)} 支（共 {len(per):,} 支，"
+                f"約 {int(np.ceil(len(per) / max(max_stocks, 1)))} 天輪一輪）")
+
+    frames, n_fail = [], 0
+    for sid in targets:
+        start = (per[sid] - pd.Timedelta(days=7)).strftime("%Y-%m-%d")
+        try:
+            d = _finmind_fetch(dataset, start_date=start, end_date=today, stock_id=sid)
+        except Exception:                                     # noqa: BLE001
+            d, n_fail = None, n_fail + 1
+        if d is not None and not d.empty:
+            frames.append(d)
+        time.sleep(sleep_s)
+
+    if not frames:
+        logger.warning(f"{name}: 本輪 {len(targets)} 支皆無新資料"
+                       f"（失敗 {n_fail} 支）")
+        return 0
+
+    new = pd.concat(frames, ignore_index=True)
+    # FinMind 回傳一律小寫 `date`，但 production parquet 可能存成 `Date`
+    # （revenue_raw 就是）。不對齊會 KeyError，且若靜默新增一欄會讓下游 ffill 失效。
+    if dcol not in new.columns:
+        for cand in ("date", "Date"):
+            if cand in new.columns:
+                new = new.rename(columns={cand: dcol})
+                break
+    if dcol not in new.columns:
+        logger.warning(f"{name}: FinMind 回傳無日期欄（{list(new.columns)[:6]}），跳過")
+        return 0
+    new[dcol] = pd.to_datetime(new[dcol], errors="coerce")
+    new["stock_id"] = new["stock_id"].astype(str)
+    for c in old.columns:
+        if c not in new.columns:
+            new[c] = pd.NA
+    key = [dcol, "stock_id"] + (["type"] if "type" in old.columns else [])
+    out = pd.concat([old, new[old.columns]], ignore_index=True)
+    out = out.drop_duplicates(subset=key, keep="last")
+    out = out.sort_values(key).reset_index(drop=True)
+    out.to_parquet(path, index=False)
+    added = len(out) - len(old)
+    logger.info(f"{name}: 抓到 {len(new):,} 列 → 淨增 {added:,} 列"
+                f"｜失敗 {n_fail} 支｜最新 {out[dcol].max().date()}")
+    return added
+
+
 def _catch_up_market_value(today: str, max_days: int = 15) -> tuple[int, list[str]]:
     """
     market_value = 當日收盤價 × 已發行普通股數（MOPS 股本快照）。
@@ -2396,6 +2510,18 @@ def run_daily_update(
                     if _n_fs else "foreign_shareholding_raw: 無新增")
     except Exception as _e:                                   # noqa: BLE001
         logger.warning(f"foreign_shareholding_raw 更新失敗（不影響推論）：{_e}")
+
+    # ── 月/季頻資料源（2026-07-29 納入；FinMind 免費層仍可用）──────────────────
+    # 這兩個源原本只在 force_rebuild 時整份重抓，平時走快取分支＝永遠不會更新，
+    # revenue 因此停更 118 天。距上次資料未滿門檻天數會自動跳過，不會每天空打。
+    # 逐股滾動：每天補「現役宇宙中資料最舊的 N 支」，約 16 天輪完一輪。
+    # 月/季頻資料一個月才變一次，不需要每天全抓；這樣每天只多花約 1–2 分鐘。
+    for _nm, _ds, _n in (("revenue_raw", "TaiwanStockMonthRevenue", 120),
+                         ("financials_raw", "TaiwanStockFinancialStatements", 60)):
+        try:
+            _catch_up_monthly(_nm, _ds, today, max_stocks=_n)
+        except Exception as _e:                               # noqa: BLE001
+            logger.warning(f"{_nm} 更新失敗（不影響推論）：{_e}")
 
     # ── 覆蓋率閘門（只告警不阻擋，見函式 docstring）────────────────────────────
     cov = _check_universe_coverage(today)
