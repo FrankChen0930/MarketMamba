@@ -346,6 +346,13 @@ cd app/frontend && npm run dev   # → localhost:5173
 > 最後更新：2026-07-28（B-1/B-2/B-4/B-5 完成、B-3 全歷史還原重建執行中；剩 7 個資料源待改直連；Phase 3 模型實驗仍暫停中）
 
 ### 最近完成
+- **Group D 全數為死值的實測確認 + 集保改 TDCC 直連（2026-07-29）**：
+  - **⚠️ 重要事實：V6.1 下 Group D 全部 12 維都是 0**（不只 `fear_greed`）。實測 `clean_and_scale` 後 `TWII_Return`/`SPX_Return`/`VIX`/`TNX`/`Gold_Return`/`Oil_Return`/`USD_TWD`/`Futures_OI_Foreign`/`Options_PC_Ratio`/`Fear_Greed`/`Business_Signal`/`FED_Rate` **std 全為 0.000000、absmax 全為 0.000000**。原始值其實有訊息（`Fear_Greed` 5~78 共 67 個相異值、`Business_Signal` 23~40），是被 `macro_norm="cross"` 消滅的（macro 同日對所有股票同值 → 橫斷面 z-score → std=0）。**這代表 V6.1 是在整組 Group D 都死掉的狀態下達到 IC ~0.08 的——目前沒有任何證據顯示這 12 維有用**
+  - **決策：暫不追 `fear_greed`/`business_indicator` 來源**。正確順序是等 V6.2 改 `macro_norm="ts"` 後先做 Group D 消融，證實有貢獻再補來源；否則是為未經證實的特徵接資料源。（同理，先前做的 TAIFEX 期貨/選擇權對 V6.1 也是零影響，但那是為 V6.2 鋪路且順帶擺脫 FinMind 付費牆）
+  - **`holdings` 改 TDCC 直連 ✅**：FinMind `TaiwanStockHoldingSharesPer` 已需付費層。新增 `fetch_holdings_tdcc_direct` + `_catch_up_holdings`，接進 `run_daily_update`。**健檢警告 3 → 2**
+  - **順帶修掉一個死常數**：舊聚合把**分級 17 =「合計」**（恆為 100.00%）也加進總和 → `總計 ≈ 200`、`Whale = 200 − 散戶 ≈ 199.67` 被 `clip(0,100)` 壓成 100 → **`Whale_Hold_Ratio` 在全部 848,269 列都是 100.0（只有 2 個相異值）**。改用分級 17 當總計後 median 99.580%、僅 147/2,956 支飽和。**對下游無影響也無接縫問題**：`_merge_holdings` 早就繞過該欄改用 `Holdings_Large_Pct = 1 − Retail/100`，而 `Retail` 一直是對的，修好的 Whale 恰等於該式 ×100
+  - **已知限制**：TDCC 開放資料**只有最新一週**（`date`/`DATE`/`d` 三種寫法實測都回同一週）；查詢頁雖有 51 週歷史但**逐股查詢**（2,000 支 × 11 週 = 22,000 次請求，不成比例）→ 2026-05-08 ~ 07-24 的缺口補不回來，只能從現在起逐週累積。⚠️ `Holdings_Large_Change` 在接續的第一週會出現一次「11 週變化壓縮成 1 週」的假跳動
+  - **另記錄**：分級 15（>1,000,000 股 ≈ >1000 張）才是真正的「大戶持股比例」（2330 為 84.70%），比「100 − 散戶」有意義得多；但歷史 parquet 只存 Whale/Retail 兩欄、無分級明細，無法回算，故未新增
 - **股利分派改 MOPS 直連（2026-07-29）**：FinMind 的 `TaiwanStockDividend` 是**逐股查詢**（~2,000 次）會撞爆免費層 600 次/日額度；MOPS `t187ap45_L`/`_O` 是**兩個 CSV、兩次請求**且含上市與上櫃。新增 `fetch_dividends_mops_direct` + `_catch_up_dividends`，接進 `run_daily_update`，淨增 2,023 列 → 最新 2026-07-27。**健檢警告 4 → 3**（整輪工作起點是 14）
   - **踩到「拆開 vs 合併」的口徑陷阱**：MOPS 把現金股利**依來源拆三欄**（盈餘分配／法定盈餘公積／**資本公積**），而 FinMind 是**總額全放 `CashEarningsDistribution`**、`CashStatutorySurplus` 恆為 0。照欄名直譯的話，**全部由資本公積配發**的公司會變成 0 元股利——1101 台泥就是（實際 0.8 元），而且不會有任何錯誤訊息。改為三欄加總後，**量級交叉驗證 MOPS/FinMind 比值 median = 1.000**（82.8% 落在 0.5~2.0；不同年度本就不會恰為 1）
   - **`date` 欄語意變化（刻意，已記錄）**：既有 `date` 實測是**除息交易日 + 6 天**（median 6、p10/p90 = 6/8）＝股利發放後才出現，而真正公告日早約 22 天；`_merge_dividend_feature` 的 docstring 寫的卻是「available once announced (before ex-date)」——**意圖與實作本來就不一致**。MOPS 只有董事會分派日（＝真正公告日），故新資料會比歷史早約 28 天被特徵看到。**兩者都不含未來資訊**，差別只在時效，新做法反而符合原意

@@ -1765,6 +1765,114 @@ def fetch_options_institutional_direct(date_str: str) -> Optional[pd.DataFrame]:
     return _taifex_parse(t, date_str, is_option=True) if t else None
 
 
+def fetch_holdings_tdcc_direct() -> Optional[pd.DataFrame]:
+    """
+    集保戶股權分散表（TDCC 開放資料 `getOD.ashx?id=1-5`）。
+
+    【為什麼改直連】FinMind 的 `TaiwanStockHoldingSharesPer` 已需付費層
+    （2026-07-29 實測回 400 "Your level is register"）。TDCC 開放資料免費、
+    一次請求就是全市場（68,238 列 / 約 2,400 支 × 17 個分級）。
+
+    ⚠️ **只有最新一週**：`getOD.ashx` 忽略任何日期參數
+       （`date` / `DATE` / `d` 三種寫法實測都回同一週）。
+       TDCC 的查詢頁（`smWeb/qryStock`）雖有 51 週歷史，但**逐股查詢**——
+       2,000 支 × 11 週 = 22,000 次請求，不成比例。
+       → 歷史缺口（2026-05-08 之後）補不回來，只能從現在起逐週累積。
+
+    【修掉一個死常數 bug】舊的聚合把**分級 17 =「合計」**（恆為 100.00%）
+       也加進總和，於是 `總計 ≈ 200`、`Whale = 200 − 散戶 ≈ 199.67`，
+       被 `clip(0, 100)` 壓成 100 → **`Whale_Hold_Ratio` 在全部 848,269 列
+       都是 100.0（只有 2 個相異值）**，是個死特徵。
+       本函式改用分級 17 當總計、`Whale = 100 − Retail`。
+
+       ✅ 對下游無影響且無接縫問題：`_merge_holdings` 早就繞過 `Whale_Hold_Ratio`、
+          改用 `Holdings_Large_Pct = 1 − Retail/100`，而 `Retail` 一直是對的。
+          修好的 Whale 恰等於該式 ×100，語意一致。
+
+    【順帶記錄】分級 15（>1,000,000 股 ≈ >1000 張）才是真正的「大戶持股比例」
+       （2330 為 84.70%），比「100 − 散戶」有意義得多。但歷史 parquet 只存了
+       Whale/Retail 兩欄、沒有分級明細，無法回算，故先不新增該欄位。
+    """
+    from io import StringIO
+    try:
+        resp = requests.get("https://opendata.tdcc.com.tw/getOD.ashx",
+                            params={"id": "1-5"}, headers=HEADERS, timeout=90)
+        resp.raise_for_status()
+    except Exception as e:                                    # noqa: BLE001
+        logger.warning(f"TDCC 集保股權分散抓取失敗：{e}")
+        return None
+    resp.encoding = "utf-8-sig"
+    try:
+        df = pd.read_csv(StringIO(resp.text))
+    except Exception as e:                                    # noqa: BLE001
+        logger.warning(f"TDCC 集保股權分散解析失敗：{e}")
+        return None
+    df.columns = [str(c).strip() for c in df.columns]
+
+    def _col(*names) -> str | None:
+        for n in names:
+            for c in df.columns:
+                if n in c:
+                    return c
+        return None
+
+    c_date, c_id = _col("資料日期"), _col("證券代號")
+    c_lv, c_pct = _col("持股分級"), _col("占集保庫存數比例")
+    if not all([c_date, c_id, c_lv, c_pct]):
+        logger.warning(f"TDCC 版面無法辨識：{list(df.columns)}")
+        return None
+
+    df["_sid"] = df[c_id].astype(str).str.strip()
+    df["_lv"] = pd.to_numeric(df[c_lv], errors="coerce")
+    df["_pct"] = pd.to_numeric(df[c_pct], errors="coerce")
+    df["_week"] = pd.to_datetime(df[c_date].astype(str).str.strip(),
+                                 format="%Y%m%d", errors="coerce")
+    df = df[df["_sid"].str.match(r"^\d{4}$") & df["_week"].notna()]
+    if df.empty:
+        return None
+
+    LV_RETAIL, LV_TOTAL = 1, 17
+    retail = (df[df["_lv"] == LV_RETAIL]
+              .groupby(["_week", "_sid"])["_pct"].sum())
+    total = (df[df["_lv"] == LV_TOTAL]
+             .groupby(["_week", "_sid"])["_pct"].sum())
+    out = pd.concat([total.rename("_total"), retail.rename("Retail_Hold_Ratio")],
+                    axis=1).reset_index()
+    out = out.rename(columns={"_week": "Week", "_sid": "stock_id"})
+    out["Retail_Hold_Ratio"] = out["Retail_Hold_Ratio"].fillna(0.0)
+    # 分級 17 是合計（實測 median 100.00）；若某支缺該列就退回 100
+    out["_total"] = out["_total"].fillna(100.0)
+    out["Whale_Hold_Ratio"] = (out["_total"] - out["Retail_Hold_Ratio"]).clip(0, 100)
+
+    n_sat = int((out["Whale_Hold_Ratio"] >= 99.999).sum())
+    logger.info(f"TDCC 集保股權分散：{out['Week'].iloc[0].date()}｜"
+                f"{len(out):,} 支｜Retail median {out['Retail_Hold_Ratio'].median():.3f}%"
+                f"｜Whale median {out['Whale_Hold_Ratio'].median():.3f}%"
+                f"｜Whale 飽和於 100 的 {n_sat:,} 支"
+                f"（舊聚合是 100%，此數應接近 0）")
+    return out[["Week", "stock_id", "Whale_Hold_Ratio", "Retail_Hold_Ratio"]]
+
+
+def _catch_up_holdings() -> int:
+    """集保股權分散補齊（TDCC 直連，週頻）。只能取最新一週，見 fetcher docstring。"""
+    path = PROCESSED_DIR / "holdings_raw.parquet"
+    if not path.exists():
+        return 0
+    new = fetch_holdings_tdcc_direct()
+    if new is None or new.empty:
+        return 0
+    old = pd.read_parquet(path)
+    old["Week"] = pd.to_datetime(old["Week"])
+    out = pd.concat([old, new[old.columns]], ignore_index=True)
+    out = out.drop_duplicates(subset=["Week", "stock_id"], keep="last")
+    out = out.sort_values(["stock_id", "Week"]).reset_index(drop=True)
+    out.to_parquet(path, index=False)
+    added = len(out) - len(old)
+    logger.info(f"holdings_raw: 淨增 {added:,} 列｜{old['Week'].max().date()} → "
+                f"{out['Week'].max().date()}")
+    return added
+
+
 def fetch_dividends_mops_direct() -> Optional[pd.DataFrame]:
     """
     股利分派情形（MOPS 開放資料 `t187ap45_L`／`_O`，含**上市與上櫃**）。
@@ -2976,6 +3084,16 @@ def run_daily_update(
                     if (_n_fut or _n_opt) else "TAIFEX 三大法人：無新增")
     except Exception as _e:                                   # noqa: BLE001
         logger.warning(f"TAIFEX 三大法人更新失敗（不影響推論）：{_e}")
+
+    # ── 集保股權分散（2026-07-29 納入；TDCC 直連，週頻）──────────────────────
+    # FinMind 的 TaiwanStockHoldingSharesPer 已需付費層。TDCC 開放資料免費、
+    # 一次請求即全市場，但**只有最新一週**（見 fetcher docstring）。
+    # 週頻資料每天跑無妨——去重會處理，且對公布延遲自我修復。
+    try:
+        _n_hold = _catch_up_holdings()
+        logger.info(f"holdings_raw: +{_n_hold:,} 列" if _n_hold else "holdings_raw: 無新增")
+    except Exception as _e:                                   # noqa: BLE001
+        logger.warning(f"holdings_raw 更新失敗（不影響推論）：{_e}")
 
     # ── 股利分派（2026-07-29 納入；MOPS 直連，含上市與上櫃）────────────────────
     # FinMind 的 TaiwanStockDividend 是逐股查詢（~2,000 次），撞爆免費層額度；
