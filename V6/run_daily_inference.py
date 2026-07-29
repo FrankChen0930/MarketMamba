@@ -52,6 +52,7 @@ from marketmamba.config import (
 )
 from marketmamba.data.fetcher import run_daily_update, load_ticker_universe
 from marketmamba.data.feature_engineer import build_features, clean_and_scale
+from marketmamba.data.hygiene import check_data_health, filter_tradable_universe
 from marketmamba.knowledge.graph_builder import update_correlation_edges
 from marketmamba.llm.report_generator import generate_market_report, build_market_data
 
@@ -697,9 +698,63 @@ def main(target_date: str | None = None, skip_push: bool = False, forward_fill: 
         logger.info(f"{'─'*50}")
         _step_update(1, "running")
 
+        # ── 資料衛生（務必在 build_features 之前）────────────────────────────
+        # 檔案最下方原本就有一次 drop_duplicates，但那是在 clean_and_scale 之後：
+        # 時序特徵（Return/MA/RSI/ATR/KD/OBV/Volatility）與當日橫斷面 z-score
+        # 在那之前就已經吃到重複列了。實測 2026-07 期間 818 支股票受影響，
+        # 2432 的 Return_5d 含重複為 -0.53%、去重後 +1.07%（正負號相反）。
+        #
+        # 這些檔的 (Date, stock_id) 本應唯一。financials_raw / balance_sheet_raw /
+        # cashflow_raw 是 type/value 長格式（同一天同一支本來就有多列），
+        # 絕不可放進這個集合。
+        _DEDUP_SAFE = {
+            "prices_raw.parquet", "institutional_raw.parquet", "margin_raw.parquet",
+            "per_raw.parquet", "market_value_raw.parquet", "daytrade_raw.parquet",
+            "securities_raw.parquet", "foreign_shareholding_raw.parquet",
+        }
+        _hygiene_notes: list[str] = []
+
+        def _sanitize(name: str, df_src):
+            if df_src is None or df_src.empty:
+                return df_src
+            notes = []
+            if name in _DEDUP_SAFE and {"Date", "stock_id"} <= set(df_src.columns):
+                n0 = len(df_src)
+                df_src = df_src.drop_duplicates(subset=["Date", "stock_id"], keep="last")
+                if len(df_src) < n0:
+                    notes.append(f"去重 {n0 - len(df_src):,} 列")
+            if name == "prices_raw.parquet":
+                # 兩個條件合成單一 mask，只做一次複製（prices_raw 有 8.7M 列，
+                # 分兩次布林篩選會多產生一份數 GB 的中間物）。
+                keep = pd.Series(True, index=df_src.index)
+                # Close<=0 是 2026-04-30~05-22 來源切換期寫入的損壞列（329 列 / 122 支）。
+                # 留著會讓 pct_change 產生 ±inf，並在任何跨越該區間的 rolling 窗口擴散。
+                if "Close" in df_src.columns:
+                    bad = pd.to_numeric(df_src["Close"], errors="coerce") <= 0
+                    if int(bad.sum()):
+                        notes.append(f"剔除 Close<=0 {int(bad.sum()):,} 列")
+                        keep &= ~bad
+                # 0050/0056 等 ETF 是 4 位數字，會通過 ^\d{4}$ 而混進個股橫斷面與 Top50。
+                # 興櫃（2026-07-28 決策）全歷史一致排除：新資料源本來就不涵蓋，
+                # 留著只會重演 2026-05-25 那次「宇宙一日少 353 支」的無聲斷層。
+                tradable = df_src.index.isin(
+                    filter_tradable_universe(df_src[["stock_id"]], exclude_etf=True,
+                                             exclude_emerging=True).index)
+                n_drop = int((keep & ~tradable).sum())
+                if n_drop:
+                    notes.append(f"剔除非普通股/ETF/興櫃 {n_drop:,} 列")
+                keep &= tradable
+                if not keep.all():
+                    df_src = df_src[keep]
+            if notes:
+                _hygiene_notes.append(f"{name}：" + "、".join(notes))
+            return df_src
+
         def _read(name: str):
             path = PROCESSED_DIR / name
-            return pd.read_parquet(path) if path.exists() else None
+            if not path.exists():
+                return None
+            return _sanitize(name, pd.read_parquet(path))
 
         # V6.0 核心數據
         prices       = _read("prices_raw.parquet")
@@ -727,6 +782,23 @@ def main(target_date: str | None = None, skip_push: bool = False, forward_fill: 
 
         if prices is None:
             raise FileNotFoundError(f"prices_raw.parquet 不存在：{PROCESSED_DIR}")
+
+        # 資料衛生處理結果（規則 7：數值明確輸出）
+        if _hygiene_notes:
+            logger.info("[資料衛生] build_features 前的清理：")
+            for _n in _hygiene_notes:
+                logger.info(f"  • {_n}")
+        else:
+            logger.info("[資料衛生] 所有來源皆無重複列 / 損壞列，未做任何清理")
+
+        # 資料健檢（non-fatal，只印警告不中斷推論）
+        _health_note = ""
+        try:
+            _health = check_data_health(PROCESSED_DIR)
+            if _health["warnings"]:
+                _health_note = f"｜健檢 {len(_health['warnings'])} 項警告"
+        except Exception as _e:                                   # noqa: BLE001
+            logger.warning(f"[健檢] 執行失敗（不影響推論）：{_e}")
 
         # 只保留近 2 年，避免 OOM（覆蓋所有滾動窗口 MA_60 / ATR_14 / SEQ_LEN=60）
         INFERENCE_LOOKBACK_DAYS = 730
@@ -785,7 +857,8 @@ def main(target_date: str | None = None, skip_push: bool = False, forward_fill: 
             f"{_n_last_before} → {_n_last_after} 支"
             f"（NaN>30% 特徵剔除 {_n_last_before - _n_last_after} 支）"
         )
-        # 去重：institutional_raw 長格式（4 rows/stock/date）→ 4 倍重複
+        # 去重（最後一道保險）：真正的去重已移到 build_features 之前的 _sanitize()，
+        # 這裡保留是為了擋住 merge 過程中可能產生的列膨脹。正常情況下應為 0 列。
         n_before = len(df)
         df = df.drop_duplicates(subset=["Date", "stock_id"], keep="last")
         if len(df) < n_before:
@@ -807,7 +880,8 @@ def main(target_date: str | None = None, skip_push: bool = False, forward_fill: 
         elapsed = time.monotonic() - t0
         logger.info(f"特徵矩陣：{df.shape}")
         logger.info(f"[2/10] ✓ 完成 ({_fmt(elapsed)})")
-        _step_update(1, "done", f"{df.shape[0]:,} × {df.shape[1]} 特徵{_freshness_note}")
+        _step_update(1, "done",
+                     f"{df.shape[0]:,} × {df.shape[1]} 特徵{_freshness_note}{_health_note}")
 
         # ── KG 滾動相關性邊更新（Step 2 後、Step 3 前） ──────────────────────
         t0 = time.monotonic()

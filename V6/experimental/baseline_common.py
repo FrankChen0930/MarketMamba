@@ -18,7 +18,14 @@ baseline_common.py — 方向二 Baseline 對照：共用資料層 + 評估層
   - 訓練端建議 day_stride=2（隔日抽樣）：5d 窗口重疊本就高度冗餘，樣本減半資訊損失小
 
 用法（Windows 本機、repo 根目錄執行）：
-  python V6/experimental/baseline_common.py --build     # 建 base matrix + derived（一次性，~1hr）
+  python V6/experimental/baseline_common.py --build         # 建 base matrix + derived（一次性，~1hr）
+  python V6/experimental/baseline_common.py --rebuild-roll  # 只重建 rolling part（G4 修正）
+
+⚠️ 2026-07-27 協定變更（v1.0 → v2.0）
+  rolling 特徵（*_rmean / *_rstd 共 60 維）原本建在 clean_and_scale 之後的
+  橫斷面 z-score 上，屬於「先橫斷面、再時序」的順序顛倒（資料品質檢查表 G4）。
+  已改為建在 chunk 檔的原始值上、再逐日 winsorize + z-score。
+  → 既有的 Ridge / GBDT / GRU 三階結果是舊特徵下的數字，重跑後才可與新結果並列。
 """
 from __future__ import annotations
 
@@ -309,55 +316,141 @@ def build_derived(force: bool = False) -> None:
         del lag
         gc.collect()
 
+    del f, gid
+    gc.collect()
+
     # ── rolling + momentum part ──
-    out = CACHE_DIR / "baseline_derived_roll.parquet"
-    if not out.exists() or force:
-        tc = time.time()
-        grp = f[ROLL_CORE].groupby(gid, sort=False)
-        cols = {}
-        for w in ROLL_MEAN_WINDOWS:
-            rm = grp.rolling(w, min_periods=w).mean()
-            rm.index = rm.index.droplevel(0)
-            for c in ROLL_CORE:
-                cols[f"{c}_rmean{w}"] = rm[c]
-            del rm
-        for w in ROLL_STD_WINDOWS:
-            rs = grp.rolling(w, min_periods=w).std()
-            rs.index = rs.index.droplevel(0)
-            for c in ROLL_CORE:
-                cols[f"{c}_rstd{w}"] = rs[c]
-            del rs
-        roll = pd.DataFrame(cols).sort_index().astype(np.float32)
-        del cols
-        gc.collect()
-
-        # momentum：原始（還原）收盤價的過去累積報酬 → 每日橫斷面 winsorize + z-score（同 clean_and_scale 慣例）
-        pr = _load_raw("prices_raw")
-        pr = pr[pr["stock_id"].astype(str).str.match(r"^\d{4}$")]
-        pr = pr.drop_duplicates(subset=["stock_id", "Date"], keep="last")
-        pr = pr.sort_values(["stock_id", "Date"], kind="mergesort")
-        g = pr.groupby("stock_id", sort=False)["Close"]
-        for w in MOM_WINDOWS:
-            pr[f"Mom_{w}d"] = g.shift(0) / g.shift(w) - 1.0
-        mom_cols = [f"Mom_{w}d" for w in MOM_WINDOWS]
-        merged = keys.merge(pr[["Date", "stock_id"] + mom_cols], on=["Date", "stock_id"], how="left")
-        for c in mom_cols:
-            merged[c] = merged.groupby("Date")[c].transform(
-                lambda x: x.clip(lower=x.quantile(0.01), upper=x.quantile(0.99)))
-            merged[c] = merged.groupby("Date")[c].transform(lambda x: (x - x.mean()) / (x.std() + 1e-9))
-            roll[c] = merged[c].astype(np.float32).to_numpy()
-        del pr, merged
-        gc.collect()
-
-        roll = roll[roll_names()]                      # 固定欄序
-        roll = pd.concat([keys, roll.reset_index(drop=True)], axis=1)
-        roll.to_parquet(out, index=False, row_group_size=ROW_GROUP)
-        print(f"[derived] roll+mom：{roll.shape[0]:,} × {len(roll_names())} ({time.time()-tc:.0f}s)",
-              flush=True)
-        del roll
-        gc.collect()
+    build_derived_roll(keys, force=force)
 
     print(f"[derived] 完成，總耗時 {(time.time()-t0)/60:.1f} 分", flush=True)
+
+
+def build_derived_roll(keys: pd.DataFrame | None = None, force: bool = False) -> None:
+    """
+    rolling（*_rmean / *_rstd）+ momentum 特徵。
+
+    ⚠️ 2026-07-27 修正——特徵計算順序（檢查表 G4）
+    ------------------------------------------------
+    舊版是從 BASE_PATH 讀特徵再做 rolling，但 BASE_PATH 已經過 clean_and_scale
+    （實測最後一日 Close 欄 mean=-0.0000、std=1.0000 = 已橫斷面 z-score），
+    等於「先橫斷面標準化、再算時序特徵」——正是檢查表 G4 點名的順序顛倒。
+    後果不是 look-ahead，而是語意錯亂：`Close_rstd20` 量到的是「橫斷面排名的波動」
+    而非價格波動，且各日 z-score 的尺度不同還被平均在一起。
+
+    現在改成從 CHUNK_DIR 的 chunk 檔取值——那是 build_base_matrix 在
+    clean_and_scale **之前** 寫出的原始特徵——先在各股自己的時序上做 rolling，
+    再逐日 winsorize + z-score，與同函式中 Mom_* 的既有正確作法一致。
+
+    lag 特徵（*_lag1/5/20）刻意不改：純位移不是時序聚合，不會混到不同日的尺度，
+    「該股 N 日前的橫斷面排名」本身就是合理且可解釋的特徵。
+    """
+    out = CACHE_DIR / "baseline_derived_roll.parquet"
+    if out.exists() and not force:
+        print("[derived] roll 已存在，跳過（要套用 G4 修正請加 --force）", flush=True)
+        return
+    tc = time.time()
+
+    if keys is None:
+        keys = pd.read_parquet(BASE_PATH, columns=["Date", "stock_id"])
+
+    # ── 來源：clean_and_scale 之前的 chunk 檔（原始值）──
+    chunk_files = sorted(CHUNK_DIR.glob("base_chunk_*.parquet"))
+    if not chunk_files:
+        raise FileNotFoundError(
+            f"找不到 {CHUNK_DIR}/base_chunk_*.parquet。rolling 特徵必須建在 "
+            f"clean_and_scale 之前的原始值上，請先跑 --build 重新產生 chunk。"
+        )
+    src = pd.concat(
+        [pd.read_parquet(p, columns=["Date", "stock_id"] + ROLL_CORE) for p in chunk_files],
+        ignore_index=True,
+    )
+    src["Date"] = pd.to_datetime(src["Date"])
+    src = src.sort_values(["stock_id", "Date"], kind="mergesort").reset_index(drop=True)
+    print(f"[derived] roll 來源（chunk 原始值）：{len(src):,} 列 × {len(ROLL_CORE)} 欄",
+          flush=True)
+
+    gid = src["stock_id"].to_numpy()
+    grp = src[ROLL_CORE].groupby(gid, sort=False)
+
+    # 逐窗口計算並立刻降成 float32，算完就釋放，避免同時存在多份 float64 中間物
+    cols: dict[str, np.ndarray] = {}
+    for w in ROLL_MEAN_WINDOWS:
+        rm = grp.rolling(w, min_periods=w).mean()
+        rm.index = rm.index.droplevel(0)
+        rm = rm.sort_index()
+        for c in ROLL_CORE:
+            cols[f"{c}_rmean{w}"] = rm[c].to_numpy(np.float32)
+        del rm
+        gc.collect()
+    for w in ROLL_STD_WINDOWS:
+        rs = grp.rolling(w, min_periods=w).std()
+        rs.index = rs.index.droplevel(0)
+        rs = rs.sort_index()
+        for c in ROLL_CORE:
+            cols[f"{c}_rstd{w}"] = rs[c].to_numpy(np.float32)
+        del rs
+        gc.collect()
+    del grp
+    gc.collect()
+
+    roll_src = pd.DataFrame(cols, index=src.index)
+    roll_src.insert(0, "stock_id", src["stock_id"].to_numpy())
+    roll_src.insert(0, "Date", src["Date"].to_numpy())
+    del cols, src, gid
+    gc.collect()
+
+    # ── 對齊回 base matrix 的 canonical 行序（chunk 是 base 的超集：含 clean 掉的列）──
+    _n0 = len(roll_src)
+    roll_src = roll_src.drop_duplicates(subset=["Date", "stock_id"], keep="last")
+    if len(roll_src) < _n0:
+        print(f"[derived] ⚠️ chunk 內有 {_n0 - len(roll_src):,} 列 (Date, stock_id) 重複，"
+              f"已取最後一筆（否則 merge 會列膨脹）", flush=True)
+    roll = keys.merge(roll_src, on=["Date", "stock_id"], how="left")
+    assert len(roll) == len(keys), f"對齊後列數 {len(roll)} != base {len(keys)}"
+    del roll_src
+    gc.collect()
+
+    # ── 逐日 winsorize + z-score（與 clean_and_scale / Mom_* 同慣例）──
+    rolled_names = [f"{c}_rmean{w}" for c in ROLL_CORE for w in ROLL_MEAN_WINDOWS] \
+                 + [f"{c}_rstd{w}" for c in ROLL_CORE for w in ROLL_STD_WINDOWS]
+    for c in rolled_names:
+        s = roll.groupby("Date")[c].transform(
+            lambda x: x.clip(lower=x.quantile(0.01), upper=x.quantile(0.99)))
+        roll[c] = ((s - s.groupby(roll["Date"]).transform("mean"))
+                   / (s.groupby(roll["Date"]).transform("std") + 1e-9)).astype(np.float32)
+        del s
+    gc.collect()
+
+    # ── momentum：原始（還原）收盤價的累積報酬 → 每日橫斷面 winsorize + z-score ──
+    pr = _load_raw("prices_raw")
+    pr = pr[pr["stock_id"].astype(str).str.match(r"^\d{4}$")]
+    pr = pr.drop_duplicates(subset=["stock_id", "Date"], keep="last")
+    pr = pr.sort_values(["stock_id", "Date"], kind="mergesort")
+    g = pr.groupby("stock_id", sort=False)["Close"]
+    for w in MOM_WINDOWS:
+        pr[f"Mom_{w}d"] = g.shift(0) / g.shift(w) - 1.0
+    mom_cols = [f"Mom_{w}d" for w in MOM_WINDOWS]
+    merged = keys.merge(pr[["Date", "stock_id"] + mom_cols], on=["Date", "stock_id"], how="left")
+    for c in mom_cols:
+        merged[c] = merged.groupby("Date")[c].transform(
+            lambda x: x.clip(lower=x.quantile(0.01), upper=x.quantile(0.99)))
+        roll[c] = merged.groupby("Date")[c].transform(
+            lambda x: (x - x.mean()) / (x.std() + 1e-9)).astype(np.float32)
+    del pr, merged
+    gc.collect()
+
+    roll = roll[["Date", "stock_id"] + roll_names()]        # 固定欄序
+    roll.to_parquet(out, index=False, row_group_size=ROW_GROUP)
+
+    # 健檢（規則 7：數值明確輸出）
+    smp = roll["Close_rmean20"].dropna()
+    print(f"[derived] roll+mom：{roll.shape[0]:,} × {len(roll_names())} "
+          f"({time.time()-tc:.0f}s)", flush=True)
+    print(f"[derived] G4 修正健檢 — Close_rmean20（rolling 建於原始價、再橫斷面標準化）："
+          f"mean={smp.mean():+.4f} std={smp.std():.4f} 非空 {len(smp):,} 列"
+          f"（應 ≈ 0 / 1，且不再等同『z-score 的移動平均』）", flush=True)
+    del roll
+    gc.collect()
 
 
 # ============================================================
@@ -539,6 +632,166 @@ def portfolio_backtest(dates: np.ndarray, stock_ids: np.ndarray, scores: np.ndar
 
 
 # ============================================================
+# 5) 序列張量介面（階段二 2d，見 planing/資料基礎升級計畫_baseline_common扶正.md）
+# ============================================================
+# 懶加載設計，比照 production TemporalCrossSectionDataset：不材料化整個 (N, 252, 59)
+# （若 N~200 萬筆 eligible 列全展開約需 118GB，本機 24GB RAM 裝不下），改成 __getitem__
+# 時才動態切片。索引清單直接沿用 BASE_PATH 的 eligible==True 列，跟階段三-1 的 flat
+# baseline（Ridge/GBDT/GRU）用同一批樣本，模型階梯之間才可比。
+
+SEQ_LEN = 252  # 與 production marketmamba.config.SEQ_LEN 一致
+
+
+class BaselineSequenceDataset:
+    """
+    __getitem__(i) 回傳 dict：
+      X            : (SEQ_LEN, 59) float32 — 結束於該筆索引日期（含當日）的最近 SEQ_LEN
+                     個交易日特徵；不足 SEQ_LEN 天者前面補 0
+      padding_mask : (SEQ_LEN,) bool — True=真實資料、False=補 0 的 padding 位置
+      rank_5d / rank_20d / stock_id / date
+    """
+
+    def __init__(self, date_from: str, date_to: str, seq_len: int = SEQ_LEN):
+        self.seq_len = seq_len
+        cols = ["Date", "stock_id", "eligible", "rank_5d", "rank_20d"] + FEATURE_COLS
+        base = pd.read_parquet(BASE_PATH, columns=cols)
+        base = base.sort_values(["stock_id", "Date"], kind="mergesort").reset_index(drop=True)
+
+        # 每支股票在自己時序中的位置（= feats 陣列的 row index），向量化計算
+        base["_pos"] = base.groupby("stock_id", sort=False).cumcount()
+
+        # per-stock 特徵陣列，供 __getitem__ O(1) 切片（groupby 順序與上面 sort 一致）
+        self._feat_by_stock: dict[str, np.ndarray] = {
+            sid: g[FEATURE_COLS].to_numpy(np.float32)
+            for sid, g in base.groupby("stock_id", sort=False)
+        }
+
+        mask = (
+            base["eligible"]
+            & (base["Date"] >= pd.Timestamp(date_from))
+            & (base["Date"] <= pd.Timestamp(date_to))
+        )
+        self.index = base.loc[
+            mask, ["Date", "stock_id", "rank_5d", "rank_20d", "_pos"]
+        ].reset_index(drop=True)
+
+        n_dims = len(FEATURE_COLS)
+        mem_gb = sum(a.nbytes for a in self._feat_by_stock.values()) / 1e9
+        print(
+            f"[BaselineSequenceDataset] {len(self.index):,} 筆索引 | "
+            f"{self.index['stock_id'].nunique()} 支股票 | seq_len={seq_len} | "
+            f"{self.index['Date'].min().date()} ~ {self.index['Date'].max().date()} | "
+            f"per-stock 特徵陣列常駐記憶體 {mem_gb:.2f} GB", flush=True,
+        )
+        del base
+        gc.collect()
+
+    def __len__(self) -> int:
+        return len(self.index)
+
+    def __getitem__(self, i: int) -> dict:
+        row = self.index.iloc[i]
+        sid, pos = row["stock_id"], int(row["_pos"])
+        feats = self._feat_by_stock[sid]
+        lo = max(0, pos - self.seq_len + 1)
+        window = feats[lo: pos + 1]                       # (actual_len, 59)
+        actual_len = window.shape[0]
+
+        X = np.zeros((self.seq_len, len(FEATURE_COLS)), dtype=np.float32)
+        padding_mask = np.zeros(self.seq_len, dtype=bool)
+        X[self.seq_len - actual_len:] = window
+        padding_mask[self.seq_len - actual_len:] = True
+
+        return {
+            "X": X,
+            "padding_mask": padding_mask,
+            "rank_5d": np.float32(row["rank_5d"]),
+            "rank_20d": np.float32(row["rank_20d"]),
+            "stock_id": sid,
+            "date": row["Date"],
+        }
+
+
+def _check_sequence_dataset(date_from: str, date_to: str, n_sample: int = 200) -> None:
+    """驗證用（規則 7：數值明確輸出）：抽樣檢查 shape、padding 比例，並跟 flat base
+    matrix 的對應列數值逐欄比對（序列最後一天必須完全等於 flat 版本該列的值）。"""
+    ds = BaselineSequenceDataset(date_from, date_to)
+    if len(ds) == 0:
+        print(f"[check_sequence] {date_from}~{date_to} 區間內沒有 eligible 樣本"
+              "（可能早於 202 天門檻累積完成的時間點），無法抽樣", flush=True)
+        return
+    rng = np.random.default_rng(0)
+    sample_idx = rng.choice(len(ds), size=min(n_sample, len(ds)), replace=False)
+
+    flat = pd.read_parquet(BASE_PATH, columns=["Date", "stock_id"] + FEATURE_COLS)
+    flat = flat.set_index(["stock_id", "Date"])
+
+    pad_ratios, max_abs_diff, shape_ok = [], 0.0, True
+    for idx in sample_idx:
+        item = ds[int(idx)]
+        if item["X"].shape != (ds.seq_len, len(FEATURE_COLS)):
+            shape_ok = False
+        pad_ratios.append(item["padding_mask"].mean())
+        flat_row = flat.loc[(item["stock_id"], pd.Timestamp(item["date"]))][FEATURE_COLS].to_numpy(np.float32)
+        diff = float(np.max(np.abs(item["X"][-1] - flat_row)))
+        max_abs_diff = max(max_abs_diff, diff)
+
+    print(
+        f"[check_sequence] 抽樣 {len(sample_idx)} 筆 | shape 正確={shape_ok} | "
+        f"padding_mask 真實資料佔比 min/median/max = "
+        f"{min(pad_ratios):.3f}/{np.median(pad_ratios):.3f}/{max(pad_ratios):.3f} | "
+        f"序列末日 vs flat base matrix 逐欄最大絕對差 = {max_abs_diff:.2e}（應為 0）",
+        flush=True,
+    )
+
+
+# ============================================================
+# 6) KG 邊介面（階段二 2e）
+# ============================================================
+# 直接重用 production 現成的 build_kg_csr()/get_batch_edges_csr()
+# （marketmamba/models/trainer.py——只 import 不修改；此路徑不在規則 5 保護範圍內，
+# 規則 5 保護的是 V6/models/ 下的 checkpoint，不是 marketmamba/models/ 原始碼）。
+# 短線/趨勢實驗模型已在用同一套，這裡只是讓 baseline_common 的使用者不必重複串接。
+
+_KG_CSR_CACHE: dict = {}
+
+
+def _get_kg_csr():
+    if "csr" not in _KG_CSR_CACHE:
+        from marketmamba.models.trainer import build_kg_csr
+        kg_csr, stock_to_idx = build_kg_csr()
+        _KG_CSR_CACHE["csr"] = kg_csr
+        _KG_CSR_CACHE["idx"] = stock_to_idx
+    return _KG_CSR_CACHE["csr"], _KG_CSR_CACHE["idx"]
+
+
+def load_kg_edges_for_stocks(stock_ids: list[str], device: str = "cpu"):
+    """回傳 (edge_index, edge_attr)：stock_ids 對應的 KG 子圖，local index 為
+    stock_ids 的位置（0-based），跟 production get_batch_edges_csr 語意一致。"""
+    import torch
+    from marketmamba.models.trainer import get_batch_edges_csr
+
+    kg_csr, stock_to_idx = _get_kg_csr()
+    edge_index, edge_attr = get_batch_edges_csr(stock_ids, kg_csr, stock_to_idx, torch.device(device))
+    n_covered = sum(1 for s in stock_ids if s in stock_to_idx)
+    print(
+        f"[KG] {len(stock_ids)} 支股票 → KG 覆蓋 {n_covered} 支 "
+        f"({n_covered / max(len(stock_ids), 1):.1%}) | 子圖邊數 {edge_index.shape[1]:,}",
+        flush=True,
+    )
+    return edge_index, edge_attr
+
+
+def _check_kg_interface(date_from: str, date_to: str, n_sample: int = 1) -> None:
+    """驗證用：從 base matrix 抽一天的 eligible 股票清單，實際跑一次子圖擷取。"""
+    base = pd.read_parquet(BASE_PATH, columns=["Date", "stock_id", "eligible"])
+    days = sorted(base.loc[base["eligible"], "Date"].unique())[-n_sample:]
+    for d in days:
+        stocks = base.loc[(base["Date"] == d) & base["eligible"], "stock_id"].tolist()
+        load_kg_edges_for_stocks(stocks, device="cpu")
+
+
+# ============================================================
 # CLI
 # ============================================================
 if __name__ == "__main__":
@@ -546,10 +799,22 @@ if __name__ == "__main__":
     ap.add_argument("--build", action="store_true", help="建 base matrix + derived features 快取")
     ap.add_argument("--force", action="store_true", help="忽略既有快取重建")
     ap.add_argument("--chunks", type=int, default=5)
+    ap.add_argument("--rebuild-roll", action="store_true",
+                    help="只重建 rolling/momentum part（套用 2026-07-27 的 G4 順序修正）。"
+                         "base matrix 與 lag part 不動，chunk 檔必須還在。")
+    ap.add_argument("--check-sequence", action="store_true", help="驗證 2d：序列張量介面健檢")
+    ap.add_argument("--check-kg", action="store_true", help="驗證 2e：KG 邊介面健檢")
     args = ap.parse_args()
     if args.build:
         build_base_matrix(n_chunks=args.chunks, force=args.force)
         build_derived(force=args.force)
         print("✅ baseline 快取建構完成：", CACHE_DIR, flush=True)
+    elif args.rebuild_roll:
+        build_derived_roll(force=True)
+        print("✅ roll part 已依 G4 修正重建：", CACHE_DIR, flush=True)
+    elif args.check_sequence:
+        _check_sequence_dataset(PROTOCOL["TEST_START"], PROTOCOL["TEST_END"])
+    elif args.check_kg:
+        _check_kg_interface(PROTOCOL["TEST_START"], PROTOCOL["TEST_END"])
     else:
         ap.print_help()

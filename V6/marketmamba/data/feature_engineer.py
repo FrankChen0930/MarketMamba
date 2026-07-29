@@ -50,9 +50,22 @@ def build_features(
     df_fear_greed:    pd.DataFrame | None = None,
     df_business_indicator: pd.DataFrame | None = None,
     df_fed_rate:      pd.DataFrame | None = None,
+    fundamentals_v2:  bool = False,
 ) -> pd.DataFrame:
     """
     Merge all raw data sources and compute the 59-dim feature matrix (V6.2).
+
+    Args:
+        fundamentals_v2:
+          False（預設，V6.1 行為）：維持現行基本面語意，與線上 v6_best.pt / v6_short.pt /
+            v6_trend.pt 的訓練資料一致。
+          True（V6.2 重訓起）：修正兩個 2026-07-27 稽核找到的基本面 bug——
+            ① EPS_Surprise 改在季頻上算 pct_change(4)（= 去年同季），
+               舊行為套在日頻列上、實際只比 4 個交易日；
+            ② Q4/年報的 available_from 從 +45 天改 +90 天（法定申報期限為次年 3/31），
+               舊行為每年 2/14–3/31 之間存在 45 天的年報 look-ahead 窗。
+          ⚠️ 兩者都會改變 2005 年起所有歷史特徵值。推論端必須等對應的 V6.2 checkpoint
+             上線後才可切換，提前切換等於注入訓練/推論不一致（同 D1 macro_norm 的坑）。
 
     Returns:
         df : MultiIndex [Date, stock_id] with all 59 feature columns + target columns
@@ -76,9 +89,13 @@ def build_features(
     df = _merge_foreign_shareholding(df, df_foreign_shareholding)  # V6.1
 
     # -- Group C: Fundamentals --
-    df = _merge_per_pbr(df, df_per)
+    df = _merge_per_pbr(df, df_per, fundamentals_v2=fundamentals_v2)
     df = _merge_market_value_feature(df, df_market_value)
-    df = _merge_fundamentals(df, df_rev, df_fin, df_balance_sheet)
+    df = _merge_fundamentals(df, df_rev, df_fin, df_balance_sheet,
+                             fundamentals_v2=fundamentals_v2)
+    # 必須在 _merge_fundamentals 之後：推算 PER/PBR 需要它 as-of join 進來的
+    # EPS_TTM 與 Book_Value（PIT 保護就是靠那個 join，不可提前）。
+    df = _derive_valuation_fallback(df, fundamentals_v2=fundamentals_v2)
     df = _merge_dividend_feature(df, df_dividend)                # V6.1
     df = _add_free_cash_flow(df, df_cashflow)                    # V6.1
 
@@ -297,8 +314,16 @@ def _merge_daytrade(df: pd.DataFrame, df_daytrade: pd.DataFrame | None) -> pd.Da
     return df
 
 
-def _merge_per_pbr(df: pd.DataFrame, df_per: pd.DataFrame | None) -> pd.DataFrame:
-    """Merge PER/PBR/DY from per_raw.parquet (daily, direct join)."""
+def _merge_per_pbr(df: pd.DataFrame, df_per: pd.DataFrame | None,
+                   fundamentals_v2: bool = False) -> pd.DataFrame:
+    """
+    Merge PER/PBR/DY from per_raw.parquet (daily, direct join).
+
+    fundamentals_v2 時額外產生 `PER__obs` / `PBR__obs` 兩個暫時欄位，記錄
+    **ffill 之前**哪些列是真正觀測到的官方值。`_derive_valuation_fallback`
+    需要這個資訊才能分辨「官方新值」與「凍結三個月的舊值」——後者應該被自算值
+    取代，前者不應該。兩個暫時欄位由該函式用完即刪，不會進入特徵矩陣。
+    """
     if df_per is None or df_per.empty:
         return df
     p = df_per.copy()
@@ -318,7 +343,134 @@ def _merge_per_pbr(df: pd.DataFrame, df_per: pd.DataFrame | None) -> pd.DataFram
     # Forward-fill PER/PBR within each stock (not updated every day)
     for c in ["PER", "PBR"]:
         if c in df.columns:
+            if fundamentals_v2:
+                # ffill 之前先記錄「這一列是真的有官方值」
+                df[c + "__obs"] = pd.to_numeric(df[c], errors="coerce").notna()
             df[c] = df.groupby("stock_id")[c].transform(lambda x: x.ffill())
+    return df
+
+
+def _derive_valuation_fallback(df: pd.DataFrame,
+                               fundamentals_v2: bool = False) -> pd.DataFrame:
+    """
+    用已有資料自行推算 PER/PBR，補上 `per_raw` 涵蓋不到的股票（B-1，2026-07-28）。
+
+    【為什麼做】per_raw 的新來源 TWSE BWIBBU_ALL **只涵蓋上市**（2026-07-27 當日
+    1,080 支），而宇宙有 1,942 支——865 支缺 PER/PBR，其中絕大多數是上櫃。
+    但這不是「找不到來源只好將就」：本益比與股價淨值比本來就能從已有的 EPS、
+    權益、市值推導出來，自算是**更完整**的做法，不是替代品。
+
+        PER = Close / EPS_TTM              （近四季 EPS 合計）
+        PBR = market_value / Book_Value    （權益歸屬於母公司業主）
+
+    PBR 刻意用「市值 ÷ 權益」而非「股價 ÷ 每股淨值」，可完全避開股數換算，
+    因此對減資與現金增資造成的股數變動免疫（本專案已知 20 筆減資事件）。
+
+    【PIT 保證】EPS_TTM 與 Book_Value 都是在季頻算好、再走
+    `_merge_financial_statements` 的 as-of join 帶進來，各季受各自的
+    `available_from` 保護（Q4 年報 +90 天、其餘 +45 天），不會提前使用未公告季度。
+
+    【三層優先序】這是本函式最容易做錯的地方。初版只用 `combine_first` 填 NaN，
+    結果 PER 只補了 308 列（+0.5%）幾乎沒效果——因為那 865 支**不是缺值**，
+    而是被 `_merge_per_pbr` 的 ffill 凍結在 2026-04-24 的舊值一路延用至今。
+    真正該做的是讓自算值**取代凍結值**：
+
+        ① 官方當日觀測值（`PER__obs` 為 True）  ← 最高優先，絕不覆蓋
+        ② 自算值                                ← 取代凍結的 ffill
+        ③ 凍結的 ffill 官方值                    ← 兩者皆無時才留
+
+    【交叉驗證只用 ①】用 ffill 值當分母會污染結果：實測全部列一起比時
+    PER 比值 median 為 0.9498（看起來像有 5% 系統偏差），但那其實是
+    「我們用當季 EPS、官方那欄卻凍結了三個月」造成的假象，不是公式錯。
+    """
+    obs_cols = [c for c in ("PER__obs", "PBR__obs") if c in df.columns]
+    if not fundamentals_v2 or "Close" not in df.columns:
+        if obs_cols:
+            df = df.drop(columns=obs_cols)
+        return df
+
+    close = pd.to_numeric(df["Close"], errors="coerce")
+
+    # ── PER = Close / EPS_TTM ────────────────────────────────────
+    per_calc = None
+    if "EPS_TTM" in df.columns:
+        eps = pd.to_numeric(df["EPS_TTM"], errors="coerce")
+        # 負值或近零的 EPS 算出來的本益比沒有經濟意義（交易所也不公布）
+        per_calc = (close / eps.where(eps > 0)).replace([np.inf, -np.inf], np.nan)
+
+    # ── PBR = market_value / Book_Value ─────────────────────────
+    pbr_calc = None
+    if "Book_Value" in df.columns and "Market_Cap_Log" in df.columns:
+        bv = pd.to_numeric(df["Book_Value"], errors="coerce")
+        mv = np.expm1(pd.to_numeric(df["Market_Cap_Log"], errors="coerce"))
+        pbr_calc = (mv / bv.where(bv > 0)).replace([np.inf, -np.inf], np.nan)
+
+    for name, calc, lo, hi in [("PER", per_calc, 0.0, 1000.0),
+                               ("PBR", pbr_calc, 0.0, 100.0)]:
+        if calc is None:
+            logger.warning(f"[valuation_v2] {name} 缺推算原料，跳過")
+            continue
+        official = pd.to_numeric(df[name], errors="coerce") if name in df.columns \
+            else pd.Series(np.nan, index=df.index)
+        obs = (df[name + "__obs"].fillna(False).astype(bool)
+               if name + "__obs" in df.columns
+               else pd.Series(False, index=df.index))
+
+        # ── 交叉驗證：只拿「官方當日觀測值」當分母 ──────────────
+        both = obs & official.notna() & (official > 0) & calc.notna()
+        if int(both.sum()) >= 100:
+            r = (calc[both] / official[both]).replace([np.inf, -np.inf], np.nan).dropna()
+            logger.info(
+                f"[valuation_v2] {name} 交叉驗證（僅官方觀測列）n={len(r):,}"
+                f"｜自算/官方 median {r.median():.4f}"
+                f"｜±10% 內 {(r.sub(1).abs() <= 0.10).mean():.1%}"
+                f"｜±25% 內 {(r.sub(1).abs() <= 0.25).mean():.1%}"
+            )
+        else:
+            logger.warning(f"[valuation_v2] {name} 交叉驗證樣本不足（n={int(both.sum())}）")
+
+        calc = calc.where((calc > lo) & (calc < hi))
+
+        # ── 橫斷面校準：消掉自算與官方之間的系統性水位差 ────────
+        # 實測 PER 的 自算/官方 median = 0.9494（僅用官方觀測列比對，n=36,079），
+        # 是真實差異而非假象。原因未完全查明（候選：基本 vs 稀釋 EPS、
+        # 交易所對股本變動的追溯調整），但**後果明確**：自算值與官方值
+        # 共存於同一個橫斷面，5% 的水位差會讓「被自算的那群股票」整體偏移，
+        # 製造出假的排名差異——而 PER/PBR 正是要拿來做橫斷面比較的特徵。
+        #
+        # 用「同一天同時有官方值與自算值」的股票算當日校準係數。
+        # 只用當日資訊、不跨日、不看未來，與本專案其他 PIT 要求一致
+        # （對照：全樣本算一個常數會用到 test 期資料，不可接受）。
+        both_day = obs & official.notna() & (official > 0) & calc.notna()
+        if int(both_day.sum()) >= 100:
+            ratio_s = (calc / official).where(both_day)
+            k = ratio_s.groupby(df["Date"]).transform("median")
+            # 當日重疊樣本不足 → k 為 NaN；係數離譜 → 多半是當日資料有問題。
+            # 兩種情況都退回 1.0（不校準），寧可保留已知的水位差也不亂調。
+            k_ok = k.between(0.5, 2.0) & k.notna()
+            n_cal = int((k_ok & calc.notna()).sum())
+            calc = calc / k.where(k_ok, 1.0)
+            logger.info(f"[valuation_v2] {name} 橫斷面校準：{n_cal:,} 列套用當日係數"
+                        f"（係數 median {k[k_ok].median():.4f}，"
+                        f"未校準 {int((~k_ok & calc.notna()).sum()):,} 列）")
+        else:
+            logger.warning(f"[valuation_v2] {name} 重疊樣本不足，未做校準")
+
+        # ── 三層優先序：官方觀測 > 自算 > 凍結 ffill ────────────
+        n_obs = int((obs & official.notna()).sum())
+        n_stale = int(((~obs) & official.notna()).sum())
+        n_replaced = int(((~obs) & official.notna() & calc.notna()).sum())
+        n_filled = int((official.isna() & calc.notna()).sum())
+        df[name] = official.where(obs).combine_first(calc).combine_first(official)
+        logger.info(
+            f"[valuation_v2] {name} 官方觀測 {n_obs:,} 列保留｜"
+            f"凍結 ffill {n_stale:,} 列中 {n_replaced:,} 列改用自算"
+            f"（{n_replaced / max(n_stale, 1):.1%}）｜"
+            f"自算另補原本空值 {n_filled:,} 列｜"
+            f"最終非空 {int(df[name].notna().sum()):,} / {len(df):,}"
+        )
+    if obs_cols:
+        df = df.drop(columns=obs_cols)
     return df
 
 
@@ -349,12 +501,14 @@ def _merge_fundamentals(
     df_rev:          pd.DataFrame | None = None,
     df_fin:          pd.DataFrame | None = None,
     df_balance_sheet: pd.DataFrame | None = None,
+    fundamentals_v2: bool = False,
 ) -> pd.DataFrame:
     """
     Merge monthly revenue and quarterly financial statements.
     Uses 'as-of' join to avoid look-ahead bias:
       - Revenue: published on 10th of following month → safe after that date
       - Financials: published ~45 days after quarter end → safe after that date
+        (fundamentals_v2=True 時 Q4/年報改 +90 天，見 build_features docstring)
     """
     fund_defaults = {
         "PER": 15.0, "PBR": 1.5,
@@ -371,7 +525,8 @@ def _merge_fundamentals(
         df = _merge_revenue(df, df_rev)
 
     if df_fin is not None and not df_fin.empty:
-        df = _merge_financial_statements(df, df_fin, df_balance_sheet)
+        df = _merge_financial_statements(df, df_fin, df_balance_sheet,
+                                         fundamentals_v2=fundamentals_v2)
 
     return df
 
@@ -402,17 +557,60 @@ def _merge_revenue(df: pd.DataFrame, df_rev: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def _balance_sheet_equity(df_bs: pd.DataFrame | None) -> pd.DataFrame | None:
+    """
+    從 balance_sheet_raw 取「歸屬於母公司業主之權益合計」當 Book_Value。
+
+    為什麼不能用 financials_raw 的同名 type：那份是綜合損益表，
+    `EquityAttributableToOwnersOfParent` 的 origin_name 實際是
+    「淨利（淨損）歸屬於母公司業主」（FinMind 英文名標錯），拿它當權益會讓 ROE ≈ 1。
+
+    ⚠️ 必須排除 `*_per` 結尾的列——那是同一科目的百分比版本
+    （2330 於 2025-03-31：本尊 4.5642e12、`_per` 版 63.98）。
+    覆蓋率：93,323 列 / 2,168 支 / 58 季。
+    """
+    if df_bs is None or df_bs.empty or "type" not in df_bs.columns:
+        return None
+    bs = df_bs.copy()
+    date_col = "Date" if "Date" in bs.columns else "date"
+    if date_col not in bs.columns:
+        return None
+    bs["Date"] = pd.to_datetime(bs[date_col])
+    PREF = ["EquityAttributableToOwnersOfParent", "Equity"]   # 前者優先（母公司業主）
+    for t in PREF:
+        sub = bs[bs["type"] == t]                             # 精確比對，天然排除 *_per
+        if sub.empty:
+            continue
+        out = (sub.groupby(["stock_id", "Date"])["value"]
+               .last().rename("Book_Value").reset_index())
+        out["Book_Value"] = pd.to_numeric(out["Book_Value"], errors="coerce")
+        logger.info(f"[fundamentals_v2] Book_Value 來源 balance_sheet_raw.{t}："
+                    f"{len(out):,} 筆 (股,季)")
+        return out
+    logger.warning("[fundamentals_v2] balance_sheet_raw 找不到權益科目，Book_Value 將退回預設值")
+    return None
+
+
 def _merge_financial_statements(
     df: pd.DataFrame,
     df_fin: pd.DataFrame,
     df_balance_sheet: pd.DataFrame | None = None,
+    fundamentals_v2: bool = False,
 ) -> pd.DataFrame:
     """Merge quarterly EPS, Gross_Margin, ROE with look-ahead protection.
     Handles FinMind long format: columns = [Date, stock_id, type, value, origin_name]"""
     df_fin = df_fin.copy()
     date_col = "Date" if "Date" in df_fin.columns else "date"
     df_fin["Date"] = pd.to_datetime(df_fin[date_col])
-    df_fin["available_from"] = df_fin["Date"] + pd.Timedelta(days=45)
+    if fundamentals_v2:
+        # 台股法定申報期限：Q1 5/15、Q2 8/14、Q3 11/14（皆 ≈ 期末 +45 天），
+        # 但 Q4/年報是次年 3/31（≈ 期末 +90 天）。舊行為一律 +45，使 12-31 財報
+        # 在 2/14 就可見，每年 2/14–3/31 之間存在 45 天的年報 look-ahead 窗。
+        _lag_days = np.where(df_fin["Date"].dt.month == 12, 90, 45)
+        df_fin["available_from"] = df_fin["Date"] + pd.to_timedelta(_lag_days, unit="D")
+        logger.info("[fundamentals_v2] 財報 available_from：Q1–Q3 +45 天、Q4/年報 +90 天")
+    else:
+        df_fin["available_from"] = df_fin["Date"] + pd.Timedelta(days=45)
 
     # -- Detect wide vs long format --
     is_long = "type" in df_fin.columns and "value" in df_fin.columns
@@ -431,6 +629,34 @@ def _merge_financial_statements(
             "Total_Equity": "Book_Value", "TotalEquity": "Book_Value",
             "StockholdersEquity": "Book_Value",
         }
+        if fundamentals_v2:
+            # ⚠️ 2026-07-27 修正：上面的鍵是照猜測的欄名寫的，與 financials_raw 實際的
+            # 58 種 type 值域對不上，導致三個特徵**自 2005 年起就是死常數**
+            # （實測今日橫斷面 std 皆為 0.0000）：
+            #   Operating_Revenue/OperatingRevenue → 實際是 "Revenue"
+            #       → Revenue 欄不存在 → Gross_Margin = GrossProfit/Revenue 永遠算不出
+            #       → 退回 fund_defaults 的常數 0.3
+            #   ROE → financials_raw 的 58 種 type 中根本沒有 ROE → 永遠是常數 0.1
+            #   Total_Equity/StockholdersEquity → 實際是
+            #       "EquityAttributableToOwnersOfParent" → Book_Value 永遠是 0.0
+            # 只有 EPS 與 GrossProfit 原本就命中，所以只壞這三個。
+            TYPE_MAP.update({
+                "Revenue": "Revenue",
+                # ROE 分子＝稅後淨利。覆蓋率實測（與權益同 (股,季) 鍵的交集）：
+                #   IncomeAfterTaxes 97.7% / NetIncome 45.4%
+                #   （TotalConsolidatedProfitForThePeriod 98.6% 但含其他綜合損益，語意不符）
+                "IncomeAfterTaxes": "IncomeAfterTaxes",
+                "NetIncome": "NetIncome",
+            })
+            # ⚠️ 絕對不要在這裡把 EquityAttributableToOwnersOfParent 對到 Book_Value。
+            # financials_raw 是**綜合損益表**，該 type 的 origin_name 實際是
+            # 「淨利（淨損）歸屬於母公司業主」——FinMind 的英文 type 名稱標錯了。
+            # 2330 於 2025-03-31：該值 3.6156e11，與 IncomeAfterTaxes 的 3.6073e11
+            # 幾乎相同，所以拿它當分母算 ROE 等於「淨利除以淨利」→ 得到 ≈1.0。
+            # 真正的股東權益在 balance_sheet_raw（見下方 _balance_sheet_equity）：
+            # 同一 (股,季) 的 EquityAttributableToOwnersOfParent = 4.5642e12
+            # （origin_name「歸屬於母公司業主之權益合計」）。
+            # 驗算 3.607e11 / 4.564e12 = 單季 0.079 → 年化約 31.6%，與台積電實際相符。
         df_fin["mapped"] = df_fin["type"].map(TYPE_MAP)
         df_fin = df_fin[df_fin["mapped"].notna()].copy()
         if df_fin.empty:
@@ -443,6 +669,39 @@ def _merge_financial_statements(
         # Compute derived columns
         if "GrossProfit" in df_wide.columns and "Revenue" in df_wide.columns:
             df_wide["Gross_Margin"] = df_wide["GrossProfit"] / df_wide["Revenue"].replace(0, np.nan)
+        if fundamentals_v2:
+            # Book_Value 從 balance_sheet_raw 取（df_balance_sheet 在此之前是個
+            # 從未被讀取的參數——資產負債表資料一直沒被用到）
+            _eq = _balance_sheet_equity(df_balance_sheet)
+            if _eq is not None:
+                df_wide = df_wide.merge(_eq, on=["stock_id", "Date"], how="left")
+            # ROE = 稅後淨利 / 母公司業主權益（**單季**，非年化非 TTM；
+            # 橫斷面標準化後只看相對排序，一致即可）
+            _ni = None
+            for _c in ("IncomeAfterTaxes", "NetIncome"):
+                if _c in df_wide.columns:
+                    _ni = df_wide[_c] if _ni is None else _ni.fillna(df_wide[_c])
+            if _ni is not None and "Book_Value" in df_wide.columns:
+                df_wide["ROE"] = _ni / df_wide["Book_Value"].replace(0, np.nan)
+                _m = df_wide["ROE"].median()
+                # 合理性守門：單季 ROE 中位數若 >0.5（年化 >200%）代表分子分母錯配，
+                # 寧可讓它退回預設常數也不要上線錯 40 倍的特徵。
+                if pd.notna(_m) and abs(_m) > 0.5:
+                    logger.warning(
+                        f"[fundamentals_v2] ROE 單季中位數 {_m:.4f} 不合理（年化 "
+                        f"{_m*4:.0%}），判定分子分母錯配，捨棄 ROE 改用預設常數"
+                    )
+                    df_wide.drop(columns=["ROE"], inplace=True)
+                else:
+                    logger.info(f"[fundamentals_v2] ROE 單季中位數 {_m:.4f}"
+                                f"（年化約 {_m*4:.1%}）")
+            # 對映失敗不可再靜默退回預設常數——那正是這三維死了二十年沒被發現的原因
+            for _c in ("Gross_Margin", "ROE", "Book_Value"):
+                if _c not in df_wide.columns:
+                    logger.warning(
+                        f"[fundamentals_v2] {_c} 仍無法從 financials_raw 導出，"
+                        f"將退回預設常數（此為死特徵，請檢查 TYPE_MAP 與實際 type 值域）"
+                    )
         df_fin = df_wide
         fin_cols = [c for c in ["EPS", "Gross_Margin", "ROE", "Book_Value"] if c in df_fin.columns]
     else:
@@ -452,12 +711,34 @@ def _merge_financial_statements(
         return df
 
     df_fin = df_fin.sort_values(["stock_id", "available_from"])
-    for col in fin_cols:
-        vals_by_stock = df_fin.groupby("stock_id").apply(
-            lambda g: _asof_lookup(df.loc[df["stock_id"] == g.name, "Date"],
-                                   g["available_from"].reset_index(drop=True),
-                                   g[col].reset_index(drop=True))
+
+    if fundamentals_v2 and "EPS" in df_fin.columns:
+        # EPS_Surprise 必須在「季頻」的 df_fin 上算：pct_change(4) = 與去年同季相比。
+        # 舊行為（見本函式結尾的 else 分支）是在 as-of merge **之後** 對日頻列做
+        # pct_change(4)，實際只比 4 個交易日。實測 2330 / 2317 / 1301 皆為
+        # 「EPS 換值 N 次 → 非零 4N 列」，93.8% 的列恆為 0，只有換值後 4 個交易日
+        # 出現脈衝，完全不是「本季 vs 去年同季」的驚喜值。
+        # 註：若某公司缺季，pct_change(4) 是「4 筆之前」而非嚴格 4 季，
+        #     與 _merge_revenue 的 pct_change(12) 同款近似。
+        df_fin["EPS_Surprise"] = (
+            df_fin.groupby("stock_id")["EPS"]
+                  .pct_change(4)
+                  .replace([np.inf, -np.inf], np.nan)
         )
+        fin_cols = fin_cols + ["EPS_Surprise"]
+
+        # EPS_TTM（近四季合計）供 PER 自行推算使用（B-1，2026-07-28）。
+        # 必須在**季頻**上算、算完才隨同一個 as-of join 帶進日頻——這樣 TTM 的
+        # 每一季都受各自的 available_from 保護（Q4 年報 +90 天、其餘 +45 天），
+        # 不會把還沒公告的季度 EPS 提前用進去。
+        # 若改在日頻上做 rolling，會像 EPS_Surprise 舊 bug 那樣變成「4 個交易日」。
+        df_fin["EPS_TTM"] = (
+            df_fin.groupby("stock_id")["EPS"]
+                  .rolling(4, min_periods=4).sum()
+                  .reset_index(level=0, drop=True)
+        )
+        fin_cols = fin_cols + ["EPS_TTM"]
+
     # Vectorised as-of per stock
     result_rows = []
     for sid, sub_df in df.groupby("stock_id"):
@@ -471,7 +752,12 @@ def _merge_financial_statements(
     if result_rows:
         df = pd.concat(result_rows, ignore_index=True)
 
-    if "EPS" in df.columns:
+    if fundamentals_v2:
+        # 已在季頻算好、隨 as-of join 帶進來，這裡只補 NaN（首 4 季無前值）
+        if "EPS_Surprise" in df.columns:
+            df["EPS_Surprise"] = df["EPS_Surprise"].fillna(0)
+    elif "EPS" in df.columns:
+        # V6.1 舊行為（保留以維持與現行 checkpoint 的訓練/推論一致）
         df["EPS_Surprise"] = df.groupby("stock_id")["EPS"].pct_change(4).fillna(0)
 
     return df

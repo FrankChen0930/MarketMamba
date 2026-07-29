@@ -325,54 +325,94 @@ def fetch_prices_twse_direct(date_str: str) -> Optional[pd.DataFrame]:
 
 def fetch_prices_tpex_direct(date_str: str) -> Optional[pd.DataFrame]:
     """
-    Fetch all TPEX (OTC) stocks' daily OHLCV from TPEX OpenAPI.
-    Available ~15:00 on trading day. No auth required.
+    上櫃個股日 OHLCV（TPEX /www/zh-tw/afterTrading/otc，全市場單一天一次請求）。
+
+    ⚠️⚠️ 2026-07-27 重寫——舊版有嚴重的靜默資料污染
+    ------------------------------------------------------
+    舊版打 `openapi/v1/tpex_mainboard_daily_close_quotes`，該端點**完全忽略 date
+    參數**：實測傳 '2026-07-16' / '2026-07-24' / '2026/07/16' / '20260716' / 不傳，
+    五種情況回傳的資料**逐位元相同**，首列 Date 永遠是當天（民國 '1150727'）。
+    而舊版又把 `"Date": date_str` 硬寫進每一列 → 等於「抓今天的報價、蓋上你要求的
+    日期」寫進 prices_raw，且不會報任何錯。
+    這條路徑在 run_daily_update 裡是 yfinance OTC 覆蓋率 <30% 時的 fallback，
+    2026-05 起一直在觸發。實測後果：prices_raw 的 OTC 列對交易所真值
+    Volume 比值 median 0.93（p10 0.38 / p90 2.20，248/835 檔偏差 >2 倍），
+    且偏差隨日期距今越遠越大——正是「回傳當天資料」的指紋。
+    （對照組：TWSE MI_INDEX 來源的列 Volume 比值 median 1.0011、Close 零偏差。）
+
+    現版改用 `/www/zh-tw/afterTrading/otc`，實測會正確遵守日期
+    （傳 2026/07/16 回 date='20260716'，傳 2026/07/24 回 '20260724'），
+    並加上回傳日期硬性核對。
+
+    版面（2026-07-27 實測，17 欄）—— ⚠️ 收盤在 idx 2、開盤在 idx 4，**收盤在開盤之前**，
+    與一般 OHLC 順序及舊 OpenAPI 的欄名對映都不同：
+      0 代號 | 1 名稱 | 2 收盤 | 3 漲跌 | 4 開盤 | 5 最高 | 6 最低
+      7 成交股數 | 8 成交金額 | 9 成交筆數 | ...
+    價格為交易所原始價（未還原），與 yfinance 的 auto_adjust 還原價不同基準，
+    因此 run_daily_update 的多來源合併採 keep="first"（yfinance 優先）。
     """
-    url = "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_daily_close_quotes"
+    date_slash = date_str.replace("-", "/")          # 此端點只認斜線格式
+    date_compact = date_str.replace("-", "")
+    url = "https://www.tpex.org.tw/www/zh-tw/afterTrading/otc"
     try:
-        resp = requests.get(url, params={"date": date_str}, timeout=30,
-                            headers={"User-Agent": "Mozilla/5.0"})
-        if resp.status_code != 200:
-            logger.warning(f"TPEX price: HTTP {resp.status_code}")
-            return None
-        rows = resp.json()
-        if not isinstance(rows, list) or not rows:
-            logger.warning("TPEX price: empty response")
+        # ⚠️ type 參數不可省：不傳時 stat 仍為 'ok'、date 也正確，但資料表是空的
+        #    （2026-07-27 實測 maxn=0）。EW = 上櫃主板；AL 會混入權證等 10,128 筆。
+        resp = requests.get(url,
+                            params={"date": date_slash, "type": "EW", "response": "json"},
+                            headers=HEADERS, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception as e:                                    # noqa: BLE001
+        logger.warning(f"TPEX direct price fetch failed for {date_str}: {e}")
+        return None
+
+    if str(data.get("stat", "")).lower() not in ("ok", "success"):
+        logger.info(f"TPEX price {date_str}: stat={data.get('stat')}（非交易日或尚未公布）")
+        return None
+    got = str(data.get("date", "")).replace("-", "").replace("/", "")
+    if got != date_compact:
+        logger.warning(
+            f"TPEX price: 回傳日期 {got or None} != 請求 {date_compact}，捨棄"
+            f"（此類端點會靜默回傳當天資料，見 docstring）"
+        )
+        return None
+
+    def _num(s) -> Optional[float]:
+        try:
+            return float(str(s).replace(",", "").strip())
+        except (ValueError, TypeError):
             return None
 
-        def _num(s) -> Optional[float]:
-            try:
-                return float(str(s).replace(",", "").strip())
-            except (ValueError, TypeError):
-                return None
-
-        records = []
-        for row in rows:
-            sid = str(row.get("SecuritiesCompanyCode", "")).strip()
-            if not sid.isdigit():
+    records = []
+    for table in data.get("tables", []):
+        fields = table.get("fields") or []
+        if len(fields) < 8 or not any("代號" in f for f in fields):
+            continue
+        for row in table.get("data") or []:
+            if len(row) < 8:
+                continue                     # 骨架列（非交易日）
+            sid = str(row[0]).strip()
+            if not sid.isdigit() or len(sid) != 4:
                 continue
-            c = _num(row.get("Close"))
-            if c is None:
+            c = _num(row[2])                 # 收盤（注意：在開盤之前）
+            if c is None or c <= 0:
                 continue
             records.append({
                 "Date":     date_str,
                 "stock_id": sid,
-                "Open":     _num(row.get("Open"))  or c,
-                "High":     _num(row.get("High"))  or c,
-                "Low":      _num(row.get("Low"))   or c,
+                "Open":     _num(row[4]) or c,
+                "High":     _num(row[5]) or c,
+                "Low":      _num(row[6]) or c,
                 "Close":    c,
-                "Volume":   _num(row.get("TradingShares")) or 0.0,
+                "Volume":   _num(row[7]) or 0.0,
             })
 
-        if not records:
-            return None
-        df = pd.DataFrame(records)
-        logger.info(f"TPEX direct prices: {len(df)} stocks for {date_str}")
-        return df
-
-    except Exception as e:
-        logger.warning(f"TPEX direct price fetch failed: {e}")
+    if not records:
+        logger.info(f"TPEX price {date_str}: 無有效數值列")
         return None
+    df = pd.DataFrame(records)
+    logger.info(f"TPEX direct prices: {len(df)} stocks for {date_str}")
+    return df
 
 
 def fetch_institutional_twse(date_str: str) -> Optional[pd.DataFrame]:
@@ -517,6 +557,1055 @@ def fetch_institutional_tpex(date_str: str) -> Optional[pd.DataFrame]:
 
 
 # ============================================================
+# Layer 2b: TWSE Direct — PER/PBR、借券、股本（2026-07-24 新增）
+# ============================================================
+# 緣起：per_raw/securities_raw/market_value_raw 三個檔案原本靠 FinMind 整批查詢
+# 建置，使用者 FinMind VIP 到期後整批查詢被降級擋掉（免費 register 等級只開放
+# 帶 data_id 的單股查詢）。這三個改用 TWSE 官方公開端點，免費、無 FinMind
+# 額度限制，且跟現有 fetch_prices_twse_direct/fetch_institutional_twse 是同一種
+# 「官方直連」模式。三個函式均為純新增，不影響任何既有函式。
+
+def fetch_per_twse_direct(date_str: str) -> Optional[pd.DataFrame]:
+    """
+    上市個股日本益比、殖利率及股價淨值比（TWSE BWIBBU_ALL，全市場單一天一次請求）。
+    只涵蓋上市（TSE），上櫃（OTC）目前沒有找到對應官方端點，仍缺。
+    """
+    date_compact = date_str.replace("-", "")
+    url = "https://www.twse.com.tw/exchangeReport/BWIBBU_ALL"
+    try:
+        resp = requests.get(url, params={"date": date_compact, "response": "json"},
+                             headers=HEADERS, timeout=20)
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception as e:
+        logger.warning(f"TWSE PER fetch failed: {e}")
+        return None
+
+    rows = data.get("data", [])
+    if not rows:
+        return None
+
+    def _num(s: str) -> Optional[float]:
+        try:
+            return float(str(s).replace(",", "").strip())
+        except (ValueError, TypeError):
+            return None
+
+    records = []
+    for row in rows:
+        try:
+            sid = str(row[0]).strip()
+            if not sid.isdigit() or len(sid) != 4:
+                continue
+            records.append({
+                "Date":              date_str,
+                "stock_id":          sid,
+                "PER":               _num(row[2]),
+                "dividend_yield":    _num(row[3]),
+                "PBR":               _num(row[4]),
+            })
+        except (IndexError, ValueError):
+            continue
+
+    if not records:
+        return None
+    df = pd.DataFrame(records)
+    logger.info(f"TWSE direct: {len(df)} stocks PER data for {date_str}")
+    return df
+
+
+def fetch_securities_lending_twse_direct(date_str: str) -> Optional[pd.DataFrame]:
+    """
+    上市上櫃股票當日可借券賣出股數（TWSE SBL/TWT96U，全市場單一天一次請求）。
+    回傳資料是「雙欄並排」格式（每列含兩支股票），且股票代號欄位包在
+    <a href=...>代號</a> 裡，需要拆開還原成兩筆記錄並清掉 HTML tag。
+    """
+    date_compact = date_str.replace("-", "")
+    url = "https://www.twse.com.tw/SBL/TWT96U"
+    try:
+        resp = requests.get(url, params={"date": date_compact, "response": "json"},
+                             headers=HEADERS, timeout=20)
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception as e:
+        logger.warning(f"TWSE securities lending fetch failed: {e}")
+        return None
+
+    rows = data.get("data", [])
+    if not rows:
+        return None
+
+    import re
+    _tag_re = re.compile(r"<a[^>]*>([^<]+)</a>")
+
+    def _strip_tag(s: str) -> str:
+        m = _tag_re.match(str(s).strip())
+        return m.group(1) if m else str(s).strip()
+
+    def _num(s: str) -> Optional[float]:
+        try:
+            return float(str(s).replace(",", "").strip())
+        except (ValueError, TypeError):
+            return None
+
+    records = []
+    for row in rows:
+        # 每列兩組 (代號, 可借券股數)：[0:2] 與 [2:4]
+        for i in (0, 2):
+            try:
+                sid = _strip_tag(row[i])
+                if not sid.isdigit() or len(sid) != 4:
+                    continue
+                bal = _num(row[i + 1])
+                if bal is None:
+                    continue
+                records.append({
+                    "Date": date_str,
+                    "stock_id": sid,
+                    "Securities_Balance": bal,
+                })
+            except (IndexError, ValueError):
+                continue
+
+    if not records:
+        return None
+    df = pd.DataFrame(records)
+    logger.info(f"TWSE direct: {len(df)} stocks securities lending data for {date_str}")
+    return df
+
+
+# ============================================================
+# 融資融券 — 交易所直連（2026-07-27 新增，取代 FinMind 路徑）
+# ============================================================
+# 為什麼改直連：FinMind 免費層強迫逐股查詢（~2,000 次呼叫 / 3.6 小時），
+# 交易所端點是「逐日整批」（1 次呼叫回全市場，60 個交易日約 1.5 分鐘）。
+# 直連不只免費，回補還比 FinMind VIP 快，因為差別在 API 形狀而非速率上限。
+#
+# 輸出欄位直接用 production margin_raw.parquet 的名稱，避免再經過
+# feature_engineer._merge_margin 的 legacy_map 轉換。
+MARGIN_COLS = ["Margin_Purchase", "Margin_Repay", "Short_Sale",
+               "Short_Cover", "Margin_Balance", "Short_Balance"]
+
+
+def _margin_num(s) -> float:
+    """交易所回傳的數字含千分位逗號；無法解析（'--'、空白）一律視為 0。"""
+    try:
+        return float(str(s).replace(",", "").strip())
+    except (ValueError, TypeError):
+        return 0.0
+
+
+def _margin_identity_check(src: str, date_str: str, rows: list[dict]) -> None:
+    """
+    數值驗證（規則 7：數值明確輸出）：
+      融資今日餘額 = 融資前日餘額 + 融資買進 - 融資賣出 - 現金償還
+      融券今日餘額 = 融券前日餘額 + 融券賣出 - 融券買進 - 現券償還
+    欄序若對映錯誤（T86 曾發生過），這兩條恆等式會大量不成立。
+    不成立不阻擋寫入，只告警——資券互抵等情況本來就有少數例外。
+    """
+    bad = 0
+    for r in rows:
+        m_ok = abs((r["_m_prev"] + r["Margin_Purchase"] - r["Margin_Repay"]
+                    - r["_m_repay"]) - r["Margin_Balance"]) <= 1
+        s_ok = abs((r["_s_prev"] + r["Short_Sale"] - r["Short_Cover"]
+                    - r["_s_repay"]) - r["Short_Balance"]) <= 1
+        if not (m_ok and s_ok):
+            bad += 1
+    rate = bad / max(len(rows), 1)
+    msg = (f"{src} margin {date_str}：{len(rows)} 檔，恆等式不成立 {bad} 檔 "
+           f"({rate:.2%})")
+    if rate > 0.05:
+        logger.warning(msg + "  ⚠️ 超過 5%，欄位對映可能有誤")
+    else:
+        logger.info(msg + "  ✓")
+
+
+def fetch_margin_twse_direct(date_str: str) -> Optional[pd.DataFrame]:
+    """
+    上市個股融資融券餘額（TWSE MI_MARGN，全市場單一天一次請求）。
+
+    版面（2026-07-27 實測，tables[1]「融資融券彙總」，16 欄）：
+      0 代號 | 1 名稱
+      2 融資買進 | 3 融資賣出 | 4 融資現金償還 | 5 融資前日餘額 | 6 融資今日餘額 | 7 融資限額
+      8 融券買進 | 9 融券賣出 | 10 融券現券償還 | 11 融券前日餘額 | 12 融券今日餘額 | 13 融券限額
+      14 資券互抵 | 15 註記
+    單位：張（交易單位），與 FinMind TaiwanStockMarginPurchaseShortSale 一致。
+
+    ⚠️ TPEX 的融券欄序是「券賣、券買」，與此處 TWSE 的「買進、賣出」**相反**，
+       兩個 fetcher 不可共用索引。
+    """
+    date_compact = date_str.replace("-", "")
+    url = "https://www.twse.com.tw/rwd/zh/marginTrading/MI_MARGN"
+    try:
+        resp = requests.get(url, params={"date": date_compact, "selectType": "ALL",
+                                         "response": "json"},
+                            headers=HEADERS, timeout=25)
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception as e:                                    # noqa: BLE001
+        logger.warning(f"TWSE margin fetch failed for {date_str}: {e}")
+        return None
+
+    if str(data.get("stat", "")).upper() != "OK":
+        logger.info(f"TWSE margin {date_str}: stat={data.get('stat')}（非交易日或尚未公布）")
+        return None
+    # 硬性核對回傳日期——避免端點忽略參數而回到別的日期（TPEX 已實證會這樣）
+    if str(data.get("date", "")).replace("-", "") != date_compact:
+        logger.warning(f"TWSE margin: 回傳日期 {data.get('date')} != 請求 {date_compact}，捨棄")
+        return None
+
+    tables = data.get("tables", [])
+    target = next((t for t in tables
+                   if isinstance(t.get("fields"), list) and len(t["fields"]) >= 16
+                   and any("代號" in f for f in t["fields"])), None)
+    if target is None or not target.get("data"):
+        logger.warning(f"TWSE margin {date_str}: 找不到個股彙總表")
+        return None
+
+    records = []
+    for row in target["data"]:
+        try:
+            sid = str(row[0]).strip()
+            if not sid.isdigit() or len(sid) != 4:
+                continue
+            records.append({
+                "Date": date_str, "stock_id": sid,
+                "Margin_Purchase": _margin_num(row[2]),    # 融資買進
+                "Margin_Repay":    _margin_num(row[3]),    # 融資賣出
+                "Margin_Balance":  _margin_num(row[6]),    # 融資今日餘額
+                "Short_Cover":     _margin_num(row[8]),    # 融券買進（回補）
+                "Short_Sale":      _margin_num(row[9]),    # 融券賣出
+                "Short_Balance":   _margin_num(row[12]),   # 融券今日餘額
+                "_m_prev":  _margin_num(row[5]),  "_m_repay": _margin_num(row[4]),
+                "_s_prev":  _margin_num(row[11]), "_s_repay": _margin_num(row[10]),
+            })
+        except (IndexError, ValueError):
+            continue
+
+    if not records:
+        return None
+    _margin_identity_check("TWSE", date_str, records)
+    return pd.DataFrame(records)[["Date", "stock_id"] + MARGIN_COLS]
+
+
+def fetch_margin_tpex_direct(date_str: str) -> Optional[pd.DataFrame]:
+    """
+    上櫃個股融資融券餘額（TPEX /www/zh-tw/margin/balance，全市場單一天一次請求）。
+
+    ⚠️⚠️ 日期格式必須是 **YYYY/MM/DD**。2026-07-27 實測：用 YYYYMMDD 或
+       YYYY-MM-DD 時此端點會**靜默忽略參數、回傳當天資料，且 stat 仍為 'ok'**。
+       若照 TWSE 的 compact 格式寫，整段回補會變成「今天的數字蓋上歷史日期」
+       而完全不報錯。因此除了用正確格式，下方另有回傳日期的硬性核對。
+
+    版面（2026-07-27 實測，tables[0]，20 欄）：
+      0 代號 | 1 名稱
+      2 前資餘額 | 3 資買 | 4 資賣 | 5 現償 | 6 資餘額 | 7 資屬證金 | 8 資使用率 | 9 資限額
+      10 前券餘額 | 11 券賣 | 12 券買 | 13 券償 | 14 券餘額 | 15 券屬證金 | 16 券使用率 | 17 券限額
+      18 資券相抵 | 19 備註
+      → 11/12 是「券賣、券買」，與 TWSE 的 8/9「買進、賣出」順序相反。
+    單位：張。
+    """
+    date_slash = date_str.replace("-", "/")                   # 必須用斜線格式
+    date_compact = date_str.replace("-", "")
+    url = "https://www.tpex.org.tw/www/zh-tw/margin/balance"
+    try:
+        resp = requests.get(url, params={"date": date_slash, "response": "json"},
+                            headers=HEADERS, timeout=25)
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception as e:                                    # noqa: BLE001
+        logger.warning(f"TPEX margin fetch failed for {date_str}: {e}")
+        return None
+
+    if str(data.get("stat", "")).lower() not in ("ok", "success"):
+        logger.info(f"TPEX margin {date_str}: stat={data.get('stat')}（非交易日或尚未公布）")
+        return None
+    if str(data.get("date", "")).replace("-", "").replace("/", "") != date_compact:
+        logger.warning(
+            f"TPEX margin: 回傳日期 {data.get('date')} != 請求 {date_compact}，捨棄"
+            f"（此端點會靜默回傳當天資料，見 docstring）"
+        )
+        return None
+
+    tables = data.get("tables", [])
+    target = next((t for t in tables
+                   if isinstance(t.get("fields"), list) and len(t["fields"]) >= 20
+                   and any("代號" in f for f in t["fields"])), None)
+    if target is None or not target.get("data"):
+        logger.warning(f"TPEX margin {date_str}: 找不到個股表")
+        return None
+
+    records = []
+    for row in target["data"]:
+        try:
+            sid = str(row[0]).strip()
+            if not sid.isdigit() or len(sid) != 4:
+                continue
+            records.append({
+                "Date": date_str, "stock_id": sid,
+                "Margin_Purchase": _margin_num(row[3]),    # 資買
+                "Margin_Repay":    _margin_num(row[4]),    # 資賣
+                "Margin_Balance":  _margin_num(row[6]),    # 資餘額
+                "Short_Sale":      _margin_num(row[11]),   # 券賣  ← 注意與 TWSE 相反
+                "Short_Cover":     _margin_num(row[12]),   # 券買
+                "Short_Balance":   _margin_num(row[14]),   # 券餘額
+                "_m_prev":  _margin_num(row[2]),  "_m_repay": _margin_num(row[5]),
+                "_s_prev":  _margin_num(row[10]), "_s_repay": _margin_num(row[13]),
+            })
+        except (IndexError, ValueError):
+            continue
+
+    if not records:
+        return None
+    _margin_identity_check("TPEX", date_str, records)
+    return pd.DataFrame(records)[["Date", "stock_id"] + MARGIN_COLS]
+
+
+def fetch_margin_direct(date_str: str) -> Optional[pd.DataFrame]:
+    """上市 + 上櫃融資融券合併（供 run_daily_update 與回補共用）。"""
+    frames = [f for f in (fetch_margin_twse_direct(date_str),
+                          fetch_margin_tpex_direct(date_str))
+              if f is not None and not f.empty]
+    if not frames:
+        return None
+    df = pd.concat(frames, ignore_index=True)
+    df = df.drop_duplicates(subset=["Date", "stock_id"], keep="first")
+    logger.info(f"margin 直連合併 {date_str}：{len(df)} 檔")
+    return df
+
+
+# ============================================================
+# 現股當沖 — 交易所直連（2026-07-27 新增）
+# ============================================================
+# 為什麼需要：production 的 daytrade_raw.parquet 的 Day_Trade_Volume
+# **2014–2026 全部 4,263,330 列都是 0**（非零列數 0）——整欄自始就沒有資料，
+# 不是停更問題。FinMind 的 TaiwanStockDayTrading 回傳的 BuyAfterSale 欄位為空，
+# 原本的管線也就一路寫 0 進去。
+#
+# ⚠️ 「列數 > N」不能當有效性判準：TWSE TWTB4U 對非交易日 2026-07-10 會回
+#    1,209 列**骨架列**（只有代號、沒有數值欄），總計表則為空。必須檢查
+#    「實際解析出數值的列數」，否則會把空殼當成有效資料寫進 parquet。
+
+def fetch_daytrade_twse_direct(date_str: str) -> Optional[pd.DataFrame]:
+    """
+    上市現股當沖成交股數（TWSE /rwd/zh/dayTrading/TWTB4U，全市場單一天一次請求）。
+
+    版面（2026-07-27 實測，個股表 6 欄）：
+      0 證券代號 | 1 證券名稱 | 2 暫停現股賣出後現款買進當沖註記
+      3 當日沖銷交易成交股數 | 4 當日沖銷交易買進成交金額 | 5 當日沖銷交易賣出成交金額
+    單位：股。回溯測試可用到 2018-01-03（925 檔）。
+    """
+    return _fetch_daytrade_generic(
+        date_str,
+        url="https://www.twse.com.tw/rwd/zh/dayTrading/TWTB4U",
+        params={"date": date_str.replace("-", ""), "selectType": "All",
+                "response": "json"},
+        src="TWSE",
+    )
+
+
+def fetch_daytrade_tpex_direct(date_str: str) -> Optional[pd.DataFrame]:
+    """
+    上櫃現股當沖成交股數（TPEX /www/zh-tw/intraday/stat，全市場單一天一次請求）。
+
+    ⚠️ 日期格式必須是 YYYY/MM/DD——與 margin/balance 同一個坑：用 YYYYMMDD 會
+       靜默回傳當天資料且 stat='ok'（2026-07-27 實測請求 20260724 回 date=20260727）。
+
+    版面（2026-07-27 實測，tables[1] 個股表 6 欄，與 TWSE 同序）：
+      0 證券代號 | 1 證券名稱 | 2 註記 | 3 當日沖銷交易成交股數
+      4 買進成交金額 | 5 賣出成交金額
+    """
+    return _fetch_daytrade_generic(
+        date_str,
+        url="https://www.tpex.org.tw/www/zh-tw/intraday/stat",
+        params={"date": date_str.replace("-", "/"), "type": "Daily",
+                "response": "json"},
+        src="TPEX",
+    )
+
+
+def _fetch_daytrade_generic(date_str: str, url: str, params: dict,
+                            src: str) -> Optional[pd.DataFrame]:
+    """TWSE / TPEX 的當沖個股表版面相同（代號在 0、當沖股數在 3），共用解析。"""
+    date_compact = date_str.replace("-", "")
+    try:
+        resp = requests.get(url, params=params, headers=HEADERS, timeout=25)
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception as e:                                    # noqa: BLE001
+        logger.warning(f"{src} daytrade fetch failed for {date_str}: {e}")
+        return None
+
+    if str(data.get("stat", "")).lower() not in ("ok", "success"):
+        logger.info(f"{src} daytrade {date_str}: stat={data.get('stat')}")
+        return None
+    got = str(data.get("date", "")).replace("-", "").replace("/", "")
+    if got != date_compact:
+        logger.warning(f"{src} daytrade: 回傳日期 {got or None} != 請求 {date_compact}，捨棄")
+        return None
+
+    records = []
+    for table in data.get("tables", []):
+        rows = table.get("data") or []
+        fields = table.get("fields") or []
+        if len(fields) < 4 or not any("代號" in f for f in fields):
+            continue
+        for row in rows:
+            if len(row) < 4:
+                continue                        # 骨架列（非交易日）→ 直接跳過
+            sid = str(row[0]).strip()
+            if not sid.isdigit() or len(sid) != 4:
+                continue
+            try:
+                shares = float(str(row[3]).replace(",", "").strip())
+            except (ValueError, TypeError):
+                continue
+            records.append({"Date": date_str, "stock_id": sid,
+                            "DayTrade_Shares": shares})
+
+    if not records:
+        logger.info(f"{src} daytrade {date_str}: 無有效數值列（非交易日或版面異動）")
+        return None
+    logger.info(f"{src} daytrade {date_str}: {len(records)} 檔")
+    return pd.DataFrame(records)
+
+
+def fetch_daytrade_direct(date_str: str) -> Optional[pd.DataFrame]:
+    """上市 + 上櫃當沖股數合併。回傳 [Date, stock_id, DayTrade_Shares]（單位：股）。"""
+    frames = [f for f in (fetch_daytrade_twse_direct(date_str),
+                          fetch_daytrade_tpex_direct(date_str))
+              if f is not None and not f.empty]
+    if not frames:
+        return None
+    df = pd.concat(frames, ignore_index=True)
+    df = df.drop_duplicates(subset=["Date", "stock_id"], keep="first")
+    return df
+
+
+def daytrade_shares_to_ratio(df_shares: pd.DataFrame) -> pd.DataFrame:
+    """
+    把當沖股數換成 production daytrade_raw 的 `Day_Trade_Volume`
+    ＝ 當沖成交股數 / 該股當日成交股數（feature_engineer 會再 clip 到 [0,1]）。
+
+    成交股數取自 prices_raw 的 Volume（yfinance / TWSE 皆為「股」，單位一致）。
+    找不到對應成交量的列直接剔除，不用 0 補——0 會被模型當成「沒有當沖」的真值。
+    """
+    price_path = PROCESSED_DIR / "prices_raw.parquet"
+    days = set(pd.to_datetime(df_shares["Date"]).dt.strftime("%Y-%m-%d"))
+    pr = pd.read_parquet(price_path, columns=["Date", "stock_id", "Volume"])
+    pr["Date"] = pd.to_datetime(pr["Date"])
+    pr = pr[pr["Date"].dt.strftime("%Y-%m-%d").isin(days)]
+    pr = pr.drop_duplicates(subset=["Date", "stock_id"], keep="last")
+
+    out = df_shares.copy()
+    out["Date"] = pd.to_datetime(out["Date"])
+    out = out.merge(pr, on=["Date", "stock_id"], how="inner")
+    out = out[out["Volume"] > 0]
+    out["Day_Trade_Volume"] = out["DayTrade_Shares"] / out["Volume"]
+    return out[["Date", "stock_id", "Day_Trade_Volume"]]
+
+
+# ============================================================
+# 除權除息計算結果表 — 還原因子的權威來源（2026-07-28 新增）
+# ============================================================
+
+def fetch_ex_rights_twse_direct(start: str, end: str) -> Optional[pd.DataFrame]:
+    """
+    上市股票除權除息計算結果表（TWSE TWT49U）。**支援日期區間查詢**，
+    一次請求可涵蓋整個月，是本專案少數不必逐日迴圈的端點。
+
+    為什麼重要：這張表同時給「除權息前收盤價」與「除權息參考價」，
+    兩者相除就是**交易所官方口徑的還原因子**：
+
+        adj_factor = 除權息參考價 / 除權息前收盤價
+
+    它一次涵蓋現金股利、股票股利與現金增資（參考價的計算已內含全部），
+    比從 `dividend_raw` 的現金股利反推準確——後者處理不了無償配股與增資。
+
+    ⚠️ 版面隨年份改變，**必須用 `fields` 陣列對映、不可硬編索引**：
+      2008 起（15 欄）：… 3 除權息前收盤價 | 4 除權息參考價 | 5 權值+息值 | 6 權/息 …
+      2005–2007（17 欄）：… 3 除權息前收盤價 | 4 除權息參考價 |
+                          5 **權值** | 6 **息值** | 7 權值+息值 | 8 權/息 …
+      兩者的索引 3/4 相同（所以 adj_factor 不受影響），但 5/6 語意完全不同——
+      初版硬編索引導致 2005–2007 的 1,592 列把「權值」當成 value、「息值」當成 kind。
+
+    註：`adj_factor > 1` 是合法的，代表**減資**（參考價高於前收盤價），
+        因此本表同時是減資事件的來源（檢查表 C3）。
+
+    ⚠️ TPEX 的對應公告 `/www/zh-tw/bulletin/exDailyQ` **忽略 date 參數**
+       （傳 2026/07/09 與 2026/06/24 都回 date='20260728~20260729'，
+       是「即將除權息」的前瞻公告而非歷史查詢），因此上櫃歷史除權息尚無來源。
+    """
+    url = "https://www.twse.com.tw/rwd/zh/exRight/TWT49U"
+    try:
+        resp = requests.get(url, params={"startDate": start.replace("-", ""),
+                                         "endDate": end.replace("-", ""),
+                                         "response": "json"},
+                            headers=HEADERS, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception as e:                                    # noqa: BLE001
+        logger.warning(f"TWSE ex-rights fetch failed {start}~{end}: {e}")
+        return None
+    if str(data.get("stat", "")).upper() != "OK":
+        return None
+
+    rows = data.get("data") or []
+    fields = data.get("fields") or []
+    if not rows:
+        for t in data.get("tables", []):
+            if len(t.get("data") or []) > 0:
+                rows, fields = t["data"], t.get("fields") or []
+                break
+    if not rows or not fields:
+        return None
+
+    def _col(*names) -> int:
+        """依欄名找索引——版面 2005–2007 為 17 欄、2008 起 15 欄，硬編會錯位。"""
+        for nm in names:
+            for i, f in enumerate(fields):
+                if nm in str(f):
+                    return i
+        return -1
+
+    i_date, i_id = _col("資料日期"), _col("股票代號")
+    i_before, i_ref = _col("除權息前收盤價"), _col("除權息參考價")
+    i_val, i_kind = _col("權值+息值"), _col("權/息")
+    if min(i_date, i_id, i_before, i_ref) < 0:
+        logger.warning(f"TWSE ex-rights: 版面無法辨識，fields={fields}")
+        return None
+
+    def _num(s):
+        try:
+            return float(str(s).replace(",", "").strip())
+        except (ValueError, TypeError):
+            return None
+
+    def _roc(s):
+        """民國 '115年06月01日' → Timestamp。"""
+        t = str(s).strip()
+        try:
+            y = int(t[:t.index("年")]) + 1911
+            m = int(t[t.index("年") + 1:t.index("月")])
+            d = int(t[t.index("月") + 1:t.index("日")])
+            return pd.Timestamp(y, m, d)
+        except Exception:                                     # noqa: BLE001
+            return pd.NaT
+
+    recs = []
+    for r in rows:
+        if len(r) <= max(i_date, i_id, i_before, i_ref):
+            continue
+        sid = str(r[i_id]).strip()
+        if not sid.isdigit() or len(sid) != 4:
+            continue
+        dt, before, ref = _roc(r[i_date]), _num(r[i_before]), _num(r[i_ref])
+        if pd.isna(dt) or not before or not ref or before <= 0:
+            continue
+        recs.append({"Date": dt, "stock_id": sid,
+                     "close_before": before, "ref_price": ref,
+                     "value": _num(r[i_val]) if 0 <= i_val < len(r) else None,
+                     "kind": str(r[i_kind]).strip() if 0 <= i_kind < len(r) else "",
+                     "adj_factor": ref / before})
+    if not recs:
+        return None
+    return pd.DataFrame(recs)
+
+
+FS_COLS = [
+    "date", "stock_id", "stock_name", "InternationalCode",
+    "ForeignInvestmentRemainingShares", "ForeignInvestmentShares",
+    "ForeignInvestmentRemainRatio", "ForeignInvestmentSharesRatio",
+    "ForeignInvestmentUpperLimitRatio", "ChineseInvestmentUpperLimitRatio",
+    "NumberOfSharesIssued", "RecentlyDeclareDate", "note",
+]
+
+
+def _fs_num(s) -> Optional[float]:
+    """'25,219,056' / '87.86%' → float。"""
+    try:
+        return float(str(s).replace(",", "").replace("%", "").strip())
+    except (ValueError, TypeError):
+        return None
+
+
+def _fs_identity_check(df: pd.DataFrame, tag: str) -> None:
+    """
+    恆等式驗證：`持股比率 ≈ 持有股數 / 發行股數 × 100`。
+
+    ⚠️ 為什麼一定要驗這個：`foreign_shareholding_raw` 有兩個長得很像但**語意相反**
+       的比率欄——`ForeignInvestmentSharesRatio`（外資實際持股%）與
+       `ForeignInvestmentRemainRatio`（尚可投資空間%）。
+       `feature_engineer._merge_foreign_shareholding` 用的是前者，對映錯會讓
+       整個特徵符號顛倒且不會報錯。用恆等式驗過才知道自己對到哪一欄。
+    """
+    a = pd.to_numeric(df["ForeignInvestmentShares"], errors="coerce")
+    b = pd.to_numeric(df["NumberOfSharesIssued"], errors="coerce")
+    r = pd.to_numeric(df["ForeignInvestmentSharesRatio"], errors="coerce")
+    m = (b > 0) & a.notna() & r.notna()
+    if int(m.sum()) < 10:
+        logger.warning(f"foreign_shareholding {tag}: 恆等式樣本不足")
+        return
+    calc = a[m] / b[m] * 100.0
+    diff = (calc - r[m]).abs()
+    ok = float((diff <= 0.05).mean())
+    logger.info(f"foreign_shareholding {tag}: 恆等式 持股比率≈持股數/發行股數 "
+                f"通過率 {ok:.1%}（n={int(m.sum()):,}，median 差 {diff.median():.4f}）")
+    if ok < 0.9:
+        logger.warning(f"foreign_shareholding {tag}: 恆等式通過率偏低，欄位對映可能有誤")
+
+
+def fetch_foreign_shareholding_twse_direct(date: str) -> Optional[pd.DataFrame]:
+    """上市外資及陸資持股（TWSE MI_QFIIS）。需 `selectType=ALLBUT0999` 才回全市場。"""
+    ds = date.replace("-", "")
+    try:
+        resp = requests.get("https://www.twse.com.tw/rwd/zh/fund/MI_QFIIS",
+                            params={"date": ds, "selectType": "ALLBUT0999",
+                                    "response": "json"},
+                            headers=HEADERS, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception as e:                                    # noqa: BLE001
+        logger.warning(f"TWSE QFIIS fetch failed {date}: {e}")
+        return None
+    if str(data.get("stat", "")).upper() != "OK":
+        return None
+    if str(data.get("date", "")) != ds:            # 硬性核對回傳日期
+        logger.warning(f"TWSE QFIIS: 回傳日期 {data.get('date')!r} != 請求 {ds!r}")
+        return None
+
+    rows, fields = data.get("data") or [], data.get("fields") or []
+    if not rows:
+        for t in data.get("tables", []):
+            if t.get("data"):
+                rows, fields = t["data"], t.get("fields") or []
+                break
+    if not rows or not fields:
+        return None
+
+    def _col(*names) -> int:
+        for nm in names:
+            for i, f in enumerate(fields):
+                if nm in str(f):
+                    return i
+        return -1
+
+    ix = {
+        "stock_id": _col("證券代號"), "stock_name": _col("證券名稱"),
+        "InternationalCode": _col("國際證券編碼"),
+        "NumberOfSharesIssued": _col("發行股數"),
+        "ForeignInvestmentRemainingShares": _col("尚可投資股數"),
+        "ForeignInvestmentShares": _col("持有股數"),
+        "ForeignInvestmentRemainRatio": _col("尚可投資比率"),
+        "ForeignInvestmentSharesRatio": _col("持股比率"),
+        "ForeignInvestmentUpperLimitRatio": _col("共用法令投資上限比率", "法令投資上限比率"),
+        "ChineseInvestmentUpperLimitRatio": _col("陸資法令投資上限比率"),
+    }
+    if min(ix["stock_id"], ix["ForeignInvestmentShares"],
+           ix["ForeignInvestmentSharesRatio"]) < 0:
+        logger.warning(f"TWSE QFIIS: 版面無法辨識，fields={fields}")
+        return None
+
+    recs = []
+    for r in rows:
+        sid = str(r[ix["stock_id"]]).strip() if ix["stock_id"] < len(r) else ""
+        if not sid.isdigit() or len(sid) != 4:
+            continue
+        rec = {"date": pd.Timestamp(date), "stock_id": sid, "note": ""}
+        for k, i in ix.items():
+            if k == "stock_id" or i < 0 or i >= len(r):
+                continue
+            rec[k] = str(r[i]).strip() if k in ("stock_name", "InternationalCode") \
+                else _fs_num(r[i])
+        recs.append(rec)
+    if not recs:
+        return None
+    df = pd.DataFrame(recs)
+    for c in FS_COLS:
+        if c not in df.columns:
+            df[c] = pd.NA
+    df = df[FS_COLS]
+    _fs_identity_check(df, f"TWSE {date}")
+    return df
+
+
+def fetch_foreign_shareholding_tpex_direct(date: str) -> Optional[pd.DataFrame]:
+    """
+    上櫃外資及陸資持股（TPEX `insti/qfii`）。
+
+    端點名不直觀（不是 forgnHold / foreignHold，那些都回 404 HTML），
+    日期需 `YYYY/MM/DD`。實測正確認日期（2026/07/27、05/06、07/24 各回對應值）。
+    """
+    ds = date.replace("-", "/")
+    try:
+        resp = requests.get("https://www.tpex.org.tw/www/zh-tw/insti/qfii",
+                            params={"date": ds, "response": "json"},
+                            headers=HEADERS, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception as e:                                    # noqa: BLE001
+        logger.warning(f"TPEX qfii fetch failed {date}: {e}")
+        return None
+    if str(data.get("date", "")) != date.replace("-", ""):
+        logger.warning(f"TPEX qfii: 回傳日期 {data.get('date')!r} != 請求 {date!r}")
+        return None
+
+    rows, fields = [], []
+    for t in data.get("tables", []):
+        if t.get("data"):
+            rows, fields = t["data"], t.get("fields") or []
+            break
+    if not rows or not fields:
+        return None
+
+    def _col(*names) -> int:
+        for nm in names:
+            for i, f in enumerate(fields):
+                if nm in str(f):
+                    return i
+        return -1
+
+    ix = {
+        "stock_id": _col("代號"), "stock_name": _col("名稱"),
+        "NumberOfSharesIssued": _col("發行股數"),
+        "ForeignInvestmentRemainingShares": _col("尚可投資股數"),
+        "ForeignInvestmentShares": _col("持有股數"),
+        "ForeignInvestmentRemainRatio": _col("尚可投資比率"),
+        "ForeignInvestmentSharesRatio": _col("持股比率"),
+        "ForeignInvestmentUpperLimitRatio": _col("法令投資上限比率"),
+    }
+    if min(ix["stock_id"], ix["ForeignInvestmentShares"],
+           ix["ForeignInvestmentSharesRatio"]) < 0:
+        logger.warning(f"TPEX qfii: 版面無法辨識，fields={fields}")
+        return None
+
+    recs = []
+    for r in rows:
+        sid = str(r[ix["stock_id"]]).strip() if ix["stock_id"] < len(r) else ""
+        if not sid.isdigit() or len(sid) != 4:
+            continue
+        rec = {"date": pd.Timestamp(date), "stock_id": sid, "note": ""}
+        for k, i in ix.items():
+            if k == "stock_id" or i < 0 or i >= len(r):
+                continue
+            rec[k] = str(r[i]).strip() if k == "stock_name" else _fs_num(r[i])
+        recs.append(rec)
+    if not recs:
+        return None
+    df = pd.DataFrame(recs)
+    for c in FS_COLS:
+        if c not in df.columns:
+            df[c] = pd.NA
+    df = df[FS_COLS]
+    _fs_identity_check(df, f"TPEX {date}")
+    return df
+
+
+def fetch_foreign_shareholding_direct(date: str) -> Optional[pd.DataFrame]:
+    """上市 + 上櫃外資持股合併。任一市場成功即回傳。"""
+    parts = []
+    for fn in (fetch_foreign_shareholding_twse_direct,
+               fetch_foreign_shareholding_tpex_direct):
+        d = fn(date)
+        if d is not None and not d.empty:
+            parts.append(d)
+    if not parts:
+        return None
+    out = pd.concat(parts, ignore_index=True)
+    return out.drop_duplicates(subset=["date", "stock_id"], keep="first")
+
+
+def fetch_ex_rights_tpex_direct(start: str, end: str) -> Optional[pd.DataFrame]:
+    """
+    上櫃股票除權除息計算結果（TPEX `bulletin/exDailyQ`）。TWT49U 的上櫃對應版，
+    欄位語意相同，因此兩市場可合併成同一張還原因子表。
+
+    ⚠️ **踩過的雷（2026-07-28）**：這個端點乍看「忽略 date 參數、只回前瞻窗口」——
+       傳 `date=2025/08/15` 會回 `date='20260728~20260729'`（即將除權息的公告），
+       因此一度被判定為「上櫃歷史除權息無官方來源」，退而用 `dividend_raw` 自算公式。
+       真正的原因是 **參數名要用 `startDate`/`endDate`，且必須是 `YYYY/MM/DD`**：
+           startDate=20250801  → 靜默忽略，回前瞻窗口
+           startDate=2025/08/01 → 正確回傳 20250801~20250831 共 150 筆
+       這正是本專案雷區清單第 2 條（TPEX 只認斜線格式）的又一次重演。
+
+    區間查詢實測可一次拉 5 年（2020–2024 回 4,976 筆），全歷史約 3–4 次請求。
+
+    【歷史深度】2007 下半年起（2007 H1 = 0 筆、2007 H2 = 3 筆、2008 H2 = 374 筆），
+       與 TPEX 價格端點的 2007-07 起點一致，不額外增加限制區段。
+
+    日期格式與 TWSE 版**不同**：TPEX 是 `114/08/01`（民國年/月/日），
+    TWSE TWT49U 是 `115年06月01日`。不可共用 parser。
+    """
+    url = "https://www.tpex.org.tw/www/zh-tw/bulletin/exDailyQ"
+    try:
+        resp = requests.get(url, params={"startDate": start, "endDate": end,
+                                         "response": "json"},
+                            headers=HEADERS, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception as e:                                    # noqa: BLE001
+        logger.warning(f"TPEX ex-rights fetch failed {start}~{end}: {e}")
+        return None
+
+    # 硬性核對回傳區間，避免又拿到前瞻窗口卻誤以為是歷史資料
+    want = f"{start.replace('/', '')}~{end.replace('/', '')}"
+    got = str(data.get("date", ""))
+    if got != want:
+        logger.warning(f"TPEX ex-rights: 回傳區間 {got!r} != 請求 {want!r}，丟棄")
+        return None
+
+    tables = data.get("tables") or []
+    rows, fields = [], []
+    for t in tables:
+        if t.get("data"):
+            rows, fields = t["data"], t.get("fields") or []
+            break
+    if not rows or not fields:
+        return None
+
+    def _col(*names) -> int:
+        for nm in names:
+            for i, f in enumerate(fields):
+                if nm in str(f):
+                    return i
+        return -1
+
+    i_date, i_id = _col("除權息日期"), _col("代號")
+    i_before, i_ref = _col("除權息前收盤價"), _col("除權息參考價")
+    i_val, i_kind = _col("權值+息值"), _col("權/息")
+    if min(i_date, i_id, i_before, i_ref) < 0:
+        logger.warning(f"TPEX ex-rights: 版面無法辨識，fields={fields}")
+        return None
+
+    def _num(s):
+        try:
+            return float(str(s).replace(",", "").strip())
+        except (ValueError, TypeError):
+            return None
+
+    def _roc_slash(s):
+        """民國 '114/08/01' → Timestamp。"""
+        try:
+            y, m, d = str(s).strip().split("/")
+            return pd.Timestamp(int(y) + 1911, int(m), int(d))
+        except Exception:                                     # noqa: BLE001
+            return pd.NaT
+
+    recs = []
+    for r in rows:
+        if len(r) <= max(i_date, i_id, i_before, i_ref):
+            continue
+        sid = str(r[i_id]).strip()
+        if not sid.isdigit() or len(sid) != 4:
+            continue
+        dt = _roc_slash(r[i_date])
+        before, ref = _num(r[i_before]), _num(r[i_ref])
+        if pd.isna(dt) or not before or not ref or before <= 0:
+            continue
+        recs.append({"Date": dt, "stock_id": sid,
+                     "close_before": before, "ref_price": ref,
+                     "value": _num(r[i_val]) if 0 <= i_val < len(r) else None,
+                     "kind": str(r[i_kind]).strip() if 0 <= i_kind < len(r) else "",
+                     "adj_factor": ref / before})
+    if not recs:
+        return None
+    return pd.DataFrame(recs)
+
+
+def _cap_reduction_parse(rows, fields, roc_parser) -> Optional[pd.DataFrame]:
+    """減資恢復買賣表的共用解析（TWSE / TPEX 欄名幾乎相同）。"""
+    def _col(*names) -> int:
+        for nm in names:
+            for i, f in enumerate(fields):
+                if nm in str(f):
+                    return i
+        return -1
+
+    i_date = _col("恢復買賣日期")
+    i_id = _col("股票代號")
+    i_before = _col("停止買賣前收盤價格", "最後交易日之收盤價格")
+    i_ref = _col("恢復買賣參考價", "減資恢復買賣開始日參考價格")
+    i_why = _col("減資原因")
+    if min(i_date, i_id, i_before, i_ref) < 0:
+        logger.warning(f"減資表版面無法辨識，fields={fields}")
+        return None
+
+    def _num(s):
+        try:
+            return float(str(s).replace(",", "").strip())
+        except (ValueError, TypeError):
+            return None
+
+    recs = []
+    for r in rows:
+        if len(r) <= max(i_date, i_id, i_before, i_ref):
+            continue
+        sid = str(r[i_id]).strip()
+        if not sid.isdigit() or len(sid) != 4:
+            continue
+        dt = roc_parser(r[i_date])
+        before, ref = _num(r[i_before]), _num(r[i_ref])
+        if pd.isna(dt) or not before or not ref or before <= 0:
+            continue
+        recs.append({"Date": dt, "stock_id": sid,
+                     "close_before": before, "ref_price": ref,
+                     "value": None,
+                     "kind": "減資",
+                     "why": str(r[i_why]).strip() if 0 <= i_why < len(r) else "",
+                     "adj_factor": ref / before})
+    return pd.DataFrame(recs) if recs else None
+
+
+def fetch_capital_reduction_twse_direct(start: str, end: str) -> Optional[pd.DataFrame]:
+    """
+    上市減資恢復買賣（TWSE `reducation/TWTAUU`）。⚠️ 路徑拼字就是 `reducation`。
+
+    【為什麼需要這張表——TWT49U 涵蓋不到】
+      彌補虧損減資（減資換股）**不經過除權除息程序**，所以完全不在 TWT49U 裡。
+      實測：全歷史 |單日報酬|>100% 的 273 筆中，203 筆是這類事件——
+      典型指紋是「前收 1–3 元 → 停牌 12–23 天 → 復牌 10–40 元」，倍率集中在 ~10×
+      （減資九成）。不處理的話這些會變成假的 +900% 單日報酬。
+
+    還原因子與除權息同一個形式：
+
+        adj_factor = 恢復買賣參考價 / 停止買賣前收盤價格
+
+    減資時 > 1（復牌價高於停牌前），與既有「adj_factor > 1 代表減資」的慣例一致。
+    事件日取**恢復買賣日**——那天的價格已是新基準，語意與除權息日相同。
+    """
+    try:
+        resp = requests.get("https://www.twse.com.tw/rwd/zh/reducation/TWTAUU",
+                            params={"startDate": start.replace("-", ""),
+                                    "endDate": end.replace("-", ""),
+                                    "response": "json"},
+                            headers=HEADERS, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception as e:                                    # noqa: BLE001
+        logger.warning(f"TWSE capital reduction fetch failed {start}~{end}: {e}")
+        return None
+    if str(data.get("stat", "")).upper() != "OK":
+        return None
+
+    rows, fields = data.get("data") or [], data.get("fields") or []
+    if not rows:
+        for t in data.get("tables", []):
+            if t.get("data"):
+                rows, fields = t["data"], t.get("fields") or []
+                break
+    if not rows or not fields:
+        return None
+
+    def _roc(s):
+        """民國 '107年01月02日' 或 '107/01/02' 皆可。"""
+        t = str(s).strip()
+        try:
+            if "年" in t:
+                y = int(t[:t.index("年")]) + 1911
+                m = int(t[t.index("年") + 1:t.index("月")])
+                d = int(t[t.index("月") + 1:t.index("日")])
+            else:
+                y, m, d = t.split("/")
+                y, m, d = int(y) + 1911, int(m), int(d)
+            return pd.Timestamp(y, m, d)
+        except Exception:                                     # noqa: BLE001
+            return pd.NaT
+
+    return _cap_reduction_parse(rows, fields, _roc)
+
+
+def fetch_capital_reduction_tpex_direct(start: str, end: str) -> Optional[pd.DataFrame]:
+    """
+    上櫃減資恢復買賣（TPEX `bulletin/revivt`）。參數需 `startDate`/`endDate` + 斜線格式。
+    欄名與 TWSE 略有不同（「最後交易日之收盤價格」/「減資恢復買賣開始日參考價格」），
+    解析器用欄名比對吸收差異。
+    """
+    try:
+        resp = requests.get("https://www.tpex.org.tw/www/zh-tw/bulletin/revivt",
+                            params={"startDate": start, "endDate": end,
+                                    "response": "json"},
+                            headers=HEADERS, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception as e:                                    # noqa: BLE001
+        logger.warning(f"TPEX capital reduction fetch failed {start}~{end}: {e}")
+        return None
+
+    want = f"{start.replace('/', '')}~{end.replace('/', '')}"
+    if str(data.get("date", "")) != want:
+        logger.warning(f"TPEX revivt: 回傳區間 {data.get('date')!r} != 請求 {want!r}")
+        return None
+
+    rows, fields = [], []
+    for t in data.get("tables", []):
+        if t.get("data"):
+            rows, fields = t["data"], t.get("fields") or []
+            break
+    if not rows or not fields:
+        return None
+
+    def _roc_any(s):
+        """
+        TPEX 這張表的日期是 **7 碼緊湊民國格式** `'1070102'`，不是斜線格式。
+        （TPEX 的日期格式已經咬過三次：兩次在請求端要斜線、這次在回應端不給斜線。）
+        兩種都接受，避免下次版面又換。
+        """
+        t = str(s).strip().replace("年", "/").replace("月", "/").replace("日", "")
+        try:
+            if "/" in t:
+                y, m, d = [x for x in t.split("/") if x]
+            elif t.isdigit() and len(t) in (6, 7):
+                y, m, d = t[:-4], t[-4:-2], t[-2:]
+            else:
+                return pd.NaT
+            return pd.Timestamp(int(y) + 1911, int(m), int(d))
+        except Exception:                                     # noqa: BLE001
+            return pd.NaT
+
+    return _cap_reduction_parse(rows, fields, _roc_any)
+
+
+def fetch_shares_outstanding_mops() -> Optional[pd.DataFrame]:
+    """
+    上市/上櫃/興櫃公司基本資料（MOPS 公開資訊觀測站開放資料，含已發行普通股數）。
+    不分日期，抓的是目前最新一份快照——股本變動不頻繁（現金增資/減資才會變），
+    拿來乘上每日已有的收盤價估算市值，精度已足夠（現金增資/減資本身另有己知
+    的極端報酬複驗項目在追蹤，見 planing/資料基礎升級計畫 2c）。
+    """
+    frames = []
+    for suffix, market in [("L", "TSE"), ("O", "OTC")]:
+        url = f"https://mopsfin.twse.com.tw/opendata/t187ap03_{suffix}.csv"
+        try:
+            resp = requests.get(url, headers=HEADERS, timeout=30)
+            resp.raise_for_status()
+        except Exception as e:
+            logger.warning(f"MOPS shares outstanding fetch failed ({market}): {e}")
+            continue
+        try:
+            df = pd.read_csv(pd.io.common.BytesIO(resp.content), encoding="utf-8")
+        except Exception as e:
+            logger.warning(f"MOPS CSV parse failed ({market}): {e}")
+            continue
+        col = next((c for c in df.columns if "已發行普通股數" in c), None)
+        if col is None or "公司代號" not in df.columns:
+            logger.warning(f"MOPS CSV missing expected columns ({market}): {list(df.columns)[:5]}")
+            continue
+        sub = df[["公司代號", col]].rename(
+            columns={"公司代號": "stock_id", col: "shares_outstanding"})
+        sub["stock_id"] = sub["stock_id"].astype(str).str.strip()
+        sub = sub[sub["stock_id"].str.match(r"^\d{4}$")]
+        sub["shares_outstanding"] = pd.to_numeric(sub["shares_outstanding"], errors="coerce")
+        sub["market"] = market
+        frames.append(sub)
+
+    if not frames:
+        return None
+    df = pd.concat(frames, ignore_index=True).dropna(subset=["shares_outstanding"])
+    logger.info(f"MOPS shares outstanding: {len(df)} companies")
+    return df
+
+
+# ============================================================
 # Layer 3: FinMind — Margin, Short, Banks, etc.
 # ============================================================
 
@@ -538,7 +1627,13 @@ def _finmind_fetch(
         "token":      FINMIND_TOKEN,
     }
     if stock_id:
-        params["stock_id"] = stock_id
+        # 2026-07-24 修正：FinMind API 實際參數名稱是 data_id，不是 stock_id
+        # （對照 V6/scripts/fetch_v61_data.py 既有正確用法確認）。舊的 "stock_id"
+        # 參數名稱不被 FinMind 辨識，導致單股查詢實質上一直被當成整批查詢送出，
+        # 免費額度下整批查詢被擋、單股查詢改用 data_id 才會生效——這個 bug 原本
+        # 就存在於 fetch_prices_finmind() 的 yfinance fallback 路徑，這次因為
+        # margin/daytrade 回補大量使用單股查詢才被發現。
+        params["data_id"] = stock_id
 
     for attempt in range(max_retries):
         try:
@@ -807,6 +1902,316 @@ def run_full_data_sync(
 # Daily Update — Inference Mode (Fast Path)
 # ============================================================
 
+def _catch_up_margin(today: str, max_days: int = 15) -> tuple[int, list[str]]:
+    """
+    把 margin_raw.parquet 補齊到 today（含），回傳 (寫入列數, 實際補到的日期清單)。
+
+    為什麼要「補缺口」而不是只抓今天：交易所的融資融券餘額公布時間可能晚於推論
+    觸發時刻（2026-07-27 實測 21:27 已有當日資料，19:30 是否已有未確認）。若每日
+    更新只抓當天、抓不到就算了，那一天就永遠是洞——這正是 margin_raw 停更三個月
+    沒被發現的模式。改成每次執行都把缺口補齊，對公布延遲自我修復。
+
+    max_days 是保險絲：缺口大於此值時只補最近 max_days 天並告警，避免每日排程
+    意外變成長時間任務（大缺口請用 V6/scripts/backfill_margin_direct.py）。
+    """
+    path = PROCESSED_DIR / "margin_raw.parquet"
+    if path.exists():
+        existing = set(
+            pd.to_datetime(pd.read_parquet(path, columns=["Date"])["Date"])
+            .dt.strftime("%Y-%m-%d")
+        )
+        start = pd.to_datetime(max(existing)) + pd.Timedelta(days=1)
+    else:
+        existing, start = set(), pd.to_datetime(today)
+
+    days = [d.strftime("%Y-%m-%d")
+            for d in pd.date_range(start, pd.to_datetime(today))
+            if d.dayofweek < 5 and d.strftime("%Y-%m-%d") not in existing]
+    if len(days) > max_days:
+        logger.warning(
+            f"Margin gap is {len(days)} weekdays — only filling the most recent "
+            f"{max_days}. Use V6/scripts/backfill_margin_direct.py for the rest."
+        )
+        days = days[-max_days:]
+
+    frames, done = [], []
+    for d in days:
+        df = fetch_margin_direct(d)
+        if df is None or df.empty:
+            continue          # 非交易日或尚未公布，下次執行會再試
+        frames.append(df)
+        done.append(d)
+        if len(days) > 1:
+            time.sleep(1.2)   # 對交易所端點的禮貌間隔
+    if not frames:
+        return 0, []
+
+    # 一次性讀改寫，刻意不用 _append_to_parquet：
+    #   ① 後者逐日各重寫一次 7.95M 列的 parquet（15 天缺口就重寫 15 次）
+    #   ② 後者會把 Date 正規化成字串，與 margin_raw 既有的 timestamp[ns] 及
+    #      backfill_margin_direct.py 寫入的型別不一致 —— 混型 Date 正是
+    #      2026-07-27 修掉的 prices_raw 重複列根因，不要在這裡重新製造一次
+    new = pd.concat(frames, ignore_index=True)
+    new["Date"] = pd.to_datetime(new["Date"])
+    if path.exists():
+        old = pd.read_parquet(path)
+        old["Date"] = pd.to_datetime(old["Date"])
+        old = old[~old["Date"].isin(set(new["Date"]))]      # 同日資料以新抓的為準
+        out = pd.concat([old, new[old.columns]], ignore_index=True)
+    else:
+        out = new
+    out = out.drop_duplicates(subset=["Date", "stock_id"], keep="last")
+    out.sort_values(["stock_id", "Date"]).reset_index(drop=True).to_parquet(path, index=False)
+    return len(new), done
+
+
+_TRADING_DAY_CACHE: dict[str, bool] = {}
+
+
+def is_trading_day(date_str: str) -> bool:
+    """
+    該日台股是否開盤。權威判定來自 TWSE MI_INDEX（非交易日回
+    「很抱歉，沒有符合條件的資料!」），週末直接判 False 不打 API。
+
+    為什麼需要：2026-06-07（週日）與 2026-06-19（端午）都曾被寫入整日假資料
+    （前者 5,194 筆、後者 1,075 筆），因為寫入端完全沒有交易日曆概念。
+    非交易日不存在合法資料，所以這是「拒絕寫入」而非「事後清理」的閘門。
+
+    每次執行只會對同一天打一次（結果快取）。
+    """
+    if date_str in _TRADING_DAY_CACHE:
+        return _TRADING_DAY_CACHE[date_str]
+    if pd.Timestamp(date_str).dayofweek >= 5:
+        _TRADING_DAY_CACHE[date_str] = False
+        return False
+    try:
+        resp = requests.get(
+            "https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX",
+            params={"response": "json", "date": date_str.replace("-", ""),
+                    "type": "ALLBUT0999"},
+            headers=HEADERS, timeout=25,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        # 有效交易日：stat=OK 且個股表真的有數值列（非交易日會回骨架或空表）
+        ok = str(data.get("stat", "")).upper() == "OK" and any(
+            len(t.get("data") or []) > 100 for t in data.get("tables", [])
+        )
+    except Exception as e:                                    # noqa: BLE001
+        # 判不出來時保守視為交易日：寧可讓下游的日期核對去擋，
+        # 也不要因為網路問題就整天不更新。
+        logger.warning(f"is_trading_day({date_str}) 判定失敗，保守視為交易日：{e}")
+        ok = True
+    _TRADING_DAY_CACHE[date_str] = ok
+    logger.info(f"[交易日閘門] {date_str} → {'交易日' if ok else '非交易日，跳過所有寫入'}")
+    return ok
+
+
+def _check_universe_coverage(today: str) -> str:
+    """
+    當日檔數對前一交易日的變動率檢查。回傳空字串表示正常，否則回警告字串。
+
+    刻意只告警不阻擋 prices 寫入：股票池變動可能是合法的（新上市/下市），
+    擋掉會讓當天完全沒有訊號。但要讓它顯眼——2026-05-25 一日少 353 支
+    （2,321 → 1,968）就是因為沒有這個檢查而過了兩個月沒被發現。
+    """
+    path = PROCESSED_DIR / "prices_raw.parquet"
+    if not path.exists():
+        return ""
+    df = pd.read_parquet(path, columns=["Date", "stock_id"])
+    df["Date"] = pd.to_datetime(df["Date"]).dt.strftime("%Y-%m-%d")
+    per_day = df.groupby("Date")["stock_id"].nunique().sort_index()
+    if today not in per_day.index or len(per_day) < 2:
+        return ""
+    pos = per_day.index.get_loc(today)
+    if pos == 0:
+        return ""
+    n_now, n_prev = int(per_day.iloc[pos]), int(per_day.iloc[pos - 1])
+    delta = (n_now - n_prev) / max(n_prev, 1)
+    if abs(delta) > 0.05:
+        msg = (f"股票池單日變動 {delta:+.1%}（{per_day.index[pos-1]} {n_prev} 支 → "
+               f"{today} {n_now} 支）")
+        logger.warning(f"[覆蓋率閘門] ⚠️ {msg}")
+        return msg
+    logger.info(f"[覆蓋率閘門] {today} {n_now} 支，對前一交易日 {delta:+.2%} ✓")
+    return ""
+
+
+def _catch_up_daytrade(today: str, max_days: int = 15) -> tuple[int, list[str]]:
+    """
+    把 daytrade_raw.parquet 補齊到 today（含）。設計與 `_catch_up_margin` 相同：
+    補缺口而非只抓今天，對交易所公布延遲自我修復。
+
+    存在理由：`Day_Trade_Volume` 原本 2014–2026 全部 4,263,330 列都是 0
+    （FinMind 的 BuyAfterSale 欄位為空，舊管線一路寫 0）。全歷史已用
+    V6/scripts/backfill_daytrade_direct.py 重建；若不把它接進每日更新，
+    重建完隔天就會再度停止更新。
+    """
+    path = PROCESSED_DIR / "daytrade_raw.parquet"
+    if path.exists():
+        existing = set(
+            pd.to_datetime(pd.read_parquet(path, columns=["Date"])["Date"])
+            .dt.strftime("%Y-%m-%d")
+        )
+        start = pd.to_datetime(max(existing)) + pd.Timedelta(days=1)
+    else:
+        existing, start = set(), pd.to_datetime(today)
+
+    days = [d.strftime("%Y-%m-%d")
+            for d in pd.date_range(start, pd.to_datetime(today))
+            if d.dayofweek < 5 and d.strftime("%Y-%m-%d") not in existing]
+    if len(days) > max_days:
+        logger.warning(
+            f"Daytrade gap is {len(days)} weekdays — only filling the most recent "
+            f"{max_days}. Use V6/scripts/backfill_daytrade_direct.py for the rest."
+        )
+        days = days[-max_days:]
+
+    frames, done = [], []
+    for d in days:
+        df = fetch_daytrade_direct(d)
+        if df is None or df.empty:
+            continue
+        frames.append(df)
+        done.append(d)
+        if len(days) > 1:
+            time.sleep(1.2)
+    if not frames:
+        return 0, []
+
+    ratio = daytrade_shares_to_ratio(pd.concat(frames, ignore_index=True))
+    if ratio.empty:
+        return 0, []
+    # 比率型特徵的理論上界：當沖股數不可能超過該股成交股數。超界代表分母有問題，
+    # 剔除而非 clip——feature_engineer 的 .clip(0,1) 會把超界值變成看似合理的 1.0。
+    n_over = int((ratio["Day_Trade_Volume"] > 1).sum())
+    if n_over:
+        logger.warning(f"Daytrade: 剔除比率 >1 的 {n_over} 列（分母 Volume 可疑）")
+        ratio = ratio[ratio["Day_Trade_Volume"] <= 1]
+
+    if path.exists():
+        old = pd.read_parquet(path)
+        old["Date"] = pd.to_datetime(old["Date"])
+        old = old[~old["Date"].isin(set(ratio["Date"]))]
+        out = pd.concat([old, ratio[old.columns]], ignore_index=True)
+    else:
+        out = ratio
+    out = out.drop_duplicates(subset=["Date", "stock_id"], keep="last")
+    out.sort_values(["stock_id", "Date"]).reset_index(drop=True).to_parquet(path, index=False)
+    return len(ratio), done
+
+
+def _catch_up_generic(name: str, fetcher, today: str,
+                      rename: dict | None = None,
+                      max_days: int = 15,
+                      date_col: str = "Date") -> tuple[int, list[str]]:
+    """
+    通用「補缺口」寫入器，供只需要單一逐日 fetcher 的資料源使用
+    （per_raw / securities_raw / foreign_shareholding_raw ...）。
+    語意與 `_catch_up_margin` 一致：每次執行都把 parquet 補齊到 today，
+    對交易所公布延遲自我修復。
+
+    rename：fetcher 的輸出欄名 → production parquet 欄名
+            （例：per 的 dividend_yield → DY；securities 的
+              Securities_Balance → Securities_Lending）。
+            schema 不一致而硬併會產生新欄位並讓下游 ffill 失效。
+
+    date_col：`foreign_shareholding_raw` 的日期欄是小寫 `date` 而非 `Date`。
+              沿用既有 schema、不改動歷史檔，故在此以參數吸收差異。
+    """
+    path = PROCESSED_DIR / f"{name}.parquet"
+    if not path.exists():
+        return 0, []
+    prod = pd.read_parquet(path)
+    prod[date_col] = pd.to_datetime(prod[date_col])
+    existing = set(prod[date_col].dt.strftime("%Y-%m-%d"))
+    start = pd.to_datetime(max(existing)) + pd.Timedelta(days=1)
+
+    days = [d.strftime("%Y-%m-%d")
+            for d in pd.date_range(start, pd.to_datetime(today))
+            if d.dayofweek < 5 and d.strftime("%Y-%m-%d") not in existing]
+    if len(days) > max_days:
+        logger.warning(f"{name} gap is {len(days)} weekdays — only filling the most "
+                       f"recent {max_days}.")
+        days = days[-max_days:]
+    if not days:
+        return 0, []
+
+    frames, done = [], []
+    for d in days:
+        df = fetcher(d)
+        if df is None or df.empty:
+            continue
+        if rename:
+            df = df.rename(columns=rename)
+        for c in prod.columns:
+            if c not in df.columns:
+                df[c] = pd.NA
+        frames.append(df[prod.columns])
+        done.append(d)
+        if len(days) > 1:
+            time.sleep(1.2)
+    if not frames:
+        return 0, []
+
+    new = pd.concat(frames, ignore_index=True)
+    new[date_col] = pd.to_datetime(new[date_col])
+    out = pd.concat([prod, new], ignore_index=True)
+    out = out.drop_duplicates(subset=[date_col, "stock_id"], keep="last")
+    (out.sort_values(["stock_id", date_col]).reset_index(drop=True)
+        .to_parquet(path, index=False))
+    return len(new), done
+
+
+def _catch_up_market_value(today: str, max_days: int = 15) -> tuple[int, list[str]]:
+    """
+    market_value = 當日收盤價 × 已發行普通股數（MOPS 股本快照）。
+    沒有逐日的市值端點，所以用價格 × 股本自行計算——與
+    `V6/scripts/backfill_stale_202607.py` 的 backfill_market_value() 同一套算法。
+
+    ⚠️ 股本用的是 MOPS 的**當前快照**（非 point-in-time）。對「今天」而言正確，
+       但若用來回補較久以前的日期，遇到期間內辦過增減資的公司會有偏差。
+       此函式只補最近數日，影響可忽略；大範圍回補請用 backfill 腳本並註明此限制。
+    """
+    path = PROCESSED_DIR / "market_value_raw.parquet"
+    price_path = PROCESSED_DIR / "prices_raw.parquet"
+    if not path.exists() or not price_path.exists():
+        return 0, []
+    prod = pd.read_parquet(path)
+    prod["Date"] = pd.to_datetime(prod["Date"])
+    existing = set(prod["Date"].dt.strftime("%Y-%m-%d"))
+    start = pd.to_datetime(max(existing)) + pd.Timedelta(days=1)
+
+    pr = pd.read_parquet(price_path, columns=["Date", "stock_id", "Close"])
+    pr["Date"] = pd.to_datetime(pr["Date"])
+    pr = pr[(pr["Date"] >= start) & (pr["Date"] <= pd.to_datetime(today))]
+    pr = pr[pr["Date"].dt.strftime("%Y-%m-%d").map(lambda d: d not in existing)]
+    if pr.empty:
+        return 0, []
+    days = sorted(pr["Date"].dt.strftime("%Y-%m-%d").unique())
+    if len(days) > max_days:
+        days = days[-max_days:]
+        pr = pr[pr["Date"].dt.strftime("%Y-%m-%d").isin(days)]
+
+    shares = fetch_shares_outstanding_mops()
+    if shares is None or shares.empty or "shares_outstanding" not in shares.columns:
+        logger.warning("market_value: MOPS 股本抓取失敗，跳過")
+        return 0, []
+    shares = shares[["stock_id", "shares_outstanding"]].drop_duplicates("stock_id")
+
+    mv = pr.merge(shares, on="stock_id", how="inner")
+    mv["market_value"] = (pd.to_numeric(mv["Close"], errors="coerce")
+                          * pd.to_numeric(mv["shares_outstanding"], errors="coerce"))
+    mv = mv[mv["market_value"] > 0][["Date", "stock_id", "market_value"]]
+    if mv.empty:
+        return 0, []
+
+    out = pd.concat([prod, mv[prod.columns]], ignore_index=True)
+    out = out.drop_duplicates(subset=["Date", "stock_id"], keep="last")
+    out.sort_values(["stock_id", "Date"]).reset_index(drop=True).to_parquet(path, index=False)
+    return len(mv), days
+
+
 def run_daily_update(
     target_date: str | None = None,
     allow_forward_fill: bool = True,
@@ -833,6 +2238,13 @@ def run_daily_update(
 
     missing: list[str] = []
     forward_filled: list[str] = []
+    warnings_: list[str] = []
+
+    # ── 交易日閘門（最前面，非交易日一律不寫任何檔）──────────────────────────
+    if not is_trading_day(today):
+        logger.info(f"=== {today} 非交易日，跳過所有資料寫入 ===")
+        return {"missing": [], "forward_filled": [], "warnings": [],
+                "skipped": "not_a_trading_day"}
 
     tse_ids, otc_ids = load_ticker_universe()
 
@@ -878,10 +2290,26 @@ def run_daily_update(
             if df_tpex is not None and not df_tpex.empty:
                 frames.append(df_tpex)
             if frames:
+                # ⚠️ 各來源的 Date 型別不同：yfinance 走 datetime index → Timestamp；
+                #    fetch_prices_twse_direct / fetch_prices_tpex_direct 直接塞 date_str → str。
+                #    concat 後欄位變成 object 混型，Timestamp('2026-07-22') 與 '2026-07-22'
+                #    被視為不同值 → drop_duplicates 完全失效，同股同日兩列都會寫進 parquet。
+                #    實測後果（2026-07-06 起）：每日約 1,550 列重複；同一天同時存在 yfinance
+                #    還原價與 TWSE 未還原價（1459 於 2026-07-22 兩列比值 1.188）；Volume 單位
+                #    也不一致（1213 於 2026-07-15 為 3000 vs 1）。
+                #    因此務必先把 Date 統一成 YYYY-MM-DD 字串再去重。
+                _src_rows = [len(f) for f in frames]
+                for _f in frames:
+                    _f["Date"] = pd.to_datetime(_f["Date"]).dt.strftime("%Y-%m-%d")
                 df_prices = pd.concat(frames, ignore_index=True).drop_duplicates(
-                    subset=["Date", "stock_id"]
+                    # keep="first" → yfinance（auto_adjust 還原價）優先，與歷史序列的還原
+                    # 基準一致；TWSE/TPEX direct 只用來補 yfinance 抓不到的股票。
+                    subset=["Date", "stock_id"], keep="first",
                 )
-                logger.info(f"TWSE/TPEX direct prices: {len(df_prices)} rows for {today}")
+                logger.info(
+                    f"多來源價格合併 {today}：各源列數 {_src_rows} → 去重後 {len(df_prices)} 列"
+                    f"（移除跨來源重疊 {sum(_src_rows) - len(df_prices)} 列）"
+                )
             else:
                 logger.warning("TWSE/TPEX direct also returned no price data")
 
@@ -916,22 +2344,71 @@ def run_daily_update(
         missing.append("institutional")
 
     # ── Margin / Short Sale ───────────────────────────────────────────────────
-    # Margin always forward-fills from yesterday when today's data isn't ready.
-    # It is never treated as a blocking missing source.
-    df_margin, margin_ff = fetch_margin_finmind(today, allow_forward_fill=True)
-    if df_margin is None:
+    # 2026-07-27 重寫。舊版有兩個獨立的問題，疊加造成 margin_raw 停更三個月無人察覺：
+    #   ① 走 fetch_margin_finmind() —— FinMind VIP 到期後失效，且該資料集對**上櫃股**
+    #      把券賣/券買標反（見 V6/scripts/fix_margin_short_swap.py 的證據與修復）
+    #   ② 更根本：它只寫到 CACHE_DIR 的單日暫存檔，**從未 append 到 margin_raw.parquet**
+    #      —— 這才是 margin_raw 停在「最後一次全量同步日」的真正原因
+    # 現在改交易所直連（恆等式 100% 成立）並真正寫回 margin_raw.parquet。
+    n_margin, margin_days = _catch_up_margin(today)
+    if n_margin == 0:
         logger.warning(f"Margin data unavailable for {today} — skipping (non-critical)")
-    elif margin_ff:
-        logger.warning(f"Margin data: using forward-fill for {today}")
-        forward_filled.append("margin")
     else:
-        logger.info(f"Margin data OK for {today}")
+        logger.info(f"Margin data OK: {n_margin:,} rows for {len(margin_days)} day(s) "
+                    f"{margin_days}")
+
+    # ── Day Trading（2026-07-27 納入每日更新）──────────────────────────────────
+    n_dt, dt_days = _catch_up_daytrade(today)
+    if n_dt == 0:
+        logger.warning(f"Daytrade data unavailable for {today} — skipping (non-critical)")
+    else:
+        logger.info(f"Daytrade data OK: {n_dt:,} rows for {len(dt_days)} day(s) {dt_days}")
+
+    # ── PER/PBR、借券餘額、市值（2026-07-28 納入每日更新）─────────────────────
+    # 這三個源原本完全不在每日更新裡，靠手動全量同步，因此自 2026-04-24 停更三個月。
+    # ⚠️ per 的來源 TWSE BWIBBU_ALL 只涵蓋上市；上櫃 PER/PBR 仍缺（見 TODO）。
+    for _nm, _fn, _ren in (
+        ("per_raw", fetch_per_twse_direct, {"dividend_yield": "DY"}),
+        ("securities_raw", fetch_securities_lending_twse_direct,
+         {"Securities_Balance": "Securities_Lending"}),
+    ):
+        try:
+            _n, _d = _catch_up_generic(_nm, _fn, today, rename=_ren)
+            logger.info(f"{_nm}: {_n:,} rows for {len(_d)} day(s) {_d}" if _n
+                        else f"{_nm}: 無新增（已最新或今日尚未公布）")
+        except Exception as _e:                               # noqa: BLE001
+            logger.warning(f"{_nm} 更新失敗（不影響推論）：{_e}")
+    try:
+        _n_mv, _d_mv = _catch_up_market_value(today)
+        logger.info(f"market_value_raw: {_n_mv:,} rows for {len(_d_mv)} day(s)" if _n_mv
+                    else "market_value_raw: 無新增")
+    except Exception as _e:                                   # noqa: BLE001
+        logger.warning(f"market_value_raw 更新失敗（不影響推論）：{_e}")
+
+    # ── 外資持股（2026-07-28 納入；上市 MI_QFIIS + 上櫃 insti/qfii）────────────
+    # 同樣是原本不在每日更新裡的源，自 2026-05-05 停更 84 天，
+    # 讓 Foreign_Holding_Pct 這一維變成凍結值。
+    try:
+        _n_fs, _d_fs = _catch_up_generic(
+            "foreign_shareholding_raw", fetch_foreign_shareholding_direct,
+            today, date_col="date")
+        logger.info(f"foreign_shareholding_raw: {_n_fs:,} rows for {len(_d_fs)} day(s)"
+                    if _n_fs else "foreign_shareholding_raw: 無新增")
+    except Exception as _e:                                   # noqa: BLE001
+        logger.warning(f"foreign_shareholding_raw 更新失敗（不影響推論）：{_e}")
+
+    # ── 覆蓋率閘門（只告警不阻擋，見函式 docstring）────────────────────────────
+    cov = _check_universe_coverage(today)
+    if cov:
+        warnings_.append(cov)
 
     logger.info(
         f"=== Daily update done: {today} | "
-        f"missing={missing or 'none'} | fwd_fill={forward_filled or 'none'} ==="
+        f"missing={missing or 'none'} | fwd_fill={forward_filled or 'none'} | "
+        f"warnings={warnings_ or 'none'} ==="
     )
-    return {"missing": missing, "forward_filled": forward_filled}
+    return {"missing": missing, "forward_filled": forward_filled,
+            "warnings": warnings_}
 
 
 
@@ -945,9 +2422,17 @@ def _sync_macro_data(start: str, end: str, force: bool = False) -> None:
         logger.info("Macro loaded from cache")
         return
 
+    # 2026-07-24 補上 TWII：_merge_macro() 把 TWII_Close 重新命名成 TWII 餵模型
+    # （對 V6.1 因 Group D 橫斷面 z-score bug 而被歸零、對 V6.2 有默認值 0.0 兜底，
+    # 兩者都不緊急），但 signal_conditions.py 的 regime 閘門（TWII vs MA60）是直接
+    # 讀 macro_raw 的 TWII_Close 判斷保守模式，不經過模型特徵管線、不受歸零 bug
+    # 影響，需要真的新鮮資料。US_SOX/CNN_FearGreed/TW_Biz_Signal/FED_Rate 確認
+    # 對現有模型無實質影響（Fear_Greed 見決策紀錄；其餘同屬 Group D 同一個 bug），
+    # 暫不在此補齊，避免陷入用不到的資料源。
     macro_tickers = {
         "^VIX":    "VIX",
         "^GSPC":   "SPX",
+        "^TWII":   "TWII_Close",
         "GC=F":    "Gold",
         "CL=F":    "Oil",
         "^TNX":    "TNX",
@@ -1053,6 +2538,18 @@ def _append_to_parquet(path: Path, df_new: pd.DataFrame, date_str: str) -> None:
         df = pd.concat([df_old, df_new], ignore_index=True)
     else:
         df = df_new
+
+    # 保險絲：本函式的兩個呼叫端（prices_raw / institutional_raw）都應該是
+    # (Date, stock_id) 唯一。上游任何來源合併疏漏都不該讓 parquet 長出重複列，
+    # 因為重複列會直接污染時序特徵（rolling 名義 N 天、實際回溯不足 N 天）。
+    if {"Date", "stock_id"} <= set(df.columns):
+        _n_before = len(df)
+        df = df.drop_duplicates(subset=["Date", "stock_id"], keep="last")
+        if len(df) < _n_before:
+            logger.warning(
+                f"{path.name}: 寫入前偵測到 {_n_before - len(df):,} 列 (Date, stock_id) "
+                f"重複，已去除（請追查上游來源合併邏輯）"
+            )
 
     df.to_parquet(path)
 

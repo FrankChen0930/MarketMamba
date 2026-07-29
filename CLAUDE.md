@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # MarketMamba — AI 助手指引
 
-> 最後更新：2026-07-15（方向二全數完成：Step 4 GRU 5d IC +0.1113 四階最高 + Step 5 對照表定稿；方向一 Step 8/9 完成、`/pipeline` 頁待驗收部署）
+> 最後更新：2026-07-28（B-1~B-5 五項決策落地：興櫃排除、PER/PBR 自算、Day_Trade 維持真值；B-3 全歷史還原重建進行中，上櫃因子公式已驗證通過）
 
 ---
 
@@ -343,9 +343,49 @@ cd app/frontend && npm run dev   # → localhost:5173
 
 ## 🔄 Current Status
 
-> 最後更新：2026-07-15（方向二 Step 5 對照表 + 方向一 Step 8/9 完成，研究計畫方向一/二全部收線；Phase 3 模型實驗仍暫停中，等真倉驗證獲利再繼續）
+> 最後更新：2026-07-28（B-1/B-2/B-4/B-5 完成、B-3 全歷史還原重建執行中；剩 7 個資料源待改直連；Phase 3 模型實驗仍暫停中）
 
 ### 最近完成
+- **B-1~B-5 五項決策落地（2026-07-28，使用者逐項拍板後執行）**：
+  - **B-2 興櫃全歷史一致排除 ✅**：`hygiene.py` 新增 `_emerging_ids()` + `filter_tradable_universe(exclude_emerging=True)`，`run_daily_inference.py` 呼叫端同步。**2026-05-22→05-25 的宇宙斷層由 −344 支（−14.9%）降到 −7 支（−0.4%）**，月底檔數從「5月2314→6月1976」跳水變成穩定 1933→1930；全歷史剔除 401 支 / 450,701 列。已知限制：`stock_info` 是現況快照非 PIT，「曾是興櫃後轉上市櫃」者的興櫃期資料仍在（明確揭露，不假裝解決）
+  - **B-1 PER/PBR 自行推算 ✅**（`fundamentals_v2` 旗標下）：`PER = Close / EPS_TTM`、`PBR = market_value / Book_Value`（用市值÷權益而非股價÷每股淨值，避開股數換算 → 對減資/增資免疫）。**`EPS_TTM` 在季頻算好再走既有 as-of join**，每季受各自 `available_from` 保護（使用者特別指定；若在日頻 rolling 會重演 `EPS_Surprise` 那個 bug）。**踩到兩個坑**：① 初版只 `combine_first` 填 NaN 幾乎沒效果（+308 列），因為那 865 支不是缺值而是被 ffill **凍結**在 04-24 舊值 → 改三層優先序「官方觀測 > 自算 > 凍結 ffill」（為此在 `_merge_per_pbr` 加 `PER__obs`/`PBR__obs` 暫時欄位），實測 PBR 凍結列 96.6%、PER 56.0% 被取代 ② 我推測「交叉驗證分母被 ffill 污染」，**改成只用官方觀測列後仍是 0.9494 → 自己的量測推翻自己的推論**，那是真實系統差異。因自算值與官方值共存於同一橫斷面，5% 水位差會製造假排名 → 加**當日橫斷面校準**（只用當日資訊、無 look-ahead；係數 median PER 0.9512 / PBR 1.0013）。PBR 交叉驗證 median 1.0014、±10% 內 92.2%
+  - **B-4 `Day_Trade_Volume` ✅**：使用者「V6.1 停了沒關係」→ 維持真值，**不需程式改動**
+  - **B-5 `stock_info` 去重**：決策為「在原始表層級修」但不急，已記待辦。使用者給的通則值得記：「**在源頭修 vs 靠每個消費端各自防禦**，源頭修一次比較省事、也比較不會有人漏掉」
+  - **回歸驗收**：`fundamentals_v2=False` 與 git HEAD **62 欄逐位元最大絕對差 `0.000e+00`** → 線上 V6.1 零影響
+- **B-3 全歷史還原重建（2026-07-28 啟動，進行中）**：使用者決策「回頭重建，順便解掉減資無標記（`adj_factor>1` 直接是減資清單，一魚兩吃）」。**我在執行前發現使用者決策時還不知道的事實**：`ex_rights_raw` 只涵蓋上市——宇宙 1,942 支中上櫃 823 支只有 **2 支**有官方紀錄，只用它重建會變成「上市已還原、上櫃未還原」，比現況（yfinance 兩邊一致還原）**更糟**。使用者追加決策：先驗證上櫃來源、過了才重抓；2007-07 前上櫃維持現況並標記。
+  - **步驟 1 驗證 ✅ 通過**（`V6/scripts/validate_dividend_formula.py`）：關鍵設計＝TWT49U 同時給「前收盤價」與「參考價」，故可**純公式比對、完全不碰 prices_raw**，不受「歷史已還原/近期未還原」混源影響（公式裡現金股利是絕對金額、不具尺度不變性，用被縮放的價格反推會失真）。配對 14,429 筆（95.0%）。**按 kind 拆解才看得出真相**：息 99.69%、權 45.95%、權息 72.04% → 抓出兩個欄位語意錯誤：**`CashIncreaseSubscriptionRate` 不是配股率**（純現金增資事件反解後只有 12.3% 一致，正確是 `ci_shares/total_shares` 的 72.0%）、股票股利要 **÷10**（對照組不除 10 時 權 1.09%/權息 0.04%，決定性排除）。**誤差幅度才是決策依據**：息 median 0.000%、權 0.025%、權息 0.024%，>1% 者僅 2.04%；典型還原修正量本身 4.5% → 平均抓到 **99.5%** 的修正量，對照「不還原＝除息日 4.5% 假跌幅」判定可用
+  - **步驟 2 重抓執行中**：`V6/scripts/refetch_raw_prices_full.py`（5,301 交易日、逐年落檔可續跑、19:15–20:15 自動避開每日推論）。**端點深度實測**：TWSE 自 2005-01-04；**TPEX 2007 上半年才開始**（2007-01-04 無、07-02 有 528 檔）→ 2007-07 前上櫃無來源。ETA 約 1.9 小時
+  - **追加：上櫃找到官方來源 ✅（推翻先前結論）**：TPEX `bulletin/exDailyQ` 不是「忽略 date」，而是要用 **`startDate`/`endDate` + 斜線格式**（`20250801` 靜默失敗、`2025/08/01` 成功）——又是雷區第 2 條的重演。新增 `fetch_ex_rights_tpex_direct`（純附加），重建後 **25,718 筆 / 2,123 支**（twse 15,775 + tpex 9,943）。**宇宙覆蓋率 54.3% → 97.4%，且兩市場對稱**（上市 97.5% / 上櫃 97.4%，原本上櫃只有 0.2%）——原先最擔心的「上市已還原、上櫃未還原」不對稱問題消失。連帶：上櫃不需 dividend_raw 公式自算（該公式降為交叉檢查）、**`dividend_raw` 停更不再阻塞 B-3**、減資清單擴大到 29 筆。過程踩到「暫時性失敗靜默變成沒資料」（TPEX 2022–2024 整段落空但總筆數看似合理，靠年度分布凹陷對齊抓取區塊邊界才發現）→ 已加重試 + 逐年逐市場缺口檢查
+  - **✅ B-3 步驟 2/3 全部完成（2026-07-29）**：重抓 3.84 小時 / 22 個年度檔（2012 與 2025 因暫時性失敗各缺 4/2 天，已重跑至空回應 0）。**又抓到一類漏掉的公司行為：減資**——第一版還原後 `|報酬|>100%` 從 184 **上升**到 273（唯一變差的指標），追查發現「前收 1–3 元 → 停牌 12–23 天 → 復牌 10–40 元、倍率 ~10×」是彌補虧損減資的指紋，273 筆中 203 筆屬此類，而純減資走股票換發、**完全不在 TWT49U/exDailyQ 裡**。補上 TWSE `reducation/TWTAUU` + TPEX `bulletin/revivt`（`adj_factor = 恢復買賣參考價 / 停止買賣前收盤價格`，同一形式），新增 **667 筆**（彌補虧損 374/退還股款 208/現金減資 85）→ 因子表 26,385 筆 / 2,143 支。**最終 `prices_adj_raw.parquet` 8,282,049 列 / 2,479 支，每一項指標都優於舊資料**：`|報酬|>40%` 850→**471**（2026 年 93→**4**）、`|報酬|>100%` 184→**144**（2026 年 5→**0**）、報酬 std 0.0817→**0.0349**、p99.9 **+12.52%→+10.00%**（正好是台股漲跌幅上限，舊值在制度上不可能存在）、最近交易日檔數 1,948→**2,100**（順帶修好 P2 的「2026-05-25 少 353 支」）。除權息日報酬 median −4.01%→+0.48%、`<−2%` 比例 73.08%→13.69%（基準 12.87%）。2412 於 07-09 由 −4.30% → **−0.60%**，與官方隱含 −3.73% 完全吻合。**接縫**：2007-07 前上櫃段用等比縮放（243,560 列 / 667 支、係數 median 0.9857）並標 `src="legacy_scaled"`。**✅ 已於 2026-07-29 切換 `prices_raw`**（使用者確認後）。`V6/scripts/switch_to_adjusted_prices.py`——**關鍵原則「只改值、不改型別」**：新檔 `Date` 是 `timestamp[ns]`、production 是 `large_string`，若直接換，每日更新寫進來的字串日期會與 timestamp 混型 → `drop_duplicates` 靜默失效，正是問題 1 的根因；故寫入前轉回字串，且不帶 `src` 欄（每日新增列不會有，會產生 NaN）。切換後 schema 逐欄型別與切換前完全相同。備份 `prices_raw_backup_before_adj_20260729.parquet`（複製回去即可回復）。**切換後驗證**：健檢重複 0／`Close<=0` 0；`build_features` + `clean_and_scale` 實跑通過（48,719 列 × 62 欄、無 inf、報酬 std 0.0197），唯 4 個含 NaN 的欄位是 `Alpha_5d/10d/20d/60d` 標籤欄（序列尾端本來就是 NaN，**新舊一致**、非回歸）
+  - **順帶修健檢的量測分母**：法人覆蓋率原本用「原始 prices 宇宙」當分母，切換後 prices 從 1,948 支變 2,100 支（多出的 133 支是 ETF，交易所本來就不出個股法人明細），覆蓋率會從 96.1% **假摔到 89.5%** 並掛上永遠不會消的警報。改用與 `run_daily_inference` 相同的 `filter_tradable_universe` 過濾後為 **可交易宇宙 1,899 支、覆蓋率 96.2% ✓**（健檢警告 8 → 7）
+  - **接縫分析順帶修好 B-2 的 PIT 限制**：舊檔比交易所多的 374,228 列中，**93.0% 落在該股「首次出現於交易所資料」之前**＝上市櫃前的興櫃期，另 7.0% 是成交量 median **90 股**的日子。「首次出現於交易所資料的日期」＝上市櫃日，是 **PIT 正確**的判準，自動排除「曾是興櫃後轉上市櫃」股票的興櫃期——那正是 B-2 用 `stock_info` 現況快照時無法處理、原記為已知限制的部分，該限制已消失
+  - **步驟 3 核心邏輯 ✅ 已寫好並驗證**（`V6/scripts/apply_ex_rights_adjustment.py`，用已完成的 2005–2010 年度檔試跑）：`adjusted(t) = raw(t) × Π{adj_factor(e) : e > t}`，除權息日當天用 `searchsorted(side="right")` 排除自己的因子。**驗證：除權息日報酬 median −5.83% → +0.77%、`<−2%` 比例 80.93% → 15.43%（一般交易日基準 18.00%）**；乘數上升 4,383 次（= 除權息事件）、下降 12 次且**全部可由減資解釋**；OHLC 保序、無 NaN／`<=0`。9105 於 2005-04-12 原始 −89.31%、官方隱含 −90.00%、還原後 +6.88%。**踩到一個自己寫反的斷言**：初版斷言「乘數應隨時間遞減」，但 `mult(後) = mult(前)/f(e)`，除息 `f<1` → 乘數**遞增**，於是把 4,383 筆正確結果報成違反。**還原後除權息日仍 +0.77% 經查為真實填息**：還原幅度 <1% 那組精確落在基準 0.0000%，且中間三組（1-3%/3-6%/6-12%）約 +0.65% 持平**不隨幅度等比放大** → 排除系統性因子誤差。**Volume 刻意不還原**（`adj_factor` 混合了現金股利，拿去調股數會錯，需另存無償配股率）。剩：接縫處理（2007-07 前上櫃無原始價），等資料到齊再寫
+  - **`foreign_shareholding` 改直連 ✅（2026-07-28）**：新增 `fetch_foreign_shareholding_twse_direct`（MI_QFIIS，需 `selectType=ALLBUT0999`）／`_tpex_direct`（`insti/qfii`——端點名不直觀，forgnHold/foreignHold 都是 404）／`_direct`，接進 `run_daily_update`（`_catch_up_generic` 加 `date_col` 參數，因該檔日期欄是小寫 `date`）。**恆等式「持股比率 ≈ 持股數/發行股數×100」兩市場皆 100% 通過**——這是必要驗證，因為該檔有 `SharesRatio`（實際持股，下游用這個）與 `RemainRatio`（尚可投資空間）兩個語意相反的欄位。回補 58 個交易日 / 111,579 列 → 2026-07-28、3,672,808 列。過程中 3 天（06-16/17/23）TWSE 回非 JSON 只拿到上櫃 890 列，靠「逐日列數 median 1,980」的檢查抓出並重抓。**健檢警告 8 → 7**
+  - **⚠️ 操作教訓**：外資持股回補與價格重抓**同時打 TWSE**，導致重抓端出現 4 次 `HTTP 307`（限流）→ 2012 年度檔會有 4 天缺 TWSE，該年跑完刪 `raw_2012.parquet` 重跑即可。**全量重抓期間只做不同主機的作業**（TAIFEX／TDCC／MOPS 各自獨立）
+  - **`holdings` 無法回補**：TDCC 開放資料 `getOD.ashx?id=1-5` **忽略日期參數**（三種寫法都回最新一週 20260724），集保歷史無開放來源 → 只能從現在起逐週累積，81 天缺口需另想辦法（或維持 FinMind）
+- **資料源直連化第二批 + 還原因子表（2026-07-28，使用者外出期間執行）**：
+  - **`per_raw` / `securities_raw` / `market_value_raw` ✅**：使用者 07-24 跑好的 staging 檔經驗證後 merge（`V6/scripts/merge_staging_202607.py`）。驗證方式＝**接縫連續性檢定**（production 04-24 FinMind vs staging 04-27 交易所）：PER median 0.9806、PBR 1.0000、market_value 0.9897 皆連續；三檔皆無非交易日假資料、無重複鍵（對照組：daytrade staging 在非交易日 07-10 有 1,710 列假資料）。schema 需對齊（`dividend_yield`→`DY`、`Securities_Balance`→`Securities_Lending`）。並新增 `_catch_up_generic()` / `_catch_up_market_value()` 接進每日更新
+  - **`prices_raw` 缺漏與損壞 ✅**：回補 2026-04-27/04-28（交易所直連；判定依據＝實測 04-24 資料與交易所**原始價逐檔相同**，median 1.0000 零偏差 → 該段是原始價，用交易所回補才同基準）+ 清除 329 列 `Close<=0`。現 8,761,018 列、`Close<=0` = 0
+  - **除權息還原因子表 ✅（新資產）**：`Data/processed_v6/ex_rights_raw.parquet`，由 TWSE TWT49U 建（支援區間查詢，全歷史 8 次請求）。**15,766 筆 / 1,188 支 / 2005-01-11 → 2026-07-28**。`adj_factor = 除權息參考價 / 除權息前收盤價`＝交易所官方口徑，一次涵蓋現金股利+股票股利+現金增資。**`adj_factor > 1` 的 20 筆代表減資**，順帶解掉檢查表 C3。⚠️ 只有上市；TPEX 的 `exDailyQ` 忽略 date 參數（只回「即將除權息」前瞻窗口）
+  - **健檢警告 14 → 8 項**，資料損壞類（重複列、`Close<=0`）全部歸零。六個資料源（prices/margin/daytrade/per/securities/market_value）皆為 2026-07-27
+  - **五項待拍板事項已於 2026-07-28 全數決策並執行**，決策內容與執行結果寫在 `MarketMamba_資料問題處理記錄_2026-07-27.md` 的 B 章節（每項附原始選項脈絡 + 決策 + 量測結果）
+- **資料源直連化第一批 + 三個資料源修復完成（2026-07-27~28）**：使用者目標＝「先把資料完全修好，再談模型」。**關鍵決策：不訂閱 FinMind VIP**——查證後發現 VIP 解決的是錯的問題（FinMind 免費層強迫逐股查詢 ~2,000 次/3.6 小時，交易所端點是逐日整批 60 次/1.5 分鐘，差別在 API 形狀不在速率上限）。策略改為**按更新頻率決定來源**：每日/每週源改交易所直連、月/季源（revenue/financials）留 FinMind 免費層過夜跑。
+  - **`margin_raw` ✅**：新增 `fetch_margin_twse_direct`/`_tpex_direct`/`fetch_margin_direct`（含回傳日期硬性核對 + 恆等式驗證）。交叉驗證時**抓出 FinMind 對上櫃股把券賣/券買標反**（全歷史 2010–2026，`corr(ΔShort_Balance, Sale−Cover)` 在 OTC 為 −0.85~−0.93、符號一致率僅 1%）→ `fix_margin_short_swap.py` 交換 2,638,958 列（33.2%），符號一致率 **65.69% → 97.18%**。回補 63 個交易日/116,292 列**僅 100 秒**。接進 `_catch_up_margin()`（補缺口而非只抓今天，對公布延遲自我修復）。**發現第二個根因：舊的 `fetch_margin_finmind` 只寫 CACHE_DIR 單日暫存檔、從未 append 到 margin_raw**——即使 VIP 沒到期也不會更新
+  - **`daytrade_raw` ✅**：發現 `Day_Trade_Volume` **2014–2026 全部 4,263,330 列都是 0**（整欄自始死值，非停更）。新增兩個直連 fetcher + `daytrade_shares_to_ratio()`，全歷史重建 70.7 分鐘 → **3,868,497 列**、3,051 交易日 × 1,965 支。年度 median 0.026(2014) → 0.220(2026) 單調上升，對得上當沖制度放寬時序＝強驗證訊號
+  - **`prices_raw` ✅**：修好 `fetch_prices_tpex_direct`——舊版打的 OpenAPI **完全忽略 date 參數**（五種格式含不傳都回當天資料），改用 `/www/zh-tw/afterTrading/otc`（需 `type=EW`）。用正確端點重抓覆蓋 2026-05-25 起的 OTC（38,350 列覆蓋 + 154 列新增），修掉 236 列嚴重 Volume 壞值
+  - **財報三維 ✅**（`fundamentals_v2` 旗標下）：`Gross_Margin`/`ROE`/`Book_Value` 自 2005 年起是死常數。根因是 **FinMind 在損益表把「淨利歸屬母公司業主」的英文 type 標成 `EquityAttributableToOwnersOfParent`**（要看 `origin_name` 才看得出來），且 **`df_balance_sheet` 一直是從未被讀取的參數**。新增 `_balance_sheet_equity()` 從資產負債表取真正的權益。驗證：2330 毛利率 62.3%/ROE 年化 37.3%、2317 5.9%/12.1%、2454 46.1%/23.0%，全部對得上實際
+  - **閘門 ✅**：`is_trading_day()`（非交易日一律不寫任何檔）+ `_check_universe_coverage()`（單日變動 >±5% 告警，實測正確抓到 2026-05-25 的 −15.2%）
+  - **進度**：59 維中原本 14 維凍結 + 4 維永久死值 → 現剩約 8 維凍結（`per`/`market_value`/`securities`/`holdings`/`foreign_shareholding`），等對應資料源改直連
+  - **文件**：`MarketMamba_資料問題處理記錄_2026-07-27.md`（15 個問題，每個含「怎麼發現/問題是什麼/如何解決/產生原因」+ 方法論教訓）、`docs/data-source-implementation-traps.md`（13 項雷區，寫新 fetcher 前必看）
+- **資料品質全面稽核（36 項）+ 第一輪程式修復（2026-07-27，使用者已驗收）**：依使用者更新後的 `MarketMamba_資料品質檢查表.md` 逐項對真實 parquet 實測（8 支審計腳本，非讀碼推論），結果寫入 `MarketMamba_資料品質檢查表_驗證結果_2026-07-27.md`。**36 項：通過 11、有疑慮 24、不適用 1**。
+  - **G4 特徵計算順序（使用者特別點名）→ 生產路徑證實正確**：用「子集不變性」檢定——宇宙從 60 支縮到 6 支，56 維逐位元最大絕對差 `0.000e+00`；`MA_20`/`Return_5d`/`Volatility_20d` 與原始 Close 手算誤差皆 0；`clean_and_scale` 後 42/56 欄改變（證明橫斷面確實是最後一步）。對照組：若顛倒，`Return_5d` 與正確值 Spearman 僅 **-0.035**（訊號全毀且只表現為 IC 偏低）。**研究路徑 `baseline_common` 有中**——rolling 建在已 z-score 的值上（base matrix 最後一日 Close mean=-0.0000/std=1.0000），而同檔的 `Mom_*` 卻是正確順序
+  - **三個「不會報錯」的線上問題，根因收斂到 `fetcher.py:1044` 一個型別 bug**：yfinance 的 `Date` 是 `Timestamp`、TWSE/TPEX direct 是 `str`，concat 後成 object 混型 → `drop_duplicates` 完全失效。這一個 bug 同時造成 ① 每日 ~1,550 列重複（2026-07-06 起，818 支受影響，2432 的 Return_5d 含重複 -0.53%／去重後 +1.07%，**正負號相反**）② 同日還原/未還原兩種價格並存（1459 於 07-22 兩列比值 1.188）③ Volume 單位不一致（1213 為 3000 vs 1）
+  - **修復（純程式，六項）**：`fetcher.py` concat 前統一 Date 型別再去重（`keep="first"` = yfinance 還原價優先）+ `_append_to_parquet` 寫檔前保險絲；`run_daily_inference.py` 新增 `_sanitize()` 把去重／剔除 `Close<=0`／排除 ETF 前移到 `build_features` **之前**（原本在 `clean_and_scale` 之後，時序特徵與當日 z-score 早已被污染）；新檔 `marketmamba/data/hygiene.py`（宇宙過濾 + 資料健檢，用 parquet statistics 取最大日期，健檢自身只吃 0.14 GB RAM）；`feature_engineer.py` 新增 `fundamentals_v2` 旗標修 `EPS_Surprise` 與 Q4 年報 look-ahead；`baseline_common.build_derived_roll()` 改建在 chunk 原始值上
+  - **回歸測試（V6.1 一致性的關鍵）**：`fundamentals_v2=False` 與 git HEAD 版本 60 欄逐位元比對最大絕對差 `0.000e+00`、`clean_and_scale` 後亦 `0.000e+00` → 線上零影響
+  - **生產驗證（2026-07-27 19:30 推論實跑）**：`_append_to_parquet` 保險絲觸發、`偵測到 11,384 列重複，已去除`（存量 10,591 + 當日新增 793）→ **parquet 重複列存量被自動清空**，健檢確認「今日 0 列 / 近 90 天 0 列 ✓」；`_sanitize` 剔除 `Close<=0` 329 列 + ETF 49,906 列；健檢報 14 項警告（13 個停更源 + `Close<=0` 存量）。原本 07-24 的「去重後 1,076,052 → 1,065,461」那 10,591 列正是同一批，證實舊流程是在特徵算完後才去重
+  - **其他確認發現**：股票池 2026-05-22 的 2,321 支 → 05-25 的 1,968 支，一日少 353 支（來源切換，非下市；同日 `Close<=0` 損壞列也恰好停止）；14 個資料源停更 77–176 天，59 維中約 27 維是凍結值或常數；`EPS_Surprise` 是 bug（`pct_change(4)` 套在日頻列，2330/2317/1301 皆「換值 N 次 → 非零 4N 列」）；Q4 年報 `available_from` 早 45 天（法定 3/31、程式給 2/14）；OHLC 違規 322,300 列（3.7%）全為 `Open` 越界且集中在冷門股（成交量中位數僅全體 1/16、`High==Low` 比例高 7 倍）→ `Open` 與 HLC 來源定義不一致；2026 年極端報酬 515 筆中 422 筆（82%）源自 `Close<=0`；14 支 ETF 混在個股宇宙
+  - **`baseline_common` roll 快取已重建（2026-07-27 20:21，17 分鐘、峰值 RSS 3.13 GB）**：`7,273,199 × 64`，新檔 2.31 GB。驗證：行序與 base 逐列完全對齊（`load_xy` 的 assert 會通過）、66 欄無缺漏、`Close_rmean20` mean=+0.0000 std=0.9925。**但誠實校準：這個修正的實際影響比預期小**——新舊版 `Close_rmean20` 的 Spearman 高達 **+0.9999**（價格水位高度自我相關，z-score 的移動平均 ≈ 移動平均的 z-score，36 個 rmean 維度排序幾乎沒動）；真正有差的是 24 個 rstd 維度：Spearman +0.7862，而且**舊版 `Close_rstd20` 的 std 只有 0.0556**（橫斷面排名日間幾乎不動 → 舊版是個近乎退化的小尺度特徵），新版已正確逐日標準化為 std≈1.0。→ 預期 Ridge/GBDT/GRU 重跑後結論不會翻盤，但數字要重出才能與新特徵並列
+  - **推翻既有認知一項**：CLAUDE.md 原記載的「還原/未還原混源接縫」在歷史段**不成立**——24,357 筆除息事件的決定性檢定（`corr(當日報酬, -股利/前收)`，未還原應趨近 +1）在 2015–2026-05 全部 ≈ 0。但盲區明確：`dividend_raw` 停更於 05-05、2026-06 之後 0 筆事件，而台股除息旺季正是 6–9 月；2412 於 07-09 跌 6.0 元（-4.3%、爆量 2.4 倍、歷年配息 4.5–5.0 元）仍高度可疑。**根本原因是 prices_raw 逐日增量寫入，未來的除息永遠不會回頭調整已寫入的歷史** → 需定期全量重抓價格（資料操作，非程式）
 - **方向二 Step 5 對照表 + 方向一 Step 8/9 前端頁完成（2026-07-15，使用者已驗收；僅剩 push 部署）**：
   - **Step 5**：`docs/baseline-comparison-table-2026-07-15.md`（方向二最終交付物）——四階（Ridge/GBDT/GRU/Mamba）5d 主表：訊號層 IC（全市場+高流動分層）、組合層（年化/Sharpe/MDD/換手/成本×2）、可解釋性並排；20d 副表；引用紀律四條；判讀=「用可解釋性換到多少效益？答案是負的」+ 三條收斂證據（模型形式 ±0.01 內移動／序列 vs 扁平無差／架構紅利不成立）+ GBDT 教訓（IC 排名 ≠ 落袋排名，表格必須訊號層與組合層並排）
   - **Step 8**：對照表精簡版嵌入 `docs/breadth-pipeline-page-draft-2026-07-12.md` §5.5（§5 與 §6 之間預留位置）
@@ -476,16 +516,25 @@ cd app/frontend && npm run dev   # → localhost:5173
 - **scanner 1.4 新邏輯待 07-07 推論驗證**：確認 ① BUY 數量合理（分數制 + 機構條件復活，乾跑 07-06 資料為 15 BUY/24 WATCH）② 機構連買明細正常顯示 ③ `condition_analysis.json` 有產出並被 push。條件貢獻分析的機構統計從 07-07 歸檔起才有意義（歷史旗標全 False）
 - **Phase 3 實驗暫停中（2026-07-06 使用者決定）**：等真倉（V6.1）先驗證有沒有賺錢再繼續做實驗。目前進度停在：~~A 正則救峰值 ✅（dropout=0.2 有效）~~ → B/C/D 三支檔案已寫好推 main、**尚未在 Colab 執行**（listnet 權重 sweep / 趨勢單尺度簡化 / 短線窗口 sweep，預期結果見 `docs/phase3-experiment-plan-2026-06-25.md`）→ E/F 未設計。恢復時：在 Colab 跑 B、貼結果回來判讀
 - **雙模型真實市場效益追蹤已上線（2026-07-06）**，取代原本卡在「archive 累積」的路線圖第②③步——不用再等，改成自動化每天算、頁面自動顯示，樣本量隨時間自然增加，不需要手動介入。目前 5d 樣本僅 4 天，10d/20d/60d 尚無資料
+- **資料品質稽核第二輪待討論（2026-07-27）**：第一輪「純程式修改」已完成。剩下的都不是改程式能解的，見下方「下一步」——資料操作三項（清 `Close<=0` 存量、補 14 個停更源、季度全量重抓價格）、歸因一項（P2 少掉的 353 支）、需重訓或動凍結協定兩項（label 起點改 t+1、`*_is_missing` 缺失旗標會動 `INPUT_DIM`）。另有已揭露但暫不處理的：`Open` 欄與 HLC 在冷門股上來源定義不一致（OHLC 違規 322,300 列 / 3.7%）、漲跌停/處置/停牌四類交易狀態欄位完全不存在、存活者偏差未量化
 
 ### 下一步
-- [ ] **`/pipeline` 頁驗收 + 部署**：本地 `cd app/frontend && npm run dev` 看 `localhost:5173/pipeline`，OK 後指定檔案 push（`docs/baseline-comparison-table-2026-07-15.md`、`docs/baseline-step4-rnn-2026-07-15.md`、`docs/breadth-pipeline-page-draft-2026-07-12.md`、`app/frontend/src/pages/Pipeline.jsx`、`App.jsx`、`AppLayout.jsx`、`planing/`、`CLAUDE.md`、`V6/experimental/baseline_rnn.py`、`result/baseline_rnn_result.json`；**不要 `git add -A`**）→ Vercel 自動部署
+- [x] ~~`/pipeline` 頁驗收 + 部署~~ **已於 2026-07-15 完成並 push**（commit `3cc7bb1`，已確認在 origin/main 上，Vercel 應已自動部署）——CLAUDE.md 這條之前漏更新，2026-07-23 核對 git log 才發現其實早就做完，補記於此
 - [ ] **資料基礎升級計畫階段二**（方向一/二收線後的下一個工程主線，不需 Colab）：資料衛生三項（Close=0 gate、還原接縫、超限複驗）+ baseline_common 序列輸出 (N,252,59) + KG 邊介面 + 協定 v2.0 版本化
 - [ ] **~7 月底重跑 `V6/experimental/conviction_c_analysis.py`**：post-P0 5d 屆時 ≥20 天、post-P0 20d 開始有樣本；同步對 `results/archive/df_short_*.csv` 的 SQ_5d/Unc_5d 做同款校準分析（horizon 對齊使用者操作週期，腳本小改即可）——5d 校準反向是否為真在此定奪，屆時再決定 deep ensembles/conformal 要不要做
-- [ ] **重複寫入來源追查 + 每日更新寫入端補「非交易日不寫入」gate**：07-07 起每日 ~1,550 筆重複；06-07（週日）、06-19（端午）兩次假資料同模式，疑同源
+- [x] ~~**重複寫入來源追查**~~ **已於 2026-07-27 定案並修復**：根因是 `fetcher.py:1044` 多來源合併時 Date 型別不一致（yfinance `Timestamp` vs TWSE/TPEX direct `str`）導致 `drop_duplicates` 失效。已修 + `_append_to_parquet` 加保險絲，當晚推論即自動清掉存量 11,384 列。**但「非交易日不寫入」gate 仍未做**（06-07 週日、06-19 端午的假資料是另一條線：來源在非交易日回了資料，與型別 bug 無關）
+- [ ] **每日更新寫入端補「非交易日不寫入」gate**：查 TWSE 交易日曆後才寫入，防止 06-07（週日）、06-19（端午）那類整日假資料再發生
 - [ ] `Data/processed_v6/prices_raw_backup_20260712.parquet`（127MB）：推論穩定跑幾天後可刪（與既有兩個 institutional backup 一起）
 - [ ] **PersonalOS 同步 K 線圖**（Vercel 版已驗收）：複製 `KLineChart.jsx` + `StockModal.jsx` + `TradingSignals.jsx` 過去（注意 import 路徑差異 `../api/market` → `../../api/mm`），PersonalOS `npm install klinecharts@^9.8.10` + `npx vite build` + 重啟 exe
 - [ ] **macro_raw 停在 2026-04-24**：每日更新本來就不含 macro → regime 閘門（TWII vs MA60）恆為 N/A、保守模式從未啟用（scanner 已加 fallback+新鮮度檢查，macro 一更新就自動生效）。對 V6.1 推論無影響（Group D 被 cross z-score 歸零）、對雙模型排名免疫（橫斷面常數）。要啟用需把 macro 加進每日更新
-- [ ] **prices_raw 每日 ~800 筆重複寫入**（5/26 起、值完全相同，疑價格更新雙資料源重疊）：存量已清（51,801 筆），來源待查
+- [x] ~~**prices_raw 每日 ~800 筆重複寫入**~~ **已於 2026-07-27 修復**（同上，型別 bug）。健檢確認「今日 0 列 / 近 90 天 0 列 ✓」
+- [ ] **B-3 步驟 3（重抓完成後接續）**：① 用重抓的原始價 + `dividend_raw` 公式建上櫃因子表（記得：`CashIncreaseSubscriptionRate` 不可用、股票股利 ÷10）② 合併官方（上市）+ 自算（上櫃）因子 → 套用累積還原 → **先寫新檔驗證再切換** ③ 2007-07 前上櫃段標記為未還原
+- [ ] **接續資料修復主線（優先序）**：① 7 個資料源改直連（`foreign_shareholding`/`dividend`/`futures_inst`/`options_inst`/`holdings`/`business_indicator`/`fear_greed`，模板照 margin/daytrade）+ `run_daily_update` 從 5 個源擴到 14 個。（`dividend_raw` 停在 2026-05-05，但**已不再阻塞 B-3**——上櫃改用 TPEX 官方因子） ② ~~清 `Close<=0`、回補 04-27/04-28~~ 已完成 ③ ~~興櫃排除~~ 已完成（B-2）
+- [ ] **B-5：`fetcher.py` 寫入 `stock_info` 時去重**（源頭修）。`industry_category` 多值需先決定保留策略（取第一筆或串接）。在那之前，新程式 join `stock_info` 一律先 `drop_duplicates(subset=["stock_id"])`
+- [ ] **清 329 列 `Close<=0` 存量**（2026-04-30 ~ 05-22、122 支）：`_sanitize` 已在讀取時剔除、推論不受影響，但 parquet 內仍在，訓練/回測若直接讀 raw 會踩到（2026 年 515 筆極端報酬中 422 筆源自此）。屬資料操作，需先備份
+- [ ] **補 14 個停更資料源**（`margin_raw`/`per_raw`/`market_value_raw`/`daytrade_raw`/`securities_raw`/`fear_greed` 停在 2026-04-24；`foreign_shareholding`/`dividend`/`futures`/`options` 05-05；`holdings` 05-08；`revenue` 04-01；`financials` 03-31；`business_indicator` 02-01）。59 維中約 27 維目前是凍結值或常數（`Day_Trade_Volume` 04-24 後恆為 0 → z-score 後整維歸零）。健檢每天會報，修好會自動變 ✓
+- [ ] **P2：股票池 2026-05-25 少掉的 353 支歸因**（2,321 → 1,968，一日之間，非下市）：查該日來源切換，確認是抓不到還是真下市。持續流失的 16 支樣本：2073、2321、3064、3426、3531、3629、4183、4413、4530、4584、5703、6680、6865、8077、8093、8923
+- [ ] **定期全量重抓價格以修正除權息還原**：prices_raw 逐日增量寫入 → 未來的除息永遠不會回頭調整已寫入的歷史（2412 於 2026-07-09 跌 6.0 元即疑為未還原除息）。歷史段（2015–2026-05）經 24,357 筆事件檢定確認已正確還原，問題只在增量段。建議季度全量重抓一次
 - [ ] 條件貢獻分析累積 20+ 天後回頭校準四條件權重（30/25/25/20）與 70/90 門檻；屆時也評估「發現 3：掃描池擴到 Top200（型態+分數過門檻才進 BUY）」要不要做
 - [ ] `Data/processed_v6/institutional_raw_backup_*.parquet` 兩個備份檔（各 ~148MB），scanner 穩定跑幾天後可刪
 - 若之後要恢復 Phase 3：見上方「進行中」，直接跑 B
@@ -500,7 +549,7 @@ cd app/frontend && npm run dev   # → localhost:5173
     - **B** listnet 權重 sweep（Mid↔Long 旋鈕，試 0.2/0.5）→ **C** 趨勢單尺度簡化（gate ep3 就塌 Long、多尺度沒加值，砍成單尺度確認 IC 不掉、未來訓練更省）→ **D** 短線窗口 90/120（≤252 純切片免重建）→ **E** 多 seed 集成（對抗 IC 脆弱、部署穩定加成）→ **F** 特徵分離（短線快/趨勢慢特徵，重建 feature matrix 大工程、潛力最大、留最後）
 - [ ] 若決定不走 5d 路線：把 LOSS_WEIGHTS / val_ic 改回 20d（remote main 目前是 5d 實驗設定）
 - [ ] **本機 git 善後**：第三次重訓 push 後 `git stash pop` 在 trainer.py 留下 CRLF 衝突——需 `git checkout HEAD -- V6/marketmamba/models/trainer.py` + `git restore --staged V6/marketmamba/config.py` + `git stash drop`
-- [ ] **V6.2 部署 checklist**：config INPUT_DIM=59 + FEATURE_GROUPS 取消 RS 注釋；`run_daily_inference.py` 的 `clean_and_scale` 改 `macro_norm="ts"`（程式內有註解標記）；checkpoint 換新
+- [ ] **V6.2 部署 checklist**：config INPUT_DIM=59 + FEATURE_GROUPS 取消 RS 注釋；`run_daily_inference.py` 的 `clean_and_scale` 改 `macro_norm="ts"`（程式內有註解標記）；**`build_features` 加 `fundamentals_v2=True`（2026-07-27 新增，訓練端與推論端必須同時切；2026-07-28 起這個旗標同時控制 PER/PBR 自算與橫斷面校準，不另加旗標）**；checkpoint 換新
 - [ ] 觀察 3–5 個交易日：排名穩定性恢復情況、買入訊號數量是否回歸正常
 - [ ] P0 後累積 20+ 天 archive 重跑 Uncertainty 校準分析（`docs/uncertainty-calibration-2026-06-13.md`，結論：SQ 設計獲實證支持、conformal 優先度降低）
 - [ ] 下次重訓後驗證模型狀態頁面：Drive JSON → V6/results → push → 頁面顯示
@@ -517,6 +566,10 @@ cd app/frontend && npm run dev   # → localhost:5173
 > **PR 3（持倉四層退場 / Portfolio 頁面）**：使用者已確認頁面內容完成，視為驗收通過
 
 ### 決策紀錄
+- **會改變歷史特徵語意的 bug 一律用旗標、預設維持現況（2026-07-27）**：`EPS_Surprise` 季頻修正與 Q4 年報 `available_from` +90 天都是真 bug，但直接改會讓推論端特徵與 V6.1 checkpoint 的訓練語意不一致——這正是 D1 `macro_norm` 踩過的坑。故比照該慣例加 `fundamentals_v2: bool = False`，預設關、Colab 訓練端傳 True，並寫進 V6.2 部署 checklist。**驗收標準是「與 git HEAD 逐位元相同」**：本次實測 60 欄最大絕對差 `0.000e+00`。凡動 `feature_engineer.py` 都應跑這個回歸測試
+- **資料衛生必須在 build_features 之前，不能在 clean_and_scale 之後（2026-07-27 教訓）**：舊流程的去重放在 `clean_and_scale` 之後，看起來「有去重」，但時序特徵（Return/MA/RSI/ATR/KD/OBV/Volatility）與當日橫斷面 z-score 早就吃過重複列了——2432 的 Return_5d 因此正負號相反。**清理的位置比清理本身重要**
+- **健檢一律 non-fatal 且用 parquet statistics（2026-07-27）**：線上 V6.1 每天要出訊號給家人看，健檢不該成為新的失敗點，故全部 `try/except` 包住、只印警告。取最大日期改用 row-group statistics（不讀資料）、損壞列統計只看近 90 天窗口——`institutional_raw` 有 32.8M 列，整檔載入會吃掉數 GB，本機只有 23.7 GB 且推論同時在跑。實測健檢自身 RSS 僅 0.14 GB
+- **`baseline_common` rolling 順序修正 → 方向二協定升 v2.0（2026-07-27）**：rolling 特徵原本建在 `clean_and_scale` 之後的橫斷面 z-score 上（檢查表 G4 的順序顛倒），已改建在 chunk 原始值上、再逐日 winsorize + z-score，與同檔 `Mom_*` 的既有正確作法一致。**lag 特徵（`*_lag1/5/20`）刻意不改**——純位移不是時序聚合、不會混到不同日的尺度，「該股 N 日前的橫斷面排名」本身合理。既有 Ridge/GBDT/GRU 三階結果是舊特徵下的數字，重跑後才可與新結果並列
 - **階 3 拍板：GRU 擇一 + window 60（2026-07-14 使用者拍板）**：循環單元 LSTM/GRU 擇一控制多重測試，選 GRU（同級替代、參數較少、3060 較快）；window 60 偏離協定 §3 字面的 252——對齊 5d 對照對象 v6_short 的 window 60，Phase 1 deep supervision 已實證長窗對 5d 冗餘，偏離理由記錄於腳本 docstring 與結果報告。loss 維持純 MSE on rank（不跟進 v6_short 的 listnet_5d，避免引入新自由度、破壞同場對照）
 - **Baseline IC 引用需分層、組合基準改等權宇宙、不為此重抓資料（2026-07-13 排查定案）**：0.1015 經 D0–D5 排查非 bug 非資料錯誤，但為「全市場含小型股」數字——對外引用一律附分層（高流動 0.0705 / 純籌碼基本面 0.0717）與存活者偏差未量化聲明；組合層以「等權 eligible 宇宙」為基準（TWII 僅脈絡）；「對 TWII −90%」已證實為基準錯配不再單獨引用。下市股回補維持先不動工（影響絕對水位不影響四階相對比較），等方向二跑完再評估
 - **Baseline 對照協定四決定（2026-07-12 使用者拍板）**：單一切分為主（同 Phase 3 harness，避免 36 次 Mamba WF 重訓）+ 便宜階 WF 為輔／rank label（與 production 線一致）／5d 主 horizon（使用者短線操作）／Top50 等權 5 日再平衡、0.15%/0.45% 成本。協定凍結後不中途改 label/切分（改了全部 baseline 重跑）。引用紀律：Mamba 端用同 harness 重跑值（0.0870）比較、不用歷史峰值（Phase 3-A 教訓）
