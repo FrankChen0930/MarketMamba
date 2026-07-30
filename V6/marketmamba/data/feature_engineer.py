@@ -470,9 +470,24 @@ def _derive_valuation_fallback(df: pd.DataFrame,
             df = df.drop(columns=obs_cols)
         return df
 
-    close = pd.to_numeric(df["Close"], errors="coerce")
+    # ── PER 的分子必須是**當日的原始收盤價**，不是還原價 ─────────────
+    #
+    # 2026-07-30 實測：用 `Close`（官方還原價）算出來的 PER，
+    # 與交易所公布的 PER 比值 median = **0.7653**，±10% 內只有 21.2%。
+    # 根因不是水位差，是分子用錯價格——交易所的 PER 用**當日實際成交價**，
+    # 而 `Close` 是以今天為基準、把歷史除息全部還原後的價格。
+    #
+    # 決定性證據：2011–2026 累積還原乘數 median = **0.7729**，與 0.7653 吻合到 1% 內。
+    # 對照組：PBR 走 `market_value`（未還原市值）→ 比值 1.0016 完全正常。
+    #
+    # 語意上也是這樣才對：時點 t 的本益比，本來就該用 t 當時的實際股價。
+    #
+    # 還原公式 adjusted(t) = raw(t) × Π{f(e) : e > t}
+    # → raw(t) = adjusted(t) / Π{f(e) : e > t}
+    close_adj = pd.to_numeric(df["Close"], errors="coerce")
+    close = _unadjusted_close(df, close_adj)
 
-    # ── PER = Close / EPS_TTM ────────────────────────────────────
+    # ── PER = 原始收盤價 / EPS_TTM ───────────────────────────────
     per_calc = None
     if "EPS_TTM" in df.columns:
         eps = pd.to_numeric(df["EPS_TTM"], errors="coerce")
@@ -555,6 +570,63 @@ def _derive_valuation_fallback(df: pd.DataFrame,
     return df
 
 
+def _unadjusted_close(df: pd.DataFrame, close_adj: pd.Series) -> pd.Series:
+    """
+    由官方還原價反推**當日的原始收盤價**（供 PER 分子使用，見呼叫處說明）。
+
+        adjusted(t) = raw(t) × Π{ adj_factor(e) : e 為除權息/減資日, e > t }
+        →  raw(t)   = adjusted(t) / Π{ ... }
+
+    因子來源是 `ex_rights_raw.parquet`（TWSE TWT49U + TPEX exDailyQ + 減資恢復買賣表，
+    26,385 筆 / 2,143 支），與當初重建還原價用的是同一份，所以能精確反推。
+
+    取不到因子表時退回還原價並警告——寧可留下已知的偏差，也不要靜默用錯的值。
+    """
+    p = Path(PROCESSED_DIR) / "ex_rights_raw.parquet"
+    if not p.exists():
+        logger.warning("[valuation_v2] 找不到 ex_rights_raw，PER 分子退回還原價"
+                       "（會有約 −23% 的系統性偏差）")
+        return close_adj
+    try:
+        ex = pd.read_parquet(p)
+    except Exception as e:                                        # noqa: BLE001
+        logger.warning(f"[valuation_v2] ex_rights_raw 讀取失敗（{e}），PER 分子退回還原價")
+        return close_adj
+
+    dcol = next((c for c in ("date", "Date", "ex_date") if c in ex.columns), None)
+    if dcol is None or "adj_factor" not in ex.columns:
+        logger.warning("[valuation_v2] ex_rights_raw 欄位不符，PER 分子退回還原價")
+        return close_adj
+
+    ex = ex[["stock_id", dcol, "adj_factor"]].copy()
+    ex["stock_id"] = ex["stock_id"].astype(str)
+    ex[dcol] = pd.to_datetime(ex[dcol], errors="coerce")
+    ex["adj_factor"] = pd.to_numeric(ex["adj_factor"], errors="coerce")
+    ex = ex.dropna().sort_values(["stock_id", dcol])
+
+    sid = df["stock_id"].astype(str).to_numpy()
+    dts = pd.to_datetime(df["Date"]).to_numpy()
+    mult = np.ones(len(df), dtype="float64")
+
+    for s, grp in ex.groupby("stock_id", sort=False):
+        m = sid == s
+        if not m.any():
+            continue
+        e = grp[dcol].to_numpy()
+        f = grp["adj_factor"].to_numpy()
+        # suffix_prod[i] = f[i] * … * f[k-1]；長度 k+1，最後一項 1.0
+        suffix = np.append(np.cumprod(f[::-1])[::-1], 1.0)
+        # 事件日嚴格大於 t 的第一個位置
+        idx = np.searchsorted(e, dts[m], side="right")
+        mult[m] = suffix[idx]
+
+    n_adj = int((mult != 1.0).sum())
+    logger.info(f"[valuation_v2] PER 分子改用原始收盤價："
+                f"{n_adj:,}/{len(df):,} 列套用還原乘數"
+                f"（median {np.median(mult[mult != 1.0]) if n_adj else 1.0:.4f}）")
+    return close_adj / pd.Series(mult, index=df.index)
+
+
 def _add_group_c_avail_flags(df: pd.DataFrame) -> pd.DataFrame:
     """
     Group C 的兩個可得性旗標（V6.3 / 決策1）。
@@ -567,17 +639,8 @@ def _add_group_c_avail_flags(df: pd.DataFrame) -> pd.DataFrame:
     此時這些欄位仍是 NaN（最終的 fillna(0) 在 `clean_and_scale`），
     所以 `notna()` 正是「有真實觀測」的正確判準。
     """
-    # 只看 PER/PBR，**刻意不含 Market_Cap_Log**。
-    # 初版把三者 OR 起來，結果旗標恆為 1（實測 2012–2026 每年都是 100%）——
-    # 因為 market_value 覆蓋率 94–99%，OR 之後永遠成立，旗標等於沒有資訊。
-    # 真正會缺、且缺得有系統的是 PER/PBR（2005 年 21%、2026 年因新來源只涵蓋上市掉到 73%）。
-    # Market_Cap_Log 自身覆蓋率夠高，不需要旗標保護。
-    val = pd.Series(False, index=df.index)
-    for c in ("PER", "PBR"):
-        if c in df.columns:
-            val = val | pd.to_numeric(df[c], errors="coerce").notna()
-    df = _mark_avail(df, "Avail_Valuation", val)
-
+    # `Avail_Valuation` 已於 2026-07-30 依全量結果移除
+    # （訓練窗 mean 0.9966 / std 0.0585，自算 PER/PBR 幾乎補滿所有列 → 常數欄）。
     fin = pd.Series(False, index=df.index)
     for c in ("EPS", "Book_Value", "ROE", "Gross_Margin"):
         if c in df.columns:
@@ -585,11 +648,8 @@ def _add_group_c_avail_flags(df: pd.DataFrame) -> pd.DataFrame:
     df = _mark_avail(df, "Avail_Financials", fin)
 
     n = len(df)
-    logger.info(
-        f"[availability] Avail_Valuation 可得 {int(val.sum()):,}/{n:,}"
-        f"（{val.mean():.1%}）｜Avail_Financials 可得 {int(fin.sum()):,}/{n:,}"
-        f"（{fin.mean():.1%}）"
-    )
+    logger.info(f"[availability] Avail_Financials 可得 {int(fin.sum()):,}/{n:,}"
+                f"（{fin.mean():.1%}）")
     return df
 
 

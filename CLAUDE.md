@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # MarketMamba — AI 助手指引
 
-> 最後更新：2026-07-28（B-1~B-5 五項決策落地：興櫃排除、PER/PBR 自算、Day_Trade 維持真值；B-3 全歷史還原重建進行中，上櫃因子公式已驗證通過）
+> 最後更新：2026-07-30（**F5 R-series 完成、特徵工程層規格正式凍結**：`INPUT_DIM`=59（可得性旗標不採用）、`NEUTRALIZE`="none"；`fundamentals_v2` 的負 Δ 證實由 look-ahead 移除主導 → 與 purge 同列正確性修正）
 
 ---
 
@@ -343,9 +343,20 @@ cd app/frontend && npm run dev   # → localhost:5173
 
 ## 🔄 Current Status
 
-> 最後更新：2026-07-28（B-1/B-2/B-4/B-5 完成、B-3 全歷史還原重建執行中；剩 7 個資料源待改直連；Phase 3 模型實驗仍暫停中）
+> 最後更新：2026-07-30（F5 十四級跑完、兩項特徵規格定案並凍結；下一階是 F6＝Colab/GPU：GAT 消融、Group D 消融、中性化用 Mamba 複驗。Phase 3 模型實驗仍暫停中）
 
 ### 最近完成
+- **F5 R-series 完成、特徵工程層規格正式凍結（2026-07-30）**：跑階器 `V6/experimental/f5_r_series.py`（新）+ `baseline_common.py` 加 `MM_VARIANT`（`nofund`/`neuind`/`neuindmc` 各自獨立快取，未設時為 no-op 並 assert）。完整數字 `V6/experimental/result/f5_r_series_result.json`、判讀寫進 `docs/feature-protocol-v2.md` §9。共 **14 級**（8 級主梯 + 4 級子修正拆解 + 完整性檢查 + 3 級 GBDT 裁決）
+  - **原計畫的 R0→R5 直線疊加行不通**：v1→v2 是一次跳四個變因（`fundamentals_v2`／宇宙過濾 ETF＋興櫃／矩陣起點／外資持股 9xxx 回補），只靠兩份快取量不出單一變因 → 改成**全部在 v2 內部爬梯子**，只有真正寫進矩陣值的變因才另建快取
+  - **誠實總結論：沒有任何一項達到 +0.009 的實務門檻，唯一顯著的效應是負的。** 起點 2012→2013 **+0.0001**（t=0.46，免費，照資料品質理由採用）、旗標 **+0.0000**、中性化 +0.0025（t=1.06 不顯著）。F5 真正的價值不在 IC 上，而在**把不該算的 0.003 拿掉**
+  - **`fundamentals_v2` 的負 Δ 完全來自 look-ahead 移除**（使用者要求拆解後量出）：四個子修正裡 **(a) Q4/年報 `available_from` 45→90 天 = −0.0016（t=−4.06，全 F5 最顯著）**，(b) 三維取真值 +0.0004、(c) EPS_Surprise 季頻 −0.0000、(d) PER/PBR 自算 +0.0000。**乾淨的隔離點是 `EPS`**——它在舊路徑本來就正常（`Book_Value` 在舊路徑只有 **1 個相異值**），故 `EPS` 12.2% 的差異純粹來自 Q4 延遲；把它換回舊時序＝把 look-ahead 放回去，IC 從 +0.0899 升到 **+0.0916**。→ **與 purge 同列「正確性修正、一律採用、不套效益判讀表」**，兩者合計誠實化代價 5d **−0.0028**
+  - **「換欄」技巧**（省掉 4 次 27 分鐘的重建）：`fundamentals_v2` 只有一個布林旗標卻 gate 四個修正。但 v2 與 `nofund` 兩份矩陣**可按 (Date, stock_id) 對齊**（v2 是子集、只少 7 列 NaN）→ 拿 v2、只把某組欄位**含其 lag1/5/20** 換成 nofund 的值即等價（只換 base 會讓同一特徵有兩種來源混在一起；`ROLL_CORE` 不含 Group C 故 rolling 不必動）。**完整性檢查通過**：四項一起換回 = +0.0913/+0.0972，與整份 nofund 矩陣的 R3 四位小數完全相同
+  - **`INPUT_DIM` 定 59、旗標不採用**（使用者拍板）：**我原本「Ridge 定不了、GBDT 會替旗標平反」的假設被自己的實驗推翻**——GBDT 5d 無效應、**20d 顯著扣 0.0060（t=−2.93）**、7 個旗標 **gain 佔比合計 0.32%** 而 307 維均分是 0.326%（七維只拿到約一維的份量，`Avail_Financials` 在 5d 是 0.000%）＝「有能力用交互作用但不用」。全量下 7 個旗標**都不是死常數**（推翻 40 支小樣本判定，`Avail_Valuation` 先前已因全量 mean 0.9966 移除 → 67→66）。**非顯而易見的原因：起點移到 2013 與旗標功能高度重疊**——旗標要標的「該來源還不存在」期間（Daytrade 2014、Holdings/ForeignShare 2018）大多已被砍掉，這也對得上 `Avail_Daytrade` 是七個裡 gain 最高的。原本最主要動機（9xxx 語意翻轉）已用回補**在源頭修好**。**未採用「只留 gain 高的那幾個」**——那是依 test 集挑特徵＝test-set selection
+  - **`NEUTRALIZE` 定 "none"、留到 F6**（使用者拍板）：四個測量（2 模型 × 2 horizon）**方向全正**，最大 +0.0068；GBDT 5d 的 `Δ_trim5=+0.0038` 比原始 Δ 更大（去極端日反而增強 → 不是被少數幾天帶起來）；G-R4a 是全場最好的 ICIR 0.950 / NW t 14.50。**但 t 值 0.76–1.42 過不了跑前定好的 |t|≥2**，且成本不是零——中性化在推論路徑多一個必須同步的步驟，訓練/推論不一致正是踩過兩次的坑（`macro_norm`、`fundamentals_v2`）。`industry_mktcap` 未量
+  - **方法紀律四條**（都寫進 `f5_r_series.py` 檔頭）：① 存 582 天**逐日 IC**、級間用**配對** NW t（Δ=0.002 時肉眼判不了）② **判讀規則跑之前先定死**（看到數字才選規則就沒意義）③ 數值全部 import 自 `baseline_ridge_lasso`，不另寫一套 Ridge（否則級間差異混進實作差異）④ **GBDT 刻意不重掃網格**，沿用 Step 3 的 leaves=127/min_leaf=2000（各自掃網格會讓超參數吸收掉特徵差異）
+  - **兩個原設計錯誤（使用者質疑後才修，兩者都不會報錯）**：① R3「fund_v2 關但旗標開」不自洽——`Avail_Financials` 在 `_merge_fundamentals(fundamentals_v2=...)` **之後**才算、判準是 `notna()`，而舊路徑那三欄是**死常數不是 NaN** → 實測該旗標在 nofund 矩陣裡是**死常數 1.0**（其餘 6 個逐位元不變）；改成兩側都關旗標、對照 R1 ② 表格漏標 horizon（實際每級都同時算 5d/20d，閘門 5d、20d 佐證，方向相反時印警告不自動採納）
+  - **⚠️ 操作教訓**：背景任務被回報 `killed` 後**它的子孫其實還活著**，我另啟接力腳本 → 兩個 `--build` 同時寫同一個輸出檔。已終止並刪半成品重建；`baseline_cache_v2` 與共用 chunk 因唯讀而未受影響（設計擋住了）、結果 JSON 完整。**啟接力前要先確認沒有殘留 process，不能相信通知**
+  - **v1→v2 最大的一項 R0b−R0 = −0.0079 不可歸因到單一變因**（fund_v2 佔 −0.0014、起點 +0.0001，剩約 −0.0065 來自宇宙過濾與外資持股回補），與 D1 分層診斷一致（小型/低流動股墊高 IC），是誠實方向的下降。要拆開需再建一份矩陣（v2 規格＋v1 宇宙規則），未做
 - **Group D 全數為死值的實測確認 + 集保改 TDCC 直連（2026-07-29）**：
   - **⚠️ 重要事實：V6.1 下 Group D 全部 12 維都是 0**（不只 `fear_greed`）。實測 `clean_and_scale` 後 `TWII_Return`/`SPX_Return`/`VIX`/`TNX`/`Gold_Return`/`Oil_Return`/`USD_TWD`/`Futures_OI_Foreign`/`Options_PC_Ratio`/`Fear_Greed`/`Business_Signal`/`FED_Rate` **std 全為 0.000000、absmax 全為 0.000000**。原始值其實有訊息（`Fear_Greed` 5~78 共 67 個相異值、`Business_Signal` 23~40），是被 `macro_norm="cross"` 消滅的（macro 同日對所有股票同值 → 橫斷面 z-score → std=0）。**這代表 V6.1 是在整組 Group D 都死掉的狀態下達到 IC ~0.08 的——目前沒有任何證據顯示這 12 維有用**
   - **決策：暫不追 `fear_greed`/`business_indicator` 來源**。正確順序是等 V6.2 改 `macro_norm="ts"` 後先做 Group D 消融，證實有貢獻再補來源；否則是為未經證實的特徵接資料源。（同理，先前做的 TAIFEX 期貨/選擇權對 V6.1 也是零影響，但那是為 V6.2 鋪路且順帶擺脫 FinMind 付費牆）
@@ -540,6 +551,7 @@ cd app/frontend && npm run dev   # → localhost:5173
   - 完整改寫 `PersonalOS/src/renderer/src/pages/MarketMamba/Portfolio.jsx`：`ExitConditionModal` 升級為四層退場 UI（L1 停損、L2 信號惡化、L3 減倉、L4 換倉）；Trailing Stop 由前端從 avg_price 計算；風險分數改用四層觸發加權
 
 ### 進行中
+- **F6（Colab／GPU）是下一階，特徵工程層已凍結**：① **GAT 三組消融**（`V6/experimental/kg_ablation.py` 程式已備妥，`no_gat`/`old_kg`/`v2_kg`，需先上傳本機的 `knowledge_graph_v2.npz`）② **Group D 12 維消融**（`macro_norm="ts"` 下那 12 維到底有沒有貢獻——V6.1 下整組是死值，目前沒有任何證據顯示有用）③ **中性化用 Mamba 複驗**（F5 給的是方向正但不顯著）。**F6 的 config 設定**：`INPUT_DIM=59`（既有 V6.2 設定，**不需 `patch_config_67d`**，連帶避開那個 import 期綁值的陷阱）、`build_features(fundamentals_v2=True, availability_flags=False)`、`clean_and_scale(macro_norm="ts", neutralize="none")`、切分用 `splitters`（purge 60 + embargo 20）、train 起點 2013
 - **研究計畫三方向（`planing/研究計畫_主檔.md`）**：**方向一 ✅ 全部完成、方向二 ✅ 全部完成**（Step 2~5 + 交付；`/pipeline` 前端頁待驗收部署）；方向三-C 等 post-P0 樣本 ≥20 天（約 7 月底）重跑複驗；方向三-A/B（事件驅動/Meta-labeling）優先級最低、先做資料可行性評估再決定投入。平行可做：資料基礎升級計畫階段二（資料衛生三項 + baseline_common 序列輸出，見 `planing/資料基礎升級計畫_baseline_common扶正.md`）
 - **scanner 1.4 新邏輯待 07-07 推論驗證**：確認 ① BUY 數量合理（分數制 + 機構條件復活，乾跑 07-06 資料為 15 BUY/24 WATCH）② 機構連買明細正常顯示 ③ `condition_analysis.json` 有產出並被 push。條件貢獻分析的機構統計從 07-07 歸檔起才有意義（歷史旗標全 False）
 - **Phase 3 實驗暫停中（2026-07-06 使用者決定）**：等真倉（V6.1）先驗證有沒有賺錢再繼續做實驗。目前進度停在：~~A 正則救峰值 ✅（dropout=0.2 有效）~~ → B/C/D 三支檔案已寫好推 main、**尚未在 Colab 執行**（listnet 權重 sweep / 趨勢單尺度簡化 / 短線窗口 sweep，預期結果見 `docs/phase3-experiment-plan-2026-06-25.md`）→ E/F 未設計。恢復時：在 Colab 跑 B、貼結果回來判讀
@@ -547,6 +559,9 @@ cd app/frontend && npm run dev   # → localhost:5173
 - **資料品質稽核第二輪待討論（2026-07-27）**：第一輪「純程式修改」已完成。剩下的都不是改程式能解的，見下方「下一步」——資料操作三項（清 `Close<=0` 存量、補 14 個停更源、季度全量重抓價格）、歸因一項（P2 少掉的 353 支）、需重訓或動凍結協定兩項（label 起點改 t+1、`*_is_missing` 缺失旗標會動 `INPUT_DIM`）。另有已揭露但暫不處理的：`Open` 欄與 HLC 在冷門股上來源定義不一致（OHLC 違規 322,300 列 / 3.7%）、漲跌停/處置/停牌四類交易狀態欄位完全不存在、存活者偏差未量化
 
 ### 下一步
+- [ ] **F6 開跑前的 checklist**（比原「V6.2 部署 checklist」更新，以此為準）：`config.py` 維持 `INPUT_DIM=59` + `FEATURE_GROUPS` 取消 RS 注釋（不做 67/66 維 patch）；`build_features(fundamentals_v2=True, availability_flags=False)`；`clean_and_scale(macro_norm="ts", neutralize="none")`；Colab 的兩個切分點已接 `splitters`（G1 已補做）；Drive 上的舊 matrix 快取要刪除重建
+- [ ] **F5 的兩份變體快取可刪**（決策已定案）：`Data/processed_v6/baseline_cache_v2_nofund`（7.3 GB）確定可刪；`baseline_cache_v2_neuind`（7.7 GB）**建議先留**——`NEUTRALIZE` 是延到 F6 的未決項，留著省一次 27 分鐘重建。D 槽現剩 55.3 GB
+- [ ] **選配：拆解 R0b−R0 的 −0.0079**（宇宙過濾 vs 外資持股回補），需再建一份「v2 規格 ＋ v1 宇宙規則」的矩陣，約 27 分鐘。不影響 F6，屬「想知道」而非「必須知道」
 - [x] ~~`/pipeline` 頁驗收 + 部署~~ **已於 2026-07-15 完成並 push**（commit `3cc7bb1`，已確認在 origin/main 上，Vercel 應已自動部署）——CLAUDE.md 這條之前漏更新，2026-07-23 核對 git log 才發現其實早就做完，補記於此
 - [ ] **資料基礎升級計畫階段二**（方向一/二收線後的下一個工程主線，不需 Colab）：資料衛生三項（Close=0 gate、還原接縫、超限複驗）+ baseline_common 序列輸出 (N,252,59) + KG 邊介面 + 協定 v2.0 版本化
 - [ ] **~7 月底重跑 `V6/experimental/conviction_c_analysis.py`**：post-P0 5d 屆時 ≥20 天、post-P0 20d 開始有樣本；同步對 `results/archive/df_short_*.csv` 的 SQ_5d/Unc_5d 做同款校準分析（horizon 對齊使用者操作週期，腳本小改即可）——5d 校準反向是否為真在此定奪，屆時再決定 deep ensembles/conformal 要不要做
@@ -594,6 +609,12 @@ cd app/frontend && npm run dev   # → localhost:5173
 > **PR 3（持倉四層退場 / Portfolio 頁面）**：使用者已確認頁面內容完成，視為驗收通過
 
 ### 決策紀錄
+- **正確性修正與效益改動要分兩套尺，不能混在同一張判讀表（2026-07-30，F5 定案）**：`fundamentals_v2` 與 purge 都讓 IC 下降，但它們拿掉的是 look-ahead——IC 掉是**誠實化的代價**，不是「這個改動不好」。使用者要求把 `fundamentals_v2` 的負 Δ 拆到子修正後證實由 Q4 延遲（t=−4.06）主導，因此與 purge 同列「一律採用、不套 |Δ|≥0.009 門檻」。**判讀規則必須在跑之前定死**，否則看到數字才選規則，等於用結果反推標準
+- **旗標這類「不為 IC 而設」的特徵，裁判要選對模型；但假設被推翻就要認（2026-07-30）**：可得性旗標要靠交互作用才有用，線性模型結構上用不到 → Ridge 的 +0.0000 是弱證據。我據此主張「GBDT 才是對的裁判」並跑了三組，**結果 GBDT 也否決**（5d 無效應、20d −0.0060 t=−2.93、gain 佔比 0.32% vs 均分 0.326%）＝「有能力用但不用」。假設被自己的實驗推翻，就照結果走。另一個收穫：**起點後移到 2013 與旗標功能高度重疊**，旗標要標的期間大多已被砍掉——兩個改動的效果不獨立，這是量 delta 時該預期到的
+- **不依 test 集 IC 挑特徵子集（2026-07-30）**：「只留 gain 最高的 `Avail_Daytrade`/`Avail_Institutional`」看起來划算，但那是 test-set selection，會讓後續所有數字失去 out-of-sample 意義。規格要照原則定，不照測試期表現定
+- **成本不是零的改動，方向對但不顯著時不進規格（2026-07-30）**：中性化四個測量方向全正、去極端日後更強、組合層也最好，但 t=0.76–1.42。決定性理由不是統計而是**它在推論路徑多一個必須同步的步驟**——`macro_norm` 與 `fundamentals_v2` 已經是兩次前例。+0.002（5d 主 horizon）換這個風險不划算，留到 F6 用真正要上線的模型再量
+- **量 delta 時「一次一變因」要驗證組合本身自洽（2026-07-30）**：原設計的 R3「fund_v2 關但旗標開」看似合理，但 `Avail_Financials` 是在 `_merge_fundamentals(fundamentals_v2=...)` 之後才依 `notna()` 算的，而舊路徑那三欄是**死常數不是 NaN** → 旗標在該組合下退化成死常數 1.0。**這種不自洽不會報錯**，只會讓 delta 混進第二個變因。實測比對兩份矩陣的旗標統計才抓到
+- **背景任務回報 killed 不代表子孫都死了（2026-07-30 操作教訓）**：據此另啟接力腳本，導致兩個 `--build` 同時寫同一個輸出檔。啟接力前要先列 process 確認，不能相信通知。附帶驗證了共用 chunk 的唯讀設計有效——`baseline_cache_v2` 完全未受影響
 - **會改變歷史特徵語意的 bug 一律用旗標、預設維持現況（2026-07-27）**：`EPS_Surprise` 季頻修正與 Q4 年報 `available_from` +90 天都是真 bug，但直接改會讓推論端特徵與 V6.1 checkpoint 的訓練語意不一致——這正是 D1 `macro_norm` 踩過的坑。故比照該慣例加 `fundamentals_v2: bool = False`，預設關、Colab 訓練端傳 True，並寫進 V6.2 部署 checklist。**驗收標準是「與 git HEAD 逐位元相同」**：本次實測 60 欄最大絕對差 `0.000e+00`。凡動 `feature_engineer.py` 都應跑這個回歸測試
 - **資料衛生必須在 build_features 之前，不能在 clean_and_scale 之後（2026-07-27 教訓）**：舊流程的去重放在 `clean_and_scale` 之後，看起來「有去重」，但時序特徵（Return/MA/RSI/ATR/KD/OBV/Volatility）與當日橫斷面 z-score 早就吃過重複列了——2432 的 Return_5d 因此正負號相反。**清理的位置比清理本身重要**
 - **健檢一律 non-fatal 且用 parquet statistics（2026-07-27）**：線上 V6.1 每天要出訊號給家人看，健檢不該成為新的失敗點，故全部 `try/except` 包住、只印警告。取最大日期改用 row-group statistics（不讀資料）、損壞列統計只看近 90 天窗口——`institutional_raw` 有 32.8M 列，整檔載入會吃掉數 GB，本機只有 23.7 GB 且推論同時在跑。實測健檢自身 RSS 僅 0.14 GB

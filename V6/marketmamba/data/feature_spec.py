@@ -121,12 +121,14 @@ AVAILABILITY_FLAGS: dict[str, tuple[str, str, tuple[str, ...], str]] = {
         "全期覆蓋極低（2005 年 0.3% → 2026 年 48.8%）——借券本來就只有部分股票有。"
         "0=無借券餘額（合法值），旗標同時帶有「這支可被借券/放空」的資訊",
     ),
-    "Avail_Valuation": (
-        "fundamentals", "per_raw（+ fundamentals_v2 自算）",
-        ("PER", "PBR"),
-        "per 2007 後穩定 ~96%，2005 僅 21%，2026 掉到 72.9%（新來源只涵蓋上市）。"
-        "**刻意不含 Market_Cap_Log**——它覆蓋率 94–99%，OR 進來會讓旗標恆為 1、失去資訊",
-    ),
+    # ⚠️ `Avail_Valuation` 已於 2026-07-30 依**全量**結果移除（INPUT_DIM 67 → 66）。
+    #    訓練窗 2013+ 實測 mean 0.9966 / std 0.0585——`fundamentals_v2` 的自算
+    #    PER/PBR 幾乎補滿了所有列，旗標實質上是常數。
+    #    常數欄不只沒資訊，還會佔掉 FactorGroupedEmbedding 的投影容量。
+    #
+    #    對照：40 支小樣本曾判定 `Avail_Margin` 與 `Avail_Financials` 也是常數，
+    #    全量下兩者分別是 0.9225 / 0.9813（有變異）→ **保留**。
+    #    這就是「死旗標取捨必須依全量結果」的實證。
     "Avail_Financials": (
         "fundamentals", "financials_raw + balance_sheet_raw + cashflow_raw",
         ("EPS", "EPS_Surprise", "Gross_Margin", "ROE",
@@ -277,10 +279,10 @@ def patch_config_67d(strict: bool = True) -> int:
     做法比照 `baseline_common.py` / `run_dual_inference.py` 既有的 runtime 自切模式，
     **不改 `config.py` 檔案本身**——本機那份是刻意保持 56 維、不進 git 的 dirty 檔。
 
-    組成：56（V6.1）+ 3（RS，V6.2）+ 8（可得性旗標，V6.3）= 67
+    組成：56（V6.1）+ 3（RS，V6.2）+ 7（可得性旗標，V6.3）= 66
       Group A price_momentum      12 → 15
       Group B institutional_flow  20 → 26
-      Group C fundamentals        12 → 14
+      Group C fundamentals        12 → 13
       Group D macro_environment   12 → 12
 
     ⚠️ **必須在 import 任何 `marketmamba.models.*` 之前呼叫。**
@@ -327,7 +329,7 @@ def patch_config_67d(strict: bool = True) -> int:
     cfg.INPUT_DIM = len(cfg.FEATURE_COLS)
     cfg.GROUP_DIMS = {k: len(v) for k, v in cfg.FEATURE_GROUPS.items()}
 
-    assert cfg.INPUT_DIM == 67, f"expected 67 features, got {cfg.INPUT_DIM}"
+    assert cfg.INPUT_DIM == 66, f"expected 66 features, got {cfg.INPUT_DIM}"
 
     # 顯式同步已載入模組的 module 級綁定（見上方 docstring 第二個 ⚠️）。
     # 這些模組都是「呼叫時才讀 module 全域」，事後覆寫有效。
@@ -345,7 +347,7 @@ def patch_config_67d(strict: bool = True) -> int:
     _fe = sys.modules.get("marketmamba.data.feature_engineer")
     if _fe is not None:
         _n = len(getattr(_fe, "FEATURE_COLS", []))
-        assert _n == 67, (
+        assert _n == 66, (
             f"feature_engineer.FEATURE_COLS 同步失敗（{_n} 維）。"
             f"沒有這一步，旗標會被算出來卻在重排欄位時靜默丟掉。")
 

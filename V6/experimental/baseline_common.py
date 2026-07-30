@@ -120,13 +120,46 @@ if PROTOCOL_VERSION == "v2":
         "AVAILABILITY_FLAGS": True,
     })
 
+# ── 變體：F5 的 R3/R4 需要「只差一個變因」的另一份矩陣 ────────────────
+# 起點／旗標／purge 都能在跑階時用參數切換，不必重建矩陣；但 `FUNDAMENTALS_V2`
+# 與 `NEUTRALIZE` 是**寫進矩陣值本身**的，只能各建一份。
+# 未設 `MM_VARIANT` 時整段是 no-op（下方 assert 保證 v1/v2 的路徑與 PROTOCOL 不變）。
+VARIANT = os.environ.get("MM_VARIANT", "").strip().lower()
+_VARIANT_SPECS: dict[str, dict] = {
+    # reuse_chunks：中性化發生在 `clean_and_scale`（chunk 之後），chunk 與 v2 逐位元
+    # 相同 → 直接重用，省 ~8 分鐘，也讓「唯一差異就是那一個 neutralize 參數」
+    # 在位元層面成立，比重建 chunk 的隔離更嚴格。
+    "nofund":   {"overrides": {"FUNDAMENTALS_V2": False},           "reuse_chunks": False},
+    "neuind":   {"overrides": {"NEUTRALIZE": "industry"},           "reuse_chunks": True},
+    "neuindmc": {"overrides": {"NEUTRALIZE": "industry_mktcap"},    "reuse_chunks": True},
+}
+if VARIANT:
+    assert PROTOCOL_VERSION == "v2", f"MM_VARIANT 只在 MM_PROTOCOL=v2 下有意義（收到 {PROTOCOL_VERSION}）"
+    assert VARIANT in _VARIANT_SPECS, f"未知的 MM_VARIANT={VARIANT!r}，可用：{list(_VARIANT_SPECS)}"
+    PROTOCOL.update(_VARIANT_SPECS[VARIANT]["overrides"])
+    print(f"[variant] MM_VARIANT={VARIANT} → PROTOCOL 覆寫 "
+          f"{_VARIANT_SPECS[VARIANT]['overrides']}", flush=True)
+
 # v2 用獨立的快取目錄：既有 Ridge / GBDT / GRU 的結果都引用 v1 的 base matrix，
 # 覆蓋掉會讓那些已發表的數字失去可重現性。
-CACHE_DIR  = PROCESSED_DIR / ("baseline_cache" if PROTOCOL_VERSION == "v1"
-                              else "baseline_cache_v2")
+_CACHE_NAME = "baseline_cache" if PROTOCOL_VERSION == "v1" else "baseline_cache_v2"
+if VARIANT:
+    _CACHE_NAME = f"{_CACHE_NAME}_{VARIANT}"
+CACHE_DIR  = PROCESSED_DIR / _CACHE_NAME
 CHUNK_DIR  = CACHE_DIR / "chunks"
+CHUNKS_SHARED = bool(VARIANT) and _VARIANT_SPECS[VARIANT]["reuse_chunks"]
+if CHUNKS_SHARED:
+    CHUNK_DIR = PROCESSED_DIR / "baseline_cache_v2" / "chunks"
 BASE_PATH  = CACHE_DIR / f"baseline_base_{_DIM}d.parquet"
 ROW_GROUP  = 200_000                # 小 row group → 讀取時 date filter 可有效裁剪
+
+# no-op 保證：沒設變體時，路徑與受變體控制的 PROTOCOL 鍵必須與改動前完全一致。
+if not VARIANT:
+    assert CACHE_DIR == PROCESSED_DIR / ("baseline_cache" if PROTOCOL_VERSION == "v1"
+                                         else "baseline_cache_v2")
+    assert CHUNK_DIR == CACHE_DIR / "chunks" and not CHUNKS_SHARED
+    assert PROTOCOL.get("NEUTRALIZE", "none") == "none"          # v1 無此鍵、v2 預設 none
+    assert PROTOCOL.get("FUNDAMENTALS_V2", False) is (PROTOCOL_VERSION == "v2")
 
 # ============================================================
 # 協定 §4 附錄：扁平模型衍生特徵規格（凍結；GBDT 共用同一份）
@@ -288,9 +321,13 @@ def build_base_matrix(n_chunks: int = 5, force: bool = False) -> None:
 
     # ── 逐 chunk 建特徵 ──
     chunks = np.array_split(np.array(stocks), n_chunks)
+    if CHUNKS_SHARED:
+        print(f"[build] 變體 {VARIANT} 重用 v2 的 chunk（中性化在 clean_and_scale，"
+              f"chunk 不受影響）：{CHUNK_DIR}", flush=True)
     for i, chunk in enumerate(chunks):
         out = CHUNK_DIR / f"base_chunk_{i}.parquet"
-        if out.exists() and not force:
+        # 共用 chunk 時 --force 不重建 chunk：那會覆蓋 v2 的檔案
+        if out.exists() and not (force and not CHUNKS_SHARED):
             print(f"[build] chunk {i+1}/{n_chunks} 已存在，跳過", flush=True)
             continue
         tc = time.time()
@@ -374,7 +411,14 @@ def build_derived(force: bool = False) -> None:
     keys = base[["Date", "stock_id"]]
     # (stock_id, Date) 排序視圖（穩定排序保留原 index，算完 sort_index 還原 canonical 行序）
     srt_idx = base[["stock_id", "Date"]].sort_values(["stock_id", "Date"], kind="mergesort").index
-    f = base.loc[srt_idx, FEATURE_COLS]
+    # 只取「要做 lag」的欄位——v2 排除了 8 個 Avail_* 旗標（見 _NO_LAG_COLS）。
+    # 這裡若用完整的 FEATURE_COLS，下面 `lag.columns = lag_names(n)` 會因為
+    # 67 欄配 59 個名字而炸掉（2026-07-30 實測踩到，且是在 base matrix 花了
+    # 15 分鐘建完之後才失敗）。
+    _lag_src = [c for c in FEATURE_COLS if c not in _NO_LAG_COLS]
+    assert len(_lag_src) == len(lag_names(1)), \
+        f"lag 來源欄位 {len(_lag_src)} 與命名 {len(lag_names(1))} 不一致"
+    f = base.loc[srt_idx, _lag_src]
     gid = base.loc[srt_idx, "stock_id"].to_numpy()
     del base
     gc.collect()
