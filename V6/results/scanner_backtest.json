@@ -1,64 +1,85 @@
 {
   "robot_type": "scanner",
-  "generated_date": "2026-07-29",
+  "generated_date": "2026-07-30",
   "initial_capital": 1000000,
   "period_start": "2026-05-27",
-  "period_end": "2026-07-29",
-  "trading_days": 45,
+  "period_end": "2026-07-30",
+  "trading_days": 46,
   "scanner_meta": {
     "market_regime": "NORMAL",
     "entry_threshold": "≥70分",
-    "scan_date": "2026-07-29",
+    "scan_date": "2026-07-30",
     "n_buy_signals": 15,
     "n_exit_signals": 0
   },
   "summary": {
-    "total_return_pct": -0.38,
-    "benchmark_return_pct": -5.99,
-    "excess_return_pct": 5.61,
+    "total_return_pct": 0.81,
+    "benchmark_return_pct": -9.53,
+    "excess_return_pct": 10.34,
     "max_drawdown_pct": -5.26,
-    "sharpe": -0.1,
-    "win_rate_pct": 27.3,
-    "total_trades": 11,
-    "avg_hold_days": 2.2,
+    "sharpe": 0.41,
+    "win_rate_pct": 25.0,
+    "total_trades": 12,
+    "avg_hold_days": 0.0,
     "current_positions": 9,
-    "cash": 136418,
-    "portfolio_value": 996178,
-    "deployed_pct": 86.3
+    "cash": 44578,
+    "portfolio_value": 1008128,
+    "deployed_pct": 95.6
   },
   "current_holdings": [
     {
       "ticker": "8462",
       "entry_date": "2026-07-28",
       "entry_price": 160.0,
-      "current_price": 164.0,
+      "current_price": 172.0,
       "shares": 1000,
-      "market_value": 164000,
-      "weight_pct": 16.5,
-      "pnl": 3760,
-      "pnl_pct": 2.35,
-      "days_held": 1,
+      "market_value": 172000,
+      "weight_pct": 17.1,
+      "pnl": 11760,
+      "pnl_pct": 7.34,
+      "days_held": 2,
       "entry_score": 130,
       "conditions_met": 3,
       "rank_stability_met": true,
       "high_confidence_met": true,
       "relative_low_met": false,
       "institutional_buy_met": true,
-      "peak_pnl_pct": 2.5,
+      "peak_pnl_pct": 7.5,
+      "trailing_stop_pct": 2.0,
+      "trailing_stop_price": 163.2
+    },
+    {
+      "ticker": "2480",
+      "entry_date": "2026-07-30",
+      "entry_price": 158.5,
+      "current_price": 158.5,
+      "shares": 1000,
+      "market_value": 158500,
+      "weight_pct": 15.7,
+      "pnl": -238,
+      "pnl_pct": -0.15,
+      "days_held": 0,
+      "entry_score": 150,
+      "conditions_met": 4,
+      "rank_stability_met": true,
+      "high_confidence_met": true,
+      "relative_low_met": true,
+      "institutional_buy_met": true,
+      "peak_pnl_pct": 0.0,
       "trailing_stop_pct": -5.0,
-      "trailing_stop_price": 152.0
+      "trailing_stop_price": 150.57
     },
     {
       "ticker": "6177",
       "entry_date": "2026-05-29",
       "entry_price": 42.4,
-      "current_price": 47.1,
+      "current_price": 47.45,
       "shares": 3000,
-      "market_value": 141300,
-      "weight_pct": 14.2,
-      "pnl": 13909,
-      "pnl_pct": 10.92,
-      "days_held": 42,
+      "market_value": 142350,
+      "weight_pct": 14.1,
+      "pnl": 14959,
+      "pnl_pct": 11.74,
+      "days_held": 43,
       "entry_score": 45,
       "conditions_met": 2,
       "rank_stability_met": false,
@@ -73,13 +94,13 @@
       "ticker": "2889",
       "entry_date": "2026-07-02",
       "entry_price": 14.8,
-      "current_price": 15.4,
+      "current_price": 15.65,
       "shares": 8000,
-      "market_value": 123200,
+      "market_value": 125200,
       "weight_pct": 12.4,
-      "pnl": 4622,
-      "pnl_pct": 3.9,
-      "days_held": 18,
+      "pnl": 6622,
+      "pnl_pct": 5.58,
+      "days_held": 19,
       "entry_score": 100,
       "conditions_met": 2,
       "rank_stability_met": true,
@@ -94,20 +115,20 @@
       "ticker": "8415",
       "entry_date": "2026-05-29",
       "entry_price": 34.3,
-      "current_price": 38.3,
+      "current_price": 38.4,
       "shares": 3000,
-      "market_value": 114900,
-      "weight_pct": 11.5,
-      "pnl": 11846,
-      "pnl_pct": 11.49,
-      "days_held": 42,
+      "market_value": 115200,
+      "weight_pct": 11.4,
+      "pnl": 12146,
+      "pnl_pct": 11.79,
+      "days_held": 43,
       "entry_score": 45,
       "conditions_met": 2,
       "rank_stability_met": false,
       "high_confidence_met": true,
       "relative_low_met": true,
       "institutional_buy_met": false,
-      "peak_pnl_pct": 11.66,
+      "peak_pnl_pct": 11.95,
       "trailing_stop_pct": 6.0,
       "trailing_stop_price": 36.36
     },
@@ -115,83 +136,62 @@
       "ticker": "2832",
       "entry_date": "2026-05-29",
       "entry_price": 52.9,
-      "current_price": 56.9,
+      "current_price": 57.4,
       "shares": 2000,
-      "market_value": 113800,
+      "market_value": 114800,
       "weight_pct": 11.4,
-      "pnl": 7841,
-      "pnl_pct": 7.4,
-      "days_held": 42,
+      "pnl": 8841,
+      "pnl_pct": 8.34,
+      "days_held": 43,
       "entry_score": 45,
       "conditions_met": 2,
       "rank_stability_met": false,
       "high_confidence_met": true,
       "relative_low_met": true,
       "institutional_buy_met": false,
-      "peak_pnl_pct": 8.13,
+      "peak_pnl_pct": 8.51,
       "trailing_stop_pct": 2.0,
       "trailing_stop_price": 53.96
-    },
-    {
-      "ticker": "5521",
-      "entry_date": "2026-07-13",
-      "entry_price": 10.25,
-      "current_price": 9.78,
-      "shares": 7000,
-      "market_value": 68460,
-      "weight_pct": 6.9,
-      "pnl": -3398,
-      "pnl_pct": -4.73,
-      "days_held": 12,
-      "entry_score": 125,
-      "conditions_met": 3,
-      "rank_stability_met": true,
-      "high_confidence_met": true,
-      "relative_low_met": true,
-      "institutional_buy_met": false,
-      "peak_pnl_pct": 0.98,
-      "trailing_stop_pct": -5.0,
-      "trailing_stop_price": 9.74
     },
     {
       "ticker": "2540",
       "entry_date": "2026-06-26",
       "entry_price": 52.9,
-      "current_price": 57.8,
+      "current_price": 58.9,
       "shares": 1000,
-      "market_value": 57800,
+      "market_value": 58900,
       "weight_pct": 5.8,
-      "pnl": 4821,
-      "pnl_pct": 9.1,
-      "days_held": 22,
+      "pnl": 5921,
+      "pnl_pct": 11.18,
+      "days_held": 23,
       "entry_score": 100,
       "conditions_met": 2,
       "rank_stability_met": true,
       "high_confidence_met": false,
       "relative_low_met": true,
       "institutional_buy_met": false,
-      "peak_pnl_pct": 9.26,
-      "trailing_stop_pct": 2.0,
-      "trailing_stop_price": 53.96
+      "peak_pnl_pct": 11.34,
+      "trailing_stop_pct": 6.0,
+      "trailing_stop_price": 56.07
     },
     {
       "ticker": "1210",
       "entry_date": "2026-07-29",
       "entry_price": 57.2,
-      "current_price": 57.2,
+      "current_price": 57.4,
       "shares": 1000,
-      "market_value": 57200,
+      "market_value": 57400,
       "weight_pct": 5.7,
-      "pnl": -86,
-      "pnl_pct": -0.15,
-      "days_held": 0,
+      "pnl": 114,
+      "pnl_pct": 0.2,
+      "days_held": 1,
       "entry_score": 125,
       "conditions_met": 3,
       "rank_stability_met": true,
       "high_confidence_met": true,
       "relative_low_met": true,
       "institutional_buy_met": false,
-      "peak_pnl_pct": 0.0,
+      "peak_pnl_pct": 0.35,
       "trailing_stop_pct": -5.0,
       "trailing_stop_price": 54.34
     },
@@ -199,13 +199,13 @@
       "ticker": "2442",
       "entry_date": "2026-06-03",
       "entry_price": 19.4,
-      "current_price": 19.1,
+      "current_price": 19.2,
       "shares": 1000,
-      "market_value": 19100,
+      "market_value": 19200,
       "weight_pct": 1.9,
-      "pnl": -329,
-      "pnl_pct": -1.69,
-      "days_held": 39,
+      "pnl": -229,
+      "pnl_pct": -1.18,
+      "days_held": 40,
       "entry_score": 55,
       "conditions_met": 2,
       "rank_stability_met": true,
@@ -220,42 +220,42 @@
   "watchlist": [
     {
       "ticker": "4961",
-      "days_in_watch": 3
+      "days_in_watch": 4
     },
     {
       "ticker": "5258",
-      "days_in_watch": 2
+      "days_in_watch": 3
     },
     {
       "ticker": "5515",
-      "days_in_watch": 2
-    },
-    {
-      "ticker": "3356",
-      "days_in_watch": 2
-    },
-    {
-      "ticker": "1598",
-      "days_in_watch": 1
-    },
-    {
-      "ticker": "2031",
-      "days_in_watch": 1
-    },
-    {
-      "ticker": "2364",
-      "days_in_watch": 1
+      "days_in_watch": 3
     },
     {
       "ticker": "6592",
-      "days_in_watch": 1
+      "days_in_watch": 2
+    },
+    {
+      "ticker": "2031",
+      "days_in_watch": 2
     },
     {
       "ticker": "2905",
+      "days_in_watch": 2
+    },
+    {
+      "ticker": "3546",
       "days_in_watch": 1
     },
     {
-      "ticker": "6486",
+      "ticker": "8121",
+      "days_in_watch": 1
+    },
+    {
+      "ticker": "1595",
+      "days_in_watch": 1
+    },
+    {
+      "ticker": "8162",
       "days_in_watch": 1
     }
   ],
@@ -619,6 +619,14 @@
       "positions_value": 859760,
       "daily_return_pct": -0.912,
       "n_positions": 9
+    },
+    {
+      "date": "2026-07-30",
+      "equity": 1008128,
+      "cash": 44578,
+      "positions_value": 963550,
+      "daily_return_pct": 1.2,
+      "n_positions": 9
     }
   ],
   "benchmark_curve": [
@@ -793,6 +801,10 @@
     {
       "date": "2026-07-28",
       "level": 94.007
+    },
+    {
+      "date": "2026-07-29",
+      "level": 90.472
     }
   ],
   "transactions": [
@@ -1136,6 +1148,28 @@
       "fee": 86.0,
       "pnl": 0.0,
       "reason": "Scanner BUY (score=125, 3/4條件)"
+    },
+    {
+      "date": "2026-07-30",
+      "action": "SELL",
+      "ticker": "5521",
+      "price": 9.6,
+      "shares": 7000,
+      "value": 67200.0,
+      "fee": 302.0,
+      "pnl": -4960.0,
+      "reason": "Trailing Stop (峰值+1.0%→止損-5.0%, 跌破 9.74)"
+    },
+    {
+      "date": "2026-07-30",
+      "action": "BUY",
+      "ticker": "2480",
+      "price": 158.5,
+      "shares": 1000,
+      "value": 158500.0,
+      "fee": 238.0,
+      "pnl": 0.0,
+      "reason": "Scanner BUY (score=150, 4/4條件)"
     }
   ]
 }
