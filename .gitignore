@@ -16,14 +16,19 @@ secrets.py
 **/*.pth
 **/*.ckpt
 
-# Data directories (regenerate locally)
-**/Data/processed_v6/
-**/Data/raw_v6/
-**/Data/cache_v6/
-**/Data/*.parquet
-**/Data/*.csv
-Data/processed_v6.zip
-Data/raw_cache/
+# Data directories (regenerate locally) — 整個目錄一律排除
+#
+# 2026-07-30 改為整目錄：原本是逐項列舉（processed_v6/、*.parquet、
+# **Data/processed_v6.zip** …），而 F6 上傳包叫 `processed_v6_f6.zip`，
+# 只差一個後綴就從縫隙漏出來，`git status` 把 0.56 GB 列為未追蹤檔案——
+# 任何一次 `git add -A` 都會把它推上 GitHub，而大檔進了歷史極難清除
+# （2026-06-12 為了玉山金鑰做過一次 filter-repo，代價很高）。
+#
+# ⚠️ 已被追蹤的檔案不受 .gitignore 影響。目前仍在追蹤中的有：
+#     Data/2330_2023.parquet、Data/fix_data.py、Data/verify_data.py
+#   要真正排除需另外 `git rm --cached`（本次未動，避免誤刪他人依賴）。
+Data/
+**/Data/
 
 # V6 result archives (dated subdirs only — root CSVs are committed)
 V6/results/20*/
