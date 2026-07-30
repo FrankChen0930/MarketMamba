@@ -266,14 +266,28 @@ if not MATRIX_CACHE.exists() and os.path.exists(DRIVE_FEATURE_CACHE):
 # ── Build or Load ──
 if MATRIX_CACHE.exists() and not FORCE_REBUILD:
     print("Loading cached feature matrix...")
+    print("  ⚠️ 快取不帶規格資訊——是否為 F6 定案規格由 Cell 3 尾的三層驗證判定")
     df = pd.read_parquet(MATRIX_CACHE)
+    _loaded_from_cache = True
 else:
-    print("Building V6.1 56D feature matrix...")
+    _loaded_from_cache = False
+    print(f"Building F6 feature matrix（INPUT_DIM={INPUT_DIM}，協定 v2.0 定案規格）...")
     print("  This takes ~20-30 min on Colab. Be patient.")
     data = merge_all_data()
     integrity = validate_data_integrity(data)
     print(f"  Stocks: {integrity.get('n_stocks')} | Dates: {integrity.get('n_dates')}")
     print(f"  Range: {integrity.get('date_range')}")
+
+    # ── 宇宙過濾（F6 新增，2026-07-30）────────────────────────────────
+    # 這一步原本只存在於 `run_daily_inference._sanitize` 與 baseline 的
+    # `_filter_universe`，Colab 路徑漏了 → ETF（0050/0056 正好是 4 位數字）與興櫃
+    # 會混進訓練。F5 的 baseline 有濾，不濾的話 F6 與 F5 的數字**不可比**，
+    # 而 R0b−R0 那 −0.0079 主要就來自這個差異。
+    from marketmamba.data.hygiene import filter_tradable_universe
+    _n0 = data["prices"]["stock_id"].nunique()
+    data["prices"] = filter_tradable_universe(data["prices"])
+    print(f"  [universe] 可交易宇宙過濾（排除 ETF + 興櫃）："
+          f"{_n0} → {data['prices']['stock_id'].nunique()} 支")
 
     df = build_features(
         df_price         = data["prices"],
@@ -297,11 +311,21 @@ else:
         df_fear_greed    = data.get("fear_greed"),
         df_business_indicator = data.get("business_indicator"),
         df_fed_rate      = data.get("fed_rate"),
+        # ── F6 定案規格（協定 v2.0 §9.4）─────────────────────────────
+        # fundamentals_v2=True：修好財報三維（舊路徑 Book_Value 是**死常數**）、
+        #   EPS_Surprise 改季頻、PER/PBR 自算，並把 Q4/年報 available_from 由
+        #   +45 天改 +90 天（**移除 look-ahead**）。F5 實測那個 look-ahead 值
+        #   +0.0016 IC（t=−4.06）——不傳這個參數等於把它留在訓練資料裡。
+        # availability_flags=False：F5 定案不採用（GBDT 20d −0.0060 t=−2.93、
+        #   gain 佔比僅 0.32%）→ INPUT_DIM 維持 59，**不需 patch_config_67d**。
+        fundamentals_v2     = True,
+        availability_flags  = False,
     )
-    # D1 修復（V6.2 起）：Group D macro 改 expanding time-series z-score。
+    # D1（V6.2 起）：Group D macro 改 expanding time-series z-score。
     # 舊版 "cross" 會把同日同值的 macro 特徵 z-score 成全 0，模型 macro 分支無資訊。
-    # ⚠️ 注意：若 Drive 上有舊的 feature matrix 快取，必須刪除重建，否則吃到舊的全 0 macro。
-    df = clean_and_scale(df, macro_norm="ts")
+    # neutralize="none"：F5 定案（四個測量方向全正但 t 只有 0.76–1.42，且會在推論
+    #   路徑多一個必須同步的步驟）。留到 F6 用 Mamba 複驗，見協定 §9.4。
+    df = clean_and_scale(df, macro_norm="ts", neutralize="none")
     df.to_parquet(MATRIX_CACHE)
     print(f"  ✅ Feature matrix saved: {df.shape}")
     _macro_chk = [c for c in ["VIX", "TWII_Return", "FED_Rate"] if c in df.columns]
@@ -312,10 +336,77 @@ else:
     shutil.copy(str(MATRIX_CACHE), DRIVE_FEATURE_CACHE)
     print(f"  ✅ Backed up to Drive ({os.path.getsize(DRIVE_FEATURE_CACHE) / 1e9:.2f} GB)")
 
-n_features = df.shape[1] - 5  # minus Date, stock_id, Alpha_5d/20d/60d
-print(f"\n✅ Feature matrix: {df.shape[0]:,} rows × {df.shape[1]} cols ({n_features} features)")
+# 特徵欄數改成與 `FEATURE_COLS` 實際比對，不用寫死的減法。
+# 舊寫法是 `df.shape[1] - 5`（Date, stock_id, Alpha_5d/20d/60d），但 V6.2 雙模型
+# 加了 **Alpha_10d** 之後 meta 欄變 6 個，那行就少算了 1 → 65-5=60 而非 59。
+# 寫死的減法每加一個標籤就會壞一次，改成比對就不會。
+from marketmamba.config import FEATURE_COLS as _FC
+_feat_present = [c for c in _FC if c in df.columns]
+_meta_cols = [c for c in df.columns if c not in set(_FC)]
+n_features = len(_feat_present)
+print(f"\n✅ Feature matrix: {df.shape[0]:,} rows × {df.shape[1]} cols "
+      f"({n_features} features + {len(_meta_cols)} meta: {_meta_cols})")
 print(f"   Date range: {df['Date'].min()} → {df['Date'].max()}")
 print(f"   Stocks: {df['stock_id'].nunique():,}")
+
+# ============================================================
+# Cell 3 尾：F6 規格三層驗證（2026-07-30）
+# ============================================================
+# 為什麼要三層：**前兩層在「參數設對但吃到舊快取」時都會通過**。
+# 那正是最可能發生的失誤——Drive 上留著 6 月的 V6_Feature_Matrix.parquet，
+# Cell 3 只會印一行 "Loading cached feature matrix..." 就直接用它。
+print("\n" + "=" * 62)
+print("F6 規格驗證（協定 v2.0 §9.4 定案規格）")
+print("=" * 62)
+
+# ── 層 1：印出來（規則 7：有做但看不到結果視同未完成）──
+_avail = [c for c in df.columns if c.startswith("Avail_")]
+print(f"[層1] INPUT_DIM={INPUT_DIM} | len(FEATURE_COLS)={len(_FC)} | "
+      f"矩陣特徵數={n_features} | meta 欄 {len(_meta_cols)} 個：{_meta_cols}")
+print(f"[層1] Avail_* 欄位數={len(_avail)}（定案規格應為 0）{_avail if _avail else ''}")
+print(f"[層1] 來源：{'快取' if _loaded_from_cache else 'build_features 實跑'}"
+      f"（fundamentals_v2=True, availability_flags=False, neutralize='none'）")
+
+# ── 層 2：硬性 assert ──
+assert INPUT_DIM == 59, f"INPUT_DIM 應為 59（F5 定案），實際 {INPUT_DIM}"
+assert len(_FC) == 59, f"FEATURE_COLS 應為 59 欄，實際 {len(_FC)}"
+assert not _avail, f"定案規格不含可得性旗標，但矩陣有 {len(_avail)} 個：{_avail}"
+assert n_features == 59, f"矩陣特徵數應為 59，實際 {n_features}"
+missing = [c for c in _FC if c not in df.columns]
+assert not missing, f"矩陣缺少 FEATURE_COLS 欄位：{missing}"
+# meta 欄應恰為 Date/stock_id + 四個標籤（Alpha_10d 是 V6.2 雙模型加的，別漏算）
+_expect_meta = {"Date", "stock_id", "Alpha_5d", "Alpha_10d", "Alpha_20d", "Alpha_60d"}
+assert set(_meta_cols) == _expect_meta, (
+    f"meta 欄不如預期：多出 {set(_meta_cols) - _expect_meta}、"
+    f"缺少 {_expect_meta - set(_meta_cols)}")
+print("[層2] assert 全部通過 ✓")
+
+# ── 層 2b：死特徵盤點（不阻斷，但必須看得見）──
+# `clean_and_scale` 之後每一維應該是橫斷面/時序標準化過的值；整維 absmax=0
+# 代表該來源是死的，模型拿不到任何資訊。已知：`fed_rate.parquet` 是壞檔
+# （<=1 個相異日期），所以 FED_Rate 會是 0。
+_dead = [c for c in _feat_present if float(df[c].abs().max()) == 0.0]
+if _dead:
+    print(f"[層2b] ⚠ 死特徵 {len(_dead)}/59 維（整維恆為 0，模型拿不到資訊）：{_dead}")
+    print("       不阻斷訓練——這幾維只是不貢獻，但 Group D 消融時要記得扣掉它們")
+else:
+    print("[層2b] 無死特徵 ✓")
+
+# ── 層 3：內容指紋（**唯一能抓到「吃到舊快取」的一層**）──
+# 判準：舊路徑（fundamentals_v2=False）下 Book_Value 是**字面死常數**
+#       ——F5 實測整份矩陣只有 **1 個相異值**、std=0.0000；
+#       Gross_Margin 只有 524 個相異值。修好後應是數十萬個相異值。
+_bv = df["Book_Value"].nunique(dropna=True)
+_gm = df["Gross_Margin"].nunique(dropna=True)
+print(f"[層3] Book_Value 相異值={_bv:,}（舊財報=1）| "
+      f"Gross_Margin 相異值={_gm:,}（舊財報=524）")
+if _bv <= 10 or _gm <= 1000:
+    raise AssertionError(
+        f"❌ 內容指紋不合：Book_Value={_bv}、Gross_Margin={_gm} 看起來是**舊財報**。\n"
+        "   最可能的原因是吃到 Drive 上的舊 V6_Feature_Matrix.parquet。\n"
+        f"   請刪除 {DRIVE_FEATURE_CACHE} 與 {MATRIX_CACHE} 後重跑本 Cell。")
+print("[層3] 內容指紋通過 ✓（財報三維為真值、Q4 look-ahead 已移除）")
+print("=" * 62)
 
 # %% Cell 3b: Knowledge Graph (lightweight — no merge_all_data)
 # ==========================================
