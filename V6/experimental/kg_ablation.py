@@ -101,10 +101,26 @@ SEED = 20260730
 VAL_END_DEFAULT = "2026-06-02"
 
 
+# F6 定案的訓練起點（協定 v2.0 §9.4 / F5 的 R1）。
+# 理由不是 IC——R1 實測 2012→2013 的 Δ 只有 +0.0001（t=0.46，無效應）——
+# 而是資料品質：`institutional_raw` 對 prices 宇宙的命中率 2011 年 17%、
+# 2012 年 56%、2013 年 74%、之後 80–96%。2013 之前 Group B 有 4~8 成的列
+# 是 fillna(0) 補出來的，而「淨買超為 0」是合法值，模型在那段學到的是
+# 「這支有沒有被資料涵蓋」而不是籌碼訊號。
+TRAIN_START_DEFAULT = "2013-01-01"
+
+
 def build_dates(df, cutoff_train_end: str = "2023-12-31", purge: bool = True,
-                val_end: Optional[str] = VAL_END_DEFAULT):
+                val_end: Optional[str] = VAL_END_DEFAULT,
+                train_start: Optional[str] = TRAIN_START_DEFAULT):
     """
     切分。**預設啟用 purge + embargo**（協定 v2.0），這是與 phase3_a 的差別。
+
+    ⚠️ `train_start`（2026-07-31 補）：`train_val_split_dates` 只在 cutoff **切一刀**，
+       不看起點——不傳這個參數的話訓練集會是**矩陣的全部歷史 2005–2023**，
+       而不是 F6 定案的 2013 起。那是靜默的規格違反（不會報錯、只是多吃 8 年
+       籌碼欄多半是 fillna(0) 的資料），而且訓練集多 74%、每 epoch 從約 19 分
+       變約 33 分、三組從 8.7 小時變約 15 小時。
 
     短線模型的 label 是 5d/10d → horizon 取 **10**（最長者）。
     embargo 20 天，與協定 §5 一致。
@@ -113,6 +129,11 @@ def build_dates(df, cutoff_train_end: str = "2023-12-31", purge: bool = True,
        但那組數字含邊界洩漏，並列時必須標註。
     """
     all_dates = sorted(df["Date"].astype(str).unique().tolist())
+    if train_start:
+        n0 = len(all_dates)
+        all_dates = [d for d in all_dates if d >= train_start]
+        print(f"[kg-abl] 訓練起點 {train_start}（F6 定案）：可用日期 {n0} → {len(all_dates)} 天",
+              flush=True)
     if purge:
         from experimental.splitters import train_val_split_dates
         train_dates, val_dates = train_val_split_dates(
@@ -337,6 +358,7 @@ def run_kg_ablation(df, arms: Sequence[str] = ("no_gat", "old_kg", "v2_kg"),
                     cutoff_train_end: str = "2023-12-31",
                     purge: bool = True,
                     val_end: Optional[str] = VAL_END_DEFAULT,
+                    train_start: Optional[str] = TRAIN_START_DEFAULT,
                     drive_dir: Optional[str] = None) -> dict:
     """
     epochs/early_stop 預設 **10/5**（原為 18/10）。依據：Phase 3-A 兩組實測
@@ -348,7 +370,8 @@ def run_kg_ablation(df, arms: Sequence[str] = ("no_gat", "old_kg", "v2_kg"),
         if a not in ARMS:
             raise ValueError(f"未知的 arm {a!r}，可用：{list(ARMS)}")
 
-    train_dates, val_dates = build_dates(df, cutoff_train_end, purge=purge, val_end=val_end)
+    train_dates, val_dates = build_dates(df, cutoff_train_end, purge=purge, val_end=val_end,
+                                         train_start=train_start)
     out_path = f"{drive_dir}/kg_ablation_result.json" if drive_dir else None
 
     # 斷線續跑：已完成的 arm 直接沿用（Colab 三組合計數小時）
@@ -376,7 +399,10 @@ def run_kg_ablation(df, arms: Sequence[str] = ("no_gat", "old_kg", "v2_kg"),
                            # F6 規格指紋：日後看到這份 JSON 才知道它是哪一套特徵下的數字
                            "spec": {"input_dim": 59, "availability_flags": False,
                                     "fundamentals_v2": True, "macro_norm": "ts",
-                                    "neutralize": "none", "train_start": "2013"},
+                                    "neutralize": "none", "train_start": train_start,
+                                    # 已知：FED_Rate 整維恆為 0（fed_rate.parquet
+                                    # 只有 <=1 個相異日期）→ 實質 58 維有訊息
+                                    "dead_features": ["FED_Rate"]},
                            "cutoff_train_end": cutoff_train_end,
                            # 切分設定必須寫進結果檔：purge 與否會改變 IC 的絕對水位，
                            # 沒記錄的話半年後看到這份 JSON 會不知道能不能跟別的數字並列
