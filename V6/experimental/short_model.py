@@ -186,11 +186,44 @@ def train_short_model(
     kg_cache_path:   str | None = None,
 ):
     # ── 把資料集的 target 欄暫時指到 5d/10d（不動正式檔，跟 listnet_5d 同款 runtime 覆蓋）──
+    #
+    # ⚠️ 這是 **module 級全域變數**，跑完必須還原（2026-07-31 補）。
+    #    原本沒還原，於是在同一個 Colab session 先跑短線模型、再跑 Cell 4 的
+    #    多 horizon 訓練時，dataset 只給 2 欄標籤而 `multi_horizon_loss` 要取
+    #    `targets[:, 2]` → `IndexError: index 2 is out of bounds`。
+    #    錯誤訊息指向 trainer.py，跟真正的原因（這裡改了全域沒還原）差很遠，
+    #    很難從堆疊追回來，所以用 try/finally 保證還原。
     import marketmamba.config as cfg
     import marketmamba.models.trainer as T
+    _orig_globals = (cfg.PRED_HORIZONS, T.PRED_HORIZONS, T.TARGET_COLS)
     cfg.PRED_HORIZONS = [5, 10]
     T.PRED_HORIZONS   = [5, 10]
     T.TARGET_COLS     = ["Alpha_5d", "Alpha_10d"]
+    try:
+        return _train_short_model_inner(
+            df, train_dates, val_dates, epochs=epochs, early_stop=early_stop, lr=lr,
+            weights=weights, window=window, n_layers=n_layers,
+            checkpoint_name=checkpoint_name, checkpoint_backup_dir=checkpoint_backup_dir,
+            status_path=status_path, device_str=device_str,
+            use_gat=use_gat, kg_cache_path=kg_cache_path)
+    finally:
+        cfg.PRED_HORIZONS, T.PRED_HORIZONS, T.TARGET_COLS = _orig_globals
+        print(f"[short] 已還原 TARGET_COLS={T.TARGET_COLS} / PRED_HORIZONS={T.PRED_HORIZONS}",
+              flush=True)
+
+
+def _train_short_model_inner(
+    df,
+    train_dates,
+    val_dates,
+    *,
+    epochs, early_stop, lr, weights, window, n_layers,
+    checkpoint_name, checkpoint_backup_dir, status_path, device_str,
+    use_gat, kg_cache_path,
+):
+    """實際訓練迴圈。外層 `train_short_model` 負責 patch/還原全域變數。"""
+    import marketmamba.config as cfg
+    import marketmamba.models.trainer as T          # 下方 KG monkeypatch 會用到
 
     device = torch.device(device_str)
     print(f"[short] device={device} | train={len(train_dates)} val={len(val_dates)} | "
