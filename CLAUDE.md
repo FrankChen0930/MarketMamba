@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # MarketMamba — AI 助手指引
 
-> 最後更新：2026-07-30（**F5 R-series 完成、特徵工程層規格正式凍結**：`INPUT_DIM`=59（可得性旗標不採用）、`NEUTRALIZE`="none"；`fundamentals_v2` 的負 Δ 證實由 look-ahead 移除主導 → 與 purge 同列正確性修正）
+> 最後更新：2026-08-01（**F6 進行中**：GAT 三組消融 `no_gat` 已完成、`old_kg` 訓練中。完整紀錄與判讀清單見 `docs/f6-training-log-and-readout.md`——那份是為了讓沒有前文脈絡的 session 能直接接手而寫的）
 
 ---
 
@@ -343,9 +343,19 @@ cd app/frontend && npm run dev   # → localhost:5173
 
 ## 🔄 Current Status
 
-> 最後更新：2026-07-30（F5 十四級跑完、兩項特徵規格定案並凍結；下一階是 F6＝Colab/GPU：GAT 消融、Group D 消融、中性化用 Mamba 複驗。Phase 3 模型實驗仍暫停中）
+> 最後更新：2026-08-01（F6 GAT 消融進行中；Group D 消融腳本待寫。**V6.1 已非紅線，使用者表示可停**。Phase 3 模型實驗仍暫停中）
 
 ### 最近完成
+- **F6 開跑：GAT 三組消融（2026-07-31~08-01，進行中）**。**完整紀錄、每一輪的設定/數字/判讀清單、以及三個 Colab 坑，全部寫在 `docs/f6-training-log-and-readout.md`**——接手前先讀那份，這裡只記重點：
+  - **規格三層驗證全過**：59 特徵 + 6 meta（`Alpha_10d` 是 V6.2 加的，meta 是 6 不是 5）、`Avail_*` 0 個、宇宙 2,479→**2,245** 支。**第三層「內容指紋」是唯一擋得住『參數設對但吃到舊快取』的一層**：`Book_Value` 相異值 1（舊財報）→ **5,033,154**、`Gross_Margin` 524 → 7,002,546
+  - **`no_gat` 完成**：峰值 5d IC **+0.0884 @ep5**、ICIR 0.733、年化 +10.7%、參數 1,394,301。**重評 mean IC 與訓練迴圈 ep5 的 val IC 完全相同 → checkpoint 重載+逐日 IC 那段程式正確**
+  - **同一批 582 天的橫向對照**（F6 val 窗刻意對齊 F5 test 窗）：GBDT +0.1036 > Ridge +0.0899 > **Mamba 單尺度 +0.0884**。1.4M 參數的 Mamba 打不贏 300 維 Ridge，與方向二 Step 4 的收斂結論一致；但 GAT 兩組未出，先不定論
+  - **多尺度主模型（Cell 4）已中止、數字不可用**：`epochs=100` 讓 OneCycleLR 暖身長達 15 個 epoch → **模型在暖身期就過擬合，從頭到尾沒進入退火階段**（ep7 峰值時 LR 只有 max 的 47% 且還在爬）。根因是 **`epochs` 一參數身兼兩職**（最多跑幾輪 vs OneCycle 排程長度），有 early stopping 時不該綁一起。要重跑需 `epochs=15~20`
+  - **白賺：scale gate 第三次塌到 Mid**（Short 0.047 / **Mid 0.890** / Long 0.063）。Phase 0 舊資料是 0.004/0.80/0.20，**同形狀在全新資料基礎上重現**。加上 Phase 1 deep supervision，已有三條獨立證據：5d 目標下多尺度實質退化成單尺度
+  - **`FED_Rate` 是死維**：`fed_rate.parquet` 只有 **8 列 / 1 個相異日期（2004-01-01）**。59 維中實質 58 維有訊息，Group D 是 **11 活 + 1 死** → 消融結論必須寫成「11 維有效特徵的貢獻」。依既有決策「先證實有貢獻再補來源」，**暫不修**
+  - **三個 Colab 坑（都踩過）**：① **模組快取**——`git pull` 後 Python 仍用 `sys.modules` 舊版、**完全不報錯**，實際導致 `train_start` 沒生效、訓練集變成 2005 起的 4,651 天 ② 特徵矩陣快取不帶規格資訊，只印一行 "Loading cached..." ③ `train_short_model` 改 `T.TARGET_COLS` 沒還原 → 接著跑 Cell 4 得到 `IndexError: index 2 is out of bounds`，而錯誤指向 `trainer.py`、與真因差很遠（已於 `d71b8ac` 用 try/finally 修好）
+  - **隔離的誠實補充**：固定 seed 只保證 **B vs C（old_kg vs v2_kg）逐參數同初始化、同資料順序**。**A（no_gat）因少建 GAT 層而少消耗 RNG → head 初始化與 DataLoader 打亂順序都不同**（實測：A 第一個 batch 1,558 支、B 是 1,668 支）。A vs B 另有參數量 +264,704 的干擾 → **A vs B 要保守讀，B vs C 才乾淨**
+  - **⚠️ 更正記載**：`macro_raw` 實際到 **2026-07-23**（5,620 列、無斷層），不是 CLAUDE.md 原記的 2026-04-24。但 `run_daily_update` **不含 macro**（已逐項列出它呼叫的 17 個 fetcher）→ 會再度停更，而 scanner regime 閘門有 10 天新鮮度檢查
 - **F5 R-series 完成、特徵工程層規格正式凍結（2026-07-30）**：跑階器 `V6/experimental/f5_r_series.py`（新）+ `baseline_common.py` 加 `MM_VARIANT`（`nofund`/`neuind`/`neuindmc` 各自獨立快取，未設時為 no-op 並 assert）。完整數字 `V6/experimental/result/f5_r_series_result.json`、判讀寫進 `docs/feature-protocol-v2.md` §9。共 **14 級**（8 級主梯 + 4 級子修正拆解 + 完整性檢查 + 3 級 GBDT 裁決）
   - **原計畫的 R0→R5 直線疊加行不通**：v1→v2 是一次跳四個變因（`fundamentals_v2`／宇宙過濾 ETF＋興櫃／矩陣起點／外資持股 9xxx 回補），只靠兩份快取量不出單一變因 → 改成**全部在 v2 內部爬梯子**，只有真正寫進矩陣值的變因才另建快取
   - **誠實總結論：沒有任何一項達到 +0.009 的實務門檻，唯一顯著的效應是負的。** 起點 2012→2013 **+0.0001**（t=0.46，免費，照資料品質理由採用）、旗標 **+0.0000**、中性化 +0.0025（t=1.06 不顯著）。F5 真正的價值不在 IC 上，而在**把不該算的 0.003 拿掉**
@@ -551,7 +561,8 @@ cd app/frontend && npm run dev   # → localhost:5173
   - 完整改寫 `PersonalOS/src/renderer/src/pages/MarketMamba/Portfolio.jsx`：`ExitConditionModal` 升級為四層退場 UI（L1 停損、L2 信號惡化、L3 減倉、L4 換倉）；Trailing Stop 由前端從 avg_price 計算；風險分數改用四層觸發加權
 
 ### 進行中
-- **F6（Colab／GPU）是下一階，特徵工程層已凍結**：① **GAT 三組消融**（`V6/experimental/kg_ablation.py` 程式已備妥，`no_gat`/`old_kg`/`v2_kg`，需先上傳本機的 `knowledge_graph_v2.npz`）② **Group D 12 維消融**（`macro_norm="ts"` 下那 12 維到底有沒有貢獻——V6.1 下整組是死值，目前沒有任何證據顯示有用）③ **中性化用 Mamba 複驗**（F5 給的是方向正但不顯著）。**F6 的 config 設定**：`INPUT_DIM=59`（既有 V6.2 設定，**不需 `patch_config_67d`**，連帶避開那個 import 期綁值的陷阱）、`build_features(fundamentals_v2=True, availability_flags=False)`、`clean_and_scale(macro_norm="ts", neutralize="none")`、切分用 `splitters`（purge 60 + embargo 20）、train 起點 2013
+- **F6 GAT 三組消融（Colab 訓練中）**：`no_gat` ✅ → `old_kg` 訓練中 → `v2_kg` 待跑。每組約 **3.6 小時**（21.6 分/epoch × 10 epoch），兩組約 7.2 小時，每組落盤可續跑。**跑完要看什麼、三個干擾項怎麼處理、什麼情況要三組一起重跑——全部在 `docs/f6-training-log-and-readout.md` §4**。摘要：① 峰值 epoch 若落在 ep9–10 代表被排程截斷 → **三組一起**用更長 epochs 重跑（epochs 決定 LR 曲線，只補一組不可比）② 判定門檻 峰值 Δ ≥ +0.009 **且** 配對 NW t ≥ 2 ③ 若 `B>A` 顯著，要再補 `random_kg`（GAT 層保留、邊隨機重連）才能分開「圖的資訊」與「多出來的 264,704 個參數」④ 三組落在 0.01 以內時**不能直接說 A≈B≈C**，要拿一組多跑 2 個 seed 量 σ
+- **F6（Colab／GPU）的其餘項目，特徵工程層已凍結**：① **GAT 三組消融**（`V6/experimental/kg_ablation.py` 程式已備妥，`no_gat`/`old_kg`/`v2_kg`，需先上傳本機的 `knowledge_graph_v2.npz`）② **Group D 12 維消融**（`macro_norm="ts"` 下那 12 維到底有沒有貢獻——V6.1 下整組是死值，目前沒有任何證據顯示有用）③ **中性化用 Mamba 複驗**（F5 給的是方向正但不顯著）。**F6 的 config 設定**：`INPUT_DIM=59`（既有 V6.2 設定，**不需 `patch_config_67d`**，連帶避開那個 import 期綁值的陷阱）、`build_features(fundamentals_v2=True, availability_flags=False)`、`clean_and_scale(macro_norm="ts", neutralize="none")`、切分用 `splitters`（purge 60 + embargo 20）、train 起點 2013
 - **研究計畫三方向（`planing/研究計畫_主檔.md`）**：**方向一 ✅ 全部完成、方向二 ✅ 全部完成**（Step 2~5 + 交付；`/pipeline` 前端頁待驗收部署）；方向三-C 等 post-P0 樣本 ≥20 天（約 7 月底）重跑複驗；方向三-A/B（事件驅動/Meta-labeling）優先級最低、先做資料可行性評估再決定投入。平行可做：資料基礎升級計畫階段二（資料衛生三項 + baseline_common 序列輸出，見 `planing/資料基礎升級計畫_baseline_common扶正.md`）
 - **scanner 1.4 新邏輯待 07-07 推論驗證**：確認 ① BUY 數量合理（分數制 + 機構條件復活，乾跑 07-06 資料為 15 BUY/24 WATCH）② 機構連買明細正常顯示 ③ `condition_analysis.json` 有產出並被 push。條件貢獻分析的機構統計從 07-07 歸檔起才有意義（歷史旗標全 False）
 - **Phase 3 實驗暫停中（2026-07-06 使用者決定）**：等真倉（V6.1）先驗證有沒有賺錢再繼續做實驗。目前進度停在：~~A 正則救峰值 ✅（dropout=0.2 有效）~~ → B/C/D 三支檔案已寫好推 main、**尚未在 Colab 執行**（listnet 權重 sweep / 趨勢單尺度簡化 / 短線窗口 sweep，預期結果見 `docs/phase3-experiment-plan-2026-06-25.md`）→ E/F 未設計。恢復時：在 Colab 跑 B、貼結果回來判讀
@@ -559,6 +570,10 @@ cd app/frontend && npm run dev   # → localhost:5173
 - **資料品質稽核第二輪待討論（2026-07-27）**：第一輪「純程式修改」已完成。剩下的都不是改程式能解的，見下方「下一步」——資料操作三項（清 `Close<=0` 存量、補 14 個停更源、季度全量重抓價格）、歸因一項（P2 少掉的 353 支）、需重訓或動凍結協定兩項（label 起點改 t+1、`*_is_missing` 缺失旗標會動 `INPUT_DIM`）。另有已揭露但暫不處理的：`Open` 欄與 HLC 在冷門股上來源定義不一致（OHLC 違規 322,300 列 / 3.7%）、漲跌停/處置/停牌四類交易狀態欄位完全不存在、存活者偏差未量化
 
 ### 下一步
+- [ ] **Colab 訓練期間可並行的三件事（本機、不碰 GPU，細節見 `docs/f6-training-log-and-readout.md` §6）**：
+      ① **拆解 F5 那個 −0.0079**——`R0b−R0` 是整個 F5 最大的單項效應且**至今無法歸因**（fund_v2 只佔 −0.0014、起點 +0.0001，剩約 −0.0065 混在「宇宙過濾 ETF＋興櫃」與「外資持股 9xxx 回補」）。需在 `_VARIANT_SPECS` 加「v2 規格 + v1 宇宙規則」變體（`_filter_universe` 目前依 `PROTOCOL_VERSION` 分支，要改成也吃變體旗標），建矩陣 27 分鐘 + Ridge 1.5 分鐘
+      ② **寫 Group D 消融腳本**（`with_macro` 59 維 vs `no_macro` 47 維）。⚠️ 砍維度會改 `INPUT_DIM`/`GROUP_DIMS`，而 `FactorGroupedEmbedding` 的 `group_dims` 預設參數在 **def 執行時**求值 → patch 必須在 `import marketmamba.models.*` 之前
+      ③ **macro 接進 `run_daily_update`**（regime 閘門 10 天新鮮度即將到期）——**但 V6.1 若退役就不必做**
 - [ ] **F6 開跑前的 checklist**（比原「V6.2 部署 checklist」更新，以此為準）：`config.py` 維持 `INPUT_DIM=59` + `FEATURE_GROUPS` 取消 RS 注釋（不做 67/66 維 patch）；`build_features(fundamentals_v2=True, availability_flags=False)`；`clean_and_scale(macro_norm="ts", neutralize="none")`；Colab 的兩個切分點已接 `splitters`（G1 已補做）；Drive 上的舊 matrix 快取要刪除重建
 - [ ] **F5 的兩份變體快取可刪**（決策已定案）：`Data/processed_v6/baseline_cache_v2_nofund`（7.3 GB）確定可刪；`baseline_cache_v2_neuind`（7.7 GB）**建議先留**——`NEUTRALIZE` 是延到 F6 的未決項，留著省一次 27 分鐘重建。D 槽現剩 55.3 GB
 - [ ] **選配：拆解 R0b−R0 的 −0.0079**（宇宙過濾 vs 外資持股回補），需再建一份「v2 規格 ＋ v1 宇宙規則」的矩陣，約 27 分鐘。不影響 F6，屬「想知道」而非「必須知道」
@@ -609,6 +624,9 @@ cd app/frontend && npm run dev   # → localhost:5173
 > **PR 3（持倉四層退場 / Portfolio 頁面）**：使用者已確認頁面內容完成，視為驗收通過
 
 ### 決策紀錄
+- **V6.1 已非紅線（2026-08-01 使用者明講）**：台股走跌、家人看盤興致大減、且他認為 V6.1 參考價值越來越低 → **需要的話可以停掉**。先前所有「附加不改既有／隔離在 experimental／production 檔案逐次授權」的繞路成本因此大幅下降。⚠️ 但他說的是「如果需要」不是「現在停」——**不要主動去停或破壞 V6.1**；遇到「為避開線上而要付明顯額外成本」的設計時，把兩個選項與成本差異攤開來問，不要預設繞路
+- **`epochs` 不該同時當「最多跑幾輪」與「OneCycle 排程長度」（2026-08-01，Cell 4 實證）**：`epochs=100` 讓暖身長達 15 個 epoch，模型在 ep7 就過擬合、峰值時 LR 只有 max 的 47% 且還在爬，從頭到尾沒進入退火階段 → 峰值 IC 只有 +0.0526，而同架構家族的單尺度（`epochs=10`、排程走完）是 +0.0884。**有 early stopping 時這兩個角色必須解耦**。連帶：消融的三組**必須用相同的 `epochs`**，只補跑其中一組會讓 LR 曲線不同、結論作廢
+- **固定 seed 不等於完全隔離（2026-08-01 實測修正）**：`use_gat=False` 少建 GAT 層 → 少消耗 RNG → 不只 head 初始化不同，**連 DataLoader 的打亂順序都不同**（實測第一個 batch 一個 1,558 支、一個 1,668 支）。架構相同的兩組才是乾淨配對。**下次設計消融時，要嘛所有組架構等價（用 mask 而非拿掉模組），要嘛明確承認這個限制並用多 seed 量 σ**
 - **正確性修正與效益改動要分兩套尺，不能混在同一張判讀表（2026-07-30，F5 定案）**：`fundamentals_v2` 與 purge 都讓 IC 下降，但它們拿掉的是 look-ahead——IC 掉是**誠實化的代價**，不是「這個改動不好」。使用者要求把 `fundamentals_v2` 的負 Δ 拆到子修正後證實由 Q4 延遲（t=−4.06）主導，因此與 purge 同列「一律採用、不套 |Δ|≥0.009 門檻」。**判讀規則必須在跑之前定死**，否則看到數字才選規則，等於用結果反推標準
 - **旗標這類「不為 IC 而設」的特徵，裁判要選對模型；但假設被推翻就要認（2026-07-30）**：可得性旗標要靠交互作用才有用，線性模型結構上用不到 → Ridge 的 +0.0000 是弱證據。我據此主張「GBDT 才是對的裁判」並跑了三組，**結果 GBDT 也否決**（5d 無效應、20d −0.0060 t=−2.93、gain 佔比 0.32% vs 均分 0.326%）＝「有能力用但不用」。假設被自己的實驗推翻，就照結果走。另一個收穫：**起點後移到 2013 與旗標功能高度重疊**，旗標要標的期間大多已被砍掉——兩個改動的效果不獨立，這是量 delta 時該預期到的
 - **不依 test 集 IC 挑特徵子集（2026-07-30）**：「只留 gain 最高的 `Avail_Daytrade`/`Avail_Institutional`」看起來划算，但那是 test-set selection，會讓後續所有數字失去 out-of-sample 意義。規格要照原則定，不照測試期表現定
