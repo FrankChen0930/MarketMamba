@@ -299,6 +299,16 @@ def _train_one_arm(df, train_dates, val_dates, arm: str,
 
     use_gat, kg_file = ARMS[arm]
     kg_path = str(Path(PROCESSED_DIR) / kg_file) if kg_file else None
+    # ⚠️ 圖檔不存在時 `build_kg_csr()` **只會印一行警告然後回 (None, {})**，
+    #    照樣訓練、只是完全沒有邊——結果還會被存成該 arm 的名字。
+    #    那等於偷偷把 `v3_kg` 跑成 `no_gat` 而沒有人會發現。在這裡當場擋掉。
+    #    （KG 的 .npz **不在 processed_v6.zip 裡**，要單獨從 Drive 複製到 PROCESSED_DIR。）
+    if kg_path is not None and not Path(kg_path).exists():
+        raise FileNotFoundError(
+            f"❌ arm={arm} 需要的圖不存在：{kg_path}\n"
+            f"   KG 的 .npz 不在 processed_v6.zip 裡，請單獨上傳到 Drive 再複製：\n"
+            f"       import shutil\n"
+            f"       shutil.copy('/content/drive/MyDrive/MarketMamba_V6/{kg_file}', '{kg_path}')")
 
     ckpt_name = f"v6_short_KG_{arm}.pt"
     status_path = backup_dir = None
