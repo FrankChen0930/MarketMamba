@@ -133,6 +133,16 @@ class Market:
         # 波動度倒數加權：近 60 日報酬標準差（shift(1) 避免用到當日資訊）
         self.vol = pxf.pct_change().rolling(60, min_periods=20).std().shift(1).reindex(self.dates)
 
+        # ── 漲跌停（風控 C 類）──────────────────────────────────────────
+        # **不需要新資料源**：台股漲跌幅上限 2015-06-01 起 ±10%、之前 ±7%，
+        # 直接由還原收盤價的日報酬推導。門檻取 0.095 / 0.065（留 tick 進位餘裕）。
+        #   收盤達漲停 → 買不到（買方排隊）
+        #   收盤達跌停 → 賣不掉（賣方排隊）
+        _lim = np.where(self.dates < pd.Timestamp("2015-06-01"), 0.065, 0.095)[:, None]
+        _r = self.ret.to_numpy(np.float64)
+        self.at_limit_up = _r >= _lim
+        self.at_limit_down = _r <= -_lim
+
         self.stocks = list(self.px.columns)
         print(f"[market] {len(self.dates)} 天 × {len(self.stocks)} 支｜"
               f"價格缺值 {self.px.isna().mean().mean():.1%}｜"
@@ -212,7 +222,7 @@ def _weights(mkt: Market, t: int, names: list[str], col_idx: dict, scheme: str) 
 
 def run_config(mkt: Market, rank: pd.DataFrame, n: int, k: float, freq: int,
                liq: float | None, cost_mult: float = 1.0,
-               weight: str = "equal") -> dict:
+               weight: str = "equal", block_limit: bool = False) -> dict:
     """
     rank: (dates × stocks) 的每日排名（1 = 分數最高；不可交易者為 NaN）
     回傳年化/Sharpe/MDD/換手/年化成本拖累/產業集中度/最大權重。
@@ -260,13 +270,31 @@ def run_config(mkt: Market, rank: pd.DataFrame, n: int, k: float, freq: int,
             if ok.sum() < n:
                 continue
             order = np.argsort(np.where(ok, rk, np.inf))
-            top_n = [mkt.stocks[i] for i in order[:n]]
 
-            keep = [s for s in holdings
-                    if np.isfinite(rk[col_idx[s]]) and rk[col_idx[s]] <= kn]
-            keep_set = set(keep)
-            need = n - len(keep)
-            adds = [s for s in top_n if s not in keep_set][:max(need, 0)]
+            if block_limit:
+                # 風控 C：買不到 / 賣不掉。**順延而不是留空**——留空等於偷偷降低曝險。
+                lu, ld = mkt.at_limit_up[t], mkt.at_limit_down[t]
+                # 賣出受阻：本來要賣（跌出緩衝）但收在跌停 → 繼續持有
+                keep = [s for s in holdings
+                        if (np.isfinite(rk[col_idx[s]]) and rk[col_idx[s]] <= kn)
+                        or ld[col_idx[s]]]
+                keep_set = set(keep)
+                need = n - len(keep)
+                # 買入受阻：收在漲停的候選跳過，往後順延取下一名
+                adds, i_ = [], 0
+                while len(adds) < max(need, 0) and i_ < len(order):
+                    c = mkt.stocks[order[i_]]
+                    i_ += 1
+                    if not ok[order[i_ - 1]] or c in keep_set or lu[order[i_ - 1]]:
+                        continue
+                    adds.append(c)
+            else:
+                top_n = [mkt.stocks[i] for i in order[:n]]
+                keep = [s for s in holdings
+                        if np.isfinite(rk[col_idx[s]]) and rk[col_idx[s]] <= kn]
+                keep_set = set(keep)
+                need = n - len(keep)
+                adds = [s for s in top_n if s not in keep_set][:max(need, 0)]
             new = keep + adds
 
             # ── 換手改用「權重變動」而非「檔數比例」（v1.1 修訂 E）──

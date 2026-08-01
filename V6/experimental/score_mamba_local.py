@@ -75,6 +75,7 @@ ARMS = {                       # arm -> (use_gat, KG 檔名)
     "no_gat": (False, None),
     "old_kg": (True, "knowledge_graph_cache.npz"),
     "v2_kg":  (True, "knowledge_graph_v2.npz"),
+    "v3_kg":  (True, "knowledge_graph_v3.npz"),
 }
 DROPOUT = 0.2                  # 與 kg_ablation 相同（eval 模式下不生效，但架構要一致）
 HISTORY_START = "2022-01-01"   # val 起點前需 ≥252 個交易日；2022-01 給約 490 天緩衝
