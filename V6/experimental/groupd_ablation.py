@@ -229,7 +229,8 @@ def zeroed_macro(df, cols: Optional[list[str]] = None):
 # ============================================================
 def _train_one_arm(df, train_dates, val_dates, arm: str,
                    epochs: int, early_stop: int, use_gat: bool,
-                   kg_file: Optional[str], drive_dir: Optional[str]) -> dict:
+                   kg_file: Optional[str], drive_dir: Optional[str],
+                   tag: str = "") -> dict:
     import experimental.short_model as sm
     from marketmamba.config import PROCESSED_DIR
     from pathlib import Path
@@ -237,11 +238,13 @@ def _train_one_arm(df, train_dates, val_dates, arm: str,
     mask_macro = ARMS[arm]
     kg_path = str(Path(PROCESSED_DIR) / kg_file) if (use_gat and kg_file) else None
 
-    ckpt_name = f"v6_short_GD_{arm}.pt"
+    # tag：同一個 arm 在不同設定下重跑時避免 checkpoint 撞名
+    # （例如 no_macro 分別在 use_gat=False 與 use_gat=True 下各跑一次）
+    ckpt_name = f"v6_short_GD_{arm}{tag}.pt"
     status_path = backup_dir = None
     if drive_dir:
         os.makedirs(drive_dir, exist_ok=True)
-        status_path = f"{drive_dir}/status_short_GD_{arm}.json"
+        status_path = f"{drive_dir}/status_short_GD_{arm}{tag}.json"
         backup_dir = f"{drive_dir}/checkpoints"
 
     print("\n" + "=" * 68, flush=True)
@@ -387,6 +390,7 @@ def run_groupd_ablation(df, arms: Sequence[str] = ("with_macro", "no_macro"),
                         kg_file: Optional[str] = None,
                         control: str = "import",
                         kg_result_path: Optional[str] = None,
+                        tag: str = "",
                         drive_dir: Optional[str] = None) -> dict:
     """
     Args:
@@ -404,7 +408,7 @@ def run_groupd_ablation(df, arms: Sequence[str] = ("with_macro", "no_macro"),
         raise ValueError("control 只能是 'import' 或 'rerun'")
     if use_gat and not kg_file:
         raise ValueError("use_gat=True 時必須指定 kg_file（例如 'knowledge_graph_v2.npz'）")
-    if use_gat and control == "import":
+    if use_gat and control == "import" and "with_macro" in arms:
         raise ValueError("use_gat=True 無法沿用 no_gat 當控制組 → 請用 control='rerun'")
 
     # ── 先把 Group D 的實測狀態印出來（決定結論要寫「幾維有效」）──
@@ -412,7 +416,7 @@ def run_groupd_ablation(df, arms: Sequence[str] = ("with_macro", "no_macro"),
 
     train_dates, val_dates = build_dates(df, cutoff_train_end, purge=purge,
                                          val_end=val_end, train_start=train_start)
-    out_path = f"{drive_dir}/groupd_ablation_result.json" if drive_dir else None
+    out_path = f"{drive_dir}/groupd_ablation_result{tag}.json" if drive_dir else None
     kg_result_path = kg_result_path or (f"{drive_dir}/kg_ablation_result.json"
                                         if drive_dir else None)
 
@@ -436,7 +440,7 @@ def run_groupd_ablation(df, arms: Sequence[str] = ("with_macro", "no_macro"),
                 "design": "mask（Group D 歸零），非砍維度 → 兩組架構/參數量/RNG 完全相同",
                 "dropout": DROPOUT, "seed": SEED,
                 "epochs": epochs, "early_stop": early_stop,
-                "use_gat": use_gat, "kg_file": kg_file,
+                "use_gat": use_gat, "kg_file": kg_file, "tag": tag,
                 "val_end": val_end,
                 "spec": {"input_dim": 59, "availability_flags": False,
                          "fundamentals_v2": True, "macro_norm": "ts",
@@ -468,7 +472,7 @@ def run_groupd_ablation(df, arms: Sequence[str] = ("with_macro", "no_macro"),
                 continue
             print("[gd-abl] → 改為自行訓練控制組", flush=True)
         results[arm] = _train_one_arm(df, train_dates, val_dates, arm,
-                                      epochs, early_stop, use_gat, kg_file, drive_dir)
+                                      epochs, early_stop, use_gat, kg_file, drive_dir, tag)
         _dump()
 
     _print_table(results, arms, diag)

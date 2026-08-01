@@ -46,6 +46,9 @@ if str(_THIS_DIR.parent) not in sys.path:
     sys.path.insert(0, str(_THIS_DIR.parent))
 
 import experimental.baseline_common as bc                      # noqa: E402
+# ⚠️ 可得性旗標一律排除（2026-08-01）：F5 定案 INPUT_DIM=59、旗標不採用，
+# 而 v2 快取的 FEATURE_COLS 含 7 個 `Avail_*`。不排除的話 GRU 會吃 66 維，
+# 與 Ridge/GBDT（300 維但旗標遮掉）、Mamba（59 維）不同基礎，**不可比**。
 from experimental.baseline_common import (                     # noqa: E402
     BASE_PATH, PROTOCOL, daily_spearman_ic, ic_summary, portfolio_backtest,
 )
@@ -56,7 +59,13 @@ RESULT_PATH = _THIS_DIR / "result" / "baseline_rnn_result.json"
 WINDOW = 60
 TRAIN_STRIDE = 2
 LOAD_FROM = "2011-01-01"            # train 2012 起，前留 ≥60 列視窗緩衝
-GRID = [{"hidden": h, "lr": lr} for h in (64, 128) for lr in (1e-3, 3e-4)]
+# ⚠️ hidden 可由 `--hidden` 覆寫（2026-08-01 新增，預設維持原網格不變）。
+# 依據：2026-07-14 那輪實測**兩個 horizon 都是最小的 h64 勝出**，而 h128 更快過擬合
+# 且 epoch 時間異常放大（37 秒 → 25~50 分），佔了 12.2 小時裡的約 11 小時。
+# 只跑 h64 可省一個數量級的時間。
+_HID = (64, 128)
+GRID = [{"hidden": h, "lr": lr} for h in _HID for lr in (1e-3, 3e-4)]
+N_FEAT = len([c for c in FEATURE_COLS if not c.startswith("Avail_")])
 MAX_EPOCHS = 15
 PATIENCE = 3
 SEED = 20260713
@@ -69,13 +78,18 @@ class Panel:
     """每股按 (stock_id, Date) 連續排列的全域陣列 + (股,日) 樣本索引。"""
 
     def __init__(self):
+        feats = [c for c in FEATURE_COLS if not c.startswith("Avail_")]
+        if len(feats) != len(FEATURE_COLS):
+            print(f"[panel] 排除 {len(FEATURE_COLS)-len(feats)} 個 Avail_* 旗標 "
+                  f"→ {len(feats)} 維（F5 定案：旗標不採用）", flush=True)
         cols = ["Date", "stock_id", "eligible", "rank_5d", "rank_20d",
-                "Alpha_5d", "Alpha_20d"] + FEATURE_COLS
+                "Alpha_5d", "Alpha_20d"] + feats
         df = pd.read_parquet(BASE_PATH, columns=cols,
                              filters=[("Date", ">=", pd.Timestamp(LOAD_FROM)),
                                       ("Date", "<=", pd.Timestamp(PROTOCOL["TEST_END"]))])
         df = df.sort_values(["stock_id", "Date"], kind="mergesort").reset_index(drop=True)
-        self.F = np.ascontiguousarray(df[FEATURE_COLS].to_numpy(np.float32))
+        self.F = np.ascontiguousarray(df[feats].to_numpy(np.float32))
+        self.n_feat = len(feats)
         self.dates = df["Date"].to_numpy()
         self.sids = df["stock_id"].to_numpy()
         self.eligible = df["eligible"].to_numpy()
@@ -114,7 +128,7 @@ class RNNReg(nn.Module):
     def __init__(self, cell: str, hidden: int, layers: int = 2, dropout: float = 0.2):
         super().__init__()
         rnn_cls = nn.GRU if cell == "gru" else nn.LSTM
-        self.rnn = rnn_cls(len(FEATURE_COLS), hidden, num_layers=layers,
+        self.rnn = rnn_cls(N_FEAT, hidden, num_layers=layers,
                            batch_first=True, dropout=dropout)
         self.head = nn.Linear(hidden, 1)
 
@@ -284,6 +298,13 @@ def main() -> None:
                   flush=True)
             print(f"[5d] 成本×2：年化 {res['test_portfolio_cost_x2']['ann_return']:+.1%}", flush=True)
             torch.save(full["state"], _THIS_DIR / "result" / f"{ARGS.cell}_5d.pt")
+            # portfolio_lab 用的逐股分數（2026-08-01 新增）
+            _sd = _THIS_DIR / "result" / "scores"
+            _sd.mkdir(parents=True, exist_ok=True)
+            pd.DataFrame({"Date": panel.dates[te_rows], "stock_id": panel.sids[te_rows],
+                          "score": np.asarray(scores, dtype=np.float32)}
+                         ).to_parquet(_sd / f"{ARGS.cell}.parquet", index=False)
+            print(f"[5d] 分數 → result/scores/{ARGS.cell}.parquet", flush=True)
 
         results["models"][f"{h}d"] = res
         del model, scores
@@ -323,5 +344,11 @@ if __name__ == "__main__":
     ap.add_argument("--skip-20d", action="store_true")
     ap.add_argument("--batch", type=int, default=8192, help="GPU OOM 時降 4096")
     ap.add_argument("--cell", choices=["gru", "lstm"], default="gru")
+    ap.add_argument("--hidden", nargs="*", type=int, default=None,
+                    help="覆寫 hidden 網格（預設 64 128）。只跑 64 可省一個數量級的時間")
     ARGS = ap.parse_args()
+    if ARGS.hidden:
+        _HID = tuple(ARGS.hidden)
+        GRID = [{"hidden": h, "lr": lr} for h in _HID for lr in (1e-3, 3e-4)]
+        print(f"[env] hidden 網格覆寫為 {_HID} → {len(GRID)} 組", flush=True)
     main()

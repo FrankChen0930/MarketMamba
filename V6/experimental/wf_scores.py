@@ -59,6 +59,10 @@ WF_DIR = _THIS / "result" / "wf"
 SCORE_DIR = _THIS / "result" / "scores"
 
 ALPHA = 10.0            # 主切分選出的 best α（見 baseline_ridge_lasso_result.json）
+# GBDT 的輪數**固定**（不逐 fold early-stopping）：F5 在主切分上選出的 best_iteration
+# 是 100/101/116，取 100。逐 fold 各自選輪數會讓超參數吸收掉 regime 差異，
+# 就不再是乾淨的 OOS——與 Ridge 固定 α 同一個理由。
+GBDT_ROUNDS = 100
 PURGE_DAYS = 5          # label horizon（rank_5d）
 EMBARGO_DAYS = 20       # 同協定 §5
 MIN_TRAIN_YEARS = 3
@@ -98,6 +102,74 @@ def build_quarterly_gram() -> tuple[list[pd.Timestamp], list[dict]]:
     del tr
     gc.collect()
     return qs, stats
+
+
+def load_train_rows() -> dict:
+    """GBDT 版：整份 train span 留在記憶體（無法像 Ridge 用 Gram 累積）。"""
+    keep = _keep_mask()
+    print(f"[wf] 載入 {DATA_START} → {PROTOCOL['TEST_END']}（stride={TRAIN_STRIDE}）...", flush=True)
+    tr = load_xy(DATA_START, PROTOCOL["TEST_END"], day_stride=TRAIN_STRIDE)
+    tr["X"] = np.ascontiguousarray(tr["X"][:, keep])
+    gc.collect()
+    print(f"[wf] {tr['X'].shape[0]:,} 列 × {tr['X'].shape[1]} 維 "
+          f"({tr['X'].nbytes/2**30:.2f} GB)", flush=True)
+    return tr
+
+
+def run_year_gbdt(year: int, tr: dict) -> Path | None:
+    """與 Ridge 版**完全相同的 fold 切分**，只換模型 → 兩者可直接並列。"""
+    import lightgbm as lgb
+    from experimental.f5_r_series import GBDT_PARAMS
+    out = WF_DIR / f"scores_wf_gbdt_{year}.parquet"
+    if out.exists():
+        print(f"[wf] gbdt {year} 已存在，跳過", flush=True)
+        return out
+    t0 = time.time()
+    keep = _keep_mask()
+    te = load_xy(f"{year}-01-01", min(f"{year}-12-31", PROTOCOL["TEST_END"]), day_stride=1)
+    if te["X"].shape[0] == 0:
+        return None
+    te["X"] = np.ascontiguousarray(te["X"][:, keep])
+    gc.collect()
+    dts = pd.DatetimeIndex(te["dates"])
+    tr_dates = pd.DatetimeIndex(tr["dates"])
+    y = tr["rank_5d"]
+    ok = ~np.isnan(y)
+
+    rows = []
+    for qi in range(4):
+        q_start = pd.Timestamp(year=year, month=1 + qi * 3, day=1)
+        q_end = q_start + pd.offsets.QuarterEnd(0)
+        sel = (dts >= q_start) & (dts <= q_end)
+        if sel.sum() == 0:
+            continue
+        cut = q_start - pd.Timedelta(days=int((PURGE_DAYS + EMBARGO_DAYS) * 1.45))
+        m = ok & (tr_dates < cut)
+        n_years = (cut - pd.Timestamp(DATA_START)).days / 365.25
+        if m.sum() == 0 or n_years < MIN_TRAIN_YEARS:
+            print(f"[wf] gbdt {year}Q{qi+1} 訓練資料不足（{n_years:.1f} 年），跳過", flush=True)
+            continue
+        tq = time.time()
+        ds = lgb.Dataset(tr["X"][m], label=y[m].astype(np.float64), free_raw_data=True)
+        b = lgb.train(GBDT_PARAMS, ds, num_boost_round=GBDT_ROUNDS)
+        sc = b.predict(te["X"][sel])
+        rows.append(pd.DataFrame({"Date": te["dates"][sel], "stock_id": te["stock_ids"][sel],
+                                  "score": sc.astype(np.float32)}))
+        print(f"[wf] gbdt {year}Q{qi+1}｜train {int(m.sum()):>9,} 列 / {n_years:.1f} 年"
+              f"｜test {int(sel.sum()):>7,} 列（{time.time()-tq:.0f}s）", flush=True)
+        del ds, b
+        gc.collect()
+
+    del te
+    gc.collect()
+    if not rows:
+        return None
+    WF_DIR.mkdir(parents=True, exist_ok=True)
+    df = pd.concat(rows, ignore_index=True)
+    df.to_parquet(out, index=False)
+    print(f"✅ [wf] gbdt {year}：{len(df):,} 列 → {out.name}（{(time.time()-t0)/60:.1f} 分）",
+          flush=True)
+    return out
 
 
 def run_year(year: int, qs: list[pd.Timestamp], stats: list[dict]) -> Path | None:
@@ -154,15 +226,15 @@ def run_year(year: int, qs: list[pd.Timestamp], stats: list[dict]) -> Path | Non
     return out
 
 
-def merge() -> Path:
-    files = sorted(WF_DIR.glob("scores_wf_ridge_*.parquet"))
+def merge(model: str = "ridge") -> Path:
+    files = sorted(WF_DIR.glob(f"scores_wf_{model}_*.parquet"))
     if not files:
         raise SystemExit(f"❌ {WF_DIR} 裡沒有年度檔")
     df = pd.concat([pd.read_parquet(f) for f in files], ignore_index=True)
     df["Date"] = pd.to_datetime(df["Date"])
     df = df.drop_duplicates(subset=["Date", "stock_id"], keep="last").sort_values(["Date", "stock_id"])
     SCORE_DIR.mkdir(parents=True, exist_ok=True)
-    dst = SCORE_DIR / "wf_ridge.parquet"
+    dst = SCORE_DIR / f"wf_{model}.parquet"
     df.to_parquet(dst, index=False)
     n_days = df["Date"].nunique()
     print(f"✅ [wf] 合併 {len(files)} 個年度檔 → {dst.name}｜{len(df):,} 列 / {n_days} 個交易日"
@@ -175,9 +247,14 @@ if __name__ == "__main__":
     ap.add_argument("--years", nargs="*", type=int,
                     default=list(range(WF_START_YEAR, 2027)))
     ap.add_argument("--merge", action="store_true")
+    ap.add_argument("--model", choices=("ridge", "gbdt"), default="ridge")
     a = ap.parse_args()
     if a.merge:
-        merge()
+        merge(a.model)
+    elif a.model == "gbdt":
+        tr = load_train_rows()
+        for yr in a.years:
+            run_year_gbdt(yr, tr)
     else:
         qs, stats = build_quarterly_gram()
         for yr in a.years:
