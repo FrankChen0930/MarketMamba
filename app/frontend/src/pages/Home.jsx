@@ -8,12 +8,12 @@ import { fetchIcAnalysis } from '../api/sim';
 // ── Feature cards config ──────────────────────────────────────────────────────
 const FEATURES = [
   {
-    to: '/scanner', icon: '🎯', label: '交易訊號',
+    to: '/conviction/signals', icon: '🎯', label: '交易訊號',
     desc: '今日 AI 掃描結果：買入推薦、退場警告、入場評分明細',
     accent: 'rgba(0,255,136,0.25)',
   },
   {
-    to: '/', icon: '📈', label: '每日排名',
+    to: '/breadth/predictions', icon: '📈', label: '每日排名',
     desc: '全市場 Alpha 排行榜，5d / 20d / 60d 三個預測視角',
     accent: 'rgba(0,212,255,0.25)',
   },
@@ -28,15 +28,29 @@ const FEATURES = [
     accent: 'rgba(245,158,11,0.25)',
   },
   {
-    to: '/sim', icon: '🎮', label: '模擬機器人',
+    to: '/breadth/backtest', icon: '🎮', label: '模型回測',
     desc: '回測結果、Alpha 機器人持倉、IC 因子分析',
     accent: 'rgba(99,102,241,0.25)',
   },
   {
-    to: '/portfolio', icon: '💼', label: '持倉追蹤',
+    to: '/conviction/portfolio', icon: '💼', label: '持倉追蹤',
     desc: '個人投資組合管理、損益追蹤、退場提醒',
     accent: 'rgba(236,72,153,0.25)',
   },
+  {
+    to: '/compare', icon: '🔀', label: '模型分歧看板',
+    desc: '高信念模型 vs 廣度模型的選股重疊率與分歧時期',
+    accent: 'rgba(250,204,21,0.25)',
+  },
+];
+
+// ── 雙模型定位比較（planing/雙模型架構重整計畫.md §0）─────────────────────────
+const MODEL_COMPARE = [
+  { label: '標的範圍',   breadth: '全市場 ~2,888 檔',            conviction: '精選 10–20 檔' },
+  { label: '核心假設',   breadth: '統計顯著性來自覆蓋面（√Breadth）', conviction: '準確性來自對少數標的的深度研究' },
+  { label: '核心引擎',   breadth: 'Mamba SSM + GATv2（DL 是決策主軸）', conviction: '量化篩選 + LLM 研究增幅 + 人工判斷（DL/LLM 是工具層）' },
+  { label: '資金定位',   breadth: 'Paper／驗證用，不代表個人實際部位', conviction: '個人實盤操作主要依據' },
+  { label: '可回測性',   breadth: '可嚴謹 Walk-Forward（12 年結構化數據）', conviction: '部分可回測（事件驅動子引擎），主體只能前瞻追蹤' },
 ];
 
 // ── System spec items ─────────────────────────────────────────────────────────
@@ -118,6 +132,83 @@ export default function Home() {
         </div>
       </div>
 
+      {/* ── 雙模型定位敘事 ── */}
+      <section>
+        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>為什麼是兩套模型</div>
+
+        <div className="panel" style={{ marginBottom: 16 }}>
+          <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.85, margin: 0 }}>
+              分野依據 Grinold 主動管理基本法則：<b style={{ color: 'var(--accent-blue)' }}>IR ≈ IC × √Breadth</b>（資訊比率 ≈ 資訊係數 × 廣度平方根）。
+              同樣的總主動報酬，可以用「更多標的、較低單檔信心」取得，也可以用「更少標的、更高單檔信心」取得——但這只解釋了押注方式的差異。
+            </p>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.85, margin: 0 }}>
+              真正決定要不要換方法論的是：<b style={{ color: 'var(--text-primary)' }}>廣度的 edge 是統計性、可重複的模式，散布在幾千檔上——這正是深度學習擅長的 pattern matching；
+              信念的 edge 來自對少數特定情境的深刻理解——樣本數太少，訓練一個深度網路只會過擬合到毫無意義。</b>
+              兩條線不只是資金規模不同，核心引擎的本質就不同：一個是統計學習驅動，一個是判斷驅動、LLM 輔助研究。
+              不是因為懶得整合，是因為用同一套工具硬做兩件事，兩邊都會做不好。
+            </p>
+          </div>
+        </div>
+
+        {/* 兩張模型入口卡片 */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 14, marginBottom: 16 }}>
+          <div onClick={() => navigate('/breadth')}
+            style={{ borderRadius: 'var(--radius)', border: '1px solid rgba(0,212,255,0.3)', background: 'rgba(0,212,255,0.04)', padding: '22px 24px', cursor: 'pointer', transition: 'all 0.18s' }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,212,255,0.2)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
+          >
+            <div style={{ fontSize: 22, marginBottom: 6 }}>🌐</div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>廣度量化模型</div>
+            <div style={{ fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 12 }}>全市場 ~2,888 檔，Mamba SSM + GATv2 為決策核心，作品展示主軸</div>
+            <div style={{ display: 'flex', gap: 14, fontSize: 12 }}>
+              <span><span style={{ color: 'var(--text-muted)' }}>IC_5d </span><span className="mono" style={{ fontWeight: 700, color: ic5d !== '—' && parseFloat(ic5d) > 0 ? 'var(--positive)' : 'var(--text-muted)' }}>{ic5d}</span></span>
+              <span><span style={{ color: 'var(--text-muted)' }}>IC_20d </span><span className="mono" style={{ fontWeight: 700, color: ic20d !== '—' && parseFloat(ic20d) > 0 ? 'var(--positive)' : 'var(--text-muted)' }}>{ic20d}</span></span>
+            </div>
+            <div style={{ marginTop: 14, fontSize: 12, fontWeight: 600, color: 'var(--accent-blue)' }}>進入廣度模型 →</div>
+          </div>
+
+          <div onClick={() => navigate('/conviction')}
+            style={{ borderRadius: 'var(--radius)', border: '1px solid rgba(0,255,136,0.3)', background: 'rgba(0,255,136,0.04)', padding: '22px 24px', cursor: 'pointer', transition: 'all 0.18s' }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,255,136,0.2)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
+          >
+            <div style={{ fontSize: 22, marginBottom: 6 }}>🎯</div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>高信念量化模型</div>
+            <div style={{ fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 12 }}>精選 10–20 檔，量化篩選 + LLM 研究 + 人工判斷，個人實盤操作主軸</div>
+            <div style={{ display: 'flex', gap: 14, fontSize: 12 }}>
+              <span><span style={{ color: 'var(--text-muted)' }}>今日買入推薦 </span><span className="mono" style={{ fontWeight: 700, color: 'var(--positive)' }}>{buyCount} 支</span></span>
+            </div>
+            <div style={{ marginTop: 14, fontSize: 12, fontWeight: 600, color: 'var(--positive)' }}>進入高信念模型 →</div>
+          </div>
+        </div>
+
+        {/* 對照表 */}
+        <div className="panel">
+          <div className="panel-header"><div className="panel-title">📐 兩條線的分野</div></div>
+          <div className="panel-body" style={{ overflowX: 'auto' }}>
+            <table className="data-table" style={{ width: '100%', minWidth: 640 }}>
+              <thead>
+                <tr>
+                  <th style={{ fontSize: 12, color: 'var(--text-muted)', padding: '8px 12px', textAlign: 'left', borderBottom: '1px solid var(--border)' }}></th>
+                  <th style={{ fontSize: 12, color: 'var(--accent-blue)', padding: '8px 12px', textAlign: 'left', borderBottom: '1px solid var(--border)' }}>🌐 廣度模型</th>
+                  <th style={{ fontSize: 12, color: 'var(--positive)', padding: '8px 12px', textAlign: 'left', borderBottom: '1px solid var(--border)' }}>🎯 高信念模型</th>
+                </tr>
+              </thead>
+              <tbody>
+                {MODEL_COMPARE.map(row => (
+                  <tr key={row.label}>
+                    <td style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', padding: '8px 12px', borderBottom: '1px solid rgba(48,54,61,0.4)' }}>{row.label}</td>
+                    <td style={{ fontSize: 12.5, color: 'var(--text-secondary)', padding: '8px 12px', borderBottom: '1px solid rgba(48,54,61,0.4)', lineHeight: 1.6 }}>{row.breadth}</td>
+                    <td style={{ fontSize: 12.5, color: 'var(--text-secondary)', padding: '8px 12px', borderBottom: '1px solid rgba(48,54,61,0.4)', lineHeight: 1.6 }}>{row.conviction}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
       {/* ── 使用指南 ── */}
       <section>
         <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>使用指南</div>
@@ -127,14 +218,14 @@ export default function Home() {
               icon: '🎯', title: '直接看結論',
               desc: '想知道今天可以買哪幾支，不需要自己判斷市場。',
               tags: ['適合初學者', '有明確進場建議'],
-              action: '去交易訊號', route: '/scanner',
+              action: '去交易訊號', route: '/conviction/signals',
               accent: 'rgba(0,255,136,0.3)', bg: 'rgba(0,255,136,0.04)',
             },
             {
               icon: '📊', title: '縮小選股範圍',
               desc: '有自己的判斷，只是不想從 2,500 支慢慢挑，需要初篩名單。',
               tags: ['有基本市場概念', '搭配自己的判斷使用'],
-              action: '看每日排名', route: '/',
+              action: '看每日排名', route: '/breadth/predictions',
               accent: 'rgba(0,212,255,0.3)', bg: 'rgba(0,212,255,0.04)',
             },
             {

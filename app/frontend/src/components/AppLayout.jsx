@@ -2,23 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { fetchMarket, fetchTicker } from '../api/market';
 
-const USER_MODE = import.meta.env.VITE_USER_MODE || 'personal';
-
 const TABS = [
   { to: '/',           icon: '🏠', label: '首頁' },
-  { to: '/dashboard',  icon: '📊', label: '每日排名' },
-  { to: '/scanner',    icon: '🎯', label: '交易訊號' },
-  { to: '/dual',       icon: '🔀', label: '雙模型' },
+  { to: '/conviction', icon: '🎯', label: '高信念模型' },
+  { to: '/breadth',    icon: '🌐', label: '廣度模型' },
+  { to: '/compare',    icon: '🔀', label: '模型分歧' },
   { to: '/quant',      icon: '📈', label: '量化分析' },
   { to: '/market',     icon: '🤖', label: 'AI 日報' },
-  { to: '/sim',        icon: '🎮', label: '模擬機器人' },
-  { to: '/pipeline',   icon: '🔬', label: 'Pipeline' },
-  ...(USER_MODE === 'personal'
-    ? [
-        { to: '/portfolio', icon: '💼', label: '持倉追蹤' },
-        { to: '/model',     icon: '🧠', label: '模型狀態' },
-      ]
-    : []),
+  { to: '/research',   icon: '🔬', label: '研究紀錄' },
 ];
 
 

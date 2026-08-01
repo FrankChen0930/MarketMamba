@@ -1,0 +1,424 @@
+{
+  "meta": {
+    "updated": "2026-08-01",
+    "note": "研究實驗登錄檔。新增實驗只要往 experiments 加一筆，不需要改 React 元件。",
+    "verdictColors": {
+      "採納": "ok",
+      "拒絕": "bad",
+      "無效應": "neutral",
+      "待覆核": "warn",
+      "正確性修正": "fix",
+      "進行中": "run"
+    }
+  },
+  "lines": [
+    {
+      "id": "data",
+      "icon": "🗄️",
+      "name": "資料層",
+      "period": "2026-07-27 ~ 07-31",
+      "summary": "36 項稽核逐項對真實 parquet 實測。抓到的問題全部是「不會報錯」的類型——整欄死值、欄位標反、型別不一致導致去重靜默失效。"
+    },
+    {
+      "id": "feature",
+      "icon": "🧬",
+      "name": "特徵工程層（F5）",
+      "period": "2026-07-30",
+      "summary": "14 級一次一變因量 IC delta。誠實總結論：沒有任何一項達到 +0.009 的實務門檻，唯一顯著的效應是負的——而那個負值來自移除 look-ahead。"
+    },
+    {
+      "id": "arch",
+      "icon": "🕸️",
+      "name": "架構層（F6）",
+      "period": "2026-07-31 ~ 08-01",
+      "summary": "GATv2 到底有沒有貢獻？三組消融證實「圖的品質」有貢獻，且最乾淨的那組配對 NW t = 5.17。"
+    },
+    {
+      "id": "portfolio",
+      "icon": "📊",
+      "name": "組合建構層",
+      "period": "2026-08-01",
+      "summary": "發現整個系統最大的漏水口：年化交易成本 20.6%，而淨年化只有 8.3%。組合層的槓桿比 IC 層大一個數量級。"
+    },
+    {
+      "id": "risk",
+      "icon": "🛡️",
+      "name": "風控層",
+      "period": "2026-08-01",
+      "summary": "回撤持續期間比 MDD 更有判讀價值：MDD −29.4% 聽起來還好，但最長連續 289 個交易日在水面下。"
+    }
+  ],
+  "experiments": [
+    {
+      "id": "D-01", "line": "data", "date": "2026-07-27",
+      "title": "特徵計算順序（先時序還是先橫斷面）",
+      "question": "生產路徑的特徵是不是「先橫斷面標準化、再算時序特徵」的順序顛倒？",
+      "design": "子集不變性檢定：宇宙從 60 支縮到 6 支，比對 56 維逐位元差異",
+      "threshold": "逐位元最大絕對差必須為 0",
+      "result": "生產路徑最大絕對差 0.000e+00 ✓；但研究路徑 baseline_common 的 rolling 建在已 z-score 的值上 ❌",
+      "verdict": "正確性修正", "overturned": false,
+      "note": "對照組：若順序顛倒，Return_5d 與正確值的 Spearman 只有 −0.035（訊號全毀，且只表現為 IC 偏低）"
+    },
+    {
+      "id": "D-02", "line": "data", "date": "2026-07-27",
+      "title": "每日 ~1,550 列重複寫入的根因",
+      "question": "prices_raw 為何每天多出約 1,550 列重複？",
+      "design": "追查多來源合併路徑的型別",
+      "threshold": "—",
+      "result": "yfinance 的 Date 是 Timestamp、交易所直連是 str → concat 後 object 混型 → drop_duplicates 完全失效",
+      "verdict": "正確性修正", "overturned": false,
+      "note": "同一個 bug 造成三個表面症狀。2432 的 Return_5d 含重複 −0.53% / 去重後 +1.07%，正負號相反"
+    },
+    {
+      "id": "D-03", "line": "data", "date": "2026-07-27",
+      "title": "Day_Trade_Volume 整欄為 0",
+      "question": "當沖比率特徵是停更還是從來沒有值？",
+      "design": "全量掃描 2014–2026",
+      "threshold": "—",
+      "result": "4,263,330 列全部是 0 —— 整欄自始死值，不是停更",
+      "verdict": "正確性修正", "overturned": false,
+      "note": "重建後年度中位數 0.026(2014) → 0.220(2026) 單調上升，對得上當沖制度放寬時序＝強驗證訊號"
+    },
+    {
+      "id": "D-04", "line": "data", "date": "2026-07-27",
+      "title": "FinMind 對上櫃股的券賣/券買標反",
+      "question": "margin_raw 的融券資料是否正確？",
+      "design": "corr(ΔShort_Balance, Sale−Cover) 全歷史 2010–2026 交叉驗證",
+      "threshold": "符號一致率應接近 100%",
+      "result": "上櫃相關係數 −0.85~−0.93、符號一致率僅 1% → 交換 2,638,958 列（33.2%）後升到 97.18%",
+      "verdict": "正確性修正", "overturned": false
+    },
+    {
+      "id": "D-05", "line": "data", "date": "2026-07-29",
+      "title": "全歷史除權息還原",
+      "question": "價格序列的除權息還原是否正確？",
+      "design": "TWSE TWT49U + TPEX exDailyQ 官方參考價建因子表，重抓 5,301 個交易日",
+      "threshold": "除權息日報酬中位數應接近 0（未還原時應為 −4.5%）",
+      "result": "|報酬|>40% 850→471、報酬 std 0.0817→0.0349、p99.9 +12.52%→+10.00%（正好是漲跌幅上限）",
+      "verdict": "正確性修正", "overturned": false,
+      "note": "順帶抓到「減資」這一類完全不在除權息公告裡的公司行為，補了 667 筆"
+    },
+    {
+      "id": "D-06", "line": "data", "date": "2026-07-29",
+      "title": "Whale_Hold_Ratio 全部是 100.0",
+      "question": "大戶持股比例為何只有 2 個相異值？",
+      "design": "追查 TDCC 分級聚合邏輯",
+      "threshold": "—",
+      "result": "舊聚合把「分級 17 = 合計」（恆為 100%）也加進總和 → 總計≈200 → clip 後全部是 100",
+      "verdict": "正確性修正", "overturned": false,
+      "note": "對下游無影響——_merge_holdings 早就繞過該欄改用 1 − Retail/100"
+    },
+    {
+      "id": "D-07", "line": "data", "date": "2026-07-29",
+      "title": "stock_info 未去重導致 31 支股票被誤排除",
+      "question": "興櫃過濾是否誤傷已轉上市櫃的公司？",
+      "design": "比對 stock_info 的多次快照",
+      "threshold": "—",
+      "result": "該檔是 4,097 列 / 3,086 支的累積快照；未去重就篩 type==emerging → 31 支被整支排除，其中 30 支仍在交易",
+      "verdict": "正確性修正", "overturned": false,
+      "note": "修法不是在源頭刪重複列（那些列帶市場別變遷史），而是提供單一權威入口 load_stock_info(latest_only=True)"
+    },
+    {
+      "id": "D-08", "line": "data", "date": "2026-07-29",
+      "title": "FinMind 402/403 被靜默吞掉",
+      "question": "回補連跑六輪、900 支、每輪淨增 0，但日誌正常——為什麼？",
+      "design": "檢視 _finmind_fetch 的錯誤處理",
+      "threshold": "—",
+      "result": "只對 429/503 重試，402（額度用盡）落進 logger.debug 回 None，與「這支沒新資料」無法區分",
+      "verdict": "正確性修正", "overturned": false,
+      "note": "更糟的是接著觸發 403 ip banned——請求速率本身就會觸發封鎖，不是把額度用完才擋"
+    },
+
+    {
+      "id": "F5-R0b", "line": "feature", "date": "2026-07-30",
+      "title": "v1 → v2 的整包差 −0.0079",
+      "question": "特徵工程從 v1 升到 v2，IC 掉了 0.0079，是哪一項造成的？",
+      "design": "當時只有 v1/v2 兩份快取，無法歸因",
+      "threshold": "|Δ| ≥ 0.009 且 |NW t| ≥ 2",
+      "result": "Δ = −0.0075（配對 580 天）、NW t = −3.22",
+      "verdict": "待覆核", "overturned": false,
+      "note": "2026-08-01 才拆開，見 F5-R0c"
+    },
+    {
+      "id": "F5-R1", "line": "feature", "date": "2026-07-30",
+      "title": "訓練起點 2012 → 2013",
+      "question": "砍掉籌碼覆蓋率只有 56% 的 2012 年，IC 會變好嗎？",
+      "design": "同一份 v2 矩陣，唯一變因是 train_start",
+      "threshold": "|Δ| ≥ 0.009 且 |NW t| ≥ 2（跑前定死）",
+      "result": "Δ = +0.0001、NW t = 0.46",
+      "verdict": "無效應", "overturned": false,
+      "note": "仍然採用——理由是資料品質（2013 前 Group B 有 4~8 成的列是 fillna(0)），不是 IC"
+    },
+    {
+      "id": "F5-R2", "line": "feature", "date": "2026-07-30",
+      "title": "可得性旗標（7 維）",
+      "question": "標記「這個資料源在當時還不存在」的旗標，能不能讓模型分辨真 0 與缺值 0？",
+      "design": "Ridge 定不了（線性模型用不到交互作用）→ 由 GBDT 裁決",
+      "threshold": "|Δ| ≥ 0.009 且 |NW t| ≥ 2",
+      "result": "GBDT 5d 無效應、20d 顯著扣 0.0060（t = −2.93）；7 個旗標 gain 佔比合計 0.32%，而 307 維均分是 0.326%",
+      "verdict": "拒絕", "overturned": true,
+      "note": "我原本假設「Ridge 定不了、GBDT 會替旗標平反」——被自己的實驗推翻。非顯而易見的原因：起點移到 2013 與旗標功能高度重疊，旗標要標的期間大多已被砍掉"
+    },
+    {
+      "id": "F5-R3", "line": "feature", "date": "2026-07-30",
+      "title": "fundamentals_v2 拆成四個子修正",
+      "question": "財報路徑修正讓 IC 下降 0.0014，是四項裡的哪一項？",
+      "design": "換欄技巧：v2 與 nofund 兩份矩陣可按 (Date, stock_id) 對齊 → 只換某組欄位（含 lag1/5/20）即等價，省掉 4 次 27 分鐘的重建",
+      "threshold": "四項相加應等於整包差（完整性檢查）",
+      "result": "(a) Q4/年報 available_from 45→90 天 = −0.0016（t = −4.06，全 F5 最顯著）；(b) 三維取真值 +0.0004；(c) EPS_Surprise 季頻 −0.0000；(d) PER/PBR 自算 +0.0000",
+      "verdict": "正確性修正", "overturned": false,
+      "note": "完整性檢查通過：四項一起換回 = +0.0913/+0.0972，與整份 nofund 矩陣的 R3 四位小數完全相同"
+    },
+    {
+      "id": "F5-R4", "line": "feature", "date": "2026-07-30",
+      "title": "產業中性化",
+      "question": "把產業效應扣掉，剩下的個股 alpha 會不會更乾淨？",
+      "design": "Ridge + GBDT × 5d/20d 四個測量",
+      "threshold": "|Δ| ≥ 0.009 且 |NW t| ≥ 2",
+      "result": "四個測量方向全正、最大 +0.0068；GBDT 5d 去極端 5 天後反而更強（+0.0038）；但 t 值只有 0.76–1.42",
+      "verdict": "待覆核", "overturned": false,
+      "note": "決定性理由不是統計而是成本——中性化在推論路徑多一個必須同步的步驟，而訓練/推論不一致已經踩過兩次（macro_norm、fundamentals_v2）"
+    },
+    {
+      "id": "F5-R5", "line": "feature", "date": "2026-07-30",
+      "title": "purge + embargo",
+      "question": "訓練集尾端的 label 落在驗證區間內，這個洩漏值多少 IC？",
+      "design": "purge 60 + embargo 20",
+      "threshold": "不適用——正確性修正一律採用，只誠實報出代價",
+      "result": "Δ = −0.0012、NW t = −3.29",
+      "verdict": "正確性修正", "overturned": false
+    },
+    {
+      "id": "F5-R0c", "line": "feature", "date": "2026-08-01",
+      "title": "把 −0.0079 拆成三段",
+      "question": "整包差的主因到底是什麼？",
+      "design": "把宇宙規則從協定版本抽成獨立開關，新建「v1 規格跑在新資料上」的矩陣",
+      "threshold": "三段相加必須等於整包差",
+      "result": "資料修復 −0.0053（71%，t = −2.22）＞ fundamentals_v2 −0.0014（19%）＞ 宇宙過濾+起點 ≈ −0.0008（10%）",
+      "verdict": "正確性修正", "overturned": true,
+      "note": "我猜錯兩次：① 原記載的「宇宙過濾＋外資持股回補」漏掉最大的一項——查檔案建立日期才發現 R0 的矩陣建於 07-12，而整批資料修復是 07-27~31 ② 接著猜「主因是除權息還原」，也被推翻"
+    },
+    {
+      "id": "F5-R0d", "line": "feature", "date": "2026-08-01",
+      "title": "除權息還原是不是那 −0.0053 的主因？",
+      "question": "未還原時除息日有假跌幅，而股利事先已知 → 應該會製造虛假 IC，對嗎？",
+      "design": "兩個獨立檢定：① 逐日 Δ vs 前瞻窗內除權息事件數 ② 逐欄比對新舊矩陣的跨列 Spearman",
+      "threshold": "若假設成立，事件多的日子 Δ 應更負；價格類特徵應大幅改變",
+      "result": "① corr(事件數, Δ) = +0.059（方向相反且不單調）② 價格類 ρ 全部 ≥0.985",
+      "verdict": "拒絕", "overturned": true,
+      "note": "還原是逐股的單調重新縮放，橫斷面排名幾乎不動——事後想想是應該預期到的。真正變的是籌碼欄：Day_Trade_Volume 相異值 1 → 30,906、Short_Sale ρ=0.78"
+    },
+
+    {
+      "id": "F6-A", "line": "arch", "date": "2026-08-01",
+      "title": "no_gat（完全不用圖）",
+      "question": "GATv2 到底有沒有貢獻？先量沒有圖的基準",
+      "design": "單尺度 Mamba，window 60、dropout 0.2、seed 20260730、purge 10+embargo 20、2,661/582 天",
+      "threshold": "峰值 Δ ≥ +0.009 且配對 NW t ≥ 2（跑前定死）",
+      "result": "峰值 5d IC +0.0884 @ep5、ICIR 0.733、年化 +10.7%、參數 1,394,301",
+      "verdict": "無效應", "overturned": false,
+      "note": "內部一致性檢查通過：重評 mean IC +0.0884 與訓練迴圈 ep5 的 val IC 完全相同"
+    },
+    {
+      "id": "F6-B", "line": "arch", "date": "2026-08-01",
+      "title": "old_kg（線上那張雜訊圖）",
+      "question": "帶著一張壞掉的圖，GAT 還有沒有用？",
+      "design": "同 A，唯一變因是加上 knowledge_graph_cache.npz（42,864 節點但真股票只有 2,510、滾動相關性邊 0 條、供應鏈邊來自 regex 抓 HTML 數字）",
+      "threshold": "同上",
+      "result": "峰值 +0.0939 @ep3；B − A = +0.0055，NW t = +0.91",
+      "verdict": "待覆核", "overturned": false,
+      "note": "t 只有 0.91 不是因為效應小，是 A 少建 GAT 層而少消耗 RNG → 初始化與資料順序都不同，run-to-run 雜訊淹掉訊號"
+    },
+    {
+      "id": "F6-C", "line": "arch", "date": "2026-08-01",
+      "title": "v2_kg（重建的乾淨圖）★ 最乾淨的一組配對",
+      "question": "圖的「品質」有沒有貢獻？",
+      "design": "與 B 同架構、同參數量（1,659,005）、同 seed、同資料順序（實測第一個 batch 都是 1,668 支）→ 唯一變因就是圖的內容",
+      "threshold": "峰值 Δ ≥ +0.009 且配對 NW t ≥ 2",
+      "result": "峰值 +0.0991 @ep3；C − B = +0.0052，配對 NW t = +5.17，67.9% 的日子為正",
+      "verdict": "採納", "overturned": false,
+      "note": "穩健性全過：前半 t=3.18 / 後半 t=4.20、去極端 5 天後 +0.0048、10d horizon 同向。幅度雖低於 +0.009 門檻，但統計上非常確定"
+    },
+    {
+      "id": "F6-D", "line": "arch", "date": "2026-08-01",
+      "title": "為什麼三組的 t 值差這麼多",
+      "question": "B−A 的 t=0.91、C−A 的 t=1.80，但 C−B 是 5.17——差在哪？",
+      "design": "比較配對差的離散度",
+      "threshold": "—",
+      "result": "std(C−B) = 0.0140 vs std(C−A) = 0.0791，**差 5.6 倍**",
+      "verdict": "正確性修正", "overturned": false,
+      "note": "方法論收穫：如果當初三組都設計成架構等價，這一輪本來可以拿到三個顯著結論而不是一個。之後所有消融一律用 mask/換內容，不用「拿掉模組」"
+    },
+    {
+      "id": "F6-E", "line": "arch", "date": "2026-08-01",
+      "title": "多尺度主模型（Cell 4）",
+      "question": "多尺度 Mamba（20/60/252 三分支）比單尺度好嗎？",
+      "design": "epochs=100",
+      "threshold": "—",
+      "result": "峰值 +0.0526 @ep7 —— **不可用**",
+      "verdict": "拒絕", "overturned": false,
+      "note": "排程被 epochs=100 拉壞：WARMUP_PCT 0.15×100 = 暖身 15 個 epoch，模型在暖身期就過擬合、從頭到尾沒進入退火。白賺的發現：scale gate 第三次塌到 Mid（0.047/0.890/0.063）"
+    },
+
+    {
+      "id": "PL-01", "line": "portfolio", "date": "2026-08-01",
+      "title": "年化交易成本 20.6%",
+      "question": "現行口徑（Top50、5 日再平衡、無緩衝）的成本是多少？",
+      "design": "換手 71%/次 × 每年 50.4 次 × (0.15% 買 + 0.45% 賣)",
+      "threshold": "—",
+      "result": "年化成本拖累 20.6%，而 v2_kg 的淨年化只有 +8.3% → **成本吃掉的比留下的還多**",
+      "verdict": "正確性修正", "overturned": false,
+      "note": "獨立驗證：D4 測成本×2 時 Ridge 從 +18.7% 掉到 −5.4%（20.3pp），與計算吻合"
+    },
+    {
+      "id": "PL-02", "line": "portfolio", "date": "2026-08-01",
+      "title": "換手緩衝（banding）",
+      "question": "在門檻邊緣來回震盪造成的無謂換手，加緩衝能省多少？",
+      "design": "rank ≤ N 才買、rank > k×N 才賣；k ∈ {1.0, 1.3, 1.5, 2.0}",
+      "threshold": "—",
+      "result": "582 天窗 N=50/5日：k 1.0→2.0 換手 76%→64%、年化 +10.8%→+16.4%、Sharpe 0.678→0.971",
+      "verdict": "採納", "overturned": false,
+      "note": "11 年 WF 驗證：Sharpe 增益隨頻率降低而遞減（3日 +0.38 / 5日 +0.23 / 10日 +0.10 / 20日 +0.08）"
+    },
+    {
+      "id": "PL-03", "line": "portfolio", "date": "2026-08-01",
+      "title": "再平衡頻率",
+      "question": "每天看 dashboard，是不是就該每天換股？",
+      "design": "頻率 ∈ {1, 3, 5, 10, 20} 交易日",
+      "threshold": "—",
+      "result": "1 日 −11.5%（Sharpe −0.698）→ 20 日 +20.8%（Sharpe 1.434），11 年 WF",
+      "verdict": "採納", "overturned": true,
+      "note": "推翻使用者原本偏好每日的直覺。根因不是成本假設而是訊號性質：Top50 名單隔天只留存 47%（Ridge）/ 34.6%（GBDT）"
+    },
+    {
+      "id": "PL-04", "line": "portfolio", "date": "2026-08-01",
+      "title": "持股數 N 的最佳值",
+      "question": "Top 50 是不是太少？該用 decile（前 10%）嗎？",
+      "design": "N ∈ {10, 25, 50, 100, 224}",
+      "threshold": "跨 N 比較看 Sharpe，不看年化（N 變大同時改變報酬與波動）",
+      "result": "582 天窗說 N=10 最好（Sharpe 1.495）；**11 年 WF 說 N=25 最好（1.500），N=10 只有 1.110**",
+      "verdict": "拒絕", "overturned": true,
+      "note": "582 天窗的結論是過擬合。連帶修正「Ridge 訊號集中在頭部」——那個型態在 11 年尺度下大幅減弱"
+    },
+    {
+      "id": "PL-05", "line": "portfolio", "date": "2026-08-01",
+      "title": "IC 與組合層不同調的機制",
+      "question": "為什麼 IC 較高的模型，實際照 Top50 買反而賺較少？（已經第四次）",
+      "design": "五個模型 × N ∈ {10…224} 的年化/Sharpe 對照 + decile spread",
+      "threshold": "—",
+      "result": "Ridge 訊號集中頭部（N=10 Sharpe 1.126 → N=224 0.524）；GBDT 與 Mamba 三組全部相反（v2_kg 0.002 → 0.829）。decile spread Sharpe：v2_kg 1.905 > GBDT 1.689 > Ridge 1.064",
+      "verdict": "正確性修正", "overturned": false,
+      "note": "連帶推論：固定用 Top50 當量尺會系統性偏袒「訊號集中在頭部」的模型 → 過去所有以 Top50 年化排序做的模型比較都帶這個偏誤"
+    },
+    {
+      "id": "PL-06", "line": "portfolio", "date": "2026-08-01",
+      "title": "GAT 的價值在組合層被放大",
+      "question": "訊號層只值 +0.0107 的 GAT，在組合層值多少？",
+      "design": "N=50、k=1.5、20 日，三組 Mamba 對照",
+      "threshold": "—",
+      "result": "no_gat +12.2%/Sharpe 0.664、old_kg +16.7%/1.038、**v2_kg +26.1%/1.490** → C−A = +13.9pp 年化、Sharpe 翻倍",
+      "verdict": "採納", "overturned": false,
+      "note": "A<B<C 在 N=25/50/100/224 四個值上全部成立，不是單點。但這是 240 格網格裡的觀察、非預先指定的檢定"
+    },
+    {
+      "id": "PL-07", "line": "portfolio", "date": "2026-08-01",
+      "title": "「20 日最好」是不是因為台股大漲？",
+      "question": "過去一年多頭，低頻持有幾乎必然正報酬——這個結論靠不靠得住？",
+      "design": "① 前後半切分 ② 依大盤區間（等權宇宙過去 20 日累積報酬正負）切上升/下跌段",
+      "threshold": "若假設成立，低頻在下跌段應該較差",
+      "result": "① 前後半都是多頭（+14.2% / +15.9%）→ **測不到** ② 11 年 WF 下跌段（976 天）：5日 −17.6%、10日 −18.5%、**20日 −14.6%**（基準 −32.1%）",
+      "verdict": "拒絕", "overturned": true,
+      "note": "低頻在下跌段也最好 → 好處來自省成本，而成本兩種行情都要付。使用者的假設被推翻，但「不能只測 20 日」的要求是對的，已補上 10 日"
+    },
+    {
+      "id": "PL-08", "line": "portfolio", "date": "2026-08-01",
+      "title": "非等權配權",
+      "question": "波動度倒數 / 流動性加權，會不會比等權好？",
+      "design": "三種配權 × 11 年 WF；單股權重上限 3× 等權",
+      "threshold": "—",
+      "result": "**必須設上限**——原始比例配權下 liquidity 最大單股權重 84.95%（整個組合押一檔台積電）。設上限後 WF 11 年：inv_vol Sharpe 1.526 > equal 1.430 > liquidity 1.156",
+      "verdict": "採納", "overturned": true,
+      "note": "liquidity 在 582 天窗 Sharpe 1.402/1.545 看起來最好，11 年 WF 卻最差——第三個被 WF 抓到的單窗假象"
+    },
+    {
+      "id": "PL-09", "line": "portfolio", "date": "2026-08-01",
+      "title": "分數平滑",
+      "question": "分數日間噪音大是換手的根因，先做移動平均再排名有沒有用？",
+      "design": "平滑窗 ∈ {1, 3, 5, 10} × 頻率",
+      "threshold": "—",
+      "result": "11 年 WF：5 日頻率 Sharpe 0.921 → **1.181**；20 日頻率 1.430 → **1.416（零增益）**，但換手 76% → 60%",
+      "verdict": "無效應", "overturned": true,
+      "note": "582 天窗曾顯示 20 日 + 5 日平滑是 1.231 → 1.484——第四個單窗假象。統一的故事：低頻／緩衝／平滑是同一類工具，都在拉「換手」這一根桿子"
+    },
+    {
+      "id": "PL-10", "line": "portfolio", "date": "2026-08-01",
+      "title": "多模型共識（Conviction 線前測）",
+      "question": "訓練多個模型、交叉比對排序，能挑出高信心股票嗎？",
+      "design": "四種共識法（5模型平均／3家族平均／一致性過濾／同意票數）× N ∈ {10,25,50} × 頻率 ∈ {10,20}",
+      "threshold": "方法在看結果前定死",
+      "result": "18 個切面裡只贏 3 次，且全部集中在 N=10/10日。一致的型態是「共識法比較保守」——下跌段保護較好、上升段參與較少",
+      "verdict": "拒絕", "overturned": true,
+      "note": "這是第二條指向同一方向的證據（方向三-C 也量到低 U 硬門檻交集輸給 SQ 連續值）。但這五個模型本來就不是為 ensemble 而建（同特徵、同標籤、其中三個同架構）→ 重點應放在製造真正的多樣性"
+    },
+    {
+      "id": "PL-11", "line": "portfolio", "date": "2026-08-01",
+      "title": "外部效度：11 年 walk-forward",
+      "question": "上面所有結論都來自單一 2.3 年多頭窗口 + 1,500 格網格，撐得住嗎？",
+      "design": "expanding WF，每季用該季之前的全部歷史重解，接成 2015-04 → 2026-06 連續不重疊的 OOS 序列（4,552,371 列 / 2,724 天）",
+      "threshold": "結構性型態是否維持",
+      "result": "**撐住**：頻率單調、緩衝有效、下跌段保護、逐年 12 年裡 10 年正超額（2018 空頭年策略 +15.1% vs 基準 −6.8%）。**沒撐住**：N=10 證實為過擬合",
+      "verdict": "採納", "overturned": false,
+      "note": "可信度排序：系統性型態 ＞ 任何單一格子。這一輪抓出四個單窗假象"
+    },
+    {
+      "id": "PL-12", "line": "portfolio", "date": "2026-08-01",
+      "title": "凍結規格暴露了我自己的設計失誤",
+      "question": "事先定死的 headline「貼近實際操作」為什麼是災難？",
+      "design": "跑前 pre-register 兩個 headline",
+      "threshold": "—",
+      "result": "「貼近實際操作」（N=25、每日再平衡）Ridge −16.3%、GBDT −31.6%",
+      "verdict": "正確性修正", "overturned": true,
+      "note": "失誤在把使用者說的「每天看 dashboard」誤讀成「每天換股」。**如果看完數字才定 headline，會選 20 日，然後永遠不會發現這個誤讀。** 失誤如實留在文件裡，修訂走 v1.1 提案並記錄理由"
+    },
+
+    {
+      "id": "R-01", "line": "risk", "date": "2026-08-01",
+      "title": "回撤持續期間",
+      "question": "MDD −29.4% 聽起來還好，實際持有的感受是什麼？",
+      "design": "計算連續處於水面下的最長天數與佔比",
+      "threshold": "—",
+      "result": "11 年 WF：**最長連續 289 個交易日（約 14 個月）在水面下、80.1% 的日子處於回撤中**",
+      "verdict": "正確性修正", "overturned": false,
+      "note": "檢核表說「回撤持續期間比 MDD 更有判讀價值」是對的"
+    },
+    {
+      "id": "R-02", "line": "risk", "date": "2026-08-01",
+      "title": "滾動 IC 監控",
+      "question": "訊號開始衰退時，能不能比整段平均 IC 更早發現？",
+      "design": "逐日 rank IC → 滾動 20/60 日",
+      "threshold": "滾動 60 日 IC 轉負 = 警訊",
+      "result": "11 年間滾動 60 日 IC **從未轉負**。但 **2026 年是 11 年最低**（wf_ridge +0.065 vs 歷年 +0.094~+0.130）",
+      "verdict": "待覆核", "overturned": false,
+      "note": "2026 只有約 5 個月、樣本少 → 列入觀察，不下結論。交叉驗證：signal_health 算出 v2_kg mean IC +0.0988 vs kg_ablation 記錄的 +0.0991，兩條不同計算路徑對得上"
+    },
+    {
+      "id": "R-03", "line": "risk", "date": "2026-08-01",
+      "title": "台股執行風險（做不了）",
+      "question": "漲跌停鎖死、處置股、下市，回測有沒有模擬？",
+      "design": "—",
+      "result": "**沒有，而且做不了**——prices_raw 完全沒有這四類交易狀態欄位",
+      "verdict": "待覆核", "overturned": false,
+      "note": "不是程式問題，是要另接 TWSE 的處置股與暫停交易公告。在補上之前回測會系統性偏樂觀，程度未量化。唯一可確認的一項 ✅：組合層、訊號層、資料層共用同一套還原價格序列"
+    },
+    {
+      "id": "R-04", "line": "risk", "date": "2026-08-01",
+      "title": "資金門檻（整張交易）",
+      "question": "N 該選多少，會不會被散戶資金卡住？",
+      "design": "以 2026-06-02 的 v2_kg 排名 × 收盤價估算等權買滿各 1 張的最低資金",
+      "threshold": "—",
+      "result": "N=10 約 65 萬、N=25 約 205 萬、N=50 約 365 萬、N=224 約 1,437 萬",
+      "verdict": "待覆核", "overturned": false,
+      "note": "方向相反的難題：Mamba 家族是分散型訊號（N 越大越好），但資金門檻是 N 越大越貴"
+    }
+  ]
+}
