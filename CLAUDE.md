@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # MarketMamba — AI 助手指引
 
-> 最後更新：2026-08-01（**F6 GAT 三組消融全部完成**：`v2_kg` +0.0991 > `old_kg` +0.0939 > `no_gat` +0.0884，C−B 配對 NW t=5.17；GAT 已採納為有用。並行工作也完成——F5 的 −0.0079 拆開了、Group D 消融腳本備妥。**下一階段計畫待討論。**完整紀錄與判讀清單見 `docs/f6-training-log-and-readout.md`——那份是為了讓沒有前文脈絡的 session 能直接接手而寫的）
+> 最後更新：2026-08-02（**F6 接近收尾**：GAT 四組 + Group D 消融都完成，Group D 是最大單一效應且方向與預期相反；GRU/GBDT walk-forward 也補齊。**唯一待跑：2×2 第四格 `no_macro + v2 圖`，3.6 小時，指令在「進行中」第一條**。完整紀錄與判讀清單見 `docs/f6-training-log-and-readout.md`、`docs/portfolio-lab-results-2026-08-01.md`）
 
 ---
 
@@ -346,6 +346,19 @@ cd app/frontend && npm run dev   # → localhost:5173
 > 最後更新：2026-08-01（F6 GAT 消融進行中；Group D 消融腳本待寫。**V6.1 已非紅線，使用者表示可停**。Phase 3 模型實驗仍暫停中）
 
 ### 最近完成
+- **★ Group D 消融：移除總經 12 維讓 IC 顯著上升（2026-08-02）—— F6 系列量到最大的單一效應**。完整逐 epoch 數字在 Drive 的 `groupd_ablation_result.json`：
+  - **`with_macro` 峰值 +0.0884 @ep5（ICIR 0.733、年化 +10.7%）vs `no_macro` 峰值 +0.1070 @ep9（ICIR 1.191、年化 +27.7%）→ Δ = −0.0186、配對 NW t = −3.12**。兩組參數量相同（1,394,301）＝ mask 設計成立、架構不是變因
+  - **機制清楚**：Group D 是**每日橫斷面常數**（實測抽 5 天，12 維的當日相異值數都是 1）→ 在橫斷面排序上零資訊，但給了模型「記住是哪一天」的通道 → **它的作用是製造過擬合**。`with_macro` 的 val_loss ep2 谷底後單調惡化（0.12799→0.1303），`no_macro` 一路降到 ep6 後平穩（0.12743→0.12677）
+  - **`no_macro` 在十個 epoch 每一格都贏**（Δ 從 −0.009 到 −0.0325）→ **結論方向不需要重跑就成立**
+  - ⚠️ **但幅度被低估**：`no_macro` 峰值在 ep9（共 10 epoch）、ep10 仍是 +0.1068，代表**被排程截斷**。依 §4.1 事先寫的規則本該兩組一起用更長 epochs 重跑（14.4h），但**使用者與 Claude 判斷改跑 2×2 第四格更划算**（見「進行中」）
+  - **實測確認 `FED_Rate` 是死維**（相異值 1、std 0）→ 結論一律寫成「**11 維有效特徵**」
+  - **這推翻了既有決策**：CLAUDE.md 原記「先證實 Group D 有貢獻，再補 `fear_greed`/`business_indicator`/`fed_rate` 資料源」——現在證實**不但沒貢獻還是負的**，那三個資料源**不用補了**，且 `INPUT_DIM` 應考慮 59 → 47
+- **GRU 在 v2 基礎重訓完成 + GBDT walk-forward 完成（2026-08-02）**：
+  - **GRU**（WSL RTX 3060、h64 only、5d only、**排除 7 個 Avail 旗標 → 59 維**才與其他模型同基礎）：test IC **+0.1018**、ICIR 0.785、NW t 11.73；分層 IC 小量 +0.1235 / 大量 +0.0893。分數已在 `result/scores/gru.parquet`
+  - ⚠️ **GRU 的 decile spread Sharpe = 2.846 高得異常**（同窗第二名 v3_kg 只有 1.928）。**尚未查證**，可能是「序列模型在兩端區辨力更強」也可能是 panel 建構方式不同造成的問題（GRU 自己從 base matrix 切窗、不走 `load_xy`）→ **列為待查**
+  - **GBDT WF**（12 個年度檔、4,552,371 列 / 2,724 天、2015-04~2026-06，固定 100 輪不逐 fold early-stop）：訊號 IC **+0.1265** > Ridge +0.1090
+  - **★ 修正一個結構性結論**：11 年 WF 下 **GBDT 的最佳頻率是 5 日（+26.2%）而不是 20 日（+21.9%）**，Ridge 則是單調到 20 日（+20.7%）。→ **穩健的結論是「不要每日再平衡」（兩者一致：Ridge −12.1%、GBDT −5.0%），而不是「20 日最好」**。緩衝在 20 日下對兩者都只有微幅效果（Ridge 1.439→1.518、GBDT 1.265→1.296，k=1.0→2.0）
+  - ⚠️ **我踩到自己的參數 bug**：`--years 2015 2026` 被 `nargs="*"` 解讀成「這兩年」不是範圍，第一輪只跑了 2015/2026。程序是**正常結束**不是被砍，補跑後才完整
 - **組合建構基準版 v1.0 凍結 + 第一批結果（2026-08-01）**。規格 `docs/portfolio-construction-baseline-v1.md`（跑之前凍結）、結果 `docs/portfolio-lab-results-2026-08-01.md`、實作 `V6/experimental/portfolio_lab.py`（**純附加，不動 `portfolio_backtest`**）。使用者提供的《組合建構基本版檢核表》為骨架，依本專案實測**修正五處、補三處**（逐項對照見規格 §7）：
   - **動機的量化依據**：現行口徑換手 70–77%/次 × 每年 50.4 次 → **年化成本拖累 20.6%**，而 `v2_kg` 淨年化只有 +8.3% → **成本吃掉的比留下的還多**。與 D4「成本 ×2 讓 Ridge 掉 20.3pp」獨立吻合。→ **修這把尺不是「改做組合層」，是讓年化這個量尺本身可用**
   - **實作驗證通過**：新口徑 k=1.0/N=50/5日 算出 Ridge +10.8%、換手 76%，對照 F5 舊口徑 +11.3%/76%；且「Top50 隔 5 日留存 24.8%」→ 預期換手 75%，與觀察值吻合
@@ -598,6 +611,29 @@ cd app/frontend && npm run dev   # → localhost:5173
   - 完整改寫 `PersonalOS/src/renderer/src/pages/MarketMamba/Portfolio.jsx`：`ExitConditionModal` 升級為四層退場 UI（L1 停損、L2 信號惡化、L3 減倉、L4 換倉）；Trailing Stop 由前端從 avg_price 計算；風險分數改用四層觸發加權
 
 ### 進行中
+- **★ 下一步（唯一待跑）：F6 的 2×2 第四格 —— `no_macro` + v2 圖，約 3.6 小時**。現有三格：
+
+  | | with macro | no macro |
+  |---|---|---|
+  | **no GAT** | +0.0884 | **+0.1070** |
+  | **v2 圖** | +0.0991 | **← 這格** |
+
+  兩個效應若可加會落在 **+0.117 附近**（現行訊號層最好是 GBDT +0.1036）；明顯低於可加值則代表兩者搶同一份訊號，那本身也是資訊。**必須用 `epochs=10`**（與另外三格同排程才可比）。Colab 用：
+  ```python
+  !cd /content/MarketMamba && git pull origin main
+  import sys
+  for m in [k for k in sys.modules if k.startswith("experimental")]: del sys.modules[m]
+  import experimental.groupd_ablation as G, inspect
+  assert "tag" in inspect.signature(G.run_groupd_ablation).parameters, "git pull 沒生效"
+  results = G.run_groupd_ablation(
+      df, arms=("no_macro",), use_gat=True, kg_file="knowledge_graph_v2.npz",
+      control="rerun", tag="_gatv2", epochs=10, early_stop=5,
+      drive_dir="/content/drive/MyDrive/MarketMamba_V6")
+  ```
+  跑起來要確認 `[KG] CSR matrix built: 2245 nodes, 32083 edges` 與 `參數 1,659,005`。
+  跑完把 `groupd_ablation_result_gatv2.json` 給 Claude 算配對檢定。
+- **待查：GRU 的 decile spread Sharpe = 2.846 異常高**（同窗其他模型 1.06~1.93）。要嘛是這輪最重要的發現（序列模型在排名兩端區辨力更強），要嘛是 panel 建構差異造成的問題。查法：對照 GRU 與 Ridge 在同一批日子的前 10%／後 10% 組合成分與報酬
+- **Cell 4 多尺度（10–16h、約 300–440 元）**：優先度已降低——有三條證據指向 5d 目標下多尺度會退化，而 Group D 這條線的期望值高得多
 - **F6 下一階段的計畫待討論（2026-08-01）**：GAT 三組消融已結束、結論已記錄，Group D 消融腳本備妥但排在之後。使用者表示「記錄下來之後我們再來討論接下來的計畫要怎麼設計」→ **下一輪做什麼尚未決定**。討論時可用的素材：① GAT 已採納為有用但幅度小（+0.005~0.011），Phase 4-A 的期望值有兩種相反讀法（見決策紀錄）② **訊號層 `v2_kg` 已超越 Ridge，但組合層仍輸**——這是第四次 IC 與組合層不同調，「照排名買會不會賺」這條線可能比再抬 IC 更值錢 ③ Group D 消融（3.6h，腳本已備妥）④ 多尺度主模型用 `epochs=15~20` 重跑（§3 那輪排程壞掉、數字不可用）⑤ 從未量過的 run-to-run σ
 - **F6（Colab／GPU）的其餘項目，特徵工程層已凍結**：① ~~GAT 三組消融~~ **✅ 已完成（2026-08-01）** ② **Group D 12 維消融**（`macro_norm="ts"` 下那 12 維到底有沒有貢獻——V6.1 下整組是死值，目前沒有任何證據顯示有用）③ **中性化用 Mamba 複驗**（F5 給的是方向正但不顯著）。**F6 的 config 設定**：`INPUT_DIM=59`（既有 V6.2 設定，**不需 `patch_config_67d`**，連帶避開那個 import 期綁值的陷阱）、`build_features(fundamentals_v2=True, availability_flags=False)`、`clean_and_scale(macro_norm="ts", neutralize="none")`、切分用 `splitters`（purge 60 + embargo 20）、train 起點 2013
 - **研究計畫三方向（`planing/研究計畫_主檔.md`）**：**方向一 ✅ 全部完成、方向二 ✅ 全部完成**（Step 2~5 + 交付；`/pipeline` 前端頁待驗收部署）；方向三-C 等 post-P0 樣本 ≥20 天（約 7 月底）重跑複驗；方向三-A/B（事件驅動/Meta-labeling）優先級最低、先做資料可行性評估再決定投入。平行可做：資料基礎升級計畫階段二（資料衛生三項 + baseline_common 序列輸出，見 `planing/資料基礎升級計畫_baseline_common扶正.md`）
@@ -670,6 +706,8 @@ cd app/frontend && npm run dev   # → localhost:5173
 > **PR 3（持倉四層退場 / Portfolio 頁面）**：使用者已確認頁面內容完成，視為驗收通過
 
 ### 決策紀錄
+- **★ Group D（總經 12 維）不但沒貢獻，還是顯著的負貢獻 → 那三個資料源不用補了（2026-08-02）**：Δ=−0.0186、NW t=−3.12、`no_macro` 十個 epoch 全勝。**機制**：Group D 是每日橫斷面常數，在排序上零資訊，卻給了模型「記住是哪一天」的通道 → **製造過擬合**（`with_macro` val_loss ep2 後單調惡化，`no_macro` 一路降到 ep6）。→ **推翻既有決策「先證實有貢獻再補來源」的前提**——證實了是負的，所以 `fear_greed`/`business_indicator`/`fed_rate` **不用補**，`INPUT_DIM` 應考慮 59 → 47。⚠️ 幅度被排程截斷（峰值在 ep9/共 10），但方向不受影響
+- **穩健的結論是「不要每日再平衡」，不是「20 日最好」（2026-08-02，GBDT WF 修正）**：11 年 WF 下 **Ridge 單調到 20 日（+20.7%）但 GBDT 在 5 日就見頂（+26.2% vs 20日 +21.9%）**。兩者唯一一致的是**每日再平衡都是災難**（Ridge −12.1%、GBDT −5.0%）。→ 之前寫的「20 日最好」要降級成「Ridge 上成立、GBDT 上不成立」；跨模型穩健的只有「不要每日」。緩衝在 20 日下對兩者都只有微幅效果
 - **存活者偏差其實不存在，長期限制可以劃掉（2026-08-01）**：CLAUDE.md 掛了很久的「存活者偏差未量化」——實測 `prices_raw` 有 **211 支（9.7%）已下市/長期停牌，且它們在下市前的交易日都留在資料裡**（WF 11 年窗內 146 支、582 天窗 19 支）。原因是 **B-3 重抓價格是逐日從交易所抓的**，自然保留到最後交易日。連帶：**下市可由資料推導、不需要找資料源**。剩下的真問題是「持股下市時怎麼認列」——目前 ffill = 「以下市前最後成交價認列」，若改成回收 0，曝險是 Top50 的 0.25%~0.56% → **最壞影響上界 <1pp/年**
 - **配權與平滑沒有跨模型一致的贏家 → 基準版維持等權（2026-08-01，推翻我自己稍早的結論）**：v1.1 擴充網格（108 組/模型 × 7 份分數）跑完後，**方向相反**——配權 Sharpe（N=50/k=1.5/20日）wf_ridge 是 inv_vol **1.526** > equal 1.430，但 **v2_kg 是 equal 1.487 > inv_vol 1.310**；平滑同樣不一致（wf_ridge 變差、ridge 582天 變好）。**我稍早說「波動度倒數是 WF 驗證下最好的」是只看 wf_ridge 一個模型的結論**，補齊六個模型後不成立。→ 基準版維持等權（與檢核表原文一致：等權最單純、不引入額外變因）。**這是「多一個模型/多一個窗口就翻盤」的第五個案例**
 - **漲跌停不需要新資料源，而且影響是正的（2026-08-01，我預期錯了兩次）**：風控 C 類原本記為「做不了、要另接 TWSE 公告」，但**台股漲跌幅上限可由還原收盤價的日報酬直接推導**（2015-06 起 ±10%、之前 ±7%）。① **第一個預期錯**：以為動能模型會富集漲停股，實測 Top50 的漲停比例只有全市場的 **0.1×（少 8.5 倍）**——模型系統性避開剛漲停的股票（label 是前瞻報酬、漲停後傾向均值回歸）② **第二個預期錯**：以為加上限制會讓報酬下降（回測系統性偏樂觀），實測**定案的低頻設定下反而變好**——WF 11 年 N=50/20日 +20.7%→**+21.0%**、v2_kg +26.0%→**+26.8%**，**空頭區間也不吃虧**（下跌段 −14.7%→−14.0%）；只有高頻（5 日）才吃虧 −1.23pp。機制：被擋掉的買單避開追高、被迫續抱的跌停股吃到均值回歸。→ **「回測系統性偏樂觀」就漲跌停這一項而言不成立，影響在 ±1pp 內**。⚠️ 仍未涵蓋：處置股/注意股/全額交割股/下市，那三項要另接 TWSE 公告、偏誤仍未量化

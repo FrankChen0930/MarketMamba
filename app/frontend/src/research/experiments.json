@@ -1,6 +1,6 @@
 {
   "meta": {
-    "updated": "2026-08-01",
+    "updated": "2026-08-02",
     "note": "研究實驗登錄檔。新增實驗只要往 experiments 加一筆，不需要改 React 元件。",
     "verdictColors": {
       "採納": "ok",
@@ -591,6 +591,45 @@
       "verdict": "拒絕",
       "overturned": true,
       "note": "**推翻我自己 2026-08-01 稍早的結論「波動度倒數加權是 WF 驗證下最好的」**——那是只看 wf_ridge 一個模型。補齊六個模型後方向不一致。→ **基準版維持等權**，理由與檢核表原文一致：等權最單純、不引入額外變因。這也是「多一個模型就翻盤」的第五個案例"
+    },
+    {
+      "id": "F6-G",
+      "line": "arch",
+      "date": "2026-08-02",
+      "title": "★ Group D（總經 12 維）消融 —— 移除它讓 IC 顯著上升",
+      "question": "macro_norm 改成 ts 之後 Group D 才第一次活著。它有貢獻嗎？",
+      "design": "**mask 而非砍維度**：把 12 欄在輸入端歸零，兩組參數量/架構/RNG 完全相同。控制組沿用已完成的 no_gat（十項核對通過）",
+      "threshold": "峰值 Δ ≥ +0.009 且配對 NW t ≥ 2（跑前定死）",
+      "result": "with_macro +0.0884 @ep5（ICIR 0.733、年化 +10.7%）vs **no_macro +0.1070 @ep9（ICIR 1.191、年化 +27.7%）** → **Δ = −0.0186、NW t = −3.12**。no_macro 在**十個 epoch 每一格都贏**",
+      "verdict": "拒絕",
+      "overturned": true,
+      "note": "**F6 系列量到最大的單一效應**（比 GAT 的 +0.0107 大 74%）。**機制**：Group D 是每日橫斷面常數 → 排序上零資訊，卻給了模型「記住是哪一天」的通道 → **製造過擬合**（with_macro 的 val_loss ep2 谷底後單調惡化，no_macro 一路降到 ep6 後平穩）。**推翻既有決策**：原記「先證實有貢獻再補 fear_greed/business_indicator/fed_rate 的資料源」→ 證實是**負的**，不用補了。⚠️ 幅度被排程截斷（峰值在 ep9/共 10 epoch）"
+    },
+    {
+      "id": "PL-14",
+      "line": "portfolio",
+      "date": "2026-08-02",
+      "title": "GBDT walk-forward 修正了「20 日最好」",
+      "question": "低頻/緩衝/N 這些結構性結論，在非線性模型上也成立嗎？",
+      "design": "與 Ridge WF **完全相同的 fold 切分**（只換模型），固定 100 輪不逐 fold early-stop，12 年連續 OOS",
+      "threshold": "跨模型方向一致才算結構性",
+      "result": "訊號 IC **+0.1265** > Ridge +0.1090。但**頻率方向不同**：Ridge 單調到 20 日（+20.7%），**GBDT 在 5 日就見頂（+26.2%，20 日只有 +21.9%）**",
+      "verdict": "待覆核",
+      "overturned": true,
+      "note": "**修正「20 日最好」這個結論** → 降級成「Ridge 上成立、GBDT 上不成立」。**跨模型唯一穩健的是「不要每日再平衡」**（Ridge −12.1%、GBDT −5.0%）。緩衝在 20 日下對兩者都只有微幅效果（k=1.0→2.0：Ridge 1.439→1.518、GBDT 1.265→1.296）"
+    },
+    {
+      "id": "PL-15",
+      "line": "portfolio",
+      "date": "2026-08-02",
+      "title": "GRU 在 v2 基礎重訓（四階對照補齊）",
+      "question": "方向二的四階對照缺 GRU 這塊，而舊的 gru_5d.pt 是舊資料訓練的、不可比",
+      "design": "WSL RTX 3060、h64 only（07-14 那輪 h128 佔了 12.2 小時裡的 11 小時）、5d only、**排除 7 個 Avail 旗標 → 59 維**才與其他模型同基礎",
+      "threshold": "—",
+      "result": "test IC **+0.1018**、ICIR 0.785、NW t 11.73；分層 IC 小量 +0.1235 / 大量 +0.0893。組合層 N=50/20日 **+31.3% / Sharpe 1.401**",
+      "verdict": "待覆核",
+      "overturned": false,
+      "note": "⚠️ **decile spread Sharpe = 2.846 高得異常**（同窗第二名 v3_kg 只有 1.928）。**尚未查證**——可能是「序列模型在排名兩端區辨力更強」，也可能是 panel 建構方式不同（GRU 自己從 base matrix 切窗、不走 load_xy）。列為待查，不當結論用"
     }
   ]
 }
