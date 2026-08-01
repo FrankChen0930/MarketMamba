@@ -143,6 +143,30 @@ class Market:
         self.at_limit_up = _r >= _lim
         self.at_limit_down = _r <= -_lim
 
+        # ── 處置股（風控 C 類，2026-08-01 補）────────────────────────────
+        # 處置 = 分盤集合競價（5 或 20 分鐘一次）+ 預收款券 → 實務上很難照收盤價成交。
+        # 「注意股」只是警示、無交易限制，故**不擋**（仍讀進來供診斷）。
+        self.under_disposal = np.zeros((len(self.dates), len(self.px.columns)), dtype=bool)
+        from marketmamba.config import PROCESSED_DIR as _PD
+        _ts = Path(_PD) / "trading_status_raw.parquet"
+        if _ts.exists():
+            t = pd.read_parquet(_ts)
+            t = t[t["status"] == "disposal"]
+            t["Date"] = pd.to_datetime(t["Date"])
+            di = {d: i for i, d in enumerate(self.dates)}
+            ci = {c: i for i, c in enumerate(self.px.columns)}
+            hit = 0
+            for d, sid in zip(t["Date"], t["stock_id"].astype(str)):
+                i, j = di.get(d), ci.get(sid)
+                if i is not None and j is not None:
+                    self.under_disposal[i, j] = True
+                    hit += 1
+            print(f"[market] 處置股：窗內命中 {hit:,} 個「股票×日」"
+                  f"（{self.under_disposal.any(axis=0).sum()} 支）", flush=True)
+        else:
+            print(f"[market] ⚠ 找不到 {_ts.name} → 處置限制不可用（block_disposal 將無效果）",
+                  flush=True)
+
         self.stocks = list(self.px.columns)
         print(f"[market] {len(self.dates)} 天 × {len(self.stocks)} 支｜"
               f"價格缺值 {self.px.isna().mean().mean():.1%}｜"
@@ -222,7 +246,8 @@ def _weights(mkt: Market, t: int, names: list[str], col_idx: dict, scheme: str) 
 
 def run_config(mkt: Market, rank: pd.DataFrame, n: int, k: float, freq: int,
                liq: float | None, cost_mult: float = 1.0,
-               weight: str = "equal", block_limit: bool = False) -> dict:
+               weight: str = "equal", block_limit: bool = False,
+               block_disposal: bool = False) -> dict:
     """
     rank: (dates × stocks) 的每日排名（1 = 分數最高；不可交易者為 NaN）
     回傳年化/Sharpe/MDD/換手/年化成本拖累/產業集中度/最大權重。
@@ -271,9 +296,24 @@ def run_config(mkt: Market, rank: pd.DataFrame, n: int, k: float, freq: int,
                 continue
             order = np.argsort(np.where(ok, rk, np.inf))
 
-            if block_limit:
+            if block_disposal and not block_limit:
+                # 只擋處置：處置中的候選不買（已持有者仍可賣——處置限制的是成交難度，
+                # 不是禁止交易；賣出的一方在預收款券下仍可執行）
+                dz = mkt.under_disposal[t]
+                top_n, i_ = [], 0
+                while len(top_n) < n and i_ < len(order):
+                    if ok[order[i_]] and not dz[order[i_]]:
+                        top_n.append(mkt.stocks[order[i_]])
+                    i_ += 1
+                keep = [s for s in holdings
+                        if np.isfinite(rk[col_idx[s]]) and rk[col_idx[s]] <= kn]
+                keep_set = set(keep)
+                adds = [s for s in top_n if s not in keep_set][:max(n - len(keep), 0)]
+            elif block_limit:
                 # 風控 C：買不到 / 賣不掉。**順延而不是留空**——留空等於偷偷降低曝險。
                 lu, ld = mkt.at_limit_up[t], mkt.at_limit_down[t]
+                if block_disposal:
+                    lu = lu | mkt.under_disposal[t]        # 處置中也視為買不到
                 # 賣出受阻：本來要賣（跌出緩衝）但收在跌停 → 繼續持有
                 keep = [s for s in holdings
                         if (np.isfinite(rk[col_idx[s]]) and rk[col_idx[s]] <= kn)
