@@ -49,17 +49,33 @@ kg_ablation.py — 決策2 的實質答案：GATv2 到底有沒有貢獻？
 怎麼用（Colab）
 ============================================================
 前置：Cell 0→1→2→3 跑完（df 就緒、sys.path 已含 /content/MarketMamba/V6），
-且 `knowledge_graph_v2.npz` 已上傳到 PROCESSED_DIR（本機用 kg_builder_v2.py 產生後上傳）。
+且對應的 `knowledge_graph_*.npz` 已放進 PROCESSED_DIR。
+
+⚠️ **KG 檔不在 `processed_v6.zip` 裡也沒關係**——Cell 2 的 zip 只管 parquet，
+   npz 只有幾十 KB～2 MB，單獨丟到 Drive 再複製過去即可，**不需要重壓縮上傳**：
+
+    import shutil, os
+    from marketmamba.config import PROCESSED_DIR
+    for f in ("knowledge_graph_v2.npz", "knowledge_graph_v3.npz"):
+        src = f"/content/drive/MyDrive/MarketMamba_V6/{f}"
+        if os.path.exists(src):
+            shutil.copy(src, str(PROCESSED_DIR / f))
+            print(f"✅ {f} → {PROCESSED_DIR}")
 
     from experimental.kg_ablation import run_kg_ablation
     results = run_kg_ablation(
         df,
-        epochs=18, early_stop=10,
+        epochs=10, early_stop=5,           # 預設值；改了就與既有三組不可比（§3 的教訓）
         drive_dir="/content/drive/MyDrive/MarketMamba_V6",
     )
 
 跑完尾端會印對照表，完整結果寫到 {drive_dir}/kg_ablation_result.json。
-只想先跑一組：run_kg_ablation(df, arms=("no_gat",))。
+**已有結果的 arm 會自動跳過**，所以要補跑 v3 只需：
+
+    run_kg_ablation(df, arms=("v3_kg",), drive_dir="...")
+
+訓練前會印出圖摘要（節點/邊/權重分布），**用它確認載對了圖**：
+`v2_kg` 應是 32,083 邊、`v3_kg` 應是 **36,587** 邊（權重 0.6 有 4,504 條）。
 """
 from __future__ import annotations
 
@@ -76,6 +92,12 @@ ARMS: dict[str, tuple[bool, Optional[str]]] = {
     "no_gat": (False, None),
     "old_kg": (True, "knowledge_graph_cache.npz"),
     "v2_kg":  (True, "knowledge_graph_v2.npz"),
+    # 2026-08-01 新增：v2 + PIT 安全的殘差相關性邊（`kg_builder_v3.py`）。
+    # **additive 模式**：v2 的 32,083 條邊逐條保留、只多加 4,504 條相關性邊
+    # → 與 v2_kg 的差異**只有「多了相關性邊」一個變因**，
+    #   是與 C−B（配對 NW t=5.17）同級的乾淨比較。
+    # 判讀基準：v2_kg 的 +0.0991（峰值 Δ ≥ +0.009 且配對 NW t ≥ 2 才算有效）。
+    "v3_kg":  (True, "knowledge_graph_v3.npz"),
 }
 
 DROPOUT = 0.2      # Phase 3-A 定案值；本實驗不動它（單一變因＝圖）

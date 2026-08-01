@@ -15,12 +15,70 @@ f5_r_series.py — F5：一次一變因量 IC delta（R0–R5）
 
     R0   v1 59d  train2012  旗標-  fund✗ neu-none  purge✗   harness 橋接（已完成 +0.0977）
     R0b  v2      train2012  旗標✗  fund✓ neu-none  purge✗   v1→v2 整包差
+    R0c  v1like  train2012  旗標✗  fund✗ neu-none  purge✗   v1 規格**跑在新資料上**
+    R0d  v1univ  train2012  旗標✗  fund✓ neu-none  purge✗   v2 規格 + v1 宇宙規則
     R1   v2      train2013  旗標✗  fund✓ neu-none  purge✗   Δ起點  = R1 − R0b
     R2   v2      train2013  旗標✓  fund✓ neu-none  purge✗   Δ旗標  = R2 − R1
     R3   v2_nofund train2013 旗標✗ fund✗ neu-none  purge✗   Δfund  = R1 − R3
     R3b  v2_nofund train2013 旗標✓ fund✗ neu-none  purge✗   診斷：旗標在舊財報下的增量
     R4a  v2_neuind train2013 旗標✓ fund✓ industry  purge✗   Δ中性化 = R4a − R2
     R5   v2      train2013  旗標✓  fund✓ neu-none  purge✓   Δpurge = R5 − R2（誠實基準）
+
+R0c / R0d：把 −0.0079 拆開（2026-08-01 新增）
+-----------------------------------------------------------------------------
+`R0b − R0 = −0.0079` 是全 F5 最大的單項效應，原本無法歸因。原以為殘差是
+「宇宙過濾 + 外資持股 9xxx 回補」，但實際查檔期後發現**還漏了更大的一項**：
+
+    baseline_cache/baseline_base_59d.parquet（R0 的矩陣）   建於 2026-07-12
+    prices_raw 切換成全歷史除權息還原                        2026-07-29
+
+R0 的矩陣建立之後，raw 幾乎被翻修了一遍——B-3 全歷史除權息還原（報酬 std
+0.0817→0.0349）、margin 券賣/券買 swap 修正、daytrade 全歷史重建、
+holdings/dividends/TAIFEX/foreign_shareholding 直連回補、revenue/financials 回補。
+（哪一項才是主因，見下面「實測後的修正」——**不是**還原。）
+（`baseline_derived_roll` 雖於 07-27 重建，但它讀 07-12 的 chunk，只有 `Mom_*`
+取自 07-27 的 prices_raw——仍在還原之前，故 v1 側口徑一致為「還原前」。）
+
+所以三段拆解是：
+
+    Δ資料修復   = R0c − R0    v1 規格、v1 宇宙，**唯一差別＝raw 資料**
+    Δ宇宙過濾   = R0b − R0d   v2 規格，**唯一差別＝ETF/興櫃排除與否**
+    Δfund+起點  = R0d − R0c   fund_v2 + MATRIX_START 2010→2011
+                              （可與已量的 R1 − R3 = −0.0014 對照）
+
+三者相加**必須等於** R0b − R0 → `report()` 尾端自動檢查（同 R3-all 的完整性檢查
+精神）。對不上就代表某一級的設定跑錯了，而那種錯誤不會自己報出來。
+
+⚠️ `R0c − R0` 是**整包**資料修復，不是單獨的外資持股回補。要再往下拆需要逐源
+   回退舊 parquet 重建矩陣，成本不成比例，目前不做。
+
+實測後的修正：主因**不是**除權息還原（2026-08-01）
+-----------------------------------------------------------------------------
+原本假設 −0.0053 主要來自價格還原（未還原時除息日的假跌幅是可預測的 → 製造
+虛假 IC）。**兩個檢查都不支持這個假設**：
+
+  ① 把 580 個測試日按「前瞻 5 日窗內的除權息事件數」分組，逐日 Δ 沒有單調關係，
+     corr(事件數, Δ) = **+0.059**（方向還相反）。
+  ② 逐欄比對舊/新矩陣（2024-01、39,754 共同列，每欄跨列 Spearman）：
+     **價格類全部 ρ ≈ 0.985–0.989**（Close/Open/High/Low/MA_20/MA_60/ATR_14）——
+     除權息還原是逐股的單調重新縮放，橫斷面**排名**幾乎不動。
+
+真正變動大的是**籌碼欄**：
+     Day_Trade_Volume  相異值 1 → 30,906（整維從死值變活值）
+     Short_Sale ρ=0.78 / Short_Cover ρ=0.86 （margin 券賣/券買 swap 修正，33.2% 的列）
+     Holdings_Large_Change ρ=0.91、Foreign_Holding_Pct ρ=0.95
+Group C 的 Gross_Margin(0.05)/ROE(0.19) 雖然 ρ 很低，但在 fund_v2=False 下相異值
+只有 10–14 個、近乎死值，實務影響小。Group D 那 8 個變動欄是**每日橫斷面常數**，
+對 Ridge 的日內 rank IC **零影響**。
+
+→ 所以 −0.0053 幾乎確定來自 **Group B 籌碼欄的正確性修正**，而那些是真的把錯的
+   資料改對（券賣/券買標反、當沖量整欄為 0）。與 purge、Q4 延遲同類：
+   **誠實化的代價，不是「這個改動不好」**。
+   要指認到單一資料源，得逐源回退重建矩陣（換欄法在此不適用——兩份矩陣的列
+   只有約 85% 對得上，不像 v2/nofund 那樣幾乎完全重疊）。
+⚠️ R0 原本是從 `baseline_ridge_lasso_result.json` 匯入的、**沒有逐日 IC**，
+   所有對 R0 的 Δ 都算不出 t 值。用 `MM_PROTOCOL=v1 --rung R0` 重跑一次即可補上
+   （會覆蓋匯入的那筆），順便驗證能否重現 +0.0977。
 
 R3 為什麼是「旗標關閉」
 -----------------------------------------------------------------------------
@@ -101,7 +159,10 @@ T_FLOOR = 2.0
 
 # 梯子的配對比較：(A, B, 說明) → Δ = A − B，A 是「有該變因」的那一級
 COMPARISONS: list[tuple[str, str, str]] = [
-    ("R0b", "R0",  "v1→v2 整包（外資持股修復 + 宇宙過濾 + fund_v2；不可歸因到單一項）"),
+    ("R0b", "R0",  "v1→v2 整包（資料修復 + 宇宙過濾 + fund_v2）→ 下面三項拆解，相加應等於它"),
+    ("R0c", "R0",  "  ├ Δ 資料修復整包（唯一差別＝raw 資料 07-12 → 07-31；主因是籌碼欄，見檔頭）"),
+    ("R0b", "R0d", "  ├ Δ 宇宙過濾（排除 ETF + 興櫃）"),
+    ("R0d", "R0c", "  └ Δ fundamentals_v2 + MATRIX_START（對照 R1−R3 = −0.0014）"),
     ("R1",  "R0b", "Δ 訓練起點 2012 → 2013"),
     ("R2",  "R1",  "Δ 可得性旗標（在 fundamentals_v2 下）"),
     ("R1",  "R3",  "Δ fundamentals_v2（兩側皆關旗標）"),
@@ -474,9 +535,12 @@ def import_r0() -> None:
                        **({"test_portfolio": d["models"][h]["ridge"]["test_portfolio"]}
                           if "test_portfolio" in d["models"][h]["ridge"] else {})}
                    for h in ("5d", "20d")},
-        "notes": ["v1 快取建於 2026-07-12，在**外資持股 9xxx 缺口修復之前** → "
-                  "與 v2 各級並列時資料基礎不同（核對結果 F2、協定 §7）",
-                  "來源腳本未存逐日 IC → 無法參與配對顯著性檢定"],
+        "notes": ["v1 快取建於 2026-07-12，早於整批資料修復（外資持股 9xxx 回補、"
+                  "**prices_raw 全歷史除權息還原 2026-07-29**、margin swap、daytrade 重建…）"
+                  " → 與 v2 各級並列時資料基礎不同（核對結果 F2、協定 §7）",
+                  "來源腳本未存逐日 IC → 無法參與配對顯著性檢定。"
+                  "用 `MM_PROTOCOL=v1 --rung R0 --train-start 2012-01-01 --flags off` "
+                  "重跑可覆蓋這筆並補上逐日 IC"],
         "generated_at": d.get("generated_at"),
     }
     _save("R0", entry)
@@ -536,7 +600,7 @@ def report() -> None:
     hdr = (f"{'級':11s} {'快取／換欄':26s} {'起點':11s} {'旗標':5s} {'fund':5s} {'中性化':9s} "
            f"{'purge':6s} {'維':4s} {'5d IC':>8s} {'20d IC':>8s} {'年化':>7s}")
     print(hdr + "\n" + "-" * 104)
-    for name in ["R0", "R0b", "R1", "R2", "R3", "R3b",
+    for name in ["R0", "R0c", "R0d", "R0b", "R1", "R2", "R3", "R3b",
                  "R3-q4delay", "R3-fin3", "R3-epssurp", "R3-perpbr", "R3-all",
                  "R4a", "R4b", "R5", "G-R1", "G-R2", "G-R4a"]:
         e = rungs.get(name)
@@ -579,11 +643,55 @@ def report() -> None:
                 and max(abs(d5["delta"]), abs(d20["delta"])) >= DELTA_FLOOR):
             print("   ⚠️ horizon 不一致（5d 與 20d 方向相反）→ 不自動採納，需人工判讀")
 
+    decomposition_check(rungs)
+
     print(f"\n門檻：|Δ| ≥ {DELTA_FLOOR}（實務）且 |NW t| ≥ {T_FLOOR}（統計）→ 採納。"
           f"完整規則見本檔檔頭（跑之前已定）。")
-    if "R0" in rungs and "R0b" in rungs:
-        print("⚠️ R0 是 v1 快取（外資持股修復前）→ 與 v2 各級並列時資料基礎不同，"
-              "R0b−R0 只能當整包參考、不可歸因到單一變因。")
+    if "R0" in rungs and "R0b" in rungs and rungs["R0"]["models"]["5d"].get("ic_by_day") is None:
+        print("⚠️ R0 是匯入的舊結果、沒有逐日 IC → 對 R0 的 Δ 都算不出 t。"
+              "跑 `MM_PROTOCOL=v1 --rung R0 --train-start 2012-01-01 --flags off` 可補上。")
+
+
+def decomposition_check(rungs: dict) -> None:
+    """R0b−R0 的三段拆解完整性檢查。
+
+    三段（資料修復 / 宇宙過濾 / fund_v2+起點）是把同一段路切成三刀，
+    相加**必須**還原成整包差。對不上就代表某一級的設定跑錯了——而那類錯誤
+    （例如變體沒吃到、train_start 打錯）**不會自己報出來**，只會安靜地
+    給出一個看起來合理的數字。這一行就是專門擋它的。
+    """
+    need = ("R0", "R0b", "R0c", "R0d")
+    if not all(r in rungs for r in need):
+        missing = [r for r in need if r not in rungs]
+        if "R0c" in rungs or "R0d" in rungs:
+            print(f"\n（拆解完整性檢查：尚缺 {missing}，跑齊後自動顯示）")
+        return
+
+    print(f"\n{'='*104}\nR0b − R0 三段拆解完整性檢查\n{'='*104}")
+    for h in ("5d", "20d"):
+        def ic(r: str) -> float:
+            return rungs[r]["models"][h]["test_ic"]["mean_ic"]
+        whole = ic("R0b") - ic("R0")
+        parts = [("資料修復（raw 07-12 → 07-31）", ic("R0c") - ic("R0")),
+                 ("宇宙過濾（排除 ETF + 興櫃）",   ic("R0b") - ic("R0d")),
+                 ("fund_v2 + MATRIX_START",       ic("R0d") - ic("R0c"))]
+        tot = sum(p for _, p in parts)
+        print(f"\n[{h}] 整包 R0b−R0 = {whole:+.4f}")
+        for lbl, v in parts:
+            share = f"{abs(v)/abs(whole):.0%}" if abs(whole) > 1e-9 else "—"
+            print(f"        {lbl:32s} {v:+.4f}   （佔 {share}）")
+        gap = tot - whole
+        flag = "✓ 一致" if abs(gap) < 5e-4 else f"❌ 對不上（差 {gap:+.4f}）→ 先懷疑某一級的設定"
+        print(f"        {'三段相加':32s} {tot:+.4f}   {flag}")
+
+    r13 = None
+    if "R1" in rungs and "R3" in rungs:
+        r13 = rungs["R1"]["models"]["5d"]["test_ic"]["mean_ic"] - \
+              rungs["R3"]["models"]["5d"]["test_ic"]["mean_ic"]
+        print(f"\n對照：R1 − R3（fund_v2 在 train2013、兩側皆關旗標）= {r13:+.4f}。"
+              f"\n      與上面「fund_v2 + MATRIX_START」的差額即 MATRIX_START 2010→2011 的效應"
+              f"\n      （macro ts 暖機期不同；macro 是每日橫斷面常數，對 Ridge 的日內 rank IC"
+              f"\n       理論上零影響，實際差額應接近 0，只剩 eligible 邊界的微小差異）。")
 
 
 # ============================================================

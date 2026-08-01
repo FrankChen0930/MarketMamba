@@ -1,0 +1,13 @@
+[
+ {
+  "arm": "v2_kg",
+  "n_days": 582,
+  "local_mean_ic": 0.0992,
+  "colab_mean_ic": 0.0991,
+  "diff": 0.0001,
+  "corr_daily": 0.9976,
+  "max_abs_daily_diff": 0.041,
+  "n_common": 582,
+  "verdict": "✅ 一致，本機矩陣可用"
+ }
+]

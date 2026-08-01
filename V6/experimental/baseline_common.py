@@ -101,6 +101,10 @@ PROTOCOL = {
     "REBALANCE_DAYS": 5,
     "COST_BUY":     0.0015,
     "COST_SELL":    0.0045,
+    # 宇宙規則：協定版本以外**另外**拉出來當一個可獨立切換的變因（2026-08-01）。
+    # 原本 `_filter_universe` 直接看 `PROTOCOL_VERSION`，導致「v2 規格 + v1 宇宙」
+    # 這種只差一個變因的組合建不出來，R0b−R0 就永遠拆不開（見 f5_r_series 檔頭）。
+    "UNIVERSE":     "v1",
 }
 
 if PROTOCOL_VERSION == "v2":
@@ -118,6 +122,7 @@ if PROTOCOL_VERSION == "v2":
         "NEUTRALIZE":    "none",    # 預設關；由 F5 量出 IC delta 再決定
         "FUNDAMENTALS_V2": True,
         "AVAILABILITY_FLAGS": True,
+        "UNIVERSE":      "v2",
     })
 
 # ── 變體：F5 的 R3/R4 需要「只差一個變因」的另一份矩陣 ────────────────
@@ -132,6 +137,19 @@ _VARIANT_SPECS: dict[str, dict] = {
     "nofund":   {"overrides": {"FUNDAMENTALS_V2": False},           "reuse_chunks": False},
     "neuind":   {"overrides": {"NEUTRALIZE": "industry"},           "reuse_chunks": True},
     "neuindmc": {"overrides": {"NEUTRALIZE": "industry_mktcap"},    "reuse_chunks": True},
+    # ── 2026-08-01 新增：拆解 F5 的 R0b − R0 = −0.0079（見 f5_r_series 檔頭）──
+    # 宇宙規則寫進 chunk 的**列集合**（ETF 進不進橫斷面會改變 winsorize/z-score 的
+    # 分母），所以與 fund_v2 一樣只能各建一份，不能 reuse_chunks。
+    #
+    # ⚠️ 兩者都**刻意不覆寫 `AVAILABILITY_FLAGS`**：`_DIM` 在 import 期就被
+    #    `patch_config_67d()` 綁成 66，關掉旗標會讓 `build_features` 不產生 Avail_*
+    #    欄，接著 `keep = [...] + FEATURE_COLS` 直接 KeyError（而且是在矩陣建了
+    #    十幾分鐘之後才炸）。沿用 R1/R3 既有作法：旗標照建、跑階時 `--flags off`
+    #    遮掉。遮掉後扁平維度 307 − 7 = **300，與 v1 完全相同** → R0c/R0d 與 R0
+    #    是同維度的比較。
+    "v1univ":   {"overrides": {"UNIVERSE": "v1"},                   "reuse_chunks": False},
+    "v1like":   {"overrides": {"UNIVERSE": "v1", "FUNDAMENTALS_V2": False,
+                               "MATRIX_START": "2010-01-01"},       "reuse_chunks": False},
 }
 if VARIANT:
     assert PROTOCOL_VERSION == "v2", f"MM_VARIANT 只在 MM_PROTOCOL=v2 下有意義（收到 {PROTOCOL_VERSION}）"
@@ -160,6 +178,8 @@ if not VARIANT:
     assert CHUNK_DIR == CACHE_DIR / "chunks" and not CHUNKS_SHARED
     assert PROTOCOL.get("NEUTRALIZE", "none") == "none"          # v1 無此鍵、v2 預設 none
     assert PROTOCOL.get("FUNDAMENTALS_V2", False) is (PROTOCOL_VERSION == "v2")
+    # 宇宙規則抽成 PROTOCOL 鍵之後，未設變體時必須與協定版本綁死＝行為與改動前一致
+    assert PROTOCOL["UNIVERSE"] == PROTOCOL_VERSION
 
 # ============================================================
 # 協定 §4 附錄：扁平模型衍生特徵規格（凍結；GBDT 共用同一份）
@@ -199,9 +219,14 @@ def _filter_universe(pr: pd.DataFrame) -> pd.DataFrame:
     v2 改用 `hygiene.filter_tradable_universe()`（與 `run_daily_inference._sanitize`
     同一套規則），但 **v1 維持原樣不動**——已發表的 Ridge/GBDT/GRU 結果是在
     那個宇宙下跑出來的，改了會讓它們無法重現。
+
+    ⚠️ 2026-08-01：判準改讀 `PROTOCOL["UNIVERSE"]` 而不是 `PROTOCOL_VERSION`。
+       未設變體時兩者恆等（上方 no-op assert 保證），行為逐位元不變；
+       設 `MM_VARIANT=v1univ/v1like` 時才會出現「v2 規格 + v1 宇宙」的組合，
+       那是拆開 R0b−R0 所必需的一次一變因。
     """
     pr = pr[pr["stock_id"].astype(str).str.match(r"^\d{4}$")]
-    if PROTOCOL_VERSION == "v2":
+    if PROTOCOL["UNIVERSE"] == "v2":
         from marketmamba.data.hygiene import filter_tradable_universe
         keep = set(filter_tradable_universe(
             pd.DataFrame({"stock_id": sorted(pr["stock_id"].astype(str).unique())})
@@ -314,7 +339,10 @@ def build_base_matrix(n_chunks: int = 5, force: bool = False) -> None:
     prices = prices.drop_duplicates(subset=["stock_id", "Date"], keep="last")
     stocks = sorted(prices["stock_id"].unique())
     print(f"[build] prices_raw {n0:,} → 過濾後 {len(prices):,} 列 | {len(stocks)} 支 | "
-          f"{prices['Date'].min().date()} → {prices['Date'].max().date()}", flush=True)
+          f"{prices['Date'].min().date()} → {prices['Date'].max().date()} | "
+          f"宇宙規則={PROTOCOL['UNIVERSE']}（v1=只過濾 ^\\d{{4}}$、含 ETF/興櫃；"
+          f"v2=filter_tradable_universe）| MATRIX_START={PROTOCOL['MATRIX_START']} | "
+          f"fund_v2={PROTOCOL.get('FUNDAMENTALS_V2', False)}", flush=True)
 
     # ── 市場層級 raw：載一次重用 ──
     market_kwargs = {k: _load_raw(v) for k, v in _MARKET_RAWS.items()}

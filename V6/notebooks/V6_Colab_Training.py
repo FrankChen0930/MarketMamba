@@ -500,18 +500,48 @@ from experimental.splitters import train_val_split_dates
 train_dates, val_dates = train_val_split_dates(
     all_dates, cutoff_train_end, horizon=60, embargo_days=20, label="cell4")
 
-FINAL_EPOCHS   = 100
+# ⚠️ FINAL_EPOCHS 100 → 20（2026-08-01 修正，見 docs/f6-training-log-and-readout.md §3）
+# `epochs` 一個參數身兼兩職：「最多跑幾輪」與「OneCycleLR 的排程長度」。
+# WARMUP_PCT=0.15 × 100 → **暖身長達 15 個 epoch**，上一輪就是這樣毀掉的：
+#   ep7（IC 峰值）LR 只有 max 的 47% 且還在往上爬、ep14 才到 99%
+#   → 模型在暖身期就過擬合，從頭到尾沒進入退火階段，best val IC 只有 +0.0526
+#     （同期單尺度 no_gat 是 +0.0884）
+# 20 個 epoch：暖身 3 個、ep3 到頂、之後完整退火。對照 kg_ablation 三組的峰值在 ep3~5。
+FINAL_EPOCHS   = 20
 N_SAMPLE_TRAIN = None   # All stocks. If OOM → set 2000
-EARLY_STOP_IC  = 15
+# 原本 15；在 20 個 epoch 下 patience=15 形同沒有 early stop。
+EARLY_STOP_IC  = 8
 
 from marketmamba import config as _cfg
 _cfg.N_SAMPLE_TRAIN = N_SAMPLE_TRAIN
+
+# ⚠️ 知識圖譜改用 v2（2026-08-01）。預設的 KG_CACHE_PATH 是**舊圖**
+# （42,864 節點 / 642,451 邊，其中真股票只有 2,510、滾動相關性邊 0 條、
+#  供應鏈邊來自 regex 抓 HTML 裡的 4 位數字）。
+# F6 消融已證實 v2 圖顯著較好：v2_kg +0.0991 vs old_kg +0.0939，
+# **配對 NW t = 5.17**（同架構同 seed，是乾淨比較）；組合層差更大
+# （N=50/k=1.5/20 日：+26.1% vs +16.7%）。
+# `train_model` 在 runtime 才呼叫 `build_kg_csr()`（trainer.py:587），
+# 所以這裡 monkeypatch 會生效，**不需要修改受保護的 trainer.py**。
+# 想改用含相關性邊的 v3 就換成 "knowledge_graph_v3.npz"。
+from pathlib import Path as _Path
+
+import marketmamba.models.trainer as _T
+from marketmamba.config import PROCESSED_DIR as _PD
+KG_FILE = "knowledge_graph_v2.npz"
+_kg_path = _Path(_PD) / KG_FILE
+assert _kg_path.exists(), (
+    f"❌ 找不到 {_kg_path}。KG 的 .npz **不在 processed_v6.zip 裡**，"
+    f"請把它單獨上傳到 Drive/MarketMamba_V6/ 再複製過來：\n"
+    f"    import shutil; shutil.copy('/content/drive/MyDrive/MarketMamba_V6/{KG_FILE}', '{_kg_path}')")
+_T.KG_CACHE_PATH = _kg_path
 
 print(f"Training Setup:")
 print(f"  Train: {len(train_dates)} days ({train_dates[0]} → {train_dates[-1]})")
 print(f"  Val:   {len(val_dates)} days ({val_dates[0]} → {val_dates[-1]})")
 print(f"  Epochs: {FINAL_EPOCHS} (IC early stop patience={EARLY_STOP_IC})")
 print(f"  N_SAMPLE: {N_SAMPLE_TRAIN or 'ALL'}")
+print(f"  KG:    {KG_FILE}  ← 訓練開始後應顯示 2245 nodes / 32083 edges（v2）")
 print(f"  GPU: {torch.cuda.get_device_name(0)}")
 
 # ── Training status recorder（PersonalOS 模型狀態頁面資料來源）──
