@@ -87,8 +87,25 @@ GRID_LIQ = [None, 0.333, 0.667]          # 保留成交金額百分位 ≥ 此�
 
 # ── Headline：跑之前定死，依慣例選，不看數字（規格 §4）────────────
 HEADLINES = {
+    # v1.1 提案 A（2026-08-01 使用者批准）：「貼近實際操作」的頻率 每日 → 20 日。
+    # 失誤在把「每天看 dashboard」誤讀成「每天換股」；實測每日再平衡 Ridge −16.3%、
+    # GBDT −31.6%，根因是 Top50 名單隔天只留存 34–47%。
+    # ⚠️ 這是**看到數字之後**才提的修訂，所有模型都在 v1.1 下重跑，新舊數字不得混用。
     "標準因子研究口徑": {"n": 224, "k": 1.5, "freq": 5, "liq": None},
-    "貼近實際操作":     {"n": 25,  "k": 1.5, "freq": 1, "liq": 0.667},
+    "貼近實際操作":     {"n": 25,  "k": 1.5, "freq": 20, "liq": 0.667},
+}
+
+# ── v1.1 擴充網格（108 組）─────────────────────────────────────────────
+# 主網格（300 組）維持 v1.0 不動，擴充維度另開一張表：
+#   配權（提案 B 的同伴）、分數平滑（提案 B）、交易限制（風控 C）
+# **取值範圍的縮減有獨立依據**：11 年 WF 已驗證低頻（10/20 日）+ 緩衝（1.5/2.0）
+# 是有效區間，不是看 582 天窗的結果挑的。
+GRID_EXT = {
+    "n":      [25, 50, 100],
+    "k":      [1.5, 2.0],
+    "freq":   [10, 20],
+    "weight": GRID_WEIGHT,
+    "smooth": [1, 5, 10],          # 分數先做 w 日移動平均再排名
 }
 
 TRADING_DAYS = 252
@@ -680,6 +697,38 @@ def sweep(models: list[str] | None = None) -> dict:
                         done += 1
                         if done % 40 == 0:
                             print(f"  ... {done}/{total}（{time.time()-t0:.0f}s）", flush=True)
+        # ── v1.1 擴充網格：配權 × 平滑 × 交易限制 ──────────────────────
+        ext_rows = []
+        te0 = time.time()
+        for sm in GRID_EXT["smooth"]:
+            raw = sig.pivot(index="Date", columns="stock_id", values="score")
+            if sm > 1:
+                raw = raw.rolling(sm, min_periods=1).mean()
+            rk_s = raw.rank(axis=1, ascending=False, method="first")                       .reindex(index=mkt.dates, columns=mkt.stocks).where(mkt.px.notna())
+            for n in GRID_EXT["n"]:
+                for k in GRID_EXT["k"]:
+                    for fq in GRID_EXT["freq"]:
+                        for wt in GRID_EXT["weight"]:
+                            r = run_config(mkt, rk_s, n, k, fq, None, weight=wt)
+                            ex, te_ = tracking_error(r.pop("_daily"), bench)
+                            r.update({"n": n, "k": k, "freq": fq, "weight": wt,
+                                      "smooth": sm, "excess_vs_ew": ex, "tracking_error": te_})
+                            ext_rows.append(r)
+        print(f"  ext {len(ext_rows)} 組（{time.time()-te0:.0f}s）", flush=True)
+
+        # 交易限制（風控 C）：只對兩個 headline 做——它是「可執行性」不是「可調參數」
+        constraints = {}
+        for hl, cfg in HEADLINES.items():
+            row = {}
+            for lab, bl, bd in (("無限制", False, False), ("擋漲跌停", True, False),
+                                ("擋處置", False, True), ("兩者都擋", True, True)):
+                r = run_config(mkt, rank, cfg["n"], cfg["k"], cfg["freq"], cfg["liq"],
+                               block_limit=bl, block_disposal=bd)
+                r.pop("_daily")
+                row[lab] = {kk: r[kk] for kk in ("ann_return", "ann_sharpe",
+                                                 "max_drawdown", "avg_turnover")}
+            constraints[hl] = row
+
         # 成本 ×2 敏感度：只對兩個 headline 做（240 組全做太慢且無必要）
         cost2 = {}
         for hl, cfg in HEADLINES.items():
@@ -698,6 +747,8 @@ def sweep(models: list[str] | None = None) -> dict:
             "decile": decile_spread(mkt, rank),
             "signal_health": signal_health(mkt, rank),      # 風控 E：訊號失效監控
             "grid": rows,
+            "grid_ext": ext_rows,                      # v1.1：配權 × 平滑
+            "constraints_headline": constraints,       # 風控 C：漲跌停 / 處置
             "cost_x2_headline": cost2,
             "elapsed_min": round((time.time() - t0) / 60, 1),
         }
