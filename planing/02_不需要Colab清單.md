@@ -28,8 +28,8 @@
 | 9 | 雙模型篩選條件（SQ 門檻/低不確定性/short∩trend 交集/跨日排名穩定） | 未做（原路線圖②） | 中 | CLAUDE.md 下一步 |
 | 10 | 真正的 dual 模擬機器人（比照 sim_engine_v3 跑紙上交易含進退場，非目前僅算 IC/Top50 超額） | 未做（原路線圖③） | 中 | CLAUDE.md 下一步，注意勿與現有「雙模型驗證」混淆 |
 | 11 | P0 後累積 20+ 天 archive，重跑 Uncertainty 校準分析確認結論維持 | 待資料累積 | 中 | `docs/uncertainty-calibration-2026-06-13.md` |
-| 12 | U4 組合風控層：以 Net_Alpha_20d 為期望報酬、Uncertainty 為風險，做 mean-variance 或風險平價的 Top-N 權重，取代目前比例分配的 Suggested_Weight | 未做 | 中 | `docs/architecture-analysis-2026-06-12.md` |
-| 13 | 組合層 sector 集中度限制（同產業最多 X 支，避免訊號全集中在半導體） | 未做 | 中 | 發想空間.md 策略面想法，與 12 可合併規劃 |
+| 12 | ~~U4 組合風控層：以 Net_Alpha_20d 為期望報酬、Uncertainty 為風險，做 mean-variance 或風險平價的 Top-N 權重，取代目前比例分配的 Suggested_Weight~~ | 落地方式已定案 | — | **改列進 `資料基礎升級計畫_baseline_common扶正.md` 階段三-3（3g）**，不在此重複追蹤 |
+| 13 | ~~組合層 sector 集中度限制（同產業最多 X 支，避免訊號全集中在半導體）~~ | 落地方式已定案 | — | **改列進 `資料基礎升級計畫_baseline_common扶正.md` 階段三-3（3h）**，不在此重複追蹤 |
 | 14 | O3 Signal_Quality 顯示邏輯優化（raw 欄位已存在，下游排序已改用 raw，前端顯示是否跟進待定） | 部分完成 | 低 | `docs/architecture-analysis-2026-06-12.md` |
 | 15 | D4：刪除/封存重複的 `models/inference.py` 舊推論實作（與 `run_daily_inference.py` 邏輯分歧） | 未做 | 低 | `docs/architecture-analysis-2026-06-12.md` |
 | 16 | conformal prediction 校準 Uncertainty（不需重訓，純推論後處理） | 未做，優先度已降低（現有排序力已夠用） | 低 | `docs/uncertainty-calibration-2026-06-13.md` |
@@ -71,6 +71,8 @@
 | 29 | 方向一：Pipeline 逐階段說明頁 | `planing/研究計畫_方向一_Pipeline說明頁.md` |
 | 30 | 方向二：業界標準 Baseline 對照 | `planing/研究計畫_方向二_Baseline對照.md` |
 | 31 | 方向三：從 breadth 萃取 conviction | `planing/研究計畫_方向三_Conviction萃取實驗.md` |
+| 32 | **（2026-07-23 新增）** 資料基礎升級計畫階段三-1（3a/3c/3d）：新資料基礎上重跑 Ridge/Lasso→GBDT→LSTM/GRU baseline 階梯、更新效能對照表、排查落差 | `planing/資料基礎升級計畫_baseline_common扶正.md` 階段三-1 |
+| 33 | **（2026-07-23 新增）** 資料基礎升級計畫階段三-2：組合建構方法比較（Top-N 等權 vs mean-variance vs 風險平價），原計畫缺口，這次一併補上 | `planing/資料基礎升級計畫_baseline_common扶正.md` 階段三-2 |
 
 ---
 

@@ -6,227 +6,146 @@
       "best_params": {
         "hidden": 64,
         "lr": 0.0003,
-        "epochs": 4
+        "epochs": 8
       },
       "grid_sweep": [
         {
           "hidden": 64,
           "lr": 0.001,
-          "best_val_ic": 0.1021,
-          "best_epoch": 1
+          "best_val_ic": 0.1058,
+          "best_epoch": 3
         },
         {
           "hidden": 64,
           "lr": 0.0003,
-          "best_val_ic": 0.1084,
-          "best_epoch": 4
-        },
-        {
-          "hidden": 128,
-          "lr": 0.001,
-          "best_val_ic": 0.1012,
-          "best_epoch": 2
-        },
-        {
-          "hidden": 128,
-          "lr": 0.0003,
-          "best_val_ic": 0.1079,
-          "best_epoch": 4
+          "best_val_ic": 0.1089,
+          "best_epoch": 8
         }
       ],
       "epoch_history_best_config": [
         {
           "epoch": 1,
-          "train_loss": 0.08335,
-          "sec": 37,
-          "val_ic": 0.0948
+          "train_loss": 0.08357,
+          "sec": 30,
+          "val_ic": 0.0841
         },
         {
           "epoch": 2,
-          "train_loss": 0.08221,
-          "sec": 37,
-          "val_ic": 0.0955
+          "train_loss": 0.08224,
+          "sec": 30,
+          "val_ic": 0.0912
         },
         {
           "epoch": 3,
-          "train_loss": 0.08194,
-          "sec": 37,
+          "train_loss": 0.08195,
+          "sec": 30,
+          "val_ic": 0.0971
+        },
+        {
+          "epoch": 4,
+          "train_loss": 0.08172,
+          "sec": 33,
+          "val_ic": 0.1028
+        },
+        {
+          "epoch": 5,
+          "train_loss": 0.08154,
+          "sec": 38,
           "val_ic": 0.1049
         },
         {
-          "epoch": 4,
-          "train_loss": 0.08174,
-          "sec": 37,
-          "val_ic": 0.1084
-        },
-        {
-          "epoch": 5,
-          "train_loss": 0.08153,
-          "sec": 37,
-          "val_ic": 0.1014
-        },
-        {
           "epoch": 6,
-          "train_loss": 0.08137,
+          "train_loss": 0.08135,
           "sec": 37,
-          "val_ic": 0.1039
+          "val_ic": 0.1025
         },
         {
           "epoch": 7,
-          "train_loss": 0.08115,
+          "train_loss": 0.08118,
           "sec": 37,
-          "val_ic": 0.0974
+          "val_ic": 0.1053
+        },
+        {
+          "epoch": 8,
+          "train_loss": 0.08102,
+          "sec": 37,
+          "val_ic": 0.1089
+        },
+        {
+          "epoch": 9,
+          "train_loss": 0.08085,
+          "sec": 38,
+          "val_ic": 0.1002
+        },
+        {
+          "epoch": 10,
+          "train_loss": 0.08072,
+          "sec": 38,
+          "val_ic": 0.1051
+        },
+        {
+          "epoch": 11,
+          "train_loss": 0.08055,
+          "sec": 39,
+          "val_ic": 0.1
         }
       ],
       "test_ic": {
-        "n_days": 580,
-        "mean_ic": 0.1113,
-        "ic_std": 0.0952,
-        "icir": 1.168,
-        "pct_pos": 0.91,
-        "t_naive": 28.13,
-        "t_newey_west": 16.81
+        "n_days": 582,
+        "mean_ic": 0.1018,
+        "ic_std": 0.1297,
+        "icir": 0.785,
+        "pct_pos": 0.821,
+        "t_naive": 18.93,
+        "t_newey_west": 11.73
       },
       "test_ic_by_liquidity": {
         "L1_小量": {
-          "mean_ic": 0.1382,
-          "n_days": 580,
-          "avg_names_per_day": 711
+          "mean_ic": 0.1235,
+          "n_days": 582,
+          "avg_names_per_day": 604
         },
         "L2_中量": {
-          "mean_ic": 0.1097,
-          "n_days": 580,
-          "avg_names_per_day": 711
+          "mean_ic": 0.0994,
+          "n_days": 582,
+          "avg_names_per_day": 604
         },
         "L3_大量": {
-          "mean_ic": 0.0867,
-          "n_days": 580,
-          "avg_names_per_day": 711
+          "mean_ic": 0.0893,
+          "n_days": 582,
+          "avg_names_per_day": 604
         }
       },
       "test_portfolio": {
-        "n_days": 592,
-        "n_rebalances": 116,
+        "n_days": 594,
+        "n_rebalances": 117,
         "n_bad_return_days": 0,
-        "ann_return": 0.2277,
-        "ann_sharpe": 1.134,
-        "max_drawdown": -0.257,
-        "avg_turnover_per_rebalance": 0.784,
-        "total_return": 0.6191,
-        "n_price_missing": 18,
-        "excess_vs_twii": -0.8041,
-        "excess_window": "2024-01-03 ~ 2026-04-24（macro TWII 覆蓋範圍）"
+        "ann_return": 0.1619,
+        "ann_sharpe": 0.776,
+        "max_drawdown": -0.3036,
+        "avg_turnover_per_rebalance": 0.764,
+        "total_return": 0.4244,
+        "n_price_missing": 0,
+        "excess_vs_twii": -1.1464,
+        "excess_window": "2024-01-03 ~ 2026-06-02（macro TWII 覆蓋範圍）"
       },
       "test_portfolio_cost_x2": {
-        "n_days": 592,
-        "n_rebalances": 116,
+        "n_days": 594,
+        "n_rebalances": 117,
         "n_bad_return_days": 0,
-        "ann_return": -0.0261,
-        "ann_sharpe": -0.025,
-        "max_drawdown": -0.361,
-        "avg_turnover_per_rebalance": 0.784,
-        "total_return": -0.0603,
-        "n_price_missing": 18,
-        "excess_vs_twii": -1.3629,
-        "excess_window": "2024-01-03 ~ 2026-04-24（macro TWII 覆蓋範圍）"
-      }
-    },
-    "20d": {
-      "cell": "gru",
-      "window": 60,
-      "best_params": {
-        "hidden": 64,
-        "lr": 0.0003,
-        "epochs": 2
-      },
-      "grid_sweep": [
-        {
-          "hidden": 64,
-          "lr": 0.001,
-          "best_val_ic": 0.1319,
-          "best_epoch": 1
-        },
-        {
-          "hidden": 64,
-          "lr": 0.0003,
-          "best_val_ic": 0.1447,
-          "best_epoch": 2
-        },
-        {
-          "hidden": 128,
-          "lr": 0.001,
-          "best_val_ic": 0.1244,
-          "best_epoch": 1
-        },
-        {
-          "hidden": 128,
-          "lr": 0.0003,
-          "best_val_ic": 0.1362,
-          "best_epoch": 3
-        }
-      ],
-      "epoch_history_best_config": [
-        {
-          "epoch": 1,
-          "train_loss": 0.0828,
-          "sec": 38,
-          "val_ic": 0.1359
-        },
-        {
-          "epoch": 2,
-          "train_loss": 0.0813,
-          "sec": 39,
-          "val_ic": 0.1447
-        },
-        {
-          "epoch": 3,
-          "train_loss": 0.08067,
-          "sec": 38,
-          "val_ic": 0.1395
-        },
-        {
-          "epoch": 4,
-          "train_loss": 0.08013,
-          "sec": 38,
-          "val_ic": 0.1207
-        },
-        {
-          "epoch": 5,
-          "train_loss": 0.07965,
-          "sec": 42,
-          "val_ic": 0.1074
-        }
-      ],
-      "test_ic": {
-        "n_days": 580,
-        "mean_ic": 0.1081,
-        "ic_std": 0.121,
-        "icir": 0.893,
-        "pct_pos": 0.795,
-        "t_naive": 21.51,
-        "t_newey_west": 5.95
-      },
-      "test_ic_by_liquidity": {
-        "L1_小量": {
-          "mean_ic": 0.1423,
-          "n_days": 580,
-          "avg_names_per_day": 709
-        },
-        "L2_中量": {
-          "mean_ic": 0.1227,
-          "n_days": 580,
-          "avg_names_per_day": 708
-        },
-        "L3_大量": {
-          "mean_ic": 0.0881,
-          "n_days": 580,
-          "avg_names_per_day": 708
-        }
+        "ann_return": -0.0738,
+        "ann_sharpe": -0.214,
+        "max_drawdown": -0.4014,
+        "avg_turnover_per_rebalance": 0.764,
+        "total_return": -0.1653,
+        "n_price_missing": 0,
+        "excess_vs_twii": -1.7282,
+        "excess_window": "2024-01-03 ~ 2026-06-02（macro TWII 覆蓋範圍）"
       }
     }
   },
   "protocol": {
-    "TRAIN_START": "2012-01-01",
+    "TRAIN_START": "2013-01-01",
     "TRAIN_END": "2023-12-31",
     "TEST_START": "2024-01-01",
     "TEST_END": "2026-06-02",
@@ -243,5 +162,5 @@
     "網格 4 組（hidden×lr）val 日 IC 選組、early stopping patience 3；full-train 以 best epoch 重訓",
     "存活者偏差 D3 未修復：絕對數字偏高，四階相對比較公平（協定 §2）；引用需配分層 IC"
   ],
-  "generated_at": "2026-07-15 02:34"
+  "generated_at": "2026-08-01 23:04"
 }

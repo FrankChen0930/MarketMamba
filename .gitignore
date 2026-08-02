@@ -62,3 +62,7 @@ obsidian_note/
 
 # Temporary debug / test output
 app/backend/_api_check.txt
+
+# 實驗產出的模型分數 parquet（~140 MB，可由 baseline_*/score_mamba_local/wf_scores 重現）
+V6/experimental/result/scores/
+V6/experimental/result/wf/
