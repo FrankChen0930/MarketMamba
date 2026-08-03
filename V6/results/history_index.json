@@ -1,6 +1,462 @@
 {
-  "last_updated": "2026-07-31",
+  "last_updated": "2026-08-03",
   "history": [
+    {
+      "date": "2026-08-03",
+      "total_investable": 938,
+      "portfolio": [
+        {
+          "rank": 1,
+          "ticker": "2535",
+          "alpha": 0.25918,
+          "sharpe": 10.0,
+          "confidence": "高信心",
+          "weight": 0.0085,
+          "uncertainty": 0.023019
+        },
+        {
+          "rank": 2,
+          "ticker": "5515",
+          "alpha": 0.272219,
+          "sharpe": 10.0,
+          "confidence": "高信心",
+          "weight": 0.0085,
+          "uncertainty": 0.024582
+        },
+        {
+          "rank": 3,
+          "ticker": "6016",
+          "alpha": 0.250603,
+          "sharpe": 9.273,
+          "confidence": "中信心",
+          "weight": 0.0079,
+          "uncertainty": 0.026592
+        },
+        {
+          "rank": 4,
+          "ticker": "6023",
+          "alpha": 0.149897,
+          "sharpe": 9.116,
+          "confidence": "高信心",
+          "weight": 0.0078,
+          "uncertainty": 0.016004
+        },
+        {
+          "rank": 5,
+          "ticker": "6015",
+          "alpha": 0.189842,
+          "sharpe": 8.711,
+          "confidence": "高信心",
+          "weight": 0.0074,
+          "uncertainty": 0.021332
+        },
+        {
+          "rank": 6,
+          "ticker": "2539",
+          "alpha": 0.200082,
+          "sharpe": 8.393,
+          "confidence": "高信心",
+          "weight": 0.0072,
+          "uncertainty": 0.023363
+        },
+        {
+          "rank": 7,
+          "ticker": "1342",
+          "alpha": 0.236248,
+          "sharpe": 7.784,
+          "confidence": "中信心",
+          "weight": 0.0066,
+          "uncertainty": 0.029837
+        },
+        {
+          "rank": 8,
+          "ticker": "6214",
+          "alpha": 0.331947,
+          "sharpe": 7.757,
+          "confidence": "中信心",
+          "weight": 0.0066,
+          "uncertainty": 0.042276
+        },
+        {
+          "rank": 9,
+          "ticker": "6177",
+          "alpha": 0.132435,
+          "sharpe": 7.526,
+          "confidence": "高信心",
+          "weight": 0.0064,
+          "uncertainty": 0.017063
+        },
+        {
+          "rank": 10,
+          "ticker": "2414",
+          "alpha": 0.21835,
+          "sharpe": 7.485,
+          "confidence": "中信心",
+          "weight": 0.0064,
+          "uncertainty": 0.028635
+        },
+        {
+          "rank": 11,
+          "ticker": "3209",
+          "alpha": 0.148602,
+          "sharpe": 7.273,
+          "confidence": "高信心",
+          "weight": 0.0062,
+          "uncertainty": 0.019882
+        },
+        {
+          "rank": 12,
+          "ticker": "2832",
+          "alpha": 0.174126,
+          "sharpe": 7.074,
+          "confidence": "高信心",
+          "weight": 0.006,
+          "uncertainty": 0.024047
+        },
+        {
+          "rank": 13,
+          "ticker": "4938",
+          "alpha": 0.168536,
+          "sharpe": 6.993,
+          "confidence": "高信心",
+          "weight": 0.006,
+          "uncertainty": 0.023529
+        },
+        {
+          "rank": 14,
+          "ticker": "2355",
+          "alpha": 0.173024,
+          "sharpe": 6.947,
+          "confidence": "高信心",
+          "weight": 0.0059,
+          "uncertainty": 0.02433
+        },
+        {
+          "rank": 15,
+          "ticker": "2905",
+          "alpha": 0.162065,
+          "sharpe": 6.89,
+          "confidence": "高信心",
+          "weight": 0.0059,
+          "uncertainty": 0.022939
+        },
+        {
+          "rank": 16,
+          "ticker": "5609",
+          "alpha": 0.169357,
+          "sharpe": 6.885,
+          "confidence": "高信心",
+          "weight": 0.0059,
+          "uncertainty": 0.024017
+        },
+        {
+          "rank": 17,
+          "ticker": "6269",
+          "alpha": 0.203475,
+          "sharpe": 6.869,
+          "confidence": "中信心",
+          "weight": 0.0059,
+          "uncertainty": 0.029041
+        },
+        {
+          "rank": 18,
+          "ticker": "4956",
+          "alpha": 0.471844,
+          "sharpe": 6.836,
+          "confidence": "低信心",
+          "weight": 0.0058,
+          "uncertainty": 0.068437
+        },
+        {
+          "rank": 19,
+          "ticker": "2850",
+          "alpha": 0.151236,
+          "sharpe": 6.81,
+          "confidence": "高信心",
+          "weight": 0.0058,
+          "uncertainty": 0.021619
+        },
+        {
+          "rank": 20,
+          "ticker": "6757",
+          "alpha": 0.139883,
+          "sharpe": 6.725,
+          "confidence": "高信心",
+          "weight": 0.0057,
+          "uncertainty": 0.020206
+        },
+        {
+          "rank": 21,
+          "ticker": "3356",
+          "alpha": 0.268527,
+          "sharpe": 6.682,
+          "confidence": "中信心",
+          "weight": 0.0057,
+          "uncertainty": 0.039585
+        },
+        {
+          "rank": 22,
+          "ticker": "3213",
+          "alpha": 0.29303,
+          "sharpe": 6.635,
+          "confidence": "中信心",
+          "weight": 0.0057,
+          "uncertainty": 0.043557
+        },
+        {
+          "rank": 23,
+          "ticker": "6996",
+          "alpha": 0.342987,
+          "sharpe": 6.532,
+          "confidence": "低信心",
+          "weight": 0.0056,
+          "uncertainty": 0.051894
+        },
+        {
+          "rank": 24,
+          "ticker": "1527",
+          "alpha": 0.167115,
+          "sharpe": 6.461,
+          "confidence": "高信心",
+          "weight": 0.0055,
+          "uncertainty": 0.025247
+        },
+        {
+          "rank": 25,
+          "ticker": "2838",
+          "alpha": 0.112192,
+          "sharpe": 6.457,
+          "confidence": "高信心",
+          "weight": 0.0055,
+          "uncertainty": 0.016755
+        },
+        {
+          "rank": 26,
+          "ticker": "2546",
+          "alpha": 0.132406,
+          "sharpe": 6.44,
+          "confidence": "高信心",
+          "weight": 0.0055,
+          "uncertainty": 0.019938
+        },
+        {
+          "rank": 27,
+          "ticker": "8162",
+          "alpha": 1.690068,
+          "sharpe": 6.389,
+          "confidence": "低信心",
+          "weight": 0.0055,
+          "uncertainty": 0.263885
+        },
+        {
+          "rank": 28,
+          "ticker": "6592",
+          "alpha": 0.159942,
+          "sharpe": 6.373,
+          "confidence": "高信心",
+          "weight": 0.0054,
+          "uncertainty": 0.024467
+        },
+        {
+          "rank": 29,
+          "ticker": "2049",
+          "alpha": 0.15896,
+          "sharpe": 6.264,
+          "confidence": "高信心",
+          "weight": 0.0054,
+          "uncertainty": 0.024736
+        },
+        {
+          "rank": 30,
+          "ticker": "6486",
+          "alpha": 0.163638,
+          "sharpe": 6.263,
+          "confidence": "高信心",
+          "weight": 0.0053,
+          "uncertainty": 0.025488
+        },
+        {
+          "rank": 31,
+          "ticker": "1714",
+          "alpha": 0.379702,
+          "sharpe": 6.213,
+          "confidence": "低信心",
+          "weight": 0.0053,
+          "uncertainty": 0.06047
+        },
+        {
+          "rank": 32,
+          "ticker": "3556",
+          "alpha": 1.366286,
+          "sharpe": 6.155,
+          "confidence": "低信心",
+          "weight": 0.0053,
+          "uncertainty": 0.221341
+        },
+        {
+          "rank": 33,
+          "ticker": "2852",
+          "alpha": 0.148868,
+          "sharpe": 6.118,
+          "confidence": "高信心",
+          "weight": 0.0052,
+          "uncertainty": 0.023677
+        },
+        {
+          "rank": 34,
+          "ticker": "4973",
+          "alpha": 0.47382,
+          "sharpe": 6.09,
+          "confidence": "低信心",
+          "weight": 0.0052,
+          "uncertainty": 0.077148
+        },
+        {
+          "rank": 35,
+          "ticker": "5410",
+          "alpha": 0.226708,
+          "sharpe": 6.087,
+          "confidence": "中信心",
+          "weight": 0.0052,
+          "uncertainty": 0.036584
+        },
+        {
+          "rank": 36,
+          "ticker": "4949",
+          "alpha": 0.348788,
+          "sharpe": 6.034,
+          "confidence": "低信心",
+          "weight": 0.0052,
+          "uncertainty": 0.057139
+        },
+        {
+          "rank": 37,
+          "ticker": "3046",
+          "alpha": 0.390418,
+          "sharpe": 6.022,
+          "confidence": "低信心",
+          "weight": 0.0051,
+          "uncertainty": 0.064168
+        },
+        {
+          "rank": 38,
+          "ticker": "2401",
+          "alpha": 0.273655,
+          "sharpe": 6.013,
+          "confidence": "中信心",
+          "weight": 0.0051,
+          "uncertainty": 0.044847
+        },
+        {
+          "rank": 39,
+          "ticker": "3022",
+          "alpha": 0.212149,
+          "sharpe": 6.012,
+          "confidence": "中信心",
+          "weight": 0.0051,
+          "uncertainty": 0.034624
+        },
+        {
+          "rank": 40,
+          "ticker": "2501",
+          "alpha": 0.105714,
+          "sharpe": 6.01,
+          "confidence": "高信心",
+          "weight": 0.0051,
+          "uncertainty": 0.016922
+        },
+        {
+          "rank": 41,
+          "ticker": "2031",
+          "alpha": 0.097963,
+          "sharpe": 6.009,
+          "confidence": "高信心",
+          "weight": 0.0051,
+          "uncertainty": 0.015636
+        },
+        {
+          "rank": 42,
+          "ticker": "2812",
+          "alpha": 0.323355,
+          "sharpe": 5.914,
+          "confidence": "低信心",
+          "weight": 0.0051,
+          "uncertainty": 0.053995
+        },
+        {
+          "rank": 43,
+          "ticker": "9941",
+          "alpha": 0.091627,
+          "sharpe": 5.751,
+          "confidence": "高信心",
+          "weight": 0.0049,
+          "uncertainty": 0.015236
+        },
+        {
+          "rank": 44,
+          "ticker": "5880",
+          "alpha": 0.239717,
+          "sharpe": 5.738,
+          "confidence": "中信心",
+          "weight": 0.0049,
+          "uncertainty": 0.041081
+        },
+        {
+          "rank": 45,
+          "ticker": "1720",
+          "alpha": 0.132721,
+          "sharpe": 5.609,
+          "confidence": "高信心",
+          "weight": 0.0048,
+          "uncertainty": 0.02295
+        },
+        {
+          "rank": 46,
+          "ticker": "2441",
+          "alpha": 0.251606,
+          "sharpe": 5.581,
+          "confidence": "中信心",
+          "weight": 0.0048,
+          "uncertainty": 0.044362
+        },
+        {
+          "rank": 47,
+          "ticker": "6585",
+          "alpha": 0.138174,
+          "sharpe": 5.555,
+          "confidence": "高信心",
+          "weight": 0.0047,
+          "uncertainty": 0.024152
+        },
+        {
+          "rank": 48,
+          "ticker": "4961",
+          "alpha": 0.270925,
+          "sharpe": 5.532,
+          "confidence": "低信心",
+          "weight": 0.0047,
+          "uncertainty": 0.048248
+        },
+        {
+          "rank": 49,
+          "ticker": "6224",
+          "alpha": 0.567716,
+          "sharpe": 5.515,
+          "confidence": "低信心",
+          "weight": 0.0047,
+          "uncertainty": 0.102219
+        },
+        {
+          "rank": 50,
+          "ticker": "1733",
+          "alpha": 0.215286,
+          "sharpe": 5.442,
+          "confidence": "中信心",
+          "weight": 0.0046,
+          "uncertainty": 0.038826
+        }
+      ]
+    },
     {
       "date": "2026-07-31",
       "total_investable": 996,
@@ -26902,82 +27358,6 @@
           "confidence": "中信心",
           "weight": 0.0057,
           "uncertainty": 0.04349
-        }
-      ]
-    },
-    {
-      "date": "2026-05-05",
-      "total_investable": 1349,
-      "portfolio": [
-        {
-          "ticker": "6690",
-          "alpha": 0.135294,
-          "sharpe": 9.98,
-          "confidence": "高信心",
-          "weight": 0.0107
-        },
-        {
-          "ticker": "3209",
-          "alpha": 0.223578,
-          "sharpe": 9.678,
-          "confidence": "中信心",
-          "weight": 0.0104
-        },
-        {
-          "ticker": "2850",
-          "alpha": 0.139267,
-          "sharpe": 9.369,
-          "confidence": "高信心",
-          "weight": 0.0101
-        },
-        {
-          "ticker": "6525",
-          "alpha": 0.174486,
-          "sharpe": 8.878,
-          "confidence": "高信心",
-          "weight": 0.0095
-        },
-        {
-          "ticker": "3432",
-          "alpha": 0.230938,
-          "sharpe": 8.594,
-          "confidence": "中信心",
-          "weight": 0.0092
-        },
-        {
-          "ticker": "3356",
-          "alpha": 0.219055,
-          "sharpe": 8.418,
-          "confidence": "中信心",
-          "weight": 0.009
-        },
-        {
-          "ticker": "6023",
-          "alpha": 0.103806,
-          "sharpe": 7.95,
-          "confidence": "高信心",
-          "weight": 0.0085
-        },
-        {
-          "ticker": "4953",
-          "alpha": 0.141517,
-          "sharpe": 7.626,
-          "confidence": "高信心",
-          "weight": 0.0082
-        },
-        {
-          "ticker": "2465",
-          "alpha": 0.382504,
-          "sharpe": 7.56,
-          "confidence": "低信心",
-          "weight": 0.0081
-        },
-        {
-          "ticker": "3025",
-          "alpha": 0.131864,
-          "sharpe": 7.551,
-          "confidence": "高信心",
-          "weight": 0.0081
         }
       ]
     }
