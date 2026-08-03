@@ -1550,6 +1550,25 @@ def _add_alpha_targets(df: pd.DataFrame, df_macro: pd.DataFrame) -> pd.DataFrame
         df["Alpha_60d"] = df["Fwd_60d"] - df["TWII_Fwd_60d"].fillna(0)
         df.drop(columns=["TWII_Fwd_5d", "TWII_Fwd_10d", "TWII_Fwd_20d", "TWII_Fwd_60d"], inplace=True)
     else:
+        # ⚠️ 這條路徑是**實際在走的**（2026-08-03 實測確認，非讀碼推論）：
+        # `macro_raw` 的欄位叫 `TWII_Close`，把它改名成 `TWII` 的 `_merge_macro`
+        # 是在 `m = df_macro.copy()` 上做的 → 呼叫端的 `df_macro` 永遠沒有 `TWII`
+        # 欄 → 上面那個 if 從來不成立。所以 `Alpha_Nd` 其實是**原始前瞻報酬**，
+        # 不是相對大盤的超額報酬（實測 `Alpha_5d` vs `Fwd_5d` 的 max|Δ| = 0.000e+00，
+        # 對照組差 0.183）。
+        #
+        # **刻意不修**：標籤最後都轉成每日橫斷面 rank，而大盤前瞻報酬是**當日常數**，
+        # 減一個當日常數不改變當日排序；IC 又是 Spearman，同樣免疫。改了會讓
+        # 所有既有結果無法重現，卻換不到任何實質差異。
+        # 但**必須讓它出聲**——原本這個退化是完全靜默的，名字叫 Alpha 卻不是 Alpha。
+        _cols = list(df_macro.columns) if df_macro is not None else []
+        logger.warning(
+            "[targets] df_macro 沒有 'TWII' 欄（實際欄位：%s…）→ Alpha_Nd 退化為"
+            "**原始前瞻報酬**，未減去大盤。這是目前的實際行為，且對 rank 標籤與"
+            " Spearman IC 無影響（減當日常數不改排序）；詳見 "
+            "docs/label-horizon-vs-holding-period-2026-08-03.md §7.1",
+            _cols[:6],
+        )
         df["Alpha_5d"]  = df["Fwd_5d"]
         df["Alpha_10d"] = df["Fwd_10d"]
         df["Alpha_20d"] = df["Fwd_20d"]

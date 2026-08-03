@@ -1,0 +1,15 @@
+[
+ {
+  "arm": "v2_kg_nomacro",
+  "n_days": 20,
+  "local_mean_ic": 0.0879,
+  "output": "v2_kg_nomacro__partial20d.parquet",
+  "partial": true,
+  "colab_mean_ic": 0.0881,
+  "diff": -0.0002,
+  "corr_daily": 1.0,
+  "max_abs_daily_diff": 0.0004,
+  "n_common": 20,
+  "verdict": "✅ 一致，本機矩陣可用"
+ }
+]

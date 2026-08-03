@@ -4,5 +4,76 @@
   "n_days": 582,
   "local_mean_ic": 0.0989,
   "verdict": "⚠ 無 Colab 逐日 IC 可對照"
+ },
+ {
+  "arm": "v2_kg_nomacro",
+  "n_days": 582,
+  "local_mean_ic": 0.1145,
+  "output": "v2_kg_nomacro.parquet",
+  "partial": false,
+  "colab_mean_ic": 0.1145,
+  "diff": -0.0,
+  "corr_daily": 1.0,
+  "max_abs_daily_diff": 0.0018,
+  "n_common": 582,
+  "verdict": "✅ 一致，本機矩陣可用"
+ },
+ {
+  "arm": "v2_kg_nomacro",
+  "head": "10d",
+  "n_days": 582,
+  "local_mean_ic": 0.1115,
+  "horizon_ic": {
+   "5d": {
+    "mean_ic": 0.1115,
+    "icir": 1.242,
+    "pct_pos": 0.893,
+    "n_days": 582
+   },
+   "10d": {
+    "mean_ic": 0.1311,
+    "icir": 1.49,
+    "pct_pos": 0.928,
+    "n_days": 582
+   },
+   "20d": {
+    "mean_ic": 0.1311,
+    "icir": 1.49,
+    "pct_pos": 0.928,
+    "n_days": 582
+   }
+  },
+  "output": "v2_kg_nomacro__head10d.parquet",
+  "partial": false,
+  "verdict": "⚠ 無 Colab 逐日 IC 可對照"
+ },
+ {
+  "arm": "v2_kg",
+  "head": "10d",
+  "n_days": 582,
+  "local_mean_ic": 0.0944,
+  "horizon_ic": {
+   "5d": {
+    "mean_ic": 0.0944,
+    "icir": 0.77,
+    "pct_pos": 0.796,
+    "n_days": 582
+   },
+   "10d": {
+    "mean_ic": 0.1049,
+    "icir": 0.931,
+    "pct_pos": 0.823,
+    "n_days": 582
+   },
+   "20d": {
+    "mean_ic": 0.1121,
+    "icir": 1.026,
+    "pct_pos": 0.816,
+    "n_days": 582
+   }
+  },
+  "output": "v2_kg__head10d.parquet",
+  "partial": false,
+  "verdict": "⚠ 無 Colab 逐日 IC 可對照"
  }
 ]

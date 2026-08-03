@@ -181,6 +181,34 @@ if not VARIANT:
     # 宇宙規則抽成 PROTOCOL 鍵之後，未設變體時必須與協定版本綁死＝行為與改動前一致
     assert PROTOCOL["UNIVERSE"] == PROTOCOL_VERSION
 
+
+# ── import 期橫幅：讓「讀到哪一份矩陣」永遠看得見（2026-08-03 新增）───────
+# 為什麼放在源頭而不是每支腳本各自防禦：`PROTOCOL_VERSION` 由 `MM_PROTOCOL`
+# 在 **import 期**決定，忘了設就會靜默指到 v1 的 `baseline_cache/`——那份是
+# 2026-07-12 建的**舊資料**（在除權息還原與整批資料修復之前），而且它真的存在
+# （1.46 GB），所以不會有 FileNotFoundError，只會安靜地算出一組「看起來很合理
+# 但基礎是舊的」數字。實測稽核：`baseline_gbdt` / `baseline_ic_diagnosis` /
+# `baseline_ridge_lasso` / `baseline_rnn` 四支都用了協定依賴常數卻沒有守門。
+#
+# 刻意**不 raise**：v1 仍是合法設定（早期結果就是在 v1 下產生的，要能重現）。
+# 問題從來不是「可以選 v1」，是「選了卻看不見」。
+try:
+    _bp_ok = BASE_PATH.exists()
+    _bp_mtime = (time.strftime("%Y-%m-%d %H:%M",
+                               time.localtime(BASE_PATH.stat().st_mtime))
+                 if _bp_ok else "不存在")
+    print(f"[protocol] MM_PROTOCOL={os.environ.get('MM_PROTOCOL') or '(未設)'}"
+          f" → PROTOCOL_VERSION={PROTOCOL_VERSION}｜變體={VARIANT or '無'}｜維度={_DIM}\n"
+          f"[protocol] base matrix = {BASE_PATH}"
+          f"｜{'存在' if _bp_ok else '**不存在**'}（建立於 {_bp_mtime}）",
+          flush=True)
+    if PROTOCOL_VERSION != "v2":
+        print("[protocol] ⚠️ 目前不是 v2。v1 的 baseline_cache 是 2026-07-12 建的舊資料"
+              "（除權息還原與資料修復**之前**），若你要的是現行協定請設 MM_PROTOCOL=v2",
+              flush=True)
+except Exception as _e:                     # 橫幅不該成為新的失敗點
+    print(f"[protocol] ⚠ 橫幅列印失敗（不影響功能）：{_e}", flush=True)
+
 # ============================================================
 # 協定 §4 附錄：扁平模型衍生特徵規格（凍結；GBDT 共用同一份）
 # ============================================================
@@ -610,10 +638,14 @@ def build_derived_roll(keys: pd.DataFrame | None = None, force: bool = False) ->
 # 3) 載入 X / y（訓練與評估用）
 # ============================================================
 def load_xy(date_from: str, date_to: str, day_stride: int = 1,
-            with_derived: bool = True) -> dict:
+            with_derived: bool = True, extra_labels: bool = False) -> dict:
     """回傳 dict：X (np.float32, n×300 或 n×59)、rank_5d/rank_20d/alpha_5d/alpha_20d、dates、stock_ids。
     只回傳 eligible 列；label NaN 列保留（各模型自行 mask）。
-    day_stride=k：每 k 個交易日取一天（訓練抽樣；5d 重疊窗冗餘高，k=2 資訊損失小）。"""
+    day_stride=k：每 k 個交易日取一天（訓練抽樣；5d 重疊窗冗餘高，k=2 資訊損失小）。
+
+    extra_labels=True 時額外回傳 rank_10d/alpha_10d，且 5d/20d 一併改讀
+    `baseline_label_10d.parquet`（同一次重建的同一份快照，見下方註解）。
+    預設 False = 逐位元維持既有行為。"""
     filt = [("Date", ">=", pd.Timestamp(date_from)), ("Date", "<=", pd.Timestamp(date_to))]
     base = pd.read_parquet(BASE_PATH, filters=filt)
     mask = base["eligible"].to_numpy()
@@ -652,6 +684,28 @@ def load_xy(date_from: str, date_to: str, day_stride: int = 1,
     np.nan_to_num(X, copy=False)                      # 衍生特徵前段 NaN → 0（= 橫斷面均值，同 clean 慣例）
     out["X"] = X
     out["feature_names"] = all_feature_names() if with_derived else list(FEATURE_COLS)
+
+    if extra_labels:
+        # 標籤 horizon 實驗（2026-08-03）：base matrix 只留 5d/20d，10d 由
+        # `experimental/label_10d.py` 重建成獨立 side file（行序與 base 完全一致）。
+        # **三個 horizon 一律改用該檔**——它是同一次重建的同一份快照；混用
+        # 「5d/20d 取快取、10d 取重建」會讓窗尾的標籤覆蓋率不一致（實測差 3 列，
+        # 數值上可忽略，但那是「不會報錯的不公平」，不該留著）。
+        # 窗內與快取逐位元相同已由 label_10d.py 的閘門證明（5.47M 列 max|Δ|=0）。
+        lp = CACHE_DIR / "baseline_label_10d.parquet"
+        if not lp.exists():
+            raise SystemExit(f"❌ 找不到 {lp.name}，先跑："
+                             f"MM_PROTOCOL=v2 python V6/experimental/label_10d.py")
+        lab = pd.read_parquet(lp, filters=filt)
+        assert len(lab) == len(mask), f"{lp.name} 列數 {len(lab)} != base {len(mask)}"
+        lk = lab.loc[mask, ["Date", "stock_id"]].reset_index(drop=True)
+        if not (lk["Date"].equals(ref_keys["Date"]) and lk["stock_id"].equals(ref_keys["stock_id"])):
+            raise AssertionError(f"{lp.name} 行序與 base 不一致")
+        for h in (5, 10, 20):
+            out[f"rank_{h}d"] = lab.loc[mask, f"rank_{h}d"].to_numpy(np.float32)
+            out[f"alpha_{h}d"] = lab.loc[mask, f"Alpha_{h}d"].to_numpy(np.float32)
+        del lab
+        gc.collect()
     return out
 
 

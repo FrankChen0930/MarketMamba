@@ -568,42 +568,77 @@ def tracking_error(strat: np.ndarray, bench: np.ndarray) -> tuple[float, float]:
 # ============================================================
 # 4) 分數產生（Ridge / GBDT 本機可跑）
 # ============================================================
-def export_scores(model: str) -> Path:
+def export_scores(model: str, label: str = "5d", purge_days: int = 0) -> Path:
     """
     產生 test 窗（2024-01-01 → 2026-06-02）的逐股分數 → result/scores/{model}.parquet
 
     設定固定沿用 F5 的 R1／G-R1（v2 協定、train 2013、旗標關、fund_v2 開、
     neutralize none、purge 關），與 F6 的 val 窗同一批交易日。
+
+    label / purge_days（2026-08-03 新增，標籤 horizon 實驗用）
+    ---------------------------------------------------------
+    - `label`："5d"（預設）／"10d"／"20d"，決定訓練用哪個 rank 標籤、
+      以及選超參數時對哪個 horizon 的 alpha 算 val IC。
+    - `purge_days`：訓練集尾端剔除幾個**交易日**。現行協定是
+      `TRAIN_END=2023-12-31` 緊接 `TEST_START=2024-01-01`、**中間沒有間隔**，
+      所以標籤有 h 天的重疊洩漏。在四階對照裡那是共用的缺陷（無害於相對比較），
+      **但一旦改變 label horizon，洩漏量就跟著改變**（5d 洩 5 天、20d 洩 20 天），
+      會系統性偏袒長 horizon——正是本實驗要檢定的那一組。
+      → 標籤 horizon 實驗一律三組同用 `purge_days=20`（= 最長 horizon）。
+
+    **預設參數（"5d", 0）逐位元維持既有行為**，輸出檔名也維持 `{model}.parquet`；
+    只要任一參數非預設，就改用 `{model}__lab{label}_p{purge}.parquet`，
+    既有分數檔絕不被覆蓋。
     """
     import os
     if os.environ.get("MM_PROTOCOL") != "v2":
         raise SystemExit("❌ 請設 MM_PROTOCOL=v2 再跑（分數要用 v2 矩陣）")
+    if label not in ("5d", "10d", "20d"):
+        raise SystemExit(f"❌ label 只能是 5d / 10d / 20d（收到 {label!r}）")
 
     from experimental.baseline_common import PROTOCOL, all_feature_names, load_xy
     from experimental.baseline_ridge_lasso import (
         RIDGE_ALPHAS, TRAIN_STRIDE, gram_stats, mean_daily_ic, ridge_solve, stats_add,
     )
     t0 = time.time()
+    default_run = (label == "5d" and purge_days == 0)
+    # 非預設 run 一律載入統一標籤快照（三個 horizon 同源），預設 run 不碰 → 行為不變
+    extra = not default_run
     names_all = all_feature_names()
     keep = np.array([not n.startswith("Avail_") for n in names_all])   # 旗標關（同 R1）
+    print(f"[scores] model={model} label={label} purge={purge_days} 交易日"
+          f"｜{'預設 run（與既有分數檔同設定）' if default_run else '標籤 horizon 實驗 run'}",
+          flush=True)
 
     print(f"[scores] 載入 train span 2013-01-01 → {PROTOCOL['TEST_END']} ...", flush=True)
-    tr = load_xy("2013-01-01", PROTOCOL["TEST_END"], day_stride=TRAIN_STRIDE)
+    tr = load_xy("2013-01-01", PROTOCOL["TEST_END"], day_stride=TRAIN_STRIDE, extra_labels=extra)
     tr["X"] = np.ascontiguousarray(tr["X"][:, keep])
     gc.collect()
-    te = load_xy(PROTOCOL["TEST_START"], PROTOCOL["TEST_END"], day_stride=1)
+    te = load_xy(PROTOCOL["TEST_START"], PROTOCOL["TEST_END"], day_stride=1, extra_labels=extra)
     te["X"] = np.ascontiguousarray(te["X"][:, keep])
     gc.collect()
     print(f"[scores] train {tr['X'].shape} | test {te['X'].shape}", flush=True)
 
     dates_tr = pd.DatetimeIndex(tr["dates"])
     train_days = [str(d)[:10] for d in np.sort(dates_tr[dates_tr <= pd.Timestamp(PROTOCOL["TRAIN_END"])].unique())]
+    if purge_days:
+        # `purge_days` 的語意是**交易日**。但 train_days 已被 TRAIN_STRIDE 抽樣過
+        # （每 stride 個交易日取一天），所以要剔除的抽樣日數 = purge_days / stride，
+        # 無條件進位（寧可多隔離一點，不可少）。兩個數字都印出來供判讀。
+        n_drop = int(np.ceil(purge_days / TRAIN_STRIDE))
+        n0 = len(train_days)
+        dropped = train_days[-n_drop:]
+        train_days = train_days[:-n_drop]
+        print(f"[scores] purge：目標隔離 {purge_days} 個交易日｜stride={TRAIN_STRIDE} → "
+              f"剔除 {n_drop} 個抽樣訓練日（{dropped[0]} → {dropped[-1]}）｜"
+              f"訓練日 {n0} → {len(train_days)}｜"
+              f"新的訓練尾端 {train_days[-1]}，TEST_START={PROTOCOL['TEST_START']}", flush=True)
     cut = int(len(train_days) * (1 - PROTOCOL["VAL_RATIO"]))
     val_days, fit_days = set(train_days[cut:]), set(train_days[:cut])
     ds = pd.Series(dates_tr.astype(str).str.slice(0, 10))
     val_m0, fit_m0 = ds.isin(val_days).to_numpy(), ds.isin(fit_days).to_numpy()
 
-    y = tr["rank_5d"]
+    y = tr[f"rank_{label}"]
     ok = ~np.isnan(y)
     fit_m, val_m, trn_m = fit_m0 & ok, val_m0 & ok, (fit_m0 | val_m0) & ok
 
@@ -612,7 +647,7 @@ def export_scores(model: str) -> Path:
         best_a, best_v = None, -9
         for a in RIDGE_ALPHAS:
             w_raw, c, _ = ridge_solve(st, a)
-            v = mean_daily_ic(tr["dates"][val_m], tr["X"][val_m] @ w_raw + c, tr["alpha_5d"][val_m])
+            v = mean_daily_ic(tr["dates"][val_m], tr["X"][val_m] @ w_raw + c, tr[f"alpha_{label}"][val_m])
             if not np.isnan(v) and v > best_v:
                 best_a, best_v = a, v
         print(f"[scores] ridge best α={best_a:.0e}（val IC {best_v:+.4f}）", flush=True)
@@ -639,7 +674,8 @@ def export_scores(model: str) -> Path:
                          f"GRU 需 WSL torch、Mamba 三組需 Colab（見檔尾 COLAB_SNIPPET）")
 
     SCORE_DIR.mkdir(parents=True, exist_ok=True)
-    out = SCORE_DIR / f"{model}.parquet"
+    out = SCORE_DIR / (f"{model}.parquet" if default_run
+                       else f"{model}__lab{label}_p{purge_days}.parquet")
     pd.DataFrame({"Date": te["dates"], "stock_id": te["stock_ids"],
                   "score": np.asarray(scores, dtype=np.float32)}).to_parquet(out, index=False)
     print(f"✅ [scores] {model}：{len(scores):,} 列 → {out.name}（{(time.time()-t0)/60:.1f} 分）",
@@ -884,6 +920,10 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--export-scores", choices=("ridge", "gbdt"),
                     help="產生該模型的 test 窗分數（需 MM_PROTOCOL=v2）")
+    ap.add_argument("--label", choices=("5d", "10d", "20d"), default="5d",
+                    help="訓練用哪個 horizon 的 rank 標籤（標籤 horizon 實驗）")
+    ap.add_argument("--purge", type=int, default=0,
+                    help="訓練集尾端剔除幾個交易日（標籤 horizon 實驗一律 20）")
     ap.add_argument("--sweep", action="store_true", help="掃 240 組網格")
     ap.add_argument("--models", nargs="*", help="只掃這幾個模型（預設全部）")
     ap.add_argument("--report", action="store_true")
@@ -893,7 +933,7 @@ if __name__ == "__main__":
     if a.colab:
         print(COLAB_SNIPPET)
     if a.export_scores:
-        export_scores(a.export_scores)
+        export_scores(a.export_scores, label=a.label, purge_days=a.purge)
     if a.sweep:
         sweep(a.models)
     if a.report or not (a.export_scores or a.sweep or a.colab):
