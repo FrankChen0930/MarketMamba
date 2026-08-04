@@ -759,15 +759,17 @@ cd app/frontend && npm run dev   # → localhost:5173
 
 > ## ▶ 下次開工從這裡開始（2026-08-04 更新）
 >
-> ### 🔴 有東西正在 Colab 上跑（2026-08-04 22:19 起）——**先讀交接單**
+> ### 🔴 head20d 首跑失敗（2026-08-04 23:23）——**先讀交接單的紅字更新**
 > **`docs/head20d-run-handoff-2026-08-04.md`**
-> `head20d` session（A100）跑兩組共約 7 小時（h10 約 01:20、h20 約 04:50 完成），
-> 由 WSL 的 `~/h20_chain.sh`（`nohup` 脫離、不依附任何 Claude Code session）自動接續，
-> **跑完會自動 `colab stop`**。結果落在 Drive `MyDrive/MarketMamba_V6/`
-> （桌面同步 = `G:\我的雲端硬碟\MarketMamba_V6\`），**不需要 `colab download`**。
+> **h10 在 epoch 3/10 中斷、h20 從未開始。根因是 WSL2 VM 於 23:23 自行重啟**
+> （`/tmp` 全清、PID 計數器歸零），殺掉 `colab new` 派生的 **keep-alive daemon**
+> → Colab 回收 A100。**訓練本身沒有錯**，是 keep-alive 掛在會突然消失的宿主上。
 >
-> ⚠️ **接手第一件事：確認 session 已停**，沒 stop 會燒到 24h 上限：
-> `wsl -d Ubuntu -- bash -lc "~/miniconda3/envs/colabcli/bin/colab sessions < /dev/null"`
+> ⚠️ **待辦**：`colab sessions` 仍列 `[?]` 孤兒但本機紀錄已被 auto-prune，
+> **CLI 停不掉 → 需到 Colab 網頁版手動終止**。
+>
+> **重跑建議**：改用 Colab 網頁版（瀏覽器自己維持 keep-alive），
+> 或先查清 WSL 為何重啟。CLI 本身已驗證可用（CPU/T4/A100 全通）。
 >
 > 判讀重點：腳本印的 val IC 是**第 0 顆頭（5d）**的，兩組本來就該接近
 > ——那是**配對是否乾淨的檢查點、不是結論**。真正的結論要把 checkpoint 產成分數、
