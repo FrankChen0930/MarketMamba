@@ -329,7 +329,10 @@ wsl -d Ubuntu -- bash -lc "~/miniconda3/envs/colabcli/bin/colab sessions"
 1. **依賴要鎖版本**：`google-colab-cli` 對 `jupyter-kernel-client` **沒有鎖版本**，而後者 1.0.0（2026-07-26）把 `KernelClient` 改名 → 直接 `AttributeError`。已鎖 **`jupyter-kernel-client<1.0.0`（實際 0.15.0）**。**重裝或 `pip install -U` 會再壞一次**。
 2. **沒 stop 的 session 會一直燒 compute units**（只有 24h 上限兜底）→ 一律用 `colab run`，不要用 `colab new`。
 3. **`repl` / `console` / `auth` / `drivemount` 需要 TTY，Claude Code 不能代跑**。
-4. **`colab run` 與 Drive 互斥**：`run` 是即開即棄的 session，而 `drivemount` 必須人在終端機。訓練資料若在 Drive（`processed_v6.zip` 3 GB），流程得改成 `colab new` → 使用者手動 `drivemount` → `colab exec` → `colab stop`。**這是目前最大的未解限制**，尚未實測。
+4. **`colab run` 與 Drive 互斥**：`run` 是即開即棄的 session，而 `drivemount` 必須人在終端機。
+   - **繞開 Drive 是可行的**：需要 TTY 的只有 `repl`/`console`/`auth`/`drivemount` 四個，`upload`/`download`/`install` 都不需要 → `new` → `upload` → `exec` → `download` → `stop` **可以全自動**。
+   - **但成本不划算**：`processed_v6.zip` 約 3 GB，`new` 到 `stop` 之間**整段計費**（含上傳等待）。20 Mbps 上傳＝在 A100 上乾等 20 分鐘，比手動掛一次 Drive 貴得多。mamba 的 whl 不是問題（幾十 MB，可在 VM 上直接從 PyPI/GitHub 抓）。
+   - **決策（2026-08-04 使用者拍板）**：**維持既有的 Drive + 手動掛載模式**，不做上傳速率實測。CLI 已測通這件事本身是資產，**下個大階段（V6.2 上線收尾之後）再優化，不必重來**。
 5. **CLI 的 DEBUG log 會把完整 OAuth token（含長期有效的 `refresh_token`）明文寫進 `~/.config/colab-cli/colab.log`**，權限還是 `-rw-r--r--`。定期清、或回報上游。
 
 指令全貌用 `colab -h`；給 agent 看的操作手冊用 `colab skill`（品質很高，含各指令的坑）。
@@ -756,45 +759,52 @@ cd app/frontend && npm run dev   # → localhost:5173
 
 > ## ▶ 下次開工從這裡開始（2026-08-04 更新）
 >
-> ### ✅ 已完成（2026-08-04）
-> **1️⃣ MOPS 財報 fetcher** —— 見「最近完成」第一條。四項驗證全過、已接進
-> `run_daily_update`、2026Q1 + 三個月營收已補齊。
+> ### 🔴 有東西正在 Colab 上跑（2026-08-04 22:19 起）——**先讀交接單**
+> **`docs/head20d-run-handoff-2026-08-04.md`**
+> `head20d` session（A100）跑兩組共約 7 小時（h10 約 01:20、h20 約 04:50 完成），
+> 由 WSL 的 `~/h20_chain.sh`（`nohup` 脫離、不依附任何 Claude Code session）自動接續，
+> **跑完會自動 `colab stop`**。結果落在 Drive `MyDrive/MarketMamba_V6/`
+> （桌面同步 = `G:\我的雲端硬碟\MarketMamba_V6\`），**不需要 `colab download`**。
 >
-> ### 🔄 進行中／接下來（依使用者 2026-08-04 指定的順序）
+> ⚠️ **接手第一件事：確認 session 已停**，沒 stop 會燒到 24h 上限：
+> `wsl -d Ubuntu -- bash -lc "~/miniconda3/envs/colabcli/bin/colab sessions < /dev/null"`
 >
-> **2️⃣ `trading_status` 接進每日流程**（本機）
-> 資料已補到 2026-08-03 ✅，但 `V6/experimental/fetch_trading_status.py` 的
-> `build()` 是**整檔重建**（`df.to_parquet(OUT)` 全檔覆寫、逐年抓 11 年），
-> 直接排進每日會每天重抓 11 年 → 需先加增量路徑再接 `run_daily_update`。
-> 組合建構系統的處置股限制要用它。
+> 判讀重點：腳本印的 val IC 是**第 0 顆頭（5d）**的，兩組本來就該接近
+> ——那是**配對是否乾淨的檢查點、不是結論**。真正的結論要把 checkpoint 產成分數、
+> 過 `portfolio_lab` 看 N=50/k=1.5/20 日那一格，對照 `v2_kg_nomacro` 的 +38.0%/Sharpe 1.713。
 >
-> **3️⃣ 測試 Colab CLI**（2026-08-04 查證，**這是新資訊、不在既有紀錄裡**）
-> Google 於 2026-06 發布 `google-colab-cli`（Apache 2.0），**只支援 Linux/macOS**
-> → 裝在 WSL2 Ubuntu（repo 已掛在 `/mnt/d/...`）。
-> `uv tool install google-colab-cli`；指令 `colab new --gpu A100` / `colab exec -f x.py`
-> / `colab install` / `colab download` / `colab log --output run.ipynb` / `colab stop`。
-> 內建 `COLAB_SKILL.md` 明講供 Claude Code 使用。
-> 另有 Colab MCP（`uvx git+https://github.com/googlecolab/colab-mcp`），但它偏
-> 「建 notebook / 插 cell / 即時執行」，**不適合 3.6h 跑批** → 決定只裝 CLI。
-> ⚠️ 第一次一定先用 **T4 + 簡單腳本**煙霧測試，不要直接上 A100/3.6h；登入是互動式的。
+> ### ✅ 2026-08-04 這一輪四項全部完成（commit `9a39d49` + `aeeb134`，**已 push**）
+> 1️⃣ MOPS 財報 fetcher（四項驗證全過、已接進每日流程、2026Q1 + 三個月營收補齊）
+> 2️⃣ `trading_status` 增量（解析搬進 `fetcher.py` 當單一來源、回歸逐筆相同）
+> 3️⃣ Colab CLI（**CPU/T4/A100 全部可用**，見上方「Colab CLI」章節）
+> 4️⃣ `Free_Cash_Flow` 兩層 bug（回歸 `max|Δ|=0.000e+00`）
 >
-> **4️⃣ 修 `Free_Cash_Flow` 的 type 名稱 bug**（2026-08-04 發現）
-> `feature_engineer._add_free_cash_flow` 找的是 `CashFlowsFromInvestingActivities`
-> ——**實際 0 筆**；真正的 type 是 `CashProvidedByInvestingActivities`（100,967 筆）。
-> → **`Free_Cash_Flow` 恆等於營業活動現金流，從來沒減過資本支出**。
-> 與 2026-07-27 修掉的 `Gross_Margin`/`ROE`/`Book_Value` 完全同類（猜的英文 type 名
-> 對不上實際值域）。**會變動特徵語意 → 走 `fundamentals_v2` 那類旗標、預設關**。
-> ⚠️ 另注意：`cashflow_raw` 是**累計**值（見上面的陷阱 ④），FCF 的季度語意要一起想清楚。
+> ### 🎯 下一個階段目標：**V6.2 正式上線並收尾**（使用者 2026-08-04 定調）
 >
-> ### ⏸ 排在後面（模型線，非資料線）
+> 關鍵路徑上有**三個彼此相關的未決規格**，它們決定要訓練哪一個 checkpoint——
+> 在定案之前不要開始訓練，否則會訓到一半又得重來：
+>
+> **A. `INPUT_DIM` 59 還是 47？**（要不要砍掉 Group D 總經 12 維）
+>   證據已足且方向一致：2×2 兩列都顯示 Group D 是負貢獻（Δ=−0.0186 / −0.0154、
+>   NW t=2.93 / 3.23）、可加、且移除後連 2026 年的 IC 衰退也消失。
+>   組合層 `v2_kg_nomacro` 是全場最好（+38.0%／Sharpe 1.713／八模型全面第一）。
+>   → **建議砍**，但這會動 `FEATURE_GROUPS` 與特徵協定，要一起定。
+>
+> **B. 標籤 horizon 用 5d 還是 20d？**（`head20d_ablation.py` 已寫好未執行，兩組 × 3.6h）
+>   Ridge +6.8pp、GBDT +10.6pp 都已達判讀門檻，Mamba 換讀 10d 頭也從
+>   +38.0% → +39.2%（Sharpe 1.838，全專案最高）。但 **Mamba 沒有真正的 20d 標籤組**
+>   （`ShortModelV6` 只有 5d/10d 兩顆頭，20d 必須重訓）。
+>   → 若 Mamba 的 20d 也贏，落地規格要從「預測 5d、每 20 日再平衡」
+>     改成「**預測 20d、每 20 日再平衡**」。
+>
+> **C. 外部效度：`v2_kg_nomacro` 只有單一 582 天多頭窗、單一 seed、無 WF。**
+>   而大盤區間切分顯示它的優勢**全在上升段**（+91.9% vs `v2_kg` +58.2%），
+>   下跌段反而**差 8.4pp**（−24.2% vs −15.8%）→ 對多頭 regime 的曝險比 `v2_kg` 高。
+>   這是「要不要拿它當上線模型」最大的風險，且**真 WF 要付 Colab 重訓的錢**。
+>
+> ### ⏸ 不擋上線、但排在後面
 > **補 GRU 的 purge**（本機 1–2h，WSL）：八模型表裡唯一還沒有隔離的，
-> 目前排第 2（+31.3%）但名次不公平——GBDT 加上 purge 掉了 6.7pp。
->
-> **Colab：`head20d_ablation.py`**（兩組 × 3.6h）：腳本已寫好未執行。
-> 判讀規則已達標（Ridge +6.8pp、GBDT +10.6pp）。跑完 → 下載 checkpoint →
-> `score_mamba_local.ARMS` 加兩組 → `--head 10d` 產分數 → `portfolio_lab`。
-> **若 Mamba 的 20d 也贏，落地規格要改成「預測 20d、每 20 日再平衡」。**
-> （3️⃣ 若成功，這一項就能直接用 CLI 跑，不必手動操作 Colab 網頁）
+> 目前排第 2（+31.3%）但名次不公平——GBDT 加上 purge 掉了 6.7pp。純為了讓對照表公平。
 >
 > ### 📌 已定案、不要再重新討論的事
 > - **財報一律以 MOPS 為準**（2026-08-04 使用者拍板 + 實證）。但**儲存用的英文
