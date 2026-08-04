@@ -156,6 +156,24 @@ def run_head20d_ablation(df, arms: Sequence[str] = ("h10", "h20"),
         print(f"\n{'='*70}\n[h20-abl] ▶ arm={arm}｜第二顆頭學 {src}｜ckpt={ckpt}\n{'='*70}",
               flush=True)
         status = f"{drive_dir}/status_short_H_{arm}.json" if drive_dir else None
+
+        # ⚠️ 2026-08-04 修：原本**完全沒有設 seed**（SEED 只被寫進輸出 JSON、沒套用）。
+        #    `groupd_ablation._train_one_arm` 有做這件事，但本檔是直接呼叫
+        #    `train_short_model`、繞過了它 → arm 1 跑完會消耗大量 RNG，
+        #    arm 2 的參數初始化與 DataLoader 打亂順序都不同 ＝ **髒配對**，
+        #    「唯一變因是第二顆頭的 horizon」這個宣稱會不成立。
+        #    與 GAT 消融 A vs B 踩過的是同一個坑（見 f6-training-log-and-readout.md）。
+        #    必須在建模與建 dataloader **之前**設（兩者都消耗 RNG）。
+        import random as _random
+
+        import torch as _torch
+        _torch.manual_seed(SEED)
+        _torch.cuda.manual_seed_all(SEED)
+        np.random.seed(SEED)
+        _random.seed(SEED)
+        print(f"[h20-abl]   seed={SEED} 已重設"
+              f"（兩組架構相同＝逐參數同初始化、同 DataLoader 順序）", flush=True)
+
         mctx = zeroed_macro(df, cols) if ZERO_MACRO else contextlib.nullcontext()
         with swapped_second_label(df, src), mctx:
             hist = train_short_model(
