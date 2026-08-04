@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # MarketMamba — AI 助手指引
 
-> 最後更新：2026-08-03（**這一天做了四件事**：① F6 2×2 最佳格過 portfolio_lab，**+38.0%/Sharpe 1.713 八模型全面最好** ② **標籤 horizon 實驗**——使用者質疑「20 天再平衡卻只預測 5 天」，實測**直覺是對的**（Ridge +6.8pp、GBDT +10.6pp），但機制是「**短標籤製造付不起的換手**」不是「預測過期」 ③ **統一 purge**：稽核出既有八模型表的隔離處理是混的，GBDT 加上 purge 掉 **6.7pp** 落到最後一名 → **既有表格系統性偏袒 Ridge/GBDT/GRU** ④ **資料抓取稽核**：10 個每日源零缺漏，但財報三源有覆蓋斷崖（`balance_sheet` 2026Q1 只有 0.7%）→ MOPS 整批端點可行性已驗證通過。**下次開工看「下一步」最上面的 ▶ 區塊**）
+> 最後更新：2026-08-04（**MOPS 財報直連上線，財報覆蓋斷崖已補平**：`financials`/`balance_sheet`/`cashflow` 2026Q1 從 216/16/16 支 → **各 1,972 支**、月營收三個月從 951 → **1,926 支**，四項驗證全過。過程證實 **FinMind 把 16 支的 EPS 截成整數**（0.97 存成 0）→ 使用者「偏好 MOPS」的判斷有實證支持。另抓到 **FinMind 三張財報的單季/累計慣例不一致**（最不直觀的一項）。**下次開工看「下一步」最上面的 ▶ 區塊**）
+>
+> 上一版：2026-08-03（**這一天做了四件事**：① F6 2×2 最佳格過 portfolio_lab，**+38.0%/Sharpe 1.713 八模型全面最好** ② **標籤 horizon 實驗**——使用者質疑「20 天再平衡卻只預測 5 天」，實測**直覺是對的**（Ridge +6.8pp、GBDT +10.6pp），但機制是「**短標籤製造付不起的換手**」不是「預測過期」 ③ **統一 purge**：稽核出既有八模型表的隔離處理是混的，GBDT 加上 purge 掉 **6.7pp** 落到最後一名 → **既有表格系統性偏袒 Ridge/GBDT/GRU** ④ **資料抓取稽核**：10 個每日源零缺漏，但財報三源有覆蓋斷崖（`balance_sheet` 2026Q1 只有 0.7%）→ MOPS 整批端點可行性已驗證通過。**下次開工看「下一步」最上面的 ▶ 區塊**）
 
 ---
 
@@ -304,6 +306,36 @@ ALLOWED_ORIGINS=https://market-mamba-pi.vercel.app
 
 ---
 
+## Colab CLI（2026-08-04 裝好並測通）
+
+不必再手動操作 Colab 網頁——`colab run` 可以「租一台 GPU → 跑本機腳本 → 自動釋放」。
+
+| 項目 | 值 |
+|------|-----|
+| 套件 | `google-colab-cli` 0.6.0（PyPI，需 Python ≥3.12、**只支援 Linux/macOS**） |
+| 安裝位置 | WSL2 的獨立 conda 環境 `colabcli`（**刻意不裝進 `mamba_env`**） |
+| 執行路徑 | `~/miniconda3/envs/colabcli/bin/colab`（直接呼叫，不走 `conda run` 以免輸出緩衝） |
+| 認證 | oauth2 貼授權碼流程，token 在 `~/.config/colab-cli/token.json`（**不需要 gcloud**） |
+| 實測可用加速器 | **CPU ✅ / T4 ✅ / A100 ✅**（A100 = 40GB、12 CPU、83.5 GiB RAM、torch 2.11.0+cu128） |
+
+```bash
+# 一次性作業（new + exec + 自動 stop），推薦
+wsl -d Ubuntu -- bash -lc "~/miniconda3/envs/colabcli/bin/colab run --gpu A100 -s <name> ~/colab_jobs/<script>.py"
+# 查有沒有殘留 session（會計費）
+wsl -d Ubuntu -- bash -lc "~/miniconda3/envs/colabcli/bin/colab sessions"
+```
+
+**⚠️ 必須記住的五件事**
+1. **依賴要鎖版本**：`google-colab-cli` 對 `jupyter-kernel-client` **沒有鎖版本**，而後者 1.0.0（2026-07-26）把 `KernelClient` 改名 → 直接 `AttributeError`。已鎖 **`jupyter-kernel-client<1.0.0`（實際 0.15.0）**。**重裝或 `pip install -U` 會再壞一次**。
+2. **沒 stop 的 session 會一直燒 compute units**（只有 24h 上限兜底）→ 一律用 `colab run`，不要用 `colab new`。
+3. **`repl` / `console` / `auth` / `drivemount` 需要 TTY，Claude Code 不能代跑**。
+4. **`colab run` 與 Drive 互斥**：`run` 是即開即棄的 session，而 `drivemount` 必須人在終端機。訓練資料若在 Drive（`processed_v6.zip` 3 GB），流程得改成 `colab new` → 使用者手動 `drivemount` → `colab exec` → `colab stop`。**這是目前最大的未解限制**，尚未實測。
+5. **CLI 的 DEBUG log 會把完整 OAuth token（含長期有效的 `refresh_token`）明文寫進 `~/.config/colab-cli/colab.log`**，權限還是 `-rw-r--r--`。定期清、或回報上游。
+
+指令全貌用 `colab -h`；給 agent 看的操作手冊用 `colab skill`（品質很高，含各指令的坑）。
+
+---
+
 ## 常見開發任務
 
 ### 手動執行推論
@@ -346,6 +378,23 @@ cd app/frontend && npm run dev   # → localhost:5173
 > 最後更新：2026-08-03（本日四項工作全部收尾：2×2 最佳格組合層驗證、標籤 horizon 實驗、統一 purge、資料抓取稽核。**V6.1 已非紅線，使用者表示可停**。Phase 3 模型實驗仍暫停中。**今天排了但未實作的三件事已整理在「下一步」最上面的 ▶ 區塊，下次直接從那裡開始**）
 
 ### 最近完成
+- **`Free_Cash_Flow` 的兩層 bug 修好（2026-08-04，走 `fundamentals_v2` 旗標、預設關）**。`feature_engineer._add_free_cash_flow`：
+  - **① type 名稱猜錯**（與 2026-07-27 修的 `Gross_Margin`/`ROE`/`Book_Value` 完全同型）：找的是 `CashFlowsFromInvestingActivities`／`InvestingActivities`，**實測各 0 筆**；真正的是 `CashProvidedByInvestingActivities`（100,967 筆）→ **`Free_Cash_Flow` 一直恆等於營業活動現金流、從沒減過資本支出**。影響：22.2% 的 (股,季) 符號改變、橫斷面排名 Spearman 僅 0.654
+  - **② 沒處理累計慣例**：`cashflow_raw` 是**年初至今累計**，直接 as-of join 會產生「年內 Q1→Q4 遞增再重置」的鋸齒。**我原本猜「同一天大家都在同一累計階段、會抵銷掉」，實測不成立**——累計 vs 單季的橫斷面排名相關 Q2 0.65／Q3 0.58／Q4 0.54。v2 下還原為**單季**，與 Group C 其餘欄位（Revenue/GrossProfit/EPS 皆單季）同義
+  - **驗收**：`fundamentals_v2=False` 與修改前 **`max|Δ| = 0.000e+00`**（V6.1 零影響）。台積電 2025 逐季手算核對通過：v1 給 `[6256, 11226, 15495, 22750]`（純營業、累計），v2 給 `[3354, 2686, 1671, 3595]`（單季 FCF）
+  - **實作細節**：累計還原**在算 FCF 之前逐欄做**，不可對 FCF 事後相減——某季若缺營業或投資其中之一，事後相減會把「缺值」變成「跳動」，逐欄處理時 NaN 會自然傳染
+  - ⚠️ **我的第一版驗收腳本測錯了東西**：用「觀測日的季度」判斷鋸齒，但 as-of join 有 45 天 lag、與底層財報季度錯開，且 FCF＝營業＋投資本來就不單調 → 報「未改善」。改用台積電原始值直接核對才確認修正生效。**檢查指標本身也要驗證**
+- **★★ MOPS 財報整批直連上線，缺口 1+2 已解（2026-08-04）**。程式 `V6/marketmamba/data/fetcher.py`（**純附加約 750 行**，既有函式未改）、驗證 `V6/scripts/validate_mops_financials.py`（只讀不寫）：
+  - **覆蓋率補平**：`financials_raw` 2026Q1 **216 → 1,972 支**、`balance_sheet_raw` **16 → 1,972**、`cashflow_raw` **16 → 1,972**、`revenue_raw` 2026-04/05/06 各 **951 → 1,926 支**。一季兩次請求取代 FinMind 的 ~1,900 次逐股查詢（實測滾動 32 支/天、追不上）
+  - **四項驗證全過**（單次完整執行 exit 0、零警告）：V1 差分規則（關鍵 type median 比值 **1.000000**、容差內 99.9~100%）／V2 量級交叉（三表 + 月營收 median 全 1.000000，月營收 **99.3% 逐位元相同**）／V3 指標核對（2330/2317/2454 × 毛利率/營收/EPS/ROE 全過）／V4 接縫連續性（倍率 **0.91×~1.10×**）
+  - **★ 使用者「偏好 MOPS」的判斷被資料證實**：16 列被覆寫的 EPS，**FinMind 的值全是整數且為朝零截斷**——14.54→14.0、6.77→6.0、**0.97→0.0**、**−0.37→0.0**。佔 FinMind 那一季自有 216 支的 **7.4%**，完全不報錯。→ 決策定為 **MOPS 優先**（`keep="last"`），理由不只命名，更根本是 **MOPS 是原始申報來源、FinMind 是轉手方**
+  - **★★ 最不直觀的發現：FinMind 三張財報的單季/累計慣例不一致**。`financials_raw` **單季**、`cashflow_raw` **年初至今累計**、`balance_sheet_raw` 時點值；而 MOPS 三張都是累計。第一版把現金流也拿去相減，V1 量到 median 比值 Q2≈0.53、Q3≈0.32（正好 1/2、1/3）才抓到。**照直覺寫下去，現金流特徵會只剩實際值的三分之一且不報錯**。判別法：`期初現金及約當現金餘額` 四季完全相同即為累計（台積電 2025 四季都是 21,276 億）
+  - **⚠️ MOPS 有一般業 / 金融保險業兩種版面**（與 TAIFEX「期貨用多方/空方、選擇權用買方/賣方」完全同型）：金融業用 `權益總額`／`資產總額`／`歸屬於母公司業主權益合計`。第一版只寫一般業欄名 → **整個金融保險業拿不到 `Book_Value`**。改用「從 FinMind 自己的 `origin_name` 程式反推對映」後，`financials` 從手寫 19 個補到 **48 個**，並帶優先序去重（`營業毛利（毛損）淨額` 25,698 vs 55 讓前者勝出）
+  - **⚠️ 我自己寫了一個把暫時性失敗轉成錯誤資料的 fallback**：MOPS 偶發回 502，「上季無對應就保留累計數」讓 13,340 列悄悄變成累計數混進單季資料（V1 量到「median 仍是 1.000000 但只有 54% 在容差內」，而 54.2% 正好 = 1046/1929 ＝只剩上市）。已改成 **① 丟棄不保留 ②>5% 就整季放棄 ③ 缺任一市場就整季放棄 ④ 重試 3 次**。原則：**缺值看得見、錯值看不見**
+  - **⚠️ V3 第一版是我的參考值過時、不是資料錯**：寫死「台積電毛利率 55~62%」而判定失敗，實際 66.2%；但 FinMind 自身軌跡 53.1→57.8→59.0→59.5→**62.3** 顯示那是延續。**沒有把區間放寬了事**（那等於拿結果改測試），V3/V4 都改成用 FinMind 自身近況**自我校準**
+  - **寫入後驗證**：schema 逐欄型別相同、重複鍵 0、`balance_sheet`/`cashflow` 既有歷史**逐位元零改變**（`max|Δ|=0.000e+00`）。備份 `Data/processed_v6/*_backup_before_mops_20260804.parquet`（79 MB，穩定後可刪）
+  - **已知未解**：月營收另有 2 列差異（5548 安倉 −8%、6441 廣錠 −16%），MOPS 備註是營運說明非更正註記 → **無法證明是 FinMind 錯還是公司事後修正**，取 MOPS（權威值），影響 2/451,086 列
+  - **端點與參數**：host **必須** `https://mopsov.twse.com.tw`；`POST /mops/web/ajax_t163sb04`（損益）／`sb05`（資產負債）／`sb20`（現金流），payload `{"encodeURIComponent":1,"step":1,"firstin":1,"off":1,"TYPEK":"sii"|"otc","year":"115","season":"01"}`（民國年）；月營收 `GET /nas/t21/{sii,otc}/t21sc03_{民國年}_{月}_0.html`，**big5**、**表格依產業拆成數十張要全部 concat**。單位千元 → 元 ×1000，但 EPS 與股數欄不可乘（`_mops_needs_scaling` 以樣式判斷、不硬編欄名）
 - **★★ 資料抓取稽核：三個真正的缺口（2026-08-03 深夜，使用者要求「上線前趁早確認」）**：
   - **✅ 10 個每日源最近 15 個交易日零缺漏**（prices/institutional/daytrade/per/market_value/securities/foreign_shareholding/futures_inst/options_inst/ex_rights）
   - **⚠️ `margin_raw` 是結構性 T+1，不是故障**：log 顯示每天 19:35 抓當天一律回「尚未公布」、隔天才抓到（1,862 檔、恆等式驗證通過），`_catch_up_margin` 會自動補。**但 `_merge_margin` 對缺當日的處理是 `ffill()`** → 推論當天用的是昨天的 margin，而**訓練資料每天都有當日 margin** → 這是 train/serve 不對稱，且反過來說訓練端對 margin 有 1 天 look-ahead（margin@T 實際上 T+1 才公布）。上線前要決定：訓練端把 margin 整體 shift(1)，或接受此偏差並記錄
@@ -705,61 +754,62 @@ cd app/frontend && npm run dev   # → localhost:5173
 
 ### 下一步
 
-> ## ▶ 下次開工從這裡開始（2026-08-03 深夜留）
+> ## ▶ 下次開工從這裡開始（2026-08-04 更新）
 >
-> 今天排了但**還沒實作**的東西，依建議順序。每一項都已把前置查證做完，
-> 接手時**不需要重新推導**，直接進實作。
+> ### ✅ 已完成（2026-08-04）
+> **1️⃣ MOPS 財報 fetcher** —— 見「最近完成」第一條。四項驗證全過、已接進
+> `run_daily_update`、2026Q1 + 三個月營收已補齊。
 >
-> ### 1️⃣ MOPS 財報 fetcher（缺口 1+2，上線前必解，本機）
-> **狀態**：可行性已驗證通過（純讀、未改程式），實作未開始。
-> **為什麼是第一順位**：`fundamentals_v2=True` 在部署 checklist 裡，而
-> `balance_sheet_raw` 2026-03-31 只有 **16 支（0.7%）**、`financials_raw` 只有
-> **176 支（7%）**、`revenue_raw` 2026-05 起只有 **871 支（44%）**。
-> FinMind 逐股滾動實測約 **32 支/天**，補完 2,300 支要 70 天，**追不上**。
+> ### 🔄 進行中／接下來（依使用者 2026-08-04 指定的順序）
 >
-> **已驗證可直接用的東西**：
-> - host **必須**是 `https://mopsov.twse.com.tw`（`mops.twse.com.tw` 只回 686 bytes）
-> - `POST /mops/web/ajax_t163sb05`（資產負債表）／`_t163sb04`（綜合損益表）／
->   `_t163sb20`（現金流量表），payload
->   `{"encodeURIComponent":1,"step":1,"firstin":1,"off":1,"TYPEK":"sii"|"otc","year":"115","season":"01"}`（**民國年**）
->   → 實測 上市 1,046 + 上櫃 883 = **1,929 家／一季兩次請求**
-> - 月營收：`GET /nas/t21/{sii,otc}/t21sc03_{民國年}_{月}_0.html`，
->   編碼 **big5**，**表格依產業分拆 → 要把所有表 concat**（只取最大表會漏掉 9 成）
-> - **schema 轉換是主要工作量**：既有 parquet 是 FinMind **長格式**
->   （`Date/stock_id/type/value/origin_name`、英文 type），MOPS 是**寬格式中文欄名**。
->   下游實際消費的 type 只有 6 個（`feature_engineer.py:758` 與 `:801-828` 已核對）：
->   `歸屬於母公司業主之權益合計`→`EquityAttributableToOwnersOfParent`（優先）、
->   `權益總計`→`Equity`、`營業收入`→`Revenue`、`營業毛利`→`GrossProfit`、
->   `基本每股盈餘`→`EPS`、`本期淨利`→`NetIncome`
+> **2️⃣ `trading_status` 接進每日流程**（本機）
+> 資料已補到 2026-08-03 ✅，但 `V6/experimental/fetch_trading_status.py` 的
+> `build()` 是**整檔重建**（`df.to_parquet(OUT)` 全檔覆寫、逐年抓 11 年），
+> 直接排進每日會每天重抓 11 年 → 需先加增量路徑再接 `run_daily_update`。
+> 組合建構系統的處置股限制要用它。
 >
-> **⚠️ 這一類工作是本專案 13 條雷區的來源**（MOPS 股利「三欄加總」讓台泥變 0 元、
-> TAIFEX 四個對映陷阱），共同特徵是**照欄名直譯會靜默算錯**。實作後**必須**做：
-> ① 量級交叉驗證（MOPS/FinMind 同期比值 median 應 ≈ 1.000）
-> ② 接縫連續性檢定（切換前後同一支股票的值不得跳階）
-> ③ 抽 2330/2317/2454 手工核對毛利率與 ROE 是否對得上實際
+> **3️⃣ 測試 Colab CLI**（2026-08-04 查證，**這是新資訊、不在既有紀錄裡**）
+> Google 於 2026-06 發布 `google-colab-cli`（Apache 2.0），**只支援 Linux/macOS**
+> → 裝在 WSL2 Ubuntu（repo 已掛在 `/mnt/d/...`）。
+> `uv tool install google-colab-cli`；指令 `colab new --gpu A100` / `colab exec -f x.py`
+> / `colab install` / `colab download` / `colab log --output run.ipynb` / `colab stop`。
+> 內建 `COLAB_SKILL.md` 明講供 Claude Code 使用。
+> 另有 Colab MCP（`uvx git+https://github.com/googlecolab/colab-mcp`），但它偏
+> 「建 notebook / 插 cell / 即時執行」，**不適合 3.6h 跑批** → 決定只裝 CLI。
+> ⚠️ 第一次一定先用 **T4 + 簡單腳本**煙霧測試，不要直接上 A100/3.6h；登入是互動式的。
 >
-> ### 2️⃣ `trading_status` 接進每日流程（缺口 3 的另一半，本機）
-> **資料已補到 2026-08-03 ✅**，但 `fetch_trading_status.py` 的 `build()` 是
-> **整檔重建**（會覆蓋、跑 11 年），不能直接排進每日 → 需先加增量路徑，
-> 再接 `run_daily_update`。組合建構系統的處置股限制要用它。
+> **4️⃣ 修 `Free_Cash_Flow` 的 type 名稱 bug**（2026-08-04 發現）
+> `feature_engineer._add_free_cash_flow` 找的是 `CashFlowsFromInvestingActivities`
+> ——**實際 0 筆**；真正的 type 是 `CashProvidedByInvestingActivities`（100,967 筆）。
+> → **`Free_Cash_Flow` 恆等於營業活動現金流，從來沒減過資本支出**。
+> 與 2026-07-27 修掉的 `Gross_Margin`/`ROE`/`Book_Value` 完全同類（猜的英文 type 名
+> 對不上實際值域）。**會變動特徵語意 → 走 `fundamentals_v2` 那類旗標、預設關**。
+> ⚠️ 另注意：`cashflow_raw` 是**累計**值（見上面的陷阱 ④），FCF 的季度語意要一起想清楚。
 >
-> ### 3️⃣ 補 GRU 的 purge（本機 1–2h，WSL）
-> 八模型表裡**唯一還沒有隔離**的就是 GRU，它現在排第 2（+31.3%）但那個名次不公平
-> ——GBDT 加上 purge 掉了 **6.7pp**。h64-only 重訓約 1–2 小時。
+> ### ⏸ 排在後面（模型線，非資料線）
+> **補 GRU 的 purge**（本機 1–2h，WSL）：八模型表裡唯一還沒有隔離的，
+> 目前排第 2（+31.3%）但名次不公平——GBDT 加上 purge 掉了 6.7pp。
 >
-> ### 4️⃣ Colab：`head20d_ablation.py`（唯一需要 Colab 的，兩組 × 3.6h）
-> 腳本已寫好未執行。判讀規則已達標（Ridge +6.8pp、GBDT +10.6pp）。
-> 跑完 → 下載 checkpoint 到 `D:\Downloads\` → 在 `score_mamba_local.ARMS` 加兩組
-> → `--head 10d` 產分數 → `portfolio_lab`。
+> **Colab：`head20d_ablation.py`**（兩組 × 3.6h）：腳本已寫好未執行。
+> 判讀規則已達標（Ridge +6.8pp、GBDT +10.6pp）。跑完 → 下載 checkpoint →
+> `score_mamba_local.ARMS` 加兩組 → `--head 10d` 產分數 → `portfolio_lab`。
 > **若 Mamba 的 20d 也贏，落地規格要改成「預測 20d、每 20 日再平衡」。**
+> （3️⃣ 若成功，這一項就能直接用 CLI 跑，不必手動操作 Colab 網頁）
 >
-> ### 📌 今天定案、下次不要再重新討論的事
+> ### 📌 已定案、不要再重新討論的事
+> - **財報一律以 MOPS 為準**（2026-08-04 使用者拍板 + 實證）。但**儲存用的英文
+>   `type` 名稱仍沿用 FinMind 詞彙（含它標錯的）**——`feature_engineer` 用它當 key、
+>   260 萬列歷史都是那套；新資料改「正確」名稱會讓同一科目有兩套 key，比一致地錯更糟。
+>   真正的中文科目名在 `origin_name` 欄。要徹底擺脫需 MOPS 整份重建歷史（另一輪決策，
+>   須先確認 MOPS 歷史深度與已下市公司——MOPS 只有現存 1,972 支、FinMind 有 2,475 支）
 > - Group D 是**負貢獻** → `fear_greed`/`business_indicator`/`fed_rate` **不補**；
 >   健檢那 3 項警告是預期中的，不是問題
 > - `Alpha_Nd` **沒有減大盤**是**刻意不修**（rank + Spearman 對當日常數免疫）
 > - 標籤 horizon 的機制是「**短標籤製造換手**」，不是「預測過期」
 > - 組合層掃描一律在 **Windows** 端跑（WSL 的 pandas 3.0 會炸）
-> - 背景任務會被砍 → 長工作用**前景分段**（每段 <10 分鐘）
+> - 背景任務會被砍 → 長工作用**前景分段**（每段 <10 分鐘）；且**啟動長跑前要先確認
+>   推論不在跑**（2026-08-04 實例：V6.1 推論 19:44 結束後，排程接著啟動雙模型推論、
+>   RSS 9.7 GB，若當時寫 parquet 會同時踩到記憶體與讀寫衝突）
 
 - [x] ~~**① 拆解 F5 那個 −0.0079**~~ **已完成（2026-08-01）**，見上方「最近完成」與 `docs/feature-protocol-v2.md` §9.6
 - [x] ~~**② 寫 Group D 消融腳本**~~ **已完成（2026-08-01）**：`V6/experimental/groupd_ablation.py`，改用 mask 設計、控制組沿用 `no_gat`
@@ -786,9 +836,11 @@ cd app/frontend && npm run dev   # → localhost:5173
   - 參數：`{"encodeURIComponent":1,"step":1,"firstin":1,"off":1,"TYPEK":"sii"/"otc","year":"115","season":"01"}`（民國年）
   - **主要工作量在 schema 轉換**：既有 parquet 是 FinMind 的**長格式**（`Date/stock_id/type/value/origin_name`、英文 type 代碼），MOPS 是**寬格式中文欄名**。所幸下游消費的 type 很少 → 對映只有約 6 個：`歸屬於母公司業主之權益合計`→`EquityAttributableToOwnersOfParent`、`權益總計`→`Equity`、`營業收入`→`Revenue`、`營業毛利`→`GrossProfit`、`基本每股盈餘`→`EPS`、`本期淨利`→`NetIncome`
   - **為什麼沒有當晚就寫**：這正是本專案累積 13 條雷區的那一類工作（MOPS 股利的「三欄加總」、TAIFEX 的四個對映陷阱都是「照欄名直譯就靜默算錯」）。深夜趕工做出**看起來正常但值是錯的**財報特徵，比現在的「值是舊的」更糟——舊值看得見、錯值看不見
-- [ ] **【上線前必解】財報三源的覆蓋斷崖**（2026-08-03 稽核）：`financials_raw` Q1 2026 只有 7% 的股票、`balance_sheet_raw`/`cashflow_raw` 只有 0.7% 且**不在任何每日流程**。FinMind 逐股滾動每天 80+40 支、實測約 32 支/天，**追不上**。可能的方向：① 把 balance_sheet/cashflow 加進 `_catch_up_monthly` ② 改用 MOPS 直連（`t163sb05`/`t163sb04` 是整批 CSV，與 `t187ap45` 同一類，不受 FinMind 額度限制）③ 一次性 bulk 補齊後再交給滾動維持。**`fundamentals_v2=True` 在部署 checklist 裡，這個缺口會直接影響上線模型的 3~5 維特徵**
-- [ ] **【上線前必解】月營收覆蓋腰斬**：`revenue_raw` 2026-05 起只有 871/1,958 支（44%）。同一個根因、同一批解法
-- [ ] **`trading_status_raw` 接進每日流程**：目前停在 2026-07-31、靠 `V6/experimental/fetch_trading_status.py` 手動跑。組合建構系統的處置股限制要用它
+- [x] ~~**【上線前必解】財報三源的覆蓋斷崖**~~ **✅ 已解（2026-08-04）**：MOPS 整批直連，`financials`/`balance_sheet`/`cashflow` 2026Q1 各補到 **1,972 支**，並已接進 `run_daily_update`（`_catch_up_mops_quarterly`）
+- [x] ~~**【上線前必解】月營收覆蓋腰斬**~~ **✅ 已解（2026-08-04）**：`revenue_raw` 2026-04/05/06 各補到 **1,926 支**（`_catch_up_mops_revenue`）。⚠️ 設計為**一次只補一個月**，若一次缺多個月需重複執行
+- [ ] **`trading_status_raw` 接進每日流程**（**下一項工作**）：資料已補到 2026-08-03，但 `V6/experimental/fetch_trading_status.py` 的 `build()` 是**整檔重建**、不能直接排進每日 → 需先加增量路徑。組合建構系統的處置股限制要用它
+- [x] ~~**修 `Free_Cash_Flow` 的 bug**~~ **✅ 已修（2026-08-04）**：兩層都修（type 名稱 + 累計還原成單季），走 `fundamentals_v2`，回歸 `max|Δ|=0.000e+00`。見「最近完成」第一條
+- [x] ~~**測試 Colab CLI**~~ **✅ 已裝好並測通（2026-08-04）**：CPU / T4 / **A100 三種都拿得到**，見上方「Colab CLI」章節。⚠️ 未解：`colab run` 是即開即棄 session，與需要 TTY 的 `drivemount` 互斥 → 訓練資料在 Drive 時流程要改成 `new` → 使用者手動 `drivemount` → `exec` → `stop`，**尚未實測**
 - [ ] **決定 margin 的 train/serve 不對稱怎麼處理**：訓練資料每天都有當日 margin，但推論當天拿不到（T+1 公布）→ `_merge_margin` 用 `ffill()` 補昨天的值。等於訓練端對 margin 有 1 天 look-ahead。選項：訓練端整體 `shift(1)`（要重訓）／接受並記錄為已知偏差
 - [ ] **補 GRU 的 purge**（1–2h 本機重訓）：它是八模型表裡唯一還沒有隔離的，目前排第 2（+31.3%）但那個名次不公平。GBDT 加上 purge 掉了 6.7pp，GRU 可能也會掉
 - [ ] **【優先級 1】上 Colab 跑 `head20d_ablation.py`**（判讀規則已達標，見「最近完成」第一條）：兩組 × 3.6h。跑完下載 checkpoint 到 `D:\Downloads\` → 在 `score_mamba_local.ARMS` 加兩組 → `--head 10d` 產分數 → `portfolio_lab`。**若 Mamba 20d 也贏，落地規格應改成「預測 20d、每 20 日再平衡」**，而不是現在的「預測 5d、每 20 日再平衡」
@@ -849,6 +901,11 @@ cd app/frontend && npm run dev   # → localhost:5173
 > **PR 3（持倉四層退場 / Portfolio 頁面）**：使用者已確認頁面內容完成，視為驗收通過
 
 ### 決策紀錄
+- **★ 財報以 MOPS 為準、但沿用 FinMind 的英文 type 詞彙（2026-08-04 使用者拍板）**：使用者說「之前遇過 FinMind 標錯名稱，偏好用 MOPS」。實測支持得比預期更強——**FinMind 把 16 支的 EPS 截成整數**（0.97 存成 0、−0.37 存成 0，朝零截斷），佔它那一季自有 216 支的 7.4%。→ 數值優先序用 MOPS（`keep="last"`）。**但命名是另一件事**：`feature_engineer` 用英文 type 當 key、260 萬列歷史都是 FinMind 詞彙，新資料改用「正確」名稱會讓同一科目有兩套 key → **比一致地錯更糟，而且是靜默的**。故 fetcher **刻意複製** FinMind 的錯誤命名（如損益表的「淨利歸屬母公司業主」照樣寫成 `EquityAttributableToOwnersOfParent`），真正的中文科目名存在 `origin_name` 欄
+- **★★ 同一個資料商的不同表可能有不同的期間慣例，必須逐表實測（2026-08-04）**：FinMind `financials_raw` 是**單季**、`cashflow_raw` 是**年初至今累計**、`balance_sheet_raw` 是時點值。這無法從欄名、文件或讀碼看出來。判別法是找一個「若為累計則應恆定」的欄位——`期初現金及約當現金餘額` 四季完全相同（台積電 2025 都是 21,276 億）就是決定性證據。→ **凡是要對財報做期間運算（相減、年化、TTM），先對每一張表各驗一次**，不可從一張表的行為外推到另一張
+- **★ 「暫時性失敗 → 保留舊值」是比「直接失敗」更糟的設計（2026-08-04，我自己犯的）**：MOPS 偶發 502 讓上櫃整批抓不到，我寫的「上季無對應就保留累計數」把它轉成 13,340 列悄悄錯誤的資料——**median 仍是精準的 1.000000，只有「容差內比例」從 100% 掉到 54%** 才看得出來（54.2% 正好 = 1046/1929 ＝只剩上市）。→ 原則定為 **「缺值看得見、錯值看不見」**：寧可丟棄、寧可整季放棄，也不要用推測值填補。具體四道：① 不保留、直接丟 ② 異常比例（>5%）就整季放棄 ③ 缺任一市場就整季放棄 ④ 網路層重試 3 次
+- **★ 驗證的判準不可硬編我記憶中的數字（2026-08-04，同一天犯了兩次）**：① V3 寫死「台積電毛利率 55~62%」→ 實際 66.2% 判定失敗，但 FinMind 自身軌跡 53.1→57.8→59.0→59.5→**62.3** 顯示那是延續，**過時的是我的參考值** ② V4 寫死「季比須落在 0.3~3.0」→ 現金流量表報 0.164 判定失敗，但那是累計慣例的年度重置，FinMind 自己也是 0.130/0.169/0.171。**兩次都沒有把區間放寬了事**——那等於拿結果去改測試、驗證等於白做。改成**自我校準**：參考值取自 FinMind 自身的近況／前一年的同一個轉換，門檻寬到不會被單一結果牽著走，但仍擋得住 1000 倍單位錯誤
+- **★ 對映表要從資料反推、不要手寫（2026-08-04）**：我手寫的 `financials` 對映只有 19 個且漏掉整個金融保險業版面（`權益總額`／`資產總額`／`歸屬於母公司業主權益合計`）→ **整個金融業拿不到 `Book_Value` 且不報錯**，與 TAIFEX「期貨用多方/空方、選擇權用買方/賣方」完全同型。改用程式比對 FinMind 自己的 `(origin_name → type)` 配對後補到 **48 個**，歧義項用「近年使用次數」當優先序自動裁決（`營業毛利（毛損）` 25,698 勝過 `淨額` 55）→ **判準與 FinMind 自身的取捨一致，而不是與我的猜測一致**
 - **★ Group D（總經 12 維）不但沒貢獻，還是顯著的負貢獻 → 那三個資料源不用補了（2026-08-02）**：Δ=−0.0186、NW t=−3.12、`no_macro` 十個 epoch 全勝。**機制**：Group D 是每日橫斷面常數，在排序上零資訊，卻給了模型「記住是哪一天」的通道 → **製造過擬合**（`with_macro` val_loss ep2 後單調惡化，`no_macro` 一路降到 ep6）。→ **推翻既有決策「先證實有貢獻再補來源」的前提**——證實了是負的，所以 `fear_greed`/`business_indicator`/`fed_rate` **不用補**，`INPUT_DIM` 應考慮 59 → 47。⚠️ 幅度被排程截斷（峰值在 ep9/共 10），但方向不受影響
 - **★ 標籤 horizon 要跟著持有期拉長，但理由不是「預測會過期」（2026-08-03）**：實測 20d 標籤在**每一個**再平衡頻率上都贏 5d 標籤（Ridge 五格全勝），若機制是「預測過期」就只該在匹配頻率上贏。真正的機制是**短標籤製造換手**——20 日再平衡下 Ridge 換手 81% → 56%、成本 5.9% → 4.1%，而毛報酬同時 26.6% → 31.5%。→ **設計標籤時要問「這個標籤會讓名單多常變動」，不只問「這個 horizon 對不對」**。連帶：落地規格若定在 20 日再平衡，標籤就該一起改成 20d（Mamba 版待 Colab 驗證）
 - **★ 改變 label horizon 的實驗，一定要先補 purge（2026-08-03）**：現行協定 `TRAIN_END` 緊接 `TEST_START`、沒有間隔，在四階對照裡是**共用**缺陷（無害於相對比較）；但**標籤 horizon 一變，洩漏量就跟著變**（5d 洩 5 天、20d 洩 20 天）→ 會系統性偏袒正在被檢定的那一組。三組一律用 max horizon 的 purge。→ **凡是「共用的缺陷」，在改動會影響該缺陷大小的變因時，就不再是共用的**

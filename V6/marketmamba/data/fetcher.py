@@ -14,8 +14,10 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import time
 from datetime import date, datetime, timedelta
+from io import StringIO
 from pathlib import Path
 from typing import Optional
 
@@ -2706,6 +2708,927 @@ def _catch_up_dividends() -> int:
     return added
 
 
+# ══════════════════════════════════════════════════════════════════════════════
+# MOPS 財報三表 + 月營收 整批直連
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# 【為什麼需要】FinMind 免費層對財報只能**逐股查詢**（~1,900 次/季），
+#   實測滾動補齊速率約 32 支/天，補完 2,300 支要 70 天，而每季持續進來
+#   → 追不上。2026-08-04 實測覆蓋率：
+#       financials_raw   2025-12-31 = 2,475 支 → 2026-03-31 = 176 支（7%）
+#       balance_sheet_raw / cashflow_raw       → 2026-03-31 =  16 支（0.7%）
+#       revenue_raw      2026-04 = 1,958 支 → 2026-05 起 = 871 支（44%）
+#   MOPS 的整批端點是**一季兩次請求**（上市 + 上櫃）拿到 1,929 家。
+#
+# 【host 必須是 mopsov】`mops.twse.com.tw` 只回 686 bytes，`mopsov` 才是資料主機。
+#
+# ── 四個對映陷阱（都是「照欄名直譯會靜默算錯」，實測後才定案）────────────────
+#
+#  ① `本期淨利（淨損）` → `IncomeAfterTaxes`，**不是 `NetIncome`**。
+#     FinMind 用**全形/半形括號**區分兩個 type：
+#         `本期淨利（淨損）`（全形）→ IncomeAfterTaxes  ← 2024 起 17,963 筆
+#         `本期淨利(淨損)`  （半形）→ NetIncome         ← 2024 起      0 筆
+#     MOPS 給的是全形。對到 NetIncome 會讓 ROE 分子落在近年無資料的 type 上
+#     （`_merge_fundamentals` 的優先序是 IncomeAfterTaxes 97.7% > NetIncome 45.4%）。
+#
+#  ② 毛利有兩欄，取 `營業毛利（毛損）`、**不是 `營業毛利（毛損）淨額`**。
+#     兩者都對到 GrossProfit，但 2024 起 FinMind 實際使用
+#     `營業毛利（毛損）` 17,385 筆 vs `淨額` 18 筆。「淨額」聽起來像最終值，
+#     選錯會與 99.9% 的歷史不同義。
+#
+#  ③ 單位：MOPS 是**千元**、FinMind 是**元** → 需 ×1000。
+#     但 EPS 與「股數」欄是原始單位，**不可乘**（見 `_MOPS_NO_SCALE`）。
+#     驗證：台泥 2026-05 月營收 MOPS 12,612,013 千元 ×1000
+#          = FinMind 12,612,013,000 逐位元相同。
+#
+#  ④ MOPS 第 2/3/4 季是**累計數**。但 FinMind 三張表的慣例**並不一致**——
+#     這是本輪最不直觀、也只有實測才看得出來的一項：
+#
+#         financials_raw    → **單季**   ∴ 需逐季相減
+#         cashflow_raw      → **累計**   ∴ 維持原值、不可相減
+#         balance_sheet_raw → 時點值     ∴ 不可相減
+#
+#     證據（2026-08-04，V1 驗證）：
+#       · 台積電 2025 四季 EPS 13.95/15.36/17.44/19.51，加總 ≈ 66 才是全年 → 單季
+#       · 台積電 2025 四季營業活動現金流 6,256/11,226/15,495/22,750 億
+#         **單調遞增**，且 `期初現金餘額` 四季完全相同（21,276 億＝年初）→ 累計
+#     第一版把現金流量表也拿去相減，V1 量到 median 比值 Q2≈0.53、Q3≈0.32
+#     （正好是 1/2、1/3）才抓到。**若照直覺「三張表都是單季」寫下去，
+#     現金流特徵會整批只剩實際值的三分之一，而且不會有任何錯誤訊息。**
+#
+# ── 對映表怎麼來的（不是猜的）──────────────────────────────────────────────
+#   FinMind 的 `origin_name` 欄保留了中文科目名，與 MOPS 的欄名幾乎逐字相同。
+#   對映是從既有 parquet 的 (type, origin_name) 配對反推、再用近年使用次數決定
+#   歧義項。語意不唯一或 FinMind 沒有對應 type 的欄位一律**不寫入**
+#   （列在 `_MOPS_SKIPPED_*`），寧可少一欄，不要寫進一個名字對、值錯的欄。
+# ══════════════════════════════════════════════════════════════════════════════
+
+MOPS_HOST = "https://mopsov.twse.com.tw"
+
+_MOPS_STATEMENT_ENDPOINT = {
+    "financials":    "ajax_t163sb04",     # 綜合損益表
+    "balance_sheet": "ajax_t163sb05",     # 資產負債表
+    "cashflow":      "ajax_t163sb20",     # 現金流量表
+}
+
+# 需要「累計 → 單季」相減的表。
+# ⚠️ 只有 financials。cashflow 在 FinMind 端本來就是累計值（見陷阱 ④），
+#    相減會讓它變成實際值的 1/2~1/3；balance_sheet 是時點值。
+_MOPS_FLOW_KINDS = {"financials"}
+
+# ── 對映表：`MOPS 欄名 → (FinMind type, 優先序)` ──────────────────────────────
+#
+# 【怎麼建的】絕大多數項目是**程式從既有 parquet 的 (origin_name → type) 反推**，
+#   不是手寫。優先序 = FinMind 2023 年起使用該 origin_name 的次數。
+#
+# 【優先序拿來做什麼】MOPS 同一張表裡有多個欄位會對到同一個 type，例如
+#   `營業毛利（毛損）`(25,698) 與 `營業毛利（毛損）淨額`(55) 都是 GrossProfit。
+#   與其手動挑一個（挑錯就是陷阱 ②），不如兩個都收、由優先序決定勝出者——
+#   判準因此與 FinMind 自己的取捨一致，而不是與我的猜測一致。
+#
+# 【⚠️ MOPS 有兩種版面：一般業 vs 金融保險業】這是與 TAIFEX 那次
+#   「期貨用多方/空方、選擇權用買方/賣方」完全同型的陷阱。
+#   金融業用的是 `權益總額`／`資產總額`／`歸屬於母公司業主權益合計`，
+#   只寫一般業的欄名會讓**整個金融保險業拿不到 `Book_Value`**（而且不會報錯）。
+#   同一家公司只會出現其中一種版面，故兩種都收不會互相干擾。
+#
+# 【標 (語意) 者】= FinMind 的 origin_name 字面不同但語意確定
+#   （MOPS「流動資產」= FinMind「流動資產合計」）。這些是人工判斷，已逐項標註。
+_MOPS_TYPE_MAP: dict[str, dict[str, tuple[str, int]]] = {
+    "financials": {
+        # ── 一般業版面 ──
+        "營業收入": ("Revenue", 25989),
+        "營業成本": ("CostOfGoodsSold", 25940),
+        "營業毛利（毛損）": ("GrossProfit", 25698),
+        "營業毛利（毛損）淨額": ("GrossProfit", 55),          # 優先序低，讓上面那個勝出
+        "營業費用": ("OperatingExpenses", 26649),
+        "營業利益（損失）": ("OperatingIncome", 26046),
+        "營業外收入及支出": ("TotalNonoperatingIncomeAndExpense", 26046),
+        "其他收益及費損淨額": ("OTHNOE", 1910),
+        "已實現銷貨（損）益": ("RealizedGain", 1001),
+        "未實現銷貨（損）益": ("UnrealizedGain", 1220),
+        "稅前淨利（淨損）": ("PreTaxIncome", 26314),
+        "所得稅費用（利益）": ("TAX", 26600),
+        "繼續營業單位本期淨利（淨損）": ("IncomeFromContinuingOperations", 26533),
+        "繼續營業單位稅前淨利（淨損）": ("IncomeBeforeTaxFromContinuingOperations", 480),
+        "停業單位損益": ("IncomeLossFromDiscontinuedOperation", 778),
+        "本期淨利（淨損）": ("IncomeAfterTaxes", 26600),        # ← 陷阱 ①：不是 NetIncome
+        "本期綜合損益總額": ("TotalConsolidatedProfitForThePeriod", 26771),
+        "其他綜合損益（淨額）": ("OtherComprehensiveIncome", 23079),
+        "基本每股盈餘（元）": ("EPS", 2477),
+        # FinMind 把「淨利歸屬母公司業主」標成 EquityAttributableToOwnersOfParent
+        # （英文名其實錯了，那是損益不是權益）。為與歷史相容必須沿用同一個 type；
+        # 真正的股東權益在 balance_sheet（`_balance_sheet_equity` 已處理）。
+        "淨利（淨損）歸屬於母公司業主": ("EquityAttributableToOwnersOfParent", 22917),
+        "綜合損益總額歸屬於母公司業主": ("EquityAttributableToOwnersOfParent", 97),
+        "淨利（淨損）歸屬於非控制權益": ("NoncontrollingInterests", 14355),
+        "綜合損益總額歸屬於非控制權益":
+            ("ComprehensiveIncomeConsolidatedNetIncomeAttributedNonControllingInterest", 14689),
+        # 生物資產（農林漁牧業專用）
+        "原始認列生物資產及農產品之利益（損失）":
+            ("GainsOnInitialRecognitionOfBiologicalAssetsForCurrentPeriod", 76),
+        "生物資產當期公允價值減出售成本之變動利益（損失）":
+            ("GainsOnChangesInFairValueLessCosts2SellOfBiologicalAssetsForCurrentPeriod", 97),
+        # ── 金融保險業版面 ──
+        "淨收益": ("Revenue", 171),
+        "收入": ("Revenue", 48),
+        "支出": ("CostOfGoodsSold", 48),
+        "收益": ("Income", 506),
+        "支出及費用": ("Expense", 506),
+        "利息淨收益": ("NetInterestIncome", 603),
+        "利息以外淨收益": ("NetNonInterestIncome", 171),
+        "利息以外淨損益": ("NetNonInterestIncome", 432),
+        "呆帳費用、承諾及保證責任準備提存": ("BadDebts", 600),
+        "營業利益": ("OperatingIncome", 506),
+        "營業外損益": ("TotalNonbusinessIncome", 506),
+        "所得稅（費用）利益": ("TAX", 171),
+        "繼續營業單位稅前損益": ("PreTaxIncome", 171),
+        "繼續營業單位稅前純益（純損）": ("PreTaxIncome", 238),
+        "繼續營業單位本期稅後淨利（淨損）": ("IncomeFromContinuingOperations", 432),
+        "繼續營業單位本期純益（純損）": ("IncomeFromContinuingOperations", 238),
+        "本期稅後淨利（淨損）": ("IncomeAfterTax", 603),
+        "本期綜合損益總額（稅後）": ("OtherComprehensiveIncomeAfterTaxThePeriod", 432),
+        "本期其他綜合損益（稅後淨額）": ("OtherComprehensiveIncomeAfterTaxThePeriod", 673),
+        "其他綜合損益（稅後）": ("OtherComprehensiveIncome", 432),
+        "其他綜合損益（稅後淨額）": ("OtherComprehensiveIncomeAfterTax", 238),
+        "其他綜合損益": ("OtherComprehensiveIncome", 48),
+        "基本每股盈餘": ("EPS", 24592),
+        "淨利（損）歸屬於母公司業主": ("EquityAttributableToOwnersOfParent", 596),
+        "淨利（損）歸屬於非控制權益": ("NoncontrollingInterests", 336),
+    },
+    "balance_sheet": {
+        # ── 一般業版面（FinMind origin 多帶「合計」二字 → 語意對映）──
+        "流動資產": ("CurrentAssets", 22000),                  # (語意)「流動資產合計」
+        "非流動資產": ("NoncurrentAssets", 22000),             # (語意)「非流動資產合計」
+        "資產總計": ("TotalAssets", 621),
+        "流動負債": ("CurrentLiabilities", 22000),             # (語意)「流動負債合計」
+        "非流動負債": ("NoncurrentLiabilities", 22000),        # (語意)「非流動負債合計」
+        "負債總計": ("Liabilities", 621),                      # (語意)「負債總額」
+        "股本": ("CapitalStock", 22000),                       # (語意)「股本合計」
+        "資本公積": ("CapitalSurplus", 22000),                 # (語意)「資本公積合計」
+        "保留盈餘": ("RetainedEarnings", 22000),               # (語意)「保留盈餘合計」
+        "其他權益": ("OtherEquityInterest", 22000),            # (語意)「其他權益合計」
+        "歸屬於母公司業主之權益合計": ("EquityAttributableToOwnersOfParent", 22564),  # ★
+        "非控制權益": ("NoncontrollingInterests", 14864),
+        "權益總計": ("Equity", 649),                                                 # ★
+        "預收股款（權益項下）之約當發行股數（單位：股）":
+            ("EquivalentIssueSharesOfAdvanceReceiptsForOrdinaryShare", 100),
+        "母公司暨子公司所持有之母公司庫藏股股數（單位：股）":
+            ("NumberOfSharesInEntityHeldByEntityAndByItsSubsidiaries", 100),
+        # ── 金融保險業版面 ──（漏掉會讓整個金融業沒有 Book_Value）
+        "資產總額": ("TotalAssets", 24854),
+        "負債總額": ("Liabilities", 24862),
+        "權益總額": ("Equity", 24826),                                               # ★
+        "歸屬於母公司業主權益合計": ("EquityAttributableToOwnersOfParent", 20000),    # (語意) ★
+        "歸屬於母公司業主之權益": ("EquityAttributableToOwnersOfParent", 20000),      # (語意) ★
+        "保留盈餘（或累積虧損）": ("RetainedEarnings", 20000),                        # (語意)
+        "母公司暨子公司持有之母公司庫藏股股數（單位：股）":
+            ("NumberOfSharesInEntityHeldByEntityAndByItsSubsidiaries", 100),
+        # ── 兩種版面共有 ──
+        "現金及約當現金": ("CashAndCashEquivalents", 25475),
+        "無形資產": ("IntangibleAssets", 22358),
+        "使用權資產": ("RightOfUseAsset", 24658),
+        "應付公司債": ("BondsPayable", 5296),
+        "本期所得稅資產": ("CurrentIncomeTaxAssets", 14676),
+        "本期所得稅負債": ("CurrentTaxLiabilities", 22284),
+        "遞延所得稅資產": ("DeferredTaxAssets", 22984),
+    },
+    "cashflow": {
+        "營業活動之淨現金流入（流出）": ("CashFlowsFromOperatingActivities", 25394),  # ★ FCF
+        "投資活動之淨現金流入（流出）": ("CashProvidedByInvestingActivities", 25380),
+        "籌資活動之淨現金流入（流出）": ("CashFlowsProvidedFromFinancingActivities", 25350),
+        "本期現金及約當現金增加（減少）數": ("CashBalancesIncrease", 25401),
+        "期初現金及約當現金餘額": ("CashBalancesBeginningOfPeriod", 25401),
+        "期末現金及約當現金餘額": ("CashBalancesEndOfPeriod", 25401),
+    },
+}
+
+# 刻意不寫入的欄位。記錄理由是為了讓「為什麼少這幾欄」有據可查，
+# 而不是看起來像漏掉——也讓版面新增欄位時的警告不會被這些常態項淹沒。
+_MOPS_SKIPPED = {
+    "financials": {
+        "合併前非屬共同控制股權損益": "FinMind 該 origin_name 的 type 是『-』（無英文代碼）",
+        "合併前非屬共同控制股權綜合損益淨額": "同上",
+        "淨利（損）歸屬於共同控制下前手權益": "同上",
+        "淨利（淨損）歸屬於共同控制下前手權益": "同上",
+        "綜合損益總額歸屬於共同控制下前手權益": "同上",
+        "保險服務結果": "FinMind 無此 origin_name（IFRS 17 新科目）",
+        "保險其他營業成本": "同上",
+        "財務結果": "同上",
+        "其他營業結果": "同上",
+    },
+    "balance_sheet": {
+        # 金融保險業的細項科目：FinMind 值域沒有，且下游未消費
+        "權益─具證券性質之虛擬通貨": "FinMind 無對應 type",
+        "權益－具證券性質之虛擬通貨": "FinMind 無對應 type（全形連字號版本）",
+        "庫藏股票": "FinMind 無對應 type",
+        "共同控制下前手權益": "FinMind 無對應 type",
+        "合併前非屬共同控制股權": "FinMind 無對應 type",
+        "待註銷股本股數（單位：股）": "FinMind 無對應 type",
+        "每股參考淨值": "FinMind 無對應 type（下游用 Equity/股數自算）",
+        "Unnamed:12": "read_html 產生的空欄",
+    },
+    "cashflow": {
+        "匯率變動對現金及約當現金之影響": "FinMind 無對應 type",
+    },
+}
+
+def _mops_needs_scaling(col: str) -> bool:
+    """該欄是否需要「千元 → 元」的 ×1000。
+
+    ⚠️ 用**樣式**判斷而不是硬編欄名清單：金融保險業版面的欄名有變體
+    （`基本每股盈餘` vs `基本每股盈餘（元）`、`母公司暨子公司持有…` vs
+    `…所持有…`），硬編清單漏掉任何一個，那一欄就會整組差 1000 倍。
+    """
+    if "單位：股" in col or "單位:股" in col:      # 股數欄，本來就是「股」
+        return False
+    if "每股" in col:                              # EPS、每股參考淨值：本來就是「元」
+        return False
+    return True
+
+
+def _mops_norm_col(c) -> str:
+    """把 read_html 的欄名正規化：攤平 MultiIndex、去空白、去重複層級。
+
+    read_html 對 MOPS 會回 `'公司 代號'`（中間有空白）與
+    `('營業收入', '當月營收')` 這種兩層欄名。
+    """
+    if isinstance(c, tuple):
+        parts = [re.sub(r"\s+", "", str(x)) for x in c
+                 if not str(x).startswith("Unnamed")]
+        ded = []
+        for p in parts:
+            if not ded or ded[-1] != p:
+                ded.append(p)
+        return "|".join(ded)
+    return re.sub(r"\s+", "", str(c))
+
+
+def _mops_to_number(v) -> float:
+    """MOPS 數值解析：`--`／空白／`-` 一律視為缺值。
+
+    ⚠️ 不可用 `pd.to_numeric(errors='coerce')` 一把梭就算了——MOPS 用 `--`
+    表示「本科目不適用」，若被靜默轉成 0 會讓「沒有這個科目」變成「這個科目是 0」，
+    在毛利率／ROE 這類比率上是完全不同的意思。
+    """
+    if v is None:
+        return float("nan")
+    if isinstance(v, (int, float)):
+        return float(v) if pd.notna(v) else float("nan")
+    s = str(v).strip().replace(",", "")
+    if s in ("", "--", "-", "—", "nan", "None"):
+        return float("nan")
+    try:
+        return float(s)
+    except ValueError:
+        return float("nan")
+
+
+def _mops_season_end(year: int, season: int) -> pd.Timestamp:
+    """季別 → 財報基準日（與 FinMind `financials_raw.Date` 的慣例一致）。"""
+    return pd.Timestamp({1: f"{year}-03-31", 2: f"{year}-06-30",
+                         3: f"{year}-09-30", 4: f"{year}-12-31"}[season])
+
+
+def _mops_pick_company_tables(tables: list[pd.DataFrame]) -> list[pd.DataFrame]:
+    """從 read_html 回傳的一堆表裡挑出「公司資料表」。
+
+    ⚠️ 不可用「列數最多」或固定索引來挑：
+      · 財報三表的主表確實只有一張，但月營收是**依產業拆成數十張表**
+        （實測上市 32 張、合計 1,023 家），只取最大的一張會漏掉九成。
+      · 版面表（頁首說明、統計摘要）也可能有不少列。
+    判準改為「欄位含公司代號」，對兩種版面都成立、且對未來改版較穩健。
+    """
+    out = []
+    for t in tables:
+        cols = [_mops_norm_col(c) for c in t.columns]
+        if any(c == "公司代號" or c.endswith("|公司代號") for c in cols):
+            t = t.copy()
+            t.columns = cols
+            out.append(t)
+    return out
+
+
+def _mops_post(endpoint: str, payload: dict, what: str,
+               retries: int = 3) -> Optional[str]:
+    """對 MOPS 發 POST 並回傳 HTML 文字（失敗回 None、不拋例外）。
+
+    ⚠️ **必須重試**：實測 MOPS 會偶發回 `502 Bad Gateway`。
+    這類暫時性失敗若不重試，上層會拿到「這一季這個市場沒資料」，
+    而那與「真的沒有」無法區分——本專案已經在 TPEX 2022–2024 整段落空上
+    踩過一次同型的坑（`data-source-implementation-traps.md`）。
+    """
+    url = f"{MOPS_HOST}/mops/web/{endpoint}"
+    for attempt in range(1, retries + 1):
+        try:
+            resp = requests.post(url, data=payload, headers=HEADERS, timeout=90)
+            resp.raise_for_status()
+        except Exception as e:                                # noqa: BLE001
+            if attempt < retries:
+                logger.warning(f"MOPS {what} 第 {attempt}/{retries} 次失敗：{e}"
+                               f"｜{attempt * 5} 秒後重試")
+                time.sleep(attempt * 5)
+                continue
+            logger.warning(f"MOPS {what} 連續 {retries} 次抓取失敗：{e}")
+            return None
+        resp.encoding = resp.apparent_encoding or "utf-8"
+        # 非資料頁（查無資料／季別未公布）會回很短的內容
+        if len(resp.content) < 5000:
+            logger.info(f"MOPS {what}：內容僅 {len(resp.content)} bytes，視為尚未公布")
+            return None
+        return resp.text
+    return None
+
+
+def fetch_mops_statement_wide(kind: str, year: int, season: int,
+                              typek: str) -> Optional[pd.DataFrame]:
+    """抓單一市場、單一季別的財報寬表（原始欄名、原始單位、**累計數**）。
+
+    `typek`: `"sii"` 上市 / `"otc"` 上櫃。
+    """
+    if kind not in _MOPS_STATEMENT_ENDPOINT:
+        raise ValueError(f"未知的 kind：{kind}")
+    what = f"{kind}/{typek}/{year}Q{season}"
+    html = _mops_post(
+        _MOPS_STATEMENT_ENDPOINT[kind],
+        {"encodeURIComponent": 1, "step": 1, "firstin": 1, "off": 1,
+         "TYPEK": typek, "year": str(year - 1911), "season": f"{season:02d}"},
+        what,
+    )
+    if html is None:
+        return None
+    try:
+        tables = pd.read_html(StringIO(html))
+    except Exception as e:                                    # noqa: BLE001
+        logger.warning(f"MOPS {what} 解析失敗：{e}")
+        return None
+    comp = _mops_pick_company_tables(tables)
+    if not comp:
+        logger.warning(f"MOPS {what}：找不到含『公司代號』的表")
+        return None
+    df = pd.concat(comp, ignore_index=True) if len(comp) > 1 else comp[0]
+    df = df[df["公司代號"].notna()].copy()
+    df["公司代號"] = df["公司代號"].astype(str).str.strip()
+    # 表頭列有時會被 read_html 當成資料列吃進來
+    df = df[df["公司代號"].str.fullmatch(r"\d{4}")]
+    return df.reset_index(drop=True)
+
+
+def _mops_wide_to_long(wide: pd.DataFrame, kind: str,
+                       date: pd.Timestamp) -> pd.DataFrame:
+    """MOPS 寬表 → FinMind 長格式 `[Date, stock_id, type, value, origin_name]`。
+
+    同時完成單位換算（千元 → 元，見 `_mops_needs_scaling`）與**同 type 去重**。
+
+    去重是必要的：MOPS 一張表裡多個欄位會對到同一個 FinMind type
+    （例：`營業毛利（毛損）` 與 `營業毛利（毛損）淨額` 都是 GrossProfit），
+    不處理會讓 `[Date, stock_id, type]` 出現重複鍵，寫進 parquet 後
+    下游的 `groupby(...).last()` 拿到哪一個要看排序 → 不可重現。
+    """
+    tmap = _MOPS_TYPE_MAP[kind]
+    rows, unmapped = [], []
+    for col in wide.columns:
+        if col in ("公司代號", "公司名稱"):
+            continue
+        hit = tmap.get(col)
+        if hit is None:
+            if col not in _MOPS_SKIPPED.get(kind, {}):
+                unmapped.append(col)
+            continue
+        t, prio = hit
+        vals = wide[col].map(_mops_to_number)
+        if _mops_needs_scaling(col):
+            vals = vals * 1000.0                              # 千元 → 元
+        sub = pd.DataFrame({
+            "Date": date,
+            "stock_id": wide["公司代號"].values,
+            "type": t,
+            "value": vals.values,
+            "origin_name": col,
+            "_prio": prio,
+        })
+        rows.append(sub[sub["value"].notna()])
+    if unmapped:
+        # 版面新增欄位時要看得見，不能靜默忽略——TAIFEX 那次就是靜默留 NaN
+        logger.warning(f"MOPS {kind}：{len(unmapped)} 個欄位未在對映表中，已略過："
+                       f"{unmapped}")
+    cols = ["Date", "stock_id", "type", "value", "origin_name"]
+    if not rows:
+        return pd.DataFrame(columns=cols)
+
+    out = pd.concat(rows, ignore_index=True)
+    key = ["Date", "stock_id", "type"]
+    n_dup = int(out.duplicated(subset=key).sum())
+    if n_dup:
+        # 依優先序（＝FinMind 自己近年的使用次數）留下勝出者，並印出實際發生的
+        # 對映衝突——這是「同一個 type 有多個來源欄」時唯一能事後查核的線索
+        winners = (out.sort_values("_prio", ascending=False)
+                   .drop_duplicates(subset=key, keep="first"))
+        losers = (out.merge(winners[key + ["origin_name"]], on=key,
+                            suffixes=("", "_win"))
+                  .query("origin_name != origin_name_win"))
+        pairs = sorted({(r.origin_name, r.origin_name_win)
+                        for r in losers.itertuples()})
+        logger.info(f"MOPS {kind}：{n_dup:,} 列同 type 重複，依優先序保留；"
+                    f"落選→勝出：{pairs[:6]}{' …' if len(pairs) > 6 else ''}")
+        out = winners
+    return out.drop(columns=["_prio"]).reset_index(drop=True)
+
+
+def fetch_financial_statement_mops_direct(kind: str, year: int,
+                                          season: int) -> Optional[pd.DataFrame]:
+    """財報三表整批直連，回傳 **FinMind 長格式、單季值**。
+
+    上市 + 上櫃各一次請求；流量表（損益／現金流）會自動用
+    「本季累計 − 上季累計」還原成單季值（見陷阱 ④）。
+    """
+    def _both(sea: int) -> Optional[pd.DataFrame]:
+        """抓上市 + 上櫃並合併。**兩個市場缺任一就整季放棄。**
+
+        ⚠️ 不可「有幾個算幾個」：實測 MOPS 對 otc 回過一次 502，
+        當時上層拿到只有上市的 1,046 家、看起來完全正常，
+        接著被當成「上一季」拿去相減 → 上櫃 883 家全部匹配不到 →
+        走 fallback 保留累計數 → **54.2% 的資料是錯的且不會報錯**
+        （54.2% 正好 = 1046/1929）。缺一個市場一定是失敗、不是常態。
+        """
+        parts = []
+        for typek in ("sii", "otc"):
+            w = fetch_mops_statement_wide(kind, year, sea, typek)
+            if w is None or w.empty:
+                logger.warning(f"MOPS {kind} {year}Q{sea}：{typek} 無資料 → "
+                               f"整季放棄（寧可沒有，不要只有一半）")
+                return None
+            parts.append(w)
+            time.sleep(1.0)
+        wide = pd.concat(parts, ignore_index=True)
+        wide = wide.drop_duplicates(subset=["公司代號"], keep="first")
+        return _mops_wide_to_long(wide, kind, _mops_season_end(year, sea))
+
+    cur = _both(season)
+    if cur is None or cur.empty:
+        return None
+
+    # 資產負債表是時點值、Q1 本來就是單季 → 直接回
+    if kind not in _MOPS_FLOW_KINDS or season == 1:
+        logger.info(f"MOPS {kind} {year}Q{season}：{cur['stock_id'].nunique():,} 支"
+                    f"／{len(cur):,} 列（單季值，無需相減）")
+        return cur
+
+    prev = _both(season - 1)
+    if prev is None or prev.empty:
+        logger.warning(f"MOPS {kind} {year}Q{season}：抓不到上一季累計數，"
+                       f"無法還原單季值 → 放棄本季（不寫入累計數，避免與歷史不同義）")
+        return None
+
+    key = ["stock_id", "type"]
+    m = cur.merge(prev[key + ["value"]], on=key, how="left",
+                  suffixes=("", "_prev"))
+
+    # ⚠️ 上季無對應的列一律**丟棄**，絕不「保留累計數」。
+    #    第一版就是保留原值，結果 MOPS 一次 502 讓上櫃整批匹配不到 →
+    #    13,340 列悄悄變成累計數混進單季資料裡，V1 量到「median 仍是 1.000000
+    #    但只有 54% 落在容差內」才抓到。**缺值看得見，錯值看不見。**
+    n_unmatched = int(m["value_prev"].isna().sum())
+    frac = n_unmatched / max(len(m), 1)
+    if frac > 0.05:
+        # 少量無對應是新上市造成的常態；大量無對應一定是抓取失敗。
+        # 這種情況連「丟棄」都不夠——整季都不可信。
+        logger.warning(f"MOPS {kind} {year}Q{season}：{n_unmatched:,}/{len(m):,} 列"
+                       f"（{frac:.1%}）在上一季無對應，遠高於新上市能解釋的比例"
+                       f" → 判定為上一季抓取不完整，整季放棄")
+        return None
+    if n_unmatched:
+        logger.info(f"MOPS {kind} {year}Q{season}：{n_unmatched:,} 列"
+                    f"（{frac:.2%}）在上一季無對應（新上市／科目變動），已丟棄")
+    m["value"] = m["value"] - m["value_prev"]                 # NaN 會傳染 → 自然丟棄
+    out = m.drop(columns=["value_prev"])
+    out = out[out["value"].notna()].reset_index(drop=True)
+    logger.info(f"MOPS {kind} {year}Q{season}：{out['stock_id'].nunique():,} 支"
+                f"／{len(out):,} 列（已由累計數還原為單季值）")
+    return out
+
+
+def fetch_revenue_mops_direct(year: int, month: int) -> Optional[pd.DataFrame]:
+    """月營收整批直連，回傳 FinMind `revenue_raw` schema。
+
+    端點 `nas/t21/{sii,otc}/t21sc03_{民國年}_{月}_0.html`，編碼 **big5**。
+
+    ⚠️ 兩個必須照做的細節：
+      · 表格**依產業拆成數十張**，要全部 concat（只取最大的一張會漏掉九成）。
+      · FinMind 的 `Date` 是**營收月份的下個月 1 日**
+        （`revenue_month=5, revenue_year=2026` → `Date=2026-06-01`），
+        不是營收月份本身。對錯會讓整批資料錯開一個月且不會報錯。
+    """
+    frames = []
+    for typek in ("sii", "otc"):
+        url = f"{MOPS_HOST}/nas/t21/{typek}/t21sc03_{year - 1911}_{month}_0.html"
+        try:
+            resp = requests.get(url, headers=HEADERS, timeout=90)
+            resp.raise_for_status()
+        except Exception as e:                                # noqa: BLE001
+            logger.warning(f"MOPS 月營收 {typek} {year}-{month:02d} 抓取失敗：{e}")
+            continue
+        resp.encoding = "big5"
+        try:
+            tables = pd.read_html(StringIO(resp.text))
+        except Exception as e:                                # noqa: BLE001
+            logger.warning(f"MOPS 月營收 {typek} {year}-{month:02d} 解析失敗：{e}")
+            continue
+        comp = _mops_pick_company_tables(tables)
+        if not comp:
+            logger.warning(f"MOPS 月營收 {typek} {year}-{month:02d}：無公司資料表")
+            continue
+        frames.extend(comp)
+        time.sleep(1.0)
+
+    if not frames:
+        return None
+    wide = pd.concat(frames, ignore_index=True)
+    col_rev = next((c for c in wide.columns if c.endswith("|當月營收")), None)
+    if col_rev is None:
+        logger.warning(f"MOPS 月營收 {year}-{month:02d}：找不到『當月營收』欄"
+                       f"（欄位：{list(wide.columns)[:8]}）")
+        return None
+    wide["公司代號"] = wide["公司代號"].astype(str).str.strip()
+    wide = wide[wide["公司代號"].str.fullmatch(r"\d{4}")]
+    wide = wide.drop_duplicates(subset=["公司代號"], keep="first")
+
+    rev = wide[col_rev].map(_mops_to_number) * 1000.0         # 千元 → 元
+    out = pd.DataFrame({
+        "Date": pd.Timestamp(year, month, 1) + pd.offsets.MonthBegin(1),
+        "stock_id": wide["公司代號"].values,
+        "country": "Taiwan",
+        "revenue": rev.values,
+        "revenue_month": month,
+        "revenue_year": year,
+        "create_time": "",
+    })
+    out = out[out["revenue"].notna()].reset_index(drop=True)
+    out["revenue"] = out["revenue"].round().astype("int64")
+    logger.info(f"MOPS 月營收 {year}-{month:02d}：{len(out):,} 支"
+                f"｜Date={out['Date'].iloc[0].date() if len(out) else '—'}")
+    return out
+
+
+def _mops_quarter_due(year: int, season: int) -> pd.Timestamp:
+    """財報的法定申報期限（用來判斷「這一季現在該有資料了嗎」）。
+
+    台股規定：Q1 5/15、Q2 8/14、Q3 11/14、Q4（年報）隔年 3/31。
+    多留 3 天緩衝，避免在期限當天就開始每天空打。
+    """
+    due = {1: (year, 5, 15), 2: (year, 8, 14),
+           3: (year, 11, 14), 4: (year + 1, 3, 31)}[season]
+    return pd.Timestamp(*due) + pd.Timedelta(days=3)
+
+
+def _catch_up_mops_quarterly(today: str, max_quarters: int = 6,
+                             min_coverage: float = 0.80) -> dict[str, int]:
+    """財報三表的季頻補齊（MOPS 整批直連）。
+
+    【與 `_catch_up_monthly` 的分工】那支是 FinMind **逐股**滾動，實測約 32 支/天、
+    補完 2,300 支要 70 天，**追不上每季新進來的量**（2026-08-04 稽核：
+    `financials` 2026Q1 只有 7%、`balance_sheet`/`cashflow` 只有 0.7%）。
+    本函式改用 MOPS 整批端點，**一季兩次請求拿到 1,929 家**。
+
+    【策略】只補「法定申報期限已過、但覆蓋率不足」的季別，且**每次執行最多補一季**——
+    財報是季頻資料，沒有必要在同一天把好幾季都抓完，分散開來也不會給 MOPS 壓力。
+
+    【MOPS 優先】重疊鍵以 MOPS 為準（`keep="last"`）。理由不只是 FinMind 有標錯的
+    英文 type 名稱，更根本的是 **MOPS 是原始申報來源、FinMind 是轉手方**。
+    實測重疊區 median 比值為 1.000000，覆寫風險低。
+    ⚠️ 但**只覆寫本次抓取的那一季**，不回頭重寫歷史——那是另一個決策。
+    """
+    added: dict[str, int] = {}
+    t = pd.Timestamp(today)
+    live = _live_universe()
+    n_live = len(live) if live else 2000
+
+    # 候選季別：由新到舊，只看申報期限已過的
+    cands: list[tuple[int, int]] = []
+    y, s = t.year, (t.month - 1) // 3 + 1
+    for _ in range(max_quarters + 4):
+        s -= 1
+        if s == 0:
+            y, s = y - 1, 4
+        if _mops_quarter_due(y, s) <= t:
+            cands.append((y, s))
+        if len(cands) >= max_quarters:
+            break
+
+    for kind in ("financials", "balance_sheet", "cashflow"):
+        path = PROCESSED_DIR / f"{kind}_raw.parquet"
+        if not path.exists():
+            continue
+        old = pd.read_parquet(path)
+        old["Date"] = pd.to_datetime(old["Date"], errors="coerce")
+        old["stock_id"] = old["stock_id"].astype(str)
+        have = old.groupby("Date")["stock_id"].nunique()
+
+        target = None
+        for (yy, ss) in cands:                                # 由新到舊，補最新的缺口
+            d = _mops_season_end(yy, ss)
+            cov = int(have.get(d, 0)) / max(n_live, 1)
+            if cov < min_coverage:
+                target = (yy, ss, d, cov)
+                break
+        if target is None:
+            logger.info(f"{kind}_raw: 近 {len(cands)} 季覆蓋率皆 ≥{min_coverage:.0%}，無需補齊")
+            added[kind] = 0
+            continue
+
+        yy, ss, d, cov = target
+        logger.info(f"{kind}_raw: {d.date()}（{yy}Q{ss}）覆蓋 {cov:.1%} "
+                    f"< {min_coverage:.0%} → 由 MOPS 補齊")
+        try:
+            new = fetch_financial_statement_mops_direct(kind, yy, ss)
+        except Exception as e:                                # noqa: BLE001
+            logger.warning(f"{kind}_raw: MOPS 抓取例外（不影響推論）：{e}")
+            added[kind] = 0
+            continue
+        if new is None or new.empty:
+            logger.warning(f"{kind}_raw: MOPS {yy}Q{ss} 無可用資料")
+            added[kind] = 0
+            continue
+
+        for c in old.columns:
+            if c not in new.columns:
+                new[c] = pd.NA
+        key = ["Date", "stock_id", "type"]
+        # MOPS 放後面 + keep="last" ＝ 重疊鍵以 MOPS 為準
+        out = pd.concat([old, new[old.columns]], ignore_index=True)
+        out = out.drop_duplicates(subset=key, keep="last")
+        out = out.sort_values(key).reset_index(drop=True)
+        out.to_parquet(path, index=False)
+        n_add = len(out) - len(old)
+        added[kind] = n_add
+        logger.info(f"{kind}_raw: MOPS {len(new):,} 列 → 淨增 {n_add:,} 列"
+                    f"｜{d.date()} 覆蓋 {int(have.get(d, 0)):,} → "
+                    f"{out[out['Date'] == d]['stock_id'].nunique():,} 支")
+    return added
+
+
+def _catch_up_mops_revenue(today: str, max_months: int = 6,
+                           min_coverage: float = 0.80) -> int:
+    """月營收補齊（MOPS 整批直連）。
+
+    月營收的公告期限是**次月 10 日**。同樣只補「期限已過但覆蓋率不足」的月份，
+    每次執行最多補一個月。
+
+    ⚠️ FinMind `revenue_raw` 的 `Date` 是**營收月份的下個月 1 日**
+    （`revenue_month=5, revenue_year=2026` → `Date=2026-06-01`），
+    `fetch_revenue_mops_direct` 已照此慣例產出，此處不再轉換。
+    """
+    path = PROCESSED_DIR / "revenue_raw.parquet"
+    if not path.exists():
+        return 0
+    t = pd.Timestamp(today)
+    old = pd.read_parquet(path)
+    old["Date"] = pd.to_datetime(old["Date"], errors="coerce")
+    old["stock_id"] = old["stock_id"].astype(str)
+    have = old.groupby("Date")["stock_id"].nunique()
+    live = _live_universe()
+    n_live = len(live) if live else 2000
+
+    target = None
+    cur = pd.Timestamp(t.year, t.month, 1)
+    for _ in range(max_months):
+        cur = cur - pd.offsets.MonthBegin(1)                   # 營收月份
+        due = cur + pd.offsets.MonthBegin(1) + pd.Timedelta(days=12)
+        if due > t:
+            continue
+        d = cur + pd.offsets.MonthBegin(1)                     # parquet 的 Date 慣例
+        cov = int(have.get(d, 0)) / max(n_live, 1)
+        if cov < min_coverage:
+            target = (cur.year, cur.month, d, cov)
+            break
+    if target is None:
+        logger.info(f"revenue_raw: 近 {max_months} 個月覆蓋率皆 ≥{min_coverage:.0%}，無需補齊")
+        return 0
+
+    yy, mm, d, cov = target
+    logger.info(f"revenue_raw: {yy}-{mm:02d} 營收（Date={d.date()}）"
+                f"覆蓋 {cov:.1%} < {min_coverage:.0%} → 由 MOPS 補齊")
+    try:
+        new = fetch_revenue_mops_direct(yy, mm)
+    except Exception as e:                                    # noqa: BLE001
+        logger.warning(f"revenue_raw: MOPS 抓取例外（不影響推論）：{e}")
+        return 0
+    if new is None or new.empty:
+        logger.warning(f"revenue_raw: MOPS {yy}-{mm:02d} 無可用資料")
+        return 0
+
+    for c in old.columns:
+        if c not in new.columns:
+            new[c] = pd.NA
+    key = ["Date", "stock_id"]
+    out = pd.concat([old, new[old.columns]], ignore_index=True)
+    out = out.drop_duplicates(subset=key, keep="last")         # MOPS 優先
+    out = out.sort_values(key).reset_index(drop=True)
+    out.to_parquet(path, index=False)
+    n_add = len(out) - len(old)
+    logger.info(f"revenue_raw: MOPS {len(new):,} 列 → 淨增 {n_add:,} 列"
+                f"｜{d.date()} 覆蓋 {int(have.get(d, 0)):,} → "
+                f"{out[out['Date'] == d]['stock_id'].nunique():,} 支")
+    return n_add
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 處置股 / 注意股（交易狀態）
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# 【為什麼在這裡】原本只有 `V6/experimental/fetch_trading_status.py`，而那支的
+#   `build()` 是**整檔重建**（逐年抓 11 年後 `to_parquet` 全檔覆寫），
+#   不能排進每日流程。解析邏輯（含下面四個實測踩過的坑）搬到這裡當**單一來源**，
+#   experimental 那支改為 import，避免兩份實作日後分歧。
+#
+# 【四項裡只有「處置」有真正的交易限制】分盤集合競價（每 5 或 20 分鐘撮合一次）
+#   → 流動性大幅下降、價差擴大；預收款券 → 很難照收盤價成交。
+#   「注意」只是警示、無交易限制，但常是處置前兆，一併抓來當診斷。
+#
+# 【端點與四個坑（2026-08-01 實測）】
+#   TWSE 處置 `/rwd/zh/announcement/punish`｜注意 `/rwd/zh/announcement/notice`
+#   TPEX 處置 `/www/zh-tw/bulletin/disposal`｜注意 `/www/zh-tw/bulletin/attention`
+#   ① 四個都要 `startDate`/`endDate`（`date` 參數回 0 列），
+#      且 TWSE 是 `YYYYMMDD`、TPEX 是 `YYYY/MM/DD`
+#   ② 起迄分隔符 TWSE 用**全形** `～`(U+FF5E)、TPEX 用**半形** `~`
+#   ③ 民國日期分隔符 punish 用 `/`、notice 用 `.`
+#   ④ TPEX 無資料時回**骨架列**（「本日無處置資料」、代號與起訖皆空字串）
+#   另：TPEX 的 disposal 與 attention **欄序不同**（代號分別在 r[2] / r[1]）
+_TS_SEP = re.compile(r"[～~﹏－-]+")
+_TS_STOCK_RE = re.compile(r"^\d{4}$")
+_TS_ENDPOINTS = {
+    ("twse", "disposal"):  "https://www.twse.com.tw/rwd/zh/announcement/punish",
+    ("twse", "attention"): "https://www.twse.com.tw/rwd/zh/announcement/notice",
+    ("tpex", "disposal"):  "https://www.tpex.org.tw/www/zh-tw/bulletin/disposal",
+    ("tpex", "attention"): "https://www.tpex.org.tw/www/zh-tw/bulletin/attention",
+}
+
+
+def _ts_roc_to_ad(s) -> Optional[str]:
+    """民國 `114/07/07` 或 `114.07.04` → 西元 `'2025-07-07'`。格式不符回 None（不猜）。
+
+    ⚠️ 分隔符**兩種都要收**：TWSE 的 punish 用 `/`、notice 用 `.`。
+       只寫 `/` 的話 notice 會整批解析失敗、回 0 列，而且不會報錯。
+    """
+    m = re.match(r"^\s*(\d{2,3})[/.](\d{1,2})[/.](\d{1,2})\s*$", str(s))
+    if not m:
+        return None
+    y, mo, d = int(m.group(1)) + 1911, int(m.group(2)), int(m.group(3))
+    try:
+        return f"{pd.Timestamp(year=y, month=mo, day=d).date()}"
+    except ValueError:
+        return None
+
+
+def _ts_get(url: str, params: dict) -> Optional[list]:
+    try:
+        r = requests.get(url, params=params, headers=HEADERS, timeout=30)
+        r.raise_for_status()
+        j = r.json()
+    except Exception as e:                                    # noqa: BLE001
+        logger.warning(f"trading_status {url.rsplit('/', 1)[-1]}：{type(e).__name__}: {e}")
+        return None
+    finally:
+        time.sleep(0.8)
+    if isinstance(j, dict):
+        if j.get("data") is not None:
+            return j["data"]
+        t = j.get("tables") or []
+        if t and t[0].get("data") is not None:
+            return t[0]["data"]
+    return None
+
+
+def fetch_trading_status_direct(market: str, kind: str,
+                                start: str, end: str) -> list[dict]:
+    """抓單一市場 × 單一類型的公告，回傳 `[{stock_id, start, end, announced, market}]`。
+
+    `start`/`end` 為 `YYYY-MM-DD`；市場間的格式差異在此函式內處理。
+    """
+    url = _TS_ENDPOINTS[(market, kind)]
+    if market == "twse":
+        params = {"response": "json", "startDate": start.replace("-", ""),
+                  "endDate": end.replace("-", "")}
+    else:
+        params = {"response": "json", "startDate": start.replace("-", "/"),
+                  "endDate": end.replace("-", "/")}
+    rows = _ts_get(url, params) or []
+
+    out = []
+    for r in rows:
+        try:
+            if market == "twse":
+                if kind == "disposal":
+                    sid, ann, span = str(r[2]).strip(), _ts_roc_to_ad(r[1]), str(r[6])
+                else:
+                    sid, ann, span = str(r[1]).strip(), _ts_roc_to_ad(r[5]), None
+            else:
+                # TPEX 兩種公告欄序不同：disposal 代號在 r[2]、attention 在 r[1]。
+                # 兩邊都用 r[2] 的話 attention 會拿到「證券名稱」→ 過不了 ^\d{4}$ → 0 列。
+                if kind == "disposal":
+                    sid, ann, span = str(r[2]).strip(), _ts_roc_to_ad(r[1]), str(r[5])
+                else:
+                    sid, ann, span = str(r[1]).strip(), _ts_roc_to_ad(r[5]), None
+
+            if span is not None:                              # 處置：一段期間
+                parts = [p for p in _TS_SEP.split(span) if p.strip()]
+                if len(parts) != 2:
+                    continue                                  # 含 TPEX 的骨架列
+                s, e = _ts_roc_to_ad(parts[0]), _ts_roc_to_ad(parts[1])
+            else:                                             # 注意：單日公告
+                s = e = ann
+
+            if not _TS_STOCK_RE.match(sid) or not s or not e:
+                continue
+            out.append({"stock_id": sid, "start": s, "end": e,
+                        "announced": ann, "market": market})
+        except (IndexError, TypeError):
+            continue
+    return out
+
+
+def expand_trading_status_daily(recs: list[dict], status: str,
+                                calendar: pd.DatetimeIndex) -> pd.DataFrame:
+    """把 `[start, end]` 期間展開成逐日列，只保留真實交易日。
+
+    展開後下游只要用 `(Date, stock_id)` 查表就知道當天有無限制，不必再解析期間。
+    """
+    out = []
+    for r in recs:
+        s, e = pd.Timestamp(r["start"]), pd.Timestamp(r["end"])
+        if e < s:
+            continue
+        for d in calendar[(calendar >= s) & (calendar <= e)]:
+            out.append((str(d.date()), r["stock_id"], status,
+                        r["market"], r["announced"]))
+    return pd.DataFrame(out, columns=["Date", "stock_id", "status",
+                                      "market", "announced"])
+
+
+def _trading_calendar() -> pd.DatetimeIndex:
+    """真實交易日曆（取自 `prices_raw` 的相異日期）。"""
+    path = PROCESSED_DIR / "prices_raw.parquet"
+    if not path.exists():
+        return pd.DatetimeIndex([])
+    d = pd.read_parquet(path, columns=["Date"])
+    return pd.DatetimeIndex(sorted(pd.to_datetime(d["Date"].unique())))
+
+
+def _catch_up_trading_status(today: str, lookback_days: int = 120) -> int:
+    """處置股 / 注意股的**增量**補齊。
+
+    【與 experimental 那支 `build()` 的分工】`build()` 是整檔重建（逐年抓 11 年、
+    全檔覆寫），適合首次建立或重整；本函式只抓最近 `lookback_days` 天的公告後
+    **合併**進既有檔，適合每日跑。
+
+    【為什麼回看窗要夠長，不能只抓「昨天到今天」】處置是**一段期間**
+    （通常 10~12 個營業日），一則今天公布的處置會涵蓋未來十幾天；
+    反過來，前幾週公布的處置其期間可能延伸到今天。只抓當天公告會漏掉
+    「期間仍在進行中、但公告日不在窗內」的那些。120 天遠大於單次處置期間，
+    也順帶把偶爾漏抓的日子自我修復。
+
+    【去重鍵】`[Date, stock_id, status]`，與 `build()` 完全相同（`keep="first"`）
+    ——同一天同一支可能同時有處置與注意，status 必須進鍵。
+    """
+    path = PROCESSED_DIR / "trading_status_raw.parquet"
+    cal = _trading_calendar()
+    if len(cal) == 0:
+        logger.warning("trading_status: 取不到交易日曆（prices_raw 不存在），跳過")
+        return 0
+
+    end = pd.Timestamp(today)
+    start = end - pd.Timedelta(days=lookback_days)
+    frames = []
+    for kind in ("disposal", "attention"):
+        for market in ("twse", "tpex"):
+            try:
+                recs = fetch_trading_status_direct(
+                    market, kind, str(start.date()), str(end.date()))
+            except Exception as e:                            # noqa: BLE001
+                logger.warning(f"trading_status {market}/{kind} 抓取失敗：{e}")
+                continue
+            if recs:
+                frames.append(expand_trading_status_daily(recs, kind, cal))
+
+    if not frames:
+        logger.info("trading_status: 近期無公告（或四個端點皆無回應）")
+        return 0
+    new = pd.concat(frames, ignore_index=True)
+
+    old = pd.read_parquet(path) if path.exists() else pd.DataFrame(columns=new.columns)
+    key = ["Date", "stock_id", "status"]
+    out = pd.concat([old, new], ignore_index=True)
+    out = out.drop_duplicates(subset=key, keep="first")       # 既有優先，與 build() 一致
+    out = out.sort_values(key).reset_index(drop=True)
+    out.to_parquet(path, index=False)
+    added = len(out) - len(old)
+    n_disp = int((new["status"] == "disposal").sum())
+    logger.info(f"trading_status: 近 {lookback_days} 天抓到 {len(new):,} 個「股票×日」"
+                f"（處置 {n_disp:,}／注意 {len(new) - n_disp:,}）→ 淨增 {added:,} 列"
+                f"｜最新 {out['Date'].max()}")
+    return added
+
+
 def _live_universe() -> set[str]:
     """
     目前仍在交易的股票代號（取 `prices_raw` 最後一個交易日）。
@@ -3103,6 +4026,42 @@ def run_daily_update(
         logger.info(f"dividend_raw: +{_n_div:,} 列" if _n_div else "dividend_raw: 無新增")
     except Exception as _e:                                   # noqa: BLE001
         logger.warning(f"dividend_raw 更新失敗（不影響推論）：{_e}")
+
+    # ── 處置股 / 注意股（2026-08-04 納入）──────────────────────────────────────
+    # 組合建構系統要用它排除處置股（分盤集合競價 → 很難照收盤價成交）。
+    # 原本只有 experimental 的整檔重建腳本、靠手動跑，停在 2026-07-31。
+    try:
+        _n_ts = _catch_up_trading_status(today)
+        if not _n_ts:
+            logger.info("trading_status_raw: 無新增")
+    except Exception as _e:                                   # noqa: BLE001
+        logger.warning(f"trading_status_raw 更新失敗（不影響推論）：{_e}")
+
+    # ── 財報三表 + 月營收：MOPS 整批直連（2026-08-04 納入）────────────────────
+    # 【為什麼要加在 FinMind 之前】2026-08-04 稽核發現財報有覆蓋斷崖：
+    #   financials 2026Q1 只有 176 支（7%）、balance_sheet/cashflow 只有 16 支（0.7%）、
+    #   月營收 2026-05 起只剩 871 支（44%）。根因是 FinMind 免費層只能逐股查詢，
+    #   實測滾動速率約 32 支/天，補完 2,300 支要 70 天——**追不上每季新進來的量**。
+    #   MOPS 是一季兩次請求拿到 1,929 家，且 balance_sheet/cashflow 本來就不在
+    #   任何每日流程裡（`_catch_up_monthly` 只涵蓋 revenue + financials）。
+    # 【與下方 FinMind 的分工】MOPS 只有現存公司（1,972 支），FinMind 的歷史含
+    #   已下市股（2,475 支）。MOPS 先把主體補滿之後，FinMind 的「補最舊 N 支」
+    #   會自然改去補 MOPS 涵蓋不到的那批，兩者互補、不重工。
+    # 【已驗證】`V6/scripts/validate_mops_financials.py` 四項全過（2026-08-04）：
+    #   差分規則、量級交叉（median 比值 1.000000）、指標核對、接縫連續性。
+    try:
+        _mops_q = _catch_up_mops_quarterly(today)
+        if any(_mops_q.values()):
+            logger.info("MOPS 財報補齊：" + "｜".join(
+                f"{k} +{v:,}" for k, v in _mops_q.items() if v))
+    except Exception as _e:                                   # noqa: BLE001
+        logger.warning(f"MOPS 財報補齊失敗（不影響推論）：{_e}")
+    try:
+        _mops_r = _catch_up_mops_revenue(today)
+        if _mops_r:
+            logger.info(f"MOPS 月營收補齊：+{_mops_r:,} 列")
+    except Exception as _e:                                   # noqa: BLE001
+        logger.warning(f"MOPS 月營收補齊失敗（不影響推論）：{_e}")
 
     # ── 月/季頻資料源（2026-07-29 納入；FinMind 免費層仍可用）──────────────────
     # 這兩個源原本只在 force_rebuild 時整份重抓，平時走快取分支＝永遠不會更新，

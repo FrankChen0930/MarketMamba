@@ -38,9 +38,21 @@ fetch_trading_status.py — 處置股 / 注意股（風控 C 類的剩餘缺口�
 **已展開成逐日**——處置是一段期間（通常 10~12 個營業日），展開後下游只要用
 `(Date, stock_id)` 查表就知道當天有沒有限制，不必再解析期間。
 
+⚠️ 2026-08-04 重構：抓取與解析邏輯已移至 `marketmamba/data/fetcher.py`
+----------------------------------------------------------------------
+原因是每日流程需要**增量**更新，而本檔的 `build()` 是整檔重建
+（逐年抓 11 年後全檔覆寫），不能直接排進 `run_daily_update`。
+解析邏輯（含上述所有坑）現在住在 `fetcher.py` 當單一來源，本檔改為 import：
+
+    fetcher.fetch_trading_status_direct(market, kind, start, end)
+    fetcher.expand_trading_status_daily(recs, status, calendar)
+    fetcher._catch_up_trading_status(today)      ← 每日增量，已接進 run_daily_update
+
+本檔保留 `build()` 供**整檔重建**（首次建立、或懷疑歷史有缺時），行為與重構前相同。
+
 用法
 ----
-    python V6/experimental/fetch_trading_status.py --years 2015 2026
+    python V6/experimental/fetch_trading_status.py --years 2015 2026   # 整檔重建
     python V6/experimental/fetch_trading_status.py --summary
 """
 from __future__ import annotations
@@ -59,120 +71,12 @@ if str(_V6) not in sys.path:
     sys.path.insert(0, str(_V6))
 
 from marketmamba.config import PROCESSED_DIR                     # noqa: E402
+from marketmamba.data.fetcher import (                           # noqa: E402
+    expand_trading_status_daily,
+    fetch_trading_status_direct,
+)
 
 OUT = Path(PROCESSED_DIR) / "trading_status_raw.parquet"
-HEADERS = {"User-Agent": "Mozilla/5.0"}
-SLEEP = 0.8
-# 起迄期間的分隔符號：TWSE 全形、TPEX 半形。兩種都要收（實測踩過）。
-SEP = re.compile(r"[～~﹏－-]+")
-STOCK_RE = re.compile(r"^\d{4}$")
-
-
-def _roc_to_ad(s: str) -> str | None:
-    """民國 `114/07/07` 或 `114.07.04` → 西元 `2025-07-07`。格式不符回 None（不猜）。
-
-    ⚠️ **分隔符號兩種都要收**：TWSE 的 punish 用 `/`、notice 用 `.`（實測 2026-08-01）。
-       只寫 `/` 的話 notice 會整批解析失敗、回 0 列，而且不會報錯。
-    """
-    m = re.match(r"^\s*(\d{2,3})[/.](\d{1,2})[/.](\d{1,2})\s*$", str(s))
-    if not m:
-        return None
-    y, mo, d = int(m.group(1)) + 1911, int(m.group(2)), int(m.group(3))
-    try:
-        return f"{pd.Timestamp(year=y, month=mo, day=d).date()}"
-    except ValueError:
-        return None
-
-
-def _get(url: str, params: dict) -> list | None:
-    try:
-        r = requests.get(url, params=params, headers=HEADERS, timeout=30)
-        r.raise_for_status()
-        j = r.json()
-    except Exception as e:                                        # noqa: BLE001
-        print(f"    ⚠ {type(e).__name__}: {e}", flush=True)
-        return None
-    finally:
-        time.sleep(SLEEP)
-    if isinstance(j, dict):
-        if j.get("data") is not None:
-            return j["data"]
-        t = j.get("tables") or []
-        if t and t[0].get("data") is not None:
-            return t[0]["data"]
-    return None
-
-
-def fetch_twse(kind: str, y0: str, y1: str) -> list[dict]:
-    """kind: disposal → punish（含起迄期間）／attention → notice（單日）。"""
-    path = "punish" if kind == "disposal" else "notice"
-    rows = _get(f"https://www.twse.com.tw/rwd/zh/announcement/{path}",
-                {"response": "json", "startDate": y0.replace("-", ""),
-                 "endDate": y1.replace("-", "")}) or []
-    out = []
-    for r in rows:
-        try:
-            if kind == "disposal":
-                sid, ann, span = str(r[2]).strip(), _roc_to_ad(r[1]), str(r[6])
-                parts = [p for p in SEP.split(span) if p.strip()]
-                if len(parts) != 2:
-                    continue
-                s, e = _roc_to_ad(parts[0]), _roc_to_ad(parts[1])
-            else:
-                sid, ann = str(r[1]).strip(), _roc_to_ad(r[5])
-                s = e = ann                                   # 注意股是單日公告
-            if not STOCK_RE.match(sid) or not s or not e:
-                continue
-            out.append({"stock_id": sid, "start": s, "end": e,
-                        "announced": ann, "market": "twse"})
-        except (IndexError, TypeError):
-            continue
-    return out
-
-
-def fetch_tpex(kind: str, y0: str, y1: str) -> list[dict]:
-    path = "disposal" if kind == "disposal" else "attention"
-    rows = _get(f"https://www.tpex.org.tw/www/zh-tw/bulletin/{path}",
-                {"response": "json", "startDate": y0.replace("-", "/"),
-                 "endDate": y1.replace("-", "/")}) or []
-    out = []
-    for r in rows:
-        try:
-            # ⚠️ 欄序兩種公告不同（實測 2026-08-01）：
-            #   disposal : 編號 / 公布日期 / **證券代號** / 名稱 / 累計 / 起訖 / ...
-            #   attention: 編號 / **證券代號** / 名稱 / 累計 / 注意資訊 / 公告日期 / ...
-            # 兩邊都用 r[2] 的話，attention 會拿到「證券名稱」→ 過不了 ^\d{4}$ → 0 列。
-            if kind == "disposal":
-                sid, ann = str(r[2]).strip(), _roc_to_ad(r[1])
-            else:
-                sid, ann = str(r[1]).strip(), _roc_to_ad(r[5])
-            if kind == "disposal":
-                parts = [p for p in SEP.split(str(r[5])) if p.strip()]
-                if len(parts) != 2:
-                    continue                                  # 含「本日無處置資料」骨架列
-                s, e = _roc_to_ad(parts[0]), _roc_to_ad(parts[1])
-            else:
-                s = e = ann
-            if not STOCK_RE.match(sid) or not s or not e:
-                continue
-            out.append({"stock_id": sid, "start": s, "end": e,
-                        "announced": ann, "market": "tpex"})
-        except (IndexError, TypeError):
-            continue
-    return out
-
-
-def expand_to_daily(recs: list[dict], status: str, calendar: pd.DatetimeIndex) -> pd.DataFrame:
-    """把 [start, end] 期間展開成逐日列，只保留真實交易日。"""
-    out = []
-    for r in recs:
-        s, e = pd.Timestamp(r["start"]), pd.Timestamp(r["end"])
-        if e < s:
-            continue
-        days = calendar[(calendar >= s) & (calendar <= e)]
-        for d in days:
-            out.append((str(d.date()), r["stock_id"], status, r["market"], r["announced"]))
-    return pd.DataFrame(out, columns=["Date", "stock_id", "status", "market", "announced"])
 
 
 def build(years: range) -> None:
@@ -187,11 +91,12 @@ def build(years: range) -> None:
     for y in years:
         y0, y1 = f"{y}-01-01", f"{y}-12-31"
         for kind in ("disposal", "attention"):
-            a, b = fetch_twse(kind, y0, y1), fetch_tpex(kind, y0, y1)
+            a = fetch_trading_status_direct("twse", kind, y0, y1)
+            b = fetch_trading_status_direct("tpex", kind, y0, y1)
             print(f"[ts] {y} {kind:10s} twse {len(a):>4} 筆｜tpex {len(b):>4} 筆", flush=True)
             for recs in (a, b):
                 if recs:
-                    frames.append(expand_to_daily(recs, kind, calendar))
+                    frames.append(expand_trading_status_daily(recs, kind, calendar))
 
     if not frames:
         raise SystemExit("❌ 一筆都沒抓到")

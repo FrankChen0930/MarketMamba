@@ -148,7 +148,8 @@ def build_features(
     # EPS_TTM 與 Book_Value（PIT 保護就是靠那個 join，不可提前）。
     df = _derive_valuation_fallback(df, fundamentals_v2=fundamentals_v2)
     df = _merge_dividend_feature(df, df_dividend)                # V6.1
-    df = _add_free_cash_flow(df, df_cashflow)                    # V6.1
+    df = _add_free_cash_flow(df, df_cashflow,
+                             fundamentals_v2=fundamentals_v2)    # V6.1
 
     # Group C 的兩個旗標必須等所有 Group C 來源都合併完才算：
     # PER/PBR 還會被 _derive_valuation_fallback 用自算值補上（B-1），
@@ -1200,11 +1201,34 @@ def _merge_dividend_feature(df: pd.DataFrame, df_div: pd.DataFrame | None) -> pd
     return df
 
 
-def _add_free_cash_flow(df: pd.DataFrame, df_cashflow: pd.DataFrame | None) -> pd.DataFrame:
+def _add_free_cash_flow(df: pd.DataFrame, df_cashflow: pd.DataFrame | None,
+                        fundamentals_v2: bool = False) -> pd.DataFrame:
     """Compute Free_Cash_Flow from cashflow_raw.parquet.
 
-    FCF = Operating Cash Flow - Capital Expenditure
+    FCF = Operating Cash Flow + Investing Cash Flow（投資活動含資本支出、通常為負）
     Uses as-of join (45-day lag) to prevent look-ahead bias.
+
+    ⚠️ 2026-08-04：舊路徑（`fundamentals_v2=False`）有**兩個**會靜默算錯的問題，
+       兩者都只在 v2 下修正，預設維持原行為以免動到 V6.1 的特徵語意。
+
+       ① **投資活動的 type 名稱猜錯**（與 `Gross_Margin`/`ROE`/`Book_Value`
+          在 2026-07-27 修掉的完全同型）：程式找的是
+          `CashFlowsFromInvestingActivities` / `InvestingActivities`
+          ——實測 `cashflow_raw` 裡**各 0 筆**；真正的 type 是
+          `CashProvidedByInvestingActivities`（100,967 筆）。
+          → `investing` 永遠取到預設的 0，**`Free_Cash_Flow` 其實恆等於
+             營業活動現金流、從來沒有減過資本支出**。
+          實測影響：22.2% 的 (股,季) 符號改變、橫斷面排名 Spearman 僅 0.654。
+
+       ② **沒有處理累計慣例**：`cashflow_raw` 是**年初至今累計**
+          （與 `financials_raw` 的單季不同——見 `fetcher.py` 的 MOPS 區塊陷阱 ④；
+          證據：台積電 2025 四季營業現金流 6,256/11,226/15,495/22,750 億單調遞增、
+          `期初現金餘額` 四季完全相同）。直接 as-of join 會讓特徵在年內
+          Q1→Q4 遞增再重置，形成**與公司現金生成能力無關的鋸齒**。
+          實測影響：累計 vs 單季的橫斷面排名相關 Q2 0.65 / Q3 0.58 / Q4 0.54
+          ——原本以為「同一天大家都在同一累計階段、會抵銷」，**實測不成立**。
+          → v2 下還原為**單季**，與 Group C 其餘欄位（Revenue/GrossProfit/EPS
+            皆為單季）同義。
     """
     if df_cashflow is None or df_cashflow.empty:
         if "Free_Cash_Flow" not in df.columns:
@@ -1226,6 +1250,9 @@ def _add_free_cash_flow(df: pd.DataFrame, df_cashflow: pd.DataFrame | None) -> p
             "CashFlowsFromInvestingActivities": "InvestingCF",
             "InvestingActivities": "InvestingCF",
         }
+        if fundamentals_v2:
+            # 問題 ①：加上實際存在於值域的 type（上面那兩個都是 0 筆）
+            TYPE_MAP["CashProvidedByInvestingActivities"] = "InvestingCF"
         cf["mapped"] = cf["type"].map(TYPE_MAP)
         cf = cf[cf["mapped"].notna()].copy()
 
@@ -1237,6 +1264,20 @@ def _add_free_cash_flow(df: pd.DataFrame, df_cashflow: pd.DataFrame | None) -> p
             index=["stock_id", "Date", "available_from"],
             columns="mapped", values="value", aggfunc="last"
         ).reset_index()
+
+        if fundamentals_v2:
+            # 問題 ②：累計 → 單季（Q1 本身即單季；Q2~Q4 減同年上一季）
+            # ⚠️ 必須在算 FCF **之前**逐欄還原，不能對 FCF 事後相減——
+            #    某一季若缺 OperatingCF 或 InvestingCF 其中之一，事後相減會把
+            #    「缺值」變成「跳動」；逐欄處理時 NaN 會自然傳染、由下游 fillna 處理。
+            cf_wide = cf_wide.sort_values(["stock_id", "Date"])
+            _q = cf_wide["Date"].dt.quarter
+            _y = cf_wide["Date"].dt.year
+            for _c in ("OperatingCF", "InvestingCF"):
+                if _c not in cf_wide.columns:
+                    continue
+                prev = cf_wide.groupby(["stock_id", _y])[_c].shift(1)
+                cf_wide[_c] = cf_wide[_c].where(_q == 1, cf_wide[_c] - prev)
 
         if "OperatingCF" in cf_wide.columns:
             investing = cf_wide.get("InvestingCF", pd.Series(0.0, index=cf_wide.index))
