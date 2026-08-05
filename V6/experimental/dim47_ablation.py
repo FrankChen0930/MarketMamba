@@ -158,10 +158,14 @@ def _load_control(drive_dir: Optional[str]) -> Optional[dict]:
         if os.path.exists(p):
             arm = json.load(open(p, encoding="utf-8"))["arms"].get(CONTROL_KEY)
             if arm:
+                # ⚠️ 欄位名以 `_train_one_arm` 實際輸出為準（2026-08-05 對實檔核對）：
+                #    eval_mean_ic_5d / epochs_param / eval_n_days / n_parameters
                 print(f"[47d] 控制組匯入 {p}:{CONTROL_KEY}"
-                      f"｜重評 IC {arm.get('rescored_mean_ic')}"
-                      f"｜epochs {arm.get('epochs')} / early_stop {arm.get('early_stop')}",
-                      flush=True)
+                      f"｜重評 IC {arm.get('eval_mean_ic_5d')}"
+                      f"｜參數 {arm.get('n_parameters'):,}"
+                      f"｜epochs {arm.get('epochs_param')}"
+                      f"/early_stop {arm.get('early_stop_param')}"
+                      f"｜val {arm.get('eval_n_days')} 天", flush=True)
                 return arm
     print(f"[47d] ⚠ 找不到 {CONTROL_JSON} → 本輪無控制組可對照，只會印出自己的數字",
           flush=True)
@@ -198,34 +202,47 @@ def run_dim47(df, drive_dir: Optional[str] = None, epochs: int = 10,
 
     # 硬檢查：val 窗必須與控制組**同一批日期數**，否則兩邊在比不同期間
     if ctrl:
-        n_ref = len(ctrl.get("ic_by_day") or {}) or ctrl.get("n_val")
+        n_ref = ctrl.get("eval_n_days") or len(ctrl.get("ic_by_day") or {})
         if n_ref and n_ref != len(val_dates):
             raise SystemExit(
                 f"❌ val 天數不符：本輪 {len(val_dates)} vs 控制組 {n_ref}。\n"
                 f"   兩邊在比不同期間，Δ 會混進「窗不同」這個變因 → 停止。")
         if n_ref:
             print(f"[47d] ✓ val 窗與控制組相同（{n_ref} 天）", flush=True)
-        if ctrl.get("epochs") not in (None, epochs):
+        if ctrl.get("epochs_param") not in (None, epochs):
             raise SystemExit(
-                f"❌ epochs 不符：本輪 {epochs} vs 控制組 {ctrl['epochs']}。\n"
+                f"❌ epochs 不符：本輪 {epochs} vs 控制組 {ctrl['epochs_param']}。\n"
                 f"   epochs 同時決定 OneCycleLR 的排程長度（Cell 4 就是栽在這裡），"
                 f"不同 epochs 的兩輪不可比 → 停止。")
 
-    # `_train_one_arm` 用 ARMS[arm] 決定要不要 mask macro——47 維下 Group D 已經
-    # 不在 FEATURE_COLS 裡，沒有東西可 mask，所以借用 "with_macro"（mask=False）。
-    # 這不是「保留 macro」，是「沒有 macro 可保留」。
-    res = _train_one_arm(df, train_dates, val_dates, "with_macro",
+    # ── 兩個 monkeypatch：讓 `_train_one_arm` 能在「沒有 Group D」的 config 下跑 ──
+    # 為什麼用 patch 而不是改 groupd_ablation.py：那支是**控制組數字的來源**
+    # （no_macro + gatv2 = IC +0.1145），保持逐位元不動，比較基準才不會動搖。
+    #
+    #  ① `ARMS` 決定要不要 mask。47 維下 Group D 根本不在 FEATURE_COLS 裡，
+    #     沒有東西可 mask → 註冊成 False。用獨立的 arm 名（不借用 "with_macro"）
+    #     才不會讓 checkpoint / status 檔名寫著誤導的 "with_macro"。
+    #  ② `macro_cols()` 在 `_train_one_arm` 裡是**無條件呼叫**的
+    #     （groupd_ablation.py:267，在 mask 三元判斷之前）→ 47 維下會 KeyError。
+    #     回空 list：沒有 macro 欄可列，而 mask=False 所以它不會被用到。
+    import experimental.groupd_ablation as _gd
+    _gd.ARMS.setdefault("dim47", False)
+    _gd.macro_cols = lambda: []
+    print("[47d] 已 patch groupd_ablation：ARMS['dim47']=False、macro_cols()→[]"
+          "（47 維下沒有 Group D 可 mask）", flush=True)
+
+    res = _train_one_arm(df, train_dates, val_dates, "dim47",
                          epochs, early_stop, use_gat=True, kg_file=kg_file,
-                         drive_dir=drive_dir, tag="_dim47")
+                         drive_dir=drive_dir, tag="")
     res["input_dim"] = 47
     res["n_parameters"] = n_par
 
-    mine = res.get("rescored_mean_ic")
+    mine = res.get("eval_mean_ic_5d")
     print("\n" + "=" * 72)
     print("47 維（砍 Group D） vs 59 維 + mask（歸零）")
     print("=" * 72)
     if ctrl and mine is not None:
-        base = ctrl.get("rescored_mean_ic")
+        base = ctrl.get("eval_mean_ic_5d")
         delta = mine - base
         ok = delta >= WIN_THRESHOLD
         print(f"{'arm':22s}{'重評 IC':>10s}{'參數量':>12s}")
