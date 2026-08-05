@@ -863,9 +863,23 @@ cd app/frontend && npm run dev   # → localhost:5173
 
 ### 下一步
 
-> ## ▶ 下次開工從這裡開始（2026-08-05 深夜更新）
+> ## ▶ 下次開工從這裡開始（2026-08-05 深夜最終版）
 >
-> ### 🎯 V6.2 週一（2026-08-10）上線。程式全部接完、驗證通過、已 push。
+> ### 📋 先讀 `docs/session-handoff-2026-08-06.md`（一分鐘上手，含早上第一件事）
+>
+> ### 🎯 V6.2 週一（2026-08-10）上線。程式全部接完、驗證通過、排程已設、已 push。
+>
+> **排程已生效**：`PersonalOS_Daily` 19:30 → **21:30**（V6.1+雙模型）、
+> 新建 `MarketMamba_V62` **22:15**（`run_hidden.vbs` → `v62_daily.bat`，無小黑窗，
+> 含 StartWhenAvailable 補跑 + WakeToRun 喚醒）。
+> ⚠️ **使用者要的「不用登入也能執行」沒能做到**：① Claude Code 的 shell 不是系統
+> 管理員、建不了 S4U 工作 ② 那個模式跑在 Session 0 而 **WSL2 需要使用者 session**
+> → 極可能整條鏈壞掉，**且這一點沒能實測**。要試的話用提權 PowerShell：
+> `Set-ScheduledTask -TaskName "MarketMamba_V62" -Principal (New-ScheduledTaskPrincipal -UserId "$env:COMPUTERNAME\$env:USERNAME" -LogonType S4U -RunLevel Highest)`
+> 跑完看 `V6/logs/v62_daily.log` 是不是空的。
+>
+> **使用者要自己做的三件**：裝中文字型（`sudo apt-get install -y fonts-noto-cjk`）、
+> `V6/.env` 加 Telegram 兩行、週一手動 `v62_daily.bat --first-day` 建倉。
 >
 > **背景可能有一件事在跑**：Colab 的 **47 維 arm**（`dim47_ablation`，約 3.6h，
 > 2026-08-05 23:00 左右開跑）。結果在 Drive 的 `dim47_ablation_result.json`，
