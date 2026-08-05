@@ -264,13 +264,20 @@ def _weights(mkt: Market, t: int, names: list[str], col_idx: dict, scheme: str) 
 def run_config(mkt: Market, rank: pd.DataFrame, n: int, k: float, freq: int,
                liq: float | None, cost_mult: float = 1.0,
                weight: str = "equal", block_limit: bool = False,
-               block_disposal: bool = False) -> dict:
+               block_disposal: bool = False,
+               reb_idx: list[int] | None = None) -> dict:
     """
     rank: (dates × stocks) 的每日排名（1 = 分數最高；不可交易者為 NaN）
     回傳年化/Sharpe/MDD/換手/年化成本拖累/產業集中度/最大權重。
+
+    `reb_idx`（2026-08-05 新增，純附加）：直接指定再平衡日的索引。
+      預設 None ＝ 維持原行為（嚴格每 `freq` 個**交易日**）。
+      用途是測「對齊星期幾」的排程——實務上排程整齊（遇國定假日自動順延），
+      但那與回測用的交易日計數不同，**差多少要量過才知道**，不可憑直覺採用。
     """
     dates = mkt.dates
-    reb_idx = list(range(0, len(dates), freq))
+    if reb_idx is None:
+        reb_idx = list(range(0, len(dates), freq))
     kn = k * n
 
     holdings: list[str] = []
