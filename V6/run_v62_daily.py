@@ -189,7 +189,23 @@ def main() -> int:
     ap.add_argument("--skip-check", action="store_true", help="跳過資料檢查（不建議）")
     ap.add_argument("--no-fetch", action="store_true",
                     help="不自己抓資料（V6.1 還在跑、且已經抓過時用）")
+    ap.add_argument("--no-ui", action="store_true", help="不開進度視窗")
     a = ap.parse_args()
+
+    if a.no_ui:
+        return _pipeline(a, None)
+    from progress_window import ProgressWindow
+    ui = ProgressWindow(
+        ["抓取資料", "建特徵矩陣", "模型推論", "組合層"],
+        ["Fetch data", "Build features", "Inference", "Portfolio"])
+    return ui.run(lambda u: _pipeline(a, u))
+
+
+def _pipeline(a, ui) -> int:
+    """實際流程。`ui` 可為 None（--no-ui 或無 DISPLAY）→ 所有 UI 呼叫變 no-op。"""
+    def _ui(idx: int, status: str, note: str = "") -> None:
+        if ui is not None:
+            ui.update(idx, status, note)
 
     t0 = datetime.now()
     import run_v62_inference as R
@@ -201,7 +217,10 @@ def main() -> int:
     elif a.no_fetch:
         complete, missing = check_freshness()
     else:
+        _ui(0, "running")
         complete, missing = fetch_data()
+    _ui(0, "done" if not missing else "skipped",
+        f"{len(missing)} 個源缺漏" if missing else "全數當日")
 
     if missing:
         notify("⚠️ V6.2 當日資料缺漏",
@@ -211,13 +230,18 @@ def main() -> int:
 
     # 特徵矩陣建一次，三個 arm 共用（矩陣是成本大宗，前向只要 1 秒）
     logger.info("[2/4] 建特徵矩陣（三個模型共用）…")
+    _ui(1, "running")
     import pandas as pd
     df = R.build_feature_df()
     df["Date"] = pd.to_datetime(df["Date"])
     date = df["Date"].max().strftime("%Y-%m-%d")
     logger.info(f"[2/4] ✓ 完成｜交易日 {date}")
+    _ui(1, "done", f"{len(df):,} 列")
+    if ui is not None:
+        ui.set_info(f"{date}｜{len(arms)} 個模型")
 
     failed = []
+    _ui(2, "running")
     for arm in arms:
         try:
             logger.info(f"[3/4] 推論 arm={arm} …")
@@ -235,6 +259,10 @@ def main() -> int:
         except Exception as e:                                  # noqa: BLE001
             failed.append(arm)
             logger.error(f"arm={arm} 失敗：{e}\n{traceback.format_exc()[:1200]}")
+
+    _ui(2, "failed" if failed else "done",
+        f"{len(arms) - len(failed)}/{len(arms)} 成功")
+    _ui(3, "failed" if failed else "done")
 
     el = (datetime.now() - t0).total_seconds() / 60
     if failed:
