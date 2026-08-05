@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # MarketMamba — AI 助手指引
 
-> 最後更新：2026-08-04（**MOPS 財報直連上線，財報覆蓋斷崖已補平**：`financials`/`balance_sheet`/`cashflow` 2026Q1 從 216/16/16 支 → **各 1,972 支**、月營收三個月從 951 → **1,926 支**，四項驗證全過。過程證實 **FinMind 把 16 支的 EPS 截成整數**（0.97 存成 0）→ 使用者「偏好 MOPS」的判斷有實證支持。另抓到 **FinMind 三張財報的單季/累計慣例不一致**（最不直觀的一項）。**下次開工看「下一步」最上面的 ▶ 區塊**）
+> 最後更新：2026-08-05（**V6.2 規格定案：`v2_kg_nomacro` 的 `5d/20`，不需重訓**；並量到**組合層雜訊底線 ±6pp**、發現 **decile spread 才是比較模型的正確量尺**、修正 **GRU 排名第 2→第 4**。**開工先讀 `docs/session-handoff-2026-08-05.md`**）
+>
+> 上一版：2026-08-04（**MOPS 財報直連上線，財報覆蓋斷崖已補平**：`financials`/`balance_sheet`/`cashflow` 2026Q1 從 216/16/16 支 → **各 1,972 支**、月營收三個月從 951 → **1,926 支**，四項驗證全過。過程證實 **FinMind 把 16 支的 EPS 截成整數**（0.97 存成 0）→ 使用者「偏好 MOPS」的判斷有實證支持。另抓到 **FinMind 三張財報的單季/累計慣例不一致**（最不直觀的一項）。**下次開工看「下一步」最上面的 ▶ 區塊**）
 >
 > 上一版：2026-08-03（**這一天做了四件事**：① F6 2×2 最佳格過 portfolio_lab，**+38.0%/Sharpe 1.713 八模型全面最好** ② **標籤 horizon 實驗**——使用者質疑「20 天再平衡卻只預測 5 天」，實測**直覺是對的**（Ridge +6.8pp、GBDT +10.6pp），但機制是「**短標籤製造付不起的換手**」不是「預測過期」 ③ **統一 purge**：稽核出既有八模型表的隔離處理是混的，GBDT 加上 purge 掉 **6.7pp** 落到最後一名 → **既有表格系統性偏袒 Ridge/GBDT/GRU** ④ **資料抓取稽核**：10 個每日源零缺漏，但財報三源有覆蓋斷崖（`balance_sheet` 2026Q1 只有 0.7%）→ MOPS 整批端點可行性已驗證通過。**下次開工看「下一步」最上面的 ▶ 區塊**）
 
@@ -831,6 +833,11 @@ cd app/frontend && npm run dev   # → localhost:5173
 
 > ## ▶ 下次開工從這裡開始（2026-08-04 更新）
 >
+> ### 📋 先讀 `docs/session-handoff-2026-08-05.md`（一分鐘上手）
+> **沒有任何東西正在背景執行**，不需要檢查 Colab session。
+> 現在卡在「V6.2 推論端接線」——那要先列計畫給使用者確認（規則 2）。
+> 規格與四個落差見下方「下一步」的「★ V6.2 上線規格」。
+>
 > ### ✅ head20d 已完成並判讀（2026-08-05）——見 `docs/head20d-ablation-result-2026-08-05.md`
 > **結論：不要改成 20d 標籤**（沒有證據支持改動，非證明較差）。
 > 更重要的副產品：**第一次量到組合層雜訊底線 N=50 約 ±6pp**，
@@ -972,7 +979,36 @@ cd app/frontend && npm run dev   # → localhost:5173
     - **B** listnet 權重 sweep（Mid↔Long 旋鈕，試 0.2/0.5）→ **C** 趨勢單尺度簡化（gate ep3 就塌 Long、多尺度沒加值，砍成單尺度確認 IC 不掉、未來訓練更省）→ **D** 短線窗口 90/120（≤252 純切片免重建）→ **E** 多 seed 集成（對抗 IC 脆弱、部署穩定加成）→ **F** 特徵分離（短線快/趨勢慢特徵，重建 feature matrix 大工程、潛力最大、留最後）
 - [ ] 若決定不走 5d 路線：把 LOSS_WEIGHTS / val_ic 改回 20d（remote main 目前是 5d 實驗設定）
 - [ ] **本機 git 善後**：第三次重訓 push 後 `git stash pop` 在 trainer.py 留下 CRLF 衝突——需 `git checkout HEAD -- V6/marketmamba/models/trainer.py` + `git restore --staged V6/marketmamba/config.py` + `git stash drop`
-- [ ] **V6.2 部署 checklist**：config INPUT_DIM=59 + FEATURE_GROUPS 取消 RS 注釋；`run_daily_inference.py` 的 `clean_and_scale` 改 `macro_norm="ts"`（程式內有註解標記）；**`build_features` 加 `fundamentals_v2=True`（2026-07-27 新增，訓練端與推論端必須同時切；2026-07-28 起這個旗標同時控制 PER/PBR 自算與橫斷面校準，不另加旗標）**；checkpoint 換新
+- [ ] **★ V6.2 上線規格（2026-08-05 定案）＋ 推論端落差**（取代舊的部署 checklist）
+
+  **規格**（記法見文件開頭「標記慣例」）：
+
+  | 項目 | 值 | 依據 |
+  |---|---|---|
+  | 模型 | `v2_kg_nomacro` | decile 5.005，次高（gru 2.388）的 2.1 倍 |
+  | checkpoint | `v6_short_GD_no_macro_gatv2.pt`（在 `D:\Downloads\`）<br>epoch 5｜val_ic_5d 0.11448｜`{window:60, n_layers:3}`｜1,659,005 參數 | |
+  | **設定** | **`5d/20`**（5 日頭 + 每 **20 個交易日**再平衡） | decile 4.999 vs 10d 頭 4.788（差 11σ）；年化那 1.2pp 在 ±2.7pp 雜訊內 |
+  | 選股 / 緩衝 | N=50 / k=1.5 | |
+  | 再平衡計數 | **嚴格交易日**，不對齊星期幾 | 實測對齊的 Δ 符號不一致（同模型 10日 +6.1pp、20日 −4.9pp）＝雜訊；且「每 4 週」實際是 12~20 個交易日（中位 19），與回測不等價 |
+
+  **預期（同窗）**：年化 +38.0% / Sharpe 1.713 / MDD −24.8% / 超額 +19.9%
+
+  **⚠️ 三個必須一起揭露的限制**：單一 seed（年化帶 ±2.7pp）／單一 582 天多頭窗無 WF／**優勢全在上升段**（下跌段比 `v2_kg` 差 8.4pp）
+
+  **推論端落差（2026-08-05 唯讀調查，`run_dual_inference.py` 為基礎）**：
+
+  | # | 落差 | 現況 | 需要 |
+  |---|---|---|---|
+  | 1 | `build_features` 的 `fundamentals_v2` | 預設 `False` | **`True`**（F6 訓練端就是 True，不改＝訓練/推論不一致） |
+  | 2 | KG 檔案 | `build_kg_csr()` 用 `KG_CACHE_PATH`（舊圖 `knowledge_graph_cache.npz`） | **`knowledge_graph_v2.npz`** |
+  | 3 | Group D 歸零 | 完全沒做 | 推論前把那 12 欄填 0（**是 mask 不是砍維度 → 不需重訓**） |
+  | 4 | checkpoint | `v6_short.pt` | `v6_short_GD_no_macro_gatv2.pt` |
+
+  ✅ 已相符的：`clean_and_scale(macro_norm="ts")`、`ShortModelV6(use_gat=True)` 為預設、`window/n_layers` 由 checkpoint config 帶入
+
+  **⚠️ 動工前依規則 2 先列計畫**。建議做成**獨立腳本**（如 `run_v62_inference.py`），不改 `run_dual_inference.py`／`run_daily_inference.py`——V6.1 仍是每天在跑的東西
+- [ ] **`INPUT_DIM` 59 → 47（砍 Group D）**：證據充分（2×2 兩列一致、可加、t=2.93/3.23）但**不擋上線**（mask 實作已足夠）。屬「清理規格」，可延後
+- [ ] **`{model}__common.parquet` 的處置**：2026-08-05 為了統一 panel 產生的 8 個檔在 `result/scores/`，**會被 `--sweep` 一併掃到**（每次多跑 8 組）。要嘛保留當正式對照集、要嘛刪除，需決定
 - [ ] 觀察 3–5 個交易日：排名穩定性恢復情況、買入訊號數量是否回歸正常
 - [ ] P0 後累積 20+ 天 archive 重跑 Uncertainty 校準分析（`docs/uncertainty-calibration-2026-06-13.md`，結論：SQ 設計獲實證支持、conformal 優先度降低）
 - [ ] 下次重訓後驗證模型狀態頁面：Drive JSON → V6/results → push → 頁面顯示
