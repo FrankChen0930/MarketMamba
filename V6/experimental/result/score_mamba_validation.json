@@ -75,5 +75,131 @@
   "output": "v2_kg__head10d.parquet",
   "partial": false,
   "verdict": "⚠ 無 Colab 逐日 IC 可對照"
+ },
+ {
+  "arm": "h20abl_h10",
+  "head": "5d",
+  "n_days": 582,
+  "local_mean_ic": 0.1141,
+  "horizon_ic": {
+   "5d": {
+    "mean_ic": 0.1141,
+    "icir": 1.367,
+    "pct_pos": 0.933,
+    "n_days": 582
+   },
+   "10d": {
+    "mean_ic": 0.1159,
+    "icir": 1.452,
+    "pct_pos": 0.93,
+    "n_days": 582
+   },
+   "20d": {
+    "mean_ic": 0.1181,
+    "icir": 1.46,
+    "pct_pos": 0.923,
+    "n_days": 582
+   }
+  },
+  "output": "h20abl_h10.parquet",
+  "partial": false,
+  "colab_mean_ic": 0.1141,
+  "diff": -0.0,
+  "corr_daily": 1.0,
+  "max_abs_daily_diff": 0.002,
+  "n_common": 582,
+  "verdict": "✅ 一致，本機矩陣可用"
+ },
+ {
+  "arm": "h20abl_h20",
+  "head": "5d",
+  "n_days": 582,
+  "local_mean_ic": 0.1141,
+  "horizon_ic": {
+   "5d": {
+    "mean_ic": 0.1141,
+    "icir": 1.345,
+    "pct_pos": 0.931,
+    "n_days": 582
+   },
+   "10d": {
+    "mean_ic": 0.1164,
+    "icir": 1.436,
+    "pct_pos": 0.93,
+    "n_days": 582
+   },
+   "20d": {
+    "mean_ic": 0.1193,
+    "icir": 1.463,
+    "pct_pos": 0.921,
+    "n_days": 582
+   }
+  },
+  "output": "h20abl_h20.parquet",
+  "partial": false,
+  "colab_mean_ic": 0.1142,
+  "diff": -0.0,
+  "corr_daily": 1.0,
+  "max_abs_daily_diff": 0.0025,
+  "n_common": 582,
+  "verdict": "✅ 一致，本機矩陣可用"
+ },
+ {
+  "arm": "h20abl_h10",
+  "head": "10d",
+  "n_days": 582,
+  "local_mean_ic": 0.1127,
+  "horizon_ic": {
+   "5d": {
+    "mean_ic": 0.1127,
+    "icir": 1.32,
+    "pct_pos": 0.919,
+    "n_days": 582
+   },
+   "10d": {
+    "mean_ic": 0.1222,
+    "icir": 1.532,
+    "pct_pos": 0.94,
+    "n_days": 582
+   },
+   "20d": {
+    "mean_ic": 0.1305,
+    "icir": 1.628,
+    "pct_pos": 0.942,
+    "n_days": 582
+   }
+  },
+  "output": "h20abl_h10__head10d.parquet",
+  "partial": false,
+  "verdict": "⚠ 無 Colab 逐日 IC 可對照"
+ },
+ {
+  "arm": "h20abl_h20",
+  "head": "10d",
+  "n_days": 582,
+  "local_mean_ic": 0.11,
+  "horizon_ic": {
+   "5d": {
+    "mean_ic": 0.11,
+    "icir": 1.227,
+    "pct_pos": 0.905,
+    "n_days": 582
+   },
+   "10d": {
+    "mean_ic": 0.1242,
+    "icir": 1.505,
+    "pct_pos": 0.943,
+    "n_days": 582
+   },
+   "20d": {
+    "mean_ic": 0.1388,
+    "icir": 1.737,
+    "pct_pos": 0.947,
+    "n_days": 582
+   }
+  },
+  "output": "h20abl_h20__head10d.parquet",
+  "partial": false,
+  "verdict": "⚠ 無 Colab 逐日 IC 可對照"
  }
 ]
