@@ -1,7 +1,15 @@
 """
-run_v62_daily.py — V6.2 每日一鍵：資料檢查 → 三個模型推論 → 組合層 → 告警
-=========================================================================
-在 `run_daily_inference.py`（V6.1）之後跑。**完全獨立**，失敗不影響 V6.1。
+run_v62_daily.py — V6.2 每日一鍵：抓資料 → 檢查 → 三個模型推論 → 組合層 → 告警
+================================================================================
+**自給自足**：自己呼叫 `run_daily_update()` 抓資料，不依賴 V6.1。
+（2026-08-05 使用者決定退役 V6.1 → V6.2 不能再吃 V6.1 更新好的 raw parquet。）
+
+⚠️ **過渡期（V6.1 還在跑的那幾天）**
+   兩支都會呼叫 `run_daily_update()` 寫同一批 parquet。`_append_to_parquet`
+   有去重保險，重複抓是安全的，但**兩者不可同時執行**（同時寫 parquet ＋
+   記憶體雙倍）。排程要錯開：V6.1 21:30 起跑約 33 分 → V6.2 排 22:15。
+   若想在過渡期省一次抓取，V6.2 可加 `--no-fetch`。
+   **V6.1 退役後把 `--no-fetch` 拿掉即可，不需要改任何程式。**
 
 為什麼要有這一支
 ----------------
@@ -132,7 +140,46 @@ def notify(title: str, body: str) -> bool:
 
 
 # ============================================================
-# 3. 主流程
+# 3. 資料更新（V6.2 自己抓，不再依賴 V6.1）
+# ============================================================
+def fetch_data(retry_wait_min: int = 10) -> tuple[dict, list[str]]:
+    """
+    呼叫與 V6.1 **同一個** `run_daily_update()`——不另寫一份抓取邏輯。
+    那支累積了 13 條交易所 API 雷區的處理（TPEX 斜線日期、Big5 編碼、
+    非交易日回 HTML、TWSE/TPEX 欄序相反……），重寫一份等於把那些坑再踩一次。
+
+    抓完用**本檔的嚴格判準**（每日源必須有當日資料）複查；缺的話等一次再抓。
+    只重試一次：22:15 起跑，一次 10 分鐘的等待還在合理範圍，
+    而真正的保險是 Telegram 告警——重試無限次只會把問題藏起來。
+    """
+    import time
+
+    from marketmamba.data.fetcher import run_daily_update
+
+    for attempt in (1, 2):
+        logger.info(f"[抓取] run_daily_update（第 {attempt} 次）…")
+        try:
+            fr = run_daily_update()
+            fwd = fr.get("forward_filled", [])
+            if fwd:
+                logger.warning(f"[抓取] forward-fill：{'、'.join(fwd)}")
+        except Exception as e:                                  # noqa: BLE001
+            logger.error(f"[抓取] 失敗：{e}")
+            if attempt == 2:
+                raise
+            time.sleep(retry_wait_min * 60)
+            continue
+
+        complete, missing = check_freshness()
+        if not missing or attempt == 2:
+            return complete, missing
+        logger.warning(f"[抓取] 仍缺 {len(missing)} 個源，{retry_wait_min} 分後重試一次…")
+        time.sleep(retry_wait_min * 60)
+    return check_freshness()
+
+
+# ============================================================
+# 4. 主流程
 # ============================================================
 def main() -> int:
     ap = argparse.ArgumentParser()
@@ -140,6 +187,8 @@ def main() -> int:
     ap.add_argument("--first-day", action="store_true",
                     help="上線第一天：強制建倉（否則要等距上次 20 個交易日）")
     ap.add_argument("--skip-check", action="store_true", help="跳過資料檢查（不建議）")
+    ap.add_argument("--no-fetch", action="store_true",
+                    help="不自己抓資料（V6.1 還在跑、且已經抓過時用）")
     a = ap.parse_args()
 
     t0 = datetime.now()
@@ -147,7 +196,12 @@ def main() -> int:
     import v62_portfolio as P
 
     arms = a.arms or list(R.ARMS)
-    complete, missing = ({}, []) if a.skip_check else check_freshness()
+    if a.skip_check:
+        complete, missing = {}, []
+    elif a.no_fetch:
+        complete, missing = check_freshness()
+    else:
+        complete, missing = fetch_data()
 
     if missing:
         notify("⚠️ V6.2 當日資料缺漏",
@@ -156,17 +210,17 @@ def main() -> int:
                "\n若 margin/daytrade 落後 1 天 → 多半是跑太早（約 21:00 才公布）。")
 
     # 特徵矩陣建一次，三個 arm 共用（矩陣是成本大宗，前向只要 1 秒）
-    logger.info("[1/3] 建特徵矩陣（三個模型共用）…")
+    logger.info("[2/4] 建特徵矩陣（三個模型共用）…")
     import pandas as pd
     df = R.build_feature_df()
     df["Date"] = pd.to_datetime(df["Date"])
     date = df["Date"].max().strftime("%Y-%m-%d")
-    logger.info(f"[1/3] ✓ 完成｜交易日 {date}")
+    logger.info(f"[2/4] ✓ 完成｜交易日 {date}")
 
     failed = []
     for arm in arms:
         try:
-            logger.info(f"[2/3] 推論 arm={arm} …")
+            logger.info(f"[3/4] 推論 arm={arm} …")
             out = R.infer(df, date, arm=arm)
             spec = R.ARMS[arm]
             R.RESULTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -175,7 +229,7 @@ def main() -> int:
             arch.mkdir(parents=True, exist_ok=True)
             out.to_csv(arch / f"{spec.out_name}_{date}.csv", index=False)
 
-            logger.info(f"[3/3] 組合層 arm={arm} …")
+            logger.info(f"[4/4] 組合層 arm={arm} …")
             P.step(arm, R.RESULTS_DIR / f"{spec.out_name}.csv",
                    data_complete=complete, force_rebalance=a.first_day)
         except Exception as e:                                  # noqa: BLE001
