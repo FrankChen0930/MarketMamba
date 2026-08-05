@@ -222,13 +222,41 @@ def main() -> None:
     tr_rows_all = panel.sample_rows(P["TRAIN_START"], P["TRAIN_END"], 5,
                                     day_stride=TRAIN_STRIDE, require_label=False)
     train_days = np.sort(pd.unique(panel.dates[tr_rows_all]))
+
+    # ── purge（2026-08-05 新增）────────────────────────────────────────
+    # 現行協定的 TRAIN_END 緊接 TEST_START、**沒有間隔**，5d 標籤會讓訓練尾端
+    # 與測試集重疊 5 天。八模型表裡 Mamba 四組有隔離、Ridge/GBDT 已補、
+    # **只有 GRU 沒有** → 它目前排第 2 但那個名次不公平（GBDT 補上 purge 掉了 6.7pp）。
+    # 語意與 `portfolio_lab.export_scores` 完全相同：`purge` 是**交易日**，
+    # 而 train_days 已被 TRAIN_STRIDE 抽樣過 → 剔除的抽樣日數 = ceil(purge/stride)，
+    # 無條件進位（寧可多隔離，不可少）。
+    train_end_eff = train_days[-1]
+    if ARGS.purge:
+        n_drop = int(np.ceil(ARGS.purge / TRAIN_STRIDE))
+        n0 = len(train_days)
+        dropped = train_days[-n_drop:]
+        train_days = train_days[:-n_drop]
+        train_end_eff = train_days[-1]
+        print(f"[split] purge：目標隔離 {ARGS.purge} 個交易日｜stride={TRAIN_STRIDE} → "
+              f"剔除 {n_drop} 個抽樣訓練日"
+              f"（{pd.Timestamp(dropped[0]).date()} → {pd.Timestamp(dropped[-1]).date()}）｜"
+              f"訓練日 {n0} → {len(train_days)}｜新訓練尾端 "
+              f"{pd.Timestamp(train_end_eff).date()}，TEST_START={P['TEST_START']}", flush=True)
+
     val_start = train_days[int(len(train_days) * (1 - P["VAL_RATIO"]))]
-    print(f"[split] train 天數 {len(train_days)}（val 自 {pd.Timestamp(val_start).date()} 起）", flush=True)
+    print(f"[split] train 天數 {len(train_days)}（val 自 {pd.Timestamp(val_start).date()} 起）"
+          f"｜seed={SEED}", flush=True)
 
     results = {"models": {}}
     horizons = [5] + ([] if ARGS.skip_20d else [20])
     for h in horizons:
         rows = panel.sample_rows(P["TRAIN_START"], P["TRAIN_END"], h, day_stride=TRAIN_STRIDE)
+        # ⚠️ purge 必須也套在這裡。只改 val_start 是不夠的——被剔除的尾端日子
+        #    仍會落進 val_rows（因為它們 >= val_start）而進入訓練迴圈。
+        if ARGS.purge:
+            n_before = len(rows)
+            rows = rows[panel.dates[rows] <= train_end_eff]
+            print(f"[rows] purge 後訓練列 {n_before:,} → {len(rows):,}", flush=True)
         fit_rows = rows[panel.dates[rows] < val_start]
         val_rows = rows[panel.dates[rows] >= val_start]
         te_rows = panel.sample_rows(P["TEST_START"], P["TEST_END"], h,
@@ -297,14 +325,19 @@ def main() -> None:
                   + (f" | 對 TWII 超額 {pf['excess_vs_twii']:+.1%}" if "excess_vs_twii" in pf else ""),
                   flush=True)
             print(f"[5d] 成本×2：年化 {res['test_portfolio_cost_x2']['ann_return']:+.1%}", flush=True)
-            torch.save(full["state"], _THIS_DIR / "result" / f"{ARGS.cell}_5d.pt")
+            # ⚠️ 多 seed／purge 變體一律加後綴，**絕不覆蓋既有的正式檔**。
+            #    `portfolio_lab --sweep` 是 glob 整個 scores/，覆蓋會讓那個模型的
+            #    整份掃描變成錯的（這個坑 score_mamba_local 踩過一次）。
+            _sfx = ARGS.tag or ("" if (ARGS.purge == 0 and SEED == 20260713)
+                                else f"__p{ARGS.purge}_s{SEED}")
+            torch.save(full["state"], _THIS_DIR / "result" / f"{ARGS.cell}_5d{_sfx}.pt")
             # portfolio_lab 用的逐股分數（2026-08-01 新增）
             _sd = _THIS_DIR / "result" / "scores"
             _sd.mkdir(parents=True, exist_ok=True)
             pd.DataFrame({"Date": panel.dates[te_rows], "stock_id": panel.sids[te_rows],
                           "score": np.asarray(scores, dtype=np.float32)}
-                         ).to_parquet(_sd / f"{ARGS.cell}.parquet", index=False)
-            print(f"[5d] 分數 → result/scores/{ARGS.cell}.parquet", flush=True)
+                         ).to_parquet(_sd / f"{ARGS.cell}{_sfx}.parquet", index=False)
+            print(f"[5d] 分數 → result/scores/{ARGS.cell}{_sfx}.parquet", flush=True)
 
         results["models"][f"{h}d"] = res
         del model, scores
@@ -323,9 +356,16 @@ def main() -> None:
         "存活者偏差 D3 未修復：絕對數字偏高，四階相對比較公平（協定 §2）；引用需配分層 IC",
     ]
     results["generated_at"] = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M")
-    RESULT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    RESULT_PATH.write_text(json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(f"\n✅ 結果已存 {RESULT_PATH}（總耗時 {(time.time()-t0)/60:.1f} 分）", flush=True)
+    # 多 seed／purge 變體寫到各自的檔，不覆蓋 2026-07-14 那份基準結果
+    _rsfx = ARGS.tag or ("" if (ARGS.purge == 0 and SEED == 20260713)
+                         else f"__p{ARGS.purge}_s{SEED}")
+    out_path = RESULT_PATH.with_name(f"{RESULT_PATH.stem}{_rsfx}.json")
+    results["run_config"] = {"seed": SEED, "purge_days": ARGS.purge,
+                             "cell": ARGS.cell, "hidden_grid": [g["hidden"] for g in GRID],
+                             "train_end_effective": str(pd.Timestamp(train_end_eff).date())}
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"\n✅ 結果已存 {out_path}（總耗時 {(time.time()-t0)/60:.1f} 分）", flush=True)
 
     print("\n" + "=" * 72, flush=True)
     print("階 3（GRU）vs 已知數字（5d test IC，全市場/高流動組）", flush=True)
@@ -346,9 +386,21 @@ if __name__ == "__main__":
     ap.add_argument("--cell", choices=["gru", "lstm"], default="gru")
     ap.add_argument("--hidden", nargs="*", type=int, default=None,
                     help="覆寫 hidden 網格（預設 64 128）。只跑 64 可省一個數量級的時間")
+    # ── 2026-08-05 新增（純附加，預設值＝原行為）─────────────────────────
+    ap.add_argument("--seed", type=int, default=SEED,
+                    help="覆寫隨機種子。多 seed 重跑用來量 run-to-run σ——"
+                         "本專案至今所有結論都壓在單一 seed 上，σ 從未量過")
+    ap.add_argument("--purge", type=int, default=0,
+                    help="訓練集尾端剔除幾個**交易日**（語意與 portfolio_lab "
+                         "--purge 相同）。GRU 是八模型表裡唯一沒有隔離的，"
+                         "而 GBDT 加上 purge 掉了 6.7pp → 現行名次不公平")
+    ap.add_argument("--tag", default="", help="輸出檔名後綴，避免多 seed 互相覆蓋")
     ARGS = ap.parse_args()
     if ARGS.hidden:
         _HID = tuple(ARGS.hidden)
         GRID = [{"hidden": h, "lr": lr} for h in _HID for lr in (1e-3, 3e-4)]
         print(f"[env] hidden 網格覆寫為 {_HID} → {len(GRID)} 組", flush=True)
+    if ARGS.seed != SEED:
+        print(f"[env] seed 覆寫 {SEED} → {ARGS.seed}", flush=True)
+        SEED = ARGS.seed
     main()
