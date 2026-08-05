@@ -21,6 +21,7 @@ import Portfolio             from './pages/Portfolio';
 import BreadthLayout      from './pages/BreadthLayout';
 import BreadthHome        from './pages/BreadthHome';
 import BreadthPredictions from './pages/BreadthPredictions';
+import BreadthPortfolio   from './pages/BreadthPortfolio';
 import InvestmentSim      from './pages/InvestmentSim';
 import BreadthVersions    from './pages/BreadthVersions';
 import DualSignals        from './pages/DualSignals';
@@ -50,6 +51,7 @@ function App() {
           <Route path="breadth" element={<BreadthLayout />}>
             <Route index            element={<BreadthHome />} />
             <Route path="predictions" element={<BreadthPredictions />} />
+            <Route path="portfolio"   element={<BreadthPortfolio />} />
             <Route path="backtest"    element={<InvestmentSim />} />
             <Route path="versions"    element={<BreadthVersions />} />
             <Route path="compare"     element={<DualSignals />} />
