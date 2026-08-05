@@ -119,6 +119,17 @@ ARMS: dict[str, Arm] = {
     # ── F6 2×2 最佳格（2026-08-03 新增）：no_macro + v2 圖，IC +0.1145 ──
     "v2_kg_nomacro": Arm(True,  "knowledge_graph_v2.npz",    "v6_short_GD_no_macro_gatv2.pt",
                          True,  ("groupd_ablation_result_gatv2.json", "no_macro")),
+    # ── 標籤 horizon 實驗（2026-08-05 新增）──────────────────────────────
+    # 兩組唯一的差別是**第二顆頭學什麼**：h10 學 Alpha_10d、h20 學 Alpha_20d。
+    # 設定與 2×2 最佳格逐項相同（v2 圖 + Group D 歸零），只有 purge_horizon
+    # 從 10 改成 20（20d 標籤必須加長，否則會系統性偏袒 h20）→ 故控制組
+    # 不能沿用 `v2_kg_nomacro`，必須重訓，這就是 h10 的存在理由。
+    # ⚠️ 評分時**兩組都用 `--head 10d`**（那是 forward 輸出的第 1 欄），
+    #    不論該頭學的是 10d 還是 20d。
+    "h20abl_h10":    Arm(True,  "knowledge_graph_v2.npz",    "v6_short_H_h10.pt",
+                         True,  ("head20d_ablation_result.json", "h10")),
+    "h20abl_h20":    Arm(True,  "knowledge_graph_v2.npz",    "v6_short_H_h20.pt",
+                         True,  ("head20d_ablation_result.json", "h20")),
 }
 DROPOUT = 0.2                  # 與 kg_ablation / groupd_ablation 相同（eval 模式下不生效，但架構要一致）
 HISTORY_START = "2022-01-01"   # val 起點前需 ≥252 個交易日；2022-01 給約 490 天緩衝
