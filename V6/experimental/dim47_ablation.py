@@ -170,16 +170,46 @@ def _load_control(drive_dir: Optional[str]) -> Optional[dict]:
 
 def run_dim47(df, drive_dir: Optional[str] = None, epochs: int = 10,
               early_stop: int = 5, kg_file: str = "knowledge_graph_v2.npz",
-              cutoff_train_end: str = "2023-12-31") -> dict:
-    """訓練 47 維 arm（v2 圖 + GAT），與控制組同 harness。"""
+              cutoff_train_end: str = "2023-12-31", purge: bool = True,
+              train_start: Optional[str] = None,
+              val_end: Optional[str] = None) -> dict:
+    """訓練 47 維 arm（v2 圖 + GAT），與控制組同 harness。
+
+    切分參數**明確傳入並印出**，不吃 `build_dates` 的預設值——預設值目前雖然
+    就是 F6 定案值，但「依賴預設」是本專案反覆踩到的靜默漂移來源
+    （F6 就發生過 `train_start` 沒傳 → 訓練集變成 2005 起、多 74%、不報錯）。
+    """
     from experimental.groupd_ablation import _train_one_arm
-    from experimental.kg_ablation import build_dates
+    from experimental.kg_ablation import (
+        TRAIN_START_DEFAULT, VAL_END_DEFAULT, build_dates)
+
+    train_start = train_start or TRAIN_START_DEFAULT
+    val_end = val_end or VAL_END_DEFAULT
 
     n_par = _assert_model_is_47d()
     ctrl = _load_control(drive_dir)
 
-    train_dates, val_dates = build_dates(df, cutoff_train_end)
+    print(f"[47d] 切分：train_start={train_start}｜cutoff={cutoff_train_end}"
+          f"｜val_end={val_end}｜purge={purge}｜epochs={epochs}/early_stop={early_stop}",
+          flush=True)
+    train_dates, val_dates = build_dates(df, cutoff_train_end, purge=purge,
+                                         val_end=val_end, train_start=train_start)
     print(f"[47d] train {len(train_dates)} 天 / val {len(val_dates)} 天", flush=True)
+
+    # 硬檢查：val 窗必須與控制組**同一批日期數**，否則兩邊在比不同期間
+    if ctrl:
+        n_ref = len(ctrl.get("ic_by_day") or {}) or ctrl.get("n_val")
+        if n_ref and n_ref != len(val_dates):
+            raise SystemExit(
+                f"❌ val 天數不符：本輪 {len(val_dates)} vs 控制組 {n_ref}。\n"
+                f"   兩邊在比不同期間，Δ 會混進「窗不同」這個變因 → 停止。")
+        if n_ref:
+            print(f"[47d] ✓ val 窗與控制組相同（{n_ref} 天）", flush=True)
+        if ctrl.get("epochs") not in (None, epochs):
+            raise SystemExit(
+                f"❌ epochs 不符：本輪 {epochs} vs 控制組 {ctrl['epochs']}。\n"
+                f"   epochs 同時決定 OneCycleLR 的排程長度（Cell 4 就是栽在這裡），"
+                f"不同 epochs 的兩輪不可比 → 停止。")
 
     # `_train_one_arm` 用 ARMS[arm] 決定要不要 mask macro——47 維下 Group D 已經
     # 不在 FEATURE_COLS 裡，沒有東西可 mask，所以借用 "with_macro"（mask=False）。
