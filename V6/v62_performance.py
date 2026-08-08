@@ -40,6 +40,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -49,6 +50,13 @@ import pandas as pd
 _V6 = Path(__file__).resolve().parent
 if str(_V6) not in sys.path:
     sys.path.insert(0, str(_V6))
+
+# ⚠️ 本檔會 import `portfolio_lab`（取 `Market` 與成本常數），而那條線在 import 期
+#    就依 `MM_PROTOCOL` 綁定協定。沒設的話會退回 **v1**，載到 2026-07-12 建的舊
+#    baseline_cache（**除權息還原與資料修復之前**）——而且只印一行警告、不會失敗。
+#    這裡直接設定，不依賴呼叫端記得帶環境變數。
+if os.environ.get("MM_PROTOCOL") != "v2":
+    os.environ["MM_PROTOCOL"] = "v2"
 
 import v62_portfolio as VP                                       # noqa: E402
 

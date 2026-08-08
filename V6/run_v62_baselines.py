@@ -77,9 +77,10 @@ if os.environ.get("MM_PROTOCOL") != "v2":
     raise SystemExit("❌ 請設 MM_PROTOCOL=v2 再跑（baseline 協定是 66 維，"
                      "與 Mamba 線的 59 維不同，混用會靜默算錯）")
 
+import macro_ts_full                                               # noqa: E402
 from experimental import baseline_common as B                      # noqa: E402
 from marketmamba.data.feature_engineer import (                    # noqa: E402
-    build_features, clean_and_scale, macro_ts_zscore,
+    build_features, clean_and_scale,
 )
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -127,54 +128,9 @@ ARMS: dict[str, BaseArm] = {
 # ============================================================
 # 1. 尾端窗面板
 # ============================================================
-def _splice_macro(df: pd.DataFrame) -> pd.DataFrame:
-    """把 12 個 Group D 欄換成**全歷史** expanding z-score 的版本。
-
-    落差 ③ 的解法。macro 是每日橫斷面常數，所以只需要「每日一列」的序列——
-    不需要任何個股列，成本極低（約 5,700 列）。
-
-    ⚠️ 用 `feature_engineer.macro_ts_zscore`，**不在這裡複製那五行**。
-       2026-08-08 為此把它從 `clean_and_scale` 抽出來（逐位元回歸通過）。
-    """
+def _macro_cols() -> list[str]:
     import marketmamba.config as _c
-    macro_cols = [c for c in _c.FEATURE_GROUPS["macro_environment"] if c in df.columns]
-    if not macro_cols:
-        logger.warning("[macro] df 沒有 Group D 欄位 → 跳過貼回")
-        return df
-
-    # 全歷史的原始 macro（clean_and_scale 之前的值）：從 chunk 檔取，
-    # 那是 build_base_matrix 在標準化之前寫出的。沒有 chunk 就退回不貼、但要講明白。
-    chunks = sorted(B.CHUNK_DIR.glob("base_chunk_*.parquet"))
-    if not chunks:
-        logger.warning(f"[macro] 找不到 {B.CHUNK_DIR}/base_chunk_*.parquet → "
-                       f"**沿用尾端窗自算的 macro**（12 欄會偏，"
-                       f"實測 Oil_Return max|Δ| 可達 2.27）")
-        return df
-
-    # 每個 chunk 都含全部日期、且 macro 每日同值 → 讀第一個 chunk 就夠
-    src = pd.read_parquet(chunks[0], columns=["Date"] + macro_cols)
-    src["Date"] = pd.to_datetime(src["Date"])
-    per_day = src.groupby("Date")[macro_cols].first().sort_index()
-    del src
-    gc.collect()
-
-    before = {c: float(df[c].iloc[0]) for c in macro_cols[:3]}
-    for c in macro_cols:
-        z = macro_ts_zscore(per_day[c])
-        df[c] = df["Date"].map(z).astype(np.float32)
-    after = {c: float(df[c].iloc[0]) for c in macro_cols[:3]}
-
-    cov = float(df[macro_cols[0]].notna().mean())
-    logger.info(f"[macro] 全歷史貼回 {len(macro_cols)} 欄"
-                f"（來源 {len(per_day):,} 個交易日：{per_day.index.min().date()} → "
-                f"{per_day.index.max().date()}）｜覆蓋率 {cov:.1%}")
-    # 規則 7：貼回前後的實際數值要看得見，否則「有做但看不出來」等同沒做
-    for c in list(before):
-        logger.info(f"[macro]   {c:<22s} 窗內自算 {before[c]:+.4f} → 全歷史 {after[c]:+.4f}")
-    if cov < 0.99:
-        logger.warning(f"[macro] ⚠️ 覆蓋率只有 {cov:.1%}——推論日可能超出 chunk 的日期範圍，"
-                       f"那幾天的 macro 會是 NaN（下游 nan→0）")
-    return df
+    return list(_c.FEATURE_GROUPS["macro_environment"])
 
 
 def build_panel(target_date: str | None = None,
@@ -216,13 +172,18 @@ def build_panel(target_date: str | None = None,
     gc.collect()
 
     raw = df[["Date", "stock_id"] + list(B.ROLL_CORE)].copy()   # rolling 的來源（未標準化）
+    # 窗內的**未標準化** macro（每日一列）——chunk 停在建立當天，
+    # 今天的日期只能由這裡補，否則貼回會是 NaN
+    mcols = [c for c in _macro_cols() if c in df.columns]
+    recent_macro = df.groupby("Date")[mcols].first().sort_index() if mcols else None
 
     cleaned = clean_and_scale(df, macro_norm="ts",
                               neutralize=B.PROTOCOL.get("NEUTRALIZE", "none"))
     cleaned = cleaned.sort_values(["Date", "stock_id"], kind="mergesort").reset_index(drop=True)
     cleaned["eligible"] = cleaned.groupby("stock_id", sort=False).cumcount() >= (
         B.PROTOCOL["MIN_HISTORY_DAYS"] - 1)
-    cleaned = _splice_macro(cleaned)
+    cleaned = macro_ts_full.splice(cleaned, mcols, logger=logger,
+                                   recent_raw=recent_macro, chunk_dir=B.CHUNK_DIR)
 
     logger.info(f"[panel] cleaned {len(cleaned):,} 列｜eligible "
                 f"{int(cleaned['eligible'].sum()):,}｜{(time.time()-t0)/60:.1f} 分")

@@ -483,6 +483,41 @@ cd app/frontend && npm run dev   # → localhost:5173
 
 ### 最近完成（2026-07-06 ~ 08-08）
 
+#### 2026-08-08（晚 2）— F6 四個消融 arm 併入並行 → **19 個組合 / 11 份分數**
+
+加入 `v2_kg` / `v3_kg` / `old_kg` / `no_gat`（checkpoint 從 Drive 複製到 `V6/checkpoints/`）。
+四個驗證全過（2026-03-02，判準 ρ≥0.95 / Top50≥40）：
+ρ = 0.9905 / 0.9907 / 0.9916 / 0.9844，加上 `v2_kg_nomacro` 回歸對照 0.9933。
+
+**★ 但這不是「加四列 ARMS」而已——它們 `zero_macro=False`，吃 Group D。**
+`run_v62_inference.build_feature_df()` 原本的註解寫「本模型 Group D 一律歸零，
+所以 trim 不構成落差」——**那對 `v2_kg_nomacro` 系成立，對這四個不成立**。
+已把 macro 全歷史貼回也套到 Mamba 這條線（新增共用模組 `V6/macro_ts_full.py`，
+兩條線都用，因為它們在不同 process、不同 `MM_PROTOCOL`）。
+實測幅度：`TWII_Return` 窗內自算 **−0.1264 → 全歷史 −0.8985**。
+
+**★★ chunk 只到它建立那天，今天的日期一定要由呼叫端補**：
+`base_chunk_*.parquet` 停在 2026-07-29，而每日推論跑的是今天 →
+少了 `recent_raw` 參數，今天的 macro `map` 回來會是 **NaN**（比偏掉更糟）。
+歷史段取 chunk、近期段取當前窗的未標準化 macro，接起來再算 expanding。
+實測 log：`來源 3,815 個交易日：2011-01-03 → 2026-08-06`（chunk 只給到 07-29）。
+
+**⚠️ `no_gat` 的 state_dict 少了 `graph_layer`/`gate`/`norm_fuse`**
+（檔案 5.3 MB vs 6.4 MB、參數 1,394,301 vs 1,659,005）→ `Arm` 加 `use_gat` 欄位，
+`infer()` 不可再寫死 `use_gat=True`，否則 strict load 當場失敗。
+
+**⚠️ 一個讓我誤判的坑：關鍵步驟不可只走 logger。**
+`macro_ts_full.splice()` 第一版只用 `logger.info` → 在 `run_v62_inference` 的驗證 log 裡
+**一行都沒出現**（root logger 早被別的 import 設定過，`basicConfig` 變成 no-op），
+害我一度以為貼回沒執行。**已改成一律 `print` + logger 附加。**
+規則 7 的重點就是這個：**看不見等同沒做，而可見性不該交給 logging 設定。**
+
+**⚠️ `v62_performance.py` 沒設 `MM_PROTOCOL=v2` 會靜默退回 v1**
+（載到 2026-07-12 建的舊 baseline_cache，除權息修復之前），只印一行警告不會失敗
+→ 已在檔案開頭直接設定，不依賴呼叫端記得帶。
+
+端對端：**9.3 分鐘、11 份分數 × 19 個組合**、exit 0，測試殘留已清。
+
 #### 2026-08-08（晚）— 前瞻績效工具，開跑第一天就抓到線上與回測的分歧
 
 新增 `V6/v62_performance.py`：把 `v62_portfolio_{arm}.jsonl` 的逐日持股算成實際報酬。

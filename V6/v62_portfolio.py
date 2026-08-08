@@ -136,6 +136,18 @@ PORTFOLIOS: dict[str, Portfolio] = {
                              note="不同 checkpoint；隔離 40 天那一輪，不可與上面並列"),
     "head20d_f20": Portfolio("head20d", 20, "equivalent", 0.392, "h20 ckpt",
                              note="不同 checkpoint；隔離 40 天那一輪，不可與上面並列"),
+    # ── F6 消融的四個 Mamba arm（2026-08-08 加入）──────────────────
+    #    ⚠️ 這四個**吃 Group D**（zero_macro=False）→ 依賴 `build_feature_df()`
+    #    的 macro 全歷史貼回。實測窗內自算 vs 全歷史：TWII_Return −0.1264 → −0.8985。
+    #    定位是對照組，不是候選上線規格。
+    "v3_kg_f20":  Portfolio("v3_kg", 20, "inferior", 0.268, "v3 圖",
+                            note="加 4,504 條相關性邊，對 v2_kg 無效應（decile 1.928）"),
+    "v2_kg_f20":  Portfolio("v2_kg", 20, "inferior", 0.260, "v2 圖",
+                            note="Group D 照常；與主線只差 Group D（decile 1.905）"),
+    "old_kg_f20": Portfolio("old_kg", 20, "inferior", 0.166, "舊圖",
+                            note="壞掉的 KG——2330 的鄰居是電器電纜（decile 1.231）"),
+    "no_gat_f20": Portfolio("no_gat", 20, "inferior", 0.122, "無 GAT",
+                            note="架構少 graph_layer/gate/norm_fuse（decile 1.664）"),
     # ── B 類經典模型（`run_v62_baselines.py` 產分數，另一個 process）──
     #    定位是**對照組**，不是候選上線規格：八模型表裡它們都輸給 Mamba
     #    （ridge decile 1.088 / gbdt 1.735 / gru 2.388 vs v2_kg_nomacro 5.005）。

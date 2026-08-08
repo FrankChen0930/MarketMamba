@@ -116,6 +116,9 @@ class Arm:
     ref_score:  str | None     # 驗證用的既有分數檔（experimental/result/scores/）
     out_name:   str
     head:       str = "5d"     # 讀 forward 輸出的哪一欄（"5d"=第0欄、"10d"=第1欄）
+    use_gat:    bool = True    # ⚠️ `no_gat` 的 state_dict **少了 graph_layer /
+                               #    gate / norm_fuse`（short_model.py:74 的警告）。
+                               #    用 use_gat=True 建模型再 load 會 strict 失敗。
     note:       str = ""
 
 
@@ -148,6 +151,28 @@ ARMS: dict[str, Arm] = {
         ckpt="v6_short_H_h20.pt", kg_file="knowledge_graph_v2.npz",
         zero_macro=True, ref_score="h20abl_h20__head10d.parquet", out_name="df_v62_h20",
         head="10d", note="第二顆頭學 Alpha_20d（對 Alpha_20d 的 IC 0.1388，三顆頭最高）"),
+    # ── F6 GAT / Group D 消融的四個 arm（2026-08-08 加入並行）────────
+    #    ⚠️ 這四個 **zero_macro=False**（吃 Group D）——所以 `build_feature_df()`
+    #    的 macro 全歷史貼回對它們是**必要的**，不是可有可無的優化。
+    #    定位是對照組：八模型表裡它們都輸給 `v2_kg_nomacro`
+    #    （decile 1.665~1.924 vs 4.999），留著是為了同一段真實 OOS 的並列紀錄。
+    "v2_kg": Arm(
+        ckpt="v6_short_KG_v2_kg.pt", kg_file="knowledge_graph_v2.npz",
+        zero_macro=False, ref_score="v2_kg.parquet", out_name="df_v62_v2_kg",
+        head="5d", note="v2 圖 + Group D 照常（decile 1.905、+26.0%）"),
+    "v3_kg": Arm(
+        ckpt="v6_short_KG_v3_kg.pt", kg_file="knowledge_graph_v3.npz",
+        zero_macro=False, ref_score="v3_kg.parquet", out_name="df_v62_v3_kg",
+        head="5d", note="v3 圖（+4,504 條相關性邊，實測無效應）"),
+    "old_kg": Arm(
+        ckpt="v6_short_KG_old_kg.pt", kg_file="knowledge_graph_cache.npz",
+        zero_macro=False, ref_score="old_kg.parquet", out_name="df_v62_old_kg",
+        head="5d", note="舊（壞）圖——2330 的鄰居是電器電纜（decile 1.229）"),
+    "no_gat": Arm(
+        ckpt="v6_short_KG_no_gat.pt", kg_file="knowledge_graph_v2.npz",
+        zero_macro=False, ref_score="no_gat.parquet", out_name="df_v62_no_gat",
+        head="5d", use_gat=False,
+        note="⚠️ 無 GAT：state_dict 少 graph_layer/gate/norm_fuse（KG 僅佔位不使用）"),
 }
 DEFAULT_ARM = "v2_kg_nomacro"
 
@@ -175,9 +200,16 @@ def build_feature_df(target_date: str | None = None,
     `history_start`：明確指定窗首（`--score-window` 用，要涵蓋 582 個評分日
     再往前 252 個交易日）。未指定時沿用 `LOOKBACK_DAYS` 天。
 
-    ⚠️ trim 後 macro ts 以近 2 年 expanding 計算（非訓練的完整歷史）——但本模型
-       **Group D 一律歸零**，所以 §4.4 那個「本機 vs Colab 的二階差異就住在 Group D」
-       在這裡自動消失，trim 不構成落差。
+    ⚠️ **macro ts 的窗長依賴（2026-08-08 修）**
+       `clean_and_scale(macro_norm="ts")` 的 Group D 是 expanding 統計量，
+       算在傳進去的日期範圍上 → trim 後的值與訓練時（全歷史）不同。
+       實測兩個窗長互比：`Oil_Return` max|Δ|=**2.27**、`TNX` 1.07、`VIX` 0.87。
+
+       原本這裡只寫「本模型 Group D 一律歸零，所以 trim 不構成落差」——
+       那對 `v2_kg_nomacro` 系成立，但 **`v2_kg`/`v3_kg`/`old_kg`/`no_gat`
+       是吃 Group D 的**，加進 ARMS 之後就不成立了。
+       → 一律用 `macro_ts_full.splice()` 把那 12 欄換成全歷史版本。
+       對歸零的 arm 完全沒差（反正會被歸零），對吃 Group D 的 arm 是必要的。
     """
     t0 = time.time()
     data = merge_all_data()
@@ -221,8 +253,17 @@ def build_feature_df(target_date: str | None = None,
         df_fed_rate=data["fed_rate"],
         fundamentals_v2=True,        # ← 落差 ①（對照 baseline_common.py:396）
     )
+    # 窗內的**未標準化** macro（每日一列）——chunk 停在它建立那天，
+    # 今天的日期只能由這裡補，否則貼回會是 NaN（比偏掉更糟）
+    _m = [c for c in MACRO_COLS if c in df.columns]
+    recent_macro = df.groupby("Date")[_m].first().sort_index() if _m else None
+
     df = clean_and_scale(df, macro_norm="ts")
     df = df.drop_duplicates(subset=["Date", "stock_id"], keep="last")
+
+    import macro_ts_full
+    df = macro_ts_full.splice(df, _m, logger=logger, recent_raw=recent_macro)
+
     logger.info(f"特徵矩陣：{len(df):,} 列 × {df['stock_id'].nunique()} 支"
                 f"｜{df['Date'].min().date()} → {df['Date'].max().date()}"
                 f"｜{(time.time()-t0)/60:.1f} 分")
@@ -262,12 +303,14 @@ def infer(df: pd.DataFrame, date: str, arm: str = DEFAULT_ARM,
         df = df.copy()
         df["Alpha_10d"] = df["Alpha_5d"] if "Alpha_5d" in df.columns else np.nan
     try:
-        model = ShortModelV6(use_gat=True, dropout=DROPOUT).to(dev)
+        model = ShortModelV6(use_gat=spec.use_gat, dropout=DROPOUT).to(dev)
         state = torch.load(ck, map_location=dev, weights_only=False)
         model.load_state_dict(state.get("state_dict", state))    # strict=True：載錯當場失敗
         model.eval()
+        # 參數量：有 GAT 1,659,005；無 GAT 少了 graph_layer/gate/norm_fuse
         print(f"[v62] checkpoint ep{state.get('epoch')} val_ic_5d={state.get('val_ic_5d')}"
-              f"｜參數 {model.n_parameters:,}（應為 1,659,005）", flush=True)
+              f"｜use_gat={spec.use_gat}｜參數 {model.n_parameters:,}"
+              f"（use_gat=True 應為 1,659,005）", flush=True)
 
         # ── 落差 ②：換 v2 圖（`build_kg_csr` 讀模組層的 KG_CACHE_PATH）──
         _o = T.KG_CACHE_PATH
