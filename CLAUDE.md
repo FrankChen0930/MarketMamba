@@ -483,6 +483,43 @@ cd app/frontend && npm run dev   # → localhost:5173
 
 ### 最近完成（2026-07-06 ~ 08-08）
 
+#### 2026-08-08（晚）— 前瞻績效工具，開跑第一天就抓到線上與回測的分歧
+
+新增 `V6/v62_performance.py`：把 `v62_portfolio_{arm}.jsonl` 的逐日持股算成實際報酬。
+**在這之前沒有任何程式做這件事**——15 個組合天天累積紀錄，但「哪個比較好」沒工具回答。
+成本／報酬順序／換手定義全部 import 自 `portfolio_lab`，實戰數字才與回測同義。
+
+**★★ 工具寫完立刻抓到一個真的 bug：`step()` 的並列打破與回測不同，而且不具決定性。**
+
+把狀態機在 582 天窗上跑一遍 → jsonl → 算報酬，得到 **38.20% vs 回測 38.02%（差 0.18pp）**。
+逐日 diff 定位到 **2024-10-01 的一檔股票**（線上選 `6206`、回測選 `3035`）。
+兩者 **score 完全相等**（0.06756592，float32），那天有 **183 組並列**：
+
+| | 並列怎麼打破 |
+|---|---|
+| 回測 `replay()` | `rank(axis=1, method="first")` → 依 pivot 欄序（stock_id 字典序） |
+| 線上 `step()` | `sort_values("score")` → pandas 預設 **quicksort，不穩定排序** |
+
+→ 不只口徑不一致，**`step()` 本身不具決定性**（同一份資料、列序不同就可能選出不同持股）。
+修法：`sort_values(["score","stock_id"], ascending=[False,True], kind="mergesort")`。
+修完 **38.020% vs 38.020%（0.000pp）**，四項指標全過；
+且**故意打亂輸入列序跑三次，持股完全相同**。
+
+**★ 這件事的兩個教訓**：
+① **0.18pp 太容易被當成捨入誤差放過** —— 而它其實是「線上與回測是不同東西」的訊號。
+   前瞻績效工具的第二個價值就是當**線上/回測一致性的稽核器**，不只是記績效。
+② **浮點分數會並列**（float32、183 組/天）→ 凡是「排序取前 N」的地方都要問：
+   **並列怎麼打破？兩條路徑打破的方式一樣嗎？排序穩定嗎？**
+
+**順帶對齊的另一個口徑**：`step()` 原本沒有回測的「當日無收盤價＝不可交易」過濾
+（`replay()` 有 `rank_df.where(mkt.px.notna())`）→ 已補 `_tradable_on()`。
+這次的分歧不是它造成的（兩檔當天都可交易），但它是真的口徑缺口。
+⚠️ `prices_raw` 的 `Date` 是 **large_string**，parquet filter 要用字串、不能用 `pd.Timestamp`。
+
+**jsonl 補記 `weights`**：現行規格等權、其實推得回來，記它是為了
+**讓紀錄自我描述**——哪天 `WEIGHT_MODE` 不再是 "equal"，所有「假設等權」的重建
+會靜默算錯，而舊紀錄裡沒有線索能發現。
+
 #### 2026-08-08 — 多頻率並行 + B 類經典模型上線 + push 鏈路補完
 
 **使用者的需求**：20 日主線中間 19 天不換股，dashboard 沒東西可看 → 同一份分數
@@ -1226,6 +1263,12 @@ Set-ScheduledTask -TaskName "MarketMamba_V62" -Principal (New-ScheduledTaskPrinc
   參數名說 30 卻做了 60。**一律走真實交易日曆換算**（`baseline_common.purge_cutoff()`）。
 - **會覆寫共用結果檔的腳本，跑之前先備份**（`portfolio_lab --sweep` 是讀舊檔再合併，
   安全；但確認過才知道，不能假設）
+- **凡是「排序取前 N」，一定要問並列怎麼打破**——分數是 float32，實測**一天有 183 組
+  完全相等的分數**。`sort_values` 預設 quicksort **不穩定** → 同一份資料列序不同就可能
+  選出不同持股。線上與回測必須用**同一套 tie-break**
+  （回測是 `rank(method="first")`＝ stock_id 字典序 → 線上要
+  `sort_values([score, stock_id], ascending=[False, True], kind="mergesort")`）。
+  2026-08-08 實測：不對齊會造成 **582 天年化差 0.18pp**，且看起來像捨入誤差。
 - **上線用的口徑必須逐行照抄回測**，不可「順便改好一點」
 - **診斷實驗一律在 `V6/experimental/` 副本**；受保護的 `marketmamba/models/` 不碰。
   修推論一律改 `run_daily_inference.py`，**不要動已棄用的 `models/inference.py`**

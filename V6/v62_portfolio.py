@@ -294,6 +294,41 @@ def _trading_days_between(a: str, b: str) -> int:
     return int(((d > pd.Timestamp(a)) & (d <= pd.Timestamp(b))).sum())
 
 
+@lru_cache(maxsize=8)
+def _tradable_on(date: str) -> frozenset[str]:
+    """當日有有效收盤價（Close > 0）的股票 —— **當天沒有價格就是買不到**。
+
+    ⚠️ 這個過濾是 2026-08-08 補的，補的是一個**真實的線上 vs 回測口徑分歧**。
+    `portfolio_lab` 與 `replay()` 都有 `rank_df.where(mkt.px.notna())`
+    （`Market` 另有 `px.where(px > 0)`），但 `step()` 原本完全沒做
+    → 線上可能選到當天停牌／無成交的股票，而回測從來不會。
+
+    **怎麼發現的**：`v62_performance.py` 把 582 天的持股紀錄算成報酬，
+    得到 38.20% vs 回測 38.02%（差 0.18pp）。逐日 diff 後定位到
+    **2024-10-01 一檔股票**（線上選 6206、回測選 3035），持股往後帶
+    就造成整段系統性差異。**0.18pp 很容易被當成捨入誤差放過** ——
+    這正是「前瞻績效工具」除了記錄績效之外的第二個價值。
+    """
+    from marketmamba.config import PROCESSED_DIR
+
+    p = Path(PROCESSED_DIR) / "prices_raw.parquet"
+    # ⚠️ `Date` 在 production 的 prices_raw 是 **large_string**、不是 timestamp
+    #    （CLAUDE.md「換 production 資料檔：只改值、不改型別」記過這件事）。
+    #    用 `pd.Timestamp` 當 filter 值會 ArrowNotImplementedError。
+    #    先試字串，型別哪天真的改了再退回 Timestamp——兩種都不成立才放棄。
+    key = pd.Timestamp(date).strftime("%Y-%m-%d")
+    cols = ["Date", "stock_id", "Close"]
+    try:
+        pr = pd.read_parquet(p, columns=cols, filters=[("Date", "==", key)])
+    except Exception:                                           # noqa: BLE001
+        pr = pd.read_parquet(p, columns=cols,
+                             filters=[("Date", "==", pd.Timestamp(date))])
+    if pr.empty:
+        return frozenset()
+    c = pd.to_numeric(pr["Close"], errors="coerce")
+    return frozenset(pr.loc[c > 0, "stock_id"].astype(str))
+
+
 def step(arm: str, scores_path: Path, data_complete: dict | None = None,
          force_rebalance: bool = False, n: int = N_HOLD, k: float = BUFFER_K,
          freq: int = REBAL_DAYS, tier: str = "primary") -> dict:
@@ -304,8 +339,42 @@ def step(arm: str, scores_path: Path, data_complete: dict | None = None,
     """
     sc = pd.read_csv(scores_path, dtype={"stock_id": str})
     date = str(pd.to_datetime(sc["Date"].iloc[0]).date())
-    sc = sc.sort_values("score", ascending=False).reset_index(drop=True)
+    # ⚠️ **並列必須用 stock_id 打破，而且要穩定排序**（2026-08-08 修）。
+    #
+    #    分數是 float32，同一天實測有 **183 組完全相等的分數**（2024-10-01）。
+    #    原本是 `sort_values("score", ascending=False)`：
+    #      ① pandas 預設 quicksort 是**不穩定排序** → `step()` 本身不具決定性
+    #      ② 回測那邊是 `rank(axis=1, method="first")`，並列依 **pivot 欄序**
+    #         （= stock_id 字典序）決定 → 兩邊對同一組並列會給出不同名次
+    #
+    #    實測後果：2024-10-01 線上選了 `6206`、回測選了 `3035`（兩者 score 相同、
+    #    rank 47/48），持股往後帶 → **整段 582 天年化差 0.18pp**（38.20 vs 38.02）。
+    #    這是「不會報錯、看起來像捨入誤差」的那類分歧。
+    #
+    #    `kind="mergesort"` = 穩定排序；次鍵 stock_id 遞增 = 對齊 `method="first"`。
+    sc["stock_id"] = sc["stock_id"].astype(str)
+    sc = sc.sort_values(["score", "stock_id"], ascending=[False, True],
+                        kind="mergesort").reset_index(drop=True)
     rk = {r.stock_id: float(i + 1) for i, r in enumerate(sc.itertuples())}
+    n_tie = int(sc["score"].duplicated().sum())
+    if n_tie:
+        print(f"[state] 並列分數 {n_tie} 組 → 一律以 stock_id 遞增打破"
+              f"（與回測 rank(method='first') 同口徑）", flush=True)
+
+    # 當日無收盤價 → 買不到 → 逐出候選池（與 portfolio_lab / replay 同口徑）。
+    # ⚠️ 排名數字**不重算**：`replay()` 是先 rank 全體、再 `.where(px.notna())`
+    #    把不可交易者設成 NaN，名次不會往前遞補。這裡照抄那個語意——
+    #    改成重算名次會讓緩衝門檻（rank ≤ k×N）的意義跟著變。
+    tradable = _tradable_on(date)
+    if tradable:
+        n_before = len(rk)
+        rk = {s: v for s, v in rk.items() if s in tradable}
+        dropped = n_before - len(rk)
+        print(f"[state] 可交易過濾：{n_before} → {len(rk)} 檔"
+              f"（剔除 {dropped} 檔當日無收盤價）", flush=True)
+    else:
+        print(f"[state] ⚠️ {date} 讀不到任何收盤價 → **不做可交易過濾**"
+              f"（回測會濾，這天的線上口徑與回測不同，判讀時要排除）", flush=True)
 
     spec = {"n": n, "k": k, "freq": freq, "weight": WEIGHT_MODE, "tier": tier}
     st_path = RESULTS_DIR / STATE_FMT.format(arm=arm)
@@ -362,9 +431,17 @@ def step(arm: str, scores_path: Path, data_complete: dict | None = None,
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     st_path.write_text(json.dumps(st, indent=1, ensure_ascii=False), encoding="utf-8")
     # 逐日 append，事後不得修改——這份才是「不可竄改的前瞻紀錄」
+    #
+    # `weights` = **上次再平衡當下的權重**（非再平衡日不更新，期間的漂移不寫回）。
+    #
+    # ⚠️ 誠實說明：這一欄**不是「補不回來」的資料**——現行規格是等權，
+    #    再平衡日的權重必然是 1/N，漂移也能由價格推回。記它的理由是
+    #    **讓紀錄自我描述**：哪天 `WEIGHT_MODE` 不再是 "equal"（規格已留這個參數），
+    #    所有「假設等權」的重建就會靜默算錯，而舊紀錄裡沒有任何線索能發現。
+    #    多一欄的成本近乎零，換掉一個未來才會爆的靜默假設。
     rec = {"date": date, "arm": arm, "rebalanced": bool(due),
-           "holdings": st["holdings"], "in_top_n": drift,
-           "spec": spec, "data_complete": data_complete or {},
+           "holdings": st["holdings"], "weights": st["weights"],
+           "in_top_n": drift, "spec": spec, "data_complete": data_complete or {},
            "written_at": datetime.now().isoformat(timespec="seconds")}
     with (RESULTS_DIR / LOG_FMT.format(arm=arm)).open("a", encoding="utf-8") as f:
         f.write(json.dumps(rec, ensure_ascii=False) + "\n")
