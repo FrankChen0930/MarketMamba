@@ -44,9 +44,12 @@ export default function BreadthPortfolio() {
   // tier 決定這個組合要不要下警告。分級不是憑感覺——是拿回測差距對
   // 組合層雜訊底線（N=50 約 ±6pp）量出來的，見 V6/v62_portfolio.py:PORTFOLIOS。
   const TIER_STYLE = {
-    primary:    { dot: '#4caf50', bg: null, border: null },
-    equivalent: { dot: '#ffc107', bg: 'rgba(255,193,7,.07)',  border: 'rgba(255,193,7,.3)' },
-    inferior:   { dot: '#ff5252', bg: 'rgba(255,82,82,.08)',  border: 'rgba(255,82,82,.35)' },
+    primary:      { dot: '#4caf50', bg: null, border: null },
+    equivalent:   { dot: '#ffc107', bg: 'rgba(255,193,7,.07)',  border: 'rgba(255,193,7,.3)' },
+    inferior:     { dot: '#ff5252', bg: 'rgba(255,82,82,.08)',  border: 'rgba(255,82,82,.35)' },
+    // incomparable：不同訓練輪，**不是「比較差」**——用中性色，不可跟 inferior 同色，
+    // 否則會把「不能比」誤導成「比較爛」。
+    incomparable: { dot: '#9e9e9e', bg: 'rgba(158,158,158,.08)', border: 'rgba(158,158,158,.35)' },
   };
   const ts = TIER_STYLE[data.tier] || TIER_STYLE.equivalent;
 
@@ -90,13 +93,18 @@ export default function BreadthPortfolio() {
           <div style={{ fontWeight: 700, marginBottom: 4 }}>
             {data.tier === 'inferior'
               ? '⛔ 這不是上線規格，而且已知比主線差'
-              : '🔬 這不是上線規格，僅供研究參考'}
+              : data.tier === 'incomparable'
+                ? '⚖️ 這不是上線規格，而且與主線不可直接比較'
+                : '🔬 這不是上線規格，僅供研究參考'}
           </div>
           <div style={{ opacity: .85 }}>
             {data.tier_desc}
+            {/* ⚠️ 主線回測值不可寫死——2026-08-09 回補資料重跑後從 38.0% 變成 37.3%，
+                寫死的話這裡會一直顯示過時的比較基準。改由 API 帶 primary_backtest_ann。 */}
             {data.backtest_ann != null && (
-              <>（回測年化 {(data.backtest_ann * 100).toFixed(1)}%，
-                主線是 38.0%）</>
+              <>（回測年化 {(data.backtest_ann * 100).toFixed(1)}%
+                {data.primary_backtest_ann != null &&
+                  <>，主線是 {(data.primary_backtest_ann * 100).toFixed(1)}%</>}）</>
             )}
             <br />
             實際操作請看<strong>主線（★ 5d 頭 / 20 日）</strong>。

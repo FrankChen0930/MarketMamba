@@ -444,12 +444,15 @@ def score_window(arm: str = DEFAULT_ARM, out_name: str | None = None) -> dict:
     _orig = (T.TARGET_COLS, T.PRED_HORIZONS, cfg.PRED_HORIZONS)
     T.TARGET_COLS, T.PRED_HORIZONS, cfg.PRED_HORIZONS = ["Alpha_5d", "Alpha_10d"], [5, 10], [5, 10]
     try:
-        model = ShortModelV6(use_gat=True, dropout=DROPOUT).to(dev)
+        # ⚠️ `use_gat` 必須跟著 spec 走。2026-08-08 我只修了 `infer()`、**漏了這裡**，
+        #    結果 `no_gat` 的窗評分在 load_state_dict 當場炸（少 graph_layer/gate/norm_fuse）。
+        #    同一個設定分散在兩處建模型，就會有「修了一處以為修完」的漏網。
+        model = ShortModelV6(use_gat=spec.use_gat, dropout=DROPOUT).to(dev)
         state = torch.load(ck, map_location=dev, weights_only=False)
         model.load_state_dict(state.get("state_dict", state))
         model.eval()
-        print(f"[window] ckpt={ck.name} ep{state.get('epoch')}｜參數 {model.n_parameters:,}",
-              flush=True)
+        print(f"[window] ckpt={ck.name} ep{state.get('epoch')}｜use_gat={spec.use_gat}"
+              f"｜參數 {model.n_parameters:,}", flush=True)
 
         _o = T.KG_CACHE_PATH
         T.KG_CACHE_PATH = Path(PROCESSED_DIR) / spec.kg_file
@@ -507,8 +510,19 @@ def score_window(arm: str = DEFAULT_ARM, out_name: str | None = None) -> dict:
           f"｜{(time.time()-t0)/60:.1f} 分", flush=True)
     print(f"[window] **現在資料** mean IC {res['mean_ic']:+.4f}｜ICIR {res['icir']}"
           f"｜IC>0 {res['pct_pos']:.1%}", flush=True)
-    print(f"[window] 對照（舊資料基礎，2026-08-03 記錄）：mean IC +0.1145｜ICIR 1.340"
-          f"｜IC>0 90.9%", flush=True)
+    # ⚠️ 2026-08-09 移除一個會誤導的輸出。
+    #    這裡原本硬編 `對照（舊資料基礎）：mean IC +0.1145｜ICIR 1.340`——
+    #    那是 **`v2_kg_nomacro` 一個 arm 的舊值**，卻對每個 arm 都印同一行。
+    #    重評分八個 arm 時 log 會長成「head10d 從 0.1145 掉到 0.1094」，
+    #    但 head10d 的舊值根本不是 0.1145。**看起來像對照，其實是拿別人的基準。**
+    #
+    #    不在這裡重算舊 IC 的理由：本函式的 IC 是用 Dataset 的 Y（當日 z-score 後的
+    #    Alpha）逐日算的，外面拿不到同一份標籤；換一個標籤路徑算出來的「舊 IC」
+    #    與這裡的「新 IC」又不可比——**那只是把誤導換一種形式**。
+    #    要做新舊 IC 對照，請用同一支腳本、同一份標籤對兩份分數各算一次。
+    #    本函式提供的可比對照是下面那段**逐日 Spearman**（它用該 arm 自己的 ref_score）。
+    print(f"[window] （不列 IC 對照：舊值須用同一份標籤另外算，"
+          f"見下方逐日 Spearman——那個才是本 arm 自己的對照）", flush=True)
 
     # 逐日比對新舊分數：一天一個 Spearman，看整窗漂移多大、有沒有集中在某段
     ref_p = REF_SCORE_DIR / (spec.ref_score or "")

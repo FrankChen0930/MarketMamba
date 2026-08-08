@@ -62,10 +62,13 @@ CAVEATS = ["單一 seed（年化帶 ±2.7pp 的 run-to-run 雜訊）",
            "單一 582 天多頭窗、無 walk-forward",
            "優勢集中在大盤上升段；下跌段比 v2_kg 差 8.4pp",
            "回測年化來自 582 天單一窗，**不是**前瞻紀錄"]
+# ⚠️ 這裡是 fallback；正常情況 tier_desc 由 manifest 帶過來（唯一真相是 PORTFOLIOS）。
 TIER_DESC = {
-    "primary":    "主線規格（回測最佳）",
-    "equivalent": "研究用；與主線差距在雜訊底線（±6pp）內，分不出優劣",
-    "inferior":   "研究用；已知明確劣於主線，請勿照做",
+    "primary":      "主線規格",
+    "equivalent":   "研究用；與主線差距在雜訊底線（±6pp）內，分不出優劣",
+    "inferior":     "研究用；已知明確劣於主線，請勿照做",
+    "incomparable": "研究用；與主線不可並列——出自不同訓練輪（隔離天數不同），"
+                    "回測數字只在該輪內部有意義",
 }
 
 CACHE_TTL = timedelta(hours=1)
@@ -157,12 +160,17 @@ async def _load(arm: str, meta: dict) -> Optional[dict]:
                 for s in st.get("holdings", [])]
 
     tier = spec.get("tier", "equivalent")
+    _primary_bt = next((a.get("backtest_ann") for a in (await _manifest())["arms"]
+                        if a.get("tier") == "primary"), None)
     return {
         "arm": arm, "label": meta.get("label", arm),
         "spec": spec, "tier": tier,
         "tier_desc": TIER_DESC.get(tier, ""),
         "is_primary": tier == "primary",
         "backtest_ann": meta.get("backtest_ann"),
+        # 主線的回測值一起帶出去——前端要拿它當比較基準。
+        # ⚠️ 前端曾經把 38.0% 寫死，2026-08-09 重跑後變 37.3%，那個寫死值就過時了。
+        "primary_backtest_ann": _primary_bt,
         "caveats": CAVEATS,
         "note_arm": meta.get("note", ""),
         "date": st.get("last_date"),

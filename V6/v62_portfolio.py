@@ -6,7 +6,8 @@ v62_portfolio.py — V6.2 組合層狀態機（主線規格 `5d/20`）
 分數本身不是持股名單——中間 19 天不換股，所以必須有狀態。
 
 規格來源：`docs/portfolio-construction-baseline-v1.md` + 2026-08-05 定案
-（CLAUDE.md「★ V6.2 上線規格」）。回測對照：N=50/k=1.5/20日 年化 +38.1%。
+（CLAUDE.md「★ V6.2 上線規格」）。回測對照：N=50/k=1.5/20日 年化 **+37.3%**
+（2026-08-09 在回補後的新面板上重評；舊面板是 +38.0%，差 0.7pp、在雜訊內）。
 
 多頻率並行（2026-08-08 新增）
 -----------------------------
@@ -18,9 +19,10 @@ GPU 前向零額外成本。所以「推論 arm」（模型 × 預測頭 → 分
 「組合 arm」（分數檔 × n/k/freq → 持股）是分開的兩張表：
 前者在 `run_v62_inference.ARMS`，後者是本檔的 `PORTFOLIOS`。
 
-⚠️ 高頻組合**已知較差、僅供參考**，分級依據見 `PORTFOLIOS` 的 `tier`
-（數字來自 `docs/label-horizon-vs-holding-period-2026-08-03.md` §2，
-非本次新跑的實驗）。
+⚠️ 高頻組合的分級依據見 `PORTFOLIOS` 的 `tier`。
+**`bt_ann` 全部是 2026-08-09 在回補後的新面板上重跑的**（11 個 arm 一致口徑），
+不是沿用 `docs/label-horizon-vs-holding-period-2026-08-03.md` §2 的舊值——
+舊值算在缺 15% 列的面板上，與現在的線上資料不同義。
 
 八個設計決定（2026-08-05；⑧ 為 08-08 新增）
 --------------------------
@@ -100,61 +102,72 @@ class Portfolio:
 
 
 # 雜訊底線：組合層 N=50 約 **±6pp**（CLAUDE.md「判讀數字之前」）。
-# 分級就是拿與主線的差距對這條線量出來的，不是憑感覺分的：
-#   equivalent = 差距在 ±6pp 內 → 老實說法是「分不出優劣」，不是「比較差」
-#   inferior   = 差距超出 ±6pp → 明確較差，要下強警告
-#
-# bt_ann 全部來自 `docs/label-horizon-vs-holding-period-2026-08-03.md` §2
-# （同一張表、同一個 checkpoint、同一個 582 天窗），**不是本次新跑的**。
+# 分級是拿與主線的差距對這條線量出來的，不是憑感覺分的。詳細規則見下方。
 _TIER_DESC = {
-    "primary":    "主線規格（回測最佳）",
-    "equivalent": "研究用；與主線差距在雜訊底線（±6pp）內，分不出優劣",
-    "inferior":   "研究用；已知明確劣於主線，請勿照做",
+    "primary":      "主線規格",
+    "equivalent":   "研究用；與主線差距在雜訊底線（±6pp）內，分不出優劣",
+    "inferior":     "研究用；已知明確劣於主線，請勿照做",
+    "incomparable": "研究用；**與主線不可並列**——出自不同訓練輪（隔離天數不同），"
+                    "回測數字只在該輪內部有意義",
 }
+
+# ⚠️ 分級規則（2026-08-09 修過一次，原本是錯的）
+#    第一版只看 `|Δ| > 6pp` 就標 inferior → `head10d_f20` 比主線**好 8.9pp**
+#    卻被標成「已知明確劣於主線，請勿照做」。**方向搞反了。**
+#    而更根本的問題是：`head10d`/`head20d` 出自**隔離 40 天**那一輪、
+#    主線是隔離 30 天，CLAUDE.md 明寫「兩輪之間隔離天數不同，不可跨輪並列」
+#    → 那個 +8.9pp 的比較本身就不成立，不該拿來分級。故新增 `incomparable`。
+#
+#    正確規則：
+#      primary       = 上線規格本身
+#      incomparable  = 不同訓練輪，不做比較
+#      equivalent    = 同輪且 |Δ| < 6pp
+#      inferior      = 同輪且 Δ ≤ −6pp（**只有更差才叫 inferior**）
 
 PORTFOLIOS: dict[str, Portfolio] = {
     # ── 主線：5d 頭 / 20 日（已定案的上線規格）────────────────────
-    "v2_kg_nomacro_f20": Portfolio("v2_kg_nomacro",     20, "primary",    0.380, "5d 頭",
+    "v2_kg_nomacro_f20": Portfolio("v2_kg_nomacro",     20, "primary",    0.373, "5d 頭",
                                    note="★ 上線規格 5d/20"),
     # ── 5d 頭的其他頻率（中間天數的參考組合）──────────────────────
-    "v2_kg_nomacro_f10": Portfolio("v2_kg_nomacro",     10, "equivalent", 0.363, "5d 頭"),
-    "v2_kg_nomacro_f05": Portfolio("v2_kg_nomacro",      5, "equivalent", 0.349, "5d 頭"),
-    "v2_kg_nomacro_f03": Portfolio("v2_kg_nomacro",      3, "inferior",   0.239, "5d 頭"),
-    "v2_kg_nomacro_f01": Portfolio("v2_kg_nomacro",      1, "inferior",   0.199, "5d 頭"),
+    "v2_kg_nomacro_f10": Portfolio("v2_kg_nomacro",     10, "equivalent", 0.374, "5d 頭"),
+    "v2_kg_nomacro_f05": Portfolio("v2_kg_nomacro",      5, "equivalent", 0.324, "5d 頭"),
+    "v2_kg_nomacro_f03": Portfolio("v2_kg_nomacro",      3, "inferior",   0.259, "5d 頭"),
+    "v2_kg_nomacro_f01": Portfolio("v2_kg_nomacro",      1, "inferior",   0.250, "5d 頭"),
     # ── 10d 頭（同一顆 checkpoint 的第二欄）────────────────────────
     #    ⚠️ 高頻端**要用這顆頭**：與 5d 頭的差距隨頻率變高而擴大
     #    （20 日 +1.2pp 在雜訊內 → 1 日 +9.6pp 超出雜訊底線）。
     #    機制在成本欄：10d 頭分數變動慢 → 換手低 → 1 日那格成本 31.1% vs 42.6%。
-    "v2_kg_nomacro_h10_f20": Portfolio("v2_kg_nomacro_h10", 20, "equivalent", 0.392,
+    "v2_kg_nomacro_h10_f20": Portfolio("v2_kg_nomacro_h10", 20, "equivalent", 0.421,
                                        "10d 頭", note="回測比主線高 1.2pp，但在雜訊內"),
-    "v2_kg_nomacro_h10_f10": Portfolio("v2_kg_nomacro_h10", 10, "equivalent", 0.376, "10d 頭"),
-    "v2_kg_nomacro_h10_f05": Portfolio("v2_kg_nomacro_h10",  5, "equivalent", 0.357, "10d 頭"),
-    "v2_kg_nomacro_h10_f03": Portfolio("v2_kg_nomacro_h10",  3, "equivalent", 0.337, "10d 頭"),
-    "v2_kg_nomacro_h10_f01": Portfolio("v2_kg_nomacro_h10",  1, "inferior",   0.295, "10d 頭"),
+    "v2_kg_nomacro_h10_f10": Portfolio("v2_kg_nomacro_h10", 10, "equivalent", 0.427, "10d 頭"),
+    "v2_kg_nomacro_h10_f05": Portfolio("v2_kg_nomacro_h10",  5, "equivalent", 0.390, "10d 頭"),
+    "v2_kg_nomacro_h10_f03": Portfolio("v2_kg_nomacro_h10",  3, "equivalent", 0.329, "10d 頭"),
+    "v2_kg_nomacro_h10_f01": Portfolio("v2_kg_nomacro_h10",  1, "equivalent", 0.326, "10d 頭",
+                                       note="新面板下 −4.7pp，落回雜訊內（舊面板是 −9.7pp）"),
     # ── 獨立訓練的研究 checkpoint（各只跑主線頻率）─────────────────
-    "head10d_f20": Portfolio("head10d", 20, "equivalent", 0.459, "h10 ckpt",
+    "head10d_f20": Portfolio("head10d", 20, "incomparable", 0.462, "h10 ckpt",
                              note="不同 checkpoint；隔離 40 天那一輪，不可與上面並列"),
-    "head20d_f20": Portfolio("head20d", 20, "equivalent", 0.392, "h20 ckpt",
+    "head20d_f20": Portfolio("head20d", 20, "incomparable", 0.385, "h20 ckpt",
                              note="不同 checkpoint；隔離 40 天那一輪，不可與上面並列"),
     # ── F6 消融的四個 Mamba arm（2026-08-08 加入）──────────────────
     #    ⚠️ 這四個**吃 Group D**（zero_macro=False）→ 依賴 `build_feature_df()`
     #    的 macro 全歷史貼回。實測窗內自算 vs 全歷史：TWII_Return −0.1264 → −0.8985。
     #    定位是對照組，不是候選上線規格。
-    "v3_kg_f20":  Portfolio("v3_kg", 20, "inferior", 0.268, "v3 圖",
+    "v3_kg_f20":  Portfolio("v3_kg", 20, "inferior", 0.275, "v3 圖",
                             note="加 4,504 條相關性邊，對 v2_kg 無效應（decile 1.928）"),
-    "v2_kg_f20":  Portfolio("v2_kg", 20, "inferior", 0.260, "v2 圖",
+    "v2_kg_f20":  Portfolio("v2_kg", 20, "inferior", 0.270, "v2 圖",
                             note="Group D 照常；與主線只差 Group D（decile 1.905）"),
-    "old_kg_f20": Portfolio("old_kg", 20, "inferior", 0.166, "舊圖",
+    "old_kg_f20": Portfolio("old_kg", 20, "inferior", 0.146, "舊圖",
                             note="壞掉的 KG——2330 的鄰居是電器電纜（decile 1.231）"),
-    "no_gat_f20": Portfolio("no_gat", 20, "inferior", 0.122, "無 GAT",
+    "no_gat_f20": Portfolio("no_gat", 20, "inferior", 0.162, "無 GAT",
                             note="架構少 graph_layer/gate/norm_fuse（decile 1.664）"),
     # ── B 類經典模型（`run_v62_baselines.py` 產分數，另一個 process）──
     #    定位是**對照組**，不是候選上線規格：八模型表裡它們都輸給 Mamba
     #    （ridge decile 1.088 / gbdt 1.735 / gru 2.388 vs v2_kg_nomacro 5.005）。
     #    留著跑是為了「同一段真實 OOS 期間、同一把尺」的並列紀錄。
-    "ridge_f20": Portfolio("ridge", 20, "inferior", 0.205, "Ridge 307維",
+    "ridge_f20": Portfolio("ridge", 20, "inferior", 0.216, "Ridge 307維",
                            note="線性 baseline；重建 vs 參考 ρ=0.9970"),
-    "gru_f20":   Portfolio("gru", 20, "inferior", 0.209, "GRU 60×59",
+    "gru_f20":   Portfolio("gru", 20, "inferior", 0.206, "GRU 60×59",
                            note="checkpoint 即原始那顆，未重訓"),
     # ⚠️ GBDT 的可重現性要**分兩層講**（2026-08-08 實測）：
     #    訊號層**不可重現**（重建 vs 參考 ρ=0.9203、Top50 重疊只有 25/50；
@@ -162,7 +175,7 @@ PORTFOLIOS: dict[str, Portfolio] = {
     #    但組合層**幾乎一樣**：11.0% vs 11.2%、Sharpe 0.653 vs 0.639、換手 79% vs 81%。
     #    → 換掉的那半個 Top50 與被換掉的一樣好。所以「持股名單對不上」≠「策略不同」。
     #    bt_ann 用重建模型自己跑出來的 11.0%（`gbdt__p30fix_20260808`），不借用參考值。
-    "gbdt_f20":  Portfolio("gbdt", 20, "inferior", 0.110, "GBDT 307維",
+    "gbdt_f20":  Portfolio("gbdt", 20, "inferior", 0.141, "GBDT 307維",
                            note="訊號層不可重現（ρ=0.9203）但組合層一致"
                                 "（11.0% vs 參考 11.2%）；decile Sh 1.714 vs 1.806"),
 }

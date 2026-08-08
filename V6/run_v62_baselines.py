@@ -402,6 +402,98 @@ def verify(out: pd.DataFrame, date: str, arm: BaseArm) -> bool:
     return ok
 
 
+def score_window(arms: list[str]) -> int:
+    """用**現在的 base matrix** 重評 582 個 val 日 → `{arm}__live.parquet`。
+
+    對應 Mamba 線的 `run_v62_inference.py --score-window`。
+    2026-08-08 回補 `prices_raw`（+441,543 列）並重建 base matrix 之後，
+    三個 baseline 也必須在新面板上重評——否則 19 個組合的 `bt_ann` 會是
+    「Mamba 用新面板、baseline 用舊面板」的混合，正是規矩裡「新舊不得混用」。
+
+    ⚠️ **不重訓，只重評分**。與 Mamba 線同口徑：checkpoint / 權重不動，
+       只換餵進去的資料。CLAUDE.md 2026-08-05 的前例就是這樣做的
+       （資料修正後重評，38.0% → 38.1%，在雜訊內）。
+       「有些重訓、有些沒有」會讓跨模型比較失去意義。
+    """
+    from experimental.baseline_common import load_xy
+
+    P = B.PROTOCOL
+    logger.info(f"[window] 載入 {P['TEST_START']} → {P['TEST_END']}（stride=1）…")
+    te = load_xy(P["TEST_START"], P["TEST_END"], day_stride=1)
+    logger.info(f"[window] {te['X'].shape[0]:,} 列 × {te['X'].shape[1]} 維"
+                f"｜{len(np.unique(te['dates']))} 天")
+
+    ok_all = True
+    for name in arms:
+        arm = ARMS[name]
+        try:
+            if arm.kind == "ridge":
+                z = np.load(RESULT_DIR / arm.artifact, allow_pickle=True)
+                w, c = z["w"], float(z["intercept"])
+                if len(w) != te["X"].shape[1]:
+                    raise SystemExit(f"權重 {len(w)} 維 != X {te['X'].shape[1]} 維")
+                s = (te["X"].astype(np.float64) @ w + c).astype(np.float32)
+            elif arm.kind == "gbdt":
+                import lightgbm as lgb
+                bst = lgb.Booster(model_file=str(RESULT_DIR / arm.artifact))
+                if bst.num_feature() != te["X"].shape[1]:
+                    raise SystemExit(f"模型 {bst.num_feature()} 維 != X {te['X'].shape[1]} 維")
+                s = bst.predict(te["X"]).astype(np.float32)
+            else:                                   # gru：序列，不吃扁平 X
+                s, dates_g, sids_g = _gru_window(arm)
+                out = pd.DataFrame({"Date": pd.to_datetime(dates_g),
+                                    "stock_id": [str(x) for x in sids_g],
+                                    "score": s.astype(np.float32)})
+                _dump(out, name)
+                continue
+
+            out = pd.DataFrame({"Date": pd.to_datetime(te["dates"]),
+                                "stock_id": [str(x) for x in te["stock_ids"]],
+                                "score": s})
+            _dump(out, name)
+        except Exception as e:                                  # noqa: BLE001
+            import traceback
+            ok_all = False
+            logger.error(f"[{name}] 失敗：{e}\n{traceback.format_exc()[:1200]}")
+    return 0 if ok_all else 1
+
+
+def _dump(out: pd.DataFrame, name: str) -> None:
+    SCORE_DIR.mkdir(parents=True, exist_ok=True)
+    p = SCORE_DIR / f"{name}__live.parquet"
+    out.to_parquet(p, index=False)
+    logger.info(f"[window] {name}：{len(out):,} 列 / {out['Date'].nunique()} 天 → {p.name}"
+                f"｜score median {out['score'].median():+.4f}")
+
+
+def _gru_window(arm: BaseArm):
+    """GRU 走序列面板（(B,60,59)），逐行對照 `baseline_rnn.Panel`。"""
+    import torch
+    import torch.nn as nn
+
+    from experimental.baseline_rnn import WINDOW, Panel, RNNReg
+
+    P = B.PROTOCOL
+    panel = Panel()
+    rows = panel.sample_rows(P["TEST_START"], P["TEST_END"], 5, require_label=False)
+    logger.info(f"[window] gru：{len(rows):,} 個樣本")
+    sd = torch.load(RESULT_DIR / arm.artifact, map_location="cpu", weights_only=False)
+    if isinstance(sd, dict) and "state" in sd:
+        sd = sd["state"]
+    hidden = sd["rnn.weight_ih_l0"].shape[0] // 3
+    dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = RNNReg("gru", hidden).to(dev)
+    model.load_state_dict(sd)
+    model.eval()
+    outs = []
+    with torch.no_grad():
+        for i in range(0, len(rows), 4096):
+            b = rows[i:i + 4096]
+            x = torch.from_numpy(panel.gather(b)).to(dev)
+            outs.append(model(x).float().cpu().numpy())
+    return np.concatenate(outs), panel.dates[rows], panel.sids[rows]
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--arms", nargs="*", default=None, help="預設全部")
@@ -409,12 +501,17 @@ def main() -> int:
     ap.add_argument("--verify-date", default=None, help="驗證模式：對既有分數比對")
     ap.add_argument("--lookback", type=int, default=LOOKBACK_DAYS)
     ap.add_argument("--no-save", action="store_true")
+    ap.add_argument("--score-window", action="store_true",
+                    help="用現在的 base matrix 重評 582 個 val 日 → {arm}__live.parquet")
     a = ap.parse_args()
 
     arms = a.arms or list(ARMS)
     unknown = [x for x in arms if x not in ARMS]
     if unknown:
         return logger.error(f"未知 arm：{unknown}（可用 {list(ARMS)}）") or 2
+
+    if a.score_window:
+        return score_window(arms)
 
     target = a.verify_date or a.date
     cleaned, raw = build_panel(target, a.lookback)
