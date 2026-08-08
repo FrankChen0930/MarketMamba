@@ -1183,27 +1183,36 @@ Set-ScheduledTask -TaskName "MarketMamba_V62" -Principal (New-ScheduledTaskPrinc
 - [ ] **`trading_status_raw` 接進每日流程**：資料已補到 2026-08-03，
       但 `V6/experimental/fetch_trading_status.py` 的 `build()` 是**整檔重建**，
       直接排每日會每天重抓 11 年 → **需先加增量路徑**。組合建構的處置股限制要用它
-- [ ] **`{model}__common.parquet`（8 個）與 `v2_kg_nomacro__live.parquet` 的處置**：
-      在 `V6/experimental/result/scores/`，**會被無過濾的 `--sweep` 一併掃到**（每次多跑 8 組）。
-      要嘛保留當正式對照集、要嘛刪除
+- [x] ~~`{model}__common.parquet` 的處置~~ **2026-08-08 決定：保留**。
+      它們是八模型定稿表的證據——**為了省 `--sweep` 的掃描時間刪掉研究證據是壞交易**。
+      改成讓成本看得見：`sweep()` 未指定 `--models` 時會先印出「要掃幾個檔、其中幾個是衍生檔」。
 - [ ] **確認 portfolio_lab v1.1 修訂提案**（規格 §8）：A 改 headline、B 分數平滑、
       D 大盤區間報告納入標準輸出。**採用後所有模型要重跑、新舊不得混用**
 - [ ] **`INPUT_DIM` 59 → 47** 要不要正式落規格：證據充分但 **47 維實測未達標** →
       現行 mask 實作已足夠，屬「清理規格」，可無限期延後
-- [ ] **每日更新寫入端補「非交易日不寫入」gate**：查 TWSE 交易日曆後才寫入，
-      防止 06-07（週日）、06-19（端午）那類整日假資料再發生
-- [ ] **清 329 列 `Close<=0` 存量**（2026-04-30 ~ 05-22、122 支）：
-      `_sanitize` 已在讀取時剔除、推論不受影響，但 parquet 內仍在
+- [x] ~~每日更新寫入端補「非交易日不寫入」gate~~ **早就做完了**（`fetcher.py:3844`
+      的 `is_trading_day()`，週末不打 API、平日查 TWSE MI_INDEX）。
+      2026-08-08 實測五個日期全對，含**端午節**（需要真的打 API 才判得出來）。
+- [x] ~~清 329 列 `Close<=0` 存量~~ **實測已經是 0 列**——B-3 全歷史重建時就一起沒了。
 - [ ] **P2：股票池 2026-05-25 少掉的 353 支歸因**（2,321 → 1,968，一日之間，非下市）
-- [ ] **PersonalOS 同步 K 線圖**（Vercel 版已驗收）：複製 `KLineChart.jsx` + `StockModal.jsx`
-      + `TradingSignals.jsx`（注意 import 路徑差異 `../api/market` → `../../api/mm`）、
-      `npm install klinecharts@^9.8.10` + `npx vite build` + 重啟 exe
-- [ ] **可刪的備份**：`*_backup_before_mops_20260804.parquet`（79 MB）、
-      `trading_status_raw_backup_20260804.parquet`、`prices_raw_backup_before_adj_20260729.parquet`、
-      `prices_raw_backup_20260712.parquet`（127 MB）、`institutional_raw_backup_*`（各 ~148 MB）、
-      `baseline_cache_v2_v1like`（~7.5 GB）
-- [ ] **本機 git 善後**：`git checkout HEAD -- V6/marketmamba/models/trainer.py`
-      + `git restore --staged V6/marketmamba/config.py` + `git stash drop`
+- [ ] ~~PersonalOS 同步 K 線圖~~ **使用者 2026-08-08 決定不做**
+- [x] ~~可刪的備份~~ **2026-08-08 已清 8.4 GB**（23 個備份 728 MB + `baseline_cache_v2_v1like` 7.7 GB）。
+      刪之前逐檔驗證「正式檔存在、可讀、鍵集合不少於備份」。
+      ⚠️ **保留 6 個未通過驗證的**（`prices_raw_backup_*` ×4、`daytrade_raw_backup_20260728`、
+      `holdings_raw_BACKUP`）：正式檔比備份**少 44 萬個 (stock_id, Date) 鍵**，
+      缺漏均勻分布在 2007–2026 每一年、881 支各缺 >100 天。
+      357 支整支消失的裡面有 352 支是 `filter_tradable_universe` 刻意排除的（興櫃），
+      **但剩下那 44 萬筆部分缺漏還沒解釋** → 在解釋清楚之前不刪（那是唯一的副本）。
+      ⚠️ 我的第一版檢查有 bug：`holdings_raw_BACKUP.parquet` 大寫沒被 regex 匹配，
+      變成拿檔案跟自己比而回報「可刪」。**檢查腳本本身也要驗。**
+- [ ] **其他衍生快取要不要刪（約 24 GB，不在原清單上）**：
+      `baseline_cache`(v1) 8.1G、`baseline_cache_v2_neuind` 7.8G、
+      `baseline_cache_v2_nofund` 7.3G、`baseline_cache_v2_v1univ` 819M。
+      都是 F5 R-series 的變體快取、實驗已凍結、可由 raw 重建（但要數小時）。
+      **`baseline_cache_v2` 8.0G 是現行協定，不可刪。**
+- [x] ~~本機 git 善後~~ `trainer.py` 早已乾淨、stash 是空的。
+      **`config.py` 維持 dirty 是刻意的**（V6.1 的 `run_daily_inference.py` 要 56 維），
+      V6.1 退役前不要動它。
 
 #### 【優先級 3】要做但不急
 

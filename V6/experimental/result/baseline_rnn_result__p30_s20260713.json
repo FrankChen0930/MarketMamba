@@ -1,0 +1,140 @@
+{
+  "models": {
+    "5d": {
+      "cell": "gru",
+      "window": 60,
+      "best_params": {
+        "hidden": 64,
+        "lr": 0.001,
+        "epochs": 2
+      },
+      "grid_sweep": [
+        {
+          "hidden": 64,
+          "lr": 0.001,
+          "best_val_ic": 0.1,
+          "best_epoch": 2
+        },
+        {
+          "hidden": 64,
+          "lr": 0.0003,
+          "best_val_ic": 0.0982,
+          "best_epoch": 5
+        }
+      ],
+      "epoch_history_best_config": [
+        {
+          "epoch": 1,
+          "train_loss": 0.08277,
+          "sec": 133,
+          "val_ic": 0.0905
+        },
+        {
+          "epoch": 2,
+          "train_loss": 0.08177,
+          "sec": 131,
+          "val_ic": 0.1
+        },
+        {
+          "epoch": 3,
+          "train_loss": 0.08124,
+          "sec": 131,
+          "val_ic": 0.0946
+        },
+        {
+          "epoch": 4,
+          "train_loss": 0.08087,
+          "sec": 131,
+          "val_ic": 0.0911
+        },
+        {
+          "epoch": 5,
+          "train_loss": 0.08041,
+          "sec": 130,
+          "val_ic": 0.0884
+        }
+      ],
+      "test_ic": {
+        "n_days": 582,
+        "mean_ic": 0.1019,
+        "ic_std": 0.1179,
+        "icir": 0.865,
+        "pct_pos": 0.835,
+        "t_naive": 20.86,
+        "t_newey_west": 12.73
+      },
+      "test_ic_by_liquidity": {
+        "L1_小量": {
+          "mean_ic": 0.125,
+          "n_days": 582,
+          "avg_names_per_day": 604
+        },
+        "L2_中量": {
+          "mean_ic": 0.1026,
+          "n_days": 582,
+          "avg_names_per_day": 604
+        },
+        "L3_大量": {
+          "mean_ic": 0.082,
+          "n_days": 582,
+          "avg_names_per_day": 604
+        }
+      },
+      "test_portfolio": {
+        "n_days": 594,
+        "n_rebalances": 117,
+        "n_bad_return_days": 0,
+        "ann_return": 0.0808,
+        "ann_sharpe": 0.48,
+        "max_drawdown": -0.2673,
+        "avg_turnover_per_rebalance": 0.749,
+        "total_return": 0.2009,
+        "n_price_missing": 0,
+        "excess_vs_twii": -1.3586,
+        "excess_window": "2024-01-03 ~ 2026-06-02（macro TWII 覆蓋範圍）"
+      },
+      "test_portfolio_cost_x2": {
+        "n_days": 594,
+        "n_rebalances": 117,
+        "n_bad_return_days": 0,
+        "ann_return": -0.1346,
+        "ann_sharpe": -0.572,
+        "max_drawdown": -0.3931,
+        "avg_turnover_per_rebalance": 0.749,
+        "total_return": -0.2888,
+        "n_price_missing": 0,
+        "excess_vs_twii": -1.8451,
+        "excess_window": "2024-01-03 ~ 2026-06-02（macro TWII 覆蓋範圍）"
+      }
+    }
+  },
+  "protocol": {
+    "TRAIN_START": "2013-01-01",
+    "TRAIN_END": "2023-12-31",
+    "TEST_START": "2024-01-01",
+    "TEST_END": "2026-06-02",
+    "VAL_RATIO": 0.15,
+    "TOP_N": 50,
+    "REBALANCE_DAYS": 5,
+    "COST_BUY": 0.0015,
+    "COST_SELL": 0.0045
+  },
+  "notes": [
+    "cell=gru、window=60（2026-07-14 使用者拍板：GRU + 60，偏離協定 §3 字面 252——對齊 v6_short 的 window 60、Phase 1 DS 已證長窗對 5d 冗餘）",
+    "loss = 純 MSE on rank label（同階 1/2；v6_short 另有 listnet_5d，此處不跟進）",
+    "訓練列 day_stride=2（同階 1/2）；test IC 用全部交易日",
+    "網格 4 組（hidden×lr）val 日 IC 選組、early stopping patience 3；full-train 以 best epoch 重訓",
+    "存活者偏差 D3 未修復：絕對數字偏高，四階相對比較公平（協定 §2）；引用需配分層 IC"
+  ],
+  "generated_at": "2026-08-05 10:04",
+  "run_config": {
+    "seed": 20260713,
+    "purge_days": 30,
+    "cell": "gru",
+    "hidden_grid": [
+      64,
+      64
+    ],
+    "train_end_effective": "2023-11-17"
+  }
+}

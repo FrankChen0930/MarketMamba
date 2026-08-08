@@ -706,6 +706,18 @@ def sweep(models: list[str] | None = None) -> dict:
                          f"   先跑 MM_PROTOCOL=v2 python V6/experimental/portfolio_lab.py "
                          f"--export-scores ridge")
 
+    # 規則 7：**不加 `--models` 就是掃整個目錄**，而那裡面有 `__common` / `__live`
+    # 之類的衍生對照集。2026-08-08 決定：那些檔案**保留**（它們是八模型定稿表的證據，
+    # 為了省掃描時間刪掉研究證據是壞交易）→ 改成把成本先印出來，讓人自己決定要不要縮。
+    if not models:
+        extra = [f.stem for f in files if "__" in f.stem]
+        print(f"[sweep] 未指定 --models → 掃描整個目錄共 **{len(files)} 個分數檔**"
+              f"（其中 {len(extra)} 個是衍生／變體檔）。", flush=True)
+        if extra:
+            print(f"[sweep] 衍生檔：{', '.join(extra[:8])}"
+                  f"{f' …等 {len(extra)} 個' if len(extra) > 8 else ''}", flush=True)
+        print(f"[sweep] 只要跑特定模型請加 `--models <name> ...`", flush=True)
+
     all_res = json.loads(OUT_PATH.read_text(encoding="utf-8")) if OUT_PATH.exists() else {}
     all_res.setdefault("models", {})
     all_res["spec"] = {
