@@ -571,6 +571,42 @@ def _derive_valuation_fallback(df: pd.DataFrame,
     return df
 
 
+def ex_rights_multiplier(df: pd.DataFrame, ex: pd.DataFrame,
+                         date_col: str = "date") -> np.ndarray:
+    """每一列的還原倍數 Π{ adj_factor(e) : e 為除權息/減資日, e > 該列日期 }。
+
+        adjusted(t) = raw(t) × multiplier(t)
+        raw(t)      = adjusted(t) / multiplier(t)
+
+    ⚠️ 2026-08-08 從 `_unadjusted_close` 抽出來，**行為完全不變**——
+    抽出來是因為「補回遺失的原始價、要轉成還原價」需要**同一份**實作
+    （方向相反而已）。這段 suffix-product + searchsorted 的邏輯若被複製一份，
+    兩份遲早會走樣，而還原價走樣是不會報錯的。
+    """
+    ex = ex[["stock_id", date_col, "adj_factor"]].copy()
+    ex["stock_id"] = ex["stock_id"].astype(str)
+    ex[date_col] = pd.to_datetime(ex[date_col], errors="coerce")
+    ex["adj_factor"] = pd.to_numeric(ex["adj_factor"], errors="coerce")
+    ex = ex.dropna().sort_values(["stock_id", date_col])
+
+    sid = df["stock_id"].astype(str).to_numpy()
+    dts = pd.to_datetime(df["Date"]).to_numpy()
+    mult = np.ones(len(df), dtype="float64")
+
+    for s, grp in ex.groupby("stock_id", sort=False):
+        m = sid == s
+        if not m.any():
+            continue
+        e = grp[date_col].to_numpy()
+        f = grp["adj_factor"].to_numpy()
+        # suffix_prod[i] = f[i] * … * f[k-1]；長度 k+1，最後一項 1.0
+        suffix = np.append(np.cumprod(f[::-1])[::-1], 1.0)
+        # 事件日嚴格大於 t 的第一個位置
+        idx = np.searchsorted(e, dts[m], side="right")
+        mult[m] = suffix[idx]
+    return mult
+
+
 def _unadjusted_close(df: pd.DataFrame, close_adj: pd.Series) -> pd.Series:
     """
     由官方還原價反推**當日的原始收盤價**（供 PER 分子使用，見呼叫處說明）。
@@ -599,27 +635,7 @@ def _unadjusted_close(df: pd.DataFrame, close_adj: pd.Series) -> pd.Series:
         logger.warning("[valuation_v2] ex_rights_raw 欄位不符，PER 分子退回還原價")
         return close_adj
 
-    ex = ex[["stock_id", dcol, "adj_factor"]].copy()
-    ex["stock_id"] = ex["stock_id"].astype(str)
-    ex[dcol] = pd.to_datetime(ex[dcol], errors="coerce")
-    ex["adj_factor"] = pd.to_numeric(ex["adj_factor"], errors="coerce")
-    ex = ex.dropna().sort_values(["stock_id", dcol])
-
-    sid = df["stock_id"].astype(str).to_numpy()
-    dts = pd.to_datetime(df["Date"]).to_numpy()
-    mult = np.ones(len(df), dtype="float64")
-
-    for s, grp in ex.groupby("stock_id", sort=False):
-        m = sid == s
-        if not m.any():
-            continue
-        e = grp[dcol].to_numpy()
-        f = grp["adj_factor"].to_numpy()
-        # suffix_prod[i] = f[i] * … * f[k-1]；長度 k+1，最後一項 1.0
-        suffix = np.append(np.cumprod(f[::-1])[::-1], 1.0)
-        # 事件日嚴格大於 t 的第一個位置
-        idx = np.searchsorted(e, dts[m], side="right")
-        mult[m] = suffix[idx]
+    mult = ex_rights_multiplier(df, ex, dcol)
 
     n_adj = int((mult != 1.0).sum())
     logger.info(f"[valuation_v2] PER 分子改用原始收盤價："

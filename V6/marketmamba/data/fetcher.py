@@ -4199,11 +4199,33 @@ def _get_trading_days(df_prices: pd.DataFrame) -> list[str]:
     return sorted(days)
 
 
-def _append_to_parquet(path: Path, df_new: pd.DataFrame, date_str: str) -> None:
+def _append_to_parquet(path: Path, df_new: pd.DataFrame, date_str: str,
+                       allow_shrink: bool = False) -> None:
     """
     Append new rows to an existing parquet, replacing rows for date_str if present.
     Always normalizes the Date column to YYYY-MM-DD string to prevent schema conflicts
     (e.g., existing parquet may have Date as int64/datetime, new data as string).
+
+    ⚠️⚠️ **`allow_shrink=False`（預設）：同一天的既有 stock_id 不會被刪掉。**
+
+    2026-08-08 查出的真實資料遺失就是這裡造成的。原本的語意是
+    「**整天替換**」——`df_old[df_old["Date"] != date_str]` 先把那天的舊列全刪，
+    再寫入這次抓到的。於是**只要某天抓到的股票比已存的少**（TPEX 端點掛掉、
+    限流、部分失敗、universe 縮水），差額就被**靜默刪除、不留任何痕跡**。
+
+    後果實測（`prices_raw.parquet`，582 天評估窗）：
+      · 缺 194,909 列 = **15.15%**，涉及 859 支（489 支在可交易宇宙內）
+      · 190 支在窗內幾乎整段消失、缺漏散布在 **98% 的交易日**
+      · 用 TWSE 官方資料判定過：4169 於 2026-06-01 確實有交易
+        （收盤 158.50、量 162,506），正式檔就是少了那一列
+
+    → 改成 **merge 語意**：同一天的舊列與新列以 (Date, stock_id) 合併，
+      新值覆蓋舊值，但**只存在於舊資料的 stock_id 一律保留**。
+      真的要刪（例如清掉已知的壞列）就明確傳 `allow_shrink=True`。
+
+    ⚠️ 為什麼不預設刪：抓取失敗是**常態**（交易所端點會掛、會限流），
+       而「這支今天沒抓到」與「這支今天沒交易」在寫入端**分不出來**。
+       分不出來的時候，保留舊列是可回復的，刪掉是不可回復的。
     """
     if df_new.empty:
         return
@@ -4218,8 +4240,23 @@ def _append_to_parquet(path: Path, df_new: pd.DataFrame, date_str: str) -> None:
         # Normalize df_old Date to string (it might be int64/datetime from original sync)
         if "Date" in df_old.columns:
             df_old["Date"] = pd.to_datetime(df_old["Date"]).dt.strftime("%Y-%m-%d")
-        # Remove any existing rows for this date before appending
-        df_old = df_old[df_old["Date"] != date_str]
+
+        same_day = df_old["Date"] == date_str
+        if allow_shrink or "stock_id" not in df_old.columns:
+            df_old = df_old[~same_day]
+        else:
+            # 只丟掉「新資料也有」的那些 stock_id，其餘當天舊列留著
+            new_ids = set(df_new["stock_id"].astype(str))
+            old_day = df_old[same_day]
+            kept = old_day[~old_day["stock_id"].astype(str).isin(new_ids)]
+            if len(kept):
+                logger.warning(
+                    f"{path.name} {date_str}：新抓到 {len(df_new):,} 支，"
+                    f"但既有資料另有 {len(kept):,} 支不在其中 → **保留舊列**"
+                    f"（舊行為會靜默刪掉它們）。若確定該刪請傳 allow_shrink=True。"
+                    f" 樣本：{sorted(kept['stock_id'].astype(str))[:8]}"
+                )
+            df_old = pd.concat([df_old[~same_day], kept], ignore_index=True)
         df = pd.concat([df_old, df_new], ignore_index=True)
     else:
         df = df_new
