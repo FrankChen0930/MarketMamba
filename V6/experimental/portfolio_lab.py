@@ -110,6 +110,49 @@ GRID_EXT = {
 
 TRADING_DAYS = 252
 
+# v1.1 提案 D（2026-08-08 使用者批准）：大盤上升段／下跌段納入標準輸出。
+# 前後半切分**測不到趨勢混淆**——實測兩半都是多頭（+14.2% / +15.9%），
+# 切點兩側同向，所以它只能測「多頭內部的穩定性」。
+# 改依「等權 eligible 宇宙過去 SEG_WINDOW 日累積報酬」的正負分段，
+# 才問得出「這個設定是不是只在多頭有用」。
+# 這對 `v2_kg_nomacro` 特別要緊：它的優勢**全在上升段**（+91.9% vs v2_kg +58.2%），
+# **下跌段反而差 8.4pp** —— 那是拿真錢跑的模型最大的未解風險。
+SEG_WINDOW = 20
+
+
+def market_segments(bench: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """回 (上升段遮罩, 有效遮罩)。定義同 `docs/portfolio-lab-results-2026-08-01.md` §7c。
+
+    ⚠️ 前 SEG_WINDOW-1 天沒有定義（rolling 還沒滿），一律排除而不是當成下跌段。
+    """
+    cum = pd.Series(bench).rolling(SEG_WINDOW).apply(lambda x: (1 + x).prod() - 1)
+    return (cum > 0).to_numpy(), np.isfinite(cum.to_numpy())
+
+
+def _seg_ann(daily: np.ndarray, sel: np.ndarray) -> float:
+    d = np.asarray(daily)[sel]
+    d = d[np.isfinite(d)]
+    if len(d) == 0:
+        return float("nan")
+    return round(float((1 + pd.Series(d)).prod() ** (TRADING_DAYS / len(d)) - 1), 4)
+
+
+def segment_report(mkt, rank, bench: np.ndarray, cfg: dict) -> dict:
+    """對某一格算「全期 / 上升段 / 下跌段」的年化。`cfg` = {n,k,freq,liq}。"""
+    up, valid = market_segments(bench)
+    r = run_config(mkt, rank, cfg["n"], cfg["k"], cfg["freq"], cfg["liq"])
+    daily = r.pop("_daily")
+    return {
+        "cell": dict(cfg),
+        "all_ann": r["ann_return"], "ann_sharpe": r["ann_sharpe"],
+        "up_ann": _seg_ann(daily, up & valid),
+        "down_ann": _seg_ann(daily, ~up & valid),
+        "up_days": int((up & valid).sum()), "down_days": int((~up & valid).sum()),
+        "benchmark_up_ann": _seg_ann(bench, up & valid),
+        "benchmark_down_ann": _seg_ann(bench, ~up & valid),
+        "seg_window": SEG_WINDOW,
+    }
+
 
 # ============================================================
 # 1) 市場資料（載入一次，240 組共用）
@@ -806,9 +849,16 @@ def sweep(models: list[str] | None = None) -> dict:
             "decile": decile_spread(mkt, rank),
             "signal_health": signal_health(mkt, rank),      # 風控 E：訊號失效監控
             "grid": rows,
-            "grid_ext": ext_rows,                      # v1.1：配權 × 平滑
+            "grid_ext": ext_rows,                      # v1.1：配權 × 平滑（探索性，不進主規格）
             "constraints_headline": constraints,       # 風控 C：漲跌停 / 處置
             "cost_x2_headline": cost2,
+            # v1.1 提案 D：大盤上升段／下跌段（前後半切分測不到趨勢混淆，見 SEG_WINDOW 註解）
+            "market_segments": {
+                name: segment_report(mkt, rank, bench, cfg)
+                for name, cfg in {**HEADLINES,
+                                  "跨模型比較格": {"n": 50, "k": 1.5, "freq": 20,
+                                                   "liq": None}}.items()
+            },
             "elapsed_min": round((time.time() - t0) / 60, 1),
         }
         print(f"[sweep] {name} 完成（{(time.time()-t0)/60:.1f} 分）"

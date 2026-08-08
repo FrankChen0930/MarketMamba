@@ -36,14 +36,16 @@ if os.environ.get("MM_PROTOCOL") != "v2":
     raise SystemExit("❌ 請設 MM_PROTOCOL=v2 再跑")
 
 from experimental.portfolio_lab import (          # noqa: E402
-    Market, RESULT_DIR, SCORE_DIR, TRADING_DAYS, equal_weight_universe, run_config,
+    Market, RESULT_DIR, SCORE_DIR, TRADING_DAYS, equal_weight_universe,
+    market_segments, run_config, SEG_WINDOW,
 )
 
 OUT = RESULT_DIR / "label_horizon_result.json"
 LAB_JSON = RESULT_DIR / "portfolio_lab_result.json"
 FREQS = [1, 3, 5, 10, 20]
 CELL = {"n": 50, "k": 1.5, "liq": None}          # 跨模型比較用的那一格
-SEG_WINDOW = 20                                   # §7c：以等權宇宙過去 20 日累積報酬定段
+# SEG_WINDOW 一律 import 自 portfolio_lab（v1.1 提案 D 之後它是標準輸出的一部分）。
+# 這裡原本自己定義了一份 `SEG_WINDOW = 20`——兩份常數並存，改了一邊不會有人發現。
 
 
 # ============================================================
@@ -145,10 +147,11 @@ def regime_split(models: list[str]) -> dict:
         rank = rank.reindex(index=mkt.dates, columns=mkt.stocks).where(mkt.px.notna())
         bench = equal_weight_universe(mkt, rank)
         if bench_seg is None:
-            # 分段依據：等權宇宙過去 SEG_WINDOW 日累積報酬的正負（§7c 定義）
-            cum = pd.Series(bench).rolling(SEG_WINDOW).apply(lambda x: (1 + x).prod() - 1)
-            bench_seg = (cum > 0).to_numpy()
-            valid = np.isfinite(cum.to_numpy())
+            # 分段依據：等權宇宙過去 SEG_WINDOW 日累積報酬的正負（§7c 定義）。
+            # ⚠️ 2026-08-08 起改用 `portfolio_lab.market_segments()` —— v1.1 提案 D
+            #    把區間報告納入 portfolio_lab 標準輸出，兩邊必須是**同一份實作**，
+            #    否則「標準輸出」與「這份報告」哪天會給出不同的分段而沒人發現。
+            bench_seg, valid = market_segments(bench)
             print(f"[區間] 上升段 {int((bench_seg & valid).sum())} 天 / "
                   f"下跌段 {int((~bench_seg & valid).sum())} 天"
                   f"（前 {SEG_WINDOW-1} 天無定義）", flush=True)
@@ -161,8 +164,8 @@ def regime_split(models: list[str]) -> dict:
                     float((1 + pd.Series(b)).prod() ** (TRADING_DAYS / max(len(b), 1)) - 1), 4)
         r = run_config(mkt, rank, CELL["n"], CELL["k"], 20, CELL["liq"])
         daily = r.pop("_daily")
-        valid = np.isfinite(pd.Series(bench).rolling(SEG_WINDOW).apply(
-            lambda x: (1 + x).prod() - 1).to_numpy())
+        # `valid` 由上面的 market_segments() 一次算好——原本這裡又重算一次同樣的
+        # rolling，是第二份副本（2026-08-08 移除）
         row = {"all_ann": r["ann_return"], "sharpe": r["ann_sharpe"]}
         for tag, sel in (("up", bench_seg & valid), ("down", ~bench_seg & valid)):
             d = np.asarray(daily)[sel]
