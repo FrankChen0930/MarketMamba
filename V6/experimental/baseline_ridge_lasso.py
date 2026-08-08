@@ -39,8 +39,9 @@ if str(_THIS_DIR.parent) not in sys.path:
     sys.path.insert(0, str(_THIS_DIR.parent))
 
 from experimental.baseline_common import (   # noqa: E402（內含 59 維 config 自切）
-    BASE_PATH, PROTOCOL, all_feature_names, build_base_matrix, build_derived,
-    daily_spearman_ic, ic_summary, load_xy, portfolio_backtest,
+    BASE_PATH, PROTOCOL, PROTOCOL_VERSION, all_feature_names, build_base_matrix,
+    build_derived, daily_spearman_ic, ic_summary, load_xy, portfolio_backtest,
+    purge_cutoff,
 )
 
 RESULT_PATH = _THIS_DIR / "result" / "baseline_ridge_lasso_result.json"
@@ -99,7 +100,22 @@ def mean_daily_ic(dates, scores, realized) -> float:
 # ============================================================
 # 主流程
 # ============================================================
-def run(skip_wf: bool = False) -> dict:
+def run(skip_wf: bool = False, purge_days: int = 0, tag: str = "",
+        save_model: bool = False, dump_scores: bool = False) -> dict:
+    """
+    purge_days（2026-08-08 新增，**預設 0 = 逐位元維持既有行為**）
+        從訓練集**尾端**剔除 N 個交易日，隔離 train/test 邊界的標籤重疊。
+        八模型定稿表用的是 30（`*__lab5d_p30.parquet`）。
+
+        ⚠️ 必須套在 `train_mask_all` 上、**在切 fit/val 之前**。
+           只改 val 起點是不夠的——被剔除的尾端日子會從 val 那側溜回訓練迴圈
+           （2026-08-05 GRU 就是這樣踩到的）。
+
+    save_model / dump_scores（2026-08-08 新增）
+        產出每日推論要用的權重（`ridge_5d{tag}.npz`）與可驗證的分數
+        （`scores/ridge{tag}.parquet`）。**2026-08-03 那次「重出 p30」沒有留下
+        任何一項**，導致上線時無法重現那個模型——這兩個旗標就是來補這個洞的。
+    """
     t0 = time.time()
     names = all_feature_names()
     P = PROTOCOL
@@ -116,6 +132,21 @@ def run(skip_wf: bool = False) -> dict:
 
     dates_tr = pd.DatetimeIndex(tr["dates"])
     train_mask_all = dates_tr <= pd.Timestamp(P["TRAIN_END"])
+
+    # ── purge：剔除訓練集尾端 N 個交易日（在切 fit/val 之前）──
+    if purge_days > 0:
+        _days = np.sort(dates_tr[train_mask_all].unique())
+        _cut = purge_cutoff(P["TRAIN_END"], purge_days)     # 用真實日曆，不是 stride 後的
+        train_mask_all = train_mask_all & (dates_tr < _cut)
+        _kept = np.sort(dates_tr[train_mask_all].unique())
+        # 規則 7：實際剔除了什麼必須看得見，不能只做邏輯
+        print(f"[purge] 載入空間（stride={TRAIN_STRIDE}）：訓練天數 "
+              f"{len(_days)} → {len(_kept)}"
+              f"｜新訓練尾日 {pd.Timestamp(_kept[-1]).date()}"
+              f"（test 起 {P['TEST_START']}）", flush=True)
+    else:
+        print("[purge] purge_days=0（無隔離，與 2026-08-03 之前的既有行為相同）", flush=True)
+
     train_days = np.sort(dates_tr[train_mask_all].unique())
     val_days = set(train_days[int(len(train_days) * (1 - P["VAL_RATIO"])):])
     val_mask = train_mask_all & dates_tr.isin(val_days)
@@ -160,6 +191,29 @@ def run(skip_wf: bool = False) -> dict:
         if horizon == 5:
             print("[ridge] 組合回測（Top50 等權、5 日再平衡、含成本）...", flush=True)
             ridge_res["test_portfolio"] = portfolio_backtest(te["dates"], te["stock_ids"], scores_te)
+
+            # ── 存權重：每日推論就是 `X @ w + intercept`（raw 特徵空間）──
+            if save_model:
+                mp = _THIS_DIR / "result" / f"ridge_5d{tag}.npz"
+                np.savez(mp, w=w_raw.astype(np.float64), intercept=np.float64(c),
+                         feature_names=np.array(names, dtype=object),
+                         alpha=np.float64(best_a), purge_days=np.int32(purge_days),
+                         protocol=str(PROTOCOL_VERSION), train_end=str(P["TRAIN_END"]),
+                         n_features=np.int32(len(names)))
+                print(f"[ridge] ✅ 權重 → {mp.name}｜{len(names)} 維｜α={best_a:.0e}"
+                      f"｜|w| median={np.median(np.abs(w_raw)):.3e}"
+                      f"｜intercept={c:+.6f}", flush=True)
+
+            # ── 出分數：用來對既有參考檔驗證，也是 portfolio_lab 的輸入 ──
+            if dump_scores:
+                sd = _THIS_DIR / "result" / "scores"
+                sd.mkdir(parents=True, exist_ok=True)
+                sp = sd / f"ridge{tag}.parquet"
+                pd.DataFrame({"Date": pd.to_datetime(te["dates"]),
+                              "stock_id": te["stock_ids"].astype(str),
+                              "score": scores_te.astype(np.float32)}
+                             ).to_parquet(sp, index=False)
+                print(f"[ridge] ✅ 分數 → scores/{sp.name}（{len(scores_te):,} 列）", flush=True)
         print(f"[ridge] test：{_fmt_ic(ridge_res['test_ic'])}", flush=True)
 
         # ---------- Lasso ----------
@@ -217,9 +271,13 @@ def run(skip_wf: bool = False) -> dict:
             tr, alpha=results["models"]["5d"]["ridge"]["best_alpha"])
 
     results.update(_meta(tr, te))
-    RESULT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    RESULT_PATH.write_text(json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(f"\n✅ 結果已存 {RESULT_PATH}（總耗時 {(time.time()-t0)/60:.1f} 分）", flush=True)
+    # 帶 tag 的實驗**絕不可覆蓋正式結果檔**——2026-08-08 第一版漏了這個，
+    # 帶 tag 跑一次就蓋掉 07-30 的正式紀錄（靠 git 救回）。
+    out_path = RESULT_PATH if not tag else \
+        RESULT_PATH.with_name(f"{RESULT_PATH.stem}{tag}{RESULT_PATH.suffix}")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"\n✅ 結果已存 {out_path.name}（總耗時 {(time.time()-t0)/60:.1f} 分）", flush=True)
     _print_summary(results)
     return results
 
@@ -334,8 +392,16 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--skip-wf", action="store_true")
     ap.add_argument("--build", action="store_true", help="缺快取時先建（等同 baseline_common --build）")
+    ap.add_argument("--purge", type=int, default=0,
+                    help="訓練尾端剔除的交易日數（八模型定稿表用 30；預設 0 = 既有行為）")
+    ap.add_argument("--tag", default="", help="輸出檔名後綴，例如 __lab5d_p30")
+    ap.add_argument("--save-model", action="store_true",
+                    help="存 5d 權重 → result/ridge_5d{tag}.npz（每日推論用）")
+    ap.add_argument("--dump-scores", action="store_true",
+                    help="出 5d 測試窗分數 → result/scores/ridge{tag}.parquet")
     args = ap.parse_args()
     if args.build or not BASE_PATH.exists():
         build_base_matrix()
         build_derived()
-    run(skip_wf=args.skip_wf)
+    run(skip_wf=args.skip_wf, purge_days=args.purge, tag=args.tag,
+        save_model=args.save_model, dump_scores=args.dump_scores)

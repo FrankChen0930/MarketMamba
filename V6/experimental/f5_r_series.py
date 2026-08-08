@@ -244,8 +244,8 @@ def apply_column_swap(out: dict, swap_from: str, cols: list[str],
         miss = merged[want[0]].isna().sum()
         for c in want:
             j = names.index(c)
-            v = merged[c].to_numpy(np.float32)
-            np.nan_to_num(v, copy=False)           # 同 load_xy 慣例
+            v = merged[c].to_numpy(np.float32).copy()   # .copy()：pandas 3.0 的
+            np.nan_to_num(v, copy=False)           # to_numpy() 唯讀（同 load_xy 慣例）
             out["X"][:, j] = v
             n_swapped += 1
         print(f"[swap] {path.name}：{len(want)} 欄 ← {swap_from}"

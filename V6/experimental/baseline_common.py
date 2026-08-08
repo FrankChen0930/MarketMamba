@@ -712,6 +712,32 @@ def load_xy(date_from: str, date_to: str, day_stride: int = 1,
 # ============================================================
 # 4) 評估工具（三階 baseline 共用）
 # ============================================================
+def purge_cutoff(train_end: str, purge_days: int) -> pd.Timestamp:
+    """回傳 purge 的切點：訓練集只保留 `Date < cutoff` 的列。
+
+    ⚠️ **必須用真實交易日曆算，不能用 `load_xy` 回來的日期**。
+    訓練資料是 `day_stride=2` 載入的（每兩個交易日取一天），
+    在那個空間裡取「倒數第 30 個」＝ 真實日曆的倒數第 **60** 個交易日。
+
+    2026-08-08 第一版就是這樣錯的：`--purge 30` 實際剔除了 2023-10-06~2023-12-29
+    共約 60 個交易日。Ridge 幾乎沒差（ρ=0.997，線性模型對訓練窗微調不敏感），
+    但 **GBDT 整個跑掉**（ρ median 0.913、Top50 重疊 23/50）——樹模型的切點是
+    離散決策，同樣的擾動會在 151 輪 boosting 裡放大。
+
+    參數名說 30 就該剔 30 個交易日，所以改成一律用真實日曆換算。
+    """
+    d = pd.read_parquet(BASE_PATH, columns=["Date"],
+                        filters=[("Date", "<=", pd.Timestamp(train_end))])
+    days = np.sort(pd.to_datetime(d["Date"]).unique())
+    if purge_days >= len(days):
+        raise SystemExit(f"❌ purge_days={purge_days} ≥ 訓練交易日數 {len(days)}")
+    cut = pd.Timestamp(days[-purge_days])
+    print(f"[purge] 真實交易日曆：訓練區間共 {len(days)} 個交易日｜"
+          f"剔除最後 {purge_days} 個（{cut.date()} ~ {pd.Timestamp(days[-1]).date()}）｜"
+          f"新訓練尾日 {pd.Timestamp(days[-purge_days-1]).date()}", flush=True)
+    return cut
+
+
 def daily_spearman_ic(dates: np.ndarray, scores: np.ndarray, realized: np.ndarray) -> pd.Series:
     """每日 Spearman IC（預測分數 vs 實際 Alpha）。realized NaN 的列自動剔除。"""
     df = pd.DataFrame({"Date": dates, "s": scores, "r": realized}).dropna(subset=["r"])

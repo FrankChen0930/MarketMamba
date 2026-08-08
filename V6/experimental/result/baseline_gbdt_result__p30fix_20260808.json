@@ -1,0 +1,302 @@
+{
+  "models": {
+    "5d": {
+      "best_params": {
+        "num_leaves": 31,
+        "min_data_in_leaf": 500,
+        "best_iteration": 162
+      },
+      "grid_sweep": [
+        {
+          "num_leaves": 31,
+          "min_data_in_leaf": 500,
+          "best_iteration": 162,
+          "val_l2": 0.082439,
+          "val_ic": 0.1057
+        },
+        {
+          "num_leaves": 31,
+          "min_data_in_leaf": 2000,
+          "best_iteration": 181,
+          "val_l2": 0.082465,
+          "val_ic": 0.1054
+        },
+        {
+          "num_leaves": 127,
+          "min_data_in_leaf": 500,
+          "best_iteration": 81,
+          "val_l2": 0.0825,
+          "val_ic": 0.1021
+        },
+        {
+          "num_leaves": 127,
+          "min_data_in_leaf": 2000,
+          "best_iteration": 79,
+          "val_l2": 0.082457,
+          "val_ic": 0.1036
+        }
+      ],
+      "test_ic": {
+        "n_days": 582,
+        "mean_ic": 0.1033,
+        "ic_std": 0.1197,
+        "icir": 0.863,
+        "pct_pos": 0.83,
+        "t_naive": 20.82,
+        "t_newey_west": 12.41
+      },
+      "test_ic_by_liquidity": {
+        "L1_小量": {
+          "mean_ic": 0.1273,
+          "n_days": 582,
+          "avg_names_per_day": 604
+        },
+        "L2_中量": {
+          "mean_ic": 0.1016,
+          "n_days": 582,
+          "avg_names_per_day": 604
+        },
+        "L3_大量": {
+          "mean_ic": 0.0804,
+          "n_days": 582,
+          "avg_names_per_day": 604
+        }
+      },
+      "top_gain_importance": [
+        {
+          "feature": "Return_1d_rmean5",
+          "gain_pct": 0.0729
+        },
+        {
+          "feature": "Return_1d",
+          "gain_pct": 0.0587
+        },
+        {
+          "feature": "ATR_14",
+          "gain_pct": 0.0455
+        },
+        {
+          "feature": "EPS",
+          "gain_pct": 0.0309
+        },
+        {
+          "feature": "Investment_Trust_Net",
+          "gain_pct": 0.0274
+        },
+        {
+          "feature": "Return_1d_lag1",
+          "gain_pct": 0.0237
+        },
+        {
+          "feature": "RSI_14_rmean60",
+          "gain_pct": 0.0191
+        },
+        {
+          "feature": "USD_TWD",
+          "gain_pct": 0.0184
+        },
+        {
+          "feature": "Day_Trade_Volume",
+          "gain_pct": 0.0179
+        },
+        {
+          "feature": "SPX_Return",
+          "gain_pct": 0.0176
+        },
+        {
+          "feature": "Options_PC_Ratio_lag5",
+          "gain_pct": 0.0176
+        },
+        {
+          "feature": "Foreign_Buy",
+          "gain_pct": 0.0153
+        },
+        {
+          "feature": "TWII_Return_lag1",
+          "gain_pct": 0.0143
+        },
+        {
+          "feature": "Foreign_Net",
+          "gain_pct": 0.0136
+        },
+        {
+          "feature": "VIX_lag20",
+          "gain_pct": 0.0129
+        },
+        {
+          "feature": "USD_TWD_lag1",
+          "gain_pct": 0.0117
+        },
+        {
+          "feature": "Futures_OI_Foreign_lag20",
+          "gain_pct": 0.0105
+        },
+        {
+          "feature": "VIX_lag5",
+          "gain_pct": 0.0104
+        },
+        {
+          "feature": "Volatility_20d_rmean60",
+          "gain_pct": 0.0102
+        },
+        {
+          "feature": "Return_5d",
+          "gain_pct": 0.0099
+        }
+      ],
+      "top_shap": [
+        {
+          "feature": "Return_1d",
+          "mean_abs_shap": 0.007757
+        },
+        {
+          "feature": "ATR_14",
+          "mean_abs_shap": 0.006506
+        },
+        {
+          "feature": "Return_1d_rmean5",
+          "mean_abs_shap": 0.006176
+        },
+        {
+          "feature": "Foreign_Buy",
+          "mean_abs_shap": 0.004733
+        },
+        {
+          "feature": "RSI_14_rmean60",
+          "mean_abs_shap": 0.004389
+        },
+        {
+          "feature": "EPS",
+          "mean_abs_shap": 0.004313
+        },
+        {
+          "feature": "Day_Trade_Volume",
+          "mean_abs_shap": 0.003081
+        },
+        {
+          "feature": "Foreign_Net",
+          "mean_abs_shap": 0.003077
+        },
+        {
+          "feature": "Return_1d_lag1",
+          "mean_abs_shap": 0.003023
+        },
+        {
+          "feature": "Investment_Trust_Net",
+          "mean_abs_shap": 0.002988
+        },
+        {
+          "feature": "ROE",
+          "mean_abs_shap": 0.00244
+        },
+        {
+          "feature": "Foreign_Sell",
+          "mean_abs_shap": 0.002158
+        },
+        {
+          "feature": "Short_Sale",
+          "mean_abs_shap": 0.002016
+        },
+        {
+          "feature": "KD_D_lag1",
+          "mean_abs_shap": 0.001976
+        },
+        {
+          "feature": "KD_K_lag5",
+          "mean_abs_shap": 0.001877
+        },
+        {
+          "feature": "Futures_OI_Foreign",
+          "mean_abs_shap": 0.001674
+        },
+        {
+          "feature": "KD_D_lag5",
+          "mean_abs_shap": 0.001523
+        },
+        {
+          "feature": "Revenue_YoY_lag5",
+          "mean_abs_shap": 0.00146
+        },
+        {
+          "feature": "EPS_Surprise",
+          "mean_abs_shap": 0.001343
+        },
+        {
+          "feature": "Futures_OI_Foreign_lag20",
+          "mean_abs_shap": 0.001305
+        }
+      ],
+      "test_portfolio": {
+        "n_days": 594,
+        "n_rebalances": 117,
+        "n_bad_return_days": 0,
+        "ann_return": 0.0632,
+        "ann_sharpe": 0.409,
+        "max_drawdown": -0.3206,
+        "avg_turnover_per_rebalance": 0.798,
+        "total_return": 0.1554,
+        "n_price_missing": 0,
+        "excess_vs_twii": -1.4326,
+        "excess_window": "2024-01-03 ~ 2026-06-02（macro TWII 覆蓋範圍）"
+      },
+      "test_portfolio_cost_x2": {
+        "n_days": 594,
+        "n_rebalances": 117,
+        "n_bad_return_days": 0,
+        "ann_return": -0.1615,
+        "ann_sharpe": -0.745,
+        "max_drawdown": -0.4237,
+        "avg_turnover_per_rebalance": 0.798,
+        "total_return": -0.3398,
+        "n_price_missing": 0,
+        "excess_vs_twii": -1.9122,
+        "excess_window": "2024-01-03 ~ 2026-06-02（macro TWII 覆蓋範圍）"
+      },
+      "benchmark_equal_weight_all": {
+        "n_days": 594,
+        "n_rebalances": 117,
+        "n_bad_return_days": 0,
+        "ann_return": 0.1697,
+        "ann_sharpe": 0.926,
+        "max_drawdown": -0.2907,
+        "avg_turnover_per_rebalance": 0.015,
+        "total_return": 0.447,
+        "n_price_missing": 0,
+        "excess_vs_twii": -1.1418,
+        "excess_window": "2024-01-03 ~ 2026-06-02（macro TWII 覆蓋範圍）"
+      }
+    }
+  },
+  "protocol": {
+    "TRAIN_START": "2013-01-01",
+    "TRAIN_END": "2023-12-31",
+    "TEST_START": "2024-01-01",
+    "TEST_END": "2026-06-02",
+    "VAL_RATIO": 0.15,
+    "TOP_N": 50,
+    "REBALANCE_DAYS": 5,
+    "COST_BUY": 0.0015,
+    "COST_SELL": 0.0045
+  },
+  "fixed_params": {
+    "objective": "regression",
+    "metric": "l2",
+    "learning_rate": 0.05,
+    "feature_fraction": 0.8,
+    "bagging_fraction": 0.8,
+    "bagging_freq": 1,
+    "lambda_l2": 1.0,
+    "max_bin": 63,
+    "verbosity": -1,
+    "seed": 20260713,
+    "num_threads": 0
+  },
+  "notes": [
+    "訓練列 day_stride=2（同階 1）；test IC 用全部交易日",
+    "label=rank（同一 label 鐵律）、objective=regression L2——不用 lambdarank",
+    "網格僅 4 組（控制多重測試負擔），val 日 IC 選組、early stopping 用 val l2",
+    "分層 IC / 成本敏感度 / 等權宇宙基準為 2026-07-13 排查後的標準輸出（引用需分層）",
+    "存活者偏差 D3 未修復：絕對數字偏高，四階相對比較公平（協定 §2）"
+  ],
+  "generated_at": "2026-08-08 14:48"
+}

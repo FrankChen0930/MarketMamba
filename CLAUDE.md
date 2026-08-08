@@ -4,7 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # MarketMamba — AI 助手指引
 
-> **最後更新：2026-08-06**（CLAUDE.md 整理成兩層記憶；47 維 arm 判定未達標 → V6.2 上線規格不變，週一 08-10 上線）
+> **最後更新：2026-08-08**（多頻率並行 + B 類經典模型接上線 + push 鏈路補完 →
+> **7 份分數 × 15 個組合**，端對端 8 分鐘跑通；`portfolio_lab` 現在 WSL 也能跑）
 >
 > **開工先讀本檔最下面「下一步」的 ▶ 區塊。**
 
@@ -226,14 +227,21 @@ MarketMamba/
         [7/7] git push → GitHub → Render 快取更新
      └─ run_dual_inference.py（雙模型, 59 維）→ df_short.csv / df_trend.csv
 
-平日 22:15  MarketMamba_V62（2026-08-10 上線）
+平日 22:15  MarketMamba_V62（2026-08-10 上線）  ── 實測全程約 8 分鐘
   └─ run_hidden.vbs → v62_daily.bat → WSL2 → run_v62_daily.py
-        [1] 自己抓資料（fetch_data，不再依賴 V6.1）
-        [2] 當日資料檢查（容許 0 天，缺就 Telegram 告警）
-        [3] 特徵矩陣建一次、三個模型共用
-        [4] 組合層狀態機（N=50 / k=1.5 / 每 20 個交易日）
-        [5] git push → /breadth/portfolio
+        [1/5] 自己抓資料（fetch_data，不再依賴 V6.1）
+        [2/5] 當日資料檢查（容許 0 天，缺就 Telegram 告警）
+        [3/5] 特徵矩陣建一次（59 維）→ 4 份 Mamba 分數（**先去重再前向**）
+              └ 另起 process（MM_PROTOCOL=v2, 66 維）→ run_v62_baselines.py
+                → 3 份 baseline 分數（ridge / gbdt / gru）
+        [4/5] 組合層狀態機 × **15 個組合**（分數 × 再平衡率，純 CPU）
+        [5/5] git push → POST /api/v62/cache/refresh → /breadth/portfolio
 ```
+
+**兩張表的關係**：`run_v62_inference.ARMS`（模型 × 預測頭 → 分數檔）與
+`v62_portfolio.PORTFOLIOS`（分數 × n/k/freq → 持股）**是分開的**。
+**再平衡率是組合層參數、不是模型參數** → 15 個組合只需要 7 份分數。
+`v62_portfolio.py --list` 看全表；`PORTFOLIOS` 是唯一真相，發布成 `v62_arms.json` 給後端讀。
 
 推論進度透過 tkinter 視窗即時顯示（WSLg）。成功 3 秒自動關閉；失敗保持開啟並置頂。
 中文字型未裝時**自動改用英文標籤**並印出安裝指令（不會出現豆腐方塊）。
@@ -471,9 +479,105 @@ cd app/frontend && npm run dev   # → localhost:5173
 
 ## 🔄 Current Status
 
-> 最後更新：2026-08-06。**本區塊只留最近一個月**，更早的完整紀錄在第二層（`obsidian_note/`）。
+> 最後更新：2026-08-08。**本區塊只留最近一個月**，更早的完整紀錄在第二層（`obsidian_note/`）。
 
-### 最近完成（2026-07-06 ~ 08-06）
+### 最近完成（2026-07-06 ~ 08-08）
+
+#### 2026-08-08 — 多頻率並行 + B 類經典模型上線 + push 鏈路補完
+
+**使用者的需求**：20 日主線中間 19 天不換股，dashboard 沒東西可看 → 同一份分數
+同時餵給多個再平衡頻率，中間天數看「參考組合」，但要標清楚那不是最好的。
+外加把 Ridge / GBDT / GRU 也放上去並行累積實戰紀錄。
+
+**成果：7 份分數 × 15 個組合，端對端 8.0 分鐘跑通**（`--first-day` 實測，測完已清殘留）。
+
+**★★ 最重要的發現：`v62_daily` 整條鏈原本沒有 git push。**
+`run_v62_daily.py` 與 `v62_daily.bat` 都沒有任何 `git add/push`——log 會顯示 ✅ 完成，
+但 state 只留本機，**Render 與 dashboard 永遠看不到**。典型的「不會報錯的失敗」。
+已補 `push_to_github()`（3 次重試）+ `_refresh_backend_cache()`。
+⚠️ 快取要打 **`/api/v62/cache/refresh`**，不是 V6.1 的 `/api/signals/...`——兩個 router
+各有各的 cache dict，清錯的完全沒作用。
+
+**★ 再平衡率是組合層參數，所以 12 個 Mamba 組合只需要 4 份分數**（先去重再前向，
+否則同一顆 checkpoint 會白白前向 5 次）。GPU 前向實測 **1.5 秒**，組合層純 CPU。
+狀態機 5 個頻率 × 2 顆頭 = **10 組全部重現 `portfolio_lab`**（最大差 0.003pp）。
+
+**★ 分級不是憑感覺，是拿回測差距對 ±6pp 雜訊底線量出來的**（`tier` 進 state/jsonl/API）：
+20 日=主線；10/5 日與主線差 1.6~3.5pp **在雜訊內 → 老實說法是「分不出優劣」**；
+5d 頭的 3/1 日差 14~18pp → 明確較差。
+**高頻端要用 10d 頭**：與 5d 頭的差距隨頻率放大（20 日 +1.2pp 在雜訊內 → 1 日 **+9.6pp**
+超出底線），機制在成本欄（1 日那格成本 31.1% vs 42.6%）。
+
+**★ 後端 router 改讀 manifest，不自帶 arm 表**。後端跑在 Render（rootDir=`app/backend`），
+import 不到 `v62_portfolio.py` → 兩邊的表**連 assert 都對不起來**（不同 process、不同機器）。
+唯一真相是 `PORTFOLIOS`，每天發布成 `v62_arms.json` 一起 push。
+
+##### B 類經典模型（Ridge / GBDT / GRU）
+
+新增 `V6/run_v62_baselines.py`（**獨立 process**——Mamba 線 59 維、baseline 線 66 維，
+config patch 是 module 級全域，混跑會靜默算錯）。三個 arm 驗證全過：
+
+| arm | ρ | Top50 重疊 | trust |
+|---|---|---|---|
+| ridge | 0.9923 | 43/50 | reproduced |
+| gbdt | 0.9995 | 50/50 | **new_model**（比的是它自己） |
+| gru | 0.9969 | 45/50 | reproduced |
+
+**★★ 尾端窗推論的三個落差，用「兩個不同窗長互比」隔離出來**
+（第一版拿尾端窗直接對快取，**同時改了窗長與資料版本**、無法歸因，已如實記在
+`diag_window_panel.py` 檔頭不偷改）：
+① **51/54 個非 macro 欄完全相同**（ρ=1.000000）→ 這條路本身成立
+② `Dividend_Yield_Fwd`/`Securities_Balance`/`Avail_Securities` 會偏 → **非價格 raw 一律不 trim**
+③ **12 個 macro 欄全部偏很大**（`Oil_Return` max|Δ|=**2.27**、`TNX` 1.07）
+→ `clean_and_scale(macro_norm="ts")` 的 expanding 統計量算在**傳進去的日期範圍**上。
+解法：全歷史算一次再按 Date 貼回，且**用 `feature_engineer.macro_ts_zscore`**
+（為此把那五行抽出來，逐位元回歸通過），不複製第二份實作。
+⚠️ **Mamba 線量不到 ③**——上線 arm 把 Group D 整個歸零。Ridge/GBDT/GRU 吃全部 66 維躲不掉。
+
+**★★ GBDT 的可重現性要分兩層講，不可簡化成「不可重現」**：
+
+| 層 | 重建 vs 參考 |
+|---|---|
+| 訊號層 | ❌ ρ=**0.9203**、Top50 重疊 **25/50** |
+| 組合層 | ✅ **11.0% vs 11.2%**、Sharpe 0.653 vs 0.639、換手 79% vs 81% |
+
+**不是設定丟失**——我自己兩次跑（只差 purge 30 vs 60 天）彼此也才 ρ=0.9434、重疊 28/50。
+樹的切點是離散決策，訓練窗動 1% 就翻，151 輪 boosting 再放大。
+**但換進來的那半個 Top50 與被換掉的一樣好** → 「持股名單對不上」≠「策略不同」。
+→ **這正是「比較模型用 decile spread、不用 Top50 年化」那條紀律的機制**，這次直接看到它發生。
+（decile Sh 1.714 vs 1.806；對照 Ridge 同樣擾動只動 ρ=0.9970 —— 線性模型對訓練窗微調不敏感。）
+
+**2026-08-03 的 `*_p30` 參考檔無法從 repo 重現**：`baseline_ridge_lasso.py` 當時沒有
+`--purge` 也不寫分數 parquet，`label_horizon_report.py` 檔頭明寫「不重跑任何模型」，
+而 `gbdt_5d.txt` 是 **07-13 的舊版**（v1 資料、無 purge）。已補上
+`--purge/--tag/--save-model/--dump-scores`（**預設維持現況、逐位元不變**）。
+
+**⚠️ 我犯的兩個錯，都已修正並留下防呆**：
+① **帶 tag 跑一次就蓋掉正式結果 JSON**（`--tag` 只套在模型與分數上、漏了 `RESULT_PATH`）
+→ 靠 git 還原，根因已修。`baseline_rnn.py` 本來就做對了。
+② **收尾 log 寫死「已推送」**，`--skip-push` 時是假話 → 已改成如實顯示。
+
+**★ `--purge` 的 stride 陷阱**：訓練用 `day_stride=2` 載入，在「載入後的日期空間」取倒數
+第 30 個 ＝ 真實日曆的倒數第 **60** 個。參數名說 30 卻做 60。
+已新增 `baseline_common.purge_cutoff()` 一律走真實交易日曆，兩支腳本共用。
+
+##### pandas / numpy 兩邊不同調 → **不改版本，修 2 行**
+
+Windows `pandas 2.2.2 / numpy 1.26.4`、WSL `pandas 3.0.2 / numpy 2.4.3`。
+**不降 WSL**（`mamba_ssm`/`causal_conv1d` 是編譯過的 wheel，降 numpy 會斷整條推論鏈）、
+**不升 Windows**（九個模型的 `portfolio_lab` 結果都是在 1.26 上算的，升級要重驗整張表）。
+
+實際壞掉的只有 **2 行**（`portfolio_lab.py:286`、`f5_r_series.py:248`），
+而修正模式 codebase 裡本來就有——另外 5 處早就寫了 `.copy()`，只是漏了這兩個。
+
+**跨平台數字實測一致**（582 天 replay）：freq=20 → 38.02% vs **38.02%**、
+freq=1 → 19.91% vs **19.91%**、換手兩端都相同。
+→ **「組合層一律 Windows」這條紀律解除。**
+⚠️ 但這只證明 `portfolio_lab` 這條算術路徑等價，不是整個 codebase 等價
+（`pd.qcut`、groupby 排序穩定性那類還是可能有差）——別的管線要搬先對一次已知數字。
+
+**環境**：WSL 補裝 `lightgbm==4.6.0`（`--no-deps`，對齊 Windows；numpy/scipy 未動）。
+**Windows 的 torch 已損壞**（`c10.dll` 初始化失敗）→ GRU 每日推論只能在 WSL 跑。
 
 #### 2026-08-06 — 47 維 arm 判定：未達標，結案
 
@@ -851,7 +955,13 @@ futures+options→TAIFEX/holdings→TDCC/per/securities/market_value），
 
 #### 🚀 V6.2 上線（週一 2026-08-10）
 
-程式已全部完成並 push（`03669d9` → `b457ca9`）。**卡在 Claude 這邊的事情是零。**
+程式已全部完成。**2026-08-08 又補了一輪**（多頻率並行、B 類經典模型、push 鏈路），
+端對端實測 8 分鐘跑通、測試殘留已清。**⚠️ 08-08 這批尚未 commit / push。**
+
+**★ 使用者定的節奏（08-08）**：週一 08-10 上線是**測穩定度**，
+**下個週末（08-15/16）把資料清掉、才正式開始累積實戰紀錄**。
+→ **真正的「模型集合定案日」是 08-17，不是 08-10。**
+CLAUDE.md 那條「模型集合要在起跑日定案」講的起跑日就是 08-17。
 
 剩下三件**全部是使用者自己做**：
 
@@ -890,16 +1000,41 @@ Set-ScheduledTask -TaskName "MarketMamba_V62" -Principal (New-ScheduledTaskPrinc
 
 ### 下一步
 
-> ## ▶ 下次開工從這裡開始（2026-08-06）
+> ## ▶ 下次開工從這裡開始（2026-08-08）
 >
-> ### 🎯 現在沒有卡在 Claude 這邊的事
+> ### 🔴 第一件事：08-08 這批還沒 commit
 >
-> V6.2 週一（2026-08-10）上線，程式全部完成、驗證通過、排程已設、已 push。
-> 剩下的三件（中文字型／Telegram `.env`／`--first-day` 建倉）**都是使用者自己做**，見「進行中」。
+> 12 個檔案改動 + 4 個新檔，全部驗證通過但**尚未進 git**。
+> `V6/marketmamba/config.py` 是刻意保持 56 維的 dirty 檔，**指定檔案加，不要 `git add -A`**：
+>
+> ```bash
+> git add V6/run_v62_daily.py V6/run_v62_inference.py V6/run_v62_baselines.py V6/v62_portfolio.py \
+>         V6/marketmamba/data/feature_engineer.py \
+>         V6/experimental/{baseline_common,baseline_gbdt,baseline_ridge_lasso,portfolio_lab,f5_r_series,compare_scores,diag_window_panel}.py \
+>         V6/experimental/result/baseline_*__p30*.json \
+>         V6/results/v62_arms.json .gitignore \
+>         app/backend/routers/v62.py app/frontend/src/pages/BreadthPortfolio.jsx CLAUDE.md
+> ```
+>
+> 權重檔（`.npz`/`.txt`/`.pt`）**使用者決定不進 git**（只在這台機器跑），已加進 `.gitignore`。
+>
+> ### 🎯 上線本身沒有卡在 Claude 這邊的事
+>
+> 週一 08-10 上線測穩定度、**08-17 才正式起跑**（見「進行中」）。
+> 剩下的三件（中文字型／Telegram `.env`／`--first-day` 建倉）**都是使用者自己做**。
 >
 > **47 維 arm 已判定並結案**：Δ=−0.0014、NW t=−0.68 → 維持 59 維 + Group D 歸零。
 > 「峰值在 ep8 會不會是 epoch 不夠」已查清＝不是（LR 已退火到 2.80e-10）。
 > **V6.2 上線規格因此完全不變。**
+>
+> ### 📌 08-17 起跑前要決定的事
+>
+> - **模型集合定案**（晚加入的少了那段紀錄，永遠無法公平並列）。
+>   目前 **15 個組合 / 7 份分數**，`v62_portfolio.py --list` 看全表。
+>   要不要再加（例如 Mamba 的 KG 系變體 `v2_kg`/`v3_kg`/`old_kg`/`no_gat`，
+>   Drive 上有 checkpoint、加一列 `ARMS` 就好）**必須在 08-17 前決定**。
+>   ⚠️ 那四個 `zero_macro=False`，要先驗尾端窗的 macro 貼回對它們也成立。
+> - **前端 15 個組合怎麼呈現**（目前是 15 顆按鈕 + tier 色點 + 警告橫幅，能用但沒設計過）
 >
 > ### ⏸ 待跑：換 seed，量 Mamba 的 run-to-run σ
 >
@@ -967,6 +1102,12 @@ Set-ScheduledTask -TaskName "MarketMamba_V62" -Principal (New-ScheduledTaskPrinc
 
 #### 【優先級 2】待決定 / 待清理
 
+- [ ] **GBDT 那格的誤差棒沒人量過**（2026-08-08 新增）：八模型表的 `gbdt (p30) +11.2%`
+      是單次跑的值。實測同樣資料、同 seed、只差 30 個訓練日 → 訊號層 ρ 只有 0.92。
+      組合層雖然穩（11.0 vs 11.2），但**那是 n=2 的觀察**。要當數用得跑幾個變體量 σ
+- [ ] **B 類每日面板每天重建一次（約 4 分）**：`run_v62_baselines.py` 走尾端窗，
+      與 Mamba 線的矩陣**不能共用**（59 維 vs 66 維、config 是 module 級全域）。
+      目前總時長 8 分可接受；要再壓的話得先確認兩邊協定能否合併，**不要為了省時間去混 config**
 - [ ] **`trading_status_raw` 接進每日流程**：資料已補到 2026-08-03，
       但 `V6/experimental/fetch_trading_status.py` 的 `build()` 是**整檔重建**，
       直接排每日會每天重抓 11 年 → **需先加增量路徑**。組合建構的處置股限制要用它
@@ -1033,9 +1174,18 @@ Set-ScheduledTask -TaskName "MarketMamba_V62" -Principal (New-ScheduledTaskPrinc
 
 #### 🛠 動手之前
 
-- **組合層掃描一律在 Windows 端跑**——WSL 的 pandas 已升到 3.0.2，`portfolio_lab` 會炸在
-  `np.nan_to_num(copy=False)`（pandas 3.0 的 `to_numpy()` 回唯讀陣列）。
-  本機 Windows 是 pandas 2.2.2、也是既有九個模型結果產出的環境。**WSL 只負責 GPU 前向。**
+- ~~組合層掃描一律在 Windows 端跑~~ **已於 2026-08-08 解除**。原因是 `portfolio_lab.py:286`
+  與 `f5_r_series.py:248` 沒有 `.copy()`（pandas 3.0 的 `to_numpy()` 回唯讀陣列），
+  而**同一份檔案裡另外 5 處早就寫了 `.copy()`**——是漏改，不是版本不相容。
+  修完兩邊數字實測一致（582 天 replay：freq=20 → 38.02% vs 38.02%、freq=1 → 19.91% vs 19.91%）。
+  ⚠️ **這只證明 `portfolio_lab` 這條算術路徑等價**，不是整個 codebase 等價
+  （`pd.qcut`、groupby 排序穩定性那類仍可能有差）。**別的管線要搬到 WSL，先對一次已知數字。**
+- **版本不同調時，先查是不是只有幾行不相容**——Windows `pandas 2.2.2/numpy 1.26.4`
+  vs WSL `pandas 3.0.2/numpy 2.4.3`。**不降 WSL**（`mamba_ssm`/`causal_conv1d` 是編譯 wheel，
+  降 numpy 會斷整條推論鏈）、**不升 Windows**（九個模型的結果都在 1.26 上算的，
+  升級要重驗整張表）。**改版本是治標且會一直追著跑，修相容性是一次性的。**
+- **Windows 的 torch 已損壞**（`c10.dll` 初始化失敗）→ 任何要 torch 的東西只能在 WSL 跑。
+  WSL 的 `lightgbm` 已補裝 **4.6.0**（`--no-deps`，對齊 Windows；動 numpy/scipy 會波及 mamba_ssm）。
 - **背景任務會被砍** → 長工作用**前景分段**（每段 <10 分鐘）。
   且**背景任務回報 killed 不代表子孫都死了**——啟接力前要先列 process 確認
   （曾因此讓兩個 build 同時寫同一個輸出檔）
@@ -1066,6 +1216,16 @@ Set-ScheduledTask -TaskName "MarketMamba_V62" -Principal (New-ScheduledTaskPrinc
   一律採用、不套 |Δ|≥0.009 門檻
 - **小樣本/快速驗證模式的輸出，檔名必須與正式輸出分開**
   （`--max-days` 曾直接覆蓋正式分數檔，而 `--sweep` 是 glob 整個目錄）
+- **`--tag` 要套在該次執行的「每一個」輸出上，特別是結果 JSON**——2026-08-08
+  給 ridge/gbdt 加了 `--tag`，只套在模型與分數上、漏了 `RESULT_PATH`，
+  **帶 tag 跑一次就蓋掉正式的 `baseline_*_result.json`**（靠 git 才救回）。
+  `baseline_rnn.py` 本來就做對了（`_sfx` + 註解「絕不覆蓋既有的正式檔」）。
+  **加旗標時要問：這次執行會寫出哪些檔？每一個都帶到了嗎？**
+- **`--purge N` 之類的「天數」參數，要確認 N 數的是哪個空間的天**——訓練資料用
+  `day_stride=2` 載入，在載入後的日期空間取倒數第 30 個 ＝ 真實日曆的倒數第 **60** 個。
+  參數名說 30 卻做了 60。**一律走真實交易日曆換算**（`baseline_common.purge_cutoff()`）。
+- **會覆寫共用結果檔的腳本，跑之前先備份**（`portfolio_lab --sweep` 是讀舊檔再合併，
+  安全；但確認過才知道，不能假設）
 - **上線用的口徑必須逐行照抄回測**，不可「順便改好一點」
 - **診斷實驗一律在 `V6/experimental/` 副本**；受保護的 `marketmamba/models/` 不碰。
   修推論一律改 `run_daily_inference.py`，**不要動已棄用的 `models/inference.py`**
@@ -1077,6 +1237,14 @@ Set-ScheduledTask -TaskName "MarketMamba_V62" -Principal (New-ScheduledTaskPrinc
 - **比較模型優劣用 decile spread，不用 Top50 年化**
   ——年化 σ = **2.68pp**，decile Sharpe σ 只有 **0.019（穩定 40 倍）**
 - **八模型表裡小於 6pp 的年化差距不該當數**
+- **「重不重現得出來」要分訊號層與組合層兩層問，不可簡化成一句話**（2026-08-08 GBDT 實例）：
+  同一份資料、同一個 seed、只差 30 個訓練日 → **訊號層 ρ=0.9203、Top50 只重疊 25/50**，
+  但**組合層 11.0% vs 11.2%、Sharpe 0.653 vs 0.639**。
+  → **換進來的那半個 Top50 與被換掉的一樣好**；「持股名單對不上」≠「策略不同」。
+  這正是上面那條 decile 紀律的機制。
+- **模型對訓練窗微擾的敏感度差一個量級**：同樣多剔 30 天，
+  **Ridge ρ=0.9970**（線性閉式解、係數幾乎不動）vs **GBDT ρ=0.9434**
+  （切點是離散決策，151 輪 boosting 再放大）。**樹模型的個股名單天生不可重現。**
 - **decile spread Sharpe 對窗長極度敏感**，11 年窗與 582 天窗**不可並列**
 - **IC 要分層引用**（全市場 / 高流動 / 純籌碼基本面）
 - **組合層基準用「等權 eligible 宇宙」（+15.2%），不用 TAIEX**

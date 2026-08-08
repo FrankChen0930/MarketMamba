@@ -128,6 +128,16 @@ ARMS: dict[str, Arm] = {
         ckpt="v6_short_GD_no_macro_gatv2.pt", kg_file="knowledge_graph_v2.npz",
         zero_macro=True, ref_score="v2_kg_nomacro.parquet", out_name="df_v62",
         head="5d", note="上線規格：5 日頭 + 每 20 交易日再平衡"),
+    # ── 同一顆 checkpoint 的第二欄（2026-08-08 新增）──────────────────
+    #    **不是新模型**——`ShortModelV6` 一次前向就吐出 (N,2)，這裡只是改讀第 1 欄。
+    #    回測 20 日 +39.2%／Sharpe 1.838，對 Alpha_20d 的 IC +0.1311（本專案最高）。
+    #    價值在高頻端：分數變動比 5d 頭慢 → 換手低 → 1 日再平衡的成本
+    #    31.1% vs 5d 頭的 42.6%，淨年化因此高 9.6pp（超出 ±6pp 雜訊底線）。
+    "v2_kg_nomacro_h10": Arm(
+        ckpt="v6_short_GD_no_macro_gatv2.pt", kg_file="knowledge_graph_v2.npz",
+        zero_macro=True, ref_score="v2_kg_nomacro__head10d.parquet",
+        out_name="df_v62_nomacro_h10", head="10d",
+        note="與 v2_kg_nomacro 同 checkpoint，讀第 1 欄（10d 頭）"),
     # ── 長 horizon 變體：同設定，只有第二顆頭學的標籤不同（purge 20）──
     #    ⚠️ 兩者都讀**第 1 欄**（forward 輸出的第二顆頭），不論它學的是 10d 還是 20d
     "head10d": Arm(

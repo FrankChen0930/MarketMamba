@@ -283,7 +283,11 @@ def run_config(mkt: Market, rank: pd.DataFrame, n: int, k: float, freq: int,
     holdings: list[str] = []
     w = np.zeros(len(mkt.stocks))
     col_idx = {s: i for i, s in enumerate(mkt.stocks)}
-    ret_np = mkt.ret.to_numpy(np.float64)
+    # ⚠️ `.copy()` 不可省：pandas 3.0 的 `to_numpy()` 回**唯讀**陣列，
+    #    直接 in-place 會 ValueError（本檔另外三處早就這樣寫了，只有這裡漏掉，
+    #    也就是「WSL 跑不了 portfolio_lab」的唯一原因）。
+    #    pandas 2.x 下多一次複製，代價與既有三處相同。
+    ret_np = mkt.ret.to_numpy(np.float64).copy()
     np.nan_to_num(ret_np, copy=False)               # 缺值日視為 0 報酬（同停牌持平）
 
     port_ret = np.zeros(len(dates))

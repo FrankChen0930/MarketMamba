@@ -43,7 +43,7 @@ if str(_THIS_DIR.parent) not in sys.path:
 import experimental.baseline_common as bc                      # noqa: E402
 from experimental.baseline_common import (                     # noqa: E402
     PROTOCOL, all_feature_names, daily_spearman_ic, ic_summary, load_xy,
-    portfolio_backtest,
+    portfolio_backtest, purge_cutoff,
 )
 from experimental.baseline_ic_diagnosis import _grouped_ic, _liquidity_lut  # noqa: E402
 
@@ -82,7 +82,25 @@ def _fmt_ic(s: dict) -> str:
 # ============================================================
 # 主切分
 # ============================================================
-def run_main(skip_20d: bool = False) -> dict:
+def run_main(skip_20d: bool = False, purge_days: int = 0, tag: str = "",
+             dump_scores: bool = False) -> dict:
+    """
+    purge_days（2026-08-08 新增，**預設 0 = 逐位元維持既有行為**）
+        從訓練集尾端剔除 N 個交易日。八模型定稿表用 30（`gbdt__lab5d_p30.parquet`）。
+        ⚠️ 必須同時套在 fit / val / full-train 三個 mask 上——只擋一個，
+           被剔除的日子會從另一個溜回訓練迴圈。
+
+    tag / dump_scores（2026-08-08 新增）
+        `gbdt_5d{tag}.txt`、`scores/gbdt{tag}.parquet`、
+        **以及結果 JSON `baseline_gbdt_result{tag}.json`**。
+        2026-08-03「重出 p30」那次沒留模型，`gbdt_5d.txt` 其實是 07-13 的舊版
+        （v1 資料、無 purge）→ 每日推論不能直接拿它當 p30 模型用。
+
+        ⚠️ **tag 一定要同時套在結果 JSON 上**。第一版只套了模型與分數，
+           結果帶 tag 跑一次就把 07-14 的正式 `baseline_gbdt_result.json` 蓋掉了
+           （靠 git 才救回來）。CLAUDE.md 早記過這條：「小樣本/快速驗證模式的輸出，
+           檔名必須與正式輸出分開」——`--max-days` 覆蓋正式分數檔是同一個坑。
+    """
     t0 = time.time()
     P = PROTOCOL
     print(f"[load] train {P['TRAIN_START']} → {P['TRAIN_END']}（stride={TRAIN_STRIDE}）...", flush=True)
@@ -93,10 +111,26 @@ def run_main(skip_20d: bool = False) -> dict:
     print(f"[load] {te['X'].shape[0]:,} 列 × {te['X'].shape[1]} 維", flush=True)
 
     dates_tr = pd.DatetimeIndex(tr["dates"])
-    train_days = np.sort(dates_tr.unique())
+    all_days = np.sort(dates_tr.unique())
+
+    # ── purge：剔除訓練尾端 N 個交易日（在切 fit/val 之前）──
+    if purge_days > 0:
+        _cut = purge_cutoff(P["TRAIN_END"], purge_days)     # 用真實日曆，不是 stride 後的
+        keep = dates_tr < _cut
+        train_days = np.sort(dates_tr[keep].unique())
+        print(f"[purge] 載入空間（stride={TRAIN_STRIDE}）：訓練天數 "
+              f"{len(all_days)} → {len(train_days)}"
+              f"｜新訓練尾日 {pd.Timestamp(train_days[-1]).date()}"
+              f"（test 起 {P['TEST_START']}）", flush=True)
+    else:
+        keep = np.ones(len(dates_tr), dtype=bool)
+        train_days = all_days
+        print("[purge] purge_days=0（無隔離，與 2026-08-03 之前的既有行為相同）", flush=True)
+
     val_days = set(train_days[int(len(train_days) * (1 - P["VAL_RATIO"])):])
-    val_mask = dates_tr.isin(val_days)
-    fit_mask = ~val_mask
+    # keep 同時套在 val 與 fit 上——只擋一個，被剔除的日子會從另一個溜回去
+    val_mask = keep & dates_tr.isin(val_days)
+    fit_mask = keep & ~dates_tr.isin(val_days)
     print(f"[split] train 天數 {len(train_days)}（val 自 {pd.Timestamp(min(val_days)).date()} 起，"
           f"{len(val_days)} 天）", flush=True)
 
@@ -106,7 +140,9 @@ def run_main(skip_20d: bool = False) -> dict:
     for horizon, label_col, alpha_col in horizons:
         y = tr[label_col]
         ok = ~np.isnan(y)
-        fit_m, val_m, trn_m = fit_mask & ok, val_mask & ok, ok
+        # trn_m 也要吃 keep——full-train 重訓若用了被 purge 掉的尾端日子，
+        # 隔離就等於沒做（而且完全不會報錯）
+        fit_m, val_m, trn_m = fit_mask & ok, val_mask & ok, keep & ok
         print(f"\n===== horizon {horizon}d（label={label_col}）=====", flush=True)
         print(f"[rows] fit {fit_m.sum():,} | val {val_m.sum():,} | full-train {trn_m.sum():,}", flush=True)
 
@@ -206,7 +242,19 @@ def run_main(skip_20d: bool = False) -> dict:
                   flush=True)
             print(f"[gbdt] 成本×2：年化 {res['test_portfolio_cost_x2']['ann_return']:+.1%} | "
                   f"等權宇宙基準：總報酬 {res['benchmark_equal_weight_all']['total_return']:+.1%}", flush=True)
-            final.save_model(str(_THIS_DIR / "result" / "gbdt_5d.txt"))
+            mp = _THIS_DIR / "result" / f"gbdt_5d{tag}.txt"
+            final.save_model(str(mp))
+            print(f"[gbdt] ✅ 模型 → {mp.name}｜purge={purge_days}"
+                  f"｜{best['best_iteration']} 輪｜{len(names)} 維", flush=True)
+            if dump_scores:
+                sd = _THIS_DIR / "result" / "scores"
+                sd.mkdir(parents=True, exist_ok=True)
+                sp = sd / f"gbdt{tag}.parquet"
+                pd.DataFrame({"Date": pd.to_datetime(te["dates"]),
+                              "stock_id": te["stock_ids"].astype(str),
+                              "score": scores.astype(np.float32)}
+                             ).to_parquet(sp, index=False)
+                print(f"[gbdt] ✅ 分數 → scores/{sp.name}（{len(scores):,} 列）", flush=True)
 
         results["models"][f"{horizon}d"] = res
         del final, scores
@@ -224,9 +272,12 @@ def run_main(skip_20d: bool = False) -> dict:
         "存活者偏差 D3 未修復：絕對數字偏高，四階相對比較公平（協定 §2）",
     ]
     results["generated_at"] = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M")
-    RESULT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    RESULT_PATH.write_text(json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(f"\n✅ 結果已存 {RESULT_PATH}（總耗時 {(time.time()-t0)/60:.1f} 分）", flush=True)
+    # 帶 tag 的實驗**絕不可覆蓋正式結果檔**（見 run_main docstring 的警告）
+    out_path = RESULT_PATH if not tag else \
+        RESULT_PATH.with_name(f"{RESULT_PATH.stem}{tag}{RESULT_PATH.suffix}")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"\n✅ 結果已存 {out_path.name}（總耗時 {(time.time()-t0)/60:.1f} 分）", flush=True)
 
     print("\n" + "=" * 72, flush=True)
     print("階 2（GBDT）vs 已知數字（5d test IC）", flush=True)
@@ -302,8 +353,14 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--wf-only", action="store_true", help="只跑 expanding WF（需先有主切分結果）")
     ap.add_argument("--skip-20d", action="store_true")
+    ap.add_argument("--purge", type=int, default=0,
+                    help="訓練尾端剔除的交易日數（八模型定稿表用 30；預設 0 = 既有行為）")
+    ap.add_argument("--tag", default="", help="輸出檔名後綴，例如 __lab5d_p30")
+    ap.add_argument("--dump-scores", action="store_true",
+                    help="出 5d 測試窗分數 → result/scores/gbdt{tag}.parquet")
     args = ap.parse_args()
     if args.wf_only:
         run_wf()
     else:
-        run_main(skip_20d=args.skip_20d)
+        run_main(skip_20d=args.skip_20d, purge_days=args.purge, tag=args.tag,
+                 dump_scores=args.dump_scores)

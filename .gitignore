@@ -66,3 +66,11 @@ app/backend/_api_check.txt
 # 實驗產出的模型分數 parquet（~140 MB，可由 baseline_*/score_mamba_local/wf_scores 重現）
 V6/experimental/result/scores/
 V6/experimental/result/wf/
+
+# 每日推論用的 baseline 權重（2026-08-08）。使用者決定不進 git——目前只在這台機器跑。
+# 可由 baseline_ridge_lasso.py --save-model / baseline_gbdt.py --tag 重建，
+# 但 ⚠️ GBDT 重建出來的**訊號層不會一樣**（ρ≈0.92），組合層才一致（11.0% vs 11.2%）。
+# 已追蹤的 V6/experimental/result/gbdt_5d.txt（2026-07-13 舊版）不受影響。
+V6/experimental/result/ridge_5d*.npz
+V6/experimental/result/gbdt_5d__*.txt
+V6/experimental/result/gru_5d*.pt

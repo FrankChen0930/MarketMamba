@@ -1,16 +1,34 @@
 """
-v62_portfolio.py — V6.2 組合層狀態機（規格 `5d/20`）
-=====================================================
-把每日分數變成**實際持股名單**：N=50 / k=1.5 緩衝 / 每 20 個交易日再平衡。
+v62_portfolio.py — V6.2 組合層狀態機（主線規格 `5d/20`）
+=========================================================
+把每日分數變成**實際持股名單**：N=50 / k=1.5 緩衝 / 每 freq 個交易日再平衡。
 
 分數本身不是持股名單——中間 19 天不換股，所以必須有狀態。
 
 規格來源：`docs/portfolio-construction-baseline-v1.md` + 2026-08-05 定案
 （CLAUDE.md「★ V6.2 上線規格」）。回測對照：N=50/k=1.5/20日 年化 +38.1%。
 
-七個設計決定（2026-08-05）
+多頻率並行（2026-08-08 新增）
+-----------------------------
+主線 20 日中間有 19 天不換股，dashboard 沒東西可看 → 同一份分數同時餵給
+多個頻率的狀態機，中間天數可以看較高頻的**參考組合**。
+
+**再平衡率是組合層參數、不是模型參數**——一份分數可同時跑 1/3/5/10/20 日，
+GPU 前向零額外成本。所以「推論 arm」（模型 × 預測頭 → 分數檔）與
+「組合 arm」（分數檔 × n/k/freq → 持股）是分開的兩張表：
+前者在 `run_v62_inference.ARMS`，後者是本檔的 `PORTFOLIOS`。
+
+⚠️ 高頻組合**已知較差、僅供參考**，分級依據見 `PORTFOLIOS` 的 `tier`
+（數字來自 `docs/label-horizon-vs-holding-period-2026-08-03.md` §2，
+非本次新跑的實驗）。
+
+八個設計決定（2026-08-05；⑧ 為 08-08 新增）
 --------------------------
  ① **一個 arm 一份 state**（`v62_state_{arm}.json`）→ 多模型並行時互不干擾。
+    多頻率並行時 arm 名稱帶頻率後綴（`..._f05`），所以彼此也不會撞。
+ ⑧ **state 的 spec 一旦寫下就不許改**：讀到既有 state 但 n/k/freq 與傳入的
+    不同 → 直接 raise。中途改規格會讓那份「不可竄改的前瞻紀錄」變成兩段
+    不同東西接在一起，而且**完全不會報錯**——正是本專案反覆踩到的那類坑。
  ② **再平衡觸發用交易日曆算，不用「跑了幾次」**：距上次再平衡 ≥20 個交易日就換。
     推論失敗一天不會讓排程漂掉——用「跑了幾次」的話，漏跑一天就永遠差一天。
  ③ **緩衝逐行照抄 `portfolio_lab.run_config`**：保留 rank ≤ k×N(=75) 的持股，
@@ -37,8 +55,9 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
+from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
@@ -51,12 +70,91 @@ if str(_V6) not in sys.path:
 # ── 規格常數（改這裡等於改上線規格，不要散落在別處）──────────────────
 N_HOLD      = 50      # 持股檔數
 BUFFER_K    = 1.5     # 緩衝：rank ≤ k×N 就續抱
-REBAL_DAYS  = 20      # 每 20 個交易日再平衡
+REBAL_DAYS  = 20      # 主線：每 20 個交易日再平衡
 WEIGHT_MODE = "equal"
 
 RESULTS_DIR = _V6 / "results"
 STATE_FMT   = "v62_state_{arm}.json"
 LOG_FMT     = "v62_portfolio_{arm}.jsonl"   # 逐日 append，事後不得改
+
+
+# ============================================================
+# 0. 組合 arm 表（分數檔 × 再平衡率）
+# ============================================================
+@dataclass(frozen=True)
+class Portfolio:
+    """一個組合層狀態機。`score_arm` 指向 `run_v62_inference.ARMS` 的某個 key。"""
+    score_arm: str            # 分數來源（推論 arm）
+    freq:      int            # 再平衡間隔（交易日）
+    tier:      str            # primary / equivalent / inferior — 前端警告分級用
+    bt_ann:    float | None   # 回測淨年化（582 天窗），前端顯示用；None = 沒跑過
+    head:      str            # 顯示用的頭名稱。**明確寫死，不從 score_arm 字串推導**
+                              # （`head10d` 不含子字串 `h10` → 推導會靜默標成 5d 頭）
+    n:         int = N_HOLD
+    k:         float = BUFFER_K
+    note:      str = ""
+
+    @property
+    def label(self) -> str:
+        return f"{self.head} / {self.freq} 日"
+
+
+# 雜訊底線：組合層 N=50 約 **±6pp**（CLAUDE.md「判讀數字之前」）。
+# 分級就是拿與主線的差距對這條線量出來的，不是憑感覺分的：
+#   equivalent = 差距在 ±6pp 內 → 老實說法是「分不出優劣」，不是「比較差」
+#   inferior   = 差距超出 ±6pp → 明確較差，要下強警告
+#
+# bt_ann 全部來自 `docs/label-horizon-vs-holding-period-2026-08-03.md` §2
+# （同一張表、同一個 checkpoint、同一個 582 天窗），**不是本次新跑的**。
+_TIER_DESC = {
+    "primary":    "主線規格（回測最佳）",
+    "equivalent": "研究用；與主線差距在雜訊底線（±6pp）內，分不出優劣",
+    "inferior":   "研究用；已知明確劣於主線，請勿照做",
+}
+
+PORTFOLIOS: dict[str, Portfolio] = {
+    # ── 主線：5d 頭 / 20 日（已定案的上線規格）────────────────────
+    "v2_kg_nomacro_f20": Portfolio("v2_kg_nomacro",     20, "primary",    0.380, "5d 頭",
+                                   note="★ 上線規格 5d/20"),
+    # ── 5d 頭的其他頻率（中間天數的參考組合）──────────────────────
+    "v2_kg_nomacro_f10": Portfolio("v2_kg_nomacro",     10, "equivalent", 0.363, "5d 頭"),
+    "v2_kg_nomacro_f05": Portfolio("v2_kg_nomacro",      5, "equivalent", 0.349, "5d 頭"),
+    "v2_kg_nomacro_f03": Portfolio("v2_kg_nomacro",      3, "inferior",   0.239, "5d 頭"),
+    "v2_kg_nomacro_f01": Portfolio("v2_kg_nomacro",      1, "inferior",   0.199, "5d 頭"),
+    # ── 10d 頭（同一顆 checkpoint 的第二欄）────────────────────────
+    #    ⚠️ 高頻端**要用這顆頭**：與 5d 頭的差距隨頻率變高而擴大
+    #    （20 日 +1.2pp 在雜訊內 → 1 日 +9.6pp 超出雜訊底線）。
+    #    機制在成本欄：10d 頭分數變動慢 → 換手低 → 1 日那格成本 31.1% vs 42.6%。
+    "v2_kg_nomacro_h10_f20": Portfolio("v2_kg_nomacro_h10", 20, "equivalent", 0.392,
+                                       "10d 頭", note="回測比主線高 1.2pp，但在雜訊內"),
+    "v2_kg_nomacro_h10_f10": Portfolio("v2_kg_nomacro_h10", 10, "equivalent", 0.376, "10d 頭"),
+    "v2_kg_nomacro_h10_f05": Portfolio("v2_kg_nomacro_h10",  5, "equivalent", 0.357, "10d 頭"),
+    "v2_kg_nomacro_h10_f03": Portfolio("v2_kg_nomacro_h10",  3, "equivalent", 0.337, "10d 頭"),
+    "v2_kg_nomacro_h10_f01": Portfolio("v2_kg_nomacro_h10",  1, "inferior",   0.295, "10d 頭"),
+    # ── 獨立訓練的研究 checkpoint（各只跑主線頻率）─────────────────
+    "head10d_f20": Portfolio("head10d", 20, "equivalent", 0.459, "h10 ckpt",
+                             note="不同 checkpoint；隔離 40 天那一輪，不可與上面並列"),
+    "head20d_f20": Portfolio("head20d", 20, "equivalent", 0.392, "h20 ckpt",
+                             note="不同 checkpoint；隔離 40 天那一輪，不可與上面並列"),
+    # ── B 類經典模型（`run_v62_baselines.py` 產分數，另一個 process）──
+    #    定位是**對照組**，不是候選上線規格：八模型表裡它們都輸給 Mamba
+    #    （ridge decile 1.088 / gbdt 1.735 / gru 2.388 vs v2_kg_nomacro 5.005）。
+    #    留著跑是為了「同一段真實 OOS 期間、同一把尺」的並列紀錄。
+    "ridge_f20": Portfolio("ridge", 20, "inferior", 0.205, "Ridge 307維",
+                           note="線性 baseline；重建 vs 參考 ρ=0.9970"),
+    "gru_f20":   Portfolio("gru", 20, "inferior", 0.209, "GRU 60×59",
+                           note="checkpoint 即原始那顆，未重訓"),
+    # ⚠️ GBDT 的可重現性要**分兩層講**（2026-08-08 實測）：
+    #    訊號層**不可重現**（重建 vs 參考 ρ=0.9203、Top50 重疊只有 25/50；
+    #    我自己兩次跑彼此也才 0.9434）——樹的切點是離散決策，訓練窗動 30 天就翻。
+    #    但組合層**幾乎一樣**：11.0% vs 11.2%、Sharpe 0.653 vs 0.639、換手 79% vs 81%。
+    #    → 換掉的那半個 Top50 與被換掉的一樣好。所以「持股名單對不上」≠「策略不同」。
+    #    bt_ann 用重建模型自己跑出來的 11.0%（`gbdt__p30fix_20260808`），不借用參考值。
+    "gbdt_f20":  Portfolio("gbdt", 20, "inferior", 0.110, "GBDT 307維",
+                           note="訊號層不可重現（ρ=0.9203）但組合層一致"
+                                "（11.0% vs 參考 11.2%）；decile Sh 1.714 vs 1.806"),
+}
+DEFAULT_PORTFOLIO = "v2_kg_nomacro_f20"
 
 
 # ============================================================
@@ -175,38 +273,66 @@ def replay(model: str, n: int = N_HOLD, k: float = BUFFER_K,
 # ============================================================
 # 3. 每日推進
 # ============================================================
+@lru_cache(maxsize=1)
+def _trading_calendar() -> pd.DatetimeIndex:
+    """prices_raw 的交易日曆，**一個 process 只讀一次**。
+
+    ⚠️ 這裡的快取不是可有可無的優化：`step()` 每呼叫一次就要問一次日曆，
+    而多頻率並行後一天會呼叫 12 次（12 個組合 arm）。沒有快取＝每天重讀
+    12 次 127 MB 的 parquet。多加一個組合 arm 的成本本該是零，
+    沒快取的話它會變成「零 GPU 成本、但每次多一次大檔 IO」。
+    """
+    from marketmamba.config import PROCESSED_DIR
+    pr = pd.read_parquet(Path(PROCESSED_DIR) / "prices_raw.parquet", columns=["Date"])
+    d = pd.to_datetime(pr["Date"].astype(str)).drop_duplicates().sort_values()
+    return pd.DatetimeIndex(d)
+
+
 def _trading_days_between(a: str, b: str) -> int:
     """用 prices_raw 的實際交易日曆算（不是曆日、也不是「跑了幾次」）。"""
-    from marketmamba.config import PROCESSED_DIR
-    pr = pd.read_parquet(PROCESSED_DIR / "prices_raw.parquet", columns=["Date"])
-    d = pd.to_datetime(pr["Date"].astype(str)).drop_duplicates().sort_values()
+    d = _trading_calendar()
     return int(((d > pd.Timestamp(a)) & (d <= pd.Timestamp(b))).sum())
 
 
 def step(arm: str, scores_path: Path, data_complete: dict | None = None,
-         force_rebalance: bool = False) -> dict:
-    """讀今日分數 → 決定要不要再平衡 → 更新 state → append 逐日紀錄。"""
+         force_rebalance: bool = False, n: int = N_HOLD, k: float = BUFFER_K,
+         freq: int = REBAL_DAYS, tier: str = "primary") -> dict:
+    """讀今日分數 → 決定要不要再平衡 → 更新 state → append 逐日紀錄。
+
+    `arm` 同時是 state/log 的檔名 key，多頻率並行時必須各自唯一
+    （`PORTFOLIOS` 的 key 已經帶 `_fNN` 後綴）。
+    """
     sc = pd.read_csv(scores_path, dtype={"stock_id": str})
     date = str(pd.to_datetime(sc["Date"].iloc[0]).date())
     sc = sc.sort_values("score", ascending=False).reset_index(drop=True)
     rk = {r.stock_id: float(i + 1) for i, r in enumerate(sc.itertuples())}
 
+    spec = {"n": n, "k": k, "freq": freq, "weight": WEIGHT_MODE, "tier": tier}
     st_path = RESULTS_DIR / STATE_FMT.format(arm=arm)
     st = json.loads(st_path.read_text(encoding="utf-8")) if st_path.exists() else {
         "arm": arm, "holdings": [], "weights": {}, "last_rebalance": None,
-        "n_rebalances": 0, "spec": {"n": N_HOLD, "k": BUFFER_K, "freq": REBAL_DAYS,
-                                    "weight": WEIGHT_MODE},
+        "n_rebalances": 0, "spec": spec,
     }
+    # 設計 ⑧：規格一旦寫下就不許改。中途改了會讓 jsonl 變成兩段不同的東西
+    # 接在一起，而且完全不會報錯——那份紀錄的價值就是「不可竄改」。
+    old = {kk: st.get("spec", {}).get(kk) for kk in ("n", "k", "freq")}
+    if st.get("spec") and old != {kk: spec[kk] for kk in ("n", "k", "freq")}:
+        raise SystemExit(
+            f"❌ arm={arm} 的既有 state 規格是 {old}，但這次傳入 "
+            f"{{'n': {n}, 'k': {k}, 'freq': {freq}}}。\n"
+            f"   規格不可中途更改（會污染前瞻紀錄）。要換規格請用新的 arm 名稱，\n"
+            f"   或先刪掉 {st_path.name} 與對應的 jsonl 重新開始。")
+
     if st.get("last_date") == date:
         print(f"[state] {date} 已處理過，跳過（重跑不會重複計算）", flush=True)
         return st
 
     since = (_trading_days_between(st["last_rebalance"], date)
-             if st["last_rebalance"] else REBAL_DAYS)
-    due = force_rebalance or st["last_rebalance"] is None or since >= REBAL_DAYS
+             if st["last_rebalance"] else freq)
+    due = force_rebalance or st["last_rebalance"] is None or since >= freq
 
     if due:
-        r = rebalance(st["holdings"], rk)
+        r = rebalance(st["holdings"], rk, n, k)
         st["holdings"] = r["holdings"]
         st["weights"] = equal_weights(r["holdings"])
         st["last_rebalance"] = date
@@ -222,15 +348,15 @@ def step(arm: str, scores_path: Path, data_complete: dict | None = None,
                   f"{' …' if len(r['dropped']) > 15 else ''}", flush=True)
         since = 0
     else:
-        print(f"[state] {date} 不換股（距上次再平衡 {since}/{REBAL_DAYS} 個交易日）",
+        print(f"[state] {date} 不換股（距上次再平衡 {since}/{freq} 個交易日）",
               flush=True)
 
-    # 漂移度：目前持股還有幾檔在模型當前 Top-N（中間 19 天唯一有參考價值的數字）
-    drift = sum(1 for s in st["holdings"] if rk.get(s, 1e9) <= N_HOLD)
+    # 漂移度：目前持股還有幾檔在模型當前 Top-N（不換股那幾天唯一有參考價值的數字）
+    drift = sum(1 for s in st["holdings"] if rk.get(s, 1e9) <= n)
     st.update({"last_date": date, "days_since_rebalance": since,
-               "days_to_next": max(REBAL_DAYS - since, 0),
+               "days_to_next": max(freq - since, 0), "spec": spec,
                "in_top_n": drift, "data_complete": data_complete or {}})
-    print(f"[state] 持股 {len(st['holdings'])} 檔｜其中 {drift} 檔仍在模型 Top{N_HOLD}"
+    print(f"[state] 持股 {len(st['holdings'])} 檔｜其中 {drift} 檔仍在模型 Top{n}"
           f"｜距下次再平衡 {st['days_to_next']} 個交易日", flush=True)
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -238,27 +364,113 @@ def step(arm: str, scores_path: Path, data_complete: dict | None = None,
     # 逐日 append，事後不得修改——這份才是「不可竄改的前瞻紀錄」
     rec = {"date": date, "arm": arm, "rebalanced": bool(due),
            "holdings": st["holdings"], "in_top_n": drift,
-           "data_complete": data_complete or {},
+           "spec": spec, "data_complete": data_complete or {},
            "written_at": datetime.now().isoformat(timespec="seconds")}
     with (RESULTS_DIR / LOG_FMT.format(arm=arm)).open("a", encoding="utf-8") as f:
         f.write(json.dumps(rec, ensure_ascii=False) + "\n")
     return st
 
 
+def write_manifest(path: Path | None = None) -> Path:
+    """把 `PORTFOLIOS` 發布成 `v62_arms.json`，供後端 router 讀取。
+
+    **為什麼要有這個檔**：後端跑在 Render（rootDir=`app/backend`），
+    import 不到本檔。若在 router 裡再寫一份 arm 表，就是跨部署邊界的重複實作
+    ——而且**連 assert 都擋不住**（兩份程式碼不在同一個 process 裡）。
+    本專案已經因為「重複實作 + 各自維護」出過 bug（scanner vs sim 的進場標準）。
+
+    → 唯一真相是本檔的 `PORTFOLIOS`，發布成資料讓後端讀。
+      後端只需要知道「有哪些 arm、檔名是什麼」，其餘規格（n/k/freq/tier）
+      每天都會隨 state 檔一起落檔，router 直接從 state 讀就好。
+    """
+    path = path or (RESULTS_DIR / "v62_arms.json")
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+
+    # 分數檔名從 `run_v62_inference.ARMS` 取，**不在這裡也不在 router 裡再寫一份**。
+    # 順帶當守門：`PORTFOLIOS` 指到不存在的 score_arm 會在這裡當場炸，
+    # 而不是等到後端抓不到檔案、前端顯示空白（那是靜默失敗）。
+    # Mamba 線（59 維）與 B 類 baseline 線（66 維）是**兩個獨立 process**
+    # ——config patch 是 module 級全域，混在同一個 process 會靜默算錯。
+    # 但兩邊的分數檔名都要進 manifest，所以這裡只 import 表、不執行推論。
+    import run_v62_inference as _R
+    score_file = {k: f"{v.out_name}.csv" for k, v in _R.ARMS.items()}
+    try:
+        import run_v62_baselines as _BL       # 只讀 ARMS，不觸發 MM_PROTOCOL 檢查
+        score_file.update({k: f"{v.out_name}.csv" for k, v in _BL.ARMS.items()})
+    except SystemExit:
+        # `run_v62_baselines` 在 import 期就要求 MM_PROTOCOL=v2；沒設時
+        # 退回硬編（只有三個名字，且與該檔的 ARMS 對齊）。不 raise——
+        # Mamba 線不該因為 baseline 線沒設環境變數就整條掛掉。
+        score_file.update({"ridge": "df_v62_ridge.csv", "gbdt": "df_v62_gbdt.csv",
+                           "gru": "df_v62_gru.csv"})
+        print("[manifest] 未設 MM_PROTOCOL=v2 → baseline 分數檔名用硬編 fallback",
+              flush=True)
+
+    missing = sorted({p.score_arm for p in PORTFOLIOS.values()} - set(score_file))
+    if missing:
+        raise SystemExit(f"❌ PORTFOLIOS 指到不存在的分數 arm：{missing}"
+                         f"（可用：{sorted(score_file)}）")
+
+    payload = {
+        "generated_at": datetime.now().isoformat(timespec="seconds"),
+        "default": DEFAULT_PORTFOLIO,
+        "tier_desc": _TIER_DESC,
+        "arms": [
+            {"arm": name, "score_arm": p.score_arm, "freq": p.freq, "n": p.n,
+             "k": p.k, "tier": p.tier, "backtest_ann": p.bt_ann, "note": p.note,
+             "head": p.head,
+             "state_file": STATE_FMT.format(arm=name),
+             "score_file": score_file[p.score_arm], "label": p.label}
+            for name, p in PORTFOLIOS.items()
+        ],
+    }
+    path.write_text(json.dumps(payload, indent=1, ensure_ascii=False), encoding="utf-8")
+    print(f"[manifest] {len(PORTFOLIOS)} 個組合 arm → {path}", flush=True)
+    return path
+
+
+def print_portfolios() -> None:
+    """列出組合 arm 表（規則 7：設定要看得見，不是只能讀程式碼推論）。"""
+    print(f"\n{'='*88}\n組合 arm 表（{len(PORTFOLIOS)} 個）\n{'='*88}")
+    print(f"{'arm':26s}{'分數來源':22s}{'freq':>5s}{'N':>4s}{'k':>5s}"
+          f"{'回測年化':>10s}  分級")
+    print("-" * 88)
+    for name, p in PORTFOLIOS.items():
+        bt = f"{p.bt_ann*100:.1f}%" if p.bt_ann is not None else "—"
+        print(f"{name:26s}{p.score_arm:22s}{p.freq:5d}{p.n:4d}{p.k:5.1f}{bt:>10s}"
+              f"  {p.tier}")
+    print("-" * 88)
+    for t, d in _TIER_DESC.items():
+        print(f"  {t:12s} {d}")
+    print(f"{'='*88}\n⚠️ 回測年化來自 docs/label-horizon-vs-holding-period-2026-08-03.md §2"
+          f"（582 天單一窗、單一 seed），不是前瞻紀錄。\n")
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--replay", metavar="MODEL",
                     help="用該分數檔 replay，對 portfolio_lab 驗證狀態機")
+    ap.add_argument("--replay-freq", type=int, default=REBAL_DAYS,
+                    help="replay 用的再平衡間隔（預設 20）")
     ap.add_argument("--step", action="store_true", help="每日推進一步")
-    ap.add_argument("--arm", default="v2_kg_nomacro")
+    ap.add_argument("--arm", default=DEFAULT_PORTFOLIO,
+                    help="組合 arm（見 --list）")
     ap.add_argument("--scores", default=str(RESULTS_DIR / "df_v62.csv"))
     ap.add_argument("--force-rebalance", action="store_true",
                     help="強制再平衡（第一天上線用）")
+    ap.add_argument("--list", action="store_true", help="列出所有組合 arm")
     a = ap.parse_args()
 
+    if a.list:
+        print_portfolios()
+        sys.exit(0)
     if a.replay:
-        sys.exit(0 if replay(a.replay) else 1)
+        sys.exit(0 if replay(a.replay, freq=a.replay_freq) else 1)
     if a.step:
-        step(a.arm, Path(a.scores), force_rebalance=a.force_rebalance)
+        p = PORTFOLIOS.get(a.arm)
+        if p is None:
+            sys.exit(f"❌ 未知的組合 arm：{a.arm}（用 --list 看可用的）")
+        step(a.arm, Path(a.scores), force_rebalance=a.force_rebalance,
+             n=p.n, k=p.k, freq=p.freq, tier=p.tier)
     else:
         ap.print_help()

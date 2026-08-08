@@ -1733,6 +1733,29 @@ def _neutralize_cross_section(df: pd.DataFrame, cols: list[str], mode: str) -> p
     return df
 
 
+MACRO_TS_MIN_HIST = 252   # 至少一年歷史才開始輸出非零 z 值
+
+
+def macro_ts_zscore(s: pd.Series) -> pd.Series:
+    """Group D 的 expanding time-series z-score（index = Date、value = 當日原始值）。
+
+    ⚠️ 2026-08-08 從 `clean_and_scale` 內部抽出來，**行為完全不變**——
+    抽出來的唯一理由是「尾端窗推論」需要用同一份實作。
+
+    為什麼需要：`clean_and_scale` 的 expanding 統計量是算在**傳進去的 df 日期範圍**上。
+    每日推論若只建 3~6 年的尾端窗，expanding 的分母就跟全歷史矩陣不同
+    → 12 個 macro 欄會系統性偏掉（2026-08-08 實測：1200 天 vs 2400 天窗，
+    `Oil_Return` max|Δ|=2.27、`TNX` 1.07、`VIX` 0.87）。
+    Mamba 上線 arm 把 Group D 歸零所以量不到；Ridge/GBDT/GRU 吃全部 66 維，躲不掉。
+
+    解法是**全歷史算這 12 欄、按 Date 貼回尾端窗**——而那必須用同一個函式，
+    不能在別處複製這五行（複製出來的第二份實作遲早會走樣，本專案已經因此出過 bug）。
+    """
+    mu = s.expanding(min_periods=MACRO_TS_MIN_HIST).mean().shift(1)  # shift(1)：只用過去資料
+    sd = s.expanding(min_periods=MACRO_TS_MIN_HIST).std().shift(1)
+    return ((s - mu) / (sd + 1e-9)).clip(-3.0, 3.0)
+
+
 def clean_and_scale(df: pd.DataFrame, macro_norm: str = "cross",
                     neutralize: str = "none") -> pd.DataFrame:
     """
@@ -1813,17 +1836,15 @@ def clean_and_scale(df: pd.DataFrame, macro_norm: str = "cross",
         )
 
     if macro_cols:
-        MIN_HIST = 252   # 至少一年歷史才開始輸出非零 z 值
         latest_dt = df["Date"].max()
         latest_vals = {}
         for col in sorted(macro_cols):
             # macro 同日全股票同值 → 以日為單位的序列計算 expanding 統計
-            s  = df.groupby("Date")[col].first().sort_index()
-            mu = s.expanding(min_periods=MIN_HIST).mean().shift(1)   # shift(1)：只用過去資料
-            sd = s.expanding(min_periods=MIN_HIST).std().shift(1)
-            z  = ((s - mu) / (sd + 1e-9)).clip(-3.0, 3.0)
+            s = df.groupby("Date")[col].first().sort_index()
+            z = macro_ts_zscore(s)
             df[col] = df["Date"].map(z)
             latest_vals[col] = float(z.get(latest_dt, float("nan")))
+        MIN_HIST = MACRO_TS_MIN_HIST
         # 規則 7：數值明確輸出（最後交易日的 macro z 值）
         logger.info(
             f"[clean_and_scale] macro_norm=ts（expanding z-score, min {MIN_HIST}d, shift(1), clip ±3σ）"
