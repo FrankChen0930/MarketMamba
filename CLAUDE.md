@@ -4,8 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # MarketMamba — AI 助手指引
 
-> **最後更新：2026-08-08**（多頻率並行 + B 類經典模型接上線 + push 鏈路補完 →
-> **7 份分數 × 15 個組合**，端對端 8 分鐘跑通；`portfolio_lab` 現在 WSL 也能跑）
+> **最後更新：2026-08-09**（資料回補後全面重評分 → 沒有推翻任何結論；
+> 前瞻績效鏈路接上線 + 19 個組合分組呈現 → **11 份分數 × 19 個組合**）
 >
 > **開工先讀本檔最下面「下一步」的 ▶ 區塊。**
 
@@ -227,20 +227,22 @@ MarketMamba/
         [7/7] git push → GitHub → Render 快取更新
      └─ run_dual_inference.py（雙模型, 59 維）→ df_short.csv / df_trend.csv
 
-平日 22:15  MarketMamba_V62（2026-08-10 上線）  ── 實測全程約 8 分鐘
+平日 22:15  MarketMamba_V62（2026-08-10 上線）  ── 實測全程約 9 分鐘
   └─ run_hidden.vbs → v62_daily.bat → WSL2 → run_v62_daily.py
-        [1/5] 自己抓資料（fetch_data，不再依賴 V6.1）
-        [2/5] 當日資料檢查（容許 0 天，缺就 Telegram 告警）
-        [3/5] 特徵矩陣建一次（59 維）→ 4 份 Mamba 分數（**先去重再前向**）
+        [1/6] 自己抓資料（fetch_data，不再依賴 V6.1）
+        [2/6] 當日資料檢查（容許 0 天，缺就 Telegram 告警）
+        [3/6] 特徵矩陣建一次（59 維）→ 8 份 Mamba 分數（**先去重再前向**）
               └ 另起 process（MM_PROTOCOL=v2, 66 維）→ run_v62_baselines.py
                 → 3 份 baseline 分數（ridge / gbdt / gru）
-        [4/5] 組合層狀態機 × **15 個組合**（分數 × 再平衡率，純 CPU）
-        [5/5] git push → POST /api/v62/cache/refresh → /breadth/portfolio
+        [4/6] 組合層狀態機 × **19 個組合**（分數 × 再平衡率，純 CPU）
+        [5/6] 前瞻績效彙總（**又一個獨立 process**，MM_PROTOCOL=v2）
+              → v62_performance.json
+        [6/6] git push → POST /api/v62/cache/refresh → /breadth/portfolio
 ```
 
 **兩張表的關係**：`run_v62_inference.ARMS`（模型 × 預測頭 → 分數檔）與
 `v62_portfolio.PORTFOLIOS`（分數 × n/k/freq → 持股）**是分開的**。
-**再平衡率是組合層參數、不是模型參數** → 15 個組合只需要 7 份分數。
+**再平衡率是組合層參數、不是模型參數** → 19 個組合只需要 11 份分數。
 `v62_portfolio.py --list` 看全表；`PORTFOLIOS` 是唯一真相，發布成 `v62_arms.json` 給後端讀。
 
 推論進度透過 tkinter 視窗即時顯示（WSLg）。成功 3 秒自動關閉；失敗保持開啟並置頂。
@@ -479,9 +481,50 @@ cd app/frontend && npm run dev   # → localhost:5173
 
 ## 🔄 Current Status
 
-> 最後更新：2026-08-08。**本區塊只留最近一個月**，更早的完整紀錄在第二層（`obsidian_note/`）。
+> 最後更新：2026-08-09。**本區塊只留最近一個月**，更早的完整紀錄在第二層（`obsidian_note/`）。
 
-### 最近完成（2026-07-06 ~ 08-08）
+### 最近完成（2026-07-06 ~ 08-09）
+
+#### 2026-08-09（下午）— 前瞻績效接上線 + 19 個組合分組呈現
+
+**背景**：`v62_performance.py`（08-08 寫的）**沒有任何人呼叫它**，也沒有後端端點
+——它是唯一能回答「哪個組合真的比較好」的工具，卻只能手動跑。三件一起補完。
+
+**① 產出鏈路**：`run_v62_daily.py` 新增 `run_performance()`，**獨立 process**
+（與 baseline 同一個理由：`portfolio_lab` 在 import 期就要 `MM_PROTOCOL=v2`，
+Mamba 線是 59 維，混跑會靜默算錯）。位置在 `step()` 之後、push 之前
+——它讀今天剛寫進 jsonl 的那一列，產出要跟著同一個 commit 上去。
+流程從 5 步變 **6 步**（進度視窗也加一格）。非致命：算不出來不影響持股紀錄。
+
+**② `family` 欄位（與 `tier` 正交）**：19 個 arm 平鋪在同一排按鈕看不出結構，
+而且**會誤導**——`v2_kg_nomacro_f03`（主線換 3 日再平衡）與 `old_kg_f20`
+（KG 壞掉的對照組）**tier 都是 `inferior`**，平鋪長得一模一樣。
+→ `family` 說「這是什麼」、`tier` 說「能不能照做」，兩個維度都要看得到。
+五組：`main_5d`(5) / `main_10d`(5) / `ckpt`(2) / `ablation`(4) / `baseline`(3)。
+加了 import 期守門（family 打錯字會讓整組在前端消失且不報錯）。
+
+**③ ★★ 樣本不足的處理 —— 我原本的門檻擋不住問題**
+
+原設計是「n_days < 20 就不顯示年化」。用合成紀錄端對端測時發現
+**30 天算出「年化 −52.3%」，而 20 天的門檻會放行它**
+——那個數字會被擺在 37.3% 的回測值旁邊，讀起來像「模型崩了」。
+
+改成兩層：
+- 門檻 20 → **60**（一季）。依據是算出來的，不是拍的：年化的標準誤
+  ≈ 252 × s_daily / √n，n=20 → ±68pp、n=60 → ±39pp、n=252 → ±19pp
+  （對照組合層雜訊底線 **±6pp**）→ **第一年之內年化都排不出名次**
+- 超過門檻也**一律附 `ann_stderr_pp`**。只做門檻的話，第 61 天會突然
+  冒出一個看似精確的數字。實測那筆 30 天的紀錄是 **−52.3% ±126pp**
+- 「差」要**同時跨過雜訊底線與自己的標準誤**才上色，沒跨過標 `*` 保持灰
+
+**驗證**：合成 30 天 jsonl → 跑工具 → **獨立重算累積報酬 −8.4258% vs 工具 −8.4%**，
+跑完自動刪除（用不在 `PORTFOLIOS` 裡的 `__smoketest` arm 名，不污染真實紀錄）。
+router 煙霧測試 14 項全過；前端 build 乾淨。
+
+**⚠️ 又抓到三個寫死的比較基準**（這是同型的第 4~6 次）：
+前端文案「回測從 +38.0% 掉到 −19.9%」（**兩個數字都過時，而且 −19.9% 連正負號
+都是錯的**——實際是 37.3% → 25.0%）／router fallback 的 `backtest_ann: 0.380`／
+`--list` footer 說 bt_ann 來自 08-03 的 docs。全部改成從單一真相取值或如實描述。
 
 #### 2026-08-09 — 全面重評分：**資料修正沒有推翻任何結論**
 
@@ -1161,23 +1204,7 @@ Set-ScheduledTask -TaskName "MarketMamba_V62" -Principal (New-ScheduledTaskPrinc
 
 ### 下一步
 
-> ## ▶ 下次開工從這裡開始（2026-08-08）
->
-> ### 🔴 第一件事：08-08 這批還沒 commit
->
-> 12 個檔案改動 + 4 個新檔，全部驗證通過但**尚未進 git**。
-> `V6/marketmamba/config.py` 是刻意保持 56 維的 dirty 檔，**指定檔案加，不要 `git add -A`**：
->
-> ```bash
-> git add V6/run_v62_daily.py V6/run_v62_inference.py V6/run_v62_baselines.py V6/v62_portfolio.py \
->         V6/marketmamba/data/feature_engineer.py \
->         V6/experimental/{baseline_common,baseline_gbdt,baseline_ridge_lasso,portfolio_lab,f5_r_series,compare_scores,diag_window_panel}.py \
->         V6/experimental/result/baseline_*__p30*.json \
->         V6/results/v62_arms.json .gitignore \
->         app/backend/routers/v62.py app/frontend/src/pages/BreadthPortfolio.jsx CLAUDE.md
-> ```
->
-> 權重檔（`.npz`/`.txt`/`.pt`）**使用者決定不進 git**（只在這台機器跑），已加進 `.gitignore`。
+> ## ▶ 下次開工從這裡開始（2026-08-09）
 >
 > ### 🎯 上線本身沒有卡在 Claude 這邊的事
 >
@@ -1191,11 +1218,12 @@ Set-ScheduledTask -TaskName "MarketMamba_V62" -Principal (New-ScheduledTaskPrinc
 > ### 📌 08-17 起跑前要決定的事
 >
 > - **模型集合定案**（晚加入的少了那段紀錄，永遠無法公平並列）。
->   目前 **15 個組合 / 7 份分數**，`v62_portfolio.py --list` 看全表。
->   要不要再加（例如 Mamba 的 KG 系變體 `v2_kg`/`v3_kg`/`old_kg`/`no_gat`，
->   Drive 上有 checkpoint、加一列 `ARMS` 就好）**必須在 08-17 前決定**。
->   ⚠️ 那四個 `zero_macro=False`，要先驗尾端窗的 macro 貼回對它們也成立。
-> - **前端 15 個組合怎麼呈現**（目前是 15 顆按鈕 + tier 色點 + 警告橫幅，能用但沒設計過）
+>   目前 **19 個組合 / 11 份分數**，`v62_portfolio.py --list` 看全表（已按 family 分組）。
+>   四個 F6 消融 arm 已於 08-08 併入（`v2_kg`/`v3_kg`/`old_kg`/`no_gat`，
+>   macro 全歷史貼回也驗過了）→ **要不要再加，08-17 前決定**。
+> - **前端呈現**：08-09 已做了第一輪（family 分組按鈕 + tier 色點 + 前瞻績效分頁）。
+>   還沒處理的是**版面本身**——19 個組合 + 兩個分頁塞在一頁，能用但沒設計過。
+>   使用者說「等全部上線、看得見全貌之後再想」。
 >
 > ### ⏸ 待跑：換 seed，量 Mamba 的 run-to-run σ
 >
@@ -1407,10 +1435,14 @@ Set-ScheduledTask -TaskName "MarketMamba_V62" -Principal (New-ScheduledTaskPrinc
   `--tag` 套了模型與分數 **漏了結果 JSON**（蓋掉正式檔）／
   `SEG_WINDOW` 與 rolling 邏輯在兩支檔案**各一份**。
   修完手上那處就當完成，是最常見的漏網型態。
-- **★ 比較基準不可寫死**（2026-08-09 一次踩到三個地方）：前端寫死「主線是 38.0%」、
-  router 測試寫死 `0.380`、`score_window` 寫死 `對照 +0.1145`。
+- **★ 比較基準不可寫死**（2026-08-09 一天內踩到**六個**地方）：前端寫死「主線是 38.0%」、
+  router 測試寫死 `0.380`、`score_window` 寫死 `對照 +0.1145`、
+  前端文案寫死「從 +38.0% 掉到 −19.9%」（**兩個數字都過時，而且 −19.9% 連正負號
+  都是錯的**——實際是 37.3% → 25.0%）、router fallback 的 `backtest_ann: 0.380`、
+  `--list` footer 說 bt_ann 出自 08-03 的 docs。
   重跑一次全部過時，而且**看起來還是很像正確的對照**。
-  基準一律從單一真相（manifest / API / 該 arm 自己的參考檔）取值。
+  基準一律從單一真相（manifest / API / 該 arm 自己的參考檔）取值；
+  **真的要寫在說明文字裡就不要寫數字**，講機制就好。
 - **★ 分級規則要分「更差」與「不可比」**：只看 `|Δ|` 會把**更好**的組合標成
   「已知明確劣於主線」（`head10d_f20` 好 8.9pp 卻被標 inferior）。
   而跨訓練輪（隔離天數不同）的比較**本身就不成立**，要有獨立的
@@ -1433,6 +1465,12 @@ Set-ScheduledTask -TaskName "MarketMamba_V62" -Principal (New-ScheduledTaskPrinc
 - **比較模型優劣用 decile spread，不用 Top50 年化**
   ——年化 σ = **2.68pp**，decile Sharpe σ 只有 **0.019（穩定 40 倍）**
 - **八模型表裡小於 6pp 的年化差距不該當數**
+- **★ 小樣本的年化必須附標準誤，而且「不顯示」的門檻要用算的**（2026-08-09）：
+  年化的標準誤 ≈ 252 × s_daily / √n → n=20 是 **±68pp**、n=60 ±39pp、n=252 ±19pp，
+  而組合層雜訊底線只有 ±6pp → **第一年之內年化排不出名次**。
+  實測 30 天的紀錄算出「年化 −52.3% **±126pp**」——**沒有誤差棒的話，
+  那個數字會被擺在 37.3% 的回測值旁邊，讀起來像「模型崩了」**。
+  ⚠️ 只設門檻不夠：門檻那天會突然冒出一個看似精確的數字。**門檻 + 誤差棒兩個都要。**
 - **「重不重現得出來」要分訊號層與組合層兩層問，不可簡化成一句話**（2026-08-08 GBDT 實例）：
   同一份資料、同一個 seed、只差 30 個訓練日 → **訊號層 ρ=0.9203、Top50 只重疊 25/50**，
   但**組合層 11.0% vs 11.2%、Sharpe 0.653 vs 0.639**。

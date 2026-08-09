@@ -92,6 +92,11 @@ class Portfolio:
     bt_ann:    float | None   # 回測淨年化（582 天窗），前端顯示用；None = 沒跑過
     head:      str            # 顯示用的頭名稱。**明確寫死，不從 score_arm 字串推導**
                               # （`head10d` 不含子字串 `h10` → 推導會靜默標成 5d 頭）
+    family:    str            # 分組（前端用；見 `_FAMILY_DESC`）。**與 tier 正交**：
+                              # tier 說「能不能照做」，family 說「這是什麼東西」。
+                              # 19 個 arm 平鋪在同一排按鈕裡看不出結構，
+                              # 而「主線的另一個頻率」與「壞掉的 KG 對照組」
+                              # 是完全不同性質的東西，混在一起會誤導。
     n:         int = N_HOLD
     k:         float = BUFFER_K
     note:      str = ""
@@ -124,50 +129,73 @@ _TIER_DESC = {
 #      equivalent    = 同輪且 |Δ| < 6pp
 #      inferior      = 同輪且 Δ ≤ −6pp（**只有更差才叫 inferior**）
 
+# ── 分組（family）：**與 tier 正交，兩者都要顯示** ───────────────────────
+#    tier  = 「能不能照這個做」（拿回測差距對雜訊底線量出來的）
+#    family= 「這是什麼東西」（同一顆模型換頻率 vs 完全不同的模型）
+#
+#    為什麼需要 family：`v2_kg_nomacro_f03`（主線換成 3 日再平衡）與
+#    `old_kg_f20`（KG 壞掉的對照組）**tier 都是 inferior**，但前者是
+#    「同一個訊號、換個用法」、後者是「一個已知有缺陷的模型」。
+#    只給 tier 的話，這兩個在前端長得一模一樣——那是誤導。
+_FAMILY_DESC = {
+    "main_5d":   "上線模型 · 5d 頭（不同再平衡率）",
+    "main_10d":  "上線模型 · 10d 頭（同一顆 checkpoint 的第二欄）",
+    "ckpt":      "獨立訓練的研究 checkpoint",
+    "ablation":  "F6 消融對照組",
+    "baseline":  "B 類經典模型對照組",
+}
+# 顯示順序（前端照這個排；dict 的宣告順序不保證前端會照用，所以明確給一份）
+FAMILY_ORDER = ["main_5d", "main_10d", "ckpt", "ablation", "baseline"]
+
 PORTFOLIOS: dict[str, Portfolio] = {
     # ── 主線：5d 頭 / 20 日（已定案的上線規格）────────────────────
     "v2_kg_nomacro_f20": Portfolio("v2_kg_nomacro",     20, "primary",    0.373, "5d 頭",
-                                   note="★ 上線規格 5d/20"),
+                                   "main_5d", note="★ 上線規格 5d/20"),
     # ── 5d 頭的其他頻率（中間天數的參考組合）──────────────────────
-    "v2_kg_nomacro_f10": Portfolio("v2_kg_nomacro",     10, "equivalent", 0.374, "5d 頭"),
-    "v2_kg_nomacro_f05": Portfolio("v2_kg_nomacro",      5, "equivalent", 0.324, "5d 頭"),
-    "v2_kg_nomacro_f03": Portfolio("v2_kg_nomacro",      3, "inferior",   0.259, "5d 頭"),
-    "v2_kg_nomacro_f01": Portfolio("v2_kg_nomacro",      1, "inferior",   0.250, "5d 頭"),
+    "v2_kg_nomacro_f10": Portfolio("v2_kg_nomacro",     10, "equivalent", 0.374, "5d 頭", "main_5d"),
+    "v2_kg_nomacro_f05": Portfolio("v2_kg_nomacro",      5, "equivalent", 0.324, "5d 頭", "main_5d"),
+    "v2_kg_nomacro_f03": Portfolio("v2_kg_nomacro",      3, "inferior",   0.259, "5d 頭", "main_5d"),
+    "v2_kg_nomacro_f01": Portfolio("v2_kg_nomacro",      1, "inferior",   0.250, "5d 頭", "main_5d"),
     # ── 10d 頭（同一顆 checkpoint 的第二欄）────────────────────────
     #    ⚠️ 高頻端**要用這顆頭**：與 5d 頭的差距隨頻率變高而擴大
     #    （20 日 +1.2pp 在雜訊內 → 1 日 +9.6pp 超出雜訊底線）。
     #    機制在成本欄：10d 頭分數變動慢 → 換手低 → 1 日那格成本 31.1% vs 42.6%。
     "v2_kg_nomacro_h10_f20": Portfolio("v2_kg_nomacro_h10", 20, "equivalent", 0.421,
-                                       "10d 頭", note="回測比主線高 1.2pp，但在雜訊內"),
-    "v2_kg_nomacro_h10_f10": Portfolio("v2_kg_nomacro_h10", 10, "equivalent", 0.427, "10d 頭"),
-    "v2_kg_nomacro_h10_f05": Portfolio("v2_kg_nomacro_h10",  5, "equivalent", 0.390, "10d 頭"),
-    "v2_kg_nomacro_h10_f03": Portfolio("v2_kg_nomacro_h10",  3, "equivalent", 0.329, "10d 頭"),
-    "v2_kg_nomacro_h10_f01": Portfolio("v2_kg_nomacro_h10",  1, "equivalent", 0.326, "10d 頭",
+                                       "10d 頭", "main_10d",
+                                       note="回測比主線高 1.2pp，但在雜訊內"),
+    "v2_kg_nomacro_h10_f10": Portfolio("v2_kg_nomacro_h10", 10, "equivalent", 0.427,
+                                       "10d 頭", "main_10d"),
+    "v2_kg_nomacro_h10_f05": Portfolio("v2_kg_nomacro_h10",  5, "equivalent", 0.390,
+                                       "10d 頭", "main_10d"),
+    "v2_kg_nomacro_h10_f03": Portfolio("v2_kg_nomacro_h10",  3, "equivalent", 0.329,
+                                       "10d 頭", "main_10d"),
+    "v2_kg_nomacro_h10_f01": Portfolio("v2_kg_nomacro_h10",  1, "equivalent", 0.326,
+                                       "10d 頭", "main_10d",
                                        note="新面板下 −4.7pp，落回雜訊內（舊面板是 −9.7pp）"),
     # ── 獨立訓練的研究 checkpoint（各只跑主線頻率）─────────────────
-    "head10d_f20": Portfolio("head10d", 20, "incomparable", 0.462, "h10 ckpt",
+    "head10d_f20": Portfolio("head10d", 20, "incomparable", 0.462, "h10 ckpt", "ckpt",
                              note="不同 checkpoint；隔離 40 天那一輪，不可與上面並列"),
-    "head20d_f20": Portfolio("head20d", 20, "incomparable", 0.385, "h20 ckpt",
+    "head20d_f20": Portfolio("head20d", 20, "incomparable", 0.385, "h20 ckpt", "ckpt",
                              note="不同 checkpoint；隔離 40 天那一輪，不可與上面並列"),
     # ── F6 消融的四個 Mamba arm（2026-08-08 加入）──────────────────
     #    ⚠️ 這四個**吃 Group D**（zero_macro=False）→ 依賴 `build_feature_df()`
     #    的 macro 全歷史貼回。實測窗內自算 vs 全歷史：TWII_Return −0.1264 → −0.8985。
     #    定位是對照組，不是候選上線規格。
-    "v3_kg_f20":  Portfolio("v3_kg", 20, "inferior", 0.275, "v3 圖",
+    "v3_kg_f20":  Portfolio("v3_kg", 20, "inferior", 0.275, "v3 圖", "ablation",
                             note="加 4,504 條相關性邊，對 v2_kg 無效應（decile 1.928）"),
-    "v2_kg_f20":  Portfolio("v2_kg", 20, "inferior", 0.270, "v2 圖",
+    "v2_kg_f20":  Portfolio("v2_kg", 20, "inferior", 0.270, "v2 圖", "ablation",
                             note="Group D 照常；與主線只差 Group D（decile 1.905）"),
-    "old_kg_f20": Portfolio("old_kg", 20, "inferior", 0.146, "舊圖",
+    "old_kg_f20": Portfolio("old_kg", 20, "inferior", 0.146, "舊圖", "ablation",
                             note="壞掉的 KG——2330 的鄰居是電器電纜（decile 1.231）"),
-    "no_gat_f20": Portfolio("no_gat", 20, "inferior", 0.162, "無 GAT",
+    "no_gat_f20": Portfolio("no_gat", 20, "inferior", 0.162, "無 GAT", "ablation",
                             note="架構少 graph_layer/gate/norm_fuse（decile 1.664）"),
     # ── B 類經典模型（`run_v62_baselines.py` 產分數，另一個 process）──
     #    定位是**對照組**，不是候選上線規格：八模型表裡它們都輸給 Mamba
     #    （ridge decile 1.088 / gbdt 1.735 / gru 2.388 vs v2_kg_nomacro 5.005）。
     #    留著跑是為了「同一段真實 OOS 期間、同一把尺」的並列紀錄。
-    "ridge_f20": Portfolio("ridge", 20, "inferior", 0.216, "Ridge 307維",
+    "ridge_f20": Portfolio("ridge", 20, "inferior", 0.216, "Ridge 307維", "baseline",
                            note="線性 baseline；重建 vs 參考 ρ=0.9970"),
-    "gru_f20":   Portfolio("gru", 20, "inferior", 0.206, "GRU 60×59",
+    "gru_f20":   Portfolio("gru", 20, "inferior", 0.206, "GRU 60×59", "baseline",
                            note="checkpoint 即原始那顆，未重訓"),
     # ⚠️ GBDT 的可重現性要**分兩層講**（2026-08-08 實測）：
     #    訊號層**不可重現**（重建 vs 參考 ρ=0.9203、Top50 重疊只有 25/50；
@@ -175,11 +203,20 @@ PORTFOLIOS: dict[str, Portfolio] = {
     #    但組合層**幾乎一樣**：11.0% vs 11.2%、Sharpe 0.653 vs 0.639、換手 79% vs 81%。
     #    → 換掉的那半個 Top50 與被換掉的一樣好。所以「持股名單對不上」≠「策略不同」。
     #    bt_ann 用重建模型自己跑出來的 11.0%（`gbdt__p30fix_20260808`），不借用參考值。
-    "gbdt_f20":  Portfolio("gbdt", 20, "inferior", 0.141, "GBDT 307維",
+    "gbdt_f20":  Portfolio("gbdt", 20, "inferior", 0.141, "GBDT 307維", "baseline",
                            note="訊號層不可重現（ρ=0.9203）但組合層一致"
                                 "（11.0% vs 參考 11.2%）；decile Sh 1.714 vs 1.806"),
 }
 DEFAULT_PORTFOLIO = "v2_kg_nomacro_f20"
+
+# 守門：family 打錯字會讓前端整組消失（分組時對不上就不會被 render），
+# 而且**完全不會報錯**——正是本專案反覆踩到的靜默失敗型態。
+_bad_fam = {n: p.family for n, p in PORTFOLIOS.items() if p.family not in _FAMILY_DESC}
+if _bad_fam:
+    raise SystemExit(f"❌ 未知的 family：{_bad_fam}（可用：{sorted(_FAMILY_DESC)}）")
+if set(FAMILY_ORDER) != set(_FAMILY_DESC):
+    raise SystemExit(f"❌ FAMILY_ORDER 與 _FAMILY_DESC 不一致："
+                     f"{set(FAMILY_ORDER) ^ set(_FAMILY_DESC)}")
 
 
 # ============================================================
@@ -517,10 +554,12 @@ def write_manifest(path: Path | None = None) -> Path:
         "generated_at": datetime.now().isoformat(timespec="seconds"),
         "default": DEFAULT_PORTFOLIO,
         "tier_desc": _TIER_DESC,
+        "family_desc": _FAMILY_DESC,
+        "family_order": FAMILY_ORDER,
         "arms": [
             {"arm": name, "score_arm": p.score_arm, "freq": p.freq, "n": p.n,
              "k": p.k, "tier": p.tier, "backtest_ann": p.bt_ann, "note": p.note,
-             "head": p.head,
+             "head": p.head, "family": p.family,
              "state_file": STATE_FMT.format(arm=name),
              "score_file": score_file[p.score_arm], "label": p.label}
             for name, p in PORTFOLIOS.items()
@@ -534,18 +573,29 @@ def write_manifest(path: Path | None = None) -> Path:
 def print_portfolios() -> None:
     """列出組合 arm 表（規則 7：設定要看得見，不是只能讀程式碼推論）。"""
     print(f"\n{'='*88}\n組合 arm 表（{len(PORTFOLIOS)} 個）\n{'='*88}")
-    print(f"{'arm':26s}{'分數來源':22s}{'freq':>5s}{'N':>4s}{'k':>5s}"
-          f"{'回測年化':>10s}  分級")
-    print("-" * 88)
-    for name, p in PORTFOLIOS.items():
-        bt = f"{p.bt_ann*100:.1f}%" if p.bt_ann is not None else "—"
-        print(f"{name:26s}{p.score_arm:22s}{p.freq:5d}{p.n:4d}{p.k:5.1f}{bt:>10s}"
-              f"  {p.tier}")
+    for fam in FAMILY_ORDER:
+        members = [(n, p) for n, p in PORTFOLIOS.items() if p.family == fam]
+        if not members:
+            continue
+        print(f"\n【{fam}】{_FAMILY_DESC[fam]}（{len(members)} 個）")
+        print(f"{'arm':26s}{'分數來源':22s}{'freq':>5s}{'N':>4s}{'k':>5s}"
+              f"{'回測年化':>10s}  分級")
+        print("-" * 88)
+        for name, p in members:
+            bt = f"{p.bt_ann*100:.1f}%" if p.bt_ann is not None else "—"
+            print(f"{name:26s}{p.score_arm:22s}{p.freq:5d}{p.n:4d}{p.k:5.1f}{bt:>10s}"
+                  f"  {p.tier}")
     print("-" * 88)
     for t, d in _TIER_DESC.items():
         print(f"  {t:12s} {d}")
-    print(f"{'='*88}\n⚠️ 回測年化來自 docs/label-horizon-vs-holding-period-2026-08-03.md §2"
-          f"（582 天單一窗、單一 seed），不是前瞻紀錄。\n")
+    print("\n⚠️ family 與 tier 正交：family 說「這是什麼」，tier 說「能不能照做」。"
+          "\n   例：`v2_kg_nomacro_f03`（主線換 3 日）與 `old_kg_f20`（壞掉的 KG）"
+          "tier 都是 inferior，\n   但前者是同一個訊號換用法、後者是已知有缺陷的模型。")
+    # ⚠️ 這行原本寫「回測年化來自 docs/label-horizon-vs-holding-period-2026-08-03.md §2」
+    #    ——那已經過時：2026-08-09 回補資料後 11 個 arm 全部在新面板上重跑過。
+    #    比較基準寫死在說明文字裡也會過時，這是同一類坑的第四次。
+    print(f"{'='*88}\n⚠️ 回測年化 = 2026-08-09 在**回補後的新面板**上重跑的 582 天單一窗"
+          f"（單一 seed）。**不是前瞻紀錄** —— 前瞻看 `v62_performance.py`。\n")
 
 
 if __name__ == "__main__":

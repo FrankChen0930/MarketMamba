@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-08-09T03:16:56",
+ "generated_at": "2026-08-09T12:26:28",
  "default": "v2_kg_nomacro_f20",
  "tier_desc": {
   "primary": "主線規格",
@@ -7,6 +7,20 @@
   "inferior": "研究用；已知明確劣於主線，請勿照做",
   "incomparable": "研究用；**與主線不可並列**——出自不同訓練輪（隔離天數不同），回測數字只在該輪內部有意義"
  },
+ "family_desc": {
+  "main_5d": "上線模型 · 5d 頭（不同再平衡率）",
+  "main_10d": "上線模型 · 10d 頭（同一顆 checkpoint 的第二欄）",
+  "ckpt": "獨立訓練的研究 checkpoint",
+  "ablation": "F6 消融對照組",
+  "baseline": "B 類經典模型對照組"
+ },
+ "family_order": [
+  "main_5d",
+  "main_10d",
+  "ckpt",
+  "ablation",
+  "baseline"
+ ],
  "arms": [
   {
    "arm": "v2_kg_nomacro_f20",
@@ -18,6 +32,7 @@
    "backtest_ann": 0.373,
    "note": "★ 上線規格 5d/20",
    "head": "5d 頭",
+   "family": "main_5d",
    "state_file": "v62_state_v2_kg_nomacro_f20.json",
    "score_file": "df_v62.csv",
    "label": "5d 頭 / 20 日"
@@ -32,6 +47,7 @@
    "backtest_ann": 0.374,
    "note": "",
    "head": "5d 頭",
+   "family": "main_5d",
    "state_file": "v62_state_v2_kg_nomacro_f10.json",
    "score_file": "df_v62.csv",
    "label": "5d 頭 / 10 日"
@@ -46,6 +62,7 @@
    "backtest_ann": 0.324,
    "note": "",
    "head": "5d 頭",
+   "family": "main_5d",
    "state_file": "v62_state_v2_kg_nomacro_f05.json",
    "score_file": "df_v62.csv",
    "label": "5d 頭 / 5 日"
@@ -60,6 +77,7 @@
    "backtest_ann": 0.259,
    "note": "",
    "head": "5d 頭",
+   "family": "main_5d",
    "state_file": "v62_state_v2_kg_nomacro_f03.json",
    "score_file": "df_v62.csv",
    "label": "5d 頭 / 3 日"
@@ -74,6 +92,7 @@
    "backtest_ann": 0.25,
    "note": "",
    "head": "5d 頭",
+   "family": "main_5d",
    "state_file": "v62_state_v2_kg_nomacro_f01.json",
    "score_file": "df_v62.csv",
    "label": "5d 頭 / 1 日"
@@ -88,6 +107,7 @@
    "backtest_ann": 0.421,
    "note": "回測比主線高 1.2pp，但在雜訊內",
    "head": "10d 頭",
+   "family": "main_10d",
    "state_file": "v62_state_v2_kg_nomacro_h10_f20.json",
    "score_file": "df_v62_nomacro_h10.csv",
    "label": "10d 頭 / 20 日"
@@ -102,6 +122,7 @@
    "backtest_ann": 0.427,
    "note": "",
    "head": "10d 頭",
+   "family": "main_10d",
    "state_file": "v62_state_v2_kg_nomacro_h10_f10.json",
    "score_file": "df_v62_nomacro_h10.csv",
    "label": "10d 頭 / 10 日"
@@ -116,6 +137,7 @@
    "backtest_ann": 0.39,
    "note": "",
    "head": "10d 頭",
+   "family": "main_10d",
    "state_file": "v62_state_v2_kg_nomacro_h10_f05.json",
    "score_file": "df_v62_nomacro_h10.csv",
    "label": "10d 頭 / 5 日"
@@ -130,6 +152,7 @@
    "backtest_ann": 0.329,
    "note": "",
    "head": "10d 頭",
+   "family": "main_10d",
    "state_file": "v62_state_v2_kg_nomacro_h10_f03.json",
    "score_file": "df_v62_nomacro_h10.csv",
    "label": "10d 頭 / 3 日"
@@ -144,6 +167,7 @@
    "backtest_ann": 0.326,
    "note": "新面板下 −4.7pp，落回雜訊內（舊面板是 −9.7pp）",
    "head": "10d 頭",
+   "family": "main_10d",
    "state_file": "v62_state_v2_kg_nomacro_h10_f01.json",
    "score_file": "df_v62_nomacro_h10.csv",
    "label": "10d 頭 / 1 日"
@@ -158,6 +182,7 @@
    "backtest_ann": 0.462,
    "note": "不同 checkpoint；隔離 40 天那一輪，不可與上面並列",
    "head": "h10 ckpt",
+   "family": "ckpt",
    "state_file": "v62_state_head10d_f20.json",
    "score_file": "df_v62_h10.csv",
    "label": "h10 ckpt / 20 日"
@@ -172,6 +197,7 @@
    "backtest_ann": 0.385,
    "note": "不同 checkpoint；隔離 40 天那一輪，不可與上面並列",
    "head": "h20 ckpt",
+   "family": "ckpt",
    "state_file": "v62_state_head20d_f20.json",
    "score_file": "df_v62_h20.csv",
    "label": "h20 ckpt / 20 日"
@@ -186,6 +212,7 @@
    "backtest_ann": 0.275,
    "note": "加 4,504 條相關性邊，對 v2_kg 無效應（decile 1.928）",
    "head": "v3 圖",
+   "family": "ablation",
    "state_file": "v62_state_v3_kg_f20.json",
    "score_file": "df_v62_v3_kg.csv",
    "label": "v3 圖 / 20 日"
@@ -200,6 +227,7 @@
    "backtest_ann": 0.27,
    "note": "Group D 照常；與主線只差 Group D（decile 1.905）",
    "head": "v2 圖",
+   "family": "ablation",
    "state_file": "v62_state_v2_kg_f20.json",
    "score_file": "df_v62_v2_kg.csv",
    "label": "v2 圖 / 20 日"
@@ -214,6 +242,7 @@
    "backtest_ann": 0.146,
    "note": "壞掉的 KG——2330 的鄰居是電器電纜（decile 1.231）",
    "head": "舊圖",
+   "family": "ablation",
    "state_file": "v62_state_old_kg_f20.json",
    "score_file": "df_v62_old_kg.csv",
    "label": "舊圖 / 20 日"
@@ -228,6 +257,7 @@
    "backtest_ann": 0.162,
    "note": "架構少 graph_layer/gate/norm_fuse（decile 1.664）",
    "head": "無 GAT",
+   "family": "ablation",
    "state_file": "v62_state_no_gat_f20.json",
    "score_file": "df_v62_no_gat.csv",
    "label": "無 GAT / 20 日"
@@ -242,6 +272,7 @@
    "backtest_ann": 0.216,
    "note": "線性 baseline；重建 vs 參考 ρ=0.9970",
    "head": "Ridge 307維",
+   "family": "baseline",
    "state_file": "v62_state_ridge_f20.json",
    "score_file": "df_v62_ridge.csv",
    "label": "Ridge 307維 / 20 日"
@@ -256,6 +287,7 @@
    "backtest_ann": 0.206,
    "note": "checkpoint 即原始那顆，未重訓",
    "head": "GRU 60×59",
+   "family": "baseline",
    "state_file": "v62_state_gru_f20.json",
    "score_file": "df_v62_gru.csv",
    "label": "GRU 60×59 / 20 日"
@@ -270,6 +302,7 @@
    "backtest_ann": 0.141,
    "note": "訊號層不可重現（ρ=0.9203）但組合層一致（11.0% vs 參考 11.2%）；decile Sh 1.714 vs 1.806",
    "head": "GBDT 307維",
+   "family": "baseline",
    "state_file": "v62_state_gbdt_f20.json",
    "score_file": "df_v62_gbdt.csv",
    "label": "GBDT 307維 / 20 日"

@@ -9,7 +9,10 @@ V6.2 組合層 router — 規格 `5d/20`
 ⚠️ 語意（前端必須照這個講，不可簡化成「今日選股」）
 ----------------------------------------------------
 本模型**每 20 個交易日才換一次股**。中間 19 天的分數變動**不是交易訊號**——
-回測實測每日再平衡是 −19.9%、每 20 日是 +38.1%，兩者差在成本與換手。
+同一份分數換成每日再平衡，回測年化會掉一大截（差在換手成本）。
+⚠️ **這裡刻意不寫具體數字**：manifest 的 `backtest_ann` 才是唯一真相，
+   而寫進註解／文案的數字重跑一次就過時（2026-08-09 已經發生過一輪，
+   前端曾寫死「38.0% → −19.9%」，實際是 37.3% → 25.0%，連正負號都錯）。
 所以 API 一律同時回：
   `is_rebalance_day`（今天是不是換股日）
   `days_to_next`（距下次還幾個交易日）
@@ -51,11 +54,20 @@ MANIFEST_FILE = "v62_arms.json"
 FALLBACK_DEFAULT = "v2_kg_nomacro_f20"
 FALLBACK_ARMS = [{
     "arm": FALLBACK_DEFAULT, "score_arm": "v2_kg_nomacro", "freq": 20, "n": 50,
-    "k": 1.5, "tier": "primary", "backtest_ann": 0.380, "head": "5d 頭",
+    "k": 1.5, "tier": "primary", "backtest_ann": 0.373, "head": "5d 頭",
+    "family": "main_5d",
     "label": "5d 頭 / 20 日", "state_file": f"v62_state_{FALLBACK_DEFAULT}.json",
     "score_file": "df_v62.csv",
     "note": "manifest 尚未推送，這是硬編的主線 fallback",
 }]
+# 只在 manifest 抓不到時用；正常情況由 `v62_portfolio._FAMILY_DESC` 帶過來。
+FALLBACK_FAMILY_DESC = {
+    "main_5d":  "上線模型 · 5d 頭（不同再平衡率）",
+    "main_10d": "上線模型 · 10d 頭（同一顆 checkpoint 的第二欄）",
+    "ckpt":     "獨立訓練的研究 checkpoint",
+    "ablation": "F6 消融對照組",
+    "baseline": "B 類經典模型對照組",
+}
 
 # 回測脈絡：全 arm 共通的警語（每個 arm 自己的數字從 manifest / state 讀）
 CAVEATS = ["單一 seed（年化帶 ±2.7pp 的 run-to-run 雜訊）",
@@ -164,6 +176,7 @@ async def _load(arm: str, meta: dict) -> Optional[dict]:
                         if a.get("tier") == "primary"), None)
     return {
         "arm": arm, "label": meta.get("label", arm),
+        "family": meta.get("family", "main_5d"),
         "spec": spec, "tier": tier,
         "tier_desc": TIER_DESC.get(tier, ""),
         "is_primary": tier == "primary",
@@ -237,13 +250,48 @@ async def list_arms():
     m = await _manifest()
     return {"default": m.get("default", FALLBACK_DEFAULT),
             "tier_desc": m.get("tier_desc", TIER_DESC),
+            # family 與 tier **正交**：family 說「這是什麼」（同一顆模型換頻率
+            # vs 完全不同的模型），tier 說「能不能照做」。只給 tier 的話，
+            # 「主線換 3 日再平衡」與「KG 壞掉的對照組」在前端長得一模一樣。
+            "family_desc": m.get("family_desc", FALLBACK_FAMILY_DESC),
+            "family_order": m.get("family_order", list(FALLBACK_FAMILY_DESC)),
             "caveats": CAVEATS,
             "stale": bool(m.get("stale")),
             "generated_at": m.get("generated_at"),
             "arms": [{"arm": a["arm"], "label": a.get("label", a["arm"]),
                       "tier": a.get("tier"), "freq": a.get("freq"),
+                      "family": a.get("family", "main_5d"),
                       "head": a.get("head"), "backtest_ann": a.get("backtest_ann"),
                       "note": a.get("note", "")} for a in m["arms"]]}
+
+
+@router.get("/performance")
+async def get_v62_performance():
+    """前瞻績效（真實 out-of-sample）——由 `V6/v62_performance.py --json` 產生。
+
+    ⚠️ **這與 `/portfolio` 的 `backtest_ann` 是兩種完全不同的東西**：
+       前者是實際跑出來的、樣本很小；後者是 582 天回測、樣本大但只有一個窗。
+       前端必須把兩者標清楚，不可混在同一欄比大小而不註明。
+
+    ⚠️ `enough_sample=false` 時（樣本 < `min_days_for_any_claim` 個交易日），
+       **年化與 Sharpe 不可顯示**——把 12 天的報酬外推成年化會得到荒謬的數字，
+       而那個數字看起來跟回測值一樣「像個結論」。前端只該顯示累積報酬 + 天數。
+    """
+    now = datetime.now()
+    key = "__perf__"
+    if key in _cache and now - _cache_time.get(key, now) < CACHE_TTL:
+        return _cache[key]
+    async with _lock:
+        if key in _cache and now - _cache_time.get(key, now) < CACHE_TTL:
+            return _cache[key]
+        d = await _fetch(_url("v62_performance.json"), as_json=True)
+        if not d:
+            # 起跑前這是**正常狀態**，不是錯誤——前端要顯示「尚未開始累積」，
+            # 而不是「載入失敗」。兩者對使用者的意義完全不同。
+            return {"models": {}, "n_days": 0, "not_started": True,
+                    "note": "V6.2 還沒開始累積前瞻紀錄（第一次再平衡之後才會出現）"}
+        _cache[key], _cache_time[key] = d, datetime.now()
+        return d
 
 
 @router.post("/cache/refresh")

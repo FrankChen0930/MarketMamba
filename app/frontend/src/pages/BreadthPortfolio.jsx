@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchV62Portfolio, fetchV62Arms } from '../api/v62';
+import V62Performance from './V62Performance';
 
 /**
  * V6.2 持股組合（20 日）
@@ -18,12 +19,19 @@ import { fetchV62Portfolio, fetchV62Arms } from '../api/v62';
 export default function BreadthPortfolio() {
   const [arm, setArm] = useState(null);
   const [arms, setArms] = useState([]);
+  const [famDesc, setFamDesc] = useState({});
+  const [famOrder, setFamOrder] = useState([]);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState('holdings');
 
   useEffect(() => {
-    fetchV62Arms().then((d) => { setArms(d.arms || []); if (!arm) setArm(d.default); })
-      .catch(() => setArms([]));
+    fetchV62Arms().then((d) => {
+      setArms(d.arms || []);
+      setFamDesc(d.family_desc || {});
+      setFamOrder(d.family_order || Object.keys(d.family_desc || {}));
+      if (!arm) setArm(d.default);
+    }).catch(() => setArms([]));
   }, []);
 
   useEffect(() => {
@@ -32,8 +40,37 @@ export default function BreadthPortfolio() {
       .finally(() => setLoading(false));
   }, [arm]);
 
-  if (loading) return <div style={{ padding: 24, opacity: .6 }}>載入中…</div>;
-  if (!data) return <div style={{ padding: 24, opacity: .6 }}>無法取得 V6.2 資料</div>;
+  // 分頁列在 loading / error 之前就算好——否則持股載入失敗時，
+  // 連「前瞻績效」都點不進去（兩者是獨立的 endpoint，不該互相拖累）。
+  const tabBar = (
+    <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid #2a2a2a' }}>
+      {[['holdings', '持股組合'], ['performance', '前瞻績效比較']].map(([k, lbl]) => (
+        <button key={k} onClick={() => setTab(k)} style={{
+          padding: '8px 16px', border: 'none', cursor: 'pointer', fontSize: 14,
+          background: 'transparent', color: tab === k ? '#4a9eff' : '#888',
+          borderBottom: tab === k ? '2px solid #4a9eff' : '2px solid transparent',
+          fontWeight: tab === k ? 600 : 400,
+        }}>{lbl}</button>
+      ))}
+    </div>
+  );
+
+  if (tab === 'performance') {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {tabBar}
+        <V62Performance />
+      </div>
+    );
+  }
+  if (loading) {
+    return <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {tabBar}<div style={{ padding: 24, opacity: .6 }}>載入中…</div></div>;
+  }
+  if (!data) {
+    return <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {tabBar}<div style={{ padding: 24, opacity: .6 }}>無法取得 V6.2 資料</div></div>;
+  }
 
   const spec = data.spec || {};
   const freq = spec.freq ?? 20;
@@ -53,36 +90,70 @@ export default function BreadthPortfolio() {
   };
   const ts = TIER_STYLE[data.tier] || TIER_STYLE.equivalent;
 
+  // 「每日再平衡會差多少」——從 manifest 取同一組（同 family）的最慢與最快頻率，
+  // **不寫死數字**。找不到成對的就退回定性描述（寧可少講，不要講過時的數字）。
+  const sameFam = arms.filter((a) => a.family === data.family
+                                     && a.backtest_ann != null);
+  const slowest = sameFam.reduce((m, a) => (!m || a.freq > m.freq ? a : m), null);
+  const fastest = sameFam.reduce((m, a) => (!m || a.freq < m.freq ? a : m), null);
+  const freqCost = (slowest && fastest && slowest.freq > fastest.freq)
+    ? { slow: slowest.backtest_ann, fast: fastest.backtest_ann } : null;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      {/* ── 組合切換（同一個模型的不同預測頭 × 不同再平衡率）── */}
+      {tabBar}
+
+      {/* ── 組合切換：按 family 分組 ──────────────────────────────────
+          ⚠️ 19 個平鋪在同一排看不出結構，而且會誤導：`v2_kg_nomacro_f03`
+             （主線換 3 日再平衡）與 `old_kg_f20`（KG 壞掉的對照組）**tier 都是
+             inferior**，平鋪的話長得一模一樣。family 說「這是什麼」、
+             tier 說「能不能照做」，兩個維度都要看得到。            */}
       {arms.length > 1 && (
-        <div>
-          <div style={{ fontSize: 12, opacity: .5, marginBottom: 6 }}>
-            並行組合（同一顆模型，差在預測頭與再平衡率）—
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ fontSize: 12, opacity: .5 }}>
+            並行組合（{arms.length} 個）—
             <span style={{ color: '#4caf50' }}> ● 主線</span>
             <span style={{ color: '#ffc107' }}> ● 雜訊內</span>
             <span style={{ color: '#ff5252' }}> ● 已知較差</span>
+            {/* 灰點原本不在圖例裡——沒有圖例的顏色等於沒有意義 */}
+            <span style={{ color: '#9e9e9e' }}> ● 不可比較</span>
           </div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {arms.map((a) => {
-              const at = TIER_STYLE[a.tier] || TIER_STYLE.equivalent;
+          {(famOrder.length ? famOrder : ['_all']).concat('_other')
+            .map((fam) => {
+              const members = fam === '_all' ? arms
+                : fam === '_other'
+                  // family 對不上任何一組的不可以靜默消失——那正是本專案
+                  // 反覆踩到的失敗型態（整組不見、完全不報錯）。
+                  ? arms.filter((a) => !famOrder.includes(a.family))
+                  : arms.filter((a) => a.family === fam);
+              if (!members.length) return null;
               return (
-                <button key={a.arm} onClick={() => setArm(a.arm)}
-                  title={a.note || ''}
-                  style={{
-                    padding: '6px 12px', borderRadius: 8, cursor: 'pointer',
-                    border: a.arm === arm ? '1px solid #4a9eff' : '1px solid #333',
-                    background: a.arm === arm ? 'rgba(74,158,255,.15)' : 'transparent',
-                    color: a.arm === arm ? '#4a9eff' : '#999', fontSize: 13,
-                    display: 'flex', alignItems: 'center', gap: 6,
-                  }}>
-                  <span style={{ color: at.dot, fontSize: 10 }}>●</span>
-                  {a.tier === 'primary' ? '★ ' : ''}{a.label}
-                </button>
+                <div key={fam}>
+                  <div style={{ fontSize: 11, opacity: .42, marginBottom: 5 }}>
+                    {famDesc[fam] || (fam === '_other' ? '其他' : fam)}
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {members.map((a) => {
+                      const at = TIER_STYLE[a.tier] || TIER_STYLE.equivalent;
+                      return (
+                        <button key={a.arm} onClick={() => setArm(a.arm)}
+                          title={a.note || ''}
+                          style={{
+                            padding: '6px 12px', borderRadius: 8, cursor: 'pointer',
+                            border: a.arm === arm ? '1px solid #4a9eff' : '1px solid #333',
+                            background: a.arm === arm ? 'rgba(74,158,255,.15)' : 'transparent',
+                            color: a.arm === arm ? '#4a9eff' : '#999', fontSize: 13,
+                            display: 'flex', alignItems: 'center', gap: 6,
+                          }}>
+                          <span style={{ color: at.dot, fontSize: 10 }}>●</span>
+                          {a.tier === 'primary' ? '★ ' : ''}{a.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               );
             })}
-          </div>
         </div>
       )}
 
@@ -147,10 +218,19 @@ export default function BreadthPortfolio() {
                   距下次再平衡 <strong>{data.days_to_next}</strong> 個交易日
                   （已過 {data.days_since_rebalance} 天）。
                 </div>
+                {/* ⚠️ 這段原本寫死「從 +38.0% 掉到 −19.9%」——兩個數字都過時了
+                    （2026-08-09 重跑後是 37.3% 與 25.0%），而且 −19.9% 連正負號
+                    都是錯的。比較基準一律從 API 取值，不寫死在文案裡。 */}
                 <div style={{ fontSize: 12, opacity: .6, marginTop: 8 }}>
                   為什麼不顯示「今日選股」：這個組合每 {freq} 個交易日換一次股。
-                  同一份訊號改成每日再平衡，回測從 +38.0% 掉到 −19.9%（5d 頭）——
-                  差別全在換手成本。中間的分數變動不是交易訊號。
+                  {freqCost != null ? (
+                    <> 同一份訊號改成<strong>每日</strong>再平衡，回測年化
+                      從 {(freqCost.slow * 100).toFixed(1)}% 掉到{' '}
+                      {(freqCost.fast * 100).toFixed(1)}%——差別全在換手成本。</>
+                  ) : (
+                    <> 同一份訊號改成每日再平衡，回測年化會明顯下降——差別全在換手成本。</>
+                  )}
+                  {' '}中間的分數變動不是交易訊號。
                 </div>
               </>
             )}

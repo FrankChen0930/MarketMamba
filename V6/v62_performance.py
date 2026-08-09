@@ -29,6 +29,9 @@ v62_performance.py — 把每日持股紀錄變成「實際賺了多少」
   · 比較模型優劣用 decile spread，不用 Top50 年化——但**前瞻紀錄算不出 decile**
     （只有持股、沒有全市場分數的逐日排序），所以這裡只能給 Top50 那條線，
     **判讀時要記得它天生比較吵**
+  · **年化一律附 ±標準誤**（`ann_stderr_pp`）。實測（2026-08-09 合成紀錄）：
+    30 天算出「年化 **−52.3%**」，而它的標準誤是 **±126pp**——沒有誤差棒的話，
+    那個數字會被擺在 37.3% 的回測值旁邊，讀起來像「模型崩了」。
 
 用法
 ----
@@ -62,7 +65,22 @@ import v62_portfolio as VP                                       # noqa: E402
 
 RESULTS_DIR = VP.RESULTS_DIR
 OUT_JSON = RESULTS_DIR / "v62_performance.json"
-MIN_DAYS_FOR_ANY_CLAIM = 20      # 少於這個天數，一律標「樣本不足」
+
+# ⚠️ 門檻原本是 20 個交易日，**那擋不住問題**（2026-08-09 用合成紀錄實測）：
+#    30 天的紀錄算出「年化 −52.3%」，而 20 天的門檻會放行它，前端就會把那個
+#    數字擺在 37.3% 的回測值旁邊——看起來像「模型崩了」，其實只是外推的假象。
+#
+#    年化報酬的標準誤 ≈ 252 × s_daily / √n。以 N=50 等權組合的日波動
+#    **假設** s ≈ 0.012 代入（⚠️ 這是估的；合成紀錄實測那籃子 s ≈ 0.027，
+#    誤差棒是這裡的兩倍多 → 真實值只會比下表更寬，不會更窄）：
+#        n = 20  → ±68pp     n = 60  → ±39pp
+#        n = 126 → ±27pp     n = 252 → ±19pp
+#    對照組合層的雜訊底線 **±6pp** —— 也就是說**第一年之內，年化都不精確到
+#    足以拿來排名**。所以：
+#      ① 門檻拉到 60（一季）：低於此連年化都不顯示，只給累積報酬
+#      ② 超過門檻也**一律附上 ±ann_stderr_pp**，讓數字自己說明它有多不準
+#    ①是判斷、②是事實。只做①會讓 61 天那天突然冒出一個看似精確的數字。
+MIN_DAYS_FOR_ANY_CLAIM = 60
 NOISE_FLOOR_PP = 6.0             # 組合層 N=50 的雜訊底線（年化 pp）
 
 
@@ -145,6 +163,10 @@ def evaluate(arm: str, log: pd.DataFrame, ret: pd.DataFrame) -> dict | None:
     sharpe = float(port.mean() / sd * np.sqrt(252)) if sd > 0 else 0.0
     eq = (1 + port).cumprod()
     mdd = float((eq / np.maximum.accumulate(eq) - 1).min())
+    # 年化報酬的標準誤（pp）：252 × s_daily / √n。
+    # **一定要跟年化一起出現**——年化是把 n 天外推成 252 天，樣本小的時候
+    # 那個外推的誤差比任何模型間的差距都大好幾倍，而數字本身看不出來。
+    ann_se_pp = float(252 * sd / np.sqrt(n) * 100) if n > 1 and sd > 0 else None
     return {
         "arm": arm,
         "n_days": n,
@@ -152,6 +174,7 @@ def evaluate(arm: str, log: pd.DataFrame, ret: pd.DataFrame) -> dict | None:
         "end": str(dates[-1].date()),
         "cum_return": round(cum, 4),
         "ann_return": round(ann, 4),
+        "ann_stderr_pp": round(ann_se_pp, 1) if ann_se_pp is not None else None,
         "ann_sharpe": round(sharpe, 3),
         "max_drawdown": round(mdd, 4),
         "n_rebalances": len(turnovers),
@@ -198,23 +221,30 @@ def main() -> int:
     print("=" * 104)
     if n_days < MIN_DAYS_FOR_ANY_CLAIM:
         print(f"⚠️ 只有 {n_days} 個交易日（門檻 {MIN_DAYS_FOR_ANY_CLAIM}）——"
-              f"**這些數字現在不能拿來下任何結論**，只用來確認管線有在跑。")
-    print(f"{'arm':26s}{'天':>4s}{'累積':>9s}{'年化':>9s}{'Sharpe':>8s}"
+              f"**這些數字現在不能拿來下任何結論**，只用來確認管線有在跑。\n"
+              f"   年化欄位一併印出 ±標準誤，看一眼就知道它有多不準。")
+    print(f"{'arm':26s}{'天':>4s}{'累積':>9s}{'年化 ±標準誤':>20s}{'Sharpe':>8s}"
           f"{'MDD':>8s}{'換手':>7s}{'回測年化':>10s}{'差':>9s}  分級")
-    print("-" * 104)
+    print("-" * 112)
     for x, v in sorted(res.items(), key=lambda kv: -kv[1]["ann_return"]):
         bt = v.get("backtest_ann")
         diff = (v["ann_return"] - bt) * 100 if bt is not None else None
+        se = v.get("ann_stderr_pp")
+        ann_s = f"{v['ann_return']*100:.1f}%" + (f" ±{se:.0f}pp" if se else "")
+        # 「差」小於標準誤時不該被讀成差距 → 標記出來，不要讓它看起來像結論
+        d_s = "—" if diff is None else (
+            f"{diff:+.1f}pp" + ("*" if se and abs(diff) < se else ""))
         print(f"{x:26s}{v['n_days']:4d}{v['cum_return']*100:8.1f}%"
-              f"{v['ann_return']*100:8.1f}%{v['ann_sharpe']:8.2f}"
+              f"{ann_s:>20s}{v['ann_sharpe']:8.2f}"
               f"{v['max_drawdown']*100:7.1f}%"
               f"{(v['avg_turnover'] or 0)*100:6.0f}%"
               f"{(f'{bt*100:.1f}%' if bt is not None else '—'):>10s}"
-              f"{(f'{diff:+.1f}pp' if diff is not None else '—'):>9s}"
-              f"  {v.get('tier','')}")
-    print("-" * 104)
+              f"{d_s:>9s}  {v.get('tier','')}")
+    print("-" * 112)
     print(f"⚠️ 「差」是前瞻 vs 回測。組合層 N=50 的雜訊底線約 ±{NOISE_FLOOR_PP:.0f}pp，"
-          f"**小於這個的差距不該當數**。")
+          f"**小於這個的差距不該當數**；標 `*` 者連自己的標準誤都跨不過。")
+    print("⚠️ ±標準誤 = 252 × s_daily / √n。它通常比模型之間的差距大好幾倍——"
+          "**第一年之內年化都排不出名次**，這不是工具的問題，是樣本量的問題。")
     print("⚠️ 前瞻紀錄算不出 decile spread（只有持股、沒有全市場逐日排序），"
           "所以這張表天生比 decile 吵——判讀時要記得。")
     inc = {x: v["days_with_incomplete_data"] for x, v in res.items()

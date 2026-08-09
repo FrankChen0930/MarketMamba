@@ -2,8 +2,8 @@
 run_v62_daily.py — V6.2 每日一鍵：抓資料 → 檢查 → 推論 → 多頻率組合層 → 告警
 ================================================================================
 兩階段（2026-08-08 起）：
-  [3/4] **分數 arm**（模型 × 預測頭）→ 每個跑一次 GPU 前向，寫一份 csv
-  [4/4] **組合 arm**（分數 × n/k/freq）→ 純 CPU，一份分數可餵給多個再平衡頻率
+  [3/6] **分數 arm**（模型 × 預測頭）→ 每個跑一次 GPU 前向，寫一份 csv
+  [4/6] **組合 arm**（分數 × n/k/freq）→ 純 CPU，一份分數可餵給多個再平衡頻率
 
 再平衡率是組合層參數、不是模型參數，所以 12 個組合只需要 4 份分數。
 先去重再前向——否則 5 個頻率會讓同一顆 checkpoint 白白前向 5 次。
@@ -230,6 +230,46 @@ def run_baselines(date: str, arms: list[str] | None = None) -> list[str]:
 
 
 # ============================================================
+# 3a-2. 前瞻績效彙總（獨立 process）
+# ============================================================
+def run_performance() -> bool:
+    """呼叫 `v62_performance.py --json` 產生 `v62_performance.json`。
+
+    ⚠️ **和 baseline 同一個理由，必須是獨立 process。**
+       `v62_performance` 會 import `portfolio_lab`（取 `Market` 與成本常數），
+       而那條線在 import 期就依 `MM_PROTOCOL` 綁定協定、要求 v2；
+       本流程是 Mamba 線（59 維）。同一個 process 混跑會**靜默**吃到錯的維度。
+
+    ⚠️ **非致命**：這只是把已經落檔的 jsonl 彙總成報酬，算不出來不影響
+       當天的持股紀錄（jsonl 才是不可竄改的原始紀錄，隨時可以重算）。
+
+    ⚠️ 順序：**必須在組合層 step() 之後、push 之前**——它讀的是今天剛寫進
+       jsonl 的那一列，而產出的 json 要跟著同一個 commit 上去。
+    """
+    import subprocess
+
+    script = _V6 / "v62_performance.py"
+    if not script.exists():
+        logger.warning(f"[績效] 找不到 {script.name} → 跳過")
+        return False
+    env = {**os.environ, "MM_PROTOCOL": "v2"}
+    t0 = datetime.now()
+    r = subprocess.run([sys.executable, str(script), "--json"], cwd=str(_V6.parent),
+                       env=env, capture_output=True, text=True, errors="replace")
+    el = (datetime.now() - t0).total_seconds() / 60
+    # 規則 7：績效表要看得見，不能只留在 json 裡（那樣 log 上完全看不出有沒有算對）
+    for line in (r.stdout or "").splitlines():
+        if line.strip():
+            logger.info(f"  │ {line.rstrip()[:170]}")
+    if r.returncode != 0:
+        logger.error(f"[績效] 失敗（exit {r.returncode}，{el:.1f} 分）\n"
+                     f"{(r.stderr or '')[-1200:]}")
+        return False
+    logger.info(f"[績效] ✓ v62_performance.json 已更新（{el:.1f} 分）")
+    return True
+
+
+# ============================================================
 # 3b. 推送結果到 GitHub
 # ============================================================
 def push_to_github(date: str, max_attempts: int = 3, retry_sec: int = 10) -> bool:
@@ -332,14 +372,17 @@ def main() -> int:
                     help="不推送到 GitHub（測試用；dashboard 不會更新）")
     ap.add_argument("--skip-baselines", action="store_true",
                     help="不跑 B 類經典模型（Ridge/GBDT/GRU，另一個 process 約 4 分）")
+    ap.add_argument("--skip-performance", action="store_true",
+                    help="不算前瞻績效（v62_performance.json 不更新）")
     a = ap.parse_args()
 
     if a.no_ui:
         return _pipeline(a, None)
     from progress_window import ProgressWindow
     ui = ProgressWindow(
-        ["抓取資料", "建特徵矩陣", "模型推論", "組合層", "推送 GitHub"],
-        ["Fetch data", "Build features", "Inference", "Portfolio", "Push"])
+        ["抓取資料", "建特徵矩陣", "模型推論", "組合層", "績效彙總", "推送 GitHub"],
+        ["Fetch data", "Build features", "Inference", "Portfolio",
+         "Performance", "Push"])
     return ui.run(lambda u: _pipeline(a, u))
 
 
@@ -380,18 +423,18 @@ def _pipeline(a, ui) -> int:
                "\n若 margin/daytrade 落後 1 天 → 多半是跑太早（約 21:00 才公布）。")
 
     # 特徵矩陣建一次、所有 arm 共用（矩陣是成本大宗，前向實測只要 1.5 秒）
-    logger.info(f"[2/4] 建特徵矩陣（{len(arms)} 份分數共用）…")
+    logger.info(f"[2/6] 建特徵矩陣（{len(arms)} 份分數共用）…")
     _ui(1, "running")
     import pandas as pd
     df = R.build_feature_df()
     df["Date"] = pd.to_datetime(df["Date"])
     date = df["Date"].max().strftime("%Y-%m-%d")
-    logger.info(f"[2/4] ✓ 完成｜交易日 {date}")
+    logger.info(f"[2/6] ✓ 完成｜交易日 {date}")
     _ui(1, "done", f"{len(df):,} 列")
     if ui is not None:
         ui.set_info(f"{date}｜{len(arms)} 份分數 / {len(pfs)} 個組合")
 
-    # ── [3/4] 推論：每個**分數 arm** 只跑一次前向 ─────────────────────
+    # ── [3/6] 推論：每個**分數 arm** 只跑一次前向 ─────────────────────
     #    多個組合 arm 可能共用同一份分數（同分數 × 不同再平衡率），
     #    所以先去重再前向——否則 5 個頻率會讓同一顆 checkpoint 前向 5 次。
     failed_arms: list[str] = []
@@ -399,7 +442,7 @@ def _pipeline(a, ui) -> int:
     _ui(2, "running")
     for arm in arms:
         try:
-            logger.info(f"[3/4] 推論 arm={arm} …")
+            logger.info(f"[3/6] 推論 arm={arm} …")
             out = R.infer(df, date, arm=arm)
             spec = R.ARMS[arm]
             R.RESULTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -429,7 +472,7 @@ def _pipeline(a, ui) -> int:
     _ui(2, "failed" if failed_arms else "done",
         f"{len(arms) + len(need_bl) - len(failed_arms)}/{len(arms) + len(need_bl)} 成功")
 
-    # ── [4/4] 組合層：一份分數餵給多個頻率的狀態機 ─────────────────────
+    # ── [4/6] 組合層：一份分數餵給多個頻率的狀態機 ─────────────────────
     #    再平衡率是組合層參數、不是模型參數 → 這一段完全不碰 GPU。
     _ui(3, "running")
     failed_pf: list[str] = []
@@ -440,7 +483,7 @@ def _pipeline(a, ui) -> int:
             logger.error(f"組合 {name} 跳過：分數 arm={p.score_arm} 沒有產出")
             continue
         try:
-            logger.info(f"[4/4] 組合層 {name}（{p.score_arm} × {p.freq} 日, {p.tier}）…")
+            logger.info(f"[4/6] 組合層 {name}（{p.score_arm} × {p.freq} 日, {p.tier}）…")
             P.step(name, score_csv[p.score_arm], data_complete=complete,
                    force_rebalance=a.first_day, n=p.n, k=p.k, freq=p.freq,
                    tier=p.tier)
@@ -454,16 +497,31 @@ def _pipeline(a, ui) -> int:
     # 發布 arm 清單給後端（PORTFOLIOS 是唯一真相，router 不再自帶一份）
     P.write_manifest()
 
-    # ── [5/5] 推送：沒有這一步，結果只留在本機，dashboard 永遠停在舊資料 ──
+    # ── 前瞻績效彙總：把今天剛寫進 jsonl 的持股算成實際報酬 ─────────────
+    #    必須在 step() 之後、push 之前，產出才會跟著同一個 commit 上去。
+    #    算不出來不影響持股紀錄（jsonl 是原始紀錄，隨時可重算）→ 只警告。
+    if a.skip_performance:
+        logger.info("[5/6] --skip-performance：略過績效彙總")
+        _ui(4, "skipped", "--skip-performance")
+    else:
+        logger.info("[5/6] 前瞻績效彙總 …")
+        _ui(4, "running")
+        perf_ok = run_performance()
+        _ui(4, "done" if perf_ok else "failed",
+            "已更新" if perf_ok else "失敗（非致命）")
+        if not perf_ok:
+            logger.warning("[5/6] 績效彙總失敗（非致命）— dashboard 的績效頁會停在舊值")
+
+    # ── [6/6] 推送：沒有這一步，結果只留在本機，dashboard 永遠停在舊資料 ──
     if a.skip_push:
-        logger.info("[5/5] --skip-push：略過推送（dashboard 不會更新）")
-        _ui(4, "skipped", "--skip-push")
+        logger.info("[6/6] --skip-push：略過推送（dashboard 不會更新）")
+        _ui(5, "skipped", "--skip-push")
         pushed = True
     else:
-        logger.info("[5/5] 推送到 GitHub …")
-        _ui(4, "running")
+        logger.info("[6/6] 推送到 GitHub …")
+        _ui(5, "running")
         pushed = push_to_github(date)
-        _ui(4, "done" if pushed else "failed",
+        _ui(5, "done" if pushed else "failed",
             "已推送" if pushed else "推送失敗，結果在本機")
 
     el = (datetime.now() - t0).total_seconds() / 60
