@@ -166,6 +166,13 @@ def evaluate(arm: str, log: pd.DataFrame, ret: pd.DataFrame) -> dict | None:
     # 年化報酬的標準誤（pp）：252 × s_daily / √n。
     # **一定要跟年化一起出現**——年化是把 n 天外推成 252 天，樣本小的時候
     # 那個外推的誤差比任何模型間的差距都大好幾倍，而數字本身看不出來。
+    #
+    # ⚠️ n<2 或 sd=0 時**算不出來**，值是 None。
+    #    **None 必須被當成「不確定性無限大」，不可被當成 0。**
+    #    上線第一天實測到這個洞：19 個 arm 都只有 1 天、`ann_stderr_pp=null`，
+    #    而下游的「差」判斷寫成 `abs(diff) >= se`，None→0 之後**每一列都通過**
+    #    ——第一天就把「年化 −31.5%、比回測差 68.8pp」印成一個看似成立的差距。
+    #    （那 −0.15% 其實只是建倉手續費，19 個 arm 完全相同。）
     ann_se_pp = float(252 * sd / np.sqrt(n) * 100) if n > 1 and sd > 0 else None
     return {
         "arm": arm,
@@ -230,10 +237,12 @@ def main() -> int:
         bt = v.get("backtest_ann")
         diff = (v["ann_return"] - bt) * 100 if bt is not None else None
         se = v.get("ann_stderr_pp")
-        ann_s = f"{v['ann_return']*100:.1f}%" + (f" ±{se:.0f}pp" if se else "")
-        # 「差」小於標準誤時不該被讀成差距 → 標記出來，不要讓它看起來像結論
+        # se 是 None ＝ 算不出來（n<2 或無波動）→ 印 `±?`，**不可印成沒有誤差**
+        ann_s = f"{v['ann_return']*100:.1f}%" + (f" ±{se:.0f}pp" if se else " ±?")
+        # 「差」小於標準誤時不該被讀成差距 → 標記出來，不要讓它看起來像結論。
+        # **se is None 也要標**——算不出誤差不等於沒有誤差。
         d_s = "—" if diff is None else (
-            f"{diff:+.1f}pp" + ("*" if se and abs(diff) < se else ""))
+            f"{diff:+.1f}pp" + ("*" if (se is None or abs(diff) < se) else ""))
         print(f"{x:26s}{v['n_days']:4d}{v['cum_return']*100:8.1f}%"
               f"{ann_s:>20s}{v['ann_sharpe']:8.2f}"
               f"{v['max_drawdown']*100:7.1f}%"

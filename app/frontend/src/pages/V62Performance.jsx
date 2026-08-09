@@ -139,9 +139,14 @@ export default function V62Performance() {
                   // 差距要同時跨過**雜訊底線**與**它自己的標準誤**才上色。
                   // 只看雜訊底線不夠：小樣本時標準誤動輒上百 pp，任何差距
                   // 都會超過 6pp 而被畫成紅綠，讀起來像「模型好/壞」。
-                  const se = m.ann_stderr_pp ?? 0;
-                  const solid = diff != null && Math.abs(diff) >= noise
-                                && Math.abs(diff) >= se;
+                  //
+                  // ⚠️ `ann_stderr_pp == null` ＝**算不出來**（n<2 或無波動），
+                  //    必須當成「不確定性無限大」→ 一律不上色。
+                  //    寫成 `?? 0` 會讓它變成「零誤差」，效果完全相反
+                  //    （上線第一天實測踩到：19 個 arm 全被標成大幅落後）。
+                  const se = m.ann_stderr_pp;
+                  const solid = diff != null && se != null
+                                && Math.abs(diff) >= noise && Math.abs(diff) >= se;
                   const dCol = !solid ? '#888' : (diff > 0 ? '#4caf50' : '#ff5252');
                   return (
                     <tr key={n} style={{ borderTop: '1px solid #222' }}>
@@ -161,10 +166,9 @@ export default function V62Performance() {
                           {pct(m.ann_return)}
                           {/* 誤差棒不是裝飾——樣本小的時候它比模型之間的差距
                               大好幾倍，沒有它那個年化會被讀成精確值 */}
-                          {m.ann_stderr_pp != null && (
-                            <span style={{ opacity: .5, fontSize: 11 }}>
-                              {' '}±{m.ann_stderr_pp.toFixed(0)}pp</span>
-                          )}
+                          <span style={{ opacity: .5, fontSize: 11 }}>
+                            {' '}±{m.ann_stderr_pp != null
+                              ? `${m.ann_stderr_pp.toFixed(0)}pp` : '?'}</span>
                         </td>
                         <td style={{ padding: '7px 14px' }}>{m.ann_sharpe?.toFixed(2)}</td>
                         <td style={{ padding: '7px 14px', opacity: .7 }}>
