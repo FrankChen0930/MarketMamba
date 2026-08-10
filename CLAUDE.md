@@ -4,8 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # MarketMamba — AI 助手指引
 
-> **最後更新：2026-08-09**（資料回補後全面重評分 → 沒有推翻任何結論；
-> 前瞻績效鏈路接上線 + 19 個組合分組呈現 → **11 份分數 × 19 個組合**）
+> **最後更新：2026-08-11**（`prices_raw` 欄名撞名讓當天三次執行全掛 → 已修資料 + 修根因，
+> V6.1／V6.2 都補跑完成；教訓：`to_parquet` 少 `index=False` 只在索引不連續那天才會爆）
 >
 > **開工先讀本檔最下面「下一步」的 ▶ 區塊。**
 
@@ -483,7 +483,65 @@ cd app/frontend && npm run dev   # → localhost:5173
 
 > 最後更新：2026-08-09。**本區塊只留最近一個月**，更早的完整紀錄在第二層（`obsidian_note/`）。
 
-### 最近完成（2026-07-06 ~ 08-09）
+### 最近完成（2026-07-06 ~ 08-11）
+
+#### 2026-08-10/11 — ★★ `prices_raw` 欄名撞名，當天三次執行全掛（已修資料 + 修根因）
+
+**症狀**：08-10 的三次執行**全部在第一行就死**，執行 0 秒：
+
+| 任務 | 時間 | 結果 |
+|---|---|---|
+| `PersonalOS_Daily` | 21:30 | `0xC000013A`（使用者看它卡住手動關掉） |
+| `MarketMamba_V62` | 22:15 | exit 255 |
+| 手動 V6.1 | 22:30 | `ArrowInvalid` |
+
+```
+pyarrow.lib.ArrowInvalid: Multiple matches for FieldRef.Name(__index_level_0__)
+```
+`prices_raw.parquet` 的 schema 有**兩個同名欄** `__index_level_0__`
+（一個 `double`、一個 `int64`）→ `fetcher.py:3857` 的
+`pd.read_parquet(price_path, columns=["Date"])` 無法解析 FieldRef。
+
+**★ 怎麼定位的（依「欄位位置」讀值，不是猜）**
+欄名重複時 pandas 讀不了，但 `pq.ParquetFile(p).read()` 可以（**不能用 `pq.read_table()`
+——它走 dataset API，欄名重複直接 `Can't unify schema with duplicate field names`**）。
+依位置抓出那個 double 欄的值 = **`0 … 8,737,250`、單調遞增、非 NaN 共 8,737,251 個**，
+而且**只有 2026-08-10 的 1,959 列是 NaN**。
+8,737,251 正好是 08-08 回補後的列數 → **它是回補那次寫入留下的 RangeIndex，
+今天之前就躺在檔案裡了**；今天的 append 只是把第二個疊上去。
+
+**★★ 根因：`_append_to_parquet` 的 `df.to_parquet(path)` 沒有 `index=False`**
+關鍵在於**它平常不會出事**：索引**連續**時 pandas 只把 RangeIndex 記進 metadata、
+**不落成實體欄**；只有 `drop_duplicates` 真的丟掉列、索引變得**不連續**時才會實體化。
+檔案裡若已存在同名 stray 欄（讀回來被當成一般資料欄），這一寫就變成兩個同名欄。
+→ 同一批被寫的 `institutional_raw` / `margin_raw` 至今乾淨，就是因為沒觸發去重。
+**「平常看起來沒事」不代表沒有這個缺陷。**
+
+已修：`to_parquet(path, index=False)` + **寫入前**偵測並丟棄任何 `__index_level_*` 欄並印警告。
+
+**修復與驗收**（`V6/experimental/fix_prices_index_column.py`，預設只檢查、`--apply` 才寫）：
+依位置刪掉第 7 欄，其餘原封不動。守門放在**寫入前**（欄名、型別逐欄、列數），
+先寫暫存檔驗過才 `os.replace`。驗收：`Open/High/Low/Close/Volume` 全部
+**`max|Δ| = 0.000e+00`**、`(Date, stock_id)` 鍵集合 **8,739,210 完全相同**、
+`pd.read_parquet(columns=['Date'])` 恢復正常。
+
+**⚠️ 沒查清楚的一點（不偷改成「已解決」）**：committed 版的 `backfill_prices.py:220`
+寫的是 `to_parquet(PROD, index=False)`，照那份程式碼**不會**產出 stray 欄，
+git 歷史上這行也只有一個版本。中間檔已被覆蓋 → **無法重現**。
+實際跑的很可能是 commit 之前的工作區版本，但這點**沒有證據，不下定論**。
+
+**補跑結果**：V6.1 ✅ 24m20s（df_kelly 1,925 檔、型態 830 個、push + Render `200`）；
+V6.2 ✅ 18.3 分（11 份分數 × 19 個組合、push + V6.2 快取 `200`，用 `--no-fetch`
+沿用 V6.1 剛抓好的 raw parquet）。
+
+**⚠️ 兩個我自己踩到的流程坑**
+① **背景任務被砍**（CLAUDE.md 早就寫過，我第一次沒照做）：第一次補跑在
+   `[1/10]` 已經通過、跑到 yfinance 時被工具層回收。改用
+   **`setsid nohup … &` + `disown` detach** 才活得下來。重啟前先 `ps` 確認無殘留
+   （避免兩個程序同時寫同一批 parquet）。
+② **監看掛錯檔案**：detached 那次的輸出走 stdout 導向的 `.out`，
+   **`inference.log` 一個字都沒寫** → 我掛在 `inference.log` 的 monitor 全程零事件，
+   看起來像「沒在跑」。**要監看的是「這次執行實際會寫的那個檔」，不是平常那個。**
 
 #### 2026-08-09（傍晚）— 用 8/6 資料整條跑一次並推上線，當場抓到自己的洞
 
@@ -1458,6 +1516,15 @@ Set-ScheduledTask -TaskName "MarketMamba_V62" -Principal (New-ScheduledTaskPrinc
 - **背景任務會被砍** → 長工作用**前景分段**（每段 <10 分鐘）。
   且**背景任務回報 killed 不代表子孫都死了**——啟接力前要先列 process 確認
   （曾因此讓兩個 build 同時寫同一個輸出檔）
+  - **★ 分不了段的整條管線（推論約 20~25 分）用 detach 跑**（2026-08-10 驗證可行）：
+    寫成 `.sh` 用 `setsid nohup python … > out 2>&1 < /dev/null &` + `disown`，
+    **從 PowerShell 呼叫 `wsl -d Ubuntu -- bash <腳本>`**
+    （Bash 工具會把 `/mnt/c/...` 改寫成 `C:/Program Files/Git/mnt/c/...`；
+    多層引號直接寫在指令列也會讓 `&` 後面整段失效、連輸出檔都不會建）。
+    重啟前一定先 `ps` 確認沒有殘留，否則兩個程序會同時寫同一批 parquet。
+  - **★ 監看要掛在「這次執行實際會寫的那個檔」**——detached 那次的 log 走 stdout
+    導向的 `.out`，`inference.log` **一個字都沒寫**，掛在 `inference.log` 的 monitor
+    全程零事件，**看起來跟「沒在跑」完全一樣**。沉默不是成功的證據。
 - **啟動長跑前要先確認推論不在跑**（2026-08-04 實例：推論結束後排程接著啟動雙模型、RSS 9.7 GB）
 - **全量重抓期間只做不同主機的作業**（TWSE 同時被兩邊打會出現 HTTP 307 限流；
   TAIFEX / TDCC / MOPS 各自獨立可並行）
@@ -1589,3 +1656,25 @@ Set-ScheduledTask -TaskName "MarketMamba_V62" -Principal (New-ScheduledTaskPrinc
 - **比率型健檢的分母要跟著重檢**——長期假警報會訓練人忽略警報，比沒有警報更危險
 - **健檢一律 non-fatal**，且用 parquet statistics 取最大日期（不讀資料）
 - **驗證的判準不可硬編記憶中的數字**，要用資料自身近況自我校準
+- **★ 寫 parquet 一律 `index=False`**（2026-08-10 血淚）：索引沒有語意時落檔只會製造
+  `__index_level_0__`。**危險的是它平常不會出事**——索引連續時 pandas 只寫 metadata、
+  **不落成實體欄**，只有 `drop_duplicates` 真的丟掉列、索引變不連續那天才會實體化，
+  於是跟檔案裡既有的同名 stray 欄撞名，之後**任何** `pd.read_parquet` 都會拋
+  `Multiple matches for FieldRef.Name(...)`。08-10 因此讓當天三次執行全部 0 秒失敗。
+  → **「平常看起來沒事」不是這個缺陷不存在的證據，只是還沒遇到觸發條件。**
+- **★ 欄名重複的 parquet 只能用 `pq.ParquetFile(p).read()` 讀**——`pq.read_table()` 走
+  dataset API，會先 unify schema 而直接 `Can't unify schema with duplicate field names`。
+  要動這種檔案一律**依欄位「位置」**操作，name-based API 全部會失敗。
+- **★ 診斷壞掉的欄，先看它的「值」而不是它的名字**：08-10 那個 stray 欄的值是
+  `0 … 8,737,250` 單調遞增、非 NaN 數正好等於某次回補後的列數 → **一眼定位到是哪一次
+  寫入留下的**，不必猜。欄名只告訴你它是索引，值才告訴你它是誰的索引。
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+Rules:
+- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).

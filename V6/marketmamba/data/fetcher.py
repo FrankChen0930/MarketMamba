@@ -4273,7 +4273,29 @@ def _append_to_parquet(path: Path, df_new: pd.DataFrame, date_str: str,
                 f"重複，已去除（請追查上游來源合併邏輯）"
             )
 
-    df.to_parquet(path)
+    # ⚠️⚠️ 2026-08-10：`index=False` 不是可有可無的整潔問題，是**會讓整條推論鏈當掉**。
+    #
+    # 本函式寫的是以 (Date, stock_id) 為鍵的資料表，索引沒有任何語意。但上面的
+    # `drop_duplicates` 一旦真的丟掉列，索引就**不連續** —— pandas 這時不會只把
+    # RangeIndex 記進 metadata，而是把它**實體化成一個 `__index_level_0__` 欄**。
+    # 檔案裡若已經存在同名的 stray 欄（讀回來會被當成一般資料欄），寫出去就變成
+    # **兩個同名欄**，之後任何 `pd.read_parquet(...)` 都會拋
+    #     ArrowInvalid: Multiple matches for FieldRef.Name(__index_level_0__)
+    #
+    # 2026-08-10 實際後果：prices_raw 撞名 → 當天三次執行（V6.1 21:30 / V6.2 22:15 /
+    # 手動 22:30）全部在 `run_daily_update()` 第一行就死，推論 0 秒失敗。
+    #
+    # ★ 為什麼這個坑潛伏很久才爆：索引**連續**時 pandas 只寫 metadata、不落成欄，
+    #   所以絕大多數日子都相安無事 —— 只有 drop_duplicates 真的丟到列的那天才會出事。
+    #   同一批被寫的 institutional_raw / margin_raw 至今乾淨，就是因為沒觸發去重。
+    #   **「平常看起來沒事」不代表沒有這個缺陷。**
+    for _stray in [c for c in df.columns if str(c).startswith("__index_level_")]:
+        logger.warning(
+            f"{path.name}: 輸入含 stray 索引欄 `{_stray}`（多半是某次寫入忘了 "
+            f"index=False 留下的）→ 寫入前丟棄，避免與本次索引撞名"
+        )
+        df = df.drop(columns=[_stray])
+    df.to_parquet(path, index=False)
 
 
 # ============================================================
