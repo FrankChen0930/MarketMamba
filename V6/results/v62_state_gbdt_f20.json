@@ -113,10 +113,10 @@
   "weight": "equal",
   "tier": "inferior"
  },
- "last_date": "2026-08-06",
- "days_since_rebalance": 0,
- "days_to_next": 20,
- "in_top_n": 50,
+ "last_date": "2026-08-10",
+ "days_since_rebalance": 1,
+ "days_to_next": 19,
+ "in_top_n": 17,
  "data_complete": {
   "prices_raw": true,
   "institutional_raw": true,
