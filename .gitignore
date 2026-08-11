@@ -58,7 +58,13 @@ market_mamba_note/
 obsidian_note/
 
 # Claude Code local settings (machine-specific permission grants)
-.claude/
+# 例外：Agent / Advisor 角色定義要進 git（版本紀錄 + repo-level 可重建性）
+# 注意順序：父目錄被 ignore 時無法用 ! 重新納入子項，所以要先開父層再關子層
+.claude/*
+!.claude/agents/
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/advisor/
 
 # Temporary debug / test output
 app/backend/_api_check.txt
