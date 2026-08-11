@@ -1,19 +1,19 @@
 import React from 'react';
+import { ChartLine } from 'lucide-react';
 import ComingSoon from '../components/ComingSoon';
 
 export default function ConvictionBacktest() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
       <ComingSoon
-        icon="📉"
+        icon={<ChartLine size={16} strokeWidth={1.75} />}
         title="回測結果"
-        desc="誠實拆兩塊呈現：有足夠歷史事件數、結構化數據的候選子策略（財報意外後動能延續、法人籌碼轉向反轉、除權息規律）可以真的做 Walk-Forward；其餘只能標示「即時追蹤中」搭配研究日誌。"
+        desc="這條線有一半的東西是回測不動的，所以這頁打算把它拆成兩塊，不混在一起講。"
         bullets={[
-          '方向三（Conviction 萃取實驗）目前狀態：使用者已決定暫停模型實驗，等真倉先驗證有沒有賺錢再繼續（見 CLAUDE.md）',
-          '候選子方案：事件驅動 / Meta-labeling / 不確定性驅動集中（優先度最高，可重用現有 MC-Dropout Uncertainty 與 Signal_Quality）',
-          '研究日誌（校準工具）規劃存 Supabase，尚未建表',
+          '可以驗證的部分：那些在歷史上重複發生夠多次的情況——例如財報遠優於預期之後股價會不會續強、法人由賣轉買之後會不會反彈、除權息前後有沒有規律。這些能拿 12 年資料真的跑一遍。',
+          '驗證不動的部分：靠人判斷的那一段。同樣的資訊，我今年的判斷跟三年前不會一樣，沒辦法回頭重跑。這塊只能上線之後一天一天記，並且把每次判斷的理由一起寫下來。',
+          '把兩者分開列，是因為混在一起會讓後者借用前者的可信度。',
         ]}
-        note="規劃詳見 planing/雙模型架構重整計畫.md §2.4、§2.7；研究進度見 planing/研究計畫_方向三_Conviction萃取實驗.md。"
       />
     </div>
   );

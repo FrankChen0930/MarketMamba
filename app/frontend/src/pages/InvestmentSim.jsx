@@ -3,6 +3,7 @@ import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid, ReferenceLine, BarChart, Bar, Cell, Legend,
 } from 'recharts';
+import { Gauge } from 'lucide-react';
 import { useApi } from '../hooks/useApi';
 import { fetchSimBacktest, fetchIcAnalysis, fetchScannerBacktest } from '../api/sim';
 import { fetchDualIc } from '../api/dual';
@@ -1045,8 +1046,13 @@ export default function InvestmentSim() {
       {/* ── Header ── */}
       <div className="page-header">
         <div>
-          <div className="page-title">🤖 投資模擬機器人</div>
-          <div className="page-subtitle">量化訊號驅動持倉模擬 · 含交易成本</div>
+          <div className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+            <Gauge size={18} strokeWidth={1.75} aria-hidden="true" />
+            模擬操作
+          </div>
+          <div className="page-subtitle">
+            假設完全照這套訊號買賣會變成什麼樣子。手續費與交易稅都已經扣掉，但沒有真的下單。
+          </div>
         </div>
       </div>
 

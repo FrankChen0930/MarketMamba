@@ -3,6 +3,7 @@ import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid, PieChart, Pie, Cell, Legend
 } from 'recharts';
+import { Info, RefreshCw } from 'lucide-react';
 import { useApi } from '../hooks/useApi';
 import { fetchPortfolio } from '../api/portfolio';
 import { fetchScannerSignals } from '../api/signals';
@@ -82,12 +83,31 @@ export default function Portfolio() {
         <div>
           <div className="page-title">持倉追蹤</div>
           <div className="page-subtitle">
-            永豐證券帳戶 · Shioaji 同步
+            自動同步永豐證券帳戶的實際持股
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button className="btn btn-primary" onClick={refetch}>🔄 重新整理</button>
+          <button className="btn btn-primary" onClick={refetch}>
+            <RefreshCw size={14} strokeWidth={2} aria-hidden="true" /> 重新整理
+          </button>
         </div>
+      </div>
+
+      {/* 這頁的定位標註：它不屬於任何一個模型版本，是個人帳戶本身。
+          主要使用場景在 PersonalOS 桌面版，網頁這邊只是同一份資料的鏡像。 */}
+      <div style={{
+        display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-start',
+        padding: 'var(--space-3) var(--space-4)',
+        background: 'rgba(139,148,158,0.06)',
+        borderLeft: '3px solid var(--ver-planned)',
+        borderRadius: '0 var(--radius-sm) var(--radius-sm) 0',
+      }}>
+        <Info size={16} strokeWidth={2} color="var(--ver-planned)" style={{ flexShrink: 0, marginTop: 2 }} aria-hidden="true" />
+        <p style={{ margin: 0, fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.8 }}>
+          <b style={{ color: 'var(--text-primary)' }}>這頁主要在 PersonalOS 桌面版使用。</b>
+          {' '}它顯示的是真實帳戶部位，不歸屬於任何一個模型版本。
+          目前的退場提示還是沿用前一版（V6.1）的判斷條件，等新版接手後會一起換掉。
+        </p>
       </div>
 
       {/* Summary Cards */}

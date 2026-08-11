@@ -10,9 +10,15 @@
   --border:        rgba(48, 54, 61, 0.8);
   --border-bright: rgba(0, 212, 255, 0.25);
 
+  /* 文字階層。三個顏色都通過 WCAG AA（對 --bg-panel #161b22）：
+     primary 13.9:1／secondary 5.7:1／muted 4.7:1。
+     ⚠️ --text-muted 原本是 #484f58，對比只有 2.1:1 而全站說明文字都用它
+     —— 那不是「低調」，是讀不到。要更淡的裝飾線條請用 --text-faint，
+     且 --text-faint 不可拿來放任何需要被讀懂的字。 */
   --text-primary:  #e6edf3;
   --text-secondary:#8b949e;
-  --text-muted:    #484f58;
+  --text-muted:    #7d8590;
+  --text-faint:    #484f58;
 
   --accent-blue:   #00d4ff;
   --accent-green:  #00ff88;
@@ -29,6 +35,20 @@
   --radius-sm:     6px;
   --radius-md:     10px;
   --radius-lg:     16px;
+
+  /* 版本狀態色。全站只有這三種狀態，別在頁面裡另外挑顏色 */
+  --ver-live:      #00ff88;   /* 上線中 */
+  --ver-legacy:    #ffa500;   /* 前一版，已凍結 */
+  --ver-planned:   #8b949e;   /* 規劃中，還沒東西 */
+
+  /* 間距尺標（4 的倍數）。改版面時從這裡取值，不要再手寫 14 / 18 / 22 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
 
   --shadow-panel: 0 4px 24px rgba(0, 0, 0, 0.4);
   --shadow-glow-blue: 0 0 20px rgba(0, 212, 255, 0.15);
@@ -96,6 +116,28 @@ body {
 .badge-negative { background: rgba(255, 71, 87, 0.1); color: var(--negative); border: 1px solid rgba(255, 71, 87, 0.25); }
 .badge-neutral  { background: rgba(139, 148, 158, 0.1); color: var(--text-secondary); border: 1px solid var(--border); }
 .badge-blue     { background: rgba(0, 212, 255, 0.1); color: var(--accent-blue); border: 1px solid rgba(0, 212, 255, 0.25); }
+.badge-live     { background: rgba(0, 255, 136, 0.1); color: var(--ver-live);    border: 1px solid rgba(0, 255, 136, 0.3); }
+.badge-legacy   { background: rgba(255, 165, 0, 0.1); color: var(--ver-legacy);  border: 1px solid rgba(255, 165, 0, 0.3); }
+.badge-planned  { background: rgba(139, 148, 158, 0.1); color: var(--ver-planned); border: 1px solid var(--border); }
+
+/* ── Focus ring ─────────────────────────────── */
+/* 鍵盤操作要看得見自己在哪。:focus-visible 只在鍵盤導覽時觸發，
+   滑鼠點擊不會出現外框，所以不會影響原本的視覺 */
+:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ── 尊重系統的「減少動態效果」設定 ─────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 
 /* ── Animations ─────────────────────────────── */
 @keyframes fadeInUp {

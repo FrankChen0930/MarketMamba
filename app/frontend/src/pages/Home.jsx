@@ -1,344 +1,274 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Globe, Target, History, ChartLine, Bot, Microscope, ArrowRight } from 'lucide-react';
 import { useApi } from '../hooks/useApi';
-import { fetchScannerSignals } from '../api/signals';
-import { fetchMarket } from '../api/market';
-import { fetchIcAnalysis } from '../api/sim';
+import { fetchV62Portfolio, fetchV62Performance } from '../api/v62';
+import VersionBadge from '../components/VersionBadge';
+import { versionOf } from '../versions';
 
-// ── Feature cards config ──────────────────────────────────────────────────────
-const FEATURES = [
+const ICON = { size: 20, strokeWidth: 1.75 };
+
+// ── 三句話講完這個網站在幹嘛 ─────────────────────────────────────────────
+const WHAT = [
   {
-    to: '/conviction/signals', icon: '🎯', label: '交易訊號',
-    desc: '今日 AI 掃描結果：買入推薦、退場警告、入場評分明細',
-    accent: 'rgba(0,255,136,0.25)',
+    title: '每天收盤後自己跑一輪',
+    desc: '下載當天的股價、成交量、法人買賣、融資融券、財報，整理成模型看得懂的格式，然後替全台股 2,500 檔各打一個分數。整個過程沒有人介入。',
   },
   {
-    to: '/breadth/predictions', icon: '📈', label: '每日排名',
-    desc: '全市場 Alpha 排行榜，5d / 20d / 60d 三個預測視角',
-    accent: 'rgba(0,212,255,0.25)',
+    title: '分數代表「相對強弱」',
+    desc: '不是預測股價會漲到多少，而是「這一檔接下來會比大盤好還是差」。所以大盤大跌的時候，分數高的股票一樣會跌，只是跌得比較少。',
   },
   {
-    to: '/quant', icon: '🔬', label: '量化分析',
-    desc: '技術型態辨識、產業熱力圖、多因子篩選',
-    accent: 'rgba(168,85,247,0.25)',
-  },
-  {
-    to: '/market', icon: '🤖', label: 'AI 日報',
-    desc: 'Claude LLM 生成的每日市場解讀與宏觀摘要',
-    accent: 'rgba(245,158,11,0.25)',
-  },
-  {
-    to: '/breadth/backtest', icon: '🎮', label: '模型回測',
-    desc: '回測結果、Alpha 機器人持倉、IC 因子分析',
-    accent: 'rgba(99,102,241,0.25)',
-  },
-  {
-    to: '/conviction/portfolio', icon: '💼', label: '持倉追蹤',
-    desc: '個人投資組合管理、損益追蹤、退場提醒',
-    accent: 'rgba(236,72,153,0.25)',
-  },
-  {
-    to: '/compare', icon: '🔀', label: '模型分歧看板',
-    desc: '高信念模型 vs 廣度模型的選股重疊率與分歧時期',
-    accent: 'rgba(250,204,21,0.25)',
+    title: '結論會被記錄下來對帳',
+    desc: '每天的持股都會存檔。過一段時間就能回頭比對：當初挑的到底準不準。這比任何回測數字都誠實，因為它沒有事後諸葛的空間。',
   },
 ];
 
-// ── 雙模型定位比較（planing/雙模型架構重整計畫.md §0）─────────────────────────
-const MODEL_COMPARE = [
-  { label: '標的範圍',   breadth: '全市場 ~2,888 檔',            conviction: '精選 10–20 檔' },
-  { label: '核心假設',   breadth: '統計顯著性來自覆蓋面（√Breadth）', conviction: '準確性來自對少數標的的深度研究' },
-  { label: '核心引擎',   breadth: 'Mamba SSM + GATv2（DL 是決策主軸）', conviction: '量化篩選 + LLM 研究增幅 + 人工判斷（DL/LLM 是工具層）' },
-  { label: '資金定位',   breadth: 'Paper／驗證用，不代表個人實際部位', conviction: '個人實盤操作主要依據' },
-  { label: '可回測性',   breadth: '可嚴謹 Walk-Forward（12 年結構化數據）', conviction: '部分可回測（事件驅動子引擎），主體只能前瞻追蹤' },
+// ── 三條線。狀態直接標出來，不要讓人點進去才發現是空的 ─────────────────
+const LINES = [
+  {
+    to: '/breadth', icon: <Globe {...ICON} />, state: 'live',
+    label: '廣度量化模型', color: 'var(--accent-blue)',
+    one: '同時買 50 檔，每 20 個交易日換一次。',
+    desc: '目前每天實際在跑的就是這一套。它不押單一檔，靠的是「平均排得比較準」慢慢累積優勢。',
+  },
+  {
+    to: '/conviction', icon: <Target {...ICON} />, state: 'planned',
+    label: '高信念量化模型', color: 'var(--positive)',
+    one: '只挑 10 到 20 檔，但每一檔都說得出理由。',
+    desc: '規則先篩、AI 研究、自己拍板的三段流程。目前只有設計，還沒接上真實資料。',
+  },
+  {
+    to: '/legacy', icon: <History {...ICON} />, state: 'legacy',
+    label: '前一版', color: 'var(--ver-legacy)',
+    one: '2026 年 8 月之前每天在跑的舊版本。',
+    desc: '用四個條件加權挑股票。已經停止更新，留著是為了跟現在這版對照。',
+  },
 ];
 
-// ── System spec items ─────────────────────────────────────────────────────────
-const SPECS = [
-  { label: '模型架構', value: 'Mamba SSM + GATv2 知識圖譜' },
-  { label: '模型參數', value: '~4M' },
-  { label: '訓練硬體', value: 'Google Colab A100' },
-  { label: '推論硬體', value: 'RTX 3060（本機 WSL2）' },
-  { label: '預測目標', value: 'Alpha_5d / Alpha_20d / Alpha_60d' },
-  { label: '不確定性', value: 'MC-Dropout N=30' },
-  { label: '訓練資料', value: '2005 年至今，~5,000 個交易日' },
-  { label: '特徵維度', value: '56 因子（4 大因子組）' },
+// ── 依照「你想拿它做什麼」分流，不是依照功能分類 ─────────────────────
+const START_HERE = [
+  {
+    icon: <Globe {...ICON} />, title: '我只想看今天的結果',
+    desc: '直接看模型目前持有哪 50 檔，還有多久會換股。',
+    action: '看持股組合', route: '/breadth/portfolio',
+    accent: 'rgba(0,212,255,0.3)', bg: 'rgba(0,212,255,0.04)',
+  },
+  {
+    icon: <ChartLine {...ICON} />, title: '我有自己的想法，只想縮小範圍',
+    desc: '看全市場今天的分數排行，當成初篩名單再自己判斷。',
+    action: '看每日評分', route: '/breadth/predictions',
+    accent: 'rgba(168,85,247,0.3)', bg: 'rgba(168,85,247,0.04)',
+  },
+  {
+    icon: <Bot {...ICON} />, title: '我想知道今天市場發生什麼事',
+    desc: '每天一篇由 AI 整理的市場摘要，講當天的重點與變化。',
+    action: '看 AI 日報', route: '/market',
+    accent: 'rgba(255,165,0,0.3)', bg: 'rgba(255,165,0,0.04)',
+  },
+  {
+    icon: <Microscope {...ICON} />, title: '我想看你怎麼做出來的',
+    desc: '做過的實驗、失敗的嘗試，以及每個設計決定背後的理由。',
+    action: '看研究紀錄', route: '/research',
+    accent: 'rgba(0,255,136,0.3)', bg: 'rgba(0,255,136,0.04)',
+  },
 ];
 
-const PIPELINE = [
-  { step: '01', title: '資料擷取', desc: 'FinMind + yfinance 全市場 2,515 支股票日資料，含機構法人、融資融券、財報、總經指標' },
-  { step: '02', title: '特徵工程', desc: '56 維因子：價格動能、機構資金流、基本面、總體環境，FactorGroupedEmbedding 分組投影' },
-  { step: '03', title: 'Mamba 推論', desc: 'MultiScaleMambaEncoder（Short 2層 / Mid 3層 / Long 3層）並行，自適應 Scale Gate 融合' },
-  { step: '04', title: 'GAT 圖增強', desc: 'GATv2 搭配 640K 條邊的知識圖譜，捕捉產業鏈與供應鏈關聯' },
-  { step: '05', title: '訊號掃描', desc: '4 條件加權評分（排名穩定 30 + 信心 25 + 機構 25 + 相對低點 20）+ 型態加分（最高 +50）' },
-  { step: '06', title: 'GitHub Push', desc: '結果自動 push 到 GitHub，Render 後端從 raw URL 載入，Vercel 前端即時呈現' },
-];
-
-// ── Component ─────────────────────────────────────────────────────────────────
 export default function Home() {
   const navigate = useNavigate();
-  const { data: scanner } = useApi(fetchScannerSignals);
-  const { data: market  } = useApi(fetchMarket);
-  const { data: ic      } = useApi(fetchIcAnalysis);
+  const { data: pf }   = useApi(fetchV62Portfolio);
+  const { data: perf } = useApi(fetchV62Performance);
 
-  const buyCount   = scanner?.buy_signals?.length ?? '—';
-  const lastDate   = scanner?.date ?? market?.last_run ?? '—';
-  const ic5d       = ic?.ic_5d?.mean != null  ? (ic.ic_5d.mean).toFixed(3)  : '—';
-  const icir5d     = ic?.ic_5d?.icir != null  ? (ic.ic_5d.icir).toFixed(2)  : '—';
-  const ic20d      = ic?.ic_20d?.mean != null ? (ic.ic_20d.mean).toFixed(3) : '—';
+  const dash = '—';
+  const lastDate  = pf?.date ?? dash;
+  const holdCount = pf?.holdings?.length != null ? `${pf.holdings.length} 檔` : dash;
+  const nextReb   = pf?.days_to_next != null ? `${pf.days_to_next} 個交易日` : dash;
+
+  // 上線後的累積報酬。刻意用「累積」而不是「年化」——
+  // 樣本還很小的時候，年化會外推出荒謬的數字，看起來卻很像結論。
+  // 年化與誤差棒留在「持股組合 → 前瞻績效」那一頁，那裡有完整的樣本量說明。
+  const primary = perf?.models
+    ? Object.values(perf.models).find(m => m.tier === 'primary')
+    : null;
+  const cumText = primary?.cum_return != null
+    ? `${primary.cum_return >= 0 ? '+' : ''}${(primary.cum_return * 100).toFixed(1)}%`
+    : dash;
+  const cumColor = primary?.cum_return == null
+    ? 'var(--text-muted)'
+    : primary.cum_return >= 0 ? 'var(--positive)' : 'var(--negative)';
+
+  const CHIPS = [
+    { label: '資料日期',   value: lastDate,  color: 'var(--accent-blue)' },
+    { label: '目前持有',   value: holdCount, color: 'var(--text-primary)' },
+    { label: '距下次換股', value: nextReb,   color: 'var(--accent-amber)' },
+    {
+      label: perf?.n_days ? `上線後累積（${perf.n_days} 天）` : '上線後累積',
+      value: cumText, color: cumColor,
+    },
+  ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 48, paddingBottom: 48 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-7)', paddingBottom: 'var(--space-7)' }}>
 
       {/* ── Hero ── */}
       <div style={{
-        borderRadius: 'var(--radius)',
+        borderRadius: 'var(--radius-lg)',
         border: '1px solid var(--border)',
-        background: 'linear-gradient(135deg, rgba(0,212,255,0.04) 0%, rgba(168,85,247,0.04) 50%, rgba(0,255,136,0.04) 100%)',
-        padding: '40px 36px',
-        position: 'relative',
-        overflow: 'hidden',
+        background: 'linear-gradient(135deg, rgba(0,212,255,0.05) 0%, rgba(168,85,247,0.04) 55%, rgba(0,255,136,0.04) 100%)',
+        padding: 'var(--space-6) var(--space-6)',
+        position: 'relative', overflow: 'hidden',
       }}>
-        {/* decorative glow */}
-        <div style={{ position: 'absolute', top: -60, right: -60, width: 240, height: 240, borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,212,255,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: -40, left: '30%', width: 180, height: 180, borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,255,136,0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        <div aria-hidden="true" style={{ position: 'absolute', top: -60, right: -60, width: 240, height: 240, borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,212,255,0.09) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
         <div style={{ position: 'relative' }}>
-          <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', color: 'var(--accent-blue)', textTransform: 'uppercase', marginBottom: 8 }}>
-            Personal Quantitative Investment System
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+            <VersionBadge state="live" />
+            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>每個交易日晚上自動更新</span>
           </div>
-          <h1 style={{ margin: '0 0 8px', fontSize: 36, fontWeight: 800, background: 'linear-gradient(135deg, #00d4ff 0%, #a855f7 50%, #00ff88 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', lineHeight: 1.2 }}>
-            MarketMamba V6
+
+          <h1 style={{
+            margin: '0 0 var(--space-3)', fontSize: 34, fontWeight: 800, lineHeight: 1.2,
+            background: 'linear-gradient(135deg, #00d4ff 0%, #a855f7 55%, #00ff88 100%)',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+          }}>
+            MarketMamba
           </h1>
-          <p style={{ margin: '0 0 28px', fontSize: 15, color: 'var(--text-secondary)', maxWidth: 560, lineHeight: 1.7 }}>
-            以深度學習驅動的台股量化投資自動化系統。每日收盤後對全市場 2,515 支股票執行 Mamba+GATv2 推論，輸出 Alpha 訊號排名與進退場建議。
+
+          <p style={{ margin: '0 0 var(--space-5)', fontSize: 15, color: 'var(--text-secondary)', maxWidth: 620, lineHeight: 1.8 }}>
+            一套自己寫的台股選股系統。每天收盤後把全市場 2,500 檔股票跑過一遍，
+            挑出模型認為接下來會相對強勢的 50 檔，每 20 個交易日換一次。
+            <b style={{ color: 'var(--text-primary)' }}>這裡的持股不是我的真實部位</b>，
+            是拿來驗證方法、也拿來展示做法的。
           </p>
 
-          {/* live stat chips */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-            {[
-              { label: '推論日期', value: lastDate, color: 'var(--accent-blue)' },
-              { label: '今日買入推薦', value: `${buyCount} 支`, color: 'var(--positive)' },
-              { label: 'IC_5d', value: ic5d, color: ic5d !== '—' && parseFloat(ic5d) > 0 ? 'var(--positive)' : 'var(--text-muted)' },
-              { label: 'ICIR_5d', value: icir5d, color: 'var(--accent-blue)' },
-              { label: 'IC_20d', value: ic20d, color: ic20d !== '—' && parseFloat(ic20d) > 0 ? 'var(--positive)' : 'var(--text-muted)' },
-            ].map(s => (
-              <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, padding: '5px 12px', borderRadius: 99, background: 'var(--bg-panel-2)', border: '1px solid var(--border)' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+            {CHIPS.map(s => (
+              <div key={s.label} style={{
+                display: 'flex', alignItems: 'center', gap: 6, fontSize: 12,
+                padding: '5px 12px', borderRadius: 99,
+                background: 'var(--bg-panel-2)', border: '1px solid var(--border)',
+              }}>
                 <span style={{ color: 'var(--text-muted)' }}>{s.label}</span>
-                <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: s.color }}>{s.value}</span>
+                <span className="mono" style={{ fontWeight: 700, color: s.color }}>{s.value}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* ── 雙模型定位敘事 ── */}
+      {/* ── 這個網站在做什麼 ── */}
       <section>
-        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>為什麼是兩套模型</div>
-
-        <div className="panel" style={{ marginBottom: 16 }}>
-          <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.85, margin: 0 }}>
-              分野依據 Grinold 主動管理基本法則：<b style={{ color: 'var(--accent-blue)' }}>IR ≈ IC × √Breadth</b>（資訊比率 ≈ 資訊係數 × 廣度平方根）。
-              同樣的總主動報酬，可以用「更多標的、較低單檔信心」取得，也可以用「更少標的、更高單檔信心」取得——但這只解釋了押注方式的差異。
-            </p>
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.85, margin: 0 }}>
-              真正決定要不要換方法論的是：<b style={{ color: 'var(--text-primary)' }}>廣度的 edge 是統計性、可重複的模式，散布在幾千檔上——這正是深度學習擅長的 pattern matching；
-              信念的 edge 來自對少數特定情境的深刻理解——樣本數太少，訓練一個深度網路只會過擬合到毫無意義。</b>
-              兩條線不只是資金規模不同，核心引擎的本質就不同：一個是統計學習驅動，一個是判斷驅動、LLM 輔助研究。
-              不是因為懶得整合，是因為用同一套工具硬做兩件事，兩邊都會做不好。
-            </p>
-          </div>
+        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.08em', marginBottom: 'var(--space-4)' }}>
+          它每天在做什麼
         </div>
-
-        {/* 兩張模型入口卡片 */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 14, marginBottom: 16 }}>
-          <div onClick={() => navigate('/breadth')}
-            style={{ borderRadius: 'var(--radius)', border: '1px solid rgba(0,212,255,0.3)', background: 'rgba(0,212,255,0.04)', padding: '22px 24px', cursor: 'pointer', transition: 'all 0.18s' }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,212,255,0.2)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
-          >
-            <div style={{ fontSize: 22, marginBottom: 6 }}>🌐</div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>廣度量化模型</div>
-            <div style={{ fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 12 }}>全市場 ~2,888 檔，Mamba SSM + GATv2 為決策核心，作品展示主軸</div>
-            <div style={{ display: 'flex', gap: 14, fontSize: 12 }}>
-              <span><span style={{ color: 'var(--text-muted)' }}>IC_5d </span><span className="mono" style={{ fontWeight: 700, color: ic5d !== '—' && parseFloat(ic5d) > 0 ? 'var(--positive)' : 'var(--text-muted)' }}>{ic5d}</span></span>
-              <span><span style={{ color: 'var(--text-muted)' }}>IC_20d </span><span className="mono" style={{ fontWeight: 700, color: ic20d !== '—' && parseFloat(ic20d) > 0 ? 'var(--positive)' : 'var(--text-muted)' }}>{ic20d}</span></span>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'var(--space-3)' }}>
+          {WHAT.map((w, i) => (
+            <div key={w.title} className="panel">
+              <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                  <span className="mono" style={{
+                    width: 24, height: 24, borderRadius: 6,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 11, fontWeight: 700, color: 'var(--accent-blue)',
+                    background: 'rgba(0,212,255,0.12)', border: '1px solid rgba(0,212,255,0.3)',
+                  }}>{i + 1}</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{w.title}</span>
+                </div>
+                <p style={{ fontSize: 12.5, color: 'var(--text-muted)', lineHeight: 1.75, margin: 0 }}>{w.desc}</p>
+              </div>
             </div>
-            <div style={{ marginTop: 14, fontSize: 12, fontWeight: 600, color: 'var(--accent-blue)' }}>進入廣度模型 →</div>
-          </div>
-
-          <div onClick={() => navigate('/conviction')}
-            style={{ borderRadius: 'var(--radius)', border: '1px solid rgba(0,255,136,0.3)', background: 'rgba(0,255,136,0.04)', padding: '22px 24px', cursor: 'pointer', transition: 'all 0.18s' }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,255,136,0.2)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
-          >
-            <div style={{ fontSize: 22, marginBottom: 6 }}>🎯</div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>高信念量化模型</div>
-            <div style={{ fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 12 }}>精選 10–20 檔，量化篩選 + LLM 研究 + 人工判斷，個人實盤操作主軸</div>
-            <div style={{ display: 'flex', gap: 14, fontSize: 12 }}>
-              <span><span style={{ color: 'var(--text-muted)' }}>今日買入推薦 </span><span className="mono" style={{ fontWeight: 700, color: 'var(--positive)' }}>{buyCount} 支</span></span>
-            </div>
-            <div style={{ marginTop: 14, fontSize: 12, fontWeight: 600, color: 'var(--positive)' }}>進入高信念模型 →</div>
-          </div>
-        </div>
-
-        {/* 對照表 */}
-        <div className="panel">
-          <div className="panel-header"><div className="panel-title">📐 兩條線的分野</div></div>
-          <div className="panel-body" style={{ overflowX: 'auto' }}>
-            <table className="data-table" style={{ width: '100%', minWidth: 640 }}>
-              <thead>
-                <tr>
-                  <th style={{ fontSize: 12, color: 'var(--text-muted)', padding: '8px 12px', textAlign: 'left', borderBottom: '1px solid var(--border)' }}></th>
-                  <th style={{ fontSize: 12, color: 'var(--accent-blue)', padding: '8px 12px', textAlign: 'left', borderBottom: '1px solid var(--border)' }}>🌐 廣度模型</th>
-                  <th style={{ fontSize: 12, color: 'var(--positive)', padding: '8px 12px', textAlign: 'left', borderBottom: '1px solid var(--border)' }}>🎯 高信念模型</th>
-                </tr>
-              </thead>
-              <tbody>
-                {MODEL_COMPARE.map(row => (
-                  <tr key={row.label}>
-                    <td style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', padding: '8px 12px', borderBottom: '1px solid rgba(48,54,61,0.4)' }}>{row.label}</td>
-                    <td style={{ fontSize: 12.5, color: 'var(--text-secondary)', padding: '8px 12px', borderBottom: '1px solid rgba(48,54,61,0.4)', lineHeight: 1.6 }}>{row.breadth}</td>
-                    <td style={{ fontSize: 12.5, color: 'var(--text-secondary)', padding: '8px 12px', borderBottom: '1px solid rgba(48,54,61,0.4)', lineHeight: 1.6 }}>{row.conviction}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          ))}
         </div>
       </section>
 
-      {/* ── 使用指南 ── */}
+      {/* ── 三條線 ── */}
       <section>
-        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>使用指南</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
-          {[
-            {
-              icon: '🎯', title: '直接看結論',
-              desc: '想知道今天可以買哪幾支，不需要自己判斷市場。',
-              tags: ['適合初學者', '有明確進場建議'],
-              action: '去交易訊號', route: '/conviction/signals',
-              accent: 'rgba(0,255,136,0.3)', bg: 'rgba(0,255,136,0.04)',
-            },
-            {
-              icon: '📊', title: '縮小選股範圍',
-              desc: '有自己的判斷，只是不想從 2,500 支慢慢挑，需要初篩名單。',
-              tags: ['有基本市場概念', '搭配自己的判斷使用'],
-              action: '看每日排名', route: '/breadth/predictions',
-              accent: 'rgba(0,212,255,0.3)', bg: 'rgba(0,212,255,0.04)',
-            },
-            {
-              icon: '🔬', title: '深入研究',
-              desc: '想了解 AI 的推論邏輯、市場報告或型態技術分析。',
-              tags: ['技術分析愛好者', '想理解模型行為'],
-              action: '探索量化分析', route: '/quant',
-              accent: 'rgba(168,85,247,0.3)', bg: 'rgba(168,85,247,0.04)',
-            },
-          ].map(card => (
-            <div key={card.title}
+        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.08em', marginBottom: 'var(--space-2)' }}>
+          三條線，狀態各不相同
+        </div>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.8, margin: '0 0 var(--space-4)', maxWidth: 700 }}>
+          同一批資料，我用兩種完全不同的方法在處理，加上一個已經退下來的舊版本。
+          會分成兩種方法是因為：買 50 檔靠的是統計上的平均優勢，買 5 檔靠的是對那 5 檔的理解——
+          這兩件事用同一套工具做，兩邊都會做不好。
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-3)' }}>
+          {LINES.map(l => (
+            <button
+              key={l.to}
+              onClick={() => navigate(l.to)}
+              style={{
+                textAlign: 'left', font: 'inherit', cursor: 'pointer',
+                borderRadius: 'var(--radius-md)',
+                border: `1px solid color-mix(in srgb, ${l.color} 35%, transparent)`,
+                background: `color-mix(in srgb, ${l.color} 4%, var(--bg-panel))`,
+                padding: 'var(--space-5)',
+                display: 'flex', flexDirection: 'column', gap: 'var(--space-2)',
+                transition: 'transform 0.18s, box-shadow 0.18s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 24px color-mix(in srgb, ${l.color} 20%, transparent)`; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+                <span style={{ color: l.color }} aria-hidden="true">{l.icon}</span>
+                <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{l.label}</span>
+                <VersionBadge state={l.state} style={{ marginLeft: 'auto' }} />
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{l.one}</div>
+              <p style={{ fontSize: 12.5, color: 'var(--text-muted)', lineHeight: 1.7, margin: 0 }}>{l.desc}</p>
+              <span style={{ marginTop: 'auto', paddingTop: 'var(--space-2)', fontSize: 12, fontWeight: 600, color: l.color, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                前往 <ArrowRight size={13} strokeWidth={2} aria-hidden="true" />
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* ── 從哪裡開始看 ── */}
+      <section>
+        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.08em', marginBottom: 'var(--space-4)' }}>
+          從哪裡開始看
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'var(--space-3)' }}>
+          {START_HERE.map(card => (
+            <button
+              key={card.title}
               onClick={() => navigate(card.route)}
-              style={{ borderRadius: 'var(--radius)', border: `1px solid ${card.accent}`, background: card.bg, padding: '18px 20px', cursor: 'pointer', transition: 'all 0.18s', display: 'flex', flexDirection: 'column', gap: 8 }}
+              style={{
+                textAlign: 'left', font: 'inherit', cursor: 'pointer',
+                borderRadius: 'var(--radius-md)', border: `1px solid ${card.accent}`,
+                background: card.bg, padding: 'var(--space-4)',
+                display: 'flex', flexDirection: 'column', gap: 'var(--space-2)',
+                transition: 'transform 0.18s, box-shadow 0.18s',
+              }}
               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 24px ${card.accent}`; }}
               onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 22 }}>{card.icon}</span>
-                <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{card.title}</span>
-              </div>
-              <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.65 }}>{card.desc}</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                {card.tags.map(t => <span key={t} style={{ fontSize: 10, color: 'var(--text-muted)', background: 'var(--bg-panel-2)', padding: '2px 8px', borderRadius: 99 }}>{t}</span>)}
-              </div>
-              <div style={{ marginTop: 'auto', paddingTop: 10, fontSize: 12, fontWeight: 600, color: 'var(--accent-blue)' }}>{card.action} →</div>
-            </div>
+              <span style={{ color: 'var(--text-secondary)' }} aria-hidden="true">{card.icon}</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{card.title}</span>
+              <span style={{ fontSize: 12.5, color: 'var(--text-muted)', lineHeight: 1.7 }}>{card.desc}</span>
+              <span style={{ marginTop: 'auto', paddingTop: 'var(--space-2)', fontSize: 12, fontWeight: 600, color: 'var(--accent-blue)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                {card.action} <ArrowRight size={13} strokeWidth={2} aria-hidden="true" />
+              </span>
+            </button>
           ))}
         </div>
       </section>
 
-      {/* ── 功能導覽 ── */}
-      <section>
-        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>功能導覽</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
-          {FEATURES.map(f => (
-            <div key={f.to}
-              onClick={() => navigate(f.to)}
-              style={{ borderRadius: 'var(--radius-sm)', border: `1px solid ${f.accent}`, background: 'var(--bg-panel)', padding: '14px 16px', cursor: 'pointer', transition: 'all 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.background = `color-mix(in srgb, ${f.accent} 8%, var(--bg-panel))`; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-panel)'; e.currentTarget.style.transform = ''; }}
-            >
-              <div style={{ fontSize: 18, marginBottom: 6 }}>{f.icon}</div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>{f.label}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>{f.desc}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── 系統介紹 ── */}
-      <section>
-        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>系統介紹</div>
-
-        {/* Pipeline */}
-        <div className="panel" style={{ marginBottom: 16 }}>
-          <div className="panel-header"><div className="panel-title">📦 推論流程</div></div>
-          <div className="panel-body">
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
-              {PIPELINE.map(p => (
-                <div key={p.step} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                  <span style={{ flexShrink: 0, width: 28, height: 28, borderRadius: 6, background: 'rgba(0,212,255,0.12)', border: '1px solid rgba(0,212,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--accent-blue)' }}>{p.step}</span>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 2 }}>{p.title}</div>
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>{p.desc}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Model Architecture */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-          <div className="panel">
-            <div className="panel-header"><div className="panel-title">🧠 模型架構</div></div>
-            <div className="panel-body">
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-secondary)', lineHeight: 2, background: 'var(--bg-panel-2)', borderRadius: 'var(--radius-sm)', padding: '12px 14px' }}>
-                {[
-                  'Input  (N × 252 × 56)',
-                  '  ↓ FactorGroupedEmbedding → d=256',
-                  '  ↓ MultiScaleMambaEncoder',
-                  '     ├─ Short branch  (2L, last 20)',
-                  '     ├─ Mid   branch  (3L, last 60)',
-                  '     └─ Long  branch  (3L, full 252)',
-                  '  ↓ GATv2  (~640K edges)',
-                  '  ↓ Gating Fusion',
-                  '  ↓ MultiHorizonHead',
-                  'Output [α5d, α20d, α60d]',
-                ].map((line, i) => (
-                  <div key={i} style={{ color: line.startsWith('Input') || line.startsWith('Output') ? 'var(--accent-blue)' : line.includes('branch') ? '#a78bfa' : 'var(--text-secondary)' }}>{line}</div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="panel">
-            <div className="panel-header"><div className="panel-title">⚙️ 技術規格</div></div>
-            <div className="panel-body">
-              {SPECS.map(s => (
-                <div key={s.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid var(--border)', fontSize: 12 }}>
-                  <span style={{ color: 'var(--text-muted)' }}>{s.label}</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-primary)', fontWeight: 600 }}>{s.value}</span>
-                </div>
-              ))}
-              <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {['Python', 'PyTorch', 'Mamba SSM', 'FastAPI', 'React', 'Vercel', 'Render', 'WSL2'].map(t => (
-                  <span key={t} style={{ fontSize: 10, padding: '3px 8px', borderRadius: 99, background: 'rgba(0,212,255,0.1)', color: 'var(--accent-blue)', fontWeight: 600 }}>{t}</span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* ── 這不是投資建議 ── */}
+      <div style={{
+        padding: 'var(--space-4)',
+        background: 'rgba(255,165,0,0.05)',
+        borderLeft: '3px solid var(--ver-legacy)',
+        borderRadius: '0 var(--radius-sm) var(--radius-sm) 0',
+      }}>
+        <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.85 }}>
+          <b style={{ color: 'var(--text-primary)' }}>這是個人專案，不是投資建議。</b>
+          {' '}模型在歷史資料上表現好，不代表接下來也會好——市場的規則會變，
+          而模型只學過去發生過的事。這裡的每個數字都附了它的前提和限制，
+          看數字之前請先看那些說明。{versionOf('live')} 的實戰紀錄從 2026 年 8 月開始累積，
+          目前樣本還太小，不足以下任何結論。
+        </p>
+      </div>
     </div>
   );
 }

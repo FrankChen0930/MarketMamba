@@ -98,7 +98,14 @@
   border-color: rgba(0, 212, 255, 0.2);
 }
 
-.nav-tab .tab-icon { font-size: 14px; }
+/* 圖示是 lucide SVG，用 flex 對齊到文字中線；
+   stroke 走 currentColor，所以 hover / active 換色會一起跟著換 */
+.nav-tab .tab-icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.nav-tab .tab-icon svg { width: 15px; height: 15px; }
 
 /* ── Topbar Right ───────────────────────────── */
 .topbar-right {
@@ -246,11 +253,15 @@
   .topbar-brand .brand-text { display: none; }
   .topbar-right { display: none; } /* replaced by mobile-status-bar */
 
-  /* Nav tabs: spread icons evenly, no text */
+  /* 主導覽：窄螢幕只剩圖示，靠 aria-label / title 帶語意（見 AppLayout） */
   .nav-tabs { justify-content: space-around; gap: 0; }
-  .nav-tab  { padding: 6px 10px; flex: 1; justify-content: center; }
-  .nav-tab span:not(.tab-icon) { display: none; }
-  .nav-tab .tab-icon { font-size: 17px; }
+  .nav-tabs .nav-tab { padding: 6px 8px; flex: 1; justify-content: center; min-height: 44px; }
+  .nav-tabs .nav-tab span:not(.tab-icon) { display: none; }
+  .nav-tabs .nav-tab .tab-icon svg { width: 19px; height: 19px; }
+
+  /* 子導覽會換行，空間夠 → 保留文字標籤。
+     只剩圖示的分頁列在子層級太難認（同一排可能有五六個相似的圖示） */
+  .nav-tab { min-height: 40px; }
 
   /* Mobile status strip (Model IC + status dot) */
   .mobile-status-bar {

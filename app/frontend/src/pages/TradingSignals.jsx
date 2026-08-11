@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ClipboardList, RefreshCw } from 'lucide-react';
 import { useApi } from '../hooks/useApi';
 import { fetchScannerSignals } from '../api/signals';
 import StockModal from '../components/StockModal';
@@ -342,7 +343,7 @@ export default function TradingSignals() {
 
   if (error) return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div className="page-header"><div className="page-title">交易訊號掃描</div></div>
+      <div className="page-header"><div className="page-title">每日訊號</div></div>
       <ApiError message={error} onRetry={refetch} />
     </div>
   );
@@ -355,10 +356,17 @@ export default function TradingSignals() {
       {/* Page Header */}
       <div className="page-header">
         <div>
-          <div className="page-title">🎯 交易訊號掃描</div>
-          <div className="page-subtitle">MarketMamba V6.1 Signal Scanner · {data?.date || '—'}</div>
+          <div className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+            <ClipboardList size={18} strokeWidth={1.75} aria-hidden="true" />
+            每日訊號
+          </div>
+          <div className="page-subtitle">
+            四個條件加權評分，滿 70 分才進買進名單 · 資料日期 {data?.date || '—'}
+          </div>
         </div>
-        <button className="btn btn-primary" onClick={refetch}>🔄 重新掃描</button>
+        <button className="btn btn-primary" onClick={refetch}>
+          <RefreshCw size={14} strokeWidth={2} aria-hidden="true" /> 重新掃描
+        </button>
       </div>
 
       {/* Market Regime Strip */}

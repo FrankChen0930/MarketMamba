@@ -1,15 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
+import { House, Globe, Target, History, ChartLine, Bot, Microscope } from 'lucide-react';
 import { fetchMarket, fetchTicker } from '../api/market';
+import { versionOf } from '../versions';
+
+// 圖示用 lucide SVG（不用 emoji）：emoji 在不同作業系統長得不一樣，
+// 也沒辦法跟著 hover / active 換色。窄螢幕會把文字藏起來只剩圖示，
+// 所以每個分頁都要帶 hint 當作 aria-label 之外的說明。
+const ICON = { size: 15, strokeWidth: 1.75 };
 
 const TABS = [
-  { to: '/',           icon: '🏠', label: '首頁' },
-  { to: '/conviction', icon: '🎯', label: '高信念模型' },
-  { to: '/breadth',    icon: '🌐', label: '廣度模型' },
-  { to: '/compare',    icon: '🔀', label: '模型分歧' },
-  { to: '/quant',      icon: '📈', label: '量化分析' },
-  { to: '/market',     icon: '🤖', label: 'AI 日報' },
-  { to: '/research',   icon: '🔬', label: '研究紀錄' },
+  { to: '/',           icon: <House {...ICON} />,     label: '首頁',       hint: '總覽與今日重點' },
+  { to: '/breadth',    icon: <Globe {...ICON} />,     label: '廣度模型',   hint: 'V6.2 · 目前上線中的版本' },
+  { to: '/conviction', icon: <Target {...ICON} />,    label: '高信念模型', hint: '少數幾檔、深入研究的那條線' },
+  { to: '/legacy',     icon: <History {...ICON} />,   label: 'V6.1 前一版', hint: '已凍結的舊版，保留對照用' },
+  { to: '/quant',      icon: <ChartLine {...ICON} />, label: '量化分析',   hint: '技術型態與產業強弱' },
+  { to: '/market',     icon: <Bot {...ICON} />,       label: 'AI 日報',    hint: '每天一篇的市場解讀' },
+  { to: '/research',   icon: <Microscope {...ICON} />, label: '研究紀錄',  hint: '做過的實驗與結論' },
 ];
 
 
@@ -61,17 +68,19 @@ export default function AppLayout() {
           <div className="logo-mark">M</div>
           <div className="brand-text">
             <span className="brand-name">MarketMamba</span>
-            <span className="brand-sub">V6 · ALPHA</span>
+            <span className="brand-sub">{versionOf('live')} · 台股每日更新</span>
           </div>
         </a>
 
-        <div className="nav-tabs">
+        <div className="nav-tabs" role="navigation" aria-label="主導覽">
           {TABS.map(tab => (
             <NavLink
               key={tab.to} to={tab.to} end={tab.to === '/'}
+              aria-label={tab.label}
+              title={`${tab.label} — ${tab.hint}`}
               className={({ isActive }) => `nav-tab${isActive ? ' active' : ''}`}
             >
-              <span className="tab-icon">{tab.icon}</span>
+              <span className="tab-icon" aria-hidden="true">{tab.icon}</span>
               <span>{tab.label}</span>
             </NavLink>
           ))}

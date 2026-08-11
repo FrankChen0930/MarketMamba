@@ -1,18 +1,18 @@
 import React from 'react';
+import { History } from 'lucide-react';
 import ComingSoon from '../components/ComingSoon';
 
 export default function ConvictionVersions() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
       <ComingSoon
-        icon="🕰️"
+        icon={<History size={16} strokeWidth={1.75} />}
         title="版本紀錄"
-        desc="記錄兩條軌跡：篩選規則的變更（門檻調整、新增訊號）與 Agent pipeline 的演進（prompt 版本、單一 prompt → 多智能體的過渡、模型分層策略調整）。"
+        desc="這頁會記兩件事的變動：篩選條件（門檻調高調低、加了什麼新條件），以及問 AI 的方式（每一版的提問怎麼寫、為什麼改）。"
         bullets={[
-          '目前篩選層沿用既有 scanner / signal_conditions（V6.2 進場評分 + 四層退場，見 CLAUDE.md 訊號系統章節）',
-          'Agent pipeline 尚未開發（研究層 LLM thesis 生成屬 app/backend 範圍）',
+          '記提問的版本聽起來很瑣碎，但同一檔股票、同一份資料，換個問法就會得到不同的結論——不記下來的話，之後根本分不清是市場變了還是我改了問法。',
+          '篩選條件目前先沿用前一版（V6.1）那一套，等這條線真的跑起來再換掉。',
         ]}
-        note="規劃詳見 planing/雙模型架構重整計畫.md §2.5。"
       />
     </div>
   );
