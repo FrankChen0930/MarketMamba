@@ -1,20 +1,20 @@
 {
-  "date": "2026-08-11",
-  "generated_at": "2026-08-11T22:05:02",
+  "date": "2026-08-12",
+  "generated_at": "2026-08-13T02:57:50",
   "taiex_technicals": {
     "close": 45121.0,
     "ma_20": 43615.0,
     "ma_60": 44398.0,
     "ma_120": 44398.0,
     "rsi_14": 55.69,
-    "macd": -40.13,
-    "macd_signal": -337.36,
-    "macd_hist": 297.23,
+    "macd": -40.15,
+    "macd_signal": -337.39,
+    "macd_hist": 297.24,
     "kd_k": 88.71,
     "kd_d": 77.03,
     "bb_pct_b": 0.731,
     "bias_20ma": 3.45,
-    "atr_14": 1273.75,
+    "atr_14": 1273.76,
     "obv_trend": "down",
     "realized_vol_10d": 48.02,
     "beta_vs_spx": 0.0,
@@ -118,18 +118,11 @@
     ]
   },
   "institutional": {
-    "foreign_net_5d_bn": 1323989.9,
-    "investment_trust_net_5d_bn": 548675.3,
-    "dealer_net_5d_bn": -85082.9,
-    "total_net_5d_bn": 1787582.3,
+    "foreign_net_5d_bn": 1612810.1,
+    "investment_trust_net_5d_bn": 317842.5,
+    "dealer_net_5d_bn": 127028.6,
+    "total_net_5d_bn": 2057681.2,
     "history": [
-      {
-        "date": "2026-08-04",
-        "date_label": "08/04",
-        "foreign_net": -137290.8,
-        "investment_trust_net": 272353.5,
-        "dealer_net": -167081.8
-      },
       {
         "date": "2026-08-05",
         "date_label": "08/05",
@@ -157,17 +150,17 @@
         "foreign_net": 177693.0,
         "investment_trust_net": 49379.7,
         "dealer_net": 20009.2
+      },
+      {
+        "date": "2026-08-12",
+        "date_label": "08/12",
+        "foreign_net": 151529.4,
+        "investment_trust_net": 41520.7,
+        "dealer_net": 45029.7
       }
     ]
   },
   "breadth_history": [
-    {
-      "date": "2026-08-04",
-      "date_label": "08/04",
-      "adv": 1155,
-      "dec": 628,
-      "ratio": 1.84
-    },
     {
       "date": "2026-08-05",
       "date_label": "08/05",
@@ -195,10 +188,17 @@
       "adv": 714,
       "dec": 1040,
       "ratio": 0.69
+    },
+    {
+      "date": "2026-08-12",
+      "date_label": "08/12",
+      "adv": 1109,
+      "dec": 657,
+      "ratio": 1.69
     }
   ],
   "margin": {
-    "date": "2026-08-11",
+    "date": "2026-08-12",
     "margin_balance_bn": 0.0,
     "short_balance_bn": 0.0,
     "margin_ratio": 0.0
@@ -206,43 +206,43 @@
   "sector_flow": [
     {
       "sector": "電子工業",
-      "net_5d_bn": 1315157.9,
+      "net_5d_bn": 1428589.6,
       "direction": "in"
     },
     {
       "sector": "半導體業",
-      "net_5d_bn": 646102.7,
-      "direction": "in"
-    },
-    {
-      "sector": "電腦及週邊設備業",
-      "net_5d_bn": 480410.4,
+      "net_5d_bn": 1071821.2,
       "direction": "in"
     },
     {
       "sector": "電子零組件業",
-      "net_5d_bn": -333017.8,
+      "net_5d_bn": -499645.4,
       "direction": "out"
     },
     {
+      "sector": "電腦及週邊設備業",
+      "net_5d_bn": 484827.9,
+      "direction": "in"
+    },
+    {
       "sector": "其他電子業",
-      "net_5d_bn": 327049.5,
+      "net_5d_bn": 382277.5,
       "direction": "in"
     },
     {
       "sector": "ETF",
-      "net_5d_bn": 152913.3,
+      "net_5d_bn": 151264.6,
+      "direction": "in"
+    },
+    {
+      "sector": "化學生技醫療",
+      "net_5d_bn": 93331.2,
       "direction": "in"
     },
     {
       "sector": "金融保險",
-      "net_5d_bn": -104810.6,
+      "net_5d_bn": -86769.5,
       "direction": "out"
-    },
-    {
-      "sector": "化學生技醫療",
-      "net_5d_bn": 59169.5,
-      "direction": "in"
     }
   ]
 }
