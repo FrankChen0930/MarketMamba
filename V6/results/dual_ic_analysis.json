@@ -1,33 +1,33 @@
 {
-  "generated_date": "2026-08-18",
-  "archive_count_short": 38,
-  "archive_count_trend": 38,
+  "generated_date": "2026-08-19",
+  "archive_count_short": 39,
+  "archive_count_trend": 39,
   "period_start": "2026-06-22",
-  "period_end": "2026-08-18",
+  "period_end": "2026-08-19",
   "horizon_summary": {
     "5d": {
-      "n_days": 33,
-      "mean_ic": 0.1288,
-      "icir": 0.92,
-      "t_stat": 5.29,
-      "ic_gt0_pct": 78.8,
-      "mean_top50_excess_pct": 1.243
+      "n_days": 34,
+      "mean_ic": 0.13,
+      "icir": 0.942,
+      "t_stat": 5.49,
+      "ic_gt0_pct": 79.4,
+      "mean_top50_excess_pct": 1.218
     },
     "10d": {
-      "n_days": 29,
-      "mean_ic": 0.1578,
-      "icir": 1.513,
-      "t_stat": 8.15,
-      "ic_gt0_pct": 96.6,
-      "mean_top50_excess_pct": 1.82
+      "n_days": 30,
+      "mean_ic": 0.1516,
+      "icir": 1.406,
+      "t_stat": 7.7,
+      "ic_gt0_pct": 93.3,
+      "mean_top50_excess_pct": 1.726
     },
     "20d": {
-      "n_days": 19,
-      "mean_ic": 0.2101,
-      "icir": 4.732,
-      "t_stat": 20.63,
+      "n_days": 20,
+      "mean_ic": 0.2057,
+      "icir": 4.348,
+      "t_stat": 19.44,
       "ic_gt0_pct": 100.0,
-      "mean_top50_excess_pct": 2.247
+      "mean_top50_excess_pct": 2.315
     },
     "60d": {
       "n_days": 0,
@@ -269,6 +269,13 @@
       "ic": 0.0913,
       "n_stocks": 1917,
       "top50_excess_pct": 0.189
+    },
+    {
+      "pred_date": "2026-08-12",
+      "future_date": "2026-08-19",
+      "ic": 0.1696,
+      "n_stocks": 1914,
+      "top50_excess_pct": 0.412
     }
   ],
   "ic_series_10d": [
@@ -474,6 +481,13 @@
       "ic": 0.017,
       "n_stocks": 1846,
       "top50_excess_pct": -1.973
+    },
+    {
+      "pred_date": "2026-08-04",
+      "future_date": "2026-08-19",
+      "ic": -0.0279,
+      "n_stocks": 1849,
+      "top50_excess_pct": -1.007
     }
   ],
   "ic_series_20d": [
@@ -609,6 +623,13 @@
       "ic": 0.1841,
       "n_stocks": 1919,
       "top50_excess_pct": -0.937
+    },
+    {
+      "pred_date": "2026-07-21",
+      "future_date": "2026-08-19",
+      "ic": 0.1223,
+      "n_stocks": 1918,
+      "top50_excess_pct": 3.596
     }
   ],
   "ic_series_60d": []
