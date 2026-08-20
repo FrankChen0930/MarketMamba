@@ -1,31 +1,25 @@
 {
-  "generated_date": "2026-08-19",
+  "generated_date": "2026-08-20",
   "archive_count": 63,
-  "period_start": "2026-05-21",
-  "period_end": "2026-08-19",
+  "period_start": "2026-05-22",
+  "period_end": "2026-08-20",
   "horizon_summary": {
     "5d": {
       "n_days": 57,
-      "mean_ic": 0.0732,
-      "icir": 0.525,
-      "t_stat": 3.96,
+      "mean_ic": 0.0756,
+      "icir": 0.553,
+      "t_stat": 4.18,
       "ic_gt0_pct": 66.7
     },
     "20d": {
       "n_days": 42,
-      "mean_ic": 0.2064,
-      "icir": 1.634,
-      "t_stat": 10.59,
+      "mean_ic": 0.2077,
+      "icir": 1.664,
+      "t_stat": 10.79,
       "ic_gt0_pct": 100.0
     }
   },
   "ic_series_5d": [
-    {
-      "pred_date": "2026-05-21",
-      "future_date": "2026-05-28",
-      "ic": -0.1487,
-      "n_stocks": 1073
-    },
     {
       "pred_date": "2026-05-22",
       "future_date": "2026-05-29",
@@ -361,15 +355,15 @@
       "future_date": "2026-08-19",
       "ic": 0.0656,
       "n_stocks": 990
+    },
+    {
+      "pred_date": "2026-08-13",
+      "future_date": "2026-08-20",
+      "ic": -0.0109,
+      "n_stocks": 1014
     }
   ],
   "ic_series_20d": [
-    {
-      "pred_date": "2026-05-21",
-      "future_date": "2026-06-18",
-      "ic": 0.0367,
-      "n_stocks": 1072
-    },
     {
       "pred_date": "2026-05-22",
       "future_date": "2026-06-22",
@@ -615,20 +609,22 @@
       "future_date": "2026-08-19",
       "ic": 0.056,
       "n_stocks": 992
+    },
+    {
+      "pred_date": "2026-07-22",
+      "future_date": "2026-08-20",
+      "ic": 0.0911,
+      "n_stocks": 1036
     }
   ],
   "rolling_ic_5d": [
     {
-      "date": "2026-05-25",
-      "rolling_ic": -0.02
-    },
-    {
       "date": "2026-05-26",
-      "rolling_ic": 0.0392
+      "rolling_ic": 0.1018
     },
     {
       "date": "2026-05-27",
-      "rolling_ic": 0.0526
+      "rolling_ic": 0.1029
     },
     {
       "date": "2026-05-28",
@@ -837,6 +833,10 @@
     {
       "date": "2026-08-12",
       "rolling_ic": -0.0315
+    },
+    {
+      "date": "2026-08-13",
+      "rolling_ic": -0.0201
     }
   ]
 }
