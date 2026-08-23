@@ -87,7 +87,11 @@ def load_ticker_universe() -> tuple[list[str], list[str]]:
         df = pd.read_parquet(cache_path)
     else:
         df = _fetch_universe_from_finmind()
-        df.to_parquet(cache_path)
+        # index=False：此處的索引沒有語意（就是列序）。目前 _fetch_universe_from_finmind()
+        # 結尾有 reset_index(drop=True)，索引連續 → pandas 只寫進 metadata、不落成實體欄，
+        # 所以這裡從未肇事。但那道防線在**另一個函式**裡，改動它不會有任何警示；
+        # 一旦 return 前多一個 filter/sort，就會實體化出 __index_level_0__ 欄（INC-01 形態）。
+        df.to_parquet(cache_path, index=False)
 
     tse = df[df["market"] == "TSE"]["stock_id"].tolist()
     otc = df[df["market"] == "OTC"]["stock_id"].tolist()

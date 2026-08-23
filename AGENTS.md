@@ -1,11 +1,11 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
 
 # MarketMamba — AI 助手指引
 
-> **最後更新：2026-08-11**（過渡期全面盤點：CLAUDE.md 109 KB → 約 62 KB、
-> 敘事移進第二層、新增事故簿與遷移地圖、建立 `.claude/agents/` 三個角色）
+> **最後更新：2026-08-11**（過渡期全面盤點：AGENTS.md 109 KB → 約 62 KB、
+> 敘事移進第二層、新增事故簿與遷移地圖、建立 `.Codex/agents/` 三個角色）
 >
 > **開工先讀本檔最下面「下一步」的 ▶ 區塊。**
 > **這份檔案是 Project Constitution（規則與 invariant），不是百科全書。**
@@ -15,7 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 📚 記憶分三層（2026-08-06 整理）
 
-CLAUDE.md 原本累積到 264 KB、超過載入上限，已拆成三層。**找不到東西時照這個順序找**：
+AGENTS.md 原本累積到 264 KB、超過載入上限，已拆成三層。**找不到東西時照這個順序找**：
 
 | 層 | 位置 | 放什麼 | 進 git？ |
 |---|---|---|---|
@@ -46,7 +46,7 @@ obsidian_note/
 > 不照著做會把雜訊當成結論。
 
 **維護規則**：本檔的「最近完成」只留**索引**，敘事一律在第二層。
-CLAUDE.md 曾在 2026-08-06 從 264 KB 壓到 68 KB、五天內長回 109 KB
+AGENTS.md 曾在 2026-08-06 從 264 KB 壓到 68 KB、五天內長回 109 KB
 → **它會自然膨脹，超過 60 KB 就該叫 Archivist 檢查。**
 
 ---
@@ -55,18 +55,18 @@ CLAUDE.md 曾在 2026-08-06 從 264 KB 壓到 68 KB、五天內長回 109 KB
 
 ### 角色
 
-**可用 Agent tool 派遣的 specialized agent 只有三個**，定義在 `.claude/agents/`，
+**可用 Agent tool 派遣的 specialized agent 只有三個**，定義在 `.Codex/agents/`，
 **身分存在於檔案裡，不依賴對話歷史**——`/clear` 之後可以完整重建。
 
 | 角色 | 做什麼 | 不做什麼 |
 |---|---|---|
 | **builder** | 實作、除錯、測試、局部重構、技術調查 | 不改專案方向、不建大型抽象、不因難看就重構、不無證據刪 legacy |
 | **verifier** | 獨立驗證、找靜默失敗與 regression、挑戰假設 | **不自行大改 production code**（產出是 Finding 不是 patch）、不把 style 當 bug |
-| **archivist** | 維護 CLAUDE.md 與 obsidian、更新現況、提煉研究結論 | 不存對話紀錄、不為每個 task 建 log、不改 production code |
+| **archivist** | 維護 AGENTS.md 與 obsidian、更新現況、提煉研究結論 | 不存對話紀錄、不為每個 task 建 log、不改 production code |
 
 **Advisor 不是第四個 agent，不要用 Agent tool 派它。**
 Advisor 是**主 session 自己遵循的 orchestration protocol**，定義在
-`.claude/skills/advisor/SKILL.md`（需要跨角色協調、判斷該不該派 agent、
+`.Codex/skills/advisor/SKILL.md`（需要跨角色協調、判斷該不該派 agent、
 或要仲裁 Builder 回報與 Verifier Finding 時載入）。它負責：
 理解 task → 判斷是否需要委派 → 建立 delegation brief →
 控制 Builder／Verifier 的資訊隔離 → 收集結構化結果 →
@@ -92,13 +92,13 @@ Verifier 的價值來自冷啟動——它不知道 Builder 希望答案是什�
 要辯論就升到使用者那裡。
 
 **不建立 agent 之間的對話系統，不建立 `agent-a-message.md` 這類檔案。**
-Agent 之間共享的是 code / tests / docs / CLAUDE.md / obsidian，**不是對話歷史**。
+Agent 之間共享的是 code / tests / docs / AGENTS.md / obsidian，**不是對話歷史**。
 delegation brief 寫在 Agent tool 的 prompt 裡，不落檔。
 
 ### 記憶檢索紀律（不要把整個 vault 塞進 context）
 
 ```
-永遠讀：CLAUDE.md + obsidian_note/01 系統現況/現況整理.md
+永遠讀：AGENTS.md + obsidian_note/01 系統現況/現況整理.md
 然後依 domain 讀：
   資料/parquet  → 03 資料管線與修復史 + 02 事故簿
   特徵          → 06 研究紀錄/02
@@ -111,10 +111,10 @@ delegation brief 寫在 Agent tool 的 prompt 裡，不落檔。
 ### 知識升級管線
 
 ```
-對話 → docs/（artifact）→ obsidian_note/（canonical memory）→ CLAUDE.md（constitution）
+對話 → docs/（artifact）→ obsidian_note/（canonical memory）→ AGENTS.md（constitution）
 ```
 
-**每一階都是提煉不是複製。** 對話不是記憶；不要因為某件事重要就把細節全塞進 CLAUDE.md。
+**每一階都是提煉不是複製。** 對話不是記憶；不要因為某件事重要就把細節全塞進 AGENTS.md。
 
 ---
 
@@ -162,11 +162,11 @@ delegation brief 寫在 Agent tool 的 prompt 裡，不落檔。
 5. **禁止修改 `V6/models/` 目錄下的任何檔案**（包含 `.pt` checkpoint），那是訓練好的模型權重，誤改無法復原。
 6. **推論腳本在 WSL2（Ubuntu）環境執行**，路徑以 `/mnt/d/...` 掛載，呼叫方式為 `wsl -d Ubuntu -- bash -lc "..."`。
 7. **輸出結果必須對人類可讀**：實作任何訓練 log、推論進度、診斷資訊時，數值必須明確顯示（例如 `scale_gate: [0.312, 0.487, 0.201]`），不可只實作邏輯而省略實際數字的輸出語句。如果一個功能「有做但看不到結果」，視同未完成。
-8. **每次任務完成並獲得我確認後，主動更新 CLAUDE.md 的 Current Status 區塊**：把剛完成的事移到「最近完成」；更新「進行中」與「下一步」；若有重要設計決策，記錄到「決策紀錄」；更新頂部的「最後更新」日期。
+8. **每次任務完成並獲得我確認後，主動更新 AGENTS.md 的 Current Status 區塊**：把剛完成的事移到「最近完成」；更新「進行中」與「下一步」；若有重要設計決策，記錄到「決策紀錄」；更新頂部的「最後更新」日期。
 
 ---
 
-## 協作偏好 / 開發習慣（2026-06-19 整理，供 Claude Code 接手）
+## 協作偏好 / 開發習慣（2026-06-19 整理，供 Codex 接手）
 
 > 從長期協作歸納的工作風格，補充上面「互動規則」。
 
@@ -220,7 +220,7 @@ MarketMamba/
 │   │   ├── quant/
 │   │   │   └── pattern_scanner.py   ← 型態辨識（V6.2 重寫：5多方+2空方型態）
 │   │   ├── llm/
-│   │   │   └── report_generator.py  ← Claude API 每日市場報告
+│   │   │   └── report_generator.py  ← Codex API 每日市場報告
 │   │   ├── backtest/
 │   │   │   ├── engine.py            ← 回測引擎
 │   │   │   ├── sim_engine_v2.py     ← 舊版模擬機器人
@@ -251,7 +251,7 @@ MarketMamba/
 
 **MarketMambaV6**（**1,659,005 參數**，Google Colab A100 訓練，本機 RTX 3060 推論）：
 
-> ⚠️ 參數量在 repo 裡有三個不一致的版本：父層 `ProjectForMe/CLAUDE.md` 寫 11.5M、
+> ⚠️ 參數量在 repo 裡有三個不一致的版本：父層 `ProjectForMe/AGENTS.md` 寫 11.5M、
 > 本檔舊版寫 ~4M、F6 消融實驗的 JSON 寫 **1,659,005**。
 > **以 1,659,005 為準**（有實驗直接佐證）。另外兩處是過期文件，見
 > `docs/research/project-transition-audit.md` §6.1。
@@ -341,7 +341,7 @@ MarketMamba/
 ——2026-07-07 就是因為「同一套規則兩份實作」造成過真實 bug。
 
 → 完整規格（四條件權重、四層退場、Trailing Stop 四檔、7 種型態）：
-`obsidian_note/01 系統現況/遷移地圖.md` 與 git 歷史 commit `da9a016` 之前的 CLAUDE.md
+`obsidian_note/01 系統現況/遷移地圖.md` 與 git 歷史 commit `da9a016` 之前的 AGENTS.md
 
 ## Colab 訓練工作流程
 
@@ -430,7 +430,7 @@ curl -X POST https://marketmamba-api.onrender.com/api/signals/cache/refresh
 **WSL2 / `V6/.env`**：
 ```
 FINMIND_TOKEN=...        # FinMind 資料 API
-ANTHROPIC_API_KEY=...    # Claude LLM 報告
+ANTHROPIC_API_KEY=...    # Codex LLM 報告
 RENDER_BACKEND_URL=https://marketmamba-api.onrender.com
 ```
 
@@ -464,7 +464,7 @@ wsl -d Ubuntu -- bash -lc "~/miniconda3/envs/colabcli/bin/colab sessions"
 **⚠️ 必須記住的五件事**
 1. **依賴要鎖版本**：`google-colab-cli` 對 `jupyter-kernel-client` **沒有鎖版本**，而後者 1.0.0（2026-07-26）把 `KernelClient` 改名 → 直接 `AttributeError`。已鎖 **`jupyter-kernel-client<1.0.0`（實際 0.15.0）**。**重裝或 `pip install -U` 會再壞一次**。
 2. **沒 stop 的 session 會一直燒 compute units**（只有 24h 上限兜底）→ 一律用 `colab run`，不要用 `colab new`。
-3. **`repl` / `console` / `auth` / `drivemount` 需要 TTY，Claude Code 不能代跑**。
+3. **`repl` / `console` / `auth` / `drivemount` 需要 TTY，Codex 不能代跑**。
 4. **`colab run` 與 Drive 互斥**：`run` 是即開即棄的 session，而 `drivemount` 必須人在終端機。
    - **繞開 Drive 是可行的**：需要 TTY 的只有 `repl`/`console`/`auth`/`drivemount` 四個，`upload`/`download`/`install` 都不需要 → `new` → `upload` → `exec` → `download` → `stop` **可以全自動**。
    - **但成本不划算**：`processed_v6.zip` 約 3 GB，`new` 到 `stop` 之間**整段計費**（含上傳等待）。20 Mbps 上傳＝在 A100 上乾等 20 分鐘，比手動掛一次 Drive 貴得多。mamba 的 whl 不是問題（幾十 MB，可在 VM 上直接從 PyPI/GitHub 抓）。
@@ -518,7 +518,7 @@ cd app/frontend && npm run dev   # → localhost:5173
 
 ### 最近完成（索引；完整敘事已移到第二層）
 
-> **2026-08-11 壓縮**：這一節原本有 770 行的完整事故敘事與逐項數字，佔 CLAUDE.md 的 46%。
+> **2026-08-11 壓縮**：這一節原本有 770 行的完整事故敘事與逐項數字，佔 AGENTS.md 的 46%。
 > 那是「我們做過什麼」，不是「新 Agent 必須知道什麼」。
 > **敘事已移到第二層，萃取出的規則保留在下方「決策紀錄」。**
 > 需要細節時：`git log` + `obsidian_note/`。
@@ -596,7 +596,7 @@ git add -A V6/results/ && git commit -m "v62: 清除試跑資料，08-17 正式�
 含 StartWhenAvailable 補跑 + WakeToRun 喚醒）。
 
 ⚠️ **使用者要的「不用登入也能執行」沒能做到**：
-① Claude Code 的 shell **不是系統管理員**、建不了 S4U 工作
+① Codex 的 shell **不是系統管理員**、建不了 S4U 工作
 ② 那個模式跑在 Session 0，而 **WSL2 需要使用者 session** → 極可能整條鏈壞掉。
 **這一點沒能實測。** 要試的話用提權 PowerShell：
 
@@ -701,7 +701,7 @@ Set-ScheduledTask -TaskName "MarketMamba_V62" -Principal (New-ScheduledTaskPrinc
 > ⚠️ **用 Colab 網頁版跑，不要用 `colab run` CLI**——`head20d` 就是栽在
 > WSL2 半夜自行重啟殺掉 keep-alive daemon。
 >
-> 跑完把 JSON 給 Claude → 算 σ + 用它標定 dim47 的 −0.0014 + 給上線的 +38.1% 補誤差棒。
+> 跑完把 JSON 給 Codex → 算 σ + 用它標定 dim47 的 −0.0014 + 給上線的 +38.1% 補誤差棒。
 >
 > ### 上線之後的下一階段（使用者已同意的方向）
 >
@@ -737,7 +737,7 @@ Set-ScheduledTask -TaskName "MarketMamba_V62" -Principal (New-ScheduledTaskPrinc
       它們是八模型定稿表的證據——**為了省 `--sweep` 的掃描時間刪掉研究證據是壞交易**。
       改成讓成本看得見：`sweep()` 未指定 `--models` 時會先印出「要掃幾個檔、其中幾個是衍生檔」。
 - [x] ~~確認 portfolio_lab v1.1 修訂提案~~ **2026-08-08 全部裁決完畢**（規格 §8 有裁決總表）：
-      **A 改 headline** ✅ 早在 08-01 就生效了（`portfolio_lab.py:95`，CLAUDE.md 這條待辦是過時的）；
+      **A 改 headline** ✅ 早在 08-01 就生效了（`portfolio_lab.py:95`，AGENTS.md 這條待辦是過時的）；
       **C 補 10 日頻率** ✅ 同樣早已生效；
       **D 大盤區間報告** ✅ **採用**——成本近乎零，且直接對準最大未解風險
       （主線優勢全在上升段、下跌段差 8.4pp，而前後半切分測不到）；
@@ -988,3 +988,7 @@ Rules:
 - If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
 - Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
 - After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+
+## Imported Claude Cowork project instructions
+
+請先看"Agent分析結果" 資料夾內的分析結果，我想要先從系統穩定性開始解決，主要問題是inference的不穩定。

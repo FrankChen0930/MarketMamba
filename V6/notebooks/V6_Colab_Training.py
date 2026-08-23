@@ -11,9 +11,74 @@ Original file is located at
 # ==========================================
 import os
 
+
+def _can_prompt():
+    """True only when a notebook frontend can safely mediate a hidden prompt.
+
+    Deliberately NOT sys.stdin.isatty(): on Windows, isatty() returns True even
+    for `python script.py < /dev/null`, and getpass then reads the console
+    directly and BLOCKS FOREVER. A missing required credential must fail loud,
+    never hang, so the prompt is offered only inside an IPython / Colab kernel,
+    where getpass is served by the frontend instead of the console.
+    """
+    try:
+        ip = get_ipython()  # noqa: F821 - injected into builtins by IPython / Colab
+    except NameError:
+        return False
+    if ip is None:
+        return False
+    shells = {c.__name__ for c in type(ip).__mro__}
+    return hasattr(ip, "kernel") or "ZMQInteractiveShell" in shells
+
+
+def _load_secret(name, *, required=True):
+    """Load a secret without ever hard-coding it in this file.
+
+    Order: os.environ -> Colab Secrets (key icon in the left sidebar) ->
+    hidden interactive prompt. Only the SOURCE is printed, never the value,
+    its length, or a prefix.
+    """
+    val = os.environ.get(name)
+    if val:
+        print(f"✅ {name}: loaded from os.environ")
+        return val
+
+    try:
+        from google.colab import userdata
+        val = userdata.get(name)
+    except Exception:
+        # Not running on Colab, secret absent, or access not granted.
+        val = None
+    if val:
+        os.environ[name] = val
+        print(f"✅ {name}: loaded from Colab Secrets")
+        return val
+
+    val = ""
+    if _can_prompt():
+        try:
+            import getpass
+            val = getpass.getpass(f"{name} (input hidden; leave blank to skip): ").strip()
+        except Exception:
+            val = ""
+    if val:
+        os.environ[name] = val
+        print(f"✅ {name}: loaded from interactive prompt")
+        return val
+
+    if required:
+        raise RuntimeError(
+            f"{name} is required but was not found. Add it under Colab Secrets "
+            f"(key icon in the left sidebar) and enable access for this notebook, "
+            f"or export {name} as an environment variable before running."
+        )
+    print(f"⚠️  {name}: not set — skipping (optional)")
+    return ""
+
+
 # ── API Tokens ──
-os.environ["FINMIND_TOKEN"] = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9"  # <-- paste your FinMind Sponsor token
-os.environ["ANTHROPIC_API_KEY"] = "hGf5_2BtIWbc3_l7nDAm9dTy3qvlhnJayzjrRkiCgMdcWoqITDeOfYX9rDzyEC8OfSEZOZo6UFb"   # <-- paste if you have one (optional)
+_load_secret("FINMIND_TOKEN", required=True)
+_load_secret("ANTHROPIC_API_KEY", required=False)
 
 # ── Build Flags ──
 FORCE_REBUILD = False    # True = rebuild 56D Feature Matrix from raw data

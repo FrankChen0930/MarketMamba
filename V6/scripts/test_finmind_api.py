@@ -1,10 +1,30 @@
 """Test: Dividend fetch strategies."""
+import os
 import sys
+from pathlib import Path
+
 sys.stdout.reconfigure(encoding="utf-8")
 import requests
 import time
 
-TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiRnJhbmtDaGVuIiwiZW1haWwiOiJhMDk2NjQ2OTk2NEBnbWFpbC5jb20ifQ.rwJBGSwJyHDqXeVZKCMkKulKVk48Y2klu4pyUgiJyrE"
+# Load V6/.env before reading the token (same convention as marketmamba/config.py)
+try:
+    from dotenv import load_dotenv
+    _env_path = Path(__file__).resolve().parent.parent / ".env"
+    if _env_path.exists():
+        load_dotenv(dotenv_path=_env_path, override=False)  # override=False: system env wins
+except ImportError:
+    pass  # python-dotenv not installed — rely on system environment variables
+
+TOKEN = os.getenv("FINMIND_TOKEN", "")
+if not TOKEN:
+    print(
+        "FINMIND_TOKEN not set. Add `FINMIND_TOKEN=<your token>` to V6/.env, "
+        "or export it as an environment variable, then re-run.",
+        file=sys.stderr,
+    )
+    sys.exit(1)
+
 BASE = "https://api.finmindtrade.com/api/v4/data"
 
 # Strategy 1: Full market, small date range, NO data_id
