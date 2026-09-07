@@ -40,6 +40,7 @@ run_v62_daily.py — V6.2 每日一鍵：抓資料 → 檢查 → 推論 → 多
     python V6/run_v62_daily.py                          # 全部組合（12 個）
     python V6/run_v62_daily.py --portfolios v2_kg_nomacro_f20   # 只跑主線
     python V6/run_v62_daily.py --first-day              # 上線第一天：強制建倉
+    python V6/run_v62_daily.py --fetch-only             # 只更新 raw parquet，不建矩陣/推論
     python V6/v62_portfolio.py --list                   # 看有哪些組合 arm
 """
 from __future__ import annotations
@@ -367,6 +368,8 @@ def main() -> int:
     ap.add_argument("--skip-check", action="store_true", help="跳過資料檢查（不建議）")
     ap.add_argument("--no-fetch", action="store_true",
                     help="不自己抓資料（V6.1 還在跑、且已經抓過時用）")
+    ap.add_argument("--fetch-only", action="store_true",
+                    help="只抓取並檢查每日 raw parquet；不建矩陣、不推論、不發布")
     ap.add_argument("--no-ui", action="store_true", help="不開進度視窗")
     ap.add_argument("--skip-push", action="store_true",
                     help="不推送到 GitHub（測試用；dashboard 不會更新）")
@@ -376,6 +379,8 @@ def main() -> int:
                     help="不算前瞻績效（v62_performance.json 不更新）")
     a = ap.parse_args()
 
+    if a.fetch_only:
+        return _pipeline(a, None)
     if a.no_ui:
         return _pipeline(a, None)
     from progress_window import ProgressWindow
@@ -393,6 +398,23 @@ def _pipeline(a, ui) -> int:
             ui.update(idx, status, note)
 
     t0 = datetime.now()
+
+    if a.fetch_only:
+        logger.info("=" * 62)
+        logger.info("[fetch-only] 只更新每日 raw parquet；不建矩陣、不載模型、不推論、不發布")
+        logger.info("=" * 62)
+        complete, missing = fetch_data()
+        logger.info(f"[fetch-only] 完整來源 {sum(complete.values())}/{len(DAILY_SOURCES)}")
+        if missing:
+            notify("⚠️ MarketMamba fetch-only 資料缺漏",
+                   "以下每日源抓取後仍沒有當日資料：\n• " + "\n• ".join(missing))
+            logger.error(f"[fetch-only] 失敗｜缺漏 {len(missing)} 個每日源｜exit=1")
+            return 1
+        elapsed = (datetime.now() - t0).total_seconds()
+        logger.info(f"[fetch-only] 完成｜每日源 {len(DAILY_SOURCES)}/{len(DAILY_SOURCES)}"
+                    f"｜耗時 {elapsed:.1f} 秒｜exit=0")
+        return 0
+
     import run_v62_inference as R
     import v62_portfolio as P
 

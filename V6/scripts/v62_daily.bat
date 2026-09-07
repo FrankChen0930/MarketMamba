@@ -7,9 +7,9 @@
 ::   21:11 才有當日資料。跑太早不會報錯——`_merge_margin` 會 ffill 昨天的值，
 ::   訓練端有當日 margin 而推論端沒有，形成 train/serve 不對稱。
 ::
-:: ⚠ 必須排在 V6.1（PersonalOS_Daily）**完成之後**
-::   V6.2 不自己抓資料，它吃 V6.1 的 run_daily_update 更新好的 raw parquet。
-::   實測 V6.1 + 雙模型全鏈路約 33 分鐘（19:30 → 20:03）。
+:: V6.2 會自己呼叫既有 run_daily_update 更新 raw parquet，不依賴 V6.1。
+:: 若只需要保留每日資料 ingestion，使用 --fetch-only；該模式在抓取與
+:: 當日完整性檢查後立即結束，不建特徵矩陣、不載模型、不推論、不發布。
 ::
 :: Task Scheduler 設定（與 daily_inference.bat 相同的關鍵項）：
 ::   - "Run only when user is logged on"（WSL2 需要有使用者 session，SYSTEM 帳號跑不動）
@@ -18,6 +18,7 @@
 :: 用法：
 ::   v62_daily.bat                 平日例行
 ::   v62_daily.bat --first-day     上線第一天（強制建倉）
+::   v62_daily.bat --fetch-only    只更新 raw parquet，不建矩陣/推論/發布
 
 SET LOGDIR=D:\Desktop\work\ProjectForMe\MarketMamba\V6\logs
 IF NOT EXIST "%LOGDIR%" MKDIR "%LOGDIR%"
