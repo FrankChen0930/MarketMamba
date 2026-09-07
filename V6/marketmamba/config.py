@@ -5,6 +5,7 @@ Single source of truth for all hyperparameters, paths, and feature definitions.
 All other modules import from here; never hard-code values elsewhere.
 """
 
+import os
 from pathlib import Path
 
 # Load .env file before anything else so environment variables are available
@@ -22,7 +23,8 @@ except ImportError:
 # Resolve absolute root regardless of where the script is called from
 _THIS_FILE = Path(__file__).resolve()
 ROOT_DIR   = _THIS_FILE.parent.parent          # .../V6/
-DATA_DIR   = ROOT_DIR.parent / "Data"          # .../Data/  (shared with V5.5)
+_DEFAULT_DATA_DIR = ROOT_DIR.parent / "Data"   # .../Data/  (shared with V5.5)
+DATA_DIR   = Path(os.getenv("MARKETMAMBA_DATA_ROOT", _DEFAULT_DATA_DIR)).expanduser()
 PROCESSED_DIR = DATA_DIR / "processed_v6"      # V6 uses its own processed folder
 MODELS_DIR    = ROOT_DIR / "models"
 RESULTS_DIR   = ROOT_DIR / "results"
@@ -172,7 +174,6 @@ TPEX_INSTITUTIONAL_URL = (
 )
 
 # Tokens / API keys — loaded from .env (see .env file in V6/)
-import os
 FINMIND_TOKEN     = os.getenv("FINMIND_TOKEN", "")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 OPENAI_API_KEY    = os.getenv("OPENAI_API_KEY", "")
@@ -198,4 +199,3 @@ GITHUB_RESULTS_KEEP_DAYS = 90   # Rolling window for df_kelly history
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 LLM_MODEL         = "claude-sonnet-4-6"
 LLM_MAX_TOKENS    = 800
-

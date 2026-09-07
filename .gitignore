@@ -34,6 +34,7 @@ Data/
 V6/results/20*/
 
 # Python cache
+.venv/
 __pycache__/
 *.pyc
 *.pyo

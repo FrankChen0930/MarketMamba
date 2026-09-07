@@ -44,13 +44,14 @@ from marketmamba.signals.signal_conditions import (
     W_RELATIVE_LOW,
     compute_entry_score,
 )
+from marketmamba.config import PROCESSED_DIR
 
 logger = logging.getLogger(__name__)
 
 # ── Paths ────────────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent.parent.parent   # V6/
 RESULTS_DIR = BASE_DIR / "results"
-DATA_DIR = BASE_DIR.parent / "Data" / "processed_v6"
+DATA_DIR = PROCESSED_DIR
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
