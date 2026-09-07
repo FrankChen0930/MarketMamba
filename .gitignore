@@ -74,6 +74,9 @@ app/backend/_api_check.txt
 V6/experimental/result/scores/
 V6/experimental/result/wf/
 
+# Research paper PDFs are kept locally for literature review but should not bloat git.
+research/literature/papers/
+
 # 每日推論用的 baseline 權重（2026-08-08）。使用者決定不進 git——目前只在這台機器跑。
 # 可由 baseline_ridge_lasso.py --save-model / baseline_gbdt.py --tag 重建，
 # 但 ⚠️ GBDT 重建出來的**訊號層不會一樣**（ρ≈0.92），組合層才一致（11.0% vs 11.2%）。
