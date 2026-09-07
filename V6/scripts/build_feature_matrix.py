@@ -157,7 +157,7 @@ def main():
     # ── Step 4: Save ──
     log.info("")
     log.info("Step 4: Saving Feature Matrix...")
-    df.to_parquet(MATRIX_CACHE)
+    df.to_parquet(MATRIX_CACHE, index=False)
     size = MATRIX_CACHE.stat().st_size / 1e9
     log.info(f"  Saved: {MATRIX_CACHE.name} ({size:.2f} GB)")
 

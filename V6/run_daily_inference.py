@@ -37,6 +37,38 @@ except ImportError:
 # Make package importable when run as __main__
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+# V6.1 legacy daily inference loads v6_best.pt, whose checkpoint was trained
+# before the V6.2 relative-strength feature expansion. Keep this process-local
+# so current V6.2/dual 59D serving remains governed by the global config.
+import marketmamba.config as _cfg
+
+_V61_RS_COLS = ("RS_5d", "RS_20d", "RS_60d")
+_V61_LEGACY_GROUP_DIMS = {
+    "price_momentum": 12,
+    "institutional_flow": 20,
+    "fundamentals": 12,
+    "macro_environment": 12,
+}
+
+_cfg.FEATURE_GROUPS = {name: list(cols) for name, cols in _cfg.FEATURE_GROUPS.items()}
+_cfg.FEATURE_GROUPS["price_momentum"] = [
+    col for col in _cfg.FEATURE_GROUPS["price_momentum"] if col not in _V61_RS_COLS
+]
+_cfg.INPUT_DIM = 56
+_cfg.FEATURE_COLS = (
+    _cfg.FEATURE_GROUPS["price_momentum"]
+    + _cfg.FEATURE_GROUPS["institutional_flow"]
+    + _cfg.FEATURE_GROUPS["fundamentals"]
+    + _cfg.FEATURE_GROUPS["macro_environment"]
+)
+_cfg.GROUP_DIMS = {name: len(cols) for name, cols in _cfg.FEATURE_GROUPS.items()}
+assert len(_cfg.FEATURE_COLS) == _cfg.INPUT_DIM == 56, (
+    f"V6.1 legacy FEATURE_COLS length {len(_cfg.FEATURE_COLS)} != 56"
+)
+assert _cfg.GROUP_DIMS == _V61_LEGACY_GROUP_DIMS, (
+    f"V6.1 legacy GROUP_DIMS {_cfg.GROUP_DIMS} != {_V61_LEGACY_GROUP_DIMS}"
+)
+
 import numpy as np
 import pandas as pd
 import torch

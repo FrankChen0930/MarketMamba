@@ -391,7 +391,7 @@ else:
     # neutralize="none"：F5 定案（四個測量方向全正但 t 只有 0.76–1.42，且會在推論
     #   路徑多一個必須同步的步驟）。留到 F6 用 Mamba 複驗，見協定 §9.4。
     df = clean_and_scale(df, macro_norm="ts", neutralize="none")
-    df.to_parquet(MATRIX_CACHE)
+    df.to_parquet(MATRIX_CACHE, index=False)
     print(f"  ✅ Feature matrix saved: {df.shape}")
     _macro_chk = [c for c in ["VIX", "TWII_Return", "FED_Rate"] if c in df.columns]
     print("  [D1 check] macro 非零確認:",
