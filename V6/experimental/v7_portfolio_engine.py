@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-from decimal import Decimal
+from decimal import Context, Decimal, ROUND_HALF_EVEN, localcontext
+from functools import wraps
 from typing import Any, Iterable, Mapping
 
 from V6.experimental.v7_portfolio_contract import (
@@ -21,6 +22,26 @@ from V6.experimental.v7_portfolio_contract import (
 
 ZERO = Decimal("0")
 ONE = Decimal("1")
+ENGINE_DECIMAL_CONTEXT = Context(prec=50, rounding=ROUND_HALF_EVEN)
+
+
+def _fixed_decimal_context(function):
+    @wraps(function)
+    def wrapped(*args, **kwargs):
+        with localcontext(ENGINE_DECIMAL_CONTEXT):
+            return function(*args, **kwargs)
+    return wrapped
+
+
+def _multiply_exact(left: Decimal, right: Decimal) -> Decimal:
+    precision = max(
+        ENGINE_DECIMAL_CONTEXT.prec,
+        len(left.as_tuple().digits) + len(right.as_tuple().digits) + 2,
+    )
+    with localcontext() as context:
+        context.prec = precision
+        context.rounding = ROUND_HALF_EVEN
+        return left * right
 
 
 @dataclass
@@ -115,6 +136,7 @@ def _ranked_tickers(scores: Mapping[str, Any]) -> tuple[str, ...]:
     )
 
 
+@_fixed_decimal_context
 def select_target_tickers(
     spec: PortfolioSpec,
     scores: Mapping[str, Any],
@@ -351,6 +373,10 @@ class PortfolioEngine:
         filled = min(requested, ratio_limited, cash_capacity)
         gross = filled * quote.price
         fee = gross * self.spec.buy_cost_rate
+        while gross + fee > self.cash and filled > ZERO:
+            filled = filled.next_minus()
+            gross = filled * quote.price
+            fee = gross * self.spec.buy_cost_rate
         if filled > ZERO:
             self.cash -= gross + fee
             if self.cash < ZERO:
@@ -380,6 +406,7 @@ class PortfolioEngine:
             reason=reason,
         )
 
+    @_fixed_decimal_context
     def apply_market_session(
         self,
         event_id: str,
@@ -428,13 +455,12 @@ class PortfolioEngine:
             quote = normalized_quotes.get(ticker)
             current = self.positions.get(ticker)
             if quote is None:
-                if current is None:
-                    fills.append(self._blocked_fill(
-                        side="BUY",
-                        ticker=ticker,
-                        requested=ZERO,
-                        reason="MISSING_QUOTE",
-                    ))
+                fills.append(self._blocked_fill(
+                    side="BUY",
+                    ticker=ticker,
+                    requested=ZERO,
+                    reason="MISSING_QUOTE",
+                ))
                 continue
             current_quantity = current.quantity if current else ZERO
             requested = max(ZERO, final_each / quote.price - current_quantity)
@@ -458,6 +484,7 @@ class PortfolioEngine:
             tuple(fills),
         )
 
+    @_fixed_decimal_context
     def apply_corporate_action(
         self,
         event_id: str,
@@ -479,9 +506,13 @@ class PortfolioEngine:
             )
 
         old_quantity = position.quantity
-        cash_added = old_quantity * normalized_action.cash_per_old_share
+        cash_added = _multiply_exact(
+            old_quantity, normalized_action.cash_per_old_share
+        )
         self.cash += cash_added
-        position.quantity = old_quantity * normalized_action.quantity_multiplier
+        position.quantity = _multiply_exact(
+            old_quantity, normalized_action.quantity_multiplier
+        )
         position.last_price = normalized_action.post_action_price
         return CorporateActionResult(
             event_id=normalized_event_id,
@@ -530,6 +561,7 @@ class PortfolioEngine:
             return self.apply_corporate_action(event_id, action)
         raise ContractError(f"unknown event kind: {normalized_kind}")
 
+    @_fixed_decimal_context
     def position_value(self) -> Decimal:
         return sum(
             (
@@ -539,6 +571,7 @@ class PortfolioEngine:
             start=ZERO,
         )
 
+    @_fixed_decimal_context
     def net_value(self) -> Decimal:
         return self.cash + self.position_value()
 

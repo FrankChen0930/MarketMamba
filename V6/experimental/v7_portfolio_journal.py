@@ -88,6 +88,12 @@ def _event_id(value: Any) -> str:
     return value.strip()
 
 
+def _ticker(value: Any) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ContractError("ticker must be a non-empty string")
+    return value.strip()
+
+
 def _normalize_payload(
     kind: str,
     occurred_at: str,
@@ -102,16 +108,17 @@ def _normalize_payload(
             if not isinstance(payload["scores"], Mapping) or not payload["scores"]:
                 raise ContractError("scores must be a non-empty mapping")
             scores = {
-                str(ticker).strip(): decimal_text(
+                _ticker(ticker): decimal_text(
                     parse_decimal(score, field=f"score[{ticker}]")
                 )
                 for ticker, score in payload["scores"].items()
             }
-            if any(not ticker for ticker in scores):
-                raise ContractError("ticker must be non-empty")
             if len(scores) != len(payload["scores"]):
                 raise ContractError("duplicate ticker after normalization")
-            return {"head": payload["head"], "scores": scores}
+            head = payload["head"]
+            if not isinstance(head, str) or not head.strip():
+                raise ContractError("head must be a non-empty string")
+            return {"head": head.strip(), "scores": scores}
         if kind == "MARKET_SESSION":
             if set(payload) != {"quotes"} or not isinstance(
                 payload["quotes"], Mapping
@@ -124,8 +131,8 @@ def _normalize_payload(
                     if isinstance(raw_quote, MarketQuote)
                     else MarketQuote.from_payload(raw_quote)
                 )
-                normalized_ticker = str(ticker).strip()
-                if not normalized_ticker or normalized_ticker != quote.ticker:
+                normalized_ticker = _ticker(ticker)
+                if normalized_ticker != quote.ticker:
                     raise ContractError("quote key does not match ticker")
                 quotes[normalized_ticker] = quote.to_payload()
             return {"quotes": quotes}
@@ -290,7 +297,7 @@ class PortfolioJournal:
     def records(self) -> tuple[dict[str, Any], ...]:
         try:
             text = self.path.read_text(encoding="utf-8")
-        except OSError as exc:
+        except (OSError, UnicodeError) as exc:
             raise JournalIntegrityError(
                 f"cannot read journal: {exc}"
             ) from exc
@@ -396,6 +403,7 @@ class PortfolioJournal:
             state=replayed.state,
             event_count=replayed.event_count,
         )
+
 
 def main(argv: list[str] | None = None) -> int:
     import argparse

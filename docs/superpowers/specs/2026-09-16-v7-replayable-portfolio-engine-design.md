@@ -26,7 +26,7 @@
 - `V6/experimental/v7_portfolio_journal.py`：加鎖 append-only JSONL、hash chain、event-id 冪等與重放 CLI。
 - 對應三份 `*_test.py`：用手算 fixture 驗證公開行為。
 
-不新增第三方依賴。金額、價格、數量、費率及分數使用 `decimal.Decimal`，在 JSON 中以十進位字串保存，避免重放漂移。
+不新增第三方依賴。金額、價格、數量、費率及分數使用 `decimal.Decimal`；引擎運算固定使用 50 位有效數字與 `ROUND_HALF_EVEN`，不受呼叫端的全域 Decimal context 影響。JSON 中仍以十進位字串保存，避免重放漂移。
 
 ## 組合與再平衡
 

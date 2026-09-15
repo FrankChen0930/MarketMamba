@@ -66,7 +66,7 @@ class PortfolioJournalResumeTest(unittest.TestCase):
             self.assertEqual(first.state, second.state)
             self.assertEqual(journal.replay().state, first.state)
             self.assertEqual(len(journal.records()), 3)
-            self.assertEqual(first.state["total_cost"], "0.00149775336994508237643534698")
+            self.assertEqual(first.state["total_cost"], "0.0014977533699450823764353469795307039440838741887169")
 
 
 class PortfolioJournalIntegrityTest(unittest.TestCase):
@@ -202,6 +202,56 @@ class PortfolioJournalCliTest(unittest.TestCase):
             self.assertNotEqual(completed.returncode, 0)
             self.assertIn("日誌驗證失敗：", completed.stderr)
             self.assertEqual(path.read_bytes(), before)
+
+
+class PortfolioJournalBoundaryTest(unittest.TestCase):
+    def test_invalid_signal_is_rejected_before_append(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            journal = PortfolioJournal.create(
+                Path(tmp) / "portfolio.jsonl",
+                portfolio_spec(),
+                "genesis-1",
+                T0,
+            )
+            before = journal.path.read_bytes()
+
+            with self.assertRaises(JournalIntegrityError):
+                journal.append(
+                    "sig-invalid",
+                    "SIGNAL",
+                    T1,
+                    {"head": "", "scores": {"A": "1"}},
+                )
+
+            self.assertEqual(journal.path.read_bytes(), before)
+
+    def test_non_string_ticker_is_rejected_before_append(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            journal = PortfolioJournal.create(
+                Path(tmp) / "portfolio.jsonl",
+                portfolio_spec(),
+                "genesis-1",
+                T0,
+            )
+            before = journal.path.read_bytes()
+
+            with self.assertRaises(JournalIntegrityError):
+                journal.append(
+                    "sig-invalid",
+                    "SIGNAL",
+                    T1,
+                    {"head": "5d", "scores": {1234: "1"}},
+                )
+
+            self.assertEqual(journal.path.read_bytes(), before)
+
+    def test_non_utf8_journal_fails_with_integrity_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "binary.jsonl"
+            path.write_bytes(b"\xff\xfe\n")
+
+            with self.assertRaises(JournalIntegrityError):
+                PortfolioJournal(path).records()
 
 
 if __name__ == "__main__":

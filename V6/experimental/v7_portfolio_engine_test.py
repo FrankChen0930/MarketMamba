@@ -179,17 +179,24 @@ class PortfolioExecutionTest(unittest.TestCase):
     def test_full_buy_charges_cost_once_and_conserves_value(self) -> None:
         engine, result = self._bought_engine()
         fill = result.fills[0]
-        expected_gross = Decimal("1") / Decimal("1.0015")
+        expected_gross = Decimal(
+            "0.99850224663005491762356465302046929605591612581128"
+        )
+        expected_fee = Decimal(
+            "0.0014977533699450823764353469795307039440838741887169"
+        )
 
         self.assertEqual(fill.side, "BUY")
         self.assertEqual(fill.status, "FILLED")
         self.assertEqual(fill.gross_notional, expected_gross)
-        self.assertEqual(fill.fee, expected_gross * Decimal("0.0015"))
+        self.assertEqual(fill.fee, expected_fee)
         self.assertEqual(engine.total_cost, fill.fee)
-        self.assertEqual(
-            engine.cash + engine.position_value(),
-            engine.net_value(),
-        )
+        from decimal import localcontext
+
+        with localcontext() as context:
+            context.prec = 50
+            conserved_value = engine.cash + engine.position_value()
+        self.assertEqual(conserved_value, engine.net_value())
         self.assertGreaterEqual(engine.cash, Decimal("0"))
         self.assertIsNone(engine.pending)
         self.assertEqual(engine.last_rebalance_session, 1)
@@ -207,7 +214,9 @@ class PortfolioExecutionTest(unittest.TestCase):
 
         self.assertEqual(
             fill.filled_quantity,
-            fill.requested_quantity / Decimal("2"),
+            Decimal(
+                "0.049925112331502745881178232651023464802795806290564"
+            ),
         )
         self.assertEqual(fill.status, "PARTIAL")
         self.assertEqual(fill.reason, "FILL_RATIO_LIMIT")
@@ -291,10 +300,12 @@ class PortfolioExecutionTest(unittest.TestCase):
             ),
         )
 
-        self.assertEqual(
-            engine.cash,
-            old_cash + old_quantity * Decimal("0.1"),
-        )
+        from decimal import localcontext
+
+        with localcontext() as context:
+            context.prec = 50
+            expected_cash = old_cash + old_quantity * Decimal("0.1")
+        self.assertEqual(engine.cash, expected_cash)
         self.assertEqual(engine.net_value(), before_dividend)
 
     def test_side_permissions_are_explicit(self) -> None:
@@ -390,6 +401,136 @@ class PortfolioEventDispatchTest(unittest.TestCase):
                 aware("2026-09-16T17:00:00+08:00"),
                 {},
             )
+
+
+class PortfolioReviewRegressionTest(unittest.TestCase):
+    def test_existing_target_without_quote_keeps_pending(self) -> None:
+        engine = PortfolioEngine(spec(
+            holdings_count=1,
+            rebalance_every_sessions=1,
+        ))
+        engine.apply_signal(
+            "sig-1", aware("2026-09-16T17:00:00+08:00"),
+            "5d", {"A": "1"},
+        )
+        engine.apply_market_session(
+            "market-1",
+            aware("2026-09-17T09:00:00+08:00"),
+            {"A": quote("A", "10")},
+        )
+        engine.apply_market_session(
+            "market-2",
+            aware("2026-09-17T17:00:00+08:00"),
+            {"A": quote("A", "10")},
+        )
+        engine.apply_signal(
+            "sig-2", aware("2026-09-17T18:00:00+08:00"),
+            "5d", {"A": "1"},
+        )
+
+        result = engine.apply_market_session(
+            "market-3",
+            aware("2026-09-18T09:00:00+08:00"),
+            {},
+        )
+
+        self.assertEqual(result.fills[0].reason, "MISSING_QUOTE")
+        self.assertIsNotNone(engine.pending)
+
+    def test_two_open_targets_complete_without_negative_cash(self) -> None:
+        engine = PortfolioEngine(spec(holdings_count=2))
+        engine.apply_signal(
+            "sig-1", aware("2026-09-16T17:00:00+08:00"),
+            "5d", {"A": "2", "B": "1"},
+        )
+
+        result = engine.apply_market_session(
+            "market-1",
+            aware("2026-09-17T09:00:00+08:00"),
+            {"A": quote("A", "10"), "B": quote("B", "20")},
+        )
+
+        self.assertEqual([fill.status for fill in result.fills], [
+            "FILLED", "FILLED",
+        ])
+        self.assertEqual(set(engine.positions), {"A", "B"})
+        self.assertGreaterEqual(engine.cash, Decimal("0"))
+        self.assertIsNone(engine.pending)
+
+    def test_full_sell_charges_sell_cost_once(self) -> None:
+        engine = PortfolioEngine(spec(
+            holdings_count=1,
+            rebalance_every_sessions=1,
+        ))
+        engine.apply_signal(
+            "sig-1", aware("2026-09-16T17:00:00+08:00"),
+            "5d", {"A": "1"},
+        )
+        first = engine.apply_market_session(
+            "market-1",
+            aware("2026-09-17T09:00:00+08:00"),
+            {"A": quote("A", "10")},
+        )
+        first_cost = first.fills[0].fee
+        engine.apply_market_session(
+            "market-2",
+            aware("2026-09-17T17:00:00+08:00"),
+            {"A": quote("A", "10")},
+        )
+        engine.apply_signal(
+            "sig-2", aware("2026-09-17T18:00:00+08:00"),
+            "5d", {"B": "2", "A": "1"},
+        )
+
+        changed = engine.apply_market_session(
+            "market-3",
+            aware("2026-09-18T09:00:00+08:00"),
+            {
+                "A": quote(
+                    "A", "10", status="BUY_BLOCKED",
+                    buy_ratio="0", sell_ratio="1",
+                ),
+                "B": quote("B", "5"),
+            },
+        )
+
+        sell = next(fill for fill in changed.fills if fill.side == "SELL")
+        buy = next(fill for fill in changed.fills if fill.side == "BUY")
+        self.assertEqual(sell.status, "FILLED")
+        self.assertEqual(
+            sell.fee,
+            Decimal(
+                "0.0044932601098352471293060409385921118322516225661508"
+            ),
+        )
+        from decimal import localcontext
+        with localcontext() as context:
+            context.prec = 50
+            expected_total_cost = first_cost + sell.fee + buy.fee
+        self.assertEqual(engine.total_cost, expected_total_cost)
+
+    def test_replay_math_does_not_depend_on_ambient_decimal_precision(self) -> None:
+        from decimal import localcontext
+
+        def run_once() -> dict:
+            engine = PortfolioEngine(spec(holdings_count=2))
+            engine.apply_signal(
+                "sig-1", aware("2026-09-16T17:00:00+08:00"),
+                "5d", {"A": "2", "B": "1"},
+            )
+            engine.apply_market_session(
+                "market-1",
+                aware("2026-09-17T09:00:00+08:00"),
+                {"A": quote("A", "10"), "B": quote("B", "20")},
+            )
+            return engine.snapshot()
+
+        default_precision = run_once()
+        with localcontext() as context:
+            context.prec = 10
+            low_precision = run_once()
+
+        self.assertEqual(low_precision, default_precision)
 
 
 if __name__ == "__main__":
