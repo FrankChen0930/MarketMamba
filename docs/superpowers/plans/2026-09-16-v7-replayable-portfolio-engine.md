@@ -33,7 +33,7 @@
 - Produces: `PortfolioSpec`, `TradeStatus`, `MarketQuote`, `CorporateAction`, `ContractError`, `parse_decimal()`, `parse_timestamp()`.
 - Consumes: Python standard library only.
 
-- [ ] **Step 1: Write failing contract tests**
+- [x] **Step 1: Write failing contract tests**
 
 Create table-driven tests with literal expectations:
 
@@ -59,13 +59,13 @@ class PortfolioContractTest(unittest.TestCase):
             parse_timestamp("2026-09-16T17:00:00")
 ```
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 Run: `python3 -m unittest V6.experimental.v7_portfolio_contract_test -v`
 
 Expected: import failure because `v7_portfolio_contract` does not exist.
 
-- [ ] **Step 3: Implement the minimal validated contract**
+- [x] **Step 3: Implement the minimal validated contract**
 
 Use frozen dataclasses and these exact enum values:
 
@@ -92,13 +92,13 @@ class PortfolioSpec:
 
 `MarketQuote.from_payload()` requires ticker, positive price, and both fill ratios; status alone defaults to UNKNOWN. Validate ratios in `[0,1]`, rates in `[0,1)`, non-empty IDs/head/ticker, positive counts, and finite decimals. `CorporateAction` requires a positive quantity multiplier, non-negative cash per old share, positive post-action price, and aware timestamp.
 
-- [ ] **Step 4: Run GREEN and contract mutation checks**
+- [x] **Step 4: Run GREEN and contract mutation checks**
 
 Run: `python3 -m unittest V6.experimental.v7_portfolio_contract_test -v`
 
 Expected: all contract tests pass. Confirm changing UNKNOWN to OPEN, accepting NaN, or accepting a naive timestamp would fail at least one test.
 
-- [ ] **Step 5: Commit only Task 1 files**
+- [x] **Step 5: Commit only Task 1 files**
 
 ```bash
 git add V6/experimental/v7_portfolio_contract.py V6/experimental/v7_portfolio_contract_test.py
@@ -117,7 +117,7 @@ git commit -m "feat: define strict V7 portfolio event contract"
 - Produces: `PortfolioEngine(spec)`, `apply_signal(event_id, as_of, head, scores)`, `snapshot()`, and result dataclasses `SignalResult`, `SessionResult`, `TradeFill`.
 - State fields used by later tasks: `cash`, `positions`, `pending`, `session_count`, `last_rebalance_session`, `last_session_id`, `total_cost`.
 
-- [ ] **Step 1: Write failing planner tests**
+- [x] **Step 1: Write failing planner tests**
 
 Test these independent mutations with literal targets:
 
@@ -142,25 +142,25 @@ def test_head_mismatch_is_rejected(self):
         engine.apply_signal("sig-x", aware("2026-09-16T17:00:00+08:00"), "10d", {"A": "1"})
 ```
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 Run: `python3 -m unittest V6.experimental.v7_portfolio_engine_test -v`
 
 Expected: import failure because `v7_portfolio_engine` does not exist.
 
-- [ ] **Step 3: Implement minimal planner state**
+- [x] **Step 3: Implement minimal planner state**
 
 Sort scores by `(-score, ticker)`. Rank starts at 1. Keep currently held tickers with rank `<= floor(buffer_multiple * holdings_count)`, preserving rank order, then fill from the sorted Top-N candidates. Candidate shortage yields fewer targets.
 
 A first signal is due. Later signals are due only when no successful rebalance exists or `session_count - last_rebalance_session >= rebalance_every_sessions`. A due signal replaces an older pending target and records its signal ID; a non-due signal cannot mutate pending state.
 
-- [ ] **Step 4: Run GREEN**
+- [x] **Step 4: Run GREEN**
 
 Run: `python3 -m unittest V6.experimental.v7_portfolio_contract_test V6.experimental.v7_portfolio_engine_test -v`
 
 Expected: contract and planner tests pass.
 
-- [ ] **Step 5: Commit only Task 2 files**
+- [x] **Step 5: Commit only Task 2 files**
 
 ```bash
 git add V6/experimental/v7_portfolio_engine.py V6/experimental/v7_portfolio_engine_test.py
@@ -179,7 +179,7 @@ git commit -m "feat: plan deterministic V7 portfolio targets"
 - `SessionResult.fills` contains side, ticker, requested quantity, filled quantity, gross notional, fee, and status.
 - `PortfolioEngine.apply_event(kind, event_id, occurred_at, payload)` becomes the journal replay boundary.
 
-- [ ] **Step 1: Add RED tests for time and conservative blocking**
+- [x] **Step 1: Add RED tests for time and conservative blocking**
 
 ```python
 def test_same_timestamp_does_not_execute_and_unknown_stays_pending(self):
@@ -198,11 +198,11 @@ Run: `python3 -m unittest V6.experimental.v7_portfolio_engine_test.PortfolioExec
 
 Expected: fail because `apply_market_session` is missing.
 
-- [ ] **Step 2: Implement quote marking and side permissions**
+- [x] **Step 2: Implement quote marking and side permissions**
 
 Increment `session_count` for each unique session call. Update held last prices from positive quotes regardless of trade status. Permit buys for OPEN/SELL_BLOCKED and sells for OPEN/BUY_BLOCKED; HALTED/UNKNOWN block both. Missing quote creates a BLOCKED fill with reason `MISSING_QUOTE`.
 
-- [ ] **Step 3: Add RED hand-calculation tests for costs and partial fills**
+- [x] **Step 3: Add RED hand-calculation tests for costs and partial fills**
 
 Use one-stock literals:
 
@@ -223,7 +223,7 @@ def test_fill_ratio_and_cash_limit_leave_pending(self):
 
 Run the two named tests; expected failure is missing execution logic, not fixture errors.
 
-- [ ] **Step 4: Implement sells-first then buys**
+- [x] **Step 4: Implement sells-first then buys**
 
 At an eligible session:
 
@@ -237,7 +237,7 @@ At an eligible session:
 
 Never let cash fall below zero; use Decimal arithmetic without quantizing.
 
-- [ ] **Step 5: Add RED tests for sell-side block and explicit corporate actions**
+- [x] **Step 5: Add RED tests for sell-side block and explicit corporate actions**
 
 ```python
 def test_sell_blocked_position_prevents_rebalance_completion(self):
@@ -261,17 +261,17 @@ def test_split_preserves_position_value_and_dividend_adds_cash_once(self):
 
 Run named tests; expected failure is missing sell blocking or corporate action behavior.
 
-- [ ] **Step 6: Implement company action and event dispatch**
+- [x] **Step 6: Implement company action and event dispatch**
 
 Apply cash using pre-action quantity, then multiply quantity and replace last price. No position is a visible NO_POSITION outcome. `apply_event` accepts only `SIGNAL`, `MARKET_SESSION`, and `CORPORATE_ACTION`, parses contract payloads, and returns the corresponding result.
 
-- [ ] **Step 7: Run GREEN and mutation review**
+- [x] **Step 7: Run GREEN and mutation review**
 
 Run: `python3 -m unittest V6.experimental.v7_portfolio_contract_test V6.experimental.v7_portfolio_engine_test -v`
 
 Expected: all pass. Mentally verify tests fail if costs are applied twice, same-time execution is allowed, UNKNOWN becomes tradable, sell runs after buy, fill ratio is ignored, or dividend uses post-split quantity incorrectly.
 
-- [ ] **Step 8: Commit Task 3 modifications**
+- [x] **Step 8: Commit Task 3 modifications**
 
 ```bash
 git add V6/experimental/v7_portfolio_engine.py V6/experimental/v7_portfolio_engine_test.py
@@ -290,7 +290,7 @@ git commit -m "feat: execute V7 portfolio fills conservatively"
 - Produces: `PortfolioJournal.create(path, spec, event_id, occurred_at)`, `append(event_id, kind, occurred_at, payload)`, `records()`, `replay()`, `JournalIntegrityError`, `EventConflictError`.
 - CLI: `python3 -m V6.experimental.v7_portfolio_journal --journal PATH`.
 
-- [ ] **Step 1: Write RED tests for create, replay, and duplicate retry**
+- [x] **Step 1: Write RED tests for create, replay, and duplicate retry**
 
 ```python
 def test_duplicate_retry_is_noop_and_replay_matches_live_state(self):
@@ -309,13 +309,13 @@ Run: `python3 -m unittest V6.experimental.v7_portfolio_journal_test -v`
 
 Expected: import failure because the journal module does not exist.
 
-- [ ] **Step 2: Implement canonical records and locked append**
+- [x] **Step 2: Implement canonical records and locked append**
 
 Canonical JSON uses `ensure_ascii=False`, `sort_keys=True`, and separators `(",", ":")`. Record hash is SHA-256 of the canonical record without `record_hash`. Genesis has `seq=1`, `prev_hash` equal to 64 zeroes, kind `GENESIS`, and payload containing the entire frozen spec.
 
 Open the journal with `a+`, acquire `fcntl.LOCK_EX`, read and validate all records, check event ID, append exactly one newline-terminated record, flush, and fsync before unlock.
 
-- [ ] **Step 3: Add RED conflict and corruption tests**
+- [x] **Step 3: Add RED conflict and corruption tests**
 
 ```python
 def test_same_id_with_different_payload_is_rejected(self):
@@ -334,11 +334,11 @@ def test_tamper_and_truncated_tail_fail_closed(self):
 
 Run named tests; expected failures are absent conflict and integrity checks.
 
-- [ ] **Step 4: Implement validation and replay**
+- [x] **Step 4: Implement validation and replay**
 
 Validate non-empty newline-terminated JSONL, contiguous seq, zero genesis predecessor, exact hash links, record hashes, unique event IDs, non-decreasing aware timestamps, genesis-first, and matching engine version. Replay instantiates from genesis spec and dispatches later records through `apply_event`.
 
-- [ ] **Step 5: Add RED CLI summary test**
+- [x] **Step 5: Add RED CLI summary test**
 
 Run the module in a subprocess on a fixture journal and assert literal labels and values:
 
@@ -353,11 +353,11 @@ self.assertIn("待成交：否", output)
 
 Expected: fail because CLI output is missing.
 
-- [ ] **Step 6: Implement read-only CLI**
+- [x] **Step 6: Implement read-only CLI**
 
 `main()` accepts only `--journal`, calls `records()` and `replay()`, prints exact numeric state, and exits non-zero with `日誌驗證失敗：<reason>` on integrity errors. It never writes during inspection.
 
-- [ ] **Step 7: Run the complete P3.1 suite**
+- [x] **Step 7: Run the complete P3.1 suite**
 
 Run:
 
@@ -369,7 +369,7 @@ git diff --check
 
 Expected: all tests pass, compileall exits 0, and diff check prints nothing.
 
-- [ ] **Step 8: Commit Task 4 files**
+- [x] **Step 8: Commit Task 4 files**
 
 ```bash
 git add V6/experimental/v7_portfolio_journal.py V6/experimental/v7_portfolio_journal_test.py
@@ -387,11 +387,11 @@ git commit -m "feat: add idempotent V7 portfolio journal replay"
 - Consumes all task outputs.
 - Produces fresh verification evidence and a reviewable feature branch.
 
-- [ ] **Step 1: Run fresh complete verification**
+- [x] **Step 1: Run fresh complete verification**
 
 Run the full Task 4 Step 7 command again after all plan checkbox edits. Record exact pass count, duration, branch status, and commit list.
 
-- [ ] **Step 2: Audit protected paths and dependencies**
+- [x] **Step 2: Audit protected paths and dependencies**
 
 Run:
 
@@ -403,10 +403,10 @@ git log --oneline 6cde79c..HEAD
 
 Expected changed paths are only the spec, plan, three production modules, and three test modules. Confirm no dependency file, model, weight, Data, parquet, result, app, schedule, V6.1 engine, or main-worktree path changed.
 
-- [ ] **Step 3: Run an end-to-end temporary journal demonstration**
+- [x] **Step 3: Run an end-to-end temporary journal demonstration**
 
 Create a temporary journal through the public API, append genesis, one signal, and one later OPEN market session, then invoke the CLI. Verify it reports 3 events, one holding, no pending target, non-negative cash, net value, and a positive one-time cost. Delete only the temporary directory created for this demonstration.
 
-- [ ] **Step 4: Preserve branch for human review**
+- [x] **Step 4: Preserve branch for human review**
 
 Do not merge, push, deploy, schedule, or remove the worktree. Report the worktree path, branch, commits, tests, files changed, timing, assumptions, and known limitations.
