@@ -113,5 +113,284 @@ class PortfolioPlannerTest(unittest.TestCase):
             )
 
 
+def quote(
+    ticker: str,
+    price: str,
+    *,
+    status: str = "OPEN",
+    buy_ratio: str = "1",
+    sell_ratio: str = "1",
+):
+    from V6.experimental.v7_portfolio_contract import MarketQuote
+
+    return MarketQuote(
+        ticker=ticker,
+        price=price,
+        status=status,
+        buy_fill_ratio=buy_ratio,
+        sell_fill_ratio=sell_ratio,
+    )
+
+
+class PortfolioExecutionTimeTest(unittest.TestCase):
+    def test_same_timestamp_does_not_execute_and_unknown_stays_pending(self) -> None:
+        engine = PortfolioEngine(spec(holdings_count=1))
+        signal_time = aware("2026-09-16T17:00:00+08:00")
+        engine.apply_signal("sig-1", signal_time, "5d", {"A": "1"})
+
+        same = engine.apply_market_session(
+            "m0", signal_time, {"A": quote("A", "10")}
+        )
+        self.assertEqual(same.fills, ())
+        self.assertEqual(engine.cash, Decimal("1"))
+
+        blocked = engine.apply_market_session(
+            "m1",
+            aware("2026-09-17T09:00:00+08:00"),
+            {"A": quote(
+                "A", "10", status="UNKNOWN",
+                buy_ratio="0", sell_ratio="0",
+            )},
+        )
+        self.assertEqual(blocked.fills[0].status, "BLOCKED")
+        self.assertEqual(blocked.fills[0].reason, "BUY_NOT_ALLOWED_UNKNOWN")
+        self.assertEqual(engine.cash, Decimal("1"))
+        self.assertIsNotNone(engine.pending)
+
+
+class PortfolioExecutionTest(unittest.TestCase):
+    T0 = "2026-09-16T17:00:00+08:00"
+    T1 = "2026-09-17T09:00:00+08:00"
+    T2 = "2026-09-17T17:00:00+08:00"
+    T3 = "2026-09-18T09:00:00+08:00"
+    T4 = "2026-09-18T10:00:00+08:00"
+
+    def _bought_engine(self) -> tuple[PortfolioEngine, object]:
+        engine = PortfolioEngine(spec(
+            holdings_count=1,
+            rebalance_every_sessions=1,
+        ))
+        engine.apply_signal("sig-1", aware(self.T0), "5d", {"A": "1"})
+        result = engine.apply_market_session(
+            "market-1", aware(self.T1), {"A": quote("A", "10")}
+        )
+        return engine, result
+
+    def test_full_buy_charges_cost_once_and_conserves_value(self) -> None:
+        engine, result = self._bought_engine()
+        fill = result.fills[0]
+        expected_gross = Decimal("1") / Decimal("1.0015")
+
+        self.assertEqual(fill.side, "BUY")
+        self.assertEqual(fill.status, "FILLED")
+        self.assertEqual(fill.gross_notional, expected_gross)
+        self.assertEqual(fill.fee, expected_gross * Decimal("0.0015"))
+        self.assertEqual(engine.total_cost, fill.fee)
+        self.assertEqual(
+            engine.cash + engine.position_value(),
+            engine.net_value(),
+        )
+        self.assertGreaterEqual(engine.cash, Decimal("0"))
+        self.assertIsNone(engine.pending)
+        self.assertEqual(engine.last_rebalance_session, 1)
+
+    def test_fill_ratio_one_half_leaves_pending(self) -> None:
+        engine = PortfolioEngine(spec(holdings_count=1))
+        engine.apply_signal("sig-1", aware(self.T0), "5d", {"A": "1"})
+
+        result = engine.apply_market_session(
+            "market-1",
+            aware(self.T1),
+            {"A": quote("A", "10", buy_ratio="0.5")},
+        )
+        fill = result.fills[0]
+
+        self.assertEqual(
+            fill.filled_quantity,
+            fill.requested_quantity / Decimal("2"),
+        )
+        self.assertEqual(fill.status, "PARTIAL")
+        self.assertEqual(fill.reason, "FILL_RATIO_LIMIT")
+        self.assertIsNotNone(engine.pending)
+
+    def test_missing_quote_is_blocked_without_inventing_price(self) -> None:
+        engine = PortfolioEngine(spec(holdings_count=1))
+        engine.apply_signal("sig-1", aware(self.T0), "5d", {"A": "1"})
+
+        result = engine.apply_market_session("market-1", aware(self.T1), {})
+
+        self.assertEqual(result.fills[0].status, "BLOCKED")
+        self.assertEqual(result.fills[0].reason, "MISSING_QUOTE")
+        self.assertNotIn("A", engine.positions)
+        self.assertEqual(engine.cash, Decimal("1"))
+
+    def test_sell_blocked_position_causes_cash_limited_buy(self) -> None:
+        engine, _ = self._bought_engine()
+        original_cost = engine.total_cost
+        engine.apply_market_session(
+            "market-2", aware(self.T2), {"A": quote("A", "10")}
+        )
+        change = engine.apply_signal(
+            "sig-2", aware("2026-09-17T18:00:00+08:00"),
+            "5d", {"B": "2", "A": "1"},
+        )
+        self.assertTrue(change.due)
+
+        result = engine.apply_market_session(
+            "market-3",
+            aware(self.T3),
+            {
+                "A": quote(
+                    "A", "10", status="SELL_BLOCKED",
+                    buy_ratio="1", sell_ratio="0",
+                ),
+                "B": quote("B", "5"),
+            },
+        )
+
+        sell = next(fill for fill in result.fills if fill.side == "SELL")
+        buy = next(fill for fill in result.fills if fill.side == "BUY")
+        self.assertEqual(sell.status, "BLOCKED")
+        self.assertEqual(sell.reason, "SELL_NOT_ALLOWED_SELL_BLOCKED")
+        self.assertEqual(buy.status, "PARTIAL")
+        self.assertEqual(buy.reason, "INSUFFICIENT_CASH")
+        self.assertEqual(buy.filled_quantity, Decimal("0"))
+        self.assertIn("A", engine.positions)
+        self.assertNotIn("B", engine.positions)
+        self.assertEqual(engine.total_cost, original_cost)
+        self.assertIsNotNone(engine.pending)
+
+    def test_split_preserves_value_and_dividend_uses_pre_action_quantity(self) -> None:
+        from V6.experimental.v7_portfolio_contract import CorporateAction
+
+        engine, _ = self._bought_engine()
+        before_split = engine.net_value()
+        engine.apply_corporate_action(
+            "ca-1",
+            CorporateAction(
+                ticker="A",
+                occurred_at=aware(self.T2),
+                quantity_multiplier="2",
+                cash_per_old_share="0",
+                post_action_price="5",
+            ),
+        )
+        self.assertEqual(engine.net_value(), before_split)
+
+        before_dividend = engine.net_value()
+        old_cash = engine.cash
+        old_quantity = engine.positions["A"].quantity
+        engine.apply_corporate_action(
+            "ca-2",
+            CorporateAction(
+                ticker="A",
+                occurred_at=aware(self.T4),
+                quantity_multiplier="1",
+                cash_per_old_share="0.1",
+                post_action_price="4.9",
+            ),
+        )
+
+        self.assertEqual(
+            engine.cash,
+            old_cash + old_quantity * Decimal("0.1"),
+        )
+        self.assertEqual(engine.net_value(), before_dividend)
+
+    def test_side_permissions_are_explicit(self) -> None:
+        for status, expected in (
+            ("BUY_BLOCKED", "BLOCKED"),
+            ("HALTED", "BLOCKED"),
+            ("UNKNOWN", "BLOCKED"),
+            ("SELL_BLOCKED", "FILLED"),
+            ("OPEN", "FILLED"),
+        ):
+            with self.subTest(status=status):
+                engine = PortfolioEngine(spec(holdings_count=1))
+                engine.apply_signal(
+                    "sig-1", aware(self.T0), "5d", {"A": "1"}
+                )
+                ratio = "1" if status in {"SELL_BLOCKED", "OPEN"} else "0"
+                result = engine.apply_market_session(
+                    "market-1",
+                    aware(self.T1),
+                    {"A": quote(
+                        "A", "10", status=status,
+                        buy_ratio=ratio, sell_ratio=ratio,
+                    )},
+                )
+                self.assertEqual(result.fills[0].status, expected)
+
+
+class PortfolioEventDispatchTest(unittest.TestCase):
+    def test_signal_and_market_payloads_dispatch_through_public_boundary(self) -> None:
+        engine = PortfolioEngine(spec(holdings_count=1))
+        engine.apply_event(
+            "SIGNAL",
+            "sig-1",
+            aware("2026-09-16T17:00:00+08:00"),
+            {"head": "5d", "scores": {"A": "1"}},
+        )
+
+        result = engine.apply_event(
+            "MARKET_SESSION",
+            "market-1",
+            aware("2026-09-17T09:00:00+08:00"),
+            {"quotes": {"A": quote("A", "10").to_payload()}},
+        )
+
+        self.assertEqual(result.fills[0].status, "FILLED")
+        self.assertIn("A", engine.positions)
+
+    def test_corporate_action_dispatch_checks_record_time(self) -> None:
+        from V6.experimental.v7_portfolio_contract import CorporateAction
+
+        engine = PortfolioEngine(spec(holdings_count=1))
+        engine.apply_signal(
+            "sig-1", aware("2026-09-16T17:00:00+08:00"),
+            "5d", {"A": "1"},
+        )
+        engine.apply_market_session(
+            "market-1",
+            aware("2026-09-17T09:00:00+08:00"),
+            {"A": quote("A", "10")},
+        )
+        action = CorporateAction(
+            ticker="A",
+            occurred_at=aware("2026-09-18T09:00:00+08:00"),
+            quantity_multiplier="2",
+            cash_per_old_share="0",
+            post_action_price="5",
+        )
+
+        result = engine.apply_event(
+            "CORPORATE_ACTION",
+            "ca-1",
+            action.occurred_at,
+            action.to_payload(),
+        )
+        self.assertEqual(result.status, "APPLIED")
+
+        bad_payload = action.to_payload()
+        bad_payload["occurred_at"] = "2026-09-19T09:00:00+08:00"
+        with self.assertRaises(ContractError):
+            engine.apply_event(
+                "CORPORATE_ACTION",
+                "ca-2",
+                action.occurred_at,
+                bad_payload,
+            )
+
+    def test_unknown_event_kind_is_rejected(self) -> None:
+        engine = PortfolioEngine(spec())
+        with self.assertRaises(ContractError):
+            engine.apply_event(
+                "UNKNOWN_EVENT",
+                "event-1",
+                aware("2026-09-16T17:00:00+08:00"),
+                {},
+            )
+
+
 if __name__ == "__main__":
     unittest.main()
