@@ -69,7 +69,7 @@ V6/experimental/v7_correctness_audit.py
 V6/experimental/v7_correctness_audit_test.py
 research/v7/v7_phase0_correctness_evidence.json
 reports/v7_phase0_correctness_audit.{json,md}
-tasks/{plan,todo}.md
+tasks/v7-signal-to-portfolio-validation-{plan,todo}.md
 ```
 
 Pure functions validate and decide; filesystem I/O stays at the CLI boundary. Use standard-library unittest with hand-written fixtures. Test clean pass, blocker stop, critical unknown stop, domain completeness, deterministic reports, atomic outputs, and exit codes.
