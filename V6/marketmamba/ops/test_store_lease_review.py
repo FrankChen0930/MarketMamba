@@ -17,7 +17,12 @@ from marketmamba.ops.lease import (
     immediate_transaction,
 )
 from marketmamba.ops.schema import open_ledger
-from marketmamba.ops.store import ArtifactRef, LedgerStateError, LedgerStore
+from marketmamba.ops.store import (
+    ArtifactRef,
+    LedgerStateError,
+    LedgerStore,
+    redact_sensitive_text,
+)
 
 
 UTC = timezone.utc
@@ -112,6 +117,38 @@ class RedactionRegressionTests(ReviewStoreTestCase):
             self.assertNotIn(secret, persisted)
         self.assertGreaterEqual(persisted.count("[REDACTED]"), 4)
 
+    def test_extended_credential_forms_share_one_redactor(self) -> None:
+        evidence = (
+            "authorization=Basic dXNlcjpwYXNz "
+            "access_token=access-value client_secret=client-value "
+            "AWS_SECRET_ACCESS_KEY=aws-value "
+            "ftp://ftp-user:ftp-password@example.test/data "
+            "postgresql://pg-user:pg-password@db.test/market "
+            "safe=https://example.com/status"
+        )
+
+        redacted = redact_sensitive_text(evidence)
+
+        self.assertIsNotNone(redacted)
+        assert redacted is not None
+        for sensitive in (
+            "dXNlcjpwYXNz",
+            "access-value",
+            "client-value",
+            "aws-value",
+            "ftp-user",
+            "ftp-password",
+            "pg-user",
+            "pg-password",
+        ):
+            self.assertNotIn(sensitive, redacted)
+        self.assertIn("authorization=[REDACTED]", redacted)
+        self.assertIn("access_token=[REDACTED]", redacted)
+        self.assertIn("client_secret=[REDACTED]", redacted)
+        self.assertIn("AWS_SECRET_ACCESS_KEY=[REDACTED]", redacted)
+        self.assertIn("ftp://[REDACTED]@example.test/data", redacted)
+        self.assertIn("postgresql://[REDACTED]@db.test/market", redacted)
+        self.assertIn("safe=https://example.com/status", redacted)
     def test_url_userinfo_is_fully_redacted_without_changing_host_or_path(
         self,
     ) -> None:

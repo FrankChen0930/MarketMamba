@@ -266,6 +266,61 @@ class CurrentStateProjectionTest(unittest.TestCase):
             "https://example.com/status",
         )
 
+    def test_unquoted_space_paths_and_extended_credentials_leave_no_fragments(self) -> None:
+        self._observe(18, ({name: True for name in self.sources}, []))
+        observed = (
+            r"posix=/home/jane/Secret Folder/private file.csv "
+            r"windows=C:\Users\Jane Doe\private file.csv "
+            r"unc=\\server\secret share\private file.csv "
+            r"safe=ordinary prose"
+        )
+        threshold = (
+            "authorization=Basic dXNlcjpwYXNz "
+            "access_token=access-value client_secret=client-value "
+            "AWS_SECRET_ACCESS_KEY=aws-value "
+            "ftp://ftp-user:ftp-password@example.test/data "
+            "postgresql://pg-user:pg-password@db.test/market "
+            "safe_url=https://example.com/status"
+        )
+        connection = sqlite3.connect(self.db)
+        connection.execute(
+            "UPDATE checks SET observed_value = ?, threshold_value = ? "
+            "WHERE check_name = 'freshness'",
+            (observed, threshold),
+        )
+        connection.commit()
+        connection.close()
+
+        state = build_current_state(self.db)
+        machine = json.dumps(state)
+        from marketmamba.ops.__main__ import main
+        human_stream = io.StringIO()
+        with patch("sys.stdout", human_stream):
+            self.assertEqual(main(["current-state", "--db", str(self.db)]), 0)
+        human = human_stream.getvalue()
+
+        for sensitive in (
+            "/home/jane",
+            "Secret Folder",
+            "private file.csv",
+            "Jane Doe",
+            "server",
+            "secret share",
+            "dXNlcjpwYXNz",
+            "access-value",
+            "client-value",
+            "aws-value",
+            "ftp-user",
+            "ftp-password",
+            "pg-user",
+            "pg-password",
+        ):
+            self.assertNotIn(sensitive, machine)
+            self.assertNotIn(sensitive, human)
+        self.assertGreaterEqual(machine.count("[PATH]"), 3)
+        self.assertIn("safe=ordinary prose", machine)
+        self.assertIn("https://example.com/status", machine)
+
     def test_projection_is_rebuildable_from_committed_ledger_only(self) -> None:
         self._observe(18, ({name: True for name in self.sources}, []))
 

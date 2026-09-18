@@ -39,16 +39,28 @@ _HEADER_SECRET = re.compile(
 _BEARER_SECRET = re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._~+/=-]+")
 _TELEGRAM_SECRET = re.compile(r"(?<!\d)\d{6,12}:[A-Za-z0-9_-]{20,}\b")
 _QUERY_SECRET = re.compile(
-    r"(?i)([?&](?:access_token|api[_-]?key|apikey|token|password|secret)=)[^&#\s]+"
+    r"(?i)([?&](?:access[_-]?token|client[_-]?secret|"
+    r"aws[_-]?secret[_-]?access[_-]?key|api[_-]?key|apikey|"
+    r"token|password|secret)=)[^&#\s]+"
+)
+_AUTH_KEY_VALUE_SECRET = re.compile(
+    r"(?i)\b(authorization|proxy-authorization)\s*=\s*"
+    r"(?:(?:basic|bearer)\s+)?[^\s&,;]+"
 )
 _KEY_VALUE_SECRET = re.compile(
-    r"(?i)\b(password|passwd|token|api[_-]?key|secret)\s*[=:]\s*[^\s&,;]+"
+    r"(?i)\b(password|passwd|access[_-]?token|client[_-]?secret|"
+    r"aws[_-]?secret[_-]?access[_-]?key|token|api[_-]?key|secret)"
+    r"\s*[=:]\s*[^\s&,;]+"
 )
 _QUOTED_KEY_SECRET = re.compile(
-    r"""(?i)(["']?(?:authorization|password|passwd|token|api[_-]?key|secret)["']?\s*:\s*)"""
+    r"""(?i)(["']?(?:authorization|password|passwd|access[_-]?token|"""
+    r"""client[_-]?secret|aws[_-]?secret[_-]?access[_-]?key|token|"""
+    r"""api[_-]?key|secret)["']?\s*:\s*)"""
     r"""(?P<quote>["'])(?:\\.|(?!(?P=quote)).)*(?P=quote)"""
 )
-_URL_USERINFO_SECRET = re.compile(r"(?i)(https?://)([^/?#\s@]+@)")
+_URL_USERINFO_SECRET = re.compile(
+    r"(?i)([a-z][a-z0-9+.-]*://)([^/?#\s@]+@)"
+)
 
 
 
@@ -69,6 +81,10 @@ def redact_sensitive_text(value: str | None) -> str | None:
             f"{match.group(1)}{match.group('quote')}"
             f"[REDACTED]{match.group('quote')}"
         ),
+        redacted,
+    )
+    redacted = _AUTH_KEY_VALUE_SECRET.sub(
+        lambda match: f"{match.group(1)}=[REDACTED]",
         redacted,
     )
     redacted = _BEARER_SECRET.sub("Bearer [REDACTED]", redacted)
