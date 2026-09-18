@@ -432,13 +432,21 @@ def observe_fetch_only(
     try:
         result = fetch_operation()
     except BaseException as fetch_error:
+        ledger_committed = False
         if session is not None:
             try:
                 _record_exception(session, fetch_error)
+                ledger_committed = True
             except BaseException as observer_error:
                 _warn(log, "exception recording", observer_error)
             finally:
                 _finish_session(session, log)
+        if ledger_committed and projection_callback is not None:
+            assert db_path is not None
+            try:
+                projection_callback(db_path)
+            except BaseException as projection_error:
+                _warn(log, "projection callback", projection_error)
         raise
 
     if session is not None:

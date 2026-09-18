@@ -65,6 +65,14 @@ except Exception as _shadow_import_error:                       # noqa: BLE001
     observe_fetch_only = None
     logger.warning("[shadow-ledger] adapter unavailable (%s); legacy fetch remains active",
                    type(_shadow_import_error).__name__)
+try:
+    from marketmamba.ops.projection import write_current_state
+except Exception as _projection_import_error:                   # noqa: BLE001
+    write_current_state = None
+    logger.warning(
+        "[shadow-ledger] projection unavailable (%s); legacy fetch remains active",
+        type(_projection_import_error).__name__,
+    )
 
 # 每日源：**必須有當日資料**（容許 0 天）。
 # 週/月/季源不列入——它們本來就不是每天更新，列進來只會製造永遠不消的假警報，
@@ -417,6 +425,7 @@ def _pipeline(a, ui) -> int:
                 daily_sources=DAILY_SOURCES,
                 v6_dir=_V6,
                 logger=logger,
+                projection_callback=write_current_state,
             )
         logger.info(f"[fetch-only] 完整來源 {sum(complete.values())}/{len(DAILY_SOURCES)}")
         if missing:

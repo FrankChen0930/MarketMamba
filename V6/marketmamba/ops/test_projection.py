@@ -1,0 +1,315 @@
+"""Tests for the committed-ledger current-state projection and CLI."""
+
+from __future__ import annotations
+
+from datetime import datetime, timezone
+import io
+import json
+from pathlib import Path
+import sqlite3
+import tempfile
+import threading
+import unittest
+from unittest.mock import patch
+
+from marketmamba.ops.diagnostics import render_current_state
+from marketmamba.ops.projection import (
+    build_current_state,
+    write_current_state,
+)
+from marketmamba.ops.schema import open_ledger
+from marketmamba.ops.shadow import observe_fetch_only
+
+
+class CurrentStateProjectionTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.v6_dir = self.root / "V6"
+        self.v6_dir.mkdir()
+        self.data_root = self.root / "Data"
+        self.processed = self.data_root / "processed_v6"
+        self.processed.mkdir(parents=True)
+        self.db = self.root / "ops" / "operations.sqlite"
+        self.sources = ("prices_raw", "margin_raw")
+        for source in self.sources:
+            (self.processed / f"{source}.parquet").write_bytes(source.encode())
+
+    def _observe(self, day: int, result) -> None:
+        observe_fetch_only(
+            lambda: result,
+            daily_sources=self.sources,
+            v6_dir=self.v6_dir,
+            ledger_path=self.db,
+            data_root=self.data_root,
+            requested_at=datetime(2026, 9, day, 14, tzinfo=timezone.utc),
+        )
+
+    def test_projection_reports_latest_retry_without_overclaiming_scope(self) -> None:
+        self._observe(
+            18,
+            (
+                {"prices_raw": True, "margin_raw": True},
+                ["legacy reports missing"],
+            ),
+        )
+        self._observe(
+            18,
+            ({"prices_raw": True, "margin_raw": True}, []),
+        )
+
+        state = build_current_state(self.db)
+
+        self.assertEqual(state["mode"], "FETCH_ONLY")
+        self.assertEqual(state["latest_requested_date"], "2026-09-18")
+        self.assertEqual(state["latest_trading_date"], "2026-09-18")
+        self.assertEqual(state["date_semantics"], "REQUESTED_ASIA_TAIPEI_DATE_UNVERIFIED_CALENDAR")
+        self.assertTrue(state["latest_logical_run_id"].startswith("logical_run_v1_"))
+        self.assertEqual(state["attempt_count"], 2)
+        self.assertEqual(state["latest_attempt"], 2)
+        self.assertEqual(state["run_status"], "SUCCEEDED")
+        self.assertIsNone(state["active_stage"])
+        self.assertGreaterEqual(state["duration_seconds"], 0)
+        self.assertEqual(state["last_successful_fetch_date"], "2026-09-18")
+        self.assertEqual(state["freshness"]["status"], "PASS")
+        self.assertEqual(state["freshness"]["observed_value"], "missing=0")
+        self.assertEqual(state["calendar"]["status"], "SKIPPED")
+        self.assertEqual(state["calendar"]["knowledge"], "UNKNOWN_NOT_EXPOSED_BY_LEGACY")
+        self.assertEqual(state["artifact_summary"]["count"], 2)
+        self.assertEqual(state["artifact_summary"]["complete_count"], 2)
+        self.assertEqual(state["artifact_summary"]["fingerprint_kinds"], ["file_stat_v1"])
+        self.assertEqual(state["warning_count"], 0)
+        self.assertEqual(state["incident_status"], "NOT_IMPLEMENTED_PHASE_C")
+        self.assertIsNone(state["open_incident_count"])
+        self.assertEqual(
+            state["scope"]["excluded"],
+            ["INFERENCE", "PORTFOLIO", "PUBLICATION"],
+        )
+        self.assertRegex(state["source_generation"], r"^[0-9a-f]{64}$")
+        self.assertEqual(state["as_of"], state["source_watermark"]["committed_at"])
+
+    def test_last_successful_fetch_date_does_not_treat_newer_failure_as_success(self) -> None:
+        self._observe(18, ({name: True for name in self.sources}, []))
+        for source in self.sources:
+            (self.processed / f"{source}.parquet").write_bytes(
+                f"{source}-next-day".encode()
+            )
+        self._observe(
+            19,
+            ({"prices_raw": True, "margin_raw": False}, ["margin_raw missing"]),
+        )
+
+        state = build_current_state(self.db)
+
+        self.assertEqual(state["latest_requested_date"], "2026-09-19")
+        self.assertEqual(state["run_status"], "FAILED")
+        self.assertEqual(state["last_successful_fetch_date"], "2026-09-18")
+        self.assertEqual(state["freshness"]["status"], "FAIL")
+
+    def test_fetch_exception_projects_failure_and_reraises_original(self) -> None:
+        error = RuntimeError("provider token=secret-value failed")
+
+        with self.assertRaises(RuntimeError) as raised:
+            observe_fetch_only(
+                lambda: (_ for _ in ()).throw(error),
+                daily_sources=self.sources,
+                v6_dir=self.v6_dir,
+                ledger_path=self.db,
+                data_root=self.data_root,
+                requested_at=datetime(2026, 9, 18, 14, tzinfo=timezone.utc),
+                projection_callback=write_current_state,
+            )
+
+        self.assertIs(raised.exception, error)
+        state = json.loads(
+            (self.db.parent / "current-state.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(state["run_status"], "FAILED")
+        self.assertEqual(state["freshness"]["status"], "FAIL")
+        self.assertNotIn("secret-value", json.dumps(state))
+
+    def test_projection_failure_does_not_replace_fetch_exception(self) -> None:
+        error = ValueError("legacy error")
+        callback_error = OSError("projection error")
+        with self.assertRaises(ValueError) as raised:
+            observe_fetch_only(
+                lambda: (_ for _ in ()).throw(error),
+                daily_sources=self.sources, v6_dir=self.v6_dir,
+                ledger_path=self.db, data_root=self.data_root,
+                projection_callback=lambda _: (_ for _ in ()).throw(callback_error),
+            )
+        self.assertIs(raised.exception, error)
+
+    def test_projection_is_rebuildable_from_committed_ledger_only(self) -> None:
+        self._observe(18, ({name: True for name in self.sources}, []))
+
+        first = build_current_state(self.db)
+        second = build_current_state(self.db)
+
+        self.assertEqual(first, second)
+
+    def test_atomic_replace_failure_preserves_previous_valid_projection(self) -> None:
+        self._observe(18, ({name: True for name in self.sources}, []))
+        target = self.root / "published" / "current-state.json"
+        target.parent.mkdir()
+        old = {"generation": "old", "valid": True}
+        target.write_text(json.dumps(old), encoding="utf-8")
+
+        with patch("marketmamba.ops.projection.os.replace", side_effect=OSError("stop")):
+            with self.assertRaises(OSError):
+                write_current_state(self.db, target)
+
+        self.assertEqual(json.loads(target.read_text(encoding="utf-8")), old)
+        self.assertEqual(list(target.parent.glob(".current-state.json.*.tmp")), [])
+
+    def test_serialized_writers_cannot_publish_older_snapshot_last(self) -> None:
+        self._observe(18, ({name: True for name in self.sources}, []))
+        target = self.root / "current-state.json"
+        first_entered = threading.Event()
+        release_first = threading.Event()
+        real_atomic_write = __import__(
+            "marketmamba.ops.projection", fromlist=["_atomic_write_json"]
+        )._atomic_write_json
+        calls = 0
+        calls_lock = threading.Lock()
+
+        def delayed_first(path, state):
+            nonlocal calls
+            with calls_lock:
+                calls += 1
+                ordinal = calls
+            if ordinal == 1:
+                first_entered.set()
+                self.assertTrue(release_first.wait(5))
+            return real_atomic_write(path, state)
+
+        errors = []
+        with patch("marketmamba.ops.projection._atomic_write_json", side_effect=delayed_first):
+            first = threading.Thread(
+                target=lambda: self._capture_error(
+                    errors, lambda: write_current_state(self.db, target)
+                )
+            )
+            first.start()
+            self.assertTrue(first_entered.wait(5))
+            self._observe(19, ({name: True for name in self.sources}, []))
+            second = threading.Thread(
+                target=lambda: self._capture_error(
+                    errors, lambda: write_current_state(self.db, target)
+                )
+            )
+            second.start()
+            release_first.set()
+            first.join(5)
+            second.join(5)
+
+        self.assertFalse(first.is_alive())
+        self.assertFalse(second.is_alive())
+        self.assertEqual(errors, [])
+        published = json.loads(target.read_text(encoding="utf-8"))
+        self.assertEqual(published["latest_requested_date"], "2026-09-19")
+
+    @staticmethod
+    def _capture_error(errors, operation) -> None:
+        try:
+            operation()
+        except BaseException as error:
+            errors.append(error)
+
+    def test_default_projection_path_is_next_to_database(self) -> None:
+        self._observe(18, ({name: True for name in self.sources}, []))
+
+        written = write_current_state(self.db)
+
+        self.assertEqual(written, self.db.parent / "current-state.json")
+        self.assertEqual(
+            json.loads(written.read_text(encoding="utf-8"))["run_status"],
+            "SUCCEEDED",
+        )
+
+    def test_human_diagnostics_are_explicitly_fetch_only(self) -> None:
+        self._observe(18, ({name: True for name in self.sources}, []))
+
+        rendered = render_current_state(build_current_state(self.db))
+
+        self.assertIn("Mode: FETCH_ONLY", rendered)
+        self.assertIn("no inference, portfolio, or publication", rendered)
+        self.assertIn("Calendar: SKIPPED", rendered)
+        self.assertIn("unknown", rendered.lower())
+        self.assertIn("Attempts: 1 (latest: 1)", rendered)
+        self.assertIn("Incidents: NOT_IMPLEMENTED_PHASE_C", rendered)
+        self.assertNotIn(str(self.root), rendered)
+
+    def test_reader_opens_ledger_without_running_migrations(self) -> None:
+        self.db.parent.mkdir(parents=True, exist_ok=True)
+        connection = open_ledger(self.db)
+        connection.close()
+        before = sqlite3.connect(self.db).execute(
+            "SELECT version, checksum, applied_at FROM schema_migrations ORDER BY version"
+        ).fetchall()
+
+        build_current_state(self.db)
+
+        readonly = sqlite3.connect(self.db)
+        self.addCleanup(readonly.close)
+        after = readonly.execute(
+            "SELECT version, checksum, applied_at FROM schema_migrations ORDER BY version"
+        ).fetchall()
+        self.assertEqual(after, before)
+
+
+class CurrentStateCliTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.db = self.root / "operations.sqlite"
+        self.v6 = self.root / "V6"
+        self.data = self.root / "Data"
+        self.v6.mkdir()
+        processed = self.data / "processed_v6"
+        processed.mkdir(parents=True)
+        (processed / "prices_raw.parquet").write_bytes(b"prices")
+        observe_fetch_only(
+            lambda: ({"prices_raw": True}, []),
+            daily_sources=("prices_raw",),
+            v6_dir=self.v6,
+            ledger_path=self.db,
+            data_root=self.data,
+            requested_at=datetime(2026, 9, 18, 14, tzinfo=timezone.utc),
+        )
+
+    def test_cli_human_default_and_json_option(self) -> None:
+        from marketmamba.ops.__main__ import main
+
+        human = io.StringIO()
+        with patch("sys.stdout", human):
+            self.assertEqual(main(["current-state", "--db", str(self.db)]), 0)
+        self.assertIn("Mode: FETCH_ONLY", human.getvalue())
+
+        machine = io.StringIO()
+        with patch("sys.stdout", machine):
+            self.assertEqual(
+                main(["current-state", "--db", str(self.db), "--json"]), 0
+            )
+        state = json.loads(machine.getvalue())
+        self.assertEqual(state["mode"], "FETCH_ONLY")
+        self.assertEqual(state["incident_status"], "NOT_IMPLEMENTED_PHASE_C")
+
+    def test_cli_failure_redacts_path_and_error_detail(self) -> None:
+        from marketmamba.ops.__main__ import main
+
+        secret_path = self.root / "token=secret-value" / "missing.sqlite"
+        stderr = io.StringIO()
+        with patch("sys.stderr", stderr):
+            self.assertEqual(
+                main(["current-state", "--db", str(secret_path)]), 2
+            )
+        self.assertNotIn("secret-value", stderr.getvalue())
+        self.assertNotIn(str(self.root), stderr.getvalue())
+        self.assertIn("unable to read operational ledger", stderr.getvalue())
+
+
+if __name__ == "__main__":
+    unittest.main()
