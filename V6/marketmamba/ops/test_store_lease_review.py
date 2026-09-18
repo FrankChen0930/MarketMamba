@@ -110,6 +110,68 @@ class RedactionRegressionTests(ReviewStoreTestCase):
             self.assertNotIn(secret, persisted)
         self.assertGreaterEqual(persisted.count("[REDACTED]"), 4)
 
+    def test_url_userinfo_is_fully_redacted_without_changing_host_or_path(
+        self,
+    ) -> None:
+        user_password_url = (
+            "https://synthetic-user:synthetic-password@"
+            "example.test/path?view=summary"
+        )
+        token_only_url = "https://synthetic-token-only@example.test/api/v1"
+        normal_url = "https://example.test/path?email=user@example.test"
+
+        attempt = self.store.start_attempt(
+            self.logical_run_id,
+            host=user_password_url,
+            code_identity=token_only_url,
+            dependency_identity=normal_url,
+            now=T0,
+        )
+
+        persisted = self.connection.execute(
+            "SELECT host, code_identity, dependency_identity "
+            "FROM attempts WHERE attempt_id = ?",
+            (attempt.attempt_id,),
+        ).fetchone()
+        self.assertEqual(
+            persisted,
+            (
+                "https://[REDACTED]@example.test/path?view=summary",
+                "https://[REDACTED]@example.test/api/v1",
+                "https://example.test/path?email=user@example.test",
+            ),
+        )
+        for credential_fragment in (
+            "synthetic-user",
+            "synthetic-password",
+            "synthetic-token-only",
+        ):
+            self.assertNotIn(credential_fragment, "|".join(persisted))
+
+    def test_escaped_json_secret_value_is_fully_redacted_before_db_write(
+        self,
+    ) -> None:
+        escaped_json = (
+            '{"api_key":"synthetic-prefix\\"synthetic-suffix","safe":"visible"}'
+        )
+
+        attempt = self.store.start_attempt(
+            self.logical_run_id,
+            host=escaped_json,
+            now=T0,
+        )
+
+        persisted = self.connection.execute(
+            "SELECT host FROM attempts WHERE attempt_id = ?",
+            (attempt.attempt_id,),
+        ).fetchone()[0]
+        self.assertEqual(
+            persisted,
+            '{"api_key":"[REDACTED]","safe":"visible"}',
+        )
+        self.assertNotIn("synthetic-prefix", persisted)
+        self.assertNotIn("synthetic-suffix", persisted)
+
 
 class TransactionRollbackRegressionTests(ReviewStoreTestCase):
     def test_denied_commit_rolls_back_stage_artifacts_and_transaction(self) -> None:

@@ -1,4 +1,4 @@
-"""SQLite v1 migration and connection setup for the operational shadow ledger."""
+"""Versioned SQLite migrations and connection setup for the shadow ledger."""
 
 from __future__ import annotations
 
@@ -110,14 +110,6 @@ MIGRATIONS = (
             )
             """,
             """
-            CREATE TABLE stage_artifacts (
-                stage_run_id TEXT NOT NULL REFERENCES stage_runs(stage_run_id) ON DELETE RESTRICT,
-                artifact_id TEXT NOT NULL REFERENCES artifacts(artifact_id) ON DELETE RESTRICT,
-                created_at TEXT NOT NULL,
-                PRIMARY KEY (stage_run_id, artifact_id)
-            )
-            """,
-            """
             CREATE TABLE checks (
                 check_id TEXT PRIMARY KEY,
                 logical_run_id TEXT NOT NULL REFERENCES logical_runs(logical_run_id) ON DELETE RESTRICT,
@@ -140,6 +132,19 @@ MIGRATIONS = (
                 heartbeat_at TEXT NOT NULL,
                 expires_at TEXT NOT NULL,
                 fencing_token INTEGER NOT NULL CHECK (fencing_token > 0)
+            )
+            """,
+        ),
+    ),
+    Migration(
+        version=2,
+        statements=(
+            """
+            CREATE TABLE stage_artifacts (
+                stage_run_id TEXT NOT NULL REFERENCES stage_runs(stage_run_id) ON DELETE RESTRICT,
+                artifact_id TEXT NOT NULL REFERENCES artifacts(artifact_id) ON DELETE RESTRICT,
+                created_at TEXT NOT NULL,
+                PRIMARY KEY (stage_run_id, artifact_id)
             )
             """,
         ),

@@ -46,9 +46,9 @@ _KEY_VALUE_SECRET = re.compile(
 )
 _QUOTED_KEY_SECRET = re.compile(
     r"""(?i)(["']?(?:authorization|password|passwd|token|api[_-]?key|secret)["']?\s*:\s*)"""
-    r"""(?P<quote>["'])(.*?)(?P=quote)"""
+    r"""(?P<quote>["'])(?:\\.|(?!(?P=quote)).)*(?P=quote)"""
 )
-_URL_USERINFO_SECRET = re.compile(r"(?i)(https?://[^/\s:@]+:)([^@\s/]+)(@)")
+_URL_USERINFO_SECRET = re.compile(r"(?i)(https?://)([^/?#\s@]+@)")
 
 
 
@@ -61,7 +61,7 @@ def redact_sensitive_text(value: str | None) -> str | None:
         raise TypeError("persisted text must be a string or None")
     redacted = _HEADER_SECRET.sub(lambda match: f"{match.group(1)}: [REDACTED]", value)
     redacted = _URL_USERINFO_SECRET.sub(
-        lambda match: f"{match.group(1)}[REDACTED]{match.group(3)}",
+        lambda match: f"{match.group(1)}[REDACTED]@",
         redacted,
     )
     redacted = _QUOTED_KEY_SECRET.sub(

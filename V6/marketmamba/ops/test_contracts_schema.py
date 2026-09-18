@@ -22,9 +22,12 @@ from marketmamba.ops.contracts import (
 from marketmamba.ops.schema import (
     _apply_migrations,
     LATEST_SCHEMA_VERSION,
+    MIGRATIONS,
     SchemaVersionError,
     open_ledger,
 )
+
+BASE_V1_CHECKSUM = "8214cd665cfb21be8d809daa5348d2e930c5ce3071e2b53d66d0eaf0f9fd4aee"
 
 
 class ContractIdentityTests(unittest.TestCase):
@@ -92,7 +95,7 @@ class ContractIdentityTests(unittest.TestCase):
 
 
 class LedgerSchemaTests(unittest.TestCase):
-    def test_open_creates_v1_core_tables_with_wal_foreign_keys_and_busy_timeout(self) -> None:
+    def test_open_creates_latest_tables_with_wal_foreign_keys_and_busy_timeout(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             database_path = Path(temporary_directory) / "ledger.sqlite3"
             connection = open_ledger(database_path)
@@ -121,9 +124,15 @@ class LedgerSchemaTests(unittest.TestCase):
             self.assertEqual(connection.execute("PRAGMA journal_mode").fetchone()[0], "wal")
             self.assertEqual(connection.execute("PRAGMA foreign_keys").fetchone()[0], 1)
             self.assertGreaterEqual(connection.execute("PRAGMA busy_timeout").fetchone()[0], 5_000)
+            self.assertEqual(LATEST_SCHEMA_VERSION, 2)
             self.assertEqual(
-                connection.execute("SELECT version FROM schema_migrations").fetchone()[0],
-                LATEST_SCHEMA_VERSION,
+                [
+                    row[0]
+                    for row in connection.execute(
+                        "SELECT version FROM schema_migrations ORDER BY version"
+                    )
+                ],
+                [1, 2],
             )
 
             with self.assertRaises(sqlite3.IntegrityError):
@@ -144,10 +153,59 @@ class LedgerSchemaTests(unittest.TestCase):
             migrations = second.execute(
                 "SELECT version, checksum, applied_at FROM schema_migrations ORDER BY version"
             ).fetchall()
-            self.assertEqual(len(migrations), 1)
-            self.assertEqual(migrations[0][0], 1)
-            self.assertEqual(len(migrations[0][1]), 64)
-            self.assertTrue(migrations[0][2].endswith("Z"))
+            self.assertEqual([migration[0] for migration in migrations], [1, 2])
+            self.assertEqual(migrations[0][1], BASE_V1_CHECKSUM)
+            for _, checksum, applied_at in migrations:
+                self.assertEqual(len(checksum), 64)
+                self.assertTrue(applied_at.endswith("Z"))
+
+    def test_genuine_base_v1_database_upgrades_to_v2(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database_path = Path(temporary_directory) / "ledger.sqlite3"
+            base_v1 = MIGRATIONS[0]
+            self.assertEqual(base_v1.version, 1)
+            self.assertEqual(base_v1.checksum, BASE_V1_CHECKSUM)
+
+            connection = sqlite3.connect(database_path)
+            connection.execute(
+                "CREATE TABLE schema_migrations ("
+                "version INTEGER PRIMARY KEY, "
+                "checksum TEXT NOT NULL CHECK (length(checksum) = 64), "
+                "applied_at TEXT NOT NULL)"
+            )
+            for statement in base_v1.statements:
+                connection.execute(statement)
+            connection.execute(
+                "INSERT INTO schema_migrations VALUES (?, ?, ?)",
+                (1, BASE_V1_CHECKSUM, "2026-09-17T00:00:00Z"),
+            )
+            connection.commit()
+            pre_upgrade_tables = {
+                row[0]
+                for row in connection.execute(
+                    "SELECT name FROM sqlite_master WHERE type = ?",
+                    ("table",),
+                )
+            }
+            self.assertNotIn("stage_artifacts", pre_upgrade_tables)
+            connection.close()
+
+            upgraded = open_ledger(database_path)
+            self.addCleanup(upgraded.close)
+            post_upgrade_tables = {
+                row[0]
+                for row in upgraded.execute(
+                    "SELECT name FROM sqlite_master WHERE type = ?",
+                    ("table",),
+                )
+            }
+            self.assertIn("stage_artifacts", post_upgrade_tables)
+            migrations = upgraded.execute(
+                "SELECT version, checksum FROM schema_migrations ORDER BY version"
+            ).fetchall()
+            self.assertEqual([migration[0] for migration in migrations], [1, 2])
+            self.assertEqual(migrations[0][1], BASE_V1_CHECKSUM)
+            self.assertEqual(migrations[1][1], MIGRATIONS[1].checksum)
 
     def test_future_schema_version_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -201,9 +259,15 @@ class LedgerSchemaTests(unittest.TestCase):
             retry = open_ledger(database_path)
             self.addCleanup(retry.close)
             self.assertEqual(
-                retry.execute("SELECT version FROM schema_migrations").fetchone()[0],
-                LATEST_SCHEMA_VERSION,
+                [
+                    row[0]
+                    for row in retry.execute(
+                        "SELECT version FROM schema_migrations ORDER BY version"
+                    )
+                ],
+                [1, 2],
             )
+
     def test_migration_checksum_mismatch_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             database_path = Path(temporary_directory) / "ledger.sqlite3"
