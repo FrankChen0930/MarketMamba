@@ -29,9 +29,6 @@ _POSIX_ABSOLUTE_PATH = re.compile(
     r'''(?:[^/\s,;'"<>()\[\]{}]+/)*'''
     r'''[^/\s,;'"<>()\[\]{}]+'''
 )
-_FIELD_ASSIGNMENT = re.compile(
-    r"(?<![A-Za-z0-9_.-])[A-Za-z_][A-Za-z0-9_.-]*\s*=\s*"
-)
 
 
 def _contains_absolute_path(value: str) -> bool:
@@ -47,64 +44,12 @@ def _contains_absolute_path(value: str) -> bool:
     )
 
 
-def _opaque_preserving_edge_space(value: str) -> str:
-    leading_length = len(value) - len(value.lstrip())
-    trailing_length = len(value) - len(value.rstrip())
-    leading = value[:leading_length]
-    trailing = value[len(value) - trailing_length :] if trailing_length else ""
-    return f"{leading}[PATH]{trailing}"
-
-
-def _redact_bounded_path_values(value: str) -> str:
-    """Opaque whole path-bearing evidence values, including paths with spaces."""
-
-    assignments = list(_FIELD_ASSIGNMENT.finditer(value))
-    if not assignments:
-        return "[PATH]" if _contains_absolute_path(value) else value
-
-    prefix = value[: assignments[0].start()]
-    parts = [
-        _opaque_preserving_edge_space(prefix)
-        if _contains_absolute_path(prefix)
-        else prefix
-    ]
-    cursor = assignments[0].start()
-    for index, assignment in enumerate(assignments):
-        parts.append(value[cursor : assignment.end()])
-        value_end = (
-            assignments[index + 1].start()
-            if index + 1 < len(assignments)
-            else len(value)
-        )
-        field_value = value[assignment.end() : value_end]
-        parts.append(
-            _opaque_preserving_edge_space(field_value)
-            if _contains_absolute_path(field_value)
-            else field_value
-        )
-        cursor = value_end
-    return "".join(parts)
-
-
 def sanitize_output_text(value: str | None) -> str | None:
     """Redact credentials and opaque absolute paths in user-facing output."""
 
-    redacted = redact_sensitive_text(value)
-    if redacted is None:
-        return None
-    redacted = _redact_bounded_path_values(redacted)
-    redacted = _QUOTED_ABSOLUTE_PATH.sub(
-        lambda match: f"{match.group('quote')}[PATH]{match.group('quote')}",
-        redacted,
-    )
-    for pattern in (
-        _FILE_ABSOLUTE_URI,
-        _UNC_ABSOLUTE_PATH,
-        _WINDOWS_ABSOLUTE_PATH,
-        _POSIX_ABSOLUTE_PATH,
-    ):
-        redacted = pattern.sub("[PATH]", redacted)
-    return redacted
+    if value is not None and _contains_absolute_path(value):
+        return "[PATH]"
+    return redact_sensitive_text(value)
 
 
 def _display(value: object) -> str:

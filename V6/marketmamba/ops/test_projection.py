@@ -253,10 +253,10 @@ class CurrentStateProjectionTest(unittest.TestCase):
         ):
             self.assertNotIn(sensitive, machine)
             self.assertNotIn(sensitive, human)
-        self.assertIn("[PATH]", machine)
+        self.assertEqual(state["freshness"]["observed_value"], "[PATH]")
+        self.assertEqual(state["freshness"]["threshold_value"], "[PATH]")
+        self.assertGreaterEqual(machine.count("[PATH]"), 2)
         self.assertIn("[PATH]", human)
-        self.assertIn("file:processed_v6/prices_raw.parquet", machine)
-        self.assertIn("https://example.com/status", machine)
         self.assertEqual(
             sanitize_output_text(
                 "2026-09-18 PASS file:processed_v6/raw.parquet "
@@ -317,8 +317,10 @@ class CurrentStateProjectionTest(unittest.TestCase):
         ):
             self.assertNotIn(sensitive, machine)
             self.assertNotIn(sensitive, human)
-        self.assertGreaterEqual(machine.count("[PATH]"), 3)
-        self.assertIn("safe=ordinary prose", machine)
+        self.assertEqual(state["freshness"]["observed_value"], "[PATH]")
+        self.assertEqual(machine.count("[PATH]"), 1)
+        self.assertNotIn("safe=ordinary prose", machine)
+        self.assertNotIn("safe=ordinary prose", human)
         self.assertIn("https://example.com/status", machine)
 
     def test_bounded_path_segments_and_quoted_credentials_are_fully_opaque(
@@ -377,15 +379,69 @@ class CurrentStateProjectionTest(unittest.TestCase):
         ):
             self.assertNotIn(sensitive_fragment, machine)
             self.assertNotIn(sensitive_fragment, human)
-        for safe_fragment in (
+        self.assertEqual(state["freshness"]["observed_value"], "[PATH]")
+        for tainted_neighbor in (
             "status=PASS",
             "file:processed_v6/raw.parquet",
-            "https://example.com/status",
         ):
-            self.assertIn(safe_fragment, machine)
-            self.assertIn(safe_fragment, human)
-        self.assertGreaterEqual(machine.count("[PATH]"), 4)
+            self.assertNotIn(tainted_neighbor, machine)
+            self.assertNotIn(tainted_neighbor, human)
+        self.assertIn("https://example.com/status", machine)
+        self.assertIn("https://example.com/status", human)
+        self.assertEqual(machine.count("[PATH]"), 1)
         self.assertGreaterEqual(machine.count("[REDACTED]"), 4)
+
+    def test_any_absolute_path_opaques_the_entire_committed_evidence(self) -> None:
+        self._observe(18, ({name: True for name in self.sources}, []))
+        cases = (
+            (
+                "posix",
+                r'''prefix "/home/jane/Secret=Folder/private=file.csv", '''
+                "suffix status=PASS",
+            ),
+            (
+                "file_uri",
+                r"prefix file:/home/jane/Secret=Folder/private=file.csv?x=1; "
+                "suffix status=PASS",
+            ),
+            (
+                "windows",
+                r"prefix C:\Users\Jane= Doe\private=file.csv; suffix status=PASS",
+            ),
+            (
+                "unc",
+                r"prefix \\server\secret=share\private=file.csv, suffix status=PASS",
+            ),
+        )
+
+        from marketmamba.ops.__main__ import main
+        for label, evidence in cases:
+            with self.subTest(path_family=label):
+                connection = sqlite3.connect(self.db)
+                connection.execute(
+                    "UPDATE checks SET observed_value = ? "
+                    "WHERE check_name = 'freshness'",
+                    (evidence,),
+                )
+                connection.commit()
+                connection.close()
+
+                state = build_current_state(self.db)
+                machine = json.dumps(state)
+                human_stream = io.StringIO()
+                with patch("sys.stdout", human_stream):
+                    self.assertEqual(
+                        main(["current-state", "--db", str(self.db)]),
+                        0,
+                    )
+                human = human_stream.getvalue()
+
+                self.assertEqual(state["freshness"]["observed_value"], "[PATH]")
+                self.assertIn('"observed_value": "[PATH]"', machine)
+                self.assertIn("observed: [PATH]", human)
+                for leaked in ("prefix", "suffix", "status=PASS", "private=file"):
+                    self.assertNotIn(leaked, machine)
+                    self.assertNotIn(leaked, human)
 
     def test_projection_is_rebuildable_from_committed_ledger_only(self) -> None:
         self._observe(18, ({name: True for name in self.sources}, []))
