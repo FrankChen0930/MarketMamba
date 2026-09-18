@@ -2,15 +2,59 @@
 
 from __future__ import annotations
 
+import re
 from typing import Mapping
 
 from marketmamba.ops.store import redact_sensitive_text
 
 
+_QUOTED_ABSOLUTE_PATH = re.compile(
+    r'''(?P<quote>["'])(?:[A-Za-z]:[\\/]|\\\\|//|/).*?(?P=quote)'''
+)
+_FILE_ABSOLUTE_URI = re.compile(
+    r'''(?i)\bfile:(?:/{1,3}|[A-Za-z]:[\\/])[^\s,;'"<>()\[\]{}]+'''
+)
+_UNC_ABSOLUTE_PATH = re.compile(
+    r'''(?<![:\\/\w])(?:\\\\|//)'''
+    r'''[^\\/\s,;'"<>()\[\]{}]+'''
+    r'''(?:[\\/][^\\/\s,;'"<>()\[\]{}]+)+'''
+)
+_WINDOWS_ABSOLUTE_PATH = re.compile(
+    r'''(?<!\w)[A-Za-z]:[\\/]'''
+    r'''(?:[^\\/\s,;'"<>()\[\]{}]+[\\/])*'''
+    r'''[^\\/\s,;'"<>()\[\]{}]+'''
+)
+_POSIX_ABSOLUTE_PATH = re.compile(
+    r'''(?<![:\\/\w])/'''
+    r'''(?:[^/\s,;'"<>()\[\]{}]+/)*'''
+    r'''[^/\s,;'"<>()\[\]{}]+'''
+)
+
+
+def sanitize_output_text(value: str | None) -> str | None:
+    """Redact credentials and opaque absolute paths in user-facing output."""
+
+    redacted = redact_sensitive_text(value)
+    if redacted is None:
+        return None
+    redacted = _QUOTED_ABSOLUTE_PATH.sub(
+        lambda match: f"{match.group('quote')}[PATH]{match.group('quote')}",
+        redacted,
+    )
+    for pattern in (
+        _FILE_ABSOLUTE_URI,
+        _UNC_ABSOLUTE_PATH,
+        _WINDOWS_ABSOLUTE_PATH,
+        _POSIX_ABSOLUTE_PATH,
+    ):
+        redacted = pattern.sub("[PATH]", redacted)
+    return redacted
+
+
 def _display(value: object) -> str:
     if value is None:
         return "—"
-    return redact_sensitive_text(str(value)) or "—"
+    return sanitize_output_text(str(value)) or "—"
 
 
 def render_current_state(state: Mapping[str, object]) -> str:
@@ -25,6 +69,12 @@ def render_current_state(state: Mapping[str, object]) -> str:
     freshness = state.get("freshness")
     freshness_status = (
         freshness.get("status") if isinstance(freshness, Mapping) else None
+    )
+    freshness_observed = (
+        freshness.get("observed_value") if isinstance(freshness, Mapping) else None
+    )
+    freshness_threshold = (
+        freshness.get("threshold_value") if isinstance(freshness, Mapping) else None
     )
     calendar = state.get("calendar")
     calendar_status = (
@@ -53,7 +103,9 @@ def render_current_state(state: Mapping[str, object]) -> str:
             "(unknown; not exposed by legacy fetcher)",
             f"Last successful fetch date: "
             f"{_display(state.get('last_successful_fetch_date'))}",
-            f"Freshness: {_display(freshness_status)}",
+            f"Freshness: {_display(freshness_status)} "
+            f"(observed: {_display(freshness_observed)}, "
+            f"threshold: {_display(freshness_threshold)})",
             f"Artifacts: {_display(artifact_count)} "
             f"(fingerprint kinds: {_display(artifact_fingerprints)})",
             f"Warnings: {_display(state.get('warning_count'))}",

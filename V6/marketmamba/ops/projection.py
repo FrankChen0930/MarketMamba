@@ -4,21 +4,32 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from datetime import datetime
+import errno
 import fcntl
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import sqlite3
 import tempfile
+import time
 from typing import Iterator, Mapping
 
-from marketmamba.ops.store import redact_sensitive_text
+from marketmamba.ops.diagnostics import sanitize_output_text
 
 
 PROJECTION_SCHEMA_VERSION = "current-state-v1"
 INCIDENT_STATUS = "NOT_IMPLEMENTED_PHASE_C"
 DATE_SEMANTICS = "REQUESTED_ASIA_TAIPEI_DATE_UNVERIFIED_CALENDAR"
+DEFAULT_LOCK_TIMEOUT_SECONDS = 0.1
+DEFAULT_LOCK_POLL_SECONDS = 0.01
+
+
+class ProjectionLockTimeout(TimeoutError):
+    """Raised when a projection writer cannot acquire authority promptly."""
+
+
 
 
 def _open_readonly(path: Path) -> sqlite3.Connection:
@@ -42,7 +53,7 @@ def _duration_seconds(started_at: str | None, finished_at: str | None) -> float 
 
 
 def _safe(value: str | None) -> str | None:
-    return redact_sensitive_text(value)
+    return sanitize_output_text(value)
 
 
 def _source_watermark(connection: sqlite3.Connection) -> dict[str, object]:
@@ -329,10 +340,42 @@ def build_current_state(database_path: str | Path) -> dict[str, object]:
 
 
 @contextmanager
-def _projection_lock(target: Path) -> Iterator[None]:
+def _projection_lock(
+    target: Path,
+    *,
+    timeout_seconds: float,
+    poll_seconds: float,
+) -> Iterator[None]:
+    if (
+        isinstance(timeout_seconds, bool)
+        or not isinstance(timeout_seconds, (int, float))
+        or not math.isfinite(timeout_seconds)
+        or timeout_seconds < 0
+    ):
+        raise ValueError("lock timeout must be a finite non-negative number")
+    if (
+        isinstance(poll_seconds, bool)
+        or not isinstance(poll_seconds, (int, float))
+        or not math.isfinite(poll_seconds)
+        or poll_seconds <= 0
+    ):
+        raise ValueError("lock poll interval must be a finite positive number")
     lock_path = target.with_name(f".{target.name}.lock")
     with lock_path.open("a+b") as handle:
-        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+        deadline = time.monotonic() + timeout_seconds
+        while True:
+            try:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except OSError as error:
+                if error.errno not in {errno.EACCES, errno.EAGAIN}:
+                    raise
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise ProjectionLockTimeout(
+                        "projection writer lock deadline exceeded"
+                    ) from error
+                time.sleep(min(poll_seconds, remaining))
         try:
             yield
         finally:
@@ -377,6 +420,9 @@ def _atomic_write_json(target: Path, state: Mapping[str, object]) -> None:
 def write_current_state(
     database_path: str | Path,
     json_path: str | Path | None = None,
+    *,
+    lock_timeout_seconds: float = DEFAULT_LOCK_TIMEOUT_SECONDS,
+    lock_poll_seconds: float = DEFAULT_LOCK_POLL_SECONDS,
 ) -> Path:
     """Publish current state atomically; concurrent writers read in lock order."""
 
@@ -387,7 +433,11 @@ def write_current_state(
         else database.parent / "current-state.json"
     )
     target.parent.mkdir(parents=True, exist_ok=True)
-    with _projection_lock(target):
+    with _projection_lock(
+        target,
+        timeout_seconds=lock_timeout_seconds,
+        poll_seconds=lock_poll_seconds,
+    ):
         # Snapshot after taking the writer lock: a delayed older callback must
         # publish first; the following writer then re-reads committed state.
         state = build_current_state(database)

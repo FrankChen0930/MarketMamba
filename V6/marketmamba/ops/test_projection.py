@@ -3,16 +3,18 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import fcntl
 import io
 import json
 from pathlib import Path
 import sqlite3
 import tempfile
 import threading
+import time
 import unittest
 from unittest.mock import patch
 
-from marketmamba.ops.diagnostics import render_current_state
+from marketmamba.ops.diagnostics import render_current_state, sanitize_output_text
 from marketmamba.ops.projection import (
     build_current_state,
     write_current_state,
@@ -140,6 +142,129 @@ class CurrentStateProjectionTest(unittest.TestCase):
                 projection_callback=lambda _: (_ for _ in ()).throw(callback_error),
             )
         self.assertIs(raised.exception, error)
+
+    def _hold_projection_lock(self):
+        self.db.parent.mkdir(parents=True, exist_ok=True)
+        lock_path = self.db.parent / ".current-state.json.lock"
+        handle = lock_path.open("a+b")
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        self.addCleanup(handle.close)
+        return handle
+
+    def test_stuck_projection_lock_cannot_delay_legacy_result_or_damage_json(self) -> None:
+        target = self.db.parent / "current-state.json"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        old = {"generation": "old", "valid": True}
+        target.write_text(json.dumps(old), encoding="utf-8")
+        lock_handle = self._hold_projection_lock()
+        result = ({name: True for name in self.sources}, [])
+        callback = lambda database: write_current_state(
+            database,
+            lock_timeout_seconds=0.05,
+            lock_poll_seconds=0.005,
+        )
+
+        started = time.monotonic()
+        observed = observe_fetch_only(
+            lambda: result,
+            daily_sources=self.sources,
+            v6_dir=self.v6_dir,
+            ledger_path=self.db,
+            data_root=self.data_root,
+            requested_at=datetime(2026, 9, 18, 14, tzinfo=timezone.utc),
+            projection_callback=callback,
+        )
+        elapsed = time.monotonic() - started
+
+        self.assertIs(observed, result)
+        self.assertLess(elapsed, 0.5)
+        self.assertEqual(json.loads(target.read_text(encoding="utf-8")), old)
+        self.assertEqual(list(target.parent.glob(".current-state.json.*.tmp")), [])
+        fcntl.flock(lock_handle.fileno(), fcntl.LOCK_UN)
+
+    def test_stuck_projection_lock_cannot_replace_legacy_exception(self) -> None:
+        target = self.db.parent / "current-state.json"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        old_text = '{"generation":"old","valid":true}\n'
+        target.write_text(old_text, encoding="utf-8")
+        lock_handle = self._hold_projection_lock()
+        error = RuntimeError("legacy provider failure")
+        callback = lambda database: write_current_state(
+            database,
+            lock_timeout_seconds=0.05,
+            lock_poll_seconds=0.005,
+        )
+
+        started = time.monotonic()
+        with self.assertRaises(RuntimeError) as raised:
+            observe_fetch_only(
+                lambda: (_ for _ in ()).throw(error),
+                daily_sources=self.sources,
+                v6_dir=self.v6_dir,
+                ledger_path=self.db,
+                data_root=self.data_root,
+                requested_at=datetime(2026, 9, 18, 14, tzinfo=timezone.utc),
+                projection_callback=callback,
+            )
+        elapsed = time.monotonic() - started
+
+        self.assertIs(raised.exception, error)
+        self.assertLess(elapsed, 0.5)
+        self.assertEqual(target.read_text(encoding="utf-8"), old_text)
+        self.assertEqual(list(target.parent.glob(".current-state.json.*.tmp")), [])
+        fcntl.flock(lock_handle.fileno(), fcntl.LOCK_UN)
+
+    def test_committed_evidence_paths_and_credentials_are_opaque_in_all_output(self) -> None:
+        self._observe(18, ({name: True for name in self.sources}, []))
+        observed = (
+            r"posix=/home/frank/private/data.parquet "
+            r"windows=C:\Users\Master\private\data.csv "
+            r'''quoted="D:\Market Data\private.csv" token=secret-value'''
+        )
+        threshold = (
+            r"unc=\\server\secret-share\private.csv "
+            r"absolute=file:/home/frank/private/raw.parquet "
+            r"normal=file:processed_v6/prices_raw.parquet https://example.com/status"
+        )
+        connection = sqlite3.connect(self.db)
+        connection.execute(
+            "UPDATE checks SET observed_value = ?, threshold_value = ? "
+            "WHERE check_name = 'freshness'",
+            (observed, threshold),
+        )
+        connection.commit()
+        connection.close()
+
+        state = build_current_state(self.db)
+        machine = json.dumps(state)
+        from marketmamba.ops.__main__ import main
+        human_stream = io.StringIO()
+        with patch("sys.stdout", human_stream):
+            self.assertEqual(main(["current-state", "--db", str(self.db)]), 0)
+        human = human_stream.getvalue()
+
+        for sensitive in (
+            "/home/frank",
+            "Master",
+            "Market Data",
+            "server",
+            "secret-share",
+            "secret-value",
+        ):
+            self.assertNotIn(sensitive, machine)
+            self.assertNotIn(sensitive, human)
+        self.assertIn("[PATH]", machine)
+        self.assertIn("[PATH]", human)
+        self.assertIn("file:processed_v6/prices_raw.parquet", machine)
+        self.assertIn("https://example.com/status", machine)
+        self.assertEqual(
+            sanitize_output_text(
+                "2026-09-18 PASS file:processed_v6/raw.parquet "
+                "https://example.com/status"
+            ),
+            "2026-09-18 PASS file:processed_v6/raw.parquet "
+            "https://example.com/status",
+        )
 
     def test_projection_is_rebuildable_from_committed_ledger_only(self) -> None:
         self._observe(18, ({name: True for name in self.sources}, []))
