@@ -36,6 +36,7 @@ class RunState(str, Enum):
     SUCCEEDED = "SUCCEEDED"
     FAILED = "FAILED"
     CANCELLED = "CANCELLED"
+    SKIPPED = "SKIPPED"
 
     @property
     def is_terminal(self) -> bool:
@@ -43,6 +44,7 @@ class RunState(str, Enum):
             RunState.SUCCEEDED,
             RunState.FAILED,
             RunState.CANCELLED,
+            RunState.SKIPPED,
         }
 
 
@@ -151,25 +153,60 @@ class StageRunIdentity:
 
 @dataclass(frozen=True)
 class ArtifactIdentity:
-    """An immutable artifact identity derived from its content and schema."""
+    """An immutable artifact identity with explicit fingerprint semantics."""
 
     artifact_type: str
-    content_sha256: str
+    content_sha256: str | None
     schema_version: str
     schema_sha256: str
+    fingerprint_kind: str = "content_sha256"
+    fingerprint_sha256: str | None = None
 
     def __post_init__(self) -> None:
         _require_token(self.artifact_type, "artifact_type")
-        _require_checksum(self.content_sha256, "content_sha256")
+        if self.content_sha256 is not None:
+            _require_checksum(self.content_sha256, "content_sha256")
         _require_token(self.schema_version, "schema_version")
         _require_checksum(self.schema_sha256, "schema_sha256")
+        _require_token(self.fingerprint_kind, "fingerprint_kind")
+        fingerprint = self.fingerprint_sha256
+        if fingerprint is None:
+            if self.content_sha256 is None:
+                raise ValueError(
+                    "fingerprint_sha256 is required when content_sha256 is absent"
+                )
+            fingerprint = self.content_sha256
+            object.__setattr__(self, "fingerprint_sha256", fingerprint)
+        _require_checksum(fingerprint, "fingerprint_sha256")
+        if self.fingerprint_kind == "content_sha256":
+            if self.content_sha256 is None or fingerprint != self.content_sha256:
+                raise ValueError(
+                    "content_sha256 fingerprint must equal the true content hash"
+                )
+        elif self.content_sha256 is not None:
+            raise ValueError(
+                "non-content fingerprints must not populate content_sha256"
+            )
 
     @property
     def canonical_key(self) -> str:
+        if self.fingerprint_kind == "content_sha256":
+            # Preserve v1/v2 artifact IDs so upgraded content artifacts remain
+            # reusable instead of being duplicated under a new identity.
+            return "|".join(
+                (
+                    self.artifact_type,
+                    self.content_sha256 or "",
+                    self.schema_version,
+                    self.schema_sha256,
+                )
+            )
         return "|".join(
             (
                 self.artifact_type,
-                self.content_sha256,
+                self.fingerprint_kind,
+                self.fingerprint_sha256 or "",
+                self.content_sha256 or "",
                 self.schema_version,
                 self.schema_sha256,
             )

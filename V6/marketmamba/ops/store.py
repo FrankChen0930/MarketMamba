@@ -183,7 +183,6 @@ class LedgerStore:
             ).fetchone()
             if row is None:
                 raise LedgerStateError(f"logical run {logical_run_id!r} does not exist")
-            _raise_if_terminal("logical run", row[0])
             attempt_number = self.connection.execute(
                 "SELECT COALESCE(MAX(attempt_number), 0) + 1 FROM attempts "
                 "WHERE logical_run_id = ?",
@@ -209,7 +208,8 @@ class LedgerStore:
                 ),
             )
             self.connection.execute(
-                "UPDATE logical_runs SET state = ?, updated_at = ? "
+                "UPDATE logical_runs SET state = ?, terminal_reason = NULL, "
+                "incident_ref = NULL, updated_at = ? "
                 "WHERE logical_run_id = ?",
                 (RunState.RUNNING.value, timestamp, logical_run_id),
             )
@@ -366,6 +366,8 @@ class LedgerStore:
                     artifact.identity.artifact_type,
                     identity_sha256,
                     artifact.identity.content_sha256,
+                    artifact.identity.fingerprint_kind,
+                    artifact.identity.fingerprint_sha256,
                     artifact.identity.schema_version,
                     artifact.identity.schema_sha256,
                     redact_sensitive_text(artifact.uri),
@@ -374,6 +376,7 @@ class LedgerStore:
                 )
                 existing = self.connection.execute(
                     "SELECT artifact_type, identity_sha256, content_sha256, "
+                    "fingerprint_kind, fingerprint_sha256, "
                     "schema_version, schema_sha256, uri, byte_size, complete "
                     "FROM artifacts WHERE artifact_id = ?",
                     (artifact.identity.artifact_id,),
@@ -382,9 +385,10 @@ class LedgerStore:
                     self.connection.execute(
                         "INSERT INTO artifacts "
                         "(artifact_id, logical_run_id, stage_run_id, artifact_type, "
-                        "identity_sha256, content_sha256, schema_version, schema_sha256, "
+                        "identity_sha256, content_sha256, fingerprint_kind, "
+                        "fingerprint_sha256, schema_version, schema_sha256, "
                         "uri, byte_size, complete, created_at) "
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                         (
                             artifact.identity.artifact_id,
                             logical_run_id,

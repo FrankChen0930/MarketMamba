@@ -106,6 +106,48 @@ class TransactionalStoreTests(StoreTestCase):
         )
         self.assertNotEqual(first.attempt_id, second.attempt_id)
 
+    def test_terminal_logical_run_reopens_for_new_attempt_without_history_rewrite(self) -> None:
+        logical_run_id = self.store.open_logical_run(self.logical, now=T0)
+        lease = self.acquire()
+        first = self.store.start_attempt(logical_run_id, host="host-a", now=T0)
+        self.store.finish_attempt(
+            first.attempt_id,
+            RunState.FAILED,
+            lease=lease,
+            exit_code=1,
+            incident_ref="incident-1",
+            now=T0 + timedelta(minutes=1),
+        )
+        self.store.finish_logical_run(
+            logical_run_id,
+            RunState.FAILED,
+            lease=lease,
+            terminal_reason="first failed",
+            incident_ref="incident-1",
+            now=T0 + timedelta(minutes=1),
+        )
+
+        second = self.store.start_attempt(
+            logical_run_id,
+            host="host-b",
+            now=T0 + timedelta(minutes=2),
+        )
+
+        self.assertEqual(second.attempt_number, 2)
+        self.assertEqual(
+            self.connection.execute(
+                "SELECT state, terminal_reason, incident_ref FROM logical_runs"
+            ).fetchone(),
+            ("RUNNING", None, None),
+        )
+        self.assertEqual(
+            self.connection.execute(
+                "SELECT attempt_number, state, host, exit_code FROM attempts "
+                "ORDER BY attempt_number"
+            ).fetchall(),
+            [(1, "FAILED", "host-a", 1), (2, "RUNNING", "host-b", None)],
+        )
+
     def test_terminal_attempt_logical_run_and_stage_are_immutable(self) -> None:
         attempt_id, stage_run_id = self.start_attempt_and_stage()
         lease = self.acquire()

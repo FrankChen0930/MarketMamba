@@ -110,11 +110,11 @@ def artifact_ref_from_stat(
     ).hexdigest()
     identity = ArtifactIdentity(
         artifact_type="raw_parquet_metadata_ref",
-        # ArtifactIdentity predates fingerprint kinds.  The schema version and
-        # type make clear that this digest covers stat metadata, not file bytes.
-        content_sha256=metadata_fingerprint,
+        content_sha256=None,
         schema_version="stat-fingerprint-v1",
         schema_sha256=_STAT_SCHEMA_SHA256,
+        fingerprint_kind="file_stat_v1",
+        fingerprint_sha256=metadata_fingerprint,
     )
     return ArtifactRef(
         identity=identity,
@@ -181,7 +181,7 @@ def _start_session(
         )
         store.commit_stage(
             calendar.stage_run_id,
-            RunState.SUCCEEDED,
+            RunState.SKIPPED,
             lease=lease,
             checks=(
                 _check(
@@ -213,7 +213,10 @@ def _start_session(
                 release_lease(connection, lease)
             except BaseException:
                 pass
-        connection.close()
+        try:
+            connection.close()
+        except BaseException:
+            pass
         raise
 
 
@@ -250,7 +253,11 @@ def _record_result(
     expected = len(daily_sources)
     observed = sum(bool(complete.get(name, False)) for name in daily_sources)
     succeeded = not missing
-    status = CheckStatus.PASS if succeeded else CheckStatus.FAIL
+    source_count_passed = observed == expected
+    source_count_status = (
+        CheckStatus.PASS if source_count_passed else CheckStatus.FAIL
+    )
+    outcome_status = CheckStatus.PASS if succeeded else CheckStatus.FAIL
     session.store.commit_stage(
         session.ingest_stage_id,
         RunState.SUCCEEDED if succeeded else RunState.FAILED,
@@ -264,15 +271,15 @@ def _record_result(
             _check(
                 session.ingest_stage_id,
                 "source_count",
-                status,
+                source_count_status,
                 observed=str(observed),
                 threshold=str(expected),
-                severity="ERROR" if not succeeded else "INFO",
+                severity="INFO" if source_count_passed else "ERROR",
             ),
             _check(
                 session.ingest_stage_id,
                 "freshness",
-                status,
+                outcome_status,
                 observed=f"missing={len(missing)}",
                 threshold="missing=0",
                 severity="ERROR" if not succeeded else "INFO",
@@ -280,7 +287,7 @@ def _record_result(
             _check(
                 session.ingest_stage_id,
                 "exit_gate",
-                status,
+                outcome_status,
                 observed="1" if missing else "0",
                 threshold="0",
                 severity="ERROR" if not succeeded else "INFO",
@@ -356,21 +363,32 @@ def _record_exception(session: _ShadowSession, error: BaseException) -> None:
     )
 
 
-def _warn(logger: logging.Logger, phase: str, error: BaseException) -> None:
-    logger.warning(
-        "[shadow-ledger] %s failed (%s); legacy fetch outcome is unchanged",
-        phase,
-        type(error).__name__,
-    )
+def _warn(logger: logging.Logger | None, phase: str, error: BaseException) -> None:
+    """Attempt diagnostics without becoming an operational dependency."""
+
+    try:
+        target = logger if logger is not None else logging.getLogger(__name__)
+        target.warning(
+            "[shadow-ledger] %s failed (%s); legacy fetch outcome is unchanged",
+            phase,
+            type(error).__name__,
+        )
+    except BaseException:
+        pass
 
 
-def _finish_session(session: _ShadowSession, logger: logging.Logger) -> None:
+def _finish_session(
+    session: _ShadowSession,
+    logger: logging.Logger | None,
+) -> None:
     try:
         release_lease(session.connection, session.lease)
     except BaseException as error:
         _warn(logger, "lease release", error)
-    finally:
+    try:
         session.connection.close()
+    except BaseException as error:
+        _warn(logger, "connection close", error)
 
 
 def observe_fetch_only(
@@ -387,22 +405,24 @@ def observe_fetch_only(
 ) -> _Result:
     """Run legacy fetch exactly once while recording best-effort shadow evidence."""
 
-    log = logger or logging.getLogger(__name__)
-    environment = os.environ if environ is None else environ
-    v6_path = Path(v6_dir)
-    db_path = (
-        Path(ledger_path)
-        if ledger_path is not None
-        else default_ledger_path(v6_path, environ=environment)
-    )
-    raw_root = (
-        Path(data_root)
-        if data_root is not None
-        else _default_data_root(v6_path, environment)
-    )
-    when = requested_at or datetime.now(timezone.utc)
+    log = logger
     session = None
+    db_path = None
+    raw_root = None
     try:
+        environment = os.environ if environ is None else environ
+        v6_path = Path(v6_dir)
+        db_path = (
+            Path(ledger_path)
+            if ledger_path is not None
+            else default_ledger_path(v6_path, environ=environment)
+        )
+        raw_root = (
+            Path(data_root)
+            if data_root is not None
+            else _default_data_root(v6_path, environment)
+        )
+        when = requested_at or datetime.now(timezone.utc)
         session = _start_session(ledger_path=db_path, requested_at=when)
     except BaseException as error:
         phase = "lease conflict" if isinstance(error, LeaseConflictError) else "initialization"
@@ -421,6 +441,8 @@ def observe_fetch_only(
         raise
 
     if session is not None:
+        assert raw_root is not None
+        assert db_path is not None
         ledger_committed = False
         try:
             _record_result(
