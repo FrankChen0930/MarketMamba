@@ -184,7 +184,7 @@ def _apply_migrations(connection: sqlite3.Connection) -> None:
 def open_ledger(path: str | Path) -> sqlite3.Connection:
     """Open and migrate one file-backed ledger with the required safety pragmas."""
 
-    connection = sqlite3.connect(str(path))
+    connection = sqlite3.connect(str(path), isolation_level=None)
     connection.execute("PRAGMA foreign_keys = ON")
     connection.execute("PRAGMA journal_mode = WAL")
     connection.execute(f"PRAGMA busy_timeout = {BUSY_TIMEOUT_MS}")
