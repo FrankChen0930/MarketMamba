@@ -59,6 +59,12 @@ if str(_V6) not in sys.path:
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger("v62_daily")
+try:
+    from marketmamba.ops.shadow import observe_fetch_only
+except Exception as _shadow_import_error:                       # noqa: BLE001
+    observe_fetch_only = None
+    logger.warning("[shadow-ledger] adapter unavailable (%s); legacy fetch remains active",
+                   type(_shadow_import_error).__name__)
 
 # 每日源：**必須有當日資料**（容許 0 天）。
 # 週/月/季源不列入——它們本來就不是每天更新，列進來只會製造永遠不消的假警報，
@@ -403,7 +409,15 @@ def _pipeline(a, ui) -> int:
         logger.info("=" * 62)
         logger.info("[fetch-only] 只更新每日 raw parquet；不建矩陣、不載模型、不推論、不發布")
         logger.info("=" * 62)
-        complete, missing = fetch_data()
+        if observe_fetch_only is None:
+            complete, missing = fetch_data()
+        else:
+            complete, missing = observe_fetch_only(
+                fetch_data,
+                daily_sources=DAILY_SOURCES,
+                v6_dir=_V6,
+                logger=logger,
+            )
         logger.info(f"[fetch-only] 完整來源 {sum(complete.values())}/{len(DAILY_SOURCES)}")
         if missing:
             notify("⚠️ MarketMamba fetch-only 資料缺漏",

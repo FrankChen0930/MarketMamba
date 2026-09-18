@@ -32,6 +32,11 @@ class FetchOnlyTest(unittest.TestCase):
         with (
             patch.object(sys, "argv", [str(SCRIPT), "--fetch-only"]),
             patch.object(MODULE, "fetch_data", return_value=fetch_result) as fetch,
+            patch.object(
+                MODULE,
+                "observe_fetch_only",
+                side_effect=lambda operation, **_: operation(),
+            ),
             patch.object(MODULE, "notify") as notify,
             patch.object(builtins, "__import__", side_effect=guarded_import),
         ):
@@ -52,6 +57,20 @@ class FetchOnlyTest(unittest.TestCase):
         self.assertEqual(result, 1)
         fetch.assert_called_once_with()
         notify.assert_called_once()
+
+    def test_fetch_only_runs_when_shadow_observer_is_unavailable(self) -> None:
+        complete = self._complete_sources()
+        with (
+            patch.object(sys, "argv", [str(SCRIPT), "--fetch-only"]),
+            patch.object(MODULE, "fetch_data", return_value=(complete, [])) as fetch,
+            patch.object(MODULE, "observe_fetch_only", None),
+            patch.object(MODULE, "notify") as notify,
+        ):
+            result = MODULE.main()
+
+        self.assertEqual(result, 0)
+        fetch.assert_called_once_with()
+        notify.assert_not_called()
 
 
 if __name__ == "__main__":
