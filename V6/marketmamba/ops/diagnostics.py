@@ -8,38 +8,44 @@ from typing import Mapping
 from marketmamba.ops.store import redact_sensitive_text
 
 
-_QUOTED_ABSOLUTE_PATH = re.compile(
-    r'''(?P<quote>["'])(?:[A-Za-z]:[\\/]|\\\\|//|/).*?(?P=quote)'''
+_HTTP_URL = re.compile(r'''(?i)\bhttps?://[^\s<>'"]+''')
+_REDACTED_CREDENTIAL_URL = re.compile(
+    r'''(?i)\b[a-z][a-z0-9+.-]*://\[REDACTED\]@[^\s<>'"]+'''
 )
-_FILE_ABSOLUTE_URI = re.compile(
-    r'''(?i)\bfile:(?:/{1,3}|[A-Za-z]:[\\/])[^\s,;'"<>()\[\]{}]+'''
+_FILE_ABSOLUTE_START = re.compile(
+    r"(?i)\bfile:(?:/{1,3}|[A-Za-z]:[\\/])"
 )
-_UNC_ABSOLUTE_PATH = re.compile(
-    r'''(?<![:\\/\w])(?:\\\\|//)'''
-    r'''[^\\/\s,;'"<>()\[\]{}]+'''
-    r'''(?:[\\/][^\\/\s,;'"<>()\[\]{}]+)+'''
+_UNC_ABSOLUTE_START = re.compile(
+    r"(?<![A-Za-z0-9_./\\-])(?:\\\\|//)(?=[^\\/\s])"
 )
-_WINDOWS_ABSOLUTE_PATH = re.compile(
-    r'''(?<!\w)[A-Za-z]:[\\/]'''
-    r'''(?:[^\\/\s,;'"<>()\[\]{}]+[\\/])*'''
-    r'''[^\\/\s,;'"<>()\[\]{}]+'''
+_WINDOWS_ABSOLUTE_START = re.compile(
+    r"(?<![A-Za-z0-9_])[A-Za-z]:[\\/]"
 )
-_POSIX_ABSOLUTE_PATH = re.compile(
-    r'''(?<![:\\/\w])/'''
-    r'''(?:[^/\s,;'"<>()\[\]{}]+/)*'''
-    r'''[^/\s,;'"<>()\[\]{}]+'''
+_POSIX_ABSOLUTE_START = re.compile(
+    r"(?<![A-Za-z0-9_./\\-])/(?=[^\s/])"
 )
+_POSIX_ROOT = re.compile(
+    r'''(?:^|(?<=[=:("'\[{,;]))/(?=$|[\s,;)\]}"'])'''
+)
+
+
+def _mask_approved_urls(value: str) -> str:
+    masked = _REDACTED_CREDENTIAL_URL.sub(
+        lambda match: " " * len(match.group()), value
+    )
+    return _HTTP_URL.sub(lambda match: " " * len(match.group()), masked)
 
 
 def _contains_absolute_path(value: str) -> bool:
+    path_candidate = _mask_approved_urls(value)
     return any(
-        pattern.search(value)
+        pattern.search(path_candidate)
         for pattern in (
-            _QUOTED_ABSOLUTE_PATH,
-            _FILE_ABSOLUTE_URI,
-            _UNC_ABSOLUTE_PATH,
-            _WINDOWS_ABSOLUTE_PATH,
-            _POSIX_ABSOLUTE_PATH,
+            _FILE_ABSOLUTE_START,
+            _UNC_ABSOLUTE_START,
+            _WINDOWS_ABSOLUTE_START,
+            _POSIX_ABSOLUTE_START,
+            _POSIX_ROOT,
         )
     )
 
@@ -47,9 +53,10 @@ def _contains_absolute_path(value: str) -> bool:
 def sanitize_output_text(value: str | None) -> str | None:
     """Redact credentials and opaque absolute paths in user-facing output."""
 
-    if value is not None and _contains_absolute_path(value):
+    redacted = redact_sensitive_text(value)
+    if redacted is not None and _contains_absolute_path(redacted):
         return "[PATH]"
-    return redact_sensitive_text(value)
+    return redacted
 
 
 def _display(value: object) -> str:

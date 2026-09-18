@@ -443,6 +443,75 @@ class CurrentStateProjectionTest(unittest.TestCase):
                     self.assertNotIn(leaked, machine)
                     self.assertNotIn(leaked, human)
 
+    def test_colon_adjacent_paths_and_roots_are_opaque_but_safe_slashes_remain(
+        self,
+    ) -> None:
+        path_cases = (
+            "location:/home/frank/private/data.csv status=PASS",
+            r"location:\\server\secret\data.csv status=PASS",
+            "root=/ status=PASS",
+            "root=file:/ status=PASS",
+            "root=C:\\ status=PASS",
+        )
+        for evidence in path_cases:
+            with self.subTest(evidence=evidence):
+                self.assertEqual(sanitize_output_text(evidence), "[PATH]")
+
+        safe_cases = (
+            "https://example.com/a/b?x=1",
+            "2026/09/18 status=PASS",
+            "division 10 / 2 remains prose",
+            "file:processed_v6/raw.parquet",
+            "dataset/prices/v1 status=PASS",
+        )
+        for evidence in safe_cases:
+            with self.subTest(safe=evidence):
+                self.assertEqual(sanitize_output_text(evidence), evidence)
+        self.assertEqual(
+            sanitize_output_text(
+                "https://url-user:url-password@example.com/a/b?x=1"
+            ),
+            "https://[REDACTED]@example.com/a/b?x=1",
+        )
+
+    def test_colon_adjacent_paths_and_roots_are_opaque_end_to_end(self) -> None:
+        self._observe(18, ({name: True for name in self.sources}, []))
+        cases = (
+            "location:/home/frank/private/data.csv status=PASS",
+            r"location:\\server\secret\data.csv status=PASS",
+            "root=/ status=PASS",
+            "root=file:/ status=PASS",
+            "root=C:\\ status=PASS",
+        )
+
+        from marketmamba.ops.__main__ import main
+        for evidence in cases:
+            with self.subTest(evidence=evidence):
+                connection = sqlite3.connect(self.db)
+                connection.execute(
+                    "UPDATE checks SET observed_value = ? "
+                    "WHERE check_name = 'freshness'",
+                    (evidence,),
+                )
+                connection.commit()
+                connection.close()
+
+                state = build_current_state(self.db)
+                machine = json.dumps(state)
+                human_stream = io.StringIO()
+                with patch("sys.stdout", human_stream):
+                    self.assertEqual(
+                        main(["current-state", "--db", str(self.db)]),
+                        0,
+                    )
+                human = human_stream.getvalue()
+
+                self.assertEqual(state["freshness"]["observed_value"], "[PATH]")
+                self.assertIn('"observed_value": "[PATH]"', machine)
+                self.assertIn("observed: [PATH]", human)
+                self.assertNotIn("status=PASS", machine)
+                self.assertNotIn("status=PASS", human)
+
     def test_projection_is_rebuildable_from_committed_ledger_only(self) -> None:
         self._observe(18, ({name: True for name in self.sources}, []))
 
