@@ -20,6 +20,7 @@ from marketmamba.ops.contracts import (
     StageRunIdentity,
 )
 from marketmamba.ops.schema import (
+    _apply_migrations,
     LATEST_SCHEMA_VERSION,
     SchemaVersionError,
     open_ledger,
@@ -164,6 +165,44 @@ class LedgerSchemaTests(unittest.TestCase):
             with self.assertRaises(SchemaVersionError):
                 open_ledger(database_path)
 
+    def test_mid_migration_ddl_failure_rolls_back_and_can_retry(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database_path = Path(temporary_directory) / "ledger.sqlite3"
+            connection = sqlite3.connect(database_path)
+
+            def deny_attempt_table(
+                action_code: int,
+                argument_one: str | None,
+                argument_two: str | None,
+                database_name: str | None,
+                trigger_name: str | None,
+            ) -> int:
+                del argument_two, database_name, trigger_name
+                if action_code == sqlite3.SQLITE_CREATE_TABLE and argument_one == "attempts":
+                    return sqlite3.SQLITE_DENY
+                return sqlite3.SQLITE_OK
+
+            connection.set_authorizer(deny_attempt_table)
+            with self.assertRaises(sqlite3.DatabaseError):
+                _apply_migrations(connection)
+            connection.set_authorizer(None)
+
+            table_names = {
+                row[0]
+                for row in connection.execute(
+                    "SELECT name FROM sqlite_master WHERE type = ?",
+                    ("table",),
+                )
+            }
+            self.assertEqual(table_names, set())
+            connection.close()
+
+            retry = open_ledger(database_path)
+            self.addCleanup(retry.close)
+            self.assertEqual(
+                retry.execute("SELECT version FROM schema_migrations").fetchone()[0],
+                LATEST_SCHEMA_VERSION,
+            )
     def test_migration_checksum_mismatch_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             database_path = Path(temporary_directory) / "ledger.sqlite3"

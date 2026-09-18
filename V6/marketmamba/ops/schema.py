@@ -146,33 +146,39 @@ def _migrations_by_version() -> dict[int, Migration]:
 
 
 def _apply_migrations(connection: sqlite3.Connection) -> None:
-    connection.execute(_SCHEMA_MIGRATIONS)
-    known_migrations = _migrations_by_version()
-    applied = dict(connection.execute("SELECT version, checksum FROM schema_migrations"))
+    connection.execute("BEGIN IMMEDIATE")
+    try:
+        connection.execute(_SCHEMA_MIGRATIONS)
+        known_migrations = _migrations_by_version()
+        applied = dict(connection.execute("SELECT version, checksum FROM schema_migrations"))
 
-    future_versions = [version for version in applied if version > LATEST_SCHEMA_VERSION]
-    if future_versions:
-        raise SchemaVersionError(
-            f"ledger schema version {max(future_versions)} is newer than supported version {LATEST_SCHEMA_VERSION}"
-        )
+        future_versions = [version for version in applied if version > LATEST_SCHEMA_VERSION]
+        if future_versions:
+            raise SchemaVersionError(
+                f"ledger schema version {max(future_versions)} is newer than supported version {LATEST_SCHEMA_VERSION}"
+            )
 
-    for version, checksum in applied.items():
-        migration = known_migrations.get(version)
-        if migration is None:
-            raise SchemaVersionError(f"ledger contains unsupported schema version {version}")
-        if checksum != migration.checksum:
-            raise SchemaVersionError(f"ledger checksum mismatch for schema version {version}")
+        for version, checksum in applied.items():
+            migration = known_migrations.get(version)
+            if migration is None:
+                raise SchemaVersionError(f"ledger contains unsupported schema version {version}")
+            if checksum != migration.checksum:
+                raise SchemaVersionError(f"ledger checksum mismatch for schema version {version}")
 
-    for migration in MIGRATIONS:
-        if migration.version in applied:
-            continue
-        with connection:
+        for migration in MIGRATIONS:
+            if migration.version in applied:
+                continue
             for statement in migration.statements:
                 connection.execute(statement)
             connection.execute(
                 "INSERT INTO schema_migrations (version, checksum, applied_at) VALUES (?, ?, ?)",
                 (migration.version, migration.checksum, _utc_iso_timestamp()),
             )
+    except Exception:
+        connection.rollback()
+        raise
+    else:
+        connection.commit()
 
 
 def open_ledger(path: str | Path) -> sqlite3.Connection:
