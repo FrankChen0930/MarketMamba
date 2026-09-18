@@ -321,6 +321,72 @@ class CurrentStateProjectionTest(unittest.TestCase):
         self.assertIn("safe=ordinary prose", machine)
         self.assertIn("https://example.com/status", machine)
 
+    def test_bounded_path_segments_and_quoted_credentials_are_fully_opaque(
+        self,
+    ) -> None:
+        self._observe(18, ({name: True for name in self.sources}, []))
+        observed = (
+            r"prefix /home/jane/Secret Folder/private file.csv suffix "
+            r"absolute=prefix file:/home/jane/Secret Folder/raw file.csv suffix "
+            r"windows=prefix C:\Users\Jane Doe\private file.csv suffix "
+            r"unc=prefix \\server\secret share\private file.csv suffix "
+            r"status=PASS relative=file:processed_v6/raw.parquet"
+        )
+        threshold = (
+            r'''authorization="Basic auth-one auth-two" '''
+            r'''access_token='access-one access-two' '''
+            r'''client_secret="client-one \"client-two\" client-three" '''
+            r'''AWS_SECRET_ACCESS_KEY='aws-one \'aws-two\' aws-three' '''
+            "safe=https://example.com/status"
+        )
+        connection = sqlite3.connect(self.db)
+        connection.execute(
+            "UPDATE checks SET observed_value = ?, threshold_value = ? "
+            "WHERE check_name = 'freshness'",
+            (observed, threshold),
+        )
+        connection.commit()
+        connection.close()
+
+        state = build_current_state(self.db)
+        machine = json.dumps(state)
+        from marketmamba.ops.__main__ import main
+        human_stream = io.StringIO()
+        with patch("sys.stdout", human_stream):
+            self.assertEqual(main(["current-state", "--db", str(self.db)]), 0)
+        human = human_stream.getvalue()
+
+        for sensitive_fragment in (
+            "prefix",
+            "suffix",
+            "/home/jane",
+            "Secret Folder",
+            "Jane Doe",
+            "secret share",
+            "private file.csv",
+            "auth-one",
+            "auth-two",
+            "access-one",
+            "access-two",
+            "client-one",
+            "client-two",
+            "client-three",
+            "aws-one",
+            "aws-two",
+            "aws-three",
+        ):
+            self.assertNotIn(sensitive_fragment, machine)
+            self.assertNotIn(sensitive_fragment, human)
+        for safe_fragment in (
+            "status=PASS",
+            "file:processed_v6/raw.parquet",
+            "https://example.com/status",
+        ):
+            self.assertIn(safe_fragment, machine)
+            self.assertIn(safe_fragment, human)
+        self.assertGreaterEqual(machine.count("[PATH]"), 4)
+        self.assertGreaterEqual(machine.count("[REDACTED]"), 4)
+
     def test_projection_is_rebuildable_from_committed_ledger_only(self) -> None:
         self._observe(18, ({name: True for name in self.sources}, []))
 

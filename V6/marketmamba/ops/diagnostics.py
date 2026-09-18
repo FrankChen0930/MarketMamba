@@ -62,8 +62,13 @@ def _redact_bounded_path_values(value: str) -> str:
     if not assignments:
         return "[PATH]" if _contains_absolute_path(value) else value
 
-    parts: list[str] = []
-    cursor = 0
+    prefix = value[: assignments[0].start()]
+    parts = [
+        _opaque_preserving_edge_space(prefix)
+        if _contains_absolute_path(prefix)
+        else prefix
+    ]
+    cursor = assignments[0].start()
     for index, assignment in enumerate(assignments):
         parts.append(value[cursor : assignment.end()])
         value_end = (

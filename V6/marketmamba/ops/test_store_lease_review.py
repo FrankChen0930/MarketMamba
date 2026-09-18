@@ -149,6 +149,45 @@ class RedactionRegressionTests(ReviewStoreTestCase):
         self.assertIn("ftp://[REDACTED]@example.test/data", redacted)
         self.assertIn("postgresql://[REDACTED]@db.test/market", redacted)
         self.assertIn("safe=https://example.com/status", redacted)
+
+    def test_equals_quoted_credentials_are_fully_redacted_before_db_write(
+        self,
+    ) -> None:
+        evidence = (
+            r'''authorization="Basic auth-one auth-two" '''
+            r'''access_token='access-one access-two' '''
+            r'''client_secret="client-one \"client-two\" client-three" '''
+            r'''AWS_SECRET_ACCESS_KEY='aws-one \'aws-two\' aws-three' '''
+            "safe=https://example.com/status "
+            "relative=file:processed_v6/raw.parquet"
+        )
+
+        attempt = self.store.start_attempt(
+            self.logical_run_id,
+            lease=self.lease,
+            host=evidence,
+            now=T0,
+        )
+        persisted = self.connection.execute(
+            "SELECT host FROM attempts WHERE attempt_id = ?",
+            (attempt.attempt_id,),
+        ).fetchone()[0]
+
+        for secret_fragment in (
+            "auth-one",
+            "auth-two",
+            "access-one",
+            "access-two",
+            "client-one",
+            "client-two",
+            "client-three",
+            "aws-one",
+            "aws-two",
+            "aws-three",
+        ):
+            self.assertNotIn(secret_fragment, persisted)
+        self.assertEqual(persisted.count("[REDACTED]"), 4)
+        self.assertIn("safe=https://example.com/status", persisted)
     def test_url_userinfo_is_fully_redacted_without_changing_host_or_path(
         self,
     ) -> None:

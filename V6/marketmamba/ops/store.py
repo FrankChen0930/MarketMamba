@@ -55,7 +55,7 @@ _KEY_VALUE_SECRET = re.compile(
 _QUOTED_KEY_SECRET = re.compile(
     r"""(?i)(["']?(?:authorization|password|passwd|access[_-]?token|"""
     r"""client[_-]?secret|aws[_-]?secret[_-]?access[_-]?key|token|"""
-    r"""api[_-]?key|secret)["']?\s*:\s*)"""
+    r"""api[_-]?key|secret)["']?\s*[=:]\s*)"""
     r"""(?P<quote>["'])(?:\\.|(?!(?P=quote)).)*(?P=quote)"""
 )
 _URL_USERINFO_SECRET = re.compile(
