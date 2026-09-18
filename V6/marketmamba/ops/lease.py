@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 import sqlite3
-from typing import Iterator
+from typing import Callable, Iterator
 
 
 class LeaseConflictError(RuntimeError):
@@ -34,6 +34,9 @@ def _require_utc(value: datetime | None) -> datetime:
         raise ValueError("lease timestamps must be timezone-aware")
     return timestamp.astimezone(timezone.utc)
 
+def _read_clock(now: datetime | None, clock: Callable[[], datetime]) -> datetime:
+    return _require_utc(now if now is not None else clock())
+
 
 def _timestamp(value: datetime | None) -> str:
     return _require_utc(value).isoformat(timespec="microseconds").replace("+00:00", "Z")
@@ -56,11 +59,10 @@ def immediate_transaction(connection: sqlite3.Connection) -> Iterator[None]:
     connection.execute("BEGIN IMMEDIATE")
     try:
         yield
-    except Exception:
+        connection.commit()
+    except BaseException:
         connection.rollback()
         raise
-    else:
-        connection.commit()
 
 
 def acquire_lease(
@@ -70,17 +72,18 @@ def acquire_lease(
     *,
     now: datetime | None = None,
     ttl: timedelta,
+    clock: Callable[[], datetime] = _utc_now,
 ) -> LeaseHandle:
     """Acquire a new or expired lease, incrementing its persistent fence."""
 
     _validate_name(lease_name, "lease_name")
     _validate_name(owner_id, "owner_id")
     _validate_ttl(ttl)
-    current = _require_utc(now)
-    heartbeat_at = _timestamp(current)
-    expires_at = _timestamp(current + ttl)
 
     with immediate_transaction(connection):
+        current = _read_clock(now, clock)
+        heartbeat_at = _timestamp(current)
+        expires_at = _timestamp(current + ttl)
         row = connection.execute(
             "SELECT owner_id, expires_at, fencing_token FROM leases WHERE lease_name = ?",
             (lease_name,),
@@ -146,14 +149,15 @@ def heartbeat_lease(
     *,
     now: datetime | None = None,
     ttl: timedelta,
+    clock: Callable[[], datetime] = _utc_now,
 ) -> None:
     """Extend only the exact active holder represented by the lease handle."""
 
     _validate_ttl(ttl)
-    current = _require_utc(now)
-    heartbeat_at = _timestamp(current)
-    expires_at = _timestamp(current + ttl)
     with immediate_transaction(connection):
+        current = _read_clock(now, clock)
+        heartbeat_at = _timestamp(current)
+        expires_at = _timestamp(current + ttl)
         validate_lease(connection, lease, now=current)
         cursor = connection.execute(
             "UPDATE leases SET heartbeat_at = ?, expires_at = ? "
@@ -177,12 +181,13 @@ def release_lease(
     lease: LeaseHandle,
     *,
     now: datetime | None = None,
+    clock: Callable[[], datetime] = _utc_now,
 ) -> None:
     """Expire an active lease without deleting or resetting its fence."""
 
-    current = _require_utc(now)
-    released_at = _timestamp(current)
     with immediate_transaction(connection):
+        current = _read_clock(now, clock)
+        released_at = _timestamp(current)
         validate_lease(connection, lease, now=current)
         cursor = connection.execute(
             "UPDATE leases SET heartbeat_at = ?, expires_at = ? "

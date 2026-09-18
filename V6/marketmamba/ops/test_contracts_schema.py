@@ -113,6 +113,7 @@ class LedgerSchemaTests(unittest.TestCase):
                     "attempts",
                     "stage_runs",
                     "artifacts",
+                    "stage_artifacts",
                     "checks",
                     "leases",
                 },

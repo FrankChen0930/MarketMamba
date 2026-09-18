@@ -110,6 +110,14 @@ MIGRATIONS = (
             )
             """,
             """
+            CREATE TABLE stage_artifacts (
+                stage_run_id TEXT NOT NULL REFERENCES stage_runs(stage_run_id) ON DELETE RESTRICT,
+                artifact_id TEXT NOT NULL REFERENCES artifacts(artifact_id) ON DELETE RESTRICT,
+                created_at TEXT NOT NULL,
+                PRIMARY KEY (stage_run_id, artifact_id)
+            )
+            """,
+            """
             CREATE TABLE checks (
                 check_id TEXT PRIMARY KEY,
                 logical_run_id TEXT NOT NULL REFERENCES logical_runs(logical_run_id) ON DELETE RESTRICT,

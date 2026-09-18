@@ -29,6 +29,10 @@ class TerminalStateError(LedgerStateError):
     """Raised when code attempts to rewrite an immutable terminal record."""
 
 
+class ArtifactConflictError(LedgerStateError):
+    """Raised when an artifact identity conflicts with immutable stored data."""
+
+
 _HEADER_SECRET = re.compile(
     r"(?im)\b(authorization|proxy-authorization|x-api-key|api-key)\s*:\s*[^\r\n]+"
 )
@@ -40,6 +44,12 @@ _QUERY_SECRET = re.compile(
 _KEY_VALUE_SECRET = re.compile(
     r"(?i)\b(password|passwd|token|api[_-]?key|secret)\s*[=:]\s*[^\s&,;]+"
 )
+_QUOTED_KEY_SECRET = re.compile(
+    r"""(?i)(["']?(?:authorization|password|passwd|token|api[_-]?key|secret)["']?\s*:\s*)"""
+    r"""(?P<quote>["'])(.*?)(?P=quote)"""
+)
+_URL_USERINFO_SECRET = re.compile(r"(?i)(https?://[^/\s:@]+:)([^@\s/]+)(@)")
+
 
 
 def redact_sensitive_text(value: str | None) -> str | None:
@@ -50,6 +60,17 @@ def redact_sensitive_text(value: str | None) -> str | None:
     if not isinstance(value, str):
         raise TypeError("persisted text must be a string or None")
     redacted = _HEADER_SECRET.sub(lambda match: f"{match.group(1)}: [REDACTED]", value)
+    redacted = _URL_USERINFO_SECRET.sub(
+        lambda match: f"{match.group(1)}[REDACTED]{match.group(3)}",
+        redacted,
+    )
+    redacted = _QUOTED_KEY_SECRET.sub(
+        lambda match: (
+            f"{match.group(1)}{match.group('quote')}"
+            f"[REDACTED]{match.group('quote')}"
+        ),
+        redacted,
+    )
     redacted = _BEARER_SECRET.sub("Bearer [REDACTED]", redacted)
     redacted = _TELEGRAM_SECRET.sub("[REDACTED]", redacted)
     redacted = _QUERY_SECRET.sub(
@@ -341,24 +362,49 @@ class LedgerStore:
                 identity_sha256 = hashlib.sha256(
                     artifact.identity.canonical_key.encode("utf-8")
                 ).hexdigest()
+                immutable_values = (
+                    artifact.identity.artifact_type,
+                    identity_sha256,
+                    artifact.identity.content_sha256,
+                    artifact.identity.schema_version,
+                    artifact.identity.schema_sha256,
+                    redact_sensitive_text(artifact.uri),
+                    artifact.byte_size,
+                    int(artifact.complete),
+                )
+                existing = self.connection.execute(
+                    "SELECT artifact_type, identity_sha256, content_sha256, "
+                    "schema_version, schema_sha256, uri, byte_size, complete "
+                    "FROM artifacts WHERE artifact_id = ?",
+                    (artifact.identity.artifact_id,),
+                ).fetchone()
+                if existing is None:
+                    self.connection.execute(
+                        "INSERT INTO artifacts "
+                        "(artifact_id, logical_run_id, stage_run_id, artifact_type, "
+                        "identity_sha256, content_sha256, schema_version, schema_sha256, "
+                        "uri, byte_size, complete, created_at) "
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        (
+                            artifact.identity.artifact_id,
+                            logical_run_id,
+                            stage_run_id,
+                            *immutable_values,
+                            timestamp,
+                        ),
+                    )
+                elif existing != immutable_values:
+                    raise ArtifactConflictError(
+                        "artifact identity conflicts with immutable stored data: "
+                        f"{artifact.identity.artifact_id}"
+                    )
+
                 self.connection.execute(
-                    "INSERT INTO artifacts "
-                    "(artifact_id, logical_run_id, stage_run_id, artifact_type, "
-                    "identity_sha256, content_sha256, schema_version, schema_sha256, "
-                    "uri, byte_size, complete, created_at) "
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO stage_artifacts "
+                    "(stage_run_id, artifact_id, created_at) VALUES (?, ?, ?)",
                     (
-                        artifact.identity.artifact_id,
-                        logical_run_id,
                         stage_run_id,
-                        artifact.identity.artifact_type,
-                        identity_sha256,
-                        artifact.identity.content_sha256,
-                        artifact.identity.schema_version,
-                        artifact.identity.schema_sha256,
-                        redact_sensitive_text(artifact.uri),
-                        artifact.byte_size,
-                        int(artifact.complete),
+                        artifact.identity.artifact_id,
                         timestamp,
                     ),
                 )
