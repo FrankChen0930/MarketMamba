@@ -46,10 +46,11 @@ class StoreTestCase(unittest.TestCase):
         self.store = LedgerStore(self.connection)
         self.logical = LogicalRunIdentity(requested_date=date(2026, 9, 17))
 
-    def start_attempt_and_stage(self) -> tuple[str, str]:
+    def start_attempt_and_stage(self, lease) -> tuple[str, str]:
         logical_run_id = self.store.open_logical_run(self.logical, now=T0)
         attempt = self.store.start_attempt(
             logical_run_id,
+            lease=lease,
             host="host-a",
             process_id=101,
             code_identity="commit-a",
@@ -78,7 +79,9 @@ class TransactionalStoreTests(StoreTestCase):
     def test_retry_same_logical_run_adds_attempt_without_rewriting_history(self) -> None:
         logical_run_id = self.store.open_logical_run(self.logical, now=T0)
         lease = self.acquire()
-        first = self.store.start_attempt(logical_run_id, host="host-a", now=T0)
+        first = self.store.start_attempt(
+            logical_run_id, lease=lease, host="host-a", now=T0
+        )
         self.store.finish_attempt(
             first.attempt_id,
             RunState.FAILED,
@@ -90,6 +93,7 @@ class TransactionalStoreTests(StoreTestCase):
         second = self.store.start_attempt(
             logical_run_id,
             host="host-b",
+            lease=lease,
             now=T0 + timedelta(minutes=2),
         )
 
@@ -109,7 +113,9 @@ class TransactionalStoreTests(StoreTestCase):
     def test_terminal_logical_run_reopens_for_new_attempt_without_history_rewrite(self) -> None:
         logical_run_id = self.store.open_logical_run(self.logical, now=T0)
         lease = self.acquire()
-        first = self.store.start_attempt(logical_run_id, host="host-a", now=T0)
+        first = self.store.start_attempt(
+            logical_run_id, lease=lease, host="host-a", now=T0
+        )
         self.store.finish_attempt(
             first.attempt_id,
             RunState.FAILED,
@@ -131,6 +137,7 @@ class TransactionalStoreTests(StoreTestCase):
             logical_run_id,
             host="host-b",
             now=T0 + timedelta(minutes=2),
+            lease=lease,
         )
 
         self.assertEqual(second.attempt_number, 2)
@@ -148,9 +155,73 @@ class TransactionalStoreTests(StoreTestCase):
             [(1, "FAILED", "host-a", 1), (2, "RUNNING", "host-b", None)],
         )
 
-    def test_terminal_attempt_logical_run_and_stage_are_immutable(self) -> None:
-        attempt_id, stage_run_id = self.start_attempt_and_stage()
+    def test_stale_holder_cannot_allocate_attempt_or_reopen_logical_run(self) -> None:
+        logical_run_id = self.store.open_logical_run(self.logical, now=T0)
+        old = self.acquire()
+        second_connection = open_ledger(self.database_path)
+        self.addCleanup(second_connection.close)
+        current = acquire_lease(
+            second_connection,
+            "daily-fetch",
+            "owner-b",
+            now=T0 + timedelta(minutes=6),
+            ttl=timedelta(minutes=5),
+        )
+
+        with self.assertRaises(StaleFenceError):
+            self.store.start_attempt(
+                logical_run_id,
+                lease=old,
+                host="stale-host",
+                now=T0 + timedelta(minutes=6),
+            )
+
+        self.assertEqual(
+            self.connection.execute("SELECT COUNT(*) FROM attempts").fetchone()[0],
+            0,
+        )
+        self.assertEqual(
+            self.connection.execute(
+                "SELECT state FROM logical_runs WHERE logical_run_id = ?",
+                (logical_run_id,),
+            ).fetchone()[0],
+            "PENDING",
+        )
+        attempt = LedgerStore(second_connection).start_attempt(
+            logical_run_id,
+            lease=current,
+            host="current-host",
+            now=T0 + timedelta(minutes=6),
+        )
+        self.assertEqual(attempt.attempt_number, 1)
+
+    def test_attempt_and_logical_terminal_states_reject_skipped(self) -> None:
+        logical_run_id = self.store.open_logical_run(self.logical, now=T0)
         lease = self.acquire()
+        attempt = self.store.start_attempt(
+            logical_run_id,
+            lease=lease,
+            now=T0,
+        )
+
+        with self.assertRaisesRegex(ValueError, "attempt"):
+            self.store.finish_attempt(
+                attempt.attempt_id,
+                RunState.SKIPPED,
+                lease=lease,
+                now=T0 + timedelta(seconds=1),
+            )
+        with self.assertRaisesRegex(ValueError, "logical"):
+            self.store.finish_logical_run(
+                logical_run_id,
+                RunState.SKIPPED,
+                lease=lease,
+                now=T0 + timedelta(seconds=1),
+            )
+
+    def test_terminal_attempt_logical_run_and_stage_are_immutable(self) -> None:
+        lease = self.acquire()
+        attempt_id, stage_run_id = self.start_attempt_and_stage(lease)
         self.store.commit_stage(
             stage_run_id,
             RunState.SUCCEEDED,
@@ -196,8 +267,8 @@ class TransactionalStoreTests(StoreTestCase):
             )
 
     def test_terminal_stage_commits_artifacts_checks_and_status_atomically(self) -> None:
-        _, stage_run_id = self.start_attempt_and_stage()
         lease = self.acquire()
+        _, stage_run_id = self.start_attempt_and_stage(lease)
         artifact_identity = ArtifactIdentity(
             artifact_type="raw_snapshot",
             content_sha256="b" * 64,
@@ -251,8 +322,8 @@ class TransactionalStoreTests(StoreTestCase):
         )
 
     def test_failed_artifact_insert_rolls_back_entire_terminal_commit(self) -> None:
-        _, stage_run_id = self.start_attempt_and_stage()
         lease = self.acquire()
+        _, stage_run_id = self.start_attempt_and_stage(lease)
         valid = ArtifactIdentity("raw_snapshot", "b" * 64, "v1", "a" * 64)
         invalid = ArtifactIdentity("raw_snapshot_2", "c" * 64, "v1", "a" * 64)
 
@@ -290,8 +361,10 @@ class TransactionalStoreTests(StoreTestCase):
             "password=hunter2"
         )
         logical_run_id = self.store.open_logical_run(self.logical, now=T0)
+        lease = self.acquire()
         attempt = self.store.start_attempt(
             logical_run_id,
+            lease=lease,
             host=secret_blob,
             code_identity=secret_blob,
             dependency_identity=secret_blob,
@@ -305,7 +378,6 @@ class TransactionalStoreTests(StoreTestCase):
         )
         attempt_id = attempt.attempt_id
         stage_run_id = stage.stage_run_id
-        lease = self.acquire()
         artifact = ArtifactIdentity("error_evidence", "b" * 64, "v1", "a" * 64)
         check = CheckIdentity(stage_run_id, "provider_error")
 
@@ -434,8 +506,8 @@ class LeaseFencingTests(StoreTestCase):
         )
 
     def test_old_holder_cannot_heartbeat_finalize_attempt_or_commit_stage(self) -> None:
-        attempt_id, stage_run_id = self.start_attempt_and_stage()
         old = self.acquire("owner-a")
+        attempt_id, stage_run_id = self.start_attempt_and_stage(old)
         current = acquire_lease(
             self.connection,
             "daily-fetch",

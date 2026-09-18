@@ -50,6 +50,7 @@ class ReviewStoreTestCase(unittest.TestCase):
     ) -> tuple[str, str]:
         attempt = self.store.start_attempt(
             self.logical_run_id,
+            lease=self.lease,
             host="host-a",
             now=attempt_time,
         )
@@ -86,6 +87,7 @@ class RedactionRegressionTests(ReviewStoreTestCase):
 
         attempt = self.store.start_attempt(
             self.logical_run_id,
+            lease=self.lease,
             host=json_evidence,
             code_identity=mapping_evidence,
             dependency_identity=credential_url,
@@ -122,6 +124,7 @@ class RedactionRegressionTests(ReviewStoreTestCase):
 
         attempt = self.store.start_attempt(
             self.logical_run_id,
+            lease=self.lease,
             host=user_password_url,
             code_identity=token_only_url,
             dependency_identity=normal_url,
@@ -157,6 +160,7 @@ class RedactionRegressionTests(ReviewStoreTestCase):
 
         attempt = self.store.start_attempt(
             self.logical_run_id,
+            lease=self.lease,
             host=escaped_json,
             now=T0,
         )

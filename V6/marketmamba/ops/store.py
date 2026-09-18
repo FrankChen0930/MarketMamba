@@ -92,9 +92,20 @@ def _utc_timestamp(value: datetime | None) -> str:
     ).replace("+00:00", "Z")
 
 
-def _require_terminal(state: RunState) -> None:
+def _require_stage_terminal(state: RunState) -> None:
     if not isinstance(state, RunState) or not state.is_terminal:
-        raise ValueError("terminal state must be SUCCEEDED, FAILED, or CANCELLED")
+        raise ValueError("stage terminal state must be terminal")
+
+
+def _require_run_terminal(state: RunState, entity: str) -> None:
+    if not isinstance(state, RunState) or state not in {
+        RunState.SUCCEEDED,
+        RunState.FAILED,
+        RunState.CANCELLED,
+    }:
+        raise ValueError(
+            f"{entity} terminal state must be SUCCEEDED, FAILED, or CANCELLED"
+        )
 
 
 def _raise_if_terminal(entity: str, state: str) -> None:
@@ -169,14 +180,18 @@ class LedgerStore:
         self,
         logical_run_id: str,
         *,
+        lease: LeaseHandle,
         host: str | None = None,
         process_id: int | None = None,
         code_identity: str | None = None,
         dependency_identity: str | None = None,
         now: datetime | None = None,
     ) -> AttemptIdentity:
-        timestamp = _utc_timestamp(now)
+        """Allocate an attempt only while holding the current live lease fence."""
+
         with immediate_transaction(self.connection):
+            validate_lease(self.connection, lease, now=now)
+            timestamp = _utc_timestamp(now)
             row = self.connection.execute(
                 "SELECT state FROM logical_runs WHERE logical_run_id = ?",
                 (logical_run_id,),
@@ -225,7 +240,7 @@ class LedgerStore:
         incident_ref: str | None = None,
         now: datetime | None = None,
     ) -> None:
-        _require_terminal(state)
+        _require_run_terminal(state, "attempt")
         timestamp = _utc_timestamp(now)
         with immediate_transaction(self.connection):
             validate_lease(self.connection, lease, now=now)
@@ -263,7 +278,7 @@ class LedgerStore:
         incident_ref: str | None = None,
         now: datetime | None = None,
     ) -> None:
-        _require_terminal(state)
+        _require_run_terminal(state, "logical run")
         timestamp = _utc_timestamp(now)
         with immediate_transaction(self.connection):
             validate_lease(self.connection, lease, now=now)
@@ -333,7 +348,7 @@ class LedgerStore:
         incident_ref: str | None = None,
         now: datetime | None = None,
     ) -> None:
-        _require_terminal(state)
+        _require_stage_terminal(state)
         timestamp = _utc_timestamp(now)
         artifact_rows = tuple(artifacts)
         check_rows = tuple(checks)

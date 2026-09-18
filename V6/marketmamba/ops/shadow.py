@@ -169,6 +169,7 @@ def _start_session(
         logical_run_id = store.open_logical_run(logical)
         attempt = store.start_attempt(
             logical_run_id,
+            lease=lease,
             host=socket.gethostname(),
             process_id=os.getpid(),
             code_identity="v62-fetch-only-shadow-phase-a",
