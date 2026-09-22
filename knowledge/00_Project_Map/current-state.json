@@ -225,12 +225,13 @@
   "worktree_register": "knowledge/00_Project_Map/Worktree_Register.md",
   "repository_rationalization": {
     "phase": "3B-1",
-    "status": "SOURCE_CANONICALIZATION_IN_PROGRESS_NO_ARTIFACT_CLEANUP",
+    "status": "SOURCE_CANONICALIZATION_COMPLETED_NO_ARTIFACT_CLEANUP",
     "observed_at": "2026-09-22",
     "report_manifest": "D:\\Desktop\\work\\project-audit\\market-mamba\\repository-rationalization\\MANIFEST.md",
-    "next_stage": "RECONCILE_HISTORICAL_NOTES_AND_BRANCH_INTEGRATION_MANIFEST",
+    "next_stage": "PHASE_3B2_SELECTIVE_BRANCH_INTEGRATION_REVIEW_NOT_STARTED",
     "historical_source_register": "research/v7/historical-local-source-register-20260922.md",
     "historical_notes_register": "research/v7/historical-notes-register-20260922.md",
+    "phase3b1_report_manifest": "D:\\Desktop\\work\\project-audit\\market-mamba\\phase3b-source-cleanup\\MANIFEST.md",
     "authority_change": false
   }
 }
