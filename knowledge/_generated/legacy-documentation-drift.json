@@ -12,14 +12,14 @@
       "claim_id": "LEGACY_ARCHITECTURE_CURRENT",
       "document": "README.md",
       "excerpt": "各組投影後 Concat → d_model=256",
-      "line": 85,
+      "line": 95,
       "severity": "WARNING"
     },
     {
       "claim_id": "LEGACY_FEATURE_COUNT",
       "document": "README.md",
       "excerpt": "**特徵維度**：56 維（個人實盤主線，不含相對強度特徵）／59 維（多模型並行線，多納入 RS_5d/RS_20d/RS_60d 相對強度特徵，總體環境維度以 mask 方式歸零——消融實驗證實總體環境因子在橫斷面排序上等同每日常數、拿掉後訊號品質反而顯著上升）。",
-      "line": 113,
+      "line": 123,
       "severity": "WARNING"
     },
     {

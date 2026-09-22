@@ -1,3 +1,13 @@
+# MarketMamba — 專案導航（2026-09-22）
+
+目前狀態以 [Current State](knowledge/00_Project_Map/Current_State.md) 為準；文件或 branch 衝突時依 [Authority Map](knowledge/00_Project_Map/Authority_Map.md) 判定。下方介紹含歷史架構與目標，不代表今天的排程、研究 gate 或部署狀態。
+
+- **研究參照：**corrected `E5-PIT-Clean-v1`（48 features，無 graph／industry neutralization）。E1 rolling-origin refresh 的兩 seed historical-simulation experiment 已完成，結論 `PASS_REFRESH_HYPOTHESIS`；strict Phase 0 仍為 `STOP`，verified executable labels 為 0。詳細 contract/result authority 見 Current State/Authority Map。
+- **運行邊界：**最近的 2026-09-22 Scheduler observation 指向獨立 Windows checkout 的 V6.2 `--fetch-only`。WSL development main、Colab 訓練與 live frontend/backend 是不同 authority；live deployment revision 仍 `UNKNOWN`。
+- **歷史與交付：**[deliveries 索引](deliveries/README.md)、[資料目錄說明](Data/README.md)、[V7 historical source register](research/v7/historical-local-source-register-20260922.md)。舊 `V7-Experiments-20260914` 與 `V7-Colab-20260911` runbook 保留為歷史，不是目前訓練指令。
+
+---
+
 # MarketMamba — 深度學習驅動的台股量化投資系統
 
 > **Mamba SSM + GATv2 知識圖譜 · 每日全市場 Alpha 推論 · 系統性多模型驗證框架**
