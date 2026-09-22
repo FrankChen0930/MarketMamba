@@ -207,7 +207,9 @@ class LifecycleCheckpointAdapter:
   value["total_seconds"]=value["train_seconds"]+value["validation_seconds"]+value["checkpoint_seconds"]
   value["updates_per_second"]=value["updates"]/max(value["train_seconds"],1e-12)
   self._telemetry=self._empty_telemetry()
-  self._last_step=0; self._last_validation=0
+  # Step is global across epochs.  Resetting it made the next epoch report all
+  # prior updates again; validation_index, in contrast, restarts every epoch.
+  self._last_validation=0
   self._wall=time.perf_counter(); self._cpu=time.process_time()
   return value
 

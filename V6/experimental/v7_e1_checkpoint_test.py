@@ -54,5 +54,12 @@ class E1CheckpointTest(unittest.TestCase):
  def test_terminal_and_phase_must_agree(self):
   with self.assertRaises(ValueError):
    self.state(1,phase="finished",terminal=False)
+ def test_epoch_snapshot_does_not_recount_prior_updates(self):
+  adapter=LifecycleCheckpointAdapter(self.store)
+  base={"epoch":0,"batch":1,"step":10,"phase":"train","terminal":False,
+        "model_state":{},"optimizer_state":{},"scheduler_state":{},"rng_state":{}}
+  adapter.save(dict(base)); self.assertEqual(adapter.snapshot_epoch()["updates"],10)
+  base.update(epoch=1,batch=1,step=12)
+  adapter.save(dict(base)); self.assertEqual(adapter.snapshot_epoch()["updates"],2)
 
 if __name__=="__main__": unittest.main()

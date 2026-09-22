@@ -340,7 +340,7 @@
       "test_evidence": "33 focused CPU tests PASS on main 2026-09-22; no training/GPU"
     },
     {
-      "authority_status": "MAIN_RESEARCH_SOURCE_ONLY",
+      "authority_status": "SUPERSEDED_BY_RECOVERY_BLOB",
       "branch": "feature/v7-e1-rolling-origin-refresh",
       "byte_identical": true,
       "destination": "V6/experimental/v7_e1_checkpoint.py",
@@ -350,10 +350,12 @@
       "source_commit": "044eef73712d2189d4e0e28e3d44b352eed6b5e3",
       "source_path": "V6/experimental/v7_e1_checkpoint.py",
       "source_sha256": "98dd8f65c8f563575fd175bd3998ad408f9ff2b021c0c32ac03797b91214200e",
-      "test_evidence": "22 focused CPU tests PASS on main 2026-09-22; one synthetic one-step smoke only; no full training/GPU"
+      "test_evidence": "22 focused CPU tests PASS on main 2026-09-22; one synthetic one-step smoke only; no full training/GPU",
+      "superseded_by_source_commit": "0f06e368fe73b6a5e5cd80f87d1c5ec2fb2da97d",
+      "superseded_by_source_blob_sha": "0b657ee57b79398fca7c9c7985d16dbc5217756e"
     },
     {
-      "authority_status": "MAIN_RESEARCH_SOURCE_ONLY",
+      "authority_status": "SUPERSEDED_BY_RECOVERY_BLOB",
       "branch": "feature/v7-e1-rolling-origin-refresh",
       "byte_identical": true,
       "destination": "V6/experimental/v7_e1_checkpoint_test.py",
@@ -363,7 +365,9 @@
       "source_commit": "044eef73712d2189d4e0e28e3d44b352eed6b5e3",
       "source_path": "V6/experimental/v7_e1_checkpoint_test.py",
       "source_sha256": "d828175937631aa7367cbd8327af28f9be0dfa2aebfd04f23708fcdeae4b7448",
-      "test_evidence": "22 focused CPU tests PASS on main 2026-09-22; one synthetic one-step smoke only; no full training/GPU"
+      "test_evidence": "22 focused CPU tests PASS on main 2026-09-22; one synthetic one-step smoke only; no full training/GPU",
+      "superseded_by_source_commit": "0f06e368fe73b6a5e5cd80f87d1c5ec2fb2da97d",
+      "superseded_by_source_blob_sha": "0c4769b2f19b0cb495a33c47c86a6e9cabcd5716"
     },
     {
       "authority_status": "MAIN_RESEARCH_SOURCE_ONLY",
@@ -507,6 +511,58 @@
       "source_path": "research/v7/corrected-e5-diagnostic-v2/next-experiment-decision.json",
       "source_sha256": "e16e420d3b5483d93991bdff264564271f81e2b09115e446edfe1d2b734c1de2",
       "test_evidence": "22 focused CPU tests PASS on main 2026-09-22; one synthetic one-step smoke only; no full training/GPU"
+    },
+    {
+      "authority_status": "MAIN_RESEARCH_SOURCE_ONLY",
+      "branch": "fix/v7-e1-colab-recovery",
+      "byte_identical": true,
+      "destination": "V6/experimental/v7_e1_colab_runtime.py",
+      "modifications": "none",
+      "semantic_role": "reusable research implementation or focused test",
+      "source_blob_sha": "6a31613417f49a425fca25f2cf40802975029cf7",
+      "source_commit": "0f06e368fe73b6a5e5cd80f87d1c5ec2fb2da97d",
+      "source_path": "V6/experimental/v7_e1_colab_runtime.py",
+      "source_sha256": "d82ce7fdd09c790845a0e161e88bc726af737e13a5228769aae80fe233953cec",
+      "test_evidence": "27 focused CPU tests PASS on main 2026-09-22 including E1 regression and one synthetic one-step smoke; no full training/GPU"
+    },
+    {
+      "authority_status": "MAIN_RESEARCH_SOURCE_ONLY",
+      "branch": "fix/v7-e1-colab-recovery",
+      "byte_identical": true,
+      "destination": "V6/experimental/v7_e1_colab_runtime_test.py",
+      "modifications": "none",
+      "semantic_role": "reusable research implementation or focused test",
+      "source_blob_sha": "00d08a6ee109075d44793c337c6de30a511ef997",
+      "source_commit": "0f06e368fe73b6a5e5cd80f87d1c5ec2fb2da97d",
+      "source_path": "V6/experimental/v7_e1_colab_runtime_test.py",
+      "source_sha256": "339416444ed3ff84f3dcc0ccd6195278fc9565e7dbf85b96852d1a7cda8832e3",
+      "test_evidence": "27 focused CPU tests PASS on main 2026-09-22 including E1 regression and one synthetic one-step smoke; no full training/GPU"
+    },
+    {
+      "authority_status": "MAIN_RESEARCH_SOURCE_ONLY",
+      "branch": "fix/v7-e1-colab-recovery",
+      "byte_identical": true,
+      "destination": "V6/experimental/v7_e1_checkpoint.py",
+      "modifications": "none",
+      "semantic_role": "reusable research implementation or focused test",
+      "source_blob_sha": "0b657ee57b79398fca7c9c7985d16dbc5217756e",
+      "source_commit": "0f06e368fe73b6a5e5cd80f87d1c5ec2fb2da97d",
+      "source_path": "V6/experimental/v7_e1_checkpoint.py",
+      "source_sha256": "f83b47fc1c09fc0060278556570aeda66ced300535f003b8767f5ab9dbf395dc",
+      "test_evidence": "27 focused CPU tests PASS on main 2026-09-22 including E1 regression and one synthetic one-step smoke; no full training/GPU"
+    },
+    {
+      "authority_status": "MAIN_RESEARCH_SOURCE_ONLY",
+      "branch": "fix/v7-e1-colab-recovery",
+      "byte_identical": true,
+      "destination": "V6/experimental/v7_e1_checkpoint_test.py",
+      "modifications": "none",
+      "semantic_role": "reusable research implementation or focused test",
+      "source_blob_sha": "0c4769b2f19b0cb495a33c47c86a6e9cabcd5716",
+      "source_commit": "0f06e368fe73b6a5e5cd80f87d1c5ec2fb2da97d",
+      "source_path": "V6/experimental/v7_e1_checkpoint_test.py",
+      "source_sha256": "ada7d014d03e85a4b4872a9a09776fd05700a984f9aba0f4025ae20330b0be7a",
+      "test_evidence": "27 focused CPU tests PASS on main 2026-09-22 including E1 regression and one synthetic one-step smoke; no full training/GPU"
     }
   ],
   "observed_at": "2026-09-22",
