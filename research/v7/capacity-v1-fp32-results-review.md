@@ -1,5 +1,7 @@
 # V7 capacity-v1-fp32 實驗結果檢查
 
+> **DATED HISTORICAL NOTE.** This 2026-09 research/design record is preserved for provenance. Its proposed work, environment and conclusions do not override the current project map or frozen corrected E5/E1 contracts.
+
 六組皆 complete，共 109 輪。已核對 summary、result、history 和最佳 checkpoint；18 個 manifest 引用（含重複引用）全部 SHA256 通過。最佳權重內的設定、seed=17、FP32 及驗證分數吻合。未修改下載的實驗資料。
 
 ## 同一個最佳 5 日 checkpoint 的比較

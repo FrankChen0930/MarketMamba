@@ -1,5 +1,7 @@
 # V7 完整實作進度規劃
 
+> **HISTORICAL TASK SNAPSHOT — 2026-09-15.** Preserve this local variant and its branch counterparts as provenance. It is not the active project plan or permission to resume old work. Use canonical Current State, Authority Map and current task authorization.
+
 更新：2026-09-15。這是同一項工作的擴充規劃，依使用者最新要求，供新對話直接執行。
 入口：[交接摘要](next-conversation-handoff.md)；需求依據：[產品架構對齊](../research/v7/product-architecture-alignment.md)；進度唯一清單：[todo.md](todo.md)。
 使用者已確認方向並要求新對話按計畫實作。例行實作、驗證與交付不再逐檔詢問；新的產品取捨、額外付費訓練批次及MAS精確批准邊界仍按實際需要處理。

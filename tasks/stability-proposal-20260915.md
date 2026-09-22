@@ -1,5 +1,7 @@
 # 歷史提案：已併入plan.md的P1/P4/P5
 
+> **DATED HISTORICAL NOTE.** This 2026-09 research/design record is preserved for provenance. Its proposed work, environment and conclusions do not override the current project map or frozen corrected E5/E1 contracts.
+
 以下狀態與暫停文字是當時記錄，不代表目前禁止實作。
 
 # V7 下一階段規劃：時間穩定性與預測目標

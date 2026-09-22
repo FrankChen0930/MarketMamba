@@ -1,4 +1,6 @@
 # V7 實作進度
+
+> **HISTORICAL TASK SNAPSHOT — 2026-09-15.** Preserve this local variant and its branch counterparts as provenance. It is not the active project plan or permission to resume old work. Use canonical Current State, Authority Map and current task authorization.
 更新2026-09-15。唯一主計畫：[plan.md](plan.md)。新對話由P0開始，優先交付P1。
 原A/B/C/D均保留並映射到P1/P4/P5，未完成項不被當成完成。P0/P1 已交付；下一步是使用者在 Colab 執行 R1 的 A/B。
 

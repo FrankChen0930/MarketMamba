@@ -1,5 +1,7 @@
 # V7 P0 接手盤點
 
+> **DATED HISTORICAL NOTE.** This 2026-09 research/design record is preserved for provenance. Its proposed work, environment and conclusions do not override the current project map or frozen corrected E5/E1 contracts.
+
 日期：2026-09-15。工作區：`/home/frank/projects/MarketMamba`；分支 `main`；HEAD `6cde79c6f9e9e192ba9a4f57c8deaa83e7817e69`。工作樹原有 README 修改與大量未追蹤 V7 程式／研究文件，均保留；未 reset、clean、stash 或重建空專案。
 
 ## Runtime 與測試

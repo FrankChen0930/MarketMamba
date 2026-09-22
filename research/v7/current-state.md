@@ -1,10 +1,12 @@
 # MarketMamba V7 — Current State
 
+> **HISTORICAL SNAPSHOT — 2026-09-10; SUPERSEDED AS CURRENT AUTHORITY.** The canonical live state is `knowledge/00_Project_Map/Current_State.md`, with conflicts decided by `Authority_Map.md`. All “current” claims below describe the old snapshot and must not direct present research or operations.
+
 _Last updated: 2026-09-10_
 
 ## 0. Purpose
 
-This file is the canonical short-form handoff for the current MarketMamba V7 research / implementation state.
+This file was the short-form handoff for the MarketMamba V7 research / implementation state on 2026-09-10.
 
 It does **not** replace:
 

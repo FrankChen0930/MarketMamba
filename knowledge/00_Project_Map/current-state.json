@@ -230,6 +230,7 @@
     "report_manifest": "D:\\Desktop\\work\\project-audit\\market-mamba\\repository-rationalization\\MANIFEST.md",
     "next_stage": "RECONCILE_HISTORICAL_NOTES_AND_BRANCH_INTEGRATION_MANIFEST",
     "historical_source_register": "research/v7/historical-local-source-register-20260922.md",
+    "historical_notes_register": "research/v7/historical-notes-register-20260922.md",
     "authority_change": false
   }
 }

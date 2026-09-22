@@ -1,5 +1,7 @@
 # V7 產品與整體架構對齊草案
 
+> **DATED HISTORICAL NOTE.** This 2026-09 research/design record is preserved for provenance. Its proposed work, environment and conclusions do not override the current project map or frozen corrected E5/E1 contracts.
+
 日期：2026-09-15。狀態：主要用途與第一版輸出已確認；組合參數仍待研究。用途：先對齊最終產出，再決定資料、模型、組合實驗。這次只整理文件，不改訓練或正式服務。
 
 ## 1. 建議的一句話定位

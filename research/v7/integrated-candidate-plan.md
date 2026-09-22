@@ -1,5 +1,7 @@
 # MarketMamba V7 integrated candidate
 
+> **DATED HISTORICAL NOTE.** This 2026-09 research/design record is preserved for provenance. Its proposed work, environment and conclusions do not override the current project map or frozen corrected E5/E1 contracts.
+
 Status: isolated candidate preparation. It is not an H1 result, measured performance, or an architecture promotion.
 
 ## Candidate and fixed protocol

@@ -1,5 +1,7 @@
 # Colab runbook: V7 integrated candidate
 
+> **DATED HISTORICAL NOTE.** This 2026-09 research/design record is preserved for provenance. Its proposed work, environment and conclusions do not override the current project map or frozen corrected E5/E1 contracts.
+
 Every command below is an explicit future Colab action. Local synthetic SSD tests and diagnostic preparation are integration checks, not official Mamba-2, GPU, H1, performance, or architecture-promotion evidence.
 
 ## 0. Mount Drive, deliver the approved source, and install base dependencies

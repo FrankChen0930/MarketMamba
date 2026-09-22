@@ -1,4 +1,6 @@
 # MarketMamba V7 新對話交接
+
+> **HISTORICAL TASK SNAPSHOT — 2026-09-15.** Preserve this local variant and its branch counterparts as provenance. It is not the active project plan or permission to resume old work. Use canonical Current State, Authority Map and current task authorization.
 更新：2026-09-15。請先讀本檔、tasks/plan.md、tasks/todo.md，再針對正在執行的階段讀程式。不要把全部歷史文件塞進上下文。
 使用者要求建立新對話並按計畫直接實作，模型指定GPT 5.6 sol；不要另用GPT 6。此交接不是要求再問一輪是否開始。
 

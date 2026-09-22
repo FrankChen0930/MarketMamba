@@ -1,5 +1,7 @@
 # V7 研究輸出契約 v1
 
+> **DATED HISTORICAL NOTE.** This 2026-09 research/design record is preserved for provenance. Its proposed work, environment and conclusions do not override the current project map or frozen corrected E5/E1 contracts.
+
 日期：2026-09-15。此契約供逐日排名、研究報告與模擬組合共同讀取；排序分數不是報酬率或上漲機率。
 
 ## 逐日預測列

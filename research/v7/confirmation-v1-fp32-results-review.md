@@ -1,5 +1,7 @@
 # confirmation-v1-fp32 實驗結果檢視
 
+> **DATED HISTORICAL NOTE.** This 2026-09 research/design record is preserved for provenance. Its proposed work, environment and conclusions do not override the current project map or frozen corrected E5/E1 contracts.
+
 日期：2026-09-15。來源：deliveries/confirmation-v1-fp32；seed17 淺模型沿用 capacity-v1-fp32。
 
 ## 結論

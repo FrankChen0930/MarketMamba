@@ -1,4 +1,6 @@
 # V7 下一階段：訓練效率、實驗控制與模型容量
+
+> **DATED HISTORICAL NOTE.** This 2026-09 research/design record is preserved for provenance. Its proposed work, environment and conclusions do not override the current project map or frozen corrected E5/E1 contracts.
 日期：2026-09-13 計畫；2026-09-14 更新交付狀態。
 **新實驗入口已完成本機功能驗證**：[操作說明](../../deliveries/V7-Experiments-20260914/README.md)。
 70 項回歸測試通過；實際交付 ZIP 在 RTX 3060、官方 SSD/GAT 上，FP32 與 BF16 各六組小樣本流程完成，含停止／續跑與完成跳過。

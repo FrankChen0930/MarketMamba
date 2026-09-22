@@ -555,6 +555,23 @@
       "conflicts": [
         "Source preservation is not result validation or architecture promotion"
       ]
+    },
+    {
+      "topic": "Dated V7 research/task notes",
+      "primary_authority": "research/v7/historical-notes-register-20260922.md",
+      "authority_class": "HISTORICAL_ONLY",
+      "status": "PRESERVED_SUPERSEDED_AS_CURRENT_STATE",
+      "supersedes": [
+        "research/v7/current-state.md as live current state",
+        "tasks/plan.md and tasks/todo.md as active instructions"
+      ],
+      "secondary_evidence": [
+        "original notes commit f7e959f",
+        "branch-local plan/todo blob IDs in notes register"
+      ],
+      "conflicts": [
+        "Old paths retained for Phase 0 historical references; current decisions use canonical Current State and frozen contracts"
+      ]
     }
   ]
 }

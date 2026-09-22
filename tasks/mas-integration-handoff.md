@@ -1,5 +1,7 @@
 # Market Mamba 使用 MAS：接入與故障交接
 
+> **HISTORICAL TASK SNAPSHOT — 2026-09-15.** Preserve this local variant and its branch counterparts as provenance. It is not the active project plan or permission to resume old work. Use canonical Current State, Authority Map and current task authorization.
+
 ## 固定入口
 共用交接目錄：/mnt/c/Users/Master/.codex/visualizations/2026/09/13/01a09bc5-6a7e-70f2-bfc8-f99cc83f00e4/mas-coordination
 接收對象以該目錄 routing.json 的 mas_maintenance_thread_id 為準。Market Mamba 新對話 ID 尚未知；由該對話第一次接入時登記於自己的 registration 檔，再通知 MAS 接收對話核對並更新 routing。不要靠標題猜 ID。
