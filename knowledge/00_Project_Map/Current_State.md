@@ -93,7 +93,7 @@ Runtime observations are not permanent facts. The new Scheduler observation expi
 ## Delivery/UI State
 
 - Tracked FastAPI and React legacy delivery surfaces exist; live deployment and deployed revision remain `UNKNOWN` because public endpoint queries were inaccessible and provider dashboards were not accessed.
-- Local V7 status API/UI additions in the main worktree: `UNMERGED_CANDIDATE`, not authority.
+- V7 status API/UI source is `COMMITTED_NOT_DEPLOYED` in the WSL development main checkout. The public API projects only the summary schema/state/decision/data ID/time/counts; original health artifacts remain local research evidence. This source commit does not change Windows operational checkout or live deployment authority.
 - V7 status design is read-only and fail-closed, but live behavior is `UNKNOWN`.
 
 ## Active Blockers

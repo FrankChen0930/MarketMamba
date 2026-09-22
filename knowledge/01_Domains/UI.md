@@ -4,7 +4,7 @@
 
 - Status: `CANONICAL_DOMAIN_NOTE_WITH_UNKNOWN`
 - Owner: MarketMamba maintainers
-- Last reviewed: 2026-09-20
+- Last reviewed: 2026-09-22
 - Authority topics: API/UI code boundary, deployment uncertainty, publication safety
 - Update triggers: API/frontend contract, deployment observation, or publication-path change
 
@@ -18,7 +18,7 @@ The repository contains a FastAPI backend at `app/backend/main.py` and a React f
 
 ## Authority
 
-Checked-in code establishes capability. Deployment requires timestamped runtime or platform evidence. Untracked local V7 UI candidates are `UNMERGED_CANDIDATE`, not project truth.
+Checked-in code establishes capability. The V7 data-health status source is `COMMITTED_NOT_DEPLOYED` in WSL development main. Deployment requires timestamped runtime or platform evidence; live revision remains `UNKNOWN`.
 
 ## Inputs
 
@@ -30,7 +30,7 @@ API responses and user-facing visualizations only when a verified publication/de
 
 ## Current Implementation
 
-The current tree exposes legacy application entry points. The production audit proposes atomic publication and a V7 paper/shadow surface, but no deployed V7 UI is established.
+The current tree exposes legacy application entry points and an additive read-only `GET /api/v7/status` route with `/v7/status` page. It reads a versioned local health summary and projects only public state, decision, identifier, timestamp and counts. It does not publish predictions or establish a deployed V7 UI. The production audit separately proposes atomic publication and a V7 paper/shadow surface.
 
 ## Evidence Classes
 
@@ -52,18 +52,20 @@ Existing app code must not automatically display corrected V7 research output. A
 
 ## Known Limitations
 
-API/UI live status, hosting, authentication, freshness behavior, and V7 integration are unknown from current authoritative evidence.
+API/UI live status, hosting, authentication and deployed V7 integration remain unknown. The local status page has no verified live freshness observation.
 
 ## Do Not Use / Do Not Mix
 
-- Do not cite untracked local candidates as merged functionality.
+- Do not cite committed development source as deployed functionality.
 - Do not expose simulated labels as verified/tradable signals.
 - Do not infer deployment from local dev configuration.
 
 ## Important Paths
 
 - Backend: `app/backend/main.py`
+- V7 status API: `app/backend/routers/v7.py`
 - Frontend: `app/frontend/src/App.jsx`
+- V7 status page/contract: `app/frontend/src/pages/V7Status.jsx`, `app/frontend/src/api/v7Contract.mjs`
 - Target architecture: `docs/production-system-architecture-audit@9efed7b`
 
 ## Related Domains

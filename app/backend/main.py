@@ -9,7 +9,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import signals, performance, market, portfolio, reports, fin_news, sim, quant, dual, v62
+from routers import signals, performance, market, portfolio, reports, fin_news, sim, quant, dual, v62, v7
 
 
 app = FastAPI(
@@ -52,6 +52,7 @@ app.include_router(sim.router,         prefix="/api")
 app.include_router(quant.router,       prefix="/api")
 app.include_router(dual.router,        prefix="/api")
 app.include_router(v62.router,         prefix="/api")   # V6.2 組合層（附加，不動既有）
+app.include_router(v7.router,          prefix="/api")
 
 
 

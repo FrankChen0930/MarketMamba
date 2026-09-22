@@ -143,7 +143,7 @@
   "delivery": {
     "legacy_api_ui": "PARTIALLY_ACTIVE_SOURCE_PRESENT",
     "live_deployment": "UNKNOWN",
-    "v7_status_candidate": "UNMERGED_CANDIDATE"
+    "v7_status_candidate": "COMMITTED_NOT_DEPLOYED_IN_WSL_DEVELOPMENT_MAIN"
   },
   "knowledge_governance": {
     "status": "ACTIVE",

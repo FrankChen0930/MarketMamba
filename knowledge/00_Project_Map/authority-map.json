@@ -423,7 +423,25 @@
       ]
     },
     {
-      "topic": "API/UI",
+      "topic": "V7 status API/UI source",
+      "primary_authority": "app/backend/routers/v7.py",
+      "authority_class": "CURRENT_REFERENCE",
+      "status": "COMMITTED_NOT_DEPLOYED",
+      "supersedes": [
+        "local untracked V7 status candidate"
+      ],
+      "secondary_evidence": [
+        "V6/experimental/v7_health_summary.py",
+        "app/frontend/src/pages/V7Status.jsx",
+        "app/frontend/src/api/v7Contract.mjs",
+        "app/backend/test_v7.py"
+      ],
+      "conflicts": [
+        "No live deployment authority from source commit"
+      ]
+    },
+    {
+      "topic": "API/UI live deployment",
       "primary_authority": null,
       "authority_class": "UNKNOWN",
       "status": "LIVE_DEPLOYMENT_UNKNOWN",
@@ -431,7 +449,7 @@
       "secondary_evidence": [
         "app/backend/main.py",
         "app/frontend/src/App.jsx",
-        "local untracked V7 candidates"
+        "committed V7 status source"
       ],
       "conflicts": [
         "Source presence does not prove deployment"

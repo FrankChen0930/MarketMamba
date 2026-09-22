@@ -7,6 +7,7 @@ import QuantAnalysis from './pages/QuantAnalysis';
 import MarketView   from './pages/MarketView';
 import Pipeline      from './pages/Pipeline';
 import Research      from './pages/Research';
+import V7Status       from './pages/V7Status';
 
 // 高信念量化模型 /conviction/*
 import ConvictionLayout      from './pages/ConvictionLayout';
@@ -66,6 +67,7 @@ function App() {
             <Route path="dual"    element={<DualSignals />} />
           </Route>
 
+          <Route path="v7/status" element={<V7Status />} />
           <Route path="compare"  element={<CompareBoard />} />
           <Route path="quant"    element={<QuantAnalysis />} />
           <Route path="market"   element={<MarketView />} />
