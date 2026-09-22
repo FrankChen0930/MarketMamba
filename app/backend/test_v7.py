@@ -6,6 +6,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+import httpx
 from fastapi import FastAPI
 from app.backend.routers import v7
 
@@ -15,10 +16,14 @@ class V7StatusApiTest(unittest.TestCase):
         app = FastAPI()
         app.include_router(v7.router, prefix="/api")
         self.assertIn("/api/v7/status", [route.path for route in app.routes])
-        result = asyncio.run(v7.status())
-        if isinstance(result, dict):
-            return 200, result
-        return result.status_code, json.loads(result.body)
+
+        async def request():
+            transport = httpx.ASGITransport(app=app)
+            async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+                response = await client.get("/api/v7/status")
+                return response.status_code, response.json()
+
+        return asyncio.run(request())
 
     def test_missing_publication_is_not_ready(self):
         with tempfile.TemporaryDirectory() as directory, patch.dict(
