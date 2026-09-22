@@ -111,11 +111,11 @@ Runtime observations are not permanent facts. The new Scheduler observation expi
 1. Recover the identity-matched E1 matrix and safe checkpoint replay, then predeclare causal regime series. Do not launch another training experiment until diagnostic limitations are resolved.
 2. Review Phase A Task 4 sanitizer evidence before any merge/deployment decision.
 3. Maintain K1 domain notes and drift checks in the same change when domain semantics, authority, or boundaries change.
-4. Use the consolidated K2 Current State, Authority Map and knowledge-impact checks. Keep the K0/K1/K2 worktrees until their artifact/merge dependencies and safe-removal conditions are reviewed; do not begin K3 automatically.
+4. Use the consolidated K2 Current State, Authority Map and knowledge-impact checks. K0/K1/K2 branch history is retained without active checkouts; do not begin K3 automatically.
 
 ## Active worktree boundary
 
-Eight linked worktrees were observed on 2026-09-22; their branch, purpose, authority and retirement preconditions are recorded in [Worktree Register](Worktree_Register.md). Branch-local research/ops results remain branch-qualified even after governance adoption. The main worktree retains unrelated dirty and untracked user changes.
+Four research/operations linked worktrees remain after the authorized K0/K1/K2 checkout retirement on 2026-09-22. Their branch, purpose and authority are recorded in [Worktree Register](Worktree_Register.md). The four K branches remain as historical lineage without active checkouts. Branch-local research/ops results remain branch-qualified; development main was clean after the retirement commit.
 
 ## Repository Rationalization Inventory
 
@@ -141,3 +141,7 @@ No knowledge update is normally required for formatting, comments, pure refactor
 ## Phase 3B-2 selective source integration (2026-09-22)
 
 Development main now contains the reusable corrected PIT primitives, corrected E5 research core, formal E1 research core and frozen contract copies, plus the E1 telemetry correction and reusable Colab log wrapper. The [source adoption register](../../research/v7/source-adoption-register-20260922.json) records source commits, blobs, destinations and test evidence. This is research source authority in main, **not** result, portfolio, operational, Colab run or deployment promotion. The old 32/8 baseline draft remains branch-qualified; the accepted E5/E1 architecture is 64/32. E1 historical-simulation `PASS_REFRESH_HYPOTHESIS` and strict Phase 0 `STOP` remain unchanged. E1 postrun diagnostics remain active; Phase A Task 4 approval and Task 5 acceptance remain open. Eight worktrees were inspected and retained; no branch/worktree/artifact was removed. Windows operational checkout, Scheduler and deployment were not changed; no push.
+
+## Phase 3B-3A governance checkout retirement (2026-09-22)
+
+The four authorized K0/K1/K2 governance checkouts were removed using normal Git worktree removal after clean-state, ignored-file, branch-history and path-dependency checks. Their branch refs and commits remain as `HISTORICAL_LINEAGE / NO_ACTIVE_CHECKOUT`; the four E1/Phase A worktrees remain present. Details and local bytecode disposition are in [Worktree Register](Worktree_Register.md). No research artifact, branch, Windows operational checkout, deployment or scheduler was changed; no push.

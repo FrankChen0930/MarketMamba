@@ -491,14 +491,15 @@
       "topic": "Worktree responsibility",
       "primary_authority": "knowledge/00_Project_Map/Worktree_Register.md",
       "authority_class": "CURRENT_REFERENCE",
-      "status": "EIGHT_OBSERVED_2026_09_22",
+      "status": "FOUR_ACTIVE_K_BRANCH_HISTORY_RETAINED_2026_09_22",
       "supersedes": [],
       "secondary_evidence": [
         "Git worktree list",
-        "branch HEAD/status"
+        "branch HEAD/status",
+        "four K checkout retirement validation 2026-09-22; branch refs preserved"
       ],
       "conflicts": [
-        "Registration is not removal authorization"
+        "K branches are historical lineage without active checkout; four E1/Phase A worktrees remain and are not retirement-authorized"
       ]
     },
     {

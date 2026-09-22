@@ -179,7 +179,7 @@
   "next_decisions": [
     "Recover the identity-matched E1 matrix, establish safe checkpoint replay, and predeclare causal regime evidence before deciding a new training experiment.",
     "Review Phase A sanitizer evidence before merge or deployment.",
-    "Use consolidated K2 governance in main; keep K0/K1/K2 worktrees until dependencies and safe-removal conditions are reviewed; do not begin K3 automatically."
+    "Use consolidated K2 governance in main; retain K0/K1/K2 branch history without active checkouts; do not begin K3 automatically."
   ],
   "authorities": [
     "knowledge/00_Project_Map/Authority_Map.md",
@@ -257,5 +257,19 @@
     "production_unchanged": true,
     "windows_checkout_unchanged": true,
     "pushed": false
+  },
+  "governance_worktree_retirement": {
+    "observed_at": "2026-09-22T14:59:55+08:00",
+    "checkout_state": "FOUR_K_CHECKOUTS_REMOVED_NORMAL_GIT_WORKTREE_REMOVE",
+    "historical_branches_preserved": [
+      "docs/project-knowledge-k0-discovery@c802f52",
+      "docs/project-knowledge-k1-bootstrap@31dd74a",
+      "docs/project-knowledge-k1-domains@2c6c6f3",
+      "integration/project-knowledge-k1@18152d0"
+    ],
+    "remaining_linked_worktrees": 4,
+    "research_and_operations_worktrees_untouched": true,
+    "pushed": false,
+    "observation_time_precision": "session interval; exact per-removal timestamps not captured"
   }
 }
