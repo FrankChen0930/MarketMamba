@@ -271,5 +271,22 @@
     "research_and_operations_worktrees_untouched": true,
     "pushed": false,
     "observation_time_precision": "session interval; exact per-removal timestamps not captured"
+  },
+  "storage_audit": {
+    "phase": "3C",
+    "observed_at": "2026-09-22",
+    "status": "READ_ONLY_COMPLETED_NO_DELETION",
+    "report_manifest": "D:\\Desktop\\work\\project-audit\\market-mamba\\storage-audit\\MANIFEST.md",
+    "low_risk_future_candidate": "frontend node_modules and dist; 187062450 logical bytes; separate cleanup authorization required",
+    "protected": [
+      "D: operational processed_v6 raw parquet and cache_v6 ticker universe",
+      "baseline caches without exact historical rebuild",
+      "dated D: processed_v6 ZIPs without verified external backup",
+      "E1 formal bundle, predictions, checkpoints and results",
+      "V7 label/provenance snapshots and prepared cache",
+      "active recovery worktree .venv"
+    ],
+    "next_action": "No destructive action from this audit; review evidence-backed generated frontend cleanup in a separately authorized pass; resolve baseline/archive/venv evidence gaps before any large removal",
+    "pushed": false
   }
 }
