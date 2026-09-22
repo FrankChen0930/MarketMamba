@@ -86,7 +86,7 @@ def main() -> int:
             fail(f"important local path missing: {local}")
     require_phrases("Labels", ("Strict Phase 0 is `STOP`", "5d=`0`, 10d=`0`", "Historical-simulation readiness is separately `PASS`"))
     require_phrases("Models", ("Seed 43 is incomplete", "correlation about `0.9983`"))
-    require_phrases("Production", ("fetch-only", "2026-09-27", "`UNKNOWN`"))
+    require_phrases("Production", ("fetch-only", "seven-day TTL", "STALE_OBSERVATION", "`UNKNOWN`"))
     require_phrases("Operations", ("Task 4", "correctness approval is not established", "Task 5 has not started"))
     print(json.dumps({
         "status": "PASS",

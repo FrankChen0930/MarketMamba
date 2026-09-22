@@ -39,6 +39,20 @@
         "research/v7/e1-postrun-diagnostic-v1/diagnostic-summary.json",
         "research/v7/e1-postrun-diagnostic-v1/monthly-comparison.json"
       ]
+    },
+    {
+      "topic": "Scheduler state",
+      "old_authority": "knowledge/runtime-observations/scheduler.json (observed 2026-09-20T01:30:00+08:00)",
+      "new_authority": "knowledge/runtime-observations/scheduler-20260922T132135+0800.json",
+      "changed_at": "2026-09-22T13:21:35+08:00",
+      "change_commit": "git commit containing this event (git log -1 -- knowledge/_generated/authority-history.json)",
+      "reason": "Read-only live Task Scheduler query confirms fetch-only enabled, full V6.2 disabled, last run/result and exact action; older observation retained.",
+      "evidence": [
+        "knowledge/runtime-observations/scheduler-20260922T132135+0800.json",
+        "knowledge/runtime-observations/operational-path-20260922T132521+0800.json",
+        "D: V6/logs/scheduler.log",
+        "D: V6/logs/v62_daily.log"
+      ]
     }
   ]
 }

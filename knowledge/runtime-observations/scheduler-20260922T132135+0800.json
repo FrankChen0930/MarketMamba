@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "observation_id": "windows-scheduler-20260922T132135-plus0800",
+  "topic": "Windows Scheduler",
+  "observed_at": "2026-09-22T13:21:35+08:00",
+  "ttl_days": 7,
+  "actor": "Phase 2 runtime reconciliation",
+  "method": "Read-only Get-ScheduledTask and Get-ScheduledTaskInfo via Windows PowerShell from WSL",
+  "evidence_ref": "D:\\Desktop\\work\\project-audit\\market-mamba\\runtime-reconciliation\\01_WINDOWS_SCHEDULER.md",
+  "supersedes_observation_id": "windows-scheduler-20260920T013000+0800",
+  "source": "Windows Task Scheduler on LAPTOP-65TMJ5CL",
+  "command": "Get-ScheduledTask filtered by MarketMamba task name/path/action; Get-ScheduledTaskInfo for each matching task",
+  "result_summary": "MarketMamba_DataFetch enabled Ready; wscript.exe invokes run_hidden.vbs and v62_daily.bat --fetch-only; last run 2026-09-21 22:30 +08:00, result 0. MarketMamba_V62 disabled; last result 255 on 2026-08-25.",
+  "limitation": "Task result is corroborated by local logs, but this observation does not prove a future run or any remote deployment.",
+  "value": {
+    "fetch_only_task": {
+      "name": "MarketMamba_DataFetch",
+      "task_path": "\\",
+      "state": "Ready",
+      "enabled": true,
+      "execute": "wscript.exe",
+      "arguments": "\"D:\\Desktop\\work\\ProjectForMe\\MarketMamba\\V6\\scripts\\run_hidden.vbs\" \"D:\\Desktop\\work\\ProjectForMe\\MarketMamba\\V6\\scripts\\v62_daily.bat\" --fetch-only",
+      "working_directory": null,
+      "principal": "Master",
+      "logon_type": "Interactive",
+      "run_level": "Limited",
+      "trigger": "Monday-Friday 22:30 Asia/Taipei",
+      "last_run_time": "2026-09-21T22:30:00+08:00",
+      "last_task_result": 0,
+      "next_run_time": "2026-09-22T22:30:00+08:00",
+      "missed_runs": 0,
+      "multiple_instances": "IgnoreNew"
+    },
+    "full_v62_task": {
+      "name": "MarketMamba_V62",
+      "state": "Disabled",
+      "enabled": false,
+      "execute": "wscript.exe",
+      "arguments": "\"D:\\Desktop\\work\\ProjectForMe\\MarketMamba\\V6\\scripts\\run_hidden.vbs\" \"D:\\Desktop\\work\\ProjectForMe\\MarketMamba\\V6\\scripts\\v62_daily.bat\"",
+      "last_run_time": "2026-08-25T22:15:00+08:00",
+      "last_task_result": 255,
+      "missed_runs": 19
+    },
+    "matching_task_count": 2
+  },
+  "confidence": "HIGH"
+}

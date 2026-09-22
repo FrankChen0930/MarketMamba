@@ -4,7 +4,7 @@
   "owner": "Human + project agents",
   "human_review": {
     "accepted_at": "2026-09-20",
-    "context": "Seed43 and Phase A review findings reconciled; accepted as current navigation authority."
+    "context": "Prior research/Phase A map accepted 2026-09-20; new runtime additions are agent-observed 2026-09-22 and not separately human-reviewed."
   },
   "hierarchy": [
     "versioned machine contracts, manifests, hashes, and executable tests",
@@ -69,32 +69,71 @@
     },
     {
       "topic": "Production runtime",
-      "primary_authority": "V6/run_v62_daily.py + timestamped scheduler action",
+      "primary_authority": "V6/run_v62_daily.py + knowledge/runtime-observations/scheduler-20260922T132135+0800.json",
       "authority_class": "CURRENT_REFERENCE",
       "status": "FETCH_ONLY_ACTIVE_FULL_PATH_DISABLED",
       "supersedes": [
         "README full-daily inference implication"
       ],
       "secondary_evidence": [
-        "V6/scripts/v62_daily.bat"
+        "V6/scripts/v62_daily.bat",
+        "knowledge/runtime-observations/operational-path-20260922T132521+0800.json"
       ],
       "conflicts": [
-        "Code capability does not equal active schedule"
+        "Scheduler executes the D: checkout at 8b82a68, not the WSL development checkout at 3b0df0f"
       ]
     },
     {
       "topic": "Scheduler state",
-      "primary_authority": "external:Windows Task Scheduler observation@2026-09-20T01:30:00+08:00",
+      "primary_authority": "knowledge/runtime-observations/scheduler-20260922T132135+0800.json",
       "authority_class": "RUNTIME_OBSERVATION",
-      "status": "ACTIVE_FETCH_ONLY_FULL_V62_DISABLED",
+      "status": "ACTIVE_FETCH_ONLY_FULL_V62_DISABLED_LAST_RESULT_0_2026_09_21",
       "supersedes": [
+        "knowledge/runtime-observations/scheduler.json",
         "older scheduler snapshots"
       ],
       "secondary_evidence": [
-        "research/project-knowledge/k0/runtime-map.json"
+        "research/project-knowledge/k0/runtime-map.json",
+        "D: V6/logs/scheduler.log",
+        "D: V6/logs/v62_daily.log"
       ],
       "conflicts": [
-        "Expires to STALE_OBSERVATION after seven days"
+        "Expires to STALE_OBSERVATION after 2026-09-29T13:21:35+08:00"
+      ]
+    },
+    {
+      "topic": "Operational checkout and WSL environment",
+      "primary_authority": "knowledge/runtime-observations/operational-path-20260922T132521+0800.json",
+      "authority_class": "RUNTIME_OBSERVATION",
+      "status": "WINDOWS_8B82A68_UBUNTU_MAMBA_ENV",
+      "supersedes": [
+        "assumption that WSL-native development checkout is scheduled"
+      ],
+      "secondary_evidence": [
+        "D: V6/scripts/v62_daily.bat",
+        "wsl.exe --list --verbose",
+        "git status/log on both checkouts"
+      ],
+      "conflicts": [
+        "Ubuntu and Ubuntu-24.04 are distinct registered distros"
+      ]
+    },
+    {
+      "topic": "Operational data root and freshness",
+      "primary_authority": "knowledge/runtime-observations/operational-path-20260922T132521+0800.json",
+      "authority_class": "RUNTIME_OBSERVATION",
+      "status": "D_DRIVE_PHYSICAL_10_OF_10_DAILY_DATES_2026_09_21",
+      "supersedes": [
+        "mtime-only freshness",
+        "guessed path equivalence"
+      ],
+      "secondary_evidence": [
+        "Data/processed_v6 symlink realpath",
+        "Parquet row-group statistics",
+        "D: V6/logs/v62_daily.log"
+      ],
+      "conflicts": [
+        "Date completeness is not full data validity; stock-universe delta warning remains"
       ]
     },
     {

@@ -4,7 +4,7 @@
 
 - Status: `CANONICAL_DOMAIN_NOTE_WITH_UNKNOWN`
 - Owner: MarketMamba maintainers
-- Last reviewed: 2026-09-20
+- Last reviewed: 2026-09-22
 - Authority topics: observed scheduling, production boundary, deployment status
 - Update triggers: scheduler observation, deployment, runtime ownership, or promotion change
 
@@ -14,7 +14,7 @@ State what is actually operating today and keep that separate from available cod
 
 ## Current Boundary
 
-The latest recorded observation (2026-09-20 01:30 Asia/Taipei) found the Windows task `MarketMamba_DataFetch` active and invoking `V6/scripts/v62_daily.bat --fetch-only`. The full V6.2 daily flow exists for manual use but its full schedule is disabled. V7 remains research/shadow work, not a promoted production trading system.
+The latest recorded observation (2026-09-22 13:21 Asia/Taipei) found the Windows task `MarketMamba_DataFetch` enabled and invoking D: `V6/scripts/v62_daily.bat --fetch-only` via `wscript.exe`/`run_hidden.vbs`. The batch uses `wsl -d Ubuntu`, `mamba_env`, and the D: checkout. Last run was 2026-09-21 22:30 with Task result 0, corroborated by the 22:39 fetch-only exit=0 log. The full V6.2 schedule is disabled. V7 remains research/shadow work, not a promoted production trading system.
 
 ## Authority
 
@@ -30,12 +30,12 @@ Fetched data and, only in manually invoked legacy flows, downstream V6.2 process
 
 ## Current Implementation
 
-- Observed active: fetch-only task.
+- Observed active: fetch-only task, Windows checkout `main@8b82a68`; WSL development `main@3b0df0f` is a distinct checkout at observation time.
 - Available but not actively scheduled: full V6.2 daily pipeline in `V6/run_v62_daily.py`.
 - Research/shadow only: Phase A ledger work and corrected V7 experiments.
 - API/UI deployment: `UNKNOWN`.
 
-Runtime observations have a seven-day TTL and expire on 2026-09-27 01:30 Asia/Taipei. After that, readers must emit `STALE_OBSERVATION` rather than assume the scheduler is unchanged.
+Runtime observations have a seven-day TTL; the new Scheduler observation expires on 2026-09-29 13:21 Asia/Taipei. After that, readers must emit `STALE_OBSERVATION` rather than assume the scheduler is unchanged. Ten daily Parquet date maxima reached 2026-09-21, but the log stock-universe delta warning prevents calling the data fully validated. Live API/UI deployment remains `UNKNOWN`.
 
 ## Evidence Classes
 

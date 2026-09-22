@@ -6,12 +6,12 @@
 
 | Field | Value |
 |---|---|
-| `observed_at` | `2026-09-20T02:45:00+08:00` |
+| `observed_at` | `2026-09-22T13:25:21+08:00` for this runtime reconciliation; individual observations retain their own timestamps |
 | `owner` | Human + project agents |
-| Repository context | `main` at governance consolidation; K0/K1/K2 lineage adopted from `integration/project-knowledge-k1`, E1 admission from `research/v7-e1-postrun-diagnostics` |
-| State updated | `2026-09-22`; this is a documentation review date, **not** a new scheduler observation |
-| Source basis | Reviewed K0 discovery, versioned machine contracts, named branch implementations, and timestamped scheduler observation |
-| Human review | Accepted `2026-09-20`; seed43 forensic and Phase A task wording reconciled; K1 domain navigation added without changing technical authority |
+| Repository context | WSL development `main@3b0df0f` at observation; Windows operational `main@8b82a68`; research authority remains branch-qualified |
+| State updated | `2026-09-22`; new Scheduler observation at `2026-09-22T13:21:35+08:00` |
+| Source basis | Reviewed K0/contracts plus [new Scheduler observation](../runtime-observations/scheduler-20260922T132135+0800.json) and [operational path observation](../runtime-observations/operational-path-20260922T132521+0800.json) |
+| Human review | Prior research/Phase A scope accepted `2026-09-20`; the new 2026-09-22 runtime observations are agent-observed and have not received separate human review |
 | Runtime freshness | External scheduler/deployment observations expire after 7 days and become `STALE_OBSERVATION`; they are retained until re-observed |
 | Repository freshness | Contracts do not expire by time; commit identity or explicit supersession changes them |
 
@@ -25,7 +25,7 @@ MarketMamba contains separate production-data, legacy model runtime, V7 correctn
 
 ## Knowledge Layers
 
-Canonical development/research checkout is WSL-native `/home/frank/projects/MarketMamba`; existing Windows scheduler/data boundary is `D:\Desktop\work\ProjectForMe\MarketMamba`. `MARKETMAMBA_DATA_ROOT` and `Data/` symlink realpaths must be checked per runtime. Colab is a separate locked training environment. The live Windows task/action has **not** been reconciled on 2026-09-22; the 2026-09-20 observation remains the most recent recorded one.
+Canonical development/research checkout is WSL-native `/home/frank/projects/MarketMamba` in the distro named `Ubuntu-24.04` (`3b0df0f` at observation). Windows Scheduler invokes the separate D: checkout `D:\Desktop\work\ProjectForMe\MarketMamba` (`8b82a68`, clean) through the distro named `Ubuntu`, not the development checkout. Both distros report Ubuntu 24.04, but they are distinct registrations. The batch activates `mamba_env` with `/home/frank/miniconda3/etc/profile.d/conda.sh` and uses Python 3.11.15 at `/home/frank/miniconda3/envs/mamba_env/bin/python`. Windows operational `Data/processed_v6` is the D: physical directory; the development checkout symlink resolves there. The read-only interactive query shell in `Ubuntu` had `MARKETMAMBA_DATA_ROOT` unset; the scheduled process environment was not captured; the Windows checkout V6 config falls back to its own `Data/`. Colab remains separate. No path or runtime was changed.
 
 - **Layer 1 — Current State:** this short file and its JSON projection hold active objectives, blockers, next actions, current runtime and branch/worktree context. [Authority Map](Authority_Map.md) determines which evidence wins; [Worktree Register](Worktree_Register.md) records checkout responsibility.
 - **Layer 2 — Project Knowledge:** [Domain Notes](../01_Domains/), [GOVERNANCE.md](../GOVERNANCE.md), and stable architecture/decision contracts describe boundaries and durable rules.
@@ -46,14 +46,15 @@ Canonical development/research checkout is WSL-native `/home/frank/projects/Mark
 
 | Topic | State | Authority / observation |
 |---|---|---|
-| Active scheduler path | `ACTIVE` | `MarketMamba_DataFetch → V6/scripts/v62_daily.bat --fetch-only`; observed `2026-09-20T01:30:00+08:00`, may expire after 7 days. See [K0 runtime map](../../research/project-knowledge/k0/runtime-map.json). |
+| Active scheduler path | `ACTIVE`, observed 2026-09-22 | `MarketMamba_DataFetch` (Ready/enabled) → `wscript.exe` → `run_hidden.vbs` → D: `v62_daily.bat --fetch-only` → `wsl -d Ubuntu` → `mamba_env` → D: checkout `V6/run_v62_daily.py`. [Scheduler observation](../runtime-observations/scheduler-20260922T132135+0800.json). Last run 2026-09-21 22:30 +08:00, Task result 0; log exit 0 at 22:39:52. |
 | Fetch-only behavior | `ACTIVE` | [`V6/scripts/v62_daily.bat`](../../V6/scripts/v62_daily.bat) and [`V6/run_v62_daily.py`](../../V6/run_v62_daily.py) stop before matrix, inference, portfolio and publication. |
-| Full V6.2 schedule | `DISABLED` | `MarketMamba_V62` scheduler observation; code remains manually runnable. |
+| Operational data freshness | `10/10 MATCH_REFERENCE_DATE` | Ten `DAILY_SOURCES` have Parquet metadata max date 2026-09-21, matching `prices_raw` and last fetch-only log. This is date completeness, not data-quality certification; log recorded a stock-universe delta warning. [Operational observation](../runtime-observations/operational-path-20260922T132521+0800.json). |
+| Full V6.2 schedule | `DISABLED` | `MarketMamba_V62` is disabled; last run 2026-08-25 22:15, last result 255. Code remains manually runnable. |
 | Result publication | `DISABLED_AS_SCHEDULED`; manual state `UNKNOWN` | Full pipeline contains publication logic, but no active scheduled publication was observed. |
 | API deployment | `UNKNOWN` | Source exists; live deployment/traffic was not verified. |
 | Frontend deployment | `UNKNOWN` | Source exists; live deployment/traffic was not verified. |
 
-Runtime observations are not permanent facts. After `2026-09-27T01:30:00+08:00`, scheduler statements above must be treated as `STALE_OBSERVATION` until checked again.
+Runtime observations are not permanent facts. The new Scheduler observation expires after `2026-09-29T13:21:35+08:00`; the prior 2026-09-20 observation remains preserved. A successful fetch-only run does not prove the next run, deployment, trading, or complete data validity.
 
 ## Data / Correctness State
 
@@ -91,7 +92,7 @@ Runtime observations are not permanent facts. After `2026-09-27T01:30:00+08:00`,
 
 ## Delivery/UI State
 
-- Tracked FastAPI and React legacy delivery surfaces: `PARTIALLY_ACTIVE`; deployment is `UNKNOWN`.
+- Tracked FastAPI and React legacy delivery surfaces exist; live deployment and deployed revision remain `UNKNOWN` because public endpoint queries were inaccessible and provider dashboards were not accessed.
 - Local V7 status API/UI additions in the main worktree: `UNMERGED_CANDIDATE`, not authority.
 - V7 status design is read-only and fail-closed, but live behavior is `UNKNOWN`.
 

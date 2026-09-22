@@ -2,14 +2,14 @@
   "schema_version": "marketmamba-current-state-v1",
   "status": "CANONICAL_CURRENT_PROJECT_MAP",
   "owner": "Human + project agents",
-  "observed_at": "2026-09-20T02:45:00+08:00",
+  "observed_at": "2026-09-22T13:25:21+08:00",
   "human_review": {
     "accepted_at": "2026-09-20",
-    "context": "Seed43 resume forensic and Phase A task wording reconciled; accepted as current navigation authority subject to semantic updates and supersession."
+    "context": "Prior research/Phase A navigation accepted 2026-09-20; 2026-09-22 runtime observations are agent-observed and not separately human-reviewed."
   },
   "repository_context": {
     "branch": "main",
-    "basis_commit": "2c6c6f3",
+    "basis_commit": "3b0df0f",
     "source_basis": [
       "reports/marketmamba_k0_project_knowledge_discovery.md",
       "research/project-knowledge/k0/authority-map.json",
@@ -18,27 +18,48 @@
       "research/project-knowledge/k0/runtime-map.json",
       "research/project-knowledge/k0/research-lineage.json"
     ],
-    "governance_source": "integration/project-knowledge-k1@18152d0 plus research/v7-e1-postrun-diagnostics@1d8e23f; consolidated without merging research/runtime changes"
+    "governance_source": "integration/project-knowledge-k1@18152d0 plus research/v7-e1-postrun-diagnostics@1d8e23f; consolidated without merging research/runtime changes",
+    "operational_checkout": "D:\\Desktop\\work\\ProjectForMe\\MarketMamba@8b82a681e43148ff5ee6389c8cb4f6394f5360e5",
+    "development_checkout_at_observation": "/home/frank/projects/MarketMamba@3b0df0fd0baa56ab4784f7c2371f722ca49116e2"
   },
   "freshness": {
     "runtime_observation_ttl_days": 7,
-    "runtime_observed_at": "2026-09-20T01:30:00+08:00",
-    "runtime_expires_at": "2026-09-27T01:30:00+08:00",
+    "runtime_observed_at": "2026-09-22T13:21:35+08:00",
+    "runtime_expires_at": "2026-09-29T13:21:35+08:00",
     "expired_status": "STALE_OBSERVATION",
-    "repository_contract_expiry": "NONE; supersession or commit identity only"
+    "repository_contract_expiry": "NONE; supersession or commit identity only",
+    "previous_scheduler_observation": "knowledge/runtime-observations/scheduler.json"
   },
   "production": {
     "scheduler_path": {
       "status": "ACTIVE",
-      "value": "MarketMamba_DataFetch -> V6/scripts/v62_daily.bat --fetch-only",
-      "authority_topic": "Scheduler state"
+      "value": "MarketMamba_DataFetch -> wscript.exe -> run_hidden.vbs -> D: v62_daily.bat --fetch-only -> wsl -d Ubuntu -> mamba_env -> D: V6/run_v62_daily.py",
+      "authority_topic": "Scheduler state",
+      "observation": "knowledge/runtime-observations/scheduler-20260922T132135+0800.json"
     },
     "fetch_only": "ACTIVE",
     "full_v62_schedule": "DISABLED",
     "publication": "DISABLED_AS_SCHEDULED",
     "manual_publication_state": "UNKNOWN",
     "api_deployment": "UNKNOWN",
-    "frontend_deployment": "UNKNOWN"
+    "frontend_deployment": "UNKNOWN",
+    "scheduler_last_run": {
+      "at": "2026-09-21T22:30:00+08:00",
+      "task_result": 0,
+      "log_exit": 0,
+      "log_finished_at": "2026-09-21T22:39:52+08:00"
+    },
+    "full_v62_last_run": {
+      "at": "2026-08-25T22:15:00+08:00",
+      "task_result": 255
+    },
+    "daily_source_freshness": {
+      "reference_date": "2026-09-21",
+      "matching_sources": 10,
+      "expected_sources": 10,
+      "class": "DATE_COMPLETENESS_ONLY",
+      "quality_warning": "stock-universe day-over-day delta +97800.0% from Sunday two-row observation"
+    }
   },
   "correctness": {
     "historical_simulation_readiness": "PASS",
@@ -191,9 +212,14 @@
   "runtime_contract": {
     "development_checkout": "/home/frank/projects/MarketMamba",
     "operational_windows_checkout": "D:\\Desktop\\work\\ProjectForMe\\MarketMamba",
-    "scheduler_live_reconciliation": "UNKNOWN_PENDING_PHASE2",
-    "data_root": "MARKETMAMBA_DATA_ROOT plus verified Data symlink/realpath per runtime",
-    "training": "Colab separate exact-lock and bundle identity"
+    "scheduler_live_reconciliation": "CONFIRMED_2026_09_22T132135+0800",
+    "data_root": "Windows checkout Data/processed_v6 physical on D:; development checkout Data/processed_v6 symlink to same path; no path equivalence for code checkouts",
+    "training": "Colab separate exact-lock and bundle identity",
+    "scheduler_distro": "Ubuntu",
+    "development_distro": "Ubuntu-24.04",
+    "operational_python": "/home/frank/miniconda3/envs/mamba_env/bin/python 3.11.15",
+    "operational_data_root": "/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6",
+    "scheduler_data_root_env": "UNKNOWN_NOT_CAPTURED"
   },
   "worktree_register": "knowledge/00_Project_Map/Worktree_Register.md"
 }
