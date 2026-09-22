@@ -154,9 +154,16 @@
       "primary_authority": "research/v7/source-adoption-register-20260922.json",
       "authority_class": "CURRENT_REFERENCE",
       "status": "IN_MAIN_RESEARCH_ONLY",
-      "supersedes": ["branch-only implementation for adopted PIT primitives"],
-      "secondary_evidence": ["33 focused CPU tests", "same-commit main source blobs"],
-      "conflicts": ["Frozen result/readiness and superseded 32/8 draft remain branch-qualified"]
+      "supersedes": [
+        "branch-only implementation for adopted PIT primitives"
+      ],
+      "secondary_evidence": [
+        "33 focused CPU tests",
+        "same-commit main source blobs"
+      ],
+      "conflicts": [
+        "Frozen result/readiness and superseded 32/8 draft remain branch-qualified"
+      ]
     },
     {
       "topic": "PIT policy",
@@ -580,6 +587,23 @@
       ],
       "conflicts": [
         "Old paths retained for Phase 0 historical references; current decisions use canonical Current State and frozen contracts"
+      ]
+    },
+    {
+      "topic": "Reusable corrected E5 and E1 research source",
+      "primary_authority": "research/v7/source-adoption-register-20260922.json",
+      "authority_class": "CURRENT_REFERENCE",
+      "status": "IN_MAIN_RESEARCH_ONLY_NOT_DEPLOYED",
+      "supersedes": [
+        "branch-only implementation for adopted source slices"
+      ],
+      "secondary_evidence": [
+        "33 E5, 22 E1 and 27 recovery focused CPU tests on main 2026-09-22",
+        "source branch blob SHA identities",
+        "main destinations named by source adoption register"
+      ],
+      "conflicts": [
+        "Experiment results, bundles, diagnostics and Phase A operations remain branch-qualified; research source is not production or deployment authority"
       ]
     }
   ]

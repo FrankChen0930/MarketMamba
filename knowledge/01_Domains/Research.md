@@ -77,3 +77,5 @@ E1 result artifacts are versioned, but post-run epoch replay lacks the frozen fu
 ## Update Triggers
 
 Update after a completed/rejected experiment, baseline promotion, acceptance-policy change, or new authoritative diagnostic decision.
+
+**2026-09-22 source integration:** Corrected E5/E1 reusable research modules and selected frozen contract copies are now in development main; see `research/v7/source-adoption-register-20260922.json`. Run results, bundles, postrun diagnostics and operational/deployment authority remain separate. No model training or production promotion occurred in Phase 3B-2.

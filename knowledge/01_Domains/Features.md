@@ -80,3 +80,5 @@ The manifest records `value_table_status=NOT_EMITTED_DOWNSTREAM_ADMISSION_BLOCKE
 ## Update Triggers
 
 Update whenever feature membership/order, transforms, graph policy, industry treatment, or matrix identity rules change.
+
+**2026-09-22 source identity:** The frozen 48-feature manifest is copied byte-identically into development main for research-source tests; the original branch/commit and blob are recorded in `research/v7/source-adoption-register-20260922.json`. Feature order and semantics are unchanged.

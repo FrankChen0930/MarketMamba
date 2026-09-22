@@ -234,5 +234,28 @@
     "historical_notes_register": "research/v7/historical-notes-register-20260922.md",
     "phase3b1_report_manifest": "D:\\Desktop\\work\\project-audit\\market-mamba\\phase3b-source-cleanup\\MANIFEST.md",
     "authority_change": false
+  },
+  "development_source_integration": {
+    "phase": "3B-2",
+    "observed_at": "2026-09-22",
+    "status": "SELECTIVE_RESEARCH_SOURCE_IN_MAIN_NOT_DEPLOYED",
+    "source_register": "research/v7/source-adoption-register-20260922.json",
+    "adopted": [
+      "corrected PIT research primitives",
+      "corrected E5 research core and frozen contract copies",
+      "formal E1 research core and frozen contract copies",
+      "E1 checkpoint telemetry correction",
+      "Colab child logging wrapper"
+    ],
+    "branch_authority_retained": [
+      "corrected E5/E1 results and bundles",
+      "E1 postrun diagnostics",
+      "Phase A operations",
+      "recovery-specific Drive migration"
+    ],
+    "strict_phase0": "STOP",
+    "production_unchanged": true,
+    "windows_checkout_unchanged": true,
+    "pushed": false
   }
 }

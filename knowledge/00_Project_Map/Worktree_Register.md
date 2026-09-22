@@ -14,3 +14,20 @@
 | `v7-historical-pit-reconstruction` | `feature/production-phase-a-shadow-ledger` / `f5b0ff3` | Phase A shadow ledger; owner UNKNOWN | `main@7bdf2e4` merge base | clean; unmerged, not deployed | Ops code/tests, Task 4 review and Task 5 replay pending. Directory name is stale; branch is authoritative identity. | UNKNOWN / N/A |
 
 **Safe-removal preconditions for every row:** record owner approval and intended retirement date; confirm checkout clean; retain branch/commit/history; verify no unique uncommitted or ignored artifact is required; verify all authority/manifest absolute-path references and merge dependencies; inventory rebuildable runtime separately. This register grants no cleanup authorization. New worktrees require a bounded objective and a check that an existing checkout does not already serve it.
+
+## Phase 3B-2 retirement preparation (observed 2026-09-22)
+
+All eight checkouts were clean in `git status --short --branch`; their branch refs and commits remain present. A clean checkout alone never authorizes removal. The readiness labels below are planning labels only.
+
+| Checkout | Readiness | Remaining authority / local dependency | Before any removal |
+|---|---|---|---|
+| `project-knowledge-k0-discovery` | `RETIRE_READY_PENDING_HUMAN_APPROVAL` | K0 history/report retained in Git and main navigation; no ignored payload observed. | Confirm owner and links, retain branch/ref, approve removal. |
+| `project-knowledge-k1-bootstrap` | `RETIRE_READY_PENDING_HUMAN_APPROVAL` | Bootstrap and legacy Claude history in Git; main governance supersedes active rules; no ignored payload observed. | Confirm owner and links, retain branch/ref, approve removal. |
+| `project-knowledge-k1-domains` | `RETIRE_READY_PENDING_HUMAN_APPROVAL` | Domain note lineage in Git/main; ignored Python bytecode observed. | Confirm owner and links, retain branch/ref, approve removal. |
+| `project-knowledge-k2-governance` | `RETIRE_READY_PENDING_HUMAN_APPROVAL` | K2 tools/rules adopted and evolved in main; ignored Python bytecode observed. | Confirm owner and links, retain branch/ref, approve removal. |
+| `v7-corrected-e5-2026-diagnostic` | `KEEP_AUTHORITY` | E5/E1 bundles, frozen result/evidence and branch-only diagnostics remain; ignored bytecode present. | Resolve bundle/result and artifact links before retirement review. |
+| `v7-e1-colab-recovery` | `KEEP_AUTHORITY` | Drive rescue/migration and recovery evidence remain branch-qualified; local `.venv` and ignored review records require separate reproducibility/retention assessment. | Preserve evidence and verify environment/artifact identity; obtain owner approval. |
+| `v7-e1-postrun-diagnostics` | `KEEP_ACTIVE` | Matrix recovery/replay and diagnostic authority remain open. | Complete task and preserve result evidence first. |
+| `v7-historical-pit-reconstruction` | `KEEP_ACTIVE` | Actual branch is `feature/production-phase-a-shadow-ledger`; Task 4 correctness approval and Task 5 acceptance remain open; ignored review records exist. | Complete independent Phase A approval and artifact review first. |
+
+No checkout, branch, ignored file or artifact was removed in Phase 3B-2.
