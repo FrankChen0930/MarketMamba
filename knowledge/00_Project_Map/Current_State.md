@@ -120,6 +120,8 @@ Eight linked worktrees were observed on 2026-09-22; their branch, purpose, autho
 
 Phase 3A read-only inventory completed on 2026-09-22; report: `D:\Desktop\work\project-audit\market-mamba\repository-rationalization\MANIFEST.md`. It classified the three tracked dirty files, 69 collapsed untracked status entries (73 files), eight worktrees, local branches, large artifacts and duplicate candidates. The Phase 3B cleanup plan is a proposal only. No source/data/worktree/branch cleanup, Windows checkout sync, push or deployment was performed. Any retirement, deletion, branch integration or operational promotion requires its own evidence and authorization. This inventory does not alter research, scheduler or deployment authority.
 
+Phase 3B-1 source canonicalization is in progress on WSL development main. The V7 status UI/API is committed but not deployed, the E1-matching environment identity is preserved, and 41 early V7 experimental source files are preserved in place with hashes and dated lineage at `research/v7/historical-local-source-register-20260922.md`. These historical files do not replace corrected E5/E1 branch authority. Research/task note reconciliation and branch integration remain open; no worktree or large artifact has been removed.
+
 ## Authority Links
 
 - [Authority Map](Authority_Map.md)

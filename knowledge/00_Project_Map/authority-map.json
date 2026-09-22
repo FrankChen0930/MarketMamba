@@ -534,10 +534,26 @@
       "status": "NOT_ADMITTED",
       "supersedes": [],
       "secondary_evidence": [
-        "main V7 API/UI candidate files"
+        "remaining main research/task note candidates"
       ],
       "conflicts": [
         "File presence is not canonical/deployed authority"
+      ]
+    },
+    {
+      "topic": "Early V7 local historical source",
+      "primary_authority": "research/v7/historical-local-source-register-20260922.md",
+      "authority_class": "HISTORICAL_ONLY",
+      "status": "PRESERVED_NOT_CURRENT_E5_OR_E1",
+      "supersedes": [
+        "untracked early V7 source with unknown ownership"
+      ],
+      "secondary_evidence": [
+        "same-commit V6/experimental/v7_experiment_* and related cohorts",
+        "dated deliveries and research notes linked in preservation register"
+      ],
+      "conflicts": [
+        "Source preservation is not result validation or architecture promotion"
       ]
     }
   ]
