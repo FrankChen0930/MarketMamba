@@ -1,0 +1,19 @@
+# V7 subset aligned to official Colab 2026.04 GPU snapshot; Linux x86_64 / CPython 3.12.13
+--only-binary=:all:
+einops==0.8.2
+huggingface_hub==1.8.0
+numpy==2.0.2
+packaging==26.0
+pandas==2.2.2
+pyarrow==18.1.0
+python-dotenv==1.2.2
+requests==2.32.4
+scikit-learn==1.6.1
+scipy==1.16.3
+setuptools==75.2.0
+transformers==5.0.0
+triton==3.6.0
+yfinance==0.2.66
+torch-geometric==2.7.0
+torch @ https://download-r2.pytorch.org/whl/cu128/torch-2.10.0%2Bcu128-cp312-cp312-manylinux_2_28_x86_64.whl#sha256=628e89bd5110ced7debee2a57c69959725b7fbc64eab81a39dd70e46c7e28ba5
+mamba-ssm @ https://github.com/state-spaces/mamba/releases/download/v2.3.2.post1/mamba_ssm-2.3.2.post1%2Bcu12torch2.10cxx11abiTRUE-cp312-cp312-linux_x86_64.whl#sha256=7a67070c1e7e99c95abd1319623f044e8a1b3fb46f774bfdea949f0a4fc79638

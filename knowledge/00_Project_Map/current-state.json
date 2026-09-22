@@ -215,6 +215,7 @@
     "scheduler_live_reconciliation": "CONFIRMED_2026_09_22T132135+0800",
     "data_root": "Windows checkout Data/processed_v6 physical on D:; development checkout Data/processed_v6 symlink to same path; no path equivalence for code checkouts",
     "training": "Colab separate exact-lock and bundle identity",
+    "training_environment_identity": "environments/v7-colab-2026.04/requirements.lock.txt preserved in development main; byte-identical to E1 branch; dated local verification is not formal Colab GPU-run evidence",
     "scheduler_distro": "Ubuntu",
     "development_distro": "Ubuntu-24.04",
     "operational_python": "/home/frank/miniconda3/envs/mamba_env/bin/python 3.11.15",

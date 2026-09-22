@@ -18,7 +18,7 @@ The frozen replication training contract uses 20 epochs, patience 5, minimum 5 e
 
 ## Authority
 
-The incumbent/experiment contracts and checkpoint loader on `feature/v7-e1-rolling-origin-refresh@044eef7` are authoritative. Colab notebooks are launch UX, not the training contract.
+The incumbent/experiment contracts and checkpoint loader on `feature/v7-e1-rolling-origin-refresh@044eef7` are authoritative. The byte-identical exact lock is also preserved at `environments/v7-colab-2026.04/requirements.lock.txt` in development main; its 2026-09-12 local verification is not formal E1 GPU-run evidence. Colab notebooks are launch UX, not the training contract.
 
 ## Inputs
 
