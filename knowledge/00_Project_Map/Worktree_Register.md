@@ -30,4 +30,4 @@ All eight checkouts were clean in `git status --short --branch`; their branch re
 | `v7-e1-postrun-diagnostics` | `KEEP_ACTIVE` | Matrix recovery/replay and diagnostic authority remain open. | Complete task and preserve result evidence first. |
 | `v7-historical-pit-reconstruction` | `KEEP_ACTIVE` | Actual branch is `feature/production-phase-a-shadow-ledger`; Task 4 correctness approval and Task 5 acceptance remain open; ignored review records exist. | Complete independent Phase A approval and artifact review first. |
 
-No checkout, branch, ignored file or artifact was removed in Phase 3B-2.
+A NUL-safe path comparison against main found branch-tracked paths absent at the same main path: K0=1, K1 bootstrap=1 (historical archive path), K1 domains=3 (archive plus two K1 task notes), K2=5 (archive plus K1/K2 task notes). These remain preserved in their branch commits; retirement requires retaining branch refs/history and confirming no checkout-path consumer. No checkout, branch, ignored file or artifact was removed in Phase 3B-2.
