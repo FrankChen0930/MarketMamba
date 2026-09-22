@@ -20,7 +20,7 @@ Define which market data may support research, simulation, and production claims
 
 1. Machine-readable manifests, hashes, lineage inventories, and tests.
 2. Completed run artifacts tied to those identities.
-3. Branch implementation at `fix/v7-historical-pit-reconstruction@e3bce91`.
+3. Reusable fail-closed PIT/provenance primitives now in development main, with byte-identical branch provenance in `research/v7/source-adoption-register-20260922.json`; remaining materialization builders and result evidence stay at `fix/v7-historical-pit-reconstruction@e3bce91`.
 4. Runtime observations with timestamps and TTLs.
 5. Reports and historical notes.
 

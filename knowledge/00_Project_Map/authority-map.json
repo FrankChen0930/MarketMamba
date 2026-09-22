@@ -150,6 +150,15 @@
       "conflicts": []
     },
     {
+      "topic": "Reusable PIT/provenance code",
+      "primary_authority": "research/v7/source-adoption-register-20260922.json",
+      "authority_class": "CURRENT_REFERENCE",
+      "status": "IN_MAIN_RESEARCH_ONLY",
+      "supersedes": ["branch-only implementation for adopted PIT primitives"],
+      "secondary_evidence": ["33 focused CPU tests", "same-commit main source blobs"],
+      "conflicts": ["Frozen result/readiness and superseded 32/8 draft remain branch-qualified"]
+    },
+    {
       "topic": "PIT policy",
       "primary_authority": "fix/v7-historical-pit-reconstruction@e3bce91:research/v7/corrected-baseline-v1/policy.json",
       "authority_class": "CANONICAL",

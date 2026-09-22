@@ -62,6 +62,7 @@
     }
   },
   "correctness": {
+    "reusable_pit_source": "IN_MAIN_RESEARCH_ONLY; six byte-identical primitives plus tests and static policy from e3bce91; source-adoption-register-20260922.json",
     "historical_simulation_readiness": "PASS",
     "strict_phase0": "STOP",
     "verified_executable_labels": {
