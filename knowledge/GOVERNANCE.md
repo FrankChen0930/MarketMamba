@@ -83,6 +83,8 @@ If nothing changed, the handoff must say `knowledge_update: not_required` with a
 
 Before creating a top-level directory, implementation, workflow, experiment/report tree, memory system, architecture, replacement version, backup, ZIP snapshot, or worktree, search existing canonical structures and Authority Map. Record why reuse cannot meet the contract. Names such as `final2`, `backup-new`, and `v2-new` do not establish an artifact version. New experiment outputs require a separate namespace and, where practical, a manifest with source commit, contract/config, input identity/hash, environment, split/support, model/checkpoint identity, output paths/hashes, and evidence class.
 
+Shared `.gitignore` excludes checkout-local `.artifacts/`, `.runtimes/`, and `.worktrees/` containers; this prevents accidental staging across clones and does not authorize deletion. `environments/` remains source-controlled. `deliveries/` remains a local exclude in this checkout because it contains large, potentially unique research evidence; future shared rules require a manifest/source-boundary review before changing that status.
+
 | Class | Meaning | Handling |
 |---|---|---|
 | `CANONICAL` | Reviewed active authority for a named scope | Commit source/contract; supersede explicitly. |

@@ -46,6 +46,11 @@ node_modules/
 dist/
 .vite/
 
+# Checkout-local generated state. Ignore is a Git staging boundary, not deletion authority.
+/.artifacts/
+/.runtimes/
+/.worktrees/
+
 # Logs
 logs/
 *.log
