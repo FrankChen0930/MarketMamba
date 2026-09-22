@@ -1,0 +1,38 @@
+{
+  "schema_version": "v7-corrected-e5-next-experiment-v1",
+  "decision": "SPECIFIED_NOT_EXECUTED",
+  "selected": "E1 rolling-origin unchanged-contract refresh",
+  "hypothesis": "Temporal/regime staleness is the primary cause.",
+  "frozen_contract": {
+    "architecture": "unchanged E5",
+    "features": "same canonical 48",
+    "labels": "v2 P0",
+    "loss_optimizer_schedule": "unchanged",
+    "seeds": [
+      17,
+      29
+    ],
+    "industry_neutralization": false,
+    "graph": false
+  },
+  "split": {
+    "train_start": "2013-01-02",
+    "train_end": "2025-11-18",
+    "purge_start": "2025-11-19",
+    "purge_end": "2025-12-31",
+    "purge_sessions": 30,
+    "evaluation_start": "2026-01-02",
+    "evaluation_end_5d": "2026-09-04",
+    "evaluation_end_10d": "2026-08-28"
+  },
+  "acceptance": {
+    "10d_mean_ic_min": 0.03,
+    "10d_paired_delta_bootstrap_lower_95_gt": 0.0,
+    "5d_mean_ic_min": 0.04,
+    "5d_noninferiority_lower_95_gt": -0.01,
+    "d10_minus_d1": "positive both horizons",
+    "seed_rule": "both seeds non-negative"
+  },
+  "why_not_static_ablation": "Occlusion effects reverse by month.",
+  "gpu_experiment_executed": false
+}

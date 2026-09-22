@@ -1,0 +1,47 @@
+{
+  "execution_scope": {
+    "from_seeds": [
+      17,
+      29,
+      43
+    ],
+    "reason": "pre-registered E1 scope; not model search",
+    "to_seeds": [
+      17,
+      29
+    ]
+  },
+  "schema_version": "v7-e1-contract-diff-v1",
+  "substantive_changes": [
+    {
+      "derived": {
+        "evaluation_start": "2026-01-02",
+        "maturity": {
+          "10d": "2026-08-28",
+          "5d": "2026-09-04"
+        },
+        "purge": [
+          "2025-11-19",
+          "2025-12-31"
+        ]
+      },
+      "field": "split.train_end",
+      "from": "2023-11-17",
+      "to": "2025-11-18"
+    }
+  ],
+  "unchanged": [
+    "48-feature contract",
+    "architecture",
+    "heads",
+    "loss",
+    "optimizer",
+    "schedule",
+    "selection",
+    "FP32",
+    "P0 labels",
+    "provenance gates",
+    "no industry neutralization",
+    "no graph"
+  ]
+}
