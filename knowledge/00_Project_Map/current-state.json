@@ -1,0 +1,199 @@
+{
+  "schema_version": "marketmamba-current-state-v1",
+  "status": "CANONICAL_CURRENT_PROJECT_MAP",
+  "owner": "Human + project agents",
+  "observed_at": "2026-09-20T02:45:00+08:00",
+  "human_review": {
+    "accepted_at": "2026-09-20",
+    "context": "Seed43 resume forensic and Phase A task wording reconciled; accepted as current navigation authority subject to semantic updates and supersession."
+  },
+  "repository_context": {
+    "branch": "main",
+    "basis_commit": "2c6c6f3",
+    "source_basis": [
+      "reports/marketmamba_k0_project_knowledge_discovery.md",
+      "research/project-knowledge/k0/authority-map.json",
+      "research/project-knowledge/k0/boundary-map.json",
+      "research/project-knowledge/k0/contradictions.json",
+      "research/project-knowledge/k0/runtime-map.json",
+      "research/project-knowledge/k0/research-lineage.json"
+    ],
+    "governance_source": "integration/project-knowledge-k1@18152d0 plus research/v7-e1-postrun-diagnostics@1d8e23f; consolidated without merging research/runtime changes"
+  },
+  "freshness": {
+    "runtime_observation_ttl_days": 7,
+    "runtime_observed_at": "2026-09-20T01:30:00+08:00",
+    "runtime_expires_at": "2026-09-27T01:30:00+08:00",
+    "expired_status": "STALE_OBSERVATION",
+    "repository_contract_expiry": "NONE; supersession or commit identity only"
+  },
+  "production": {
+    "scheduler_path": {
+      "status": "ACTIVE",
+      "value": "MarketMamba_DataFetch -> V6/scripts/v62_daily.bat --fetch-only",
+      "authority_topic": "Scheduler state"
+    },
+    "fetch_only": "ACTIVE",
+    "full_v62_schedule": "DISABLED",
+    "publication": "DISABLED_AS_SCHEDULED",
+    "manual_publication_state": "UNKNOWN",
+    "api_deployment": "UNKNOWN",
+    "frontend_deployment": "UNKNOWN"
+  },
+  "correctness": {
+    "historical_simulation_readiness": "PASS",
+    "strict_phase0": "STOP",
+    "verified_executable_labels": {
+      "5d": 0,
+      "10d": 0
+    },
+    "feature_contract": {
+      "name": "E5-PIT-Clean-v1",
+      "count": 48,
+      "graph": "DISABLED",
+      "industry_neutralization": "DISABLED",
+      "current_industry_backfill": false
+    },
+    "historical_label_class": "HISTORICAL_SIMULATION_PROXY",
+    "proxy_policy": "P0",
+    "trading_evidence": false
+  },
+  "research": {
+    "corrected_baseline": "E5-PIT-Clean-v1",
+    "corrected_e5": {
+      "status": "COMPLETED_PARTIAL_ENSEMBLE",
+      "formal_seeds": [
+        17,
+        29
+      ],
+      "architecture": {
+        "d_model": 64,
+        "d_state": 32
+      }
+    },
+    "seed43": {
+      "status": "INCOMPLETE_EXCLUDED_FROM_FORMAL_CONCLUSIONS",
+      "stale_pointer_metadata": {
+        "best_epoch": 8,
+        "best_present": false,
+        "latest_present": false,
+        "previous_present": false
+      },
+      "surviving_orphan": {
+        "epoch": 15,
+        "step": 39915,
+        "terminal": false,
+        "contract_match": true,
+        "matrix_match": true,
+        "authority": "convergence evidence only"
+      },
+      "promotion_allowed": false,
+      "direct_resume_allowed": false,
+      "note": "Pointer metadata referenced missing generations; surviving orphan checkpoint is epoch 15 and is convergence evidence only."
+    },
+    "extended_diagnostic": "STOP_FOR_TRADING_CONTINUE_RESEARCH",
+    "e1": {
+      "status": "COMPLETED_RESEARCH_EXPERIMENT",
+      "outcome": "PASS_REFRESH_HYPOTHESIS",
+      "research_evidence_only": true,
+      "result_authority": "eec63c5:research/v7/e1-rolling-origin-refresh-v1/results/result-manifest.json",
+      "formal_seeds": [
+        17,
+        29
+      ],
+      "postrun_diagnostic": "ef020e5:research/v7/e1-postrun-diagnostic-v1/diagnostic-summary.json"
+    }
+  },
+  "operations": {
+    "architecture_audit": "COMPLETE_CURRENT_REFERENCE",
+    "phase_a_branch": "feature/production-phase-a-shadow-ledger@f5b0ff3",
+    "phase_a_status": "UNMERGED",
+    "deployed": false,
+    "tasks": {
+      "task1_contracts_schema_migrations": "COMPLETED_REVIEWED",
+      "task2_transactional_store_lease_fencing": "COMPLETED_REVIEWED",
+      "task3_fetch_only_shadow_adapter": "COMPLETED_REVIEWED",
+      "task4_atomic_projection_read_only_cli": "IMPLEMENTED_WITH_SANITIZER_FOLLOW_UP_FIXES_CORRECTNESS_APPROVAL_NOT_ESTABLISHED",
+      "task5_replay_formal_acceptance_report": "NOT_STARTED"
+    },
+    "blocker": "HUMAN_REVIEW_REQUIRED_FOR_TASK4_CORRECTNESS_APPROVAL_SANITIZER_EVIDENCE_AND_MERGE_DECISION",
+    "success_authority": "LEGACY_FETCH_RESULT"
+  },
+  "delivery": {
+    "legacy_api_ui": "PARTIALLY_ACTIVE_SOURCE_PRESENT",
+    "live_deployment": "UNKNOWN",
+    "v7_status_candidate": "UNMERGED_CANDIDATE"
+  },
+  "knowledge_governance": {
+    "status": "ACTIVE",
+    "domain_layer": "COMPLETE_CURRENT_SCOPE",
+    "unified_health": "AVAILABLE",
+    "runtime_observation_store": "ACTIVE_WITH_STALE_SEMANTICS",
+    "generated_navigation": "DETERMINISTIC",
+    "authority": "knowledge/GOVERNANCE.md"
+  },
+  "blockers": [
+    {
+      "id": "strict-phase0",
+      "status": "STOP",
+      "description": "No verified executable 5d/10d labels."
+    },
+    {
+      "id": "phase-a-review",
+      "status": "HUMAN_REVIEW_REQUIRED",
+      "description": "Sanitizer/path-redaction evidence and merge decision require acceptance."
+    },
+    {
+      "id": "e1-diagnostics",
+      "status": "UNKNOWN",
+      "description": "E1 final-support epoch replay and causal regime decomposition lack frozen matrix/market-state evidence."
+    },
+    {
+      "id": "deployment",
+      "status": "UNKNOWN",
+      "description": "Live API/frontend and manual publication state are unverified."
+    }
+  ],
+  "next_decisions": [
+    "Recover the identity-matched E1 matrix, establish safe checkpoint replay, and predeclare causal regime evidence before deciding a new training experiment.",
+    "Review Phase A sanitizer evidence before merge or deployment.",
+    "Use consolidated K2 governance in main; keep K0/K1/K2 worktrees until dependencies and safe-removal conditions are reviewed; do not begin K3 automatically."
+  ],
+  "authorities": [
+    "knowledge/00_Project_Map/Authority_Map.md",
+    "knowledge/00_Project_Map/authority-map.json",
+    "research/project-knowledge/k0/authority-map.json"
+  ],
+  "knowledge_impact": {
+    "must_update": [
+      "semantic change",
+      "authority change",
+      "subsystem boundary change",
+      "active runtime state change",
+      "correctness gate change",
+      "new canonical artifact",
+      "deprecation",
+      "major blocker or next-decision change"
+    ],
+    "normally_no_update": [
+      "formatting",
+      "comments",
+      "pure refactor",
+      "tests-only",
+      "internal rename"
+    ]
+  },
+  "state_updated_at": "2026-09-22",
+  "active_objectives": [
+    "Recover identity-matched E1 matrix and safe checkpoint replay before E2 decision",
+    "Review Phase A Task 4 evidence before merge/deployment"
+  ],
+  "runtime_contract": {
+    "development_checkout": "/home/frank/projects/MarketMamba",
+    "operational_windows_checkout": "D:\\Desktop\\work\\ProjectForMe\\MarketMamba",
+    "scheduler_live_reconciliation": "UNKNOWN_PENDING_PHASE2",
+    "data_root": "MARKETMAMBA_DATA_ROOT plus verified Data symlink/realpath per runtime",
+    "training": "Colab separate exact-lock and bundle identity"
+  },
+  "worktree_register": "knowledge/00_Project_Map/Worktree_Register.md"
+}

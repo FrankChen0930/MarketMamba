@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "classification": "GENERATED_DISCOVERY_NOT_CANONICAL",
+  "canonical_contract":{"name":"E5-PIT-Clean-v1","path":"research/v7/corrected-baseline-v1/feature-manifest.json","count":48,"order_hash":"7d75d4...","industry_neutralization":false,"explicit_graph_features":false,"current_industry_backfill":false,"confidence":"HIGH"},
+  "families": [
+    {"name":"price-volume-technical","implementation":"V6/experimental/v7_corrected_baseline.py","contract":"48-feature ordered manifest","source":"provenance-eligible OHLCV","pit_status":"ADMITTED_WHEN_SOURCE_ELIGIBLE","current_model_usage":"corrected E5/E1"},
+    {"name":"macro-market","implementation":"corrected baseline builders","contract":"causal/as-of transforms only","source":"dated market/macro records","pit_status":"contracted fail-closed","current_model_usage":"corrected E5/E1"},
+    {"name":"financial-fundamental","implementation":"legacy feature engineer and PIT record builders","contract":"removed from corrected 48-feature set","source":"publication records","pit_status":"not admitted to current corrected baseline","current_model_usage":"legacy only"},
+    {"name":"industry","implementation":"historical industry intervals","contract":"no current-industry backfill; no industry neutralization","source":"dated industry evidence","pit_status":"PIT intervals required","current_model_usage":"universe/context, not neutralization"},
+    {"name":"graph","implementation":"V6/marketmamba/knowledge/graph_builder.py","contract":"disabled, zero edges, absent fusion branch in corrected V7","source":"sector/supply-chain/correlation","pit_status":"legacy/current-world risk","current_model_usage":"legacy V6 only"}
+  ],
+  "preprocessing":{"scaling":"fitted within training contract; inspect manifest per run","missing_values":"fail-closed for contract-critical fields; model preprocessing is runner-specific","causal_transforms":"required by corrected contract","feature_order":"manifest-pinned"},
+  "removed_features":["PER","PBR","Revenue_MoM","Revenue_YoY","EPS","EPS_Surprise","Gross_Margin","ROE","Book_Value","Dividend_Yield_Fwd","Free_Cash_Flow"],
+  "legacy_counts":[{"context":"V6.1 prose","count":56},{"context":"tracked V6 config/runtime","count":59},{"context":"some V6.2 baselines","count":66},{"context":"corrected V7","count":48}],
+  "warning":"Feature count is contract-specific; never infer model compatibility from a global count."
+}

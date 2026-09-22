@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "classification": "GENERATED_DISCOVERY_NOT_CANONICAL",
+  "boundaries": [
+    {"name":"data-acquisition","inputs":["external providers"],"outputs":["mutable processed Parquet"],"authority":"provider payload plus freshness checks","mutable_state":["Data/processed_v6"],"external_dependencies":["TWSE","TPEX","FinMind","TAIFEX","MOPS","TDCC","yfinance"],"ownership":"production ingestion"},
+    {"name":"correctness-evidence","inputs":["official immutable snapshots"],"outputs":["PIT records","lifecycle","provenance eligibility","gates"],"authority":"versioned manifests/hashes/tests","mutable_state":[],"external_dependencies":["official historical sources"],"ownership":"V7 correctness"},
+    {"name":"feature-label-contract","inputs":["admitted PIT data"],"outputs":["48-feature panels","classed labels","universe"],"authority":"corrected baseline manifests","mutable_state":[],"external_dependencies":[],"ownership":"V7 research data"},
+    {"name":"model-research","inputs":["frozen matrices/contracts"],"outputs":["checkpoints","predictions","telemetry","diagnostics"],"authority":"run-local manifests and final reports","mutable_state":["Colab Drive run directory"],"external_dependencies":["Colab GPU","Drive"],"ownership":"research"},
+    {"name":"historical-simulation","inputs":["P0-admitted proxy observations"],"outputs":["simulated labels/results"],"authority":"historical-simulation readiness","mutable_state":[],"external_dependencies":[],"ownership":"research only"},
+    {"name":"portfolio","inputs":["signals","market sessions","cost/fill policy"],"outputs":["targets","fills","NAV","journal"],"authority":"contract plus hash-chain replay","mutable_state":["journal"],"external_dependencies":[],"ownership":"V7 research simulator; V6.2 separate legacy operational path"},
+    {"name":"production-runtime","inputs":["mutable data","models","policies"],"outputs":["scores","portfolio state","published results"],"authority":"entrypoint code plus external scheduler","mutable_state":["V6/results","portfolio JSON/JSONL"],"external_dependencies":["scheduler","Git publication"],"ownership":"legacy V6.2; full path disabled"},
+    {"name":"operations-control-plane","inputs":["stage observations"],"outputs":["ledger","checks","current-state projection"],"authority":"append/transaction semantics and projection","mutable_state":["SQLite WAL","current-state.json"],"external_dependencies":["filesystem locking"],"ownership":"Phase A branch; shadow only"},
+    {"name":"api-ui","inputs":["published artifacts","local health summary"],"outputs":["HTTP API","dashboard"],"authority":"artifact schema and fail-closed adapter","mutable_state":["caches"],"external_dependencies":["hosting","browser"],"ownership":"delivery surface"},
+    {"name":"knowledge-docs","inputs":["machine evidence","decisions","runtime observations"],"outputs":["navigation","current state","authority map","history"],"authority":"supporting unless explicitly designated","mutable_state":["repo docs","local Obsidian"],"external_dependencies":["Git","Windows/WSL paths"],"ownership":"humans and agents"}
+  ],
+  "critical_rules":["mutable production data must not cross into PIT authority without provenance admission","historical simulation PASS must not cross into trading readiness","research portfolio output must not be described as live execution","unmerged branch work must be labeled candidate state"]
+}

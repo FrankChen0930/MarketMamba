@@ -1,0 +1,13 @@
+{
+  "authority": "NAVIGATION_ONLY",
+  "event_count": 3,
+  "events_by_topic": {
+    "E1 completed result": 1,
+    "E1 post-run diagnostic": 1,
+    "Knowledge governance": 1
+  },
+  "generated": true,
+  "notice": "GENERATED / DO NOT HAND EDIT",
+  "schema_version": 1,
+  "tracking_start": "K2"
+}

@@ -1,0 +1,24 @@
+{
+  "authority": "NAVIGATION_ONLY",
+  "generated": true,
+  "missing": [],
+  "notice": "GENERATED / DO NOT HAND EDIT",
+  "optional_domain_count": 1,
+  "present": [
+    "Data",
+    "Features",
+    "Models",
+    "Training",
+    "Labels",
+    "Production",
+    "Universe",
+    "Execution",
+    "Portfolio",
+    "Operations",
+    "UI",
+    "Research"
+  ],
+  "required_domain_count": 11,
+  "result": "PASS",
+  "schema_version": 2
+}

@@ -1,0 +1,240 @@
+{
+  "schema_version": 1,
+  "status": "ACTIVE_KNOWLEDGE_IMPACT_MAP",
+  "default": {
+    "severity": "NO_KNOWLEDGE_IMPACT",
+    "reason": "No declared semantic surface matched; reviewer still owns semantic judgment."
+  },
+  "rules": [
+    {
+      "id": "feature-contract",
+      "patterns": [
+        "research/v7/**/feature-manifest.json",
+        "**/feature-manifest.json"
+      ],
+      "impacts": [
+        {
+          "artifact": "knowledge/01_Domains/Features.md",
+          "severity": "REVIEW_REQUIRED"
+        },
+        {
+          "artifact": "knowledge/01_Domains/Models.md",
+          "severity": "REVIEW_REQUIRED"
+        },
+        {
+          "artifact": "knowledge/00_Project_Map/Current_State.md",
+          "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+        },
+        {
+          "artifact": "knowledge/00_Project_Map/Authority_Map.md",
+          "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+        }
+      ]
+    },
+    {
+      "id": "label-execution-universe-contracts",
+      "patterns": [
+        "research/v7/**/label-manifest.json",
+        "research/v7/**/universe-manifest.json",
+        "research/v7/**/execution-proxy-policy.json",
+        "research/v7/**/readiness.json"
+      ],
+      "impacts": [
+        {
+          "artifact": "knowledge/01_Domains/Labels.md",
+          "severity": "REVIEW_REQUIRED"
+        },
+        {
+          "artifact": "knowledge/01_Domains/Execution.md",
+          "severity": "REVIEW_REQUIRED"
+        },
+        {
+          "artifact": "knowledge/01_Domains/Universe.md",
+          "severity": "REVIEW_REQUIRED"
+        },
+        {
+          "artifact": "knowledge/00_Project_Map/Current_State.md",
+          "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+        },
+        {
+          "artifact": "knowledge/00_Project_Map/Authority_Map.md",
+          "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+        }
+      ]
+    },
+    {
+      "id": "model-training-contracts",
+      "patterns": [
+        "research/v7/**/incumbent-contract.json",
+        "research/v7/**/experiment-contract.json",
+        "V6/experimental/v7_*train*.py",
+        "V6/experimental/v7_*checkpoint*.py"
+      ],
+      "impacts": [
+        {
+          "artifact": "knowledge/01_Domains/Models.md",
+          "severity": "REVIEW_REQUIRED"
+        },
+        {
+          "artifact": "knowledge/01_Domains/Training.md",
+          "severity": "REVIEW_REQUIRED"
+        },
+        {
+          "artifact": "knowledge/01_Domains/Research.md",
+          "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+        }
+      ]
+    },
+    {
+      "id": "production-runner",
+      "patterns": [
+        "V6/run_v62_daily.py",
+        "V6/scripts/v62_daily.bat"
+      ],
+      "impacts": [
+        {
+          "artifact": "knowledge/01_Domains/Production.md",
+          "severity": "REVIEW_REQUIRED"
+        },
+        {
+          "artifact": "knowledge/01_Domains/Operations.md",
+          "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+        },
+        {
+          "artifact": "knowledge/00_Project_Map/Current_State.md",
+          "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+        }
+      ]
+    },
+    {
+      "id": "portfolio",
+      "patterns": [
+        "V6/experimental/v7_portfolio_*"
+      ],
+      "impacts": [
+        {
+          "artifact": "knowledge/01_Domains/Portfolio.md",
+          "severity": "REVIEW_REQUIRED"
+        }
+      ]
+    },
+    {
+      "id": "operations-control-plane",
+      "patterns": [
+        "V6/marketmamba/ops/**"
+      ],
+      "impacts": [
+        {
+          "artifact": "knowledge/01_Domains/Operations.md",
+          "severity": "REVIEW_REQUIRED"
+        },
+        {
+          "artifact": "knowledge/01_Domains/Production.md",
+          "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+        },
+        {
+          "artifact": "knowledge/00_Project_Map/Current_State.md",
+          "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+        }
+      ]
+    },
+    {
+      "id": "delivery-surfaces",
+      "patterns": [
+        "app/backend/**",
+        "app/frontend/**"
+      ],
+      "impacts": [
+        {
+          "artifact": "knowledge/01_Domains/UI.md",
+          "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+        },
+        {
+          "artifact": "knowledge/00_Project_Map/Current_State.md",
+          "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+        }
+      ]
+    },
+    {
+      "id": "worktree-responsibility",
+      "patterns": [
+        "knowledge/00_Project_Map/Worktree_Register.md"
+      ],
+      "impacts": [
+        {
+          "artifact": "knowledge/00_Project_Map/Current_State.md",
+          "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+        },
+        {
+          "artifact": "knowledge/00_Project_Map/Authority_Map.md",
+          "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+        },
+        {
+          "artifact": "knowledge/01_Domains/Operations.md",
+          "severity": "REVIEW_REQUIRED"
+        }
+      ]
+    },
+    {
+      "id": "canonical-knowledge",
+      "patterns": [
+        "knowledge/00_Project_Map/**",
+        "knowledge/01_Domains/**"
+      ],
+      "impacts": [
+        {
+          "artifact": "knowledge/GOVERNANCE.md",
+          "severity": "REVIEW_REQUIRED"
+        }
+      ]
+    },
+    {
+      "id": "knowledge-governance-system",
+      "patterns": [
+        "AGENTS.md",
+        "CLAUDE.md",
+        "knowledge/GOVERNANCE.md",
+        "knowledge/governance-config.json",
+        "knowledge/knowledge-impact-map.json",
+        "knowledge/runtime-observations/**",
+        "tools/project_knowledge/**"
+      ],
+      "impacts": [
+        {
+          "artifact": "knowledge/GOVERNANCE.md",
+          "severity": "REVIEW_REQUIRED"
+        },
+        {
+          "artifact": "knowledge/00_Project_Map/Current_State.md",
+          "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+        }
+      ]
+    },
+    {
+      "id": "generated-validation-output",
+      "patterns": [
+        "knowledge/_generated/**"
+      ],
+      "impacts": [
+        {
+          "artifact": "knowledge/GOVERNANCE.md",
+          "severity": "NO_KNOWLEDGE_IMPACT"
+        }
+      ]
+    },
+    {
+      "id": "history-reports-tasks",
+      "patterns": [
+        "knowledge/02_History/**",
+        "reports/**",
+        "tasks/**"
+      ],
+      "impacts": [
+        {
+          "artifact": "knowledge/02_History/README.md",
+          "severity": "NO_KNOWLEDGE_IMPACT"
+        }
+      ]
+    }
+  ]
+}

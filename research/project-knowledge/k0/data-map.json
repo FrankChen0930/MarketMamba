@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "classification": "GENERATED_DISCOVERY_NOT_CANONICAL",
+  "lifecycle": ["provider acquisition","raw/mutable processed storage","hygiene","immutable official snapshots","PIT records and lifecycle","source-provenance admission","features/universe/labels","matrix","research outputs"],
+  "directories": [
+    {"path":"Data/processed_v6","purpose":"daily provider-aligned inputs","producer":"V6 data fetcher","consumer":"V6.2 merger/runtime","mutability":"MUTABLE_APPEND_DEDUP","authority":"CURRENT_REFERENCE","versioning":"implicit by date","risk":["current-world mutation","mixed providers","not PIT evidence"]},
+    {"path":"Data/v7_prepared_20260911","purpose":"legacy integrated V7 prepared feature cache","producer":"v7 integrated preparation","consumer":"legacy V7 experiments","mutability":"FROZEN_BY_CONVENTION","authority":"HISTORICAL_ONLY","versioning":"dated directory","risk":["pre-correctness semantics"]},
+    {"path":"Data/v7_exchange_verified_ohlcv_v1","purpose":"official exchange OHLCV observations","producer":"OHLCV remediation builders","consumer":"provenance and labels","mutability":"IMMUTABLE_EVIDENCE","authority":"CANONICAL","versioning":"manifest/hash","risk":["coverage gaps must fail closed"]},
+    {"path":"Data/v7_corrected_baseline_v1","purpose":"verified lifecycle universe and corrected baseline artifacts","producer":"corrected baseline builder","consumer":"corrected E5/E1","mutability":"VERSIONED","authority":"CANONICAL","versioning":"v1 manifests/hashes","risk":["value table admission was blocked where evidence absent"]},
+    {"path":"Data/v7_historical_execution_proxy_v1","purpose":"frozen P0/P1/P2 proxy evidence","producer":"historical proxy validator","consumer":"historical label admission","mutability":"VERSIONED","authority":"RESEARCH_EVIDENCE","versioning":"v1 policy/manifests","risk":["must never be called VERIFIED_EXECUTABLE"]},
+    {"path":"Data/v7_historical_simulated_labels_v1","purpose":"provenance-safe 5d/10d simulated labels","producer":"historical label materializer","consumer":"corrected E5 replication","mutability":"VERSIONED","authority":"RESEARCH_EVIDENCE","versioning":"v1","risk":["simulation only"]},
+    {"path":"Data/v7_historical_simulated_labels_v2","purpose":"extended label support for E1","producer":"v2 label materializer","consumer":"E1 matrix","mutability":"VERSIONED","authority":"RESEARCH_EVIDENCE","versioning":"v2","risk":["not strict live executability"]},
+    {"path":"Data/v7_ohlcv_provenance_remediation_v1","purpose":"global mismatch inventory and eligibility evidence","producer":"provenance remediation","consumer":"P0 readiness","mutability":"IMMUTABLE_EVIDENCE","authority":"CANONICAL","versioning":"manifest/hash","risk":["source classification must precede proxy"]},
+    {"path":"deliveries","purpose":"human transfer bundles and experiment outputs","producer":"packagers and users","consumer":"Colab/handoffs","mutability":"MIXED","authority":"SUPPORTING","versioning":"bundle-specific","risk":["filename final/latest does not confer authority"]}
+  ],
+  "label_classes": [
+    {"name":"legacy-close-to-close","formula":"legacy horizon close return","entry":"close","exit":"future close","rolling":"legacy implementation dependent","tradability":"weak/implicit","evidence_class":"HISTORICAL_ONLY","allowed_usage":"legacy comparisons only"},
+    {"name":"corrected-next-open","formula":"exit_close / entry_open - 1","entry":"next frozen calendar session open; never roll","exit":"h-th holding-session close; entry is day 1","rolling":"NO_ROLL","tradability":"full interval provenance and suspension checks","evidence_class":"contract","allowed_usage":"corrected research when admitted"},
+    {"name":"strict-verified-executable","formula":"corrected formula with verified executable evidence","entry":"verified next open","exit":"verified holding close","rolling":"NO_ROLL","tradability":"verified daily evidence","evidence_class":"CANONICAL_STRICT","allowed_usage":"future live/paper validation; currently 0/0 labels"},
+    {"name":"historical-simulation-proxy","formula":"corrected formula admitted by frozen P0 proxy","entry":"simulated next open","exit":"simulated holding close","rolling":"NO_ROLL","tradability":"proxy, source-eligible, zero critical false executable","evidence_class":"RESEARCH_EVIDENCE","allowed_usage":"historical simulation and model research only"}
+  ],
+  "counts":{"historical_simulated_v1":{"5d":6889229,"10d":6790554},"historical_simulated_v2":{"5d":7023920,"10d":6923464},"strict_verified":{"5d":0,"10d":0}}
+}

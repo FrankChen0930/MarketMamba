@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "status": "ACTIVE_KNOWLEDGE_GOVERNANCE_CONFIG",
+  "required_domains": ["Data", "Features", "Models", "Training", "Labels", "Production", "Universe", "Execution", "Portfolio", "Operations", "UI"],
+  "optional_domains": ["Research"],
+  "tier_a_domains": ["Data", "Features", "Models", "Training", "Labels", "Production"],
+  "important_local_paths": [
+    "AGENTS.md",
+    "knowledge/00_Project_Map/Current_State.md",
+    "knowledge/00_Project_Map/Authority_Map.md",
+    "V6/run_v62_daily.py",
+    "V6/scripts/v62_daily.bat",
+    "V6/experimental/v7_portfolio_contract.py",
+    "app/backend/main.py",
+    "app/frontend/src/App.jsx"
+  ],
+  "important_authority_refs": [
+    "e3bce91:research/v7/corrected-baseline-v1/policy.json",
+    "e3bce91:research/v7/corrected-baseline-v1/feature-manifest.json",
+    "e3bce91:research/v7/corrected-baseline-v1/label-manifest.json",
+    "e3bce91:research/v7/corrected-baseline-v1/universe-manifest.json",
+    "e3bce91:research/v7/ohlcv-provenance-remediation-v1/readiness.json",
+    "044eef7:research/v7/corrected-e5-replication-v1/incumbent-contract.json",
+    "044eef7:research/v7/e1-rolling-origin-refresh-v1/experiment-contract.json",
+    "f5b0ff3:V6/marketmamba/ops/",
+    "9efed7b:reports/marketmamba_production_system_audit.md"
+  ],
+  "dependencies": [
+    ["Data", "Features"], ["Data", "Universe"], ["Data", "Execution"],
+    ["Features", "Models"], ["Models", "Training"], ["Universe", "Execution"],
+    ["Execution", "Labels"], ["Labels", "Portfolio"], ["Models", "Portfolio"],
+    ["Training", "Operations"], ["Portfolio", "Production"],
+    ["Operations", "Production"], ["Production", "UI"]
+  ],
+  "legacy_documents": ["README.md", "OVERVIEW.md", "PROJECT.md"],
+  "legacy_claim_patterns": [
+    {"id": "FULL_DAILY_ACTIVE", "severity": "WARNING", "pattern": "(?i)(每日.*(自動|排程).*(推論|部署)|daily.*automated.*inference)"},
+    {"id": "LEGACY_FEATURE_COUNT", "severity": "WARNING", "pattern": "(?i)(特徵維度.*(56|59)|輸入資料.*56|INPUT_DIM.?=.?59|V6\\.2.*59.*特徵)"},
+    {"id": "LEGACY_ARCHITECTURE_CURRENT", "severity": "WARNING", "pattern": "(?i)(d_model.?=.?256|MambaBlocks.?[×x].?8|D_MODEL.?=.?256)"}
+  ]
+}

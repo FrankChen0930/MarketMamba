@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-09-20",
+  "authority": "DISCOVERY_EVIDENCE_ONLY",
+  "findings": [
+    {
+      "id": "K1-DOMAIN-001",
+      "severity": "INFO",
+      "topic": "runtime_telemetry",
+      "finding": "Corrected E5 runtime forensics lack matrix wall time, epoch timing, GPU utilization, and durable-storage I/O telemetry.",
+      "disposition": "Preserve as a Training limitation; do not infer missing values."
+    },
+    {
+      "id": "K1-DOMAIN-002",
+      "severity": "WARNING",
+      "topic": "universe_lifecycle",
+      "finding": "A historical listing-start case remains unresolved in the available lifecycle evidence.",
+      "disposition": "Keep UNKNOWN and fail closed until sourced."
+    },
+    {
+      "id": "K1-DOMAIN-003",
+      "severity": "INFO",
+      "topic": "deployment",
+      "finding": "API and frontend source exists, but live deployment and service ownership are not verified.",
+      "disposition": "Retain UNKNOWN; require a timestamped runtime observation."
+    }
+  ]
+}

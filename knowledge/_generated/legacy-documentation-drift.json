@@ -1,0 +1,71 @@
+{
+  "authority": "VALIDATION_OUTPUT_ONLY",
+  "automatic_edits_performed": false,
+  "documents_scanned": [
+    "README.md",
+    "OVERVIEW.md",
+    "PROJECT.md"
+  ],
+  "generated": true,
+  "hits": [
+    {
+      "claim_id": "LEGACY_ARCHITECTURE_CURRENT",
+      "document": "README.md",
+      "excerpt": "各組投影後 Concat → d_model=256",
+      "line": 85,
+      "severity": "WARNING"
+    },
+    {
+      "claim_id": "LEGACY_FEATURE_COUNT",
+      "document": "README.md",
+      "excerpt": "**特徵維度**：56 維（個人實盤主線，不含相對強度特徵）／59 維（多模型並行線，多納入 RS_5d/RS_20d/RS_60d 相對強度特徵，總體環境維度以 mask 方式歸零——消融實驗證實總體環境因子在橫斷面排序上等同每日常數、拿掉後訊號品質反而顯著上升）。",
+      "line": 113,
+      "severity": "WARNING"
+    },
+    {
+      "claim_id": "FULL_DAILY_ACTIVE",
+      "document": "OVERVIEW.md",
+      "excerpt": "> 台股 AI 選股系統：Mamba SSM + KG-Enhanced GATv2 · 每日自動化推論 · 全棧 Web Dashboard",
+      "line": 3,
+      "severity": "WARNING"
+    },
+    {
+      "claim_id": "LEGACY_FEATURE_COUNT",
+      "document": "OVERVIEW.md",
+      "excerpt": "### 輸入資料（56 維特徵 × 252 天序列）",
+      "line": 27,
+      "severity": "WARNING"
+    },
+    {
+      "claim_id": "LEGACY_FEATURE_COUNT",
+      "document": "OVERVIEW.md",
+      "excerpt": "> V6.2 訓練版（`INPUT_DIM=59`）額外啟用 RS_5d/RS_20d/RS_60d 三個相對強度特徵。",
+      "line": 36,
+      "severity": "WARNING"
+    },
+    {
+      "claim_id": "LEGACY_ARCHITECTURE_CURRENT",
+      "document": "OVERVIEW.md",
+      "excerpt": "↓ FactorGroupedEmbedding（各群組獨立投影 → 比例分配子維度 → Concat → d_model=256）",
+      "line": 46,
+      "severity": "WARNING"
+    },
+    {
+      "claim_id": "FULL_DAILY_ACTIVE",
+      "document": "OVERVIEW.md",
+      "excerpt": "**用途**：展示 Claude LLM 每日自動生成的市場分析報告，以及推論時的大盤快照。",
+      "line": 324,
+      "severity": "WARNING"
+    },
+    {
+      "claim_id": "LEGACY_ARCHITECTURE_CURRENT",
+      "document": "PROJECT.md",
+      "excerpt": "MambaBlocks × 8 (d_model=256, d_state=32)  # 捕捉時序模式",
+      "line": 77,
+      "severity": "WARNING"
+    }
+  ],
+  "notice": "GENERATED / DO NOT HAND EDIT",
+  "schema_version": 1,
+  "status": "WARNING"
+}

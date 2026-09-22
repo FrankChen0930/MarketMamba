@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "status": "APPEND_ONLY_FROM_K2",
+  "authority": "GOVERNANCE_HISTORY_INDEX",
+  "events": [
+    {
+      "topic": "Knowledge governance",
+      "old_authority": "research/project-knowledge/k0/knowledge-impact-policy-proposal.md (PROPOSAL_ONLY)",
+      "new_authority": "092b65b:knowledge/GOVERNANCE.md",
+      "changed_at": "2026-09-20",
+      "change_commit": "092b65b",
+      "reason": "K2 established the first reviewed governance lifecycle and operational contracts.",
+      "evidence": [
+        "knowledge/GOVERNANCE.md",
+        "knowledge/knowledge-impact-map.json",
+        "knowledge/runtime-observations/scheduler.json"
+      ]
+    },
+    {
+      "topic": "E1 completed result",
+      "old_authority": "external-only unverified result state",
+      "new_authority": "eec63c5:research/v7/e1-rolling-origin-refresh-v1/results/result-manifest.json",
+      "changed_at": "2026-09-21",
+      "change_commit": "eec63c5",
+      "reason": "Formal seed 17/29 results and paired evaluation were hash-validated and admitted as historical-simulation research evidence; strict Phase 0 remains STOP.",
+      "evidence": [
+        "research/v7/e1-rolling-origin-refresh-v1/results/result-manifest.json",
+        "research/v7/e1-rolling-origin-refresh-v1/results/evaluation.json"
+      ]
+    },
+    {
+      "topic": "E1 post-run diagnostic",
+      "old_authority": "undiagnosed post-run state",
+      "new_authority": "ef020e5:research/v7/e1-postrun-diagnostic-v1/diagnostic-summary.json",
+      "changed_at": "2026-09-21",
+      "change_commit": "ef020e5",
+      "reason": "Exact paired month and sensitivity analyses were completed; absent matrix/checkpoint and ex-ante regime inputs remain explicit UNKNOWN.",
+      "evidence": [
+        "research/v7/e1-postrun-diagnostic-v1/diagnostic-summary.json",
+        "research/v7/e1-postrun-diagnostic-v1/monthly-comparison.json"
+      ]
+    }
+  ]
+}

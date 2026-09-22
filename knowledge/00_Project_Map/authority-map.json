@@ -1,0 +1,487 @@
+{
+  "schema_version": "marketmamba-authority-map-v1",
+  "status": "CANONICAL_CURRENT_PROJECT_MAP",
+  "owner": "Human + project agents",
+  "human_review": {
+    "accepted_at": "2026-09-20",
+    "context": "Seed43 and Phase A review findings reconciled; accepted as current navigation authority."
+  },
+  "hierarchy": [
+    "versioned machine contracts, manifests, hashes, and executable tests",
+    "completed run-local final artifacts and validated checkpoint manifests",
+    "implementation on an explicitly named branch and commit",
+    "timestamped runtime observations",
+    "human reports and guides",
+    "historical notes and legacy artifacts"
+  ],
+  "freshness": {
+    "runtime_observation_ttl_days": 7,
+    "expired_status": "STALE_OBSERVATION",
+    "repository_contract_expiry": "supersession or commit identity only"
+  },
+  "topics": [
+    {
+      "topic": "Current project state",
+      "primary_authority": "knowledge/00_Project_Map/Current_State.md",
+      "authority_class": "CANONICAL",
+      "status": "CANONICAL_CURRENT_PROJECT_MAP",
+      "supersedes": [
+        "README/OVERVIEW current-state prose",
+        "old handoffs"
+      ],
+      "secondary_evidence": [
+        "reports/marketmamba_k0_project_knowledge_discovery.md"
+      ],
+      "conflicts": []
+    },
+    {
+      "topic": "Knowledge governance",
+      "primary_authority": "knowledge/GOVERNANCE.md",
+      "authority_class": "CANONICAL",
+      "status": "ACTIVE_GOVERNANCE_V1",
+      "supersedes": [
+        "K0 governance proposals",
+        "manual-only K1 maintenance"
+      ],
+      "secondary_evidence": [
+        "knowledge/knowledge-impact-map.json",
+        "tools/project_knowledge/knowledge_health.py"
+      ],
+      "conflicts": [
+        "Governance tools never auto-rewrite authority or business semantics"
+      ]
+    },
+    {
+      "topic": "Runtime observation store",
+      "primary_authority": "knowledge/runtime-observations/",
+      "authority_class": "CURRENT_REFERENCE",
+      "status": "TIMESTAMPED_EVIDENCE_WITH_TTL",
+      "supersedes": [
+        "runtime facts stored only in prose"
+      ],
+      "secondary_evidence": [
+        "tools/project_knowledge/runtime_observations.py",
+        "research/project-knowledge/k0/runtime-map.json"
+      ],
+      "conflicts": [
+        "Timestamps require actual observation evidence"
+      ]
+    },
+    {
+      "topic": "Production runtime",
+      "primary_authority": "V6/run_v62_daily.py + timestamped scheduler action",
+      "authority_class": "CURRENT_REFERENCE",
+      "status": "FETCH_ONLY_ACTIVE_FULL_PATH_DISABLED",
+      "supersedes": [
+        "README full-daily inference implication"
+      ],
+      "secondary_evidence": [
+        "V6/scripts/v62_daily.bat"
+      ],
+      "conflicts": [
+        "Code capability does not equal active schedule"
+      ]
+    },
+    {
+      "topic": "Scheduler state",
+      "primary_authority": "external:Windows Task Scheduler observation@2026-09-20T01:30:00+08:00",
+      "authority_class": "RUNTIME_OBSERVATION",
+      "status": "ACTIVE_FETCH_ONLY_FULL_V62_DISABLED",
+      "supersedes": [
+        "older scheduler snapshots"
+      ],
+      "secondary_evidence": [
+        "research/project-knowledge/k0/runtime-map.json"
+      ],
+      "conflicts": [
+        "Expires to STALE_OBSERVATION after seven days"
+      ]
+    },
+    {
+      "topic": "Data provenance policy",
+      "primary_authority": "fix/v7-historical-pit-reconstruction@e3bce91:research/v7/ohlcv-provenance-remediation-v1/source-reliability.json",
+      "authority_class": "CANONICAL",
+      "status": "ACTIVE_RESEARCH_CONTRACT",
+      "supersedes": [
+        "mixed-source OHLCV admission"
+      ],
+      "secondary_evidence": [
+        "same-directory provenance lineage and mismatch inventory"
+      ],
+      "conflicts": []
+    },
+    {
+      "topic": "PIT policy",
+      "primary_authority": "fix/v7-historical-pit-reconstruction@e3bce91:research/v7/corrected-baseline-v1/policy.json",
+      "authority_class": "CANONICAL",
+      "status": "ACTIVE_RESEARCH_CONTRACT",
+      "supersedes": [
+        "current-world/backfilled assumptions"
+      ],
+      "secondary_evidence": [
+        "builder code",
+        "Phase 0 tests"
+      ],
+      "conflicts": []
+    },
+    {
+      "topic": "Feature contract",
+      "primary_authority": "fix/v7-historical-pit-reconstruction@e3bce91:research/v7/corrected-baseline-v1/feature-manifest.json",
+      "authority_class": "CANONICAL",
+      "status": "48_FEATURES",
+      "supersedes": [
+        "V6.1 56-feature contract",
+        "V6.2 59-feature contract",
+        "V6.2 baseline 66-feature contract"
+      ],
+      "secondary_evidence": [
+        "corrected baseline builder/tests"
+      ],
+      "conflicts": []
+    },
+    {
+      "topic": "Feature list",
+      "primary_authority": "fix/v7-historical-pit-reconstruction@e3bce91:research/v7/corrected-baseline-v1/feature-manifest.json#ordered_features",
+      "authority_class": "CANONICAL",
+      "status": "ORDER_PINNED",
+      "supersedes": [
+        "legacy feature orders"
+      ],
+      "secondary_evidence": [
+        "research/project-knowledge/k0/feature-map.json"
+      ],
+      "conflicts": []
+    },
+    {
+      "topic": "Label contract",
+      "primary_authority": "fix/v7-historical-pit-reconstruction@e3bce91:research/v7/corrected-baseline-v1/label-manifest.json",
+      "authority_class": "CANONICAL",
+      "status": "NEXT_OPEN_NO_ROLL",
+      "supersedes": [
+        "legacy close-to-close semantics"
+      ],
+      "secondary_evidence": [
+        "policy",
+        "historical label materializer tests"
+      ],
+      "conflicts": []
+    },
+    {
+      "topic": "Universe contract",
+      "primary_authority": "fix/v7-historical-pit-reconstruction@e3bce91:research/v7/corrected-baseline-v1/universe-manifest.json",
+      "authority_class": "CANONICAL",
+      "status": "VERIFIED_LIFECYCLE",
+      "supersedes": [
+        "current constituent backfill"
+      ],
+      "secondary_evidence": [
+        "historical security-master builder/tests"
+      ],
+      "conflicts": [
+        "Membership is not tradability"
+      ]
+    },
+    {
+      "topic": "Historical simulation proxy",
+      "primary_authority": "fix/v7-historical-pit-reconstruction@e3bce91:research/v7/historical-execution-proxy-v1/execution-proxy-policy.json",
+      "authority_class": "CANONICAL",
+      "status": "P0_FROZEN_PASS",
+      "supersedes": [
+        "ad-hoc execution heuristics"
+      ],
+      "secondary_evidence": [
+        "proxy validation",
+        "provenance-remediation readiness"
+      ],
+      "conflicts": [
+        "Not VERIFIED_EXECUTABLE"
+      ]
+    },
+    {
+      "topic": "Strict executable evidence",
+      "primary_authority": "fix/v7-historical-pit-reconstruction@e3bce91:research/v7/ohlcv-provenance-remediation-v1/readiness.json",
+      "authority_class": "CANONICAL",
+      "status": "STOP_LABELS_5D_0_10D_0",
+      "supersedes": [
+        "claims that proxy PASS implies trading readiness"
+      ],
+      "secondary_evidence": [
+        "corrected Phase 0 audit"
+      ],
+      "conflicts": [
+        "Historical simulation simultaneously PASS"
+      ]
+    },
+    {
+      "topic": "Corrected E5 architecture",
+      "primary_authority": "feature/v7-e1-rolling-origin-refresh@044eef7:research/v7/corrected-e5-replication-v1/incumbent-contract.json",
+      "authority_class": "CANONICAL",
+      "status": "D_MODEL_64_D_STATE_32",
+      "supersedes": [
+        "corrected architecture draft d_model32/d_state8"
+      ],
+      "secondary_evidence": [
+        "completed result identity",
+        "final runner"
+      ],
+      "conflicts": []
+    },
+    {
+      "topic": "Training recipe",
+      "primary_authority": "feature/v7-e1-rolling-origin-refresh@044eef7:research/v7/corrected-e5-replication-v1/incumbent-contract.json#/fields/training",
+      "authority_class": "CANONICAL",
+      "status": "FROZEN_FOR_E1",
+      "supersedes": [
+        "notebook-only assumptions"
+      ],
+      "secondary_evidence": [
+        "E1 experiment contract",
+        "exact environment lock"
+      ],
+      "conflicts": []
+    },
+    {
+      "topic": "Corrected E5 checkpoints",
+      "primary_authority": "run-local validated checkpoint manifests",
+      "authority_class": "RESEARCH_EVIDENCE",
+      "status": "SEEDS_17_29_COMPLETE_SEED43_INCOMPLETE_EXCLUDED",
+      "supersedes": [
+        "filename or pointer-only inference"
+      ],
+      "secondary_evidence": [
+        "diagnostic resume forensics",
+        "telemetry"
+      ],
+      "conflicts": [
+        "Seed43 pointer best_epoch=8 names missing generations; surviving orphan is epoch15/step39915 and convergence evidence only"
+      ]
+    },
+    {
+      "topic": "Diagnostic v1",
+      "primary_authority": "feature/v7-e1-rolling-origin-refresh@044eef7:research/v7/corrected-e5-diagnostic-v1/summary.json",
+      "authority_class": "RESEARCH_EVIDENCE",
+      "status": "SUPERSEDED_FOR_CURRENT_CONCLUSION",
+      "supersedes": [
+        "raw partial-run impressions"
+      ],
+      "secondary_evidence": [
+        "v1 component analyses"
+      ],
+      "conflicts": [
+        "v2 is current conclusion"
+      ]
+    },
+    {
+      "topic": "Extended diagnostic v2",
+      "primary_authority": "feature/v7-e1-rolling-origin-refresh@044eef7:research/v7/corrected-e5-diagnostic-v2/diagnostic-summary.json",
+      "authority_class": "RESEARCH_EVIDENCE",
+      "status": "STOP_FOR_TRADING_CONTINUE_RESEARCH",
+      "supersedes": [
+        "diagnostic v1 as final conclusion"
+      ],
+      "secondary_evidence": [
+        "v2 component analyses"
+      ],
+      "conflicts": []
+    },
+    {
+      "topic": "E1 experiment specification",
+      "primary_authority": "feature/v7-e1-rolling-origin-refresh@044eef7:research/v7/e1-rolling-origin-refresh-v1/experiment-contract.json",
+      "authority_class": "CANONICAL",
+      "status": "FROZEN_EXPERIMENT_SPECIFICATION",
+      "supersedes": [
+        "informal proposals"
+      ],
+      "secondary_evidence": [
+        "contract diff",
+        "runner",
+        "checkpoint store",
+        "generated notebook"
+      ],
+      "conflicts": [
+        "Pre-run decision field is historical, not completed-result authority"
+      ]
+    },
+    {
+      "topic": "E1 completed result",
+      "primary_authority": "eec63c5:research/v7/e1-rolling-origin-refresh-v1/results/result-manifest.json",
+      "authority_class": "RESEARCH_EVIDENCE",
+      "status": "PASS_REFRESH_HYPOTHESIS",
+      "supersedes": [
+        "external-only unverified result state"
+      ],
+      "secondary_evidence": [
+        "research/v7/e1-rolling-origin-refresh-v1/results/evaluation.json",
+        "research/v7/e1-rolling-origin-refresh-v1/results/run-summary.json"
+      ],
+      "conflicts": [
+        "Historical simulation only; strict Phase 0 STOP; no portfolio admission"
+      ]
+    },
+    {
+      "topic": "E1 post-run diagnostic",
+      "primary_authority": "ef020e5:research/v7/e1-postrun-diagnostic-v1/diagnostic-summary.json",
+      "authority_class": "RESEARCH_EVIDENCE",
+      "status": "EPOCH_DEGRADATION_INCONCLUSIVE_REGIME_DEPENDENCE_INCONCLUSIVE",
+      "supersedes": [
+        "undiagnosed post-run state"
+      ],
+      "secondary_evidence": [
+        "research/v7/e1-postrun-diagnostic-v1/monthly-comparison.json",
+        "research/v7/e1-postrun-diagnostic-v1/epoch-evaluation.json"
+      ],
+      "conflicts": [
+        "No final-support epoch replay or causal regime series; strict Phase 0 STOP"
+      ]
+    },
+    {
+      "topic": "Portfolio semantics",
+      "primary_authority": "V6/experimental/v7_portfolio_contract.py",
+      "authority_class": "CURRENT_REFERENCE",
+      "status": "RESEARCH_ONLY",
+      "supersedes": [
+        "V6.2 JSONL as V7 semantic authority"
+      ],
+      "secondary_evidence": [
+        "V6/experimental/v7_portfolio_engine.py",
+        "V6/experimental/v7_portfolio_journal.py",
+        "tests"
+      ],
+      "conflicts": [
+        "No live broker/scheduler integration"
+      ]
+    },
+    {
+      "topic": "Production-system architecture",
+      "primary_authority": "docs/production-system-architecture-audit@9efed7b:reports/marketmamba_production_system_audit.md",
+      "authority_class": "CURRENT_REFERENCE",
+      "status": "AUDIT_COMPLETE_ROADMAP_PHASE_A_TO_F",
+      "supersedes": [
+        "older production prose"
+      ],
+      "secondary_evidence": [
+        "production-system machine contracts"
+      ],
+      "conflicts": [
+        "Branch implementation is newer than parts of prose"
+      ]
+    },
+    {
+      "topic": "Phase A implementation",
+      "primary_authority": "feature/production-phase-a-shadow-ledger@f5b0ff3:V6/marketmamba/ops/",
+      "authority_class": "UNMERGED_IMPLEMENTATION",
+      "status": "TASKS_1_TO_3_COMPLETED_REVIEWED_TASK4_IMPLEMENTED_APPROVAL_PENDING_TASK5_NOT_STARTED_UNMERGED_NOT_DEPLOYED",
+      "supersedes": [
+        "roadmap-only Phase A description"
+      ],
+      "secondary_evidence": [
+        "branch tests",
+        "sanitizer fix commits"
+      ],
+      "conflicts": [
+        "HUMAN_REVIEW_REQUIRED for Task 4 correctness approval",
+        "Shadow evidence does not own fetch success"
+      ]
+    },
+    {
+      "topic": "API/UI",
+      "primary_authority": null,
+      "authority_class": "UNKNOWN",
+      "status": "LIVE_DEPLOYMENT_UNKNOWN",
+      "supersedes": [],
+      "secondary_evidence": [
+        "app/backend/main.py",
+        "app/frontend/src/App.jsx",
+        "local untracked V7 candidates"
+      ],
+      "conflicts": [
+        "Source presence does not prove deployment"
+      ]
+    },
+    {
+      "topic": "Agent instructions",
+      "primary_authority": "AGENTS.md",
+      "authority_class": "CURRENT_REFERENCE",
+      "status": "NAVIGATION_AND_POLICY_ONLY",
+      "supersedes": [
+        "stale duplicated project state in CLAUDE.md"
+      ],
+      "secondary_evidence": [
+        "research/project-knowledge/k0/agents-audit.md",
+        "research/project-knowledge/k0/claude-audit.md"
+      ],
+      "conflicts": [
+        "Machine contracts and project map outrank empirical state prose"
+      ]
+    },
+    {
+      "topic": "Worktree responsibility",
+      "primary_authority": "knowledge/00_Project_Map/Worktree_Register.md",
+      "authority_class": "CURRENT_REFERENCE",
+      "status": "EIGHT_OBSERVED_2026_09_22",
+      "supersedes": [],
+      "secondary_evidence": [
+        "Git worktree list",
+        "branch HEAD/status"
+      ],
+      "conflicts": [
+        "Registration is not removal authorization"
+      ]
+    },
+    {
+      "topic": "Development runtime contract",
+      "primary_authority": "knowledge/00_Project_Map/Current_State.md",
+      "authority_class": "CURRENT_REFERENCE",
+      "status": "WSL_NATIVE_DEVELOPMENT",
+      "supersedes": [],
+      "secondary_evidence": [
+        "AGENTS.md",
+        "docs/operations/wsl-migration-2026-09-07.md"
+      ],
+      "conflicts": [
+        "Windows operational checkout is separate"
+      ]
+    },
+    {
+      "topic": "Mutable data cache",
+      "primary_authority": "V6/marketmamba/config.py",
+      "authority_class": "CURRENT_REFERENCE",
+      "status": "MUTABLE_NON_PIT_CACHE",
+      "supersedes": [],
+      "secondary_evidence": [
+        "MARKETMAMBA_DATA_ROOT",
+        "V7 source registry"
+      ],
+      "conflicts": [
+        "Snapshot and realpath required for research provenance"
+      ]
+    },
+    {
+      "topic": "Colab runtime",
+      "primary_authority": "feature/v7-e1-rolling-origin-refresh@044eef7:research/v7/e1-rolling-origin-refresh-v1/experiment-contract.json",
+      "authority_class": "CURRENT_REFERENCE",
+      "status": "SEPARATE_LOCKED_TRAINING_RUNTIME",
+      "supersedes": [],
+      "secondary_evidence": [
+        "E1 bundle",
+        "exact lock"
+      ],
+      "conflicts": [
+        "Formal run requires identity"
+      ]
+    },
+    {
+      "topic": "Local untracked candidates",
+      "primary_authority": null,
+      "authority_class": "UNKNOWN",
+      "status": "NOT_ADMITTED",
+      "supersedes": [],
+      "secondary_evidence": [
+        "main V7 API/UI candidate files"
+      ],
+      "conflicts": [
+        "File presence is not canonical/deployed authority"
+      ]
+    }
+  ]
+}

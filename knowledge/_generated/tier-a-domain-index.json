@@ -1,0 +1,39 @@
+{
+  "authority": "NAVIGATION_ONLY",
+  "domains": [
+    {
+      "name": "Data",
+      "path": "knowledge/01_Domains/Data.md",
+      "status": "CANONICAL_DOMAIN_NOTE_WITH_UNKNOWN"
+    },
+    {
+      "name": "Features",
+      "path": "knowledge/01_Domains/Features.md",
+      "status": "CANONICAL_DOMAIN_NOTE"
+    },
+    {
+      "name": "Models",
+      "path": "knowledge/01_Domains/Models.md",
+      "status": "CANONICAL_DOMAIN_NOTE"
+    },
+    {
+      "name": "Training",
+      "path": "knowledge/01_Domains/Training.md",
+      "status": "CANONICAL_DOMAIN_NOTE_WITH_UNKNOWN"
+    },
+    {
+      "name": "Labels",
+      "path": "knowledge/01_Domains/Labels.md",
+      "status": "CANONICAL_DOMAIN_NOTE"
+    },
+    {
+      "name": "Production",
+      "path": "knowledge/01_Domains/Production.md",
+      "status": "CANONICAL_DOMAIN_NOTE_WITH_UNKNOWN"
+    }
+  ],
+  "generated": true,
+  "notice": "GENERATED / DO NOT HAND EDIT",
+  "schema_version": 2,
+  "tier": "A"
+}
