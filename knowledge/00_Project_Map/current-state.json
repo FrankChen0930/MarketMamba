@@ -221,5 +221,13 @@
     "operational_data_root": "/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6",
     "scheduler_data_root_env": "UNKNOWN_NOT_CAPTURED"
   },
-  "worktree_register": "knowledge/00_Project_Map/Worktree_Register.md"
+  "worktree_register": "knowledge/00_Project_Map/Worktree_Register.md",
+  "repository_rationalization": {
+    "phase": "3A",
+    "status": "INVENTORY_COMPLETED_NO_CLEANUP",
+    "observed_at": "2026-09-22",
+    "report_manifest": "D:\\Desktop\\work\\project-audit\\market-mamba\\repository-rationalization\\MANIFEST.md",
+    "next_stage": "PHASE_3B_PROPOSED_NOT_AUTHORIZED",
+    "authority_change": false
+  }
 }

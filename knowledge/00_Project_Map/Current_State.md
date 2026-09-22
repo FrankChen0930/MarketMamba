@@ -114,6 +114,10 @@ Runtime observations are not permanent facts. The new Scheduler observation expi
 
 Eight linked worktrees were observed on 2026-09-22; their branch, purpose, authority and retirement preconditions are recorded in [Worktree Register](Worktree_Register.md). Branch-local research/ops results remain branch-qualified even after governance adoption. The main worktree retains unrelated dirty and untracked user changes.
 
+## Repository Rationalization Inventory
+
+Phase 3A read-only inventory completed on 2026-09-22; report: `D:\Desktop\work\project-audit\market-mamba\repository-rationalization\MANIFEST.md`. It classified the three tracked dirty files, 69 collapsed untracked status entries (73 files), eight worktrees, local branches, large artifacts and duplicate candidates. The Phase 3B cleanup plan is a proposal only. No source/data/worktree/branch cleanup, Windows checkout sync, push or deployment was performed. Any retirement, deletion, branch integration or operational promotion requires its own evidence and authorization. This inventory does not alter research, scheduler or deployment authority.
+
 ## Authority Links
 
 - [Authority Map](Authority_Map.md)
