@@ -154,6 +154,27 @@
     "generated_navigation": "DETERMINISTIC",
     "authority": "knowledge/GOVERNANCE.md"
   },
+  "repository_governance_rationalization": {
+    "status": "COMPLETED",
+    "completed_on": "2026-09-22",
+    "scope": "Repository governance, source authority, Git working-tree rationalization, K worktree retirement, and storage retention audit",
+    "remaining_worktrees": [
+      "feature/v7-e1-rolling-origin-refresh",
+      "fix/v7-e1-colab-recovery",
+      "research/v7-e1-postrun-diagnostics",
+      "feature/production-phase-a-shadow-ledger"
+    ],
+    "exclusions": [
+      "V7 research and strict Phase 0",
+      "E1 postrun diagnostics",
+      "Phase A acceptance",
+      "DATA_QUALITY_DIAGNOSTIC",
+      "Windows operational promotion",
+      "backend/frontend deployment verification or promotion",
+      "large-storage cleanup"
+    ],
+    "publication_evidence": "External finalization audit records development-main push and remote-HEAD verification separately"
+  },
   "blockers": [
     {
       "id": "strict-phase0",
