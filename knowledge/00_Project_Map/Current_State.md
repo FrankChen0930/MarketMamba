@@ -19,15 +19,19 @@ Semantic change owners must update this file in the same change. K0 remains disc
 
 ## Project Summary
 
-**CPU-only window 02 (2026-10-21, IN_PROGRESS):** reuse clean window 01 lineage
+**CPU-only window 02 (2026-10-21, WINDOW_COMPLETE):** reused window 01 lineage
 from `7eb9cd9` on `development/v7-cpu-window-01`; main stays `83a6a2e`.
-[Current backlog/checkpoint](../../tasks/v7-cpu-development-window-02.md).
-U1 normalized quote collision fix: 47 portfolio/process tests pass, independent
-review passes with no Critical/Required. U2 JSON duplicate-member ambiguity reproduced, READY to review.
-Current Goal API created a V7 goal after observing no goal; future automatic
-continuation remains unverified. No MAS/global settings touched. This supersedes
-window 01's next-action observation, not its evidence. UNMERGED / NOT_DEPLOYED;
-strict Phase 0 STOP, E1 frozen matrix BLOCKED. No research approval.
+[Current backlog/checkpoint](../../tasks/v7-cpu-development-window-02.md) and
+[evidence index](../../research/v7/cpu-window-02-evidence.json).
+U1 `735ae6f` rejects normalized quote collisions before persistence; U2 (commit
+containing this closure) rejects duplicate JSON object keys at every depth.
+Both COMPLETED_VERIFIED: final 60 portfolio/process/health/audit, 47 PIT,
+23 governance PASS; independent review no Critical/Required, one fix round each.
+No remaining confirmed READY item in inspected backlog; stop after two units.
+Goal API created a correctly bound V7 objective after observing no goal; future
+automatic continuation unverified. No MAS/global settings touched. This supersedes
+window 01 next-action status only. UNMERGED / NOT_DEPLOYED, no research approval;
+strict Phase 0 STOP and E1 matrix BLOCKED remain unchanged. Extra Human decisions 0.
 
 **CPU-only window 01 (2026-10-21):** Human authorized bounded autonomous
 engineering without training or research changes. Isolated
@@ -39,8 +43,8 @@ validation and shared-lock reading. Final bounded suites: 53
 portfolio/process/health/audit, 47 PIT, 23 governance PASS; independent review
 has no Required/Critical findings. See the
 [evidence index](../../research/v7/cpu-window-01-evidence.json).
-Next READY (not fixed): normalized quote collisions can silently retain the
-last value in the journal adapter. Window stopped after three units.
+Historical next READY at window 01 closure: normalized quote collisions;
+now fixed by window 02 above. Window 01 stopped after three units.
 E1 matrix remains BLOCKED; strict Phase 0 STOP and Phase 1–5 gates unchanged.
 This branch is UNMERGED / NOT_DEPLOYED; no live MAS Core capability is assumed.
 

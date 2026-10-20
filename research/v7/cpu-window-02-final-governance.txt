@@ -1,0 +1,28 @@
+test_durable_and_labeled_references (tools.project_knowledge.test_knowledge_governance.AuthorityReferenceTests.test_durable_and_labeled_references) ... ok
+test_e1_status_mismatch_fails (tools.project_knowledge.test_knowledge_governance.CanonicalInvariantTests.test_e1_status_mismatch_fails) ... ok
+test_feature_authority_change_without_note_fails (tools.project_knowledge.test_knowledge_governance.CanonicalInvariantTests.test_feature_authority_change_without_note_fails) ... ok
+test_phase_a_deployed_mismatch_fails (tools.project_knowledge.test_knowledge_governance.CanonicalInvariantTests.test_phase_a_deployed_mismatch_fails) ... ok
+test_dirty_legacy_document_uses_committed_prose (tools.project_knowledge.test_knowledge_governance.GenerationTests.test_dirty_legacy_document_uses_committed_prose) ... ok
+test_generation_is_deterministic (tools.project_knowledge.test_knowledge_governance.GenerationTests.test_generation_is_deterministic) ... ok
+test_acknowledgment_requires_reason (tools.project_knowledge.test_knowledge_governance.ImpactTests.test_acknowledgment_requires_reason) ... ok
+test_feature_manifest_requires_review (tools.project_knowledge.test_knowledge_governance.ImpactTests.test_feature_manifest_requires_review) ... ok
+test_governance_tool_requires_governance_review (tools.project_knowledge.test_knowledge_governance.ImpactTests.test_governance_tool_requires_governance_review) ... ok
+test_production_and_portfolio_mapping (tools.project_knowledge.test_knowledge_governance.ImpactTests.test_production_and_portfolio_mapping) ... ok
+test_worktree_responsibility_requires_state_review (tools.project_knowledge.test_knowledge_governance.ImpactTests.test_worktree_responsibility_requires_state_review) ... ok
+test_export_is_read_only (tools.project_knowledge.test_knowledge_governance.ObsidianTests.test_export_is_read_only) ... ok
+test_missing_vault_is_skipped (tools.project_knowledge.test_knowledge_governance.ObsidianTests.test_missing_vault_is_skipped) ... ok
+test_fixed_human_approval_is_evidence_bound (tools.project_knowledge.test_knowledge_governance.PhaseAApprovalTests.test_fixed_human_approval_is_evidence_bound) ... ok
+test_missing_human_record_rejected (tools.project_knowledge.test_knowledge_governance.PhaseAApprovalTests.test_missing_human_record_rejected) ... ok
+test_modified_approval_binding_rejected (tools.project_knowledge.test_knowledge_governance.PhaseAApprovalTests.test_modified_approval_binding_rejected) ... ok
+test_no_automatic_task5_approval (tools.project_knowledge.test_knowledge_governance.PhaseAApprovalTests.test_no_automatic_task5_approval) ... ok
+test_task5_changed_decision_or_evidence_is_rejected (tools.project_knowledge.test_knowledge_governance.PhaseAApprovalTests.test_task5_changed_decision_or_evidence_is_rejected) ... ok
+test_task5_corrupt_fixed_evidence_is_rejected (tools.project_knowledge.test_knowledge_governance.PhaseAApprovalTests.test_task5_corrupt_fixed_evidence_is_rejected) ... ok
+test_task5_missing_decision_is_rejected (tools.project_knowledge.test_knowledge_governance.PhaseAApprovalTests.test_task5_missing_decision_is_rejected) ... ok
+test_task5_scoped_human_decision_is_evidence_bound (tools.project_knowledge.test_knowledge_governance.PhaseAApprovalTests.test_task5_scoped_human_decision_is_evidence_bound) ... ok
+test_fresh_and_stale (tools.project_knowledge.test_knowledge_governance.RuntimeTests.test_fresh_and_stale) ... ok
+test_record_is_explicit_and_atomic (tools.project_knowledge.test_knowledge_governance.RuntimeTests.test_record_is_explicit_and_atomic) ... ok
+
+----------------------------------------------------------------------
+Ran 23 tests in 0.195s
+
+OK

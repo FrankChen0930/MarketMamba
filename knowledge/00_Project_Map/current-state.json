@@ -335,8 +335,8 @@
   },
   "state_updated_at": "2026-10-21",
   "active_objectives": [
-    "CPU window 01 complete: three portfolio correctness/recovery units, local commits; stop this window",
-    "Next CPU window: journal normalized quote collision rejection; no new research decision",
+    "CPU window 02 complete: two journal correctness units, local-only; stop",
+    "No further confirmed READY CPU item in inspected backlog; no new research decision",
     "Await identity-matched E1 matrix location; no replay/training/deployment"
   ],
   "runtime_contract": {
@@ -421,17 +421,19 @@
   "cpu_development_window_02": {
     "branch": "development/v7-cpu-window-01",
     "base_commit": "7eb9cd9027a312a06d526666e4ad31d2255ff4f2",
-    "status": "IN_PROGRESS_UNMERGED_NOT_DEPLOYED",
+    "status": "WINDOW_COMPLETE_UNMERGED_NOT_DEPLOYED",
     "plan": "tasks/v7-cpu-development-window-02.md",
     "unit_limit": 5,
     "units": {
-      "U1": "COMPLETED_VERIFIED; 47 tests, independent 47, 23 governance; one fix round",
-      "U2": "READY_REPRODUCED"
+      "U1": "COMPLETED_VERIFIED at 735ae6f; 47 tests, independent 47; one fix round",
+      "U2": "COMPLETED_VERIFIED in containing commit; 60 portfolio/health/audit, independent 60, 47 PIT, 23 governance; one fix round"
     },
     "strict_phase0": "STOP",
     "e1_matrix": "BLOCKED",
     "human_decisions": 0,
     "goal_binding": "V7_CREATED_AFTER_NULL; automatic continuation unverified",
-    "aggregate_usage": "NOT_INDEPENDENTLY_VERIFIED"
+    "aggregate_usage": "NOT_INDEPENDENTLY_VERIFIED",
+    "next_ready": [],
+    "evidence": "research/v7/cpu-window-02-evidence.json"
   }
 }

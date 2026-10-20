@@ -9,7 +9,9 @@
 
 `development/v7-cpu-window-01` continues from `7eb9cd9`, UNMERGED / NOT_DEPLOYED.
 [Window 02 checkpoint](../../tasks/v7-cpu-development-window-02.md) owns current
-engineering planning only. Existing portfolio spec/engine duplicate-refusal and
+engineering planning only. Window complete: normalized collision refusal at
+`735ae6f`, duplicate JSON member refusal in this closure commit; both are
+reviewed synthetic engineering, not Human research approval. Existing portfolio spec/engine duplicate-refusal and
 journal integrity contracts remain authoritative; no research/production promotion,
 no replacement of historical window 01 evidence or E1 frozen artifacts.
 

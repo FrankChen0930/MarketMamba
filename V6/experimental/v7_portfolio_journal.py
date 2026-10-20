@@ -152,6 +152,15 @@ def _normalize_payload(
     raise JournalIntegrityError(f"unknown event kind: {kind}")
 
 
+def _unique_json_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise JournalIntegrityError(f"duplicate JSON key: {key}")
+        result[key] = value
+    return result
+
+
 def _decode_lines(text: str) -> list[dict[str, Any]]:
     if not text:
         raise JournalIntegrityError("journal is empty")
@@ -162,7 +171,7 @@ def _decode_lines(text: str) -> list[dict[str, Any]]:
         if not line:
             raise JournalIntegrityError(f"blank journal line: {line_number}")
         try:
-            record = json.loads(line)
+            record = json.loads(line, object_pairs_hook=_unique_json_object)
         except json.JSONDecodeError as exc:
             raise JournalIntegrityError(
                 f"invalid JSON on line {line_number}: {exc.msg}"

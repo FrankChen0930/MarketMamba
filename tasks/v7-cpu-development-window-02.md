@@ -1,6 +1,6 @@
 # V7 CPU development window 02
 
-Status: IN_PROGRESS, UNMERGED / NOT_DEPLOYED. Human authorization: current
+Status: WINDOW_COMPLETE, UNMERGED / NOT_DEPLOYED. Human authorization: current
 “Market Mamba V7 — Autonomous CPU Development Window 02” request. At most five
 meaningful CPU engineering units; no requirement to fill the limit. Reuse existing
 `.worktrees/v7-cpu-window-01`, branch `development/v7-cpu-window-01`, starting
@@ -29,7 +29,7 @@ No new worktree/system or historical artifact replacement.
 | Priority / unit | Planning status | Source, dependency, decision and evidence |
 |---|---|---|
 | U1 normalized quote-key collision | COMPLETED_VERIFIED | Window 01 reproduced backlog; engine `_normalize_quotes` rejects duplicate normalized ticker. Two-line journal fix preserves same rule before persistence. RED 4 tests / 25 failing subcases; GREEN 47 portfolio/process tests, 1.913s. Initial fix rounds 1, review rework 0. Independent 47 PASS (2.158s); independent old-source 25 failures; no Critical/Required. Governance 23 PASS (0.087s); health WARNING/no FAIL. |
-| U2 duplicate JSON member ambiguity | READY, reproduced | Journal hash-chain/canonical replay and error-retention contract. Disposable public journal probe inserts `"price":"999","price":"10"` without recomputing hash; reader accepts two records. Independently reproduced; selected under autonomous bounded correctness authorization, separate RED/fix/commit. |
+| U2 duplicate JSON member ambiguity | COMPLETED_VERIFIED | Journal hash-chain/canonical replay and error-retention contract. Disposable public journal probe inserts `"price":"999","price":"10"` without recomputing hash; reader accepts two records. Independently reproduced; selected under autonomous bounded correctness authorization, separate RED/fix/commit. |
 | E1 identity-matched matrix/replay | BLOCKED | `11ae71d:reports/v7_e1_evidence_recovery.md`; no new original matrix location. Do not recreate frozen data or repeat unchanged search. |
 | Strict executable labels | BLOCKED | Phase 0 STOP, verified 5d/10d=0; missing qualified tradability/PIT evidence. |
 | Signal anatomy/portfolio validation Phase 1–5 | HUMAN_DECISION_REQUIRED | Existing validation design gates on correctness PASS; synthetic engineering is not research admission. |
@@ -58,3 +58,57 @@ Resume by inspecting branch HEAD/status and this backlog/evidence, then verifyin
 source/log hashes. Strict Phase 0 STOP and E1 BLOCKED remain unchanged.
 
 U1 implementation/source and raw log hashes are bound in `research/v7/cpu-window-02-evidence.json`; commit identity is its containing commit. No research authority changed.
+
+## U2 bounded implementation checkpoint
+
+New diagnosis selected under existing autonomous journal-correctness scope, not
+an old roadmap feature. `json.loads` discarded duplicate object members before
+hash/canonical validation. A local `object_pairs_hook` rejects duplicate decoded
+keys at every object depth; snapshot reader already follows this pattern, but
+portfolio does not import that separate subsystem. Hashes remain semantic JSON
+hashes, not byte-level authentication. Valid whitespace, key order and Unicode
+escape variants remain supported; no migration/repair or trading rule change.
+
+RED: 3 tests, 45 failures (11 mutations × 4 read/retry/append operations, plus
+CLI); legal-format test already PASS. Initial repair rounds 1, review rework 0.
+GREEN: 60 portfolio/process/health/audit tests, 2.304s; PIT 47, 1.053s;
+governance 23, 0.195s. Independent 60 PASS (2.253s); old-source RED 45 failures (0.502s); no Critical/Required/Optional. U1 commit `735ae6f`; U2 commit is the commit containing this closure.
+
+Planning reassessment: no remaining confirmed READY item in the inspected
+backlog after U2. Research validation is gated by correctness PASS (the old
+59-feature draft is not promoted); production B–F would create larger systems
+outside this window. Stop after two units with independent review complete and local commit as final checkpoint. This is a
+bounded engineering stopping point, not proof that every possible defect is gone.
+Future high-value CPU work: review this lineage for separately authorized
+integration, or exact E1 replay only if original identity-matched evidence is
+supplied. Neither authorizes merge now. GPU is not required for journal work;
+new training remains separately authorized and does not replace frozen evidence.
+
+Knowledge impact: current implementation, active objective, blocker/next-action
+and branch responsibility updated. Research semantics/authority, subsystem
+boundary, runtime, correctness thresholds and canonical research artifacts
+unchanged. Operations/Governance reviewed; no new policy or runtime change.
+Historical window 01 artifacts and protected evidence remain untouched.
+
+## Final window closure
+
+Both units COMPLETED_VERIFIED, one initial fix each and zero review rework;
+additional Human decisions/interventions 0. No remaining selected IN_PROGRESS or
+confirmed READY item. No merge/push/deploy. Main stays `83a6a2e`; candidate remains
+UNMERGED / NOT_DEPLOYED. Final evidence index binds source/tests/logs and explicit
+U1 commit; U2 identity is the commit containing its final source hashes.
+
+Goal observation at reported updatedAt `1792517386`: status active, correct V7
+thread/objective; tool reported tokensUsed 126706 and timeUsedSeconds 287.
+These are API-reported intermediate counters, not verified aggregate subagent
+usage or wall elapsed; no budget/hard limit was configured. Clock observed
+`2026-10-20T17:30:37Z` at closure preparation versus Goal createdAt
+`1792517093` (`2026-10-20T17:24:53Z`), 344 wall seconds to that checkpoint.
+Final response will mark only this V7 goal complete after commit/clean checks.
+Future continuation remains untested; no continuation reliability certification.
+
+Resume checkpoint: this branch's final commit and
+`research/v7/cpu-window-02-evidence.json`. Verify historical U1 source hashes at
+`735ae6f`, final U2 source hashes at containing commit, all raw log hashes, clean
+status and main identity. Preserve window 01/E1 integration dependencies; no
+automatic merge. No further engineering unit is queued for autonomous continuation.

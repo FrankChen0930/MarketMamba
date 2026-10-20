@@ -391,5 +391,81 @@ class PortfolioJournalQuoteCollisionTest(unittest.TestCase):
                 self.assertEqual(journal.path.read_bytes(), before)
 
 
+class PortfolioJournalJsonMemberTest(unittest.TestCase):
+    def test_duplicate_members_at_each_depth_refuse_read_replay_and_append(self):
+        # The final value and existing record hash stay unchanged. A permissive
+        # decoder would discard the first member before integrity validation.
+        replacements = (
+            ('"seq":1', '"seq":999,"seq":1'),
+            ('"event_id":"g"', '"event_id":"other","event_id":"g"'),
+            ('"kind":"GENESIS"', '"kind":"SIGNAL","kind":"GENESIS"'),
+            ('"payload":{', '"payload":{},"payload":{'),
+            ('"holdings_count":1', '"holdings_count":2,"holdings_count":1'),
+            ('"scores":{"A":"1"}', '"scores":{"A":"9","A":"1"}'),
+            ('"quotes":{', '"quotes":{},"quotes":{'),
+            ('"quotes":{"A":{', '"quotes":{"A":{},"A":{'),
+            ('"price":"10"', '"price":"999","price":"10"'),
+            ('"price":"10"', '"price":"10","price":"10"'),
+            ('"price":"10"', '"price":"999","\\u0070rice":"10"'),
+        )
+        for needle, replacement in replacements:
+            with self.subTest(replacement=replacement):
+                with tempfile.TemporaryDirectory() as tmp:
+                    journal = PortfolioJournal.create(Path(tmp) / "journal.jsonl", portfolio_spec(), "g", T0)
+                    journal.append("signal", "SIGNAL", T1, signal_payload())
+                    journal.append("market", "MARKET_SESSION", T2, market_payload())
+                    original = journal.path.read_text()
+                    self.assertIn(needle, original)
+                    altered = original.replace(needle, replacement, 1)
+                    self.assertNotEqual(original, altered)
+                    journal.path.write_text(altered)
+                    before = journal.path.read_bytes()
+                    for name, operation in (
+                        ("records", journal.records),
+                        ("replay", journal.replay),
+                        ("retry", lambda: journal.append("market", "MARKET_SESSION", T2, market_payload())),
+                        ("append", lambda: journal.append("later", "MARKET_SESSION", T2, market_payload())),
+                    ):
+                        with self.subTest(operation=name):
+                            with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+                                operation()
+                            self.assertEqual(journal.path.read_bytes(), before)
+
+    def test_duplicate_member_cli_refuses_without_repair(self):
+        import subprocess
+        import sys
+
+        with tempfile.TemporaryDirectory() as tmp:
+            journal = PortfolioJournal.create(Path(tmp) / "journal.jsonl", portfolio_spec(), "g", T0)
+            journal.append("market", "MARKET_SESSION", T2, market_payload())
+            journal.path.write_text(journal.path.read_text().replace(
+                '"price":"10"', '"price":"999","price":"10"'))
+            before = journal.path.read_bytes()
+            result = subprocess.run(
+                [sys.executable, "-B", "-m", "V6.experimental.v7_portfolio_journal", "--journal", str(journal.path)],
+                cwd=Path(__file__).resolve().parents[2], capture_output=True, text=True,
+            )
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            self.assertIn("duplicate JSON key", result.stderr)
+            self.assertEqual(journal.path.read_bytes(), before)
+
+    def test_legal_key_order_whitespace_and_unicode_encoding_remain_readable(self):
+        import json
+
+        with tempfile.TemporaryDirectory() as tmp:
+            journal = PortfolioJournal.create(Path(tmp) / "journal.jsonl", portfolio_spec(), "創始", T0)
+            journal.append("signal", "SIGNAL", T1, signal_payload())
+            filled = journal.append("market", "MARKET_SESSION", T2, market_payload())
+            lines = [json.dumps(dict(reversed(list(record.items()))), ensure_ascii=True)
+                     for record in journal.records()]
+            journal.path.write_text("\n".join(lines) + "\n")
+            before = journal.path.read_bytes()
+            self.assertEqual(journal.replay().state, filled.state)
+            retry = journal.append("market", "MARKET_SESSION", T2, market_payload())
+            self.assertFalse(retry.appended)
+            self.assertEqual(retry.event_count, 3)
+            self.assertEqual(journal.path.read_bytes(), before)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,7 +1,9 @@
 # Worktree Register
 
 Window 02 reuses the window 01 checkout below from `7eb9cd9`, owner Codex under
-current Human CPU authorization; IN_PROGRESS, UNMERGED / NOT_DEPLOYED.
+current Human CPU authorization; WINDOW_COMPLETE, UNMERGED / NOT_DEPLOYED.
+Two units verified; U1 `735ae6f`, U2 containing closure commit; no further READY
+unit queued. Prior window and E1 lineage remain integration dependencies.
 [Task/resume](../../tasks/v7-cpu-development-window-02.md). Existing creation,
 authority, dependencies and safe-removal requirements remain unchanged.
 

@@ -46,10 +46,15 @@ durable-before-response SIGKILL retry and partial-tail refusal. No power-loss,
 network-filesystem or uncooperative-writer guarantee is inferred.
 Window 02 now closes that normalized quote collision with the same rejection
 as the engine; unique whitespace keys and empty quotes remain legal. Local
-47-test regression passes, independent review passes with no Critical/Required. Existing persisted
+60-test portfolio/process/health/audit regression passes, independent review
+passes with no Critical/Required. Existing persisted
 ambiguous/corrupt journals remain refused without repair. See the
 [current checkpoint](../../tasks/v7-cpu-development-window-02.md). Duplicate
-raw JSON members are a separately reproduced READY integrity follow-up.
+raw JSON members are also now rejected at all object depths (including escaped
+equivalent names), before hash validation can discard ambiguity. Legal JSON
+key order/whitespace/Unicode formatting remain readable; hashes are semantic
+JSON integrity, not byte-level authentication. Two-unit window complete; no
+research/production promotion.
 
 The research engine models partial execution and deterministic state transitions with replayable hash-linked records. No active scheduler, broker adapter, or verified live-paper loop is established for V7.
 
