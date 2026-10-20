@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 import fcntl
 import io
 import json
@@ -21,6 +21,9 @@ from marketmamba.ops.projection import (
 )
 from marketmamba.ops.schema import open_ledger
 from marketmamba.ops.shadow import observe_fetch_only
+from marketmamba.ops.contracts import ArtifactIdentity, LogicalRunIdentity, RunState
+from marketmamba.ops.lease import acquire_lease
+from marketmamba.ops.store import ArtifactRef, LedgerStore
 
 
 class CurrentStateProjectionTest(unittest.TestCase):
@@ -47,6 +50,62 @@ class CurrentStateProjectionTest(unittest.TestCase):
             data_root=self.data_root,
             requested_at=datetime(2026, 9, day, 14, tzinfo=timezone.utc),
         )
+
+    def test_artifact_summary_counts_identities_not_stage_references(self) -> None:
+        """Shared artifacts count once; distinct equal-sized artifacts count twice."""
+        now = datetime(2026, 9, 18, 14, tzinfo=timezone.utc)
+        self.db.parent.mkdir(parents=True)
+        connection = open_ledger(self.db)
+        try:
+            store = LedgerStore(connection)
+            lease = acquire_lease(
+                connection, "daily-fetch", "offline-fixture",
+                now=now, ttl=timedelta(minutes=5),
+            )
+            logical = store.open_logical_run(
+                LogicalRunIdentity(requested_date=date(2026, 9, 18)), now=now,
+            )
+            attempt = store.start_attempt(logical, lease=lease, host="fixture", now=now)
+            complete = ArtifactRef(
+                ArtifactIdentity("fixture", "a" * 64, "v1", "b" * 64),
+                "relative/one", 42, True,
+            )
+            incomplete = ArtifactRef(
+                ArtifactIdentity("fixture", "c" * 64, "v1", "b" * 64),
+                "relative/two", 42, False,
+            )
+            for stage_name, artifacts in (
+                ("fetch", [complete, incomplete]), ("inspect", [complete]),
+            ):
+                stage = store.start_stage(
+                    attempt.attempt_id, stage_name, "inputs-v1", now=now,
+                )
+                store.commit_stage(
+                    stage.stage_run_id, RunState.SUCCEEDED, lease=lease,
+                    artifacts=artifacts, now=now,
+                )
+            store.finish_attempt(
+                attempt.attempt_id, RunState.SUCCEEDED,
+                lease=lease, exit_code=0, now=now,
+            )
+            before = tuple(connection.iterdump())
+            summary = build_current_state(self.db)["artifact_summary"]
+            self.assertEqual(summary["count"], 2)
+            self.assertEqual(summary["complete_count"], 1)
+            self.assertEqual(summary["total_bytes"], 84)
+            self.assertEqual(summary["by_type"], [{
+                "artifact_type": "fixture", "fingerprint_kind": "content_sha256",
+                "count": 2, "complete_count": 1, "total_bytes": 84,
+            }])
+            self.assertEqual(tuple(connection.iterdump()), before)
+            # Latest attempt must not inherit the previous attempt's artifacts.
+            store.start_attempt(logical, lease=lease, host="fixture", now=now)
+            summary = build_current_state(self.db)["artifact_summary"]
+            self.assertEqual(summary["count"], 0)
+            self.assertEqual(summary["complete_count"], 0)
+            self.assertEqual(summary["total_bytes"], 0)
+        finally:
+            connection.close()
 
     def test_projection_reports_latest_retry_without_overclaiming_scope(self) -> None:
         self._observe(

@@ -1,0 +1,126 @@
+{
+  "record_type": "TASK4_OFFLINE_ENGINEERING_EVIDENCE_NOT_ACCEPTANCE",
+  "observed_on": "2026-10-20",
+  "source_commit": "f5b0ff3df7645098cc01a9eeb36f5df22c4a3e41",
+  "candidate_branch": "fix/phase-a-task4-evidence",
+  "candidate_identity": "Containing Git commit; no mutable branch name is an approval",
+  "canonical_memory": "fix/v7-snapshot-immutability:knowledge/00_Project_Map/Current_State.md",
+  "human_correctness_approval": "NOT_ESTABLISHED",
+  "strict_phase0": "STOP",
+  "task5": "NOT_STARTED",
+  "scope": "Task 4 projection/read-only CLI component evidence only. No production data, training, fetch, merge, deployment or Task 5 formal replay.",
+  "sources": [
+    {
+      "path": "research/production-system/implementation-roadmap.md",
+      "identity": "Tracked at source_commit",
+      "role": "Phase A roadmap; does not itself approve implementation"
+    },
+    {
+      "path": ".superpowers/sdd/derived-plan/task-4-brief.md",
+      "sha256": "1853df81c27c156a761bfc32ef5eeed7efbaa40d99977b2473b11948397c32d0",
+      "role": "Ignored historical specification in original v7-historical-pit-reconstruction checkout"
+    },
+    {
+      "path": ".superpowers/sdd/derived-plan/task-4-report.md",
+      "sha256": "1668f3513b4c7016592415ef42b4ec2766de26cf80b2261ff751e286ebdc8561",
+      "role": "Ignored implementation/rework report; not independent correctness approval"
+    },
+    {
+      "path": ".superpowers/sdd/derived-plan/task-5-brief.md",
+      "sha256": "ee3c4b0d2a6e54f56e9e20940eda29ae814fca9006e23cd6421b2f78b701eaf1",
+      "role": "Ignored next-task boundary, not executed"
+    },
+    {
+      "path": ".superpowers/sdd/pasted-text.txt/derived-plan.md",
+      "sha256": "d4d026b1d0d7c728ef3020c7d81a4b299d1aeddf838be103d6d10137e5e7b365",
+      "role": "Ignored historical task sequence in original checkout"
+    }
+  ],
+  "acceptance_evidence_index": [
+    {
+      "criterion": "Committed-ledger-only deterministic read model without migrations",
+      "tests": [
+        "test_projection_is_rebuildable_from_committed_ledger_only",
+        "test_reader_opens_ledger_without_running_migrations"
+      ],
+      "result": "PASS_DETERMINISTIC_REBUILD_AND_NO_MIGRATION_TESTS",
+      "limit": "Two successive reads agree. No concurrent uncommitted-writer or mid-read writer-commit isolation test; committed-only concurrency is supported by SQLite BEGIN implementation, not directly certified here. Not a power-loss durability certification."
+    },
+    {
+      "criterion": "Required fields, latest attempt, last successful fetch and explicit unknowns",
+      "tests": [
+        "test_projection_reports_latest_retry_without_overclaiming_scope",
+        "test_last_successful_fetch_date_does_not_treat_newer_failure_as_success",
+        "test_human_diagnostics_are_explicitly_fetch_only"
+      ],
+      "result": "PASS_COMPONENT_TESTS",
+      "limit": "Calendar remains unverified; incident status NOT_IMPLEMENTED_PHASE_C"
+    },
+    {
+      "criterion": "Atomic publication, bounded lock and preserved legacy outcome",
+      "tests": [
+        "test_atomic_replace_failure_preserves_previous_valid_projection",
+        "test_serialized_writers_cannot_publish_older_snapshot_last",
+        "test_stuck_projection_lock_cannot_delay_legacy_result_or_damage_json",
+        "test_stuck_projection_lock_cannot_replace_legacy_exception",
+        "test_projection_failure_does_not_replace_fetch_exception"
+      ],
+      "result": "PASS_COMPONENT_TESTS",
+      "limit": "Atomic replace uses injected OSError; ordering uses threads. No Task 4 SIGKILL or power-loss claim; Task 5 crash/restart campaign not run."
+    },
+    {
+      "criterion": "Opaque absolute paths and credential redaction in machine/human output",
+      "tests": [
+        "test_committed_evidence_paths_and_credentials_are_opaque_in_all_output",
+        "test_unquoted_space_paths_and_extended_credentials_leave_no_fragments",
+        "test_bounded_path_segments_and_quoted_credentials_are_fully_opaque",
+        "test_any_absolute_path_opaques_the_entire_committed_evidence",
+        "test_colon_adjacent_paths_and_roots_are_opaque_but_safe_slashes_remain",
+        "test_colon_adjacent_paths_and_roots_are_opaque_end_to_end"
+      ],
+      "result": "PASS_EXISTING_REGRESSION_CORPUS",
+      "limit": "Finite regression corpus, not proof of every possible secret encoding. Historical rounds a6d9fca, 4422cba, 05c2b90, e47ea59 and f5b0ff3 are repairs, not final acceptance."
+    },
+    {
+      "criterion": "Read-only human/JSON CLI and generic failure diagnostics",
+      "tests": ["test_cli_human_default_and_json_option", "test_cli_failure_redacts_path_and_error_detail"],
+      "result": "PASS_IN_PROCESS_CLI_TESTS",
+      "limit": "Not a production CLI deployment or real-data observation"
+    },
+    {
+      "criterion": "Artifact identity summary counts shared identities once",
+      "tests": ["test_artifact_summary_counts_identities_not_stage_references"],
+      "result": "BASELINE_FAIL_CANDIDATE_PASS",
+      "baseline_observation": "Public LedgerStore APIs accepted two artifacts with three stage links. count=2 but complete_count=2 instead of 1; join also repeats bytes.",
+      "fix": "Existence-filter artifact identities before aggregation; no store/schema/authority mutation.",
+      "coverage": "Two distinct 42-byte artifacts, one complete, shared complete identity across two stages; expected count=2, complete_count=1, total_bytes=84. Latest empty retry must report zero."
+    }
+  ],
+  "verification": {
+    "environment": "WSL Python 3.12.3, CPU stdlib unittest, temporary synthetic ledgers only",
+    "baseline_ops": {"passed": 69, "exit_code": 0, "seconds": 7.231},
+    "red_test": {"failed": 1, "exit_code": 1, "assertion": "complete_count: 2 != 1"},
+    "fixture_setup_correction": "Initial test setup omitted ledger parent directory and errored before assertion; mkdir correction precedes genuine RED. Not reported as product defect.",
+    "candidate_ops": {"passed": 70, "exit_code": 0, "seconds": 7.218},
+    "fetch_only_regression": {"passed": 3, "exit_code": 0, "seconds": 0.003, "class": "mocked offline fetch control-flow, not actual fetch"},
+    "commands": [
+      "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=V6 python3 -B -W error::ResourceWarning -m unittest discover -s V6/marketmamba/ops -p 'test_*.py' -q",
+      "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=V6 python3 -B -m unittest V6.scripts.test_v62_fetch_only -q",
+      "git diff --check"
+    ],
+    "implementation_repair_rounds": 2,
+    "rounds": [
+      "Round 1: regression RED then artifact-identity aggregation fix.",
+      "Round 2: independent review prompted stronger before/after ledger dump assertion, replacing connection-local total_changes; production query unchanged."
+    ],
+    "independent_review": "Engineering-only review: no Required/Critical finding. Independently 70 ops and 3 fetch-only tests passed in round 1. Round 2 read-only review checked iterdump assertion, evidence index and four historical SHA256 values; no independent round-2 test run. Main agent reran final 70+3. Committed-only concurrency limit corrected as requested."
+  },
+  "remaining_gates": [
+    "Human correctness review of Task 4 candidate and sanitizer evidence. No final approval record found in inspected history/memory.",
+    "Direct concurrent committed-only snapshot evidence is absent: add uncommitted-writer and mid-read-commit deterministic isolation tests in a subsequent bounded pass; existing sequential rebuild test is not that evidence.",
+    "Task 5 remains separate: >=10 deterministic observed-vs-shadow replay cases, crash/restart/concurrency evidence, schema/replay/acceptance artifacts, real projection example and overhead report.",
+    "Explicit integration/merge and any deployment decision are separate from correctness review; original operations branch and main remain unchanged.",
+    "Projection performance is unbenchmarked on a long-lived ledger. EXISTS scans artifact identities; watermark already scans historical tables. Task 5 overhead evidence remains necessary."
+  ],
+  "task5_recommendation": "After Task 4 review and explicit next-stage authorization, run bounded offline Task 5; do not interpret this record as permission or completed acceptance."
+}

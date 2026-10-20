@@ -111,10 +111,13 @@ def _artifact_summary(
                COUNT(DISTINCT a.artifact_id) AS artifact_count,
                SUM(a.complete) AS complete_count,
                SUM(a.byte_size) AS total_bytes
-        FROM stage_artifacts AS sa
-        JOIN stage_runs AS sr ON sr.stage_run_id = sa.stage_run_id
-        JOIN artifacts AS a ON a.artifact_id = sa.artifact_id
-        WHERE sr.attempt_id = ?
+        FROM artifacts AS a
+        WHERE EXISTS (
+            SELECT 1
+            FROM stage_artifacts AS sa
+            JOIN stage_runs AS sr ON sr.stage_run_id = sa.stage_run_id
+            WHERE sr.attempt_id = ? AND sa.artifact_id = a.artifact_id
+        )
         GROUP BY a.artifact_type, a.fingerprint_kind
         ORDER BY a.artifact_type, a.fingerprint_kind
         """,
