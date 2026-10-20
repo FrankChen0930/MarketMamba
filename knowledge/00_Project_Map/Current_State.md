@@ -140,6 +140,29 @@ Phase 3B-1 source canonicalization completed on 2026-09-22 in WSL development ma
 
 ## Bounded recovery checkpoint — 2026-10-20
 
+### Snapshot Reader contract continuation (Unit A)
+
+Base `8309ee366aea4c002f9a79d0d97d214b29578fcf`, same isolated branch.
+The v1 reader now rejects traversal, absolute/noncanonical raw paths, symlink
+files/directories, non-regular files, duplicate keys, malformed/missing/wrong-type
+fields, digest/request/publication identity mismatch and incomplete publication.
+Directory-relative no-follow reads are anchored at the caller-selected snapshot
+root; root ancestors must remain trusted/stable. Integrity is not authenticity,
+HTTP success, PIT eligibility or Human correctness approval.
+
+Two repair rounds: initial reader validation (22 failing assertions before fix);
+independent review then reproduced nested JSON float overflow (`1e999`), closed
+with finite-number parsing. Valid v1 GET/POST, empty payload, naive/offset/UTC
+writer timestamps, HTTP error observations and finite floats stay compatible.
+Final focused snapshot tests: 17/17; six PIT suites: 47/47 (zero skips);
+governance tests: 15/15. Independent reviewer reran 17/17 and approved the
+second-round reader changes with no remaining required finding.
+No research data was read or modified; all malformed manifests are offline
+fixtures. Strict Phase 0 STOP and Task 4 approval pending remain unchanged.
+Next authorized unit after passing tests/review/commit: Phase A Task 4 evidence
+recovery against its separate branch, without importing operations into this
+snapshot candidate or claiming correctness approval.
+
 - **Completed:** reproduced silent manifest replacement for the same request and
   retrieval timestamp, including parser-only conflicts; identical retries also
   replaced inode/mtime. Replaced shared temporary-name/overwrite publication with

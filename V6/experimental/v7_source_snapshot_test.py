@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import copy
+import hashlib
 import os
 from pathlib import Path
 import subprocess
@@ -28,6 +30,127 @@ class RequestSpecTest(unittest.TestCase):
 
 
 class SnapshotTest(unittest.TestCase):
+    def reader_fixture(self, directory):
+        path = snapshot_response(
+            RequestSpec("POST", "https://example.test/query", {"a": 1}, body=b"q=1",
+                        headers={"Accept": "application/json"}),
+            b'{"value":1}', directory, retrieved_at="2026-09-17T10:00:00+08:00",
+            parser_version="v1", content_type="application/json")
+        return path, json.loads(path.read_text())
+
+    def test_reader_rejects_invalid_schema_types_and_missing_fields(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path, original = self.reader_fixture(directory)
+            cases = [
+                ((), []), ((), None), (("response",), []), (("request",), []),
+                (("response", "bytes"), True), (("response", "bytes"), "11"),
+                (("response", "bytes"), 11.0), (("response", "bytes"), -1),
+                (("response", "status_code"), "200"), (("response", "status_code"), True),
+                (("response", "content_type"), None), (("parser_version",), ""),
+                (("parser_version",), 1), (("retrieved_at",), "not-a-date"),
+                (("schema_version",), "future-v2"), (("request", "method"), "DELETE"),
+                (("request", "params"), []), (("request", "headers"), []),
+                (("request", "body_sha256"), "bad"), (("response", "sha256"), "bad"),
+                (("request_id",), "0"*64),
+            ]
+            for keys, value in cases:
+                changed = copy.deepcopy(original)
+                if not keys:
+                    changed = value
+                else:
+                    target = changed
+                    for key in keys[:-1]:
+                        target = target[key]
+                    target[keys[-1]] = value
+                with self.subTest(keys=keys, value=value):
+                    path.write_text(json.dumps(changed))
+                    self.assertFalse(verify_snapshot(path))
+            for section in (None, "request", "response"):
+                for key in original if section is None else original[section]:
+                    changed = copy.deepcopy(original)
+                    del (changed if section is None else changed[section])[key]
+                    with self.subTest(missing=(section, key)):
+                        path.write_text(json.dumps(changed))
+                        self.assertFalse(verify_snapshot(path))
+
+    def test_reader_rejects_escape_paths_even_with_matching_bytes_and_digest(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)/"snapshot"
+            path, original = self.reader_fixture(root)
+            raw = root/original["response"]["path"]
+            outside = Path(directory)/"outside.json"
+            outside.write_bytes(raw.read_bytes())
+            for value in (str(outside), "../../outside.json", "../raw/"+raw.name,
+                          "raw/../raw/"+raw.name, "raw//"+raw.name, "raw\\"+raw.name):
+                with self.subTest(path=value):
+                    changed = copy.deepcopy(original)
+                    changed["response"]["path"] = value
+                    path.write_text(json.dumps(changed))
+                    self.assertFalse(verify_snapshot(path))
+
+    def test_reader_rejects_symlink_files_and_directories(self):
+        for kind in ("manifest", "raw_file", "raw_dir", "manifest_dir"):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)/"snapshot"
+                path, original = self.reader_fixture(root)
+                selected = {"manifest":path, "raw_file":root/original["response"]["path"],
+                            "raw_dir":root/"raw", "manifest_dir":root/"manifests"}[kind]
+                outside = Path(directory)/"outside"
+                selected.rename(outside)
+                selected.symlink_to(outside, target_is_directory=outside.is_dir())
+                self.assertFalse(verify_snapshot(path))
+
+    def test_reader_rejects_corruption_duplicates_and_partial_publication(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path, original = self.reader_fixture(directory)
+            for text in ('{', '[]', path.read_text()[:-2], '{"schema_version":"bad",'+path.read_text()[1:]):
+                with self.subTest(text=text[:30]):
+                    path.write_text(text)
+                    self.assertFalse(verify_snapshot(path))
+            path.write_text(json.dumps(original))
+            partial = path.with_name("."+path.name+".tmp")
+            partial.write_bytes(path.read_bytes())
+            self.assertFalse(verify_snapshot(partial))
+            raw = Path(directory)/original["response"]["path"]
+            raw.unlink()
+            self.assertFalse(verify_snapshot(path))
+            self.assertFalse(verify_snapshot(path.with_name("missing.json")))
+
+    def test_reader_rejects_rehashed_request_under_wrong_publication_identity(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path, manifest = self.reader_fixture(directory)
+            manifest["request"]["params"]["a"] = 2
+            payload = json.dumps(manifest["request"], ensure_ascii=True, sort_keys=True,
+                                 separators=(",", ":")).encode("ascii")
+            manifest["request_id"] = hashlib.sha256(payload).hexdigest()
+            path.write_text(json.dumps(manifest))
+            self.assertFalse(verify_snapshot(path))
+
+    def test_reader_accepts_existing_writer_shapes_and_http_error_observation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            for index, (stamp, content, status) in enumerate((
+                ("2026-09-17T10:00:00+08:00", "application/json", 200),
+                ("2026-09-17T10:00:00", "application/octet-stream", 404),
+                ("2026-09-17T10:00:00Z", "text/plain", 503),
+            )):
+                path = snapshot_response(RequestSpec("GET", "https://example.test/data",
+                    {"finite": [0.5, -1.25e10]}),
+                    b"", Path(directory)/str(index), retrieved_at=stamp,
+                    parser_version="v1", content_type=content, status_code=status)
+                self.assertTrue(verify_snapshot(path))
+
+    def test_reader_rejects_overflowing_json_number_even_with_matching_identity(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path, manifest = self.reader_fixture(directory)
+            manifest["request"]["params"] = {"nested": [float("inf")]}
+            canonical = json.dumps(manifest["request"], ensure_ascii=True, sort_keys=True,
+                                   separators=(",", ":")).encode("ascii")
+            manifest["request_id"] = hashlib.sha256(canonical).hexdigest()
+            renamed = path.with_name(manifest["request_id"]+"-"+
+                                     path.name.split("-", 1)[1])
+            renamed.write_text(json.dumps(manifest).replace("Infinity", "1e999"))
+            self.assertFalse(verify_snapshot(renamed))
+
     def test_failed_publication_preserves_existing_snapshot(self):
         with tempfile.TemporaryDirectory() as directory:
             spec = RequestSpec("GET", "https://example.test/data")

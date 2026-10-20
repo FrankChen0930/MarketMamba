@@ -69,6 +69,13 @@ approval, production rollout or full power-loss durability certification.
 Trusted local snapshot directories and hard-link/fsync support are required.
 See [recovery checkpoint](../00_Project_Map/Current_State.md#bounded-recovery-checkpoint--2026-10-20).
 
+The same branch's subsequent Unit A completes the v1 reader integrity boundary:
+strict fields/types, finite JSON numbers, duplicate-key rejection, canonical
+publication identity and directory-relative no-follow raw/manifest reads.
+Compatible valid v1 writer output remains readable, including HTTP error
+observations (integrity does not mean source success or PIT admission).
+Trusted/stable root ancestors remain required. No frozen policy changed.
+
 - Some external publication timestamps and historical revisions remain incomplete.
 - Provider availability is broader than evidence eligible for strict PIT use.
 - External source behavior can change and requires revalidation.

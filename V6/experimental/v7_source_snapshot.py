@@ -6,8 +6,11 @@ from dataclasses import dataclass, field
 from datetime import datetime
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
+import re
+import stat
 import tempfile
 from typing import Any, Mapping
 from urllib.parse import urlparse
@@ -139,17 +142,115 @@ def snapshot_response(
     return manifest_path
 
 
+def _unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise SnapshotContractError("duplicate manifest key")
+        result[key] = value
+    return result
+
+
+def _reject_json_constant(value: str) -> None:
+    raise SnapshotContractError(f"non-finite JSON constant: {value}")
+
+
+def _finite_json_float(token: str) -> float:
+    value = float(token)
+    if not math.isfinite(value):
+        raise SnapshotContractError("overflowing JSON number")
+    return value
+
+
+def _manifest_identity(manifest: Any) -> tuple[str, str]:
+    """Validate v1 writer shape; return only canonical publication basenames."""
+    if not isinstance(manifest, dict) or set(manifest) != {
+        "schema_version", "request_id", "request", "retrieved_at", "parser_version", "response"
+    }:
+        raise SnapshotContractError("invalid manifest fields")
+    request, response = manifest["request"], manifest["response"]
+    if (manifest["schema_version"] != "v7-source-snapshot-v1"
+            or not isinstance(request, dict) or set(request) != {
+                "method", "url", "params", "body_sha256", "headers"}
+            or not isinstance(response, dict) or set(response) != {
+                "status_code", "content_type", "bytes", "sha256", "path"}):
+        raise SnapshotContractError("invalid v1 schema")
+    for value in (manifest["request_id"], request["body_sha256"], response["sha256"]):
+        if not isinstance(value, str) or re.fullmatch(r"[0-9a-f]{64}", value) is None:
+            raise SnapshotContractError("invalid digest")
+    if (not isinstance(manifest["retrieved_at"], str)
+            or not isinstance(manifest["parser_version"], str)
+            or not manifest["parser_version"].strip()
+            or type(response["bytes"]) is not int or response["bytes"] < 0
+            or type(response["status_code"]) is not int
+            or not 100 <= response["status_code"] <= 599
+            or not isinstance(response["content_type"], str)
+            or not isinstance(request["method"], str)
+            or not isinstance(request["url"], str)
+            or not isinstance(request["params"], dict)
+            or not isinstance(request["headers"], dict)
+            or any(not isinstance(v, str) for v in request["headers"].values())):
+        raise SnapshotContractError("invalid field types")
+    canonical = RequestSpec(request["method"], request["url"], request["params"],
+                            headers=request["headers"]).canonical_request()
+    canonical["body_sha256"] = request["body_sha256"]
+    if canonical != request or _sha256(_canonical_bytes(request)) != manifest["request_id"]:
+        raise SnapshotContractError("request identity mismatch")
+    timestamp = datetime.fromisoformat(manifest["retrieved_at"])
+    if timestamp.isoformat() != manifest["retrieved_at"]:
+        raise SnapshotContractError("noncanonical retrieval timestamp")
+    stamp = timestamp.isoformat().replace(":", "").replace("+", "p")
+    suffix = ".json" if "json" in response["content_type"].lower() else ".bin"
+    raw_name = response["sha256"] + suffix
+    if response["path"] != "raw/" + raw_name:
+        raise SnapshotContractError("noncanonical raw path")
+    return f"{manifest['request_id']}-{stamp}.json", raw_name
+
+
+def _read_regular_at(directory: int, name: str) -> bytes:
+    # Nonblocking prevents a substituted FIFO from hanging validation.
+    fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=directory)
+    with os.fdopen(fd, "rb") as stream:
+        if not stat.S_ISREG(os.fstat(stream.fileno()).st_mode):
+            raise SnapshotContractError("snapshot must be a regular file")
+        return stream.read()
+
+
 def verify_snapshot(manifest_path: str | Path) -> bool:
-    path = Path(manifest_path)
+    """Read-only integrity check, not source authenticity or research admission.
+
+    v1 uses manifests/<request>-<timestamp>.json and raw/<digest>.<suffix>.
+    Directory descriptors anchor reads; symlinks and noncanonical paths fail.
+    Snapshot root ancestors must remain trusted/stable during the operation.
+    """
+    descriptors = []
     try:
-        manifest = json.loads(path.read_text(encoding="utf-8"))
-        raw_path = path.parent.parent / manifest["response"]["path"]
-        raw = raw_path.read_bytes()
-        return (
-            manifest["schema_version"] == "v7-source-snapshot-v1"
-            and len(raw) == int(manifest["response"]["bytes"])
-            and _sha256(raw) == manifest["response"]["sha256"]
-            and _sha256(_canonical_bytes(manifest["request"])) == manifest["request_id"]
-        )
-    except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError):
+        given = Path(manifest_path)
+        if ".." in given.parts:
+            return False
+        path = given.absolute()
+        root = path.parent.parent
+        if path.parent.name != "manifests" or root.resolve() != root:
+            return False
+        flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+        root_fd = os.open(root, flags)
+        descriptors.append(root_fd)
+        manifest_fd = os.open("manifests", flags, dir_fd=root_fd)
+        descriptors.append(manifest_fd)
+        manifest = json.loads(_read_regular_at(manifest_fd, path.name),
+                              object_pairs_hook=_unique_object,
+                              parse_constant=_reject_json_constant,
+                              parse_float=_finite_json_float)
+        manifest_name, raw_name = _manifest_identity(manifest)
+        if path.name != manifest_name:
+            return False
+        raw_fd = os.open("raw", flags, dir_fd=root_fd)
+        descriptors.append(raw_fd)
+        raw = _read_regular_at(raw_fd, raw_name)
+        return (len(raw) == manifest["response"]["bytes"]
+                and _sha256(raw) == manifest["response"]["sha256"])
+    except (OSError, KeyError, TypeError, ValueError, RecursionError, RuntimeError):
         return False
+    finally:
+        for fd in reversed(descriptors):
+            os.close(fd)

@@ -78,7 +78,7 @@ An authority class describes evidence strength, not deployment status. Branch-lo
 ## Authority Classes
 
 Branch-local recovery candidate (2026-10-20): `fix/v7-snapshot-immutability`
-changes only the snapshot writer and tests from main `50c5b78`, with its
+changes only the snapshot writer/reader and tests from main `50c5b78`, with its
 [checkpoint](Current_State.md#bounded-recovery-checkpoint--2026-10-20).
 It is `UNMERGED_IMPLEMENTATION / NOT_DEPLOYED`, not a replacement of frozen
 PIT contracts, source-adoption history, research results or Phase A approval.

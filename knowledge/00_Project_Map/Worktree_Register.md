@@ -18,6 +18,11 @@ not formal data artifacts. Adoption requires separate integration approval.
 Safe removal requires retained commits/branch, clean state, artifact/dependency
 check and explicit Human approval; this entry authorizes no removal.
 
+Same-day continuation from `8309ee3`: reuse this clean isolated checkout for
+Unit A reader-contract validation and its tests; no new checkout needed for
+the same snapshot subsystem. Phase A evidence recovery is a separate unit on
+the operations lineage; its original worktree must not be overwritten.
+
 > Updated from `git worktree list --porcelain` and branch verification on 2026-09-22 after the four authorized K checkouts were retired. This is a registry of checkouts and responsibility, not authority to merge or remove them. `UNKNOWN` means creation/ownership was not verified. Update in the same coherent change when a branch or responsibility changes; a fresh runtime/worktree observation needs its own date.
 
 | Checkout under `.worktrees/` | Branch / HEAD | Purpose and owner/task | Base | Current state | Authority carried / dependencies | Created / retired |

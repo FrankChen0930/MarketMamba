@@ -3,6 +3,17 @@
   "status": "CANONICAL_CURRENT_PROJECT_MAP",
   "owner": "Human + project agents",
   "bounded_engineering_recovery": {
+    "reader_contract_continuation": {
+      "base_commit": "8309ee366aea4c002f9a79d0d97d214b29578fcf",
+      "scope": "Unit A v1 reader path/schema/identity fail-closed validation",
+      "repair_rounds": 2,
+      "snapshot_tests_passed": 17,
+      "pit_tests_passed": 47,
+      "governance_tests_passed": 15,
+      "independent_review": "PASS_ENGINEERING_ONLY",
+      "research_approval": false,
+      "next_authorized_unit": "Phase A Task 4 evidence recovery in separate branch"
+    },
     "observed_on": "2026-10-20",
     "base_commit": "50c5b785e8c373913c3301a056497eb955f36681",
     "branch": "fix/v7-snapshot-immutability",
