@@ -4,13 +4,14 @@
 
 - Status: `CANONICAL_DOMAIN_NOTE`
 - Owner: MarketMamba maintainers
-- Last reviewed: 2026-09-20
+- Last reviewed: 2026-10-20
 - Authority topics: shadow ledger, resumable orchestration, incident/read-model boundaries
 - Update triggers: Phase A review, merge, deployment, schema, or operational-policy change
 
 ## Purpose
 
 Describe the target operational control plane and its current implementation/review boundary.
+The 2026-10-20 review is bounded engineering evidence recovery, not Human approval.
 
 ## Current Boundary
 
@@ -31,6 +32,13 @@ Append/transaction-backed operational records and read-only projections/CLI view
 ## Current Implementation
 
 Tasks 1–3 are completed and reviewed. Task 4 has implementation and sanitizer fixes, but correctness approval is not established. Task 5 has not started. The branch is unmerged, not deployed, and requires human review.
+
+The isolated follow-up `fix/phase-a-task4-evidence@46df7b3402f85877a5fc55600d53b15a6f3a7849`
+fixes Task 4 artifact aggregation when multiple stages reference one identity.
+Original `f5b0ff3` remains unchanged. Offline ops 70/70 and mocked fetch-only 3/3
+pass; independent engineering review has no Required finding. The candidate's
+`research/production-system/phase-a/task4-evidence-recovery.json` indexes original
+spec/report hashes, RED/GREEN evidence and remaining gates. Not merged or deployed.
 
 ## Evidence Classes
 
@@ -53,6 +61,15 @@ Existing scripts own their actual work. Phase A observes and records rather than
 ## Known Limitations
 
 Task 4 lacks established correctness approval; Task 5, production notifications/incidents, and atomic publication are incomplete.
+
+Concrete Task 4 evidence gap: the current sequential rebuild test does not test
+an uncommitted concurrent writer or a commit midway through reading a projection.
+SQLite BEGIN supports snapshot consistency in the implementation, but that is
+not a direct test result. Sanitizer cases pass; Human correctness review remains
+pending. Task 5 must supply process crash/restart/replay and overhead evidence;
+thread ordering and injected replace failure are not substitutes. The projection
+scans historical artifact identities and watermark tables; long-ledger cost is
+not yet benchmarked. No Task 5 work is authorized by this note.
 
 ## Do Not Use / Do Not Mix
 

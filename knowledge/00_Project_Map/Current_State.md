@@ -159,9 +159,40 @@ governance tests: 15/15. Independent reviewer reran 17/17 and approved the
 second-round reader changes with no remaining required finding.
 No research data was read or modified; all malformed manifests are offline
 fixtures. Strict Phase 0 STOP and Task 4 approval pending remain unchanged.
-Next authorized unit after passing tests/review/commit: Phase A Task 4 evidence
-recovery against its separate branch, without importing operations into this
-snapshot candidate or claiming correctness approval.
+Reader implementation committed as `0a7928061755855faf9aeb55c1702e26a5a62a34`.
+The next authorized unit (Task 4 evidence recovery) completed below, on its
+separate operations lineage; no operations implementation was imported here.
+
+### Phase A Task 4 evidence recovery (Unit B)
+
+Isolated `fix/phase-a-task4-evidence@46df7b3402f85877a5fc55600d53b15a6f3a7849`
+derives directly from original `f5b0ff3df7645098cc01a9eeb36f5df22c4a3e41`.
+The original checkout remains unchanged. Evidence index at that commit:
+`research/production-system/phase-a/task4-evidence-recovery.json`.
+It records specification/report hashes, exact test names, commands and limits.
+
+Recovered a deterministic defect: one artifact referenced by two stages was
+counted once but its completed flag and bytes were summed twice. The fix filters
+artifact identities by attempt membership before aggregation. Public LedgerStore
+fixtures reproduce the baseline failure (`complete_count` 2 instead of 1);
+the candidate also verifies equal-sized distinct artifacts, latest empty retry
+isolation and unchanged logical ledger contents.
+
+Two bounded rounds: query fix after genuine RED; review-driven test strengthening
+from connection-local change count to complete before/after ledger dump.
+Final offline ops 70/70 and mocked fetch-only regression 3/3 PASS. Independent
+reviewer ran 70+3 in round 1 and reviewed round 2 without rerunning tests; no
+Required/Critical finding. These are engineering evidence, not Human acceptance.
+
+Task 4 correctness approval remains **NOT_ESTABLISHED**. The sequential rebuild
+test does not prove concurrent committed-only isolation: uncommitted-writer and
+mid-read-commit tests are still missing. Sanitizer regression corpus passes but
+requires final Human review. Task 5's process crash/restart/replay, >=10 outcome
+comparisons, formal artifacts and overhead benchmark remain **NOT_STARTED**.
+Do not proceed directly as though Task 4 were approved. Next bounded proposal:
+close the two snapshot-isolation evidence gaps, present Task 4 for Human review,
+then separately authorize offline Task 5. No research rules/data changed;
+strict Phase 0 **STOP** and all research authority remain unchanged.
 
 - **Completed:** reproduced silent manifest replacement for the same request and
   retrieval timestamp, including parser-only conflicts; identical retries also

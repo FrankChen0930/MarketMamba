@@ -77,6 +77,13 @@ An authority class describes evidence strength, not deployment status. Branch-lo
 
 ## Authority Classes
 
+2026-10-20 bounded Task 4 follow-up:
+`fix/phase-a-task4-evidence@46df7b3402f85877a5fc55600d53b15a6f3a7849`
+is an unmerged artifact-summary fix/evidence candidate derived from `f5b0ff3`,
+not a replacement authority or Human correctness decision. Its evidence index
+records 70 ops + 3 mocked fetch-only passes and remaining concurrent snapshot
+isolation evidence gaps. Task 5 remains not started; legacy fetch owns outcomes.
+
 Branch-local recovery candidate (2026-10-20): `fix/v7-snapshot-immutability`
 changes only the snapshot writer/reader and tests from main `50c5b78`, with its
 [checkpoint](Current_State.md#bounded-recovery-checkpoint--2026-10-20).

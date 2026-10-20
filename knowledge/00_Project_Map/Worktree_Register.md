@@ -23,6 +23,18 @@ Unit A reader-contract validation and its tests; no new checkout needed for
 the same snapshot subsystem. Phase A evidence recovery is a separate unit on
 the operations lineage; its original worktree must not be overwritten.
 
+Unit B added `.worktrees/phase-a-task4-evidence`, branch
+`fix/phase-a-task4-evidence@46df7b3402f85877a5fc55600d53b15a6f3a7849`,
+direct base `f5b0ff3df7645098cc01a9eeb36f5df22c4a3e41`, created 2026-10-20
+under the same Human bounded objective. Original operations checkout was clean
+and retained unchanged. Scope: Task 4 artifact-summary fix, synthetic tests and
+evidence index; `UNMERGED / NOT_DEPLOYED / CORRECTNESS_APPROVAL_NOT_ESTABLISHED`.
+Runtime: system Python 3.12.3 stdlib; no production data dependency. This checkout
+retains the historical ops AGENTS file; current project authority remains the
+canonical map, not its stale runtime narrative. Existing canonical memory is
+updated in the snapshot candidate, not duplicated into the old lineage.
+Both candidates require explicit integration decisions; no merge/cleanup grant.
+
 > Updated from `git worktree list --porcelain` and branch verification on 2026-09-22 after the four authorized K checkouts were retired. This is a registry of checkouts and responsibility, not authority to merge or remove them. `UNKNOWN` means creation/ownership was not verified. Update in the same coherent change when a branch or responsibility changes; a fresh runtime/worktree observation needs its own date.
 
 | Checkout under `.worktrees/` | Branch / HEAD | Purpose and owner/task | Base | Current state | Authority carried / dependencies | Created / retired |

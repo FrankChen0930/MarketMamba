@@ -12,7 +12,26 @@
       "governance_tests_passed": 15,
       "independent_review": "PASS_ENGINEERING_ONLY",
       "research_approval": false,
-      "next_authorized_unit": "Phase A Task 4 evidence recovery in separate branch"
+      "commit": "0a7928061755855faf9aeb55c1702e26a5a62a34",
+      "next_authorized_unit": "Completed Unit B evidence recovery; stop pending next bounded authorization"
+    },
+    "task4_evidence_recovery": {
+      "branch": "fix/phase-a-task4-evidence",
+      "base_commit": "f5b0ff3df7645098cc01a9eeb36f5df22c4a3e41",
+      "commit": "46df7b3402f85877a5fc55600d53b15a6f3a7849",
+      "evidence_path": "research/production-system/phase-a/task4-evidence-recovery.json",
+      "status": "ENGINEERING_EVIDENCE_RECOVERED_UNMERGED",
+      "fix": "Artifact summary aggregates each identity once across stage references",
+      "repair_rounds": 2,
+      "ops_tests_passed": 70,
+      "fetch_only_mock_tests_passed": 3,
+      "independent_review": "NO_REQUIRED_FINDINGS; round1 independent 70+3, round2 read-only review",
+      "correctness_approval": "NOT_ESTABLISHED",
+      "remaining_evidence": [
+        "Concurrent uncommitted-writer and mid-read-commit snapshot isolation",
+        "Human Task4 correctness/sanitizer review",
+        "Separate Task5 crash/replay/overhead/formal acceptance"
+      ]
     },
     "observed_on": "2026-10-20",
     "base_commit": "50c5b785e8c373913c3301a056497eb955f36681",
@@ -24,7 +43,7 @@
     "pit_regression_tests_passed": 40,
     "research_or_correctness_promotion": false,
     "checkpoint": "knowledge/00_Project_Map/Current_State.md",
-    "next_bounded_candidate": "Offline snapshot reader path/schema validation; no new data admission"
+    "next_bounded_candidate": "Task4 concurrent committed-only snapshot evidence before Human correctness review; no new data admission"
   },
   "observed_at": "2026-09-22T13:25:21+08:00",
   "human_review": {
@@ -162,7 +181,7 @@
       "task4_atomic_projection_read_only_cli": "IMPLEMENTED_WITH_SANITIZER_FOLLOW_UP_FIXES_CORRECTNESS_APPROVAL_NOT_ESTABLISHED",
       "task5_replay_formal_acceptance_report": "NOT_STARTED"
     },
-    "blocker": "HUMAN_REVIEW_REQUIRED_FOR_TASK4_CORRECTNESS_APPROVAL_SANITIZER_EVIDENCE_AND_MERGE_DECISION",
+    "blocker": "TASK4_CONCURRENT_SNAPSHOT_EVIDENCE_GAP_AND_HUMAN_CORRECTNESS_REVIEW; MERGE_REQUIRES_SEPARATE_DECISION",
     "success_authority": "LEGACY_FETCH_RESULT"
   },
   "delivery": {
@@ -208,7 +227,7 @@
     {
       "id": "phase-a-review",
       "status": "HUMAN_REVIEW_REQUIRED",
-      "description": "Sanitizer/path-redaction evidence and merge decision require acceptance."
+      "description": "Task4 concurrent snapshot evidence remains missing; candidate 46df7b3 fixes duplicate artifact aggregation. Human correctness/sanitizer review and separate merge decision remain required."
     },
     {
       "id": "e1-diagnostics",
