@@ -31,6 +31,12 @@ Append/transaction-backed operational records and read-only projections/CLI view
 
 ## Current Implementation
 
+Current update (2026-10-21): Human approved Task 4 limited engineering correctness
+at `1e119ef`, bound to the verified historical evidence index and 12 raw records.
+See `knowledge/02_History/Decisions/20261021-task4-human-approval.json`.
+Task 5 is authorized for offline work in `integration/phase-a-task5`, not approved.
+The following earlier observations remain historical; no deployment is implied.
+
 Tasks 1–3 are completed and reviewed. Task 4 has implementation and sanitizer fixes, but correctness approval is not established. Task 5 has not started. The branch is unmerged, not deployed, and requires human review.
 
 The isolated follow-up `fix/phase-a-task4-evidence@46df7b3402f85877a5fc55600d53b15a6f3a7849`

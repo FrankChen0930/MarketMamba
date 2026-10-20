@@ -1,5 +1,18 @@
 # Worktree Register
 
+## Phase A integration — 2026-10-21
+
+New `.worktrees/phase-a-task5`, `integration/phase-a-task5`, base
+`63a040d306e402dbc22e8592f57f034fd4a9a863`, owner Human-authorized Codex.
+Purpose: isolated joint validation plus Task 5 offline evidence. A new checkout
+is explicitly requested to preserve both existing source candidates.
+Seventeen Phase A-only commits from `9efed7b` through `1e119ef` are cherry-picked
+with source commit provenance; unrelated research lineage is excluded.
+State UNMERGED / NOT_DEPLOYED. Source checkouts and main retained unchanged.
+Dependencies: stdlib SQLite tests and existing E1 recovery CPU .venv for PIT;
+all replay data temporary synthetic files. No execution/production authority.
+Retirement N/A; requires preserved commits, clean/artifact audit and Human approval.
+
 ## Bounded recovery addition — observed 2026-10-20
 
 New checkout `.worktrees/v7-snapshot-immutability`, branch

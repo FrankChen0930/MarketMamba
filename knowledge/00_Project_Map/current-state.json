@@ -189,10 +189,12 @@
       "task1_contracts_schema_migrations": "COMPLETED_REVIEWED",
       "task2_transactional_store_lease_fencing": "COMPLETED_REVIEWED",
       "task3_fetch_only_shadow_adapter": "COMPLETED_REVIEWED",
-      "task4_atomic_projection_read_only_cli": "IMPLEMENTED_WITH_SANITIZER_FOLLOW_UP_FIXES_CORRECTNESS_APPROVAL_NOT_ESTABLISHED",
-      "task5_replay_formal_acceptance_report": "NOT_STARTED"
+      "task4_atomic_projection_read_only_cli": "HUMAN_APPROVED_LIMITED_ENGINEERING",
+      "task5_replay_formal_acceptance_report": "IN_PROGRESS_OFFLINE"
     },
-    "blocker": "HUMAN_TASK4_CORRECTNESS_REVIEW_PENDING_ON_1e119ef; MERGE_REQUIRES_SEPARATE_DECISION",
+    "blocker": "TASK5_OFFLINE_VALIDATION_IN_PROGRESS; NO_TASK5_CORRECTNESS_APPROVAL",
+    "task4_human_decision": "knowledge/02_History/Decisions/20261021-task4-human-approval.json",
+    "integration_candidate": "integration/phase-a-task5",
     "success_authority": "LEGACY_FETCH_RESULT"
   },
   "delivery": {

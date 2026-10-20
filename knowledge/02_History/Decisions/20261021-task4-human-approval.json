@@ -1,0 +1,15 @@
+{
+  "status": "ACCEPTED",
+  "authority": "HUMAN",
+  "recorded_on": "2026-10-21",
+  "source": "Human message in this conversation: /goal Market Mamba V7 — Phase A Task 4 Approval, Integration & Task 5",
+  "verbatim_decision": "我批准 Phase A Task 4 的限定工程 correctness，範圍僅包含已驗證的 Snapshot Isolation、Sanitizer、Aggregation 與 Task 4 既定工程契約。",
+  "approved_commit": "1e119ef855f8fd319f774162beca0bd729d4b921",
+  "evidence_index": "research/production-system/phase-a/task4-evidence-recovery.json",
+  "evidence_index_sha256": "ed254b828683a83035fe791117266d9ea9ed1a56ac477e9a4125dcbf9ff380ec",
+  "evidence_verified": {"raw_records": 12, "generation_digests": 36, "result": "MATCH"},
+  "scope": "TASK4_LIMITED_ENGINEERING_CORRECTNESS",
+  "excludes": ["cross-branch integration correctness", "research data or PIT/label semantics", "production correctness", "training", "deployment", "main merge", "push", "Task5 correctness approval"],
+  "strict_phase0": "STOP",
+  "recording_limit": "Agent transcription of explicit Human message, not an Agent-issued approval or cryptographic signature. Fixed evidence was verified from Git before recording."
+}

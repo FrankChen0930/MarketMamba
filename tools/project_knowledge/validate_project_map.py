@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import re
 import subprocess
 import sys
@@ -60,6 +61,29 @@ def validate_authority_reference(reference: str | None, authority_class: str) ->
     clean = reference.split("#", 1)[0]
     if "/" in clean and not (ROOT / clean).exists():
         fail(f"missing primary authority path: {clean}")
+
+def validate_phase_a_state(tasks: dict) -> None:
+    task4 = tasks["task4_atomic_projection_read_only_cli"]
+    task5 = tasks["task5_replay_formal_acceptance_report"]
+    if "APPROVAL_NOT_ESTABLISHED" in task4 and task5 == "NOT_STARTED":
+        return  # Retained historical state.
+    if task4 != "HUMAN_APPROVED_LIMITED_ENGINEERING":
+        fail("Phase A Task 4 requires explicit scoped approval")
+    record = json.loads((ROOT / "knowledge/02_History/Decisions/20261021-task4-human-approval.json").read_text())
+    if (record["authority"] != "HUMAN" or record["status"] != "ACCEPTED"
+            or record["scope"] != "TASK4_LIMITED_ENGINEERING_CORRECTNESS"
+            or record["strict_phase0"] != "STOP"
+            or record["approved_commit"] != "1e119ef855f8fd319f774162beca0bd729d4b921"
+            or record["evidence_index"] != "research/production-system/phase-a/task4-evidence-recovery.json"
+            or record["evidence_index_sha256"] != "ed254b828683a83035fe791117266d9ea9ed1a56ac477e9a4125dcbf9ff380ec"):
+        fail("Human Task 4 decision binding mismatch")
+    raw = subprocess.check_output(["git", "-C", str(ROOT), "show",
+                                   f'{record["approved_commit"]}:{record["evidence_index"]}'])
+    if hashlib.sha256(raw).hexdigest() != record["evidence_index_sha256"]:
+        fail("Approved Task 4 evidence mismatch")
+    if task5 not in {"NOT_STARTED", "IN_PROGRESS_OFFLINE", "OFFLINE_EVIDENCE_READY_HUMAN_REVIEW_PENDING",
+                     "STOP_EVIDENCE_GAP_HUMAN_REVIEW_PENDING"}:
+        fail("Task 5 has no correctness approval in this decision")
 
 
 def main() -> int:
@@ -126,10 +150,7 @@ def main() -> int:
     if current["operations"]["deployed"] is not False:
         fail("Phase A deployment mismatch")
     tasks = current["operations"]["tasks"]
-    if "APPROVAL_NOT_ESTABLISHED" not in tasks["task4_atomic_projection_read_only_cli"]:
-        fail("Phase A Task 4 must remain approval-pending")
-    if tasks["task5_replay_formal_acceptance_report"] != "NOT_STARTED":
-        fail("Phase A Task 5 must remain not started")
+    validate_phase_a_state(tasks)
 
     print(json.dumps({
         "status": "PASS",

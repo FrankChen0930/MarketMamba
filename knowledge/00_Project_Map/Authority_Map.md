@@ -77,6 +77,13 @@ An authority class describes evidence strength, not deployment status. Branch-lo
 
 ## Authority Classes
 
+2026-10-21 explicit Human decision supersedes the prior Task 4 approval-pending
+state only: [decision record](../02_History/Decisions/20261021-task4-human-approval.json)
+binds limited engineering correctness to fixed `1e119ef` and its verified index.
+Agent integration/test judgments do not extend that approval. Task 5 is
+authorized for offline work, not correctness-approved. Strict Phase 0 STOP,
+research authority and production boundaries remain unchanged.
+
 2026-10-20 bounded Task 4 follow-up:
 `fix/phase-a-task4-evidence@46df7b3402f85877a5fc55600d53b15a6f3a7849`
 is an unmerged artifact-summary fix/evidence candidate derived from `f5b0ff3`,

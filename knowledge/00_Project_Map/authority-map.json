@@ -425,7 +425,7 @@
       "topic": "Phase A implementation",
       "primary_authority": "feature/production-phase-a-shadow-ledger@f5b0ff3:V6/marketmamba/ops/",
       "authority_class": "UNMERGED_IMPLEMENTATION",
-      "status": "TASKS_1_TO_3_COMPLETED_REVIEWED_TASK4_IMPLEMENTED_APPROVAL_PENDING_TASK5_NOT_STARTED_UNMERGED_NOT_DEPLOYED",
+      "status": "HISTORICAL_SOURCE_RETAINED; TASK4_LIMITED_APPROVAL_AT_1e119ef; TASK5_OFFLINE_IN_PROGRESS; UNMERGED_NOT_DEPLOYED",
       "supersedes": [
         "roadmap-only Phase A description"
       ],
@@ -434,7 +434,7 @@
         "sanitizer fix commits"
       ],
       "conflicts": [
-        "HUMAN_REVIEW_REQUIRED for Task 4 correctness approval",
+        "Task4 approval applies only to 1e119ef limited engineering scope; decision in knowledge/02_History/Decisions/20261021-task4-human-approval.json",
         "Shadow evidence does not own fetch success"
       ]
     },

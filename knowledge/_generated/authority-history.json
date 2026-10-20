@@ -53,6 +53,15 @@
         "D: V6/logs/scheduler.log",
         "D: V6/logs/v62_daily.log"
       ]
+    },
+    {
+      "topic": "Task 4 limited engineering correctness",
+      "old_authority": "NOT_APPROVED at 63a040d",
+      "new_authority": "knowledge/02_History/Decisions/20261021-task4-human-approval.json",
+      "changed_at": "2026-10-21",
+      "change_commit": "containing commit",
+      "reason": "Explicit Human approval in current conversation, after fixed 1e119ef index and 12 evidence digests revalidated. No research/production/Task5 approval.",
+      "evidence": ["1e119ef:research/production-system/phase-a/task4-evidence-recovery.json"]
     }
   ]
 }

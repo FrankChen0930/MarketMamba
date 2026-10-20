@@ -21,10 +21,33 @@ import export_obsidian_links
 import generate_indexes
 import runtime_observations
 import validate_governance
+import validate_project_map
 from authority_refs import parse_authority_ref
 
 
 ROOT = Path(__file__).resolve().parents[2]
+
+class PhaseAApprovalTests(unittest.TestCase):
+    def test_fixed_human_approval_is_evidence_bound(self):
+        validate_project_map.validate_phase_a_state({
+            "task4_atomic_projection_read_only_cli": "HUMAN_APPROVED_LIMITED_ENGINEERING",
+            "task5_replay_formal_acceptance_report": "IN_PROGRESS_OFFLINE",
+        })
+
+    def test_no_automatic_task5_approval(self):
+        with self.assertRaises(AssertionError):
+            validate_project_map.validate_phase_a_state({
+                "task4_atomic_projection_read_only_cli": "HUMAN_APPROVED_LIMITED_ENGINEERING",
+                "task5_replay_formal_acceptance_report": "APPROVED",
+            })
+
+    def test_missing_human_record_rejected(self):
+        with tempfile.TemporaryDirectory() as temp, patch.object(validate_project_map, "ROOT", Path(temp)):
+            with self.assertRaises((AssertionError, FileNotFoundError)):
+                validate_project_map.validate_phase_a_state({
+                    "task4_atomic_projection_read_only_cli": "HUMAN_APPROVED_LIMITED_ENGINEERING",
+                    "task5_replay_formal_acceptance_report": "IN_PROGRESS_OFFLINE",
+                })
 
 
 class AuthorityReferenceTests(unittest.TestCase):

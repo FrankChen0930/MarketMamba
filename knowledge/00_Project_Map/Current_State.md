@@ -19,6 +19,18 @@ Semantic change owners must update this file in the same change. K0 remains disc
 
 ## Project Summary
 
+**2026-10-21 current Phase A decision:** Human explicitly approved Task 4 limited
+engineering correctness at `1e119ef`, after revalidation of its index, 12 raw
+SHA-256 records and 36 generation digests. Decision provenance:
+[Human record](../02_History/Decisions/20261021-task4-human-approval.json).
+This supersedes older pending-Task-4 observations below, not research or
+production gates. New isolated `integration/phase-a-task5` starts at `63a040d`
+and cherry-picks the 17 Phase A commits `9efed7b..1e119ef` with `-x` provenance.
+Integrated Operations files match `1e119ef`; snapshot files match `63a040d`.
+Joint regression: 75 ops, 47 PIT, 3 fetch-only, 18 governance PASS.
+Task 5 offline validation is now authorized/in progress, **not approved**.
+No main merge, push, deployment, production data or training authorization.
+
 **2026-10-20 bounded engineering recovery (branch-local):** base development
 `main@50c5b785e8c373913c3301a056497eb955f36681`; candidate
 `fix/v7-snapshot-immutability`, `UNMERGED / NOT_DEPLOYED`. One engineering unit
@@ -96,7 +108,7 @@ Runtime observations are not permanent facts. The new Scheduler observation expi
 | Architecture audit | `COMPLETE_CURRENT_REFERENCE` | `docs/production-system-architecture-audit@9efed7b:reports/marketmamba_production_system_audit.md` and its production-system roadmap. |
 | Phase A implementation | `UNMERGED`, `NOT_DEPLOYED` | `feature/production-phase-a-shadow-ledger@f5b0ff3`; SQLite WAL ledger, fencing, shadow fetch observer and atomic current-state projection exist on that branch. |
 | Phase A task state | Task 1 contracts/schema migrations: `COMPLETED_REVIEWED`; Task 2 transactional store/lease/fencing: `COMPLETED_REVIEWED`; Task 3 fetch-only shadow adapter: `COMPLETED_REVIEWED`; Task 4 atomic projection/read-only CLI: `IMPLEMENTED_WITH_SANITIZER_FOLLOW_UP_FIXES`, correctness approval `NOT_ESTABLISHED`; Task 5 replay/formal acceptance report: `NOT_STARTED` | Branch-local implementation is not production authority. |
-| Current blocker | `HUMAN_REVIEW_REQUIRED` | Task 4 correctness approval remains pending; sanitizer/path-redaction fixes do not constitute acceptance by themselves. |
+| Current blocker | `TASK5_OFFLINE_EVIDENCE_IN_PROGRESS` | Task 4 limited engineering approval is recorded above; Task 5 correctness and any production promotion remain Human decisions. |
 | Production success authority | Legacy fetch result remains authoritative | Shadow-ledger failures must not change fetch-only success semantics. |
 
 ## Delivery/UI State
