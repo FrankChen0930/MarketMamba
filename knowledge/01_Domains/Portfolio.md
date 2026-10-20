@@ -37,6 +37,9 @@ with deterministically ordered current holdings when no pending target exists.
 The pending-target behavior and exact frequency boundary are preserved.
 See [bounded plan/evidence](../../tasks/v7-cpu-development-window-01.md).
 This is synthetic component engineering, not signal/portfolio research admission.
+The same candidate also rejects invalid semantic journal transitions before
+persistence, preserving existing bytes and replayability. Append/duplicate
+responses derive from their locked prefix, not a later unlocked read.
 
 The research engine models partial execution and deterministic state transitions with replayable hash-linked records. No active scheduler, broker adapter, or verified live-paper loop is established for V7.
 

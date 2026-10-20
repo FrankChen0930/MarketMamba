@@ -257,6 +257,20 @@ def _validate_records(records: list[dict[str, Any]]) -> None:
         expected_prev = record["record_hash"]
 
 
+def _replay_records(records: list[dict[str, Any]] | tuple[dict[str, Any], ...]) -> ReplayResult:
+    """Reduce a structurally validated prefix without reopening its journal."""
+    try:
+        engine = PortfolioEngine(PortfolioSpec.from_payload(records[0]["payload"]))
+        for record in records[1:]:
+            engine.apply_event(
+                record["kind"], record["event_id"],
+                record["occurred_at"], record["payload"],
+            )
+    except (KeyError, ContractError) as exc:
+        raise JournalIntegrityError(f"cannot replay journal: {exc}") from exc
+    return ReplayResult(state=engine.snapshot(), event_count=len(records))
+
+
 class PortfolioJournal:
     def __init__(self, path: str | Path):
         self.path = Path(path)
@@ -306,28 +320,7 @@ class PortfolioJournal:
         return tuple(records)
 
     def replay(self) -> ReplayResult:
-        records = self.records()
-        first = records[0]
-        if first.get("kind") != "GENESIS":
-            raise JournalIntegrityError("first record must be GENESIS")
-        try:
-            spec = PortfolioSpec.from_payload(first["payload"])
-            engine = PortfolioEngine(spec)
-            for record in records[1:]:
-                engine.apply_event(
-                    record["kind"],
-                    record["event_id"],
-                    record["occurred_at"],
-                    record["payload"],
-                )
-        except (KeyError, ContractError) as exc:
-            raise JournalIntegrityError(
-                f"cannot replay journal: {exc}"
-            ) from exc
-        return ReplayResult(
-            state=engine.snapshot(),
-            event_count=len(records),
-        )
+        return _replay_records(self.records())
 
     def append(
         self,
@@ -363,7 +356,7 @@ class PortfolioJournal:
                         and record["occurred_at"] == timestamp
                         and record["payload"] == normalized_payload
                     ):
-                        replayed = self.replay()
+                        replayed = _replay_records(records)
                         return AppendResult(
                             appended=False,
                             state=replayed.state,
@@ -388,6 +381,10 @@ class PortfolioJournal:
                     payload=normalized_payload,
                     prev_hash=records[-1]["record_hash"],
                 )
+                # Validate the entire proposed transition before changing bytes.
+                # Keep this snapshot: reopening after unlock could observe a
+                # later writer rather than this append's committed prefix.
+                replayed = _replay_records([*records, record])
                 handle.seek(0, os.SEEK_END)
                 handle.write(_canonical(record) + "\n")
                 handle.flush()
@@ -397,7 +394,6 @@ class PortfolioJournal:
                 f"journal does not exist: {self.path}"
             ) from None
 
-        replayed = self.replay()
         return AppendResult(
             appended=True,
             state=replayed.state,

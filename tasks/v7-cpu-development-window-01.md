@@ -83,3 +83,12 @@ actual test counts/durations and bounded repair counts instead.
   policy/runtime change requiring updates there. Next U2 remains READY:
   disposable real-journal probe confirms head mismatch is rejected only AFTER
   bytes change, and the resulting journal cannot replay.
+- U2 RED: 6 boundary tests, 2 failures (new semantic refusal and extension of
+  an existing semantically invalid chain both changed bytes), exit 1.
+  GREEN: all 38 portfolio tests PASS, 0.305s. Shared prefix reducer now validates
+  the proposed chain under the append lock before writing, and returns that
+  prefix without a second unlocked read. Historical corrupt journals remain
+  refused and unchanged, never auto-repaired. One implementation repair;
+  independent review passed: no Required/Critical; independent 38 tests PASS
+  (0.294s), and both RED regressions independently reproduced on `585ad65`.
+  U3 remains READY; shared reader locking is not yet certified.

@@ -205,6 +205,58 @@ class PortfolioJournalCliTest(unittest.TestCase):
 
 
 class PortfolioJournalBoundaryTest(unittest.TestCase):
+    def test_head_mismatch_refusal_preserves_bytes_and_allows_valid_retry(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            journal = PortfolioJournal.create(
+                Path(tmp) / "portfolio.jsonl", portfolio_spec(), "genesis", T0
+            )
+            before = journal.path.read_bytes()
+            with self.assertRaises(JournalIntegrityError):
+                journal.append(
+                    "signal", "SIGNAL", T1, {"head": "10d", "scores": {"A": "1"}}
+                )
+            self.assertEqual(journal.path.read_bytes(), before)
+            self.assertEqual(journal.replay().event_count, 1)
+            accepted = journal.append("signal", "SIGNAL", T1, signal_payload())
+            self.assertTrue(accepted.appended)
+            self.assertEqual(accepted.event_count, 2)
+            self.assertEqual(journal.replay().state, accepted.state)
+
+    def test_existing_semantically_invalid_chain_cannot_be_extended(self):
+        import json
+        from V6.experimental.v7_portfolio_journal import _make_record
+
+        with tempfile.TemporaryDirectory() as tmp:
+            journal = PortfolioJournal.create(
+                Path(tmp) / "portfolio.jsonl", portfolio_spec(), "genesis", T0
+            )
+            invalid = _make_record(
+                seq=2, event_id="bad-head", kind="SIGNAL", occurred_at=T1,
+                payload={"head": "10d", "scores": {"A": "1"}},
+                prev_hash=journal.records()[0]["record_hash"],
+            )
+            with journal.path.open("a") as handle:
+                handle.write(json.dumps(invalid) + "\n")
+            before = journal.path.read_bytes()
+            with self.assertRaises(JournalIntegrityError):
+                journal.append("market", "MARKET_SESSION", T2, market_payload())
+            self.assertEqual(journal.path.read_bytes(), before)
+
+    def test_valid_early_signal_after_fill_is_replayable_and_non_mutating(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            journal = PortfolioJournal.create(
+                Path(tmp) / "portfolio.jsonl", portfolio_spec(), "genesis", T0
+            )
+            journal.append("signal", "SIGNAL", T1, signal_payload())
+            filled = journal.append("market", "MARKET_SESSION", T2, market_payload())
+            early = journal.append(
+                "early", "SIGNAL", "2026-09-17T17:00:00+08:00",
+                {"head": "5d", "scores": {"B": "2"}},
+            )
+            self.assertEqual(early.state, filled.state)
+            self.assertEqual(early.event_count, 4)
+            self.assertEqual(journal.replay().state, filled.state)
+
     def test_invalid_signal_is_rejected_before_append(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             journal = PortfolioJournal.create(

@@ -11,7 +11,7 @@
     "unit_limit": 3,
     "units": {
       "U1": "COMPLETE: 35 portfolio tests passed; independent 35 PASS, no Required/Critical findings",
-      "U2": "READY_AFTER_U1",
+      "U2": "COMPLETE: independent 38 PASS; no Required/Critical findings",
       "U3": "READY_AFTER_U2"
     },
     "strict_phase0": "STOP",
