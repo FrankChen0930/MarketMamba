@@ -9,7 +9,7 @@
 | `observed_at` | `2026-09-22T13:25:21+08:00` for this runtime reconciliation; individual observations retain their own timestamps |
 | `owner` | Human + project agents |
 | Repository context | WSL development `main@3b0df0f` at observation; Windows operational `main@8b82a68`; research authority remains branch-qualified |
-| State updated | `2026-09-22`; new Scheduler observation at `2026-09-22T13:21:35+08:00` |
+| State updated | `2026-10-21` engineering/decision update; Scheduler observation remains `2026-09-22T13:21:35+08:00`, not refreshed |
 | Source basis | Reviewed K0/contracts plus [new Scheduler observation](../runtime-observations/scheduler-20260922T132135+0800.json) and [operational path observation](../runtime-observations/operational-path-20260922T132521+0800.json) |
 | Human review | Prior research/Phase A scope accepted `2026-09-20`; the new 2026-09-22 runtime observations are agent-observed and have not received separate human review |
 | Runtime freshness | External scheduler/deployment observations expire after 7 days and become `STALE_OBSERVATION`; they are retained until re-observed |
@@ -28,13 +28,22 @@ production gates. New isolated `integration/phase-a-task5` starts at `63a040d`
 and cherry-picks the 17 Phase A commits `9efed7b..1e119ef` with `-x` provenance.
 Integrated Operations files match `1e119ef`; snapshot files match `63a040d`.
 Joint regression: 75 ops, 47 PIT, 3 fetch-only, 18 governance PASS.
-Task 5 offline validation is complete: **OFFLINE_EVIDENCE_READY_HUMAN_REVIEW_PENDING**.
+Task 5 limited offline engineering correctness is now **HUMAN_APPROVED** at
+fixed `1c5250e67461456b7ca0b361f8da3d9cb3f22514`, after artifact/digest verification.
+The [Task 5 Human decision](../02_History/Decisions/20261021-task5-human-approval.json)
+retains the explicit scope and exclusions. Original acceptance/report artifacts
+remain unchanged historical pre-decision evidence.
 Final Operations 81, governance 19, non-training portfolio regression 38 PASS;
 joint PIT 47 and fetch-only 3 PASS. See the
 [Task 5 report](../../reports/production_phase_a_shadow_ledger.md) and
 [evidence index](../../research/production-system/phase-a/task5-evidence-index.json).
 Ten fixed replays, real-process restart/concurrency and measured overhead are
-offline engineering evidence, not production or Human correctness approval.
+offline engineering evidence, not production certification. Final engineering
+review recommends **GO for development candidate integration**; this is an Agent
+assessment, not final Phase A Human acceptance or permission to merge.
+See [final review and guarded integration procedure](../../reports/production_phase_a_integration_review.md).
+The decision-validator change passes 23 governance tests (including rejection
+of mutated, missing or corrupt Task 5 approval evidence).
 No main merge, push, deployment, production data or training authorization.
 
 **2026-10-20 bounded engineering recovery (branch-local):** base development
@@ -43,7 +52,7 @@ No main merge, push, deployment, production data or training authorization.
 fixes immutable V7 source snapshot publication; it does not promote research
 evidence or close any correctness gate. See the checkpoint below.
 
-**Active objectives:** recover the identity-matched E1 matrix and safely replay retained checkpoints before deciding further research; Human review of Task 5 evidence and a separate integration decision. Governance consolidation supplies navigation, not a new research or production gate.
+**Active objectives:** Human final Phase A integration decision; subsequently consider bounded E1 matrix/checkpoint identity recovery before deciding further research. No new research execution is authorized by this recommendation.
 
 MarketMamba contains separate production-data, legacy model runtime, V7 correctness, research-training, historical-simulation, portfolio, delivery, and operations-control-plane subsystems. Production acquisition uses mutable provider data; V7 research authority uses versioned PIT/provenance evidence. The current corrected research baseline is `E5-PIT-Clean-v1`, with 48 features, no graph and no industry neutralization. Historical simulation is `PASS`, while strict trading correctness remains `STOP`. The observed production scheduler runs fetch-only; full V6.2 inference/portfolio/publication is `DISABLED`. E1 is a completed research experiment with `PASS_REFRESH_HYPOTHESIS`, not trading evidence. Phase A operations work is `UNMERGED` and `NOT_DEPLOYED`.
 
@@ -112,9 +121,9 @@ Runtime observations are not permanent facts. The new Scheduler observation expi
 | Topic | State | Authority / notes |
 |---|---|---|
 | Architecture audit | `COMPLETE_CURRENT_REFERENCE` | `docs/production-system-architecture-audit@9efed7b:reports/marketmamba_production_system_audit.md` and its production-system roadmap. |
-| Phase A implementation | `UNMERGED`, `NOT_DEPLOYED` | `feature/production-phase-a-shadow-ledger@f5b0ff3`; SQLite WAL ledger, fencing, shadow fetch observer and atomic current-state projection exist on that branch. |
-| Phase A task state | Tasks 1–3 `COMPLETED_REVIEWED`; Task 4 `HUMAN_APPROVED_LIMITED_ENGINEERING` at `1e119ef`; Task 5 `OFFLINE_EVIDENCE_READY_HUMAN_REVIEW_PENDING` | Branch-local integration evidence is not production authority. |
-| Current blocker | `TASK5_HUMAN_CORRECTNESS_REVIEW_PENDING` | Task 4 limited engineering approval is recorded above; Task 5 correctness and any integration/production promotion remain Human decisions. |
+| Phase A implementation | `UNMERGED`, `NOT_DEPLOYED` | Candidate `integration/phase-a-task5`; original `f5b0ff3` retained as historical source. |
+| Phase A task state | Tasks 1–3 `COMPLETED_REVIEWED`; Task 4 limited approval at `1e119ef`; Task 5 limited offline approval at `1c5250e` | Final Phase A completion/integration remains a separate Human gate. |
+| Current blocker | `FINAL_INTEGRATION_DECISION_REQUIRED` | No known blocking limited engineering finding; no merge or production authorization. |
 | Production success authority | Legacy fetch result remains authoritative | Shadow-ledger failures must not change fetch-only success semantics. |
 
 ## Delivery/UI State
@@ -126,20 +135,23 @@ Runtime observations are not permanent facts. The new Scheduler observation expi
 ## Active Blockers
 
 1. `STOP`: strict Phase 0 has no verified executable 5d/10d labels.
-2. `HUMAN_REVIEW_REQUIRED`: Phase A Task 5 correctness package and separate integration decision.
+2. `HUMAN_REVIEW_REQUIRED`: final Phase A acceptance and development-main integration decision.
 3. `UNKNOWN`: E1 final-support epoch dynamics and causal regime dependence require the frozen matrix and ex-ante market-state evidence; completed result is admitted.
 4. `UNKNOWN`: live API/frontend deployment and publication state.
 
 ## Current Decisions / Next Actions
 
 1. Recover the identity-matched E1 matrix and safe checkpoint replay, then predeclare causal regime series. Do not launch another training experiment until diagnostic limitations are resolved.
-2. Review Phase A Task 5 offline evidence before any integration decision; no deployment authorization.
+2. Decide final Phase A integration using the fixed candidate and guarded procedure; no deployment authorization.
 3. Maintain K1 domain notes and drift checks in the same change when domain semantics, authority, or boundaries change.
 4. Use the consolidated K2 Current State, Authority Map and knowledge-impact checks. K0/K1/K2 branch history is retained without active checkouts; do not begin K3 automatically.
 
 ## Active worktree boundary
 
-Four research/operations linked worktrees remain after the authorized K0/K1/K2 checkout retirement on 2026-09-22. Their branch, purpose and authority are recorded in [Worktree Register](Worktree_Register.md). The four K branches remain as historical lineage without active checkouts. Branch-local research/ops results remain branch-qualified; development main was clean after the retirement commit.
+At this review Git lists eight linked worktrees plus main. The 2026-09-22
+four-worktree count below is historical. This task reuses the clean
+`.worktrees/phase-a-task5` candidate; main remains `50c5b78` and no checkout is
+removed. Responsibilities are in [Worktree Register](Worktree_Register.md).
 
 ## Repository Rationalization Inventory
 
@@ -156,7 +168,11 @@ Phase 3B-1 source canonicalization completed on 2026-09-22 in WSL development ma
 - [K0 boundary map](../../research/project-knowledge/k0/boundary-map.json)
 - Corrected/PIT authorities are branch-qualified in [Authority Map](Authority_Map.md).
 
-## Bounded recovery checkpoint — 2026-10-20
+## Historical bounded recovery checkpoint — 2026-10-20
+
+The observation-time pending approvals and suggested next steps in this section
+are superseded by the current 2026-10-21 decision summary above. They are not
+instructions to repeat completed work.
 
 ### Snapshot Reader contract continuation (Unit A)
 

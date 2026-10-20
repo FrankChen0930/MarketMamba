@@ -9,7 +9,10 @@ is explicitly requested to preserve both existing source candidates.
 Seventeen Phase A-only commits from `9efed7b` through `1e119ef` are cherry-picked
 with source commit provenance; unrelated research lineage is excluded.
 State UNMERGED / NOT_DEPLOYED. Source checkouts and main retained unchanged.
-Task 5 offline evidence completed; Human correctness review pending.
+Task 5 limited offline engineering approved at `1c5250e` in the 2026-10-21
+Final Engineering Review request. Final Phase A/integration decision pending.
+This checkout is reused for the bounded decision/governance update and final
+review; no new worktree or production implementation is needed.
 Resume from the branch's committed evidence index and report, not the older
 source checkouts' historical pending-Task4 notes. Do not start further work.
 Dependencies: stdlib SQLite tests and existing E1 recovery CPU .venv for PIT;

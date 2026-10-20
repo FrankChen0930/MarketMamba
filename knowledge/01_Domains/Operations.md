@@ -17,9 +17,10 @@ The 2026-10-20 review is bounded engineering evidence recovery, not Human approv
 
 Current candidate `integration/phase-a-task5` combines verified Snapshot and
 Task 4 sources without changing production authority. Human approved Task 4
-limited engineering at `1e119ef`; Task 5 is now
-`OFFLINE_EVIDENCE_READY_HUMAN_REVIEW_PENDING`. See
-[formal report](../../reports/production_phase_a_shadow_ledger.md).
+limited engineering at `1e119ef`; Task 5 limited offline engineering is now
+Human-approved at `1c5250e`. Final Phase A acceptance/integration is pending.
+See [final engineering review](../../reports/production_phase_a_integration_review.md)
+and the preserved [pre-decision report](../../reports/production_phase_a_shadow_ledger.md).
 The older review observations below are historical, not the current approval gate.
 No training, live fetch, main merge or deployment occurred.
 
@@ -27,7 +28,10 @@ Phase A builds a shadow operational ledger around existing workflows. It records
 
 ## Authority
 
-Implementation lives on unmerged branch `feature/production-phase-a-shadow-ledger@f5b0ff3`, primarily under `V6/marketmamba/ops/`. The production architecture audit at `docs/production-system-architecture-audit@9efed7b` defines the roadmap.
+Current unmerged implementation is `integration/phase-a-task5@1c5250e`,
+primarily under `V6/marketmamba/ops/`. Original
+`feature/production-phase-a-shadow-ledger@f5b0ff3` remains historical source.
+The production architecture audit at `docs/production-system-architecture-audit@9efed7b` defines the roadmap.
 
 ## Inputs
 
@@ -42,7 +46,8 @@ Append/transaction-backed operational records and read-only projections/CLI view
 Current update (2026-10-21): Human approved Task 4 limited engineering correctness
 at `1e119ef`, bound to the verified historical evidence index and 12 raw records.
 See `knowledge/02_History/Decisions/20261021-task4-human-approval.json`.
-Task 5 is authorized for offline work in `integration/phase-a-task5`, not approved.
+Task 5 limited offline engineering approval is separately recorded in
+`knowledge/02_History/Decisions/20261021-task5-human-approval.json`.
 The following earlier observations remain historical; no deployment is implied.
 
 Tasks 1–3 are completed and reviewed. Task 4 has implementation and sanitizer fixes, but correctness approval is not established. Task 5 has not started. The branch is unmerged, not deployed, and requires human review.
@@ -74,7 +79,10 @@ Existing scripts own their actual work. Phase A observes and records rather than
 
 ## Known Limitations
 
-Task 4 lacks established correctness approval; Task 5, production notifications/incidents, and atomic publication are incomplete.
+Task 4/5 scoped approvals do not certify production. Production notifications,
+incidents and whole-pipeline publication/recovery remain later phases.
+Long-ledger performance, live provider behavior and host power loss are untested.
+The following paragraphs preserve earlier evidence gaps, not current gates.
 
 At the earlier `46df7b3` checkpoint, the sequential rebuild test did not test
 an uncommitted concurrent writer or a commit midway through reading a projection.

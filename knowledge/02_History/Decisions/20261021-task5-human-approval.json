@@ -1,0 +1,26 @@
+{
+  "status": "ACCEPTED",
+  "authority": "HUMAN",
+  "recorded_on": "2026-10-21",
+  "source": "Human message in this conversation: /goal Market Mamba V7 — Phase A Final Engineering Review & Integration Readiness",
+  "verbatim_decision": "我批准 `integration/phase-a-task5@1c5250e67461456b7ca0b361f8da3d9cb3f22514` 對應的 **Phase A Task 5 限定離線工程 Correctness**。",
+  "approved_commit": "1c5250e67461456b7ca0b361f8da3d9cb3f22514",
+  "evidence_index": "research/production-system/phase-a/task5-evidence-index.json",
+  "evidence_index_sha256": "51e6b00c3dde35e583ed32c466286002d849a518aee24810b5216ae16f056d98",
+  "acceptance_sha256": "439dfcc3b1be1286a1ae986aef753285caa6193aa653681f96156465038ae7ca",
+  "review_package_sha256": "bc1a61dc9055c43de7ce0d36679cb8165fa8f457381e506991428ed438dcbbab",
+  "evidence_verified": {
+    "indexed_files": 4,
+    "raw_records": 14,
+    "fixed_replays": 10,
+    "additional_process_scenarios": 4,
+    "benchmark_median_added_ns": 98475144.0,
+    "result": "MATCH_FIXED_GIT_AND_CHECKOUT",
+    "tests": "Fixed acceptance/report records agree with prior execution and independent review in this conversation. Historical suite totals are not claimed as newly rerun."
+  },
+  "scope": "TASK5_LIMITED_OFFLINE_ENGINEERING_CORRECTNESS",
+  "includes": ["Existing offline Task5 contract", "Fixed replay, crash/restart, concurrency and ledger validation", "Reported benchmark with shared-host and synthetic-fixture limitations"],
+  "excludes": ["production readiness", "deployment approval", "research data or PIT/label semantics", "complete research correctness", "host power-loss durability", "complete experimental or training pipeline certification", "automatic Phase A final completion", "main merge", "push", "training"],
+  "strict_phase0": "STOP",
+  "recording_limit": "Agent transcription of explicit Human decision, not an Agent-issued approval or cryptographic signature. Fixed artifacts were verified before recording. Original acceptance/report remain historical and unchanged."
+}

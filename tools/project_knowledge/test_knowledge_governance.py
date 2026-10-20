@@ -28,6 +28,45 @@ from authority_refs import parse_authority_ref
 ROOT = Path(__file__).resolve().parents[2]
 
 class PhaseAApprovalTests(unittest.TestCase):
+    def test_task5_scoped_human_decision_is_evidence_bound(self):
+        validate_project_map.validate_phase_a_state({
+            "task4_atomic_projection_read_only_cli": "HUMAN_APPROVED_LIMITED_ENGINEERING",
+            "task5_replay_formal_acceptance_report": "HUMAN_APPROVED_LIMITED_OFFLINE_ENGINEERING",
+        })
+
+    def test_task5_changed_decision_or_evidence_is_rejected(self):
+        path = ROOT / "knowledge/02_History/Decisions/20261021-task5-human-approval.json"
+        original = Path.read_text
+        record = json.loads(path.read_text())
+        mutations = (
+            ("authority", "AGENT"), ("approved_commit", "0" * 40),
+            ("scope", "PRODUCTION_APPROVED"), ("strict_phase0", "PASS"),
+            ("evidence_index_sha256", "0" * 64),
+            ("acceptance_sha256", "0" * 64),
+            ("review_package_sha256", "0" * 64),
+        )
+        for field, value in mutations:
+            def read(target, *args, **kwargs):
+                if target == path:
+                    return json.dumps({**record, field: value})
+                return original(target, *args, **kwargs)
+            with self.subTest(field=field), patch.object(Path, "read_text", read):
+                with self.assertRaises(AssertionError):
+                    validate_project_map.validate_phase_a_state({
+                        "task4_atomic_projection_read_only_cli": "HUMAN_APPROVED_LIMITED_ENGINEERING",
+                        "task5_replay_formal_acceptance_report": "HUMAN_APPROVED_LIMITED_OFFLINE_ENGINEERING",
+                    })
+
+    def test_task5_missing_decision_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp, patch.object(validate_project_map, "ROOT", Path(temp)):
+            with self.assertRaises(FileNotFoundError):
+                validate_project_map.validate_task5_decision()
+
+    def test_task5_corrupt_fixed_evidence_is_rejected(self):
+        with patch.object(validate_project_map.subprocess, "check_output", return_value=b"corrupt"):
+            with self.assertRaisesRegex(AssertionError, "evidence mismatch"):
+                validate_project_map.validate_task5_decision()
+
     def test_fixed_human_approval_is_evidence_bound(self):
         validate_project_map.validate_phase_a_state({
             "task4_atomic_projection_read_only_cli": "HUMAN_APPROVED_LIMITED_ENGINEERING",

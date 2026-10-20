@@ -55,7 +55,7 @@
     "pit_regression_tests_passed": 40,
     "research_or_correctness_promotion": false,
     "checkpoint": "knowledge/00_Project_Map/Current_State.md",
-    "next_bounded_candidate": "Human Task5 correctness review of integration/phase-a-task5; no further execution authorized"
+    "next_bounded_candidate": "Human final Phase A integration decision; Task5 limited offline approval recorded, no merge or research execution authorized"
   },
   "observed_at": "2026-09-22T13:25:21+08:00",
   "human_review": {
@@ -191,9 +191,12 @@
       "task2_transactional_store_lease_fencing": "COMPLETED_REVIEWED",
       "task3_fetch_only_shadow_adapter": "COMPLETED_REVIEWED",
       "task4_atomic_projection_read_only_cli": "HUMAN_APPROVED_LIMITED_ENGINEERING",
-      "task5_replay_formal_acceptance_report": "OFFLINE_EVIDENCE_READY_HUMAN_REVIEW_PENDING"
+      "task5_replay_formal_acceptance_report": "HUMAN_APPROVED_LIMITED_OFFLINE_ENGINEERING"
     },
-    "blocker": "TASK5_HUMAN_CORRECTNESS_REVIEW_PENDING; SEPARATE_INTEGRATION_DECISION_REQUIRED",
+    "blocker": "FINAL_PHASE_A_AND_DEVELOPMENT_MAIN_INTEGRATION_DECISION_REQUIRED",
+    "task5_human_decision": "knowledge/02_History/Decisions/20261021-task5-human-approval.json",
+    "engineering_readiness": "GO_FOR_LIMITED_DEVELOPMENT_CANDIDATE; AGENT_ASSESSMENT_NOT_FINAL_HUMAN_ACCEPTANCE",
+    "final_engineering_review": "reports/production_phase_a_integration_review.md",
     "task5_evidence_index": "research/production-system/phase-a/task5-evidence-index.json",
     "task5_report": "reports/production_phase_a_shadow_ledger.md",
     "task5_validation": {"operations": 81, "pit": 47, "fetch_only": 3, "governance": 19, "non_training_portfolio": 38},
@@ -244,7 +247,7 @@
     {
       "id": "phase-a-review",
       "status": "HUMAN_REVIEW_REQUIRED",
-      "description": "Task4 limited engineering Human approval recorded for 1e119ef. Integrated Task5 offline evidence ready; Task5 Human correctness and separate merge decision remain required."
+      "description": "Task4 limited engineering approved at 1e119ef; Task5 limited offline engineering approved at 1c5250e. Final Phase A acceptance and development-main integration require separate Human decision."
     },
     {
       "id": "e1-diagnostics",
@@ -259,7 +262,7 @@
   ],
   "next_decisions": [
     "Recover the identity-matched E1 matrix, establish safe checkpoint replay, and predeclare causal regime evidence before deciding a new training experiment.",
-    "Review Phase A Task5 offline package; Task4 approval is limited to its fixed source, not integration or production.",
+    "Decide final Phase A limited engineering integration; Task4/Task5 fixed-source approvals do not authorize merge or production.",
     "Use consolidated K2 governance in main; retain K0/K1/K2 branch history without active checkouts; do not begin K3 automatically."
   ],
   "authorities": [
@@ -289,7 +292,7 @@
   "state_updated_at": "2026-10-21",
   "active_objectives": [
     "Recover identity-matched E1 matrix and safe checkpoint replay before E2 decision",
-    "Human review Task5 offline evidence and separately decide integration; no deployment authorization"
+    "Human final Phase A integration decision; no merge, deployment or new research execution authorization"
   ],
   "runtime_contract": {
     "development_checkout": "/home/frank/projects/MarketMamba",

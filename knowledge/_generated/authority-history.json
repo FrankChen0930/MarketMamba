@@ -62,6 +62,24 @@
       "change_commit": "containing commit",
       "reason": "Explicit Human approval in current conversation, after fixed 1e119ef index and 12 evidence digests revalidated. No research/production/Task5 approval.",
       "evidence": ["1e119ef:research/production-system/phase-a/task4-evidence-recovery.json"]
+    },
+    {
+      "topic": "Task 5 limited offline engineering correctness",
+      "old_authority": "NOT_APPROVED at 1c5250e",
+      "new_authority": "knowledge/02_History/Decisions/20261021-task5-human-approval.json",
+      "changed_at": "2026-10-21",
+      "change_commit": "containing commit",
+      "reason": "Explicit Human decision in Final Engineering Review request after fixed artifacts and indexed digests matched. No final Phase A, merge, research or production approval.",
+      "evidence": ["1c5250e:research/production-system/phase-a/task5-evidence-index.json", "1c5250e:research/production-system/phase-a/acceptance.json"]
+    },
+    {
+      "topic": "Phase A implementation",
+      "old_authority": "feature/production-phase-a-shadow-ledger@f5b0ff3:V6/marketmamba/ops/",
+      "new_authority": "integration/phase-a-task5@1c5250e:V6/marketmamba/ops/",
+      "changed_at": "2026-10-21",
+      "change_commit": "containing commit",
+      "reason": "Point implementation navigation at the verified unmerged candidate including aggregation and isolation/replay evidence. Retain f5b0ff3 as historical source; no production or main authority promotion.",
+      "evidence": ["1c5250e:research/production-system/phase-a/task5-evidence-index.json", "1e119ef:research/production-system/phase-a/task4-evidence-recovery.json"]
     }
   ]
 }

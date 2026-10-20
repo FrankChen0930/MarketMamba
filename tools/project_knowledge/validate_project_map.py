@@ -62,6 +62,32 @@ def validate_authority_reference(reference: str | None, authority_class: str) ->
     if "/" in clean and not (ROOT / clean).exists():
         fail(f"missing primary authority path: {clean}")
 
+def validate_task5_decision() -> None:
+    """Check the recorded scoped decision; this does not issue Human approval."""
+    record = json.loads((ROOT / "knowledge/02_History/Decisions/20261021-task5-human-approval.json").read_text())
+    expected = {
+        "authority": "HUMAN", "status": "ACCEPTED",
+        "scope": "TASK5_LIMITED_OFFLINE_ENGINEERING_CORRECTNESS",
+        "strict_phase0": "STOP",
+        "approved_commit": "1c5250e67461456b7ca0b361f8da3d9cb3f22514",
+        "evidence_index": "research/production-system/phase-a/task5-evidence-index.json",
+        "evidence_index_sha256": "51e6b00c3dde35e583ed32c466286002d849a518aee24810b5216ae16f056d98",
+        "acceptance_sha256": "439dfcc3b1be1286a1ae986aef753285caa6193aa653681f96156465038ae7ca",
+        "review_package_sha256": "bc1a61dc9055c43de7ce0d36679cb8165fa8f457381e506991428ed438dcbbab",
+    }
+    if any(record.get(key) != value for key, value in expected.items()):
+        fail("Human Task 5 decision binding mismatch")
+    for path, digest in (
+        (record["evidence_index"], record["evidence_index_sha256"]),
+        ("research/production-system/phase-a/acceptance.json", record["acceptance_sha256"]),
+        ("reports/production_phase_a_shadow_ledger.md", record["review_package_sha256"]),
+    ):
+        raw = subprocess.check_output(["git", "-C", str(ROOT), "show",
+                                       f'{record["approved_commit"]}:{path}'])
+        if hashlib.sha256(raw).hexdigest() != digest:
+            fail("Approved Task 5 evidence mismatch")
+
+
 def validate_phase_a_state(tasks: dict) -> None:
     task4 = tasks["task4_atomic_projection_read_only_cli"]
     task5 = tasks["task5_replay_formal_acceptance_report"]
@@ -81,7 +107,9 @@ def validate_phase_a_state(tasks: dict) -> None:
                                    f'{record["approved_commit"]}:{record["evidence_index"]}'])
     if hashlib.sha256(raw).hexdigest() != record["evidence_index_sha256"]:
         fail("Approved Task 4 evidence mismatch")
-    if task5 not in {"NOT_STARTED", "IN_PROGRESS_OFFLINE", "OFFLINE_EVIDENCE_READY_HUMAN_REVIEW_PENDING",
+    if task5 == "HUMAN_APPROVED_LIMITED_OFFLINE_ENGINEERING":
+        validate_task5_decision()
+    elif task5 not in {"NOT_STARTED", "IN_PROGRESS_OFFLINE", "OFFLINE_EVIDENCE_READY_HUMAN_REVIEW_PENDING",
                      "STOP_EVIDENCE_GAP_HUMAN_REVIEW_PENDING"}:
         fail("Task 5 has no correctness approval in this decision")
 
