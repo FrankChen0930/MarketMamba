@@ -1,5 +1,17 @@
 # Worktree Register
 
+## E1 evidence recovery — 2026-10-21
+
+New `.worktrees/e1-frozen-evidence`, branch `recovery/e1-frozen-evidence`,
+base `83a6a2e6f4a56db318ee07e7e737cc01de3ce48e`, owner Human-authorized Codex.
+Purpose: bounded E1 artifact inventory/identity and gated offline inspection.
+Existing research/recovery checkouts carry distinct historical work; this new
+checkout isolates current evidence from integrated main and preserved sources.
+State: UNMERGED evidence/documentation only, STOP_REPLAY_MATRIX_IDENTITY_UNAVAILABLE.
+Dependencies: fixed eec63c5/ef020e5 Git artifacts and read-only local deliveries.
+No execution/training authority transferred. Retired N/A; removal requires
+retained commit/evidence, clean checkout and explicit decision.
+
 ## Local Phase A integration closure — 2026-10-21
 
 WSL main fast-forwarded `50c5b78` → fixed `89f9496` under explicit Human

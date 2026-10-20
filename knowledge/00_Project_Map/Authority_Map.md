@@ -77,6 +77,12 @@ An authority class describes evidence strength, not deployment status. Branch-lo
 
 ## Authority Classes
 
+E1 recovery observation (2026-10-21):
+[inventory](../../research/v7/e1-rolling-origin-refresh-v1/evidence-recovery-20261021.json)
+records surviving byte integrity and limited local discovery. It does not
+supersede eec63c5 completed-result or ef020e5 diagnostic research conclusions.
+Missing matrix identity and unvalidated payload semantics stop replay.
+
 Subsequent explicit Human integration decision authorized local WSL main only:
 `89f9496:research/production-system/phase-a/` is now reachable from main.
 The [closure record](../../research/production-system/phase-a/integration-closure.json)

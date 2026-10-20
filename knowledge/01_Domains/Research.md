@@ -54,6 +54,12 @@ Legacy A/B/C artifacts remain unchanged and are not tradable evidence. Corrected
 
 ## Known Limitations
 
+2026-10-21 bounded recovery: six E1 checkpoint hashes and both prediction hashes
+match admitted evidence; seven postrun files match fixed Git. The frozen E1
+matrix remains unlocated in searched local paths/archives; remote Drive was not
+inspected. Replay is STOP, not a new research conclusion.
+See [recovery report](../../reports/v7_e1_evidence_recovery.md).
+
 E1 result artifacts are versioned, but post-run epoch replay lacks the frozen full matrix and safe checkpoint deserialization; causal regime decomposition lacks ex-ante state variables. Runtime telemetry for the earlier corrected replication is incomplete.
 
 ## Do Not Use / Do Not Mix

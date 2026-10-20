@@ -59,6 +59,11 @@ Older notebooks that assume one uninterrupted runtime or reconstruct matrices ev
 
 ## Known Limitations
 
+2026-10-21 recovery revalidated best/previous/latest file hashes for both E1
+seeds. Pointer epochs are 1/5/6; embedded identities remain unvalidated because
+only static ZIP/pickle-opcode inspection was performed. Existing unrestricted
+loader was not executed. Frozen matrix is not found locally; no replay/training.
+
 Runtime forensics are inconclusive: matrix wall time, epoch timing, GPU utilization, and Drive I/O were not fully captured. Observed completed-seed runtimes were about 6.94 and 7.82 hours on an A100 80GB fp32, but these are run observations, not forecasts.
 
 ## Do Not Use / Do Not Mix

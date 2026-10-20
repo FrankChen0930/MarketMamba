@@ -19,6 +19,17 @@ Semantic change owners must update this file in the same change. K0 remains disc
 
 ## Project Summary
 
+**E1 recovery checkpoint (2026-10-21, branch-local):**
+`recovery/e1-frozen-evidence` verified six checkpoint byte hashes, two prediction
+hashes, seven result/pointer/evaluation files and seven fixed diagnostic files.
+Historical matrix `a590b280...947f62` was not found in the explicit local search;
+same-name fixtures rejected, remote Drive not inspected.
+**STOP_REPLAY_MATRIX_IDENTITY_UNAVAILABLE**. No checkpoint deserialization,
+matrix generation, inference or training. See
+[inventory/report](../../reports/v7_e1_evidence_recovery.md).
+Human next step: locate the original matrix/manifest or exact archive path.
+Do not repeat completed Phase A work or infer permanent matrix loss.
+
 **Current integration closure (2026-10-21):** Human authorized fixed `89f9496`;
 WSL development main fast-forwarded from `50c5b78` to that exact candidate.
 Pre/post checks each passed 81 Operations, 47 PIT/Snapshot, 3 fetch-only,
@@ -62,8 +73,9 @@ decision above authorized only local development main. No push/deployment/traini
 fixes immutable V7 source snapshot publication; it does not promote research
 evidence or close any correctness gate. See the checkpoint below.
 
-**Active objectives:** bounded E1 frozen matrix/checkpoint identity recovery and
-safe offline inspection/replay only when existing evidence satisfies its gates.
+**Active objective:** await original E1 frozen matrix/manifest location.
+Bounded local inventory is complete; replay is stopped until identity and safe
+inspection gates can be met. No new research hypothesis or training is authorized.
 
 MarketMamba contains separate production-data, legacy model runtime, V7 correctness, research-training, historical-simulation, portfolio, delivery, and operations-control-plane subsystems. Production acquisition uses mutable provider data; V7 research authority uses versioned PIT/provenance evidence. The current corrected research baseline is `E5-PIT-Clean-v1`, with 48 features, no graph and no industry neutralization. Historical simulation is `PASS`, while strict trading correctness remains `STOP`. The observed production scheduler runs fetch-only; full V6.2 inference/portfolio/publication is `DISABLED`. E1 is a completed research experiment with `PASS_REFRESH_HYPOTHESIS`, not trading evidence. Phase A operations work is `UNMERGED` and `NOT_DEPLOYED`.
 

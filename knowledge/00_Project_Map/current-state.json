@@ -55,7 +55,7 @@
     "pit_regression_tests_passed": 40,
     "research_or_correctness_promotion": false,
     "checkpoint": "knowledge/00_Project_Map/Current_State.md",
-    "next_bounded_candidate": "Authorized isolated E1 evidence recovery; no new matrix generation or training"
+    "next_bounded_candidate": "Stop replay; Human locate original matrix/manifest or provide exact archive path. No new matrix generation or training."
   },
   "observed_at": "2026-09-22T13:25:21+08:00",
   "human_review": {
@@ -136,6 +136,19 @@
     "trading_evidence": false
   },
   "research": {
+    "e1_evidence_recovery": {
+      "status": "STOP_REPLAY_MATRIX_IDENTITY_UNAVAILABLE",
+      "branch": "recovery/e1-frozen-evidence",
+      "source_base": "83a6a2e6f4a56db318ee07e7e737cc01de3ce48e",
+      "inventory": "research/v7/e1-rolling-origin-refresh-v1/evidence-recovery-20261021.json",
+      "verified_checkpoint_files": 6,
+      "verified_predictions": 2,
+      "verified_diagnostic_files": 7,
+      "matrix": "NOT_FOUND_IN_EXPLICIT_LOCAL_SCOPE; REMOTE_NOT_INSPECTED",
+      "payload_identity": "UNKNOWN_NOT_DESERIALIZED",
+      "replay_executed": false,
+      "next_gate": "Locate original identity-matched matrix and certify safe checkpoint inspection; no regeneration or training"
+    },
     "corrected_baseline": "E5-PIT-Clean-v1",
     "corrected_e5": {
       "status": "COMPLETED_PARTIAL_ENSEMBLE",
@@ -254,7 +267,7 @@
     {
       "id": "e1-diagnostics",
       "status": "UNKNOWN",
-      "description": "E1 final-support epoch replay and causal regime decomposition lack frozen matrix/market-state evidence."
+      "description": "Recovery inventory verified surviving checkpoint/prediction bytes; identity-matched frozen matrix not found in searched local scope, remote not inspected, embedded checkpoint identity still unvalidated. Stop replay; Human source-location evidence needed."
     },
     {
       "id": "deployment",
@@ -264,7 +277,7 @@
   ],
   "next_decisions": [
     "Recover the identity-matched E1 matrix, establish safe checkpoint replay, and predeclare causal regime evidence before deciding a new training experiment.",
-    "Recover E1 frozen matrix/checkpoint evidence within current authorization; no production promotion.",
+    "Human locate original a590b280...947f62 frozen matrix/manifest or archive; replay stopped, no regenerated substitute.",
     "Use consolidated K2 governance in main; retain K0/K1/K2 branch history without active checkouts; do not begin K3 automatically."
   ],
   "authorities": [
@@ -294,7 +307,7 @@
   "state_updated_at": "2026-10-21",
   "active_objectives": [
     "Recover identity-matched E1 matrix and safe checkpoint replay before E2 decision",
-    "Bounded E1 evidence recovery and gated safe offline inspection; no training or deployment"
+    "Await original E1 frozen matrix location; bounded recovery checkpoint saved, no replay/training/deployment"
   ],
   "runtime_contract": {
     "development_checkout": "/home/frank/projects/MarketMamba",

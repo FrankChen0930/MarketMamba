@@ -1,0 +1,96 @@
+{
+  "status": "STOP_REPLAY_MATRIX_IDENTITY_UNAVAILABLE",
+  "observed_on": "2026-10-21",
+  "evidence_class": "READ_ONLY_ARTIFACT_INTEGRITY_AND_DISCOVERY",
+  "base_commit": "83a6a2e6f4a56db318ee07e7e737cc01de3ce48e",
+  "branch": "recovery/e1-frozen-evidence",
+  "human_authority": "Current conversation: Phase A Integration Closure & E1 Evidence Recovery; bounded offline recovery only.",
+  "sources": {
+    "contract": "044eef7:research/v7/e1-rolling-origin-refresh-v1/experiment-contract.json",
+    "contract_file_sha256": "7a59d98744ac736e915ff5f6e0e8fead2f80f5ce7f8283b467ec0464bffe8d4c",
+    "completed_result": "eec63c5:research/v7/e1-rolling-origin-refresh-v1/results/result-manifest.json",
+    "diagnostic": "ef020e5:research/v7/e1-postrun-diagnostic-v1/diagnostic-summary.json",
+    "diagnostic_file_sha256": "6615742d6dfc80259e9f05055f3faae15f3e38d779542e8ac19ba465564a0a86",
+    "checkpoint_inventory": "ef020e5:research/v7/e1-postrun-diagnostic-v1/epoch-checkpoint-inventory.json",
+    "checkpoint_inventory_sha256": "5e9df84eb7a8f6f78683e71c7c7f38537c257ded122f7e2e4474dfd01e614eb4"
+  },
+  "expected_identity": {
+    "contract_sha256": "fea9948f05bb096596cb2cacfc522bad27a7e1f587d0a5a08f704da458d29152",
+    "matrix_logical_identity": "a590b280f0700dcf36fde9ac51e767d735cc2737b613cbb3b49ef3f472947f62",
+    "config_sha256": "acdfe7fb055eed26730fd6a01a1733e4a76f48a3fec4b08bd09546080397a2d4",
+    "seeds": [17, 29],
+    "architecture": {"d_model": 64, "d_state": 32, "input_dim": 48, "sequence_length": 60, "graph": false},
+    "labels": {"source_version": "v2", "policy": "P0", "evidence_class": "HISTORICAL_SIMULATION_PROXY"},
+    "train_end": "2025-11-18",
+    "evaluation_start": "2026-01-02",
+    "binding_limit": "Expected values from fixed contract and hash-matched results; checkpoint payload semantics and matrix files were not admitted."
+  },
+  "external_root": "/home/frank/projects/MarketMamba/deliveries/V7-E1-Rolling-Origin-Refresh-Results",
+  "verified": {
+    "result_pointer_run_evaluation_report_files": 7,
+    "prediction_files": 2,
+    "checkpoint_files": 6,
+    "diagnostic_git_vs_checkout_files": 7,
+    "all_expected_hashes_match": true,
+    "result_identity_fields_match": true,
+    "prediction_sha256": {
+      "17": "65e909fa7ba42e9cbea794c08785ca06fff98b2489b2dc9cd9838244a729a1fb",
+      "29": "f4164f259da68f95e7d33f13121ed5d5eeec92276274722a6816c48926112d7d"
+    },
+    "checkpoints": [
+      {"seed": 17, "role": "best", "epoch": 1, "terminal_from_pointer": false, "file": "state-5b901669d1ac402fa81a66f2d6893f12.pt", "bytes": 1169099, "sha256": "4b9b02ded3521a45005e1a17ecdd423a9f3bd5286842c84278580b96e5bb6de1"},
+      {"seed": 17, "role": "previous", "epoch": 5, "terminal_from_pointer": false, "file": "state-d9b8ad75ebd14233851cadd9888e4063.pt", "bytes": 1179531, "sha256": "3e81bc36135368ebf426dc30a22f2dfa4e270fdf5e1aba3f2a10ffbc6115dd5a"},
+      {"seed": 17, "role": "latest", "epoch": 6, "terminal_from_pointer": true, "file": "state-7126fc7473134069bb76871f1e60ac5e.pt", "bytes": 1169675, "sha256": "18278fd3b67bc987882271eb2244083cab8be1894097d1f9c86f93de0eb922e1"},
+      {"seed": 29, "role": "best", "epoch": 1, "terminal_from_pointer": false, "file": "state-7f8654e54e894222b38dda1886a0d3da.pt", "bytes": 1169099, "sha256": "752bffa33f158b9dbd7040f4127abca1935c9c8fa1f3627af9664cba351a98f8"},
+      {"seed": 29, "role": "previous", "epoch": 5, "terminal_from_pointer": false, "file": "state-8d22b759016f4e08a9bc913f3939d556.pt", "bytes": 1179467, "sha256": "1a863f73fc8e4d6ecee9c8e7662e0dccd5d1a5d3d3b11b8bdc1febe34ef04c5c"},
+      {"seed": 29, "role": "latest", "epoch": 6, "terminal_from_pointer": true, "file": "state-f0fd3867eaad43acb5e6ef81ea3cc63f.pt", "bytes": 1169611, "sha256": "97f5387a263a2941efe96e20fd087ec29a8d1eb66714dd6a427a9a4475f6e0e7"}
+    ]
+  },
+  "matrix_discovery": {
+    "manifest_scan_roots": ["/home/frank/projects/MarketMamba/Data", "/home/frank/projects/MarketMamba/deliveries", "/home/frank/projects/MarketMamba/.worktrees"],
+    "method": "rg --files -uuu -g manifest.json; exclude .venv, node_modules, .git, .runtimes; no symlink-follow flag",
+    "manifest_count": 14,
+    "matching_top_level_logical_identity_count": 0,
+    "known_absent_paths": [
+      "/home/frank/projects/MarketMamba/Data/v7_e1_rolling_origin_refresh_v1",
+      "/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/v7_e1_rolling_origin_refresh_v1",
+      "/content/drive/MyDrive/MarketMamba_V7_E1_Rolling_Origin_Refresh"
+    ],
+    "rejected_same_name_fixtures": [
+      {"path": "deliveries/Task5-V7-Shared-Drive-Acceptance-044bfa6/fixture/MyDrive/MarketMamba_V7_E1_Rolling_Origin_Refresh/matrix/v7_e1_rolling_origin_refresh_v1/manifest.json", "identity": "matrix-20260920", "reason": "synthetic migration fixture, not historical matrix"},
+      {"path": "deliveries/FinalFix-V7-Shared-Drive-Acceptance-9ec5405/fixture/MyDrive/MarketMamba_V7_E1_Rolling_Origin_Refresh/matrix/v7_e1_rolling_origin_refresh_v1/manifest.json", "identity": "6c68fb198946d0385a14ee697e17425c862a49b9ce39e29b37b4a9435a0a7eba", "rows": 2, "reason": "synthetic two-row fixture with dummy source hashes"}
+    ],
+    "archives_central_directory_only": [
+      {"name": "V7-E1-Rolling-Origin-Refresh-Colab-Bundle.zip", "bytes": 2208388108, "entries": 4560},
+      {"name": "V7-E1-Rolling-Origin-Refresh-Colab-CodeOnly-044bfa6.zip", "bytes": 76747, "entries": 27},
+      {"name": "V7-E1-Rolling-Origin-Refresh-Colab-CodeOnly-0f06e36.zip", "bytes": 85773, "entries": 28},
+      {"name": "V7-E1-Rolling-Origin-Refresh-Colab-CodeOnly-9ec5405.zip", "bytes": 85663, "entries": 28}
+    ],
+    "matching_matrix_namespace_or_X_npy_entries": 0,
+    "remote_drive": "NOT_INSPECTED; connector discovery returned unsupported call; no remote absence claim",
+    "loss_classification": "NOT_FOUND_IN_EXPLICIT_SEARCH_SCOPE; NOT_PROVEN_PERMANENTLY_LOST"
+  },
+  "safe_inspection": {
+    "six_files": "ZIP structure and data.pkl presence checked without deserialization",
+    "best_checkpoints_only": "pickletools.genops inspected opcode references; no reducers executed",
+    "global_references": ["collections OrderedDict", "torch._utils _rebuild_tensor_v2", "torch FloatStorage", "numpy._core.multiarray _reconstruct", "numpy ndarray", "_codecs encode", "numpy dtype", "torch ByteStorage"],
+    "installed_torch_metadata": "2.10.0+cpu",
+    "torch_load_executed": false,
+    "production_loader": "V6/experimental/v7_e1_checkpoint.py uses weights_only=False; not invoked or changed",
+    "checkpoint_embedded_identity": "UNKNOWN_NOT_DESERIALIZED",
+    "safe_replay_certified": false
+  },
+  "remaining": [
+    "Historical matrix manifest and complete arrays with logical identity a590b280...947f62",
+    "File-level source/data/feature binding and matrix checksum validation",
+    "Safe checkpoint payload inspection and model-key/shape/identity validation",
+    "Epochs 2-4 absent from retained local generations; not reconstructed",
+    "Frozen final-support and ex-ante regime evidence required for unresolved research claims"
+  ],
+  "replay_executed": false,
+  "matrix_regenerated": false,
+  "training": false,
+  "strict_phase0": "STOP",
+  "repair_rounds": 0,
+  "next_human_action": "Locate original frozen matrix/manifest in the original Drive/shared-root archive or provide its exact mounted path. Do not provide a newly rebuilt replacement under the historical identity."
+}
