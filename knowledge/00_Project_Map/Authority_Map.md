@@ -84,6 +84,11 @@ not a replacement authority or Human correctness decision. Its evidence index
 records 70 ops + 3 mocked fetch-only passes and remaining concurrent snapshot
 isolation evidence gaps. Task 5 remains not started; legacy fetch owns outcomes.
 
+Same-day follow-up `fix/phase-a-task4-evidence@1e119ef` closes the two listed
+isolation evidence gaps with real-process tests (75 ops total). Its Task 4
+review package is ready for Human decision, **NOT_APPROVED**. This supersedes
+only the missing-isolation-evidence observation, not authority or research state.
+
 Branch-local recovery candidate (2026-10-20): `fix/v7-snapshot-immutability`
 changes only the snapshot writer/reader and tests from main `50c5b78`, with its
 [checkpoint](Current_State.md#bounded-recovery-checkpoint--2026-10-20).

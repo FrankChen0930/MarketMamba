@@ -28,10 +28,21 @@
       "independent_review": "NO_REQUIRED_FINDINGS; round1 independent 70+3, round2 read-only review",
       "correctness_approval": "NOT_ESTABLISHED",
       "remaining_evidence": [
-        "Concurrent uncommitted-writer and mid-read-commit snapshot isolation",
         "Human Task4 correctness/sanitizer review",
         "Separate Task5 crash/replay/overhead/formal acceptance"
-      ]
+      ],
+      "isolation_follow_up": {
+        "commit": "1e119ef855f8fd319f774162beca0bd729d4b921",
+        "status": "TWO_ISOLATION_GAPS_CLOSED_HUMAN_REVIEW_READY_NOT_APPROVED",
+        "real_process_tests": 5,
+        "scenarios_including_negative_control": 12,
+        "ops_tests_passed": 75,
+        "fetch_only_mock_tests_passed": 3,
+        "production_code_changed": false,
+        "production_bug_found": false,
+        "independent_review": "5 tests / 12 scenarios PASS; no Required/Critical findings",
+        "task5": "NOT_STARTED"
+      }
     },
     "observed_on": "2026-10-20",
     "base_commit": "50c5b785e8c373913c3301a056497eb955f36681",
@@ -43,7 +54,7 @@
     "pit_regression_tests_passed": 40,
     "research_or_correctness_promotion": false,
     "checkpoint": "knowledge/00_Project_Map/Current_State.md",
-    "next_bounded_candidate": "Task4 concurrent committed-only snapshot evidence before Human correctness review; no new data admission"
+    "next_bounded_candidate": "Human Task4 correctness decision on 1e119ef; Task5 only after separate authorization"
   },
   "observed_at": "2026-09-22T13:25:21+08:00",
   "human_review": {
@@ -181,7 +192,7 @@
       "task4_atomic_projection_read_only_cli": "IMPLEMENTED_WITH_SANITIZER_FOLLOW_UP_FIXES_CORRECTNESS_APPROVAL_NOT_ESTABLISHED",
       "task5_replay_formal_acceptance_report": "NOT_STARTED"
     },
-    "blocker": "TASK4_CONCURRENT_SNAPSHOT_EVIDENCE_GAP_AND_HUMAN_CORRECTNESS_REVIEW; MERGE_REQUIRES_SEPARATE_DECISION",
+    "blocker": "HUMAN_TASK4_CORRECTNESS_REVIEW_PENDING_ON_1e119ef; MERGE_REQUIRES_SEPARATE_DECISION",
     "success_authority": "LEGACY_FETCH_RESULT"
   },
   "delivery": {
@@ -227,7 +238,7 @@
     {
       "id": "phase-a-review",
       "status": "HUMAN_REVIEW_REQUIRED",
-      "description": "Task4 concurrent snapshot evidence remains missing; candidate 46df7b3 fixes duplicate artifact aggregation. Human correctness/sanitizer review and separate merge decision remain required."
+      "description": "Task4 isolation evidence gaps closed by candidate 1e119ef after aggregation fix 46df7b3. Human correctness/sanitizer review and separate merge decision remain required."
     },
     {
       "id": "e1-diagnostics",

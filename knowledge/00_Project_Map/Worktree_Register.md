@@ -35,6 +35,14 @@ canonical map, not its stale runtime narrative. Existing canonical memory is
 updated in the snapshot candidate, not duplicated into the old lineage.
 Both candidates require explicit integration decisions; no merge/cleanup grant.
 
+Task 4 isolation follow-up continued in this clean existing isolated worktree,
+now `fix/phase-a-task4-evidence@1e119ef855f8fd319f774162beca0bd729d4b921`.
+Only tests/evidence changed from `46df7b3`; original ops checkout remains at
+`f5b0ff3`. Snapshot candidate remains a separate lineage; no combined candidate
+or merge was needed for independent subsystem tests. Task 4 Human review is
+pending, no authority carried. Raw synthetic test evidence is tracked, not a
+runtime database. Canonical-memory checkpoint remains on the snapshot branch.
+
 > Updated from `git worktree list --porcelain` and branch verification on 2026-09-22 after the four authorized K checkouts were retired. This is a registry of checkouts and responsibility, not authority to merge or remove them. `UNKNOWN` means creation/ownership was not verified. Update in the same coherent change when a branch or responsibility changes; a fresh runtime/worktree observation needs its own date.
 
 | Checkout under `.worktrees/` | Branch / HEAD | Purpose and owner/task | Base | Current state | Authority carried / dependencies | Created / retired |

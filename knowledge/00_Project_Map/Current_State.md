@@ -184,7 +184,8 @@ Final offline ops 70/70 and mocked fetch-only regression 3/3 PASS. Independent
 reviewer ran 70+3 in round 1 and reviewed round 2 without rerunning tests; no
 Required/Critical finding. These are engineering evidence, not Human acceptance.
 
-Task 4 correctness approval remains **NOT_ESTABLISHED**. The sequential rebuild
+At the initial `46df7b3` checkpoint, Task 4 correctness approval remained
+**NOT_ESTABLISHED**. The sequential rebuild
 test does not prove concurrent committed-only isolation: uncommitted-writer and
 mid-read-commit tests are still missing. Sanitizer regression corpus passes but
 requires final Human review. Task 5's process crash/restart/replay, >=10 outcome
@@ -193,6 +194,33 @@ Do not proceed directly as though Task 4 were approved. Next bounded proposal:
 close the two snapshot-isolation evidence gaps, present Task 4 for Human review,
 then separately authorize offline Task 5. No research rules/data changed;
 strict Phase 0 **STOP** and all research authority remain unchanged.
+
+### Task 4 isolation evidence follow-up — Human review pending
+
+`fix/phase-a-task4-evidence@1e119ef855f8fd319f774162beca0bd729d4b921`
+adds tests and evidence only, directly after `46df7b3`. The two isolation gaps
+above are now closed for the tested SQLite WAL/synthetic-ledger contract:
+real spawned writer/reader, uncommitted commit/rollback/SIGKILL cases, and four
+deterministic reader boundaries repeated twice. No sleep-based ordering.
+Whole projection identity/counts and digest are checked; an explicit no-BEGIN
+negative control detects a mixed version. No production correctness bug found
+or production code changed. No production repair rounds were needed.
+
+Final Operations 75/75; mocked fetch-only 3/3; separate snapshot branch PIT
+47/47 and governance 15/15 PASS. Independent reviewer ran the five isolation
+tests (12 scenarios), no Required/Critical finding. Optional cleanup-return
+assertion improvement remains deferred; successful child exits/liveness were
+directly checked. No cross-branch integration was performed or claimed.
+
+Human review package: Task 4 branch
+`research/production-system/phase-a/task4-evidence-recovery.json`,
+with 12 raw records and hashes in `isolation-evidence-20261020/`.
+Evidence is sufficient to present the bounded Task 4 engineering correctness
+decision; **NOT_APPROVED** until Human decides. Tests do not establish research
+PIT/label truth, arbitrary-secret absence, power-loss durability or production
+readiness. Task 5 remains **NOT_STARTED** and requires a separate authorization:
+fixed >=10 observed-vs-shadow replay cases, crash/restart/concurrency, formal
+artifacts/report and overhead evidence. Strict Phase 0 remains **STOP**.
 
 - **Completed:** reproduced silent manifest replacement for the same request and
   retrieval timestamp, including parser-only conflicts; identical retries also

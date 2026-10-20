@@ -62,14 +62,24 @@ Existing scripts own their actual work. Phase A observes and records rather than
 
 Task 4 lacks established correctness approval; Task 5, production notifications/incidents, and atomic publication are incomplete.
 
-Concrete Task 4 evidence gap: the current sequential rebuild test does not test
+At the earlier `46df7b3` checkpoint, the sequential rebuild test did not test
 an uncommitted concurrent writer or a commit midway through reading a projection.
 SQLite BEGIN supports snapshot consistency in the implementation, but that is
-not a direct test result. Sanitizer cases pass; Human correctness review remains
+not a direct test result in that original test. Sanitizer cases pass; Human correctness review remains
 pending. Task 5 must supply process crash/restart/replay and overhead evidence;
 thread ordering and injected replace failure are not substitutes. The projection
 scans historical artifact identities and watermark tables; long-ledger cost is
 not yet benchmarked. No Task 5 work is authorized by this note.
+
+Follow-up `1e119ef855f8fd319f774162beca0bd729d4b921` on the same isolated
+Task 4 branch closes those two evidence gaps: five real-process tests, 12
+scenarios including an explicit no-BEGIN negative control. Full ops 75/75 and
+mocked fetch regression 3/3 pass; independent isolation review/test run passed,
+no Required/Critical finding. Production code unchanged. Raw before/during/after
+states, identities, counts, process exits and digests are indexed in the existing
+Task 4 evidence package. Human correctness decision is now ready for review,
+not granted. SIGKILL evidence is limited to an uncommitted ledger writer, not
+publication recovery or the Task 5 full replay program.
 
 ## Do Not Use / Do Not Mix
 
