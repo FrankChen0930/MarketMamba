@@ -77,6 +77,12 @@ An authority class describes evidence strength, not deployment status. Branch-lo
 
 ## Authority Classes
 
+CPU-only window 01 is branch-local engineering under the existing approved
+portfolio engine contract, not a research authority replacement. See
+[scope/backlog](../../tasks/v7-cpu-development-window-01.md).
+Main stays `83a6a2e`; E1 evidence remains pinned to `11ae71d`.
+Neither test success nor Agent work selection grants research acceptance.
+
 E1 recovery observation (2026-10-21):
 [inventory](../../research/v7/e1-rolling-origin-refresh-v1/evidence-recovery-20261021.json)
 records surviving byte integrity and limited local discovery. It does not

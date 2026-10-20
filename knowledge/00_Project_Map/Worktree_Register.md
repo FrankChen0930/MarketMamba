@@ -1,5 +1,17 @@
 # Worktree Register
 
+## CPU-only window 01 — 2026-10-21
+
+`.worktrees/v7-cpu-window-01`, branch `development/v7-cpu-window-01`, base
+`11ae71d1a3ea7f68ed10d5623bc9d639689e4e8b`; owner Human-authorized Codex.
+Purpose: three bounded existing V7 portfolio contract fixes/verification units;
+existing checkouts are completed evidence or other subsystem lineages and are
+preserved. State ACTIVE / UNMERGED / NOT_DEPLOYED. Authority: engineering only;
+dependencies: inherited E1 evidence and main `83a6a2e`, Python stdlib,
+temporary synthetic fixtures, no external data. Created 2026-10-21 Taipei;
+retired N/A. Safe removal requires preserved commits, clean/artifact audit and
+explicit Human approval. No removal or integration is authorized here.
+
 ## E1 evidence recovery — 2026-10-21
 
 New `.worktrees/e1-frozen-evidence`, branch `recovery/e1-frozen-evidence`,

@@ -2,6 +2,22 @@
   "schema_version": "marketmamba-current-state-v1",
   "status": "CANONICAL_CURRENT_PROJECT_MAP",
   "owner": "Human + project agents",
+  "cpu_development_window_01": {
+    "branch": "development/v7-cpu-window-01",
+    "base_commit": "11ae71d1a3ea7f68ed10d5623bc9d639689e4e8b",
+    "status": "ACTIVE_UNMERGED_NOT_DEPLOYED",
+    "plan": "tasks/v7-cpu-development-window-01.md",
+    "authority": "Current Human CPU-only bounded engineering request; no research approval",
+    "unit_limit": 3,
+    "units": {
+      "U1": "COMPLETE: 35 portfolio tests passed; independent 35 PASS, no Required/Critical findings",
+      "U2": "READY_AFTER_U1",
+      "U3": "READY_AFTER_U2"
+    },
+    "strict_phase0": "STOP",
+    "e1_matrix": "BLOCKED_IDENTITY_MATCHED_MATRIX_NOT_RECOVERED",
+    "aggregate_usage": "UNAVAILABLE_OLD_GOAL_API_BINDING"
+  },
   "bounded_engineering_recovery": {
     "historical_checkpoints_note": "Earlier reader/task4 entries below retain their observation-time status; current approval and Task5 state are in operations.",
     "reader_contract_continuation": {

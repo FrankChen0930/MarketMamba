@@ -252,11 +252,14 @@ class PortfolioEngine:
         _normalized_scores(scores)
 
         if not self._signal_due():
-            assert self.pending is not None
             return SignalResult(
                 event_id=normalized_event_id,
                 due=False,
-                target_tickers=self.pending.target_tickers,
+                target_tickers=(
+                    self.pending.target_tickers
+                    if self.pending is not None
+                    else tuple(sorted(self.positions))
+                ),
             )
 
         target = select_target_tickers(

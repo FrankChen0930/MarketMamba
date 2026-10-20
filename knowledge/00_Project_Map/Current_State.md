@@ -19,6 +19,14 @@ Semantic change owners must update this file in the same change. K0 remains disc
 
 ## Project Summary
 
+**CPU-only window 01 (2026-10-21):** Human authorized bounded autonomous
+engineering without training or research changes. Isolated
+`development/v7-cpu-window-01`, base `11ae71d`; main remains `83a6a2e`.
+[Ranked backlog and acceptance](../../tasks/v7-cpu-development-window-01.md)
+select three existing portfolio scheduling/journal recovery contract units.
+E1 matrix remains BLOCKED; strict Phase 0 STOP and Phase 1–5 gates unchanged.
+This branch is UNMERGED / NOT_DEPLOYED; no live MAS Core capability is assumed.
+
 **E1 recovery checkpoint (2026-10-21, branch-local):**
 `recovery/e1-frozen-evidence` verified six checkpoint byte hashes, two prediction
 hashes, seven result/pointer/evaluation files and seven fixed diagnostic files.

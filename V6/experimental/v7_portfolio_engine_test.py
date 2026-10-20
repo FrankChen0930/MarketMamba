@@ -30,6 +30,35 @@ def spec(
 
 
 class PortfolioPlannerTest(unittest.TestCase):
+    def test_completed_rebalance_ignores_early_signals_until_exact_boundary(self):
+        engine = PortfolioEngine(spec(holdings_count=1, rebalance_every_sessions=2))
+        engine.apply_signal("initial", "2026-09-16T17:00:00+08:00", "5d", {"A": "1"})
+        engine.apply_market_session(
+            "fill", "2026-09-17T09:00:00+08:00", {"A": quote("A", "10")}
+        )
+        self.assertIsNone(engine.pending)
+        for day in (17, 18):
+            if day == 18:
+                engine.apply_market_session(
+                    "mark", "2026-09-18T09:00:00+08:00", {"A": quote("A", "11")}
+                )
+            before = engine.snapshot()
+            early = engine.apply_signal(
+                f"early-{day}", f"2026-09-{day}T17:00:00+08:00", "5d", {"B": "2"}
+            )
+            self.assertFalse(early.due)
+            self.assertEqual(early.target_tickers, ("A",))
+            self.assertEqual(engine.snapshot(), before)
+        engine.apply_market_session(
+            "boundary", "2026-09-19T09:00:00+08:00", {"A": quote("A", "11")}
+        )
+        due = engine.apply_signal(
+            "due", "2026-09-19T17:00:00+08:00", "5d", {"B": "2"}
+        )
+        self.assertTrue(due.due)
+        self.assertEqual(due.target_tickers, ("B",))
+        self.assertEqual(engine.pending.signal_id, "due")
+
     def test_signal_tie_breaks_by_ticker_and_does_not_trade(self) -> None:
         engine = PortfolioEngine(spec())
 

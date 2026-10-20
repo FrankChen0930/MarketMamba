@@ -30,6 +30,14 @@ Deterministic target positions, orders/fills, holdings/cash/NAV transitions, and
 
 ## Current Implementation
 
+CPU window 01, isolated `development/v7-cpu-window-01` (UNMERGED /
+NOT_DEPLOYED): reproduced an AssertionError for a valid early signal after
+a completed rebalance. The candidate returns a non-mutating not-due result
+with deterministically ordered current holdings when no pending target exists.
+The pending-target behavior and exact frequency boundary are preserved.
+See [bounded plan/evidence](../../tasks/v7-cpu-development-window-01.md).
+This is synthetic component engineering, not signal/portfolio research admission.
+
 The research engine models partial execution and deterministic state transitions with replayable hash-linked records. No active scheduler, broker adapter, or verified live-paper loop is established for V7.
 
 ## Evidence Classes
