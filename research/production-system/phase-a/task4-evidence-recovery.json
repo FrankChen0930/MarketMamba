@@ -41,10 +41,16 @@
       "criterion": "Committed-ledger-only deterministic read model without migrations",
       "tests": [
         "test_projection_is_rebuildable_from_committed_ledger_only",
-        "test_reader_opens_ledger_without_running_migrations"
+        "test_reader_opens_ledger_without_running_migrations",
+        "test_uncommitted_then_commit",
+        "test_uncommitted_then_rollback",
+        "test_uncommitted_writer_process_failure",
+        "test_commit_at_deterministic_reader_boundaries",
+        "test_negative_control_detects_missing_read_transaction"
       ],
-      "result": "PASS_DETERMINISTIC_REBUILD_AND_NO_MIGRATION_TESTS",
-      "limit": "Two successive reads agree. No concurrent uncommitted-writer or mid-read writer-commit isolation test; committed-only concurrency is supported by SQLite BEGIN implementation, not directly certified here. Not a power-loss durability certification."
+      "result": "PASS_REAL_PROCESS_WAL_ISOLATION_AND_NO_MIGRATION_TESTS",
+      "limit": "Real spawned processes and SQLite, test-only COMMIT/SQL barriers. Synthetic ledger only; no disk power-loss, production deployment or general Task 5 crash/restart certification.",
+      "raw_evidence": "isolation-evidence-20261020/*.json"
     },
     {
       "criterion": "Required fields, latest attempt, last successful fetch and explicit unknowns",
@@ -66,7 +72,7 @@
         "test_projection_failure_does_not_replace_fetch_exception"
       ],
       "result": "PASS_COMPONENT_TESTS",
-      "limit": "Atomic replace uses injected OSError; ordering uses threads. No Task 4 SIGKILL or power-loss claim; Task 5 crash/restart campaign not run."
+      "limit": "Atomic replace uses injected OSError; publication ordering uses threads. No publication SIGKILL or power-loss claim. Isolation follow-up kills only an uncommitted ledger writer; Task 5 crash/restart campaign not run."
     },
     {
       "criterion": "Opaque absolute paths and credential redaction in machine/human output",
@@ -117,10 +123,88 @@
   },
   "remaining_gates": [
     "Human correctness review of Task 4 candidate and sanitizer evidence. No final approval record found in inspected history/memory.",
-    "Direct concurrent committed-only snapshot evidence is absent: add uncommitted-writer and mid-read-commit deterministic isolation tests in a subsequent bounded pass; existing sequential rebuild test is not that evidence.",
+    "Previous concurrent committed-only evidence gap closed by isolation follow-up; Human decision still required.",
     "Task 5 remains separate: >=10 deterministic observed-vs-shadow replay cases, crash/restart/concurrency evidence, schema/replay/acceptance artifacts, real projection example and overhead report.",
     "Explicit integration/merge and any deployment decision are separate from correctness review; original operations branch and main remain unchanged.",
     "Projection performance is unbenchmarked on a long-lived ledger. EXISTS scans artifact identities; watermark already scans historical tables. Task 5 overhead evidence remains necessary."
   ],
-  "task5_recommendation": "After Task 4 review and explicit next-stage authorization, run bounded offline Task 5; do not interpret this record as permission or completed acceptance."
+  "isolation_follow_up": {
+    "base_commit": "46df7b3402f85877a5fc55600d53b15a6f3a7849",
+    "production_code_changes": false,
+    "production_correctness_bug_found": false,
+    "test_file": "V6/marketmamba/ops/test_projection_isolation.py",
+    "raw_evidence_directory": "isolation-evidence-20261020",
+    "cases": {
+      "uncommitted_commit_rollback_kill": 3,
+      "reader_boundaries": 4,
+      "repetitions_per_boundary": 2,
+      "explicit_negative_control": 1,
+      "total_records": 12
+    },
+    "method": "Spawned writer calls real LedgerStore.commit_stage. A sqlite3.Connection subclass pauses immediately before real commit, or raises a controlled error so existing immediate_transaction rolls back. Reader calls production build_current_state with a real-connection trace callback only for Pipe synchronization. No sleep ordering. All database files are temporary synthetic fixtures.",
+    "outcomes": [
+      "Uncommitted reader equals complete prior projection.",
+      "Commit exposes new artifact/stage/counts to a subsequent reader; rollback and writer SIGKILL preserve prior projection.",
+      "Commit before first snapshot read returns new version.",
+      "Commit mid-watermark, after watermark or before artifact aggregation returns complete old version for the in-flight reader, new version for a fresh reader.",
+      "Whole projection equality includes ledger counts and version identity; source_generation digest is recomputed. Artifact ID and SHA256 are checked against fixture payload.",
+      "Explicit test-only removal of BEGIN produces mixed version (watermark artifacts=0, summary artifacts=1); negative control detects it. Production transaction unchanged."
+    ],
+    "final_ops": {"passed": 75, "skipped": 0, "exit_code": 0, "seconds": 13.686},
+    "fetch_only_mock_regression": {"passed": 3, "exit_code": 0},
+    "independent_review": {
+      "verdict": "NO_REQUIRED_OR_CRITICAL_FINDINGS_ENGINEERING_ONLY",
+      "tests_passed": 5,
+      "scenarios": 12,
+      "seconds": 5.869,
+      "evidence_env_set": false,
+      "optional_deferred": "Manually created subcase doCleanups return value is not asserted. Child exit/liveness is directly asserted before cleanup; no observed cleanup failure. Does not invalidate isolation assertions."
+    },
+    "other_branch_regression": {
+      "snapshot_commit": "baa70eac2ae1fcb8caed93583a64a1811d66af7e",
+      "pit_passed": 47,
+      "governance_passed": 15,
+      "joint_branch_execution_claimed": false
+    },
+    "evidence_sha256": {
+      "after_watermark-0.json": "a66371a96bd50f9a2129d02e2860cac6c21fb5f72d63df1ccc74a1ec15aa2afd",
+      "after_watermark-1.json": "6761f9e862590a4851dde2b291e58a985da816e098cd305d8a7e2fbd1db035a4",
+      "before_artifacts-0.json": "b047380525ffa9e85fd416636112b6800b62f5dd05a77c275cb10e5384310b3a",
+      "before_artifacts-1.json": "295bf5ed38d335d237bf398ed905a408ff119fb52d904b99aaeb1f932bfe9aa7",
+      "before_snapshot-0.json": "ea25e5cffae22270725f9c85de09fedfabfbaf7488a7a731f2d0bbc38dc1ab96",
+      "before_snapshot-1.json": "b40aec3aab06d9cef92e310cc71280e30664494c9eb23a28c70cb026480c7dee",
+      "commit.json": "01fa155dc501b4c5b0d6e94f5e2c48a82fc8447a53d2777e3a702653bff58600",
+      "kill.json": "f0948e8b33c7a29143cb2148678a123a9a4bb5fae153ef7189da916db1cf8226",
+      "mid_watermark-0.json": "67c19efb5ca3ea0d93f6552e01cc7bf0909d16f26c05ad0ab4747d75485c28b7",
+      "mid_watermark-1.json": "87c3be809551211917f21896685616141e70edd8c1584d610f1fbc77597d3bfe",
+      "negative-control-no-BEGIN.json": "ae6c25735b23bcd3d3fbd5a1c03c5311c878ba1471354aa38674ad3f0865dcf6",
+      "rollback.json": "279de418ba21be6d775d01e36656e633fc86222b7def4f7029c1da9025f83356"
+    },
+    "raw_evidence_command": "Create a NEW empty evidence directory, then TASK4_ISOLATION_EVIDENCE_DIR=<directory> PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=V6 python3 -B -W error::ResourceWarning -m unittest discover -s V6/marketmamba/ops -p 'test_*.py' -q",
+    "safe_rerun": "Omit TASK4_ISOLATION_EVIDENCE_DIR for ordinary tests; records use exclusive creation and will not overwrite the committed evidence.",
+    "repair_rounds": "No production fix. Initial tests passed; negative-control and concise evidence output added before final regression."
+  },
+  "human_review_package": {
+    "decision_requested": "Accept or reject Task 4 engineering correctness for this isolated candidate only; no implied merge, deployment, research approval or Task 5 execution grant.",
+    "satisfied": [
+      "Committed-only projection and consistent concurrent reads under tested WAL interleavings",
+      "Required projection fields and explicit unknown/non-authoritative states",
+      "Distinct artifact aggregation, preserved identity and read-only projection",
+      "Existing sanitizer regression corpus and read-only CLI",
+      "Existing bounded publication lock, atomic replace failure and legacy-outcome preservation tests"
+    ],
+    "unmet_task4_engineering_criteria_found": [],
+    "limitations_for_human": [
+      "Tests cannot certify PIT/source truth, research labels/forecast semantics, real-data quality or arbitrary encoded-secret absence.",
+      "No power-loss durability claim. The SIGKILL test only covers an uncommitted store transaction, not full pipeline restart.",
+      "Performance and >=10 formal observed-vs-shadow replay cases belong to Task 5 and remain unexecuted."
+    ],
+    "ancestry": {
+      "ops": "f5b0ff3 -> 46df7b3 -> containing candidate commit",
+      "snapshot": "50c5b78 -> 8309ee3 -> 0a79280 -> baa70ea",
+      "common_ancestor": "7bdf2e4e41a24d9eee30821162b9524227d2b859",
+      "joint_integration": "NOT_PERFORMED; tests run on their owning branches. Ops SQL projection has no runtime dependency on V7 source-snapshot reader."
+    }
+  },
+  "task5_recommendation": "Human can review Task 4 candidate evidence before deciding. If approved and separately authorized, bounded offline Task 5: >=10 fixed observed-vs-shadow cases, crash/restart/concurrency replay, required schema/results/acceptance/report and overhead benchmark. No production or research gate promotion."
 }

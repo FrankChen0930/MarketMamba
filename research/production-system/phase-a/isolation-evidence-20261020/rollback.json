@@ -1,0 +1,236 @@
+{
+  "after": {
+    "active_stage": "INGEST_RAW",
+    "artifact_summary": {
+      "by_type": [],
+      "complete_count": 0,
+      "count": 0,
+      "fingerprint_kinds": [],
+      "total_bytes": 0
+    },
+    "as_of": "2026-10-20T15:49:26.667307Z",
+    "attempt_count": 1,
+    "calendar": {
+      "checked_at": null,
+      "knowledge": "UNKNOWN_NOT_EXPOSED_BY_LEGACY",
+      "observed_value": null,
+      "status": "UNKNOWN",
+      "threshold_value": null
+    },
+    "date_semantics": "REQUESTED_ASIA_TAIPEI_DATE_UNVERIFIED_CALENDAR",
+    "duration_seconds": null,
+    "freshness": {
+      "checked_at": null,
+      "observed_value": null,
+      "status": "UNKNOWN",
+      "threshold_value": null
+    },
+    "incident_status": "NOT_IMPLEMENTED_PHASE_C",
+    "last_successful_fetch_date": null,
+    "latest_attempt": 1,
+    "latest_attempt_status": "RUNNING",
+    "latest_exit_code": null,
+    "latest_logical_run_id": "logical_run_v1_cb4f0641a830701e95c53ee5be9451dc649ef5a3a34894112e051fd138db533f",
+    "latest_requested_date": "2026-10-20",
+    "latest_trading_date": "2026-10-20",
+    "mode": "FETCH_ONLY",
+    "open_incident_count": null,
+    "projection_schema_version": "current-state-v1",
+    "run_status": "RUNNING",
+    "scope": {
+      "excluded": [
+        "INFERENCE",
+        "PORTFOLIO",
+        "PUBLICATION"
+      ],
+      "included": [
+        "CALENDAR_OBSERVATION",
+        "INGEST_RAW"
+      ]
+    },
+    "source_generation": "a79cb3426e16077021fdc3696532f6642e6eb35018f38b1ec765bb9fa0876e8e",
+    "source_watermark": {
+      "committed_at": "2026-10-20T15:49:26.667307Z",
+      "row_counts": {
+        "artifacts": 0,
+        "attempts": 1,
+        "checks": 0,
+        "logical_runs": 1,
+        "stage_artifacts": 0,
+        "stage_runs": 1
+      }
+    },
+    "stage_statuses": [
+      {
+        "duration_seconds": null,
+        "retryable": false,
+        "stage": "INGEST_RAW",
+        "status": "RUNNING"
+      }
+    ],
+    "warning_count": 0
+  },
+  "artifact_identity": "artifact_v1_fb6d61570e340d6bbd4e905e3621e7a19aa5fffbefaeeb3c0bddf56729a882cb",
+  "artifact_rows": [],
+  "before": {
+    "active_stage": "INGEST_RAW",
+    "artifact_summary": {
+      "by_type": [],
+      "complete_count": 0,
+      "count": 0,
+      "fingerprint_kinds": [],
+      "total_bytes": 0
+    },
+    "as_of": "2026-10-20T15:49:26.667307Z",
+    "attempt_count": 1,
+    "calendar": {
+      "checked_at": null,
+      "knowledge": "UNKNOWN_NOT_EXPOSED_BY_LEGACY",
+      "observed_value": null,
+      "status": "UNKNOWN",
+      "threshold_value": null
+    },
+    "date_semantics": "REQUESTED_ASIA_TAIPEI_DATE_UNVERIFIED_CALENDAR",
+    "duration_seconds": null,
+    "freshness": {
+      "checked_at": null,
+      "observed_value": null,
+      "status": "UNKNOWN",
+      "threshold_value": null
+    },
+    "incident_status": "NOT_IMPLEMENTED_PHASE_C",
+    "last_successful_fetch_date": null,
+    "latest_attempt": 1,
+    "latest_attempt_status": "RUNNING",
+    "latest_exit_code": null,
+    "latest_logical_run_id": "logical_run_v1_cb4f0641a830701e95c53ee5be9451dc649ef5a3a34894112e051fd138db533f",
+    "latest_requested_date": "2026-10-20",
+    "latest_trading_date": "2026-10-20",
+    "mode": "FETCH_ONLY",
+    "open_incident_count": null,
+    "projection_schema_version": "current-state-v1",
+    "run_status": "RUNNING",
+    "scope": {
+      "excluded": [
+        "INFERENCE",
+        "PORTFOLIO",
+        "PUBLICATION"
+      ],
+      "included": [
+        "CALENDAR_OBSERVATION",
+        "INGEST_RAW"
+      ]
+    },
+    "source_generation": "a79cb3426e16077021fdc3696532f6642e6eb35018f38b1ec765bb9fa0876e8e",
+    "source_watermark": {
+      "committed_at": "2026-10-20T15:49:26.667307Z",
+      "row_counts": {
+        "artifacts": 0,
+        "attempts": 1,
+        "checks": 0,
+        "logical_runs": 1,
+        "stage_artifacts": 0,
+        "stage_runs": 1
+      }
+    },
+    "stage_statuses": [
+      {
+        "duration_seconds": null,
+        "retryable": false,
+        "stage": "INGEST_RAW",
+        "status": "RUNNING"
+      }
+    ],
+    "warning_count": 0
+  },
+  "case": "rollback",
+  "class": "REAL_PROCESS_SYNTHETIC_LEDGER",
+  "content_sha256": "ebcf053ffeabc3e111219322a54e754bed0a7b5154fa4bacc84c07986d69de3a",
+  "during": {
+    "active_stage": "INGEST_RAW",
+    "artifact_summary": {
+      "by_type": [],
+      "complete_count": 0,
+      "count": 0,
+      "fingerprint_kinds": [],
+      "total_bytes": 0
+    },
+    "as_of": "2026-10-20T15:49:26.667307Z",
+    "attempt_count": 1,
+    "calendar": {
+      "checked_at": null,
+      "knowledge": "UNKNOWN_NOT_EXPOSED_BY_LEGACY",
+      "observed_value": null,
+      "status": "UNKNOWN",
+      "threshold_value": null
+    },
+    "date_semantics": "REQUESTED_ASIA_TAIPEI_DATE_UNVERIFIED_CALENDAR",
+    "duration_seconds": null,
+    "freshness": {
+      "checked_at": null,
+      "observed_value": null,
+      "status": "UNKNOWN",
+      "threshold_value": null
+    },
+    "incident_status": "NOT_IMPLEMENTED_PHASE_C",
+    "last_successful_fetch_date": null,
+    "latest_attempt": 1,
+    "latest_attempt_status": "RUNNING",
+    "latest_exit_code": null,
+    "latest_logical_run_id": "logical_run_v1_cb4f0641a830701e95c53ee5be9451dc649ef5a3a34894112e051fd138db533f",
+    "latest_requested_date": "2026-10-20",
+    "latest_trading_date": "2026-10-20",
+    "mode": "FETCH_ONLY",
+    "open_incident_count": null,
+    "projection_schema_version": "current-state-v1",
+    "run_status": "RUNNING",
+    "scope": {
+      "excluded": [
+        "INFERENCE",
+        "PORTFOLIO",
+        "PUBLICATION"
+      ],
+      "included": [
+        "CALENDAR_OBSERVATION",
+        "INGEST_RAW"
+      ]
+    },
+    "source_generation": "a79cb3426e16077021fdc3696532f6642e6eb35018f38b1ec765bb9fa0876e8e",
+    "source_watermark": {
+      "committed_at": "2026-10-20T15:49:26.667307Z",
+      "row_counts": {
+        "artifacts": 0,
+        "attempts": 1,
+        "checks": 0,
+        "logical_runs": 1,
+        "stage_artifacts": 0,
+        "stage_runs": 1
+      }
+    },
+    "stage_statuses": [
+      {
+        "duration_seconds": null,
+        "retryable": false,
+        "stage": "INGEST_RAW",
+        "status": "RUNNING"
+      }
+    ],
+    "warning_count": 0
+  },
+  "journal_mode": "wal",
+  "outcome": "rolled_back",
+  "sqlite_version": "3.45.1",
+  "staged": {
+    "event": "uncommitted",
+    "pid": 42,
+    "rows": [
+      [
+        "artifact_v1_fb6d61570e340d6bbd4e905e3621e7a19aa5fffbefaeeb3c0bddf56729a882cb",
+        "ebcf053ffeabc3e111219322a54e754bed0a7b5154fa4bacc84c07986d69de3a",
+        32,
+        1
+      ]
+    ]
+  },
+  "writer_exitcode": 0
+}

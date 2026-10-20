@@ -1,0 +1,250 @@
+{
+  "after": {
+    "active_stage": null,
+    "artifact_summary": {
+      "by_type": [
+        {
+          "artifact_type": "isolation_fixture",
+          "complete_count": 1,
+          "count": 1,
+          "fingerprint_kind": "content_sha256",
+          "total_bytes": 32
+        }
+      ],
+      "complete_count": 1,
+      "count": 1,
+      "fingerprint_kinds": [
+        "content_sha256"
+      ],
+      "total_bytes": 32
+    },
+    "as_of": "2026-10-20T15:49:23.484375Z",
+    "attempt_count": 1,
+    "calendar": {
+      "checked_at": null,
+      "knowledge": "UNKNOWN_NOT_EXPOSED_BY_LEGACY",
+      "observed_value": null,
+      "status": "UNKNOWN",
+      "threshold_value": null
+    },
+    "date_semantics": "REQUESTED_ASIA_TAIPEI_DATE_UNVERIFIED_CALENDAR",
+    "duration_seconds": null,
+    "freshness": {
+      "checked_at": null,
+      "observed_value": null,
+      "status": "UNKNOWN",
+      "threshold_value": null
+    },
+    "incident_status": "NOT_IMPLEMENTED_PHASE_C",
+    "last_successful_fetch_date": null,
+    "latest_attempt": 1,
+    "latest_attempt_status": "RUNNING",
+    "latest_exit_code": null,
+    "latest_logical_run_id": "logical_run_v1_cb4f0641a830701e95c53ee5be9451dc649ef5a3a34894112e051fd138db533f",
+    "latest_requested_date": "2026-10-20",
+    "latest_trading_date": "2026-10-20",
+    "mode": "FETCH_ONLY",
+    "open_incident_count": null,
+    "projection_schema_version": "current-state-v1",
+    "run_status": "RUNNING",
+    "scope": {
+      "excluded": [
+        "INFERENCE",
+        "PORTFOLIO",
+        "PUBLICATION"
+      ],
+      "included": [
+        "CALENDAR_OBSERVATION",
+        "INGEST_RAW"
+      ]
+    },
+    "source_generation": "8e2b7018ca6e3b36fb2c22842b0616b4d79e830579397e2f91ca38d54197bf61",
+    "source_watermark": {
+      "committed_at": "2026-10-20T15:49:23.484375Z",
+      "row_counts": {
+        "artifacts": 1,
+        "attempts": 1,
+        "checks": 0,
+        "logical_runs": 1,
+        "stage_artifacts": 1,
+        "stage_runs": 1
+      }
+    },
+    "stage_statuses": [
+      {
+        "duration_seconds": 1.0,
+        "retryable": false,
+        "stage": "INGEST_RAW",
+        "status": "SUCCEEDED"
+      }
+    ],
+    "warning_count": 0
+  },
+  "artifact_identity": "artifact_v1_fb6d61570e340d6bbd4e905e3621e7a19aa5fffbefaeeb3c0bddf56729a882cb",
+  "barrier": {
+    "event": "reader_barrier",
+    "pid": 25,
+    "sql": "SELECT logical_run_id, requested_date, mode, state, updated_at FROM logical_runs WHERE mode = 'FETCH_ONLY' ORDER BY requested_date DESC, updated_at DESC, logical_run_id DESC LIMIT 1"
+  },
+  "before": {
+    "active_stage": "INGEST_RAW",
+    "artifact_summary": {
+      "by_type": [],
+      "complete_count": 0,
+      "count": 0,
+      "fingerprint_kinds": [],
+      "total_bytes": 0
+    },
+    "as_of": "2026-10-20T15:49:23.484375Z",
+    "attempt_count": 1,
+    "calendar": {
+      "checked_at": null,
+      "knowledge": "UNKNOWN_NOT_EXPOSED_BY_LEGACY",
+      "observed_value": null,
+      "status": "UNKNOWN",
+      "threshold_value": null
+    },
+    "date_semantics": "REQUESTED_ASIA_TAIPEI_DATE_UNVERIFIED_CALENDAR",
+    "duration_seconds": null,
+    "freshness": {
+      "checked_at": null,
+      "observed_value": null,
+      "status": "UNKNOWN",
+      "threshold_value": null
+    },
+    "incident_status": "NOT_IMPLEMENTED_PHASE_C",
+    "last_successful_fetch_date": null,
+    "latest_attempt": 1,
+    "latest_attempt_status": "RUNNING",
+    "latest_exit_code": null,
+    "latest_logical_run_id": "logical_run_v1_cb4f0641a830701e95c53ee5be9451dc649ef5a3a34894112e051fd138db533f",
+    "latest_requested_date": "2026-10-20",
+    "latest_trading_date": "2026-10-20",
+    "mode": "FETCH_ONLY",
+    "open_incident_count": null,
+    "projection_schema_version": "current-state-v1",
+    "run_status": "RUNNING",
+    "scope": {
+      "excluded": [
+        "INFERENCE",
+        "PORTFOLIO",
+        "PUBLICATION"
+      ],
+      "included": [
+        "CALENDAR_OBSERVATION",
+        "INGEST_RAW"
+      ]
+    },
+    "source_generation": "512c2797796ac53437b27025a8fa6d51125cc7f57bde210e0d27eda1b0f89d48",
+    "source_watermark": {
+      "committed_at": "2026-10-20T15:49:23.484375Z",
+      "row_counts": {
+        "artifacts": 0,
+        "attempts": 1,
+        "checks": 0,
+        "logical_runs": 1,
+        "stage_artifacts": 0,
+        "stage_runs": 1
+      }
+    },
+    "stage_statuses": [
+      {
+        "duration_seconds": null,
+        "retryable": false,
+        "stage": "INGEST_RAW",
+        "status": "RUNNING"
+      }
+    ],
+    "warning_count": 0
+  },
+  "case": "after_watermark-0",
+  "class": "REAL_PROCESS_SYNTHETIC_LEDGER",
+  "content_sha256": "ebcf053ffeabc3e111219322a54e754bed0a7b5154fa4bacc84c07986d69de3a",
+  "during": {
+    "active_stage": "INGEST_RAW",
+    "artifact_summary": {
+      "by_type": [],
+      "complete_count": 0,
+      "count": 0,
+      "fingerprint_kinds": [],
+      "total_bytes": 0
+    },
+    "as_of": "2026-10-20T15:49:23.484375Z",
+    "attempt_count": 1,
+    "calendar": {
+      "checked_at": null,
+      "knowledge": "UNKNOWN_NOT_EXPOSED_BY_LEGACY",
+      "observed_value": null,
+      "status": "UNKNOWN",
+      "threshold_value": null
+    },
+    "date_semantics": "REQUESTED_ASIA_TAIPEI_DATE_UNVERIFIED_CALENDAR",
+    "duration_seconds": null,
+    "freshness": {
+      "checked_at": null,
+      "observed_value": null,
+      "status": "UNKNOWN",
+      "threshold_value": null
+    },
+    "incident_status": "NOT_IMPLEMENTED_PHASE_C",
+    "last_successful_fetch_date": null,
+    "latest_attempt": 1,
+    "latest_attempt_status": "RUNNING",
+    "latest_exit_code": null,
+    "latest_logical_run_id": "logical_run_v1_cb4f0641a830701e95c53ee5be9451dc649ef5a3a34894112e051fd138db533f",
+    "latest_requested_date": "2026-10-20",
+    "latest_trading_date": "2026-10-20",
+    "mode": "FETCH_ONLY",
+    "open_incident_count": null,
+    "projection_schema_version": "current-state-v1",
+    "run_status": "RUNNING",
+    "scope": {
+      "excluded": [
+        "INFERENCE",
+        "PORTFOLIO",
+        "PUBLICATION"
+      ],
+      "included": [
+        "CALENDAR_OBSERVATION",
+        "INGEST_RAW"
+      ]
+    },
+    "source_generation": "512c2797796ac53437b27025a8fa6d51125cc7f57bde210e0d27eda1b0f89d48",
+    "source_watermark": {
+      "committed_at": "2026-10-20T15:49:23.484375Z",
+      "row_counts": {
+        "artifacts": 0,
+        "attempts": 1,
+        "checks": 0,
+        "logical_runs": 1,
+        "stage_artifacts": 0,
+        "stage_runs": 1
+      }
+    },
+    "stage_statuses": [
+      {
+        "duration_seconds": null,
+        "retryable": false,
+        "stage": "INGEST_RAW",
+        "status": "RUNNING"
+      }
+    ],
+    "warning_count": 0
+  },
+  "journal_mode": "wal",
+  "reader_exitcode": 0,
+  "sqlite_version": "3.45.1",
+  "staged": {
+    "event": "uncommitted",
+    "pid": 24,
+    "rows": [
+      [
+        "artifact_v1_fb6d61570e340d6bbd4e905e3621e7a19aa5fffbefaeeb3c0bddf56729a882cb",
+        "ebcf053ffeabc3e111219322a54e754bed0a7b5154fa4bacc84c07986d69de3a",
+        32,
+        1
+      ]
+    ]
+  },
+  "writer_exitcode": 0
+}
