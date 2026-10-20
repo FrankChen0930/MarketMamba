@@ -6,7 +6,9 @@ from dataclasses import dataclass, field
 from datetime import datetime
 import hashlib
 import json
+import os
 from pathlib import Path
+import tempfile
 from typing import Any, Mapping
 from urllib.parse import urlparse
 
@@ -27,10 +29,34 @@ def _sha256(data: bytes) -> str:
 
 
 def _atomic_bytes(path: Path, data: bytes) -> None:
+    """Publish once; identical retries reuse bytes, conflicting identities fail.
+
+    A unique staged file is fsynced before no-clobber publication. This assumes
+    a trusted snapshot directory and a filesystem supporting hard links/fsync;
+    unsupported storage fails rather than falling back to overwrite.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_name(path.name + ".tmp")
-    temporary.write_bytes(data)
-    temporary.replace(path)
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(dir=path.parent, prefix=f".{path.name}.",
+                                         suffix=".tmp", delete=False) as stream:
+            temporary = Path(stream.name)
+            stream.write(data)
+            stream.flush()
+            os.fsync(stream.fileno())
+        try:
+            os.link(temporary, path)
+        except FileExistsError:
+            if path.is_symlink() or not path.is_file() or path.read_bytes() != data:
+                raise SnapshotContractError("immutable snapshot identity conflicts with existing bytes")
+        directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
 
 
 @dataclass(frozen=True)
@@ -92,11 +118,7 @@ def snapshot_response(
     suffix = ".json" if "json" in content_type.lower() else ".bin"
     raw_relative = Path("raw") / f"{response_sha}{suffix}"
     raw_path = base / raw_relative
-    if raw_path.exists():
-        if _sha256(raw_path.read_bytes()) != response_sha:
-            raise SnapshotContractError("content-addressed raw snapshot is corrupted")
-    else:
-        _atomic_bytes(raw_path, response_body)
+    _atomic_bytes(raw_path, response_body)
     stamp = timestamp.isoformat().replace(":", "").replace("+", "p")
     manifest = {
         "schema_version": "v7-source-snapshot-v1",

@@ -61,6 +61,14 @@ Legacy V6 datasets remain useful for reproducing historical work, but cannot be 
 
 ## Known Limitations
 
+Branch-local engineering candidate `fix/v7-snapshot-immutability` (2026-10-20)
+adds no-clobber source snapshot publication: same-identity/different-byte
+manifests are refused; identical retries retain the original inode/mtime.
+Concurrent-writer and SIGKILL fixtures are tested; this is not a data-quality
+approval, production rollout or full power-loss durability certification.
+Trusted local snapshot directories and hard-link/fsync support are required.
+See [recovery checkpoint](../00_Project_Map/Current_State.md#bounded-recovery-checkpoint--2026-10-20).
+
 - Some external publication timestamps and historical revisions remain incomplete.
 - Provider availability is broader than evidence eligible for strict PIT use.
 - External source behavior can change and requires revalidation.

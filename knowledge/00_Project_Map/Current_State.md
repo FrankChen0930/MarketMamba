@@ -19,6 +19,12 @@ Semantic change owners must update this file in the same change. K0 remains disc
 
 ## Project Summary
 
+**2026-10-20 bounded engineering recovery (branch-local):** base development
+`main@50c5b785e8c373913c3301a056497eb955f36681`; candidate
+`fix/v7-snapshot-immutability`, `UNMERGED / NOT_DEPLOYED`. One engineering unit
+fixes immutable V7 source snapshot publication; it does not promote research
+evidence or close any correctness gate. See the checkpoint below.
+
 **Active objectives:** recover the identity-matched E1 matrix and safely replay retained checkpoints before deciding further research; review Phase A Task 4 evidence before any merge/deploy. Governance consolidation supplies navigation, not a new research or production gate.
 
 MarketMamba contains separate production-data, legacy model runtime, V7 correctness, research-training, historical-simulation, portfolio, delivery, and operations-control-plane subsystems. Production acquisition uses mutable provider data; V7 research authority uses versioned PIT/provenance evidence. The current corrected research baseline is `E5-PIT-Clean-v1`, with 48 features, no graph and no industry neutralization. Historical simulation is `PASS`, while strict trading correctness remains `STOP`. The observed production scheduler runs fetch-only; full V6.2 inference/portfolio/publication is `DISABLED`. E1 is a completed research experiment with `PASS_REFRESH_HYPOTHESIS`, not trading evidence. Phase A operations work is `UNMERGED` and `NOT_DEPLOYED`.
@@ -131,6 +137,53 @@ Phase 3B-1 source canonicalization completed on 2026-09-22 in WSL development ma
 - [K0 machine authority map](../../research/project-knowledge/k0/authority-map.json)
 - [K0 boundary map](../../research/project-knowledge/k0/boundary-map.json)
 - Corrected/PIT authorities are branch-qualified in [Authority Map](Authority_Map.md).
+
+## Bounded recovery checkpoint — 2026-10-20
+
+- **Completed:** reproduced silent manifest replacement for the same request and
+  retrieval timestamp, including parser-only conflicts; identical retries also
+  replaced inode/mtime. Replaced shared temporary-name/overwrite publication with
+  unique staged files and atomic no-clobber publication. Identical bytes reuse
+  the committed file; conflicts, corrupt raw content and manifest symlinks fail
+  closed without replacing the original. Valid raw blobs created before a
+  rejected manifest remain preserved and do not imply a completed observation.
+- **Evidence:** snapshot suite 10/10; all six adopted PIT primitive suites
+  40/40, no skips, CPU/local synthetic fixtures, ResourceWarning promoted to
+  error. Real competing subprocesses yield one committed manifest; controlled
+  SIGKILL before/after manifest publication yields safe retry and valid hashes.
+  This is engineering/fault-injection evidence, not market-data or trading
+  correctness. Independent review found no required code changes.
+  Governance regression 15/15; syntax/JSON and `git diff --check` passed.
+  Knowledge-impact review completed; unified knowledge health exits 0 with
+  pre-existing Governance/Authority Drift/Legacy Docs WARNING, no structural
+  FAIL. Operations/GOVERNANCE rules reviewed and unchanged: no control-plane,
+  authority or lifecycle policy change. Full project/model-training tests were
+  not run; verification is bounded to the six PIT primitives and governance.
+- **Runtime:** Python 3.12.3; related pandas tests use the existing
+  `.worktrees/v7-e1-colab-recovery/.venv/bin/python` with GPU hidden. No installs,
+  model training or data writes. `MARKETMAMBA_DATA_ROOT` was unset; canonical
+  development `Data/processed_v6` resolves to
+  `/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6`; that data was
+  not loaded or mounted into the new worktree. Only temporary fixture data used.
+- **Limits:** trusted snapshot directories and hard-link/fsync-capable filesystem
+  required; unsupported storage fails, with no overwrite fallback. No certification
+  of Windows/Drive semantics, adversarial directory mutation or host power-loss
+  durability (new-directory parents are not fsynced). Killed-writer temporary
+  files stay non-authoritative and are not auto-cleaned.
+- **Remaining gates:** strict Phase 0 STOP, verified labels 5d/10d = 0; Phase A
+  Task 4 approval not established / Task 5 not started; E1 matrix/replay and
+  causal-regime evidence limitations unchanged. No merge, deployment or approval.
+- **Resume:** inspect this branch and commit/tests before using the candidate;
+  the main source-adoption register remains historical byte-identity evidence.
+  Existing memory-hardening branch `91db7d1` remains unmerged; no new hooks or
+  memory system were installed. Next bounded candidate: validate source snapshot
+  reader path/schema rejection with offline fixtures, without admitting new data.
+
+Reproduce the bounded regression from the candidate worktree:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 CUDA_VISIBLE_DEVICES='' /home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python -B -W error::ResourceWarning -m unittest V6.experimental.v7_source_snapshot_test V6.experimental.v7_temporal_contract_test V6.experimental.v7_executable_labels_test V6.experimental.v7_ohlcv_provenance_test V6.experimental.v7_historical_security_master_test V6.experimental.v7_historical_label_materialize_test -v
+```
 
 ## Knowledge-impact Rule
 

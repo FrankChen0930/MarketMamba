@@ -1,5 +1,23 @@
 # Worktree Register
 
+## Bounded recovery addition — observed 2026-10-20
+
+New checkout `.worktrees/v7-snapshot-immutability`, branch
+`fix/v7-snapshot-immutability`, base
+`50c5b785e8c373913c3301a056497eb955f36681`, created 2026-10-20; owner/task:
+Codex under Human's bounded V7 engineering recovery. Purpose: one source-snapshot
+immutability fix and offline recovery tests. State: `UNMERGED / NOT_DEPLOYED`,
+no research or execution authority carried; retirement date N/A.
+Existing worktrees serve Phase A, E1 research/recovery/diagnostics or memory
+hardening, not this main-based snapshot fix, so a separate checkout avoids
+overwriting or importing their unmerged work. Source and main were clean at
+start; existing checkouts were retained. The additional memory-hardening
+checkout is `fix/memory-lifecycle-hardening@91db7d1`, clean at observation.
+Test runtime depends on the retained E1 recovery `.venv`; fixtures are temporary,
+not formal data artifacts. Adoption requires separate integration approval.
+Safe removal requires retained commits/branch, clean state, artifact/dependency
+check and explicit Human approval; this entry authorizes no removal.
+
 > Updated from `git worktree list --porcelain` and branch verification on 2026-09-22 after the four authorized K checkouts were retired. This is a registry of checkouts and responsibility, not authority to merge or remove them. `UNKNOWN` means creation/ownership was not verified. Update in the same coherent change when a branch or responsibility changes; a fresh runtime/worktree observation needs its own date.
 
 | Checkout under `.worktrees/` | Branch / HEAD | Purpose and owner/task | Base | Current state | Authority carried / dependencies | Created / retired |

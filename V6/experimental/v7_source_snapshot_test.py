@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
+import subprocess
+import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from V6.experimental.v7_source_snapshot import (
     RequestSpec,
@@ -24,6 +28,148 @@ class RequestSpecTest(unittest.TestCase):
 
 
 class SnapshotTest(unittest.TestCase):
+    def test_failed_publication_preserves_existing_snapshot(self):
+        with tempfile.TemporaryDirectory() as directory:
+            spec = RequestSpec("GET", "https://example.test/data")
+            options = dict(retrieved_at="2026-09-17T10:00:00+08:00", parser_version="v1")
+            path = snapshot_response(spec, b"original", directory, **options)
+            original = path.read_bytes()
+            with patch("V6.experimental.v7_source_snapshot.os.link", side_effect=OSError("injected storage failure")):
+                with self.assertRaises(OSError):
+                    snapshot_response(spec, b"new", directory, **options)
+            self.assertEqual(path.read_bytes(), original)
+            self.assertTrue(verify_snapshot(path))
+            self.assertEqual(list(Path(directory).rglob("*.tmp")), [])
+
+    def test_corrupt_raw_is_not_silently_repaired(self):
+        with tempfile.TemporaryDirectory() as directory:
+            spec = RequestSpec("GET", "https://example.test/data")
+            options = dict(retrieved_at="2026-09-17T10:00:00+08:00", parser_version="v1")
+            path = snapshot_response(spec, b"original", directory, **options)
+            raw = Path(directory)/json.loads(path.read_text())["response"]["path"]
+            raw.write_bytes(b"corrupt")
+            with self.assertRaises(SnapshotContractError):
+                snapshot_response(spec, b"original", directory, **options)
+            self.assertEqual(raw.read_bytes(), b"corrupt")
+            self.assertFalse(verify_snapshot(path))
+
+    def test_manifest_symlink_is_not_replaced(self):
+        with tempfile.TemporaryDirectory() as directory:
+            spec = RequestSpec("GET", "https://example.test/data")
+            options = dict(retrieved_at="2026-09-17T10:00:00+08:00", parser_version="v1")
+            path = snapshot_response(spec, b"same", directory, **options)
+            target = Path(directory)/"retained.json"
+            path.rename(target)
+            path.symlink_to(target)
+            original = target.read_bytes()
+            with self.assertRaises(SnapshotContractError):
+                snapshot_response(spec, b"same", directory, **options)
+            self.assertTrue(path.is_symlink())
+            self.assertEqual(target.read_bytes(), original)
+
+    def test_competing_processes_commit_exactly_one_conflicting_observation(self):
+        code = """
+import sys
+from V6.experimental.v7_source_snapshot import *
+sys.stdin.readline()
+try:
+    p = snapshot_response(RequestSpec("GET", "https://example.test/data"),
+        sys.argv[2].encode(), sys.argv[1],
+        retrieved_at="2026-09-17T10:00:00+08:00", parser_version="v1")
+except SnapshotContractError:
+    sys.exit(3)
+print(p)
+"""
+        with tempfile.TemporaryDirectory() as directory:
+            children = [subprocess.Popen([sys.executable, "-B", "-c", code, directory, body],
+                        stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                        text=True) for body in ("first", "second")]
+            try:
+                for child in children:
+                    child.stdin.write("go\n")
+                    child.stdin.flush()
+                outputs = [child.communicate(timeout=10) for child in children]
+                self.assertEqual(sorted(child.returncode for child in children), [0, 3])
+                winner = next(out.strip() for child, (out, _) in zip(children, outputs)
+                              if child.returncode == 0)
+                self.assertTrue(verify_snapshot(winner))
+                self.assertEqual(len(list((Path(directory)/"manifests").glob("*.json"))), 1)
+                self.assertEqual(list(Path(directory).rglob("*.tmp")), [])
+            finally:
+                for child in children:
+                    if child.poll() is None:
+                        child.kill()
+                    child.communicate()
+
+    @unittest.skipUnless(os.name == "posix", "SIGKILL lifecycle requires POSIX")
+    def test_killed_publisher_recovers_before_and_after_manifest_commit(self):
+        # Controlled fault injection, not evidence of a real market-data run.
+        code = """
+import sys
+from pathlib import Path
+from V6.experimental import v7_source_snapshot as s
+link = s.os.link
+def interrupt(src, dst):
+    if Path(dst).parent.name == "manifests":
+        if sys.argv[2] == "after":
+            link(src, dst)
+        print("ready", flush=True)
+        sys.stdin.readline()
+        raise RuntimeError("parent should kill child")
+    return link(src, dst)
+s.os.link = interrupt
+s.snapshot_response(s.RequestSpec("GET", "https://example.test/data"), b"same",
+    sys.argv[1], retrieved_at="2026-09-17T10:00:00+08:00", parser_version="v1")
+"""
+        for stage in ("before", "after"):
+            with self.subTest(stage=stage), tempfile.TemporaryDirectory() as directory:
+                child = subprocess.Popen([sys.executable, "-B", "-c", code, directory, stage],
+                    stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                try:
+                    import select
+                    self.assertTrue(select.select([child.stdout], [], [], 10)[0])
+                    self.assertEqual(child.stdout.readline().strip(), "ready")
+                    child.kill()
+                    child.communicate(timeout=10)
+                    self.assertEqual(child.returncode, -9)
+                    manifests = list((Path(directory)/"manifests").glob("*.json"))
+                    self.assertEqual(len(manifests), int(stage == "after"))
+                    path = snapshot_response(RequestSpec("GET", "https://example.test/data"),
+                        b"same", directory, retrieved_at="2026-09-17T10:00:00+08:00",
+                        parser_version="v1")
+                    self.assertTrue(verify_snapshot(path))
+                    # Interrupted temporary files remain non-authoritative; never deleted by recovery.
+                    self.assertTrue(list(Path(directory).rglob("*.tmp")))
+                finally:
+                    if child.poll() is None:
+                        child.kill()
+                    child.communicate()
+
+    def test_conflicting_observation_cannot_replace_committed_manifest(self):
+        with tempfile.TemporaryDirectory() as directory:
+            spec = RequestSpec("GET", "https://example.test/data")
+            options = dict(retrieved_at="2026-09-17T10:00:00+08:00", parser_version="v1")
+            path = snapshot_response(spec, b"original", directory, **options)
+            original = path.read_bytes()
+            for body, parser in ((b"changed", "v1"), (b"original", "v2")):
+                with self.subTest(body=body, parser=parser):
+                    with self.assertRaises(SnapshotContractError):
+                        snapshot_response(spec, body, directory,
+                                          **{**options, "parser_version": parser})
+                    self.assertEqual(path.read_bytes(), original)
+                    self.assertTrue(verify_snapshot(path))
+
+    def test_identical_observation_is_noop_including_manifest_identity(self):
+        with tempfile.TemporaryDirectory() as directory:
+            spec = RequestSpec("GET", "https://example.test/data")
+            options = dict(retrieved_at="2026-09-17T10:00:00+08:00", parser_version="v1")
+            path = snapshot_response(spec, b"same", directory, **options)
+            before = path.stat()
+            self.assertEqual(snapshot_response(spec, b"same", directory, **options), path)
+            after = path.stat()
+            self.assertEqual((before.st_ino, before.st_mtime_ns),
+                             (after.st_ino, after.st_mtime_ns))
+
     def test_snapshot_is_atomic_fingerprinted_and_replayable(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

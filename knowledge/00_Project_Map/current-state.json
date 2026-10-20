@@ -2,6 +2,19 @@
   "schema_version": "marketmamba-current-state-v1",
   "status": "CANONICAL_CURRENT_PROJECT_MAP",
   "owner": "Human + project agents",
+  "bounded_engineering_recovery": {
+    "observed_on": "2026-10-20",
+    "base_commit": "50c5b785e8c373913c3301a056497eb955f36681",
+    "branch": "fix/v7-snapshot-immutability",
+    "status": "UNMERGED_NOT_DEPLOYED",
+    "milestone": "Immutable source snapshot conflict rejection and process-crash recovery",
+    "evidence_class": "OFFLINE_SYNTHETIC_ENGINEERING_AND_FAULT_INJECTION",
+    "snapshot_tests_passed": 10,
+    "pit_regression_tests_passed": 40,
+    "research_or_correctness_promotion": false,
+    "checkpoint": "knowledge/00_Project_Map/Current_State.md",
+    "next_bounded_candidate": "Offline snapshot reader path/schema validation; no new data admission"
+  },
   "observed_at": "2026-09-22T13:25:21+08:00",
   "human_review": {
     "accepted_at": "2026-09-20",
