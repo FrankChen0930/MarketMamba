@@ -80,6 +80,15 @@
       "change_commit": "containing commit",
       "reason": "Point implementation navigation at the verified unmerged candidate including aggregation and isolation/replay evidence. Retain f5b0ff3 as historical source; no production or main authority promotion.",
       "evidence": ["1c5250e:research/production-system/phase-a/task5-evidence-index.json", "1e119ef:research/production-system/phase-a/task4-evidence-recovery.json"]
+    },
+    {
+      "topic": "Phase A local development integration",
+      "old_authority": "integration/phase-a-task5@1c5250e:V6/marketmamba/ops/",
+      "new_authority": "89f9496:V6/marketmamba/ops/",
+      "changed_at": "2026-10-21",
+      "change_commit": "containing closure commit",
+      "reason": "Explicit Human local ff-only approval; main reached exact89f9496 and pre/post tests passed. No production/research promotion.",
+      "evidence": ["research/production-system/phase-a/integration-closure.json"]
     }
   ]
 }

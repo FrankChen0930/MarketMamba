@@ -19,6 +19,15 @@ Semantic change owners must update this file in the same change. K0 remains disc
 
 ## Project Summary
 
+**Current integration closure (2026-10-21):** Human authorized fixed `89f9496`;
+WSL development main fast-forwarded from `50c5b78` to that exact candidate.
+Pre/post checks each passed 81 Operations, 47 PIT/Snapshot, 3 fetch-only,
+38 Portfolio and 23 governance tests. See
+[closure](../../reports/production_phase_a_integration_closure.md).
+Phase A is `IN_DEVELOPMENT_MAIN / NOT_DEPLOYED`; old pending-merge language below
+is historical. Remote tracking was not fetched; Windows operations are untouched.
+E1 bounded evidence recovery is now authorized in isolation, not new training.
+
 **2026-10-21 current Phase A decision:** Human explicitly approved Task 4 limited
 engineering correctness at `1e119ef`, after revalidation of its index, 12 raw
 SHA-256 records and 36 generation digests. Decision provenance:
@@ -44,7 +53,8 @@ assessment, not final Phase A Human acceptance or permission to merge.
 See [final review and guarded integration procedure](../../reports/production_phase_a_integration_review.md).
 The decision-validator change passes 23 governance tests (including rejection
 of mutated, missing or corrupt Task 5 approval evidence).
-No main merge, push, deployment, production data or training authorization.
+The earlier review had no merge authority; the subsequent explicit integration
+decision above authorized only local development main. No push/deployment/training.
 
 **2026-10-20 bounded engineering recovery (branch-local):** base development
 `main@50c5b785e8c373913c3301a056497eb955f36681`; candidate
@@ -52,7 +62,8 @@ No main merge, push, deployment, production data or training authorization.
 fixes immutable V7 source snapshot publication; it does not promote research
 evidence or close any correctness gate. See the checkpoint below.
 
-**Active objectives:** Human final Phase A integration decision; subsequently consider bounded E1 matrix/checkpoint identity recovery before deciding further research. No new research execution is authorized by this recommendation.
+**Active objectives:** bounded E1 frozen matrix/checkpoint identity recovery and
+safe offline inspection/replay only when existing evidence satisfies its gates.
 
 MarketMamba contains separate production-data, legacy model runtime, V7 correctness, research-training, historical-simulation, portfolio, delivery, and operations-control-plane subsystems. Production acquisition uses mutable provider data; V7 research authority uses versioned PIT/provenance evidence. The current corrected research baseline is `E5-PIT-Clean-v1`, with 48 features, no graph and no industry neutralization. Historical simulation is `PASS`, while strict trading correctness remains `STOP`. The observed production scheduler runs fetch-only; full V6.2 inference/portfolio/publication is `DISABLED`. E1 is a completed research experiment with `PASS_REFRESH_HYPOTHESIS`, not trading evidence. Phase A operations work is `UNMERGED` and `NOT_DEPLOYED`.
 
@@ -121,9 +132,9 @@ Runtime observations are not permanent facts. The new Scheduler observation expi
 | Topic | State | Authority / notes |
 |---|---|---|
 | Architecture audit | `COMPLETE_CURRENT_REFERENCE` | `docs/production-system-architecture-audit@9efed7b:reports/marketmamba_production_system_audit.md` and its production-system roadmap. |
-| Phase A implementation | `UNMERGED`, `NOT_DEPLOYED` | Candidate `integration/phase-a-task5`; original `f5b0ff3` retained as historical source. |
-| Phase A task state | Tasks 1–3 `COMPLETED_REVIEWED`; Task 4 limited approval at `1e119ef`; Task 5 limited offline approval at `1c5250e` | Final Phase A completion/integration remains a separate Human gate. |
-| Current blocker | `FINAL_INTEGRATION_DECISION_REQUIRED` | No known blocking limited engineering finding; no merge or production authorization. |
+| Phase A implementation | `IN_DEVELOPMENT_MAIN`, `NOT_DEPLOYED` | Fixed `89f9496` integrated locally; original source and candidate branches retained. |
+| Phase A task state | Tasks 1–3 `COMPLETED_REVIEWED`; Task 4 limited approval at `1e119ef`; Task 5 limited offline approval at `1c5250e` | Limited local engineering integration completed; production readiness remains outside scope. |
+| Current blocker | `NONE_FOR_LOCAL_PHASE_A_INTEGRATION` | Completed local integration; production and research gates remain unchanged. |
 | Production success authority | Legacy fetch result remains authoritative | Shadow-ledger failures must not change fetch-only success semantics. |
 
 ## Delivery/UI State
@@ -135,14 +146,14 @@ Runtime observations are not permanent facts. The new Scheduler observation expi
 ## Active Blockers
 
 1. `STOP`: strict Phase 0 has no verified executable 5d/10d labels.
-2. `HUMAN_REVIEW_REQUIRED`: final Phase A acceptance and development-main integration decision.
+2. `NOT_DEPLOYED`: Phase A local integration complete, no production promotion.
 3. `UNKNOWN`: E1 final-support epoch dynamics and causal regime dependence require the frozen matrix and ex-ante market-state evidence; completed result is admitted.
 4. `UNKNOWN`: live API/frontend deployment and publication state.
 
 ## Current Decisions / Next Actions
 
 1. Recover the identity-matched E1 matrix and safe checkpoint replay, then predeclare causal regime series. Do not launch another training experiment until diagnostic limitations are resolved.
-2. Decide final Phase A integration using the fixed candidate and guarded procedure; no deployment authorization.
+2. Preserve Phase A closure evidence; recover E1 evidence in isolation without new training.
 3. Maintain K1 domain notes and drift checks in the same change when domain semantics, authority, or boundaries change.
 4. Use the consolidated K2 Current State, Authority Map and knowledge-impact checks. K0/K1/K2 branch history is retained without active checkouts; do not begin K3 automatically.
 

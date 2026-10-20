@@ -1,5 +1,13 @@
 # Worktree Register
 
+## Local Phase A integration closure — 2026-10-21
+
+WSL main fast-forwarded `50c5b78` → fixed `89f9496` under explicit Human
+authorization. `.worktrees/phase-a-task5` remains clean at the approved candidate;
+all original source worktrees are retained unchanged. No checkout is removed.
+Subsequent main closure commit updates memory/report only. E1 new work will use
+a separate isolated checkout, not the historical candidate or Windows operations.
+
 ## Phase A integration — 2026-10-21
 
 New `.worktrees/phase-a-task5`, `integration/phase-a-task5`, base

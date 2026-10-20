@@ -423,9 +423,9 @@
     },
     {
       "topic": "Phase A implementation",
-      "primary_authority": "integration/phase-a-task5@1c5250e:V6/marketmamba/ops/",
-      "authority_class": "UNMERGED_IMPLEMENTATION",
-      "status": "HISTORICAL_SOURCE_RETAINED; TASK4_LIMITED_APPROVAL_AT_1e119ef; TASK5_LIMITED_OFFLINE_APPROVAL_AT_1c5250e; FINAL_INTEGRATION_DECISION_PENDING; UNMERGED_NOT_DEPLOYED",
+      "primary_authority": "89f9496:V6/marketmamba/ops/",
+      "authority_class": "CURRENT_REFERENCE",
+      "status": "IN_DEVELOPMENT_MAIN; TASK4_TASK5_SCOPED_APPROVALS_RETAINED; NOT_DEPLOYED; NOT_PUSHED",
       "supersedes": [
         "roadmap-only Phase A description"
       ],

@@ -15,6 +15,11 @@ The 2026-10-20 review is bounded engineering evidence recovery, not Human approv
 
 ## Current Boundary
 
+2026-10-21 closure supersedes pending-integration observations below:
+Human-authorized ff-only placed fixed `89f9496` on WSL development main.
+Pre/post bounded suites passed. Phase A is integrated locally, **not deployed**.
+See [integration closure](../../reports/production_phase_a_integration_closure.md).
+
 Current candidate `integration/phase-a-task5` combines verified Snapshot and
 Task 4 sources without changing production authority. Human approved Task 4
 limited engineering at `1e119ef`; Task 5 limited offline engineering is now
