@@ -15,7 +15,11 @@
       "U3": "COMPLETE: five real-process cases; independent combined 43 PASS; no Required/Critical"
     },
     "evidence": "research/v7/cpu-window-01-evidence.json",
-    "final_tests": {"portfolio_health_audit": 53, "pit": 47, "governance": 23},
+    "final_tests": {
+      "portfolio_health_audit": 53,
+      "pit": 47,
+      "governance": 23
+    },
     "next_ready": "Reproduced normalized quote collision silently overwrites input; not fixed. Journal should reject as existing engine does.",
     "strict_phase0": "STOP",
     "e1_matrix": "BLOCKED_IDENTITY_MATCHED_MATRIX_NOT_RECOVERED",
@@ -232,7 +236,13 @@
     "final_engineering_review": "reports/production_phase_a_integration_review.md",
     "task5_evidence_index": "research/production-system/phase-a/task5-evidence-index.json",
     "task5_report": "reports/production_phase_a_shadow_ledger.md",
-    "task5_validation": {"operations": 81, "pit": 47, "fetch_only": 3, "governance": 19, "non_training_portfolio": 38},
+    "task5_validation": {
+      "operations": 81,
+      "pit": 47,
+      "fetch_only": 3,
+      "governance": 19,
+      "non_training_portfolio": 38
+    },
     "task4_human_decision": "knowledge/02_History/Decisions/20261021-task4-human-approval.json",
     "integration_candidate": "integration/phase-a-task5",
     "success_authority": "LEGACY_FETCH_RESULT"
@@ -407,5 +417,21 @@
     ],
     "next_action": "No destructive action from this audit; review evidence-backed generated frontend cleanup in a separately authorized pass; resolve baseline/archive/venv evidence gaps before any large removal",
     "pushed": false
+  },
+  "cpu_development_window_02": {
+    "branch": "development/v7-cpu-window-01",
+    "base_commit": "7eb9cd9027a312a06d526666e4ad31d2255ff4f2",
+    "status": "IN_PROGRESS_UNMERGED_NOT_DEPLOYED",
+    "plan": "tasks/v7-cpu-development-window-02.md",
+    "unit_limit": 5,
+    "units": {
+      "U1": "COMPLETED_VERIFIED; 47 tests, independent 47, 23 governance; one fix round",
+      "U2": "READY_REPRODUCED"
+    },
+    "strict_phase0": "STOP",
+    "e1_matrix": "BLOCKED",
+    "human_decisions": 0,
+    "goal_binding": "V7_CREATED_AFTER_NULL; automatic continuation unverified",
+    "aggregate_usage": "NOT_INDEPENDENTLY_VERIFIED"
   }
 }

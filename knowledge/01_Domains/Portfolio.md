@@ -44,9 +44,12 @@ Shared-lock reads now exclude in-progress append bytes. Five real-process
 synthetic/fault-injection cases cover duplicate/conflict, concurrent reading,
 durable-before-response SIGKILL retry and partial-tail refusal. No power-loss,
 network-filesystem or uncooperative-writer guarantee is inferred.
-Known READY follow-up: journal quote keys can collide after whitespace
-normalization and silently overwrite; engine already rejects such duplicates.
-This pre-existing defect is reproduced but not fixed in the three-unit window.
+Window 02 now closes that normalized quote collision with the same rejection
+as the engine; unique whitespace keys and empty quotes remain legal. Local
+47-test regression passes, independent review passes with no Critical/Required. Existing persisted
+ambiguous/corrupt journals remain refused without repair. See the
+[current checkpoint](../../tasks/v7-cpu-development-window-02.md). Duplicate
+raw JSON members are a separately reproduced READY integrity follow-up.
 
 The research engine models partial execution and deterministic state transitions with replayable hash-linked records. No active scheduler, broker adapter, or verified live-paper loop is established for V7.
 

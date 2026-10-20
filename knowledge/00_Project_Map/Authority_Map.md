@@ -5,6 +5,14 @@
 > Semantic change owner must update this map in the same change.
 > Prior research/Phase A map accepted `2026-09-20`; 2026-09-22 runtime additions are agent-observed, pending separate human review. Canonical means current navigation authority, not immutable final state.
 
+## CPU window 02 implementation boundary
+
+`development/v7-cpu-window-01` continues from `7eb9cd9`, UNMERGED / NOT_DEPLOYED.
+[Window 02 checkpoint](../../tasks/v7-cpu-development-window-02.md) owns current
+engineering planning only. Existing portfolio spec/engine duplicate-refusal and
+journal integrity contracts remain authoritative; no research/production promotion,
+no replacement of historical window 01 evidence or E1 frozen artifacts.
+
 ## Source-of-truth Hierarchy
 
 1. Versioned machine contracts, manifests, hashes, and executable tests.

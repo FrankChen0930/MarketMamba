@@ -19,6 +19,16 @@ Semantic change owners must update this file in the same change. K0 remains disc
 
 ## Project Summary
 
+**CPU-only window 02 (2026-10-21, IN_PROGRESS):** reuse clean window 01 lineage
+from `7eb9cd9` on `development/v7-cpu-window-01`; main stays `83a6a2e`.
+[Current backlog/checkpoint](../../tasks/v7-cpu-development-window-02.md).
+U1 normalized quote collision fix: 47 portfolio/process tests pass, independent
+review passes with no Critical/Required. U2 JSON duplicate-member ambiguity reproduced, READY to review.
+Current Goal API created a V7 goal after observing no goal; future automatic
+continuation remains unverified. No MAS/global settings touched. This supersedes
+window 01's next-action observation, not its evidence. UNMERGED / NOT_DEPLOYED;
+strict Phase 0 STOP, E1 frozen matrix BLOCKED. No research approval.
+
 **CPU-only window 01 (2026-10-21):** Human authorized bounded autonomous
 engineering without training or research changes. Isolated
 `development/v7-cpu-window-01`, base `11ae71d`; main remains `83a6a2e`.
@@ -88,7 +98,7 @@ decision above authorized only local development main. No push/deployment/traini
 fixes immutable V7 source snapshot publication; it does not promote research
 evidence or close any correctness gate. See the checkpoint below.
 
-**Active objectives:** CPU window 01 complete; next bounded engineering candidate
+**Historical window 01 objectives:** CPU window 01 complete; next bounded engineering candidate
 is journal quote-collision refusal. Separately await original E1 frozen
 matrix/manifest location.
 Bounded local inventory is complete; replay is stopped until identity and safe

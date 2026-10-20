@@ -306,5 +306,90 @@ class PortfolioJournalBoundaryTest(unittest.TestCase):
                 PortfolioJournal(path).records()
 
 
+class PortfolioJournalQuoteCollisionTest(unittest.TestCase):
+    def test_collision_refuses_without_write_and_valid_retry_recovers(self):
+        from V6.experimental.v7_portfolio_contract import MarketQuote
+
+        for alias in (" A ", "\tA\t", "\u3000A\u3000"):
+            for reverse in (False, True):
+                for same_price in (False, True):
+                    for as_object in (False, True):
+                        with self.subTest(alias=alias, reverse=reverse,
+                                          same_price=same_price, as_object=as_object):
+                            with tempfile.TemporaryDirectory() as tmp:
+                                journal = PortfolioJournal.create(
+                                    Path(tmp) / "journal.jsonl", portfolio_spec(), "g", T0
+                                )
+                                journal.append("signal", "SIGNAL", T1, signal_payload())
+                                before = journal.path.read_bytes()
+                                state = journal.replay()
+                                first = market_payload()["quotes"]["A"]
+                                second = dict(first, price="10" if same_price else "20")
+                                if as_object:
+                                    first = MarketQuote.from_payload(first)
+                                    second = MarketQuote.from_payload(second)
+                                pairs = [("A", first), (alias, second)]
+                                if reverse:
+                                    pairs.reverse()
+                                with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+                                    journal.append("market", "MARKET_SESSION", T2,
+                                                   {"quotes": dict(pairs)})
+                                self.assertEqual(journal.path.read_bytes(), before)
+                                self.assertEqual(journal.replay(), state)
+                                reopened = PortfolioJournal(journal.path)
+                                accepted = reopened.append("market", "MARKET_SESSION", T2, market_payload())
+                                self.assertTrue(accepted.appended)
+                                self.assertEqual(accepted.event_count, 3)
+                                durable = journal.path.read_bytes()
+                                retry = PortfolioJournal(journal.path).append(
+                                    "market", "MARKET_SESSION", T2, market_payload())
+                                self.assertFalse(retry.appended)
+                                self.assertEqual(retry.state, accepted.state)
+                                self.assertEqual(journal.path.read_bytes(), durable)
+                                self.assertEqual(journal.replay().state, accepted.state)
+
+    def test_collision_cannot_be_treated_as_duplicate_retry(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            journal = PortfolioJournal.create(Path(tmp) / "journal.jsonl", portfolio_spec(), "g", T0)
+            journal.append("market", "MARKET_SESSION", T2, market_payload())
+            before = journal.path.read_bytes()
+            quote = market_payload()["quotes"]["A"]
+            with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+                journal.append("market", "MARKET_SESSION", T2,
+                               {"quotes": {" A ": dict(quote, price="20"), "A": quote}})
+            self.assertEqual(journal.path.read_bytes(), before)
+
+    def test_unique_whitespace_key_and_empty_quotes_remain_legal(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            journal = PortfolioJournal.create(Path(tmp) / "journal.jsonl", portfolio_spec(), "g", T0)
+            quote = market_payload()["quotes"]["A"]
+            first = journal.append("market", "MARKET_SESSION", T2, {"quotes": {" A ": quote}})
+            self.assertEqual(set(journal.records()[-1]["payload"]["quotes"]), {"A"})
+            retry = journal.append("market", "MARKET_SESSION", T2, market_payload())
+            self.assertFalse(retry.appended)
+            self.assertEqual(first.state, retry.state)
+            empty = journal.append("empty", "MARKET_SESSION", "2026-09-18T09:00:00+08:00", {"quotes": {}})
+            self.assertEqual(journal.replay().state, empty.state)
+
+    def test_hash_valid_persisted_collision_is_refused_without_repair(self):
+        import json
+        from V6.experimental.v7_portfolio_journal import _make_record
+
+        with tempfile.TemporaryDirectory() as tmp:
+            journal = PortfolioJournal.create(Path(tmp) / "journal.jsonl", portfolio_spec(), "g", T0)
+            quote = market_payload()["quotes"]["A"]
+            bad = _make_record(seq=2, event_id="bad", kind="MARKET_SESSION", occurred_at=T2,
+                               payload={"quotes": {"A": quote, " A ": dict(quote, price="20")}},
+                               prev_hash=journal.records()[0]["record_hash"])
+            with journal.path.open("a") as handle:
+                handle.write(json.dumps(bad) + "\n")
+            before = journal.path.read_bytes()
+            for operation in (journal.records, journal.replay,
+                              lambda: journal.append("later", "MARKET_SESSION", T2, market_payload())):
+                with self.assertRaises(JournalIntegrityError):
+                    operation()
+                self.assertEqual(journal.path.read_bytes(), before)
+
+
 if __name__ == "__main__":
     unittest.main()

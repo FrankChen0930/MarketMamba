@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "evidence_class": "OFFLINE_SYNTHETIC_ENGINEERING",
+  "artifact_class": "GENERATED",
+  "base_commit": "7eb9cd9027a312a06d526666e4ad31d2255ff4f2",
+  "branch": "development/v7-cpu-window-01",
+  "main": "83a6a2e6f4a56db318ee07e7e737cc01de3ce48e",
+  "contract": "docs/superpowers/specs/2026-09-16-v7-replayable-portfolio-engine-design.md",
+  "runtime": {
+    "python": "3.12.3",
+    "gpu": "not used",
+    "data": "synthetic temporary fixtures only",
+    "aggregate_usage": "not independently verified",
+    "goal_thread": "01a15a57-babe-79e2-9d27-018f19698e0e",
+    "goal_createdAt": 1792517093,
+    "continuation": "current V7 binding observed; future automatic continuation not exercised"
+  },
+  "units": {
+    "U1": {
+      "status": "COMPLETED_VERIFIED",
+      "commit": "containing commit of this U1 index; source bound by hashes",
+      "initial_fix_rounds": 1,
+      "review_rework_rounds": 0,
+      "red": {
+        "tests": 4,
+        "failures": 25,
+        "seconds": 0.657
+      },
+      "green": {
+        "tests": 47,
+        "seconds": 1.913
+      },
+      "independent": {
+        "green_tests": 47,
+        "seconds": 2.158,
+        "old_source_failures": 25,
+        "review": "no Critical/Required/Optional",
+        "agent": "u1_review"
+      },
+      "governance": {
+        "tests": 23,
+        "seconds": 0.087
+      },
+      "knowledge_health": "WARNING, no structural FAIL",
+      "sha256": {
+        "V6/experimental/v7_portfolio_journal.py": "ee5fe1d3cc44cba785061f8112c0bdfec1995f43934d006c2515e8991eac1f64",
+        "V6/experimental/v7_portfolio_journal_test.py": "dde0d74b053c62f0fd3c0be52982664a96109ec80075db34f44c5527f0d85e98",
+        "research/v7/cpu-window-02-u1-governance.txt": "912abe5762888a3f26cf409f3f4c81b20c2abce2f662437b4f1e3538abddfce0",
+        "research/v7/cpu-window-02-u1-independent-red.txt": "01bd7fca115c2715728b16b9d12c6d6717d6c212c028d019fbdd7c5cb044fa0d",
+        "research/v7/cpu-window-02-u1-green.txt": "e323939beb39853eec3967fd3b25217369b0c1bf017386907b4cf8ec1a2e515b",
+        "research/v7/cpu-window-02-u1-independent-green.txt": "dc97602cf34c5f2d00f2d9e88b79427230da407cf9ea0acf730d54ade43107f5",
+        "research/v7/cpu-window-02-u1-red.txt": "bc08d1347ba3ffc594f6f1cfb7744be400d5738d24db288e8f233110a4cc8513"
+      }
+    }
+  },
+  "human_decisions": 0,
+  "research_approval": false,
+  "production_approval": false,
+  "strict_phase0": "STOP",
+  "e1_matrix": "BLOCKED",
+  "model_identity": "N/A no model used",
+  "split_support": "N/A synthetic journal fixtures",
+  "limits": [
+    "No full training/repository suite",
+    "No power-loss/network filesystem certification",
+    "Normalized persisted collision already refused by previous reader; regression only"
+  ]
+}

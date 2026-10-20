@@ -134,6 +134,8 @@ def _normalize_payload(
                 normalized_ticker = _ticker(ticker)
                 if normalized_ticker != quote.ticker:
                     raise ContractError("quote key does not match ticker")
+                if normalized_ticker in quotes:
+                    raise ContractError(f"duplicate quote ticker: {normalized_ticker}")
                 quotes[normalized_ticker] = quote.to_payload()
             return {"quotes": quotes}
         if kind == "CORPORATE_ACTION":
