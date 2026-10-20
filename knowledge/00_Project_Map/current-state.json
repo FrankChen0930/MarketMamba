@@ -437,7 +437,7 @@
     "evidence": "research/v7/cpu-window-02-evidence.json"
   },
   "strategic_roadmap_recovery": {
-    "status": "PLANNING_COMPLETE_AWAITING_PROGRAM_APPROVAL",
+    "status": "PLANNING_COMPLETE_H1_SUBSEQUENTLY_APPROVED",
     "branch": "integration/v7-cpu-roadmap",
     "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
     "main_unchanged": "83a6a2e6f4a56db318ee07e7e737cc01de3ce48e",
@@ -452,10 +452,27 @@
       "PORT-03",
       "PORT-04"
     ],
-    "next_human_gate": "H1 fixture-only engineering program; optional H0 exact local integration; H2 research decisions deferred",
+    "next_human_gate": "H0 exact integration and H2 research remain separate; H1 engineering approved",
     "strict_phase0": "STOP",
     "e1_matrix": "BLOCKED",
     "mas_core_live": "NOT_CERTIFIED",
     "goal_binding": "CURRENT_V7_OBJECTIVE; future unattended reliability unverified"
-  }
+  },
+  "portfolio_history": {
+    "status": "H1_ENGINEERING_IN_PROGRESS_UNMERGED_NOT_DEPLOYED",
+    "branch": "development/v7-portfolio-history",
+    "base_commit": "bebf19ee937a2237641e09701d0564590ed30fc6",
+    "units": {
+      "PORT-01": "COMPLETED_VERIFIED",
+      "PORT-02": "IN_PROGRESS",
+      "PORT-03": "IN_PROGRESS",
+      "PORT-04": "BLOCKED_DEPENDENCIES"
+    },
+    "authority": "knowledge/02_History/Decisions/20261021-portfolio-history-h1.json",
+    "evidence": "research/v7/portfolio-history-evidence.json",
+    "backlog": "research/v7/research-program.md",
+    "strict_phase0": "STOP",
+    "research_admission": false
+  },
+  "next_actions": []
 }

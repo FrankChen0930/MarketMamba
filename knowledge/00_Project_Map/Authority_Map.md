@@ -27,8 +27,11 @@ todo and CPU-window queues remain dated evidence, not parallel active roadmaps.
 Candidate `integration/v7-cpu-roadmap` from `4c388de` is independently reviewed
 GO for local development consideration only, UNMERGED / NOT_DEPLOYED. Main remains
 `83a6a2e`; no main merge or source cherry-pick occurred. [Evidence report](../../reports/v7_strategic_roadmap_recovery.md).
-PORT-01–04 are PROPOSED awaiting H1, not READY; H0 main integration and H2 research
-admission are separate. MAS Core Live is not certified or activated.
+PORT-01–04 have [explicit H1 approval](../02_History/Decisions/20261021-portfolio-history-h1.json)
+for fixture-only CPU read-only engineering; completion evidence is
+[portfolio-history-evidence](../../research/v7/portfolio-history-evidence.json).
+New implementation is branch-local UNMERGED / NOT_DEPLOYED. H0 main integration and H2 research
+admission remain unapproved and separate. MAS Core Live is not certified or activated.
 
 ## Source-of-truth Hierarchy
 

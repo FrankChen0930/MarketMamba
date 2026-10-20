@@ -1,0 +1,32 @@
+{
+  "status": "ACCEPTED",
+  "authority": "HUMAN",
+  "recorded_on": "2026-10-21",
+  "source": "Human message: /goal Market Mamba V7 — Autonomous Portfolio History Product Slice",
+  "verbatim_decision": "我批准執行既有 `research/v7/research-program.md` 中提出的 PORT-01～PORT-04，範圍限定為 **fixture-only、CPU-only、read-only Portfolio History Product Slice**。",
+  "approved_base": "bebf19ee937a2237641e09701d0564590ed30fc6",
+  "units": [
+    "PORT-01",
+    "PORT-02",
+    "PORT-03",
+    "PORT-04"
+  ],
+  "includes": [
+    "implementation",
+    "tests",
+    "independent review",
+    "at most two repair rounds per unit",
+    "local commits",
+    "canonical memory"
+  ],
+  "excludes": [
+    "H0 main merge",
+    "H2 research data/admission/performance",
+    "push",
+    "deploy",
+    "GPU/Colab",
+    "MAS Core Live"
+  ],
+  "strict_phase0": "STOP",
+  "recording_limit": "Transcription of explicit Human H1 scope; not agent approval of results."
+}

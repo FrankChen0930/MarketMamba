@@ -20,7 +20,7 @@ Semantic change owners must update this file in the same change. K0 remains disc
 ## Project Summary
 
 **Strategic recovery / integration candidate (2026-10-21):** this Human-authorized
-planning window is complete, awaiting program scope approval. `main@83a6a2e`
+planning window is complete; H1 was subsequently approved for the fixture slice. `main@83a6a2e`
 remains unchanged; candidate `integration/v7-cpu-roadmap` starts at fixed
 `4c388de`. Five CPU fixes already form continuous ancestry; no cherry-picks,
 source changes or main merge. Joint 60 portfolio/health/audit, 47 PIT, 81 ops,
@@ -33,13 +33,16 @@ The **single active cross-domain development backlog/program** is the dated
 section of [existing research program](../../research/v7/research-program.md#current-development-program--2026-10-21).
 Prior CPU task files remain completed-window evidence. Product intent includes
 trustworthy data, relative rankings, weight-based simulation and performance;
-current engine is complete only as a deterministic component. PORT-01–04 propose
-a fixture-only history exporter/API/view, **not approved and not READY**; no
-real predictions, economic research or Phase 1–5. H1 is the minimal one-time scope
-decision; optional H0 separately approves exact candidate integration. Strict
-Phase 0 STOP and E1 matrix BLOCKED persist. MAS Advisory roles are planning/review,
-Core Live unverified; current thread Goal is correctly V7-bound, future unattended
-continuation untested. Stop here, do not start proposed implementation.
+current engine is complete only as a deterministic component. PORT-01–04 now have explicit
+[Human H1 fixture-only engineering approval](../02_History/Decisions/20261021-portfolio-history-h1.json).
+Active isolated branch `development/v7-portfolio-history` from `bebf19e`:
+PORT-01 COMPLETED_VERIFIED (7 focused / 67 combined, independent review closed
+one compatibility repair); PORT-02/03 IN_PROGRESS, PORT-04 dependency-blocked.
+[Evidence/checkpoint](../../research/v7/portfolio-history-evidence.json).
+UNMERGED / NOT_DEPLOYED; H0/H2 absent. Strict Phase 0 STOP and E1 matrix BLOCKED
+persist. MAS Core Live unverified; no production/runtime authority changed.
+Native Goal is V7-bound; automatic future continuation remains unverified.
+
 
 **CPU-only window 02 (2026-10-21, WINDOW_COMPLETE):** reused window 01 lineage
 from `7eb9cd9` on `development/v7-cpu-window-01`; main stays `83a6a2e`.

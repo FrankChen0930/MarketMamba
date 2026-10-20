@@ -111,6 +111,18 @@
         "reports/v7_strategic_roadmap_recovery.md",
         "research/v7/cpu-integration-candidate-20261021.json"
       ]
+    },
+    {
+      "topic": "V7 H1 Portfolio History engineering scope",
+      "old_authority": "PORT-01–04 proposed pending H1",
+      "new_authority": "knowledge/02_History/Decisions/20261021-portfolio-history-h1.json",
+      "changed_at": "2026-10-21",
+      "change_commit": "containing PORT-01 commit",
+      "reason": "Explicit Human approval of four fixture-only CPU read-only engineering units; no research or merge promotion.",
+      "evidence": [
+        "knowledge/02_History/Decisions/20261021-portfolio-history-h1.json",
+        "research/v7/portfolio-history-evidence.json"
+      ]
     }
   ]
 }

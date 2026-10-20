@@ -16,6 +16,16 @@ Describe portfolio construction/accounting capabilities while preserving the dis
 
 `V6/v62_portfolio.py` belongs to the legacy V6.2 operational path. The V7 portfolio contract, engine, and journal are deterministic research components supporting targets, pending orders, fills, partial fills, costs, actions, NAV, hash-chain integrity, and replay. They are not a live broker.
 
+## H1 fixture history slice
+
+Exporter `V6/experimental/v7_portfolio_history.py` captures raw bytes and records
+from a single shared lock, replays each event once and exports exact snapshots.
+Operator fixture manifest and hashes are provenance declarations, not research
+authenticity/admission. Output is atomic, limited to temporary/task artifacts.
+See [H1 decision](../02_History/Decisions/20261021-portfolio-history-h1.json) and
+[unit evidence](../../research/v7/portfolio-history-evidence.json). Branch-local
+UNMERGED / NOT_DEPLOYED; existing accounting and Strict STOP remain unchanged.
+
 ## Authority
 
 Current checked-in V7 portfolio code and tests define research behavior. Promotion or production ownership requires a separate explicit decision.

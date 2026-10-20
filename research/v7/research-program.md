@@ -32,7 +32,7 @@ Current State projects active IDs and checkpoint only. Reports are dated evidenc
 what can be attempted, `approval_state` names permission. READY requires a precise
 contract, available inputs/runtime, independent acceptance and current authorization.
 A proposal awaiting blanket scope approval is **not READY**. No GPU dependency does
-not imply no Human/data dependency. No future work starts in this planning session.
+not imply no Human/data dependency. H1 was explicitly approved by Human on 2026-10-21; only PORT-01–04 fixture engineering may execute. H0/H2 remain absent.
 
 ### Ranked backlog
 
@@ -47,10 +47,10 @@ index. `COMPLETED_VERIFIED` means the named offline scope only.
 | INT-01 / P0 / five-fix integration candidate | S3, window01/02; IMPLEMENTED_VERIFIED / COMPLETED_VERIFIED / current request covers candidate only | 83a6a2e→4c388de chain; GPU no; merge decision separate | Five unchanged source/test hashes; 60 portfolio,47 PIT,81 ops,3 fetch,23 governance; old journal compatibility; independent GO. Consolidates trustworthy core. | S; accidental promotion/inherited evidence omitted |
 | PLAN-01 / P0 / recover full objective and dependency map | S1–S15; IMPLEMENTED_VERIFIED planning artifact / COMPLETED_VERIFIED / current request | Canonical map/contracts/history; GPU no; no research decision made | Each formal objective traces source; proposal vs approval explicit; one queue, recoverable checkpoint, independent authority review. Prevents random bug work. | M; stale prose mistaken for authority |
 | INT-02 / P1 / local main integration | INT-01/report §5; NOT_STARTED / HUMAN_DECISION_REQUIRED / exact candidate approval absent | Clean fixed main+candidate, reviewed entire ancestry; GPU no; Human merge approval | Exact approved SHA ff-only; post identity/tests; no push/deploy. Makes all five fixes available on development main. | S; main movement or partial cherry-pick |
-| PORT-01 / P1 / deterministic offline journal history exporter | S1,S3 + proposed engineering contract below; NOT_STARTED / PROPOSED / H1 required | Five-fix source, H1 approved schema; GPU no; no research decision, engineering scope approval | One locked prefix; per-event states exactly reproduce engine; source digest; deterministic bytes; invalid input leaves output unchanged. Turns engine into inspectable workflow. | M, 2–3 focused days; read/hash race, accidental repair |
-| PORT-02 / P1 / read-only artifact API | S1/S2 product intent, S12 patterns + proposal below; NOT_STARTED / PROPOSED / H1 required | PORT-01 schema; GPU no; H1 | Missing/corrupt/unsupported explicit, public field projection, no arbitrary path/query/write; existing routes unchanged. Exposes verified simulation artifact safely. | S–M, 1–2 days; stale fallback or private path leak |
-| PORT-03 / P1 / offline portfolio history view | S1/S2 + proposed view contract; NOT_STARTED / PROPOSED / H1 required | PORT-01 frozen schema; mocks in parallel with PORT-02, real integration after both; GPU no; H1 | NAV/cash/positions/pending/cost/event timeline, provenance, explicit fixture label; API agreement, browser desktop/mobile, missing/error/zero. Completes useful product slice. | M, 2–3 days; simulation mistaken for live/research result |
-| PORT-04 / P1 / workflow acceptance and restart handoff | S3 + H1 fixture program; NOT_STARTED / PROPOSED / H1 required | PORT-01/02/03; GPU no; H1 | Fixed scenarios include no-trade, partial/blocked fills, action, retry, corrupt/truncated rejection; fresh process replay→export→API matches; build/browser; independent review/checkpoint. Closes end-to-end engineering evidence. | M, 1–2 days; synthetic success mistaken for market validation |
+| PORT-01 / P1 / deterministic offline journal history exporter | S1,S3 + H1 contract below; IMPLEMENTED_VERIFIED / COMPLETED_VERIFIED / H1 approved | Five-fix source, H1 approved schema; GPU no; no research decision, engineering scope approval | One locked prefix; per-event states exactly reproduce engine; source digest; deterministic bytes; invalid input leaves output unchanged. Turns engine into inspectable workflow. | M, 2–3 focused days; read/hash race, accidental repair |
+| PORT-02 / P1 / read-only artifact API | S1/S2 product intent, S12 patterns + H1 below; PARTIAL / IN_PROGRESS / H1 approved | PORT-01 schema; GPU no; H1 | Missing/corrupt/unsupported explicit, public field projection, no arbitrary path/query/write; existing routes unchanged. Exposes verified simulation artifact safely. | S–M, 1–2 days; stale fallback or private path leak |
+| PORT-03 / P1 / offline portfolio history view | S1/S2 + H1 view contract; PARTIAL / IN_PROGRESS / H1 approved | PORT-01 frozen schema; mocks in parallel with PORT-02, real integration after both; GPU no; H1 | NAV/cash/positions/pending/cost/event timeline, provenance, explicit fixture label; API agreement, browser desktop/mobile, missing/error/zero. Completes useful product slice. | M, 2–3 days; simulation mistaken for live/research result |
+| PORT-04 / P1 / workflow acceptance and restart handoff | S3 + H1 fixture program; NOT_STARTED / BLOCKED / H1 approved (depends PORT-02/03) | PORT-01/02/03; GPU no; H1 | Fixed scenarios include no-trade, partial/blocked fills, action, retry, corrupt/truncated rejection; fresh process replay→export→API matches; build/browser; independent review/checkpoint. Closes end-to-end engineering evidence. | M, 1–2 days; synthetic success mistaken for market validation |
 | DATA-01 / P1 / original E1 matrix recovery | S8/S9/S10; PARTIAL / BLOCKED / bounded new-location inspection may be requested | Exact original a590b280…947f62 matrix+manifest location; GPU no; Human supplies location/access as needed | Per-file size/hash, aggregate identity, contract/split match; never regenerate replacement. Unlocks original replay. Previous unchanged search not repeated. | Unknown I/O; unique evidence unavailable |
 | RES-01 / P2 / safe retained checkpoint replay | S7/S8/S9/S10; PARTIAL / BLOCKED / exact replay scope/runtime must be approved | DATA-01, safe deserialization validation, retained checkpoint identities; no new training; CPU feasibility UNKNOWN | Validate embedded contract/matrix/seed, paired support, existing BEST rule; preserve output namespace. Recover final-support evidence without altering historical result. | M–L; unsafe loading, missing epochs2–4, hardware feasibility |
 | DATA-02 / P1 research gate / strict executable evidence | S5/S6; PARTIAL / BLOCKED / source admission and any acquisition permission separate | Direct dated tradability/open/PIT evidence; GPU no; Human source/policy questions if unresolved | Existing zero-tolerance/no-roll/unknown rules unchanged; qualified evidence inventory, no simulated→verified relabel. Unlocks strict capability only when evidence qualifies. | L/unknown; historical coverage/license/provenance |
@@ -62,18 +62,23 @@ index. `COMPLETED_VERIFIED` means the named offline scope only.
 | TRAIN-01 / later / next discriminating experiment | S7/S9/S13; NOT_STARTED / HUMAN_DECISION_REQUIRED / H2 + compute approval | Resolve diagnostic gaps and predeclare question; GPU/Colab yes for new training | One frozen hypothesis, splits/seeds/selection/cost/stop rule; durable evidence. Human retains promotion. | L/compute; unsupported new direction |
 | MAS-01 / separate maintenance / Core Live certification | S12 + historical MAS handoff; PARTIAL / BLOCKED / outside V7 implementation grant | MAS owner exact-version certification, valid occurrence approvals/routing; GPU no | Actual Builder+Verifier lifecycle and restart evidence, not a Codex takeover. Never make this a prerequisite for independent Codex CPU work. | Separate project; authority/state corruption |
 
-**READY remaining now: none for new core implementation.** INT-01/PLAN-01 were
-READY under this request and are completed. PORT-01–04 become actionable only
-after H1 below and their dependency gates; INT-02 only after H0. This is why a
-bounded product program, rather than endless bug searches, is the next decision.
+**H1 execution checkpoint — 2026-10-21:** PORT-01 completed and independently
+reviewed (7 focused / 67 combined tests); PORT-02/03 IN_PROGRESS; PORT-04 waits
+for their schema and integration gates. See [unit evidence](portfolio-history-evidence.json).
+Branch `development/v7-portfolio-history` starts at `bebf19ee937a2237641e09701d0564590ed30fc6`;
+UNMERGED / NOT_DEPLOYED. No other backlog permission is implied.
 
-### Proposed engineering contract for H1 (not yet approved)
+### H1 approved engineering contract
 
-Assumptions presented for one-time approval: a local, fixture-only offline
-portfolio inspection slice; existing event/state/cost semantics; no real
-predictions, historical market data, strategy selection, new economic metrics,
-production routes/data or background jobs. This is not S4 Phase1–5 with a new name.
-It exposes an existing deterministic engine; it does not analyze model signals.
+[Explicit Human H1 decision](../../knowledge/02_History/Decisions/20261021-portfolio-history-h1.json)
+approves this local fixture-only offline history slice. No real predictions,
+market data, strategy selection, new economic metrics or background jobs.
+This exposes the existing deterministic engine; it is not S4 Phase1–5 research.
+Engineering binding: source additionally carries `fixture_id` and
+`fixture_manifest_sha256`; operator declaration `v7-portfolio-fixture-v1` binds
+exact journal bytes. This declaration is not an authenticity certificate or
+admission. API requires an operator-pinned artifact SHA-256 and never accepts
+client paths. Output is confined to checkout `.artifacts` or OS temporary paths.
 
 1. **Input:** explicit local synthetic journal generated from existing S3 test
    fixtures; operator-selected source path, never a browser-supplied path. Fixtures
@@ -126,7 +131,7 @@ It exposes an existing deterministic engine; it does not analyze model signals.
    extraction may be needed for lock-consistent export, with regression tests;
    no broad refactor. Prefix public state keys with no invented strategy semantics.
 
-Proposed commands after implementation (modules do not yet exist):
+Initial program command sketch (see PORT-04 acceptance report for exact runnable commands):
 `python3 -B -m unittest V6.experimental.v7_portfolio_history_test app.backend.test_v7_portfolio`;
 `python3 -B -m V6.experimental.v7_portfolio_history --journal <fixture> --output <isolated-artifact>`.
 Existing portfolio/PIT/governance commands remain in candidate index. Frontend:
@@ -147,7 +152,7 @@ and unittest conventions; don't duplicate accounting formulas in API or JS.
 
 H0 (optional): approve exact local main integration candidate; this is independent
 of H1 and not necessary if development continues on verified candidate ancestry.
-H1 (minimum next decision): approve PORT-01–04 and the proposed engineering contract
+H1 (APPROVED 2026-10-21): Human approved PORT-01–04 and the engineering contract
 above as a single fixture-only program. This is engineering scope approval, not
 research correctness. Routine choices within it need no repeated micro-approval.
 H2 (defer): real prediction admission, economic/risk definitions and next research
@@ -198,7 +203,7 @@ It describes thread-scoped persistent objectives and explicit stopping condition
 our live API confirms this thread's new V7 objective, not weeks-long unattended
 reliability or cross-thread/global project memory. No scheduler is enabled here.
 
-### Suggested next Goal (only after H1 approval)
+### H1 Goal (now authorized; stop after PORT-04)
 
 > Complete PORT-01–04 in research/v7/research-program.md: a deterministic,
 > fixture-only V7 journal history exporter, additive read-only API and local

@@ -1,5 +1,17 @@
 # Worktree Register
 
+## H1 Portfolio History slice — 2026-10-21
+
+- Path `.worktrees/v7-portfolio-history`; branch `development/v7-portfolio-history`;
+  base `bebf19ee937a2237641e09701d0564590ed30fc6`; owner Codex under Human H1.
+- Existing roadmap candidate is a frozen review checkpoint, CPU windows are closed;
+  this isolated worktree owns new fixture product code. Created 2026-10-21; retired N/A.
+- State IN_PROGRESS / UNMERGED / NOT_DEPLOYED; authority fixture engineering only.
+- Dependencies: full roadmap/CPU ancestry, no model/market inputs; unit state in
+  [evidence](../../research/v7/portfolio-history-evidence.json), sole backlog in research-program.
+- Safe removal requires clean tree, preserved commits, audit of unique ignored fixtures
+  and browser/test evidence, resolved references and authorization. No merge/push/removal now.
+
 ## Strategic recovery and CPU integration candidate — 2026-10-21
 
 - Path `.worktrees/v7-cpu-roadmap`; branch `integration/v7-cpu-roadmap`.

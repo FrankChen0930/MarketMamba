@@ -319,18 +319,25 @@ class PortfolioJournal:
             ) from None
         return journal
 
-    def records(self) -> tuple[dict[str, Any], ...]:
+    def read_prefix(self) -> tuple[bytes, tuple[dict[str, Any], ...]]:
+        """Capture bytes and validated records from one shared-locked inode."""
         try:
-            with self.path.open("r", encoding="utf-8") as handle:
+            with self.path.open("rb") as handle:
                 fcntl.flock(handle.fileno(), fcntl.LOCK_SH)
-                text = handle.read()
+                raw = handle.read()
+            # Preserve the old text reader universal-newline semantics for parsing.
+            # Identity remains the original bytes captured under the shared lock.
+            text = raw.decode("utf-8").replace("\r\n", "\n").replace("\r", "\n")
         except (OSError, UnicodeError) as exc:
             raise JournalIntegrityError(
                 f"cannot read journal: {exc}"
             ) from exc
         records = _decode_lines(text)
         _validate_records(records)
-        return tuple(records)
+        return raw, tuple(records)
+
+    def records(self) -> tuple[dict[str, Any], ...]:
+        return self.read_prefix()[1]
 
     def replay(self) -> ReplayResult:
         return _replay_records(self.records())
