@@ -19,6 +19,28 @@ Semantic change owners must update this file in the same change. K0 remains disc
 
 ## Project Summary
 
+**Strategic recovery / integration candidate (2026-10-21):** this Human-authorized
+planning window is complete, awaiting program scope approval. `main@83a6a2e`
+remains unchanged; candidate `integration/v7-cpu-roadmap` starts at fixed
+`4c388de`. Five CPU fixes already form continuous ancestry; no cherry-picks,
+source changes or main merge. Joint 60 portfolio/health/audit, 47 PIT, 81 ops,
+3 fetch-only, 23 governance and 6 historical-output fixtures PASS. Independent
+review: GO for local development candidate only, no Critical/Required.
+[Integration/objective/status evidence](../../reports/v7_strategic_roadmap_recovery.md)
+and [hash/test index](../../research/v7/cpu-integration-candidate-20261021.json).
+
+The **single active cross-domain development backlog/program** is the dated
+section of [existing research program](../../research/v7/research-program.md#current-development-program--2026-10-21).
+Prior CPU task files remain completed-window evidence. Product intent includes
+trustworthy data, relative rankings, weight-based simulation and performance;
+current engine is complete only as a deterministic component. PORT-01–04 propose
+a fixture-only history exporter/API/view, **not approved and not READY**; no
+real predictions, economic research or Phase 1–5. H1 is the minimal one-time scope
+decision; optional H0 separately approves exact candidate integration. Strict
+Phase 0 STOP and E1 matrix BLOCKED persist. MAS Advisory roles are planning/review,
+Core Live unverified; current thread Goal is correctly V7-bound, future unattended
+continuation untested. Stop here, do not start proposed implementation.
+
 **CPU-only window 02 (2026-10-21, WINDOW_COMPLETE):** reused window 01 lineage
 from `7eb9cd9` on `development/v7-cpu-window-01`; main stays `83a6a2e`.
 [Current backlog/checkpoint](../../tasks/v7-cpu-development-window-02.md) and
@@ -102,13 +124,13 @@ decision above authorized only local development main. No push/deployment/traini
 fixes immutable V7 source snapshot publication; it does not promote research
 evidence or close any correctness gate. See the checkpoint below.
 
-**Historical window 01 objectives:** CPU window 01 complete; next bounded engineering candidate
+**Historical window 01 objectives (superseded by strategic checkpoint above):** CPU window 01 complete; next bounded engineering candidate
 is journal quote-collision refusal. Separately await original E1 frozen
 matrix/manifest location.
 Bounded local inventory is complete; replay is stopped until identity and safe
 inspection gates can be met. No new research hypothesis or training is authorized.
 
-MarketMamba contains separate production-data, legacy model runtime, V7 correctness, research-training, historical-simulation, portfolio, delivery, and operations-control-plane subsystems. Production acquisition uses mutable provider data; V7 research authority uses versioned PIT/provenance evidence. The current corrected research baseline is `E5-PIT-Clean-v1`, with 48 features, no graph and no industry neutralization. Historical simulation is `PASS`, while strict trading correctness remains `STOP`. The observed production scheduler runs fetch-only; full V6.2 inference/portfolio/publication is `DISABLED`. E1 is a completed research experiment with `PASS_REFRESH_HYPOTHESIS`, not trading evidence. Phase A operations work is `UNMERGED` and `NOT_DEPLOYED`.
+MarketMamba contains separate production-data, legacy model runtime, V7 correctness, research-training, historical-simulation, portfolio, delivery, and operations-control-plane subsystems. Production acquisition uses mutable provider data; V7 research authority uses versioned PIT/provenance evidence. The current corrected research baseline is `E5-PIT-Clean-v1`, with 48 features, no graph and no industry neutralization. Historical simulation is `PASS`, while strict trading correctness remains `STOP`. The observed production scheduler runs fetch-only; full V6.2 inference/portfolio/publication is `DISABLED`. E1 is a completed research experiment with `PASS_REFRESH_HYPOTHESIS`, not trading evidence. Phase A operations work is `IN_DEVELOPMENT_MAIN` and `NOT_DEPLOYED`; historical pending-integration paragraphs below are retained observations.
 
 The `environments/v7-colab-2026.04/` identity files are preserved in development main. Its exact lock matches the E1 branch copy; the E1 frozen contract and run manifests still own experiment semantics and result provenance. The dated local verification record is not proof of a current Colab GPU runtime.
 
@@ -195,17 +217,23 @@ Runtime observations are not permanent facts. The new Scheduler observation expi
 
 ## Current Decisions / Next Actions
 
-1. Recover the identity-matched E1 matrix and safe checkpoint replay, then predeclare causal regime series. Do not launch another training experiment until diagnostic limitations are resolved.
-2. Preserve Phase A closure evidence; recover E1 evidence in isolation without new training.
-3. Maintain K1 domain notes and drift checks in the same change when domain semantics, authority, or boundaries change.
-4. Use the consolidated K2 Current State, Authority Map and knowledge-impact checks. K0/K1/K2 branch history is retained without active checkouts; do not begin K3 automatically.
+1. Review H1 proposed fixture-only PORT-01–04 contract/program in the single backlog;
+   approval is not yet granted. No confirmed new core implementation READY now.
+2. Optionally approve exact local integration candidate (H0), including inherited
+   E1 evidence/planning documents; no main merge/push/deploy performed here.
+3. Recover original E1 matrix only if new location/evidence is supplied. Do not
+   repeat unchanged search or create replacement historical data. Research admission,
+   causal regime/risk/metrics and new training remain separate H2 decisions.
+4. Resume by fixed candidate HEAD, hashes, backlog and actual runtime, not old
+   task titles or MAS lifecycle state. Completed CPU windows are historical checkpoints.
 
 ## Active worktree boundary
 
-At this review Git lists eight linked worktrees plus main. The 2026-09-22
-four-worktree count below is historical. This task reuses the clean
-`.worktrees/phase-a-task5` candidate; main remains `50c5b78` and no checkout is
-removed. Responsibilities are in [Worktree Register](Worktree_Register.md).
+At this audit: main plus eleven linked worktrees (twelve total after candidate
+creation). New `.worktrees/v7-cpu-roadmap` from `4c388de` isolates integration and
+planning; original CPU and Phase A/E1 trees retained. Main stays `83a6a2e`.
+[Worktree Register](Worktree_Register.md) owns purpose/dependencies/removal conditions.
+No tree was removed, no Windows runtime observation refreshed.
 
 ## Repository Rationalization Inventory
 

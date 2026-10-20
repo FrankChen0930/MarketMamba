@@ -127,3 +127,14 @@ publication recovery or the Task 5 full replay program.
 ## Update Triggers
 
 Update after review approval, branch merge, schema or lease-policy change, Task 5 implementation, or any deployment.
+
+## Strategic recovery planning pointer — 2026-10-21
+
+Current objective/implementation gaps are recorded in the
+[dated recovery report](../../reports/v7_strategic_roadmap_recovery.md).
+The sole active cross-domain backlog is the
+[existing research program](../../research/v7/research-program.md#current-development-program--2026-10-21).
+This pointer does not replace this domain's machine contracts or promote evidence.
+Five CPU fixes have a verified integration candidate from `4c388de`, UNMERGED /
+NOT_DEPLOYED. PORT-01–04 are fixture-only proposals awaiting H1; strict Phase 0
+STOP, E1 portfolio admission=false and production boundaries remain unchanged.

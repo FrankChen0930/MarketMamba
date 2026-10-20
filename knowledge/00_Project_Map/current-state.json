@@ -335,9 +335,9 @@
   },
   "state_updated_at": "2026-10-21",
   "active_objectives": [
-    "CPU window 02 complete: two journal correctness units, local-only; stop",
-    "No further confirmed READY CPU item in inspected backlog; no new research decision",
-    "Await identity-matched E1 matrix location; no replay/training/deployment"
+    "Strategic recovery and five-fix integration candidate complete; stop awaiting H1 program approval",
+    "Single current backlog is research/v7/research-program.md dated current section",
+    "No real-data portfolio admission or Phase1-5; Strict Phase0 STOP, E1 exact matrix BLOCKED"
   ],
   "runtime_contract": {
     "development_checkout": "/home/frank/projects/MarketMamba",
@@ -435,5 +435,27 @@
     "aggregate_usage": "NOT_INDEPENDENTLY_VERIFIED",
     "next_ready": [],
     "evidence": "research/v7/cpu-window-02-evidence.json"
+  },
+  "strategic_roadmap_recovery": {
+    "status": "PLANNING_COMPLETE_AWAITING_PROGRAM_APPROVAL",
+    "branch": "integration/v7-cpu-roadmap",
+    "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+    "main_unchanged": "83a6a2e6f4a56db318ee07e7e737cc01de3ce48e",
+    "candidate": "GO_AGENT_RECOMMENDATION_ONLY_UNMERGED_NOT_DEPLOYED",
+    "backlog_owner": "research/v7/research-program.md#current-development-program--2026-10-21",
+    "evidence": "research/v7/cpu-integration-candidate-20261021.json",
+    "report": "reports/v7_strategic_roadmap_recovery.md",
+    "ready_remaining": [],
+    "proposed_program": [
+      "PORT-01",
+      "PORT-02",
+      "PORT-03",
+      "PORT-04"
+    ],
+    "next_human_gate": "H1 fixture-only engineering program; optional H0 exact local integration; H2 research decisions deferred",
+    "strict_phase0": "STOP",
+    "e1_matrix": "BLOCKED",
+    "mas_core_live": "NOT_CERTIFIED",
+    "goal_binding": "CURRENT_V7_OBJECTIVE; future unattended reliability unverified"
   }
 }

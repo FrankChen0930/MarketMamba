@@ -1,5 +1,24 @@
 # Worktree Register
 
+## Strategic recovery and CPU integration candidate — 2026-10-21
+
+- Path `.worktrees/v7-cpu-roadmap`; branch `integration/v7-cpu-roadmap`.
+- Base `4c388ded57062194114ea3e221d00c177eb96892`; owner Human-authorized Codex,
+  task Strategic Roadmap Recovery & Autonomous Development Planning.
+- Purpose: isolated candidate jointly verifying five CPU fixes and preserving
+  current roadmap/backlog proposal. Existing CPU checkout remains a fixed completed
+  window checkpoint; other checkouts serve separate evidence/approval lineages.
+- Created 2026-10-21 Taipei; state PLANNING_COMPLETE / GO_CANDIDATE_ONLY /
+  UNMERGED / NOT_DEPLOYED. Authority: engineering evidence/planning, no new
+  research or production authority. Retired date N/A.
+- Dependencies: main83a6a2e → E1 inventory11ae71d → CPU windows4c388de; Python
+  stdlib/recovery venv, fixture-only tests; no candidate Data or model weights used.
+- Merge needs explicit exact-SHA Human approval of full inherited evidence and
+  planning; removal needs preserved commits, clean/unique-artifact audit, resolved
+  references and explicit approval. No removal/merge/push authorized now.
+- Current queue [research program](../../research/v7/research-program.md);
+  [candidate report](../../reports/v7_strategic_roadmap_recovery.md).
+
 Window 02 reuses the window 01 checkout below from `7eb9cd9`, owner Codex under
 current Human CPU authorization; WINDOW_COMPLETE, UNMERGED / NOT_DEPLOYED.
 Two units verified; U1 `735ae6f`, U2 containing closure commit; no further READY

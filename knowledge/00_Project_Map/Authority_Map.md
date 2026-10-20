@@ -15,6 +15,21 @@ reviewed synthetic engineering, not Human research approval. Existing portfolio 
 journal integrity contracts remain authoritative; no research/production promotion,
 no replacement of historical window 01 evidence or E1 frozen artifacts.
 
+## Strategic planning ownership — 2026-10-21
+
+The dated current section in [research-program.md](../../research/v7/research-program.md#current-development-program--2026-10-21)
+is the **single current development backlog**. This is planning/navigation authority
+under the present Human request, not approval of proposed execution/research.
+The original umbrella research contract remains historical context in that file;
+S5–S9 frozen machine contracts/results retain research authority. Old tasks/plan,
+todo and CPU-window queues remain dated evidence, not parallel active roadmaps.
+
+Candidate `integration/v7-cpu-roadmap` from `4c388de` is independently reviewed
+GO for local development consideration only, UNMERGED / NOT_DEPLOYED. Main remains
+`83a6a2e`; no main merge or source cherry-pick occurred. [Evidence report](../../reports/v7_strategic_roadmap_recovery.md).
+PORT-01–04 are PROPOSED awaiting H1, not READY; H0 main integration and H2 research
+admission are separate. MAS Core Live is not certified or activated.
+
 ## Source-of-truth Hierarchy
 
 1. Versioned machine contracts, manifests, hashes, and executable tests.

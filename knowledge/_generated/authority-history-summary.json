@@ -1,7 +1,8 @@
 {
   "authority": "NAVIGATION_ONLY",
-  "event_count": 8,
+  "event_count": 9,
   "events_by_topic": {
+    "Current V7 development planning ownership": 1,
     "E1 completed result": 1,
     "E1 post-run diagnostic": 1,
     "Knowledge governance": 1,

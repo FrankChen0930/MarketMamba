@@ -608,6 +608,24 @@
       "conflicts": [
         "Experiment results, bundles, diagnostics and Phase A operations remain branch-qualified; research source is not production or deployment authority"
       ]
+    },
+    {
+      "topic": "Current V7 development backlog",
+      "primary_authority": "research/v7/research-program.md",
+      "authority_class": "CURRENT_REFERENCE",
+      "status": "PLANNING_ONLY_AWAITING_HUMAN_PROGRAM_APPROVAL",
+      "supersedes": [
+        "CPU window closure queues as cross-domain next-work navigation",
+        "historical tasks/plan.md and tasks/todo.md as active execution assumptions"
+      ],
+      "secondary_evidence": [
+        "reports/v7_strategic_roadmap_recovery.md",
+        "research/v7/cpu-integration-candidate-20261021.json"
+      ],
+      "conflicts": [
+        "No research contract, historical artifact or Human approval superseded",
+        "PROPOSED PORT-01–04 cannot be executed until H1; MAS Core Live remains unverified"
+      ]
     }
   ]
 }
