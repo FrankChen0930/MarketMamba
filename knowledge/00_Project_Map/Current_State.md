@@ -38,7 +38,8 @@ current engine is complete only as a deterministic component. PORT-01–04 now h
 Active isolated branch `development/v7-portfolio-history` from `bebf19e`:
 PORT-01 COMPLETED_VERIFIED (7 focused / 67 combined, independent review closed
 one compatibility repair); PORT-02 COMPLETED_VERIFIED (4 new + 4 existing API
-tests, independent live startup review); PORT-03 IN_PROGRESS, PORT-04 dependency-blocked.
+tests, independent live startup review); PORT-03 COMPLETED_VERIFIED (8 focused +
+8 existing JS cases, build and real desktop/mobile/keyboard acceptance); PORT-04 IN_PROGRESS.
 [Evidence/checkpoint](../../research/v7/portfolio-history-evidence.json).
 UNMERGED / NOT_DEPLOYED; H0/H2 absent. Strict Phase 0 STOP and E1 matrix BLOCKED
 persist. MAS Core Live unverified; no production/runtime authority changed.

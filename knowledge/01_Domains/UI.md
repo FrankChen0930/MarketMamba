@@ -86,3 +86,13 @@ This pointer does not replace this domain's machine contracts or promote evidenc
 Five CPU fixes have a verified integration candidate from `4c388de`, UNMERGED /
 NOT_DEPLOYED. PORT-01–04 are fixture-only proposals awaiting H1; strict Phase 0
 STOP, E1 portfolio admission=false and production boundaries remain unchanged.
+
+## H1 Portfolio History local fixture view — 2026-10-21
+
+Existing React app opt-in route `/v7/portfolio-history` with
+`VITE_V7_PORTFOLIO_HISTORY=1`; same-origin pinned read-only API, no external
+API URL for this view. Displays exact engine NAV/cash/positions/pending/cost/events,
+fixture identity and STOP/not-admitted banner. Chart is explicitly approximate;
+weights remain undefined, no invented financial metric. Real Chrome desktop/mobile
+and keyboard accepted; [evidence](../../research/v7/portfolio-history-evidence.json).
+UNMERGED / NOT_DEPLOYED. [Local launch](../../reports/v7_portfolio_history_acceptance.md).

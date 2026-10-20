@@ -53,4 +53,10 @@ PORT-02: four new and four existing API tests PASS. Independent review identifie
 launch-path documentation; the repository-root local launcher above resolves it.
 Live server startup and actual browser/API evidence are tracked in the unit index.
 
-PORT-03/04: acceptance in progress. Build is not browser acceptance.
+PORT-03: 8 focused + 8 existing frontend cases, build/lint PASS. Actual Chrome
+155.0.8059.85 desktop 1440 and mobile 390 verify all 7 event values, positions,
+pending and provenance, keyboard navigation, no page overflow/runtime exception.
+One CSS repair improved long exact decimal readability on mobile; no value changes.
+Independent same-model and separate-model review: no Critical/Required.
+
+PORT-04: final evidence closure in progress. Browser evidence is separate from build.

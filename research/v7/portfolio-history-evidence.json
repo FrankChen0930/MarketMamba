@@ -23,7 +23,7 @@
     },
     "PORT-02": {
       "state": "COMPLETED_VERIFIED",
-      "commit": "containing PORT-02 commit",
+      "commit": "7ab3cb95c07831f78ddd840428d2f6fb6caeccdf",
       "repair_rounds": 1,
       "tests": {
         "new_api": 4,
@@ -308,6 +308,86 @@
         }
       },
       "environment_limit": "sandbox ASGI threadpool stalled; bounded host execution passed; no application change to hide environment issue"
+    },
+    "PORT-03": {
+      "state": "COMPLETED_VERIFIED",
+      "commit": "containing PORT-03 commit",
+      "repair_rounds": 1,
+      "repair_note": "One browser-evidenced mobile table CSS readability repair; schema fixture fields coordinated during implementation; one keyboard harness assumption corrected separately, not a product behavior repair.",
+      "tests": {
+        "new_frontend": 8,
+        "existing_frontend": 8,
+        "build": "PASS",
+        "focused_lint": "PASS",
+        "browser": "Chrome155 real desktop1440/mobile390, 7 events each, keyboard, no overflow or runtime exceptions"
+      },
+      "review": "history_review and separate-model final_slice_review: no Critical/Required; reviewers examined browser evidence, did not rerun browser",
+      "logs": {
+        "port03-red": "node:internal/modules/esm/resolve:271\n    throw new ERR_MODULE_NOT_FOUND(\n          ^\n\nError [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/frank/projects/MarketMamba/.worktrees/v7-portfolio-history/app/frontend/src/api/portfolioHistoryContract.mjs' imported from /home/frank/projects/MarketMamba/.worktrees/v7-portfolio-history/app/frontend/src/api/portfolioHistory.test.mjs\n    at finalizeResolution (node:internal/modules/esm/resolve:271:11)\n    at moduleResolve (node:internal/modules/esm/resolve:865:10)\n    at defaultResolve (node:internal/modules/esm/resolve:992:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)\n    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)\n    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)\n    at #resolve (node:internal/modules/esm/loader:683:17)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)\n    at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)\n    at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {\n  code: 'ERR_MODULE_NOT_FOUND',\n  url: 'file:///home/frank/projects/MarketMamba/.worktrees/v7-portfolio-history/app/frontend/src/api/portfolioHistoryContract.mjs'\n}\n\nNode.js v24.19.0\n✖ app/frontend/src/api/portfolioHistory.test.mjs (38.01263ms)\nℹ tests 1\nℹ suites 0\nℹ pass 0\nℹ fail 1\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 46.753231\n\n✖ failing tests:\n\ntest at app/frontend/src/api/portfolioHistory.test.mjs:1:1\n✖ app/frontend/src/api/portfolioHistory.test.mjs (38.01263ms)\n  'test failed'\n",
+        "port03-fixture-identity-red": "✔ preserves exact decimal strings, true zeros and null pending (2.395782ms)\n✔ rejects non-fixture and admitted or non-STOP histories (0.350304ms)\n✖ rejects invalid identity, event count/order, and final state mismatch (6.832047ms)\n✔ rejects malformed decimals, positions and pending (0.764315ms)\n✔ missing/error responses contain no stale history, malformed envelope fails closed (0.379073ms)\n✔ reload immediately clears old data and ignores out-of-order completion (0.525836ms)\n✔ network failure and disposal never retain a ready result (0.568242ms)\nℹ tests 7\nℹ suites 0\nℹ pass 6\nℹ fail 1\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 19.729139\n\n✖ failing tests:\n\ntest at app/frontend/src/api/portfolioHistory.test.mjs:20:1\n✖ rejects invalid identity, event count/order, and final state mismatch (6.832047ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  'ready' !== 'error'\n  \n      at TestContext.<anonymous> (file:///home/frank/projects/MarketMamba/.worktrees/v7-portfolio-history/app/frontend/src/api/portfolioHistory.test.mjs:22:92)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)\n      at Test.postRun (node:internal/test_runner/test:1522:19)\n      at Test.run (node:internal/test_runner/test:1447:12)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: 'ready',\n    expected: 'error',\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n",
+        "port03-green": "✔ preserves exact decimal strings, true zeros and null pending (2.552719ms)\n✔ rejects non-fixture and admitted or non-STOP histories (0.387583ms)\n✔ rejects invalid identity, event count/order, and final state mismatch (0.963679ms)\n✔ rejects malformed decimals, positions and pending (0.363828ms)\n✔ missing/error responses contain no stale history, malformed envelope fails closed (0.209186ms)\n✔ reload immediately clears old data and ignores out-of-order completion (0.354059ms)\n✔ network failure and disposal never retain a ready result (0.356004ms)\n✔ API transport uses only local origin and refuses non-200 data (1.209559ms)\nℹ tests 8\nℹ suites 0\nℹ pass 8\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 16.60679\n",
+        "port03-build": "\n> frontend@0.0.0 build\n> vite build\n\nvite v8.0.10 building client environment for production...\n\u001b[2K\ntransforming...✓ 2399 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                     0.45 kB │ gzip:   0.29 kB\ndist/assets/index-CJqG5a_6.css     13.15 kB │ gzip:   3.40 kB\ndist/assets/index-90CuOr8E.js   1,188.76 kB │ gzip: 346.86 kB\n\n[plugin builtin:vite-reporter] \n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n✓ built in 783ms\n",
+        "port03-v7-regression": "✔ normalizes a valid health publication without inventing values (1.933942ms)\n✔ unknown state fails closed to error and missing fields remain null (0.192952ms)\n✔ zero is preserved as a real numeric value (0.120236ms)\n✔ wrong schema and blocked publication fail closed (0.099342ms)\nℹ tests 4\nℹ suites 0\nℹ pass 4\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 12.806946\n",
+        "port03-summary-regression": "✔ only known states pass through and unknown fails closed (1.246652ms)\n✔ missing numbers render an em dash while a real zero is preserved (14.058582ms)\n✔ presentation keeps the five-prop contract and normalizes counts (1.991306ms)\n✔ component exposes an accessible status live region (4.48835ms)\nℹ tests 4\nℹ suites 0\nℹ pass 4\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 27.007451\n"
+      },
+      "browser": {
+        "observed_at": "2026-10-20T18:16:11.623Z",
+        "browser": {
+          "Browser": "Chrome/155.0.8059.85",
+          "Protocol-Version": "1.3",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "V8-Version": "15.5.35.25",
+          "WebKit-Version": "537.36 (@0e66b94549a8bd85f03fbdf189b752d6e7b63c32)",
+          "webSocketDebuggerUrl": "ws://127.0.0.1:9228/devtools/browser/46aec23f-32f6-40f1-9a03-9470009df6a7"
+        },
+        "checks": [
+          {
+            "viewport": "desktop",
+            "width": 1440,
+            "height": 1000,
+            "overflow": false,
+            "keyboard_focus_tag": "SELECT",
+            "keyboard_focus_order": [
+              "svg",
+              "SELECT"
+            ],
+            "events_verified": 7,
+            "status": "已讀取 7 個模擬事件"
+          },
+          {
+            "viewport": "mobile",
+            "width": 390,
+            "height": 844,
+            "overflow": false,
+            "keyboard_focus_tag": "SELECT",
+            "keyboard_focus_order": [
+              "svg",
+              "SELECT"
+            ],
+            "events_verified": 7,
+            "status": "已讀取 7 個模擬事件"
+          },
+          {
+            "scenario": "missing",
+            "method": "CDP request interception after actual API validation",
+            "stale_history_visible": false,
+            "status": "尚無可用的模擬歷史資料。"
+          },
+          {
+            "scenario": "corrupt",
+            "method": "CDP request interception after actual API validation",
+            "stale_history_visible": false,
+            "status": "歷史資料損壞、身份不符或目前無法使用；未沿用舊資料。"
+          },
+          {
+            "scenario": "network",
+            "method": "CDP request interception after actual API validation",
+            "stale_history_visible": false,
+            "status": "目前無法連線到歷史服務；未沿用舊資料。"
+          }
+        ],
+        "runtime_exceptions": []
+      }
     }
   },
   "human_interventions_after_h1": 0,

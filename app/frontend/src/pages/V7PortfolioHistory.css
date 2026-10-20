@@ -1,0 +1,22 @@
+.portfolio-history { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
+.portfolio-history .page-header, .portfolio-history .panel-header { flex-wrap: wrap; gap: var(--space-3); }
+.ph-warning { border: 1px solid #b99546; background: rgba(185, 149, 70, .09); border-radius: var(--radius-md, 8px); padding: var(--space-4); overflow-wrap: anywhere; }
+.ph-warning p { margin: var(--space-2) 0 0; }
+.ph-chart { height: 260px; width: 100%; min-width: 0; margin-top: var(--space-3); }
+.ph-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-5); }
+.ph-metrics dd, .ph-provenance dd { margin: var(--space-1) 0 var(--space-3); }
+.ph-exact { overflow-wrap: anywhere; }
+.ph-table { overflow-x: auto; }
+.ph-table table { width: 100%; border-collapse: collapse; text-align: left; }
+.ph-table th, .ph-table td { padding: var(--space-3); border-bottom: 1px solid var(--border, #334155); vertical-align: top; }
+.ph-table caption { text-align: left; color: var(--text-secondary); padding-bottom: var(--space-3); }
+.ph-provenance { overflow-wrap: anywhere; }
+.ph-source-entry { margin-bottom: var(--space-2); }
+.portfolio-history select { max-width: 100%; background: var(--bg-card, #182030); color: var(--text-primary, #eef2ff); padding: var(--space-2); border: 1px solid var(--border, #475569); border-radius: 4px; }
+.portfolio-history label { min-width: 0; max-width: 100%; }
+.portfolio-history pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.portfolio-history h3 { margin: var(--space-4) 0 var(--space-2); }
+.portfolio-history :focus-visible { outline: 2px solid #80b8ff; outline-offset: 3px; }
+/* Exact decimal strings stay intact; tables scroll locally on narrow screens. */
+.ph-table table { min-width: 640px; }
+.ph-table .ph-exact { white-space: nowrap; overflow-wrap: normal; }

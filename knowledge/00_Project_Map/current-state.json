@@ -335,7 +335,7 @@
   },
   "state_updated_at": "2026-10-21",
   "active_objectives": [
-    "Strategic recovery and five-fix integration candidate complete; stop awaiting H1 program approval",
+    "H1 PORT-01/02/03 completed; PORT-04 evidence closure in progress; no H0/H2",
     "Single current backlog is research/v7/research-program.md dated current section",
     "No real-data portfolio admission or Phase1-5; Strict Phase0 STOP, E1 exact matrix BLOCKED"
   ],
@@ -465,14 +465,13 @@
     "units": {
       "PORT-01": "COMPLETED_VERIFIED",
       "PORT-02": "COMPLETED_VERIFIED",
-      "PORT-03": "IN_PROGRESS",
-      "PORT-04": "BLOCKED_DEPENDENCIES"
+      "PORT-03": "COMPLETED_VERIFIED",
+      "PORT-04": "IN_PROGRESS"
     },
     "authority": "knowledge/02_History/Decisions/20261021-portfolio-history-h1.json",
     "evidence": "research/v7/portfolio-history-evidence.json",
     "backlog": "research/v7/research-program.md",
     "strict_phase0": "STOP",
     "research_admission": false
-  },
-  "next_actions": []
+  }
 }

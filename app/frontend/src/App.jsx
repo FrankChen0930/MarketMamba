@@ -8,6 +8,7 @@ import MarketView   from './pages/MarketView';
 import Pipeline      from './pages/Pipeline';
 import Research      from './pages/Research';
 import V7Status       from './pages/V7Status';
+import V7PortfolioHistory from './pages/V7PortfolioHistory';
 
 // 高信念量化模型 /conviction/*
 import ConvictionLayout      from './pages/ConvictionLayout';
@@ -68,6 +69,9 @@ function App() {
           </Route>
 
           <Route path="v7/status" element={<V7Status />} />
+          {import.meta.env.VITE_V7_PORTFOLIO_HISTORY === '1' && (
+            <Route path="v7/portfolio-history" element={<V7PortfolioHistory />} />
+          )}
           <Route path="compare"  element={<CompareBoard />} />
           <Route path="quant"    element={<QuantAnalysis />} />
           <Route path="market"   element={<MarketView />} />
