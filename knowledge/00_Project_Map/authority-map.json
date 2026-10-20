@@ -425,7 +425,7 @@
       "topic": "Phase A implementation",
       "primary_authority": "feature/production-phase-a-shadow-ledger@f5b0ff3:V6/marketmamba/ops/",
       "authority_class": "UNMERGED_IMPLEMENTATION",
-      "status": "HISTORICAL_SOURCE_RETAINED; TASK4_LIMITED_APPROVAL_AT_1e119ef; TASK5_OFFLINE_IN_PROGRESS; UNMERGED_NOT_DEPLOYED",
+      "status": "HISTORICAL_SOURCE_RETAINED; TASK4_LIMITED_APPROVAL_AT_1e119ef; TASK5_OFFLINE_EVIDENCE_READY_HUMAN_REVIEW_PENDING; UNMERGED_NOT_DEPLOYED",
       "supersedes": [
         "roadmap-only Phase A description"
       ],

@@ -1,0 +1,67 @@
+{
+  "migrations": [
+    {
+      "checksum": "8214cd665cfb21be8d809daa5348d2e930c5ce3071e2b53d66d0eaf0f9fd4aee",
+      "version": 1
+    },
+    {
+      "checksum": "e35222768ebb0cfc4bc215845e9c3a4df08ae8d17ce2562f6624e753e1633c54",
+      "version": 2
+    },
+    {
+      "checksum": "03c9f511200f8b6b7fd4a7e04f633e615fe997bd5bad240f73b3f90897d29177",
+      "version": 3
+    }
+  ],
+  "schema_version": 3,
+  "sqlite_master": [
+    [
+      "table",
+      "artifacts",
+      "artifacts",
+      "CREATE TABLE \"artifacts\" (\n                artifact_id TEXT PRIMARY KEY,\n                logical_run_id TEXT NOT NULL REFERENCES logical_runs(logical_run_id)\n                    ON DELETE RESTRICT,\n                stage_run_id TEXT REFERENCES \"stage_runs\"(stage_run_id)\n                    ON DELETE RESTRICT,\n                artifact_type TEXT NOT NULL,\n                identity_sha256 TEXT NOT NULL CHECK (length(identity_sha256) = 64),\n                content_sha256 TEXT CHECK (\n                    content_sha256 IS NULL OR length(content_sha256) = 64\n                ),\n                fingerprint_kind TEXT NOT NULL,\n                fingerprint_sha256 TEXT NOT NULL\n                    CHECK (length(fingerprint_sha256) = 64),\n                schema_version TEXT NOT NULL,\n                schema_sha256 TEXT NOT NULL CHECK (length(schema_sha256) = 64),\n                uri TEXT NOT NULL,\n                byte_size INTEGER NOT NULL CHECK (byte_size >= 0),\n                complete INTEGER NOT NULL CHECK (complete IN (0, 1)),\n                created_at TEXT NOT NULL,\n                UNIQUE (\n                    artifact_type, fingerprint_kind, fingerprint_sha256,\n                    schema_version, schema_sha256\n                )\n            )"
+    ],
+    [
+      "table",
+      "attempts",
+      "attempts",
+      "CREATE TABLE attempts (\n                attempt_id TEXT PRIMARY KEY,\n                logical_run_id TEXT NOT NULL REFERENCES logical_runs(logical_run_id) ON DELETE RESTRICT,\n                attempt_number INTEGER NOT NULL CHECK (attempt_number > 0),\n                state TEXT NOT NULL CHECK (state IN (\"PENDING\", \"RUNNING\", \"SUCCEEDED\", \"FAILED\", \"CANCELLED\")),\n                host TEXT,\n                process_id INTEGER,\n                code_identity TEXT,\n                dependency_identity TEXT,\n                started_at TEXT NOT NULL,\n                heartbeat_at TEXT,\n                finished_at TEXT,\n                exit_code INTEGER,\n                incident_ref TEXT,\n                UNIQUE (logical_run_id, attempt_number)\n            )"
+    ],
+    [
+      "table",
+      "checks",
+      "checks",
+      "CREATE TABLE \"checks\" (\n                check_id TEXT PRIMARY KEY,\n                logical_run_id TEXT NOT NULL REFERENCES logical_runs(logical_run_id)\n                    ON DELETE RESTRICT,\n                stage_run_id TEXT REFERENCES \"stage_runs\"(stage_run_id)\n                    ON DELETE RESTRICT,\n                scope TEXT NOT NULL,\n                check_name TEXT NOT NULL,\n                status TEXT NOT NULL CHECK (status IN (\"PASS\", \"WARN\", \"FAIL\", \"SKIP\")),\n                severity TEXT NOT NULL,\n                observed_value TEXT,\n                threshold_value TEXT,\n                policy_version TEXT NOT NULL,\n                checked_at TEXT NOT NULL,\n                UNIQUE (scope, check_name, policy_version)\n            )"
+    ],
+    [
+      "table",
+      "leases",
+      "leases",
+      "CREATE TABLE leases (\n                lease_name TEXT PRIMARY KEY,\n                owner_id TEXT NOT NULL,\n                heartbeat_at TEXT NOT NULL,\n                expires_at TEXT NOT NULL,\n                fencing_token INTEGER NOT NULL CHECK (fencing_token > 0)\n            )"
+    ],
+    [
+      "table",
+      "logical_runs",
+      "logical_runs",
+      "CREATE TABLE logical_runs (\n                logical_run_id TEXT PRIMARY KEY,\n                requested_date TEXT NOT NULL CHECK (length(requested_date) = 10),\n                mode TEXT NOT NULL CHECK (mode = \"FETCH_ONLY\"),\n                authority TEXT NOT NULL CHECK (authority = \"LEGACY_V62\"),\n                policy_version TEXT NOT NULL,\n                state TEXT NOT NULL CHECK (state IN (\"PENDING\", \"RUNNING\", \"SUCCEEDED\", \"FAILED\", \"CANCELLED\")),\n                terminal_reason TEXT,\n                incident_ref TEXT,\n                created_at TEXT NOT NULL,\n                updated_at TEXT NOT NULL,\n                UNIQUE (requested_date, mode, authority, policy_version)\n            )"
+    ],
+    [
+      "table",
+      "schema_migrations",
+      "schema_migrations",
+      "CREATE TABLE schema_migrations (\n    version INTEGER PRIMARY KEY,\n    checksum TEXT NOT NULL CHECK (length(checksum) = 64),\n    applied_at TEXT NOT NULL\n)"
+    ],
+    [
+      "table",
+      "stage_artifacts",
+      "stage_artifacts",
+      "CREATE TABLE \"stage_artifacts\" (\n                stage_run_id TEXT NOT NULL REFERENCES \"stage_runs\"(stage_run_id)\n                    ON DELETE RESTRICT,\n                artifact_id TEXT NOT NULL REFERENCES \"artifacts\"(artifact_id)\n                    ON DELETE RESTRICT,\n                created_at TEXT NOT NULL,\n                PRIMARY KEY (stage_run_id, artifact_id)\n            )"
+    ],
+    [
+      "table",
+      "stage_runs",
+      "stage_runs",
+      "CREATE TABLE \"stage_runs\" (\n                stage_run_id TEXT PRIMARY KEY,\n                attempt_id TEXT NOT NULL REFERENCES attempts(attempt_id) ON DELETE RESTRICT,\n                stage_name TEXT NOT NULL,\n                input_identity TEXT NOT NULL,\n                state TEXT NOT NULL CHECK (state IN (\n                    \"PENDING\", \"RUNNING\", \"SUCCEEDED\", \"FAILED\",\n                    \"CANCELLED\", \"SKIPPED\"\n                )),\n                started_at TEXT NOT NULL,\n                finished_at TEXT,\n                retryable INTEGER NOT NULL DEFAULT 0 CHECK (retryable IN (0, 1)),\n                error_fingerprint TEXT,\n                incident_ref TEXT,\n                UNIQUE (attempt_id, stage_name, input_identity)\n            )"
+    ]
+  ]
+}

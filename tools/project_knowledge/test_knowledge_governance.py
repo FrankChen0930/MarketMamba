@@ -49,6 +49,19 @@ class PhaseAApprovalTests(unittest.TestCase):
                     "task5_replay_formal_acceptance_report": "IN_PROGRESS_OFFLINE",
                 })
 
+    def test_modified_approval_binding_rejected(self):
+        record = json.loads((ROOT / "knowledge/02_History/Decisions/20261021-task4-human-approval.json").read_text())
+        for field, value in (("authority", "AGENT"), ("approved_commit", "0" * 40),
+                             ("evidence_index_sha256", "0" * 64),
+                             ("strict_phase0", "PASS")):
+            with self.subTest(field=field), patch.object(
+                validate_project_map.json, "loads", return_value={**record, field: value}
+            ), self.assertRaises(AssertionError):
+                validate_project_map.validate_phase_a_state({
+                    "task4_atomic_projection_read_only_cli": "HUMAN_APPROVED_LIMITED_ENGINEERING",
+                    "task5_replay_formal_acceptance_report": "IN_PROGRESS_OFFLINE",
+                })
+
 
 class AuthorityReferenceTests(unittest.TestCase):
     def test_durable_and_labeled_references(self) -> None:

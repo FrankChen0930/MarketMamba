@@ -70,7 +70,7 @@ An authority class describes evidence strength, not deployment status. Branch-lo
 | E1 post-run diagnostic | `ef020e5:research/v7/e1-postrun-diagnostic-v1/diagnostic-summary.json` | `RESEARCH_EVIDENCE` | `EPOCH_DEGRADATION_INCONCLUSIVE`; `REGIME_DEPENDENCE_INCONCLUSIVE` | Undiagnosed post-run state | Month and leave-one-month-out analyses, checkpoint inventory, logged validation history | July-sensitive 10d absolute level; no final-support epoch replay or causal regime series. |
 | Portfolio semantics | [`V6/experimental/v7_portfolio_contract.py`](../../V6/experimental/v7_portfolio_contract.py) plus engine/journal tests | `CURRENT_REFERENCE` | `RESEARCH_ONLY` | V6.2 JSONL as V7 semantic authority | `v7_portfolio_engine.py`, `v7_portfolio_journal.py` | No live broker or scheduler integration was discovered. |
 | Production-system architecture | `docs/production-system-architecture-audit@9efed7b:reports/marketmamba_production_system_audit.md` and roadmap | `CURRENT_REFERENCE` | Audit complete; roadmap Phase A–F | Earlier production prose | Production-system machine contracts | Branch implementation may be newer than prose. |
-| Phase A implementation | `feature/production-phase-a-shadow-ledger@f5b0ff3:V6/marketmamba/ops/` | `UNMERGED_IMPLEMENTATION` | Tasks 1–3 completed/reviewed; Task 4 implemented with sanitizer fixes but correctness approval pending; Task 5 not started; `UNMERGED`, `NOT_DEPLOYED` | Roadmap-only description of Phase A | Branch tests and commit history through sanitizer fixes | `HUMAN_REVIEW_REQUIRED`; implementation/fixes do not imply correctness acceptance. Shadow evidence does not own legacy fetch success. |
+| Phase A implementation | `feature/production-phase-a-shadow-ledger@f5b0ff3:V6/marketmamba/ops/`; candidate `integration/phase-a-task5` | `UNMERGED_IMPLEMENTATION` | Tasks 1–3 reviewed; Task 4 limited Human approval at `1e119ef`; Task 5 offline evidence ready, Human review pending; `NOT_DEPLOYED` | Earlier pending Task 4 state | Fixed Human decision record and Task 5 evidence index | Task 4 approval does not extend to integration, Task 5 or production. Shadow evidence does not own legacy fetch success. |
 | V7 status API/UI source | [`app/backend/routers/v7.py`](../../app/backend/routers/v7.py), [`app/frontend/src/pages/V7Status.jsx`](../../app/frontend/src/pages/V7Status.jsx), focused tests | `CURRENT_REFERENCE` | `COMMITTED_NOT_DEPLOYED` in WSL development main | Local untracked V7 status candidate | Health summary builder and frontend contract tests | Additive status route only; no model inference, portfolio or scheduler authority. |
 | API/UI live deployment | None for live deployment state | `UNKNOWN` | `UNKNOWN` | Claims inferred from source presence | Source paths above | Source capability does not prove deployment; provider revision remains unverified. |
 | Agent instructions | [`AGENTS.md`](../../AGENTS.md) | `CURRENT_REFERENCE` | Navigation/policy only | Stale duplicated assumptions in `CLAUDE.md` | K0 agents/CLAUDE audits | Machine contracts and this map outrank project-state prose in agent guides. |
@@ -81,10 +81,10 @@ An authority class describes evidence strength, not deployment status. Branch-lo
 state only: [decision record](../02_History/Decisions/20261021-task4-human-approval.json)
 binds limited engineering correctness to fixed `1e119ef` and its verified index.
 Agent integration/test judgments do not extend that approval. Task 5 is
-authorized for offline work, not correctness-approved. Strict Phase 0 STOP,
+offline evidence-ready, not correctness-approved. Strict Phase 0 STOP,
 research authority and production boundaries remain unchanged.
 
-2026-10-20 bounded Task 4 follow-up:
+Historical 2026-10-20 bounded Task 4 follow-up (superseded approval status):
 `fix/phase-a-task4-evidence@46df7b3402f85877a5fc55600d53b15a6f3a7849`
 is an unmerged artifact-summary fix/evidence candidate derived from `f5b0ff3`,
 not a replacement authority or Human correctness decision. Its evidence index

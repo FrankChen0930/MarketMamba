@@ -4,7 +4,7 @@
 
 - Status: `CANONICAL_DOMAIN_NOTE`
 - Owner: MarketMamba maintainers
-- Last reviewed: 2026-10-20
+- Last reviewed: 2026-10-21
 - Authority topics: shadow ledger, resumable orchestration, incident/read-model boundaries
 - Update triggers: Phase A review, merge, deployment, schema, or operational-policy change
 
@@ -14,6 +14,14 @@ Describe the target operational control plane and its current implementation/rev
 The 2026-10-20 review is bounded engineering evidence recovery, not Human approval.
 
 ## Current Boundary
+
+Current candidate `integration/phase-a-task5` combines verified Snapshot and
+Task 4 sources without changing production authority. Human approved Task 4
+limited engineering at `1e119ef`; Task 5 is now
+`OFFLINE_EVIDENCE_READY_HUMAN_REVIEW_PENDING`. See
+[formal report](../../reports/production_phase_a_shadow_ledger.md).
+The older review observations below are historical, not the current approval gate.
+No training, live fetch, main merge or deployment occurred.
 
 Phase A builds a shadow operational ledger around existing workflows. It records runs, attempts, stages, artifacts, and checks with leases/fencing and transactional behavior. It does not own or redefine data-fetch success, model correctness, broker execution, or publication.
 

@@ -1,0 +1,1747 @@
+{
+  "benchmark": {
+    "baseline_ns": [
+      5289,
+      2448,
+      2662,
+      2060,
+      2043,
+      2505,
+      2009,
+      2358,
+      2776,
+      2077
+    ],
+    "limits": "Synthetic stat-only artifacts; excludes provider/network cost and large-ledger extrapolation.",
+    "max_shadow_ns": 136371430,
+    "median_added_ns": 98475144.0,
+    "protocol": "10 paired callbacks vs real shadow+projection on one fresh ledger; first includes migrations, subsequent attempts grow same logical run",
+    "shadow_ns": [
+      136371430,
+      95976462,
+      95629698,
+      98991068,
+      98896385,
+      98058709,
+      99600465,
+      101273032,
+      95902187,
+      93383997
+    ],
+    "threshold": "NONE_PREDECLARED; measurement, not a production performance approval"
+  },
+  "cases": [
+    {
+      "case": "concurrent_owners",
+      "competitor": {
+        "result": "CONFLICT"
+      },
+      "exitcodes": [
+        0,
+        0,
+        0
+      ],
+      "first": {
+        "fence": 1,
+        "result": "ACQUIRED"
+      },
+      "successor": {
+        "fence": 2,
+        "result": "ACQUIRED"
+      }
+    },
+    {
+      "artifact_sha256_before_and_after": "23f608eedafa0b590fe5f97e71a70c0af1c87f77923e9b0f60485e66fb90a873",
+      "case": "crash_running_artifact_before_ledger_restart",
+      "checkpoint": {
+        "attempt": "attempt_v1_8affa083307253866de66ef96700a0e78e0004c095ce905d84c2828ab536a4fb",
+        "fence": 1,
+        "logical": "logical_run_v1_cc645ad2866065164fa271d00c4ab327c5dd7e5af03622025251f892afe2e1e2",
+        "stage": "stage_run_v1_a8f26b2ba129d73dc0f4ae9c97e02a3ad3db915033c44ce54c742c68f62ad2b7"
+      },
+      "limit": "Explicit fixed test clock crosses lease expiry. Old RUNNING remains historical, not falsely completed. Ledger is the checkpoint, not a model checkpoint; no Phase D automatic resume claim.",
+      "old_attempts_preserved": [
+        [
+          1,
+          "RUNNING"
+        ],
+        [
+          2,
+          "SUCCEEDED"
+        ]
+      ],
+      "projection": {
+        "active_stage": null,
+        "artifact_summary": {
+          "by_type": [
+            {
+              "artifact_type": "raw_parquet_metadata_ref",
+              "complete_count": 1,
+              "count": 1,
+              "fingerprint_kind": "file_stat_v1",
+              "total_bytes": 25
+            }
+          ],
+          "complete_count": 1,
+          "count": 1,
+          "fingerprint_kinds": [
+            "file_stat_v1"
+          ],
+          "total_bytes": 25
+        },
+        "as_of": "2026-10-20T16:08:40.752000Z",
+        "attempt_count": 2,
+        "calendar": {
+          "checked_at": null,
+          "knowledge": "UNKNOWN_NOT_EXPOSED_BY_LEGACY",
+          "observed_value": null,
+          "status": "UNKNOWN",
+          "threshold_value": null
+        },
+        "date_semantics": "REQUESTED_ASIA_TAIPEI_DATE_UNVERIFIED_CALENDAR",
+        "duration_seconds": 0.0,
+        "freshness": {
+          "checked_at": null,
+          "observed_value": null,
+          "status": "UNKNOWN",
+          "threshold_value": null
+        },
+        "incident_status": "NOT_IMPLEMENTED_PHASE_C",
+        "last_successful_fetch_date": "2026-01-01",
+        "latest_attempt": 2,
+        "latest_attempt_status": "SUCCEEDED",
+        "latest_exit_code": 0,
+        "latest_logical_run_id": "logical_run_v1_cc645ad2866065164fa271d00c4ab327c5dd7e5af03622025251f892afe2e1e2",
+        "latest_requested_date": "2026-01-01",
+        "latest_trading_date": "2026-01-01",
+        "mode": "FETCH_ONLY",
+        "open_incident_count": null,
+        "projection_schema_version": "current-state-v1",
+        "run_status": "SUCCEEDED",
+        "scope": {
+          "excluded": [
+            "INFERENCE",
+            "PORTFOLIO",
+            "PUBLICATION"
+          ],
+          "included": [
+            "CALENDAR_OBSERVATION",
+            "INGEST_RAW"
+          ]
+        },
+        "source_generation": "9bd4698d1a3cd320ac6b169920246ae645aeb39916e7c2d5cd5c3d7ea20bd969",
+        "source_watermark": {
+          "committed_at": "2026-10-20T16:08:40.752000Z",
+          "row_counts": {
+            "artifacts": 1,
+            "attempts": 2,
+            "checks": 0,
+            "logical_runs": 1,
+            "stage_artifacts": 1,
+            "stage_runs": 2
+          }
+        },
+        "stage_statuses": [
+          {
+            "duration_seconds": 0.0,
+            "retryable": false,
+            "stage": "INGEST_RAW",
+            "status": "SUCCEEDED"
+          }
+        ],
+        "warning_count": 0
+      },
+      "recovered": {
+        "artifact": "artifact_v1_72f9980fb7314224006577654d54c9d705510ce8b532f969aa51ab537479256b",
+        "attempt": "attempt_v1_2fef2fd175843824fc505e93c77cc47b3bd9c0417462a3dcf23d65d0835f66ed",
+        "fence": 2,
+        "logical": "logical_run_v1_cc645ad2866065164fa271d00c4ab327c5dd7e5af03622025251f892afe2e1e2"
+      },
+      "restart_exit": 0,
+      "writer_exit": -9
+    },
+    {
+      "attempts": [
+        {
+          "action": "good",
+          "artifact_rows": [
+            [
+              "artifact_v1_81a2f101c01886e9a2f0c3600517f68d9bd504b69f8bb74ac7e8a94ebb6c3183",
+              "file_stat_v1",
+              null,
+              "aff3a6224a18fc50355c3658d672da1cd4c9510f775023d15b32b054ed565931"
+            ],
+            [
+              "artifact_v1_f4d753af3b475ed8e87e68a80fcf41f70b0e201f5c679b773ccd5b2243bf61b6",
+              "file_stat_v1",
+              null,
+              "bb7f58cbaf3598c46235d5edaba9ab27b26012de580e806768a9e88e3e2083ce"
+            ]
+          ],
+          "calls": 1,
+          "legacy_exit": 0,
+          "legacy_return": [
+            {
+              "margin_raw": true,
+              "prices_raw": true
+            },
+            []
+          ],
+          "shadow_projection": {
+            "active_stage": null,
+            "artifact_summary": {
+              "by_type": [
+                {
+                  "artifact_type": "raw_parquet_metadata_ref",
+                  "complete_count": 2,
+                  "count": 2,
+                  "fingerprint_kind": "file_stat_v1",
+                  "total_bytes": 80
+                }
+              ],
+              "complete_count": 2,
+              "count": 2,
+              "fingerprint_kinds": [
+                "file_stat_v1"
+              ],
+              "total_bytes": 80
+            },
+            "as_of": "2026-10-20T16:08:41.177030Z",
+            "attempt_count": 1,
+            "calendar": {
+              "checked_at": "2026-10-20T16:08:41.144088Z",
+              "knowledge": "UNKNOWN_NOT_EXPOSED_BY_LEGACY",
+              "observed_value": "unknown:not_exposed_by_legacy_fetcher",
+              "status": "SKIPPED",
+              "threshold_value": null
+            },
+            "date_semantics": "REQUESTED_ASIA_TAIPEI_DATE_UNVERIFIED_CALENDAR",
+            "duration_seconds": 0.039792,
+            "freshness": {
+              "checked_at": "2026-10-20T16:08:41.159932Z",
+              "observed_value": "missing=0",
+              "status": "PASS",
+              "threshold_value": "missing=0"
+            },
+            "incident_status": "NOT_IMPLEMENTED_PHASE_C",
+            "last_successful_fetch_date": "2026-01-01",
+            "latest_attempt": 1,
+            "latest_attempt_status": "SUCCEEDED",
+            "latest_exit_code": 0,
+            "latest_logical_run_id": "logical_run_v1_cc645ad2866065164fa271d00c4ab327c5dd7e5af03622025251f892afe2e1e2",
+            "latest_requested_date": "2026-01-01",
+            "latest_trading_date": "2026-01-01",
+            "mode": "FETCH_ONLY",
+            "open_incident_count": null,
+            "projection_schema_version": "current-state-v1",
+            "run_status": "SUCCEEDED",
+            "scope": {
+              "excluded": [
+                "INFERENCE",
+                "PORTFOLIO",
+                "PUBLICATION"
+              ],
+              "included": [
+                "CALENDAR_OBSERVATION",
+                "INGEST_RAW"
+              ]
+            },
+            "source_generation": "22a8161b88fca5c06bf900efeca88bbc35e109343556e0325dce457eae91c8a8",
+            "source_watermark": {
+              "committed_at": "2026-10-20T16:08:41.177030Z",
+              "row_counts": {
+                "artifacts": 2,
+                "attempts": 1,
+                "checks": 4,
+                "logical_runs": 1,
+                "stage_artifacts": 2,
+                "stage_runs": 2
+              }
+            },
+            "stage_statuses": [
+              {
+                "duration_seconds": 0.007356,
+                "retryable": false,
+                "stage": "CALENDAR",
+                "status": "SKIPPED"
+              },
+              {
+                "duration_seconds": 0.007913,
+                "retryable": false,
+                "stage": "INGEST_RAW",
+                "status": "SUCCEEDED"
+              }
+            ],
+            "warning_count": 0
+          }
+        }
+      ],
+      "case": "clean_success",
+      "limit": null,
+      "match": true
+    },
+    {
+      "attempts": [
+        {
+          "action": "missing",
+          "artifact_rows": [
+            [
+              "artifact_v1_81a2f101c01886e9a2f0c3600517f68d9bd504b69f8bb74ac7e8a94ebb6c3183",
+              "file_stat_v1",
+              null,
+              "aff3a6224a18fc50355c3658d672da1cd4c9510f775023d15b32b054ed565931"
+            ],
+            [
+              "artifact_v1_f4d753af3b475ed8e87e68a80fcf41f70b0e201f5c679b773ccd5b2243bf61b6",
+              "file_stat_v1",
+              null,
+              "bb7f58cbaf3598c46235d5edaba9ab27b26012de580e806768a9e88e3e2083ce"
+            ]
+          ],
+          "calls": 1,
+          "legacy_exit": 1,
+          "legacy_return": [
+            {
+              "margin_raw": false,
+              "prices_raw": true
+            },
+            [
+              "margin_raw"
+            ]
+          ],
+          "shadow_projection": {
+            "active_stage": null,
+            "artifact_summary": {
+              "by_type": [
+                {
+                  "artifact_type": "raw_parquet_metadata_ref",
+                  "complete_count": 1,
+                  "count": 2,
+                  "fingerprint_kind": "file_stat_v1",
+                  "total_bytes": 80
+                }
+              ],
+              "complete_count": 1,
+              "count": 2,
+              "fingerprint_kinds": [
+                "file_stat_v1"
+              ],
+              "total_bytes": 80
+            },
+            "as_of": "2026-10-20T16:08:41.346344Z",
+            "attempt_count": 1,
+            "calendar": {
+              "checked_at": "2026-10-20T16:08:41.310158Z",
+              "knowledge": "UNKNOWN_NOT_EXPOSED_BY_LEGACY",
+              "observed_value": "unknown:not_exposed_by_legacy_fetcher",
+              "status": "SKIPPED",
+              "threshold_value": null
+            },
+            "date_semantics": "REQUESTED_ASIA_TAIPEI_DATE_UNVERIFIED_CALENDAR",
+            "duration_seconds": 0.055728,
+            "freshness": {
+              "checked_at": "2026-10-20T16:08:41.329095Z",
+              "observed_value": "missing=1",
+              "status": "FAIL",
+              "threshold_value": "missing=0"
+            },
+            "incident_status": "NOT_IMPLEMENTED_PHASE_C",
+            "last_successful_fetch_date": null,
+            "latest_attempt": 1,
+            "latest_attempt_status": "FAILED",
+            "latest_exit_code": 1,
+            "latest_logical_run_id": "logical_run_v1_cc645ad2866065164fa271d00c4ab327c5dd7e5af03622025251f892afe2e1e2",
+            "latest_requested_date": "2026-01-01",
+            "latest_trading_date": "2026-01-01",
+            "mode": "FETCH_ONLY",
+            "open_incident_count": null,
+            "projection_schema_version": "current-state-v1",
+            "run_status": "FAILED",
+            "scope": {
+              "excluded": [
+                "INFERENCE",
+                "PORTFOLIO",
+                "PUBLICATION"
+              ],
+              "included": [
+                "CALENDAR_OBSERVATION",
+                "INGEST_RAW"
+              ]
+            },
+            "source_generation": "247854e4113097971846ca21468073952024c7d45e0ff3f0ac7ab36b909b43f9",
+            "source_watermark": {
+              "committed_at": "2026-10-20T16:08:41.346344Z",
+              "row_counts": {
+                "artifacts": 2,
+                "attempts": 1,
+                "checks": 4,
+                "logical_runs": 1,
+                "stage_artifacts": 2,
+                "stage_runs": 2
+              }
+            },
+            "stage_statuses": [
+              {
+                "duration_seconds": 0.010099,
+                "retryable": false,
+                "stage": "CALENDAR",
+                "status": "SKIPPED"
+              },
+              {
+                "duration_seconds": 0.009692,
+                "retryable": false,
+                "stage": "INGEST_RAW",
+                "status": "FAILED"
+              }
+            ],
+            "warning_count": 0
+          }
+        }
+      ],
+      "case": "missing_source",
+      "limit": null,
+      "match": true
+    },
+    {
+      "attempts": [
+        {
+          "action": "stale",
+          "artifact_rows": [
+            [
+              "artifact_v1_81a2f101c01886e9a2f0c3600517f68d9bd504b69f8bb74ac7e8a94ebb6c3183",
+              "file_stat_v1",
+              null,
+              "aff3a6224a18fc50355c3658d672da1cd4c9510f775023d15b32b054ed565931"
+            ],
+            [
+              "artifact_v1_f4d753af3b475ed8e87e68a80fcf41f70b0e201f5c679b773ccd5b2243bf61b6",
+              "file_stat_v1",
+              null,
+              "bb7f58cbaf3598c46235d5edaba9ab27b26012de580e806768a9e88e3e2083ce"
+            ]
+          ],
+          "calls": 1,
+          "legacy_exit": 1,
+          "legacy_return": [
+            {
+              "margin_raw": true,
+              "prices_raw": true
+            },
+            [
+              "freshness:previous_date"
+            ]
+          ],
+          "shadow_projection": {
+            "active_stage": null,
+            "artifact_summary": {
+              "by_type": [
+                {
+                  "artifact_type": "raw_parquet_metadata_ref",
+                  "complete_count": 2,
+                  "count": 2,
+                  "fingerprint_kind": "file_stat_v1",
+                  "total_bytes": 80
+                }
+              ],
+              "complete_count": 2,
+              "count": 2,
+              "fingerprint_kinds": [
+                "file_stat_v1"
+              ],
+              "total_bytes": 80
+            },
+            "as_of": "2026-10-20T16:08:41.511697Z",
+            "attempt_count": 1,
+            "calendar": {
+              "checked_at": "2026-10-20T16:08:41.478569Z",
+              "knowledge": "UNKNOWN_NOT_EXPOSED_BY_LEGACY",
+              "observed_value": "unknown:not_exposed_by_legacy_fetcher",
+              "status": "SKIPPED",
+              "threshold_value": null
+            },
+            "date_semantics": "REQUESTED_ASIA_TAIPEI_DATE_UNVERIFIED_CALENDAR",
+            "duration_seconds": 0.0385,
+            "freshness": {
+              "checked_at": "2026-10-20T16:08:41.495370Z",
+              "observed_value": "missing=1",
+              "status": "FAIL",
+              "threshold_value": "missing=0"
+            },
+            "incident_status": "NOT_IMPLEMENTED_PHASE_C",
+            "last_successful_fetch_date": null,
+            "latest_attempt": 1,
+            "latest_attempt_status": "FAILED",
+            "latest_exit_code": 1,
+            "latest_logical_run_id": "logical_run_v1_cc645ad2866065164fa271d00c4ab327c5dd7e5af03622025251f892afe2e1e2",
+            "latest_requested_date": "2026-01-01",
+            "latest_trading_date": "2026-01-01",
+            "mode": "FETCH_ONLY",
+            "open_incident_count": null,
+            "projection_schema_version": "current-state-v1",
+            "run_status": "FAILED",
+            "scope": {
+              "excluded": [
+                "INFERENCE",
+                "PORTFOLIO",
+                "PUBLICATION"
+              ],
+              "included": [
+                "CALENDAR_OBSERVATION",
+                "INGEST_RAW"
+              ]
+            },
+            "source_generation": "899d1cf09d093889bb50503e8065c127e3dbcb0e5c36c02fe3ba23e56d4c021e",
+            "source_watermark": {
+              "committed_at": "2026-10-20T16:08:41.511697Z",
+              "row_counts": {
+                "artifacts": 2,
+                "attempts": 1,
+                "checks": 4,
+                "logical_runs": 1,
+                "stage_artifacts": 2,
+                "stage_runs": 2
+              }
+            },
+            "stage_statuses": [
+              {
+                "duration_seconds": 0.006922,
+                "retryable": false,
+                "stage": "CALENDAR",
+                "status": "SKIPPED"
+              },
+              {
+                "duration_seconds": 0.008669,
+                "retryable": false,
+                "stage": "INGEST_RAW",
+                "status": "FAILED"
+              }
+            ],
+            "warning_count": 0
+          }
+        }
+      ],
+      "case": "freshness_failure",
+      "limit": null,
+      "match": true
+    },
+    {
+      "attempts": [
+        {
+          "action": "exit1",
+          "artifact_rows": [
+            [
+              "artifact_v1_81a2f101c01886e9a2f0c3600517f68d9bd504b69f8bb74ac7e8a94ebb6c3183",
+              "file_stat_v1",
+              null,
+              "aff3a6224a18fc50355c3658d672da1cd4c9510f775023d15b32b054ed565931"
+            ],
+            [
+              "artifact_v1_f4d753af3b475ed8e87e68a80fcf41f70b0e201f5c679b773ccd5b2243bf61b6",
+              "file_stat_v1",
+              null,
+              "bb7f58cbaf3598c46235d5edaba9ab27b26012de580e806768a9e88e3e2083ce"
+            ]
+          ],
+          "calls": 1,
+          "legacy_exit": 1,
+          "legacy_return": [
+            {
+              "margin_raw": true,
+              "prices_raw": true
+            },
+            [
+              "legacy exit gate failed"
+            ]
+          ],
+          "shadow_projection": {
+            "active_stage": null,
+            "artifact_summary": {
+              "by_type": [
+                {
+                  "artifact_type": "raw_parquet_metadata_ref",
+                  "complete_count": 2,
+                  "count": 2,
+                  "fingerprint_kind": "file_stat_v1",
+                  "total_bytes": 80
+                }
+              ],
+              "complete_count": 2,
+              "count": 2,
+              "fingerprint_kinds": [
+                "file_stat_v1"
+              ],
+              "total_bytes": 80
+            },
+            "as_of": "2026-10-20T16:08:41.666552Z",
+            "attempt_count": 1,
+            "calendar": {
+              "checked_at": "2026-10-20T16:08:41.633808Z",
+              "knowledge": "UNKNOWN_NOT_EXPOSED_BY_LEGACY",
+              "observed_value": "unknown:not_exposed_by_legacy_fetcher",
+              "status": "SKIPPED",
+              "threshold_value": null
+            },
+            "date_semantics": "REQUESTED_ASIA_TAIPEI_DATE_UNVERIFIED_CALENDAR",
+            "duration_seconds": 0.041727,
+            "freshness": {
+              "checked_at": "2026-10-20T16:08:41.649820Z",
+              "observed_value": "missing=1",
+              "status": "FAIL",
+              "threshold_value": "missing=0"
+            },
+            "incident_status": "NOT_IMPLEMENTED_PHASE_C",
+            "last_successful_fetch_date": null,
+            "latest_attempt": 1,
+            "latest_attempt_status": "FAILED",
+            "latest_exit_code": 1,
+            "latest_logical_run_id": "logical_run_v1_cc645ad2866065164fa271d00c4ab327c5dd7e5af03622025251f892afe2e1e2",
+            "latest_requested_date": "2026-01-01",
+            "latest_trading_date": "2026-01-01",
+            "mode": "FETCH_ONLY",
+            "open_incident_count": null,
+            "projection_schema_version": "current-state-v1",
+            "run_status": "FAILED",
+            "scope": {
+              "excluded": [
+                "INFERENCE",
+                "PORTFOLIO",
+                "PUBLICATION"
+              ],
+              "included": [
+                "CALENDAR_OBSERVATION",
+                "INGEST_RAW"
+              ]
+            },
+            "source_generation": "f5cb2d26f742f45bb5fb29237c96566871b0509104e1ab2c903818e71f776796",
+            "source_watermark": {
+              "committed_at": "2026-10-20T16:08:41.666552Z",
+              "row_counts": {
+                "artifacts": 2,
+                "attempts": 1,
+                "checks": 4,
+                "logical_runs": 1,
+                "stage_artifacts": 2,
+                "stage_runs": 2
+              }
+            },
+            "stage_statuses": [
+              {
+                "duration_seconds": 0.00755,
+                "retryable": false,
+                "stage": "CALENDAR",
+                "status": "SKIPPED"
+              },
+              {
+                "duration_seconds": 0.007836,
+                "retryable": false,
+                "stage": "INGEST_RAW",
+                "status": "FAILED"
+              }
+            ],
+            "warning_count": 0
+          }
+        }
+      ],
+      "case": "nonzero_exit",
+      "limit": null,
+      "match": true
+    },
+    {
+      "attempts": [
+        {
+          "action": "exception",
+          "artifact_rows": [],
+          "calls": 1,
+          "legacy_exit": 1,
+          "legacy_return": "SAME_EXCEPTION_OBJECT",
+          "shadow_projection": {
+            "active_stage": null,
+            "artifact_summary": {
+              "by_type": [],
+              "complete_count": 0,
+              "count": 0,
+              "fingerprint_kinds": [],
+              "total_bytes": 0
+            },
+            "as_of": "2026-10-20T16:08:41.814381Z",
+            "attempt_count": 1,
+            "calendar": {
+              "checked_at": "2026-10-20T16:08:41.783614Z",
+              "knowledge": "UNKNOWN_NOT_EXPOSED_BY_LEGACY",
+              "observed_value": "unknown:not_exposed_by_legacy_fetcher",
+              "status": "SKIPPED",
+              "threshold_value": null
+            },
+            "date_semantics": "REQUESTED_ASIA_TAIPEI_DATE_UNVERIFIED_CALENDAR",
+            "duration_seconds": 0.037778,
+            "freshness": {
+              "checked_at": "2026-10-20T16:08:41.799039Z",
+              "observed_value": "fetch_exception:builtins.RuntimeError",
+              "status": "FAIL",
+              "threshold_value": "fetch_completed"
+            },
+            "incident_status": "NOT_IMPLEMENTED_PHASE_C",
+            "last_successful_fetch_date": null,
+            "latest_attempt": 1,
+            "latest_attempt_status": "FAILED",
+            "latest_exit_code": 1,
+            "latest_logical_run_id": "logical_run_v1_cc645ad2866065164fa271d00c4ab327c5dd7e5af03622025251f892afe2e1e2",
+            "latest_requested_date": "2026-01-01",
+            "latest_trading_date": "2026-01-01",
+            "mode": "FETCH_ONLY",
+            "open_incident_count": null,
+            "projection_schema_version": "current-state-v1",
+            "run_status": "FAILED",
+            "scope": {
+              "excluded": [
+                "INFERENCE",
+                "PORTFOLIO",
+                "PUBLICATION"
+              ],
+              "included": [
+                "CALENDAR_OBSERVATION",
+                "INGEST_RAW"
+              ]
+            },
+            "source_generation": "ff3a493f5f6a98d4e1b5e4ec6b269350b05023821d31360a97c5d1a73b746e8f",
+            "source_watermark": {
+              "committed_at": "2026-10-20T16:08:41.814381Z",
+              "row_counts": {
+                "artifacts": 0,
+                "attempts": 1,
+                "checks": 4,
+                "logical_runs": 1,
+                "stage_artifacts": 0,
+                "stage_runs": 2
+              }
+            },
+            "stage_statuses": [
+              {
+                "duration_seconds": 0.007401,
+                "retryable": false,
+                "stage": "CALENDAR",
+                "status": "SKIPPED"
+              },
+              {
+                "duration_seconds": 0.00741,
+                "retryable": false,
+                "stage": "INGEST_RAW",
+                "status": "FAILED"
+              }
+            ],
+            "warning_count": 1
+          }
+        },
+        {
+          "action": "good",
+          "artifact_rows": [
+            [
+              "artifact_v1_81a2f101c01886e9a2f0c3600517f68d9bd504b69f8bb74ac7e8a94ebb6c3183",
+              "file_stat_v1",
+              null,
+              "aff3a6224a18fc50355c3658d672da1cd4c9510f775023d15b32b054ed565931"
+            ],
+            [
+              "artifact_v1_f4d753af3b475ed8e87e68a80fcf41f70b0e201f5c679b773ccd5b2243bf61b6",
+              "file_stat_v1",
+              null,
+              "bb7f58cbaf3598c46235d5edaba9ab27b26012de580e806768a9e88e3e2083ce"
+            ]
+          ],
+          "calls": 1,
+          "legacy_exit": 0,
+          "legacy_return": [
+            {
+              "margin_raw": true,
+              "prices_raw": true
+            },
+            []
+          ],
+          "shadow_projection": {
+            "active_stage": null,
+            "artifact_summary": {
+              "by_type": [
+                {
+                  "artifact_type": "raw_parquet_metadata_ref",
+                  "complete_count": 2,
+                  "count": 2,
+                  "fingerprint_kind": "file_stat_v1",
+                  "total_bytes": 80
+                }
+              ],
+              "complete_count": 2,
+              "count": 2,
+              "fingerprint_kinds": [
+                "file_stat_v1"
+              ],
+              "total_bytes": 80
+            },
+            "as_of": "2026-10-20T16:08:41.925328Z",
+            "attempt_count": 2,
+            "calendar": {
+              "checked_at": "2026-10-20T16:08:41.893657Z",
+              "knowledge": "UNKNOWN_NOT_EXPOSED_BY_LEGACY",
+              "observed_value": "unknown:not_exposed_by_legacy_fetcher",
+              "status": "SKIPPED",
+              "threshold_value": null
+            },
+            "date_semantics": "REQUESTED_ASIA_TAIPEI_DATE_UNVERIFIED_CALENDAR",
+            "duration_seconds": 0.039255,
+            "freshness": {
+              "checked_at": "2026-10-20T16:08:41.909942Z",
+              "observed_value": "missing=0",
+              "status": "PASS",
+              "threshold_value": "missing=0"
+            },
+            "incident_status": "NOT_IMPLEMENTED_PHASE_C",
+            "last_successful_fetch_date": "2026-01-01",
+            "latest_attempt": 2,
+            "latest_attempt_status": "SUCCEEDED",
+            "latest_exit_code": 0,
+            "latest_logical_run_id": "logical_run_v1_cc645ad2866065164fa271d00c4ab327c5dd7e5af03622025251f892afe2e1e2",
+            "latest_requested_date": "2026-01-01",
+            "latest_trading_date": "2026-01-01",
+            "mode": "FETCH_ONLY",
+            "open_incident_count": null,
+            "projection_schema_version": "current-state-v1",
+            "run_status": "SUCCEEDED",
+            "scope": {
+              "excluded": [
+                "INFERENCE",
+                "PORTFOLIO",
+                "PUBLICATION"
+              ],
+              "included": [
+                "CALENDAR_OBSERVATION",
+                "INGEST_RAW"
+              ]
+            },
+            "source_generation": "48dd3424fdb514b0870bb44efff9576de53b009fa04899e2a6b1e8ac7c51b43e",
+            "source_watermark": {
+              "committed_at": "2026-10-20T16:08:41.925328Z",
+              "row_counts": {
+                "artifacts": 2,
+                "attempts": 2,
+                "checks": 8,
+                "logical_runs": 1,
+                "stage_artifacts": 2,
+                "stage_runs": 4
+              }
+            },
+            "stage_statuses": [
+              {
+                "duration_seconds": 0.007865,
+                "retryable": false,
+                "stage": "CALENDAR",
+                "status": "SKIPPED"
+              },
+              {
+                "duration_seconds": 0.008078,
+                "retryable": false,
+                "stage": "INGEST_RAW",
+                "status": "SUCCEEDED"
+              }
+            ],
+            "warning_count": 0
+          }
+        }
+      ],
+      "case": "transient_provider_failure_then_success",
+      "limit": null,
+      "match": true
+    },
+    {
+      "attempts": [
+        {
+          "action": "good",
+          "artifact_rows": [
+            [
+              "artifact_v1_81a2f101c01886e9a2f0c3600517f68d9bd504b69f8bb74ac7e8a94ebb6c3183",
+              "file_stat_v1",
+              null,
+              "aff3a6224a18fc50355c3658d672da1cd4c9510f775023d15b32b054ed565931"
+            ],
+            [
+              "artifact_v1_f4d753af3b475ed8e87e68a80fcf41f70b0e201f5c679b773ccd5b2243bf61b6",
+              "file_stat_v1",
+              null,
+              "bb7f58cbaf3598c46235d5edaba9ab27b26012de580e806768a9e88e3e2083ce"
+            ]
+          ],
+          "calls": 1,
+          "legacy_exit": 0,
+          "legacy_return": [
+            {
+              "margin_raw": true,
+              "prices_raw": true
+            },
+            []
+          ],
+          "shadow_projection": {
+            "active_stage": null,
+            "artifact_summary": {
+              "by_type": [
+                {
+                  "artifact_type": "raw_parquet_metadata_ref",
+                  "complete_count": 2,
+                  "count": 2,
+                  "fingerprint_kind": "file_stat_v1",
+                  "total_bytes": 80
+                }
+              ],
+              "complete_count": 2,
+              "count": 2,
+              "fingerprint_kinds": [
+                "file_stat_v1"
+              ],
+              "total_bytes": 80
+            },
+            "as_of": "2026-10-20T16:08:42.064576Z",
+            "attempt_count": 1,
+            "calendar": {
+              "checked_at": "2026-10-20T16:08:42.033474Z",
+              "knowledge": "UNKNOWN_NOT_EXPOSED_BY_LEGACY",
+              "observed_value": "unknown:not_exposed_by_legacy_fetcher",
+              "status": "SKIPPED",
+              "threshold_value": null
+            },
+            "date_semantics": "REQUESTED_ASIA_TAIPEI_DATE_UNVERIFIED_CALENDAR",
+            "duration_seconds": 0.038505,
+            "freshness": {
+              "checked_at": "2026-10-20T16:08:42.049023Z",
+              "observed_value": "missing=0",
+              "status": "PASS",
+              "threshold_value": "missing=0"
+            },
+            "incident_status": "NOT_IMPLEMENTED_PHASE_C",
+            "last_successful_fetch_date": "2026-01-01",
+            "latest_attempt": 1,
+            "latest_attempt_status": "SUCCEEDED",
+            "latest_exit_code": 0,
+            "latest_logical_run_id": "logical_run_v1_cc645ad2866065164fa271d00c4ab327c5dd7e5af03622025251f892afe2e1e2",
+            "latest_requested_date": "2026-01-01",
+            "latest_trading_date": "2026-01-01",
+            "mode": "FETCH_ONLY",
+            "open_incident_count": null,
+            "projection_schema_version": "current-state-v1",
+            "run_status": "SUCCEEDED",
+            "scope": {
+              "excluded": [
+                "INFERENCE",
+                "PORTFOLIO",
+                "PUBLICATION"
+              ],
+              "included": [
+                "CALENDAR_OBSERVATION",
+                "INGEST_RAW"
+              ]
+            },
+            "source_generation": "6f748a66cee96a4761df79b1545e7bc7ef4efc9d83ea41f46652143f2bd6b981",
+            "source_watermark": {
+              "committed_at": "2026-10-20T16:08:42.064576Z",
+              "row_counts": {
+                "artifacts": 2,
+                "attempts": 1,
+                "checks": 4,
+                "logical_runs": 1,
+                "stage_artifacts": 2,
+                "stage_runs": 2
+              }
+            },
+            "stage_statuses": [
+              {
+                "duration_seconds": 0.007344,
+                "retryable": false,
+                "stage": "CALENDAR",
+                "status": "SKIPPED"
+              },
+              {
+                "duration_seconds": 0.007563,
+                "retryable": false,
+                "stage": "INGEST_RAW",
+                "status": "SUCCEEDED"
+              }
+            ],
+            "warning_count": 0
+          }
+        },
+        {
+          "action": "good",
+          "artifact_rows": [
+            [
+              "artifact_v1_81a2f101c01886e9a2f0c3600517f68d9bd504b69f8bb74ac7e8a94ebb6c3183",
+              "file_stat_v1",
+              null,
+              "aff3a6224a18fc50355c3658d672da1cd4c9510f775023d15b32b054ed565931"
+            ],
+            [
+              "artifact_v1_f4d753af3b475ed8e87e68a80fcf41f70b0e201f5c679b773ccd5b2243bf61b6",
+              "file_stat_v1",
+              null,
+              "bb7f58cbaf3598c46235d5edaba9ab27b26012de580e806768a9e88e3e2083ce"
+            ]
+          ],
+          "calls": 1,
+          "legacy_exit": 0,
+          "legacy_return": [
+            {
+              "margin_raw": true,
+              "prices_raw": true
+            },
+            []
+          ],
+          "shadow_projection": {
+            "active_stage": null,
+            "artifact_summary": {
+              "by_type": [
+                {
+                  "artifact_type": "raw_parquet_metadata_ref",
+                  "complete_count": 2,
+                  "count": 2,
+                  "fingerprint_kind": "file_stat_v1",
+                  "total_bytes": 80
+                }
+              ],
+              "complete_count": 2,
+              "count": 2,
+              "fingerprint_kinds": [
+                "file_stat_v1"
+              ],
+              "total_bytes": 80
+            },
+            "as_of": "2026-10-20T16:08:42.172507Z",
+            "attempt_count": 2,
+            "calendar": {
+              "checked_at": "2026-10-20T16:08:42.141728Z",
+              "knowledge": "UNKNOWN_NOT_EXPOSED_BY_LEGACY",
+              "observed_value": "unknown:not_exposed_by_legacy_fetcher",
+              "status": "SKIPPED",
+              "threshold_value": null
+            },
+            "date_semantics": "REQUESTED_ASIA_TAIPEI_DATE_UNVERIFIED_CALENDAR",
+            "duration_seconds": 0.0403,
+            "freshness": {
+              "checked_at": "2026-10-20T16:08:42.157269Z",
+              "observed_value": "missing=0",
+              "status": "PASS",
+              "threshold_value": "missing=0"
+            },
+            "incident_status": "NOT_IMPLEMENTED_PHASE_C",
+            "last_successful_fetch_date": "2026-01-01",
+            "latest_attempt": 2,
+            "latest_attempt_status": "SUCCEEDED",
+            "latest_exit_code": 0,
+            "latest_logical_run_id": "logical_run_v1_cc645ad2866065164fa271d00c4ab327c5dd7e5af03622025251f892afe2e1e2",
+            "latest_requested_date": "2026-01-01",
+            "latest_trading_date": "2026-01-01",
+            "mode": "FETCH_ONLY",
+            "open_incident_count": null,
+            "projection_schema_version": "current-state-v1",
+            "run_status": "SUCCEEDED",
+            "scope": {
+              "excluded": [
+                "INFERENCE",
+                "PORTFOLIO",
+                "PUBLICATION"
+              ],
+              "included": [
+                "CALENDAR_OBSERVATION",
+                "INGEST_RAW"
+              ]
+            },
+            "source_generation": "bb371b43f5045a74e1dff3eab10b5cfeefffdbe47aee52af9eefeeaed18f3264",
+            "source_watermark": {
+              "committed_at": "2026-10-20T16:08:42.172507Z",
+              "row_counts": {
+                "artifacts": 2,
+                "attempts": 2,
+                "checks": 8,
+                "logical_runs": 1,
+                "stage_artifacts": 4,
+                "stage_runs": 4
+              }
+            },
+            "stage_statuses": [
+              {
+                "duration_seconds": 0.008655,
+                "retryable": false,
+                "stage": "CALENDAR",
+                "status": "SKIPPED"
+              },
+              {
+                "duration_seconds": 0.007909,
+                "retryable": false,
+                "stage": "INGEST_RAW",
+                "status": "SUCCEEDED"
+              }
+            ],
+            "warning_count": 0
+          }
+        }
+      ],
+      "case": "retry_same_logical_run",
+      "limit": null,
+      "match": true
+    },
+    {
+      "attempts": [
+        {
+          "action": "warning",
+          "artifact_rows": [
+            [
+              "artifact_v1_81a2f101c01886e9a2f0c3600517f68d9bd504b69f8bb74ac7e8a94ebb6c3183",
+              "file_stat_v1",
+              null,
+              "aff3a6224a18fc50355c3658d672da1cd4c9510f775023d15b32b054ed565931"
+            ],
+            [
+              "artifact_v1_f4d753af3b475ed8e87e68a80fcf41f70b0e201f5c679b773ccd5b2243bf61b6",
+              "file_stat_v1",
+              null,
+              "bb7f58cbaf3598c46235d5edaba9ab27b26012de580e806768a9e88e3e2083ce"
+            ]
+          ],
+          "calls": 1,
+          "legacy_exit": 0,
+          "legacy_return": [
+            {
+              "margin_raw": true,
+              "prices_raw": true
+            },
+            []
+          ],
+          "shadow_projection": {
+            "active_stage": null,
+            "artifact_summary": {
+              "by_type": [
+                {
+                  "artifact_type": "raw_parquet_metadata_ref",
+                  "complete_count": 2,
+                  "count": 2,
+                  "fingerprint_kind": "file_stat_v1",
+                  "total_bytes": 80
+                }
+              ],
+              "complete_count": 2,
+              "count": 2,
+              "fingerprint_kinds": [
+                "file_stat_v1"
+              ],
+              "total_bytes": 80
+            },
+            "as_of": "2026-10-20T16:08:42.305783Z",
+            "attempt_count": 1,
+            "calendar": {
+              "checked_at": "2026-10-20T16:08:42.275512Z",
+              "knowledge": "UNKNOWN_NOT_EXPOSED_BY_LEGACY",
+              "observed_value": "unknown:not_exposed_by_legacy_fetcher",
+              "status": "SKIPPED",
+              "threshold_value": null
+            },
+            "date_semantics": "REQUESTED_ASIA_TAIPEI_DATE_UNVERIFIED_CALENDAR",
+            "duration_seconds": 0.038038,
+            "freshness": {
+              "checked_at": "2026-10-20T16:08:42.290895Z",
+              "observed_value": "missing=0",
+              "status": "PASS",
+              "threshold_value": "missing=0"
+            },
+            "incident_status": "NOT_IMPLEMENTED_PHASE_C",
+            "last_successful_fetch_date": "2026-01-01",
+            "latest_attempt": 1,
+            "latest_attempt_status": "SUCCEEDED",
+            "latest_exit_code": 0,
+            "latest_logical_run_id": "logical_run_v1_cc645ad2866065164fa271d00c4ab327c5dd7e5af03622025251f892afe2e1e2",
+            "latest_requested_date": "2026-01-01",
+            "latest_trading_date": "2026-01-01",
+            "mode": "FETCH_ONLY",
+            "open_incident_count": null,
+            "projection_schema_version": "current-state-v1",
+            "run_status": "SUCCEEDED",
+            "scope": {
+              "excluded": [
+                "INFERENCE",
+                "PORTFOLIO",
+                "PUBLICATION"
+              ],
+              "included": [
+                "CALENDAR_OBSERVATION",
+                "INGEST_RAW"
+              ]
+            },
+            "source_generation": "adc3b96f140f71c10a1931c096d046b89f5c6924350357bbb3d0dc69e35dafe5",
+            "source_watermark": {
+              "committed_at": "2026-10-20T16:08:42.305783Z",
+              "row_counts": {
+                "artifacts": 2,
+                "attempts": 1,
+                "checks": 4,
+                "logical_runs": 1,
+                "stage_artifacts": 2,
+                "stage_runs": 2
+              }
+            },
+            "stage_statuses": [
+              {
+                "duration_seconds": 0.007493,
+                "retryable": false,
+                "stage": "CALENDAR",
+                "status": "SKIPPED"
+              },
+              {
+                "duration_seconds": 0.007451,
+                "retryable": false,
+                "stage": "INGEST_RAW",
+                "status": "SUCCEEDED"
+              }
+            ],
+            "warning_count": 0
+          }
+        }
+      ],
+      "case": "duplicate_hygiene_warning",
+      "limit": "Hygiene log is not exposed by legacy result; no Phase C warning certification.",
+      "match": true
+    },
+    {
+      "attempts": [
+        {
+          "action": "count_mismatch",
+          "artifact_rows": [
+            [
+              "artifact_v1_81a2f101c01886e9a2f0c3600517f68d9bd504b69f8bb74ac7e8a94ebb6c3183",
+              "file_stat_v1",
+              null,
+              "aff3a6224a18fc50355c3658d672da1cd4c9510f775023d15b32b054ed565931"
+            ],
+            [
+              "artifact_v1_f4d753af3b475ed8e87e68a80fcf41f70b0e201f5c679b773ccd5b2243bf61b6",
+              "file_stat_v1",
+              null,
+              "bb7f58cbaf3598c46235d5edaba9ab27b26012de580e806768a9e88e3e2083ce"
+            ]
+          ],
+          "calls": 1,
+          "legacy_exit": 0,
+          "legacy_return": [
+            {
+              "margin_raw": false,
+              "prices_raw": true
+            },
+            []
+          ],
+          "shadow_projection": {
+            "active_stage": null,
+            "artifact_summary": {
+              "by_type": [
+                {
+                  "artifact_type": "raw_parquet_metadata_ref",
+                  "complete_count": 1,
+                  "count": 2,
+                  "fingerprint_kind": "file_stat_v1",
+                  "total_bytes": 80
+                }
+              ],
+              "complete_count": 1,
+              "count": 2,
+              "fingerprint_kinds": [
+                "file_stat_v1"
+              ],
+              "total_bytes": 80
+            },
+            "as_of": "2026-10-20T16:08:42.449448Z",
+            "attempt_count": 1,
+            "calendar": {
+              "checked_at": "2026-10-20T16:08:42.419552Z",
+              "knowledge": "UNKNOWN_NOT_EXPOSED_BY_LEGACY",
+              "observed_value": "unknown:not_exposed_by_legacy_fetcher",
+              "status": "SKIPPED",
+              "threshold_value": null
+            },
+            "date_semantics": "REQUESTED_ASIA_TAIPEI_DATE_UNVERIFIED_CALENDAR",
+            "duration_seconds": 0.03772,
+            "freshness": {
+              "checked_at": "2026-10-20T16:08:42.434710Z",
+              "observed_value": "missing=0",
+              "status": "PASS",
+              "threshold_value": "missing=0"
+            },
+            "incident_status": "NOT_IMPLEMENTED_PHASE_C",
+            "last_successful_fetch_date": "2026-01-01",
+            "latest_attempt": 1,
+            "latest_attempt_status": "SUCCEEDED",
+            "latest_exit_code": 0,
+            "latest_logical_run_id": "logical_run_v1_cc645ad2866065164fa271d00c4ab327c5dd7e5af03622025251f892afe2e1e2",
+            "latest_requested_date": "2026-01-01",
+            "latest_trading_date": "2026-01-01",
+            "mode": "FETCH_ONLY",
+            "open_incident_count": null,
+            "projection_schema_version": "current-state-v1",
+            "run_status": "SUCCEEDED",
+            "scope": {
+              "excluded": [
+                "INFERENCE",
+                "PORTFOLIO",
+                "PUBLICATION"
+              ],
+              "included": [
+                "CALENDAR_OBSERVATION",
+                "INGEST_RAW"
+              ]
+            },
+            "source_generation": "18f793daf5fe465d8d80d04e1b33d0f229b49321488e02d16952bb7720fef56d",
+            "source_watermark": {
+              "committed_at": "2026-10-20T16:08:42.449448Z",
+              "row_counts": {
+                "artifacts": 2,
+                "attempts": 1,
+                "checks": 4,
+                "logical_runs": 1,
+                "stage_artifacts": 2,
+                "stage_runs": 2
+              }
+            },
+            "stage_statuses": [
+              {
+                "duration_seconds": 0.007601,
+                "retryable": false,
+                "stage": "CALENDAR",
+                "status": "SKIPPED"
+              },
+              {
+                "duration_seconds": 0.007664,
+                "retryable": false,
+                "stage": "INGEST_RAW",
+                "status": "SUCCEEDED"
+              }
+            ],
+            "warning_count": 0
+          }
+        }
+      ],
+      "case": "source_count_mismatch_not_success_authority",
+      "limit": null,
+      "match": true
+    },
+    {
+      "attempts": [
+        {
+          "action": "good",
+          "artifact_rows": [
+            [
+              "artifact_v1_81a2f101c01886e9a2f0c3600517f68d9bd504b69f8bb74ac7e8a94ebb6c3183",
+              "file_stat_v1",
+              null,
+              "aff3a6224a18fc50355c3658d672da1cd4c9510f775023d15b32b054ed565931"
+            ],
+            [
+              "artifact_v1_f4d753af3b475ed8e87e68a80fcf41f70b0e201f5c679b773ccd5b2243bf61b6",
+              "file_stat_v1",
+              null,
+              "bb7f58cbaf3598c46235d5edaba9ab27b26012de580e806768a9e88e3e2083ce"
+            ]
+          ],
+          "calls": 1,
+          "legacy_exit": 0,
+          "legacy_return": [
+            {
+              "margin_raw": true,
+              "prices_raw": true
+            },
+            []
+          ],
+          "shadow_projection": {
+            "active_stage": null,
+            "artifact_summary": {
+              "by_type": [
+                {
+                  "artifact_type": "raw_parquet_metadata_ref",
+                  "complete_count": 2,
+                  "count": 2,
+                  "fingerprint_kind": "file_stat_v1",
+                  "total_bytes": 80
+                }
+              ],
+              "complete_count": 2,
+              "count": 2,
+              "fingerprint_kinds": [
+                "file_stat_v1"
+              ],
+              "total_bytes": 80
+            },
+            "as_of": "2026-10-20T16:08:43.296027Z",
+            "attempt_count": 1,
+            "calendar": {
+              "checked_at": "2026-10-20T16:08:42.565757Z",
+              "knowledge": "UNKNOWN_NOT_EXPOSED_BY_LEGACY",
+              "observed_value": "unknown:not_exposed_by_legacy_fetcher",
+              "status": "SKIPPED",
+              "threshold_value": null
+            },
+            "date_semantics": "REQUESTED_ASIA_TAIPEI_DATE_UNVERIFIED_CALENDAR",
+            "duration_seconds": 0.738733,
+            "freshness": {
+              "checked_at": "2026-10-20T16:08:43.281071Z",
+              "observed_value": "missing=0",
+              "status": "PASS",
+              "threshold_value": "missing=0"
+            },
+            "incident_status": "NOT_IMPLEMENTED_PHASE_C",
+            "last_successful_fetch_date": "2026-01-01",
+            "latest_attempt": 1,
+            "latest_attempt_status": "SUCCEEDED",
+            "latest_exit_code": 0,
+            "latest_logical_run_id": "logical_run_v1_cc645ad2866065164fa271d00c4ab327c5dd7e5af03622025251f892afe2e1e2",
+            "latest_requested_date": "2026-01-01",
+            "latest_trading_date": "2026-01-01",
+            "mode": "FETCH_ONLY",
+            "open_incident_count": null,
+            "projection_schema_version": "current-state-v1",
+            "run_status": "SUCCEEDED",
+            "scope": {
+              "excluded": [
+                "INFERENCE",
+                "PORTFOLIO",
+                "PUBLICATION"
+              ],
+              "included": [
+                "CALENDAR_OBSERVATION",
+                "INGEST_RAW"
+              ]
+            },
+            "source_generation": "a8d235920f1c8a7e276da9982d3ab907d55b187be03b0ab78a2382060e154d62",
+            "source_watermark": {
+              "committed_at": "2026-10-20T16:08:43.296027Z",
+              "row_counts": {
+                "artifacts": 2,
+                "attempts": 1,
+                "checks": 4,
+                "logical_runs": 1,
+                "stage_artifacts": 2,
+                "stage_runs": 2
+              }
+            },
+            "stage_statuses": [
+              {
+                "duration_seconds": 0.007046,
+                "retryable": false,
+                "stage": "CALENDAR",
+                "status": "SKIPPED"
+              },
+              {
+                "duration_seconds": 0.007684,
+                "retryable": false,
+                "stage": "INGEST_RAW",
+                "status": "SUCCEEDED"
+              }
+            ],
+            "warning_count": 0
+          }
+        }
+      ],
+      "case": "projection_failure_preserves_output",
+      "limit": null,
+      "match": true
+    },
+    {
+      "attempts": [
+        {
+          "action": "good",
+          "artifact_rows": [
+            [
+              "artifact_v1_81a2f101c01886e9a2f0c3600517f68d9bd504b69f8bb74ac7e8a94ebb6c3183",
+              "file_stat_v1",
+              null,
+              "aff3a6224a18fc50355c3658d672da1cd4c9510f775023d15b32b054ed565931"
+            ]
+          ],
+          "calls": 1,
+          "legacy_exit": 0,
+          "legacy_return": [
+            {
+              "margin_raw": true,
+              "prices_raw": true
+            },
+            []
+          ],
+          "shadow_projection": {
+            "active_stage": null,
+            "artifact_summary": {
+              "by_type": [
+                {
+                  "artifact_type": "raw_parquet_metadata_ref",
+                  "complete_count": 1,
+                  "count": 1,
+                  "fingerprint_kind": "file_stat_v1",
+                  "total_bytes": 40
+                }
+              ],
+              "complete_count": 1,
+              "count": 1,
+              "fingerprint_kinds": [
+                "file_stat_v1"
+              ],
+              "total_bytes": 40
+            },
+            "as_of": "2026-10-20T16:08:43.428503Z",
+            "attempt_count": 1,
+            "calendar": {
+              "checked_at": "2026-10-20T16:08:43.398521Z",
+              "knowledge": "UNKNOWN_NOT_EXPOSED_BY_LEGACY",
+              "observed_value": "unknown:not_exposed_by_legacy_fetcher",
+              "status": "SKIPPED",
+              "threshold_value": null
+            },
+            "date_semantics": "REQUESTED_ASIA_TAIPEI_DATE_UNVERIFIED_CALENDAR",
+            "duration_seconds": 0.036944,
+            "freshness": {
+              "checked_at": "2026-10-20T16:08:43.413841Z",
+              "observed_value": "missing=0",
+              "status": "PASS",
+              "threshold_value": "missing=0"
+            },
+            "incident_status": "NOT_IMPLEMENTED_PHASE_C",
+            "last_successful_fetch_date": "2026-01-01",
+            "latest_attempt": 1,
+            "latest_attempt_status": "SUCCEEDED",
+            "latest_exit_code": 0,
+            "latest_logical_run_id": "logical_run_v1_cc645ad2866065164fa271d00c4ab327c5dd7e5af03622025251f892afe2e1e2",
+            "latest_requested_date": "2026-01-01",
+            "latest_trading_date": "2026-01-01",
+            "mode": "FETCH_ONLY",
+            "open_incident_count": null,
+            "projection_schema_version": "current-state-v1",
+            "run_status": "SUCCEEDED",
+            "scope": {
+              "excluded": [
+                "INFERENCE",
+                "PORTFOLIO",
+                "PUBLICATION"
+              ],
+              "included": [
+                "CALENDAR_OBSERVATION",
+                "INGEST_RAW"
+              ]
+            },
+            "source_generation": "c8e1143d764001c7f477c234615c68617c3019276f3de100ee106bc3172c0b7f",
+            "source_watermark": {
+              "committed_at": "2026-10-20T16:08:43.428503Z",
+              "row_counts": {
+                "artifacts": 1,
+                "attempts": 1,
+                "checks": 4,
+                "logical_runs": 1,
+                "stage_artifacts": 1,
+                "stage_runs": 2
+              }
+            },
+            "stage_statuses": [
+              {
+                "duration_seconds": 0.007211,
+                "retryable": false,
+                "stage": "CALENDAR",
+                "status": "SKIPPED"
+              },
+              {
+                "duration_seconds": 0.007785,
+                "retryable": false,
+                "stage": "INGEST_RAW",
+                "status": "SUCCEEDED"
+              }
+            ],
+            "warning_count": 0
+          }
+        }
+      ],
+      "case": "missing_artifact_not_success_authority",
+      "limit": null,
+      "match": true
+    },
+    {
+      "case": "real_nonzero_callback_child",
+      "child_exitcode": 1,
+      "limit": "Real child process using synthetic failing callback, not live provider or production CLI.",
+      "projection": {
+        "active_stage": null,
+        "artifact_summary": {
+          "by_type": [],
+          "complete_count": 0,
+          "count": 0,
+          "fingerprint_kinds": [],
+          "total_bytes": 0
+        },
+        "as_of": "2026-10-20T16:08:43.721331Z",
+        "attempt_count": 1,
+        "calendar": {
+          "checked_at": "2026-10-20T16:08:43.692627Z",
+          "knowledge": "UNKNOWN_NOT_EXPOSED_BY_LEGACY",
+          "observed_value": "unknown:not_exposed_by_legacy_fetcher",
+          "status": "SKIPPED",
+          "threshold_value": null
+        },
+        "date_semantics": "REQUESTED_ASIA_TAIPEI_DATE_UNVERIFIED_CALENDAR",
+        "duration_seconds": 0.036225,
+        "freshness": {
+          "checked_at": "2026-10-20T16:08:43.707104Z",
+          "observed_value": "fetch_exception:builtins.RuntimeError",
+          "status": "FAIL",
+          "threshold_value": "fetch_completed"
+        },
+        "incident_status": "NOT_IMPLEMENTED_PHASE_C",
+        "last_successful_fetch_date": null,
+        "latest_attempt": 1,
+        "latest_attempt_status": "FAILED",
+        "latest_exit_code": 1,
+        "latest_logical_run_id": "logical_run_v1_cc645ad2866065164fa271d00c4ab327c5dd7e5af03622025251f892afe2e1e2",
+        "latest_requested_date": "2026-01-01",
+        "latest_trading_date": "2026-01-01",
+        "mode": "FETCH_ONLY",
+        "open_incident_count": null,
+        "projection_schema_version": "current-state-v1",
+        "run_status": "FAILED",
+        "scope": {
+          "excluded": [
+            "INFERENCE",
+            "PORTFOLIO",
+            "PUBLICATION"
+          ],
+          "included": [
+            "CALENDAR_OBSERVATION",
+            "INGEST_RAW"
+          ]
+        },
+        "source_generation": "10ec6a64883faa8c3ef5668aaf275f3de3c1674b691e7164d09752f3d5b42da3",
+        "source_watermark": {
+          "committed_at": "2026-10-20T16:08:43.721331Z",
+          "row_counts": {
+            "artifacts": 0,
+            "attempts": 1,
+            "checks": 4,
+            "logical_runs": 1,
+            "stage_artifacts": 0,
+            "stage_runs": 2
+          }
+        },
+        "stage_statuses": [
+          {
+            "duration_seconds": 0.007632,
+            "retryable": false,
+            "stage": "CALENDAR",
+            "status": "SKIPPED"
+          },
+          {
+            "duration_seconds": 0.00698,
+            "retryable": false,
+            "stage": "INGEST_RAW",
+            "status": "FAILED"
+          }
+        ],
+        "warning_count": 1
+      }
+    },
+    {
+      "case": "stale_fence_and_active_shadow_conflict",
+      "fences": [
+        1,
+        2
+      ],
+      "legacy_return_unchanged": true,
+      "limit": "Active competing lease produces NO shadow observation, not a successful shadow run.",
+      "shadow_attempts": 0,
+      "stale_rejected": true
+    }
+  ],
+  "evidence_class": "OFFLINE_SYNTHETIC_CALLBACKS_REAL_SQLITE_AND_PROCESSES",
+  "human_acceptance": "NOT_GRANTED",
+  "projection_example": {
+    "active_stage": null,
+    "artifact_summary": {
+      "by_type": [
+        {
+          "artifact_type": "raw_parquet_metadata_ref",
+          "complete_count": 2,
+          "count": 2,
+          "fingerprint_kind": "file_stat_v1",
+          "total_bytes": 80
+        }
+      ],
+      "complete_count": 2,
+      "count": 2,
+      "fingerprint_kinds": [
+        "file_stat_v1"
+      ],
+      "total_bytes": 80
+    },
+    "as_of": "2026-10-20T16:08:41.177030Z",
+    "attempt_count": 1,
+    "calendar": {
+      "checked_at": "2026-10-20T16:08:41.144088Z",
+      "knowledge": "UNKNOWN_NOT_EXPOSED_BY_LEGACY",
+      "observed_value": "unknown:not_exposed_by_legacy_fetcher",
+      "status": "SKIPPED",
+      "threshold_value": null
+    },
+    "date_semantics": "REQUESTED_ASIA_TAIPEI_DATE_UNVERIFIED_CALENDAR",
+    "duration_seconds": 0.039792,
+    "freshness": {
+      "checked_at": "2026-10-20T16:08:41.159932Z",
+      "observed_value": "missing=0",
+      "status": "PASS",
+      "threshold_value": "missing=0"
+    },
+    "incident_status": "NOT_IMPLEMENTED_PHASE_C",
+    "last_successful_fetch_date": "2026-01-01",
+    "latest_attempt": 1,
+    "latest_attempt_status": "SUCCEEDED",
+    "latest_exit_code": 0,
+    "latest_logical_run_id": "logical_run_v1_cc645ad2866065164fa271d00c4ab327c5dd7e5af03622025251f892afe2e1e2",
+    "latest_requested_date": "2026-01-01",
+    "latest_trading_date": "2026-01-01",
+    "mode": "FETCH_ONLY",
+    "open_incident_count": null,
+    "projection_schema_version": "current-state-v1",
+    "run_status": "SUCCEEDED",
+    "scope": {
+      "excluded": [
+        "INFERENCE",
+        "PORTFOLIO",
+        "PUBLICATION"
+      ],
+      "included": [
+        "CALENDAR_OBSERVATION",
+        "INGEST_RAW"
+      ]
+    },
+    "source_generation": "22a8161b88fca5c06bf900efeca88bbc35e109343556e0325dce457eae91c8a8",
+    "source_watermark": {
+      "committed_at": "2026-10-20T16:08:41.177030Z",
+      "row_counts": {
+        "artifacts": 2,
+        "attempts": 1,
+        "checks": 4,
+        "logical_runs": 1,
+        "stage_artifacts": 2,
+        "stage_runs": 2
+      }
+    },
+    "stage_statuses": [
+      {
+        "duration_seconds": 0.007356,
+        "retryable": false,
+        "stage": "CALENDAR",
+        "status": "SKIPPED"
+      },
+      {
+        "duration_seconds": 0.007913,
+        "retryable": false,
+        "stage": "INGEST_RAW",
+        "status": "SUCCEEDED"
+      }
+    ],
+    "warning_count": 0
+  },
+  "python": "3.12.3",
+  "source_head": "77a3863e60e1ab372404910e6cf0c5ed9a4e4070",
+  "sqlite": "3.45.1",
+  "test_source_sha256": "1b0044b1674d4ca932358b7aa8ef33f6fdf4c44f19db1858d15c573fc621e9d3"
+}

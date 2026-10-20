@@ -1,0 +1,40 @@
+{
+  "status": "OFFLINE_EVIDENCE_READY_HUMAN_REVIEW_PENDING",
+  "engineering_result": "PASS",
+  "human_task5_approval": "NOT_GRANTED",
+  "strict_phase0": "STOP",
+  "evidence_class": "OFFLINE_SYNTHETIC_CALLBACKS_REAL_SQLITE_AND_PROCESSES",
+  "integration_branch": "integration/phase-a-task5",
+  "evidence_source_head": "77a3863e60e1ab372404910e6cf0c5ed9a4e4070",
+  "test_source_sha256": "1b0044b1674d4ca932358b7aa8ef33f6fdf4c44f19db1858d15c573fc621e9d3",
+  "human_task4_record": "knowledge/02_History/Decisions/20261021-task4-human-approval.json",
+  "coverage": {
+    "fixed_observed_shadow_replays": 10,
+    "additional_process_scenarios": 4,
+    "replay_match": true,
+    "crash_restart": "SIGKILL exit -9; durable RUNNING retained; new process reacquires expired lease and finishes a new attempt",
+    "concurrency": "Three real processes; conflict then successor fencing; deterministic pipes, no timing sleep",
+    "actual_nonzero_child_exit": 1,
+    "artifact_identity": "Expected count and file-stat identity match ledger; not content-digest certification",
+    "checkpoint": "SQLite durable logical/attempt/stage/fence identity; not Phase D automatic pipeline resume",
+    "benchmark": "10 paired raw timing samples; median added 98.475144 ms; no predeclared performance threshold"
+  },
+  "validation": {
+    "task5_tests": {"passed": 6, "seconds": 4.139},
+    "operations": {"passed": 81, "seconds": 18.303},
+    "pit": {"passed": 47},
+    "fetch_only": {"passed": 3},
+    "governance": {"passed": 19},
+    "non_training_portfolio_regression": {"passed": 38},
+    "full_experimental_suite": "NOT_RUN: includes model training forbidden by this authorization"
+  },
+  "limitations": [
+    "Synthetic callbacks and temporary stat-only files, not research datasets or production fetches.",
+    "Artifact-before-ledger case recovers a pre-existing unregistered file, not a worker publication crash window.",
+    "Hygiene warning case preserves a fixture log; it does not certify Phase C diagnostics.",
+    "Ten replay exit outcomes are mapped from legacy results; a separate real child proves one actual failure exit.",
+    "Benchmark ran alongside operations regression on the shared host; not isolated-host or production performance.",
+    "No research, PIT/label semantics, production, deployment, main integration or Task 5 Human correctness approval."
+  ],
+  "next_gate": "Human Task 5 correctness review and separate integration decision"
+}

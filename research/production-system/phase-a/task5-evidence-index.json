@@ -1,0 +1,20 @@
+{
+  "status": "OFFLINE_ENGINEERING_EVIDENCE",
+  "source_head": "77a3863e60e1ab372404910e6cf0c5ed9a4e4070",
+  "source_binding": "The new test was uncommitted at execution; its exact SHA-256 binds the executed source. The delivery commit contains that source and these records.",
+  "files": [
+    {"path": "V6/marketmamba/ops/test_phase_a_replay.py", "sha256": "1b0044b1674d4ca932358b7aa8ef33f6fdf4c44f19db1858d15c573fc621e9d3"},
+    {"path": "research/production-system/phase-a/shadow-replay-results.json", "sha256": "2b154362661456e134ddbfec33cdb30f6aad8ace9e1add4d3f1300508a3bbdb5"},
+    {"path": "research/production-system/phase-a/schema.json", "sha256": "8f9d4c3665dd6cc9dbba40d184ba1c814a9e5202bd16b3a3306e42308f81338c"},
+    {"path": "knowledge/02_History/Decisions/20261021-task4-human-approval.json", "sha256": "fdbd3acc89bc29f970543e3bd798e144f2da9a077ec4694e855e7165c6ee9203"}
+  ],
+  "commands": {
+    "replay": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=V6 python3 -B -W error::ResourceWarning -m unittest marketmamba.ops.test_phase_a_replay -v",
+    "operations": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=V6 python3 -B -W error::ResourceWarning -m unittest discover -s V6/marketmamba/ops -p 'test_*.py' -q",
+    "governance": "PYTHONDONTWRITEBYTECODE=1 python3 -B -m unittest tools.project_knowledge.test_knowledge_governance -v"
+  },
+  "regeneration": "To capture new raw records set PHASE_A_EVIDENCE_DIR to a NEW isolated directory. Exclusive publication refuses existing files. A new run is new evidence, not byte-identical runtime timings.",
+  "report": "reports/production_phase_a_shadow_ledger.md",
+  "acceptance": "research/production-system/phase-a/acceptance.json",
+  "database_retention": "Temporary SQLite databases are not committed."
+}

@@ -3,6 +3,7 @@
   "status": "CANONICAL_CURRENT_PROJECT_MAP",
   "owner": "Human + project agents",
   "bounded_engineering_recovery": {
+    "historical_checkpoints_note": "Earlier reader/task4 entries below retain their observation-time status; current approval and Task5 state are in operations.",
     "reader_contract_continuation": {
       "base_commit": "8309ee366aea4c002f9a79d0d97d214b29578fcf",
       "scope": "Unit A v1 reader path/schema/identity fail-closed validation",
@@ -54,7 +55,7 @@
     "pit_regression_tests_passed": 40,
     "research_or_correctness_promotion": false,
     "checkpoint": "knowledge/00_Project_Map/Current_State.md",
-    "next_bounded_candidate": "Human Task4 correctness decision on 1e119ef; Task5 only after separate authorization"
+    "next_bounded_candidate": "Human Task5 correctness review of integration/phase-a-task5; no further execution authorized"
   },
   "observed_at": "2026-09-22T13:25:21+08:00",
   "human_review": {
@@ -190,9 +191,12 @@
       "task2_transactional_store_lease_fencing": "COMPLETED_REVIEWED",
       "task3_fetch_only_shadow_adapter": "COMPLETED_REVIEWED",
       "task4_atomic_projection_read_only_cli": "HUMAN_APPROVED_LIMITED_ENGINEERING",
-      "task5_replay_formal_acceptance_report": "IN_PROGRESS_OFFLINE"
+      "task5_replay_formal_acceptance_report": "OFFLINE_EVIDENCE_READY_HUMAN_REVIEW_PENDING"
     },
-    "blocker": "TASK5_OFFLINE_VALIDATION_IN_PROGRESS; NO_TASK5_CORRECTNESS_APPROVAL",
+    "blocker": "TASK5_HUMAN_CORRECTNESS_REVIEW_PENDING; SEPARATE_INTEGRATION_DECISION_REQUIRED",
+    "task5_evidence_index": "research/production-system/phase-a/task5-evidence-index.json",
+    "task5_report": "reports/production_phase_a_shadow_ledger.md",
+    "task5_validation": {"operations": 81, "pit": 47, "fetch_only": 3, "governance": 19, "non_training_portfolio": 38},
     "task4_human_decision": "knowledge/02_History/Decisions/20261021-task4-human-approval.json",
     "integration_candidate": "integration/phase-a-task5",
     "success_authority": "LEGACY_FETCH_RESULT"
@@ -240,7 +244,7 @@
     {
       "id": "phase-a-review",
       "status": "HUMAN_REVIEW_REQUIRED",
-      "description": "Task4 isolation evidence gaps closed by candidate 1e119ef after aggregation fix 46df7b3. Human correctness/sanitizer review and separate merge decision remain required."
+      "description": "Task4 limited engineering Human approval recorded for 1e119ef. Integrated Task5 offline evidence ready; Task5 Human correctness and separate merge decision remain required."
     },
     {
       "id": "e1-diagnostics",
@@ -255,7 +259,7 @@
   ],
   "next_decisions": [
     "Recover the identity-matched E1 matrix, establish safe checkpoint replay, and predeclare causal regime evidence before deciding a new training experiment.",
-    "Review Phase A sanitizer evidence before merge or deployment.",
+    "Review Phase A Task5 offline package; Task4 approval is limited to its fixed source, not integration or production.",
     "Use consolidated K2 governance in main; retain K0/K1/K2 branch history without active checkouts; do not begin K3 automatically."
   ],
   "authorities": [
@@ -282,10 +286,10 @@
       "internal rename"
     ]
   },
-  "state_updated_at": "2026-09-22",
+  "state_updated_at": "2026-10-21",
   "active_objectives": [
     "Recover identity-matched E1 matrix and safe checkpoint replay before E2 decision",
-    "Review Phase A Task 4 evidence before merge/deployment"
+    "Human review Task5 offline evidence and separately decide integration; no deployment authorization"
   ],
   "runtime_contract": {
     "development_checkout": "/home/frank/projects/MarketMamba",

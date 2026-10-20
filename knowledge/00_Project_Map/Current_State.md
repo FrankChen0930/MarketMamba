@@ -28,7 +28,13 @@ production gates. New isolated `integration/phase-a-task5` starts at `63a040d`
 and cherry-picks the 17 Phase A commits `9efed7b..1e119ef` with `-x` provenance.
 Integrated Operations files match `1e119ef`; snapshot files match `63a040d`.
 Joint regression: 75 ops, 47 PIT, 3 fetch-only, 18 governance PASS.
-Task 5 offline validation is now authorized/in progress, **not approved**.
+Task 5 offline validation is complete: **OFFLINE_EVIDENCE_READY_HUMAN_REVIEW_PENDING**.
+Final Operations 81, governance 19, non-training portfolio regression 38 PASS;
+joint PIT 47 and fetch-only 3 PASS. See the
+[Task 5 report](../../reports/production_phase_a_shadow_ledger.md) and
+[evidence index](../../research/production-system/phase-a/task5-evidence-index.json).
+Ten fixed replays, real-process restart/concurrency and measured overhead are
+offline engineering evidence, not production or Human correctness approval.
 No main merge, push, deployment, production data or training authorization.
 
 **2026-10-20 bounded engineering recovery (branch-local):** base development
@@ -37,7 +43,7 @@ No main merge, push, deployment, production data or training authorization.
 fixes immutable V7 source snapshot publication; it does not promote research
 evidence or close any correctness gate. See the checkpoint below.
 
-**Active objectives:** recover the identity-matched E1 matrix and safely replay retained checkpoints before deciding further research; review Phase A Task 4 evidence before any merge/deploy. Governance consolidation supplies navigation, not a new research or production gate.
+**Active objectives:** recover the identity-matched E1 matrix and safely replay retained checkpoints before deciding further research; Human review of Task 5 evidence and a separate integration decision. Governance consolidation supplies navigation, not a new research or production gate.
 
 MarketMamba contains separate production-data, legacy model runtime, V7 correctness, research-training, historical-simulation, portfolio, delivery, and operations-control-plane subsystems. Production acquisition uses mutable provider data; V7 research authority uses versioned PIT/provenance evidence. The current corrected research baseline is `E5-PIT-Clean-v1`, with 48 features, no graph and no industry neutralization. Historical simulation is `PASS`, while strict trading correctness remains `STOP`. The observed production scheduler runs fetch-only; full V6.2 inference/portfolio/publication is `DISABLED`. E1 is a completed research experiment with `PASS_REFRESH_HYPOTHESIS`, not trading evidence. Phase A operations work is `UNMERGED` and `NOT_DEPLOYED`.
 
@@ -107,8 +113,8 @@ Runtime observations are not permanent facts. The new Scheduler observation expi
 |---|---|---|
 | Architecture audit | `COMPLETE_CURRENT_REFERENCE` | `docs/production-system-architecture-audit@9efed7b:reports/marketmamba_production_system_audit.md` and its production-system roadmap. |
 | Phase A implementation | `UNMERGED`, `NOT_DEPLOYED` | `feature/production-phase-a-shadow-ledger@f5b0ff3`; SQLite WAL ledger, fencing, shadow fetch observer and atomic current-state projection exist on that branch. |
-| Phase A task state | Task 1 contracts/schema migrations: `COMPLETED_REVIEWED`; Task 2 transactional store/lease/fencing: `COMPLETED_REVIEWED`; Task 3 fetch-only shadow adapter: `COMPLETED_REVIEWED`; Task 4 atomic projection/read-only CLI: `IMPLEMENTED_WITH_SANITIZER_FOLLOW_UP_FIXES`, correctness approval `NOT_ESTABLISHED`; Task 5 replay/formal acceptance report: `NOT_STARTED` | Branch-local implementation is not production authority. |
-| Current blocker | `TASK5_OFFLINE_EVIDENCE_IN_PROGRESS` | Task 4 limited engineering approval is recorded above; Task 5 correctness and any production promotion remain Human decisions. |
+| Phase A task state | Tasks 1–3 `COMPLETED_REVIEWED`; Task 4 `HUMAN_APPROVED_LIMITED_ENGINEERING` at `1e119ef`; Task 5 `OFFLINE_EVIDENCE_READY_HUMAN_REVIEW_PENDING` | Branch-local integration evidence is not production authority. |
+| Current blocker | `TASK5_HUMAN_CORRECTNESS_REVIEW_PENDING` | Task 4 limited engineering approval is recorded above; Task 5 correctness and any integration/production promotion remain Human decisions. |
 | Production success authority | Legacy fetch result remains authoritative | Shadow-ledger failures must not change fetch-only success semantics. |
 
 ## Delivery/UI State
@@ -120,14 +126,14 @@ Runtime observations are not permanent facts. The new Scheduler observation expi
 ## Active Blockers
 
 1. `STOP`: strict Phase 0 has no verified executable 5d/10d labels.
-2. `HUMAN_REVIEW_REQUIRED`: Phase A Task 4 correctness approval, sanitizer/path-redaction evidence, and merge decision.
+2. `HUMAN_REVIEW_REQUIRED`: Phase A Task 5 correctness package and separate integration decision.
 3. `UNKNOWN`: E1 final-support epoch dynamics and causal regime dependence require the frozen matrix and ex-ante market-state evidence; completed result is admitted.
 4. `UNKNOWN`: live API/frontend deployment and publication state.
 
 ## Current Decisions / Next Actions
 
 1. Recover the identity-matched E1 matrix and safe checkpoint replay, then predeclare causal regime series. Do not launch another training experiment until diagnostic limitations are resolved.
-2. Review Phase A Task 4 sanitizer evidence before any merge/deployment decision.
+2. Review Phase A Task 5 offline evidence before any integration decision; no deployment authorization.
 3. Maintain K1 domain notes and drift checks in the same change when domain semantics, authority, or boundaries change.
 4. Use the consolidated K2 Current State, Authority Map and knowledge-impact checks. K0/K1/K2 branch history is retained without active checkouts; do not begin K3 automatically.
 
@@ -207,7 +213,7 @@ close the two snapshot-isolation evidence gaps, present Task 4 for Human review,
 then separately authorize offline Task 5. No research rules/data changed;
 strict Phase 0 **STOP** and all research authority remain unchanged.
 
-### Task 4 isolation evidence follow-up — Human review pending
+### Historical Task 4 isolation checkpoint — prior to 2026-10-21 Human approval
 
 `fix/phase-a-task4-evidence@1e119ef855f8fd319f774162beca0bd729d4b921`
 adds tests and evidence only, directly after `46df7b3`. The two isolation gaps
