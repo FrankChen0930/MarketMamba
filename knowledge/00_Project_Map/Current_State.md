@@ -24,6 +24,13 @@ engineering without training or research changes. Isolated
 `development/v7-cpu-window-01`, base `11ae71d`; main remains `83a6a2e`.
 [Ranked backlog and acceptance](../../tasks/v7-cpu-development-window-01.md)
 select three existing portfolio scheduling/journal recovery contract units.
+All three complete: early-signal state preservation, pre-write semantic
+validation and shared-lock reading. Final bounded suites: 53
+portfolio/process/health/audit, 47 PIT, 23 governance PASS; independent review
+has no Required/Critical findings. See the
+[evidence index](../../research/v7/cpu-window-01-evidence.json).
+Next READY (not fixed): normalized quote collisions can silently retain the
+last value in the journal adapter. Window stopped after three units.
 E1 matrix remains BLOCKED; strict Phase 0 STOP and Phase 1–5 gates unchanged.
 This branch is UNMERGED / NOT_DEPLOYED; no live MAS Core capability is assumed.
 
@@ -81,7 +88,9 @@ decision above authorized only local development main. No push/deployment/traini
 fixes immutable V7 source snapshot publication; it does not promote research
 evidence or close any correctness gate. See the checkpoint below.
 
-**Active objective:** await original E1 frozen matrix/manifest location.
+**Active objectives:** CPU window 01 complete; next bounded engineering candidate
+is journal quote-collision refusal. Separately await original E1 frozen
+matrix/manifest location.
 Bounded local inventory is complete; replay is stopped until identity and safe
 inspection gates can be met. No new research hypothesis or training is authorized.
 

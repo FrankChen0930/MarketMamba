@@ -40,6 +40,13 @@ This is synthetic component engineering, not signal/portfolio research admission
 The same candidate also rejects invalid semantic journal transitions before
 persistence, preserving existing bytes and replayability. Append/duplicate
 responses derive from their locked prefix, not a later unlocked read.
+Shared-lock reads now exclude in-progress append bytes. Five real-process
+synthetic/fault-injection cases cover duplicate/conflict, concurrent reading,
+durable-before-response SIGKILL retry and partial-tail refusal. No power-loss,
+network-filesystem or uncooperative-writer guarantee is inferred.
+Known READY follow-up: journal quote keys can collide after whitespace
+normalization and silently overwrite; engine already rejects such duplicates.
+This pre-existing defect is reproduced but not fixed in the three-unit window.
 
 The research engine models partial execution and deterministic state transitions with replayable hash-linked records. No active scheduler, broker adapter, or verified live-paper loop is established for V7.
 

@@ -1,6 +1,6 @@
 # V7 CPU-only development window 01
 
-Status: ACTIVE, UNMERGED / NOT_DEPLOYED. Human provenance: current conversation
+Status: WINDOW_COMPLETE, UNMERGED / NOT_DEPLOYED. Human provenance: current conversation
 “Autonomous CPU-Only Development Program”, authorizing bounded engineering,
 not new research contracts. Main remains `83a6a2e`; this isolated branch
 `development/v7-cpu-window-01` starts at `11ae71d` (E1 evidence-only successor).
@@ -22,6 +22,7 @@ The older integrated candidate/59-feature draft is historical, not roadmap.
 | U1: completed-rebalance early signal | READY to reproduce | Approved replayable engine spec/plan; `apply_signal` assumes pending exists when not due, although completed rebalance clears it. Preserve scheduling and state. |
 | U2: reject invalid journal transitions before persistence | READY after U1 | Approved journal fail-closed/replay contract; append currently persists before engine validation. Preserve hash chain and bytes on semantic refusal. |
 | U3: process concurrency and interrupted retry evidence | READY after U2 | Existing locked journal and idempotence contract; existing tests are sequential. Real processes, deterministic synchronization, no timing sleeps. |
+| Next window: quote normalization collision refusal | READY, reproduced, NOT FIXED | Journal maps `A` and ` A ` to one key and accepts the last quote; engine already rejects normalized duplicates. Existing contract suffices. |
 | Signal anatomy / portfolio response / failure slicing | HUMAN_DECISION_REQUIRED (gate blocked) | Existing signal-to-portfolio design explicitly gates Phase 1–5 on correctness PASS; no automatic admission of E1 signals. |
 | New E2 hypothesis / ex-ante regime variables | HUMAN_DECISION_REQUIRED | Agent candidate only; no frozen next-experiment contract. Do not implement a research direction. |
 | New training or Colab rerun | BLOCKED | Requires explicit Human authorization and runtime; not needed for U1–U3. |
@@ -92,3 +93,30 @@ actual test counts/durations and bounded repair counts instead.
   independent review passed: no Required/Critical; independent 38 tests PASS
   (0.294s), and both RED regressions independently reproduced on `585ad65`.
   U3 remains READY; shared reader locking is not yet certified.
+- U3 COMPLETE: RED reader returned “truncated final line” during a writer's
+  locked partial append. Shared-lock read fixes this. Five real spawn-process
+  cases PASS (0.752s): duplicate/conflict, reader/writer, fsync→SIGKILL→new-process
+  retry, SIGKILL partial tail refusal. Independent combined 43 PASS (1.062s),
+  no Required/Critical findings. One initial repair, zero review rework.
+- Final bounded regression: 53 portfolio/process/health/audit, 47 PIT and
+  23 governance PASS. [Evidence index](../research/v7/cpu-window-01-evidence.json)
+  binds raw logs and changed source hashes. No full repository/training claim.
+  Protected Phase 0 evidence/report and E1 contract remain byte-identical to
+  main; read-only preserved legacy audit still STOP with six blockers.
+- Review skill influenced delivery: different-model independent testing and
+  RED confirmation against prior commits. No additional Human interruption.
+- Known remaining defect: a disposable journal accepts quotes keyed `A` at
+  price10 and ` A ` at price20 with the same ticker; stores only A at price20.
+  Next window should add rejection/no-write RED coverage and match the engine's
+  duplicate-refusal contract. No new research decision needed. No blanket
+  malformed-input or production certification is claimed.
+
+## Resume / next window
+
+Resume this branch at the commit containing the evidence index. Verify clean
+worktree, main still `83a6a2e`, source/log digests and STOP first.
+U1 `585ad65`, U2 `f42aef0`, U3 containing this checkpoint are local only.
+Reassess the reproduced READY quote collision first. Do not repeat unchanged
+E1 discovery without a new location. E1 replay, strict executable labels and
+new research hypotheses remain separately blocked/gated. E1 recovery `11ae71d`
+is preserved as ancestry, not merged into main. Stop after three units.

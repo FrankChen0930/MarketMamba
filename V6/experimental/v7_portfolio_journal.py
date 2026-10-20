@@ -310,7 +310,9 @@ class PortfolioJournal:
 
     def records(self) -> tuple[dict[str, Any], ...]:
         try:
-            text = self.path.read_text(encoding="utf-8")
+            with self.path.open("r", encoding="utf-8") as handle:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_SH)
+                text = handle.read()
         except (OSError, UnicodeError) as exc:
             raise JournalIntegrityError(
                 f"cannot read journal: {exc}"

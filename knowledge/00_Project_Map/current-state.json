@@ -5,15 +5,18 @@
   "cpu_development_window_01": {
     "branch": "development/v7-cpu-window-01",
     "base_commit": "11ae71d1a3ea7f68ed10d5623bc9d639689e4e8b",
-    "status": "ACTIVE_UNMERGED_NOT_DEPLOYED",
+    "status": "WINDOW_COMPLETE_UNMERGED_NOT_DEPLOYED",
     "plan": "tasks/v7-cpu-development-window-01.md",
     "authority": "Current Human CPU-only bounded engineering request; no research approval",
     "unit_limit": 3,
     "units": {
       "U1": "COMPLETE: 35 portfolio tests passed; independent 35 PASS, no Required/Critical findings",
       "U2": "COMPLETE: independent 38 PASS; no Required/Critical findings",
-      "U3": "READY_AFTER_U2"
+      "U3": "COMPLETE: five real-process cases; independent combined 43 PASS; no Required/Critical"
     },
+    "evidence": "research/v7/cpu-window-01-evidence.json",
+    "final_tests": {"portfolio_health_audit": 53, "pit": 47, "governance": 23},
+    "next_ready": "Reproduced normalized quote collision silently overwrites input; not fixed. Journal should reject as existing engine does.",
     "strict_phase0": "STOP",
     "e1_matrix": "BLOCKED_IDENTITY_MATCHED_MATRIX_NOT_RECOVERED",
     "aggregate_usage": "UNAVAILABLE_OLD_GOAL_API_BINDING"
@@ -322,8 +325,9 @@
   },
   "state_updated_at": "2026-10-21",
   "active_objectives": [
-    "Recover identity-matched E1 matrix and safe checkpoint replay before E2 decision",
-    "Await original E1 frozen matrix location; bounded recovery checkpoint saved, no replay/training/deployment"
+    "CPU window 01 complete: three portfolio correctness/recovery units, local commits; stop this window",
+    "Next CPU window: journal normalized quote collision rejection; no new research decision",
+    "Await identity-matched E1 matrix location; no replay/training/deployment"
   ],
   "runtime_contract": {
     "development_checkout": "/home/frank/projects/MarketMamba",
