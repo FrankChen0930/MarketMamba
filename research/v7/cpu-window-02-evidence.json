@@ -55,7 +55,7 @@
     "U2": {
       "status": "COMPLETED_VERIFIED",
       "base_commit": "735ae6f",
-      "commit": "containing final closure commit; source bound by hashes",
+      "commit": "cd5c83adb84a91f4baa2bba43340cc1401426983",
       "initial_fix_rounds": 1,
       "review_rework_rounds": 0,
       "red": {
@@ -134,5 +134,13 @@
     "pit": "PYTHONDONTWRITEBYTECODE=1 CUDA_VISIBLE_DEVICES= /home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python -B -W error::ResourceWarning -m unittest V6.experimental.v7_source_snapshot_test V6.experimental.v7_temporal_contract_test V6.experimental.v7_executable_labels_test V6.experimental.v7_ohlcv_provenance_test V6.experimental.v7_historical_security_master_test V6.experimental.v7_historical_label_materialize_test -v",
     "governance": "python3 -B -m unittest tools.project_knowledge.test_knowledge_governance -v",
     "health": "python3 -B tools/project_knowledge/knowledge_health.py --ci --as-of 2026-10-21"
+  },
+  "post_commit_verification": {
+    "committed_hashes_passed": 16,
+    "main_clean": true,
+    "candidate_clean_at": "cd5c83adb84a91f4baa2bba43340cc1401426983",
+    "full_range_diff_check": "2 raw unittest RED log trailing-whitespace warnings; preserved evidence",
+    "source_tests_knowledge_diff_check": "PASS excluding only the two raw RED log files",
+    "knowledge_health": "WARNING, no structural FAIL"
   }
 }

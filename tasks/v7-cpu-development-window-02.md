@@ -112,3 +112,13 @@ Resume checkpoint: this branch's final commit and
 `735ae6f`, final U2 source hashes at containing commit, all raw log hashes, clean
 status and main identity. Preserve window 01/E1 integration dependencies; no
 automatic merge. No further engineering unit is queued for autonomous continuation.
+
+Post-commit verification: candidate `cd5c83adb84a91f4baa2bba43340cc1401426983`
+and main `83a6a2e` clean; 16 committed artifact hashes PASS; knowledge health
+WARNING/no structural FAIL. Full-range `git diff --check 7eb9cd9..cd5c83a`
+reports exactly two trailing-whitespace lines in immutable raw unittest RED
+logs (`cpu-window-02-u1-red.txt:2`, `cpu-window-02-u2-red.txt:2`). They are retained
+as original evidence, not rewritten. The same range excluding only those two
+raw logs passes; source/tests/knowledge whitespace validation passes. This is an
+explicit evidence-format limitation, not a claim that full-range diff check is
+clean. Final documentation-only commit records this observation; no extra unit.
