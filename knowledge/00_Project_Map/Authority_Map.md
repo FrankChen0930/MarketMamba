@@ -30,6 +30,9 @@ GO for local development consideration only, UNMERGED / NOT_DEPLOYED. Main remai
 PORT-01–04 have [explicit H1 approval](../02_History/Decisions/20261021-portfolio-history-h1.json)
 for fixture-only CPU read-only engineering; completion evidence is
 [portfolio-history-evidence](../../research/v7/portfolio-history-evidence.json).
+PORT-01–04 are COMPLETED_VERIFIED within fixture engineering, with
+[acceptance report](../../reports/v7_portfolio_history_acceptance.md).
+Human Product Slice Review is pending; engineering completion is not result approval.
 New implementation is branch-local UNMERGED / NOT_DEPLOYED. H0 main integration and H2 research
 admission remain unapproved and separate. MAS Core Live is not certified or activated.
 

@@ -613,7 +613,7 @@
       "topic": "Current V7 development backlog",
       "primary_authority": "research/v7/research-program.md",
       "authority_class": "CURRENT_REFERENCE",
-      "status": "H1_FIXTURE_ENGINEERING_APPROVED_ONLY",
+      "status": "H1_COMPLETED_VERIFIED_ENGINEERING_ONLY",
       "supersedes": [
         "CPU window closure queues as cross-domain next-work navigation",
         "historical tasks/plan.md and tasks/todo.md as active execution assumptions"
@@ -621,7 +621,9 @@
       "secondary_evidence": [
         "reports/v7_strategic_roadmap_recovery.md",
         "research/v7/cpu-integration-candidate-20261021.json",
-        "knowledge/02_History/Decisions/20261021-portfolio-history-h1.json"
+        "knowledge/02_History/Decisions/20261021-portfolio-history-h1.json",
+        "research/v7/portfolio-history-evidence.json",
+        "reports/v7_portfolio_history_acceptance.md"
       ],
       "conflicts": [
         "No research contract, historical artifact or Human approval superseded",

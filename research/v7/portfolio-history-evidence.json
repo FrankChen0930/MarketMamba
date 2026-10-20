@@ -311,7 +311,7 @@
     },
     "PORT-03": {
       "state": "COMPLETED_VERIFIED",
-      "commit": "containing PORT-03 commit",
+      "commit": "7592151c0f86de29901cc7848c1826d9888e4150",
       "repair_rounds": 1,
       "repair_note": "One browser-evidenced mobile table CSS readability repair; schema fixture fields coordinated during implementation; one keyboard harness assumption corrected separately, not a product behavior repair.",
       "tests": {
@@ -388,6 +388,180 @@
         ],
         "runtime_exceptions": []
       }
+    },
+    "PORT-04": {
+      "state": "COMPLETED_VERIFIED",
+      "commit": "containing PORT-04 acceptance commit",
+      "repair_rounds": 1,
+      "review": "Independent separate-model final_slice_review APPROVE, no Critical/Required; independently reran 7 exporter and 8 frontend cases, reviewed actual HTTP/browser receipts; final documentation closure separately checked. Closure reviewer found stale domain pointer; all five matching domain pointers updated in round1. Independent final reread: APPROVE, no remaining Critical/Required.",
+      "tests": {
+        "actual_http_restart_e2e": 1,
+        "pit": 47,
+        "ops": 81,
+        "fetch_only": 3,
+        "governance": 23
+      },
+      "logs": {
+        "port04-e2e": "test_fixture_replay_export_http_restart_and_failure_isolation (V6.experimental.v7_portfolio_history_e2e_test.HistoryEndToEndTest.test_fixture_replay_export_http_restart_and_failure_isolation) ... {\"case\": \"fixture-replay-export-http-restart\", \"events\": 7, \"sha256\": \"0d69e24ba1419989e05714bcb61efe40e1f71483c92927822b0b95a44e893779\", \"source_commit\": \"7ab3cb95c07831f78ddd840428d2f6fb6caeccdf\", \"strict_phase0\": \"STOP\", \"research_admission\": false, \"result\": \"PASS\"}\nok\n\n----------------------------------------------------------------------\nRan 1 test in 1.176s\n\nOK\n",
+        "port04-pit": "test_request_identity_is_canonical_and_rejects_credentials (V6.experimental.v7_source_snapshot_test.RequestSpecTest.test_request_identity_is_canonical_and_rejects_credentials) ... ok\ntest_competing_processes_commit_exactly_one_conflicting_observation (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_competing_processes_commit_exactly_one_conflicting_observation) ... ok\ntest_conflicting_observation_cannot_replace_committed_manifest (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_conflicting_observation_cannot_replace_committed_manifest) ... ok\ntest_corrupt_raw_is_not_silently_repaired (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_corrupt_raw_is_not_silently_repaired) ... ok\ntest_failed_publication_preserves_existing_snapshot (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_failed_publication_preserves_existing_snapshot) ... ok\ntest_identical_observation_is_noop_including_manifest_identity (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_identical_observation_is_noop_including_manifest_identity) ... ok\ntest_identical_response_reuses_content_addressed_raw_file (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_identical_response_reuses_content_addressed_raw_file) ... ok\ntest_killed_publisher_recovers_before_and_after_manifest_commit (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_killed_publisher_recovers_before_and_after_manifest_commit) ... ok\ntest_manifest_symlink_is_not_replaced (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_manifest_symlink_is_not_replaced) ... ok\ntest_reader_accepts_existing_writer_shapes_and_http_error_observation (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_reader_accepts_existing_writer_shapes_and_http_error_observation) ... ok\ntest_reader_rejects_corruption_duplicates_and_partial_publication (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_reader_rejects_corruption_duplicates_and_partial_publication) ... ok\ntest_reader_rejects_escape_paths_even_with_matching_bytes_and_digest (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_reader_rejects_escape_paths_even_with_matching_bytes_and_digest) ... ok\ntest_reader_rejects_invalid_schema_types_and_missing_fields (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_reader_rejects_invalid_schema_types_and_missing_fields) ... ok\ntest_reader_rejects_overflowing_json_number_even_with_matching_identity (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_reader_rejects_overflowing_json_number_even_with_matching_identity) ... ok\ntest_reader_rejects_rehashed_request_under_wrong_publication_identity (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_reader_rejects_rehashed_request_under_wrong_publication_identity) ... ok\ntest_reader_rejects_symlink_files_and_directories (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_reader_rejects_symlink_files_and_directories) ... ok\ntest_snapshot_is_atomic_fingerprinted_and_replayable (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_snapshot_is_atomic_fingerprinted_and_replayable) ... ok\ntest_out_of_calendar_future_is_not_fabricated (V6.experimental.v7_temporal_contract_test.CalendarContractTest.test_out_of_calendar_future_is_not_fabricated) ... ok\ntest_publication_uses_strictly_next_session (V6.experimental.v7_temporal_contract_test.CalendarContractTest.test_publication_uses_strictly_next_session) ... ok\ntest_unknown_timestamp_stays_unknown (V6.experimental.v7_temporal_contract_test.CalendarContractTest.test_unknown_timestamp_stays_unknown) ... ok\ntest_verified_event_records_next_session_and_provenance (V6.experimental.v7_temporal_contract_test.CalendarContractTest.test_verified_event_records_next_session_and_provenance) ... ok\ntest_exact_boundaries_are_half_open (V6.experimental.v7_temporal_contract_test.EffectiveIntervalTest.test_exact_boundaries_are_half_open) ... ok\ntest_manifest_is_reproducible_and_json_safe (V6.experimental.v7_temporal_contract_test.EffectiveIntervalTest.test_manifest_is_reproducible_and_json_safe) ... ok\ntest_overlapping_intervals_fail_closed (V6.experimental.v7_temporal_contract_test.EffectiveIntervalTest.test_overlapping_intervals_fail_closed) ... ok\ntest_horizon_counts_entry_session_as_one (V6.experimental.v7_executable_labels_test.ExecutableLabelTest.test_horizon_counts_entry_session_as_one) ... ok\ntest_input_order_does_not_change_output (V6.experimental.v7_executable_labels_test.ExecutableLabelTest.test_input_order_does_not_change_output) ... ok\ntest_manifest_names_exact_formula_and_invalidation (V6.experimental.v7_executable_labels_test.ExecutableLabelTest.test_manifest_names_exact_formula_and_invalidation) ... ok\ntest_missing_intermediate_observation_invalidates_label (V6.experimental.v7_executable_labels_test.ExecutableLabelTest.test_missing_intermediate_observation_invalidates_label) ... ok\ntest_missing_or_locked_entry_is_unknown_not_rolled (V6.experimental.v7_executable_labels_test.ExecutableLabelTest.test_missing_or_locked_entry_is_unknown_not_rolled) ... ok\ntest_suspension_inside_holding_interval_invalidates_label (V6.experimental.v7_executable_labels_test.ExecutableLabelTest.test_suspension_inside_holding_interval_invalidates_label) ... ok\ntest_tail_has_explicit_insufficient_future_status (V6.experimental.v7_executable_labels_test.ExecutableLabelTest.test_tail_has_explicit_insufficient_future_status) ... ok\ntest_weekend_and_holiday_follow_explicit_calendar (V6.experimental.v7_executable_labels_test.ExecutableLabelTest.test_weekend_and_holiday_follow_explicit_calendar) ... ok\ntest_1264_regression_fails_closed_without_regular_board_anchor (V6.experimental.v7_ohlcv_provenance_test.OhlcvProvenanceTest.test_1264_regression_fails_closed_without_regular_board_anchor) ... ok\ntest_adjusted_price_without_segment_provenance_is_rejected (V6.experimental.v7_ohlcv_provenance_test.OhlcvProvenanceTest.test_adjusted_price_without_segment_provenance_is_rejected) ... ok\ntest_ambiguous_provider_segment_cannot_execute (V6.experimental.v7_ohlcv_provenance_test.OhlcvProvenanceTest.test_ambiguous_provider_segment_cannot_execute) ... ok\ntest_exchange_derived_with_clear_regular_board_semantics_is_admitted (V6.experimental.v7_ohlcv_provenance_test.OhlcvProvenanceTest.test_exchange_derived_with_clear_regular_board_semantics_is_admitted) ... ok\ntest_exchange_regular_board_verified_is_admitted (V6.experimental.v7_ohlcv_provenance_test.OhlcvProvenanceTest.test_exchange_regular_board_verified_is_admitted) ... ok\ntest_mixed_source_precedence_is_deterministic (V6.experimental.v7_ohlcv_provenance_test.OhlcvProvenanceTest.test_mixed_source_precedence_is_deterministic) ... ok\ntest_source_reliability_matrix_is_complete_and_deterministic (V6.experimental.v7_ohlcv_provenance_test.OhlcvProvenanceTest.test_source_reliability_matrix_is_complete_and_deterministic) ... ok\ntest_synthetic_backfill_is_rejected_even_with_finite_ohlcv (V6.experimental.v7_ohlcv_provenance_test.OhlcvProvenanceTest.test_synthetic_backfill_is_rejected_even_with_finite_ohlcv) ... ok\ntest_listing_delisting_and_unknown_gap_fail_closed (V6.experimental.v7_historical_security_master_test.HistoricalSecurityMasterTest.test_listing_delisting_and_unknown_gap_fail_closed) ... ok\ntest_overlapping_or_nondeterministic_events_are_rejected (V6.experimental.v7_historical_security_master_test.HistoricalSecurityMasterTest.test_overlapping_or_nondeterministic_events_are_rejected) ... ok\ntest_suspension_preserves_existence_and_resume_boundary (V6.experimental.v7_historical_security_master_test.HistoricalSecurityMasterTest.test_suspension_preserves_existence_and_resume_boundary) ... ok\ntest_transfer_code_change_and_relisting_keep_identity (V6.experimental.v7_historical_security_master_test.HistoricalSecurityMasterTest.test_transfer_code_change_and_relisting_keep_identity) ... ok\ntest_missing_holding_observation_cannot_silently_roll (V6.experimental.v7_historical_label_materialize_test.HistoricalLabelMaterializeTest.test_missing_holding_observation_cannot_silently_roll) ... ok\ntest_suspension_invalidates_holding_interval (V6.experimental.v7_historical_label_materialize_test.HistoricalLabelMaterializeTest.test_suspension_invalidates_holding_interval) ... ok\ntest_vectorized_labels_keep_frozen_next_session_contract (V6.experimental.v7_historical_label_materialize_test.HistoricalLabelMaterializeTest.test_vectorized_labels_keep_frozen_next_session_contract) ... ok\n\n----------------------------------------------------------------------\nRan 47 tests in 1.651s\n\nOK\n",
+        "port04-ops": "test_child_identities_are_deterministic_and_check_policy_is_explicit (test_contracts_schema.ContractIdentityTests.test_child_identities_are_deterministic_and_check_policy_is_explicit) ... ok\ntest_identity_dataclasses_validate_their_required_fields (test_contracts_schema.ContractIdentityTests.test_identity_dataclasses_validate_their_required_fields) ... ok\ntest_logical_run_identity_is_canonical_and_never_uses_volatile_data (test_contracts_schema.ContractIdentityTests.test_logical_run_identity_is_canonical_and_never_uses_volatile_data) ... ok\ntest_metadata_fingerprint_never_claims_a_content_hash (test_contracts_schema.ContractIdentityTests.test_metadata_fingerprint_never_claims_a_content_hash) ... ok\ntest_future_schema_version_fails_closed (test_contracts_schema.LedgerSchemaTests.test_future_schema_version_fails_closed) ... ok\ntest_genuine_base_v1_database_upgrades_to_v2 (test_contracts_schema.LedgerSchemaTests.test_genuine_base_v1_database_upgrades_to_v2) ... ok\ntest_mid_migration_ddl_failure_rolls_back_and_can_retry (test_contracts_schema.LedgerSchemaTests.test_mid_migration_ddl_failure_rolls_back_and_can_retry) ... ok\ntest_migration_checksum_mismatch_fails_closed (test_contracts_schema.LedgerSchemaTests.test_migration_checksum_mismatch_fails_closed) ... ok\ntest_open_creates_latest_tables_with_wal_foreign_keys_and_busy_timeout (test_contracts_schema.LedgerSchemaTests.test_open_creates_latest_tables_with_wal_foreign_keys_and_busy_timeout) ... ok\ntest_populated_v2_database_upgrades_to_explicit_fingerprints (test_contracts_schema.LedgerSchemaTests.test_populated_v2_database_upgrades_to_explicit_fingerprints) ... ok\ntest_repeated_open_is_idempotent_and_records_a_checksum (test_contracts_schema.LedgerSchemaTests.test_repeated_open_is_idempotent_and_records_a_checksum) ... ok\ntest_v3_failure_rolls_back_rebuild_and_can_retry (test_contracts_schema.LedgerSchemaTests.test_v3_failure_rolls_back_rebuild_and_can_retry) ... ok\ntest_concurrent_lease_ownership (test_phase_a_replay.PhaseAReplayTest.test_concurrent_lease_ownership) ... ok\ntest_crash_running_artifact_before_ledger_and_restart (test_phase_a_replay.PhaseAReplayTest.test_crash_running_artifact_before_ledger_and_restart) ... ok\ntest_fixed_observed_vs_shadow_replays (test_phase_a_replay.PhaseAReplayTest.test_fixed_observed_vs_shadow_replays) ... synthetic duplicate hygiene warning\n[shadow-ledger] projection callback failed (IsADirectoryError); legacy fetch outcome is unchanged\nok\ntest_real_nonzero_child_exit_matches_failed_shadow (test_phase_a_replay.PhaseAReplayTest.test_real_nonzero_child_exit_matches_failed_shadow) ... Process SpawnProcess-6:\nTraceback (most recent call last):\n  File \"/usr/lib/python3.12/multiprocessing/process.py\", line 314, in _bootstrap\n    self.run()\n  File \"/usr/lib/python3.12/multiprocessing/process.py\", line 108, in run\n    self._target(*self._args, **self._kwargs)\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-portfolio-history/V6/marketmamba/ops/test_phase_a_replay.py\", line 103, in failing_callback_child\n    observe_fetch_only(\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-portfolio-history/V6/marketmamba/ops/shadow.py\", line 433, in observe_fetch_only\n    result = fetch_operation()\n             ^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-portfolio-history/V6/marketmamba/ops/test_phase_a_replay.py\", line 101, in fail\n    raise RuntimeError(\"synthetic child fetch failure\")\nRuntimeError: synthetic child fetch failure\nok\ntest_reproducible_overhead_benchmark (test_phase_a_replay.PhaseAReplayTest.test_reproducible_overhead_benchmark) ... ok\ntest_stale_fence_and_active_shadow_conflict (test_phase_a_replay.PhaseAReplayTest.test_stale_fence_and_active_shadow_conflict) ... [shadow-ledger] lease conflict failed (LeaseConflictError); legacy fetch outcome is unchanged\nok\ntest_cli_failure_redacts_path_and_error_detail (test_projection.CurrentStateCliTest.test_cli_failure_redacts_path_and_error_detail) ... ok\ntest_cli_human_default_and_json_option (test_projection.CurrentStateCliTest.test_cli_human_default_and_json_option) ... ok\ntest_any_absolute_path_opaques_the_entire_committed_evidence (test_projection.CurrentStateProjectionTest.test_any_absolute_path_opaques_the_entire_committed_evidence) ... ok\ntest_artifact_summary_counts_identities_not_stage_references (test_projection.CurrentStateProjectionTest.test_artifact_summary_counts_identities_not_stage_references)\nShared artifacts count once; distinct equal-sized artifacts count twice. ... ok\ntest_atomic_replace_failure_preserves_previous_valid_projection (test_projection.CurrentStateProjectionTest.test_atomic_replace_failure_preserves_previous_valid_projection) ... ok\ntest_bounded_path_segments_and_quoted_credentials_are_fully_opaque (test_projection.CurrentStateProjectionTest.test_bounded_path_segments_and_quoted_credentials_are_fully_opaque) ... ok\ntest_colon_adjacent_paths_and_roots_are_opaque_but_safe_slashes_remain (test_projection.CurrentStateProjectionTest.test_colon_adjacent_paths_and_roots_are_opaque_but_safe_slashes_remain) ... ok\ntest_colon_adjacent_paths_and_roots_are_opaque_end_to_end (test_projection.CurrentStateProjectionTest.test_colon_adjacent_paths_and_roots_are_opaque_end_to_end) ... ok\ntest_committed_evidence_paths_and_credentials_are_opaque_in_all_output (test_projection.CurrentStateProjectionTest.test_committed_evidence_paths_and_credentials_are_opaque_in_all_output) ... ok\ntest_default_projection_path_is_next_to_database (test_projection.CurrentStateProjectionTest.test_default_projection_path_is_next_to_database) ... ok\ntest_fetch_exception_projects_failure_and_reraises_original (test_projection.CurrentStateProjectionTest.test_fetch_exception_projects_failure_and_reraises_original) ... ok\ntest_human_diagnostics_are_explicitly_fetch_only (test_projection.CurrentStateProjectionTest.test_human_diagnostics_are_explicitly_fetch_only) ... ok\ntest_last_successful_fetch_date_does_not_treat_newer_failure_as_success (test_projection.CurrentStateProjectionTest.test_last_successful_fetch_date_does_not_treat_newer_failure_as_success) ... ok\ntest_projection_failure_does_not_replace_fetch_exception (test_projection.CurrentStateProjectionTest.test_projection_failure_does_not_replace_fetch_exception) ... [shadow-ledger] projection callback failed (OSError); legacy fetch outcome is unchanged\nok\ntest_projection_is_rebuildable_from_committed_ledger_only (test_projection.CurrentStateProjectionTest.test_projection_is_rebuildable_from_committed_ledger_only) ... ok\ntest_projection_reports_latest_retry_without_overclaiming_scope (test_projection.CurrentStateProjectionTest.test_projection_reports_latest_retry_without_overclaiming_scope) ... ok\ntest_reader_opens_ledger_without_running_migrations (test_projection.CurrentStateProjectionTest.test_reader_opens_ledger_without_running_migrations) ... ok\ntest_serialized_writers_cannot_publish_older_snapshot_last (test_projection.CurrentStateProjectionTest.test_serialized_writers_cannot_publish_older_snapshot_last) ... ok\ntest_stuck_projection_lock_cannot_delay_legacy_result_or_damage_json (test_projection.CurrentStateProjectionTest.test_stuck_projection_lock_cannot_delay_legacy_result_or_damage_json) ... [shadow-ledger] projection callback failed (ProjectionLockTimeout); legacy fetch outcome is unchanged\nok\ntest_stuck_projection_lock_cannot_replace_legacy_exception (test_projection.CurrentStateProjectionTest.test_stuck_projection_lock_cannot_replace_legacy_exception) ... [shadow-ledger] projection callback failed (ProjectionLockTimeout); legacy fetch outcome is unchanged\nok\ntest_unquoted_space_paths_and_extended_credentials_leave_no_fragments (test_projection.CurrentStateProjectionTest.test_unquoted_space_paths_and_extended_credentials_leave_no_fragments) ... ok\ntest_commit_at_deterministic_reader_boundaries (test_projection_isolation.ProjectionProcessIsolationTest.test_commit_at_deterministic_reader_boundaries) ... {\"after_generation\": \"7fe02bb3b718f4b45736ae6c48e017dc8e2b6b6860482c3a6a4024c6e4b01cf8\", \"before_generation\": \"7bffe2936134d9c6861628031dd12cc6812bbaf4bebe8884f397e0dd67935661\", \"case\": \"before_snapshot-0\", \"during_generation\": \"7fe02bb3b718f4b45736ae6c48e017dc8e2b6b6860482c3a6a4024c6e4b01cf8\", \"writer_exitcode\": 0}\n{\"after_generation\": \"d182f36ed8992be8826cb86f38d832dee4e79c547f3a9610c47e26e09ee5fdf3\", \"before_generation\": \"a61a4d62870bb1da5aec7eec7bf7cca4048a833fabdde894203da37fd2759c80\", \"case\": \"before_snapshot-1\", \"during_generation\": \"d182f36ed8992be8826cb86f38d832dee4e79c547f3a9610c47e26e09ee5fdf3\", \"writer_exitcode\": 0}\n{\"after_generation\": \"944b684c94e7b55099cd519a5cda8840ea884e9a0aee6cf3c3fd7a8161ebe59c\", \"before_generation\": \"362c9cdc61de79ceba25315171fdebd8ce55a44c328b7a6ff4b12b6062b29290\", \"case\": \"mid_watermark-0\", \"during_generation\": \"362c9cdc61de79ceba25315171fdebd8ce55a44c328b7a6ff4b12b6062b29290\", \"writer_exitcode\": 0}\n{\"after_generation\": \"acc3d2215afb81be2f72fa45bbbffd5a9635c1e6519f9d3fbbbc1c232b4a5218\", \"before_generation\": \"5dd21a76a6a43dc75d85081d6386422d7e38a1781f48cc92fd36188f154e2d5d\", \"case\": \"mid_watermark-1\", \"during_generation\": \"5dd21a76a6a43dc75d85081d6386422d7e38a1781f48cc92fd36188f154e2d5d\", \"writer_exitcode\": 0}\n{\"after_generation\": \"02bff527872815149c40bfeaab957a1410c3e9987fe8a5eaa4a57b419e2764e0\", \"before_generation\": \"e654db6f217c0f41118b23ffde946b83052283878e8a4cc6b2a88fc10cce5286\", \"case\": \"after_watermark-0\", \"during_generation\": \"e654db6f217c0f41118b23ffde946b83052283878e8a4cc6b2a88fc10cce5286\", \"writer_exitcode\": 0}\n{\"after_generation\": \"b69ce1e3d07fbcb7161e31f86fe2f5e27c0e62be18f42ba1759b6b500c2bf2c4\", \"before_generation\": \"408a26d2a806ed8158fbb2e369b5d2083d0774f44b2badf9a71ccb357ff3edf2\", \"case\": \"after_watermark-1\", \"during_generation\": \"408a26d2a806ed8158fbb2e369b5d2083d0774f44b2badf9a71ccb357ff3edf2\", \"writer_exitcode\": 0}\n{\"after_generation\": \"4630ecc3d3c2f1bd170520acd34953ace4c60229ad2d547f38ad6a01a643a227\", \"before_generation\": \"7c5b24b0712611a7ffaffe8540d8c1f8146634415ecb0f3469a9e9e90778cd2b\", \"case\": \"before_artifacts-0\", \"during_generation\": \"7c5b24b0712611a7ffaffe8540d8c1f8146634415ecb0f3469a9e9e90778cd2b\", \"writer_exitcode\": 0}\n{\"after_generation\": \"5ffd000ee07feecd98dfff7de1e74dbdf772f79dfe60af7f711042d56dcdde3a\", \"before_generation\": \"f289060bc2a32438648cd04fdc944b639cfc33074bffa7498a8e7e5b8e3e9d24\", \"case\": \"before_artifacts-1\", \"during_generation\": \"f289060bc2a32438648cd04fdc944b639cfc33074bffa7498a8e7e5b8e3e9d24\", \"writer_exitcode\": 0}\nok\ntest_negative_control_detects_missing_read_transaction (test_projection_isolation.ProjectionProcessIsolationTest.test_negative_control_detects_missing_read_transaction) ... {\"after_generation\": \"415e5ded4d679452769f1d8c8e251b1c6dd6d89f81b9964f29c6e355b46464e4\", \"before_generation\": \"c4b0e13c669b5937dc21945a6837aa47a36877dbdfaf44adc87def9ee2af969e\", \"case\": \"negative-control-no-BEGIN\", \"during_generation\": \"004a7dcba338c617175adee7f229666bfd0d7092ecbb3800a3d59f3bad5f9d71\", \"writer_exitcode\": 0}\nok\ntest_uncommitted_then_commit (test_projection_isolation.ProjectionProcessIsolationTest.test_uncommitted_then_commit) ... {\"after_generation\": \"aadacca9f0d822ec1b9884e4441e884832207ec1316a51d1951e544f17687e5a\", \"before_generation\": \"46d5693e0ac46f764a79f63aaad0f9b67299be84bc89521c91ed185f43b5b2a2\", \"case\": \"commit\", \"during_generation\": \"46d5693e0ac46f764a79f63aaad0f9b67299be84bc89521c91ed185f43b5b2a2\", \"writer_exitcode\": 0}\nok\ntest_uncommitted_then_rollback (test_projection_isolation.ProjectionProcessIsolationTest.test_uncommitted_then_rollback) ... {\"after_generation\": \"cfa8e8ce5d808d4618f33c588d63ab70f487e8a3e21f48a07959390d8e59bff7\", \"before_generation\": \"cfa8e8ce5d808d4618f33c588d63ab70f487e8a3e21f48a07959390d8e59bff7\", \"case\": \"rollback\", \"during_generation\": \"cfa8e8ce5d808d4618f33c588d63ab70f487e8a3e21f48a07959390d8e59bff7\", \"writer_exitcode\": 0}\nok\ntest_uncommitted_writer_process_failure (test_projection_isolation.ProjectionProcessIsolationTest.test_uncommitted_writer_process_failure) ... {\"after_generation\": \"da665546c05326fd181404c152ace74e3b208f2c765d6a69e68258ffc3098127\", \"before_generation\": \"da665546c05326fd181404c152ace74e3b208f2c765d6a69e68258ffc3098127\", \"case\": \"kill\", \"during_generation\": \"da665546c05326fd181404c152ace74e3b208f2c765d6a69e68258ffc3098127\", \"writer_exitcode\": -9}\nok\ntest_active_lease_conflict_does_not_skip_or_duplicate_legacy_fetch (test_shadow.ShadowFetchObserverTest.test_active_lease_conflict_does_not_skip_or_duplicate_legacy_fetch) ... ok\ntest_connection_close_failure_cannot_replace_legacy_result (test_shadow.ShadowFetchObserverTest.test_connection_close_failure_cannot_replace_legacy_result) ... ok\ntest_default_ledger_path_is_under_ignored_data_directory (test_shadow.ShadowFetchObserverTest.test_default_ledger_path_is_under_ignored_data_directory) ... ok\ntest_existing_fetch_exception_is_recorded_and_reraised_unchanged (test_shadow.ShadowFetchObserverTest.test_existing_fetch_exception_is_recorded_and_reraised_unchanged) ... ok\ntest_hostile_logger_and_config_path_do_not_block_legacy_fetch (test_shadow.ShadowFetchObserverTest.test_hostile_logger_and_config_path_do_not_block_legacy_fetch) ... ok\ntest_hostile_path_does_not_block_legacy_fetch (test_shadow.ShadowFetchObserverTest.test_hostile_path_does_not_block_legacy_fetch) ... ok\ntest_ledger_initialization_failure_does_not_change_legacy_result (test_shadow.ShadowFetchObserverTest.test_ledger_initialization_failure_does_not_change_legacy_result) ... ok\ntest_missing_result_remains_failure_and_is_recorded (test_shadow.ShadowFetchObserverTest.test_missing_result_remains_failure_and_is_recorded) ... ok\ntest_projection_callback_failure_is_non_authoritative (test_shadow.ShadowFetchObserverTest.test_projection_callback_failure_is_non_authoritative) ... ok\ntest_projection_is_not_requested_after_ledger_commit_failure (test_shadow.ShadowFetchObserverTest.test_projection_is_not_requested_after_ledger_commit_failure) ... ok\ntest_release_and_logger_failures_cannot_replace_legacy_exception (test_shadow.ShadowFetchObserverTest.test_release_and_logger_failures_cannot_replace_legacy_exception) ... ok\ntest_source_count_is_independent_from_authoritative_missing_list (test_shadow.ShadowFetchObserverTest.test_source_count_is_independent_from_authoritative_missing_list) ... ok\ntest_stat_artifact_declares_metadata_fingerprint_semantics (test_shadow.ShadowFetchObserverTest.test_stat_artifact_declares_metadata_fingerprint_semantics) ... ok\ntest_success_returns_exact_legacy_result_and_commits_checks (test_shadow.ShadowFetchObserverTest.test_success_returns_exact_legacy_result_and_commits_checks) ... ok\ntest_two_terminal_runs_create_distinct_attempt_and_stage_history (test_shadow.ShadowFetchObserverTest.test_two_terminal_runs_create_distinct_attempt_and_stage_history) ... ok\ntest_connection_safety_pragmas_apply_to_each_real_connection (test_store_lease.LeaseFencingTests.test_connection_safety_pragmas_apply_to_each_real_connection) ... ok\ntest_old_holder_cannot_heartbeat_finalize_attempt_or_commit_stage (test_store_lease.LeaseFencingTests.test_old_holder_cannot_heartbeat_finalize_attempt_or_commit_stage) ... ok\ntest_stale_takeover_and_release_keep_fencing_token_monotonic (test_store_lease.LeaseFencingTests.test_stale_takeover_and_release_keep_fencing_token_monotonic) ... ok\ntest_two_real_connections_racing_have_exactly_one_lease_winner (test_store_lease.LeaseFencingTests.test_two_real_connections_racing_have_exactly_one_lease_winner) ... ok\ntest_attempt_and_logical_terminal_states_reject_skipped (test_store_lease.TransactionalStoreTests.test_attempt_and_logical_terminal_states_reject_skipped) ... ok\ntest_failed_artifact_insert_rolls_back_entire_terminal_commit (test_store_lease.TransactionalStoreTests.test_failed_artifact_insert_rolls_back_entire_terminal_commit) ... ok\ntest_persisted_errors_evidence_and_uris_are_redacted (test_store_lease.TransactionalStoreTests.test_persisted_errors_evidence_and_uris_are_redacted) ... ok\ntest_retry_same_logical_run_adds_attempt_without_rewriting_history (test_store_lease.TransactionalStoreTests.test_retry_same_logical_run_adds_attempt_without_rewriting_history) ... ok\ntest_stale_holder_cannot_allocate_attempt_or_reopen_logical_run (test_store_lease.TransactionalStoreTests.test_stale_holder_cannot_allocate_attempt_or_reopen_logical_run) ... ok\ntest_terminal_attempt_logical_run_and_stage_are_immutable (test_store_lease.TransactionalStoreTests.test_terminal_attempt_logical_run_and_stage_are_immutable) ... ok\ntest_terminal_logical_run_reopens_for_new_attempt_without_history_rewrite (test_store_lease.TransactionalStoreTests.test_terminal_logical_run_reopens_for_new_attempt_without_history_rewrite) ... ok\ntest_terminal_stage_commits_artifacts_checks_and_status_atomically (test_store_lease.TransactionalStoreTests.test_terminal_stage_commits_artifacts_checks_and_status_atomically) ... ok\ntest_existing_artifact_with_conflicting_content_fails_closed (test_store_lease_review.ArtifactLineageRegressionTests.test_existing_artifact_with_conflicting_content_fails_closed) ... ok\ntest_retry_can_reference_same_immutable_artifact_with_distinct_lineage (test_store_lease_review.ArtifactLineageRegressionTests.test_retry_can_reference_same_immutable_artifact_with_distinct_lineage) ... ok\ntest_heartbeat_reads_clock_after_write_lock_and_rejects_expired_lease (test_store_lease_review.LeaseClockRegressionTests.test_heartbeat_reads_clock_after_write_lock_and_rejects_expired_lease) ... ok\ntest_equals_quoted_credentials_are_fully_redacted_before_db_write (test_store_lease_review.RedactionRegressionTests.test_equals_quoted_credentials_are_fully_redacted_before_db_write) ... ok\ntest_escaped_json_secret_value_is_fully_redacted_before_db_write (test_store_lease_review.RedactionRegressionTests.test_escaped_json_secret_value_is_fully_redacted_before_db_write) ... ok\ntest_extended_credential_forms_share_one_redactor (test_store_lease_review.RedactionRegressionTests.test_extended_credential_forms_share_one_redactor) ... ok\ntest_json_mapping_and_url_userinfo_secrets_are_redacted_before_db_write (test_store_lease_review.RedactionRegressionTests.test_json_mapping_and_url_userinfo_secrets_are_redacted_before_db_write) ... ok\ntest_url_userinfo_is_fully_redacted_without_changing_host_or_path (test_store_lease_review.RedactionRegressionTests.test_url_userinfo_is_fully_redacted_without_changing_host_or_path) ... ok\ntest_denied_commit_rolls_back_stage_artifacts_and_transaction (test_store_lease_review.TransactionRollbackRegressionTests.test_denied_commit_rolls_back_stage_artifacts_and_transaction) ... ok\ntest_keyboard_interrupt_rolls_back_body_and_transaction (test_store_lease_review.TransactionRollbackRegressionTests.test_keyboard_interrupt_rolls_back_body_and_transaction) ... ok\n\n----------------------------------------------------------------------\nRan 81 tests in 18.009s\n\nOK\n",
+        "port04-fetch-governance": "test_fetch_only_returns_failure_when_daily_sources_are_missing (V6.scripts.test_v62_fetch_only.FetchOnlyTest.test_fetch_only_returns_failure_when_daily_sources_are_missing) ... 2026-10-21 02:17:40,478 INFO ==============================================================\n2026-10-21 02:17:40,478 INFO [fetch-only] 只更新每日 raw parquet；不建矩陣、不載模型、不推論、不發布\n2026-10-21 02:17:40,489 INFO ==============================================================\n2026-10-21 02:17:40,489 INFO [fetch-only] 完整來源 0/10\n2026-10-21 02:17:40,490 ERROR [fetch-only] 失敗｜缺漏 1 個每日源｜exit=1\nok\ntest_fetch_only_runs_when_shadow_observer_is_unavailable (V6.scripts.test_v62_fetch_only.FetchOnlyTest.test_fetch_only_runs_when_shadow_observer_is_unavailable) ... 2026-10-21 02:17:40,491 INFO ==============================================================\n2026-10-21 02:17:40,491 INFO [fetch-only] 只更新每日 raw parquet；不建矩陣、不載模型、不推論、不發布\n2026-10-21 02:17:40,491 INFO ==============================================================\n2026-10-21 02:17:40,491 INFO [fetch-only] 完整來源 10/10\n2026-10-21 02:17:40,491 INFO [fetch-only] 完成｜每日源 10/10｜耗時 0.0 秒｜exit=0\nok\ntest_fetch_only_stops_before_model_pipeline_imports (V6.scripts.test_v62_fetch_only.FetchOnlyTest.test_fetch_only_stops_before_model_pipeline_imports) ... 2026-10-21 02:17:40,493 INFO ==============================================================\n2026-10-21 02:17:40,493 INFO [fetch-only] 只更新每日 raw parquet；不建矩陣、不載模型、不推論、不發布\n2026-10-21 02:17:40,493 INFO ==============================================================\n2026-10-21 02:17:40,493 INFO [fetch-only] 完整來源 10/10\n2026-10-21 02:17:40,493 INFO [fetch-only] 完成｜每日源 10/10｜耗時 0.0 秒｜exit=0\nok\ntest_durable_and_labeled_references (tools.project_knowledge.test_knowledge_governance.AuthorityReferenceTests.test_durable_and_labeled_references) ... ok\ntest_e1_status_mismatch_fails (tools.project_knowledge.test_knowledge_governance.CanonicalInvariantTests.test_e1_status_mismatch_fails) ... ok\ntest_feature_authority_change_without_note_fails (tools.project_knowledge.test_knowledge_governance.CanonicalInvariantTests.test_feature_authority_change_without_note_fails) ... ok\ntest_phase_a_deployed_mismatch_fails (tools.project_knowledge.test_knowledge_governance.CanonicalInvariantTests.test_phase_a_deployed_mismatch_fails) ... ok\ntest_dirty_legacy_document_uses_committed_prose (tools.project_knowledge.test_knowledge_governance.GenerationTests.test_dirty_legacy_document_uses_committed_prose) ... ok\ntest_generation_is_deterministic (tools.project_knowledge.test_knowledge_governance.GenerationTests.test_generation_is_deterministic) ... ok\ntest_acknowledgment_requires_reason (tools.project_knowledge.test_knowledge_governance.ImpactTests.test_acknowledgment_requires_reason) ... ok\ntest_feature_manifest_requires_review (tools.project_knowledge.test_knowledge_governance.ImpactTests.test_feature_manifest_requires_review) ... ok\ntest_governance_tool_requires_governance_review (tools.project_knowledge.test_knowledge_governance.ImpactTests.test_governance_tool_requires_governance_review) ... ok\ntest_production_and_portfolio_mapping (tools.project_knowledge.test_knowledge_governance.ImpactTests.test_production_and_portfolio_mapping) ... ok\ntest_worktree_responsibility_requires_state_review (tools.project_knowledge.test_knowledge_governance.ImpactTests.test_worktree_responsibility_requires_state_review) ... ok\ntest_export_is_read_only (tools.project_knowledge.test_knowledge_governance.ObsidianTests.test_export_is_read_only) ... ok\ntest_missing_vault_is_skipped (tools.project_knowledge.test_knowledge_governance.ObsidianTests.test_missing_vault_is_skipped) ... ok\ntest_fixed_human_approval_is_evidence_bound (tools.project_knowledge.test_knowledge_governance.PhaseAApprovalTests.test_fixed_human_approval_is_evidence_bound) ... ok\ntest_missing_human_record_rejected (tools.project_knowledge.test_knowledge_governance.PhaseAApprovalTests.test_missing_human_record_rejected) ... ok\ntest_modified_approval_binding_rejected (tools.project_knowledge.test_knowledge_governance.PhaseAApprovalTests.test_modified_approval_binding_rejected) ... ok\ntest_no_automatic_task5_approval (tools.project_knowledge.test_knowledge_governance.PhaseAApprovalTests.test_no_automatic_task5_approval) ... ok\ntest_task5_changed_decision_or_evidence_is_rejected (tools.project_knowledge.test_knowledge_governance.PhaseAApprovalTests.test_task5_changed_decision_or_evidence_is_rejected) ... ok\ntest_task5_corrupt_fixed_evidence_is_rejected (tools.project_knowledge.test_knowledge_governance.PhaseAApprovalTests.test_task5_corrupt_fixed_evidence_is_rejected) ... ok\ntest_task5_missing_decision_is_rejected (tools.project_knowledge.test_knowledge_governance.PhaseAApprovalTests.test_task5_missing_decision_is_rejected) ... ok\ntest_task5_scoped_human_decision_is_evidence_bound (tools.project_knowledge.test_knowledge_governance.PhaseAApprovalTests.test_task5_scoped_human_decision_is_evidence_bound) ... ok\ntest_fresh_and_stale (tools.project_knowledge.test_knowledge_governance.RuntimeTests.test_fresh_and_stale) ... ok\ntest_record_is_explicit_and_atomic (tools.project_knowledge.test_knowledge_governance.RuntimeTests.test_record_is_explicit_and_atomic) ... ok\n\n----------------------------------------------------------------------\nRan 26 tests in 0.197s\n\nOK\n"
+      },
+      "browser_receipts": {
+        "port04-actual-missing": {
+          "observed_at": "2026-10-20T18:17:03.953Z",
+          "browser": {
+            "Browser": "Chrome/155.0.8059.85",
+            "Protocol-Version": "1.3",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+            "V8-Version": "15.5.35.25",
+            "WebKit-Version": "537.36 (@0e66b94549a8bd85f03fbdf189b752d6e7b63c32)",
+            "webSocketDebuggerUrl": "ws://127.0.0.1:9228/devtools/browser/46aec23f-32f6-40f1-9a03-9470009df6a7"
+          },
+          "checks": [
+            {
+              "viewport": "desktop",
+              "width": 1440,
+              "height": 1000,
+              "overflow": false,
+              "keyboard_focus_tag": "BODY",
+              "keyboard_focus_order": [
+                "BODY"
+              ],
+              "events_verified": 0,
+              "status": "尚無可用的模擬歷史資料。"
+            },
+            {
+              "viewport": "mobile",
+              "width": 390,
+              "height": 844,
+              "overflow": false,
+              "keyboard_focus_tag": "A",
+              "keyboard_focus_order": [
+                "A"
+              ],
+              "events_verified": 0,
+              "status": "尚無可用的模擬歷史資料。"
+            }
+          ],
+          "runtime_exceptions": [],
+          "unavailable_expectation": "missing"
+        },
+        "port04-actual-corrupt": {
+          "observed_at": "2026-10-20T18:17:28.111Z",
+          "browser": {
+            "Browser": "Chrome/155.0.8059.85",
+            "Protocol-Version": "1.3",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+            "V8-Version": "15.5.35.25",
+            "WebKit-Version": "537.36 (@0e66b94549a8bd85f03fbdf189b752d6e7b63c32)",
+            "webSocketDebuggerUrl": "ws://127.0.0.1:9228/devtools/browser/46aec23f-32f6-40f1-9a03-9470009df6a7"
+          },
+          "checks": [
+            {
+              "viewport": "desktop",
+              "width": 1440,
+              "height": 1000,
+              "overflow": false,
+              "keyboard_focus_tag": "BODY",
+              "keyboard_focus_order": [
+                "BODY"
+              ],
+              "events_verified": 0,
+              "status": "歷史資料損壞、身份不符或目前無法使用；未沿用舊資料。"
+            },
+            {
+              "viewport": "mobile",
+              "width": 390,
+              "height": 844,
+              "overflow": false,
+              "keyboard_focus_tag": "A",
+              "keyboard_focus_order": [
+                "A"
+              ],
+              "events_verified": 0,
+              "status": "歷史資料損壞、身份不符或目前無法使用；未沿用舊資料。"
+            }
+          ],
+          "runtime_exceptions": [],
+          "unavailable_expectation": "corrupt"
+        },
+        "port04-restored-restarted": {
+          "observed_at": "2026-10-20T18:18:25.877Z",
+          "browser": {
+            "Browser": "Chrome/155.0.8059.85",
+            "Protocol-Version": "1.3",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+            "V8-Version": "15.5.35.25",
+            "WebKit-Version": "537.36 (@0e66b94549a8bd85f03fbdf189b752d6e7b63c32)",
+            "webSocketDebuggerUrl": "ws://127.0.0.1:9228/devtools/browser/46aec23f-32f6-40f1-9a03-9470009df6a7"
+          },
+          "checks": [
+            {
+              "viewport": "desktop",
+              "width": 1440,
+              "height": 1000,
+              "overflow": false,
+              "keyboard_focus_tag": "SELECT",
+              "keyboard_focus_order": [
+                "svg",
+                "SELECT"
+              ],
+              "events_verified": 7,
+              "status": "已讀取 7 個模擬事件"
+            },
+            {
+              "viewport": "mobile",
+              "width": 390,
+              "height": 844,
+              "overflow": false,
+              "keyboard_focus_tag": "SELECT",
+              "keyboard_focus_order": [
+                "svg",
+                "SELECT"
+              ],
+              "events_verified": 7,
+              "status": "已讀取 7 個模擬事件"
+            },
+            {
+              "scenario": "missing",
+              "method": "CDP request interception after actual API validation",
+              "stale_history_visible": false,
+              "status": "尚無可用的模擬歷史資料。"
+            },
+            {
+              "scenario": "corrupt",
+              "method": "CDP request interception after actual API validation",
+              "stale_history_visible": false,
+              "status": "歷史資料損壞、身份不符或目前無法使用；未沿用舊資料。"
+            },
+            {
+              "scenario": "network",
+              "method": "CDP request interception after actual API validation",
+              "stale_history_visible": false,
+              "status": "目前無法連線到歷史服務；未沿用舊資料。"
+            }
+          ],
+          "runtime_exceptions": [],
+          "unavailable_expectation": null
+        }
+      },
+      "restart": {
+        "old_api_pid": 326288,
+        "new_api_pid": 327398,
+        "artifact_sha256": "d7fd650132e1261a7fb5275cf44c7481b9f86f226253f35f8dd49003953035d6",
+        "browser_after_restart": "7 events each desktop/mobile PASS"
+      },
+      "process_cleanup": "API, Vite and dedicated Chrome stopped; no scheduler or background task retained",
+      "final_validation": {
+        "artifact_hashes": 5,
+        "source_hashes": 16,
+        "syntax": "PASS",
+        "new_diff_check": "PASS",
+        "governance_output": "test_durable_and_labeled_references (tools.project_knowledge.test_knowledge_governance.AuthorityReferenceTests.test_durable_and_labeled_references) ... ok\ntest_e1_status_mismatch_fails (tools.project_knowledge.test_knowledge_governance.CanonicalInvariantTests.test_e1_status_mismatch_fails) ... ok\ntest_feature_authority_change_without_note_fails (tools.project_knowledge.test_knowledge_governance.CanonicalInvariantTests.test_feature_authority_change_without_note_fails) ... ok\ntest_phase_a_deployed_mismatch_fails (tools.project_knowledge.test_knowledge_governance.CanonicalInvariantTests.test_phase_a_deployed_mismatch_fails) ... ok\ntest_dirty_legacy_document_uses_committed_prose (tools.project_knowledge.test_knowledge_governance.GenerationTests.test_dirty_legacy_document_uses_committed_prose) ... ok\ntest_generation_is_deterministic (tools.project_knowledge.test_knowledge_governance.GenerationTests.test_generation_is_deterministic) ... ok\ntest_acknowledgment_requires_reason (tools.project_knowledge.test_knowledge_governance.ImpactTests.test_acknowledgment_requires_reason) ... ok\ntest_feature_manifest_requires_review (tools.project_knowledge.test_knowledge_governance.ImpactTests.test_feature_manifest_requires_review) ... ok\ntest_governance_tool_requires_governance_review (tools.project_knowledge.test_knowledge_governance.ImpactTests.test_governance_tool_requires_governance_review) ... ok\ntest_production_and_portfolio_mapping (tools.project_knowledge.test_knowledge_governance.ImpactTests.test_production_and_portfolio_mapping) ... ok\ntest_worktree_responsibility_requires_state_review (tools.project_knowledge.test_knowledge_governance.ImpactTests.test_worktree_responsibility_requires_state_review) ... ok\ntest_export_is_read_only (tools.project_knowledge.test_knowledge_governance.ObsidianTests.test_export_is_read_only) ... ok\ntest_missing_vault_is_skipped (tools.project_knowledge.test_knowledge_governance.ObsidianTests.test_missing_vault_is_skipped) ... ok\ntest_fixed_human_approval_is_evidence_bound (tools.project_knowledge.test_knowledge_governance.PhaseAApprovalTests.test_fixed_human_approval_is_evidence_bound) ... ok\ntest_missing_human_record_rejected (tools.project_knowledge.test_knowledge_governance.PhaseAApprovalTests.test_missing_human_record_rejected) ... ok\ntest_modified_approval_binding_rejected (tools.project_knowledge.test_knowledge_governance.PhaseAApprovalTests.test_modified_approval_binding_rejected) ... ok\ntest_no_automatic_task5_approval (tools.project_knowledge.test_knowledge_governance.PhaseAApprovalTests.test_no_automatic_task5_approval) ... ok\ntest_task5_changed_decision_or_evidence_is_rejected (tools.project_knowledge.test_knowledge_governance.PhaseAApprovalTests.test_task5_changed_decision_or_evidence_is_rejected) ... ok\ntest_task5_corrupt_fixed_evidence_is_rejected (tools.project_knowledge.test_knowledge_governance.PhaseAApprovalTests.test_task5_corrupt_fixed_evidence_is_rejected) ... ok\ntest_task5_missing_decision_is_rejected (tools.project_knowledge.test_knowledge_governance.PhaseAApprovalTests.test_task5_missing_decision_is_rejected) ... ok\ntest_task5_scoped_human_decision_is_evidence_bound (tools.project_knowledge.test_knowledge_governance.PhaseAApprovalTests.test_task5_scoped_human_decision_is_evidence_bound) ... ok\ntest_fresh_and_stale (tools.project_knowledge.test_knowledge_governance.RuntimeTests.test_fresh_and_stale) ... ok\ntest_record_is_explicit_and_atomic (tools.project_knowledge.test_knowledge_governance.RuntimeTests.test_record_is_explicit_and_atomic) ... ok\n\n----------------------------------------------------------------------\nRan 23 tests in 0.049s\n\nOK\n",
+        "knowledge_health_output": "KNOWLEDGE HEALTH\n\nProject Map        PASS\nAgent Guides       PASS\nDomains            PASS\nGovernance         WARNING\nAuthority Drift    WARNING\nRuntime Freshness  PASS\nGenerated Index    PASS\nLegacy Docs        WARNING\n\nOverall: WARNING\n"
+      },
+      "repair_note": "One documentation-only closure repair: synchronize stale H1 proposal pointers in five canonical domain notes; no implementation rework."
     }
   },
   "human_interventions_after_h1": 0,
@@ -401,5 +575,101 @@
   "usage": "No independently verified aggregate token telemetry; no precise aggregate claim",
   "goal": "V7-bound native Goal; automatic cross-session continuation not certified",
   "strict_phase0": "STOP",
-  "research_admission": false
+  "research_admission": false,
+  "artifact_class": "GENERATED",
+  "observed_at": "2026-10-20T18:20:56.075116+00:00",
+  "status": "COMPLETED_VERIFIED_H1_ENGINEERING_ONLY_UNMERGED_NOT_DEPLOYED",
+  "environment_lock": "annotated-types==0.8.0\nanyio==4.15.1\ncertifi==2026.10.19\nclick==8.5.0\nfastapi==0.115.12\nh11==0.16.0\nhttpcore==1.0.9\nhttpx==0.28.1\nidna==3.20\npydantic==2.14.1\npydantic_core==2.50.1\nstarlette==0.46.2\ntyping-inspection==0.4.4\ntyping_extensions==4.16.0\nuvicorn==0.34.3\n",
+  "native_goal_telemetry_observation": {
+    "thread_id": "01a15a57-babe-79e2-9d27-018f19698e0e",
+    "status": "active at observation",
+    "tokensUsed": 320880,
+    "timeUsedSeconds": 940,
+    "interpretation": "Native API reported values only; scope/aggregation across agents not independently certified, not exact aggregate accounting or a hard limit.",
+    "tool_updatedAt_epoch": 1792520356
+  },
+  "artifact_inventory": [
+    {
+      "path": "research/v7/portfolio-history-fixture.jsonl",
+      "sha256": "3f2cf753f2299df83ab921c8fc9f6e46abfe0e26f5fa6ab6bae4bb9f2ff5ca1c",
+      "bytes": 2535,
+      "artifact_class": "GENERATED",
+      "evidence_class": "OFFLINE_SYNTHETIC_ENGINEERING",
+      "rebuild": "fixed fixture builder / documented browser harness"
+    },
+    {
+      "path": "research/v7/portfolio-history-fixture-manifest.json",
+      "sha256": "f6a81fa77292e7ee3a5a40e937241a5eee77cb2c93ea842fdb0bd522c3d4084b",
+      "bytes": 222,
+      "artifact_class": "GENERATED",
+      "evidence_class": "OFFLINE_SYNTHETIC_ENGINEERING",
+      "rebuild": "fixed fixture builder / documented browser harness"
+    },
+    {
+      "path": "research/v7/portfolio-history-artifact.json",
+      "sha256": "d7fd650132e1261a7fb5275cf44c7481b9f86f226253f35f8dd49003953035d6",
+      "bytes": 5632,
+      "artifact_class": "GENERATED",
+      "evidence_class": "OFFLINE_SYNTHETIC_ENGINEERING",
+      "rebuild": "fixed fixture builder / documented browser harness"
+    },
+    {
+      "path": "research/v7/portfolio-history-desktop.png",
+      "sha256": "0021d9b5f67989fb9ac64b4b0bf33a1a9ba79b01f610debc7a1418be6a6ca597",
+      "bytes": 251397,
+      "artifact_class": "GENERATED",
+      "evidence_class": "OFFLINE_SYNTHETIC_ENGINEERING",
+      "rebuild": "fixed fixture builder / documented browser harness"
+    },
+    {
+      "path": "research/v7/portfolio-history-mobile.png",
+      "sha256": "53c7b3adacd3cbf2a6e115989e6ae5547b640914d4bc183c9ab3405a084d15b5",
+      "bytes": 211310,
+      "artifact_class": "GENERATED",
+      "evidence_class": "OFFLINE_SYNTHETIC_ENGINEERING",
+      "rebuild": "fixed fixture builder / documented browser harness"
+    }
+  ],
+  "source_identity_note": "Browser artifact exporter source_commit is ddd75ff (committed exporter); API commit 7ab3cb9, UI commit7592151. Fixed fixture builder/test source included in acceptance commit and hash list; no claim that all files existed at exporter commit.",
+  "validated_source_files": {
+    "V6/experimental/v7_portfolio_journal.py": "d06ff693b44f9f658cc71ea34daedfbe013a42e293e677fadf162b053df5310b",
+    "V6/experimental/v7_portfolio_history.py": "5c9fb03219e4c12d2ed1e05068b8ffb7be783b335c59771e86e44bb657c17541",
+    "V6/experimental/v7_portfolio_history_test.py": "ce73aaf1aceea472f586a6c1f37eea564adb6d2110bb90af86b2fe581b4d0e3d",
+    "V6/experimental/v7_portfolio_fixture.py": "3fd3043aa662ca01dd3340230349557c7b8a50a746fb9ea6721114d510fceb66",
+    "V6/experimental/v7_portfolio_history_e2e_test.py": "d32fbe4312132f4ca9b502b83d567ae4b269f08fc51873695051afb89fb14326",
+    "app/backend/main.py": "7949dbad6ee0ef892ae6b81c09d19937a504bd00f8804e9d1ba55e2134ab198f",
+    "app/backend/routers/v7_portfolio.py": "f932997def1b20cab12f4501266f9957d3eeaf8ba8280484d6cf29d5b2700521",
+    "app/backend/portfolio_history_local.py": "9bc87453e9eaed076addff85ebefb12b9ba23826b71bd0f895245248429dc2f2",
+    "app/backend/test_v7_portfolio.py": "7a520135c7e5317ed22f96bab40bc18c0b41bbda901373b69dec16b1bb5d763a",
+    "app/frontend/src/App.jsx": "029bbaa2905830a0532b56b80d85fac1cb329f6d0017b2a38587ca08af8895ab",
+    "app/frontend/src/api/portfolioHistory.js": "5111d99f535bb0e205338dd902465a63536c03ef3fe58a133b0029be8da7451b",
+    "app/frontend/src/api/portfolioHistoryContract.mjs": "862069ce44bdc2bb1a69304d2e8c91dbff025536b9d351f566d780d98852170f",
+    "app/frontend/src/api/portfolioHistory.test.mjs": "d01843f812f5cd8ca1fc1c04fa660ec266e0cb1c589f55c65809cdd2b8547088",
+    "app/frontend/src/api/portfolioHistory.browser.mjs": "1a9c0b3565907fe86513dde13a42b80bc8872d90dfb184474482bb46e4ce589c",
+    "app/frontend/src/pages/V7PortfolioHistory.jsx": "ad556194442cbe5dc0f0c55936a69408524a986bfb6e62610d0e1a85e88b6735",
+    "app/frontend/src/pages/V7PortfolioHistory.css": "391f11fc239d0fbfb96ed4ec85ea4dc012159573d310b5104240a761c762b814"
+  },
+  "limitations": [
+    "Synthetic fixture declarations are not market authenticity or research admission",
+    "Weights/official performance/risk policy undefined and not introduced",
+    "Chrome155 tested; no broad browser certification",
+    "Recharts initial dimension console warning; legacy shell market routes 404 in isolated API; no claim of full legacy dashboard acceptance",
+    "Build inherited chunk-size warning",
+    "Host power loss not certified",
+    "H0 merge/H2 absent; main unchanged",
+    "Historical inherited raw RED logs contain preserved trailing whitespace; new change diff clean"
+  ],
+  "independent_reviewers": [
+    {
+      "agent": "history_review",
+      "scope": "PORT01,PORT02,PORT03 static",
+      "outcome": "APPROVE after PORT01/02 round1, no Critical/Required"
+    },
+    {
+      "agent": "final_slice_review",
+      "model": "gpt-6-astra",
+      "scope": "whole product/acceptance; independent focused 7 Python +8 Node; browser receipts reviewed not independently rerun",
+      "outcome": "APPROVE no Critical/Required"
+    }
+  ]
 }

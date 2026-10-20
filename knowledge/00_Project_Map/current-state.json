@@ -335,7 +335,7 @@
   },
   "state_updated_at": "2026-10-21",
   "active_objectives": [
-    "H1 PORT-01/02/03 completed; PORT-04 evidence closure in progress; no H0/H2",
+    "H1 PORT-01–04 completed and verified; STOP for Human Product Slice Review",
     "Single current backlog is research/v7/research-program.md dated current section",
     "No real-data portfolio admission or Phase1-5; Strict Phase0 STOP, E1 exact matrix BLOCKED"
   ],
@@ -459,19 +459,23 @@
     "goal_binding": "CURRENT_V7_OBJECTIVE; future unattended reliability unverified"
   },
   "portfolio_history": {
-    "status": "H1_ENGINEERING_IN_PROGRESS_UNMERGED_NOT_DEPLOYED",
+    "status": "COMPLETED_VERIFIED_UNMERGED_NOT_DEPLOYED",
     "branch": "development/v7-portfolio-history",
     "base_commit": "bebf19ee937a2237641e09701d0564590ed30fc6",
     "units": {
       "PORT-01": "COMPLETED_VERIFIED",
       "PORT-02": "COMPLETED_VERIFIED",
       "PORT-03": "COMPLETED_VERIFIED",
-      "PORT-04": "IN_PROGRESS"
+      "PORT-04": "COMPLETED_VERIFIED"
     },
     "authority": "knowledge/02_History/Decisions/20261021-portfolio-history-h1.json",
     "evidence": "research/v7/portfolio-history-evidence.json",
     "backlog": "research/v7/research-program.md",
     "strict_phase0": "STOP",
-    "research_admission": false
+    "research_admission": false,
+    "checkpoint": "Containing PORT-04 commit; git log -1 on development/v7-portfolio-history",
+    "report": "reports/v7_portfolio_history_acceptance.md",
+    "next_action": "STOP; Human Product Slice Review; no H0/H2 granted",
+    "human_interventions_after_h1": 0
   }
 }

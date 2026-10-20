@@ -50,7 +50,7 @@ index. `COMPLETED_VERIFIED` means the named offline scope only.
 | PORT-01 / P1 / deterministic offline journal history exporter | S1,S3 + H1 contract below; IMPLEMENTED_VERIFIED / COMPLETED_VERIFIED / H1 approved | Five-fix source, H1 approved schema; GPU no; no research decision, engineering scope approval | One locked prefix; per-event states exactly reproduce engine; source digest; deterministic bytes; invalid input leaves output unchanged. Turns engine into inspectable workflow. | M, 2–3 focused days; read/hash race, accidental repair |
 | PORT-02 / P1 / read-only artifact API | S1/S2 product intent, S12 patterns + H1 below; IMPLEMENTED_VERIFIED / COMPLETED_VERIFIED / H1 approved | PORT-01 schema; GPU no; H1 | Missing/corrupt/unsupported explicit, public field projection, no arbitrary path/query/write; existing routes unchanged. Exposes verified simulation artifact safely. | S–M, 1–2 days; stale fallback or private path leak |
 | PORT-03 / P1 / offline portfolio history view | S1/S2 + H1 view contract; IMPLEMENTED_VERIFIED / COMPLETED_VERIFIED / H1 approved | PORT-01 frozen schema; mocks in parallel with PORT-02, real integration after both; GPU no; H1 | NAV/cash/positions/pending/cost/event timeline, provenance, explicit fixture label; API agreement, browser desktop/mobile, missing/error/zero. Completes useful product slice. | M, 2–3 days; simulation mistaken for live/research result |
-| PORT-04 / P1 / workflow acceptance and restart handoff | S3 + H1 fixture program; PARTIAL / IN_PROGRESS / H1 approved | PORT-01/02/03; GPU no; H1 | Fixed scenarios include no-trade, partial/blocked fills, action, retry, corrupt/truncated rejection; fresh process replay→export→API matches; build/browser; independent review/checkpoint. Closes end-to-end engineering evidence. | M, 1–2 days; synthetic success mistaken for market validation |
+| PORT-04 / P1 / workflow acceptance and restart handoff | S3 + H1 fixture program; IMPLEMENTED_VERIFIED / COMPLETED_VERIFIED / H1 approved | PORT-01/02/03; GPU no; H1 | Fixed scenarios include no-trade, partial/blocked fills, action, retry, corrupt/truncated rejection; fresh process replay→export→API matches; build/browser; independent review/checkpoint. Closes end-to-end engineering evidence. | M, 1–2 days; synthetic success mistaken for market validation |
 | DATA-01 / P1 / original E1 matrix recovery | S8/S9/S10; PARTIAL / BLOCKED / bounded new-location inspection may be requested | Exact original a590b280…947f62 matrix+manifest location; GPU no; Human supplies location/access as needed | Per-file size/hash, aggregate identity, contract/split match; never regenerate replacement. Unlocks original replay. Previous unchanged search not repeated. | Unknown I/O; unique evidence unavailable |
 | RES-01 / P2 / safe retained checkpoint replay | S7/S8/S9/S10; PARTIAL / BLOCKED / exact replay scope/runtime must be approved | DATA-01, safe deserialization validation, retained checkpoint identities; no new training; CPU feasibility UNKNOWN | Validate embedded contract/matrix/seed, paired support, existing BEST rule; preserve output namespace. Recover final-support evidence without altering historical result. | M–L; unsafe loading, missing epochs2–4, hardware feasibility |
 | DATA-02 / P1 research gate / strict executable evidence | S5/S6; PARTIAL / BLOCKED / source admission and any acquisition permission separate | Direct dated tradability/open/PIT evidence; GPU no; Human source/policy questions if unresolved | Existing zero-tolerance/no-roll/unknown rules unchanged; qualified evidence inventory, no simulated→verified relabel. Unlocks strict capability only when evidence qualifies. | L/unknown; historical coverage/license/provenance |
@@ -63,7 +63,12 @@ index. `COMPLETED_VERIFIED` means the named offline scope only.
 | MAS-01 / separate maintenance / Core Live certification | S12 + historical MAS handoff; PARTIAL / BLOCKED / outside V7 implementation grant | MAS owner exact-version certification, valid occurrence approvals/routing; GPU no | Actual Builder+Verifier lifecycle and restart evidence, not a Codex takeover. Never make this a prerequisite for independent Codex CPU work. | Separate project; authority/state corruption |
 
 **H1 execution checkpoint — 2026-10-21:** PORT-01 completed and independently
-reviewed (7 focused / 67 combined tests); PORT-02 completed (8 API tests, independent live review); PORT-03 completed (real browser + unit/build); PORT-04 acceptance evidence closure IN_PROGRESS. See [unit evidence](portfolio-history-evidence.json).
+reviewed (7 focused / 67 combined tests); PORT-02 completed (8 API tests, independent live review); PORT-03 completed (real browser + unit/build); PORT-04 COMPLETED_VERIFIED
+(actual HTTP/restart and browser missing/corrupt/restore; 47 PIT,81 ops,3 fetch,23 governance).
+All four authorized units are complete; stop for Human Product Slice Review.
+No remaining READY work is authorized by H1. Further CPU opportunities are
+H0 integration or separately bounded fixture extensions/source recovery; these
+need their existing gates, not new training by default. See [unit evidence](portfolio-history-evidence.json).
 Branch `development/v7-portfolio-history` starts at `bebf19ee937a2237641e09701d0564590ed30fc6`;
 UNMERGED / NOT_DEPLOYED. No other backlog permission is implied.
 
@@ -140,7 +145,7 @@ UI verified. If tools/runtime unavailable, mark that milestone BLOCKED, never wa
 Python style follows existing type hints, Decimal text, `JournalIntegrityError`
 and unittest conventions; don't duplicate accounting formulas in API or JS.
 
-### One-to-two-week sequence after H1
+### Original H1 sequencing plan (all four units now complete)
 
 | Window estimate | Milestone | Gate / parallelism / stopping point |
 |---|---|---|
