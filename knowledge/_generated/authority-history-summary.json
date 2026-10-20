@@ -1,11 +1,12 @@
 {
   "authority": "NAVIGATION_ONLY",
-  "event_count": 4,
+  "event_count": 5,
   "events_by_topic": {
     "E1 completed result": 1,
     "E1 post-run diagnostic": 1,
     "Knowledge governance": 1,
-    "Scheduler state": 1
+    "Scheduler state": 1,
+    "Task 4 limited engineering correctness": 1
   },
   "generated": true,
   "notice": "GENERATED / DO NOT HAND EDIT",
