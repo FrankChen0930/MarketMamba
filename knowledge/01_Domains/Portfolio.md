@@ -26,6 +26,11 @@ See [H1 decision](../02_History/Decisions/20261021-portfolio-history-h1.json) an
 [unit evidence](../../research/v7/portfolio-history-evidence.json). Branch-local
 UNMERGED / NOT_DEPLOYED; existing accounting and Strict STOP remain unchanged.
 
+Read-only API: `app/backend/routers/v7_portfolio.py`; opt-in main registration,
+loopback clients, explicit pinned SHA-256, no stale cache or write methods. Local
+launcher `app/backend/portfolio_history_local.py` reuses this router without legacy
+startup. [Launch/evidence report](../../reports/v7_portfolio_history_acceptance.md).
+
 ## Authority
 
 Current checked-in V7 portfolio code and tests define research behavior. Promotion or production ownership requires a separate explicit decision.

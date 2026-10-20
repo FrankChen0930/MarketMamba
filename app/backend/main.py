@@ -54,6 +54,10 @@ app.include_router(dual.router,        prefix="/api")
 app.include_router(v62.router,         prefix="/api")   # V6.2 組合層（附加，不動既有）
 app.include_router(v7.router,          prefix="/api")
 
+if os.getenv("V7_PORTFOLIO_HISTORY_ENABLED") == "1":
+    from routers import v7_portfolio
+    app.include_router(v7_portfolio.router, prefix="/api")
+
 
 
 @app.get("/")

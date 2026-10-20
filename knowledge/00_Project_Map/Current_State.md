@@ -37,7 +37,8 @@ current engine is complete only as a deterministic component. PORT-01–04 now h
 [Human H1 fixture-only engineering approval](../02_History/Decisions/20261021-portfolio-history-h1.json).
 Active isolated branch `development/v7-portfolio-history` from `bebf19e`:
 PORT-01 COMPLETED_VERIFIED (7 focused / 67 combined, independent review closed
-one compatibility repair); PORT-02/03 IN_PROGRESS, PORT-04 dependency-blocked.
+one compatibility repair); PORT-02 COMPLETED_VERIFIED (4 new + 4 existing API
+tests, independent live startup review); PORT-03 IN_PROGRESS, PORT-04 dependency-blocked.
 [Evidence/checkpoint](../../research/v7/portfolio-history-evidence.json).
 UNMERGED / NOT_DEPLOYED; H0/H2 absent. Strict Phase 0 STOP and E1 matrix BLOCKED
 persist. MAS Core Live unverified; no production/runtime authority changed.

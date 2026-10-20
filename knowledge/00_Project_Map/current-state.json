@@ -464,7 +464,7 @@
     "base_commit": "bebf19ee937a2237641e09701d0564590ed30fc6",
     "units": {
       "PORT-01": "COMPLETED_VERIFIED",
-      "PORT-02": "IN_PROGRESS",
+      "PORT-02": "COMPLETED_VERIFIED",
       "PORT-03": "IN_PROGRESS",
       "PORT-04": "BLOCKED_DEPENDENCIES"
     },
