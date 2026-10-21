@@ -1,9 +1,25 @@
 # V7 Research Program and Current Development Backlog
 
-> Current planning owner: pinned Window04 branch below; this main file is navigation, linked by canonical
+> Current planning owner: this isolated reconciliation branch, linked by canonical
 > Current State/Authority Map. Planning status does not grant research, execution,
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
+
+## Window04 Git reconciliation — current candidate
+
+Human authorized isolated version reconciliation only. Branch
+`integration/v7-window04-reconciliation`, worktree `.worktrees/v7-window04-reconciliation`,
+base/main `c733a53f81ff7bd572739b5d75f8baabf1189976`; second parent fixed
+`489a127cf951f93f7bfc873e9333f05113f5b8e9`. Both histories are retained without rewrite.
+Original STOP audit `3330427a1d774d30e65216ddab89d668d97c187c` remains separate evidence,
+not a third merge parent. This section supersedes older continuation pointers below;
+they describe prior checkpoints, not the current working location.
+
+Status: CANDIDATE_PENDING_VERIFICATION / UNMERGED_IN_MAIN / NOT_DEPLOYED.
+Main is unchanged. No Stage B work or research planning is authorized here.
+Strict Phase 0 STOP; E1 Frozen Matrix BLOCKED; H2 NOT APPROVED; comparison options
+remain PROPOSED. Read the local unique `research/v7/research-program.md` first
+for reconciliation checkpoint; original preparation artifacts are unchanged.
 
 ## Current development program — 2026-10-21
 
@@ -19,6 +35,31 @@ WINDOW_COMPLETE / STOP. Readiness tool2a9de32 and decision package489a127 comple
 64 related non-training tests PASS,15 source hashes/cost arithmetic verified,
 independent reviews0 Critical/Required. New comparison options remain PROPOSED;
 no dates/thresholds/training/H2 approved. Original matrix BLOCKED, Strict Phase0 STOP.
+
+WINDOW_COMPLETE / STOP / UNMERGED / NOT_DEPLOYED for Window04; Window02/03 now integrated in local main at
+exacteba6b649, with pre/post267 PASS. This containing docs commit records closure.
+New work uses `development/v7-fair-evaluation-decision` from main closuref31fcbb;
+no new comparison or training approved. Readiness checkpoint in containing commit;
+[window evidence](fair-evaluation-preparation-evidence.json).
+
+| Unit | Objective/authority | Acceptance/status |
+|---|---|---|
+| W04-INT | Human fixed integration | COMPLETED;267pre/post, hashes, independent GO; no deploy |
+| W04-DECISION | Human Stage2/frozen E5/E1 evidence | COMPLETED_VERIFIED15sources/independent0 Required: extend existing review into data-exposure ledger, interval requirements, symbolic fit counts/cost and Human options; all PROPOSED |
+| W04-READINESS | Human Stage3/existing contracts | COMPLETED_VERIFIED5tests/independent5: reproducible read-only integrity audit joining existing contract/config/result/checkpoint metadata checks; fail closed on drift; no evaluation or payload loading |
+
+Window04 closed: readiness2a9de32 (1 repair), decision package/closure containing
+commit (0).64 relevant non-training tests PASS; independent reviews0 Required,
+15 source identities/cost arithmetic PASS. [Decision package](../../reports/v7_fair_evaluation_decision_package.md),
+[evidence](fair-evaluation-preparation-evidence.json). All new comparisons PROPOSED;
+no dates/thresholds or training approved. Main integration remains separate fact.
+
+Resume: cd `.worktrees/v7-fair-evaluation-decision`, verify HEAD/clean, read Current
+State/Authority Map and this queue; main pointer pins closure SHA. No historical
+rediscovery or matrix search. Next valuable CPU work is implementing a Human-frozen
+session split/selection/refit/support design, or payload identity checks when original
+matrix becomes available. Both currently dependency-bound, not unqualified READY.
+New bounded execution grant is required; no background continuation.
 
 Latest unique backlog is that pinned commit's `research/v7/research-program.md`
 Window04 section; report `reports/v7_fair_evaluation_decision_package.md`, evidence

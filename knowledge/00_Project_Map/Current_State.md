@@ -2,6 +2,22 @@
 
 > Status: `CANONICAL_CURRENT_PROJECT_MAP`
 
+## Window04 Git reconciliation — current candidate
+
+Human authorized isolated version reconciliation only. Branch
+`integration/v7-window04-reconciliation`, worktree `.worktrees/v7-window04-reconciliation`,
+base/main `c733a53f81ff7bd572739b5d75f8baabf1189976`; second parent fixed
+`489a127cf951f93f7bfc873e9333f05113f5b8e9`. Both histories are retained without rewrite.
+Original STOP audit `3330427a1d774d30e65216ddab89d668d97c187c` remains separate evidence,
+not a third merge parent. This section supersedes older continuation pointers below;
+they describe prior checkpoints, not the current working location.
+
+Status: CANDIDATE_PENDING_VERIFICATION / UNMERGED_IN_MAIN / NOT_DEPLOYED.
+Main is unchanged. No Stage B work or research planning is authorized here.
+Strict Phase 0 STOP; E1 Frozen Matrix BLOCKED; H2 NOT APPROVED; comparison options
+remain PROPOSED. Read the local unique `research/v7/research-program.md` first
+for reconciliation checkpoint; original preparation artifacts are unchanged.
+
 ## Fair evaluation preparation complete — fixed continuation pointer
 
 Window02/03 source is integrated in local main at approvedeba6b649; this main
@@ -20,6 +36,18 @@ into main. To resume, cd named worktree, verify HEAD/clean, read Current State,
 Authority Map and that queue. No full historical rediscovery or repeated matrix
 search. New bounded execution needs Human grant; no background continuation.
 This pointer supersedes earlier Window04 authorized/READY text below.
+
+## Fair evaluation preparation — completed checkpoint
+
+Isolated `development/v7-fair-evaluation-decision` from integrated main closuref31fcbb.
+UNMERGED/NOT_DEPLOYED for new work only. Existing-contract read-only E1 metadata
+audit completed,5tests/independent5 PASS,0 Required; always execution_ready=false.
+Decision package completed:15 source hashes, exposure ledger, fit/cost formulas and
+Colab stop conditions independently verified;0 Critical/Required.64 related tests
+PASS. WINDOW_COMPLETE/STOP, all new options PROPOSED. New execution requires
+Human bounded grant. Resume at this branch via main pinned closure pointer.
+[Unique backlog](../../research/v7/research-program.md#fair-evaluation-preparation-window-04),
+[evidence](../../research/v7/fair-evaluation-preparation-evidence.json).
 
 ## Window02/03 integrated; fair evaluation preparation authorized
 

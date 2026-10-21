@@ -1,5 +1,17 @@
 # Worktree Register
 
+## Window04 reconciliation — 2026-10-21
+
+- Path `.worktrees/v7-window04-reconciliation`, branch `integration/v7-window04-reconciliation`;
+  base c733a53f81ff7bd572739b5d75f8baabf1189976; owner Codex/current Human reconciliation.
+- Created 2026-10-21; retired N/A. Purpose preserve both histories and verify new
+  candidate, not Stage B. Existing 21 trees hold distinct fixed/source/audit purposes;
+  none may be repointed for this newly authorized candidate. Existing document paths reused.
+- UNMERGED_IN_MAIN / NOT_DEPLOYED; dependencies fixed489a127 and retained audit3330427.
+  Safe removal requires clean checkout, retained commits/artifacts, resolved references
+  and separate retirement authorization. No cleanup or main merge authorized.
+
+
 ## Portfolio H0 local integration closure — 2026-10-21
 
 - WSL primary checkout `/home/frank/projects/MarketMamba`, branch `main`, now includes
@@ -300,3 +312,14 @@ Dependencies: pinned Git metadata, existing recovery venv; original matrix block
 No data mount. Main records pointer only; all20trees retained. Safe removal requires
 preserved clean commits, no unique artifacts/consumers, resolved dependencies and
 explicit retirement approval. No cleanup or tool integration authorized here.
+
+## Fair evaluation decision window04 — 2026-10-21
+
+Path `.worktrees/v7-fair-evaluation-decision`; branch
+`development/v7-fair-evaluation-decision`; basef31fcbb after fixedeba6b649 integration.
+Owner Codex/current Human grant; created2026-10-21, retiredN/A. WINDOW_COMPLETE_STOP/UNMERGED/
+NOT_DEPLOYED. Purpose: bounded decision package and repeatable metadata audit.
+Prior19trees preserved fixed purposes; no equivalent current window exists.
+Dependencies: Git pinned metadata, existing recovery venv read-only, original
+matrix unavailable. No data mount. Safe removal requires preserved clean commits,
+no unique consumers/artifacts, resolved dependencies and separate retirement approval.

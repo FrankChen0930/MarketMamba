@@ -1,0 +1,248 @@
+{
+  "schema": "v7-fair-evaluation-preparation-evidence-v1",
+  "base": "f31fcbba4d82d260915d7b640d80abc9c9ba8fc1",
+  "branch": "development/v7-fair-evaluation-decision",
+  "status": "WINDOW_COMPLETE_STOP",
+  "runtime": {
+    "python": "3.12.3",
+    "executable": "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+    "CUDA_VISIBLE_DEVICES": "",
+    "MARKETMAMBA_DATA_ROOT": "UNSET",
+    "candidate_data": "3 inherited tracked historical files; no processed_v6; contents unread"
+  },
+  "readiness": {
+    "red": "======================================================================\nERROR: v7_e1_readiness_test (unittest.loader._FailedTest.v7_e1_readiness_test)\n----------------------------------------------------------------------\nImportError: Failed to import test module: v7_e1_readiness_test\nTraceback (most recent call last):\n  File \"/usr/lib/python3.12/unittest/loader.py\", line 137, in loadTestsFromName\n    module = __import__(module_name)\n             ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-fair-evaluation-decision/V6/experimental/v7_e1_readiness_test.py\", line 7, in <module>\n    from V6.experimental.v7_e1_readiness import audit, read_result_blob, candidate_config\nModuleNotFoundError: No module named 'V6.experimental.v7_e1_readiness'\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (errors=1)\n",
+    "green": "----------------------------------------------------------------------\nRan 5 tests in 0.240s\n\nOK\n",
+    "output": {
+      "status": "VERIFIED_METADATA_ONLY",
+      "result_commit": "eec63c551270f271e26a5aca831fe5b3b38e3f42",
+      "result_manifest_sha256": "f4d63c74af623991814d301230f065818850829d69a176309bd7769c7b76a1a6",
+      "copied_artifacts_verified": 7,
+      "contract_sha256": "fea9948f05bb096596cb2cacfc522bad27a7e1f587d0a5a08f704da458d29152",
+      "config_sha256": "acdfe7fb055eed26730fd6a01a1733e4a76f48a3fec4b08bd09546080397a2d4",
+      "declared_matrix_identity": "a590b280f0700dcf36fde9ac51e767d735cc2737b613cbb3b49ef3f472947f62",
+      "split": {
+        "evaluation_end_10d": "2026-08-28",
+        "evaluation_end_5d": "2026-09-04",
+        "evaluation_start": "2026-01-02",
+        "purge_end": "2025-12-31",
+        "purge_sessions": 30,
+        "purge_start": "2025-11-19",
+        "train_end": "2025-11-18",
+        "train_start": "2013-01-02"
+      },
+      "formal_seeds": [
+        17,
+        29
+      ],
+      "features": 48,
+      "execution_ready": false,
+      "matrix_payload": "NOT_VERIFIED",
+      "checkpoint_payload": "NOT_LOADED",
+      "strict_phase0": "STOP",
+      "h2_admission": "NOT_APPROVED",
+      "research_evaluation_performed": false,
+      "limitations": [
+        "Original matrix required for payload verification",
+        "No checkpoint deserialization or live environment validation",
+        "New comparison/training requires separate Human approval"
+      ]
+    },
+    "repair_rounds": 1,
+    "review": {
+      "reviewer": "/root/independent_review",
+      "critical": 0,
+      "required": 0,
+      "independent_tests": 5,
+      "CLI": "VERIFIED_METADATA_ONLY; execution_ready=false"
+    },
+    "regression": "\n----------------------------------------------------------------------\nRan 64 tests in 4.459s\n\nOK\n",
+    "commit": "2a9de32afc71e59b35c2bc673d31e1ae431fe902"
+  },
+  "hashes": {
+    "V6/experimental/v7_e1_readiness.py": "822f77f526f9eb765868443e84721995c0710f9208582f69eb57beaab6039a2f",
+    "V6/experimental/v7_e1_readiness_test.py": "2845f2d97ffcaa5445971c34ab210937d40b26d5434b5cbba6e9e956e1892ff3",
+    "reports/v7_fair_evaluation_decision_package.md": "ac856223c07df7433f9a128fc1c8d37aa40d8ae5c526a5a99f2cb6af31fc3446"
+  },
+  "decision_sources": [
+    {
+      "commit": "9bb4247bec9e6bf1eb06b01f001a6b795faa2a7d",
+      "path": "V6/experimental/v7_corrected_e5_train.py",
+      "sha256": "e5326ddd4dc3ef9e3d34df9e7dedca7cd1fbd420aac92d4480e5eeba97c46510",
+      "bytes": 23131
+    },
+    {
+      "commit": "9bb4247bec9e6bf1eb06b01f001a6b795faa2a7d",
+      "path": "V6/experimental/v7_e1_run.py",
+      "sha256": "0990aa8f1dcce900213a6d6986bcb9762fd2f29d0c04e4e7d824a911e151e2c3",
+      "bytes": 4696
+    },
+    {
+      "commit": "9bb4247bec9e6bf1eb06b01f001a6b795faa2a7d",
+      "path": "V6/experimental/v7_e1_contract.py",
+      "sha256": "96f22b9cd3a5bd412aa43dbbea4ea3cd3f6c85d076cd914e88ec6c0ec0efe547",
+      "bytes": 7165
+    },
+    {
+      "commit": "9bb4247bec9e6bf1eb06b01f001a6b795faa2a7d",
+      "path": "V6/experimental/v7_e1_matrix.py",
+      "sha256": "ee759fada9586291e7bf931e7f8cb1187e52527deef9c733aaa6dd603e160efc",
+      "bytes": 7611
+    },
+    {
+      "commit": "9bb4247bec9e6bf1eb06b01f001a6b795faa2a7d",
+      "path": "V6/experimental/v7_e1_checkpoint.py",
+      "sha256": "6a1ad9523e8e23cf1ceb506b6fae0a43550a5e2b6a60e60d8832d339222f2921",
+      "bytes": 11478
+    },
+    {
+      "commit": "9bb4247bec9e6bf1eb06b01f001a6b795faa2a7d",
+      "path": "research/v7/e1-rolling-origin-refresh-v1/experiment-contract.json",
+      "sha256": "7a59d98744ac736e915ff5f6e0e8fead2f80f5ce7f8283b467ec0464bffe8d4c",
+      "bytes": 3027
+    },
+    {
+      "commit": "9bb4247bec9e6bf1eb06b01f001a6b795faa2a7d",
+      "path": "research/v7/corrected-e5-replication-v1/incumbent-contract.json",
+      "sha256": "3cb4a5fc9c1595689366a2b6bbd49210743b9160fe0f00516622b463eaf46e85",
+      "bytes": 5204
+    },
+    {
+      "commit": "9bb4247bec9e6bf1eb06b01f001a6b795faa2a7d",
+      "path": "environments/v7-colab-2026.04/requirements.lock.txt",
+      "sha256": "cebc665d6e4a4cfc5cd53113c7a52d594c7595b09ae0633903845f175cac1af5",
+      "bytes": 2587
+    },
+    {
+      "commit": "de2b62e4d5ec2557b8446ccd2994d2d1cfa0c278",
+      "path": "V6/experimental/v7_e1_evaluate.py",
+      "sha256": "a34261037faf0cd695fc6a9c35ef0cec583abca951ea92d34cab83f994cba0ee",
+      "bytes": 17192
+    },
+    {
+      "commit": "eec63c551270f271e26a5aca831fe5b3b38e3f42",
+      "path": "research/v7/e1-rolling-origin-refresh-v1/results/result-manifest.json",
+      "sha256": "f4d63c74af623991814d301230f065818850829d69a176309bd7769c7b76a1a6",
+      "bytes": 1712
+    },
+    {
+      "commit": "9bb4247bec9e6bf1eb06b01f001a6b795faa2a7d",
+      "path": "V6/experimental/v7_corrected_e5_matrix.py",
+      "bytes": 17857,
+      "sha256": "b3735a7d8c01dd09bfdcd4e3a920ebd7ef0976a75195bbd3b8892310e639f671"
+    },
+    {
+      "commit": "9bb4247bec9e6bf1eb06b01f001a6b795faa2a7d",
+      "path": "research/v7/corrected-baseline-v1/feature-manifest.json",
+      "bytes": 1564,
+      "sha256": "d3b2c2d23ccc071b6e0d49ca77d27f41ade085084ea8fd3952321f5352a32547"
+    },
+    {
+      "commit": "ef020e5075f773605a5465982a2222afc013dac5",
+      "path": "research/v7/e1-postrun-diagnostic-v1/epoch-evaluation.json",
+      "bytes": 7556,
+      "sha256": "3e1c09bd8f3a5ed72ef117d1a631c6ba05a847052954daa7a01fe8bfa276d6b2"
+    },
+    {
+      "commit": "044eef73712d2189d4e0e28e3d44b352eed6b5e3",
+      "path": "research/v7/corrected-e5-diagnostic-v2/diagnostic-summary.json",
+      "bytes": 1138,
+      "sha256": "6e9f98d50d6b797d7d5df4db60c6081408d5477822bb020aa21a72144810b731"
+    },
+    {
+      "commit": "ef020e5075f773605a5465982a2222afc013dac5",
+      "path": "research/v7/e1-postrun-diagnostic-v1/diagnostic-summary.json",
+      "bytes": 1654,
+      "sha256": "6615742d6dfc80259e9f05055f3faae15f3e38d779542e8ac19ba465564a0a86"
+    }
+  ],
+  "cost_observations": {
+    "source": "ef020e5:research/v7/e1-postrun-diagnostic-v1/epoch-evaluation.json",
+    "summed_logged_epochs": {
+      "17": {
+        "train_seconds": 4088.886211893077,
+        "validation_seconds": 220.11284477399522,
+        "checkpoint_seconds": 2320.0549900820006,
+        "total_seconds": 6629.054046749073,
+        "epochs": 6,
+        "logged_epoch_hours": 1.8414039018747423
+      },
+      "29": {
+        "train_seconds": 5661.857429698977,
+        "validation_seconds": 270.0833929429989,
+        "checkpoint_seconds": 2551.498537408994,
+        "total_seconds": 8483.43936005097,
+        "epochs": 6,
+        "logged_epoch_hours": 2.356510933347492
+      }
+    },
+    "not_forecast": true,
+    "excludes_or_unknown": [
+      "matrix build",
+      "startup/resume",
+      "final inference",
+      "transfer",
+      "GPU allocation/billing/Colab quota"
+    ],
+    "fit_formulas": {
+      "holdout": "M*S*(C+R)",
+      "walk_forward": "M*S*K*(C+R)",
+      "nested_temporal": "M*S*K*(C*J+R)"
+    },
+    "illustrative_only": {
+      "holdout_M2_S2_C1_R0": 4,
+      "walk_M2_S2_C1_R0_K3": 12,
+      "nested_M2_S2_C2_R1_K3_J3": 84
+    },
+    "monetary_cost": "UNKNOWN; no quote or paid resource use"
+  },
+  "references": [
+    {
+      "url": "https://www.jmlr.org/papers/v11/cawley10a.html",
+      "scope": "author abstract selection bias",
+      "accessed_on": "2026-10-21"
+    },
+    {
+      "url": "https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.TimeSeriesSplit.html",
+      "scope": "official time order/gap/equal spacing caveat",
+      "accessed_on": "2026-10-21"
+    }
+  ],
+  "checks": {
+    "source_hashes_verified": 15,
+    "tool_hashes_verified": 2,
+    "syntax": "PASS",
+    "candidate_processed_v6": "ABSENT",
+    "protected_data_models_lock_contract": "UNCHANGED",
+    "historical_artifacts": "UNCHANGED",
+    "knowledge_health": "KNOWLEDGE HEALTH\n\nProject Map        PASS\nAgent Guides       PASS\nDomains            PASS\nGovernance         WARNING\nAuthority Drift    WARNING\nRuntime Freshness  PASS\nGenerated Index    PASS\nLegacy Docs        WARNING\n\nOverall: WARNING\n",
+    "post_docs_governance_tests": 23
+  },
+  "decision_review": {
+    "reviewer": "/root/independent_review",
+    "critical": 0,
+    "required": 0,
+    "sources_verified": 15,
+    "cost_arithmetic": "PASS",
+    "repair_rounds": 0
+  },
+  "usage_observation": {
+    "tokensUsed": 78472,
+    "timeUsedSeconds": 587,
+    "scope": "pre-closure goal counter; unaudited,not billing/not hard limit"
+  },
+  "remaining": {
+    "new_comparison": "PROPOSED_HUMAN_DECISION_REQUIRED",
+    "training_compute": "NOT_AUTHORIZED",
+    "original_matrix": "BLOCKED",
+    "H2": "NOT_APPROVED",
+    "next_execution": "NEW_BOUNDED_GRANT_REQUIRED"
+  },
+  "closure_review": {
+    "reviewer": "/root/independent_review",
+    "critical": 0,
+    "required": 0,
+    "minimal_resume": "PASS",
+    "repair_rounds": 0
+  }
+}
