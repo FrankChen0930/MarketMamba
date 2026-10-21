@@ -102,6 +102,8 @@ UNMERGED / NOT_DEPLOYED. [Local launch](../../reports/v7_portfolio_history_accep
 ## Current UX direction — 2026-10-21
 
 Human approved default dashboard / advanced research mode for the fixture history
-page only. [Scope and design](../../reports/v7_portfolio_ux_acceptance.md).
+page only. UX-01–04 completed and verified on `development/v7-portfolio-ux`,
+UNMERGED / NOT_DEPLOYED; Human UX Product Slice Review pending.
+[Scope and design](../../reports/v7_portfolio_ux_acceptance.md).
 Formatting is presentation-only; exact source Decimal and backend contracts remain
 authoritative. Project-local pinned frontend skills do not override this boundary.

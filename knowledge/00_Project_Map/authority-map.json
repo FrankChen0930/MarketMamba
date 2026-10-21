@@ -633,7 +633,8 @@
   ],
   "portfolio_ux_scope": {
     "authority": "knowledge/02_History/Decisions/20261021-portfolio-ux-human-decision.json",
-    "status": "PRESENTATION_ENGINEERING_APPROVED_ONLY",
-    "skill_authority": "SUBORDINATE_GUIDANCE_NO_FINANCIAL_AUTHORITY"
+    "status": "PRESENTATION_ENGINEERING_VERIFIED_HUMAN_PRODUCT_REVIEW_PENDING",
+    "skill_authority": "SUBORDINATE_GUIDANCE_NO_FINANCIAL_AUTHORITY",
+    "evidence": "research/v7/portfolio-ux-evidence.json"
   }
 }

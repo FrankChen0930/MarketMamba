@@ -40,6 +40,8 @@ admission remain unapproved and separate. MAS Core Live is not certified or acti
 
 [Human UX decision](../02_History/Decisions/20261021-portfolio-ux-human-decision.json)
 authorizes only UX-01–04 presentation engineering on `5a2bc6f` ancestry.
+The fixture UX slice is engineering-verified; [UX acceptance](../../reports/v7_portfolio_ux_acceptance.md)
+is ready for Human review, not Human acceptance or H0/H2 approval.
 Pinned project-local frontend skills are subordinate guidance, never research,
 production or project authority. No H0/H2 admission or accounting changes.
 

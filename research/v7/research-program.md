@@ -47,9 +47,13 @@ for this new explicitly authorized presentation window. Base `5a2bc6f`; isolated
 | UX-01 | COMPLETED_VERIFIED | Same validated API object; accessible default/general vs advanced; preserve event on toggle | Simple overview with research detail; no parallel model |
 | UX-02 | COMPLETED_VERIFIED | Presentation decimal formatting only; exact raw in advanced; zero vs unknown; immutable tests | Readability without accounting change |
 | UX-03 | COMPLETED_VERIFIED | Dated ordered Chinese event timeline, chart selection sync, observable state changes only | Explain actual state, never infer causes |
-| UX-04 | IN_PROGRESS | Real Chrome desktop/mobile all7 events/modes, exact values, errors, keyboard; regressions/review/evidence | Verifiable product review, not H0/H2 |
+| UX-04 | COMPLETED_VERIFIED | Real Chrome desktop/mobile all7 events/modes, exact values, errors, keyboard; regressions/review/evidence | Verifiable product review, not H0/H2 |
 
-Implementation may share the same page/helper to avoid artificial subsystem splits.
+Completed as one coherent UX-01–03 page/helper commit `764dfbf` plus UX-04 acceptance
+commit. Real Chrome desktop/mobile, both modes/all7events, exact values and errors
+verified. Full lint remains identical baseline failure; scoped new code PASS.
+No UX unit remains READY: stop for Human Product Slice Review, no H0/H2 inferred.
+Implementation shares the same page/helper to avoid artificial subsystem splits.
 Each logical unit has at most two evidence-supported repair rounds. Completion
 records in [UX report](../../reports/v7_portfolio_ux_acceptance.md); no extension
 beyond UX-04 without new scope. Original PORT evidence will not be rewritten.

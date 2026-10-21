@@ -19,11 +19,14 @@ Semantic change owners must update this file in the same change. K0 remains disc
 
 ## Project Summary
 
-**Active UX refinement (2026-10-21):** Human approved UX-01–04 default dashboard /
+**Completed UX refinement (2026-10-21):** Human approved UX-01–04 default dashboard /
 advanced research view on isolated `development/v7-portfolio-ux` from fixed `5a2bc6f`.
 [Decision](../02_History/Decisions/20261021-portfolio-ux-human-decision.json),
 [skills/design/acceptance](../../reports/v7_portfolio_ux_acceptance.md).
-UX-01–03 implementation verified; UX-04 browser/evidence closure in progress.
+UX-01–04 COMPLETED_VERIFIED within fixture UI scope: desktop1440/mobile390
+Chrome155, both modes/all7events/exact values/keyboard PASS. Implementation
+`764dfbf`; final evidence in containing UX04 commit. Stop for Human UX Product
+Slice Review. Focused lint PASS; full frontend baseline58errors/3warnings unchanged.
 [UX evidence](../../research/v7/portfolio-ux-evidence.json).
 UNMERGED / NOT_DEPLOYED; existing PORT completion remains preserved.
 No H0/H2, accounting, data or production authority change. Strict STOP persists.
