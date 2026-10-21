@@ -17,6 +17,16 @@
 
 Semantic change owners must update this file in the same change. K0 remains discovery evidence. `CANONICAL_CURRENT_PROJECT_MAP` means current accepted navigation/state authority, subject to semantic updates and explicit supersession; it does not mean immutable or permanently final.
 
+## Cross-domain window02 execution checkpoint
+
+Isolated `development/v7-cross-domain-window-02` from main closurec1179fe,
+UNMERGED/NOT_DEPLOYED. W02-DATA/PREP/EVAL/MODEL selected under current Human grant;
+[unique backlog](../../research/v7/research-program.md#cross-domain-window-02)
+owns acceptance and state. No production parser edits or training permitted.
+W02-DATA completed7-case offline diagnostic with independent review0 Required;
+TWSE/TPEx source fixes and MOPS policy are now explicit Human decision items.
+[Evidence](../../research/v7/cross-domain-window02-evidence.json).
+
 ## Charter integrated and window 02 authorized — 2026-10-21
 
 LOCAL_DEVELOPMENT_INTEGRATED / NOT_DEPLOYED. Human approved exact

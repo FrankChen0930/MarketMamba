@@ -1,0 +1,118 @@
+{
+  "schema": "v7-cross-domain-window02-evidence-v1",
+  "base": "c1179fe1ee8b66c768391b5f22f8aaebfc42d646",
+  "branch": "development/v7-cross-domain-window-02",
+  "status": "IN_PROGRESS",
+  "data": {
+    "evidence_class": "OFFLINE_DIAGNOSTIC_NOT_CERTIFICATION",
+    "source": "V6/marketmamba/data/fetcher.py",
+    "source_sha256": "945eb1533782f4b28da1b05762c1d7a8a5ad8e80bacb420ab67b64d33bb27598",
+    "function_names": [
+      "_mops_norm_col",
+      "_mops_pick_company_tables",
+      "_mops_to_number",
+      "fetch_prices_tpex_direct",
+      "fetch_prices_twse_direct",
+      "fetch_revenue_mops_direct"
+    ],
+    "network_requests": 0,
+    "fixture_transport_calls": 9,
+    "results": [
+      {
+        "case": "TWSE_date_20260716",
+        "returned_date": "20260716",
+        "rows": 101,
+        "assigned_dates": [
+          "2026-07-16"
+        ]
+      },
+      {
+        "case": "TWSE_date_20260717",
+        "returned_date": "20260717",
+        "rows": 101,
+        "assigned_dates": [
+          "2026-07-16"
+        ]
+      },
+      {
+        "case": "TPEx_reordered_False",
+        "rows": 1,
+        "Open": 10.0,
+        "Close": 11.0
+      },
+      {
+        "case": "TPEx_reordered_True",
+        "rows": 1,
+        "Open": 11.0,
+        "Close": 10.0
+      },
+      {
+        "case": "TPEx_wrong_date_rejected",
+        "rejected": true
+      },
+      {
+        "case": "MOPS_missing_otc_False",
+        "rows": 2,
+        "stocks": [
+          "1101",
+          "2201"
+        ],
+        "dates": [
+          "2026-06-01",
+          "2026-06-01"
+        ],
+        "values": [
+          100000,
+          100000
+        ],
+        "publication_time": [
+          "",
+          ""
+        ]
+      },
+      {
+        "case": "MOPS_missing_otc_True",
+        "rows": 1,
+        "stocks": [
+          "1101"
+        ],
+        "dates": [
+          "2026-06-01"
+        ],
+        "values": [
+          100000
+        ],
+        "publication_time": [
+          ""
+        ]
+      }
+    ],
+    "limitations": "AST exact function bodies; transport/HTML parse fixtures; no whole-module or external provider certification, no production data loaded/written"
+  },
+  "review": {
+    "data": {
+      "reviewer": "/root/independent_review",
+      "critical": 0,
+      "required": 0,
+      "independent_reproduction": "7 cases,9 fake transport calls,source/probe hashes PASS"
+    }
+  },
+  "runtime": {
+    "python": "3.12.3",
+    "executable": "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+    "CUDA_VISIBLE_DEVICES": "",
+    "MARKETMAMBA_DATA_ROOT": "UNSET",
+    "candidate_Data": "ABSENT",
+    "network_requests": 0,
+    "model_training": false
+  },
+  "units": {
+    "W02-DATA": {
+      "status": "COMPLETED_VERIFIED",
+      "repair_rounds": 0
+    }
+  },
+  "hashes": {
+    "research/v7/cross-domain-provider-probe.py": "db03b18d854decae6ede1edece83d482598f7b497b71bc9dccdabe43a4c7a01d"
+  }
+}

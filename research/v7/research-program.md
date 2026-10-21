@@ -9,14 +9,34 @@
 
 ### Cross-domain window 02
 
-Status: AUTHORIZED_DISCOVERY. Human approved exactf7af348 local main integration
-and one next3–5-unit CPU-only window; [decision](../../knowledge/02_History/Decisions/20261021-charter-integration-window02.json).
-StageA completed:6d74d738→f7af348 ff-only, pre/post254 PASS, independent review0
-Critical/Required; [evidence](charter-integration-20261021.json). Containing main
-closure commit adds docs only. Create an isolated new window from this verified
-main; preserve fixed window01 tree. The next dated table here will own selection,
-not a second roadmap. No training (including tiny smoke), production change or
-research decision. Stop after this new window; old window01 STOP remains historical.
+Status: EXECUTING_BOUNDED_WINDOW. StageA main6d74d738→f7af348 ff-only,
+then docs closure `c1179fe`; pre/post254 PASS, independent0 Required/Critical.
+[Decision](../../knowledge/02_History/Decisions/20261021-charter-integration-window02.json),
+[integration evidence](charter-integration-20261021.json). New isolated branch
+`development/v7-cross-domain-window-02` from exactc1179fe. UNMERGED / NOT_DEPLOYED.
+
+| ID / priority | Objective / authority | State / resource & Human dependencies | Acceptance / value / risk / duplicate check |
+|---|---|---|---|
+| W02-DATA / P1 | TWSE/TPEx/MOPS reliability diagnosis; Data provenance boundary + current Human direction | COMPLETED_VERIFIED diagnostic only; offline provider fixtures, CPU; production fixes HUMAN_DECISION_REQUIRED | Pin actual parser AST/source, contrast valid/mismatched dates/schema/missing-market cases; report exact expected vs observed; no network/production import side effects. Makes source risk actionable; no certification or new pipeline. Existing validation scripts require operational data/network; reuse code semantics without invoking them |
+| W02-PREP / P1 | E1 frozen contract/matrix metadata integrity before training; existing frozen experiment+Training identity contract | READY after mutation RED; synthetic metadata only, no array rebuild/GPU | Reject hash/semantic/feature-order/file-set drift even if self-rehashed; valid frozen contract/manifest unchanged. Prevent expensive run against wrong identities; no new experiment. All-branch history inspected: no equivalent fix |
+| W02-EVAL / P1 | Frozen two-seed decision completeness; SEEDS/ACCEPTANCE contract | READY after RED; synthetic summaries only | Missing/wrong seeds or nonfinite gate inputs cannot PASS; preserve legal decision vocabulary/thresholds. Prevent vacuous apparent research success; no historical recalculation. Existing evaluator lacks seed-set validation |
+| W02-MODEL / P2 | E5/E1 architecture/ablation/evaluation fairness audit; research objective + Human prep grant | READY; pinned code/manifests only | Distinguish trained ablation vs occlusion vs proposal; trace selection/evaluation support and test reuse; explicit PROPOSED choices, source hashes, no inferred research approval; adds code-level trace beyond Window01 decision summary |
+| W02-DATA-FIX / P1 | TWSE date binding / TPEx header-index drift | HUMAN_DECISION_REQUIRED for production edits | Proven7-case probe; no historical data correction authorized; pin source and fix original parser only after scoped production approval |
+| W02-MOPS-POLICY / P2 | Monthly market completeness and publication provenance | HUMAN_DECISION_REQUIRED | Existing quarterly all-market guard is not automatically monthly policy; do not usecache Date as PIT |
+| W02-PORT / P3 | Portfolio/Operations reliability | DEFERRED; existing H0/PhaseA complete | No demonstrated higher-value gap than first3 domains; avoid repeating UX/low-impact bug work |
+| DATA-01 | Frozen E1 matrix | BLOCKED | No new location; no repeated search or generated substitute |
+| RANK-01/METRIC-01/RES-02/TRAIN-01 | Ranking/economic/new research | HUMAN_DECISION_REQUIRED | H2, strict correctness, frozen new design/compute; preparation does not admit execution |
+
+Limits: four selected units maximum for this window;2 evidence-backed repair
+rounds each. No model training, including tiny smoke; no GPU probes, formal data
+or weights loaded. NETWORK=0. Existing recovery venv Python3.12.3, CUDA hidden,
+MARKETMAMBA_DATA_ROOT unset; candidate Data absent. Main data symlink to Windows
+remains untouched. Only temporary synthetic fixtures. Commit evidence and update
+this single queue per unit. STOP after these units or unresolved authorization.
+
+Resume: verify branch/base/status, read this section + Charter + window02 evidence
+once created; continue only unresolved authorized READY units. Other17 checkouts
+retain previous purposes; fixed Charter branch staysf7af348. No main merge of new work.
 
 ### Autonomous charter window 01
 
@@ -511,3 +531,12 @@ manifest publication. RED19 failures7/errors6; GREEN19, full PIT49; independent1
 PASS, no Critical/Required. One repair round; valid six-case payload bytes match
 base6d74d738. Frozen data/PIT authority unchanged. All five units complete; STOP.
 Identity: containing snapshot/window closure commit, preserved in branch history.
+
+### W02-DATA checkpoint
+
+Completed7-case synthetic provider diagnosis, independent7-case rerun/source/probe
+hash PASS,0 Required/Critical,0 repair rounds. Existing fetcher unchanged. Source,
+numerical observations and limitations in [window evidence](cross-domain-window02-evidence.json)
+and [report](../../reports/v7_cross_domain_window02.md). Identity: containing data
+unit commit. Production date/schema corrections and monthly completeness remain
+Human decisions; no network/official-data inference. Continue W02-PREP/EVAL/MODEL.

@@ -137,3 +137,13 @@ at exactf7af348 (supersedes its branch-local status only). Pre/post CPU regressi
 and authority checks are in [integration evidence](../../research/v7/charter-integration-20261021.json).
 A separate Human-authorized cross-domain CPU window may proceed in isolation;
 research contracts, formal data, production and StrictSTOP boundaries are unchanged.
+
+## Window02 provider diagnostic — 2026-10-21
+
+[Offline7-case diagnostic](../../reports/v7_cross_domain_window02.md) at mainc1179fe
+reproduces TWSE wrong-date relabeling and TPEx positional schema drift; MOPS monthly
+partial-market return and blank publication time are recorded as completeness/PIT
+risks requiring domain decisions. AST function-body fixtures, no production import,
+network or data writes. Independent review reproduces all7. This does not certify
+external providers or change cache/publication semantics; production source fixes
+remain HUMAN_DECISION_REQUIRED in the sole backlog.

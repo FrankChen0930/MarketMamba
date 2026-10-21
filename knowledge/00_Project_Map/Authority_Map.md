@@ -5,6 +5,16 @@
 > Semantic change owner must update this map in the same change.
 > Prior research/Phase A map accepted `2026-09-20`; 2026-09-22 runtime additions are agent-observed, pending separate human review. Canonical means current navigation authority, not immutable final state.
 
+## Cross-domain window02 execution checkpoint
+
+Isolated `development/v7-cross-domain-window-02` from main closurec1179fe,
+UNMERGED/NOT_DEPLOYED. W02-DATA/PREP/EVAL/MODEL selected under current Human grant;
+[unique backlog](../../research/v7/research-program.md#cross-domain-window-02)
+owns acceptance and state. No production parser edits or training permitted.
+W02-DATA completed7-case offline diagnostic with independent review0 Required;
+TWSE/TPEx source fixes and MOPS policy are now explicit Human decision items.
+[Evidence](../../research/v7/cross-domain-window02-evidence.json).
+
 ## Charter integrated and window 02 authorized — 2026-10-21
 
 LOCAL_DEVELOPMENT_INTEGRATED / NOT_DEPLOYED. Human approved exact
