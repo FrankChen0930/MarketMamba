@@ -137,3 +137,13 @@ completed-result metadata checks. Output VERIFIED_METADATA_ONLY never authorizes
 execution; matrix payload NOT_VERIFIED, checkpoint payload NOT_LOADED. It does not
 re-evaluate predictions or replace recovery evaluator provenance gates. See
 [window evidence](../../research/v7/fair-evaluation-preparation-evidence.json).
+
+## Window04 CPU logging reliability
+
+Branch-local W04B-LOG changes `v7_e1_colab_runtime.run_logged` so background log
+write/decode failures reach the caller with the original cause and log path,
+stop a running child through the existing cleanup, and fail even if the child
+already exited. Existing success/nonzero/heartbeat behavior remains covered.
+Six CPU fixture tests and independent review verify this scope; no live Colab,
+Drive storage durability or research readiness certification. UNMERGED / NOT_DEPLOYED.
+See [bounded evidence](../../research/v7/window04-cpu-continuation-evidence.json).

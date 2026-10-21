@@ -613,7 +613,7 @@
       "topic": "Current V7 development backlog",
       "primary_authority": "research/v7/research-program.md",
       "authority_class": "CURRENT_REFERENCE",
-      "status": "WINDOW04_INTEGRATED_CPU_CONTINUATION_AUTHORIZED",
+      "status": "WINDOW04_CPU_CONTINUATION_BRANCH_LOCAL",
       "supersedes": [
         "CPU window closure queues as cross-domain next-work navigation",
         "historical tasks/plan.md and tasks/todo.md as active execution assumptions"
@@ -635,7 +635,8 @@
         "development/v7-fair-evaluation-decision@489a127cf951f93f7bfc873e9333f05113f5b8e9:research/v7/fair-evaluation-preparation-evidence.json",
         "research/v7/fair-evaluation-preparation-evidence.json",
         "research/v7/window04-reconciliation-evidence.json",
-        "research/v7/window04-main-integration.json"
+        "research/v7/window04-main-integration.json",
+        "research/v7/window04-cpu-continuation-evidence.json"
       ],
       "conflicts": [
         "StageB current queue belongs to isolated development/v7-window04-cpu-continuation after closure",

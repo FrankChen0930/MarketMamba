@@ -5,6 +5,21 @@
 > Semantic change owner must update this map in the same change.
 > Prior research/Phase A map accepted `2026-09-20`; 2026-09-22 runtime additions are agent-observed, pending separate human review. Canonical means current navigation authority, not immutable final state.
 
+## Window04 Stage B — bounded CPU checkpoint
+
+Branch `development/v7-window04-cpu-continuation`, base/main `31f7accc475b5b735684d5a06725a237d85d5693`,
+worktree `.worktrees/v7-window04-cpu-continuation`. UNMERGED / NOT_DEPLOYED.
+W04B-LOG fixes admitted E1 runtime reader-error propagation: log write/decode
+failure reaches caller with original cause/path and stops a still-running child;
+a failure observed after child exit also cannot return success. CPU fixtures only,
+no Colab/Drive certification or training readiness claim. Focused6 tests PASS,
+independent6 PASS,0 Critical/Required,0 review rework rounds (one initial fix).
+[Unique backlog](../../research/v7/research-program.md#window04-stage-b--cpu-continuation)
+records evaluated alternatives; [evidence](../../research/v7/window04-cpu-continuation-evidence.json).
+Strict Phase0 STOP, E1 matrix BLOCKED, H2 NOT_APPROVED and proposals PROPOSED.
+This section owns branch-local progress; earlier integration/continuation pointers
+below are historical. Stage B source/closure stays here, main remains unchanged.
+
 ## Window04 integrated; bounded CPU continuation authorized
 
 Human-approved fixed `98f270dd63f05831b2a42695d8005638fda2bbf5` was ff-only integrated

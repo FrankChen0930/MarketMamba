@@ -1,5 +1,18 @@
 # Worktree Register
 
+## Window04 CPU continuation — 2026-10-21
+
+- Path `.worktrees/v7-window04-cpu-continuation`; branch
+  `development/v7-window04-cpu-continuation`; base `31f7accc475b5b735684d5a06725a237d85d5693`.
+- Owner Codex/current Human Window04 continuation. Created2026-10-21; retired N/A.
+  Purpose bounded CPU reliability work after approved integration. Existing22trees
+  retain fixed/audit/source roles; none serves this new development window.
+- UNMERGED / NOT_DEPLOYED. Dependencies existing runtime contracts, fixtures and
+  recovery venv. Source/memory/closure stay here, no main navigation updates.
+- Safe removal requires clean tree, retained commits/artifacts, resolved references
+  and separate retirement approval. No cleanup authorized.
+
+
 ## Window04 reconciliation — 2026-10-21
 
 - Path `.worktrees/v7-window04-reconciliation`, branch `integration/v7-window04-reconciliation`;

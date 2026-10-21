@@ -5,6 +5,22 @@
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
 
+## Window04 Stage B — CPU continuation
+
+ACTIVE / UNMERGED / NOT_DEPLOYED; Human approved same-window continuation after
+successful fixed98f270d integration. Base is main closure31f7acc, branch
+`development/v7-window04-cpu-continuation`. Maximum4 units, max2 rework rounds/unit.
+
+| ID / priority | Objective / authority | Acceptance / resources / duplicate check | State |
+|---|---|---|---|
+| W04B-LOG / P1 | System reliability + experiment preparation: existing durable-log/explicit-failure contract, Training domain invariants and admitted runtime a7992f0 | Real CPU child + injected log write/decode errors must raise with cause/path, stop child, never return success after reader failure; legal success/nonzero/heartbeat unchanged. No GPU/data. All-branch path history only a7992f0/044bfa6/0b7c98e: no equivalent fix. Prevent hidden evidence loss and wasted future compute; thread cleanup risk; bounded S effort | COMPLETED_VERIFIED: RED6tests/3failures → GREEN6; independent6PASS/0Required; one initial fix,0 rework |
+| W04B-DATA / P2 | Existing TWSE/TPEx/MOPS/PIT scope | Existing parser and snapshot regressions passed; known deterministic date/header issues already integrated; further monthly completeness policy needs Human. No production-path changes or new acquisition | NO_NEW_READY_UNIT_ESTABLISHED |
+| W04B-PORT / P2 | H1 fixture journal/replay/history | Existing67tests PASS and completed PORT01–04; real-data adapter/economic metrics depend on H2/frozen financial definitions | HUMAN_DECISION_REQUIRED for extension |
+| W04B-EVAL / P2 | Existing E1 preparation | Metadata audit already integrated and verified; payload checking needs original matrix; new split/selection needs Human. Do not duplicate decision package | BLOCKED / HUMAN_DECISION_REQUIRED |
+
+No full roadmap recovery or E1 location rescan. Remaining slots are not a target;
+after W04B-LOG reassess only demonstrated independent READY work and stop otherwise.
+
 ## Window04 integrated; bounded CPU continuation authorized
 
 Human-approved fixed `98f270dd63f05831b2a42695d8005638fda2bbf5` was ff-only integrated
