@@ -23,7 +23,9 @@ Semantic change owners must update this file in the same change. K0 remains disc
 advanced research view on isolated `development/v7-portfolio-ux` from fixed `5a2bc6f`.
 [Decision](../02_History/Decisions/20261021-portfolio-ux-human-decision.json),
 [skills/design/acceptance](../../reports/v7_portfolio_ux_acceptance.md).
-IN_PROGRESS / UNMERGED / NOT_DEPLOYED; existing PORT completion remains preserved.
+UX-01–03 implementation verified; UX-04 browser/evidence closure in progress.
+[UX evidence](../../research/v7/portfolio-ux-evidence.json).
+UNMERGED / NOT_DEPLOYED; existing PORT completion remains preserved.
 No H0/H2, accounting, data or production authority change. Strict STOP persists.
 
 

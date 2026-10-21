@@ -27,4 +27,34 @@ numbers or ornamental cards. No new library, font download or financial metric.
 
 ## Verification / closure
 
-Pending implementation, independent review and real Chrome desktop/mobile acceptance.
+UX-01–03 share a single page/helper change, avoiding parallel data models.
+Independent review found no Critical/Required. Seven presentation tests and eight
+API client contract tests PASS; existing frontend8, Portfolio67, Python API8 +
+real HTTP/restart1 and governance23 PASS. Build PASS (inherited large-chunk warning).
+The same schema/API/engine/exporter/fixture bytes and original PORT evidence remain
+unchanged: [identity and test index](../research/v7/portfolio-ux-evidence.json).
+
+Formatting is presentation-only, four decimal places (quantity six), half away
+from zero using decimal text/BigInt; no float precision loss before rounding.
+Tiny nonzero displayed as approximate zero. Original exact strings remain in
+advanced mode/raw selectable JSON. Comparisons use full precision, not formatted
+values. Unknown never becomes numeric zero. Event labels are Chinese translations;
+changes describe observed adjacent states only, never reasons, returns or fills.
+
+General: compact selected-event summary, dated interactive chart/timeline,
+positions/pending, visible fixture/source class and STOP/not-admitted notice.
+Advanced: same selected event, exact decimals, complete event table, raw selected
+API event/state, schema/spec, engine version, journal/manifest/final-record hashes
+and source commit. Does not invent raw Journal payload absent from API.
+Mode switching uses the same validated result, preserves selection and does not
+request another API result. Native buttons/select and SVG Enter/Space support keyboard.
+
+Focused changed-source lint PASS. **Full frontend lint remains FAIL:58 errors,
+3warnings, byte-identical output after path normalization to fixed5a2bc6f.** This
+is an inherited repository gate, not claimed PASS and not expanded into this UX
+scope. The project config excludes mjs rules; new helpers/driver get explicit
+no-unused-vars/no-undef with Node globals. Vendored upstream markdown hard-break
+whitespace is retained byte-for-byte; diff check excludes that pinned third-party
+content, and does not silently normalize it.
+
+UX-04 real browser evidence and final checkpoint are being consolidated.

@@ -44,10 +44,10 @@ for this new explicitly authorized presentation window. Base `5a2bc6f`; isolated
 
 | ID | State | Dependencies / acceptance | Value / risk |
 |---|---|---|---|
-| UX-01 | IN_PROGRESS | Same validated API object; accessible default/general vs advanced; preserve event on toggle | Simple overview with research detail; no parallel model |
-| UX-02 | READY after UX-01 | Presentation decimal formatting only; exact raw in advanced; zero vs unknown; immutable tests | Readability without accounting change |
-| UX-03 | READY after UX-01 | Dated ordered Chinese event timeline, chart selection sync, observable state changes only | Explain actual state, never infer causes |
-| UX-04 | READY after UX-01–03 | Real Chrome desktop/mobile all7 events/modes, exact values, errors, keyboard; regressions/review/evidence | Verifiable product review, not H0/H2 |
+| UX-01 | COMPLETED_VERIFIED | Same validated API object; accessible default/general vs advanced; preserve event on toggle | Simple overview with research detail; no parallel model |
+| UX-02 | COMPLETED_VERIFIED | Presentation decimal formatting only; exact raw in advanced; zero vs unknown; immutable tests | Readability without accounting change |
+| UX-03 | COMPLETED_VERIFIED | Dated ordered Chinese event timeline, chart selection sync, observable state changes only | Explain actual state, never infer causes |
+| UX-04 | IN_PROGRESS | Real Chrome desktop/mobile all7 events/modes, exact values, errors, keyboard; regressions/review/evidence | Verifiable product review, not H0/H2 |
 
 Implementation may share the same page/helper to avoid artificial subsystem splits.
 Each logical unit has at most two evidence-supported repair rounds. Completion
