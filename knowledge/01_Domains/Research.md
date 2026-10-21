@@ -98,3 +98,12 @@ NOT_DEPLOYED. PORT-01–04 H1 fixture engineering is now COMPLETED_VERIFIED;
 Human Product Slice Review remains pending. See the
 [acceptance report](../../reports/v7_portfolio_history_acceptance.md). Strict Phase 0
 STOP, E1 portfolio admission=false and production boundaries remain unchanged.
+
+## Autonomous research preparation — 2026-10-21
+
+[Decision preparation](../../reports/v7_autonomous_research_preparation.md) maps
+fixed E1 result/diagnostic/recovery evidence to options and fairness checks.
+PROPOSED / NOT_APPROVED: no E2 selection, new experiment or admission. Sources and
+checks are in [window evidence](../../research/v7/autonomous-window-01-evidence.json).
+E1 matrix stays BLOCKED; no repeated discovery without a new exact location.
+The Charter permits preparation, while Human retains formal research decisions.

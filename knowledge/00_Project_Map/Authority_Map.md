@@ -18,9 +18,13 @@ Human research/production decisions unchanged. No automatic future execution.
 
 AUTO-DATA: branch-local E1 split preparation rejects unmatched date/assignment
 counts; 14 focused / 29 E1 CPU tests PASS, independent review14 PASS. This does not
-alter frozen split, research result or admission. Charter commit `be7998d`;
+alter frozen split, research result or admission. Charter commit `be7998d`; AUTO-DATA `3f07f80`;
 unit identity is its containing implementation commit. Evidence:
 [window index](../../research/v7/autonomous-window-01-evidence.json).
+
+AUTO-RES completed a [Human decision preparation package](../../reports/v7_autonomous_research_preparation.md)
+with4 pinned sources independently verified. PROPOSED / NOT_APPROVED, no E2 or
+research admission; existing inconclusive claims preserved.
 
 ## Portfolio History H0 completed — 2026-10-21
 
