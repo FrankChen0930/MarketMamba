@@ -4,7 +4,7 @@
 
 ## Data reliability / evaluation preparation window03 — 2026-10-21
 
-ACTIVE_BOUNDED / UNMERGED / NOT_DEPLOYED. Current Human grant supersedes the
+WINDOW_COMPLETE / STOP / UNMERGED / NOT_DEPLOYED. Current Human grant superseded the
 Window02 STOP solely for this separate window. Main remains9956446; candidate
 `development/v7-data-evaluation-preparation` joins main and fixed Window02f34f9f3
 in isolation. Five navigation conflicts retain Window02 content, with this new
@@ -15,7 +15,13 @@ checkpoint taking precedence; main's previous pointer remains in parent history.
 Stage1 isolated integration GO at9bb4247 (259 tests, independent0 Required).
 Parser complete: TWSE response date binding and TPEx unique header mapping,
 8 tests + independent8 PASS; MOPS source/policy unchanged. No provider certification.
-No main merge authorized. Strict Phase0 STOP/E1 matrix BLOCKED unchanged.
+Fairness/readiness completed:12 source identities,7 result hashes,2seed identity
+chains; independent0 Required. New designs PROPOSED; NOT_RUN_READY without matrix.
+Runtime correction: candidate Data/contains3 inherited tracked historical files,
+unchanged and parquet contents unread; no processed_v6 mount. Do not reuse older
+Data-absent assumption. Final267 tests PASS, health WARNING/no FAIL. Main stays9956446; next session starts
+at `.worktrees/v7-data-evaluation-preparation`, reads this queue/evidence and waits
+for a new bounded grant. No main merge authorized. Strict Phase0 STOP/E1 matrix BLOCKED unchanged.
 
 ## Observation Metadata
 

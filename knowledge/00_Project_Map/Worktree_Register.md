@@ -278,7 +278,7 @@ resolved integration dependencies and separate retirement approval. No removal n
 Path `.worktrees/v7-data-evaluation-preparation`; branch
 `development/v7-data-evaluation-preparation`; base9956446, integrates fixedf34f9f3
 only within candidate. Owner Codex/current Human grant. Created2026-10-21;
-retiredN/A; ACTIVE/UNMERGED/NOT_DEPLOYED. Purpose: integration readiness, deterministic
+retiredN/A; WINDOW_COMPLETE_STOP/UNMERGED/NOT_DEPLOYED. Purpose: integration readiness, deterministic
 parser fixes and fairness preparation; other18trees retained with original purposes.
 Dependencies: fixed parent commits, existing recovery venv read-only; no data mount.
 Authority scoped engineering only. Safe removal requires clean preserved commits,

@@ -126,3 +126,15 @@ results or quantify historical selection bias. Occlusion is not retrained ablati
 identities and PROPOSED comparison-design options; Human approval remains required.
 [Unique backlog](../../research/v7/research-program.md#cross-domain-window-02)
 is WINDOW_COMPLETE/STOP. Strict Phase0 STOP; E1 matrix BLOCKED; no new search.
+
+## Window03 fairness and readiness preparation — 2026-10-21
+
+Completed source-level E5/E1 split/selection/final-evaluation review and PROPOSED
+comparison designs, without changing existing result classifications or policy.
+Existing validators/configs match historical E1 contract/config identities;7 copied
+result hashes and2 seed best-pointer metadata chains checked. No matrix/weight
+payload validation, training or Colab launch. NOT_RUN_READY; original matrix BLOCKED.
+[Report](../../reports/v7_data_evaluation_window03.md),
+[unique completed queue](../../research/v7/research-program.md#data-evaluation-window-03).
+Main9956446 unchanged; branch `development/v7-data-evaluation-preparation` is
+UNMERGED/NOT_DEPLOYED. New bounded execution and formal research decisions need Human.

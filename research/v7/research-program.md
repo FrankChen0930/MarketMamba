@@ -9,7 +9,7 @@
 
 ### Data evaluation window 03
 
-ACTIVE_BOUNDED; Human approved deterministic parser engineering and research
+WINDOW_COMPLETE / STOP / UNMERGED / NOT_DEPLOYED. Human approved deterministic parser engineering and research
 preparation, not main merge, training or policy changes. Candidate branch
 `development/v7-data-evaluation-preparation` from main9956446 plus Window02f34f9f3.
 This queue supersedes Window02's next-decision status for the newly authorized scope.
@@ -18,13 +18,26 @@ This queue supersedes Window02's next-decision status for the newly authorized s
 |---|---|---|
 | W03-INT | P0 Human Stage1 | Both fixed parents, four source units unchanged,259 joint non-training regressions,source hashes/governance/independent review; GO_ISOLATED_ONLY, containing merge commit |
 | W03-PARSER | P1 Human Stage2/existing fetcher contracts | RED then legal input compatibility and wrong date/header fail-closed; mock only; COMPLETED8PASS/independent8,1 repair. All existing worktrees examined, W02 diagnostic only, no duplicate fix |
-| W03-FAIR | P1 Human Stage3/frozen E5/E1 contracts | Trace split/selection/final support, evidence limits, compare temporal holdout/walk-forward/nested designs; proposals only; READY |
-| W03-PREP | P2 Human Stage4 | Assess existing identity/evidence tools; implement only a demonstrated contract gap with CPU acceptance, otherwise document reuse/dependencies; DISCOVERY |
+| W03-FAIR | P1 Human Stage3/frozen E5/E1 contracts | Trace split/selection/final support, evidence limits, compare temporal holdout/walk-forward/nested designs; proposals only; COMPLETED_VERIFIED independent0 Required |
+| W03-PREP | P2 Human Stage4 | COMPLETED_CPU_METADATA_CHECKS: reuse existing validators,12 source identities/7 result hashes/2seed chains; NOT_RUN_READY without original matrix |
 | W03-MOPS | P1 existing monthly/quarterly parser contract | COMPLETED existing quarterly/monthly regression; monthly all-market acceptance policy remains HUMAN_DECISION_REQUIRED, no invented rule |
+
+Closed after integration, parser and research/readiness preparation. Integration9bb4247
+(0 repair), parser74ccb2d (1), research/preparation in containing commit (0).
+Independent reviews0 Critical/Required;267 tests PASS. See
+[report](../../reports/v7_data_evaluation_window03.md) and
+[evidence](data-evaluation-window03-evidence.json). New execution needs a bounded
+Human grant; no additional unblocked high-value READY item demonstrated.
 
 At most two evidence-backed repair rounds per engineering unit. Data fixtures only;
 no formal data, source fetch, historical matrix regeneration or training. Record
-unit evidence in data-evaluation-window03-evidence.json; STOP on bounded closure.
+unit evidence in data-evaluation-window03-evidence.json; this window is now CLOSED.
+Resume at `.worktrees/v7-data-evaluation-preparation`, verify branch/HEAD/clean,
+read Current_State/Authority_Map and this queue. Main9956446 remains unchanged.
+Human decisions: candidate integration, MOPS monthly policy, exact new comparison
+design and compute grant. E1 matrix BLOCKED; no repeat search without new evidence.
+Next valuable CPU work depends on these: approved session-split/acceptance fixtures,
+or verification of original matrix when located. Do not invent policy or start now.
 
 ### Cross-domain window 02
 

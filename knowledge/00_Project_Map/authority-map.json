@@ -613,7 +613,7 @@
       "topic": "Current V7 development backlog",
       "primary_authority": "research/v7/research-program.md",
       "authority_class": "CURRENT_REFERENCE",
-      "status": "WINDOW03_ISOLATED_ENGINEERING_AND_RESEARCH_PREPARATION",
+      "status": "WINDOW03_COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
       "supersedes": [
         "CPU window closure queues as cross-domain next-work navigation",
         "historical tasks/plan.md and tasks/todo.md as active execution assumptions"
@@ -634,7 +634,7 @@
       ],
       "conflicts": [
         "No main integration or research/evaluation policy change authorized",
-        "Window02 remains closed; separate Window03 grant permits parser fixes and preparation only; Strict STOP/E1 matrix BLOCKED"
+        "Window03 complete; new bounded grant required; Strict STOP/E1 matrix BLOCKED; no new research admission"
       ]
     }
   ],
