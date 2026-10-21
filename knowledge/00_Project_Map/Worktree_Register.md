@@ -1,5 +1,15 @@
 # Worktree Register
 
+## W04B-LOG integrated — 2026-10-21
+
+- Fixed `development/v7-window04-cpu-continuation@97fb4c9d669f3aa237ef5545a0ef322a5cc2d6a9`
+  is now LOCAL_DEVELOPMENT_INTEGRATED / NOT_DEPLOYED. Original worktree retained
+  clean at the fixed SHA; older UNMERGED observations below describe prior state.
+- Main ff-only31f7acc→97fb4c9, then this docs-only closure. No new worktree needed;
+  all23 prior trees and historical artifacts retained. Retired N/A; no cleanup
+  authorized; existing safe-removal requirements remain. No pending development.
+
+
 ## Window04 CPU continuation — 2026-10-21
 
 - Path `.worktrees/v7-window04-cpu-continuation`; branch

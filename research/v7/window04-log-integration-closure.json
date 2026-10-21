@@ -1,0 +1,282 @@
+{
+  "schema_version": 1,
+  "artifact_class": "CANONICAL",
+  "evidence_class": "LOCAL_ENGINEERING_INTEGRATION",
+  "status": "INTEGRATED_NOT_DEPLOYED_STOP",
+  "observed_at": "2026-10-21T13:15:02.357658+00:00",
+  "authority": "Human Window04 Integration Closure: fixed97fb4c9; bounded local integration only, no new engineering window",
+  "main_before": "31f7accc475b5b735684d5a06725a237d85d5693",
+  "main_after_ff": "97fb4c9d669f3aa237ef5545a0ef322a5cc2d6a9",
+  "engineering_commit": "27b9b41b01a44d3459ab66c6a0ea83395fc2d30a",
+  "source_closure_commit": "97fb4c9d669f3aa237ef5545a0ef322a5cc2d6a9",
+  "integration_mode": "ff-only; no new merge commit",
+  "main_documentation_closure": "Containing commit; documentation/evidence only",
+  "preflight_clean_worktrees": 23,
+  "source_hashes": {
+    "V6/experimental/v7_e1_colab_runtime.py": "352b16c7762342d7120b88a985688a94e963e719bee0286ad7edb9323609abc6",
+    "V6/experimental/v7_e1_colab_runtime_test.py": "7a898dbbcd3454cdbf733831af7d4188db30ef14ea7ae7a04e7c6bba01c95531"
+  },
+  "source_red_green": "Original immutable evidence:6tests/3failures RED,6PASS GREEN; independently reviewed, not regenerated",
+  "tests": {
+    "pre": {
+      "total_passed": 274,
+      "groups": [
+        {
+          "group": "pit",
+          "command": [
+            "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+            "-B",
+            "-m",
+            "unittest",
+            "V6.experimental.v7_source_snapshot_test",
+            "V6.experimental.v7_temporal_contract_test",
+            "V6.experimental.v7_executable_labels_test",
+            "V6.experimental.v7_ohlcv_provenance_test",
+            "V6.experimental.v7_historical_security_master_test",
+            "V6.experimental.v7_historical_label_materialize_test",
+            "-q"
+          ],
+          "exit_code": 0,
+          "tests_passed": 49,
+          "seconds": 2.7740394369993737,
+          "result": "----------------------------------------------------------------------\nRan 49 tests in 1.212s\n\nOK\n"
+        },
+        {
+          "group": "e1_no_training",
+          "command": [
+            "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+            "-B",
+            "-m",
+            "unittest",
+            "V6.experimental.v7_e1_contract_test",
+            "V6.experimental.v7_e1_matrix_test",
+            "V6.experimental.v7_e1_evaluate_test",
+            "V6.experimental.v7_e1_checkpoint_test",
+            "V6.experimental.v7_e1_colab_runtime_test",
+            "V6.experimental.v7_e1_run_test.E1RunTest.test_lifecycle_adapter_round_trip",
+            "-q"
+          ],
+          "exit_code": 0,
+          "tests_passed": 38,
+          "seconds": 8.394205377000617,
+          "result": "----------------------------------------------------------------------\nRan 38 tests in 4.841s\n\nOK\n"
+        },
+        {
+          "group": "portfolio",
+          "command": [
+            "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+            "-B",
+            "-m",
+            "unittest",
+            "V6.experimental.v7_portfolio_contract_test",
+            "V6.experimental.v7_portfolio_engine_test",
+            "V6.experimental.v7_portfolio_journal_test",
+            "V6.experimental.v7_portfolio_history_test",
+            "V6.experimental.v7_portfolio_process_test",
+            "V6.experimental.v7_health_summary_test",
+            "V6.experimental.v7_correctness_audit_test",
+            "-q"
+          ],
+          "exit_code": 0,
+          "tests_passed": 67,
+          "seconds": 2.7911393720005435,
+          "result": "----------------------------------------------------------------------\nRan 67 tests in 2.644s\n\nOK\n"
+        },
+        {
+          "group": "ops",
+          "command": [
+            "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+            "-B",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "V6/marketmamba/ops",
+            "-p",
+            "test_*.py",
+            "-q"
+          ],
+          "exit_code": 0,
+          "tests_passed": 81,
+          "seconds": 17.228636125000776,
+          "result": "----------------------------------------------------------------------\nRan 81 tests in 17.037s\n\nOK\n"
+        },
+        {
+          "group": "fetch_governance",
+          "command": [
+            "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+            "-B",
+            "-m",
+            "unittest",
+            "V6.scripts.test_v62_fetch_only",
+            "tools.project_knowledge.test_knowledge_governance",
+            "-q"
+          ],
+          "exit_code": 0,
+          "tests_passed": 26,
+          "seconds": 0.2409640149999177,
+          "result": "----------------------------------------------------------------------\nRan 26 tests in 0.079s\n\nOK\n"
+        }
+      ],
+      "official_parser": {
+        "command": "python -B V6/marketmamba/data/test_official_parsers.py -q",
+        "passed": 8,
+        "result": "OK"
+      },
+      "metadata": {
+        "command": "python -B -m unittest V6.experimental.v7_e1_readiness_test -q",
+        "passed": 5,
+        "result": "OK"
+      }
+    },
+    "post": {
+      "total_passed": 274,
+      "groups": [
+        {
+          "group": "pit",
+          "command": [
+            "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+            "-B",
+            "-m",
+            "unittest",
+            "V6.experimental.v7_source_snapshot_test",
+            "V6.experimental.v7_temporal_contract_test",
+            "V6.experimental.v7_executable_labels_test",
+            "V6.experimental.v7_ohlcv_provenance_test",
+            "V6.experimental.v7_historical_security_master_test",
+            "V6.experimental.v7_historical_label_materialize_test",
+            "-q"
+          ],
+          "exit_code": 0,
+          "tests_passed": 49,
+          "seconds": 1.705302207999921,
+          "result": "----------------------------------------------------------------------\nRan 49 tests in 1.134s\n\nOK\n"
+        },
+        {
+          "group": "e1_no_training",
+          "command": [
+            "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+            "-B",
+            "-m",
+            "unittest",
+            "V6.experimental.v7_e1_contract_test",
+            "V6.experimental.v7_e1_matrix_test",
+            "V6.experimental.v7_e1_evaluate_test",
+            "V6.experimental.v7_e1_checkpoint_test",
+            "V6.experimental.v7_e1_colab_runtime_test",
+            "V6.experimental.v7_e1_run_test.E1RunTest.test_lifecycle_adapter_round_trip",
+            "-q"
+          ],
+          "exit_code": 0,
+          "tests_passed": 38,
+          "seconds": 6.618939897998644,
+          "result": "----------------------------------------------------------------------\nRan 38 tests in 4.369s\n\nOK\n"
+        },
+        {
+          "group": "portfolio",
+          "command": [
+            "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+            "-B",
+            "-m",
+            "unittest",
+            "V6.experimental.v7_portfolio_contract_test",
+            "V6.experimental.v7_portfolio_engine_test",
+            "V6.experimental.v7_portfolio_journal_test",
+            "V6.experimental.v7_portfolio_history_test",
+            "V6.experimental.v7_portfolio_process_test",
+            "V6.experimental.v7_health_summary_test",
+            "V6.experimental.v7_correctness_audit_test",
+            "-q"
+          ],
+          "exit_code": 0,
+          "tests_passed": 67,
+          "seconds": 2.9291147320000164,
+          "result": "----------------------------------------------------------------------\nRan 67 tests in 2.772s\n\nOK\n"
+        },
+        {
+          "group": "ops",
+          "command": [
+            "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+            "-B",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "V6/marketmamba/ops",
+            "-p",
+            "test_*.py",
+            "-q"
+          ],
+          "exit_code": 0,
+          "tests_passed": 81,
+          "seconds": 17.93755677199988,
+          "result": "----------------------------------------------------------------------\nRan 81 tests in 17.752s\n\nOK\n"
+        },
+        {
+          "group": "fetch_governance",
+          "command": [
+            "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+            "-B",
+            "-m",
+            "unittest",
+            "V6.scripts.test_v62_fetch_only",
+            "tools.project_knowledge.test_knowledge_governance",
+            "-q"
+          ],
+          "exit_code": 0,
+          "tests_passed": 26,
+          "seconds": 0.2459131460000208,
+          "result": "----------------------------------------------------------------------\nRan 26 tests in 0.077s\n\nOK\n"
+        }
+      ],
+      "official_parser": {
+        "command": "python -B V6/marketmamba/data/test_official_parsers.py -q",
+        "passed": 8,
+        "result": "OK"
+      },
+      "metadata": {
+        "command": "python -B -m unittest V6.experimental.v7_e1_readiness_test -q",
+        "passed": 5,
+        "result": "OK"
+      }
+    }
+  },
+  "independent_review": {
+    "reviewer": "/root/independent_review",
+    "runtime_tests_passed": 6,
+    "critical": 0,
+    "required": 0,
+    "result": "GO"
+  },
+  "knowledge_health": "pre/post WARNING; no FAIL; existing Governance/Authority Drift/Legacy Docs warning classes",
+  "runtime": {
+    "python": "3.12.3",
+    "executable": "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+    "CUDA_VISIBLE_DEVICES": "",
+    "MARKETMAMBA_DATA_ROOT": "UNSET",
+    "main_processed_v6_realpath": "/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6",
+    "operational_data_access": "NONE; mock/temporary fixtures only"
+  },
+  "scope": "Reader write/decode failure reaches caller with original cause/log path; stops running child and cannot return success after child exit. No Colab/Drive actual runtime certification.",
+  "next_readiness": {
+    "ready": "No additional high-value READY item established by prior bounded discovery; none authorized by this integration-only grant",
+    "research": "Human choose/freeze existing PROPOSED decision package before split/selection/refit fixture engineering",
+    "MOPS": "Human monthly completeness policy before new acceptance semantics",
+    "H2": "Real-data portfolio/ranking/economic reports require admission and definitions",
+    "E1": "Original matrix BLOCKED; inspect only with new location evidence; do not regenerate or repeat search"
+  },
+  "boundaries": [
+    "Strict Phase0 STOP",
+    "E1 Frozen Matrix BLOCKED",
+    "H2 NOT_APPROVED",
+    "Fair Evaluation PROPOSED",
+    "No new engineering/push/deploy/training/MAS live"
+  ],
+  "knowledge_impact": "Local integration ownership and next checkpoint updated; no global authority or research/financial semantics changed",
+  "closure_review": {
+    "reviewer": "/root/independent_review",
+    "critical": 0,
+    "required": 0,
+    "result": "PASS: documentation-only, identity/test totals and STOP/next-dependency navigation consistent"
+  }
+}

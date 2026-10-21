@@ -147,3 +147,8 @@ already exited. Existing success/nonzero/heartbeat behavior remains covered.
 Six CPU fixture tests and independent review verify this scope; no live Colab,
 Drive storage durability or research readiness certification. UNMERGED / NOT_DEPLOYED.
 See [bounded evidence](../../research/v7/window04-cpu-continuation-evidence.json).
+
+W04B-LOG local integration update (2026-10-21): fixed97fb4c9 now included in
+WSL development main; earlier UNMERGED label above is historical. NOT_DEPLOYED;
+fixture scope and no live Colab/Drive certification unchanged. See
+[integration closure](../../research/v7/window04-log-integration-closure.json).

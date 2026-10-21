@@ -1,9 +1,37 @@
 # V7 Research Program and Current Development Backlog
 
-> Current planning owner: this isolated reconciliation branch, linked by canonical
+> Current planning owner: WSL development main after W04B integration, linked by canonical
 > Current State/Authority Map. Planning status does not grant research, execution,
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
+
+## Window04 W04B-LOG integration closure — STOP
+
+Human-approved fixed `97fb4c9d669f3aa237ef5545a0ef322a5cc2d6a9` integrated by local ff-only
+from `31f7accc475b5b735684d5a06725a237d85d5693`. Engineering source `27b9b41b01a44d3459ab66c6a0ea83395fc2d30a`;
+no new merge commit. This containing main commit adds closure documentation only.
+LOCAL_DEVELOPMENT_INTEGRATED / NOT_DEPLOYED / WINDOW_COMPLETE / STOP.
+Pre/post274 tests each PASS; independent runtime6 PASS,0 Critical/Required.
+Both source hashes match;23 existing worktrees clean before integration and preserved.
+[Closure evidence](window04-log-integration-closure.json).
+
+Current continuation entry is WSL main: verify HEAD/clean, read this section,
+Authority Map, `knowledge/GOVERNANCE.md` and the local unique
+`research/v7/research-program.md`. Older branch-local/unmerged pointers below are
+historical, superseded only for W04B-LOG local integration. No new work authorized.
+No additional high-value READY item was established by the prior bounded discovery;
+future concrete CPU defects can be considered under a new bounded grant.
+Strict Phase0 STOP; E1 matrix BLOCKED; H2 NOT_APPROVED; research options PROPOSED.
+
+### Next development readiness (assessment only)
+
+| Priority / item | State / prerequisite |
+|---|---|
+| Fair evaluation preparation continuation | HUMAN_DECISION_REQUIRED: choose/freeze from existing PROPOSED package; only then implement split/selection/config fixtures under new bounded grant. No new design here |
+| MOPS acceptance completeness | HUMAN_DECISION_REQUIRED: explicit monthly completeness policy; existing parser semantics unchanged |
+| Original E1 payload identity | BLOCKED: original Frozen Matrix/new location evidence required; no repeated search or substitute generation |
+| Portfolio/ranking/economic extension | HUMAN_DECISION_REQUIRED: H2 and financial definitions; H1 fixture slice already completed |
+| Independent CPU reliability defects | No additional concrete high-value READY item established; future evidence may justify new bounded engineering independent of research gates |
 
 ## Window04 Stage B — CPU continuation
 
