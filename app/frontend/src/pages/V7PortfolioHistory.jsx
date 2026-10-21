@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { getPortfolioHistory } from '../api/portfolioHistory';
 import { createHistoryLoader } from '../api/portfolioHistoryContract.mjs';
@@ -14,6 +14,40 @@ function EventDot({ cx, cy, payload, select, selected }) {
     role="button" tabIndex={0} aria-label={`選取事件 ${payload.seq}：${eventName(payload.kind)}，${eventTime(payload.occurred_at)}`}
     aria-pressed={selected === payload.seq} onClick={e => { e.stopPropagation(); select(payload.seq); }}
     onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(payload.seq); } }} />;
+}
+
+function EventTimeline({ events, selected, onSelect }) {
+  const list = useRef(null);
+  const current = useRef(null);
+  useLayoutEffect(() => {
+    const container = list.current;
+    const item = current.current;
+    if (!container || !item) return;
+    const keepVisible = () => {
+      const bounds = container.getBoundingClientRect();
+      const target = item.getBoundingClientRect();
+      const top = bounds.top + container.clientTop;
+      const bottom = top + container.clientHeight;
+      // Scroll only this list; preserve page position and the user's focus.
+      if (target.top < top) container.scrollTop += target.top - top;
+      else if (target.bottom > bottom) container.scrollTop += target.bottom - bottom;
+    };
+    keepVisible();
+    const observer = new ResizeObserver(keepVisible);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [events, selected]);
+  return <section className="panel ph-timeline-panel" aria-labelledby="ph-timeline">
+    <div className="panel-header"><h2 className="panel-title" id="ph-timeline">事件時間線</h2></div>
+    <ol className="ph-timeline" ref={list}>{events.map(item => <li key={item.seq}>
+      <button type="button" ref={selected === item.seq ? current : null} data-timeline-seq={item.seq}
+        aria-pressed={selected === item.seq} aria-current={selected === item.seq ? 'step' : undefined} onClick={() => onSelect(item.seq)}>
+        <span className="ph-sequence">{item.seq}</span><span><strong>{eventName(item.kind)}</strong>
+          {selected === item.seq ? <span className="ph-selected-label">目前選取</span> : null}
+          <time dateTime={item.occurred_at}>{eventTime(item.occurred_at)}</time></span>
+      </button>
+    </li>)}</ol>
+  </section>;
 }
 
 export default function V7PortfolioHistory() {
@@ -72,7 +106,7 @@ export default function V7PortfolioHistory() {
             <Line dataKey="nav" name="NAV" stroke="var(--accent-blue)" strokeWidth={2} dot={<EventDot select={setSelected} selected={event.seq} />} activeDot={false} isAnimationActive={false} />
           </LineChart></ResponsiveContainer></div> : <p>數值超出圖表顯示範圍；請使用時間線與進階原始值。</p>}
         </div></section>
-        <section className="panel ph-timeline-panel" aria-labelledby="ph-timeline"><div className="panel-header"><h2 className="panel-title" id="ph-timeline">事件時間線</h2></div><ol className="ph-timeline">{history.events.map(item => <li key={item.seq}><button type="button" data-timeline-seq={item.seq} aria-pressed={event.seq === item.seq} onClick={() => setSelected(item.seq)}><span className="ph-sequence">{item.seq}</span><span><strong>{eventName(item.kind)}</strong><time dateTime={item.occurred_at}>{eventTime(item.occurred_at)}</time></span></button></li>)}</ol></section>
+        <EventTimeline events={history.events} selected={event.seq} onSelect={setSelected} />
       </div>
       <div className="ph-detail-grid">
         <section className="panel" aria-labelledby="ph-positions"><div className="panel-header"><h2 className="panel-title" id="ph-positions">持倉</h2></div><div className="panel-body">

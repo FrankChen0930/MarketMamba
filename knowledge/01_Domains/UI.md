@@ -107,3 +107,14 @@ UNMERGED / NOT_DEPLOYED; Human UX Product Slice Review pending.
 [Scope and design](../../reports/v7_portfolio_ux_acceptance.md).
 Formatting is presentation-only; exact source Decimal and backend contracts remain
 authoritative. Project-local pinned frontend skills do not override this boundary.
+
+### Final closure — 2026-10-21
+
+Human accepted the dual-mode direction; authorized timeline visibility and clearer
+observable-state explanations only. Both are COMPLETED_VERIFIED from `1553a59`
+on the same UX candidate; [closure evidence](../../research/v7/portfolio-ux-closure-evidence.json).
+Timeline updates only its own scroll position and retains focus; page-specific scroll
+anchoring is disabled to prevent description-height changes shifting the page.
+General mode remains mobile usable; advanced mobile received basic smoke only.
+No numeric/API/backend change. AI should use existing structured API/JSON.
+Engineering recommends UX closure; final Human review and separate H0/H2 remain pending.

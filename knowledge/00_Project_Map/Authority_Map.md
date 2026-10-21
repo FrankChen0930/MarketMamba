@@ -38,6 +38,13 @@ admission remain unapproved and separate. MAS Core Live is not certified or acti
 
 ## UX product direction — 2026-10-21
 
+The subsequent [Human final-closure decision](../02_History/Decisions/20261021-portfolio-ux-closure-decision.json)
+accepts the overall dual-mode direction and authorizes only selection visibility
+and event readability. Both finishing tasks are engineering-verified; final Human
+closure review remains pending. Mobile advanced requires basic access only; AI
+should prefer the structured API/JSON. This decision grants no H0/H2 or new research authority.
+The following original UX-01–04 record remains historical scope evidence.
+
 [Human UX decision](../02_History/Decisions/20261021-portfolio-ux-human-decision.json)
 authorizes only UX-01–04 presentation engineering on `5a2bc6f` ancestry.
 The fixture UX slice is engineering-verified; [UX acceptance](../../reports/v7_portfolio_ux_acceptance.md)

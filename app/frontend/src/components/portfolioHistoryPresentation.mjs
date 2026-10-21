@@ -30,9 +30,9 @@ export const eventName = kind => EVENT_NAMES[kind] ?? `未識別事件（${kind}
 export const eventTime = value => typeof value === 'string' ? value.replace('T', ' ').replace(/(Z|[+-]\d\d:\d\d)$/, ' $1') : '時間不可用';
 export const selectedEvent = (history, seq) => history.events.find(event => event.seq === seq) ?? history.events.at(-1);
 export function describeEvent(event, previous) {
-  if (!previous) return '記錄組合的初始狀態；尚無前一事件可比較。';
+  if (!previous) return '這是組合的初始紀錄，沒有前一筆事件可供比較。';
   const current = event.state, before = previous.state, changes = [];
-  for (const [field, name] of [['net_value', 'NAV'], ['cash', '現金'], ['total_cost', '累計成本']]) {
+  for (const [field, name] of [['net_value', '淨值'], ['cash', '現金'], ['total_cost', '累計成本']]) {
     const direction = compareDecimal(current[field], before[field]);
     if (direction === 1) changes.push(`${name}增加`);
     else if (direction === -1) changes.push(`${name}減少`);
@@ -41,8 +41,23 @@ export function describeEvent(event, previous) {
   const tickers = new Set([...Object.keys(current.positions), ...Object.keys(before.positions)]);
   if ([...tickers].some(ticker => compareDecimal(current.positions[ticker]?.quantity ?? '0', before.positions[ticker]?.quantity ?? '0') !== 0)) changes.push('持倉數量改變');
   if ([...tickers].some(ticker => current.positions[ticker] && before.positions[ticker] && compareDecimal(current.positions[ticker].last_price, before.positions[ticker].last_price) !== 0)) changes.push('持倉最後價格改變');
-  if (before.pending === null && current.pending !== null) changes.push('出現待成交目標');
-  else if (before.pending !== null && current.pending === null) changes.push('待成交目標清空');
-  else if (JSON.stringify(before.pending) !== JSON.stringify(current.pending)) changes.push('待成交目標欄位改變');
-  return changes.length ? `${changes.join('；')}。僅比較相鄰事件的完整狀態，不推定原因。` : 'NAV、現金、持倉與待成交目標未變，累計成本未變。此處不推定事件原因。';
+  if (before.pending === null && current.pending !== null) changes.push('新增了待成交目標');
+  else if (before.pending !== null && current.pending === null) changes.push('不再列有待成交目標');
+  else if (JSON.stringify(before.pending) !== JSON.stringify(current.pending)) changes.push('待成交目標的記錄內容改變');
+  const pendingUnchanged = JSON.stringify(before.pending) === JSON.stringify(current.pending);
+  const pendingSummary = current.pending === null ? '也沒有待成交目標' : '待成交目標仍保留';
+  const summary = changes.length
+    ? `與前一筆相比，${changes.join('、')}。${pendingUnchanged && current.pending !== null ? '待成交目標仍保留。' : ''}`
+    : `與前一筆相比，淨值、現金、持倉及累計成本均未變動，${pendingSummary}。`;
+  let context;
+  if (event.kind === 'CORPORATE_ACTION') {
+    context = '這筆紀錄標示為公司行動，但現有欄位不足以判定具體類型或原因。';
+  } else if (event.kind === 'SIGNAL') {
+    context = '這筆紀錄標示為訊號事件，並不代表已成交。';
+  } else if (event.kind === 'MARKET_SESSION' && changes.length === 0) {
+    context = '這筆紀錄標示為市場時段，但現有欄位不足以判定未變動的原因。';
+  } else {
+    context = '這些是已記錄的狀態變化，現有欄位不足以判定原因。';
+  }
+  return summary + context;
 }

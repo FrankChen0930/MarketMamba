@@ -1,0 +1,22 @@
+{
+  "status": "ACCEPTED",
+  "authority": "HUMAN",
+  "recorded_on": "2026-10-21",
+  "source": "Human message /goal Market Mamba V7 — Portfolio History Final UX Closure",
+  "verbatim_decision": "我已審閱 V7 Portfolio History 的四種畫面，並確認整體雙模式方向符合需求。",
+  "scope": "Only timeline selection visibility and deterministic readable Traditional Chinese event explanations; tests, independent review, bounded repairs, local commit, memory. No further mobile advanced visual optimization.",
+  "base_commit": "1553a59dcf7b9479702d586f4d80ad20b5bee9c0",
+  "product_principles": [
+    "General mode prioritizes user readability and mobile usability",
+    "Advanced mode prioritizes exact data/provenance; mobile basic access only",
+    "AI should use existing structured API/JSON"
+  ],
+  "excludes": [
+    "H0 main integration",
+    "H2 real-data/research admission",
+    "financial semantics",
+    "engine/exporter/accounting changes",
+    "push/deploy/training"
+  ],
+  "recording_limit": "Human accepts dual-mode direction and authorizes finishing scope; final closure recommendation is engineering evidence, not Human approval of final artifact."
+}

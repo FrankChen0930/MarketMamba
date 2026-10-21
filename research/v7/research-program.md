@@ -58,6 +58,26 @@ Each logical unit has at most two evidence-supported repair rounds. Completion
 records in [UX report](../../reports/v7_portfolio_ux_acceptance.md); no extension
 beyond UX-04 without new scope. Original PORT evidence will not be rewritten.
 
+### Final UX closure — Human authorized 2026-10-21
+
+[Decision](../../knowledge/02_History/Decisions/20261021-portfolio-ux-closure-decision.json):
+dual-mode direction accepted; only the following finishing scope was authorized.
+Same branch `development/v7-portfolio-ux`, fixed base `1553a59`; containing closure
+commit owns final identity. CPU/fixture only, no GPU or new Human research decision.
+
+| ID | State | Dependencies / acceptance | Value / risk |
+|---|---|---|---|
+| UX-FINAL-01 | COMPLETED_VERIFIED | Existing UX1–4; all7 selections including initial7 visible inside timeline; chart/summary/state sync; pageY/focus stable; keyboard | Closes observed selection defect; one bounded scroll-anchoring repair |
+| UX-FINAL-02 | COMPLETED_VERIFIED | Existing validated API states; deterministic exact-delta Chinese narratives; no unsupported causes or action types; 9 unit tests | Readable explanations without financial-policy change; no repair needed |
+
+[Final report](../../reports/v7_portfolio_ux_closure.md) and
+[evidence index](portfolio-ux-closure-evidence.json) retain baseline RED, repaired
+browser result, screenshots, exact identity and independent review. No further UX
+work is READY or authorized. Stop for Human closure review. H0 local main integration
+requires explicit approval of the exact full candidate ancestry; H2 remains separate.
+Mobile advanced visual optimization is expressly outside this program; basic access
+is sufficient. Existing API/JSON is the preferred future AI research interface.
+
 ### Ranked backlog
 
 Sizes are bounded engineering estimates, not delivery promises. Priority is value

@@ -1,4 +1,4 @@
-.portfolio-history { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
+.portfolio-history { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; overflow-anchor: none; }
 .portfolio-history .page-header, .portfolio-history .panel-header { flex-wrap: wrap; gap: var(--space-3); }
 .ph-warning { display:flex; align-items:center; flex-wrap:wrap; gap:8px 20px; border-left:3px solid var(--accent-amber); background:rgba(255,165,0,.06); padding:12px 16px; font-size:13px; }
 .ph-warning strong { color:var(--accent-amber); }
@@ -31,6 +31,7 @@
 .ph-timeline { list-style:none; padding:6px 12px 12px; margin:0; max-height:360px; overflow-y:auto; }
 .ph-timeline button { display:flex; width:100%; align-items:center; gap:12px; text-align:left; background:transparent; color:var(--text-primary); border:1px solid transparent; border-radius:4px; padding:9px 10px; cursor:pointer; font:inherit; }
 .ph-timeline button[aria-pressed=true] { background:var(--bg-hover); border-color:var(--accent-blue); }
+.ph-selected-label { display:inline-block; margin-left:8px; color:var(--accent-blue); font-size:12px; font-weight:600; }
 .ph-timeline time { display:block; font-size:12px; color:var(--text-secondary); margin-top:3px; }
 .ph-timeline strong { font-size:13px; font-weight:500; }
 .ph-sequence { font-variant-numeric:tabular-nums; color:var(--text-secondary); width:18px; flex-shrink:0; }

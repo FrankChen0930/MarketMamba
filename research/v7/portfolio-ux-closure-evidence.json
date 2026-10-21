@@ -1,0 +1,1085 @@
+{
+  "schema": "v7-portfolio-ux-closure-evidence-v1",
+  "artifact_class": "GENERATED",
+  "evidence_class": "OFFLINE_SYNTHETIC_ENGINEERING",
+  "branch": "development/v7-portfolio-ux",
+  "base_commit": "1553a59dcf7b9479702d586f4d80ad20b5bee9c0",
+  "final_commit": "containing final UX closure commit",
+  "status": "COMPLETED_VERIFIED_UNMERGED_NOT_DEPLOYED",
+  "main_unchanged": "83a6a2e6f4a56db318ee07e7e737cc01de3ce48e",
+  "authority": "knowledge/02_History/Decisions/20261021-portfolio-ux-closure-decision.json",
+  "units": {
+    "UX-FINAL-01": {
+      "status": "COMPLETED_VERIFIED",
+      "repair_rounds": 1,
+      "repair": "Observed mobile pointer selection Y853→829 from scroll anchoring; single CSS variable experiment Y853→853; scoped overflow-anchor:none final no-injection PASS"
+    },
+    "UX-FINAL-02": {
+      "status": "COMPLETED_VERIFIED",
+      "repair_rounds": 0
+    }
+  },
+  "additional_human_decisions": 0,
+  "review": {
+    "code": "Independent gpt-6-astra /root/ux_review: no Required/Critical; independent9/9 tests and diff-check; incremental CSS review no Required/Critical",
+    "browser": "Independent /root/ux_browser_review: actual Chrome155 desktop1440x1000/mobile390x844; no injection in final; screenshots visually inspected"
+  },
+  "test_counts": {
+    "presentation": 9,
+    "frontend_contract": 8,
+    "existing_frontend": 8,
+    "portfolio_health_audit": 67,
+    "portfolio_api": 4,
+    "governance": 23
+  },
+  "logs": {
+    "unit-red": "✔ default event is latest; explicit event survives independent mode changes (0.815274ms)\n✔ display rounds decimal text without float loss or currency/percent semantics (1.779244ms)\n✔ unknown is distinct from zero (0.324793ms)\n✔ comparison uses complete decimal text including beyond IEEE precision (0.193666ms)\n✔ names and source timezone are conservative, unknown kind stays unknown (0.290798ms)\n✖ explanation describes observed changes without claiming causes or fills (1.60137ms)\n✔ all presentation passes preserve original artifact bytes and identity (1.212262ms)\n✖ seven fixture narratives use deterministic observed changes and explicit limits (2.37348ms)\n✖ narratives use precise states rather than event ID or a rounded value (0.697851ms)\nℹ tests 9\nℹ suites 0\nℹ pass 6\nℹ fail 3\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 17.812852\n\n✖ failing tests:\n\ntest at app/frontend/src/components/portfolioHistoryPresentation.test.mjs:36:1\n✖ explanation describes observed changes without claiming causes or fills (1.60137ms)\n  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /新增了待成交目標/. Input:\n  \n  '出現待成交目標。僅比較相鄰事件的完整狀態，不推定原因。'\n  \n      at TestContext.<anonymous> (file:///home/frank/projects/MarketMamba/.worktrees/v7-portfolio-ux/app/frontend/src/components/portfolioHistoryPresentation.test.mjs:39:10)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)\n      at Test.postRun (node:internal/test_runner/test:1522:19)\n      at Test.run (node:internal/test_runner/test:1447:12)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: '出現待成交目標。僅比較相鄰事件的完整狀態，不推定原因。',\n    expected: /新增了待成交目標/,\n    operator: 'match',\n    diff: 'simple'\n  }\n\ntest at app/frontend/src/components/portfolioHistoryPresentation.test.mjs:55:1\n✖ seven fixture narratives use deterministic observed changes and explicit limits (2.37348ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n  + actual - expected\n  \n    [\n  +   '記錄組合的初始狀態；尚無前一事件可比較。',\n  +   'NAV、現金、持倉與待成交目標未變，累計成本未變。此處不推定事件原因。',\n  +   '出現待成交目標。僅比較相鄰事件的完整狀態，不推定原因。',\n  +   'NAV、現金、持倉與待成交目標未變，累計成本未變。此處不推定事件原因。',\n  +   'NAV減少；現金減少；累計成本增加；持倉數量改變。僅比較相鄰事件的完整狀態，不推定原因。',\n  +   'NAV減少；現金減少；累計成本增加；持倉數量改變；待成交目標清空。僅比較相鄰事件的完整狀態，不推定原因。',\n  +   'NAV增加；現金增加；持倉數量改變；持倉最後價格改變。僅比較相鄰事件的完整狀態，不推定原因。'\n  -   '這是組合的初始紀錄，沒有前一筆事件可供比較。',\n  -   '與前一筆相比，淨值、現金、持倉及累計成本均未變動，也沒有待成交目標。這筆紀錄標示為市場時段，但現有欄位不足以判定未變動的原因。',\n  -   '與前一筆相比，新增了待成交目標。這筆紀錄標示為訊號事件，並不代表已成交。',\n  -   '與前一筆相比，淨值、現金、持倉及累計成本均未變動，待成交目標仍保留。這筆紀錄標示為市場時段，但現有欄位不足以判定未變動的原因。',\n  -   '與前一筆相比，淨值減少、現金減少、累計成本增加、持倉數量改變。待成交目標仍保留。這些是已記錄的狀態變化，現有欄位不足以判定原因。',\n  -   '與前一筆相比，淨值減少、現金減少、累計成本增加、持倉數量改變、不再列有待成交目標。這些是已記錄的狀態變化，現有欄位不足以判定原因。',\n  -   '與前一筆相比，淨值增加、現金增加、持倉數量改變、持倉最後價格改變。這筆紀錄標示為公司行動，但現有欄位不足以判定具體類型或原因。'\n    ]\n  \n      at TestContext.<anonymous> (file:///home/frank/projects/MarketMamba/.worktrees/v7-portfolio-ux/app/frontend/src/components/portfolioHistoryPresentation.test.mjs:65:10)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)\n      at Test.postRun (node:internal/test_runner/test:1522:19)\n      at Test.run (node:internal/test_runner/test:1447:12)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: [Array],\n    expected: [Array],\n    operator: 'deepStrictEqual',\n    diff: 'simple'\n  }\n\ntest at app/frontend/src/components/portfolioHistoryPresentation.test.mjs:67:1\n✖ narratives use precise states rather than event ID or a rounded value (0.697851ms)\n  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /不足以判定具體類型或原因/. Input:\n  \n  '現金減少。僅比較相鄰事件的完整狀態，不推定原因。'\n  \n      at TestContext.<anonymous> (file:///home/frank/projects/MarketMamba/.worktrees/v7-portfolio-ux/app/frontend/src/components/portfolioHistoryPresentation.test.mjs:76:10)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)\n      at Test.postRun (node:internal/test_runner/test:1522:19)\n      at Test.run (node:internal/test_runner/test:1447:12)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: '現金減少。僅比較相鄰事件的完整狀態，不推定原因。',\n    expected: /不足以判定具體類型或原因/,\n    operator: 'match',\n    diff: 'simple'\n  }\n",
+    "unit": "✔ default event is latest; explicit event survives independent mode changes (2.187303ms)\n✔ display rounds decimal text without float loss or currency/percent semantics (0.474288ms)\n✔ unknown is distinct from zero (0.255811ms)\n✔ comparison uses complete decimal text including beyond IEEE precision (0.147126ms)\n✔ names and source timezone are conservative, unknown kind stays unknown (0.169372ms)\n✔ explanation describes observed changes without claiming causes or fills (0.7183ms)\n✔ all presentation passes preserve original artifact bytes and identity (0.376498ms)\n✔ seven fixture narratives use deterministic observed changes and explicit limits (0.914491ms)\n✔ narratives use precise states rather than event ID or a rounded value (0.568164ms)\nℹ tests 9\nℹ suites 0\nℹ pass 9\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 16.682292\n",
+    "contract": "✔ preserves exact decimal strings, true zeros and null pending (3.053908ms)\n✔ rejects non-fixture and admitted or non-STOP histories (1.179181ms)\n✔ rejects invalid identity, event count/order, and final state mismatch (0.625726ms)\n✔ rejects malformed decimals, positions and pending (0.370707ms)\n✔ missing/error responses contain no stale history, malformed envelope fails closed (0.20466ms)\n✔ reload immediately clears old data and ignores out-of-order completion (0.428399ms)\n✔ network failure and disposal never retain a ready result (0.491927ms)\n✔ API transport uses only local origin and refuses non-200 data (1.383747ms)\nℹ tests 8\nℹ suites 0\nℹ pass 8\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 16.991581\n",
+    "v7": "✔ normalizes a valid health publication without inventing values (1.670924ms)\n✔ unknown state fails closed to error and missing fields remain null (0.201501ms)\n✔ zero is preserved as a real numeric value (0.128607ms)\n✔ wrong schema and blocked publication fail closed (0.106031ms)\nℹ tests 4\nℹ suites 0\nℹ pass 4\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 14.825896\n",
+    "summary": "✔ only known states pass through and unknown fails closed (0.873362ms)\n✔ missing numbers render an em dash while a real zero is preserved (12.346953ms)\n✔ presentation keeps the five-prop contract and normalizes counts (0.982468ms)\n✔ component exposes an accessible status live region (6.652123ms)\nℹ tests 4\nℹ suites 0\nℹ pass 4\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 26.59909\n",
+    "lint": "",
+    "helper-lint": "",
+    "build": "vite v8.0.10 building client environment for production...\n\u001b[2K\ntransforming...✓ 2400 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                     0.45 kB │ gzip:   0.29 kB\ndist/assets/index-DRti6jcS.css     17.04 kB │ gzip:   4.15 kB\ndist/assets/index-DNhyYrB0.js   1,178.79 kB │ gzip: 343.52 kB\n\n[plugin builtin:vite-reporter] \n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n✓ built in 752ms\n",
+    "portfolio": "test_corporate_action_round_trips_and_validates_explicit_terms (V6.experimental.v7_portfolio_contract_test.PortfolioContractTest.test_corporate_action_round_trips_and_validates_explicit_terms) ... ok\ntest_default_spec_round_trips_with_decimal_strings (V6.experimental.v7_portfolio_contract_test.PortfolioContractTest.test_default_spec_round_trips_with_decimal_strings) ... ok\ntest_invalid_numbers_and_naive_timestamps_are_rejected (V6.experimental.v7_portfolio_contract_test.PortfolioContractTest.test_invalid_numbers_and_naive_timestamps_are_rejected) ... ok\ntest_quote_requires_explicit_ratios_and_rejects_invalid_values (V6.experimental.v7_portfolio_contract_test.PortfolioContractTest.test_quote_requires_explicit_ratios_and_rejects_invalid_values) ... ok\ntest_spec_rejects_unsafe_counts_rates_and_version (V6.experimental.v7_portfolio_contract_test.PortfolioContractTest.test_spec_rejects_unsafe_counts_rates_and_version) ... ok\ntest_unknown_is_the_explicit_safe_default (V6.experimental.v7_portfolio_contract_test.PortfolioContractTest.test_unknown_is_the_explicit_safe_default) ... ok\ntest_corporate_action_dispatch_checks_record_time (V6.experimental.v7_portfolio_engine_test.PortfolioEventDispatchTest.test_corporate_action_dispatch_checks_record_time) ... ok\ntest_signal_and_market_payloads_dispatch_through_public_boundary (V6.experimental.v7_portfolio_engine_test.PortfolioEventDispatchTest.test_signal_and_market_payloads_dispatch_through_public_boundary) ... ok\ntest_unknown_event_kind_is_rejected (V6.experimental.v7_portfolio_engine_test.PortfolioEventDispatchTest.test_unknown_event_kind_is_rejected) ... ok\ntest_fill_ratio_one_half_leaves_pending (V6.experimental.v7_portfolio_engine_test.PortfolioExecutionTest.test_fill_ratio_one_half_leaves_pending) ... ok\ntest_full_buy_charges_cost_once_and_conserves_value (V6.experimental.v7_portfolio_engine_test.PortfolioExecutionTest.test_full_buy_charges_cost_once_and_conserves_value) ... ok\ntest_missing_quote_is_blocked_without_inventing_price (V6.experimental.v7_portfolio_engine_test.PortfolioExecutionTest.test_missing_quote_is_blocked_without_inventing_price) ... ok\ntest_sell_blocked_position_causes_cash_limited_buy (V6.experimental.v7_portfolio_engine_test.PortfolioExecutionTest.test_sell_blocked_position_causes_cash_limited_buy) ... ok\ntest_side_permissions_are_explicit (V6.experimental.v7_portfolio_engine_test.PortfolioExecutionTest.test_side_permissions_are_explicit) ... ok\ntest_split_preserves_value_and_dividend_uses_pre_action_quantity (V6.experimental.v7_portfolio_engine_test.PortfolioExecutionTest.test_split_preserves_value_and_dividend_uses_pre_action_quantity) ... ok\ntest_same_timestamp_does_not_execute_and_unknown_stays_pending (V6.experimental.v7_portfolio_engine_test.PortfolioExecutionTimeTest.test_same_timestamp_does_not_execute_and_unknown_stays_pending) ... ok\ntest_buffer_keeps_rank_three_and_fills_from_top_n (V6.experimental.v7_portfolio_engine_test.PortfolioPlannerTest.test_buffer_keeps_rank_three_and_fills_from_top_n) ... ok\ntest_candidate_shortage_never_invents_a_ticker (V6.experimental.v7_portfolio_engine_test.PortfolioPlannerTest.test_candidate_shortage_never_invents_a_ticker) ... ok\ntest_completed_rebalance_ignores_early_signals_until_exact_boundary (V6.experimental.v7_portfolio_engine_test.PortfolioPlannerTest.test_completed_rebalance_ignores_early_signals_until_exact_boundary) ... ok\ntest_head_mismatch_and_malformed_signal_are_rejected (V6.experimental.v7_portfolio_engine_test.PortfolioPlannerTest.test_head_mismatch_and_malformed_signal_are_rejected) ... ok\ntest_pending_signal_is_not_superseded_before_frequency_is_due (V6.experimental.v7_portfolio_engine_test.PortfolioPlannerTest.test_pending_signal_is_not_superseded_before_frequency_is_due) ... ok\ntest_signal_tie_breaks_by_ticker_and_does_not_trade (V6.experimental.v7_portfolio_engine_test.PortfolioPlannerTest.test_signal_tie_breaks_by_ticker_and_does_not_trade) ... ok\ntest_existing_target_without_quote_keeps_pending (V6.experimental.v7_portfolio_engine_test.PortfolioReviewRegressionTest.test_existing_target_without_quote_keeps_pending) ... ok\ntest_full_sell_charges_sell_cost_once (V6.experimental.v7_portfolio_engine_test.PortfolioReviewRegressionTest.test_full_sell_charges_sell_cost_once) ... ok\ntest_replay_math_does_not_depend_on_ambient_decimal_precision (V6.experimental.v7_portfolio_engine_test.PortfolioReviewRegressionTest.test_replay_math_does_not_depend_on_ambient_decimal_precision) ... ok\ntest_two_open_targets_complete_without_negative_cash (V6.experimental.v7_portfolio_engine_test.PortfolioReviewRegressionTest.test_two_open_targets_complete_without_negative_cash) ... ok\ntest_existing_semantically_invalid_chain_cannot_be_extended (V6.experimental.v7_portfolio_journal_test.PortfolioJournalBoundaryTest.test_existing_semantically_invalid_chain_cannot_be_extended) ... ok\ntest_head_mismatch_refusal_preserves_bytes_and_allows_valid_retry (V6.experimental.v7_portfolio_journal_test.PortfolioJournalBoundaryTest.test_head_mismatch_refusal_preserves_bytes_and_allows_valid_retry) ... ok\ntest_invalid_signal_is_rejected_before_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalBoundaryTest.test_invalid_signal_is_rejected_before_append) ... ok\ntest_non_string_ticker_is_rejected_before_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalBoundaryTest.test_non_string_ticker_is_rejected_before_append) ... ok\ntest_non_utf8_journal_fails_with_integrity_error (V6.experimental.v7_portfolio_journal_test.PortfolioJournalBoundaryTest.test_non_utf8_journal_fails_with_integrity_error) ... ok\ntest_valid_early_signal_after_fill_is_replayable_and_non_mutating (V6.experimental.v7_portfolio_journal_test.PortfolioJournalBoundaryTest.test_valid_early_signal_after_fill_is_replayable_and_non_mutating) ... ok\ntest_cli_fails_closed_on_corrupt_journal_without_writing (V6.experimental.v7_portfolio_journal_test.PortfolioJournalCliTest.test_cli_fails_closed_on_corrupt_journal_without_writing) ... ok\ntest_cli_prints_human_readable_replay_without_writing (V6.experimental.v7_portfolio_journal_test.PortfolioJournalCliTest.test_cli_prints_human_readable_replay_without_writing) ... ok\ntest_same_id_with_different_payload_is_rejected (V6.experimental.v7_portfolio_journal_test.PortfolioJournalIntegrityTest.test_same_id_with_different_payload_is_rejected) ... ok\ntest_tamper_and_truncated_tail_fail_closed (V6.experimental.v7_portfolio_journal_test.PortfolioJournalIntegrityTest.test_tamper_and_truncated_tail_fail_closed) ... ok\ntest_time_regression_is_rejected_without_changing_file (V6.experimental.v7_portfolio_journal_test.PortfolioJournalIntegrityTest.test_time_regression_is_rejected_without_changing_file) ... ok\ntest_duplicate_member_cli_refuses_without_repair (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_member_cli_refuses_without_repair) ... ok\ntest_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) ... ok\ntest_legal_key_order_whitespace_and_unicode_encoding_remain_readable (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_legal_key_order_whitespace_and_unicode_encoding_remain_readable) ... ok\ntest_collision_cannot_be_treated_as_duplicate_retry (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_cannot_be_treated_as_duplicate_retry) ... ok\ntest_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) ... ok\ntest_hash_valid_persisted_collision_is_refused_without_repair (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_hash_valid_persisted_collision_is_refused_without_repair) ... ok\ntest_unique_whitespace_key_and_empty_quotes_remain_legal (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_unique_whitespace_key_and_empty_quotes_remain_legal) ... ok\ntest_duplicate_retry_is_noop_and_replay_matches_live_state (V6.experimental.v7_portfolio_journal_test.PortfolioJournalResumeTest.test_duplicate_retry_is_noop_and_replay_matches_live_state) ... ok\ntest_alias_rejected_and_atomic_replace_failure (V6.experimental.v7_portfolio_history_test.HistoryTests.test_alias_rejected_and_atomic_replace_failure) ... ok\ntest_corrupt_missing_and_conflicting_inputs_preserve_output (V6.experimental.v7_portfolio_history_test.HistoryTests.test_corrupt_missing_and_conflicting_inputs_preserve_output) ... ok\ntest_every_prefix_and_determinism (V6.experimental.v7_portfolio_history_test.HistoryTests.test_every_prefix_and_determinism) ... ok\ntest_identity_flags_duplicate_keys_and_state_rejected (V6.experimental.v7_portfolio_history_test.HistoryTests.test_identity_flags_duplicate_keys_and_state_rejected) ... ok\ntest_legacy_universal_newline_bytes_identity (V6.experimental.v7_portfolio_history_test.HistoryTests.test_legacy_universal_newline_bytes_identity) ... ok\ntest_manifest_is_required_and_hash_bound (V6.experimental.v7_portfolio_history_test.HistoryTests.test_manifest_is_required_and_hash_bound) ... ok\ntest_real_process_shared_lock_and_captured_prefix (V6.experimental.v7_portfolio_history_test.HistoryTests.test_real_process_shared_lock_and_captured_prefix) ... ok\ntest_concurrent_conflicting_writers_admit_only_one_payload (V6.experimental.v7_portfolio_process_test.PortfolioProcessTest.test_concurrent_conflicting_writers_admit_only_one_payload) ... {\"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exits\": [0, 0], \"journal_sha256\": \"f2b40d1b9bcb49d0463bb35e80fef93a595c53f5b81b1696895986e8026636fd\", \"results\": [{\"appended\": true, \"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}, {\"event\": \"error\", \"message\": \"event_id 'market' has different content\", \"type\": \"EventConflictError\"}], \"scenario\": \"concurrent_conflict\"}\nok\ntest_concurrent_duplicate_writers_charge_once (V6.experimental.v7_portfolio_process_test.PortfolioProcessTest.test_concurrent_duplicate_writers_charge_once) ... {\"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exits\": [0, 0], \"journal_sha256\": \"f2b40d1b9bcb49d0463bb35e80fef93a595c53f5b81b1696895986e8026636fd\", \"results\": [{\"appended\": false, \"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}, {\"appended\": true, \"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}], \"scenario\": \"concurrent_duplicate\"}\nok\ntest_reader_waits_for_writer_commit_instead_of_observing_partial_line (V6.experimental.v7_portfolio_process_test.PortfolioProcessTest.test_reader_waits_for_writer_commit_instead_of_observing_partial_line) ... {\"blocked\": {\"event\": \"lock_blocked\", \"operation\": 1}, \"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exit\": 0, \"journal_sha256\": \"f2b40d1b9bcb49d0463bb35e80fef93a595c53f5b81b1696895986e8026636fd\", \"result\": {\"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}, \"scenario\": \"reader_during_split_write\"}\nok\ntest_sigkill_after_fsync_then_new_process_retry_does_not_charge_twice (V6.experimental.v7_portfolio_process_test.PortfolioProcessTest.test_sigkill_after_fsync_then_new_process_retry_does_not_charge_twice) ... {\"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exits\": [-9, 0], \"journal_sha256\": \"f2b40d1b9bcb49d0463bb35e80fef93a595c53f5b81b1696895986e8026636fd\", \"result\": {\"appended\": false, \"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}, \"scenario\": \"sigkill_durable_before_response\"}\nok\ntest_sigkill_partial_tail_is_preserved_and_refused_not_repaired (V6.experimental.v7_portfolio_process_test.PortfolioProcessTest.test_sigkill_partial_tail_is_preserved_and_refused_not_repaired) ... {\"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exits\": [-9, 0], \"journal_sha256\": \"fd78812e4fdd32f4cebea6c6011d3bc75dc4faf1cf4d5ebcd9a53664667fe802\", \"refusal\": {\"event\": \"error\", \"message\": \"journal has a truncated final line\", \"type\": \"JournalIntegrityError\"}, \"scenario\": \"sigkill_partial_tail\"}\nok\ntest_blocking_report_is_blocked (V6.experimental.v7_health_summary_test.V7HealthSummaryTest.test_blocking_report_is_blocked) ... ok\ntest_missing_blocking_and_unknown_severity_fail_closed (V6.experimental.v7_health_summary_test.V7HealthSummaryTest.test_missing_blocking_and_unknown_severity_fail_closed) ... ok\ntest_quarantine_is_degraded_but_publishable (V6.experimental.v7_health_summary_test.V7HealthSummaryTest.test_quarantine_is_degraded_but_publishable) ... ok\ntest_write_is_atomic_and_records_source_hash (V6.experimental.v7_health_summary_test.V7HealthSummaryTest.test_write_is_atomic_and_records_source_hash) ... ok\ntest_stop_is_completed_audit_exit_code_two (V6.experimental.v7_correctness_audit_test.AuditCliTest.test_stop_is_completed_audit_exit_code_two) ... ok\ntest_complete_clean_document_passes (V6.experimental.v7_correctness_audit_test.AuditDecisionTest.test_complete_clean_document_passes) ... ok\ntest_major_failure_stops_and_preserves_remediation (V6.experimental.v7_correctness_audit_test.AuditDecisionTest.test_major_failure_stops_and_preserves_remediation) ... ok\ntest_missing_required_domain_is_invalid (V6.experimental.v7_correctness_audit_test.AuditDecisionTest.test_missing_required_domain_is_invalid) ... ok\ntest_markdown_exposes_timing_and_blocker_remediation (V6.experimental.v7_correctness_audit_test.AuditReportTest.test_markdown_exposes_timing_and_blocker_remediation) ... ok\ntest_write_outputs_creates_matching_json_and_markdown (V6.experimental.v7_correctness_audit_test.AuditReportTest.test_write_outputs_creates_matching_json_and_markdown) ... ok\n\n----------------------------------------------------------------------\nRan 67 tests in 2.855s\n\nOK\n",
+    "api": "test_api_corrupt_and_identity_missing_or_conflicting (app.backend.test_v7_portfolio.PortfolioApiTest.test_api_corrupt_and_identity_missing_or_conflicting) ... ok\ntest_api_disabled_missing_and_no_stale_fallback (app.backend.test_v7_portfolio.PortfolioApiTest.test_api_disabled_missing_and_no_stale_fallback) ... ok\ntest_api_exact_artifact_and_schema (app.backend.test_v7_portfolio.PortfolioApiTest.test_api_exact_artifact_and_schema) ... ok\ntest_api_write_and_remote_refused (app.backend.test_v7_portfolio.PortfolioApiTest.test_api_write_and_remote_refused) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.161s\n\nOK\n",
+    "governance": ".......................\n----------------------------------------------------------------------\nRan 23 tests in 0.069s\n\nOK\n",
+    "red": "node:internal/modules/run_main:107\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: initial selected event 7 must be fully visible inside timeline\n\nfalse !== true\n\n    at file://wsl.localhost/Ubuntu-24.04/home/frank/projects/MarketMamba/.worktrees/v7-portfolio-ux/app/frontend/src/api/portfolioHistoryClosure.browser.mjs:39:146\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v24.14.0\n",
+    "green-first-failure": "node:internal/modules/run_main:107\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n829 !== 853\n\n    at file://wsl.localhost/Ubuntu-24.04/home/frank/projects/MarketMamba/.worktrees/v7-portfolio-ux/app/frontend/src/api/portfolioHistoryClosure.browser.mjs:52:229 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: 829,\n  expected: 853,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v24.14.0\n",
+    "green": "[\n  {\n    \"viewport\": \"desktop\",\n    \"initial\": {\n      \"seq\": 7,\n      \"ariaCurrent\": \"step\",\n      \"selectedLabel\": true,\n      \"containerTop\": 733.671875,\n      \"containerBottom\": 1093.671875,\n      \"buttonTop\": 1030.671875,\n      \"buttonBottom\": 1093.171875,\n      \"visible\": true,\n      \"scrollTop\": 84,\n      \"windowY\": 0,\n      \"focus\": \"{\\\"tag\\\":\\\"BODY\\\",\\\"seq\\\":null}\",\n      \"pressedStyle\": \"rgb(33, 38, 45)\"\n    },\n    \"actions\": [\n      {\n        \"seq\": 1,\n        \"beforeY\": 0,\n        \"afterY\": 0,\n        \"visible\": true,\n        \"timelineScroll\": 6,\n        \"focusPreserved\": true\n      },\n      {\n        \"seq\": 2,\n        \"beforeY\": 0,\n        \"afterY\": 0,\n        \"visible\": true,\n        \"timelineScroll\": 6,\n        \"focusPreserved\": true\n      },\n      {\n        \"seq\": 3,\n        \"beforeY\": 0,\n        \"afterY\": 0,\n        \"visible\": true,\n        \"timelineScroll\": 6,\n        \"focusPreserved\": true\n      },\n      {\n        \"seq\": 4,\n        \"beforeY\": 0,\n        \"afterY\": 0,\n        \"visible\": true,\n        \"timelineScroll\": 6,\n        \"focusPreserved\": true\n      },\n      {\n        \"seq\": 5,\n        \"beforeY\": 0,\n        \"afterY\": 0,\n        \"visible\": true,\n        \"timelineScroll\": 6,\n        \"focusPreserved\": true\n      },\n      {\n        \"seq\": 6,\n        \"beforeY\": 0,\n        \"afterY\": 0,\n        \"visible\": true,\n        \"timelineScroll\": 21,\n        \"focusPreserved\": true\n      },\n      {\n        \"seq\": 7,\n        \"beforeY\": 0,\n        \"afterY\": 0,\n        \"visible\": true,\n        \"timelineScroll\": 84,\n        \"focusPreserved\": true\n      }\n    ],\n    \"pointer\": {\n      \"beforeY\": 384,\n      \"afterY\": 384,\n      \"seq\": 3\n    },\n    \"advancedExactEvents\": 7,\n    \"keyboard\": [\n      \"chart Enter\",\n      \"timeline Space\",\n      \"select Home\"\n    ]\n  },\n  {\n    \"viewport\": \"mobile\",\n    \"initial\": {\n      \"seq\": 7,\n      \"ariaCurrent\": \"step\",\n      \"selectedLabel\": true,\n      \"containerTop\": 1412,\n      \"containerBottom\": 1662,\n      \"buttonTop\": 1599,\n      \"buttonBottom\": 1661.5,\n      \"visible\": true,\n      \"scrollTop\": 194,\n      \"windowY\": 0,\n      \"focus\": \"{\\\"tag\\\":\\\"BODY\\\",\\\"seq\\\":null}\",\n      \"pressedStyle\": \"rgb(33, 38, 45)\"\n    },\n    \"actions\": [\n      {\n        \"seq\": 1,\n        \"beforeY\": 0,\n        \"afterY\": 0,\n        \"visible\": true,\n        \"timelineScroll\": 6,\n        \"focusPreserved\": true\n      },\n      {\n        \"seq\": 2,\n        \"beforeY\": 0,\n        \"afterY\": 0,\n        \"visible\": true,\n        \"timelineScroll\": 6,\n        \"focusPreserved\": true\n      },\n      {\n        \"seq\": 3,\n        \"beforeY\": 0,\n        \"afterY\": 0,\n        \"visible\": true,\n        \"timelineScroll\": 6,\n        \"focusPreserved\": true\n      },\n      {\n        \"seq\": 4,\n        \"beforeY\": 0,\n        \"afterY\": 0,\n        \"visible\": true,\n        \"timelineScroll\": 6,\n        \"focusPreserved\": true\n      },\n      {\n        \"seq\": 5,\n        \"beforeY\": 0,\n        \"afterY\": 0,\n        \"visible\": true,\n        \"timelineScroll\": 69,\n        \"focusPreserved\": true\n      },\n      {\n        \"seq\": 6,\n        \"beforeY\": 0,\n        \"afterY\": 0,\n        \"visible\": true,\n        \"timelineScroll\": 131,\n        \"focusPreserved\": true\n      },\n      {\n        \"seq\": 7,\n        \"beforeY\": 0,\n        \"afterY\": 0,\n        \"visible\": true,\n        \"timelineScroll\": 194,\n        \"focusPreserved\": true\n      }\n    ],\n    \"pointer\": {\n      \"beforeY\": 853,\n      \"afterY\": 853,\n      \"seq\": 3\n    },\n    \"advancedExactEvents\": 1,\n    \"keyboard\": [\n      \"chart Enter\",\n      \"timeline Space\",\n      \"select Home\"\n    ]\n  }\n]\n",
+    "impact": "{\n  \"acknowledgment\": null,\n  \"automatic_updates_performed\": false,\n  \"changed\": [\n    \"app/frontend/src/components/portfolioHistoryPresentation.mjs\",\n    \"app/frontend/src/components/portfolioHistoryPresentation.test.mjs\",\n    \"app/frontend/src/pages/V7PortfolioHistory.css\",\n    \"app/frontend/src/pages/V7PortfolioHistory.jsx\",\n    \"knowledge/00_Project_Map/Authority_Map.md\",\n    \"knowledge/00_Project_Map/Current_State.md\",\n    \"knowledge/00_Project_Map/Worktree_Register.md\",\n    \"knowledge/00_Project_Map/authority-map.json\",\n    \"knowledge/00_Project_Map/current-state.json\",\n    \"knowledge/01_Domains/UI.md\",\n    \"knowledge/_generated/authority-history-summary.json\",\n    \"knowledge/_generated/authority-history.json\",\n    \"research/v7/research-program.md\"\n  ],\n  \"matched_rules\": {\n    \"app/frontend/src/components/portfolioHistoryPresentation.mjs\": [\n      \"delivery-surfaces\"\n    ],\n    \"app/frontend/src/components/portfolioHistoryPresentation.test.mjs\": [\n      \"delivery-surfaces\"\n    ],\n    \"app/frontend/src/pages/V7PortfolioHistory.css\": [\n      \"delivery-surfaces\"\n    ],\n    \"app/frontend/src/pages/V7PortfolioHistory.jsx\": [\n      \"delivery-surfaces\"\n    ],\n    \"knowledge/00_Project_Map/Authority_Map.md\": [\n      \"canonical-knowledge\"\n    ],\n    \"knowledge/00_Project_Map/Current_State.md\": [\n      \"canonical-knowledge\"\n    ],\n    \"knowledge/00_Project_Map/Worktree_Register.md\": [\n      \"worktree-responsibility\",\n      \"canonical-knowledge\"\n    ],\n    \"knowledge/00_Project_Map/authority-map.json\": [\n      \"canonical-knowledge\"\n    ],\n    \"knowledge/00_Project_Map/current-state.json\": [\n      \"canonical-knowledge\"\n    ],\n    \"knowledge/01_Domains/UI.md\": [\n      \"canonical-knowledge\"\n    ],\n    \"knowledge/_generated/authority-history-summary.json\": [\n      \"generated-validation-output\"\n    ],\n    \"knowledge/_generated/authority-history.json\": [\n      \"generated-validation-output\"\n    ],\n    \"research/v7/research-program.md\": [\n      \"DEFAULT\"\n    ]\n  },\n  \"potential_knowledge_impact\": [\n    {\n      \"artifact\": \"knowledge/01_Domains/Operations.md\",\n      \"rules\": [\n        \"worktree-responsibility\"\n      ],\n      \"severity\": \"REVIEW_REQUIRED\"\n    },\n    {\n      \"artifact\": \"knowledge/GOVERNANCE.md\",\n      \"rules\": [\n        \"canonical-knowledge\",\n        \"generated-validation-output\"\n      ],\n      \"severity\": \"REVIEW_REQUIRED\"\n    },\n    {\n      \"artifact\": \"knowledge/00_Project_Map/Authority_Map.md\",\n      \"rules\": [\n        \"worktree-responsibility\"\n      ],\n      \"severity\": \"UPDATE_IF_SEMANTIC_CHANGE\"\n    },\n    {\n      \"artifact\": \"knowledge/00_Project_Map/Current_State.md\",\n      \"rules\": [\n        \"delivery-surfaces\",\n        \"worktree-responsibility\"\n      ],\n      \"severity\": \"UPDATE_IF_SEMANTIC_CHANGE\"\n    },\n    {\n      \"artifact\": \"knowledge/01_Domains/UI.md\",\n      \"rules\": [\n        \"delivery-surfaces\"\n      ],\n      \"severity\": \"UPDATE_IF_SEMANTIC_CHANGE\"\n    }\n  ],\n  \"schema_version\": 1,\n  \"status\": \"WARNING\"\n}\n",
+    "health": "KNOWLEDGE HEALTH\n\nProject Map        PASS\nAgent Guides       PASS\nDomains            PASS\nGovernance         WARNING\nAuthority Drift    WARNING\nRuntime Freshness  PASS\nGenerated Index    PASS\nLegacy Docs        WARNING\n\nOverall: WARNING\n",
+    "indexes": "{\"mismatches\": [], \"mode\": \"WRITE\", \"outputs\": [\"knowledge/_generated/tier-a-domain-index.json\", \"knowledge/_generated/coverage.json\", \"knowledge/_generated/important-paths.json\", \"knowledge/_generated/domain-dependencies.md\", \"knowledge/_generated/authority-history-summary.json\", \"knowledge/_generated/legacy-documentation-drift.json\"], \"status\": \"PASS\"}\n",
+    "browser-lint": ""
+  },
+  "baseline_browser_red": {
+    "checks": [
+      {
+        "viewport": "desktop",
+        "initial": {
+          "seq": 7,
+          "containerTop": 733.671875,
+          "containerBottom": 1093.671875,
+          "buttonTop": 1114.671875,
+          "buttonBottom": 1177.171875,
+          "visible": false,
+          "scrollTop": 0,
+          "windowY": 0,
+          "focus": "<body>\n    <div id=\"root\"><div class=\"app-shell\"><nav class=\"topbar\"><a href=\"/\" class=\"topbar-brand\" style=\"text-decoration: none;\"><div class=\"logo-mark\">M</div><div class=\"brand-text\"><span class=\"brand-name\">MarketMamba</span><span class=\"brand-sub\">V6.2 · 台股每日更新</span></div></a><div class=\"nav-tabs\" role=\"navigation\" aria-label=\"主導覽\"><a aria-label=\"首頁\" title=\"首頁 — 總覽與今日重點\" class=\"nav-tab\" href=\"/\" data-discover=\"true\"><span class=\"tab-icon\" aria-hidden=\"true\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-house\" aria-hidden=\"true\"><path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\"></path><path d=\"M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"></path></svg></span><span>首頁</span></a><a aria-label=\"廣度模型\" title=\"廣度模型 — V6.2 · 目前上線中的版本\" class=\"nav-tab\" href=\"/breadth\" data-discover=\"true\"><span class=\"tab-icon\" aria-hidden=\"true\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-globe\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20\"></path><path d=\"M2 12h20\"></path></svg></span><span>廣度模型</span></a><a aria-label=\"高信念模型\" title=\"高信念模型 — 少數幾檔、深入研究的那條線\" class=\"nav-tab\" href=\"/conviction\" data-discover=\"true\"><span class=\"tab-icon\" aria-hidden=\"true\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-target\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><circle cx=\"12\" cy=\"12\" r=\"6\"></circle><circle cx=\"12\" cy=\"12\" r=\"2\"></circle></svg></span><span>高信念模型</span></a><a aria-label=\"V6.1 前一版\" title=\"V6.1 前一版 — 已凍結的舊版，保留對照用\" class=\"nav-tab\" href=\"/legacy\" data-discover=\"true\"><span class=\"tab-icon\" aria-hidden=\"true\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-history\" aria-hidden=\"true\"><path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"></path><path d=\"M3 3v5h5\"></path><path d=\"M12 7v5l4 2\"></path></svg></span><span>V6.1 前一版</span></a><a aria-label=\"量化分析\" title=\"量化分析 — 技術型態與產業強弱\" class=\"nav-tab\" href=\"/quant\" data-discover=\"true\"><span class=\"tab-icon\" aria-hidden=\"true\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-chart-line\" aria-hidden=\"true\"><path d=\"M3 3v16a2 2 0 0 0 2 2h16\"></path><path d=\"m19 9-5 5-4-4-3 3\"></path></svg></span><span>量化分析</span></a><a aria-label=\"AI 日報\" title=\"AI 日報 — 每天一篇的市場解讀\" class=\"nav-tab\" href=\"/market\" data-discover=\"true\"><span class=\"tab-icon\" aria-hidden=\"true\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-bot\" aria-hidden=\"true\"><path d=\"M12 8V4H8\"></path><rect width=\"16\" height=\"12\" x=\"4\" y=\"8\" rx=\"2\"></rect><path d=\"M2 14h2\"></path><path d=\"M20 14h2\"></path><path d=\"M15 13v2\"></path><path d=\"M9 13v2\"></path></svg></span><span>AI 日報</span></a><a aria-label=\"研究紀錄\" title=\"研究紀錄 — 做過的實驗與結論\" class=\"nav-tab\" href=\"/research\" data-discover=\"true\"><span class=\"tab-icon\" aria-hidden=\"true\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-microscope\" aria-hidden=\"true\"><path d=\"M6 18h8\"></path><path d=\"M3 22h18\"></path><path d=\"M14 22a7 7 0 1 0 0-14h-1\"></path><path d=\"M9 14h2\"></path><path d=\"M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z\"></path><path d=\"M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3\"></path></svg></span><span>研究紀錄</span></a></div><div class=\"topbar-right\"><div class=\"topbar-stat\"><span class=\"ts-label\">VIX</span><span class=\"ts-value mono text-positive\">—</span></div><div class=\"topbar-stat\"><span class=\"ts-label\">USD/TWD</span><span class=\"ts-value mono\">—</span></div><div class=\"topbar-stat\"><span class=\"ts-label\">漲/跌</span><span class=\"ts-value mono\"><span class=\"text-positive\">—</span><span style=\"color: var(--text-muted);\">/</span><span class=\"text-negative\">—</span></span></div><div style=\"display: flex; align-items: center; gap: 6px;\"><div class=\"status-dot\" style=\"background: var(--accent-amber); box-shadow: 0 0 6px var(--accent-amber);\"></div><span style=\"font-size: 11px; color: var(--text-muted);\">Mock</span></div></div></nav><div class=\"mobile-status-bar\"><div class=\"msb-left\"><span class=\"msb-label\">VIX</span><span class=\"msb-value text-positive\">—</span></div><div class=\"msb-right\"><div class=\"status-dot\" style=\"background: var(--accent-amber); box-shadow: 0 0 5px var(--accent-amber); width: 6px; height: 6px;\"></div><span class=\"msb-label\">Mock</span></div></div><div class=\"ticker-bar\"><div class=\"ticker-track\"><div class=\"ticker-item\"><span class=\"ti-name\">加權</span><span class=\"ti-price\">—</span><span class=\"ti-change text-positive\">—</span></div><div class=\"ticker-item\"><span class=\"ti-name\">台積電</span><span class=\"ti-price\">—</span><span class=\"ti-change text-positive\">—</span></div><div class=\"ticker-item\"><span class=\"ti-name\">聯發科</span><span class=\"ti-price\">—</span><span class=\"ti-change text-positive\">—</span></div><div class=\"ticker-item\"><span class=\"ti-name\">加權</span><span class=\"ti-price\">—</span><span class=\"ti-change text-positive\">—</span></div><div class=\"ticker-item\"><span class=\"ti-name\">台積電</span><span class=\"ti-price\">—</span><span class=\"ti-change text-positive\">—</span></div><div class=\"ticker-item\"><span class=\"ti-name\">聯發科</span><span class=\"ti-price\">—</span><span class=\"ti-change text-positive\">—</span></div></div></div><main class=\"page-content\"><main class=\"portfolio-history\" data-mode=\"general\"><header class=\"page-header\"><div><h1 class=\"page-title\">模擬組合歷史</h1><p class=\"page-subtitle\">選擇事件，查看當時的組合狀態</p></div><button type=\"button\" class=\"btn btn-ghost\">重新整理</button></header><aside class=\"ph-warning\" role=\"note\"><strong>Synthetic Fixture · 模擬資料</strong><span>僅供工程驗證，非真實交易或正式績效</span><small>research_admission=false · Strict Phase 0：STOP</small></aside><div class=\"ph-view-bar\"><fieldset class=\"ph-mode\"><legend class=\"ph-sr-only\">顯示模式</legend><button type=\"button\" aria-pressed=\"true\">一般模式</button><button type=\"button\" aria-pressed=\"false\">進階研究模式</button></fieldset><span role=\"status\" aria-live=\"polite\" data-testid=\"history-status\">7 個模擬事件 · 唯讀</span></div><section class=\"ph-overview\" aria-labelledby=\"ph-current\"><div class=\"ph-current-heading\"><div><p class=\"ph-context\">最新事件 7 / 7</p><h2 id=\"ph-current\" data-testid=\"selected-event-title\">公司行動</h2><time datetime=\"2026-09-20T09:00:00+08:00\">2026-09-20 09:00:00 +08:00</time></div><label class=\"ph-event-select\">查看事件<select aria-label=\"選擇歷史事件\"><option value=\"1\">1 · 初始狀態 · 2026-09-16 08:00:00 +08:00</option><option value=\"2\">2 · 市場時段 · 2026-09-16 09:00:00 +08:00</option><option value=\"3\">3 · 訊號事件 · 2026-09-16 17:00:00 +08:00</option><option value=\"4\">4 · 市場時段 · 2026-09-17 09:00:00 +08:00</option><option value=\"5\">5 · 市場時段 · 2026-09-18 09:00:00 +08:00</option><option value=\"6\">6 · 市場時段 · 2026-09-19 09:00:00 +08:00</option><option value=\"7\">7 · 公司行動 · 2026-09-20 09:00:00 +08:00</option></select></label></div><p class=\"ph-explanation\" data-testid=\"event-explanation\" aria-live=\"polite\">與前一筆相比，淨值增加、現金增加、持倉數量改變、持倉最後價格改變。這筆紀錄標示為公司行動，但現有欄位不足以判定具體類型或原因。</p><dl class=\"ph-metrics\"><div><dt>NAV 淨值</dt><dd><span class=\"ph-number\" data-testid=\"state-nav\">1.0085</span></dd><small>引擎淨值，非報酬率</small></div><div><dt>Cash 現金</dt><dd><span class=\"ph-number\" data-testid=\"state-cash\">0.0107</span></dd><small>沿用引擎原始單位</small></div><div><dt>Costs 累計成本</dt><dd><span class=\"ph-number\" data-testid=\"state-cost\">0.0015</span></dd><small>截至所選事件</small></div><div><dt>Pending 待成交</dt><dd class=\"ph-pending-summary\" data-testid=\"pending-summary\">無待成交</dd><small>1 項持倉 · 4 個市場時段</small></div></dl><p class=\"ph-format-note\">顯示精度：數值 4 位、持倉數量 6 位小數；僅四捨五入顯示。完整值見進階研究模式，狀態比較使用完整精度。</p></section><div class=\"ph-history-grid\"><section class=\"panel ph-nav-panel\" aria-labelledby=\"ph-nav\"><div class=\"panel-header\"><h2 class=\"panel-title\" id=\"ph-nav\">NAV 事件歷程</h2></div><div class=\"panel-body\"><p class=\"text-muted\">點選圖上的事件或右側時間線，查看該事件完成後的狀態。圖表為近似視覺化。</p><div class=\"ph-chart\"><div class=\"recharts-responsive-container\" style=\"width: 100%; height: 100%; min-width: 0px;\"><div style=\"width: 0px; height: 0px; overflow: visible;\"><div width=\"852\" height=\"260\" class=\"recharts-wrapper\" style=\"position: relative; cursor: default; width: 852px; height: 260px;\"><div xmlns=\"http://www.w3.org/1999/xhtml\" tabindex=\"-1\" class=\"recharts-tooltip-wrapper\" style=\"visibility: hidden; pointer-events: none; position: absolute; top: 0px; left: 0px;\"><div class=\"recharts-default-tooltip\" role=\"status\" aria-live=\"assertive\" style=\"margin: 0px; padding: 10px; background-color: rgb(255, 255, 255); border: 1px solid rgb(204, 204, 204); white-space: nowrap;\"><p class=\"recharts-tooltip-label\" style=\"margin: 0px;\"></p></div></div><svg role=\"application\" tabindex=\"0\" class=\"recharts-surface\" width=\"852\" height=\"260\" viewBox=\"0 0 852 260\" style=\"width: 100%; height: 100%; display: block;\"><title></title><desc></desc><g tabindex=\"-1\" class=\"recharts-zIndex-layer_-100\"></g><g tabindex=\"-1\" class=\"recharts-zIndex-layer_-50\"></g><defs><clipPath id=\"recharts1-clip\"><rect x=\"70\" y=\"20\" height=\"200\" width=\"762\"></rect></clipPath></defs><g tabindex=\"-1\" class=\"recharts-zIndex-layer_100\"></g><g tabindex=\"-1\" class=\"recharts-zIndex-layer_200\"></g><g tabindex=\"-1\" class=\"recharts-zIndex-layer_300\"></g><g tabindex=\"-1\" class=\"recharts-zIndex-layer_400\"><g class=\"recharts-layer recharts-line\"><g class=\"recharts-layer recharts-shape\"><path name=\"NAV\" stroke=\"var(--accent-blue)\" stroke-width=\"2\" fill=\"none\" id=\"recharts-line-_r_0_\" height=\"200\" width=\"762\" class=\"recharts-curve recharts-line-curve\" d=\"M70,184.286L197,184.286L324,184.286L451,184.286L578,194.984L705,205.666L832,63.13\"></path></g></g></g><g tabindex=\"-1\" class=\"recharts-zIndex-layer_500\"><g class=\"recharts-layer recharts-cartesian-axis recharts-xAxis xAxis\"><line angle=\"0\" height=\"30\" orientation=\"bottom\" x=\"70\" y=\"220\" width=\"762\" class=\"recharts-cartesian-axis-line\" stroke=\"#666\" fill=\"none\" x1=\"70\" y1=\"220\" x2=\"832\" y2=\"220\"></line><g class=\"recharts-cartesian-axis-ticks recharts-xAxis-ticks\"><g class=\"recharts-cartesian-axis-tick-lines recharts-xAxis-tick-lines\"><g class=\"recharts-layer recharts-cartesian-axis-tick\"><line angle=\"0\" height=\"30\" orientation=\"bottom\" x=\"70\" y=\"220\" width=\"762\" class=\"recharts-cartesian-axis-tick-line\" stroke=\"#666\" fill=\"none\" x1=\"70\" y1=\"226\" x2=\"70\" y2=\"220\"></line></g><g class=\"recharts-layer recharts-cartesian-axis-tick\"><line angle=\"0\" height=\"30\" orientation=\"bottom\" x=\"70\" y=\"220\" width=\"762\" class=\"recharts-cartesian-axis-tick-line\" stroke=\"#666\" fill=\"none\" x1=\"197\" y1=\"226\" x2=\"197\" y2=\"220\"></line></g><g class=\"recharts-layer recharts-cartesian-axis-tick\"><line angle=\"0\" height=\"30\" orientation=\"bottom\" x=\"70\" y=\"220\" width=\"762\" class=\"recharts-cartesian-axis-tick-line\" stroke=\"#666\" fill=\"none\" x1=\"324\" y1=\"226\" x2=\"324\" y2=\"220\"></line></g><g class=\"recharts-layer recharts-cartesian-axis-tick\"><line angle=\"0\" height=\"30\" orientation=\"bottom\" x=\"70\" y=\"220\" width=\"762\" class=\"recharts-cartesian-axis-tick-line\" stroke=\"#666\" fill=\"none\" x1=\"451\" y1=\"226\" x2=\"451\" y2=\"220\"></line></g><g class=\"recharts-layer recharts-cartesian-axis-tick\"><line angle=\"0\" height=\"30\" orientation=\"bottom\" x=\"70\" y=\"220\" width=\"762\" class=\"recharts-cartesian-axis-tick-line\" stroke=\"#666\" fill=\"none\" x1=\"578\" y1=\"226\" x2=\"578\" y2=\"220\"></line></g><g class=\"recharts-layer recharts-cartesian-axis-tick\"><line angle=\"0\" height=\"30\" orientation=\"bottom\" x=\"70\" y=\"220\" width=\"762\" class=\"recharts-cartesian-axis-tick-line\" stroke=\"#666\" fill=\"none\" x1=\"705\" y1=\"226\" x2=\"705\" y2=\"220\"></line></g><g class=\"recharts-layer recharts-cartesian-axis-tick\"><line angle=\"0\" height=\"30\" orientation=\"bottom\" x=\"70\" y=\"220\" width=\"762\" class=\"recharts-cartesian-axis-tick-line\" stroke=\"#666\" fill=\"none\" x1=\"832\" y1=\"226\" x2=\"832\" y2=\"220\"></line></g></g></g></g><g class=\"recharts-layer recharts-cartesian-axis recharts-yAxis yAxis\"><line width=\"70\" angle=\"0\" orientation=\"left\" x=\"0\" y=\"20\" height=\"200\" class=\"recharts-cartesian-axis-line\" stroke=\"#666\" fill=\"none\" x1=\"70\" y1=\"20\" x2=\"70\" y2=\"220\"></line><g class=\"recharts-cartesian-axis-ticks recharts-yAxis-ticks\"><g class=\"recharts-cartesian-axis-tick-lines recharts-yAxis-tick-lines\"><g class=\"recharts-layer recharts-cartesian-axis-tick\"><line width=\"70\" angle=\"0\" orientation=\"left\" x=\"0\" y=\"20\" height=\"200\" class=\"recharts-cartesian-axis-tick-line\" stroke=\"#666\" fill=\"none\" x1=\"64\" y1=\"220\" x2=\"70\" y2=\"220\"></line></g><g class=\"recharts-layer recharts-cartesian-axis-tick\"><line width=\"70\" angle=\"0\" orientation=\"left\" x=\"0\" y=\"20\" height=\"200\" class=\"recharts-cartesian-axis-tick-line\" stroke=\"#666\" fill=\"none\" x1=\"64\" y1=\"170.0000000000024\" x2=\"70\" y2=\"170.0000000000024\"></line></g><g class=\"recharts-layer recharts-cartesian-axis-tick\"><line width=\"70\" angle=\"0\" orientation=\"left\" x=\"0\" y=\"20\" height=\"200\" class=\"recharts-cartesian-axis-tick-line\" stroke=\"#666\" fill=\"none\" x1=\"64\" y1=\"120.0000000000016\" x2=\"70\" y2=\"120.0000000000016\"></line></g><g class=\"recharts-layer recharts-cartesian-axis-tick\"><line width=\"70\" angle=\"0\" orientation=\"left\" x=\"0\" y=\"20\" height=\"200\" class=\"recharts-cartesian-axis-tick-line\" stroke=\"#666\" fill=\"none\" x1=\"64\" y1=\"70.0000000000008\" x2=\"70\" y2=\"70.0000000000008\"></line></g><g class=\"recharts-layer recharts-cartesian-axis-tick\"><line width=\"70\" angle=\"0\" orientation=\"left\" x=\"0\" y=\"20\" height=\"200\" class=\"recharts-cartesian-axis-tick-line\" stroke=\"#666\" fill=\"none\" x1=\"64\" y1=\"20\" x2=\"70\" y2=\"20\"></line></g></g></g></g></g><g tabindex=\"-1\" class=\"recharts-zIndex-layer_600\"><g class=\"recharts-layer recharts-line-dots\"><circle cx=\"70\" cy=\"184.28571428571507\" r=\"5\" class=\"ph-chart-dot\" data-chart-seq=\"1\" role=\"button\" tabindex=\"0\" aria-label=\"選取事件 1：初始狀態，2026-09-16 08:00:00 +08:00\" aria-pressed=\"false\"></circle><circle cx=\"197\" cy=\"184.28571428571507\" r=\"5\" class=\"ph-chart-dot\" data-chart-seq=\"2\" role=\"button\" tabindex=\"0\" aria-label=\"選取事件 2：市場時段，2026-09-16 09:00:00 +08:00\" aria-pressed=\"false\"></circle><circle cx=\"324\" cy=\"184.28571428571507\" r=\"5\" class=\"ph-chart-dot\" data-chart-seq=\"3\" role=\"button\" tabindex=\"0\" aria-label=\"選取事件 3：訊號事件，2026-09-16 17:00:00 +08:00\" aria-pressed=\"false\"></circle><circle cx=\"451\" cy=\"184.28571428571507\" r=\"5\" class=\"ph-chart-dot\" data-chart-seq=\"4\" role=\"button\" tabindex=\"0\" aria-label=\"選取事件 4：市場時段，2026-09-17 09:00:00 +08:00\" aria-pressed=\"false\"></circle><circle cx=\"578\" cy=\"194.98395264246633\" r=\"5\" class=\"ph-chart-dot\" data-chart-seq=\"5\" role=\"button\" tabindex=\"0\" aria-label=\"選取事件 5：市場時段，2026-09-18 09:00:00 +08:00\" aria-pressed=\"false\"></circle><circle cx=\"705\" cy=\"205.66616767666466\" r=\"5\" class=\"ph-chart-dot\" data-chart-seq=\"6\" role=\"button\" tabindex=\"0\" aria-label=\"選取事件 6：市場時段，2026-09-19 09:00:00 +08:00\" aria-pressed=\"false\"></circle><circle cx=\"832\" cy=\"63.12981173700028\" r=\"7\" class=\"ph-chart-dot\" data-chart-seq=\"7\" role=\"button\" tabindex=\"0\" aria-label=\"選取事件 7：公司行動，2026-09-20 09:00:00 +08:00\" aria-pressed=\"true\"></circle></g></g><g tabindex=\"-1\" class=\"recharts-zIndex-layer_1000\"></g><g tabindex=\"-1\" class=\"recharts-zIndex-layer_1100\"></g><g tabindex=\"-1\" class=\"recharts-zIndex-layer_1200\"></g><g tabindex=\"-1\" class=\"recharts-zIndex-layer_2000\"><g class=\"recharts-cartesian-axis-tick-labels recharts-xAxis-tick-labels\"><g class=\"recharts-layer recharts-cartesian-axis-tick-label\"><text height=\"30\" orientation=\"bottom\" width=\"762\" stroke=\"none\" x=\"70\" y=\"228\" class=\"recharts-text recharts-cartesian-axis-tick-value\" text-anchor=\"middle\" fill=\"#666\"><tspan x=\"70\" dy=\"0.71em\">1 · 09-16</tspan></text></g><g class=\"recharts-layer recharts-cartesian-axis-tick-label\"><text height=\"30\" orientation=\"bottom\" width=\"762\" stroke=\"none\" x=\"197\" y=\"228\" class=\"recharts-text recharts-cartesian-axis-tick-value\" text-anchor=\"middle\" fill=\"#666\"><tspan x=\"197\" dy=\"0.71em\">2 · 09-16</tspan></text></g><g class=\"recharts-layer recharts-cartesian-axis-tick-label\"><text height=\"30\" orientation=\"bottom\" width=\"762\" stroke=\"none\" x=\"324\" y=\"228\" class=\"recharts-text recharts-cartesian-axis-tick-value\" text-anchor=\"middle\" fill=\"#666\"><tspan x=\"324\" dy=\"0.71em\">3 · 09-16</tspan></text></g><g class=\"recharts-layer recharts-cartesian-axis-tick-label\"><text height=\"30\" orientation=\"bottom\" width=\"762\" stroke=\"none\" x=\"451\" y=\"228\" class=\"recharts-text recharts-cartesian-axis-tick-value\" text-anchor=\"middle\" fill=\"#666\"><tspan x=\"451\" dy=\"0.71em\">4 · 09-17</tspan></text></g><g class=\"recharts-layer recharts-cartesian-axis-tick-label\"><text height=\"30\" orientation=\"bottom\" width=\"762\" stroke=\"none\" x=\"578\" y=\"228\" class=\"recharts-text recharts-cartesian-axis-tick-value\" text-anchor=\"middle\" fill=\"#666\"><tspan x=\"578\" dy=\"0.71em\">5 · 09-18</tspan></text></g><g class=\"recharts-layer recharts-cartesian-axis-tick-label\"><text height=\"30\" orientation=\"bottom\" width=\"762\" stroke=\"none\" x=\"705\" y=\"228\" class=\"recharts-text recharts-cartesian-axis-tick-value\" text-anchor=\"middle\" fill=\"#666\"><tspan x=\"705\" dy=\"0.71em\">6 · 09-19</tspan></text></g><g class=\"recharts-layer recharts-cartesian-axis-tick-label\"><text height=\"30\" orientation=\"bottom\" width=\"762\" stroke=\"none\" x=\"821.65625\" y=\"228\" class=\"recharts-text recharts-cartesian-axis-tick-value\" text-anchor=\"middle\" fill=\"#666\"><tspan x=\"821.65625\" dy=\"0.71em\">7 · 09-20</tspan></text></g></g><g class=\"recharts-cartesian-axis-tick-labels recharts-yAxis-tick-labels\"><g class=\"recharts-layer recharts-cartesian-axis-tick-label\"><text width=\"70\" orientation=\"left\" height=\"200\" stroke=\"none\" x=\"62\" y=\"220\" class=\"recharts-text recharts-cartesian-axis-tick-value\" text-anchor=\"end\" fill=\"#666\"><tspan x=\"62\" dy=\"0.355em\">0.9975</tspan></text></g><g class=\"recharts-layer recharts-cartesian-axis-tick-label\"><text width=\"70\" orientation=\"left\" height=\"200\" stroke=\"none\" x=\"62\" y=\"170.0000000000024\" class=\"recharts-text recharts-cartesian-axis-tick-value\" text-anchor=\"end\" fill=\"#666\"><tspan x=\"62\" dy=\"0.355em\">1.0010</tspan></text></g><g class=\"recharts-layer recharts-cartesian-axis-tick-label\"><text width=\"70\" orientation=\"left\" height=\"200\" stroke=\"none\" x=\"62\" y=\"120.0000000000016\" class=\"recharts-text recharts-cartesian-axis-tick-value\" text-anchor=\"end\" fill=\"#666\"><tspan x=\"62\" dy=\"0.355em\">1.0045</tspan></text></g><g class=\"recharts-layer recharts-cartesian-axis-tick-label\"><text width=\"70\" orientation=\"left\" height=\"200\" stroke=\"none\" x=\"62\" y=\"70.0000000000008\" class=\"recharts-text recharts-cartesian-axis-tick-value\" text-anchor=\"end\" fill=\"#666\"><tspan x=\"62\" dy=\"0.355em\">1.0080</tspan></text></g><g class=\"recharts-layer recharts-cartesian-axis-tick-label\"><text width=\"70\" orientation=\"left\" height=\"200\" stroke=\"none\" x=\"62\" y=\"20\" class=\"recharts-text recharts-cartesian-axis-tick-value\" text-anchor=\"end\" fill=\"#666\"><tspan x=\"62\" dy=\"0.355em\">1.0115</tspan></text></g></g></g></svg></div></div></div></div></div></section><section class=\"panel ph-timeline-panel\" aria-labelledby=\"ph-timeline\"><div class=\"panel-header\"><h2 class=\"panel-title\" id=\"ph-timeline\">事件時間線</h2></div><ol class=\"ph-timeline\"><li><button type=\"button\" data-timeline-seq=\"1\" aria-pressed=\"false\"><span class=\"ph-sequence\">1</span><span><strong>初始狀態</strong><time datetime=\"2026-09-16T08:00:00+08:00\">2026-09-16 08:00:00 +08:00</time></span></button></li><li><button type=\"button\" data-timeline-seq=\"2\" aria-pressed=\"false\"><span class=\"ph-sequence\">2</span><span><strong>市場時段</strong><time datetime=\"2026-09-16T09:00:00+08:00\">2026-09-16 09:00:00 +08:00</time></span></button></li><li><button type=\"button\" data-timeline-seq=\"3\" aria-pressed=\"false\"><span class=\"ph-sequence\">3</span><span><strong>訊號事件</strong><time datetime=\"2026-09-16T17:00:00+08:00\">2026-09-16 17:00:00 +08:00</time></span></button></li><li><button type=\"button\" data-timeline-seq=\"4\" aria-pressed=\"false\"><span class=\"ph-sequence\">4</span><span><strong>市場時段</strong><time datetime=\"2026-09-17T09:00:00+08:00\">2026-09-17 09:00:00 +08:00</time></span></button></li><li><button type=\"button\" data-timeline-seq=\"5\" aria-pressed=\"false\"><span class=\"ph-sequence\">5</span><span><strong>市場時段</strong><time datetime=\"2026-09-18T09:00:00+08:00\">2026-09-18 09:00:00 +08:00</time></span></button></li><li><button type=\"button\" data-timeline-seq=\"6\" aria-pressed=\"false\"><span class=\"ph-sequence\">6</span><span><strong>市場時段</strong><time datetime=\"2026-09-19T09:00:00+08:00\">2026-09-19 09:00:00 +08:00</time></span></button></li><li><button type=\"button\" data-timeline-seq=\"7\" aria-pressed=\"true\"><span class=\"ph-sequence\">7</span><span><strong>公司行動</strong><time datetime=\"2026-09-20T09:00:00+08:00\">2026-09-20 09:00:00 +08:00</time></span></button></li></ol></section></div><div class=\"ph-detail-grid\"><section class=\"panel\" aria-labelledby=\"ph-positions\"><div class=\"panel-header\"><h2 class=\"panel-title\" id=\"ph-positions\">持倉</h2></div><div class=\"panel-body\"><div class=\"ph-table\" tabindex=\"0\" role=\"region\" aria-label=\"持倉數量與價格，可橫向捲動\"><table><thead><tr><th>標的</th><th>數量</th><th>最後價格</th></tr></thead><tbody><tr data-position-ticker=\"A\"><th scope=\"row\">A</th><td data-field=\"quantity\"><span class=\"ph-number\">0.199551</span></td><td data-field=\"last_price\"><span class=\"ph-number\">5.0000</span></td></tr></tbody></table></div><p class=\"ph-format-note\">權重口徑未定義，未新增權重計算。</p></div></section><section class=\"panel\" aria-labelledby=\"ph-pending\"><div class=\"panel-header\"><h2 class=\"panel-title\" id=\"ph-pending\">待成交目標</h2></div><div class=\"panel-body\" data-testid=\"pending-state\"><p>沒有待成交目標（pending = null）。</p></div></section></div><footer class=\"ph-source-footer\"><span>來源：portfolio-history-fixed-synthetic-v1</span><span>OFFLINE_SYNTHETIC_ENGINEERING · UNMERGED / NOT_DEPLOYED</span><button type=\"button\" class=\"btn btn-ghost\">查看原始值與來源識別</button></footer></main></main></div></div>\n    <script type=\"module\" src=\"/src/main.jsx\"></script>\n  \n\n<span id=\"recharts_measurement_span\" aria-hidden=\"true\" style=\"position: absolute; top: -20000px; left: 0px; padding: 0px; margin: 0px; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; white-space: pre; font-size: 14px; letter-spacing: normal;\">0.9975</span></body>",
+          "pressedStyle": "rgb(33, 38, 45)"
+        }
+      }
+    ],
+    "expected": "selected7 visible",
+    "actual": false
+  },
+  "single_variable_diagnosis": {
+    "observed_at": "2026-10-21T06:15:56.664Z",
+    "diagnosticNoAnchor": true,
+    "checks": [
+      {
+        "viewport": "desktop",
+        "initial": {
+          "seq": 7,
+          "ariaCurrent": "step",
+          "selectedLabel": true,
+          "containerTop": 733.671875,
+          "containerBottom": 1093.671875,
+          "buttonTop": 1030.671875,
+          "buttonBottom": 1093.171875,
+          "visible": true,
+          "scrollTop": 84,
+          "windowY": 0,
+          "focus": "{\"tag\":\"BODY\",\"seq\":null}",
+          "pressedStyle": "rgb(33, 38, 45)"
+        },
+        "actions": [
+          {
+            "seq": 1,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 6,
+            "focusPreserved": true
+          },
+          {
+            "seq": 2,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 6,
+            "focusPreserved": true
+          },
+          {
+            "seq": 3,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 6,
+            "focusPreserved": true
+          },
+          {
+            "seq": 4,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 6,
+            "focusPreserved": true
+          },
+          {
+            "seq": 5,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 6,
+            "focusPreserved": true
+          },
+          {
+            "seq": 6,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 21,
+            "focusPreserved": true
+          },
+          {
+            "seq": 7,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 84,
+            "focusPreserved": true
+          }
+        ],
+        "pointer": {
+          "beforeY": 384,
+          "afterY": 384,
+          "seq": 3
+        },
+        "advancedExactEvents": 7,
+        "keyboard": [
+          "chart Enter",
+          "timeline Space",
+          "select Home"
+        ]
+      },
+      {
+        "viewport": "mobile",
+        "initial": {
+          "seq": 7,
+          "ariaCurrent": "step",
+          "selectedLabel": true,
+          "containerTop": 1412,
+          "containerBottom": 1662,
+          "buttonTop": 1599,
+          "buttonBottom": 1661.5,
+          "visible": true,
+          "scrollTop": 194,
+          "windowY": 0,
+          "focus": "{\"tag\":\"BODY\",\"seq\":null}",
+          "pressedStyle": "rgb(33, 38, 45)"
+        },
+        "actions": [
+          {
+            "seq": 1,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 6,
+            "focusPreserved": true
+          },
+          {
+            "seq": 2,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 6,
+            "focusPreserved": true
+          },
+          {
+            "seq": 3,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 6,
+            "focusPreserved": true
+          },
+          {
+            "seq": 4,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 6,
+            "focusPreserved": true
+          },
+          {
+            "seq": 5,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 69,
+            "focusPreserved": true
+          },
+          {
+            "seq": 6,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 131,
+            "focusPreserved": true
+          },
+          {
+            "seq": 7,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 194,
+            "focusPreserved": true
+          }
+        ],
+        "pointer": {
+          "beforeY": 853,
+          "afterY": 853,
+          "seq": 3
+        },
+        "advancedExactEvents": 1,
+        "keyboard": [
+          "chart Enter",
+          "timeline Space",
+          "select Home"
+        ]
+      }
+    ],
+    "browser": {
+      "Browser": "Chrome/155.0.8059.85",
+      "Protocol-Version": "1.3",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+      "V8-Version": "15.5.35.25",
+      "WebKit-Version": "537.36 (@0e66b94549a8bd85f03fbdf189b752d6e7b63c32)",
+      "webSocketDebuggerUrl": "ws://127.0.0.1:9230/devtools/browser/dcde68df-952d-4623-b8bc-a1b5b92a5747"
+    },
+    "runtime_exceptions": []
+  },
+  "final_browser": {
+    "observed_at": "2026-10-21T06:17:23.978Z",
+    "diagnosticNoAnchor": false,
+    "checks": [
+      {
+        "viewport": "desktop",
+        "initial": {
+          "seq": 7,
+          "ariaCurrent": "step",
+          "selectedLabel": true,
+          "containerTop": 733.671875,
+          "containerBottom": 1093.671875,
+          "buttonTop": 1030.671875,
+          "buttonBottom": 1093.171875,
+          "visible": true,
+          "scrollTop": 84,
+          "windowY": 0,
+          "focus": "{\"tag\":\"BODY\",\"seq\":null}",
+          "pressedStyle": "rgb(33, 38, 45)"
+        },
+        "actions": [
+          {
+            "seq": 1,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 6,
+            "focusPreserved": true
+          },
+          {
+            "seq": 2,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 6,
+            "focusPreserved": true
+          },
+          {
+            "seq": 3,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 6,
+            "focusPreserved": true
+          },
+          {
+            "seq": 4,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 6,
+            "focusPreserved": true
+          },
+          {
+            "seq": 5,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 6,
+            "focusPreserved": true
+          },
+          {
+            "seq": 6,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 21,
+            "focusPreserved": true
+          },
+          {
+            "seq": 7,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 84,
+            "focusPreserved": true
+          }
+        ],
+        "pointer": {
+          "beforeY": 384,
+          "afterY": 384,
+          "seq": 3
+        },
+        "advancedExactEvents": 7,
+        "keyboard": [
+          "chart Enter",
+          "timeline Space",
+          "select Home"
+        ]
+      },
+      {
+        "viewport": "mobile",
+        "initial": {
+          "seq": 7,
+          "ariaCurrent": "step",
+          "selectedLabel": true,
+          "containerTop": 1412,
+          "containerBottom": 1662,
+          "buttonTop": 1599,
+          "buttonBottom": 1661.5,
+          "visible": true,
+          "scrollTop": 194,
+          "windowY": 0,
+          "focus": "{\"tag\":\"BODY\",\"seq\":null}",
+          "pressedStyle": "rgb(33, 38, 45)"
+        },
+        "actions": [
+          {
+            "seq": 1,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 6,
+            "focusPreserved": true
+          },
+          {
+            "seq": 2,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 6,
+            "focusPreserved": true
+          },
+          {
+            "seq": 3,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 6,
+            "focusPreserved": true
+          },
+          {
+            "seq": 4,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 6,
+            "focusPreserved": true
+          },
+          {
+            "seq": 5,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 69,
+            "focusPreserved": true
+          },
+          {
+            "seq": 6,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 131,
+            "focusPreserved": true
+          },
+          {
+            "seq": 7,
+            "beforeY": 0,
+            "afterY": 0,
+            "visible": true,
+            "timelineScroll": 194,
+            "focusPreserved": true
+          }
+        ],
+        "pointer": {
+          "beforeY": 853,
+          "afterY": 853,
+          "seq": 3
+        },
+        "advancedExactEvents": 1,
+        "keyboard": [
+          "chart Enter",
+          "timeline Space",
+          "select Home"
+        ]
+      }
+    ],
+    "browser": {
+      "Browser": "Chrome/155.0.8059.85",
+      "Protocol-Version": "1.3",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+      "V8-Version": "15.5.35.25",
+      "WebKit-Version": "537.36 (@0e66b94549a8bd85f03fbdf189b752d6e7b63c32)",
+      "webSocketDebuggerUrl": "ws://127.0.0.1:9230/devtools/browser/dcde68df-952d-4623-b8bc-a1b5b92a5747"
+    },
+    "runtime_exceptions": []
+  },
+  "narratives_before_after": [
+    {
+      "seq": 1,
+      "before": "記錄組合的初始狀態；尚無前一事件可比較。",
+      "after": "這是組合的初始紀錄，沒有前一筆事件可供比較。"
+    },
+    {
+      "seq": 2,
+      "before": "NAV、現金、持倉與待成交目標未變，累計成本未變。此處不推定事件原因。",
+      "after": "與前一筆相比，淨值、現金、持倉及累計成本均未變動，也沒有待成交目標。這筆紀錄標示為市場時段，但現有欄位不足以判定未變動的原因。"
+    },
+    {
+      "seq": 3,
+      "before": "出現待成交目標。僅比較相鄰事件的完整狀態，不推定原因。",
+      "after": "與前一筆相比，新增了待成交目標。這筆紀錄標示為訊號事件，並不代表已成交。"
+    },
+    {
+      "seq": 4,
+      "before": "NAV、現金、持倉與待成交目標未變，累計成本未變。此處不推定事件原因。",
+      "after": "與前一筆相比，淨值、現金、持倉及累計成本均未變動，待成交目標仍保留。這筆紀錄標示為市場時段，但現有欄位不足以判定未變動的原因。"
+    },
+    {
+      "seq": 5,
+      "before": "NAV減少；現金減少；累計成本增加；持倉數量改變。僅比較相鄰事件的完整狀態，不推定原因。",
+      "after": "與前一筆相比，淨值減少、現金減少、累計成本增加、持倉數量改變。待成交目標仍保留。這些是已記錄的狀態變化，現有欄位不足以判定原因。"
+    },
+    {
+      "seq": 6,
+      "before": "NAV減少；現金減少；累計成本增加；持倉數量改變；待成交目標清空。僅比較相鄰事件的完整狀態，不推定原因。",
+      "after": "與前一筆相比，淨值減少、現金減少、累計成本增加、持倉數量改變、不再列有待成交目標。這些是已記錄的狀態變化，現有欄位不足以判定原因。"
+    },
+    {
+      "seq": 7,
+      "before": "NAV增加；現金增加；持倉數量改變；持倉最後價格改變。僅比較相鄰事件的完整狀態，不推定原因。",
+      "after": "與前一筆相比，淨值增加、現金增加、持倉數量改變、持倉最後價格改變。這筆紀錄標示為公司行動，但現有欄位不足以判定具體類型或原因。"
+    }
+  ],
+  "source_hashes": [
+    {
+      "path": "app/frontend/src/pages/V7PortfolioHistory.jsx",
+      "sha256": "ef088eef87cba4a1f6471668daeaf1ff8359c95e444916f93dd17a70ba9ec566"
+    },
+    {
+      "path": "app/frontend/src/pages/V7PortfolioHistory.css",
+      "sha256": "8c0808e50f88134c09eb79956be90a802e6636cfd52c92c589ab0c6992302799"
+    },
+    {
+      "path": "app/frontend/src/components/portfolioHistoryPresentation.mjs",
+      "sha256": "8f47d6d7e8a37210786ae275061c79f93d01b6486b0663a159813d342e700155"
+    },
+    {
+      "path": "app/frontend/src/components/portfolioHistoryPresentation.test.mjs",
+      "sha256": "4541d3120ffe13a1a89d19be2fe7a96f4f876113f834c6cf9d2d6c6b9bcb23fe"
+    },
+    {
+      "path": "app/frontend/src/api/portfolioHistoryClosure.browser.mjs",
+      "sha256": "567deb6acf820806cb42c0079abf375fe8044d1cd3acc7d4c8eb78280b5e94dd"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "research/v7/portfolio-ux-closure-red-desktop.png",
+      "sha256": "8623be9aea015688202b531cd830c2d1c482b10bd9cd2000a52f77feba97f68d"
+    },
+    {
+      "path": "research/v7/portfolio-ux-closure-desktop-default.png",
+      "sha256": "ede0bdc4a999cda9dbe4ecf11284f50aa711edc3167888405937f7a7a76b9c49"
+    },
+    {
+      "path": "research/v7/portfolio-ux-closure-desktop-selected.png",
+      "sha256": "f28f29e9554c1aa3333b87f4d25b18d206c8f835b78e02b1538b9203a40e3b16"
+    },
+    {
+      "path": "research/v7/portfolio-ux-closure-mobile-general.png",
+      "sha256": "487ab4f9840be978c7f3b357c7199168c42d84456a9defeb86ba6e359f2fdace"
+    },
+    {
+      "path": "research/v7/portfolio-ux-closure-desktop-selected-clean.png",
+      "sha256": "07d1d4f9c10b8380478a557100c015bd87e9673752ddf45849c197cbc35c2a96"
+    }
+  ],
+  "preserved_baseline_files": [
+    {
+      "path": ".agents/skills/frontend-design/LICENSE.txt",
+      "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+    },
+    {
+      "path": ".agents/skills/frontend-design/SKILL.md",
+      "sha256": "d91970639e9f5c37682ac7ab60094d35f1c7c1f38d731bd56396563aee10c1d3"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/AGENTS.md",
+      "sha256": "fc93e7421177bbf869cce892bc60a6c83a4517d974bc3bf65c4e2c1e58a6ccf6"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/README.md",
+      "sha256": "9eafb2123d3b8b2aef41fba0db2648a3f4f49996f8c7c8bb2c86263befd8b48a"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/SKILL.md",
+      "sha256": "71ed7794962fa6e803ee83030517b5b93a9f70fbfeb431ec4535c5480a8d8355"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/metadata.json",
+      "sha256": "c4e18bac3290fbe1b471a605867d4df68b03144ea26b8befdbe8f9d8fd124354"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/_sections.md",
+      "sha256": "01c59969e4e867f0708c8f8ef9c6d87fab9a07d0586244f429ff84013db8a115"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/_template.md",
+      "sha256": "99df2a3ea088c6c22de2484ddc7e964d0e9923846f44c63380343ecc64455442"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/advanced-effect-event-deps.md",
+      "sha256": "55ed8f9f27a1bff803d6fa55828176207714b02123cbb97ddb8a90d88024a723"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/advanced-event-handler-refs.md",
+      "sha256": "a3097edeecfb2ff6851cd66ed8cdf0617c3c88180504bee824aa6e75a215bbbc"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/advanced-init-once.md",
+      "sha256": "3e4dc22173eb0e2b6dcf583e3babd862b8696328f8f59aee7c4d746c5bc05f6c"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/advanced-use-latest.md",
+      "sha256": "8a3f64dfe5a77d1564248faf17fe662ae75b55d497a243cb30b38eb07ccbbf9a"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/async-api-routes.md",
+      "sha256": "523338540d73427dc14c0cbb19f2741ebccdf8b105a7b2c1b33d2905cf237a42"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/async-cheap-condition-before-await.md",
+      "sha256": "03107c1f70a293cd58a8abc5474c5548e20ea4efdf01b6d45aae7ad0ac1cb32c"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/async-defer-await.md",
+      "sha256": "f3c142d090615abdcc99d31c123be37b31f0f1ed8d9ec9f7789a3bc6883ae0fb"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/async-dependencies.md",
+      "sha256": "16ef469f877e30c6b8e1e1b4bc3e527312fa3c6318cb785a4eca186ea236131a"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/async-parallel.md",
+      "sha256": "6d2f841896279e976dfcdc1ac89e70771ac188baadfd43c096b5706cb838b961"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/async-suspense-boundaries.md",
+      "sha256": "de05fedac2eb7ae563b887b5a424464ec3dfaf84e5b7797467ebe2a796ac8afc"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/bundle-analyzable-paths.md",
+      "sha256": "62090b5c815fd71bf1133dce754f51abc16a9456d0ccd025fd627de27726e92a"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/bundle-barrel-imports.md",
+      "sha256": "e648f6d54525f07a691357040ca5bff6ea3424788a91ff63812adb29622a671b"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/bundle-conditional.md",
+      "sha256": "09c8259c3efb04fc0abb8e412ccbda217c222ae8118516283e571c995fe3a7d4"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/bundle-defer-third-party.md",
+      "sha256": "3719fb47b191e8db4fe22686ec88448ad5af9e6838585425abbe103d0b642e37"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/bundle-dynamic-imports.md",
+      "sha256": "401817a7369f315fc5a68a1095742ff7d53d0461906880dc9d64a41495ee1986"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/bundle-preload.md",
+      "sha256": "d1f7cc28da7cd5ab249acd287edc5b761afcfb194e9cb62cd44c5f3543db2de2"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/client-event-listeners.md",
+      "sha256": "242a873349febc1ce685e85617994784dbab92c2eaa68aed7fed5a83e7680e93"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/client-localstorage-schema.md",
+      "sha256": "0fb7cdf9dc93fdf22f87e3669f953fb9d4ac9b0be42eec4a29fe9a2560610b88"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/client-passive-event-listeners.md",
+      "sha256": "1f35016f9053de69e884ee9be00654e37979c2ca85f5e57764dc2626ff7acb4b"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/client-swr-dedup.md",
+      "sha256": "644652c39c6cc00de8d1c77a7273612e868dc3f7edda30764164c12ec0f764a3"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/js-batch-dom-css.md",
+      "sha256": "480b891b9eaf96e929dc1e964274a4828e3a78009b7d00ccd965a0d425215959"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/js-cache-function-results.md",
+      "sha256": "3daaa11d24f4295cb6be8bc6f407f2ce83cc7b5bd1f0e68891ea8ab835721dc7"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/js-cache-property-access.md",
+      "sha256": "73e47431e74878a927061bf0ddc7cd91a7556cb35d2573f3421e82300d9ae311"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/js-cache-storage.md",
+      "sha256": "11b826b0433898c1ece2d3547010d8e77db9fb240185748c45db91493de9b6cc"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/js-combine-iterations.md",
+      "sha256": "71add08aeeb43091d4ff4c0b2842cce8b4bdef8ad3e732cc034bb5a84827e746"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/js-early-exit.md",
+      "sha256": "925ce5ce87f3347186ca62212f29cc6baa2b8c85a96d2720ad07c3d0abf781c0"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/js-flatmap-filter.md",
+      "sha256": "9e5b166a41914d975bef7635467f8fb32cd98b5c3126c0bc6f163490812fb5f0"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/js-hoist-regexp.md",
+      "sha256": "f9e9aef2f7c2307dd7310f283df85dcada45fc43e9bb941b0c3aa414dec21ec4"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/js-index-maps.md",
+      "sha256": "5df1bdc2cfabb2c98abd55d26762e5c18189535c2e686184f426082e62920391"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/js-length-check-first.md",
+      "sha256": "8b54a311c826b299272f29187fc58bc55772a04c4a72eeb29456ee96dc9fc624"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/js-min-max-loop.md",
+      "sha256": "87dfb67e2f39df6ad8bcfb5b78c5fb364d3c07554ad188a202408d99f3763421"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/js-request-idle-callback.md",
+      "sha256": "ee08f83905b4011abbc33d594033157d77561b5bbd9b36b04f0f409581ffec32"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/js-set-map-lookups.md",
+      "sha256": "a7fd781a6ba9ad49065961b6f9a90ef486bf6b648390e1a08704025f98e1642b"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/js-tosorted-immutable.md",
+      "sha256": "d0a5e1b0fec48a0a81397957e2f068e224329f7c42cb5feeed8aae6fa64025e8"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rendering-activity.md",
+      "sha256": "1e5e7eaf3555e61d6a2e900089c676527d26259501db5594f59544b6c664f85a"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rendering-animate-svg-wrapper.md",
+      "sha256": "9c6ae0ca7a51434e803887c64cded760956579a1452ccb80a461a03f9c937c77"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rendering-conditional-render.md",
+      "sha256": "2ec2fa23c4148285144687050c52369adba3da2fbe3d486f8d3e0aad8f06f2bc"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rendering-content-visibility.md",
+      "sha256": "64eee6d5b916fe74df33363994b27fc7f71bea3bcedc7ee04bda23107ca3e6e4"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rendering-hoist-jsx.md",
+      "sha256": "93b229560fae92005ed9a2a829064607b39b2e984e92d221d05b2d41df2b7c0e"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rendering-hydration-no-flicker.md",
+      "sha256": "dc7ab358c67c177bca6e6f360fbc935ebe4efa928c0ba3ebd3f9f3d9e2000ca3"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rendering-hydration-suppress-warning.md",
+      "sha256": "915bacb934e2927d84b37a3f3d225a47b309ac8f9e494ed2bcb66ce07c5676a2"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rendering-resource-hints.md",
+      "sha256": "351b1095d641717b930f1b2253282b7120af3023bc74e06c17675168d4286864"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rendering-script-defer-async.md",
+      "sha256": "4cea07b7875ba7fc2c7465ff23b63a2bb334f90aaf2d9293d38d67b05fdb32ab"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rendering-svg-precision.md",
+      "sha256": "ed468533f6e95f622859c884b122cf21f9f593ed6bb3d500a54de4b9f9bcb9fb"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rendering-usetransition-loading.md",
+      "sha256": "3a1249c3f13026b6f54ab5712c388df219d6af01b12aa542749acd99a46f4bc1"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rerender-defer-reads.md",
+      "sha256": "234050a77faf50cb306be10a9e15bd4421134ab5907e75f13e6d78e2bd262dc9"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rerender-dependencies.md",
+      "sha256": "17eb5830956fb56486fd3cfc7431f5849d39751730c05ad9e77dd4f0c27169c5"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rerender-derived-state-no-effect.md",
+      "sha256": "cb11ec76f50aa7b6847269f02d79b120c889a30d9ecd2c1d578f75144419c77a"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rerender-derived-state.md",
+      "sha256": "1c326bb67b01fb084eb00c8911b0a7cff54681c2315b629f88e49b64eaa6481d"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rerender-functional-setstate.md",
+      "sha256": "5e68df6b2ae8058e67f476ff1ac67bde159f5a9d18df439e46eabcdeb7b52e58"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rerender-lazy-state-init.md",
+      "sha256": "4ae844740f266fc8cbf050701230286624a2440ec5be67b9a63d9edc3c580573"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rerender-memo-with-default-value.md",
+      "sha256": "81c47476564ad8a79fc68fc442734255ca7d6829424359464503fda0a9f9a0dd"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rerender-memo.md",
+      "sha256": "1f258990c2f27ff6256b3cc5c43300631bb3f0d81f749aed08d07fcdcc131dd1"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rerender-move-effect-to-event.md",
+      "sha256": "abc2cbf167bee056743023351e96806a411d3398da8802093620aecf0721f029"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rerender-no-inline-components.md",
+      "sha256": "1cc32907a770272524ba682eef9e7efdd8ad4533b6f89b718a1fcd7d1d0eb6a3"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rerender-simple-expression-in-memo.md",
+      "sha256": "5bdcf2d1558ba5204e643c887b7b4060f89630969425651eb68e96427d97f800"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rerender-split-combined-hooks.md",
+      "sha256": "6f45d703343484ef9acef9388397f3642966ae6a5a258899a0cf1f9977cfbf6c"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rerender-transitions.md",
+      "sha256": "60f4033909a62df5e5b8c601494f9e50a562e2f8c1c2d81eac24f38142265f1c"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rerender-use-deferred-value.md",
+      "sha256": "8c3579576a61a949884167745dcfaf1d5426ba305cc61fd0a79602d70fda4909"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/rerender-use-ref-transient-values.md",
+      "sha256": "f1a649af9d1d0b5c762f6c9c4c1c70c90d7df82aa10296ee87aadb78c1b76c54"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/server-after-nonblocking.md",
+      "sha256": "d0b8d24a3db9f0f65f9e2bddbf230b0e03a5f60e1229d93a4a18f5e7a991c7c2"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/server-auth-actions.md",
+      "sha256": "a2ca8aa102839251c7971ec784560fab943c20b36fe6f80365d4110c13260c23"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/server-cache-lru.md",
+      "sha256": "1924b64561841923b88a657085097a0aeba3e0ba2d5470b9f5c15cc10d6ae70f"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/server-cache-react.md",
+      "sha256": "fddeea6c870bb3da4134b61d54b7d09b83d2603f929b7547cd3dc1dc269edd5c"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/server-dedup-props.md",
+      "sha256": "c2747424cdac46be62f835f245a0aa887b0090b416d28e2ac8676702645eeb37"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/server-hoist-static-io.md",
+      "sha256": "5abea4dd882b13661bd5f7dfb93f9e547d5f08176c61c448ade91b210ed5d49f"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/server-no-shared-module-state.md",
+      "sha256": "4d869bf1cd2f1632e5ca4c0e64b1cf0e71c5f5a0f940bc8a22174d205e735ed7"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/server-parallel-fetching.md",
+      "sha256": "569a2e9fc04f9606686cd75c5894ef8781b502786a7fffe241396846c7733472"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/server-parallel-nested-fetching.md",
+      "sha256": "ad5d9656984d4a959997a2367bf59cc6632297b4634a1dd13a087939d83f30b3"
+    },
+    {
+      "path": ".agents/skills/vercel-react-best-practices/rules/server-serialization.md",
+      "sha256": "f4c7d68b29c82381baad059c4a7f09e868e71ec9c3115a26ad3ae7d24c0dfe1f"
+    },
+    {
+      "path": "V6/experimental/v7_portfolio_contract.py",
+      "sha256": "7b5a887adf88b45999fa830d54148ed3f137ca05937a4109a61df517b7f6c854"
+    },
+    {
+      "path": "V6/experimental/v7_portfolio_contract_test.py",
+      "sha256": "b0cc3df0336a4bc13f9e23daddae237acba37af7f9a592510d43890dbbf1b7da"
+    },
+    {
+      "path": "V6/experimental/v7_portfolio_engine.py",
+      "sha256": "0ec986ac4eda4ddaa4310bd8b8ae1c746eb62af59d3e8fd371b4729f7bc4a39c"
+    },
+    {
+      "path": "V6/experimental/v7_portfolio_engine_test.py",
+      "sha256": "8347ac6236b4dbe0990efe8603e4e59179f356e51738b202dea8e941d2beb943"
+    },
+    {
+      "path": "V6/experimental/v7_portfolio_fixture.py",
+      "sha256": "3fd3043aa662ca01dd3340230349557c7b8a50a746fb9ea6721114d510fceb66"
+    },
+    {
+      "path": "V6/experimental/v7_portfolio_history.py",
+      "sha256": "5c9fb03219e4c12d2ed1e05068b8ffb7be783b335c59771e86e44bb657c17541"
+    },
+    {
+      "path": "V6/experimental/v7_portfolio_history_e2e_test.py",
+      "sha256": "d32fbe4312132f4ca9b502b83d567ae4b269f08fc51873695051afb89fb14326"
+    },
+    {
+      "path": "V6/experimental/v7_portfolio_history_test.py",
+      "sha256": "ce73aaf1aceea472f586a6c1f37eea564adb6d2110bb90af86b2fe581b4d0e3d"
+    },
+    {
+      "path": "V6/experimental/v7_portfolio_journal.py",
+      "sha256": "d06ff693b44f9f658cc71ea34daedfbe013a42e293e677fadf162b053df5310b"
+    },
+    {
+      "path": "V6/experimental/v7_portfolio_journal_test.py",
+      "sha256": "83e1dae9634e13bdfe3550ecffa3de38549d1462539681d89b377db12ccc4911"
+    },
+    {
+      "path": "V6/experimental/v7_portfolio_process_test.py",
+      "sha256": "ab3d6d6abca893b70cb77740265ecd93546751e0f14a887b02376a0e7aa374c7"
+    },
+    {
+      "path": "app/backend/.env.example",
+      "sha256": "82926ec8449b7cf67b9552298780fdf94ac0fa0c288f408e296ea97425942e98"
+    },
+    {
+      "path": "app/backend/__init__.py",
+      "sha256": "2a38cb374f00985f5745c3e9703c3b46ee968df7b95758f515d8218023071273"
+    },
+    {
+      "path": "app/backend/_api_check.txt",
+      "sha256": "342d134858eff48e4380e2d09e75828d3218a95a2f0b223f808c8ca302aaa277"
+    },
+    {
+      "path": "app/backend/main.py",
+      "sha256": "7949dbad6ee0ef892ae6b81c09d19937a504bd00f8804e9d1ba55e2134ab198f"
+    },
+    {
+      "path": "app/backend/mock_data.py",
+      "sha256": "bb1f6e5971965b1dce85e12ba11f96099d69e9c4688bf7ce0f6ecc26d6daede9"
+    },
+    {
+      "path": "app/backend/portfolio_history_local.py",
+      "sha256": "9bc87453e9eaed076addff85ebefb12b9ba23826b71bd0f895245248429dc2f2"
+    },
+    {
+      "path": "app/backend/requirements.txt",
+      "sha256": "590bf89e82ab8e94d957eb4a38a8b42ba933c0ec4320929be14589b0dd2c9bf7"
+    },
+    {
+      "path": "app/backend/routers/__init__.py",
+      "sha256": "91c2e41ac7c5504343a778d9ed66cc42834c547a0c770e9aba267a853a6581c0"
+    },
+    {
+      "path": "app/backend/routers/dual.py",
+      "sha256": "8fc5a107a313be56a226b3e52a1c00aa00980e5dda3f489b28e5aa2d3b8c5c22"
+    },
+    {
+      "path": "app/backend/routers/fin_news.py",
+      "sha256": "1bb87224e2f49bdcb785f0a36b020ba25aee4fb670aad565572c2728f239cbf6"
+    },
+    {
+      "path": "app/backend/routers/market.py",
+      "sha256": "d7ad14a34beb35a016deb9ec1179fd9e847f59d3e69694eb4869f2484497b359"
+    },
+    {
+      "path": "app/backend/routers/performance.py",
+      "sha256": "3d81a63eff16c1953b2a51fed79ca91ab7374fe95320547606c877846e18b81b"
+    },
+    {
+      "path": "app/backend/routers/portfolio.py",
+      "sha256": "2de7a93590ea63a3d9b296e066386367f74cd133176ac6117c810fa58a826f71"
+    },
+    {
+      "path": "app/backend/routers/quant.py",
+      "sha256": "ec488a6df9e59061452270160a618db60d60b62915e88d85863618a25c4d21e6"
+    },
+    {
+      "path": "app/backend/routers/reports.py",
+      "sha256": "3da374f65faae1f8fc7e15946f583742ec269f58a779ec2acd3388e6d326e1ea"
+    },
+    {
+      "path": "app/backend/routers/signals.py",
+      "sha256": "62feedf6da96401b80b988652355a38dbbf028cb2c0bd2b2d2a6d53f6efa5c8c"
+    },
+    {
+      "path": "app/backend/routers/sim.py",
+      "sha256": "52e91dc01c30a42ecf736b2a25406d10f9a1e0d70f6121cb74ed50958edc4201"
+    },
+    {
+      "path": "app/backend/routers/v62.py",
+      "sha256": "df42a073bbbec03b77d1392dccfc7f6854b7c56458293f92fa039f134ace1e5f"
+    },
+    {
+      "path": "app/backend/routers/v7.py",
+      "sha256": "9f07407a4be16d0119dea269040f3bebc2d7343cb8eba5654ce33c5bf669573f"
+    },
+    {
+      "path": "app/backend/routers/v7_portfolio.py",
+      "sha256": "f932997def1b20cab12f4501266f9957d3eeaf8ba8280484d6cf29d5b2700521"
+    },
+    {
+      "path": "app/backend/schemas.py",
+      "sha256": "6717db422423c5c5e7590826a7b5359abdd455ad56888c08489ed1e36077deb6"
+    },
+    {
+      "path": "app/backend/stock_info.py",
+      "sha256": "e63c0ec324f2b5f0488bed1e3ebec8d5e08be7ad6f340e51361ecf33a8447caa"
+    },
+    {
+      "path": "app/backend/test_v7.py",
+      "sha256": "0434b70da29b101d1cf08a8b673961b571c6426596db6d9e55217a83d3c2e59e"
+    },
+    {
+      "path": "app/backend/test_v7_portfolio.py",
+      "sha256": "7a520135c7e5317ed22f96bab40bc18c0b41bbda901373b69dec16b1bb5d763a"
+    },
+    {
+      "path": "app/backend/ticker_mapping.json",
+      "sha256": "5a0c75e732ce005ca1a34ce4ec71c35834ad7398a8bfb0ef58c8e9358f98781c"
+    },
+    {
+      "path": "app/frontend/src/api/portfolioHistory.browser.mjs",
+      "sha256": "1a9c0b3565907fe86513dde13a42b80bc8872d90dfb184474482bb46e4ce589c"
+    },
+    {
+      "path": "app/frontend/src/api/portfolioHistory.js",
+      "sha256": "5111d99f535bb0e205338dd902465a63536c03ef3fe58a133b0029be8da7451b"
+    },
+    {
+      "path": "app/frontend/src/api/portfolioHistory.test.mjs",
+      "sha256": "d01843f812f5cd8ca1fc1c04fa660ec266e0cb1c589f55c65809cdd2b8547088"
+    },
+    {
+      "path": "app/frontend/src/api/portfolioHistoryContract.mjs",
+      "sha256": "862069ce44bdc2bb1a69304d2e8c91dbff025536b9d351f566d780d98852170f"
+    },
+    {
+      "path": "app/frontend/src/api/portfolioHistoryUx.browser.mjs",
+      "sha256": "47cd7e5516e1e4cd5d8fa1a5da35b7c3e5438736ba9c4fafc8579dd189348dd5"
+    },
+    {
+      "path": "research/v7/portfolio-history-artifact.json",
+      "sha256": "d7fd650132e1261a7fb5275cf44c7481b9f86f226253f35f8dd49003953035d6"
+    },
+    {
+      "path": "research/v7/portfolio-history-desktop.png",
+      "sha256": "0021d9b5f67989fb9ac64b4b0bf33a1a9ba79b01f610debc7a1418be6a6ca597"
+    },
+    {
+      "path": "research/v7/portfolio-history-evidence.json",
+      "sha256": "0123980196e0d6fce00341a7d2f0e23a4ffaf52044e311c95d0c4c637192fc15"
+    },
+    {
+      "path": "research/v7/portfolio-history-fixture-manifest.json",
+      "sha256": "f6a81fa77292e7ee3a5a40e937241a5eee77cb2c93ea842fdb0bd522c3d4084b"
+    },
+    {
+      "path": "research/v7/portfolio-history-fixture.jsonl",
+      "sha256": "3f2cf753f2299df83ab921c8fc9f6e46abfe0e26f5fa6ab6bae4bb9f2ff5ca1c"
+    },
+    {
+      "path": "research/v7/portfolio-history-mobile.png",
+      "sha256": "53c7b3adacd3cbf2a6e115989e6ae5547b640914d4bc183c9ab3405a084d15b5"
+    },
+    {
+      "path": "research/v7/portfolio-ux-desktop-advanced.png",
+      "sha256": "a2c96baca97ae917ec96d65d526df24fc40ea32c55bb6e333df4952e71f16ebd"
+    },
+    {
+      "path": "research/v7/portfolio-ux-desktop-general.png",
+      "sha256": "697336716d8e3244c160a60210968a35db1f2f9d5995390737356fc84d077292"
+    },
+    {
+      "path": "research/v7/portfolio-ux-evidence.json",
+      "sha256": "208f35025176c67c8038d8c85ff02a0aa212f76e8cb1d53a56029baec6983dbb"
+    },
+    {
+      "path": "research/v7/portfolio-ux-mobile-advanced.png",
+      "sha256": "d89115a57fe86698293365e52d633653e7e4caddaca94f9f403fd017bd15b8d6"
+    },
+    {
+      "path": "research/v7/portfolio-ux-mobile-general.png",
+      "sha256": "17bfdd7cdaadc96c8a880f5d13e25f86b4f6459638ea0382492024314b61d169"
+    },
+    {
+      "path": "research/v7/portfolio-ux-skill-preflight.json",
+      "sha256": "a1139a0d570dece74b67d7549e50249ec96460df987bc59a695b4dced151626f"
+    }
+  ],
+  "numeric_helpers_unchanged": true,
+  "fixture_sha256": "d7fd650132e1261a7fb5275cf44c7481b9f86f226253f35f8dd49003953035d6",
+  "runtime": {
+    "node": "v24.19.0 (WSL); browser runner Windows Node v24.14.0",
+    "python_api": "fastapi0.115.12/httpx0.28.1/uvicorn0.34.3",
+    "browser_venv": "/home/frank/.venvs/v7-portfolio-history",
+    "regression_venv": "/tmp/marketmamba-closure-venv",
+    "data_root": "unset; worktree Data nonexistent, fixture only",
+    "services": "All temporary API/Vite/dedicated Chrome processes stopped, including short screenshot-only restart."
+  },
+  "limitations": [
+    "No physical phone test; mobile Chrome emulation390x844",
+    "Existing Recharts hover/keyboard tooltip may retain prior hover event independently of selected state; no tooltip redesign authorized",
+    "Full frontend inherited lint58errors/3warnings remains historical limitation; scoped lint PASS",
+    "Build retains existing large-chunk warning",
+    "No real data, research correctness, H0/H2, merge/push/deploy/training approval"
+  ],
+  "telemetry": {
+    "goal_thread": "01a15a57-babe-79e2-9d27-018f19698e0e",
+    "created_at_epoch": 1792562945,
+    "note": "Native goal active for this UX closure; usage counters are not certified aggregate of delegated agents. No precise aggregate token or hard-cap claim."
+  },
+  "selected_screenshot_receipt": {
+    "observed_at": "2026-10-21T06:19:09.983Z",
+    "selected": 5,
+    "tooltipVisible": false,
+    "method": "actual pointer timeline click and pointer moved outside chart; no DOM/style injection"
+  }
+}

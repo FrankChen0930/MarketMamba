@@ -135,6 +135,18 @@
         "knowledge/02_History/Decisions/20261021-portfolio-ux-human-decision.json",
         "research/v7/portfolio-ux-skill-preflight.json"
       ]
+    },
+    {
+      "topic": "Portfolio History final UX closure scope",
+      "old_authority": "UX01–04 complete; Human direction review pending",
+      "new_authority": "knowledge/02_History/Decisions/20261021-portfolio-ux-closure-decision.json",
+      "changed_at": "2026-10-21",
+      "change_commit": "containing final UX closure commit",
+      "reason": "Explicit Human acceptance of dual-mode direction and authorization of only selection visibility and event readability. No H0/H2 or final-result approval inferred.",
+      "evidence": [
+        "knowledge/02_History/Decisions/20261021-portfolio-ux-closure-decision.json",
+        "research/v7/portfolio-ux-closure-evidence.json"
+      ]
     }
   ]
 }

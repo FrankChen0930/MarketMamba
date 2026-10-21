@@ -19,6 +19,19 @@ Semantic change owners must update this file in the same change. K0 remains disc
 
 ## Project Summary
 
+**Final UX closure (2026-10-21):** Human accepted the dual-mode direction and
+[authorized only two finishing changes](../02_History/Decisions/20261021-portfolio-ux-closure-decision.json).
+On `development/v7-portfolio-ux`, baseline `1553a59`, timeline selection stays visible
+inside its container, with explicit selected text and no page anchoring jumps;
+event explanations use observable exact-state differences and conservative Chinese.
+Both tasks COMPLETED_VERIFIED / UNMERGED / NOT_DEPLOYED. Final identity is the
+containing closure commit (see `git log -1`); [report](../../reports/v7_portfolio_ux_closure.md)
+and [evidence index](../../research/v7/portfolio-ux-closure-evidence.json).
+Desktop/mobile general seven events, desktop advanced exact values and mobile advanced
+basic smoke verified. No additional mobile advanced visual work. Stop for Human final
+review; H0/H2 remain unapproved, Strict Phase 0 STOP, E1 BLOCKED. No further UX READY work.
+Earlier UX/PORT evidence below is retained as historical acceptance, not rewritten.
+
 **Completed UX refinement (2026-10-21):** Human approved UX-01–04 default dashboard /
 advanced research view on isolated `development/v7-portfolio-ux` from fixed `5a2bc6f`.
 [Decision](../02_History/Decisions/20261021-portfolio-ux-human-decision.json),

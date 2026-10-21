@@ -494,7 +494,24 @@
     "evidence": "research/v7/portfolio-ux-evidence.json",
     "implementation_commit": "764dfbf6800dc00d133af4775206da5cf9cfbf43",
     "checkpoint": "Containing UX04 acceptance commit; git log -1 on development/v7-portfolio-ux",
-    "next_action": "STOP; Human UX Product Slice Review pending; H0/H2 absent",
+    "next_action": "Historical UX01–04 completed; see portfolio_ux_closure for current checkpoint",
     "lint_limit": "Full repo58errors/3warnings identical to baseline; changed-source PASS"
+  },
+  "portfolio_ux_closure": {
+    "state": "COMPLETED_VERIFIED_UNMERGED_NOT_DEPLOYED",
+    "branch": "development/v7-portfolio-ux",
+    "base_commit": "1553a59dcf7b9479702d586f4d80ad20b5bee9c0",
+    "checkpoint": "Containing final UX closure commit; git log -1 on development/v7-portfolio-ux",
+    "units": {
+      "UX-FINAL-01": "COMPLETED_VERIFIED",
+      "UX-FINAL-02": "COMPLETED_VERIFIED"
+    },
+    "authority": "knowledge/02_History/Decisions/20261021-portfolio-ux-closure-decision.json",
+    "report": "reports/v7_portfolio_ux_closure.md",
+    "evidence": "research/v7/portfolio-ux-closure-evidence.json",
+    "backlog": "research/v7/research-program.md",
+    "product_repairs": 1,
+    "additional_human_decisions": 0,
+    "next_action": "STOP; Human final UX closure review. H0/H2 not approved; no further UX work authorized."
   }
 }

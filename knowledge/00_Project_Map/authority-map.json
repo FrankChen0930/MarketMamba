@@ -633,8 +633,13 @@
   ],
   "portfolio_ux_scope": {
     "authority": "knowledge/02_History/Decisions/20261021-portfolio-ux-human-decision.json",
-    "status": "PRESENTATION_ENGINEERING_VERIFIED_HUMAN_PRODUCT_REVIEW_PENDING",
+    "status": "ORIGINAL_UX_ENGINEERING_COMPLETE; DIRECTION_ACCEPTED_BY_HUMAN; FINAL_CLOSURE_REVIEW_PENDING",
     "skill_authority": "SUBORDINATE_GUIDANCE_NO_FINANCIAL_AUTHORITY",
-    "evidence": "research/v7/portfolio-ux-evidence.json"
+    "evidence": "research/v7/portfolio-ux-evidence.json",
+    "final_closure": {
+      "authority": "knowledge/02_History/Decisions/20261021-portfolio-ux-closure-decision.json",
+      "evidence": "research/v7/portfolio-ux-closure-evidence.json",
+      "status": "TWO_TASK_ENGINEERING_VERIFIED_NO_H0_H2"
+    }
   }
 }

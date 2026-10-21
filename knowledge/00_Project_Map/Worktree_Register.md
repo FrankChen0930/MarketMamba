@@ -6,6 +6,9 @@
   `5a2bc6fcee4c0bf78190a6ac74d11f53f8becbd4`; owner Codex under Human UX-01–04.
 - Created 2026-10-21; purpose presentation-only refinement, preserving prior PORT
   checkout and original acceptance. Existing worktrees own frozen prior evidence.
+- Final closure continues this same candidate from `1553a59`; owner Codex under
+  explicit Human two-task closure scope. Both tasks COMPLETED_VERIFIED in containing
+  closure commit; [closure report](../../reports/v7_portfolio_ux_closure.md).
 - State COMPLETED_VERIFIED / UNMERGED / NOT_DEPLOYED; authority UI engineering only.
   API/Vite/dedicated Chrome stopped; no production observation refreshed.
 - Depends full PORT/CPU ancestry, existing Node dependencies and temporary API venv;
