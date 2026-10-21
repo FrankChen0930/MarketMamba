@@ -5,12 +5,15 @@
 > Semantic change owner must update this map in the same change.
 > Prior research/Phase A map accepted `2026-09-20`; 2026-09-22 runtime additions are agent-observed, pending separate human review. Canonical means current navigation authority, not immutable final state.
 
-## Fair evaluation preparation — branch-local checkpoint
+## Fair evaluation preparation — completed checkpoint
 
 Isolated `development/v7-fair-evaluation-decision` from integrated main closuref31fcbb.
 UNMERGED/NOT_DEPLOYED for new work only. Existing-contract read-only E1 metadata
 audit completed,5tests/independent5 PASS,0 Required; always execution_ready=false.
-Research decision package continues under scoped Human grant, all options PROPOSED.
+Decision package completed:15 source hashes, exposure ledger, fit/cost formulas and
+Colab stop conditions independently verified;0 Critical/Required.64 related tests
+PASS. WINDOW_COMPLETE/STOP, all new options PROPOSED. New execution requires
+Human bounded grant. Resume at this branch via main pinned closure pointer.
 [Unique backlog](../../research/v7/research-program.md#fair-evaluation-preparation-window-04),
 [evidence](../../research/v7/fair-evaluation-preparation-evidence.json).
 

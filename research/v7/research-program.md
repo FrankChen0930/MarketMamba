@@ -9,7 +9,7 @@
 
 ### Fair evaluation preparation window 04
 
-EXECUTING_BOUNDED_PREPARATION; Window02/03 now integrated in local main at
+WINDOW_COMPLETE / STOP / UNMERGED / NOT_DEPLOYED for Window04; Window02/03 now integrated in local main at
 exacteba6b649, with pre/post267 PASS. This containing docs commit records closure.
 New work uses `development/v7-fair-evaluation-decision` from main closuref31fcbb;
 no new comparison or training approved. Readiness checkpoint in containing commit;
@@ -18,8 +18,21 @@ no new comparison or training approved. Readiness checkpoint in containing commi
 | Unit | Objective/authority | Acceptance/status |
 |---|---|---|
 | W04-INT | Human fixed integration | COMPLETED;267pre/post, hashes, independent GO; no deploy |
-| W04-DECISION | Human Stage2/frozen E5/E1 evidence | READY: extend existing review into data-exposure ledger, interval requirements, symbolic fit counts/cost and Human options; all PROPOSED |
+| W04-DECISION | Human Stage2/frozen E5/E1 evidence | COMPLETED_VERIFIED15sources/independent0 Required: extend existing review into data-exposure ledger, interval requirements, symbolic fit counts/cost and Human options; all PROPOSED |
 | W04-READINESS | Human Stage3/existing contracts | COMPLETED_VERIFIED5tests/independent5: reproducible read-only integrity audit joining existing contract/config/result/checkpoint metadata checks; fail closed on drift; no evaluation or payload loading |
+
+Window04 closed: readiness2a9de32 (1 repair), decision package/closure containing
+commit (0).64 relevant non-training tests PASS; independent reviews0 Required,
+15 source identities/cost arithmetic PASS. [Decision package](../../reports/v7_fair_evaluation_decision_package.md),
+[evidence](fair-evaluation-preparation-evidence.json). All new comparisons PROPOSED;
+no dates/thresholds or training approved. Main integration remains separate fact.
+
+Resume: cd `.worktrees/v7-fair-evaluation-decision`, verify HEAD/clean, read Current
+State/Authority Map and this queue; main pointer pins closure SHA. No historical
+rediscovery or matrix search. Next valuable CPU work is implementing a Human-frozen
+session split/selection/refit/support design, or payload identity checks when original
+matrix becomes available. Both currently dependency-bound, not unqualified READY.
+New bounded execution grant is required; no background continuation.
 
 Use existing Window03 report as foundation; do not repeat its research findings
 as new experiments. STOP after this package/readiness window. No E1 matrix search

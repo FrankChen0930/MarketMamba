@@ -294,7 +294,7 @@ or deployment. New fair-evaluation work needs separate isolated scope/worktree.
 
 Path `.worktrees/v7-fair-evaluation-decision`; branch
 `development/v7-fair-evaluation-decision`; basef31fcbb after fixedeba6b649 integration.
-Owner Codex/current Human grant; created2026-10-21, retiredN/A. ACTIVE/UNMERGED/
+Owner Codex/current Human grant; created2026-10-21, retiredN/A. WINDOW_COMPLETE_STOP/UNMERGED/
 NOT_DEPLOYED. Purpose: bounded decision package and repeatable metadata audit.
 Prior19trees preserved fixed purposes; no equivalent current window exists.
 Dependencies: Git pinned metadata, existing recovery venv read-only, original

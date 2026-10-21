@@ -138,3 +138,12 @@ payload validation, training or Colab launch. NOT_RUN_READY; original matrix BLO
 [unique completed queue](../../research/v7/research-program.md#data-evaluation-window-03).
 Main9956446 unchanged; branch `development/v7-data-evaluation-preparation` is
 UNMERGED/NOT_DEPLOYED. New bounded execution and formal research decisions need Human.
+
+## Window04 Research Decision Package
+
+[Evidence-grounded package](../../reports/v7_fair_evaluation_decision_package.md)
+adds exposure ledger, symbolic sample/fit-count requirements and telemetry cost
+limits to Window03 review. All options PROPOSED; no final dates/thresholds or new
+research classification. Historical logged epoch wall time is not a GPU cost forecast.
+Original matrix and unretained epochs independently limit replay; STOP/H2 unchanged.
+Current unique backlog records WINDOW_COMPLETE; next execution needs Human grant.

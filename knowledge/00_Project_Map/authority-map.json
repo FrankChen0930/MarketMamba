@@ -613,7 +613,7 @@
       "topic": "Current V7 development backlog",
       "primary_authority": "research/v7/research-program.md",
       "authority_class": "CURRENT_REFERENCE",
-      "status": "WINDOW0203_INTEGRATED_WINDOW04_PREPARATION_ONLY",
+      "status": "WINDOW0203_INTEGRATED_WINDOW04_COMPLETE_UNMERGED_STOP",
       "supersedes": [
         "CPU window closure queues as cross-domain next-work navigation",
         "historical tasks/plan.md and tasks/todo.md as active execution assumptions"
@@ -631,11 +631,12 @@
         "research/v7/cross-domain-window02-evidence.json",
         "knowledge/02_History/Decisions/20261021-data-evaluation-window03.json",
         "research/v7/data-evaluation-window03-evidence.json",
-        "research/v7/window0203-integration-20261021.json"
+        "research/v7/window0203-integration-20261021.json",
+        "research/v7/fair-evaluation-preparation-evidence.json"
       ],
       "conflicts": [
-        "Window02/03 local main integrated, not deployed",
-        "Window04 CPU preparation only; comparison/training/H2 not approved"
+        "Window02/03 locally integrated; Window04 new work branch-local only",
+        "New comparison/training/H2 not approved; new bounded grant required"
       ]
     }
   ],
