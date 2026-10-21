@@ -1,0 +1,18 @@
+{
+  "status": "ACCEPTED",
+  "authority": "HUMAN",
+  "recorded_on": "2026-10-21",
+  "source": "Human message /goal Market Mamba V7 — Portfolio History UX Refinement",
+  "verbatim_decision": "預設簡潔的 Portfolio Dashboard，可切換至進階研究模式。",
+  "scope": "UX-01–04 fixture-only read-only presentation; engineering/tests/independent review/bounded repair/local commits/memory plus project-local pinned frontend skills",
+  "base_commit": "5a2bc6fcee4c0bf78190a6ac74d11f53f8becbd4",
+  "excludes": [
+    "H0 main merge",
+    "H2 real data/research admission",
+    "new financial semantics",
+    "production",
+    "GPU/Colab",
+    "push/deploy"
+  ],
+  "recording_limit": "Transcription of explicit Human direction, not agent approval of result"
+}

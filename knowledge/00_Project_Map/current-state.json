@@ -335,7 +335,7 @@
   },
   "state_updated_at": "2026-10-21",
   "active_objectives": [
-    "H1 PORT-01–04 completed and verified; STOP for Human Product Slice Review",
+    "Complete Human-authorized UX-01–04; no H0/H2 or financial semantics",
     "Single current backlog is research/v7/research-program.md dated current section",
     "No real-data portfolio admission or Phase1-5; Strict Phase0 STOP, E1 exact matrix BLOCKED"
   ],
@@ -477,5 +477,19 @@
     "report": "reports/v7_portfolio_history_acceptance.md",
     "next_action": "STOP; Human Product Slice Review; no H0/H2 granted",
     "human_interventions_after_h1": 0
+  },
+  "portfolio_ux": {
+    "state": "IN_PROGRESS_UNMERGED_NOT_DEPLOYED",
+    "branch": "development/v7-portfolio-ux",
+    "base_commit": "5a2bc6fcee4c0bf78190a6ac74d11f53f8becbd4",
+    "units": {
+      "UX-01": "IN_PROGRESS",
+      "UX-02": "READY_AFTER_DEPENDENCIES",
+      "UX-03": "READY_AFTER_DEPENDENCIES",
+      "UX-04": "READY_AFTER_DEPENDENCIES"
+    },
+    "authority": "knowledge/02_History/Decisions/20261021-portfolio-ux-human-decision.json",
+    "report": "reports/v7_portfolio_ux_acceptance.md",
+    "backlog": "research/v7/research-program.md"
   }
 }

@@ -34,6 +34,26 @@ contract, available inputs/runtime, independent acceptance and current authoriza
 A proposal awaiting blanket scope approval is **not READY**. No GPU dependency does
 not imply no Human/data dependency. H1 was explicitly approved by Human on 2026-10-21; only PORT-01–04 fixture engineering may execute. H0/H2 remain absent.
 
+### Active UX refinement — Human approved 2026-10-21
+
+[Human product direction](../../knowledge/02_History/Decisions/20261021-portfolio-ux-human-decision.json)
+authorizes a concise default dashboard and advanced research mode. Sole active
+queue remains this file; old PORT closure is historical completion, not a blocker
+for this new explicitly authorized presentation window. Base `5a2bc6f`; isolated
+`development/v7-portfolio-ux`; no GPU/data/research gate required for these fixtures.
+
+| ID | State | Dependencies / acceptance | Value / risk |
+|---|---|---|---|
+| UX-01 | IN_PROGRESS | Same validated API object; accessible default/general vs advanced; preserve event on toggle | Simple overview with research detail; no parallel model |
+| UX-02 | READY after UX-01 | Presentation decimal formatting only; exact raw in advanced; zero vs unknown; immutable tests | Readability without accounting change |
+| UX-03 | READY after UX-01 | Dated ordered Chinese event timeline, chart selection sync, observable state changes only | Explain actual state, never infer causes |
+| UX-04 | READY after UX-01–03 | Real Chrome desktop/mobile all7 events/modes, exact values, errors, keyboard; regressions/review/evidence | Verifiable product review, not H0/H2 |
+
+Implementation may share the same page/helper to avoid artificial subsystem splits.
+Each logical unit has at most two evidence-supported repair rounds. Completion
+records in [UX report](../../reports/v7_portfolio_ux_acceptance.md); no extension
+beyond UX-04 without new scope. Original PORT evidence will not be rewritten.
+
 ### Ranked backlog
 
 Sizes are bounded engineering estimates, not delivery promises. Priority is value

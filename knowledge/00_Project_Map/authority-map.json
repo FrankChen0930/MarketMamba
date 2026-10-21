@@ -630,5 +630,10 @@
         "Only PORT-01–04 H1 is approved; H0/H2 absent; MAS Core Live remains unverified"
       ]
     }
-  ]
+  ],
+  "portfolio_ux_scope": {
+    "authority": "knowledge/02_History/Decisions/20261021-portfolio-ux-human-decision.json",
+    "status": "PRESENTATION_ENGINEERING_APPROVED_ONLY",
+    "skill_authority": "SUBORDINATE_GUIDANCE_NO_FINANCIAL_AUTHORITY"
+  }
 }

@@ -98,3 +98,10 @@ fixture identity and STOP/not-admitted banner. Chart is explicitly approximate;
 weights remain undefined, no invented financial metric. Real Chrome desktop/mobile
 and keyboard accepted; [evidence](../../research/v7/portfolio-history-evidence.json).
 UNMERGED / NOT_DEPLOYED. [Local launch](../../reports/v7_portfolio_history_acceptance.md).
+
+## Current UX direction — 2026-10-21
+
+Human approved default dashboard / advanced research mode for the fixture history
+page only. [Scope and design](../../reports/v7_portfolio_ux_acceptance.md).
+Formatting is presentation-only; exact source Decimal and backend contracts remain
+authoritative. Project-local pinned frontend skills do not override this boundary.

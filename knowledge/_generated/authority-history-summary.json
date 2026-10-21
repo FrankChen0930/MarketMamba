@@ -1,6 +1,6 @@
 {
   "authority": "NAVIGATION_ONLY",
-  "event_count": 10,
+  "event_count": 11,
   "events_by_topic": {
     "Current V7 development planning ownership": 1,
     "E1 completed result": 1,
@@ -8,6 +8,7 @@
     "Knowledge governance": 1,
     "Phase A implementation": 1,
     "Phase A local development integration": 1,
+    "Portfolio History UX direction": 1,
     "Scheduler state": 1,
     "Task 4 limited engineering correctness": 1,
     "Task 5 limited offline engineering correctness": 1,

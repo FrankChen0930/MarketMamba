@@ -123,6 +123,18 @@
         "knowledge/02_History/Decisions/20261021-portfolio-history-h1.json",
         "research/v7/portfolio-history-evidence.json"
       ]
+    },
+    {
+      "topic": "Portfolio History UX direction",
+      "old_authority": "Original H1 engineering slice; no dual-mode product decision",
+      "new_authority": "knowledge/02_History/Decisions/20261021-portfolio-ux-human-decision.json",
+      "changed_at": "2026-10-21",
+      "change_commit": "containing UX preflight commit",
+      "reason": "Explicit Human UX-01–04 authorization; no financial or deployment authority changed",
+      "evidence": [
+        "knowledge/02_History/Decisions/20261021-portfolio-ux-human-decision.json",
+        "research/v7/portfolio-ux-skill-preflight.json"
+      ]
     }
   ]
 }

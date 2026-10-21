@@ -36,6 +36,13 @@ Human Product Slice Review is pending; engineering completion is not result appr
 New implementation is branch-local UNMERGED / NOT_DEPLOYED. H0 main integration and H2 research
 admission remain unapproved and separate. MAS Core Live is not certified or activated.
 
+## UX product direction — 2026-10-21
+
+[Human UX decision](../02_History/Decisions/20261021-portfolio-ux-human-decision.json)
+authorizes only UX-01–04 presentation engineering on `5a2bc6f` ancestry.
+Pinned project-local frontend skills are subordinate guidance, never research,
+production or project authority. No H0/H2 admission or accounting changes.
+
 ## Source-of-truth Hierarchy
 
 1. Versioned machine contracts, manifests, hashes, and executable tests.

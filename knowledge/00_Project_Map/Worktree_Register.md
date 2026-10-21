@@ -1,5 +1,18 @@
 # Worktree Register
 
+## Portfolio History UX — 2026-10-21
+
+- Path `.worktrees/v7-portfolio-ux`; branch `development/v7-portfolio-ux`; base
+  `5a2bc6fcee4c0bf78190a6ac74d11f53f8becbd4`; owner Codex under Human UX-01–04.
+- Created 2026-10-21; purpose presentation-only refinement, preserving prior PORT
+  checkout and original acceptance. Existing worktrees own frozen prior evidence.
+- State IN_PROGRESS / UNMERGED / NOT_DEPLOYED; authority UI engineering only.
+- Depends full PORT/CPU ancestry, existing Node dependencies and temporary API venv;
+  no market/model data. Retired N/A; no removal approved. Safe removal requires clean
+  tree, preserved commits, artifact audit and resolved references.
+- [Current backlog](../../research/v7/research-program.md);
+  [report](../../reports/v7_portfolio_ux_acceptance.md).
+
 ## H1 Portfolio History slice — 2026-10-21
 
 - Path `.worktrees/v7-portfolio-history`; branch `development/v7-portfolio-history`;

@@ -19,6 +19,14 @@ Semantic change owners must update this file in the same change. K0 remains disc
 
 ## Project Summary
 
+**Active UX refinement (2026-10-21):** Human approved UX-01–04 default dashboard /
+advanced research view on isolated `development/v7-portfolio-ux` from fixed `5a2bc6f`.
+[Decision](../02_History/Decisions/20261021-portfolio-ux-human-decision.json),
+[skills/design/acceptance](../../reports/v7_portfolio_ux_acceptance.md).
+IN_PROGRESS / UNMERGED / NOT_DEPLOYED; existing PORT completion remains preserved.
+No H0/H2, accounting, data or production authority change. Strict STOP persists.
+
+
 **Strategic recovery / integration candidate (2026-10-21):** this Human-authorized
 planning window is complete; H1 was subsequently approved for the fixture slice. `main@83a6a2e`
 remains unchanged; candidate `integration/v7-cpu-roadmap` starts at fixed
