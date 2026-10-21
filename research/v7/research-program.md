@@ -9,7 +9,7 @@
 
 ### Autonomous charter window 01
 
-Status: `EXECUTING_BOUNDED_WINDOW`; base `6d74d738`; isolated
+Status: `WINDOW_COMPLETE / STOP_AFTER_FIRST_WINDOW`; base `6d74d738`; isolated
 `development/v7-autonomous-charter`, UNMERGED / NOT_DEPLOYED.
 [Charter](../../knowledge/GOVERNANCE.md#autonomous-development-charter--2026-10-21)
 and [Human grant](../../knowledge/02_History/Decisions/20261021-autonomous-charter.json)
@@ -23,7 +23,7 @@ sources; the following table owns current execution state. No duplicate queue.
 | AUTO-DATA / P1 | E1 split completeness; frozen E1 split + validate_split_rows | COMPLETED_VERIFIED; synthetic dates only, no GPU/new data | Reject unmatched row/split lengths rather than silently zip-truncate; preserve legal splits; protects preparation integrity; RED confirmed before implementation; git history has no prior fix |
 | AUTO-RES / P2 | Prepare next decision from admitted diagnostics S7–S10 | COMPLETED_VERIFIED; git-pinned JSON/code only; no matrix/checkpoints loaded | Evidence-linked options, leakage/fairness/dependency checklist; explicit proposal vs approval; reduce Human research decision effort; no new run/results; existing diagnosis retained, not recomputed |
 | AUTO-CKPT / P1 | E1 malformed pointer fallback; Training latest/previous/best contract | COMPLETED_VERIFIED; synthetic local CPU only | Reject malformed entries before body access, use valid previous after restart, preserve best and identity, SIGKILL/orphan regression; avoids losing recoverable progress; no historical loader certification; reviewer reproduced TypeError/KeyError, no prior fix in all-branch history |
-| AUTO-SNAP / P1 | Immutable snapshot writer/reader consistency; existing v1 schema | READY; offline RequestSpec fixtures only | Reject reader-invalid input before any raw/manifest publication; valid HTTP-error roundtrip and concurrency/restart intact; prevents immutable unusable artifacts; status0/600 reproduced, no prior all-branch fix |
+| AUTO-SNAP / P1 | Immutable snapshot writer/reader consistency; existing v1 schema | COMPLETED_VERIFIED; offline RequestSpec fixtures only | Reject reader-invalid input before any raw/manifest publication; valid HTTP-error roundtrip and concurrency/restart intact; prevents immutable unusable artifacts; status0/600 reproduced, no prior all-branch fix |
 | AUTO-PORT / P2 | Portfolio H1 inspector follow-on | DEFERRED_NO_CONFIRMED_GAP; existing fixtures available | Engine/export/API/UI already completed H0; avoid repeated UX/test work; real signals/metrics need H2; no new policy authorized |
 | DATA-01 / P1 blocker | Original frozen matrix | BLOCKED; new exact location required | No new lead; do not repeat previous search, regenerate or deserialize |
 | RANK-01 / METRIC-01 / RES-02 | End-to-end ranking/economic research | HUMAN_DECISION_REQUIRED; H2 and strict gates | High product/research value; no inferred policy, admission or Phase1–5 execution |
@@ -34,13 +34,40 @@ Runtime: Python 3.12.3 via existing recovery venv, CUDA hidden; system python3 f
 governance. MARKETMAMBA_DATA_ROOT unset; main Data/processed_v6 symlink targets
 `/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6`; not read.
 New checkout has no Data directory. Main started clean; no other tree modified.
-Resume: verify branch/base/status, read this section and Charter, continue only
-remaining READY units within this first window; stop on completion. AUTO-GOV checkpoint: 23 governance tests PASS; knowledge health WARNING with no
-structural FAIL; diff check PASS. Independent reviewer `/root/independent_review`
-found no Critical/Required in Charter/governance/decision/maps/register. Zero
-repair rounds. Identity: containing governance commit (`git log -- knowledge/GOVERNANCE.md`).
-Operations domain reviewed/updated; no runtime policy or external observation changed.
-Final evidence and review identities for execution units will be recorded here.
+Resume checkpoint: this first window is CLOSED. Verify `development/v7-autonomous-charter`
+HEAD, ancestry from6d74d738 and clean status; read Charter and this table, then
+[window evidence](autonomous-window-01-evidence.json). Do not restart completed
+units or old E1 search. Another execution window needs a new bounded Human grant;
+merge/push/deploy remain separately unauthorized. No READY item remains in this
+window's confirmed selection; this is not an exhaustive no-bugs claim.
+
+| Completed unit | Local commit / verification / review |
+|---|---|
+| AUTO-GOV | `be7998d`; governance23 PASS; independent authority review0 Critical/Required |
+| AUTO-DATA | `3f07f80`; focused14, final E1 suite33 PASS; independent14 PASS; one repair round |
+| AUTO-RES | `5847afc`;4/4 pinned source identities and claims independently checked; zero repairs; proposal NOT_APPROVED |
+| AUTO-CKPT | `2c60415`; checkpoint/run/runtime19 PASS, independent19 PASS; two rounds, Required closed |
+| AUTO-SNAP | Containing snapshot/window closure commit; snapshot19, final PIT49 PASS, independent19 PASS; one round;6 baseline-byte-compatible cases |
+
+Final shared verification: E1 33 + PIT49 + governance23 =105 tests PASS, no skips.
+Syntax/JSON/source and four pinned artifact hashes checked; diff check PASS;
+knowledge health WARNING (governance/authority/legacy), zero structural FAIL.
+Local CPU only; existing suite contains a one-step synthetic smoke, no new
+research/model training. No formal datasets/weights loaded or network requests.
+
+Priorities after this window: P1 DATA-01 only with a new original-matrix location;
+P2 RANK-01/METRIC-01 and next-study decisions via the
+[research preparation package](../../reports/v7_autonomous_research_preparation.md);
+OPS-02 remains PROPOSED pending domain/architecture scope. No unexecuted candidate
+has been mislabeled READY. GPU/new training requires hypothesis+compute approval.
+Portfolio fixtures already meet H0; no repeated UX work. The two reviewer-found
+reliability gaps were evaluated and completed in this window, not left for rediscovery.
+
+Efficiency: no duplicate implementation, bulk data search or padding units. Initial
+broad reads were truncated, and a reviewer test-module typo required a corrected
+run; these were avoidable token/tool overhead. Same review agent resumed after
+pending initialization; no extra parallel memory/MAS system. Available native
+usage snapshot is in evidence and is unaudited, not a hard cost limit.
 
 ### Historical H0 checkpoint (superseded only as to next-window authorization)
 
@@ -464,4 +491,12 @@ independent15+4 PASS; Critical/Required0. Real spawned SIGKILL before pointer,
 restart/orphan, repeated latest loss, seed/contract/matrix mismatch covered.
 No historical checkpoint loaded. Existing unsafe-for-untrusted-pickle loader is
 not certified. [Evidence](autonomous-window-01-evidence.json); identity: containing
-checkpoint commit. Training note/maps updated. Next/final unit: AUTO-SNAP.
+checkpoint commit. Training note/maps updated. AUTO-SNAP subsequently completed below.
+
+### AUTO-SNAP completion checkpoint — 2026-10-21
+
+Writer validates serialized payload with existing reader rules before raw or
+manifest publication. RED19 failures7/errors6; GREEN19, full PIT49; independent19
+PASS, no Critical/Required. One repair round; valid six-case payload bytes match
+base6d74d738. Frozen data/PIT authority unchanged. All five units complete; STOP.
+Identity: containing snapshot/window closure commit, preserved in branch history.

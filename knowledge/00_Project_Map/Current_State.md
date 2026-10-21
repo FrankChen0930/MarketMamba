@@ -19,29 +19,32 @@ Semantic change owners must update this file in the same change. K0 remains disc
 
 ## Autonomous charter first window — 2026-10-21
 
-Human authorized the [reusable Charter](../GOVERNANCE.md#autonomous-development-charter--2026-10-21)
-and a first bounded CPU-only window from verified main `6d74d738`.
-Branch `development/v7-autonomous-charter`, UNMERGED / NOT_DEPLOYED.
-The [single backlog](../../research/v7/research-program.md#autonomous-charter-window-01)
-owns current unit selection/checkpoint. This supersedes older “next program not
-authorized / stop after H0” instructions only for this window; completed H0 and
-all historical evidence stay intact. Strict Phase 0 STOP, E1 matrix BLOCKED,
-Human research/production decisions unchanged. No automatic future execution.
+**WINDOW_COMPLETE / STOP_AFTER_FIRST_WINDOW / UNMERGED / NOT_DEPLOYED.**
+Human's [Charter](../GOVERNANCE.md#autonomous-development-charter--2026-10-21)
+is persisted in existing governance, and the
+[single backlog/checkpoint](../../research/v7/research-program.md#autonomous-charter-window-01)
+records the complete first window. Branch `development/v7-autonomous-charter`
+starts at unchanged main `6d74d7384caa5fa90b1b050ce507bfb8282f19df`.
+Five units: Charter `be7998d`, E1 split completeness `3f07f80`, research decision
+preparation `5847afc`, checkpoint fallback `2c60415`, snapshot pre-publication
+validation in the containing closure commit. No further work starts in this window.
 
-AUTO-DATA: branch-local E1 split preparation rejects unmatched date/assignment
-counts; 14 focused / 29 E1 CPU tests PASS, independent review14 PASS. This does not
-alter frozen split, research result or admission. Charter commit `be7998d`; AUTO-DATA `3f07f80`;
-unit identity is its containing implementation commit. Evidence:
-[window index](../../research/v7/autonomous-window-01-evidence.json).
+[Evidence](../../research/v7/autonomous-window-01-evidence.json): E1 33 + PIT49 +
+governance23 =105 PASS; independent reviews0 Critical/Required after checkpoint's
+second/final repair; snapshot one round; four research sources verified. Source
+and output hashes/JSON/syntax/diff checks pass; knowledge health WARNING, no FAIL.
+CPU synthetic engineering and PROPOSED research preparation only; no historical
+checkpoint payload/matrix/data reads, external network, new training, GPU or MAS.
+Existing E1 unittest includes a one-step synthetic CPU smoke. Loader remains
+trusted-local and unrestricted: no historical-pickle safety certification.
 
-AUTO-RES completed a [Human decision preparation package](../../reports/v7_autonomous_research_preparation.md)
-with4 pinned sources independently verified. PROPOSED / NOT_APPROVED, no E2 or
-research admission; existing inconclusive claims preserved.
-
-AUTO-CKPT completed scoped malformed-latest fallback and valid previous retention
-through save/orphan recovery; final19 tests and independent19 PASS, two rounds.
-UNMERGED / NOT_DEPLOYED; no historical loader certification or replay. AUTO-RES
-preparation commit `5847afc`; final pending unit is AUTO-SNAP.
+This supersedes older no-next-program or in-progress statements solely for this
+completed window. H0 remains locally integrated; Strict Phase0 STOP, E1 Frozen
+Matrix BLOCKED, H2 and production/research gates unchanged. Another session reads
+Charter + this backlog + fixed branch evidence, verifies Git/runtime, and waits
+for a new bounded window grant before executing. No merge/push/deploy authorized.
+No confirmed unexecuted READY item remains in this window; do not infer global
+absence of defects or repeat E1 searches without new evidence.
 
 ## Portfolio History H0 completed — 2026-10-21
 
@@ -317,23 +320,19 @@ Runtime observations are not permanent facts. The new Scheduler observation expi
 
 ## Current Decisions / Next Actions
 
-1. Review H1 proposed fixture-only PORT-01–04 contract/program in the single backlog;
-   approval is not yet granted. No confirmed new core implementation READY now.
-2. Optionally approve exact local integration candidate (H0), including inherited
-   E1 evidence/planning documents; no main merge/push/deploy performed here.
-3. Recover original E1 matrix only if new location/evidence is supplied. Do not
-   repeat unchanged search or create replacement historical data. Research admission,
-   causal regime/risk/metrics and new training remain separate H2 decisions.
-4. Resume by fixed candidate HEAD, hashes, backlog and actual runtime, not old
-   task titles or MAS lifecycle state. Completed CPU windows are historical checkpoints.
+The first Autonomous Charter window is complete. Use the single backlog linked
+above; all five selected units are committed/reviewed. No automatic continuation.
+Next Human decisions: separate exact-candidate integration, future bounded CPU
+window, original E1 matrix location if available, and research admission/design/
+compute. Strict gates remain unchanged; no need to repeat completed H0 or E1 search.
 
 ## Active worktree boundary
 
-At this audit: main plus eleven linked worktrees (twelve total after candidate
-creation). New `.worktrees/v7-cpu-roadmap` from `4c388de` isolates integration and
-planning; original CPU and Phase A/E1 trees retained. Main stays `83a6a2e`.
-[Worktree Register](Worktree_Register.md) owns purpose/dependencies/removal conditions.
-No tree was removed, no Windows runtime observation refreshed.
+Observed 2026-10-21: main plus16 linked worktrees (17 total after this window's
+creation). Only `development/v7-autonomous-charter` changed; main remains6d74d738.
+All other checkouts were clean at inventory and preserved. The new tree retains
+the closed window for review; no tree removal authorized. See Worktree Register.
+No Windows runtime observation was refreshed.
 
 ## Repository Rationalization Inventory
 

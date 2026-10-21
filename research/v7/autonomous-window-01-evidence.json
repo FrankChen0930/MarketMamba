@@ -3,7 +3,7 @@
   "base_commit": "6d74d7384caa5fa90b1b050ce507bfb8282f19df",
   "branch": "development/v7-autonomous-charter",
   "evidence_class": "CPU_SYNTHETIC_ENGINEERING_AND_RESEARCH_PREPARATION",
-  "status": "IN_PROGRESS",
+  "status": "WINDOW_COMPLETE",
   "sources": [
     {
       "identity": "eec63c551270f271e26a5aca831fe5b3b38e3f42:research/v7/e1-rolling-origin-refresh-v1/results/result-manifest.json",
@@ -33,7 +33,8 @@
     "payloads_loaded": false,
     "status": "COMPLETED_VERIFIED",
     "repair_rounds": 0,
-    "report_sha256": "45d0bd7948da3eb6da40bcae9883688cbe12c463dd8857fc8fe394d41ff542cb"
+    "report_sha256": "45d0bd7948da3eb6da40bcae9883688cbe12c463dd8857fc8fe394d41ff542cb",
+    "commit": "5847afc"
   },
   "split_validation": {
     "red": "test_contract_freezes_model_training_data_and_scope (V6.experimental.v7_e1_contract_test.E1ContractTest.test_contract_freezes_model_training_data_and_scope) ... ok\ntest_diff_and_boundaries (V6.experimental.v7_e1_contract_test.E1ContractTest.test_diff_and_boundaries) ... ok\ntest_drift_fails_closed (V6.experimental.v7_e1_contract_test.E1ContractTest.test_drift_fails_closed) ... ok\ntest_split_validation_preserves_complete_iterable_boundaries (V6.experimental.v7_e1_contract_test.E1ContractTest.test_split_validation_preserves_complete_iterable_boundaries) ... ok\ntest_split_validation_rejects_leakage (V6.experimental.v7_e1_contract_test.E1ContractTest.test_split_validation_rejects_leakage) ... ok\ntest_split_validation_requires_one_assignment_per_date (V6.experimental.v7_e1_contract_test.E1ContractTest.test_split_validation_requires_one_assignment_per_date) ... \n  test_split_validation_requires_one_assignment_per_date (V6.experimental.v7_e1_contract_test.E1ContractTest.test_split_validation_requires_one_assignment_per_date) (dates=['2025-11-18', '2025-11-19'], splits=['train'], iterator=False) ... FAIL\n  test_split_validation_requires_one_assignment_per_date (V6.experimental.v7_e1_contract_test.E1ContractTest.test_split_validation_requires_one_assignment_per_date) (dates=['2025-11-18', '2025-11-19'], splits=['train'], iterator=True) ... FAIL\n  test_split_validation_requires_one_assignment_per_date (V6.experimental.v7_e1_contract_test.E1ContractTest.test_split_validation_requires_one_assignment_per_date) (dates=['2025-11-18'], splits=['train', 'purge'], iterator=False) ... FAIL\n  test_split_validation_requires_one_assignment_per_date (V6.experimental.v7_e1_contract_test.E1ContractTest.test_split_validation_requires_one_assignment_per_date) (dates=['2025-11-18'], splits=['train', 'purge'], iterator=True) ... FAIL\n\n======================================================================\nFAIL: test_split_validation_requires_one_assignment_per_date (V6.experimental.v7_e1_contract_test.E1ContractTest.test_split_validation_requires_one_assignment_per_date) (dates=['2025-11-18', '2025-11-19'], splits=['train'], iterator=False)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_e1_contract_test.py\", line 46, in test_split_validation_requires_one_assignment_per_date\n    with self.assertRaises(ValueError):\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_split_validation_requires_one_assignment_per_date (V6.experimental.v7_e1_contract_test.E1ContractTest.test_split_validation_requires_one_assignment_per_date) (dates=['2025-11-18', '2025-11-19'], splits=['train'], iterator=True)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_e1_contract_test.py\", line 46, in test_split_validation_requires_one_assignment_per_date\n    with self.assertRaises(ValueError):\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_split_validation_requires_one_assignment_per_date (V6.experimental.v7_e1_contract_test.E1ContractTest.test_split_validation_requires_one_assignment_per_date) (dates=['2025-11-18'], splits=['train', 'purge'], iterator=False)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_e1_contract_test.py\", line 46, in test_split_validation_requires_one_assignment_per_date\n    with self.assertRaises(ValueError):\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_split_validation_requires_one_assignment_per_date (V6.experimental.v7_e1_contract_test.E1ContractTest.test_split_validation_requires_one_assignment_per_date) (dates=['2025-11-18'], splits=['train', 'purge'], iterator=True)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_e1_contract_test.py\", line 46, in test_split_validation_requires_one_assignment_per_date\n    with self.assertRaises(ValueError):\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 6 tests in 0.005s\n\nFAILED (failures=4)\n",
@@ -66,7 +67,9 @@
     "V6/experimental/v7_e1_contract.py": "403cc084260f6ca7a13b41634f2d20b42f254242c5f3a93027d3decc7103c71e",
     "V6/experimental/v7_e1_contract_test.py": "30c18bde26408bf81969a55531c6617bb0a5c708ac43b116f996eb01142f0816",
     "V6/experimental/v7_e1_checkpoint.py": "6a1ad9523e8e23cf1ceb506b6fae0a43550a5e2b6a60e60d8832d339222f2921",
-    "V6/experimental/v7_e1_checkpoint_test.py": "cc81eb67b2647828edd1c8b5782b5d56f485b2809e8d6ae66f5af1eef726b888"
+    "V6/experimental/v7_e1_checkpoint_test.py": "cc81eb67b2647828edd1c8b5782b5d56f485b2809e8d6ae66f5af1eef726b888",
+    "V6/experimental/v7_source_snapshot.py": "b8c114a86ba7a5fede2459e3afe6121fa2737d54fb5f5dcb44ad9474e1e66462",
+    "V6/experimental/v7_source_snapshot_test.py": "15f7542757cd057219d3fafc32ee8b79a7ef29d99cdd0b3bbb89a2a1e08ce85e"
   },
   "checkpoint": {
     "status": "COMPLETED_VERIFIED",
@@ -84,6 +87,135 @@
       "tests": "15 checkpoint/run +4 runtime PASS",
       "review_command_error": "nonexistent v7_e1_runtime_test spelling corrected to v7_e1_colab_runtime_test"
     },
-    "limits": "trusted cooperative local filesystem; no hostile race/unrestricted pickle safety certification; historical payloads not loaded; not arbitrary pointer damage coverage"
+    "limits": "trusted cooperative local filesystem; no hostile race/unrestricted pickle safety certification; historical payloads not loaded; not arbitrary pointer damage coverage",
+    "commit": "2c60415"
+  },
+  "snapshot": {
+    "status": "COMPLETED_VERIFIED",
+    "repair_rounds": 1,
+    "red": "======================================================================\nERROR: test_writer_rejects_unreadable_manifest_before_any_publication (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_writer_rejects_unreadable_manifest_before_any_publication) (kwargs={'status_code': None})\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_source_snapshot_test.py\", line 49, in test_writer_rejects_unreadable_manifest_before_any_publication\n    snapshot_response(RequestSpec(\"GET\", \"https://example.test/data\"), b\"{}\",\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_source_snapshot.py\", line 133, in snapshot_response\n    \"status_code\": int(status_code),\n                   ^^^^^^^^^^^^^^^^\nTypeError: int() argument must be a string, a bytes-like object or a real number, not 'NoneType'\n\n======================================================================\nERROR: test_writer_rejects_unreadable_manifest_before_any_publication (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_writer_rejects_unreadable_manifest_before_any_publication) (kwargs={'status_code': 'bad'})\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_source_snapshot_test.py\", line 49, in test_writer_rejects_unreadable_manifest_before_any_publication\n    snapshot_response(RequestSpec(\"GET\", \"https://example.test/data\"), b\"{}\",\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_source_snapshot.py\", line 133, in snapshot_response\n    \"status_code\": int(status_code),\n                   ^^^^^^^^^^^^^^^^\nValueError: invalid literal for int() with base 10: 'bad'\n\n======================================================================\nERROR: test_writer_rejects_unreadable_manifest_before_any_publication (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_writer_rejects_unreadable_manifest_before_any_publication) (kwargs={'status_code': inf})\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_source_snapshot_test.py\", line 49, in test_writer_rejects_unreadable_manifest_before_any_publication\n    snapshot_response(RequestSpec(\"GET\", \"https://example.test/data\"), b\"{}\",\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_source_snapshot.py\", line 133, in snapshot_response\n    \"status_code\": int(status_code),\n                   ^^^^^^^^^^^^^^^^\nOverflowError: cannot convert float infinity to integer\n\n======================================================================\nERROR: test_writer_rejects_unreadable_manifest_before_any_publication (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_writer_rejects_unreadable_manifest_before_any_publication) (kwargs={'content_type': None})\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_source_snapshot_test.py\", line 49, in test_writer_rejects_unreadable_manifest_before_any_publication\n    snapshot_response(RequestSpec(\"GET\", \"https://example.test/data\"), b\"{}\",\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_source_snapshot.py\", line 121, in snapshot_response\n    suffix = \".json\" if \"json\" in content_type.lower() else \".bin\"\n                                  ^^^^^^^^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'lower'\n\n======================================================================\nERROR: test_writer_rejects_unreadable_manifest_before_any_publication (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_writer_rejects_unreadable_manifest_before_any_publication) (params={'nested': {1: 'first', '1': 'second'}})\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_source_snapshot_test.py\", line 57, in test_writer_rejects_unreadable_manifest_before_any_publication\n    snapshot_response(RequestSpec(\"GET\", \"https://example.test/data\", params),\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_source_snapshot.py\", line 128, in snapshot_response\n    \"request_id\": request.request_id,\n                  ^^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_source_snapshot.py\", line 98, in request_id\n    return _sha256(_canonical_bytes(self.canonical_request()))\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_source_snapshot.py\", line 27, in _canonical_bytes\n    return json.dumps(value, ensure_ascii=True, sort_keys=True, separators=(\",\", \":\"), default=str).encode(\"ascii\")\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/json/__init__.py\", line 238, in dumps\n    **kw).encode(obj)\n          ^^^^^^^^^^^\n  File \"/usr/lib/python3.12/json/encoder.py\", line 200, in encode\n    chunks = self.iterencode(o, _one_shot=True)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/json/encoder.py\", line 258, in iterencode\n    return _iterencode(o, 0)\n           ^^^^^^^^^^^^^^^^^\nTypeError: '<' not supported between instances of 'str' and 'int'\n\n======================================================================\nERROR: test_writer_rejects_unreadable_manifest_before_any_publication (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_writer_rejects_unreadable_manifest_before_any_publication) (params={'value': {1, 2}})\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_source_snapshot_test.py\", line 57, in test_writer_rejects_unreadable_manifest_before_any_publication\n    snapshot_response(RequestSpec(\"GET\", \"https://example.test/data\", params),\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_source_snapshot.py\", line 141, in snapshot_response\n    _atomic_bytes(manifest_path, json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True).encode(\"utf-8\") + b\"\\n\")\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/json/__init__.py\", line 238, in dumps\n    **kw).encode(obj)\n          ^^^^^^^^^^^\n  File \"/usr/lib/python3.12/json/encoder.py\", line 202, in encode\n    chunks = list(chunks)\n             ^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/json/encoder.py\", line 432, in _iterencode\n    yield from _iterencode_dict(o, _current_indent_level)\n  File \"/usr/lib/python3.12/json/encoder.py\", line 406, in _iterencode_dict\n    yield from chunks\n  File \"/usr/lib/python3.12/json/encoder.py\", line 406, in _iterencode_dict\n    yield from chunks\n  File \"/usr/lib/python3.12/json/encoder.py\", line 406, in _iterencode_dict\n    yield from chunks\n  File \"/usr/lib/python3.12/json/encoder.py\", line 439, in _iterencode\n    o = _default(o)\n        ^^^^^^^^^^^\n  File \"/usr/lib/python3.12/json/encoder.py\", line 180, in default\n    raise TypeError(f'Object of type {o.__class__.__name__} '\nTypeError: Object of type set is not JSON serializable\n\n======================================================================\nFAIL: test_invalid_writer_retry_preserves_all_committed_bytes (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_invalid_writer_retry_preserves_all_committed_bytes)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_source_snapshot_test.py\", line 66, in test_invalid_writer_retry_preserves_all_committed_bytes\n    with self.assertRaises(SnapshotContractError):\nAssertionError: SnapshotContractError not raised\n\n======================================================================\nFAIL: test_writer_rejects_unreadable_manifest_before_any_publication (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_writer_rejects_unreadable_manifest_before_any_publication) (kwargs={'status_code': 0})\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_source_snapshot_test.py\", line 48, in test_writer_rejects_unreadable_manifest_before_any_publication\n    with self.assertRaises(SnapshotContractError):\nAssertionError: SnapshotContractError not raised\n\n======================================================================\nFAIL: test_writer_rejects_unreadable_manifest_before_any_publication (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_writer_rejects_unreadable_manifest_before_any_publication) (kwargs={'status_code': 600})\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_source_snapshot_test.py\", line 48, in test_writer_rejects_unreadable_manifest_before_any_publication\n    with self.assertRaises(SnapshotContractError):\nAssertionError: SnapshotContractError not raised\n\n======================================================================\nFAIL: test_writer_rejects_unreadable_manifest_before_any_publication (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_writer_rejects_unreadable_manifest_before_any_publication) (kwargs={'status_code': -1})\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_source_snapshot_test.py\", line 48, in test_writer_rejects_unreadable_manifest_before_any_publication\n    with self.assertRaises(SnapshotContractError):\nAssertionError: SnapshotContractError not raised\n\n======================================================================\nFAIL: test_writer_rejects_unreadable_manifest_before_any_publication (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_writer_rejects_unreadable_manifest_before_any_publication) (kwargs={'status_code': True})\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_source_snapshot_test.py\", line 48, in test_writer_rejects_unreadable_manifest_before_any_publication\n    with self.assertRaises(SnapshotContractError):\nAssertionError: SnapshotContractError not raised\n\n======================================================================\nFAIL: test_writer_rejects_unreadable_manifest_before_any_publication (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_writer_rejects_unreadable_manifest_before_any_publication) (params={'nested': [nan]})\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_source_snapshot_test.py\", line 56, in test_writer_rejects_unreadable_manifest_before_any_publication\n    with self.assertRaises(SnapshotContractError):\nAssertionError: SnapshotContractError not raised\n\n======================================================================\nFAIL: test_writer_rejects_unreadable_manifest_before_any_publication (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_writer_rejects_unreadable_manifest_before_any_publication) (params={'nested': [inf]})\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_source_snapshot_test.py\", line 56, in test_writer_rejects_unreadable_manifest_before_any_publication\n    with self.assertRaises(SnapshotContractError):\nAssertionError: SnapshotContractError not raised\n\n----------------------------------------------------------------------\nRan 19 tests in 1.503s\n\nFAILED (failures=7, errors=6)\n",
+    "green": "test_request_identity_is_canonical_and_rejects_credentials (V6.experimental.v7_source_snapshot_test.RequestSpecTest.test_request_identity_is_canonical_and_rejects_credentials) ... ok\ntest_competing_processes_commit_exactly_one_conflicting_observation (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_competing_processes_commit_exactly_one_conflicting_observation) ... ok\ntest_conflicting_observation_cannot_replace_committed_manifest (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_conflicting_observation_cannot_replace_committed_manifest) ... ok\ntest_corrupt_raw_is_not_silently_repaired (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_corrupt_raw_is_not_silently_repaired) ... ok\ntest_failed_publication_preserves_existing_snapshot (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_failed_publication_preserves_existing_snapshot) ... ok\ntest_identical_observation_is_noop_including_manifest_identity (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_identical_observation_is_noop_including_manifest_identity) ... ok\ntest_identical_response_reuses_content_addressed_raw_file (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_identical_response_reuses_content_addressed_raw_file) ... ok\ntest_invalid_writer_retry_preserves_all_committed_bytes (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_invalid_writer_retry_preserves_all_committed_bytes) ... ok\ntest_killed_publisher_recovers_before_and_after_manifest_commit (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_killed_publisher_recovers_before_and_after_manifest_commit) ... ok\ntest_manifest_symlink_is_not_replaced (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_manifest_symlink_is_not_replaced) ... ok\ntest_reader_accepts_existing_writer_shapes_and_http_error_observation (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_reader_accepts_existing_writer_shapes_and_http_error_observation) ... ok\ntest_reader_rejects_corruption_duplicates_and_partial_publication (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_reader_rejects_corruption_duplicates_and_partial_publication) ... ok\ntest_reader_rejects_escape_paths_even_with_matching_bytes_and_digest (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_reader_rejects_escape_paths_even_with_matching_bytes_and_digest) ... ok\ntest_reader_rejects_invalid_schema_types_and_missing_fields (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_reader_rejects_invalid_schema_types_and_missing_fields) ... ok\ntest_reader_rejects_overflowing_json_number_even_with_matching_identity (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_reader_rejects_overflowing_json_number_even_with_matching_identity) ... ok\ntest_reader_rejects_rehashed_request_under_wrong_publication_identity (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_reader_rejects_rehashed_request_under_wrong_publication_identity) ... ok\ntest_reader_rejects_symlink_files_and_directories (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_reader_rejects_symlink_files_and_directories) ... ok\ntest_snapshot_is_atomic_fingerprinted_and_replayable (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_snapshot_is_atomic_fingerprinted_and_replayable) ... ok\ntest_writer_rejects_unreadable_manifest_before_any_publication (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_writer_rejects_unreadable_manifest_before_any_publication) ... ok\n\n----------------------------------------------------------------------\nRan 19 tests in 1.266s\n\nOK\n",
+    "review": {
+      "reviewer": "/root/independent_review",
+      "critical": 0,
+      "required": 0,
+      "tests": "19 PASS in1.141s"
+    },
+    "compatibility": "6/6 GET/POST UTC/naive/offset HTTP success/error fixtures byte-identical to6d74d738 writer; all readable",
+    "limits": "trusted local filesystem only; no new source/PIT/correctness/production authority",
+    "commit": "containing snapshot/window closure commit"
+  },
+  "final_regression": {
+    "pit": "----------------------------------------------------------------------\nRan 49 tests in 1.256s\n\nOK\n",
+    "e1": "{\"time\": \"2026-10-21T09:27:28.981474+00:00\", \"event\": \"resume_scan\", \"seed\": 17, \"status\": \"FRESH\"}\n{\"time\": \"2026-10-21T09:27:28.995379+00:00\", \"event\": \"seed_started\", \"seed\": 17}\n{\"time\": \"2026-10-21T09:27:30.122366+00:00\", \"event\": \"seed_finished\", \"seed\": 17, \"status\": \"smoke_complete\", \"total_seconds\": 1.1273681140000917, \"steps\": 1}\n\n----------------------------------------------------------------------\nRan 33 tests in 5.511s\n\nOK\n",
+    "governance": "----------------------------------------------------------------------\nRan 23 tests in 0.085s\n\nOK\n"
+  },
+  "usage_observation": {
+    "provider": "native get_goal, unaudited accounting snapshot before closure",
+    "tokensUsed": 220363,
+    "timeUsedSeconds": 826,
+    "goal_created_unix": 1792573476,
+    "observed_updated_unix": 1792574854,
+    "hard_cost_limit": false,
+    "limits": "Provider usage figures are not independently certified cost; elapsed wall interval differs from provider timeUsedSeconds."
+  },
+  "efficiency_audit": {
+    "duplicate_implementation": false,
+    "repeated_E1_discovery": false,
+    "extra_unit_to_fill_count": false,
+    "avoidable_work": [
+      "Initial reads too broad and truncated, requiring narrower reads",
+      "Reviewer mistyped runtime test module; corrected invocation",
+      "Reviewer startup remained pending_init; resumed same review agent"
+    ],
+    "stopping_rule": "Five substantive units including Charter; no further discovery/execution after final verification"
+  },
+  "final_integrity": {
+    "source_hashes_and_ast": 6,
+    "pinned_source_hashes": 4,
+    "report_hash": "PASS",
+    "json": "PASS",
+    "diff_check": "PASS",
+    "knowledge_health": "KNOWLEDGE HEALTH\n\nProject Map        PASS\nAgent Guides       PASS\nDomains            PASS\nGovernance         WARNING\nAuthority Drift    WARNING\nRuntime Freshness  PASS\nGenerated Index    PASS\nLegacy Docs        WARNING\n\nOverall: WARNING\n",
+    "knowledge_impact": {
+      "acknowledgment": null,
+      "automatic_updates_performed": false,
+      "changed": [
+        "V6/experimental/v7_source_snapshot.py",
+        "V6/experimental/v7_source_snapshot_test.py",
+        "knowledge/00_Project_Map/Authority_Map.md",
+        "knowledge/00_Project_Map/Current_State.md",
+        "knowledge/00_Project_Map/Worktree_Register.md",
+        "knowledge/01_Domains/Data.md",
+        "research/v7/autonomous-window-01-evidence.json",
+        "research/v7/research-program.md"
+      ],
+      "matched_rules": {
+        "V6/experimental/v7_source_snapshot.py": [
+          "DEFAULT"
+        ],
+        "V6/experimental/v7_source_snapshot_test.py": [
+          "DEFAULT"
+        ],
+        "knowledge/00_Project_Map/Authority_Map.md": [
+          "canonical-knowledge"
+        ],
+        "knowledge/00_Project_Map/Current_State.md": [
+          "canonical-knowledge"
+        ],
+        "knowledge/00_Project_Map/Worktree_Register.md": [
+          "worktree-responsibility",
+          "canonical-knowledge"
+        ],
+        "knowledge/01_Domains/Data.md": [
+          "canonical-knowledge"
+        ],
+        "research/v7/autonomous-window-01-evidence.json": [
+          "DEFAULT"
+        ],
+        "research/v7/research-program.md": [
+          "DEFAULT"
+        ]
+      },
+      "potential_knowledge_impact": [
+        {
+          "artifact": "knowledge/01_Domains/Operations.md",
+          "rules": [
+            "worktree-responsibility"
+          ],
+          "severity": "REVIEW_REQUIRED"
+        },
+        {
+          "artifact": "knowledge/GOVERNANCE.md",
+          "rules": [
+            "canonical-knowledge"
+          ],
+          "severity": "REVIEW_REQUIRED"
+        },
+        {
+          "artifact": "knowledge/00_Project_Map/Authority_Map.md",
+          "rules": [
+            "worktree-responsibility"
+          ],
+          "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+        },
+        {
+          "artifact": "knowledge/00_Project_Map/Current_State.md",
+          "rules": [
+            "worktree-responsibility"
+          ],
+          "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+        }
+      ],
+      "schema_version": 1,
+      "status": "WARNING"
+    }
+  },
+  "closure_review": {
+    "reviewer": "/root/independent_review",
+    "critical": 0,
+    "required": 0,
+    "checks": "Five units, bounded repair rounds, sole backlog, stopped window, no authority inflation, unaudited usage limits;6 source hashes/AST,diff independently checked",
+    "test_attribution": "105 combined builder-run; independent unit14 E1,19 checkpoint,19 snapshot; governance authority review and4 source identity checks"
   }
 }

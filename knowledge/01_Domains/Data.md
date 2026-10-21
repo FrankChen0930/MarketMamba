@@ -122,3 +122,10 @@ iterables in `validate_split_rows`; every input row needs an assignment. Prior
 zip truncation could silently omit a tail. Frozen split/PIT/label/provenance
 semantics are unchanged. CPU synthetic evidence, UNMERGED / NOT_DEPLOYED;
 no matrix search, generation, formal-data edit or strict readiness promotion.
+
+The same window also validates serialized source snapshot v1 content with the
+existing reader rules before publishing raw or manifest bytes. Invalid status,
+nonfinite/unserializable parameters and malformed observations fail without any
+publication; legal HTTP error observations remain supported. Nineteen snapshot
+and49 combined PIT fixtures PASS, independent19 PASS; six valid writer outputs
+match main6d74d738 bytes. No schema/PIT policy or formal source data is changed.

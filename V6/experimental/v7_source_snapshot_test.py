@@ -38,6 +38,39 @@ class SnapshotTest(unittest.TestCase):
             parser_version="v1", content_type="application/json")
         return path, json.loads(path.read_text())
 
+    def test_writer_rejects_unreadable_manifest_before_any_publication(self):
+        defaults = {"retrieved_at": "2026-10-21T00:00:00Z", "parser_version": "v1"}
+        cases = [{"status_code": value} for value in (0, 600, -1, True, None, "bad", float("inf"))]
+        cases += [{"parser_version": ""}, {"content_type": None}]
+        for kwargs in cases:
+            with self.subTest(kwargs=kwargs), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory) / "unpublished"
+                with self.assertRaises(SnapshotContractError):
+                    snapshot_response(RequestSpec("GET", "https://example.test/data"), b"{}",
+                                      root, **{**defaults, **kwargs})
+                self.assertFalse(root.exists())
+        for params in ({"nested": [float("nan")]}, {"nested": [float("inf")]},
+                       {"nested": {1: "first", "1": "second"}}, {"value": {1, 2}}):
+            with self.subTest(params=params), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory) / "unpublished"
+                with self.assertRaises(SnapshotContractError):
+                    snapshot_response(RequestSpec("GET", "https://example.test/data", params),
+                                      b"{}", root, **defaults)
+                self.assertFalse(root.exists())
+
+    def test_invalid_writer_retry_preserves_all_committed_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path, _ = self.reader_fixture(root)
+            before = {str(p.relative_to(root)): p.read_bytes() for p in root.rglob("*") if p.is_file()}
+            with self.assertRaises(SnapshotContractError):
+                snapshot_response(RequestSpec("GET", "https://example.test/invalid"), b"new body",
+                                  root, retrieved_at="2026-10-21T00:00:00Z",
+                                  parser_version="v1", status_code=600)
+            after = {str(p.relative_to(root)): p.read_bytes() for p in root.rglob("*") if p.is_file()}
+            self.assertEqual(before, after)
+            self.assertTrue(verify_snapshot(path))
+
     def test_reader_rejects_invalid_schema_types_and_missing_fields(self):
         with tempfile.TemporaryDirectory() as directory:
             path, original = self.reader_fixture(directory)

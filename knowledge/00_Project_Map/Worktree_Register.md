@@ -240,7 +240,7 @@ Each preserving branch ref and commit remained after removal. The `archive/V5.5_
 
 - Path: `.worktrees/v7-autonomous-charter`; branch `development/v7-autonomous-charter`.
 - Base: `6d74d7384caa5fa90b1b050ce507bfb8282f19df`; owner: Codex / Human first-window task.
-- Created: 2026-10-21; retired: N/A; current state: ACTIVE, UNMERGED / NOT_DEPLOYED.
+- Created: 2026-10-21; retired: N/A; current state: WINDOW_COMPLETE, retained for review; UNMERGED / NOT_DEPLOYED.
 - Purpose: Charter and first CPU-only units. Existing 15 linked worktrees preserve
   prior H0/CPU/research evidence; none serves this new main-based bounded window.
 - Authority: Human charter decision; no new research/runtime authority.
@@ -248,3 +248,8 @@ Each preserving branch ref and commit remained after removal. The `archive/V5.5_
   venv read-only for CPU tests, no data mounted. Main and old trees untouched.
 - Safe removal: clean committed history retained, evidence/path dependencies
   checked and explicit retirement review; no removal authorized now.
+
+Closure: five Charter-window units complete, final identity is the containing
+snapshot/window commit; earlier units be7998d/3f07f80/5847afc/2c60415. Source and
+tracked evidence committed; no data/GPU artifacts created. No active execution
+responsibility remains. A future window must not infer automatic authorization.

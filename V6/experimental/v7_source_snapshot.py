@@ -108,37 +108,43 @@ def snapshot_response(
     content_type: str = "application/octet-stream",
     status_code: int = 200,
 ) -> Path:
-    if not isinstance(response_body, bytes):
-        raise SnapshotContractError("response body must be bytes")
+    # Validate the serialized v1 observation with the reader's own rules before
+    # publishing even its raw blob. Normalized valid writer output stays stable.
     try:
+        if not isinstance(response_body, bytes):
+            raise SnapshotContractError("response body must be bytes")
+        if not isinstance(content_type, str):
+            raise SnapshotContractError("content_type must be text")
         timestamp = datetime.fromisoformat(str(retrieved_at).replace("Z", "+00:00"))
-    except ValueError as error:
-        raise SnapshotContractError("retrieved_at must be an ISO timestamp") from error
-    if not str(parser_version).strip():
-        raise SnapshotContractError("parser_version is required")
-    base = Path(root)
-    response_sha = _sha256(response_body)
-    suffix = ".json" if "json" in content_type.lower() else ".bin"
-    raw_relative = Path("raw") / f"{response_sha}{suffix}"
-    raw_path = base / raw_relative
-    _atomic_bytes(raw_path, response_body)
-    stamp = timestamp.isoformat().replace(":", "").replace("+", "p")
-    manifest = {
-        "schema_version": "v7-source-snapshot-v1",
-        "request_id": request.request_id,
-        "request": request.canonical_request(),
-        "retrieved_at": timestamp.isoformat(),
-        "parser_version": str(parser_version),
-        "response": {
-            "status_code": int(status_code),
-            "content_type": str(content_type),
-            "bytes": len(response_body),
-            "sha256": response_sha,
-            "path": raw_relative.as_posix(),
-        },
-    }
-    manifest_path = base / "manifests" / f"{request.request_id}-{stamp}.json"
-    _atomic_bytes(manifest_path, json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True).encode("utf-8") + b"\n")
+        base = Path(root)
+        response_sha = _sha256(response_body)
+        suffix = ".json" if "json" in content_type.lower() else ".bin"
+        raw_relative = Path("raw") / f"{response_sha}{suffix}"
+        manifest = {
+            "schema_version": "v7-source-snapshot-v1",
+            "request_id": request.request_id,
+            "request": request.canonical_request(),
+            "retrieved_at": timestamp.isoformat(),
+            "parser_version": str(parser_version),
+            "response": {
+                "status_code": int(status_code),
+                "content_type": content_type,
+                "bytes": len(response_body),
+                "sha256": response_sha,
+                "path": raw_relative.as_posix(),
+            },
+        }
+        payload = json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True,
+                             allow_nan=False).encode("utf-8") + b"\n"
+        decoded = json.loads(payload, object_pairs_hook=_unique_object,
+                             parse_constant=_reject_json_constant,
+                             parse_float=_finite_json_float)
+        manifest_name, _ = _manifest_identity(decoded)
+    except (TypeError, ValueError, OverflowError, RecursionError) as error:
+        raise SnapshotContractError(f"invalid snapshot observation: {error}") from error
+    manifest_path = base / "manifests" / manifest_name
+    _atomic_bytes(base / raw_relative, response_body)
+    _atomic_bytes(manifest_path, payload)
     return manifest_path
 
 
