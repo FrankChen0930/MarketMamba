@@ -289,3 +289,14 @@ no unique artifacts/path consumers and explicit retirement; no removal authorize
 Fixedf34f9f3/eba6b649 trees preserved; now ancestors of local main. Their UNMERGED
 status above is historical, superseded solely for local integration. No tree removal
 or deployment. New fair-evaluation work needs separate isolated scope/worktree.
+
+## Window04 fixed checkpoint — 2026-10-21
+
+Purpose: bounded fair evaluation decision package and read-only metadata audit.
+Owner Codex/current Human grant; created2026-10-21, retiredN/A. Branch
+`development/v7-fair-evaluation-decision`, path `.worktrees/v7-fair-evaluation-decision`,
+base`f31fcbba4d82d260915d7b640d80abc9c9ba8fc1`, HEAD`489a127cf951f93f7bfc873e9333f05113f5b8e9`. WINDOW_COMPLETE_STOP/UNMERGED/NOT_DEPLOYED.
+Dependencies: pinned Git metadata, existing recovery venv; original matrix blocked.
+No data mount. Main records pointer only; all20trees retained. Safe removal requires
+preserved clean commits, no unique artifacts/consumers, resolved dependencies and
+explicit retirement approval. No cleanup or tool integration authorized here.

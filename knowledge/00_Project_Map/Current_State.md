@@ -2,6 +2,25 @@
 
 > Status: `CANONICAL_CURRENT_PROJECT_MAP`
 
+## Fair evaluation preparation complete — fixed continuation pointer
+
+Window02/03 source is integrated in local main at approvedeba6b649; this main
+commit adds navigation only. New Window04 work remains UNMERGED/NOT_DEPLOYED on
+`development/v7-fair-evaluation-decision@489a127cf951f93f7bfc873e9333f05113f5b8e9`, base`f31fcbba4d82d260915d7b640d80abc9c9ba8fc1`.
+Worktree `/home/frank/projects/MarketMamba/.worktrees/v7-fair-evaluation-decision`.
+WINDOW_COMPLETE / STOP. Readiness tool2a9de32 and decision package489a127 completed;
+64 related non-training tests PASS,15 source hashes/cost arithmetic verified,
+independent reviews0 Critical/Required. New comparison options remain PROPOSED;
+no dates/thresholds/training/H2 approved. Original matrix BLOCKED, Strict Phase0 STOP.
+
+Latest unique backlog is that pinned commit's `research/v7/research-program.md`
+Window04 section; report `reports/v7_fair_evaluation_decision_package.md`, evidence
+`research/v7/fair-evaluation-preparation-evidence.json`. New audit is not merged
+into main. To resume, cd named worktree, verify HEAD/clean, read Current State,
+Authority Map and that queue. No full historical rediscovery or repeated matrix
+search. New bounded execution needs Human grant; no background continuation.
+This pointer supersedes earlier Window04 authorized/READY text below.
+
 ## Window02/03 integrated; fair evaluation preparation authorized
 
 LOCAL_DEVELOPMENT_INTEGRATED / NOT_DEPLOYED. Human approved fixedeba6b649;

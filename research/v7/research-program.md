@@ -1,6 +1,6 @@
 # V7 Research Program and Current Development Backlog
 
-> Current planning owner: this file's dated section below, linked by canonical
+> Current planning owner: pinned Window04 branch below; this main file is navigation, linked by canonical
 > Current State/Authority Map. Planning status does not grant research, execution,
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
@@ -9,19 +9,24 @@
 
 ### Fair evaluation preparation window 04
 
-AUTHORIZED_BOUNDED_PREPARATION; Window02/03 now integrated in local main at
-exacteba6b649, with pre/post267 PASS. This containing docs commit records closure.
-New work must use an isolated branch; no new comparison or training approved.
+## Fair evaluation preparation complete — fixed continuation pointer
 
-| Unit | Objective/authority | Acceptance/status |
-|---|---|---|
-| W04-INT | Human fixed integration | COMPLETED;267pre/post, hashes, independent GO; no deploy |
-| W04-DECISION | Human Stage2/frozen E5/E1 evidence | READY: extend existing review into data-exposure ledger, interval requirements, symbolic fit counts/cost and Human options; all PROPOSED |
-| W04-READINESS | Human Stage3/existing contracts | READY: reproducible read-only integrity audit joining existing contract/config/result/checkpoint metadata checks; fail closed on drift; no evaluation or payload loading |
+Window02/03 source is integrated in local main at approvedeba6b649; this main
+commit adds navigation only. New Window04 work remains UNMERGED/NOT_DEPLOYED on
+`development/v7-fair-evaluation-decision@489a127cf951f93f7bfc873e9333f05113f5b8e9`, base`f31fcbba4d82d260915d7b640d80abc9c9ba8fc1`.
+Worktree `/home/frank/projects/MarketMamba/.worktrees/v7-fair-evaluation-decision`.
+WINDOW_COMPLETE / STOP. Readiness tool2a9de32 and decision package489a127 completed;
+64 related non-training tests PASS,15 source hashes/cost arithmetic verified,
+independent reviews0 Critical/Required. New comparison options remain PROPOSED;
+no dates/thresholds/training/H2 approved. Original matrix BLOCKED, Strict Phase0 STOP.
 
-Use existing Window03 report as foundation; do not repeat its research findings
-as new experiments. STOP after this package/readiness window. No E1 matrix search
-without new evidence; Strict Phase0 STOP/H2 unapproved.
+Latest unique backlog is that pinned commit's `research/v7/research-program.md`
+Window04 section; report `reports/v7_fair_evaluation_decision_package.md`, evidence
+`research/v7/fair-evaluation-preparation-evidence.json`. New audit is not merged
+into main. To resume, cd named worktree, verify HEAD/clean, read Current State,
+Authority Map and that queue. No full historical rediscovery or repeated matrix
+search. New bounded execution needs Human grant; no background continuation.
+This pointer supersedes earlier Window04 authorized/READY text below.
 
 ### Data evaluation window 03
 
