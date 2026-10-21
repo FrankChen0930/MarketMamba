@@ -512,6 +512,22 @@
     "backlog": "research/v7/research-program.md",
     "product_repairs": 1,
     "additional_human_decisions": 0,
-    "next_action": "STOP; Human final UX closure review. H0/H2 not approved; no further UX work authorized."
+    "next_action": "Historical original closure; Human accepted limited product slice; see portfolio_font_visibility for final font blocker correction/new H0 gate"
+  },
+  "portfolio_font_visibility": {
+    "status": "COMPLETED_VERIFIED_UNMERGED_NOT_DEPLOYED",
+    "branch": "fix/v7-timeline-font-visibility",
+    "base_commit": "6c89479416ad9fa429db7818cc645f729367eac9",
+    "audit_evidence_commit": "7ecb92016557af135ffd28c80892aa6be9d727df",
+    "audit_is_ancestor": false,
+    "checkpoint": "Containing fix/evidence commit; final fixed SHA provided in handoff",
+    "authority": "knowledge/02_History/Decisions/20261021-portfolio-font-blocker-authorization.json",
+    "report": "reports/v7_portfolio_font_visibility.md",
+    "evidence": "research/v7/portfolio-font-visibility-evidence.json",
+    "backlog": "research/v7/research-program.md",
+    "h0": "ENGINEERING_GO_REQUIRES_NEW_FIXED_SHA_HUMAN_APPROVAL",
+    "product_ux": "HUMAN_ACCEPTED_LIMITED_SLICE",
+    "required_findings_remaining": 0,
+    "next_action": "STOP; explicit Human H0 approval for new fixed candidate; no merge/push/deploy/H2"
   }
 }

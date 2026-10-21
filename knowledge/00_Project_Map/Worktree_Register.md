@@ -1,5 +1,28 @@
 # Worktree Register
 
+## Timeline font blocker repair — 2026-10-21
+
+- Path `.worktrees/v7-timeline-font-visibility`; branch `fix/v7-timeline-font-visibility`;
+  base exact `6c89479416ad9fa429db7818cc645f729367eac9`; owner Codex under explicit
+  Human late-font blocker scope. Created2026-10-21; retired N/A.
+- Purpose minimal frontend repair and bounded H0 preflight. Existing product branch
+  owns fixed old candidate; audit branch owns failure evidence. Neither can serve
+  this new candidate without losing its frozen responsibility, so isolation is required.
+- COMPLETED_VERIFIED / UNMERGED / NOT_DEPLOYED; new SHA awaits explicit H0 approval.
+  Depends full CPU/PORT/UX ancestry; audit7ecb920 is evidence only, not ancestor.
+- No worktree removal authorized. Safe removal requires clean state, retained commits/
+  artifacts and resolved references. Temporary fixture services stopped after review.
+- [Report](../../reports/v7_portfolio_font_visibility.md), [sole backlog](../../research/v7/research-program.md).
+
+## Preserved H0 audit source — 2026-10-21
+
+- `.worktrees/v7-h0-preflight`, `audit/v7-h0-preflight@7ecb92016557af135ffd28c80892aa6be9d727df`,
+  base6c894794; owner Codex/Human H0 preflight; created2026-10-21; retired N/A.
+- Evidence-only STOP checkpoint for failed old-candidate font acceptance; no main
+  integration, not a replacement product candidate. Original evidence remains immutable.
+  No removal authorized; retain clean commit/artifacts and references before cleanup.
+
+
 ## Portfolio History UX — 2026-10-21
 
 - Path `.worktrees/v7-portfolio-ux`; branch `development/v7-portfolio-ux`; base

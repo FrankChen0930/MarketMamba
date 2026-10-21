@@ -1,10 +1,11 @@
 {
   "authority": "NAVIGATION_ONLY",
-  "event_count": 12,
+  "event_count": 13,
   "events_by_topic": {
     "Current V7 development planning ownership": 1,
     "E1 completed result": 1,
     "E1 post-run diagnostic": 1,
+    "Final H0 late-font browser blocker correction": 1,
     "Knowledge governance": 1,
     "Phase A implementation": 1,
     "Phase A local development integration": 1,

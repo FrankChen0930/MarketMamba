@@ -147,6 +147,18 @@
         "knowledge/02_History/Decisions/20261021-portfolio-ux-closure-decision.json",
         "research/v7/portfolio-ux-closure-evidence.json"
       ]
+    },
+    {
+      "topic": "Final H0 late-font browser blocker correction",
+      "old_authority": "Original6c894794 candidate; H0 stopped in evidence-only audit7ecb920",
+      "new_authority": "knowledge/02_History/Decisions/20261021-portfolio-font-blocker-authorization.json",
+      "changed_at": "2026-10-21",
+      "change_commit": "containing font-blocker correction commit",
+      "reason": "Explicit Human minimal repair/new candidate/preflight authorization; prior limited UX acceptance retained; no new SHA H0 or H2 granted",
+      "evidence": [
+        "knowledge/02_History/Decisions/20261021-portfolio-font-blocker-authorization.json",
+        "research/v7/portfolio-font-visibility-evidence.json"
+      ]
     }
   ]
 }

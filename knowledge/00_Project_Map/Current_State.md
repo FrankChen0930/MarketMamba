@@ -17,6 +17,25 @@
 
 Semantic change owners must update this file in the same change. K0 remains discovery evidence. `CANONICAL_CURRENT_PROJECT_MAP` means current accepted navigation/state authority, subject to semantic updates and explicit supersession; it does not mean immutable or permanently final.
 
+## Final H0 browser blocker resolved — 2026-10-21
+
+Human [authorized only the late-font visibility repair](../02_History/Decisions/20261021-portfolio-font-blocker-authorization.json).
+New branch `fix/v7-timeline-font-visibility` starts from exact `6c894794` product
+candidate; `audit/v7-h0-preflight@7ecb920` is evidence only, NOT an ancestor.
+True-font RED reproduced desktop3.5px/mobile2.5px clipping. Existing ResizeObserver
+now observes all event rows as well as the fixed-height container; GREEN confirms
+font-driven layout correction without page movement, focus loss or data change.
+[Report](../../reports/v7_portfolio_font_visibility.md),
+[evidence index](../../research/v7/portfolio-font-visibility-evidence.json).
+Original Required finding RESOLVED within tested fixture scope; bounded preflight
+engineering GO, pending Human approval of the new fixed SHA. Final candidate is the
+containing commit, not the audit commit. Main remains `83a6a2e`; no merge occurred.
+Human limited UX product acceptance remains in force; earlier pending-UX-review
+language below is historical. Old H0 authorization does not extend to this new SHA.
+UNMERGED / NOT_DEPLOYED; H2 unapproved, Strict Phase0 STOP, E1 Frozen Matrix BLOCKED.
+STOP here: no further UX/research work authorized. Native Goal creation was rejected
+because the previous H0 goal remains paused; no automatic continuation claim.
+
 ## Project Summary
 
 **Final UX closure (2026-10-21):** Human accepted the dual-mode direction and

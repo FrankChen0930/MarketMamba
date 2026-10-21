@@ -78,6 +78,25 @@ requires explicit approval of the exact full candidate ancestry; H2 remains sepa
 Mobile advanced visual optimization is expressly outside this program; basic access
 is sufficient. Existing API/JSON is the preferred future AI research interface.
 
+### Current font blocker closure — Human authorized 2026-10-21
+
+The prior limited Product Slice UX Closure was Human accepted. Old H0 preflight at
+6c894794 stopped on late-font clipping; audit7ecb920 remains immutable evidence, not
+candidate ancestry. This explicit correction scope supersedes the older no-READY-UX
+checkpoint solely for the one confirmed defect.
+
+| ID | State | Acceptance / dependency |
+|---|---|---|
+| UX-FONT-VISIBILITY | COMPLETED_VERIFIED | True delayed-font RED→GREEN, desktop/mobile last selection fully visible; all7 selections, page/focus/precision/source unchanged; independent review |
+| H0-NEW-CANDIDATE | HUMAN_DECISION_REQUIRED | Engineering preflight GO; new fixed containing commit from6c894794; main83a6a2e ancestor/clean; explicit new SHA authorization before ff-only |
+
+[Decision](../../knowledge/02_History/Decisions/20261021-portfolio-font-blocker-authorization.json),
+[report](../../reports/v7_portfolio_font_visibility.md),
+[evidence](portfolio-font-visibility-evidence.json).
+No Required/Critical remains in tested scope. No further UX work READY/authorized.
+Stop for Human new-fixed-candidate H0 confirmation; original approval does not extend.
+Strict Phase0 STOP/E1 BLOCKED/H2 unapproved unchanged. Never merge audit branch.
+
 ### Ranked backlog
 
 Sizes are bounded engineering estimates, not delivery promises. Priority is value

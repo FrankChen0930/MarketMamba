@@ -35,6 +35,8 @@ function EventTimeline({ events, selected, onSelect }) {
     keepVisible();
     const observer = new ResizeObserver(keepVisible);
     observer.observe(container);
+    // Fonts can resize earlier rows while the scroll container stays fixed-height.
+    for (const row of container.children) observer.observe(row);
     return () => observer.disconnect();
   }, [events, selected]);
   return <section className="panel ph-timeline-panel" aria-labelledby="ph-timeline">

@@ -641,5 +641,12 @@
       "evidence": "research/v7/portfolio-ux-closure-evidence.json",
       "status": "TWO_TASK_ENGINEERING_VERIFIED_NO_H0_H2"
     }
+  },
+  "portfolio_font_visibility": {
+    "authority": "knowledge/02_History/Decisions/20261021-portfolio-font-blocker-authorization.json",
+    "status": "SCOPED_ENGINEERING_VERIFIED_NEW_SHA_H0_PENDING",
+    "evidence": "research/v7/portfolio-font-visibility-evidence.json",
+    "audit_provenance": "7ecb92016557af135ffd28c80892aa6be9d727df:research/v7/portfolio-h0-preflight-evidence.json",
+    "boundary": "Human UX direction accepted; original H0 bound to6c894794 cannot authorize new SHA; H2 not approved"
   }
 }

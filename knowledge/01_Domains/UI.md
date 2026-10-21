@@ -118,3 +118,15 @@ anchoring is disabled to prevent description-height changes shifting the page.
 General mode remains mobile usable; advanced mobile received basic smoke only.
 No numeric/API/backend change. AI should use existing structured API/JSON.
 Engineering recommends UX closure; final Human review and separate H0/H2 remain pending.
+
+### Late-font visibility correction — 2026-10-21
+
+Human accepted the limited UX direction; the later H0 preflight nevertheless found
+font-driven selected-row clipping at fixed6c894794. New isolated font repair observes
+all `li` dimensions using the same ResizeObserver/cleanup, because earlier rows can
+move the selected row while the fixed-height scrollport remains unchanged.
+No fixed delay, visibility retry, CSS masking, data/numeric/API or design change.
+True Chrome held/released existing fonts verifies geometry, selection, focus and page
+position; [evidence](../../research/v7/portfolio-font-visibility-evidence.json).
+Original Required finding resolved; engineering H0 GO only, new candidate SHA still
+requires Human approval. No main merge/H2/deployment; mobile advanced basic smoke only.
