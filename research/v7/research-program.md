@@ -17,10 +17,10 @@ This queue supersedes Window02's next-decision status for the newly authorized s
 | Unit | Priority / authority | Acceptance / resources / status |
 |---|---|---|
 | W03-INT | P0 Human Stage1 | Both fixed parents, four source units unchanged,259 joint non-training regressions,source hashes/governance/independent review; GO_ISOLATED_ONLY, containing merge commit |
-| W03-PARSER | P1 Human Stage2/existing fetcher contracts | RED then legal input compatibility and wrong date/header fail-closed; mock only; READY. All existing worktrees examined, W02 diagnostic only, no duplicate fix |
+| W03-PARSER | P1 Human Stage2/existing fetcher contracts | RED then legal input compatibility and wrong date/header fail-closed; mock only; COMPLETED8PASS/independent8,1 repair. All existing worktrees examined, W02 diagnostic only, no duplicate fix |
 | W03-FAIR | P1 Human Stage3/frozen E5/E1 contracts | Trace split/selection/final support, evidence limits, compare temporal holdout/walk-forward/nested designs; proposals only; READY |
 | W03-PREP | P2 Human Stage4 | Assess existing identity/evidence tools; implement only a demonstrated contract gap with CPU acceptance, otherwise document reuse/dependencies; DISCOVERY |
-| W03-MOPS | P1 existing monthly/quarterly parser contract | Offline completeness controls; monthly all-market acceptance policy remains HUMAN_DECISION_REQUIRED, no invented rule |
+| W03-MOPS | P1 existing monthly/quarterly parser contract | COMPLETED existing quarterly/monthly regression; monthly all-market acceptance policy remains HUMAN_DECISION_REQUIRED, no invented rule |
 
 At most two evidence-backed repair rounds per engineering unit. Data fixtures only;
 no formal data, source fetch, historical matrix regeneration or training. Record

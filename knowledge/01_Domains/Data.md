@@ -147,3 +147,16 @@ risks requiring domain decisions. AST function-body fixtures, no production impo
 network or data writes. Independent review reproduces all7. This does not certify
 external providers or change cache/publication semantics; production source fixes
 remain HUMAN_DECISION_REQUIRED in the sole backlog.
+
+## Window03 parser reliability — isolated candidate
+
+Human authorized offline deterministic parser fixes. TWSE response date must match
+requested session before Date assignment. TPEx binds exact required names to indices;
+missing/ambiguous names reject through None. Existing price fallbacks/units unchanged.
+Eight full-module fixture tests pass, independent8 PASS; fake config/transport only.
+MOPS quarterly completeness rules verified, monthly partial-result policy unchanged
+and still Human-only. No formal data writes, live source checks or production rollout.
+[Current queue](../../research/v7/research-program.md#data-evaluation-window-03),
+[evidence](../../research/v7/data-evaluation-window03-evidence.json).
+Window02's historical provider probe must run at pinnedf34f9f3; its defect oracle
+is intentionally historical, not a regression expectation for this repaired parser.

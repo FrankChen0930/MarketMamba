@@ -281,6 +281,12 @@ def fetch_prices_twse_direct(date_str: str) -> Optional[pd.DataFrame]:
             logger.warning(f"TWSE price: stat={data.get('stat')}")
             return None
 
+        # Bind the response to the requested session before assigning Date.
+        got = str(data.get("date", "")).replace("-", "").replace("/", "")
+        if got != date_compact:
+            logger.warning(f"TWSE price: response date {got or None} != requested {date_compact}")
+            return None
+
         # MI_INDEX returns a 'tables' list; the individual stock table is the
         # one whose fields include 開盤價 (Open).
         tables = data.get("tables", [])
@@ -411,27 +417,37 @@ def fetch_prices_tpex_direct(date_str: str) -> Optional[pd.DataFrame]:
             return None
 
     records = []
+    required = ("代號", "收盤", "開盤", "最高", "最低", "成交股數")
     for table in data.get("tables", []):
         fields = table.get("fields") or []
-        if len(fields) < 8 or not any("代號" in f for f in fields):
-            continue
+        if not isinstance(fields, list) or not all(isinstance(f, str) for f in fields):
+            logger.warning("TPEX price: malformed field names")
+            return None
+        fields = [f.strip() for f in fields]
+        if not any("代號" in f for f in fields):
+            continue  # unrelated summary table
+        if any(fields.count(name) != 1 for name in required):
+            logger.warning(f"TPEX price: missing or ambiguous required fields {fields}")
+            return None
+        columns = {name: fields.index(name) for name in required}
+        last_required = max(columns.values())
         for row in table.get("data") or []:
-            if len(row) < 8:
+            if len(row) <= last_required:
                 continue                     # 骨架列（非交易日）
-            sid = str(row[0]).strip()
+            sid = str(row[columns["代號"]]).strip()
             if not sid.isdigit() or len(sid) != 4:
                 continue
-            c = _num(row[2])                 # 收盤（注意：在開盤之前）
+            c = _num(row[columns["收盤"]])
             if c is None or c <= 0:
                 continue
             records.append({
                 "Date":     date_str,
                 "stock_id": sid,
-                "Open":     _num(row[4]) or c,
-                "High":     _num(row[5]) or c,
-                "Low":      _num(row[6]) or c,
+                "Open":     _num(row[columns["開盤"]]) or c,
+                "High":     _num(row[columns["最高"]]) or c,
+                "Low":      _num(row[columns["最低"]]) or c,
                 "Close":    c,
-                "Volume":   _num(row[7]) or 0.0,
+                "Volume":   _num(row[columns["成交股數"]]) or 0.0,
             })
 
     if not records:

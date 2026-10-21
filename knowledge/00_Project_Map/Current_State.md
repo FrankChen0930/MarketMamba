@@ -12,6 +12,9 @@ checkpoint taking precedence; main's previous pointer remains in parent history.
 [Decision](../02_History/Decisions/20261021-data-evaluation-window03.json),
 [unique backlog](../../research/v7/research-program.md#data-evaluation-window-03),
 [evidence](../../research/v7/data-evaluation-window03-evidence.json).
+Stage1 isolated integration GO at9bb4247 (259 tests, independent0 Required).
+Parser complete: TWSE response date binding and TPEx unique header mapping,
+8 tests + independent8 PASS; MOPS source/policy unchanged. No provider certification.
 No main merge authorized. Strict Phase0 STOP/E1 matrix BLOCKED unchanged.
 
 ## Observation Metadata
