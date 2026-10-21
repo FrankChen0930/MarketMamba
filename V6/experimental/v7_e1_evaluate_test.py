@@ -25,6 +25,23 @@ class E1EvaluateTest(unittest.TestCase):
   x=np.linspace(.01,.03,50)
   self.assertEqual(block_bootstrap_lower(x,repeats=100),
                    block_bootstrap_lower(x,repeats=100))
+ def test_decision_requires_both_frozen_seeds(self):
+  good=summarize(frame());paired,_=paired_daily_delta(frame(),frame(-1))
+  for seeds in ({},{17:good},{29:good},{17:good,43:good},{17:good,29:good,43:good}):
+   with self.subTest(seeds=list(seeds)),self.assertRaises(ValueError):
+    decide(seeds,good,paired,10)
+  self.assertEqual(decide({"17":good,"29":good},good,paired,10)["outcome"],"PASS_REFRESH_HYPOTHESIS")
+ def test_nonfinite_or_unknown_acceptance_inputs_are_invalid(self):
+  good=summarize(frame());paired,_=paired_daily_delta(frame(),frame(-1))
+  for value in (np.inf,-np.inf,np.nan,None,True,"0.5"):
+   for key in ("mean_rank_ic_5d","mean_rank_ic_10d"):
+    with self.subTest(seed_value=value,key=key),self.assertRaises(ValueError):
+     decide({17:dict(good,**{key:value}),29:good},good,paired,10)
+   for key in ("mean_rank_ic_5d","mean_rank_ic_10d","mean_d10_minus_d1_5d","mean_d10_minus_d1_10d"):
+    with self.subTest(ensemble_value=value,key=key),self.assertRaises(ValueError):
+     decide({17:good,29:good},dict(good,**{key:value}),paired,10)
+  bad=good.copy();bad.pop("mean_rank_ic_5d")
+  with self.assertRaises(ValueError):decide({17:bad,29:good},good,paired,10)
  def test_frozen_decision_vocabulary(self):
   seeds={17:summarize(frame()),29:summarize(frame())}; ensemble=summarize(frame())
   paired,_=paired_daily_delta(frame(),frame(-1))

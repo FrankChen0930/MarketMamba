@@ -27,6 +27,8 @@ W02-DATA completed7-case offline diagnostic with independent review0 Required;
 TWSE/TPEx source fixes and MOPS policy are now explicit Human decision items.
 W02-PREP completed frozen contract/matrix metadata guards;34 tests and independent14
 PASS. Metadata-only, no training readiness/admission; original matrix remains BLOCKED.
+W02-EVAL rejects missing seeds/nonfinite gate values;6 tests + independent6 PASS.
+Acceptance thresholds unchanged; historical evidence not recomputed.
 [Evidence](../../research/v7/cross-domain-window02-evidence.json).
 
 ## Charter integrated and window 02 authorized — 2026-10-21

@@ -46,3 +46,15 @@ Critical/Required 皆0，修復1輪。微型訓練測試的 source-hash fixture�
 合法hex，但未執行訓練。此防護只驗 metadata，不認證實際array bytes、
 checkpoint loader或完整training readiness；E1 Frozen Matrix仍BLOCKED。
 另一 recovery 分支de2b62e已有 evaluator byte/provenance驗證，本輪不重作。
+
+## W02-EVAL：正式 seed 與 acceptance 輸入完整性
+
+固定 SEEDS=17/29；空集合、缺 seed、多 seed 或不同 seed 均拒絕，避免
+`all([])` 被當成研究成功。整體與各 seed 的既有 gate 欄位必須為有限實數；
+缺值、NaN、Infinity、bool、字串不能通過。合法 JSON 字串 keys 保持相容。
+不改變 thresholds、bootstrap 或 PASS/PARTIAL/FAIL 定義。
+
+RED6 tests出現29 failures/13 errors；GREEN6 PASS；獨立6 PASS，0 Required，
+1修復輪。這是 aggregate 防護，不是 paired support／provenance認證；
+歷史已admit的17/29結果沒有重算或撤銷。另一recovery分支de2b62e也保留
+原先decide缺口；其byte/provenance checks仍是不同、未整合的工程成果。
