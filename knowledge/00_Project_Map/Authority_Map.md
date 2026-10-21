@@ -26,6 +26,11 @@ AUTO-RES completed a [Human decision preparation package](../../reports/v7_auton
 with4 pinned sources independently verified. PROPOSED / NOT_APPROVED, no E2 or
 research admission; existing inconclusive claims preserved.
 
+AUTO-CKPT completed scoped malformed-latest fallback and valid previous retention
+through save/orphan recovery; final19 tests and independent19 PASS, two rounds.
+UNMERGED / NOT_DEPLOYED; no historical loader certification or replay. AUTO-RES
+preparation commit `5847afc`; final pending unit is AUTO-SNAP.
+
 ## Portfolio History H0 completed — 2026-10-21
 
 **LOCAL_DEVELOPMENT_INTEGRATED / NOT_DEPLOYED.** Human accepted the limited

@@ -1,7 +1,7 @@
 """Crash-safe E1 checkpoints adapted from the verified confirmation runner."""
 from __future__ import annotations
 from datetime import datetime,timezone
-import hashlib,json,os,shutil,tempfile,time,uuid
+import hashlib,json,os,re,shutil,tempfile,time,uuid
 from pathlib import Path
 from typing import Any,Mapping
 import torch
@@ -65,14 +65,24 @@ class DurableCheckpointStore:
   return value if isinstance(value,dict) and value.get("schema_version")==POINTER_SCHEMA else {}
 
  def _entry_state(self,entry):
-  if not entry or set(entry)<{"file","sha256","bytes"}: return None
-  path=self.root/entry["file"]
-  if not path.is_file() or path.stat().st_size!=entry["bytes"] or sha256(path)!=entry["sha256"]:
+  # Pointer corruption must not prevent fallback to a valid previous generation.
+  if not isinstance(entry,dict) or not {"file","sha256","bytes"}.issubset(entry):
    return None
-  try: state=torch.load(path,map_location="cpu",weights_only=False)
+  name=entry["file"]
+  if (not isinstance(name,str) or not name or name in {".",".."}
+      or Path(name).name!=name or "/" in name or "\\" in name
+      or type(entry["bytes"]) is not int or entry["bytes"]<=0
+      or not isinstance(entry["sha256"],str)
+      or re.fullmatch(r"[0-9a-f]{64}",entry["sha256"]) is None):
+   return None
+  path=self.root/name
+  try:
+   if (path.is_symlink() or not path.is_file()
+       or path.stat().st_size!=entry["bytes"] or sha256(path)!=entry["sha256"]):
+    return None
+   state=torch.load(path,map_location="cpu",weights_only=False)
+   validate_state(state,self.identity)
   except Exception: return None
-  try: validate_state(state,self.identity)
-  except ValueError: return None
   return state
 
  def load(self,role="latest",allow_previous=True):
@@ -81,6 +91,12 @@ class DurableCheckpointStore:
   for candidate in roles:
    state=self._entry_state(manifest.get(candidate))
    if state is not None: return state
+  return None
+
+ def _previous_entry(self,manifest):
+  for role in ("latest","previous"):
+   entry=manifest.get(role)
+   if self._entry_state(entry) is not None: return entry
   return None
 
  def save(self,state,best=False,interrupt_at=None):
@@ -110,7 +126,7 @@ class DurableCheckpointStore:
           "epoch":state["epoch"],"batch":state["batch"],"step":state["step"],
           "phase":state["phase"],"terminal":state["terminal"]}
    updated={"schema_version":POINTER_SCHEMA,"latest":entry,
-            "previous":old.get("latest"),"best":entry if best else old.get("best")}
+            "previous":self._previous_entry(old),"best":entry if best else old.get("best")}
    if interrupt_at=="before_pointer": raise RuntimeError("injected before pointer")
    atomic_json(self.pointer,updated)
    self._prune(updated)
@@ -142,7 +158,7 @@ class DurableCheckpointStore:
   if not candidates: return None
   candidate=candidates[0]; old=self.manifest()
   updated={"schema_version":POINTER_SCHEMA,"latest":candidate,
-           "previous":old.get("latest") or old.get("previous"),
+           "previous":self._previous_entry(old),
            "best":old.get("best"),
            "recovery":{"mode":"validated_orphan","candidate":candidate["file"],
                        "recovered_at":datetime.now(timezone.utc).isoformat(),

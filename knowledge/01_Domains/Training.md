@@ -88,3 +88,15 @@ Runtime forensics are inconclusive: matrix wall time, epoch timing, GPU utilizat
 Update after checkpoint-format changes, new formal run evidence, Colab bundle changes, or added runtime telemetry.
 
 **2026-09-22 source integration:** Corrected E5/E1 reusable research modules and selected frozen contract copies are now in development main; see `research/v7/source-adoption-register-20260922.json`. Run results, bundles, postrun diagnostics and operational/deployment authority remain separate. No model training or production promotion occurred in Phase 3B-2.
+
+## CPU recovery engineering — 2026-10-21
+
+`development/v7-autonomous-charter` (UNMERGED / NOT_DEPLOYED) validates local
+checkpoint entry metadata before loading. Malformed/unreadable latest entries
+fall back to valid previous; save/orphan recovery retain that validated generation,
+not a corrupt pointer. SIGKILL before pointer, restart, identity/seed mismatch and
+second latest loss fixtures pass; best is not promoted by recovery.
+[Window evidence](../../research/v7/autonomous-window-01-evidence.json): two repair
+rounds, final19 tests, independent19 PASS. Existing trusted-local unrestricted
+Torch loader remains unchanged: no historical payload safety/replay certification,
+no arbitrary pointer corruption or hostile-filesystem guarantee. E1 stays BLOCKED.

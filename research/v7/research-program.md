@@ -22,6 +22,8 @@ sources; the following table owns current execution state. No duplicate queue.
 | AUTO-GOV / P0 | Reusable bounded autonomy; current Human grant | COMPLETED_VERIFIED; CPU/stdlib, no data/GPU | Charter, one backlog, map/register, independent review, governance checks; avoids repeated supervision; risk: accidental permission expansion; no existing window owns it |
 | AUTO-DATA / P1 | E1 split completeness; frozen E1 split + validate_split_rows | COMPLETED_VERIFIED; synthetic dates only, no GPU/new data | Reject unmatched row/split lengths rather than silently zip-truncate; preserve legal splits; protects preparation integrity; RED confirmed before implementation; git history has no prior fix |
 | AUTO-RES / P2 | Prepare next decision from admitted diagnostics S7–S10 | COMPLETED_VERIFIED; git-pinned JSON/code only; no matrix/checkpoints loaded | Evidence-linked options, leakage/fairness/dependency checklist; explicit proposal vs approval; reduce Human research decision effort; no new run/results; existing diagnosis retained, not recomputed |
+| AUTO-CKPT / P1 | E1 malformed pointer fallback; Training latest/previous/best contract | COMPLETED_VERIFIED; synthetic local CPU only | Reject malformed entries before body access, use valid previous after restart, preserve best and identity, SIGKILL/orphan regression; avoids losing recoverable progress; no historical loader certification; reviewer reproduced TypeError/KeyError, no prior fix in all-branch history |
+| AUTO-SNAP / P1 | Immutable snapshot writer/reader consistency; existing v1 schema | READY; offline RequestSpec fixtures only | Reject reader-invalid input before any raw/manifest publication; valid HTTP-error roundtrip and concurrency/restart intact; prevents immutable unusable artifacts; status0/600 reproduced, no prior all-branch fix |
 | AUTO-PORT / P2 | Portfolio H1 inspector follow-on | DEFERRED_NO_CONFIRMED_GAP; existing fixtures available | Engine/export/API/UI already completed H0; avoid repeated UX/test work; real signals/metrics need H2; no new policy authorized |
 | DATA-01 / P1 blocker | Original frozen matrix | BLOCKED; new exact location required | No new lead; do not repeat previous search, regenerate or deserialize |
 | RANK-01 / METRIC-01 / RES-02 | End-to-end ranking/economic research | HUMAN_DECISION_REQUIRED; H2 and strict gates | High product/research value; no inferred policy, admission or Phase1–5 execution |
@@ -453,3 +455,13 @@ independent review confirms4/4 identity and no admission/approval inflation.
 Zero repair rounds. Proposal stays NOT_APPROVED. This is preparation, not new
 research analysis execution. Human still owns next hypothesis/design/compute.
 Identity: containing research-preparation commit; no external data/GPU needed.
+
+### AUTO-CKPT completion checkpoint — 2026-10-21
+
+Two repair rounds: entry rejection/fallback, then independent-review Required fix
+for valid previous retention through save/orphan recovery. Final19 CPU tests PASS,
+independent15+4 PASS; Critical/Required0. Real spawned SIGKILL before pointer,
+restart/orphan, repeated latest loss, seed/contract/matrix mismatch covered.
+No historical checkpoint loaded. Existing unsafe-for-untrusted-pickle loader is
+not certified. [Evidence](autonomous-window-01-evidence.json); identity: containing
+checkpoint commit. Training note/maps updated. Next/final unit: AUTO-SNAP.
