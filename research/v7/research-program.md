@@ -7,7 +7,7 @@
 
 ## Window04 Stage B — CPU continuation
 
-ACTIVE / UNMERGED / NOT_DEPLOYED; Human approved same-window continuation after
+WINDOW_COMPLETE / STOP / UNMERGED / NOT_DEPLOYED; Human approved same-window continuation after
 successful fixed98f270d integration. Base is main closure31f7acc, branch
 `development/v7-window04-cpu-continuation`. Maximum4 units, max2 rework rounds/unit.
 
@@ -18,8 +18,17 @@ successful fixed98f270d integration. Base is main closure31f7acc, branch
 | W04B-PORT / P2 | H1 fixture journal/replay/history | Existing67tests PASS and completed PORT01–04; real-data adapter/economic metrics depend on H2/frozen financial definitions | HUMAN_DECISION_REQUIRED for extension |
 | W04B-EVAL / P2 | Existing E1 preparation | Metadata audit already integrated and verified; payload checking needs original matrix; new split/selection needs Human. Do not duplicate decision package | BLOCKED / HUMAN_DECISION_REQUIRED |
 
-No full roadmap recovery or E1 location rescan. Remaining slots are not a target;
-after W04B-LOG reassess only demonstrated independent READY work and stop otherwise.
+W04B-LOG source `27b9b41b01a44d3459ab66c6a0ea83395fc2d30a`; final274 joint tests PASS, independent6 PASS,
+0 Critical/Required; initial fix1/review rework0. One of maximum4 units completed.
+Final re-evaluation found no additional demonstrated independent high-value READY
+unit; no full roadmap recovery, repeated fairness proposal or E1 location rescan.
+STOP: no background continuation. A new bounded grant is required. Main remains
+31f7acc; this containing docs-only closure commit is the final branch checkpoint.
+Resume in `.worktrees/v7-window04-cpu-continuation`, verify HEAD/clean, read
+Current_State, Authority_Map, `knowledge/GOVERNANCE.md` and this section.
+[Evidence](window04-cpu-continuation-evidence.json). Future decision: Human review
+of this fixed engineering candidate; H2/MOPS/research choices are separate and
+not prerequisites for unrelated future CPU engineering if a concrete defect emerges.
 
 ## Window04 integrated; bounded CPU continuation authorized
 

@@ -5,7 +5,7 @@
   "work_id": "W04B-LOG",
   "base": "31f7accc475b5b735684d5a06725a237d85d5693",
   "branch": "development/v7-window04-cpu-continuation",
-  "source_identity": "Containing unit commit; closure pins exact unit SHA",
+  "source_identity": "27b9b41b01a44d3459ab66c6a0ea83395fc2d30a",
   "observed_at": "2026-10-21T13:03:16.269094+00:00",
   "authority": [
     "Current Human Window04 Stage B System Reliability/Experiment Preparation",
@@ -158,5 +158,15 @@
     "knowledge_health": "WARNING, no FAIL; same existing classes",
     "syntax": "PASS",
     "diff_check": "PASS"
+  },
+  "status": "WINDOW_COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+  "remaining_ready": "NONE_DEMONSTRATED_IN_BOUNDED_DISCOVERY",
+  "resume": "Containing docs-only closure commit; verify branch/HEAD/clean, read Current State, Authority Map, Charter and sole backlog; new bounded grant required",
+  "closure_review": {
+    "reviewer": "/root/independent_review",
+    "critical": 0,
+    "required": 0,
+    "source_hashes_verified": 2,
+    "resume": "PASS"
   }
 }

@@ -613,7 +613,7 @@
       "topic": "Current V7 development backlog",
       "primary_authority": "research/v7/research-program.md",
       "authority_class": "CURRENT_REFERENCE",
-      "status": "WINDOW04_CPU_CONTINUATION_BRANCH_LOCAL",
+      "status": "WINDOW04_CPU_CONTINUATION_COMPLETE_STOP",
       "supersedes": [
         "CPU window closure queues as cross-domain next-work navigation",
         "historical tasks/plan.md and tasks/todo.md as active execution assumptions"

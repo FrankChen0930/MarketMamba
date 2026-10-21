@@ -5,10 +5,15 @@
 > Semantic change owner must update this map in the same change.
 > Prior research/Phase A map accepted `2026-09-20`; 2026-09-22 runtime additions are agent-observed, pending separate human review. Canonical means current navigation authority, not immutable final state.
 
-## Window04 Stage B — bounded CPU checkpoint
+## Window04 Stage B — completed / STOP
 
 Branch `development/v7-window04-cpu-continuation`, base/main `31f7accc475b5b735684d5a06725a237d85d5693`,
 worktree `.worktrees/v7-window04-cpu-continuation`. UNMERGED / NOT_DEPLOYED.
+WINDOW_COMPLETE / STOP: W04B-LOG source `27b9b41b01a44d3459ab66c6a0ea83395fc2d30a`; final274 tests PASS.
+No additional high-value independent READY unit established. A new bounded grant
+is required for further development; this grant is exhausted. Resume by verifying
+HEAD/clean here, reading this section, Charter and the unique backlog; do not
+continue automatically. The containing docs-only closure commit is final checkpoint.
 W04B-LOG fixes admitted E1 runtime reader-error propagation: log write/decode
 failure reaches caller with original cause/path and stops a still-running child;
 a failure observed after child exit also cannot return success. CPU fixtures only,
