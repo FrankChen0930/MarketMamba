@@ -235,3 +235,16 @@ Human authorization in the Phase 3B-3A task covered only the four K checkouts. P
 | `project-knowledge-k2-governance` | 2026-09-22 14:58–15:00 | `integration/project-knowledge-k1@18152d0` | Historical K2 governance and four K1/K2 task notes in branch Git history; current governance remains in main | Checkout removed normally; twelve reproducible `.pyc` files removed with checkout |
 
 Each preserving branch ref and commit remained after removal. The `archive/V5.5_repo` **pointer** and branch-only task-note contents remain durable through those commits; the gitlink target content is not locally available and its external provenance remains UNKNOWN. Same-path copies in main were not required. Four research/operations worktrees remain active/preserved and were not touched. Exact observed completion time per individual remove command was not captured; interval above bounds this session and avoids false precision.
+
+## Autonomous Charter window — 2026-10-21
+
+- Path: `.worktrees/v7-autonomous-charter`; branch `development/v7-autonomous-charter`.
+- Base: `6d74d7384caa5fa90b1b050ce507bfb8282f19df`; owner: Codex / Human first-window task.
+- Created: 2026-10-21; retired: N/A; current state: ACTIVE, UNMERGED / NOT_DEPLOYED.
+- Purpose: Charter and first CPU-only units. Existing 15 linked worktrees preserve
+  prior H0/CPU/research evidence; none serves this new main-based bounded window.
+- Authority: Human charter decision; no new research/runtime authority.
+- Merge dependency: separate Human approval; artifact dependency: existing recovery
+  venv read-only for CPU tests, no data mounted. Main and old trees untouched.
+- Safe removal: clean committed history retained, evidence/path dependencies
+  checked and explicit retirement review; no removal authorized now.

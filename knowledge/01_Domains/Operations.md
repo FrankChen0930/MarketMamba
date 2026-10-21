@@ -140,3 +140,11 @@ NOT_DEPLOYED. PORT-01–04 H1 fixture engineering is now COMPLETED_VERIFIED;
 Human Product Slice Review remains pending. See the
 [acceptance report](../../reports/v7_portfolio_history_acceptance.md). Strict Phase 0
 STOP, E1 portfolio admission=false and production boundaries remain unchanged.
+
+## Bounded autonomous engineering — 2026-10-21
+
+The [Charter](../GOVERNANCE.md#autonomous-development-charter--2026-10-21)
+records Human-authorized CPU engineering and proposal boundaries. The sole backlog
+remains research/v7/research-program.md. This is a development workflow, not a
+new operations architecture, scheduler, MAS system or production authority.
+The first window is isolated from main6d74d738 and stops after bounded completion.

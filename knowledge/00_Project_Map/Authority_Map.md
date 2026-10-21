@@ -5,6 +5,17 @@
 > Semantic change owner must update this map in the same change.
 > Prior research/Phase A map accepted `2026-09-20`; 2026-09-22 runtime additions are agent-observed, pending separate human review. Canonical means current navigation authority, not immutable final state.
 
+## Autonomous charter first window — 2026-10-21
+
+Human authorized the [reusable Charter](../GOVERNANCE.md#autonomous-development-charter--2026-10-21)
+and a first bounded CPU-only window from verified main `6d74d738`.
+Branch `development/v7-autonomous-charter`, UNMERGED / NOT_DEPLOYED.
+The [single backlog](../../research/v7/research-program.md#autonomous-charter-window-01)
+owns current unit selection/checkpoint. This supersedes older “next program not
+authorized / stop after H0” instructions only for this window; completed H0 and
+all historical evidence stay intact. Strict Phase 0 STOP, E1 matrix BLOCKED,
+Human research/production decisions unchanged. No automatic future execution.
+
 ## Portfolio History H0 completed — 2026-10-21
 
 **LOCAL_DEVELOPMENT_INTEGRATED / NOT_DEPLOYED.** Human accepted the limited

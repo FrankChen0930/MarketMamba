@@ -107,3 +107,59 @@ Before creating a worktree, check whether an existing checkout serves the bounde
 Development/research uses the WSL-native checkout `/home/frank/projects/MarketMamba`. Existing Windows Scheduler/data operation references `D:\Desktop\work\ProjectForMe\MarketMamba` and invokes WSL; only timestamped observations establish the live action. Colab is a separate exact-lock training runtime. Record `MARKETMAMBA_DATA_ROOT`, symlink realpath, environment and source commit before asserting cross-runtime equivalence. No runtime or data move follows from this contract.
 
 Every substantial task closes with: Completed, Changed, Decisions, Evidence, Remaining, Blockers, Next recommended action, Project memory updated, Authority map updated, Git status, Commit, Push, Worktree, Runtime/environment. Write `N/A` when inapplicable. The final response plus relevant canonical state update suffice; avoid a new handoff file for every task.
+
+## Autonomous Development Charter — 2026-10-21
+
+Authority: Human request “Market Mamba V7 — Autonomous Development Charter & First
+Work Program”, recorded in [decision](02_History/Decisions/20261021-autonomous-charter.json).
+This reusable selection/workflow policy does not authorize indefinite unattended
+execution. The first window permits at most five valuable units (target 3–5, fewer
+when no suitable READY work remains), then STOP. A later session may reuse the
+checkpoint but needs a new bounded execution window; no automatic schedule.
+
+### Authorized engineering and research preparation
+
+Within an existing approved contract and isolated checkout, agents may decompose
+and execute CPU-only data-fetch reliability, schema drift detection, PIT/data
+validation, system/checkpoint/restart/version handoff, portfolio/backtesting
+engineering, existing artifact inspection, approved-experiment preparation and
+necessary regression/review repairs. Production paths remain protected: changes
+are additive/shadow/flagged and never silently change endpoints, schedules, data
+flows or success authority. Network inspection is read-only, bounded and limited
+to previously admitted sources; no bulk downloads or formal-data overwrites.
+
+Research preparation may organize papers, inspect existing models/experiments,
+propose ablations/baselines/evaluations, audit leakage/selection/comparison fairness,
+and validate approved code/config completeness. A proposal is PROPOSED, never a
+Human research decision. New hypotheses, targets, labels, comparison rules,
+architecture direction or privileges require HUMAN_DECISION_REQUIRED.
+
+### Human-only boundaries
+
+Human retains formal hypothesis/experiment approval; prediction/ranking/portfolio
+research admission; formal data correction/overwrite; new training/GPU/paid
+resources; deployment/schedule/trading; research correctness, production readiness
+and gate decisions. Strict Phase 0 remains STOP. E1 Frozen Matrix remains BLOCKED:
+without new location evidence, do not repeat searches or regenerate a substitute.
+No Windows operational checkout, V6 production/models, push/merge/deploy, paid API,
+MAS Core Live activation or MAS infrastructure expansion is authorized.
+
+### Selection, execution and persistence
+
+Use only the existing research-program.md backlog and canonical project memory.
+Evaluate Data, Portfolio and Research Preparation; rank by research/product value,
+not ease or test count. For each candidate record objective/contract, GPU/data/
+Human dependencies, CPU-fixture acceptance, dependency unlocked, existing-worktree
+check, value/risk/resources. READY requires all of existing engineering semantics,
+current authorization, available inputs and independently verifiable acceptance.
+PROPOSED or HUMAN_DECISION_REQUIRED items cannot become READY by agent approval.
+
+Per READY unit: Plan → Implement → Tests → Independent Review → Bounded Rework →
+Checkpoint → Local Commit. First reproduce failures, change one attributable cause,
+maximum two evidence-supported repair rounds; unresolved units become BLOCKED while
+independent READY work may continue. Do not weaken gates or pad unit counts.
+Update the unique backlog and project map in the same coherent change with status,
+source/artifact identities, tests/review, dependencies, Human decisions and exact
+resume instructions. Record available time/token measurements with provenance;
+unverified estimates are not hard cost limits. Stop at window completion, no READY
+work, or a major authorization blocker. Local completion is UNMERGED/NOT_DEPLOYED.

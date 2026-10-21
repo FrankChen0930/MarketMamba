@@ -7,6 +7,41 @@
 
 ## Current development program — 2026-10-21
 
+### Autonomous charter window 01
+
+Status: `AUTHORIZED_DISCOVERY`; base `6d74d738`; isolated
+`development/v7-autonomous-charter`, UNMERGED / NOT_DEPLOYED.
+[Charter](../../knowledge/GOVERNANCE.md#autonomous-development-charter--2026-10-21)
+and [Human grant](../../knowledge/02_History/Decisions/20261021-autonomous-charter.json)
+supersede the old no-next-program restriction below for this window only.
+The previous ranked backlog and S1–S15 remain historical objective/dependency
+sources; the following table owns current execution state. No duplicate queue.
+
+| ID / priority | Objective / authority | State; dependencies/resources | Acceptance / value / risk / duplication |
+|---|---|---|---|
+| AUTO-GOV / P0 | Reusable bounded autonomy; current Human grant | COMPLETED_VERIFIED; CPU/stdlib, no data/GPU | Charter, one backlog, map/register, independent review, governance checks; avoids repeated supervision; risk: accidental permission expansion; no existing window owns it |
+| AUTO-DATA / P1 | E1 split completeness; frozen E1 split + validate_split_rows | CANDIDATE; synthetic dates only, no GPU/new data | Reject unmatched row/split lengths rather than silently zip-truncate; preserve legal splits; protects preparation integrity; inspect RED before READY; no prior fix found in current source |
+| AUTO-RES / P2 | Prepare next decision from admitted diagnostics S7–S10 | READY; git-pinned JSON/code only; no matrix/checkpoints loaded | Evidence-linked options, leakage/fairness/dependency checklist; explicit proposal vs approval; reduce Human research decision effort; no new run/results; existing diagnosis retained, not recomputed |
+| AUTO-PORT / P2 | Portfolio H1 inspector follow-on | DEFERRED_NO_CONFIRMED_GAP; existing fixtures available | Engine/export/API/UI already completed H0; avoid repeated UX/test work; real signals/metrics need H2; no new policy authorized |
+| DATA-01 / P1 blocker | Original frozen matrix | BLOCKED; new exact location required | No new lead; do not repeat previous search, regenerate or deserialize |
+| RANK-01 / METRIC-01 / RES-02 | End-to-end ranking/economic research | HUMAN_DECISION_REQUIRED; H2 and strict gates | High product/research value; no inferred policy, admission or Phase1–5 execution |
+| OPS-02 / P3 | Provider certification B–E | PROPOSED; per-domain policy/architecture decisions | Existing Phase A complete; broad migration not implicitly approved; reliability fixes to existing contracts may be separately decomposed |
+| TRAIN-01 | Next discriminating training | HUMAN_DECISION_REQUIRED; hypothesis and GPU grant | CPU preparation does not approve training |
+
+Runtime: Python 3.12.3 via existing recovery venv, CUDA hidden; system python3 for
+governance. MARKETMAMBA_DATA_ROOT unset; main Data/processed_v6 symlink targets
+`/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6`; not read.
+New checkout has no Data directory. Main started clean; no other tree modified.
+Resume: verify branch/base/status, read this section and Charter, continue only
+remaining READY units within this first window; stop on completion. AUTO-GOV checkpoint: 23 governance tests PASS; knowledge health WARNING with no
+structural FAIL; diff check PASS. Independent reviewer `/root/independent_review`
+found no Critical/Required in Charter/governance/decision/maps/register. Zero
+repair rounds. Identity: containing governance commit (`git log -- knowledge/GOVERNANCE.md`).
+Operations domain reviewed/updated; no runtime policy or external observation changed.
+Final evidence and review identities for execution units will be recorded here.
+
+### Historical H0 checkpoint (superseded only as to next-window authorization)
+
 Status: `PORTFOLIO_SLICE_LOCAL_DEVELOPMENT_INTEGRATED / NEXT_PROGRAM_NOT_AUTHORIZED`.
 
 Latest H0 checkpoint: Human accepted the limited fixture product and approved exact

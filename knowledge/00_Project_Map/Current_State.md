@@ -17,6 +17,17 @@
 
 Semantic change owners must update this file in the same change. K0 remains discovery evidence. `CANONICAL_CURRENT_PROJECT_MAP` means current accepted navigation/state authority, subject to semantic updates and explicit supersession; it does not mean immutable or permanently final.
 
+## Autonomous charter first window — 2026-10-21
+
+Human authorized the [reusable Charter](../GOVERNANCE.md#autonomous-development-charter--2026-10-21)
+and a first bounded CPU-only window from verified main `6d74d738`.
+Branch `development/v7-autonomous-charter`, UNMERGED / NOT_DEPLOYED.
+The [single backlog](../../research/v7/research-program.md#autonomous-charter-window-01)
+owns current unit selection/checkpoint. This supersedes older “next program not
+authorized / stop after H0” instructions only for this window; completed H0 and
+all historical evidence stay intact. Strict Phase 0 STOP, E1 matrix BLOCKED,
+Human research/production decisions unchanged. No automatic future execution.
+
 ## Portfolio History H0 completed — 2026-10-21
 
 **LOCAL_DEVELOPMENT_INTEGRATED / NOT_DEPLOYED.** Human accepted the limited
