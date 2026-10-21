@@ -5,6 +5,23 @@
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
 
+## Window04 integrated; bounded CPU continuation authorized
+
+Human-approved fixed `98f270dd63f05831b2a42695d8005638fda2bbf5` was ff-only integrated
+from main `c733a53f81ff7bd572739b5d75f8baabf1189976`. LOCAL_DEVELOPMENT_INTEGRATED /
+NOT_DEPLOYED. Pre/post272 tests each PASS; independent metadata5 PASS,0 Critical/Required.
+This containing main commit is integration closure documentation only.
+[Evidence](window04-main-integration.json).
+
+The same Human grant authorizes Stage B, at most four valuable CPU engineering
+units with at most two evidenced rework rounds each. Use isolated
+`.worktrees/v7-window04-cpu-continuation`, branch `development/v7-window04-cpu-continuation`,
+created from this closure; its `research/v7/research-program.md` owns subsequent
+selection and completion state. All pending development/closure stays on that branch.
+No Stage B merge/push/deploy/training. Strict Phase0 STOP, E1 matrix BLOCKED,
+H2 NOT_APPROVED; comparison proposals remain PROPOSED. Earlier awaiting-approval /
+no-StageB text below is historical and superseded solely by this explicit grant.
+
 ## Window04 Git reconciliation — current candidate
 
 Human authorized isolated version reconciliation only. Branch

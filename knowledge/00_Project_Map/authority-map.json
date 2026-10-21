@@ -613,7 +613,7 @@
       "topic": "Current V7 development backlog",
       "primary_authority": "research/v7/research-program.md",
       "authority_class": "CURRENT_REFERENCE",
-      "status": "RECONCILIATION_GO_CANDIDATE_ONLY_AWAIT_HUMAN",
+      "status": "WINDOW04_INTEGRATED_CPU_CONTINUATION_AUTHORIZED",
       "supersedes": [
         "CPU window closure queues as cross-domain next-work navigation",
         "historical tasks/plan.md and tasks/todo.md as active execution assumptions"
@@ -634,11 +634,12 @@
         "research/v7/window0203-integration-20261021.json",
         "development/v7-fair-evaluation-decision@489a127cf951f93f7bfc873e9333f05113f5b8e9:research/v7/fair-evaluation-preparation-evidence.json",
         "research/v7/fair-evaluation-preparation-evidence.json",
-        "research/v7/window04-reconciliation-evidence.json"
+        "research/v7/window04-reconciliation-evidence.json",
+        "research/v7/window04-main-integration.json"
       ],
       "conflicts": [
-        "Current isolated reconciliation preserves c733a53 and489a127 histories; main unchanged",
-        "All comparison proposals PROPOSED; Stage B not authorized; no training/H2 approval"
+        "StageB current queue belongs to isolated development/v7-window04-cpu-continuation after closure",
+        "No StageB merge/training/H2/research proposal approval"
       ]
     }
   ],
