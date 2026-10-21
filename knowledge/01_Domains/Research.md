@@ -115,3 +115,14 @@ at exactf7af348 (supersedes its branch-local status only). Pre/post CPU regressi
 and authority checks are in [integration evidence](../../research/v7/charter-integration-20261021.json).
 A separate Human-authorized cross-domain CPU window may proceed in isolation;
 research contracts, formal data, production and StrictSTOP boundaries are unchanged.
+
+## Window02 research preparation — 2026-10-21
+
+Source-level audit confirms shared trainer reuses split_code2 evaluation for
+checkpoint selection and final evaluation; this is research-used historical
+support, not untouched holdout certification. This does not revoke admitted
+results or quantify historical selection bias. Occlusion is not retrained ablation.
+[Window02 report](../../reports/v7_cross_domain_window02.md) records11 pinned source
+identities and PROPOSED comparison-design options; Human approval remains required.
+[Unique backlog](../../research/v7/research-program.md#cross-domain-window-02)
+is WINDOW_COMPLETE/STOP. Strict Phase0 STOP; E1 matrix BLOCKED; no new search.

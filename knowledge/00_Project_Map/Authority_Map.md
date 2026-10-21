@@ -5,10 +5,10 @@
 > Semantic change owner must update this map in the same change.
 > Prior research/Phase A map accepted `2026-09-20`; 2026-09-22 runtime additions are agent-observed, pending separate human review. Canonical means current navigation authority, not immutable final state.
 
-## Cross-domain window02 execution checkpoint
+## Cross-domain window02 final checkpoint — STOP
 
 Isolated `development/v7-cross-domain-window-02` from main closurec1179fe,
-UNMERGED/NOT_DEPLOYED. W02-DATA/PREP/EVAL/MODEL selected under current Human grant;
+UNMERGED/NOT_DEPLOYED. W02-DATA/PREP/EVAL/MODEL completed; this bounded Human grant is exhausted;
 [unique backlog](../../research/v7/research-program.md#cross-domain-window-02)
 owns acceptance and state. No production parser edits or training permitted.
 W02-DATA completed7-case offline diagnostic with independent review0 Required;
@@ -17,6 +17,10 @@ W02-PREP completed frozen contract/matrix metadata guards;34 tests and independe
 PASS. Metadata-only, no training readiness/admission; original matrix remains BLOCKED.
 W02-EVAL rejects missing seeds/nonfinite gate values;6 tests + independent6 PASS.
 Acceptance thresholds unchanged; historical evidence not recomputed.
+W02-MODEL completed source-level selection/evaluation reuse audit;11 pinned sources
+independently verified. New research choices remain PROPOSED/Human-only.
+Final259 tests PASS, four independent reviews0 Critical/Required. No additional
+high-value READY item demonstrated; see queue for P1/P2 decisions and recovery.
 [Evidence](../../research/v7/cross-domain-window02-evidence.json).
 
 ## Charter integrated and window 02 authorized — 2026-10-21

@@ -9,7 +9,7 @@
 
 ### Cross-domain window 02
 
-Status: EXECUTING_BOUNDED_WINDOW. StageA main6d74d738→f7af348 ff-only,
+Status: WINDOW_COMPLETE / STOP_AFTER_WINDOW / UNMERGED / NOT_DEPLOYED. StageA main6d74d738→f7af348 ff-only,
 then docs closure `c1179fe`; pre/post254 PASS, independent0 Required/Critical.
 [Decision](../../knowledge/02_History/Decisions/20261021-charter-integration-window02.json),
 [integration evidence](charter-integration-20261021.json). New isolated branch
@@ -20,7 +20,7 @@ then docs closure `c1179fe`; pre/post254 PASS, independent0 Required/Critical.
 | W02-DATA / P1 | TWSE/TPEx/MOPS reliability diagnosis; Data provenance boundary + current Human direction | COMPLETED_VERIFIED diagnostic only; offline provider fixtures, CPU; production fixes HUMAN_DECISION_REQUIRED | Pin actual parser AST/source, contrast valid/mismatched dates/schema/missing-market cases; report exact expected vs observed; no network/production import side effects. Makes source risk actionable; no certification or new pipeline. Existing validation scripts require operational data/network; reuse code semantics without invoking them |
 | W02-PREP / P1 | E1 frozen contract/matrix metadata integrity before training; existing frozen experiment+Training identity contract | COMPLETED_VERIFIED; 34 non-training tests PASS, independent14 PASS; metadata only | Reject hash/semantic/feature-order/file-set drift even if self-rehashed; valid frozen contract/manifest unchanged. Prevent expensive run against wrong identities; no new experiment. All-branch history inspected: no equivalent fix |
 | W02-EVAL / P1 | Frozen two-seed decision completeness; SEEDS/ACCEPTANCE contract | COMPLETED_VERIFIED; 6 tests PASS + independent6; synthetic summaries only | Missing/wrong seeds or nonfinite gate inputs cannot PASS; preserve legal decision vocabulary/thresholds. Prevent vacuous apparent research success; no historical recalculation. Existing evaluator lacks seed-set validation |
-| W02-MODEL / P2 | E5/E1 architecture/ablation/evaluation fairness audit; research objective + Human prep grant | READY; pinned code/manifests only | Distinguish trained ablation vs occlusion vs proposal; trace selection/evaluation support and test reuse; explicit PROPOSED choices, source hashes, no inferred research approval; adds code-level trace beyond Window01 decision summary |
+| W02-MODEL / P2 | E5/E1 architecture/ablation/evaluation fairness audit; research objective + Human prep grant | COMPLETED_VERIFIED research preparation; 11 pinned sources reviewed | Distinguish trained ablation vs occlusion vs proposal; trace selection/evaluation support and test reuse; explicit PROPOSED choices, source hashes, no inferred research approval; adds code-level trace beyond Window01 decision summary |
 | W02-DATA-FIX / P1 | TWSE date binding / TPEx header-index drift | HUMAN_DECISION_REQUIRED for production edits | Proven7-case probe; no historical data correction authorized; pin source and fix original parser only after scoped production approval |
 | W02-MOPS-POLICY / P2 | Monthly market completeness and publication provenance | HUMAN_DECISION_REQUIRED | Existing quarterly all-market guard is not automatically monthly policy; do not usecache Date as PIT |
 | W02-PORT / P3 | Portfolio/Operations reliability | DEFERRED; existing H0/PhaseA complete | No demonstrated higher-value gap than first3 domains; avoid repeating UX/low-impact bug work |
@@ -34,9 +34,12 @@ MARKETMAMBA_DATA_ROOT unset; candidate Data absent. Main data symlink to Windows
 remains untouched. Only temporary synthetic fixtures. Commit evidence and update
 this single queue per unit. STOP after these units or unresolved authorization.
 
-Resume: verify branch/base/status, read this section + Charter + window02 evidence
-once created; continue only unresolved authorized READY units. Other17 checkouts
-retain previous purposes; fixed Charter branch staysf7af348. No main merge of new work.
+Resume: this window is CLOSED. Verify branch/base/status and read this section,
+Charter and existing window02 evidence. No unit may continue under this closed grant;
+a new bounded Human grant is required. See final checkpoint below for commits
+371d55d/e17fcf0/164dbc1 and MODEL containing closure commit, pinned by main navigation.
+Other17 checkouts retain their purposes; fixed Charter staysf7af348. No main merge
+of window02 implementation.
 
 ### Autonomous charter window 01
 
@@ -559,3 +562,26 @@ independent6 PASS,0 Required;1 repair round. Thresholds/bootstrap/outcomes uncha
 No historical result recalculation; recovery branch de2b62e has the same original
 `decide` gap but separate stronger support/provenance implementation. Continue only
 W02-MODEL and final bounded-window validation; do not reopen original matrix search.
+
+### Window02 final checkpoint — STOP
+
+Four units completed: DATA371d55d (0 repair rounds), PREPe17fcf0 (1),
+EVAL164dbc1 (1), MODEL in containing closure commit (1 documentation-only closure repair). Independent reviews:
+0 Critical/Required each. Final259 tests PASS: PIT49/E1 non-training36/
+Portfolio67/Operations81/fetch+governance26. Final model review verified11/11
+source identities and claim trace. No training, matrix search, production edit,
+network access, or research approval. New proposals stay PROPOSED.
+
+No additional demonstrated high-value READY work remains from this cross-domain
+scan under the current boundaries. P1 W02-DATA-FIX and research comparison design
+need Human scope/specification; DATA-01 stays BLOCKED without original matrix;
+P2 MOPS policy/new ablation/walk-forward require Human decisions. Do not invent
+work to fill a fifth slot. Next execution window needs a new bounded Human grant.
+
+Minimal recovery: cd `.worktrees/v7-cross-domain-window-02` from WSL root; verify
+`git status --short --branch`, HEAD and worktrees; read Current_State, Authority_Map,
+this dated queue and cross-domain-window02-evidence.json. Expected branch is
+`development/v7-cross-domain-window-02`, basec1179fe, four completed units,
+STOP/UNMERGED/NOT_DEPLOYED. Read model report only for selected follow-up design.
+Do not rerun historical discovery or E1 matrix search. Main navigation will pin
+this closure commit; no window02 implementation merge is authorized here.

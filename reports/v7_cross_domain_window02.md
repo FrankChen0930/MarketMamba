@@ -58,3 +58,75 @@ RED6 tests出現29 failures/13 errors；GREEN6 PASS；獨立6 PASS，0 Required�
 1修復輪。這是 aggregate 防護，不是 paired support／provenance認證；
 歷史已admit的17/29結果沒有重算或撤銷。另一recovery分支de2b62e也保留
 原先decide缺口；其byte/provenance checks仍是不同、未整合的工程成果。
+
+## W02-MODEL：模型、比較公平性與研究設計準備
+
+Authority為既有Research Program、Models/Training domain與Human的research
+preparation授權。以下是固定Git artifacts與程式閱讀；沒有讀模型權重、
+重新跑 inference、搜尋原矩陣或產生新的研究結果。完整11筆commit/path/
+size/SHA-256 inventory在window02 evidence；commit-qualified來源避免把
+main早期evaluator誤認成歷史result的產生程式。
+
+### 已有模型與實驗的範圍
+
+| 證據 | 可支持的說法 | 不可升格的說法 |
+|---|---|---|
+| `c1179fe:research/v7/corrected-e5-replication-v1/incumbent-contract.json` | E5-PIT-Clean-v1固定48 features（15/20/1/12）、sequence60、d_model64/d_state32、temporal1＋cross forward1/reverse1、5d/10d雙head、無graph。FP32/AdamW、best RankIC5 selection，10d讀同一checkpoint | 舊GAT/其他模型草案不是本輪正式架構 |
+| 同contract的fields.split與fields.seeds | E5 train2013-01-02..2023-11-17，purge2023-11-20..12-29，research-used evaluation2024-01-02..2026-09-11；原seed計畫17/29/43 | 計畫3seeds不代表3個完成結果；正式分析僅17/29，43依診斷明確excluded |
+| `044eef7:research/v7/corrected-e5-diagnostic-v2/diagnostic-summary.json` | 等長窗口RankIC5：2024 .084109、2025 .073829、2026 .029115；RankIC10：.073560/.053531/.003541。截尾放大但不完全造成退化 | 不是近期可交易報酬；strict STOP，verified executable labels=0 |
+| 同版本occlusion-policy/results | 原best checkpoints17 epoch16、29 epoch18；四組features置於causal standardized中心0，mask不變，model parameters不變。Replay各324395rows，max error .0000228882 < .0001，rank correlations > .999999 | 這是固定模型occlusion，並非刪feature重訓ablation。效果隨月份反轉，不能據此批准永久刪特徵 |
+| `eec63c5:research/v7/e1-rolling-origin-refresh-v1/results/result-manifest.json`及evaluation | E1保留架構/訓練契約、refresh rolling origin；兩正式seeds，歷史PASS_REFRESH_HYPOTHESIS；paired314780 keys | 不是portfolio admission、研究correctness重新認證或新架構優勢 |
+| `c1179fe:research/v7/experiment-hypotheses.md` | 既有Mamba/Mamba2、lookback、GAT等UNTESTED/parked假說可供Human考量 | 不把舊提案當成已完成baseline/ablation或已准訓練 |
+
+E5 split的purge日期為 **2023-11-20..2023-12-29**；30 trading-day
+purge包含既有horizon/embargo規則，不在本輪改動。固定研究日曆不等於
+observational market的即時可交易資料。E1具體split仍以frozen experiment為準。
+
+### 比較公平性與可重現性
+
+E1的既有evaluation使用new/old各314780 prediction keys的paired support，
+不是拿E5全年度summary直接與E1 2026 summary相比。Labels source308462列；
+307309 keys匹配、7471 prediction keys materialized為missing labels、1153
+source-only keys，coverage為MATERIALIZED_EXACT_PREDICTION_SUPPORT。
+因此314780是prediction support，不是每個horizon都有314780有效labels。
+
+歷史E1 ensemble RankIC5=.0634117723、RankIC10=.0520247529；paired bootstrap
+lower95分別.0110906193/.0218207175；D10-D1=.0059473002/.0077599392。
+同時保留不理想的monotonicity5=.0583379810、10=-.1158419639，避免只報
+漂亮數值。數字直接摘錄固定evaluation，沒有重算或改gate。成本、成交、
+universe/PIT與ranking/portfolio admission仍需各自證據，不能由RankIC推得。
+
+`de2b62e:V6/experimental/v7_e1_evaluate.py`已有另一recovery分支的matrix
+byte identity、label來源與support防護。這些程式不能因main未完整採用而
+被宣稱不存在；本輪PREP只處理training metadata，EVAL只補共同decide缺口。
+歷史artifact不可用本輪新helper重新命名為current research evidence。
+
+### Selection bias／test reuse：程式可證與不可證
+
+`c1179fe:V6/experimental/v7_corrected_e5_train.py` 的 `train_seed` 建立
+split_code=2的同一個`evaluation` dataset（約386行），每epoch在其上取得
+RankIC5做`update_selection`與early stopping（約474–522行），再載入best
+checkpoint，將同一個dataset交給`evaluate_model`（約525–536行）。
+`c1179fe:V6/experimental/v7_e1_run.py`直接呼叫此shared trainer。
+
+這是**程式層級的selection/evaluation support reuse**，與contract所稱
+research-used historical evaluation一致。時間purge可避免特定label跨界，
+不能消除選模後評估的selection bias。近年退化分析、E1 refresh與postrun
+分析也已使用此歷史區間；未來proposal不可再聲稱它是完全未觸碰test。
+
+本輪未開historical bundled payload、原matrix或checkpoint，因此不能量化
+bias，也不能斷言各次postrun label-extension的有效mask完全相同。不得由
+目前source trace自行撤銷已admit結果；它界定下一次研究比較需要Human決定
+的設計。Window01對epoch/regime的INCONCLUSIVE整理仍沿用，不重複計為新研究。
+
+### 僅供Human決策的選項（全部PROPOSED）
+
+| 選項 | Human必須凍結的內容 | 依賴／本輪狀態 |
+|---|---|---|
+| A：後續未參與選模的時間區間 | exact dates、selection/final-evaluation分離、label maturity、PIT/universe、baseline、paired support與acceptance；不能由Agent補日期 | 新資料admission、可能inference/compute授權；PROPOSED/HUMAN_DECISION_REQUIRED |
+| B：nested或walk-forward設計 | folds、purge、selection budget、多重比較政策、固定features/labels/seeds及incumbent；是否訓練ablation需明確批准 | 正式研究規格與GPU/訓練授權；PROPOSED/HUMAN_DECISION_REQUIRED |
+| C：維持現有描述性結論、暫不新增實驗 | 確認優先處理資料來源與既有admission依賴 | 可停留於現有STOP；原E1 matrix無新線索保持BLOCKED，不反覆搜尋/生成替代品 |
+
+以上不新增target、label、metric、正式架構或experiment配置。所有新設計均未
+READY；本輪完成的是可審查的研究準備。Portfolio H0/Operations目前沒有
+比上述已證問題更高價值且獨立的READY缺口，所以不為湊數擴張system work。

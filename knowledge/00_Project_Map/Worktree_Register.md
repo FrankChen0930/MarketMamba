@@ -265,7 +265,7 @@ its checkout must start from verified main and be registered before execution.
 
 Path `.worktrees/v7-cross-domain-window-02`; branch `development/v7-cross-domain-window-02`;
 base `c1179fe1ee8b66c768391b5f22f8aaebfc42d646`; owner Codex / current Human window02.
-Created2026-10-21, retiredN/A; ACTIVE, UNMERGED/NOT_DEPLOYED. Purpose: four selected
+Created2026-10-21, retiredN/A; WINDOW_COMPLETE_STOP, UNMERGED/NOT_DEPLOYED. Purpose: four selected
 cross-domain CPU units, not the fixed Charter integration. Existing17 trees serve
 completed/historical work and cannot be repurposed without moving fixed evidence.
 Authority: current Human decision; no research/production authority. Dependencies:
