@@ -1,6 +1,6 @@
 # V7 Research Program and Current Development Backlog
 
-> Current planning owner: this file's dated section below, linked by canonical
+> Current planning owner: pinned Window02 branch below; this main file is navigation, linked by canonical
 > Current State/Authority Map. Planning status does not grant research, execution,
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
@@ -9,14 +9,30 @@
 
 ### Cross-domain window 02
 
-Status: AUTHORIZED_DISCOVERY. Human approved exactf7af348 local main integration
-and one next3–5-unit CPU-only window; [decision](../../knowledge/02_History/Decisions/20261021-charter-integration-window02.json).
-StageA completed:6d74d738→f7af348 ff-only, pre/post254 PASS, independent review0
-Critical/Required; [evidence](charter-integration-20261021.json). Containing main
-closure commit adds docs only. Create an isolated new window from this verified
-main; preserve fixed window01 tree. The next dated table here will own selection,
-not a second roadmap. No training (including tiny smoke), production change or
-research decision. Stop after this new window; old window01 STOP remains historical.
+## Window02 closed — pinned continuation pointer
+
+Charter is integrated in local main; Window02 is completed on
+`development/v7-cross-domain-window-02@f34f9f32a86a0ee97a8dcdb74faad996bf5f5b4e`,
+base `c1179fe1ee8b66c768391b5f22f8aaebfc42d646`.
+Worktree: `/home/frank/projects/MarketMamba/.worktrees/v7-cross-domain-window-02`.
+**WINDOW_COMPLETE / STOP / UNMERGED / NOT_DEPLOYED** for Window02 implementation.
+This main commit changes navigation only, not Window02 code or research authority.
+
+The unique latest backlog is that pinned commit's `research/v7/research-program.md`
+Cross-domain window02 section; evidence is `research/v7/cross-domain-window02-evidence.json`,
+report `reports/v7_cross_domain_window02.md`. Do not use this main checkout's older
+AUTHORIZED_DISCOVERY text below as renewed execution authority. Four units:
+DATA371d55d, PREPe17fcf0, EVAL164dbc1, MODELf34f9f3. Final259 CPU tests PASS;
+independent reviews0 Critical/Required after one closure-wording repair. No additional
+high-value READY item demonstrated in current scan. P1 production source fixes and
+new comparison designs require Human scope/approval; original E1 matrix BLOCKED.
+Strict Phase0 STOP. No training, production edit, network, push/deploy or MAS.
+
+Resume: cd the named worktree; verify branch/HEAD/clean status, then read its
+Current_State.md, Authority_Map.md, the pinned program and evidence. New bounded
+execution requires Human grant. This pointer supersedes earlier next-window
+instructions; the existing Charter remains reusable. No second backlog is created.
+
 
 ### Autonomous charter window 01
 

@@ -611,9 +611,9 @@
     },
     {
       "topic": "Current V7 development backlog",
-      "primary_authority": "research/v7/research-program.md",
+      "primary_authority": "development/v7-cross-domain-window-02@f34f9f32a86a0ee97a8dcdb74faad996bf5f5b4e:research/v7/research-program.md",
       "authority_class": "CURRENT_REFERENCE",
-      "status": "PORTFOLIO_SLICE_LOCAL_DEVELOPMENT_INTEGRATED_NEXT_PROGRAM_UNAPPROVED",
+      "status": "CHARTER_INTEGRATED_WINDOW02_COMPLETE_UNMERGED_STOP",
       "supersedes": [
         "CPU window closure queues as cross-domain next-work navigation",
         "historical tasks/plan.md and tasks/todo.md as active execution assumptions"
@@ -625,11 +625,14 @@
         "research/v7/portfolio-history-evidence.json",
         "reports/v7_portfolio_history_acceptance.md",
         "knowledge/02_History/Decisions/20261021-portfolio-final-h0-approval.json",
-        "research/v7/portfolio-h0-integration-closure.json"
+        "research/v7/portfolio-h0-integration-closure.json",
+        "knowledge/02_History/Decisions/20261021-charter-integration-window02.json",
+        "research/v7/charter-integration-20261021.json",
+        "development/v7-cross-domain-window-02@f34f9f32a86a0ee97a8dcdb74faad996bf5f5b4e:research/v7/cross-domain-window02-evidence.json"
       ],
       "conflicts": [
         "No research contract or historical artifact superseded",
-        "H0 exact4a66928 completed locally; H2/next Program unapproved; MAS Core Live unverified"
+        "Window02 complete on isolated pinned branch; main contains navigation only; next execution grant required; H2 Human-only; MAS Core Live unverified"
       ]
     }
   ],

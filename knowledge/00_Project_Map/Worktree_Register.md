@@ -260,3 +260,14 @@ responsibility remains. A future window must not infer automatic authorization.
 explicit Human ff-only grant; its worktree/HEAD remain untouched and clean.
 All17 existing trees retained. New cross-domain window has separate authorization;
 its checkout must start from verified main and be registered before execution.
+
+## Window02 preserved checkpoint — 2026-10-21
+
+Purpose: four bounded cross-domain CPU units. Owner Codex/current Human grant;
+created2026-10-21, retiredN/A. Branch `development/v7-cross-domain-window-02`,
+path `.worktrees/v7-cross-domain-window-02`, basec1179fe, HEAD`f34f9f32a86a0ee97a8dcdb74faad996bf5f5b4e`.
+WINDOW_COMPLETE_STOP / UNMERGED / NOT_DEPLOYED. Authority: scoped Human direction,
+no research/production admission. Dependencies: preserved commits, existing recovery
+venv (read-only), no formal-data mount. Main only records this pointer. Keep all18
+trees; removal requires clean preserved commits, no unique artifacts/path consumers,
+resolved integration dependencies and separate retirement approval. No removal now.

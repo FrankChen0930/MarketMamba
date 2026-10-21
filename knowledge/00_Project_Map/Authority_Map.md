@@ -5,6 +5,30 @@
 > Semantic change owner must update this map in the same change.
 > Prior research/Phase A map accepted `2026-09-20`; 2026-09-22 runtime additions are agent-observed, pending separate human review. Canonical means current navigation authority, not immutable final state.
 
+## Window02 closed — pinned continuation pointer
+
+Charter is integrated in local main; Window02 is completed on
+`development/v7-cross-domain-window-02@f34f9f32a86a0ee97a8dcdb74faad996bf5f5b4e`,
+base `c1179fe1ee8b66c768391b5f22f8aaebfc42d646`.
+Worktree: `/home/frank/projects/MarketMamba/.worktrees/v7-cross-domain-window-02`.
+**WINDOW_COMPLETE / STOP / UNMERGED / NOT_DEPLOYED** for Window02 implementation.
+This main commit changes navigation only, not Window02 code or research authority.
+
+The unique latest backlog is that pinned commit's `research/v7/research-program.md`
+Cross-domain window02 section; evidence is `research/v7/cross-domain-window02-evidence.json`,
+report `reports/v7_cross_domain_window02.md`. Do not use this main checkout's older
+AUTHORIZED_DISCOVERY text below as renewed execution authority. Four units:
+DATA371d55d, PREPe17fcf0, EVAL164dbc1, MODELf34f9f3. Final259 CPU tests PASS;
+independent reviews0 Critical/Required after one closure-wording repair. No additional
+high-value READY item demonstrated in current scan. P1 production source fixes and
+new comparison designs require Human scope/approval; original E1 matrix BLOCKED.
+Strict Phase0 STOP. No training, production edit, network, push/deploy or MAS.
+
+Resume: cd the named worktree; verify branch/HEAD/clean status, then read its
+Current_State.md, Authority_Map.md, the pinned program and evidence. New bounded
+execution requires Human grant. This pointer supersedes earlier next-window
+instructions; the existing Charter remains reusable. No second backlog is created.
+
 ## Charter integrated and window 02 authorized — 2026-10-21
 
 LOCAL_DEVELOPMENT_INTEGRATED / NOT_DEPLOYED. Human approved exact
