@@ -12,8 +12,14 @@ Original STOP audit `3330427a1d774d30e65216ddab89d668d97c187c` remains separate 
 not a third merge parent. This section supersedes older continuation pointers below;
 they describe prior checkpoints, not the current working location.
 
-Status: CANDIDATE_PENDING_VERIFICATION / UNMERGED_IN_MAIN / NOT_DEPLOYED.
+Status: GO_CANDIDATE_ONLY / AWAIT_HUMAN / UNMERGED_IN_MAIN / NOT_DEPLOYED.
 Main is unchanged. No Stage B work or research planning is authorized here.
+Merge commit `225efa9bb13b67bd5258faba79a47666c8906148` retains exact two parents above.
+272 joint tests PASS; independent metadata5 PASS,0 Critical/Required; no unresolved
+conflicts. [Integration evidence](../../research/v7/window04-reconciliation-evidence.json). The containing docs-only
+closure commit is the final candidate SHA; main and original candidate are ancestors.
+Resume by verifying branch/HEAD/clean here, reading this section and the evidence,
+then await Human approval of that fixed SHA. Do not start Stage B.
 Strict Phase 0 STOP; E1 Frozen Matrix BLOCKED; H2 NOT APPROVED; comparison options
 remain PROPOSED. Read the local unique `research/v7/research-program.md` first
 for reconciliation checkpoint; original preparation artifacts are unchanged.
