@@ -18,7 +18,7 @@ then docs closure `c1179fe`; pre/post254 PASS, independent0 Required/Critical.
 | ID / priority | Objective / authority | State / resource & Human dependencies | Acceptance / value / risk / duplicate check |
 |---|---|---|---|
 | W02-DATA / P1 | TWSE/TPEx/MOPS reliability diagnosis; Data provenance boundary + current Human direction | COMPLETED_VERIFIED diagnostic only; offline provider fixtures, CPU; production fixes HUMAN_DECISION_REQUIRED | Pin actual parser AST/source, contrast valid/mismatched dates/schema/missing-market cases; report exact expected vs observed; no network/production import side effects. Makes source risk actionable; no certification or new pipeline. Existing validation scripts require operational data/network; reuse code semantics without invoking them |
-| W02-PREP / P1 | E1 frozen contract/matrix metadata integrity before training; existing frozen experiment+Training identity contract | READY after mutation RED; synthetic metadata only, no array rebuild/GPU | Reject hash/semantic/feature-order/file-set drift even if self-rehashed; valid frozen contract/manifest unchanged. Prevent expensive run against wrong identities; no new experiment. All-branch history inspected: no equivalent fix |
+| W02-PREP / P1 | E1 frozen contract/matrix metadata integrity before training; existing frozen experiment+Training identity contract | COMPLETED_VERIFIED; 34 non-training tests PASS, independent14 PASS; metadata only | Reject hash/semantic/feature-order/file-set drift even if self-rehashed; valid frozen contract/manifest unchanged. Prevent expensive run against wrong identities; no new experiment. All-branch history inspected: no equivalent fix |
 | W02-EVAL / P1 | Frozen two-seed decision completeness; SEEDS/ACCEPTANCE contract | READY after RED; synthetic summaries only | Missing/wrong seeds or nonfinite gate inputs cannot PASS; preserve legal decision vocabulary/thresholds. Prevent vacuous apparent research success; no historical recalculation. Existing evaluator lacks seed-set validation |
 | W02-MODEL / P2 | E5/E1 architecture/ablation/evaluation fairness audit; research objective + Human prep grant | READY; pinned code/manifests only | Distinguish trained ablation vs occlusion vs proposal; trace selection/evaluation support and test reuse; explicit PROPOSED choices, source hashes, no inferred research approval; adds code-level trace beyond Window01 decision summary |
 | W02-DATA-FIX / P1 | TWSE date binding / TPEx header-index drift | HUMAN_DECISION_REQUIRED for production edits | Proven7-case probe; no historical data correction authorized; pin source and fix original parser only after scoped production approval |
@@ -540,3 +540,13 @@ numerical observations and limitations in [window evidence](cross-domain-window0
 and [report](../../reports/v7_cross_domain_window02.md). Identity: containing data
 unit commit. Production date/schema corrections and monthly completeness remain
 Human decisions; no network/official-data inference. Continue W02-PREP/EVAL/MODEL.
+
+### W02-PREP checkpoint
+
+Containing commit pins the already approved contract digest and validates matrix
+metadata field identities/types, including self-rehashed drift. RED13 tests with25
+failures → GREEN34 non-training tests; independent14 PASS,0 Required;1 repair round.
+No actual arrays inspected or rebuilt; frozen matrix remains BLOCKED. Contract and
+ACCEPTANCE unchanged. Recovery evaluator byte/provenance checks at de2b62e are
+separate branch-local work, not duplicated or silently adopted here.
+Continue W02-EVAL then W02-MODEL; see window02 evidence/report.

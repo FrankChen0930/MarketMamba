@@ -31,3 +31,18 @@ Probe是GENERATED diagnostic evidence的generator，不是source certifier。
 Source固定於c1179fe；若source hash不同，必須把新觀察另記，不能覆寫本輪歷史。
 新真實response/發布時間/資料版本與每個partition provenance仍需合格證據；
 本輪不做大量抓取或用mutable cache補成PIT。
+
+## W02-PREP：批准實驗的 metadata 防護
+
+以既有 frozen experiment 的 contract SHA-256
+`fea9948f05bb096596cb2cacfc522bad27a7e1f587d0a5a08f704da458d29152`
+驗證完整 payload；checked-in 與 build_contract 的內容身份不變。
+Matrix metadata 必須有完整 array/source 名稱、合法 SHA、整數列數、固定
+feature order、label/P0/horizon、preprocessing 與無 graph 的契約。
+變更語意後重新計算自己的 hash 也不能通過。
+
+RED：13 tests、25 failures；GREEN：34 非訓練 tests PASS；獨立14 PASS，
+Critical/Required 皆0，修復1輪。微型訓練測試的 source-hash fixture同步為
+合法hex，但未執行訓練。此防護只驗 metadata，不認證實際array bytes、
+checkpoint loader或完整training readiness；E1 Frozen Matrix仍BLOCKED。
+另一 recovery 分支de2b62e已有 evaluator byte/provenance驗證，本輪不重作。

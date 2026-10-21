@@ -25,6 +25,8 @@ UNMERGED/NOT_DEPLOYED. W02-DATA/PREP/EVAL/MODEL selected under current Human gra
 owns acceptance and state. No production parser edits or training permitted.
 W02-DATA completed7-case offline diagnostic with independent review0 Required;
 TWSE/TPEx source fixes and MOPS policy are now explicit Human decision items.
+W02-PREP completed frozen contract/matrix metadata guards;34 tests and independent14
+PASS. Metadata-only, no training readiness/admission; original matrix remains BLOCKED.
 [Evidence](../../research/v7/cross-domain-window02-evidence.json).
 
 ## Charter integrated and window 02 authorized — 2026-10-21

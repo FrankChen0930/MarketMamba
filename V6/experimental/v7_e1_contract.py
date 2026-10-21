@@ -7,6 +7,8 @@ from pathlib import Path
 from V6.experimental.v7_corrected_e5_replication import canonical_hash
 
 SCHEMA="v7-e1-rolling-origin-refresh-contract-v1"
+# Identity in the frozen experiment specification and admitted E1 result.
+FROZEN_CONTRACT_SHA256="fea9948f05bb096596cb2cacfc522bad27a7e1f587d0a5a08f704da458d29152"
 MATRIX_NAMESPACE="Data/v7_e1_rolling_origin_refresh_v1"
 OUTPUT_NAMESPACE="MarketMamba_V7_E1_Rolling_Origin_Refresh"
 SEEDS=(17,29)
@@ -58,9 +60,14 @@ def build_contract(incumbent_path,decision_path,feature_manifest_path):
   "matrix":{"namespace":MATRIX_NAMESPACE,"reuse_incumbent_matrix":False,
             "reuse_stable_inputs":True,"ordering":["Date","stock_id"]},
   "output_namespace":OUTPUT_NAMESPACE}
- validate_contract(c); c["contract_sha256"]=canonical_hash(c); return c
+ c["contract_sha256"]=canonical_hash(c); validate_contract(c); return c
 
 def validate_contract(c):
+ if not isinstance(c,dict): raise ValueError("E1 contract must be an object")
+ try: observed=canonical_hash({k:v for k,v in c.items() if k!="contract_sha256"})
+ except (TypeError,ValueError) as exc: raise ValueError("invalid E1 contract JSON") from exc
+ if c.get("contract_sha256")!=FROZEN_CONTRACT_SHA256 or observed!=FROZEN_CONTRACT_SHA256:
+  raise ValueError("E1 frozen contract identity mismatch")
  f=c.get("frozen",{}); labels=f.get("labels",{}); semantics=c.get("correctness_semantics",{})
  checks={"schema":c.get("schema_version")==SCHEMA,
   "features":f.get("features")=={"input_dim":48,"group_dims":[15,20,1,12],"order_from":"feature-manifest.json"},

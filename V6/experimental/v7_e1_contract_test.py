@@ -31,6 +31,30 @@ class E1ContractTest(unittest.TestCase):
     for k in path[:-1]: x=x[k]
     x[path[-1]]=value
     with self.assertRaises(ValueError): validate_contract(c)
+ def test_every_frozen_contract_field_and_identity_is_bound(self):
+  mutations=[lambda c:c.update(output_namespace="other"),
+   lambda c:c.update(hypothesis="different hypothesis"),
+   lambda c:c.update(baseline="other"),
+   lambda c:c["frozen"].update(environment="other"),
+   lambda c:c["frozen"]["labels"].update(source_version="v1"),
+   lambda c:c["matrix"].update(ordering=["stock_id","Date"]),
+   lambda c:c["correctness_semantics"].update(evidence_class="VERIFIED_EXECUTABLE")]
+  for mutation in mutations:
+   for rehash in (False,True):
+    c=built();mutation(c)
+    if rehash: c["contract_sha256"]=canonical_hash({k:v for k,v in c.items() if k!="contract_sha256"})
+    with self.subTest(mutation=mutation,rehash=rehash),self.assertRaises(ValueError):
+     validate_contract(c)
+  for identity in (None,"a"*64):
+   c=built()
+   if identity is None: c.pop("contract_sha256")
+   else: c["contract_sha256"]=identity
+   with self.assertRaises(ValueError): validate_contract(c)
+ def test_checked_in_frozen_contract_remains_accepted(self):
+  import json
+  c=json.loads((ROOT/"research/v7/e1-rolling-origin-refresh-v1/experiment-contract.json").read_text())
+  validate_contract(c)
+  self.assertEqual(c,built())
  def test_diff_and_boundaries(self):
   self.assertEqual(contract_diff(built())["substantive_changes"][0]["field"],"split.train_end")
   cases={"2013-01-01":"warmup","2013-01-02":"train","2025-11-18":"train",

@@ -1,4 +1,5 @@
 import json
+import hashlib
 import tempfile,unittest
 from pathlib import Path
 import pandas as pd
@@ -43,7 +44,7 @@ class E1RunTest(unittest.TestCase):
   arrays=build_e1_arrays(pd.DataFrame(features),pd.DataFrame(universe),pd.DataFrame(labels),cfg)
   with tempfile.TemporaryDirectory() as d:
    root=Path(d); matrix=root/"v7_e1_rolling_origin_refresh_v1"
-   write_matrix(matrix,c,cfg,arrays,{k:k[0]*64 for k in ("features","labels","universe","provenance")})
+   write_matrix(matrix,c,cfg,arrays,{k:hashlib.sha256(k.encode()).hexdigest() for k in ("features","labels","universe","provenance")})
    result=run_seed(matrix,root/"output",c,cfg,17,torch.device("cpu"),
                    smoke_steps=1,model_factory=TinyModel)
    self.assertEqual(result["status"],"smoke_complete")
