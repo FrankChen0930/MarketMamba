@@ -2,6 +2,19 @@
 
 > Status: `CANONICAL_CURRENT_PROJECT_MAP`
 
+## Window02/03 integrated; fair evaluation preparation authorized
+
+LOCAL_DEVELOPMENT_INTEGRATED / NOT_DEPLOYED. Human approved fixedeba6b649;
+main ff-only9956446→eba6b649, pre/post267 tests each PASS, independent0 Critical/
+Required.19 worktrees clean before merge;23 source/2 parser/1 report/7 result hashes
+verified, protected contracts/data/models/lock unchanged. Fixed candidates retained.
+[Integration evidence](../../research/v7/window0203-integration-20261021.json),
+[Human scope](../02_History/Decisions/20261021-engineering-integration-fair-preparation.json).
+This supersedes UNMERGED/no-main-merge text below only for admitted Window02/03.
+No deployment, policy or research classification change. StrictSTOP/E1BLOCKED/H2
+unapproved persist. A separate bounded CPU preparation window is authorized;
+its current queue is [the unique program](../../research/v7/research-program.md).
+
 ## Data reliability / evaluation preparation window03 — 2026-10-21
 
 WINDOW_COMPLETE / STOP / UNMERGED / NOT_DEPLOYED. Current Human grant superseded the

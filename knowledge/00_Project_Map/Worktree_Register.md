@@ -283,3 +283,9 @@ parser fixes and fairness preparation; other18trees retained with original purpo
 Dependencies: fixed parent commits, existing recovery venv read-only; no data mount.
 Authority scoped engineering only. Safe removal requires clean preserved commits,
 no unique artifacts/path consumers and explicit retirement; no removal authorized.
+
+## Window02/03 integration — 2026-10-21
+
+Fixedf34f9f3/eba6b649 trees preserved; now ancestors of local main. Their UNMERGED
+status above is historical, superseded solely for local integration. No tree removal
+or deployment. New fair-evaluation work needs separate isolated scope/worktree.

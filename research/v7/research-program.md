@@ -7,6 +7,22 @@
 
 ## Current development program — 2026-10-21
 
+### Fair evaluation preparation window 04
+
+AUTHORIZED_BOUNDED_PREPARATION; Window02/03 now integrated in local main at
+exacteba6b649, with pre/post267 PASS. This containing docs commit records closure.
+New work must use an isolated branch; no new comparison or training approved.
+
+| Unit | Objective/authority | Acceptance/status |
+|---|---|---|
+| W04-INT | Human fixed integration | COMPLETED;267pre/post, hashes, independent GO; no deploy |
+| W04-DECISION | Human Stage2/frozen E5/E1 evidence | READY: extend existing review into data-exposure ledger, interval requirements, symbolic fit counts/cost and Human options; all PROPOSED |
+| W04-READINESS | Human Stage3/existing contracts | READY: reproducible read-only integrity audit joining existing contract/config/result/checkpoint metadata checks; fail closed on drift; no evaluation or payload loading |
+
+Use existing Window03 report as foundation; do not repeat its research findings
+as new experiments. STOP after this package/readiness window. No E1 matrix search
+without new evidence; Strict Phase0 STOP/H2 unapproved.
+
 ### Data evaluation window 03
 
 WINDOW_COMPLETE / STOP / UNMERGED / NOT_DEPLOYED. Human approved deterministic parser engineering and research
