@@ -148,3 +148,11 @@ records Human-authorized CPU engineering and proposal boundaries. The sole backl
 remains research/v7/research-program.md. This is a development workflow, not a
 new operations architecture, scheduler, MAS system or production authority.
 The first window is isolated from main6d74d738 and stops after bounded completion.
+
+## Charter integration — 2026-10-21
+
+Window01 source/governance is now LOCAL_DEVELOPMENT_INTEGRATED / NOT_DEPLOYED
+at exactf7af348 (supersedes its branch-local status only). Pre/post CPU regression
+and authority checks are in [integration evidence](../../research/v7/charter-integration-20261021.json).
+A separate Human-authorized cross-domain CPU window may proceed in isolation;
+research contracts, formal data, production and StrictSTOP boundaries are unchanged.

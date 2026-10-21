@@ -129,3 +129,11 @@ nonfinite/unserializable parameters and malformed observations fail without any
 publication; legal HTTP error observations remain supported. Nineteen snapshot
 and49 combined PIT fixtures PASS, independent19 PASS; six valid writer outputs
 match main6d74d738 bytes. No schema/PIT policy or formal source data is changed.
+
+## Charter integration — 2026-10-21
+
+Window01 source/governance is now LOCAL_DEVELOPMENT_INTEGRATED / NOT_DEPLOYED
+at exactf7af348 (supersedes its branch-local status only). Pre/post CPU regression
+and authority checks are in [integration evidence](../../research/v7/charter-integration-20261021.json).
+A separate Human-authorized cross-domain CPU window may proceed in isolation;
+research contracts, formal data, production and StrictSTOP boundaries are unchanged.

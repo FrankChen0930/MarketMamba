@@ -7,6 +7,17 @@
 
 ## Current development program — 2026-10-21
 
+### Cross-domain window 02
+
+Status: AUTHORIZED_DISCOVERY. Human approved exactf7af348 local main integration
+and one next3–5-unit CPU-only window; [decision](../../knowledge/02_History/Decisions/20261021-charter-integration-window02.json).
+StageA completed:6d74d738→f7af348 ff-only, pre/post254 PASS, independent review0
+Critical/Required; [evidence](charter-integration-20261021.json). Containing main
+closure commit adds docs only. Create an isolated new window from this verified
+main; preserve fixed window01 tree. The next dated table here will own selection,
+not a second roadmap. No training (including tiny smoke), production change or
+research decision. Stop after this new window; old window01 STOP remains historical.
+
 ### Autonomous charter window 01
 
 Status: `WINDOW_COMPLETE / STOP_AFTER_FIRST_WINDOW`; base `6d74d738`; isolated

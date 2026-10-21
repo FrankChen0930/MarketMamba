@@ -253,3 +253,10 @@ Closure: five Charter-window units complete, final identity is the containing
 snapshot/window commit; earlier units be7998d/3f07f80/5847afc/2c60415. Source and
 tracked evidence committed; no data/GPU artifacts created. No active execution
 responsibility remains. A future window must not infer automatic authorization.
+
+## Charter fixed-candidate integration — 2026-10-21
+
+`development/v7-autonomous-charter@f7af348` is now reachable from WSL main via
+explicit Human ff-only grant; its worktree/HEAD remain untouched and clean.
+All17 existing trees retained. New cross-domain window has separate authorization;
+its checkout must start from verified main and be registered before execution.

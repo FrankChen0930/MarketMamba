@@ -17,6 +17,24 @@
 
 Semantic change owners must update this file in the same change. K0 remains discovery evidence. `CANONICAL_CURRENT_PROJECT_MAP` means current accepted navigation/state authority, subject to semantic updates and explicit supersession; it does not mean immutable or permanently final.
 
+## Charter integrated and window 02 authorized — 2026-10-21
+
+LOCAL_DEVELOPMENT_INTEGRATED / NOT_DEPLOYED. Human approved exact
+`f7af348710467ac381b2a84e8d192670ced89932`; WSL main ff-only from
+`6d74d7384caa5fa90b1b050ce507bfb8282f19df` to that SHA. This containing
+closure commit is docs/evidence only. [Integration evidence](../../research/v7/charter-integration-20261021.json)
+records pre/post254 tests each (PIT49, non-training E1 31, portfolio67, ops81,
+fetch3+governance23), 6 source/4 authority hashes,75 protected blobs unchanged,
+17 clean worktrees and independent0 Critical/Required. No tiny training or GPU probe run.
+Window01's UNMERGED wording below is historical and superseded only for integration.
+
+[New Human decision](../02_History/Decisions/20261021-charter-integration-window02.json)
+authorizes one next isolated CPU window, maximum3–5 meaningful units. Current
+selection/checkpoint remains the [unique program](../../research/v7/research-program.md).
+Discover Data, Model Research and Experiment Preparation before optional system
+work; do not change V6 production. StrictSTOP/E1BLOCKED/Human research gates persist.
+The fixed candidate branch remains unchanged. No push/deploy/Windows/MAS activity.
+
 ## Autonomous charter first window — 2026-10-21
 
 **WINDOW_COMPLETE / STOP_AFTER_FIRST_WINDOW / UNMERGED / NOT_DEPLOYED.**

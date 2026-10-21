@@ -100,3 +100,11 @@ second latest loss fixtures pass; best is not promoted by recovery.
 rounds, final19 tests, independent19 PASS. Existing trusted-local unrestricted
 Torch loader remains unchanged: no historical payload safety/replay certification,
 no arbitrary pointer corruption or hostile-filesystem guarantee. E1 stays BLOCKED.
+
+## Charter integration — 2026-10-21
+
+Window01 source/governance is now LOCAL_DEVELOPMENT_INTEGRATED / NOT_DEPLOYED
+at exactf7af348 (supersedes its branch-local status only). Pre/post CPU regression
+and authority checks are in [integration evidence](../../research/v7/charter-integration-20261021.json).
+A separate Human-authorized cross-domain CPU window may proceed in isolation;
+research contracts, formal data, production and StrictSTOP boundaries are unchanged.
