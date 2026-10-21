@@ -17,6 +17,27 @@
 
 Semantic change owners must update this file in the same change. K0 remains discovery evidence. `CANONICAL_CURRENT_PROJECT_MAP` means current accepted navigation/state authority, subject to semantic updates and explicit supersession; it does not mean immutable or permanently final.
 
+## Portfolio History H0 completed — 2026-10-21
+
+**LOCAL_DEVELOPMENT_INTEGRATED / NOT_DEPLOYED.** Human accepted the limited
+fixture Product Slice and [approved exact4a66928](../02_History/Decisions/20261021-portfolio-final-h0-approval.json).
+WSL main fast-forwarded from `83a6a2e6f4a56db318ee07e7e737cc01de3ce48e` to
+`4a66928aa4c9bd8a1ddf99a5b42866e9b22efb74`; subsequent containing commit is
+**documentation/evidence only**, not a different product candidate. Pre/post CPU,
+API/HTTP, frontend and real Chrome font/selection/error checks passed.
+[Integration report](../../reports/v7_portfolio_h0_integration_closure.md),
+[evidence](../../research/v7/portfolio-h0-integration-closure.json).
+CPU01/02, PORT01–04, UX01–04, final UX and font correction are in local main.
+This supersedes historical UNMERGED/H0-pending/UX-review-pending prose below for
+these units only. Original reports, fixed branches and all16 worktrees are retained;
+audit7ecb920 remains separate historical failed-preflight evidence, not merged.
+No Required/Critical remains within this tested slice. Main is a valid source
+baseline for future separately authorized CPU work; no new Program starts now.
+Strict Phase0 STOP, E1 Frozen Matrix BLOCKED, H2 unapproved, research correctness
+unapproved. No push/deploy/Windows operational change/training. STOP after closure.
+The existing UI's static UNMERGED badge is historical candidate wording, not a live
+Git integration indicator; canonical status above owns integration authority.
+
 ## Final H0 browser blocker resolved — 2026-10-21
 
 Human [authorized only the late-font visibility repair](../02_History/Decisions/20261021-portfolio-font-blocker-authorization.json).

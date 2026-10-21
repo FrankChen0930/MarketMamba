@@ -1,5 +1,23 @@
 # Worktree Register
 
+## Portfolio H0 local integration closure — 2026-10-21
+
+- WSL primary checkout `/home/frank/projects/MarketMamba`, branch `main`, now includes
+  exact approved4a66928 from83a6a2e via ff-only. Owner Human-authorized Codex H0;
+  this containing commit adds only closure documentation/evidence.
+- CPU/roadmap/PORT/UX/font source branches below are preserved historical checkpoints
+  whose source ancestry is now LOCAL_DEVELOPMENT_INTEGRATED / NOT_DEPLOYED. Their
+  earlier UNMERGED state describes pre-H0 observations, superseded by this entry.
+- All16 worktrees remain; no checkout removed, reset, repointed or cleaned. Audit
+  `audit/v7-h0-preflight@7ecb920` is retained separately and was not merged.
+- Candidate remains `fix/v7-timeline-font-visibility@4a66928`; retire dates remain N/A.
+  Existing safe-removal conditions and separate authorization still apply.
+- Main is the next authorized CPU-work source baseline; this does not grant a new
+  Program. No active fixture services, production deployment or operational change.
+- [Closure](../../reports/v7_portfolio_h0_integration_closure.md),
+  [evidence](../../research/v7/portfolio-h0-integration-closure.json).
+
+
 ## Timeline font blocker repair — 2026-10-21
 
 - Path `.worktrees/v7-timeline-font-visibility`; branch `fix/v7-timeline-font-visibility`;

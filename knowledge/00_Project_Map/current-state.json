@@ -23,7 +23,10 @@
     "next_ready": "Reproduced normalized quote collision silently overwrites input; not fixed. Journal should reject as existing engine does.",
     "strict_phase0": "STOP",
     "e1_matrix": "BLOCKED_IDENTITY_MATCHED_MATRIX_NOT_RECOVERED",
-    "aggregate_usage": "UNAVAILABLE_OLD_GOAL_API_BINDING"
+    "aggregate_usage": "UNAVAILABLE_OLD_GOAL_API_BINDING",
+    "historical_window_record": true,
+    "local_integration_status": "LOCAL_DEVELOPMENT_INTEGRATED",
+    "integration_commit": "4a66928aa4c9bd8a1ddf99a5b42866e9b22efb74"
   },
   "bounded_engineering_recovery": {
     "historical_checkpoints_note": "Earlier reader/task4 entries below retain their observation-time status; current approval and Task5 state are in operations.",
@@ -335,9 +338,9 @@
   },
   "state_updated_at": "2026-10-21",
   "active_objectives": [
-    "UX-01–04 fixture UX complete; STOP awaiting Human Product Slice Review",
-    "Single current backlog is research/v7/research-program.md dated current section",
-    "No real-data portfolio admission or Phase1-5; Strict Phase0 STOP, E1 exact matrix BLOCKED"
+    "Portfolio History H0 LOCAL_DEVELOPMENT_INTEGRATED; current authorized work complete, STOP",
+    "Single backlog remains research/v7/research-program.md; no next Program authorized",
+    "Strict Phase0 STOP; E1 identity-matched Frozen Matrix BLOCKED; H2/research correctness unapproved"
   ],
   "runtime_contract": {
     "development_checkout": "/home/frank/projects/MarketMamba",
@@ -434,7 +437,10 @@
     "goal_binding": "V7_CREATED_AFTER_NULL; automatic continuation unverified",
     "aggregate_usage": "NOT_INDEPENDENTLY_VERIFIED",
     "next_ready": [],
-    "evidence": "research/v7/cpu-window-02-evidence.json"
+    "evidence": "research/v7/cpu-window-02-evidence.json",
+    "historical_window_record": true,
+    "local_integration_status": "LOCAL_DEVELOPMENT_INTEGRATED",
+    "integration_commit": "4a66928aa4c9bd8a1ddf99a5b42866e9b22efb74"
   },
   "strategic_roadmap_recovery": {
     "status": "PLANNING_COMPLETE_H1_SUBSEQUENTLY_APPROVED",
@@ -452,14 +458,17 @@
       "PORT-03",
       "PORT-04"
     ],
-    "next_human_gate": "H0 exact integration and H2 research remain separate; H1 engineering approved",
+    "next_human_gate": "H0 complete; H2 and any next Program remain separate/unapproved",
     "strict_phase0": "STOP",
     "e1_matrix": "BLOCKED",
     "mas_core_live": "NOT_CERTIFIED",
-    "goal_binding": "CURRENT_V7_OBJECTIVE; future unattended reliability unverified"
+    "goal_binding": "CURRENT_V7_OBJECTIVE; future unattended reliability unverified",
+    "historical_window_record": true,
+    "local_integration_status": "LOCAL_DEVELOPMENT_INTEGRATED",
+    "integration_commit": "4a66928aa4c9bd8a1ddf99a5b42866e9b22efb74"
   },
   "portfolio_history": {
-    "status": "COMPLETED_VERIFIED_UNMERGED_NOT_DEPLOYED",
+    "status": "LOCAL_DEVELOPMENT_INTEGRATED_NOT_DEPLOYED",
     "branch": "development/v7-portfolio-history",
     "base_commit": "bebf19ee937a2237641e09701d0564590ed30fc6",
     "units": {
@@ -475,11 +484,15 @@
     "research_admission": false,
     "checkpoint": "Containing PORT-04 commit; git log -1 on development/v7-portfolio-history",
     "report": "reports/v7_portfolio_history_acceptance.md",
-    "next_action": "STOP; Human Product Slice Review; no H0/H2 granted",
-    "human_interventions_after_h1": 0
+    "next_action": "This slice is closed/in local main; no next Program authorized; H2 remains unapproved",
+    "human_interventions_after_h1": 0,
+    "historical_source_branch": "development/v7-portfolio-history",
+    "local_integration_status": "LOCAL_DEVELOPMENT_INTEGRATED",
+    "integration_commit": "4a66928aa4c9bd8a1ddf99a5b42866e9b22efb74",
+    "integration_authority": "knowledge/02_History/Decisions/20261021-portfolio-final-h0-approval.json"
   },
   "portfolio_ux": {
-    "state": "COMPLETED_VERIFIED_UNMERGED_NOT_DEPLOYED",
+    "state": "LOCAL_DEVELOPMENT_INTEGRATED_NOT_DEPLOYED",
     "branch": "development/v7-portfolio-ux",
     "base_commit": "5a2bc6fcee4c0bf78190a6ac74d11f53f8becbd4",
     "units": {
@@ -494,11 +507,15 @@
     "evidence": "research/v7/portfolio-ux-evidence.json",
     "implementation_commit": "764dfbf6800dc00d133af4775206da5cf9cfbf43",
     "checkpoint": "Containing UX04 acceptance commit; git log -1 on development/v7-portfolio-ux",
-    "next_action": "Historical UX01–04 completed; see portfolio_ux_closure for current checkpoint",
-    "lint_limit": "Full repo58errors/3warnings identical to baseline; changed-source PASS"
+    "next_action": "This slice is closed/in local main; no next Program authorized; H2 remains unapproved",
+    "lint_limit": "Full repo58errors/3warnings identical to baseline; changed-source PASS",
+    "historical_source_branch": "development/v7-portfolio-ux",
+    "local_integration_status": "LOCAL_DEVELOPMENT_INTEGRATED",
+    "integration_commit": "4a66928aa4c9bd8a1ddf99a5b42866e9b22efb74",
+    "integration_authority": "knowledge/02_History/Decisions/20261021-portfolio-final-h0-approval.json"
   },
   "portfolio_ux_closure": {
-    "state": "COMPLETED_VERIFIED_UNMERGED_NOT_DEPLOYED",
+    "state": "LOCAL_DEVELOPMENT_INTEGRATED_NOT_DEPLOYED",
     "branch": "development/v7-portfolio-ux",
     "base_commit": "1553a59dcf7b9479702d586f4d80ad20b5bee9c0",
     "checkpoint": "Containing final UX closure commit; git log -1 on development/v7-portfolio-ux",
@@ -512,10 +529,14 @@
     "backlog": "research/v7/research-program.md",
     "product_repairs": 1,
     "additional_human_decisions": 0,
-    "next_action": "Historical original closure; Human accepted limited product slice; see portfolio_font_visibility for final font blocker correction/new H0 gate"
+    "next_action": "This slice is closed/in local main; no next Program authorized; H2 remains unapproved",
+    "historical_source_branch": "development/v7-portfolio-ux",
+    "local_integration_status": "LOCAL_DEVELOPMENT_INTEGRATED",
+    "integration_commit": "4a66928aa4c9bd8a1ddf99a5b42866e9b22efb74",
+    "integration_authority": "knowledge/02_History/Decisions/20261021-portfolio-final-h0-approval.json"
   },
   "portfolio_font_visibility": {
-    "status": "COMPLETED_VERIFIED_UNMERGED_NOT_DEPLOYED",
+    "status": "LOCAL_DEVELOPMENT_INTEGRATED_NOT_DEPLOYED",
     "branch": "fix/v7-timeline-font-visibility",
     "base_commit": "6c89479416ad9fa429db7818cc645f729367eac9",
     "audit_evidence_commit": "7ecb92016557af135ffd28c80892aa6be9d727df",
@@ -525,9 +546,30 @@
     "report": "reports/v7_portfolio_font_visibility.md",
     "evidence": "research/v7/portfolio-font-visibility-evidence.json",
     "backlog": "research/v7/research-program.md",
-    "h0": "ENGINEERING_GO_REQUIRES_NEW_FIXED_SHA_HUMAN_APPROVAL",
+    "h0": "APPROVED_AND_COMPLETED_EXACT_4a66928",
     "product_ux": "HUMAN_ACCEPTED_LIMITED_SLICE",
     "required_findings_remaining": 0,
-    "next_action": "STOP; explicit Human H0 approval for new fixed candidate; no merge/push/deploy/H2"
+    "next_action": "This slice is closed/in local main; no next Program authorized; H2 remains unapproved",
+    "historical_source_branch": "fix/v7-timeline-font-visibility",
+    "local_integration_status": "LOCAL_DEVELOPMENT_INTEGRATED",
+    "integration_commit": "4a66928aa4c9bd8a1ddf99a5b42866e9b22efb74",
+    "integration_authority": "knowledge/02_History/Decisions/20261021-portfolio-final-h0-approval.json"
+  },
+  "portfolio_h0_integration": {
+    "status": "LOCAL_DEVELOPMENT_INTEGRATED",
+    "deployment": "NOT_DEPLOYED",
+    "main_before": "83a6a2e6f4a56db318ee07e7e737cc01de3ce48e",
+    "approved_candidate": "4a66928aa4c9bd8a1ddf99a5b42866e9b22efb74",
+    "immediate_main_after_ff": "4a66928aa4c9bd8a1ddf99a5b42866e9b22efb74",
+    "documentation_commit": "Containing H0 closure commit; source unchanged from approved candidate",
+    "authority": "knowledge/02_History/Decisions/20261021-portfolio-final-h0-approval.json",
+    "evidence": "research/v7/portfolio-h0-integration-closure.json",
+    "report": "reports/v7_portfolio_h0_integration_closure.md",
+    "product_acceptance": "HUMAN_ACCEPTED_LIMITED_FIXTURE_SLICE",
+    "required_findings_remaining": 0,
+    "h2": "NOT_APPROVED",
+    "strict_phase0": "STOP",
+    "e1_frozen_matrix": "BLOCKED",
+    "next_action": "STOP; use integrated main as baseline only for separately authorized next CPU work"
   }
 }

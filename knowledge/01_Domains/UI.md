@@ -130,3 +130,15 @@ True Chrome held/released existing fonts verifies geometry, selection, focus and
 position; [evidence](../../research/v7/portfolio-font-visibility-evidence.json).
 Original Required finding resolved; engineering H0 GO only, new candidate SHA still
 requires Human approval. No main merge/H2/deployment; mobile advanced basic smoke only.
+
+## Local H0 integration closure — 2026-10-21
+
+The complete limited fixture History slice, five CPU fixes and UX/font correction
+are LOCAL_DEVELOPMENT_INTEGRATED at exact4a66928, NOT_DEPLOYED. This supersedes
+pre-H0 branch-local/pending-review status above; original implementation/acceptance
+semantics remain unchanged. [Closure](../../reports/v7_portfolio_h0_integration_closure.md)
+and [Human approval](../02_History/Decisions/20261021-portfolio-final-h0-approval.json).
+No real data/model admission, formal performance policy or research approval.
+Static UI UNMERGED badge is inherited candidate wording, not live Git status;
+canonical state records local integration. No UX changes made during integration.
+Strict Phase0 STOP/E1 BLOCKED/H2 unapproved. Stop; next Program needs separate scope.

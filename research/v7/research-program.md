@@ -7,7 +7,21 @@
 
 ## Current development program — 2026-10-21
 
-Status: `PLANNING_COMPLETE / AWAITING_HUMAN_PROGRAM_APPROVAL`.
+Status: `PORTFOLIO_SLICE_LOCAL_DEVELOPMENT_INTEGRATED / NEXT_PROGRAM_NOT_AUTHORIZED`.
+
+Latest H0 checkpoint: Human accepted the limited fixture product and approved exact
+`4a66928aa4c9bd8a1ddf99a5b42866e9b22efb74`; main fast-forwarded from83a6a2e.
+CPU01/02 + PORT01–04 + UX01–04 + final closure/font fix are now in local main.
+Pre/post CPU and actual Chrome verification passed; no Required/Critical remains.
+[Human approval](../../knowledge/02_History/Decisions/20261021-portfolio-final-h0-approval.json),
+[closure](../../reports/v7_portfolio_h0_integration_closure.md),
+[evidence](portfolio-h0-integration-closure.json).
+No further Portfolio UX work or new Program is authorized. STOP; future scoped CPU
+work may use this main baseline. H2/StrictSTOP/E1BLOCKED remain unchanged.
+The older planning/window statements below retain their observation-time context;
+this checkpoint supersedes their H0-pending/UNMERGED status, not research authority.
+
+Historical roadmap recovery source record:
 Source baseline: `4c388ded57062194114ea3e221d00c177eb96892`; integration candidate
 `integration/v7-cpu-roadmap`, UNMERGED / NOT_DEPLOYED; main `83a6a2e` unchanged.
 Authority for this update: Human “Strategic Roadmap Recovery & Autonomous
@@ -88,13 +102,13 @@ checkpoint solely for the one confirmed defect.
 | ID | State | Acceptance / dependency |
 |---|---|---|
 | UX-FONT-VISIBILITY | COMPLETED_VERIFIED | True delayed-font RED→GREEN, desktop/mobile last selection fully visible; all7 selections, page/focus/precision/source unchanged; independent review |
-| H0-NEW-CANDIDATE | HUMAN_DECISION_REQUIRED | Engineering preflight GO; new fixed containing commit from6c894794; main83a6a2e ancestor/clean; explicit new SHA authorization before ff-only |
+| H0-NEW-CANDIDATE | COMPLETED_VERIFIED | Human-approved exact4a66928 ff-only from83a6a2e; pre/post regressions and Chrome PASS; LOCAL_DEVELOPMENT_INTEGRATED / NOT_DEPLOYED |
 
 [Decision](../../knowledge/02_History/Decisions/20261021-portfolio-font-blocker-authorization.json),
 [report](../../reports/v7_portfolio_font_visibility.md),
 [evidence](portfolio-font-visibility-evidence.json).
 No Required/Critical remains in tested scope. No further UX work READY/authorized.
-Stop for Human new-fixed-candidate H0 confirmation; original approval does not extend.
+This gate is now closed by explicit final4a66928 Human approval and local integration above. Stop; no next Program starts.
 Strict Phase0 STOP/E1 BLOCKED/H2 unapproved unchanged. Never merge audit branch.
 
 ### Ranked backlog

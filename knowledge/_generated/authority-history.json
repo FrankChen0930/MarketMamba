@@ -159,6 +159,18 @@
         "knowledge/02_History/Decisions/20261021-portfolio-font-blocker-authorization.json",
         "research/v7/portfolio-font-visibility-evidence.json"
       ]
+    },
+    {
+      "topic": "Portfolio History exact-candidate H0 local integration",
+      "old_authority": "fix/v7-timeline-font-visibility@4a66928 preintegration candidate; new SHA H0 pending",
+      "new_authority": "knowledge/02_History/Decisions/20261021-portfolio-final-h0-approval.json",
+      "changed_at": "2026-10-21",
+      "change_commit": "containing main documentation closure commit",
+      "reason": "Explicit Human exact4a66928 H0 approval; main ff-only from83a6a2e, pre/post checks passed. Limited product acceptance/local source status only; no research or deployment authority promotion.",
+      "evidence": [
+        "knowledge/02_History/Decisions/20261021-portfolio-final-h0-approval.json",
+        "research/v7/portfolio-h0-integration-closure.json"
+      ]
     }
   ]
 }

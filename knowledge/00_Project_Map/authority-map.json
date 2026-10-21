@@ -613,7 +613,7 @@
       "topic": "Current V7 development backlog",
       "primary_authority": "research/v7/research-program.md",
       "authority_class": "CURRENT_REFERENCE",
-      "status": "H1_COMPLETED_VERIFIED_ENGINEERING_ONLY",
+      "status": "PORTFOLIO_SLICE_LOCAL_DEVELOPMENT_INTEGRATED_NEXT_PROGRAM_UNAPPROVED",
       "supersedes": [
         "CPU window closure queues as cross-domain next-work navigation",
         "historical tasks/plan.md and tasks/todo.md as active execution assumptions"
@@ -623,30 +623,41 @@
         "research/v7/cpu-integration-candidate-20261021.json",
         "knowledge/02_History/Decisions/20261021-portfolio-history-h1.json",
         "research/v7/portfolio-history-evidence.json",
-        "reports/v7_portfolio_history_acceptance.md"
+        "reports/v7_portfolio_history_acceptance.md",
+        "knowledge/02_History/Decisions/20261021-portfolio-final-h0-approval.json",
+        "research/v7/portfolio-h0-integration-closure.json"
       ],
       "conflicts": [
-        "No research contract, historical artifact or Human approval superseded",
-        "Only PORT-01–04 H1 is approved; H0/H2 absent; MAS Core Live remains unverified"
+        "No research contract or historical artifact superseded",
+        "H0 exact4a66928 completed locally; H2/next Program unapproved; MAS Core Live unverified"
       ]
     }
   ],
   "portfolio_ux_scope": {
     "authority": "knowledge/02_History/Decisions/20261021-portfolio-ux-human-decision.json",
-    "status": "ORIGINAL_UX_ENGINEERING_COMPLETE; DIRECTION_ACCEPTED_BY_HUMAN; FINAL_CLOSURE_REVIEW_PENDING",
+    "status": "HUMAN_ACCEPTED_LIMITED_SLICE_LOCAL_DEVELOPMENT_INTEGRATED",
     "skill_authority": "SUBORDINATE_GUIDANCE_NO_FINANCIAL_AUTHORITY",
     "evidence": "research/v7/portfolio-ux-evidence.json",
     "final_closure": {
       "authority": "knowledge/02_History/Decisions/20261021-portfolio-ux-closure-decision.json",
       "evidence": "research/v7/portfolio-ux-closure-evidence.json",
-      "status": "TWO_TASK_ENGINEERING_VERIFIED_NO_H0_H2"
-    }
+      "status": "LOCAL_DEVELOPMENT_INTEGRATED_NO_H2"
+    },
+    "integration_authority": "knowledge/02_History/Decisions/20261021-portfolio-final-h0-approval.json"
   },
   "portfolio_font_visibility": {
     "authority": "knowledge/02_History/Decisions/20261021-portfolio-font-blocker-authorization.json",
-    "status": "SCOPED_ENGINEERING_VERIFIED_NEW_SHA_H0_PENDING",
+    "status": "LOCAL_DEVELOPMENT_INTEGRATED_NOT_DEPLOYED",
     "evidence": "research/v7/portfolio-font-visibility-evidence.json",
     "audit_provenance": "7ecb92016557af135ffd28c80892aa6be9d727df:research/v7/portfolio-h0-preflight-evidence.json",
-    "boundary": "Human UX direction accepted; original H0 bound to6c894794 cannot authorize new SHA; H2 not approved"
+    "boundary": "Exact4a66928 integrated under new explicit H0 decision; H2 not approved",
+    "integration_authority": "knowledge/02_History/Decisions/20261021-portfolio-final-h0-approval.json"
+  },
+  "portfolio_h0_integration": {
+    "authority": "knowledge/02_History/Decisions/20261021-portfolio-final-h0-approval.json",
+    "status": "LOCAL_DEVELOPMENT_INTEGRATED_NOT_DEPLOYED",
+    "implementation_commit": "4a66928aa4c9bd8a1ddf99a5b42866e9b22efb74",
+    "evidence": "research/v7/portfolio-h0-integration-closure.json",
+    "boundary": "Limited fixture product and local source integration only; no H2/research/production promotion"
   }
 }
