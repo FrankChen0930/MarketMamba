@@ -2,6 +2,15 @@
 
 > Status: `CANONICAL_CURRENT_PROJECT_MAP`
 
+## Fair evaluation preparation — branch-local checkpoint
+
+Isolated `development/v7-fair-evaluation-decision` from integrated main closuref31fcbb.
+UNMERGED/NOT_DEPLOYED for new work only. Existing-contract read-only E1 metadata
+audit completed,5tests/independent5 PASS,0 Required; always execution_ready=false.
+Research decision package continues under scoped Human grant, all options PROPOSED.
+[Unique backlog](../../research/v7/research-program.md#fair-evaluation-preparation-window-04),
+[evidence](../../research/v7/fair-evaluation-preparation-evidence.json).
+
 ## Window02/03 integrated; fair evaluation preparation authorized
 
 LOCAL_DEVELOPMENT_INTEGRATED / NOT_DEPLOYED. Human approved fixedeba6b649;

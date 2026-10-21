@@ -129,3 +129,11 @@ payload validation, training or Colab launch. NOT_RUN_READY; original matrix BLO
 [unique completed queue](../../research/v7/research-program.md#data-evaluation-window-03).
 Main9956446 unchanged; branch `development/v7-data-evaluation-preparation` is
 UNMERGED/NOT_DEPLOYED. New bounded execution and formal research decisions need Human.
+
+## Window04 reusable metadata audit
+
+`V6.experimental.v7_e1_readiness` joins existing frozen contract/config and pinned
+completed-result metadata checks. Output VERIFIED_METADATA_ONLY never authorizes
+execution; matrix payload NOT_VERIFIED, checkpoint payload NOT_LOADED. It does not
+re-evaluate predictions or replace recovery evaluator provenance gates. See
+[window evidence](../../research/v7/fair-evaluation-preparation-evidence.json).

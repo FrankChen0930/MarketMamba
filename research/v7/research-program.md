@@ -9,15 +9,17 @@
 
 ### Fair evaluation preparation window 04
 
-AUTHORIZED_BOUNDED_PREPARATION; Window02/03 now integrated in local main at
+EXECUTING_BOUNDED_PREPARATION; Window02/03 now integrated in local main at
 exacteba6b649, with pre/post267 PASS. This containing docs commit records closure.
-New work must use an isolated branch; no new comparison or training approved.
+New work uses `development/v7-fair-evaluation-decision` from main closuref31fcbb;
+no new comparison or training approved. Readiness checkpoint in containing commit;
+[window evidence](fair-evaluation-preparation-evidence.json).
 
 | Unit | Objective/authority | Acceptance/status |
 |---|---|---|
 | W04-INT | Human fixed integration | COMPLETED;267pre/post, hashes, independent GO; no deploy |
 | W04-DECISION | Human Stage2/frozen E5/E1 evidence | READY: extend existing review into data-exposure ledger, interval requirements, symbolic fit counts/cost and Human options; all PROPOSED |
-| W04-READINESS | Human Stage3/existing contracts | READY: reproducible read-only integrity audit joining existing contract/config/result/checkpoint metadata checks; fail closed on drift; no evaluation or payload loading |
+| W04-READINESS | Human Stage3/existing contracts | COMPLETED_VERIFIED5tests/independent5: reproducible read-only integrity audit joining existing contract/config/result/checkpoint metadata checks; fail closed on drift; no evaluation or payload loading |
 
 Use existing Window03 report as foundation; do not repeat its research findings
 as new experiments. STOP after this package/readiness window. No E1 matrix search
