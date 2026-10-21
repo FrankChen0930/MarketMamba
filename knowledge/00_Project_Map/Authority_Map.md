@@ -16,6 +16,12 @@ authorized / stop after H0” instructions only for this window; completed H0 an
 all historical evidence stay intact. Strict Phase 0 STOP, E1 matrix BLOCKED,
 Human research/production decisions unchanged. No automatic future execution.
 
+AUTO-DATA: branch-local E1 split preparation rejects unmatched date/assignment
+counts; 14 focused / 29 E1 CPU tests PASS, independent review14 PASS. This does not
+alter frozen split, research result or admission. Charter commit `be7998d`;
+unit identity is its containing implementation commit. Evidence:
+[window index](../../research/v7/autonomous-window-01-evidence.json).
+
 ## Portfolio History H0 completed — 2026-10-21
 
 **LOCAL_DEVELOPMENT_INTEGRATED / NOT_DEPLOYED.** Human accepted the limited

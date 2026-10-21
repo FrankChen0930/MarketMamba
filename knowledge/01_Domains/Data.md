@@ -114,3 +114,11 @@ NOT_DEPLOYED. PORT-01–04 H1 fixture engineering is now COMPLETED_VERIFIED;
 Human Product Slice Review remains pending. See the
 [acceptance report](../../reports/v7_portfolio_history_acceptance.md). Strict Phase 0
 STOP, E1 portfolio admission=false and production boundaries remain unchanged.
+
+## E1 preparation integrity — autonomous window 2026-10-21
+
+Branch-local `development/v7-autonomous-charter` rejects unequal date/split
+iterables in `validate_split_rows`; every input row needs an assignment. Prior
+zip truncation could silently omit a tail. Frozen split/PIT/label/provenance
+semantics are unchanged. CPU synthetic evidence, UNMERGED / NOT_DEPLOYED;
+no matrix search, generation, formal-data edit or strict readiness promotion.

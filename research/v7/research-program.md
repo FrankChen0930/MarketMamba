@@ -9,7 +9,7 @@
 
 ### Autonomous charter window 01
 
-Status: `AUTHORIZED_DISCOVERY`; base `6d74d738`; isolated
+Status: `EXECUTING_BOUNDED_WINDOW`; base `6d74d738`; isolated
 `development/v7-autonomous-charter`, UNMERGED / NOT_DEPLOYED.
 [Charter](../../knowledge/GOVERNANCE.md#autonomous-development-charter--2026-10-21)
 and [Human grant](../../knowledge/02_History/Decisions/20261021-autonomous-charter.json)
@@ -20,7 +20,7 @@ sources; the following table owns current execution state. No duplicate queue.
 | ID / priority | Objective / authority | State; dependencies/resources | Acceptance / value / risk / duplication |
 |---|---|---|---|
 | AUTO-GOV / P0 | Reusable bounded autonomy; current Human grant | COMPLETED_VERIFIED; CPU/stdlib, no data/GPU | Charter, one backlog, map/register, independent review, governance checks; avoids repeated supervision; risk: accidental permission expansion; no existing window owns it |
-| AUTO-DATA / P1 | E1 split completeness; frozen E1 split + validate_split_rows | CANDIDATE; synthetic dates only, no GPU/new data | Reject unmatched row/split lengths rather than silently zip-truncate; preserve legal splits; protects preparation integrity; inspect RED before READY; no prior fix found in current source |
+| AUTO-DATA / P1 | E1 split completeness; frozen E1 split + validate_split_rows | COMPLETED_VERIFIED; synthetic dates only, no GPU/new data | Reject unmatched row/split lengths rather than silently zip-truncate; preserve legal splits; protects preparation integrity; RED confirmed before implementation; git history has no prior fix |
 | AUTO-RES / P2 | Prepare next decision from admitted diagnostics S7–S10 | READY; git-pinned JSON/code only; no matrix/checkpoints loaded | Evidence-linked options, leakage/fairness/dependency checklist; explicit proposal vs approval; reduce Human research decision effort; no new run/results; existing diagnosis retained, not recomputed |
 | AUTO-PORT / P2 | Portfolio H1 inspector follow-on | DEFERRED_NO_CONFIRMED_GAP; existing fixtures available | Engine/export/API/UI already completed H0; avoid repeated UX/test work; real signals/metrics need H2; no new policy authorized |
 | DATA-01 / P1 blocker | Original frozen matrix | BLOCKED; new exact location required | No new lead; do not repeat previous search, regenerate or deserialize |
@@ -433,3 +433,14 @@ Expected first MAS output:
 - compute/cost/risk estimate
 - missing evidence/questions
 - Human approval request
+
+### AUTO-DATA completion checkpoint — 2026-10-21
+
+Authority: frozen E1 split and existing per-row validation, Charter engineering.
+Before implementation: READY after RED confirmed silent omitted tails. One repair
+round (`zip(strict=True)`), no new split/label/PIT rule. RED: 6 tests, four failing
+subcases; GREEN focused14, E1 regression29 (includes existing one-step synthetic
+CPU smoke, not new research training). Independent reviewer reran14 PASS; zero
+Critical/Required. [Evidence](autonomous-window-01-evidence.json) retains raw output.
+Source/test identity: containing AUTO-DATA commit. Data note and both maps updated;
+frozen contracts/historical artifacts untouched. Remaining: original matrix BLOCKED.

@@ -103,7 +103,7 @@ def assign_split(value):
  return "out_of_contract"
 
 def validate_split_rows(dates,splits):
- pairs=list(zip((str(x)[:10] for x in dates),map(str,splits)))
+ pairs=list(zip((str(x)[:10] for x in dates),map(str,splits),strict=True))
  if not pairs: raise ValueError("E1 matrix has no rows")
  for day,seen in pairs:
   expected=assign_split(day)

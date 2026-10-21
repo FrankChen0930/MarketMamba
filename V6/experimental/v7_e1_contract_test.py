@@ -37,6 +37,23 @@ class E1ContractTest(unittest.TestCase):
    "2025-11-19":"purge","2025-12-31":"purge","2026-01-02":"research_evaluation",
    "2026-09-04":"research_evaluation","2026-09-05":"out_of_contract"}
   self.assertEqual({d:assign_split(d) for d in cases},cases)
+ def test_split_validation_requires_one_assignment_per_date(self):
+  for dates,splits in [(["2025-11-18", "2025-11-19"], ["train"]),
+                       (["2025-11-18"], ["train", "purge"]),
+                       ([], ["train"]), (["2025-11-18"], [])]:
+   for as_iterator in (False, True):
+    with self.subTest(dates=dates,splits=splits,iterator=as_iterator):
+     with self.assertRaises(ValueError):
+      validate_split_rows(iter(dates) if as_iterator else dates,
+                          iter(splits) if as_iterator else splits)
+ def test_split_validation_preserves_complete_iterable_boundaries(self):
+  dates=["2013-01-01","2013-01-02","2025-11-18","2025-11-19",
+         "2025-12-31","2026-01-02","2026-09-04","2026-09-05"]
+  splits=["warmup","train","train","purge","purge",
+          "research_evaluation","research_evaluation","out_of_contract"]
+  validate_split_rows(iter(dates),iter(splits))
+  with self.assertRaisesRegex(ValueError,"no rows"):
+   validate_split_rows(iter(()),iter(()))
  def test_split_validation_rejects_leakage(self):
   validate_split_rows(["2025-11-18","2025-11-19","2026-01-02"],
                       ["train","purge","research_evaluation"])

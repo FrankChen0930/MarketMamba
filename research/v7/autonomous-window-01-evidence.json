@@ -1,0 +1,65 @@
+{
+  "schema": "v7-autonomous-window-evidence-v1",
+  "base_commit": "6d74d7384caa5fa90b1b050ce507bfb8282f19df",
+  "branch": "development/v7-autonomous-charter",
+  "evidence_class": "CPU_SYNTHETIC_ENGINEERING_AND_RESEARCH_PREPARATION",
+  "status": "IN_PROGRESS",
+  "sources": [
+    {
+      "identity": "eec63c551270f271e26a5aca831fe5b3b38e3f42:research/v7/e1-rolling-origin-refresh-v1/results/result-manifest.json",
+      "sha256": "f4d63c74af623991814d301230f065818850829d69a176309bd7769c7b76a1a6",
+      "bytes": 1712
+    },
+    {
+      "identity": "ef020e5075f773605a5465982a2222afc013dac5:research/v7/e1-postrun-diagnostic-v1/diagnostic-summary.json",
+      "sha256": "6615742d6dfc80259e9f05055f3faae15f3e38d779542e8ac19ba465564a0a86",
+      "bytes": 1654
+    },
+    {
+      "identity": "11ae71d1a3ea7f68ed10d5623bc9d639689e4e8b:reports/v7_e1_evidence_recovery.md",
+      "sha256": "92fba44423cc0a241f733a3c83eefe9941473a4192bebceea896954ab0284541",
+      "bytes": 5332
+    },
+    {
+      "identity": "044eef73712d2189d4e0e28e3d44b352eed6b5e3:research/v7/e1-rolling-origin-refresh-v1/experiment-contract.json",
+      "sha256": "7a59d98744ac736e915ff5f6e0e8fead2f80f5ce7f8283b467ec0464bffe8d4c",
+      "bytes": 3027
+    }
+  ],
+  "research_preparation_checks": {
+    "source_count": 4,
+    "json_count": 3,
+    "assertions": "PASS: counts, paired sum, seeds, admission, contract binding, July fractions, inconclusive claims, STOP",
+    "payloads_loaded": false
+  },
+  "split_validation": {
+    "red": "test_contract_freezes_model_training_data_and_scope (V6.experimental.v7_e1_contract_test.E1ContractTest.test_contract_freezes_model_training_data_and_scope) ... ok\ntest_diff_and_boundaries (V6.experimental.v7_e1_contract_test.E1ContractTest.test_diff_and_boundaries) ... ok\ntest_drift_fails_closed (V6.experimental.v7_e1_contract_test.E1ContractTest.test_drift_fails_closed) ... ok\ntest_split_validation_preserves_complete_iterable_boundaries (V6.experimental.v7_e1_contract_test.E1ContractTest.test_split_validation_preserves_complete_iterable_boundaries) ... ok\ntest_split_validation_rejects_leakage (V6.experimental.v7_e1_contract_test.E1ContractTest.test_split_validation_rejects_leakage) ... ok\ntest_split_validation_requires_one_assignment_per_date (V6.experimental.v7_e1_contract_test.E1ContractTest.test_split_validation_requires_one_assignment_per_date) ... \n  test_split_validation_requires_one_assignment_per_date (V6.experimental.v7_e1_contract_test.E1ContractTest.test_split_validation_requires_one_assignment_per_date) (dates=['2025-11-18', '2025-11-19'], splits=['train'], iterator=False) ... FAIL\n  test_split_validation_requires_one_assignment_per_date (V6.experimental.v7_e1_contract_test.E1ContractTest.test_split_validation_requires_one_assignment_per_date) (dates=['2025-11-18', '2025-11-19'], splits=['train'], iterator=True) ... FAIL\n  test_split_validation_requires_one_assignment_per_date (V6.experimental.v7_e1_contract_test.E1ContractTest.test_split_validation_requires_one_assignment_per_date) (dates=['2025-11-18'], splits=['train', 'purge'], iterator=False) ... FAIL\n  test_split_validation_requires_one_assignment_per_date (V6.experimental.v7_e1_contract_test.E1ContractTest.test_split_validation_requires_one_assignment_per_date) (dates=['2025-11-18'], splits=['train', 'purge'], iterator=True) ... FAIL\n\n======================================================================\nFAIL: test_split_validation_requires_one_assignment_per_date (V6.experimental.v7_e1_contract_test.E1ContractTest.test_split_validation_requires_one_assignment_per_date) (dates=['2025-11-18', '2025-11-19'], splits=['train'], iterator=False)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_e1_contract_test.py\", line 46, in test_split_validation_requires_one_assignment_per_date\n    with self.assertRaises(ValueError):\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_split_validation_requires_one_assignment_per_date (V6.experimental.v7_e1_contract_test.E1ContractTest.test_split_validation_requires_one_assignment_per_date) (dates=['2025-11-18', '2025-11-19'], splits=['train'], iterator=True)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_e1_contract_test.py\", line 46, in test_split_validation_requires_one_assignment_per_date\n    with self.assertRaises(ValueError):\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_split_validation_requires_one_assignment_per_date (V6.experimental.v7_e1_contract_test.E1ContractTest.test_split_validation_requires_one_assignment_per_date) (dates=['2025-11-18'], splits=['train', 'purge'], iterator=False)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_e1_contract_test.py\", line 46, in test_split_validation_requires_one_assignment_per_date\n    with self.assertRaises(ValueError):\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_split_validation_requires_one_assignment_per_date (V6.experimental.v7_e1_contract_test.E1ContractTest.test_split_validation_requires_one_assignment_per_date) (dates=['2025-11-18'], splits=['train', 'purge'], iterator=True)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter/V6/experimental/v7_e1_contract_test.py\", line 46, in test_split_validation_requires_one_assignment_per_date\n    with self.assertRaises(ValueError):\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 6 tests in 0.005s\n\nFAILED (failures=4)\n",
+    "green": "test_contract_freezes_model_training_data_and_scope (V6.experimental.v7_e1_contract_test.E1ContractTest.test_contract_freezes_model_training_data_and_scope) ... ok\ntest_diff_and_boundaries (V6.experimental.v7_e1_contract_test.E1ContractTest.test_diff_and_boundaries) ... ok\ntest_drift_fails_closed (V6.experimental.v7_e1_contract_test.E1ContractTest.test_drift_fails_closed) ... ok\ntest_split_validation_preserves_complete_iterable_boundaries (V6.experimental.v7_e1_contract_test.E1ContractTest.test_split_validation_preserves_complete_iterable_boundaries) ... ok\ntest_split_validation_rejects_leakage (V6.experimental.v7_e1_contract_test.E1ContractTest.test_split_validation_rejects_leakage) ... ok\ntest_split_validation_requires_one_assignment_per_date (V6.experimental.v7_e1_contract_test.E1ContractTest.test_split_validation_requires_one_assignment_per_date) ... ok\ntest_arrays_use_e1_boundaries (V6.experimental.v7_e1_matrix_test.E1MatrixTest.test_arrays_use_e1_boundaries) ... ok\ntest_manifest_isolated_and_tamper_evident (V6.experimental.v7_e1_matrix_test.E1MatrixTest.test_manifest_isolated_and_tamper_evident) ... ok\ntest_v2_label_gate_is_exact (V6.experimental.v7_e1_matrix_test.E1MatrixTest.test_v2_label_gate_is_exact) ... ok\ntest_write_rejects_old_namespace (V6.experimental.v7_e1_matrix_test.E1MatrixTest.test_write_rejects_old_namespace) ... ok\ntest_bootstrap_is_deterministic (V6.experimental.v7_e1_evaluate_test.E1EvaluateTest.test_bootstrap_is_deterministic) ... ok\ntest_frozen_decision_vocabulary (V6.experimental.v7_e1_evaluate_test.E1EvaluateTest.test_frozen_decision_vocabulary) ... ok\ntest_pairing_is_exact_shared_support (V6.experimental.v7_e1_evaluate_test.E1EvaluateTest.test_pairing_is_exact_shared_support) ... ok\ntest_rank_ensemble_and_metrics (V6.experimental.v7_e1_evaluate_test.E1EvaluateTest.test_rank_ensemble_and_metrics) ... ok\n\n----------------------------------------------------------------------\nRan 14 tests in 1.318s\n\nOK\n",
+    "repair_rounds": 1,
+    "regression": "{\"time\": \"2026-10-21T09:19:25.971478+00:00\", \"event\": \"resume_scan\", \"seed\": 17, \"status\": \"FRESH\"}\n{\"time\": \"2026-10-21T09:19:25.987269+00:00\", \"event\": \"seed_started\", \"seed\": 17}\n{\"time\": \"2026-10-21T09:19:28.059904+00:00\", \"event\": \"seed_finished\", \"seed\": 17, \"status\": \"smoke_complete\", \"total_seconds\": 2.0713660320000145, \"steps\": 1}\n\n----------------------------------------------------------------------\nRan 29 tests in 3.654s\n\nOK\n",
+    "status": "COMPLETED_VERIFIED"
+  },
+  "review": {
+    "reviewer": "/root/independent_review",
+    "critical": 0,
+    "required": 0,
+    "charter": "PASS; boundary review",
+    "split": "PASS; independently reran14 in0.939s",
+    "research_preparation": "PASS; independently verified4/4 source bytes and SHA256"
+  },
+  "runtime": {
+    "python": "3.12.3",
+    "test_executable": "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+    "CUDA_VISIBLE_DEVICES": "",
+    "MARKETMAMBA_DATA_ROOT": "UNSET",
+    "candidate_Data": "ABSENT",
+    "formal_data_read": false,
+    "network_requests": 0,
+    "training": "No new research/model training; existing unittest suite includes one-step synthetic CPU smoke"
+  },
+  "charter_commit": "be7998d",
+  "source_files": {
+    "V6/experimental/v7_e1_contract.py": "403cc084260f6ca7a13b41634f2d20b42f254242c5f3a93027d3decc7103c71e",
+    "V6/experimental/v7_e1_contract_test.py": "30c18bde26408bf81969a55531c6617bb0a5c708ac43b116f996eb01142f0816"
+  }
+}
