@@ -1,10 +1,11 @@
 """Exact-support E1 signal evaluation and frozen acceptance decision."""
 from __future__ import annotations
-import argparse,json
+import argparse,json,math
+from numbers import Real
 from pathlib import Path
 import numpy as np
 import pandas as pd
-from V6.experimental.v7_e1_contract import ACCEPTANCE
+from V6.experimental.v7_e1_contract import ACCEPTANCE, SEEDS
 
 KEYS=["Date","stock_id"]
 def _rank_ic(group,pred,label):
@@ -88,6 +89,18 @@ def block_bootstrap_lower(values,block=20,repeats=2000,seed=20260919):
   means.append(float(np.mean(sampled[:n])))
  return float(np.quantile(means,.025))
 def decide(seed_summaries,ensemble_summary,paired_daily,bootstrap_repeats=2000):
+ # Frozen acceptance requires both formal seeds, including JSON round trips.
+ if (not isinstance(seed_summaries,dict) or len(seed_summaries)!=len(SEEDS)
+     or {str(seed) for seed in seed_summaries}!={str(seed) for seed in SEEDS}):
+  raise ValueError("acceptance requires exactly the frozen seeds")
+ seed_fields=[f"mean_rank_ic_{h}d" for h in (5,10)]
+ ensemble_fields=seed_fields+[f"mean_d10_minus_d1_{h}d" for h in (5,10)]
+ for summary,fields in [(s,seed_fields) for s in seed_summaries.values()]+[(ensemble_summary,ensemble_fields)]:
+  if not isinstance(summary,dict): raise ValueError("invalid acceptance summary")
+  for field in fields:
+   value=summary.get(field)
+   if isinstance(value,bool) or not isinstance(value,Real) or not math.isfinite(value):
+    raise ValueError(f"acceptance requires finite numeric {field}")
  lower5=block_bootstrap_lower(paired_daily["delta_ic_5d"],repeats=bootstrap_repeats)
  lower10=block_bootstrap_lower(paired_daily["delta_ic_10d"],repeats=bootstrap_repeats)
  checks={

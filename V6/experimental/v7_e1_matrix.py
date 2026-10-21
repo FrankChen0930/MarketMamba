@@ -1,7 +1,7 @@
 """E1 matrix identity and isolated materialization helpers."""
 import argparse
 from dataclasses import replace
-import json,os
+import json,os,re
 from pathlib import Path
 import numpy as np
 from V6.experimental.v7_corrected_e5_matrix import (
@@ -58,14 +58,25 @@ def make_manifest(contract,config,arrays,files,source_hashes,build_mode="full_me
  value["logical_identity"]=canonical_hash(value); validate_manifest(value,contract,config)
  return value
 def validate_manifest(value,contract,config):
+ validate_contract(contract)
+ if not isinstance(value,dict): raise ValueError("E1 matrix manifest must be an object")
+ is_sha=lambda item:isinstance(item,str) and re.fullmatch(r"[0-9a-f]{64}",item) is not None
+ def hashes_match(mapping,keys):
+  return isinstance(mapping,dict) and set(mapping)==set(keys) and all(is_sha(x) for x in mapping.values())
  checks={"schema":value.get("schema_version")==SCHEMA,
+  "files":hashes_match(value.get("files"),MATRIX_ARRAYS),
+  "sources":hashes_match(value.get("source_hashes"),REQUIRED_SOURCE_HASHES),
+  "rows":type(value.get("rows")) is int and value["rows"]>=0,
+  "features":value.get("feature_order")==list(config.feature_order),
+  "labels":value.get("label_contract")=={"evidence_class":"HISTORICAL_SIMULATION_PROXY",
+   "proxy_policy":"P0","source_version":"v2","horizons":[5,10]},
   "namespace":value.get("namespace")==MATRIX_NAMESPACE,
   "contract":value.get("contract_sha256")==contract["contract_sha256"],
   "config":value.get("config_sha256")==config.sha256,
   "split":value.get("split_contract")==SPLIT,
   "ordering":value.get("ordering")==["Date","stock_id"],
-  "graph":value.get("graph",{}).get("enabled") is False,
-  "industry":value.get("preprocessing",{}).get("industry_neutralization") is False,
+  "graph":value.get("graph")=={"enabled":False,"edge_count":0,"fusion_branch":"ABSENT"},
+  "preprocessing":value.get("preprocessing")==contract["frozen"]["preprocessing"],
   "identity":value.get("logical_identity")==canonical_hash(
    {k:v for k,v in value.items() if k!="logical_identity"})}
  errors=[k for k,v in checks.items() if not v]

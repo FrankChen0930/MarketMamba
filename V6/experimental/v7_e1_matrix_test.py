@@ -1,4 +1,5 @@
 import tempfile,unittest
+import copy
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -26,6 +27,22 @@ class E1MatrixTest(unittest.TestCase):
   doc=make_manifest(c,cfg,arrays,files,sources); self.assertEqual(doc["namespace"],MATRIX_NAMESPACE)
   bad=dict(doc); bad["split_contract"]=dict(SPLIT,train_end="2025-11-19")
   with self.assertRaises(ValueError): validate_manifest(bad,c,cfg)
+ def test_rehashed_manifest_cannot_change_frozen_metadata(self):
+  c=built();cfg=e1_config(config())
+  original=make_manifest(c,cfg,{"dates":np.array(["2026-01-02"],dtype="datetime64[D]")},
+   {name:"a"*64 for name in MATRIX_ARRAYS},{name:"b"*64 for name in REQUIRED_SOURCE_HASHES})
+  mutations=[lambda d:d.update(feature_order=list(reversed(d["feature_order"]))),
+   lambda d:d.update(files={}),lambda d:d["files"].update({"X.npy":"bad"}),
+   lambda d:d.update(source_hashes={}),lambda d:d["source_hashes"].update(features="bad"),
+   lambda d:d.update(rows=True),lambda d:d.update(rows=-1),
+   lambda d:d["label_contract"].update(source_version="v1"),
+   lambda d:d["preprocessing"].update(current_industry_backfill=True),
+   lambda d:d["graph"].update(edge_count=1)]
+  for mutate in mutations:
+   d=copy.deepcopy(original);mutate(d)
+   d["logical_identity"]=canonical_hash({k:v for k,v in d.items() if k!="logical_identity"})
+   with self.subTest(mutation=mutate),self.assertRaises(ValueError):validate_manifest(d,c,cfg)
+  validate_manifest(original,c,cfg)
  def test_v2_label_gate_is_exact(self):
   source={"classes":{"EXCHANGE_REGULAR_BOARD_VERIFIED":{"eligible":True},
                      "EXCHANGE_DERIVED_BUT_SEMANTICS_CLEAR":{"eligible":True}}}

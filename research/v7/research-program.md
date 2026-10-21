@@ -1,38 +1,64 @@
 # V7 Research Program and Current Development Backlog
 
-> Current planning owner: pinned Window02 branch below; this main file is navigation, linked by canonical
+> Current planning owner: this file's dated section below, linked by canonical
 > Current State/Authority Map. Planning status does not grant research, execution,
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
 
 ## Current development program — 2026-10-21
 
+### Data evaluation window 03
+
+ACTIVE_BOUNDED; Human approved deterministic parser engineering and research
+preparation, not main merge, training or policy changes. Candidate branch
+`development/v7-data-evaluation-preparation` from main9956446 plus Window02f34f9f3.
+This queue supersedes Window02's next-decision status for the newly authorized scope.
+
+| Unit | Priority / authority | Acceptance / resources / status |
+|---|---|---|
+| W03-INT | P0 Human Stage1 | Both fixed parents, four source units unchanged,259 joint non-training regressions,source hashes/governance/independent review; GO_ISOLATED_ONLY, containing merge commit |
+| W03-PARSER | P1 Human Stage2/existing fetcher contracts | RED then legal input compatibility and wrong date/header fail-closed; mock only; READY. All existing worktrees examined, W02 diagnostic only, no duplicate fix |
+| W03-FAIR | P1 Human Stage3/frozen E5/E1 contracts | Trace split/selection/final support, evidence limits, compare temporal holdout/walk-forward/nested designs; proposals only; READY |
+| W03-PREP | P2 Human Stage4 | Assess existing identity/evidence tools; implement only a demonstrated contract gap with CPU acceptance, otherwise document reuse/dependencies; DISCOVERY |
+| W03-MOPS | P1 existing monthly/quarterly parser contract | Offline completeness controls; monthly all-market acceptance policy remains HUMAN_DECISION_REQUIRED, no invented rule |
+
+At most two evidence-backed repair rounds per engineering unit. Data fixtures only;
+no formal data, source fetch, historical matrix regeneration or training. Record
+unit evidence in data-evaluation-window03-evidence.json; STOP on bounded closure.
+
 ### Cross-domain window 02
 
-## Window02 closed — pinned continuation pointer
+Status: WINDOW_COMPLETE / STOP_AFTER_WINDOW / UNMERGED / NOT_DEPLOYED. StageA main6d74d738→f7af348 ff-only,
+then docs closure `c1179fe`; pre/post254 PASS, independent0 Required/Critical.
+[Decision](../../knowledge/02_History/Decisions/20261021-charter-integration-window02.json),
+[integration evidence](charter-integration-20261021.json). New isolated branch
+`development/v7-cross-domain-window-02` from exactc1179fe. UNMERGED / NOT_DEPLOYED.
 
-Charter is integrated in local main; Window02 is completed on
-`development/v7-cross-domain-window-02@f34f9f32a86a0ee97a8dcdb74faad996bf5f5b4e`,
-base `c1179fe1ee8b66c768391b5f22f8aaebfc42d646`.
-Worktree: `/home/frank/projects/MarketMamba/.worktrees/v7-cross-domain-window-02`.
-**WINDOW_COMPLETE / STOP / UNMERGED / NOT_DEPLOYED** for Window02 implementation.
-This main commit changes navigation only, not Window02 code or research authority.
+| ID / priority | Objective / authority | State / resource & Human dependencies | Acceptance / value / risk / duplicate check |
+|---|---|---|---|
+| W02-DATA / P1 | TWSE/TPEx/MOPS reliability diagnosis; Data provenance boundary + current Human direction | COMPLETED_VERIFIED diagnostic only; offline provider fixtures, CPU; production fixes HUMAN_DECISION_REQUIRED | Pin actual parser AST/source, contrast valid/mismatched dates/schema/missing-market cases; report exact expected vs observed; no network/production import side effects. Makes source risk actionable; no certification or new pipeline. Existing validation scripts require operational data/network; reuse code semantics without invoking them |
+| W02-PREP / P1 | E1 frozen contract/matrix metadata integrity before training; existing frozen experiment+Training identity contract | COMPLETED_VERIFIED; 34 non-training tests PASS, independent14 PASS; metadata only | Reject hash/semantic/feature-order/file-set drift even if self-rehashed; valid frozen contract/manifest unchanged. Prevent expensive run against wrong identities; no new experiment. All-branch history inspected: no equivalent fix |
+| W02-EVAL / P1 | Frozen two-seed decision completeness; SEEDS/ACCEPTANCE contract | COMPLETED_VERIFIED; 6 tests PASS + independent6; synthetic summaries only | Missing/wrong seeds or nonfinite gate inputs cannot PASS; preserve legal decision vocabulary/thresholds. Prevent vacuous apparent research success; no historical recalculation. Existing evaluator lacks seed-set validation |
+| W02-MODEL / P2 | E5/E1 architecture/ablation/evaluation fairness audit; research objective + Human prep grant | COMPLETED_VERIFIED research preparation; 11 pinned sources reviewed | Distinguish trained ablation vs occlusion vs proposal; trace selection/evaluation support and test reuse; explicit PROPOSED choices, source hashes, no inferred research approval; adds code-level trace beyond Window01 decision summary |
+| W02-DATA-FIX / P1 | TWSE date binding / TPEx header-index drift | HUMAN_DECISION_REQUIRED for production edits | Proven7-case probe; no historical data correction authorized; pin source and fix original parser only after scoped production approval |
+| W02-MOPS-POLICY / P2 | Monthly market completeness and publication provenance | HUMAN_DECISION_REQUIRED | Existing quarterly all-market guard is not automatically monthly policy; do not usecache Date as PIT |
+| W02-PORT / P3 | Portfolio/Operations reliability | DEFERRED; existing H0/PhaseA complete | No demonstrated higher-value gap than first3 domains; avoid repeating UX/low-impact bug work |
+| DATA-01 | Frozen E1 matrix | BLOCKED | No new location; no repeated search or generated substitute |
+| RANK-01/METRIC-01/RES-02/TRAIN-01 | Ranking/economic/new research | HUMAN_DECISION_REQUIRED | H2, strict correctness, frozen new design/compute; preparation does not admit execution |
 
-The unique latest backlog is that pinned commit's `research/v7/research-program.md`
-Cross-domain window02 section; evidence is `research/v7/cross-domain-window02-evidence.json`,
-report `reports/v7_cross_domain_window02.md`. Do not use this main checkout's older
-AUTHORIZED_DISCOVERY text below as renewed execution authority. Four units:
-DATA371d55d, PREPe17fcf0, EVAL164dbc1, MODELf34f9f3. Final259 CPU tests PASS;
-independent reviews0 Critical/Required after one closure-wording repair. No additional
-high-value READY item demonstrated in current scan. P1 production source fixes and
-new comparison designs require Human scope/approval; original E1 matrix BLOCKED.
-Strict Phase0 STOP. No training, production edit, network, push/deploy or MAS.
+Limits: four selected units maximum for this window;2 evidence-backed repair
+rounds each. No model training, including tiny smoke; no GPU probes, formal data
+or weights loaded. NETWORK=0. Existing recovery venv Python3.12.3, CUDA hidden,
+MARKETMAMBA_DATA_ROOT unset; candidate Data absent. Main data symlink to Windows
+remains untouched. Only temporary synthetic fixtures. Commit evidence and update
+this single queue per unit. STOP after these units or unresolved authorization.
 
-Resume: cd the named worktree; verify branch/HEAD/clean status, then read its
-Current_State.md, Authority_Map.md, the pinned program and evidence. New bounded
-execution requires Human grant. This pointer supersedes earlier next-window
-instructions; the existing Charter remains reusable. No second backlog is created.
-
+Resume: this window is CLOSED. Verify branch/base/status and read this section,
+Charter and existing window02 evidence. No unit may continue under this closed grant;
+a new bounded Human grant is required. See final checkpoint below for commits
+371d55d/e17fcf0/164dbc1 and MODEL containing closure commit, pinned by main navigation.
+Other17 checkouts retain their purposes; fixed Charter staysf7af348. No main merge
+of window02 implementation.
 
 ### Autonomous charter window 01
 
@@ -527,3 +553,54 @@ manifest publication. RED19 failures7/errors6; GREEN19, full PIT49; independent1
 PASS, no Critical/Required. One repair round; valid six-case payload bytes match
 base6d74d738. Frozen data/PIT authority unchanged. All five units complete; STOP.
 Identity: containing snapshot/window closure commit, preserved in branch history.
+
+### W02-DATA checkpoint
+
+Completed7-case synthetic provider diagnosis, independent7-case rerun/source/probe
+hash PASS,0 Required/Critical,0 repair rounds. Existing fetcher unchanged. Source,
+numerical observations and limitations in [window evidence](cross-domain-window02-evidence.json)
+and [report](../../reports/v7_cross_domain_window02.md). Identity: containing data
+unit commit. Production date/schema corrections and monthly completeness remain
+Human decisions; no network/official-data inference. Continue W02-PREP/EVAL/MODEL.
+
+### W02-PREP checkpoint
+
+Containing commit pins the already approved contract digest and validates matrix
+metadata field identities/types, including self-rehashed drift. RED13 tests with25
+failures → GREEN34 non-training tests; independent14 PASS,0 Required;1 repair round.
+No actual arrays inspected or rebuilt; frozen matrix remains BLOCKED. Contract and
+ACCEPTANCE unchanged. Recovery evaluator byte/provenance checks at de2b62e are
+separate branch-local work, not duplicated or silently adopted here.
+Continue W02-EVAL then W02-MODEL; see window02 evidence/report.
+
+### W02-EVAL checkpoint
+
+Containing commit rejects incomplete/noncanonical seed sets and missing/nonfinite/
+boolean aggregate acceptance values. RED6 tests:29 failures/13 errors; GREEN6 PASS;
+independent6 PASS,0 Required;1 repair round. Thresholds/bootstrap/outcomes unchanged.
+No historical result recalculation; recovery branch de2b62e has the same original
+`decide` gap but separate stronger support/provenance implementation. Continue only
+W02-MODEL and final bounded-window validation; do not reopen original matrix search.
+
+### Window02 final checkpoint — STOP
+
+Four units completed: DATA371d55d (0 repair rounds), PREPe17fcf0 (1),
+EVAL164dbc1 (1), MODEL in containing closure commit (1 documentation-only closure repair). Independent reviews:
+0 Critical/Required each. Final259 tests PASS: PIT49/E1 non-training36/
+Portfolio67/Operations81/fetch+governance26. Final model review verified11/11
+source identities and claim trace. No training, matrix search, production edit,
+network access, or research approval. New proposals stay PROPOSED.
+
+No additional demonstrated high-value READY work remains from this cross-domain
+scan under the current boundaries. P1 W02-DATA-FIX and research comparison design
+need Human scope/specification; DATA-01 stays BLOCKED without original matrix;
+P2 MOPS policy/new ablation/walk-forward require Human decisions. Do not invent
+work to fill a fifth slot. Next execution window needs a new bounded Human grant.
+
+Minimal recovery: cd `.worktrees/v7-cross-domain-window-02` from WSL root; verify
+`git status --short --branch`, HEAD and worktrees; read Current_State, Authority_Map,
+this dated queue and cross-domain-window02-evidence.json. Expected branch is
+`development/v7-cross-domain-window-02`, basec1179fe, four completed units,
+STOP/UNMERGED/NOT_DEPLOYED. Read model report only for selected follow-up design.
+Do not rerun historical discovery or E1 matrix search. Main navigation will pin
+this closure commit; no window02 implementation merge is authorized here.

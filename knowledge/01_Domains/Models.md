@@ -75,3 +75,14 @@ The corrected two-head diagnostic found near-redundant ensemble outputs in 2026 
 Update after a frozen contract revision, successful formal experiment, ensemble-membership change, or promotion decision.
 
 **2026-09-22 source integration:** Corrected E5/E1 reusable research modules and selected frozen contract copies are now in development main; see `research/v7/source-adoption-register-20260922.json`. Run results, bundles, postrun diagnostics and operational/deployment authority remain separate. No model training or production promotion occurred in Phase 3B-2.
+
+## Window02 research preparation — 2026-10-21
+
+Source-level audit confirms shared trainer reuses split_code2 evaluation for
+checkpoint selection and final evaluation; this is research-used historical
+support, not untouched holdout certification. This does not revoke admitted
+results or quantify historical selection bias. Occlusion is not retrained ablation.
+[Window02 report](../../reports/v7_cross_domain_window02.md) records11 pinned source
+identities and PROPOSED comparison-design options; Human approval remains required.
+[Unique backlog](../../research/v7/research-program.md#cross-domain-window-02)
+is WINDOW_COMPLETE/STOP. Strict Phase0 STOP; E1 matrix BLOCKED; no new search.

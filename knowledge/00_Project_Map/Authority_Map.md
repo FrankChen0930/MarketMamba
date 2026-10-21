@@ -5,29 +5,35 @@
 > Semantic change owner must update this map in the same change.
 > Prior research/Phase A map accepted `2026-09-20`; 2026-09-22 runtime additions are agent-observed, pending separate human review. Canonical means current navigation authority, not immutable final state.
 
-## Window02 closed — pinned continuation pointer
+## Data reliability / evaluation preparation window03 — 2026-10-21
 
-Charter is integrated in local main; Window02 is completed on
-`development/v7-cross-domain-window-02@f34f9f32a86a0ee97a8dcdb74faad996bf5f5b4e`,
-base `c1179fe1ee8b66c768391b5f22f8aaebfc42d646`.
-Worktree: `/home/frank/projects/MarketMamba/.worktrees/v7-cross-domain-window-02`.
-**WINDOW_COMPLETE / STOP / UNMERGED / NOT_DEPLOYED** for Window02 implementation.
-This main commit changes navigation only, not Window02 code or research authority.
+ACTIVE_BOUNDED / UNMERGED / NOT_DEPLOYED. Current Human grant supersedes the
+Window02 STOP solely for this separate window. Main remains9956446; candidate
+`development/v7-data-evaluation-preparation` joins main and fixed Window02f34f9f3
+in isolation. Five navigation conflicts retain Window02 content, with this new
+checkpoint taking precedence; main's previous pointer remains in parent history.
+[Decision](../02_History/Decisions/20261021-data-evaluation-window03.json),
+[unique backlog](../../research/v7/research-program.md#data-evaluation-window-03),
+[evidence](../../research/v7/data-evaluation-window03-evidence.json).
+No main merge authorized. Strict Phase0 STOP/E1 matrix BLOCKED unchanged.
 
-The unique latest backlog is that pinned commit's `research/v7/research-program.md`
-Cross-domain window02 section; evidence is `research/v7/cross-domain-window02-evidence.json`,
-report `reports/v7_cross_domain_window02.md`. Do not use this main checkout's older
-AUTHORIZED_DISCOVERY text below as renewed execution authority. Four units:
-DATA371d55d, PREPe17fcf0, EVAL164dbc1, MODELf34f9f3. Final259 CPU tests PASS;
-independent reviews0 Critical/Required after one closure-wording repair. No additional
-high-value READY item demonstrated in current scan. P1 production source fixes and
-new comparison designs require Human scope/approval; original E1 matrix BLOCKED.
-Strict Phase0 STOP. No training, production edit, network, push/deploy or MAS.
+## Cross-domain window02 final checkpoint — STOP
 
-Resume: cd the named worktree; verify branch/HEAD/clean status, then read its
-Current_State.md, Authority_Map.md, the pinned program and evidence. New bounded
-execution requires Human grant. This pointer supersedes earlier next-window
-instructions; the existing Charter remains reusable. No second backlog is created.
+Isolated `development/v7-cross-domain-window-02` from main closurec1179fe,
+UNMERGED/NOT_DEPLOYED. W02-DATA/PREP/EVAL/MODEL completed; this bounded Human grant is exhausted;
+[unique backlog](../../research/v7/research-program.md#cross-domain-window-02)
+owns acceptance and state. No production parser edits or training permitted.
+W02-DATA completed7-case offline diagnostic with independent review0 Required;
+TWSE/TPEx source fixes and MOPS policy are now explicit Human decision items.
+W02-PREP completed frozen contract/matrix metadata guards;34 tests and independent14
+PASS. Metadata-only, no training readiness/admission; original matrix remains BLOCKED.
+W02-EVAL rejects missing seeds/nonfinite gate values;6 tests + independent6 PASS.
+Acceptance thresholds unchanged; historical evidence not recomputed.
+W02-MODEL completed source-level selection/evaluation reuse audit;11 pinned sources
+independently verified. New research choices remain PROPOSED/Human-only.
+Final259 tests PASS, four independent reviews0 Critical/Required. No additional
+high-value READY item demonstrated; see queue for P1/P2 decisions and recovery.
+[Evidence](../../research/v7/cross-domain-window02-evidence.json).
 
 ## Charter integrated and window 02 authorized — 2026-10-21
 

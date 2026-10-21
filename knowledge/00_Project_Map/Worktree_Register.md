@@ -261,13 +261,25 @@ explicit Human ff-only grant; its worktree/HEAD remain untouched and clean.
 All17 existing trees retained. New cross-domain window has separate authorization;
 its checkout must start from verified main and be registered before execution.
 
-## Window02 preserved checkpoint — 2026-10-21
+## Cross-domain window02 — 2026-10-21
 
-Purpose: four bounded cross-domain CPU units. Owner Codex/current Human grant;
-created2026-10-21, retiredN/A. Branch `development/v7-cross-domain-window-02`,
-path `.worktrees/v7-cross-domain-window-02`, basec1179fe, HEAD`f34f9f32a86a0ee97a8dcdb74faad996bf5f5b4e`.
-WINDOW_COMPLETE_STOP / UNMERGED / NOT_DEPLOYED. Authority: scoped Human direction,
-no research/production admission. Dependencies: preserved commits, existing recovery
-venv (read-only), no formal-data mount. Main only records this pointer. Keep all18
-trees; removal requires clean preserved commits, no unique artifacts/path consumers,
+Path `.worktrees/v7-cross-domain-window-02`; branch `development/v7-cross-domain-window-02`;
+base `c1179fe1ee8b66c768391b5f22f8aaebfc42d646`; owner Codex / current Human window02.
+Created2026-10-21, retiredN/A; WINDOW_COMPLETE_STOP, UNMERGED/NOT_DEPLOYED. Purpose: four selected
+cross-domain CPU units, not the fixed Charter integration. Existing17 trees serve
+completed/historical work and cannot be repurposed without moving fixed evidence.
+Authority: current Human decision; no research/production authority. Dependencies:
+main closure, existing recovery venv read-only, temp fixtures; no data mount.
+Safe removal requires clean preserved commits, no unique artifacts/path consumers,
 resolved integration dependencies and separate retirement approval. No removal now.
+
+## Window03 isolated candidate — 2026-10-21
+
+Path `.worktrees/v7-data-evaluation-preparation`; branch
+`development/v7-data-evaluation-preparation`; base9956446, integrates fixedf34f9f3
+only within candidate. Owner Codex/current Human grant. Created2026-10-21;
+retiredN/A; ACTIVE/UNMERGED/NOT_DEPLOYED. Purpose: integration readiness, deterministic
+parser fixes and fairness preparation; other18trees retained with original purposes.
+Dependencies: fixed parent commits, existing recovery venv read-only; no data mount.
+Authority scoped engineering only. Safe removal requires clean preserved commits,
+no unique artifacts/path consumers and explicit retirement; no removal authorized.

@@ -108,3 +108,12 @@ at exactf7af348 (supersedes its branch-local status only). Pre/post CPU regressi
 and authority checks are in [integration evidence](../../research/v7/charter-integration-20261021.json).
 A separate Human-authorized cross-domain CPU window may proceed in isolation;
 research contracts, formal data, production and StrictSTOP boundaries are unchanged.
+
+## Window02 metadata guard — branch-local
+
+`development/v7-cross-domain-window-02` (UNMERGED/NOT_DEPLOYED) pins the existing
+E1 frozen contract and rejects matrix metadata drift, including self-rehashed
+changes. This does not verify array bytes or certify training readiness. Existing
+recovery evaluator byte/provenance work remains branch-qualified. See
+[window02 evidence](../../research/v7/cross-domain-window02-evidence.json) and
+[unique backlog](../../research/v7/research-program.md#cross-domain-window-02).
