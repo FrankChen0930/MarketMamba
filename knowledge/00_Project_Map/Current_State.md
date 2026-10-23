@@ -2,6 +2,29 @@
 
 > Status: `CANONICAL_CURRENT_PROJECT_MAP`
 
+## Window09 Durable Artifacts & Offline Replay — bounded engineering
+
+Window08 fixed `bdea30d877fa2c5d02308f343fa5591a35616aec` LOCAL_INTEGRATED /
+NOT_DEPLOYED, ff-only from `1631020bce8223ac4337c7e97473a2a3d9a555f0`.
+Pre/post101CPUtests PASS;19hashes/24cases reverified; independent34tests GO,
+Critical0/Required0. Main remains bdea30d; no extra main closure commit.
+Older Window08 UNMERGED/STOP entries are historical, superseded for this integration only.
+
+Window09 isolated `development/v7-window09-artifact-replay`, base bdea30d, path
+`.worktrees/v7-window09-artifact-replay`. UNMERGED / NOT_DEPLOYED. Human authorizes
+only two CPU/SYNTHETIC units, <=2evidence-based rework/unit, then STOP.
+U1 COMPLETE_REVIEWED:18focused/independent18PASS;1rework corrected traversal,
+metadata symlink and JSON exponent overflow. Immutable bundle profiles, required
+artifacts, staging+diagnostics, fsync/flock/rename, idempotence and verified external
+bytes references implemented. U2 offline replay/restore remains next authorized unit.
+No tracking platform, retention/GC policy or training/research admission added.
+
+StrictSTOP/E1matrixBLOCKED/H2NOT_APPROVED/FairEvaluationPROPOSED/PreNextOpenPROPOSED/
+InferenceRecoveryDEFERRED. No W06/recovery/audit integration or original matrix search.
+[Evidence](../../research/v7/window09-evidence.json),
+[backlog](../../research/v7/research-program.md#window09-durable-artifacts-and-offline-replay).
+Resume named worktree cleanHEAD/maps/Charter/evidence/sole queue; no Window10 grant.
+
 ## Window08 Common Ranking Evaluation — complete / STOP
 
 Window07 fixed `1631020bce8223ac4337c7e97473a2a3d9a555f0` LOCAL_INTEGRATED /

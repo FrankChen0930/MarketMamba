@@ -168,3 +168,11 @@ Common ranking adapter reuses frozen E5 average-tie RankIC without changing hist
 results. Named synthetic policy owns minN/weighting; metadata-first maturity/role
 guards precede label payload reads. [Evidence](../../research/v7/window08-evidence.json)
 and sole Backlog own branch-local status; real policy/data admission remain absent.
+
+## Window09 durable synthetic evidence
+
+[Bundle/replay evidence](../../research/v7/window09-evidence.json) tracks immutable
+filesystem publication and safe offline validation. Artifacts verified != training
+complete != research admitted. Hash without actual bytes is NOT_RESTORABLE. No old
+E1 matrix reconstruction or legacy unsafe checkpoint load. Main W08 integrated;
+new Window09 source and memory stay isolated; sole Backlog owns current status.

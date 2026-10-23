@@ -1,5 +1,16 @@
 # Worktree Register
 
+## Window09 artifact/replay — 2026-10-23
+
+- Path `.worktrees/v7-window09-artifact-replay`; branch `development/v7-window09-artifact-replay`;
+  base `bdea30d877fa2c5d02308f343fa5591a35616aec`; owner Codex/HumanWindow09;
+  created2026-10-23; retiredN/A. ACTIVE/UNMERGED/NOT_DEPLOYED.
+- Existing29trees clean/distinct objectives, none serves W09. Existing experimental,
+  research/reports/maps suffice; no new platform or memory tree. Dependencies E1
+  safe filesystem/hash/state validator, integrated W08 outputs; synthetic bytes only.
+- Main bdea30d held; W08 originaltree/history retained. Safe removal requires clean
+  preserved commits/evidence and resolved artifact refs/separate retirement review.
+
 ## Window08 ranking evaluation — 2026-10-23
 
 - Path `.worktrees/v7-window08-ranking-evaluation`; branch `development/v7-window08-ranking-evaluation`;

@@ -21,6 +21,17 @@
   },
   "topics": [
     {
+      "topic": "Window09 synthetic durable artifact and replay engineering",
+      "primary_authority": "research/v7/window09-evidence.json",
+      "authority_class": "CANONICAL",
+      "status": "UNMERGED_NOT_DEPLOYED_SYNTHETIC_ONLY",
+      "secondary_evidence": [
+        "V6/experimental/v7_research_artifacts.py",
+        "research/v7/research-program.md"
+      ],
+      "conflicts": []
+    },
+    {
       "topic": "Window08 common ranking engineering",
       "primary_authority": "research/v7/window08-evidence.json",
       "authority_class": "CANONICAL",

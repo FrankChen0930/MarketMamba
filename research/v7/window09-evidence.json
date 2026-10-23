@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "artifact_class": "CANONICAL",
+  "branch": "development/v7-window09-artifact-replay",
+  "base": "bdea30d877fa2c5d02308f343fa5591a35616aec",
+  "status": "U1_COMPLETE_U2_READY",
+  "integration": {
+    "before": "1631020bce8223ac4337c7e97473a2a3d9a555f0",
+    "after": "bdea30d877fa2c5d02308f343fa5591a35616aec",
+    "method": "ff-only",
+    "pre_tests": 101,
+    "post_tests": 101,
+    "hashes_verified": 19,
+    "cases_verified": 24,
+    "worktrees_clean": 29,
+    "independent_tests": 34,
+    "critical": 0,
+    "required": 0,
+    "main_closure_doc_commit": false
+  },
+  "U1": {
+    "red": "======================================================================\nERROR: v7_research_artifacts_test (unittest.loader._FailedTest.v7_research_artifacts_test)\n----------------------------------------------------------------------\nImportError: Failed to import test module: v7_research_artifacts_test\nTraceback (most recent call last):\n  File \"/usr/lib/python3.12/unittest/loader.py\", line 137, in loadTestsFromName\n    module = __import__(module_name)\n             ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window09-artifact-replay/V6/experimental/v7_research_artifacts_test.py\", line 5, in <module>\n    from V6.experimental.v7_research_artifacts import publish_bundle,verify_bundle,run_key\nModuleNotFoundError: No module named 'V6.experimental.v7_research_artifacts'\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (errors=1)\n",
+    "green": "----------------------------------------------------------------------\nRan 18 tests in 2.566s\n\nOK\n",
+    "rework_red": "======================================================================\nFAIL: test_external_reference_parent_traversal_is_not_allowed (V6.experimental.v7_research_artifacts_test.ArtifactPublicationTest.test_external_reference_parent_traversal_is_not_allowed)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window09-artifact-replay/V6/experimental/v7_research_artifacts_test.py\", line 90, in test_external_reference_parent_traversal_is_not_allowed\n    self.assertNotEqual(self.publish(external_roots=[allowed])['status'],'ARTIFACTS_VERIFIED')\nAssertionError: 'ARTIFACTS_VERIFIED' == 'ARTIFACTS_VERIFIED'\n\n======================================================================\nFAIL: test_manifest_and_publication_leaf_symlinks_are_refused (V6.experimental.v7_research_artifacts_test.ArtifactPublicationTest.test_manifest_and_publication_leaf_symlinks_are_refused) (leaf='manifest.json')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window09-artifact-replay/V6/experimental/v7_research_artifacts_test.py\", line 98, in test_manifest_and_publication_leaf_symlinks_are_refused\n    self.assertNotEqual(self.verify()['status'],'ARTIFACTS_VERIFIED')\nAssertionError: 'ARTIFACTS_VERIFIED' == 'ARTIFACTS_VERIFIED'\n\n======================================================================\nFAIL: test_manifest_and_publication_leaf_symlinks_are_refused (V6.experimental.v7_research_artifacts_test.ArtifactPublicationTest.test_manifest_and_publication_leaf_symlinks_are_refused) (leaf='publication.json')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window09-artifact-replay/V6/experimental/v7_research_artifacts_test.py\", line 98, in test_manifest_and_publication_leaf_symlinks_are_refused\n    self.assertNotEqual(self.verify()['status'],'ARTIFACTS_VERIFIED')\nAssertionError: 'ARTIFACTS_VERIFIED' == 'ARTIFACTS_VERIFIED'\n\n======================================================================\nFAIL: test_json_exponent_overflow_is_rejected_recursively (V6.experimental.v7_research_artifacts_test.ArtifactPublicationTest.test_json_exponent_overflow_is_rejected_recursively)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window09-artifact-replay/V6/experimental/v7_research_artifacts_test.py\", line 104, in test_json_exponent_overflow_is_rejected_recursively\n    self.assertIn('NONFINITE_JSON',self.publish()['reasons'])\nAssertionError: 'NONFINITE_JSON' not found in []\n\n----------------------------------------------------------------------\nRan 3 tests in 0.591s\n\nFAILED (failures=4)\n",
+    "tests": 18,
+    "rework_rounds": 1,
+    "review": {
+      "reviewer": "/root/independent_review",
+      "critical": 0,
+      "required_initial": 3,
+      "required_remaining": 0,
+      "independent_tests": 18
+    },
+    "repair": "Reject parent traversal, symlink metadata leaves, nonfinite JSON exponent floats",
+    "regression": {
+      "tests": 119,
+      "log": "----------------------------------------------------------------------\nRan 119 tests in 3.087s\n\nOK\n"
+    }
+  },
+  "U2": {
+    "status": "READY"
+  },
+  "runtime": {
+    "python": "3.12.3",
+    "executable": "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+    "CUDA_VISIBLE_DEVICES": "",
+    "data_env": "UNSET",
+    "inputs": "SYNTHETIC_ONLY",
+    "production_payload_access": false
+  },
+  "limitations": [
+    "POSIX local same-filesystem flock/rename, not distributed object storage",
+    "Caller pins compare declared identities, no source authenticity/admission",
+    "External references require explicit allowed roots and live matching bytes each verification",
+    "Generated_at is actual local publication observation, historical signal/evaluation clocks are simulated roles, not proof of historic live issuance",
+    "No training resume/reproduction implied by artifact completeness"
+  ],
+  "knowledge_health": "WARNING/noFAIL existing Governance/AuthorityDrift/LegacyDocs classes"
+}

@@ -1,9 +1,25 @@
 # V7 Research Program and Current Development Backlog
 
-> Current planning owner: isolated Window08 engineering branch, linked by canonical
+> Current planning owner: isolated Window09 engineering branch, linked by canonical
 > Current State/Authority Map. Planning status does not grant research, execution,
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
+
+## Window09 Durable Artifacts and Offline Replay
+
+Current sole queue: Human Window09, two SYNTHETIC/CPU units only. Branch
+`development/v7-window09-artifact-replay`, base/main bdea30d. UNMERGED/NOT_DEPLOYED.
+Window08 integrated after pre/post101tests/independentGO; older queues historical.
+
+| Unit | Objective / authority | Acceptance / status |
+|---|---|---|
+| W09-U1 | Human Durable Artifact Completion; reuse E1 filesystem/hash primitives | COMPLETE_REVIEWED:18tests+independent18PASS; stage/verify/atomicpublish/idempotence/immutable/conflict/failures;1rework,0remainingCritical/Required |
+| W09-U2 | Human Offline Replay/Restore | READY: reconstruct W08 daily/pair/rejection results solely from verified bundle; safe synthetic checkpoint and dataset eligibility; no untrustedtorchload |
+| Future Window10 | Further development | NOT_AUTHORIZED; stop after this bounded window |
+
+Permanent storage location, retention/GC, formal data/admission and GPU runtime
+acceptance remain HUMAN_DECISION_REQUIRED. No real Frozen Matrix bytes recovered.
+[Evidence](window09-evidence.json),[report](../../reports/v7_window09_artifact_replay.md).
 
 ## Window08 Common Ranking Evaluation
 
