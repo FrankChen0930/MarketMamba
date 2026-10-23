@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_class": "CANONICAL",
-  "status": "U1_COMPLETE_U2_READY",
+  "status": "SOURCE_COMPLETE_FINAL_PACKAGING_PENDING",
   "branch": "development/v7-window11-l2-cpu-resume",
   "base": "f25181637e40138c84dc3722292647d4325882fc",
   "integration": {
@@ -18,7 +18,7 @@
     "main_doc_commit": false
   },
   "U1": {
-    "tests": 3,
+    "tests": 5,
     "red": "======================================================================\nERROR: test_actual_l2_fit_refit_forward_and_replay (V6.experimental.v7_window11_l2_test.RealLightGBMTest.test_actual_l2_fit_refit_forward_and_replay)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/V6/experimental/v7_window11_l2_test.py\", line 12, in test_actual_l2_fit_refit_forward_and_replay\n    result=run_study(folder,comparison_model='L2')\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: run_study() got an unexpected keyword argument 'comparison_model'\n\n======================================================================\nERROR: test_forward_label_change_does_not_select_or_refit (V6.experimental.v7_window11_l2_test.RealLightGBMTest.test_forward_label_change_does_not_select_or_refit)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/V6/experimental/v7_window11_l2_test.py\", line 27, in test_forward_label_change_does_not_select_or_refit\n    p=panel();a=run_study(Path(folder)/'a',inputs=copy.deepcopy(p),comparison_model='L2')\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: run_study() got an unexpected keyword argument 'comparison_model'\n\n======================================================================\nERROR: test_same_support_and_coverage_exclusions (V6.experimental.v7_window11_l2_test.RealLightGBMTest.test_same_support_and_coverage_exclusions)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/V6/experimental/v7_window11_l2_test.py\", line 20, in test_same_support_and_coverage_exclusions\n    result=run_study(folder,comparison_model='L2',drop_l0_forward_stock=True)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: run_study() got an unexpected keyword argument 'comparison_model'\n\n----------------------------------------------------------------------\nRan 3 tests in 0.005s\n\nFAILED (errors=3)\n",
     "green": "----------------------------------------------------------------------\nRan 3 tests in 2.364s\n\nOK\n",
     "dependency_setup_corrections": 1,
@@ -33,10 +33,34 @@
     "regression": {
       "tests": 170,
       "log": "----------------------------------------------------------------------\nRan 170 tests in 20.765s\n\nOK\n"
+    },
+    "commit": "f00bebab33cdeaa75b8401c6a6988dfaa3d3e0e7",
+    "additional_source_snapshot_tests": {
+      "red": "======================================================================\nERROR: test_explicit_code_snapshot_cannot_claim_unavailable_commit (V6.experimental.v7_window11_l2_test.RealLightGBMTest.test_explicit_code_snapshot_cannot_claim_unavailable_commit)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/V6/experimental/v7_window11_l2_test.py\", line 35, in test_explicit_code_snapshot_cannot_claim_unavailable_commit\n    result=run_study(folder,comparison_model='L2',source_commit='0'*40)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: run_study() got an unexpected keyword argument 'source_commit'\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (errors=1)\n",
+      "green": "----------------------------------------------------------------------\nRan 5 tests in 3.238s\n\nOK\n"
     }
   },
   "U2": {
-    "status": "IN_PROGRESS_UNREVIEWED"
+    "status": "COMPLETE_REVIEWED",
+    "source_commit": "Containing U2 source checkpoint",
+    "tests": 9,
+    "red": "======================================================================\nERROR: v7_cpu_resume_test (unittest.loader._FailedTest.v7_cpu_resume_test)\n----------------------------------------------------------------------\nImportError: Failed to import test module: v7_cpu_resume_test\nTraceback (most recent call last):\n  File \"/usr/lib/python3.12/unittest/loader.py\", line 137, in loadTestsFromName\n    module = __import__(module_name)\n             ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/V6/experimental/v7_cpu_resume_test.py\", line 5, in <module>\n    from V6.experimental.v7_cpu_resume import make_fixture,run_probe,semantic_state,read_state,make_binding,ProofStore\nModuleNotFoundError: No module named 'V6.experimental.v7_cpu_resume'\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (errors=1)\n",
+    "initial_green": "----------------------------------------------------------------------\nRan 8 tests in 90.875s\n\nOK\n",
+    "state_guard_red": "======================================================================\nFAIL: test_safe_codec_rejects_pickle_and_inconsistent_lr_rng_or_cursor (V6.experimental.v7_cpu_resume_test.CPUResumeTest.test_safe_codec_rejects_pickle_and_inconsistent_lr_rng_or_cursor)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/V6/experimental/v7_cpu_resume_test.py\", line 88, in test_safe_codec_rejects_pickle_and_inconsistent_lr_rng_or_cursor\n    with self.assertRaises(Exception):store._read_payload(path)\nAssertionError: Exception not raised\n\n----------------------------------------------------------------------\nRan 1 test in 3.471s\n\nFAILED (failures=1)\n",
+    "rework_rounds": 2,
+    "rework1_red": "======================================================================\nFAIL: test_optimizer_moments_and_config_cannot_be_missing_or_replaced (V6.experimental.v7_cpu_resume_test.CPUResumeTest.test_optimizer_moments_and_config_cannot_be_missing_or_replaced)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/V6/experimental/v7_cpu_resume_test.py\", line 105, in test_optimizer_moments_and_config_cannot_be_missing_or_replaced\n    with self.assertRaises(Exception):store._read_payload(path)\nAssertionError: Exception not raised\n\n----------------------------------------------------------------------\nRan 1 test in 3.325s\n\nFAILED (failures=1)\n",
+    "rework1_green": "----------------------------------------------------------------------\nRan 2 tests in 17.467s\n\nOK\n",
+    "rework2_red": "======================================================================\nFAIL: test_explicit_matching_snapshot_success_path (V6.experimental.v7_window11_l2_test.RealLightGBMTest.test_explicit_matching_snapshot_success_path)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/V6/experimental/v7_window11_l2_test.py\", line 44, in test_explicit_matching_snapshot_success_path\n    self.assertEqual(result['status'],'STUDY_ARTIFACTS_VERIFIED',result['reasons'])\nAssertionError: 'STUDY_REJECTED' != 'STUDY_ARTIFACTS_VERIFIED'\n- STUDY_REJECTED\n+ STUDY_ARTIFACTS_VERIFIED\n : [\"string indices must be integers, not 'str'\"]\n\n----------------------------------------------------------------------\nRan 1 test in 1.228s\n\nFAILED (failures=1)\n",
+    "review": {
+      "reviewer": "/root/independent_review",
+      "critical": 0,
+      "required_remaining": 0,
+      "initial_required": 1,
+      "second_round_required": 1,
+      "golden_optimizer_independent_tests": 2,
+      "snapshot_independent_tests": 5
+    },
+    "evidence": "research/v7/window11-cpu-resume-evidence.json"
   },
   "runtime": {
     "overlay": "/home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/.runtimes/window11-cpu/bin/python",
@@ -53,5 +77,24 @@
     "StrictSTOP/E1matrixBLOCKED/H2NOT_APPROVED/FairEvaluationPROPOSED/PreNextOpenPROPOSED/InferenceRecoveryDEFERRED",
     "No formalfeaturelabel/admission or production changes",
     "No GPU/unknownhistoricalpayload/mainmergeofnewwork/push/deploy"
+  ],
+  "regression": {
+    "total_tests_passed": 211,
+    "log": "{\"time\": \"2026-10-23T15:38:33.613275+00:00\", \"event\": \"resume_scan\", \"seed\": 17, \"status\": \"FRESH\"}\n{\"time\": \"2026-10-23T15:38:33.627320+00:00\", \"event\": \"seed_started\", \"seed\": 17}\n{\"time\": \"2026-10-23T15:38:33.694589+00:00\", \"event\": \"seed_finished\", \"seed\": 17, \"status\": \"smoke_complete\", \"total_seconds\": 0.06669565799529664, \"steps\": 1}\n----------------------------------------------------------------------\nRan 211 tests in 117.396s\n\nOK\n",
+    "includes": [
+      "previous167",
+      "L2fit/source5",
+      "realCPUresume9",
+      "E1checkpoint/lifecycle/train/runlogging regression"
+    ]
+  },
+  "verified_cpu_granularity": [
+    "CPU_STEP_BOUNDARY_RESUMABLE",
+    "CPU_MID_EPOCH_RESUMABLE"
+  ],
+  "not_claimed": [
+    "separateEpochBoundaryInterrupt",
+    "GPU/AMP/shuffled/multiworker/midbatch generic exact resume",
+    "full reproduction/research admission"
   ]
 }

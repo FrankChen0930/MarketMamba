@@ -64,6 +64,10 @@ class DurableCheckpointStore:
   except (OSError,json.JSONDecodeError): return {}
   return value if isinstance(value,dict) and value.get("schema_version")==POINTER_SCHEMA else {}
 
+ def _read_payload(self,path):
+  """Codec seam; existing E1 behavior preserved, trusted CPU probe overrides safely."""
+  return torch.load(path,map_location="cpu",weights_only=False)
+
  def _entry_state(self,entry):
   # Pointer corruption must not prevent fallback to a valid previous generation.
   if not isinstance(entry,dict) or not {"file","sha256","bytes"}.issubset(entry):
@@ -80,7 +84,7 @@ class DurableCheckpointStore:
    if (path.is_symlink() or not path.is_file()
        or path.stat().st_size!=entry["bytes"] or sha256(path)!=entry["sha256"]):
     return None
-   state=torch.load(path,map_location="cpu",weights_only=False)
+   state=self._read_payload(path)
    validate_state(state,self.identity)
   except Exception: return None
   return state
@@ -117,7 +121,7 @@ class DurableCheckpointStore:
    if interrupt_at=="before_drive_flush": raise RuntimeError("injected before Drive publish")
    if sha256(partial)!=local_sha: raise OSError("Drive checkpoint copy verification failed")
    os.replace(partial,dest); _fsync_dir(self.root)
-   reloaded=torch.load(dest,map_location="cpu",weights_only=False)
+   reloaded=self._read_payload(dest)
    validate_state(reloaded,self.identity)
    self.last_io={"local_seconds":local_seconds,
                  "drive_seconds":time.perf_counter()-drive_started}

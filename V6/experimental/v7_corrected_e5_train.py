@@ -378,9 +378,13 @@ def train_seed(
     matrix_manifest_validator=validate_matrix_manifest,
     telemetry_hook=None,
     telemetry_provider=None,
+    step_observer=None,
+    engineering_probe=False,
 ) -> dict[str, Any]:
     if device.type != "cuda" and smoke_steps is None:
         raise ValueError("formal training requires CUDA; CPU is smoke-only")
+    if engineering_probe and (device.type!='cpu' or smoke_steps is None):
+        raise ValueError('engineering probe requires explicit CPU smoke mode')
     set_seed(seed)
     train = CorrectedMatrixDataset(matrix, config, split_code=1,
                                    manifest_validator=matrix_manifest_validator)
@@ -439,11 +443,14 @@ def train_seed(
                 torch.nn.utils.clip_grad_norm_(
                     model.parameters(), config.gradient_clip, error_if_nonfinite=True
                 )
+                lr_before = optimizer.param_groups[0]["lr"]
                 optimizer.step()
                 scheduler.step()
                 state["step"] = int(state["step"]) + 1
                 updates_this_call += 1
             state["batch"] = current_batch + 1
+            if loss is not None and step_observer is not None:
+                step_observer({"epoch":current_epoch,"batch":current_batch+1,"step":int(state["step"]),"loss":float(loss.detach().item()),"lr_before":lr_before,"lr_after":optimizer.param_groups[0]["lr"]},state)
             persist()
             if smoke_steps is not None and updates_this_call == 1:
                 restored = checkpoints.load(config.sha256, matrix_identity)
@@ -551,6 +558,8 @@ def train_seed(
         "strict_phase0": "STOP",
         "historical_simulation_readiness": "PASS",
     }
+    if engineering_probe:
+        result.update(evidence_class="SYNTHETIC_CPU_ENGINEERING",historical_simulation_readiness="NOT_EVALUATED",research_admitted=False)
     result_path = result_path or output / "result.json"
     _atomic_json(result_path, result)
     return result

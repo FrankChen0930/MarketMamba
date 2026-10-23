@@ -7,7 +7,7 @@ consumers receive only the W07-supervised subset. No search or runtime schedulin
 from collections.abc import Mapping
 from copy import deepcopy
 from pathlib import Path
-import hashlib,json
+import hashlib,json,re,subprocess
 from V6.experimental.v7_corrected_e5_replication import canonical_hash
 from V6.experimental.v7_classical_baseline import fit_baseline,score_view
 from V6.experimental.v7_classical_baseline_test import panel,selection,ids_for
@@ -72,11 +72,18 @@ def _evaluation(p,scores,fits,runs,label_capability,role,policy,extra=None):
     return raw,data,bundles,evaluations
 
 
-def _bundle(p,config,raw,rawbytes,bundles,evaluations,paired,ledger,validation):
+def _bundle(p,config,raw,rawbytes,bundles,evaluations,paired,ledger,validation,source_commit=None):
     cal,fold,days,features,labels=p;h=bundles['a']['header']
     code={'schema':'v7-replay-code-manifest-v1','commit':SOURCE_COMMIT,'files':{path:hashlib.sha256((ROOT/path).read_bytes()).hexdigest() for path in CODE_PATHS}}
+    if source_commit is not None:
+        if not isinstance(source_commit,str) or not re.fullmatch('[0-9a-f]{40}',source_commit):raise ValueError('CODE_SNAPSHOT_UNAVAILABLE')
+        for path,source_hash in code['files'].items():
+            try:blob=subprocess.check_output(['git','show',source_commit+':'+path],cwd=ROOT,stderr=subprocess.DEVNULL)
+            except subprocess.CalledProcessError:raise ValueError('CODE_SNAPSHOT_UNAVAILABLE')
+            if hashlib.sha256(blob).hexdigest()!=source_hash:raise ValueError('CODE_SNAPSHOT_CONTENT_MISMATCH')
+        code['commit']=source_commit
     identity={'study_id':h['study_id'],'recipe_id':h['recipe_id'],'run_id':h['run_id'],'fold_id':h['fold_id'],'origin_id':'window10-toy-origin','origin_at':h['origin_at'],'seed':0,
-      'code_commit':SOURCE_COMMIT,'prediction_role':'FORWARD','code_manifest_sha256':canonical_hash(code),'data_sha256':canonical_hash(raw),
+      'code_commit':code['commit'],'prediction_role':'FORWARD','code_manifest_sha256':canonical_hash(code),'data_sha256':canonical_hash(raw),
       'feature_sha256':canonical_hash({'feature_contract_id':fold['feature_contract_id']}),
       'label_sha256':canonical_hash({'label_contract_id':fold['label_contract_id'],'label_definition':fold['label_definition']}),
       'universe_sha256':canonical_hash(sorted({r['stock_id'] for rs in raw['scores'].values() for r in rs})),
@@ -106,11 +113,12 @@ def _bundle(p,config,raw,rawbytes,bundles,evaluations,paired,ledger,validation):
     return manifest,files
 
 
-def run_study(root,*,inputs=None,interrupt_at=None,drop_l0_forward_stock=False,comparison_model='L1'):
+def run_study(root,*,inputs=None,interrupt_at=None,drop_l0_forward_stock=False,comparison_model='L1',source_commit=None):
     result={'schema':'v7-classical-study-evidence-v1','status':'STUDY_REJECTED','research_admitted':False,'reasons':[]}
     try:
         if comparison_model not in {'L1','L2'}:raise ValueError('UNSUPPORTED_FIXED_COMPARISON')
         participants=('L0',comparison_model)
+        suffix='-'+source_commit[:12] if isinstance(source_commit,str) else ''
         p=inputs if inputs is not None else panel()
         if not isinstance(p,(tuple,list)) or len(p)!=5 or any(not isinstance(v,Mapping) for v in (p[0],p[1],p[3],p[4])):raise ValueError('INVALID_SYNTHETIC_PANEL')
         cal,fold,days,features,all_labels=p
@@ -122,7 +130,7 @@ def run_study(root,*,inputs=None,interrupt_at=None,drop_l0_forward_stock=False,c
         supervised={sid:l for sid,l in all_labels.items() if features[sid]['signal_session']<=fold['refit'][1]}
         selections={};selection_fits={};val_scores={}
         for kind in participants:
-            run=selection(p,configs[kind]);selections[kind]=run
+            run=selection(p,configs[kind]);run['run_id']+=suffix;selections[kind]=run
             fitted=_require(_fit(p,configs[kind],run,'SELECTION_TRAIN',(1,2,3),supervised),'FIT_ENGINEERING_ONLY');selection_fits[kind]=fitted
             auth=_authorized(p,run,'SELECTION_VALIDATION',(15,16),supervised)
             val_scores[kind]=_require(score_view(fitted,canonical_hash(fitted),auth,canonical_hash(auth),run,canonical_hash(run)),'SCORED')
@@ -137,9 +145,9 @@ def run_study(root,*,inputs=None,interrupt_at=None,drop_l0_forward_stock=False,c
         before=canonical_hash(decision);refit_fits={};refits={};forwards={};forward_scores={}
         d=days[29];ready={k:d+v for k,v in {'model_built_at':'T07:10:00+08:00','artifact_verified_at':'T07:20:00+08:00','approval_at':'T07:30:00+08:00','ready_at':'T07:40:00+08:00'}.items()}
         for kind in participants:
-            refit=make_refit_run(selections[kind],'refit-'+kind,fold,ready);refit['selection_decision_sha256']=before;refits[kind]=refit
+            refit=make_refit_run(selections[kind],'refit-'+kind+suffix,fold,ready);refit['selection_decision_sha256']=before;refits[kind]=refit
             fitted=_require(_fit(p,configs[kind],refit,'REFIT',(1,2,3,15,16,18),supervised),'FIT_ENGINEERING_ONLY');refit_fits[kind]=fitted
-            forward=make_forward_run(refit,'forward-'+kind,fold);forwards[kind]=forward
+            forward=make_forward_run(refit,'forward-'+kind+suffix,fold);forwards[kind]=forward
             auth=_authorized(p,forward,'FORWARD_FEATURES',(30,31),supervised)
             forward_scores[kind]=_require(score_view(fitted,canonical_hash(fitted),auth,canonical_hash(auth),forward,canonical_hash(forward)),'SCORED')
         if drop_l0_forward_stock:
@@ -154,7 +162,7 @@ def run_study(root,*,inputs=None,interrupt_at=None,drop_l0_forward_stock=False,c
         if before!=after:raise ValueError('SAME_FOLD_FORWARD_CHANGED_SELECTION')
         ledger={'schema':'v7-classical-fit-ledger-v1','scope':'TINY_SYNTHETIC_CPU','selection_fits':selection_fits,'selection_declarations':selections,'selection_decision':decision,'selection_decision_sha256':before,
                 'refit_fits':refit_fits,'refit_declarations':refits,'forward_declarations':forwards,'dependency_probe':dependency_probe,'forward_prediction_artifact_sha256':{k:canonical_hash(v) for k,v in forward_scores.items()},'permission_declarations_are_initial_intent_not_actual_execution_status':True}
-        manifest,files=_bundle(p,config,raw,data,bundles,fevals,pair,ledger,{'raw':vraw,'data':vdata,'bundles':vbundles,'evaluations':vevals})
+        manifest,files=_bundle(p,config,raw,data,bundles,fevals,pair,ledger,{'raw':vraw,'data':vdata,'bundles':vbundles,'evaluations':vevals},source_commit)
         pub=publish_bundle(root,manifest,canonical_hash(manifest),files,interrupt_at=interrupt_at)
         return {**result,'status':'STUDY_ARTIFACTS_VERIFIED' if pub['status'] in {'ARTIFACTS_VERIFIED','ALREADY_PUBLISHED'} else 'STUDY_INCOMPLETE',
           'publication':pub,'manifest':manifest,'manifest_sha256':canonical_hash(manifest),'run_key':run_key(manifest['identity']),

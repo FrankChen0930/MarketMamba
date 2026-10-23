@@ -30,4 +30,19 @@ class RealLightGBMTest(unittest.TestCase):
             self.assertEqual(a['selection_decision'],b['selection_decision']);self.assertEqual(a['refit_fits'],b['refit_fits'])
             self.assertNotEqual(a['forward_evaluations'],b['forward_evaluations'])
 
+    def test_explicit_code_snapshot_cannot_claim_unavailable_commit(self):
+        with tempfile.TemporaryDirectory() as folder:
+            result=run_study(folder,comparison_model='L2',source_commit='0'*40)
+            self.assertEqual(result['status'],'STUDY_REJECTED');self.assertIn('CODE_SNAPSHOT_UNAVAILABLE',result['reasons'])
+
+    def test_explicit_matching_snapshot_success_path(self):
+        from unittest.mock import patch
+        from V6.experimental.v7_classical_study import ROOT
+        def source_bytes(command,**kwargs):return (ROOT/command[2].split(':',1)[1]).read_bytes()
+        with tempfile.TemporaryDirectory() as folder,patch('V6.experimental.v7_classical_study.subprocess.check_output',side_effect=source_bytes):
+            result=run_study(folder,comparison_model='L2',source_commit='a'*40)
+            self.assertEqual(result['status'],'STUDY_ARTIFACTS_VERIFIED',result['reasons'])
+            self.assertEqual(result['manifest']['identity']['code_commit'],'a'*40)
+            self.assertTrue(result['manifest']['identity']['run_id'].endswith('a'*12))
+
 if __name__=='__main__':unittest.main()

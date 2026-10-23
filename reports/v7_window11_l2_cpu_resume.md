@@ -13,8 +13,15 @@ byjoblib diagnosed and corrected with existinglock3.1.2, no globalenvironmentupg
 environment; no futureGPU/real research implication. Full environment closure not
 claimed; .pth depends on retained CPUbase; wheel hashes prove PyPI bytes only.
 
-U2 next: actual PyTorch CPU train through E1 existing loop/store/adapter, safe codec,
-new-process numerical resume proof; no secondTrainer. Scope/gates remain strictSTOP,
+U2 source complete: actualPyTorchCPU through E1 train_seed,9testsPASS;211joint
+regressionPASS. 0/75/0processes,step4epoch1batch1 afterwarmup to12steps/4epochs,
+23nontelemetryfields equal across LATEST/PREVIOUS/BEST; no secondTrainer.
+Two bounded repairs completed: optimizer moment/hyperparameter validation and
+source snapshot positive-path variable shadow;no remainingCritical/Required.
+CPU_STEP_BOUNDARY_RESUMABLE/CPU_MID_EPOCH_RESUMABLE only deterministic daily cursor,
+FP32/1thread/0workers; no separateepochinterrupt/GPU/AMP/shuffled-loader claim.
+Actualstate bytes retained .artifacts/window11-cpu-resume-proof (~1.79MB), Git-only
+metadata cannot restore if bytes lost. Final source-bound L2 packaging pending. Scope/gates remain strictSTOP,
 E1BLOCKED/H2unapproved/FairEvaluation&PreNextOpenPROPOSED.
 
 Resume: namedtree cleanHEAD/maps/Charter/soleWindow11queue/evidence; STOP after two

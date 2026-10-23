@@ -204,3 +204,11 @@ No remaining READY work under this grant; STOP/new bounded authorization require
 overlay actual fitting validated, no real research admission. E1 reused for actual
 CPU resume proof, status owned by [Window11 evidence](../../research/v7/window11-evidence.json)
 and sole Backlog. No unknown pickle, GPU or missing E1matrix reconstruction.
+
+Window11 actualCPU proof: 12steps/4epochs, interrupted atstep4 afterwarmup, new
+process exact state/trace match; LATEST/PREVIOUS/BEST 23fields each. Granularity is
+deterministic daily cursor at fulloptimizerstep,0workers/FP32/singleCPUthread only.
+No shuffled/multiworker/AMP/GPU or separateepochinterrupt claim. New safe codec
+weights_only=True with primitive NumPy RNG, original E1 default behavior unchanged.
+Checkpoint bytes retained locally, not derivable from hashes. U2 source complete;
+source-bound L2 republishing and final memory closure still pending.

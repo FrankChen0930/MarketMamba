@@ -17,8 +17,16 @@ LightGBM4.6.0/sklearn1.6.1/joblib1.6.0/threadpoolctl3.6.0/cloudpickle3.1.2,5offi
 wheel hashes pinned. Base NumPy2.0.2/SciPy1.16.3/Torch2.10.0+cpu unchanged.
 Actual L2 fit/refit/forward/common-support and independent replay PASS. Setup corrected
 missing required cloudpickle using existing repo lock, no global/package upgrade.
-U2 IN_PROGRESS_UNREVIEWED: reuse E1 actual tiny CPU training, safe weights-only checkpoint codec,
-new-process interrupt/resume proof with explicit granularity; no second trainer.
+U2 COMPLETE_REVIEWED:actual E1 train loop/modelFactory+safe codec,9CPUtestsPASS;
+211jointtestsPASS. New process exits0/75/0,step4(epoch1batch1) afterwarmup resumed
+to12steps/4epochs;all23nontelemetryfields equal forLATEST/PREVIOUS/BEST.
+CPU_STEP_BOUNDARY_RESUMABLE and CPU_MID_EPOCH_RESUMABLE only deterministic daily
+order/0workers/FP32/singleCPUthread. No separateepochinterrupt/GPU/AMP/shuffle claim.
+U2 used2bounded repairs (optimizer completeness,source-snapshot success-path);
+0remainingCritical/Required. CPUbytes retained .artifacts/window11-cpu-resume-proof
+(83files/~1.79MB),notrestorable fromhashes alone;noGC or worktree removal.
+Source commit checkpoint now; final source-bound L2 republishing/closure only
+remains. No more engineering under this grant. U1 source f00bebab33cdeaa75b8401c6a6988dfaa3d3e0e7.
 
 StrictSTOP/E1matrixBLOCKED/H2NOT_APPROVED/FairEvaluationPROPOSED/PreNextOpenPROPOSED/
 InferenceRecoveryDEFERRED. No GPU/realresearch/production/otherbranchmerge/admission.

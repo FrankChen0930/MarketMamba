@@ -13,8 +13,12 @@ branch `development/v7-window11-l2-cpu-resume`, UNMERGED/NOT_DEPLOYED.
 | Unit | Objective/authority | Acceptance/status |
 |---|---|---|
 | W11-U1 | Human actual LightGBM baseline completion | COMPLETE_REVIEWED:3focused/independent3PASS,0Critical/Required;5official wheels pinned,actual fit/refit/common-support/replay;setup dependency correction1 |
-| W11-U2 | Human actual PyTorch CPU interrupt/resume | IN_PROGRESS_UNREVIEWED: E1 train/store adapter reuse, full state/numeric comparisons across process, safe codec/no unknown payload, bounded granularity |
+| W11-U2 | Human actual PyTorch CPU interrupt/resume | COMPLETE_REVIEWED:9tests;realCPU0/75/0 resume12steps/4epochs,23fieldsx3roles exact;2rework,0Critical/Required;final source-bound artifact closure pending |
 
+U1 source f00bebab33cdeaa75b8401c6a6988dfaa3d3e0e7; U2 source checkpoint is containing commit.
+211jointtestsPASS; final source-bound L2 artifact/closure packaging remains only.
+No training/GPU authority beyond this window. Retained .artifacts CPU bytes required
+for restoration; source hashes alone do not restore checkpoints.
 Earlier L2 missing-dependency blocker is resolved ONLY in this dedicated overlay;
 other environments remain unqualified. Real-data/evaluation/admission/GPU policies
 still need Human. Full reproduction/GPU resume not claimed; E1matrix BLOCKED.
