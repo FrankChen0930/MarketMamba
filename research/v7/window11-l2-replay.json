@@ -1,0 +1,178 @@
+{
+  "schema": "v7-offline-replay-evidence-v1",
+  "status": "EVALUATION_REPLAYABLE",
+  "research_admitted": false,
+  "capabilities": {
+    "METADATA_VERIFIED": {
+      "proven": true,
+      "reasons": []
+    },
+    "EVALUATION_REPLAYABLE": {
+      "proven": true,
+      "reasons": []
+    },
+    "TRAINING_RESUMABLE": {
+      "proven": false,
+      "reasons": [
+        "NO_REAL_RUNTIME_STATE_OR_TRAINING_VERIFIED"
+      ]
+    },
+    "FULL_REPRODUCTION_READY": {
+      "proven": false,
+      "reasons": [
+        "NO_FULL_DATA_CODE_TRAINING_RUNTIME_REPRODUCTION_VERIFIED"
+      ]
+    }
+  },
+  "reasons": [],
+  "comparisons_match": true,
+  "replayed_at": "2026-10-23T15:12:03.790540+00:00",
+  "historical_live_prediction_proven": false,
+  "manifest_sha256": "660f6fed0bfd5a32d4333fdaf581f6c0e7cabe1683f3bea3cf1e83298357f759",
+  "run_key": "479685eb5b06e5815c7bb800d29107ee80a45bed2dbe8bfa935547a31463f50b",
+  "simulated_evaluation_times": [
+    "2024-03-01T18:00:00+08:00",
+    "2024-03-01T18:00:00+08:00"
+  ],
+  "publication_generated_at": "2026-10-23T15:12:02.231459+00:00",
+  "recomputed_hashes": {
+    "daily_metrics": "14f00c78a720f37e395d7107deef007b8a498f0be1bd07718cc2fc24c7b07e66",
+    "paired_comparison": "8045d48f9c0c76c82df6911fc19a6bb8c7437dca8cb698912847414430e630c9",
+    "rejection_ledger": "36c5fecb5e3fdfd10b71daa6fe6b77fdb217463a0e9f9e39bd3a03121a8d4a95"
+  },
+  "expected_hashes": {
+    "daily_metrics": "14f00c78a720f37e395d7107deef007b8a498f0be1bd07718cc2fc24c7b07e66",
+    "paired_comparison": "8045d48f9c0c76c82df6911fc19a6bb8c7437dca8cb698912847414430e630c9",
+    "rejection_ledger": "36c5fecb5e3fdfd10b71daa6fe6b77fdb217463a0e9f9e39bd3a03121a8d4a95"
+  },
+  "classical_validation_replay": {
+    "verified": true,
+    "validation_evaluations_sha256": "2c9dc29084b1adf29710eca70123986fa1a522c0269017adc0cf2392c72ec436",
+    "selection_decision_sha256": "44c91e496e54d72f4e814cb5ca3d22435b64bbcde03657261c83a096271ca853"
+  },
+  "daily": {
+    "a": [
+      {
+        "signal_session": "2024-02-14",
+        "horizon": 5,
+        "valid_n": 4,
+        "stock_ids": [
+          "toy-0",
+          "toy-1",
+          "toy-2",
+          "toy-3"
+        ],
+        "rank_ic": 0.7745966692414834,
+        "reasons": [],
+        "support_sha256": "6b121db5b93060a8ce8399f71e4f0a8beb011fc54a21bcaee4ee700437d0d514",
+        "requested_n": 4,
+        "excluded_n": 0,
+        "evaluation_identity": "26a59f4ae9dab405b176a909d5334fbc467b8808793cad0fc369e28d333302be"
+      },
+      {
+        "signal_session": "2024-02-15",
+        "horizon": 5,
+        "valid_n": 4,
+        "stock_ids": [
+          "toy-0",
+          "toy-1",
+          "toy-2",
+          "toy-3"
+        ],
+        "rank_ic": 0.7745966692414834,
+        "reasons": [],
+        "support_sha256": "8747956a08e18d38214263ca1ccc32f083ada3c5e986cb1d9f7e9fb6038d83ce",
+        "requested_n": 4,
+        "excluded_n": 0,
+        "evaluation_identity": "95aab9c0aec920a5cf18cbc84d854d2c44fbcb4c24240c4ec7c8cbe1eb61338a"
+      }
+    ],
+    "b": [
+      {
+        "signal_session": "2024-02-14",
+        "horizon": 5,
+        "valid_n": 4,
+        "stock_ids": [
+          "toy-0",
+          "toy-1",
+          "toy-2",
+          "toy-3"
+        ],
+        "rank_ic": 0.9999999999999998,
+        "reasons": [],
+        "support_sha256": "6b121db5b93060a8ce8399f71e4f0a8beb011fc54a21bcaee4ee700437d0d514",
+        "requested_n": 4,
+        "excluded_n": 0,
+        "evaluation_identity": "5a16e73a52293760c58e64ca427b40548593791414556e59cc2c0a41a666583e"
+      },
+      {
+        "signal_session": "2024-02-15",
+        "horizon": 5,
+        "valid_n": 4,
+        "stock_ids": [
+          "toy-0",
+          "toy-1",
+          "toy-2",
+          "toy-3"
+        ],
+        "rank_ic": 0.9999999999999998,
+        "reasons": [],
+        "support_sha256": "8747956a08e18d38214263ca1ccc32f083ada3c5e986cb1d9f7e9fb6038d83ce",
+        "requested_n": 4,
+        "excluded_n": 0,
+        "evaluation_identity": "b181dd7ff0a6b29727b6fc6a63b9a2f21c73a059571db509aa957d76bd82d26d"
+      }
+    ]
+  },
+  "paired_daily": [
+    {
+      "signal_session": "2024-02-14",
+      "horizon": 5,
+      "valid_n": 4,
+      "stock_ids": [
+        "toy-0",
+        "toy-1",
+        "toy-2",
+        "toy-3"
+      ],
+      "support_sha256": "6b121db5b93060a8ce8399f71e4f0a8beb011fc54a21bcaee4ee700437d0d514",
+      "rank_ic_a": 0.7745966692414834,
+      "rank_ic_b": 0.9999999999999998,
+      "delta_b_minus_a": 0.22540333075851637,
+      "reasons": [],
+      "requested_a": 4,
+      "requested_b": 4,
+      "union_n": 4,
+      "excluded_union_n": 0
+    },
+    {
+      "signal_session": "2024-02-15",
+      "horizon": 5,
+      "valid_n": 4,
+      "stock_ids": [
+        "toy-0",
+        "toy-1",
+        "toy-2",
+        "toy-3"
+      ],
+      "support_sha256": "8747956a08e18d38214263ca1ccc32f083ada3c5e986cb1d9f7e9fb6038d83ce",
+      "rank_ic_a": 0.7745966692414834,
+      "rank_ic_b": 0.9999999999999998,
+      "delta_b_minus_a": 0.22540333075851637,
+      "reasons": [],
+      "requested_a": 4,
+      "requested_b": 4,
+      "union_n": 4,
+      "excluded_union_n": 0
+    }
+  ],
+  "rejection_ledger": {
+    "schema": "v7-replay-rejections-v1",
+    "evaluations": {
+      "a": [],
+      "b": []
+    },
+    "comparison": []
+  },
+  "exposure_events_retained": 0
+}

@@ -106,23 +106,27 @@ def _bundle(p,config,raw,rawbytes,bundles,evaluations,paired,ledger,validation):
     return manifest,files
 
 
-def run_study(root,*,inputs=None,interrupt_at=None,drop_l0_forward_stock=False):
+def run_study(root,*,inputs=None,interrupt_at=None,drop_l0_forward_stock=False,comparison_model='L1'):
     result={'schema':'v7-classical-study-evidence-v1','status':'STUDY_REJECTED','research_admitted':False,'reasons':[]}
     try:
+        if comparison_model not in {'L1','L2'}:raise ValueError('UNSUPPORTED_FIXED_COMPARISON')
+        participants=('L0',comparison_model)
         p=inputs if inputs is not None else panel()
         if not isinstance(p,(tuple,list)) or len(p)!=5 or any(not isinstance(v,Mapping) for v in (p[0],p[1],p[3],p[4])):raise ValueError('INVALID_SYNTHETIC_PANEL')
         cal,fold,days,features,all_labels=p
-        config=json.loads((ROOT/'research/v7/window10-synthetic-recipes.json').read_text());configs={r['model_kind']:r for r in config['recipes']}
+        config=json.loads((ROOT/'research/v7/window10-synthetic-recipes.json').read_text())
+        if comparison_model=='L2':config['selection_policy']['participants']=list(participants);config['comparison_model']='L2'
+        configs={r['model_kind']:r for r in config['recipes']}
         eval_policy={'schema':'v7-ranking-policy-prototype-v1','policy_id':'window10-average-equal-toy-v1','status':'SYNTHETIC_NOT_ADMITTED','tie_policy':'AVERAGE','min_valid_n':2,'aggregation_weighting':'EQUAL_SESSION','invalid_support':'EXCLUDE_WITH_LEDGER','statistical_policy':'NOT_CONFIGURED_NO_INFERENCE'}
         # Capability subset excludes forward labels. They are not passed to fit/selection.
         supervised={sid:l for sid,l in all_labels.items() if features[sid]['signal_session']<=fold['refit'][1]}
         selections={};selection_fits={};val_scores={}
-        for kind in ('L0','L1'):
+        for kind in participants:
             run=selection(p,configs[kind]);selections[kind]=run
             fitted=_require(_fit(p,configs[kind],run,'SELECTION_TRAIN',(1,2,3),supervised),'FIT_ENGINEERING_ONLY');selection_fits[kind]=fitted
             auth=_authorized(p,run,'SELECTION_VALIDATION',(15,16),supervised)
             val_scores[kind]=_require(score_view(fitted,canonical_hash(fitted),auth,canonical_hash(auth),run,canonical_hash(run)),'SCORED')
-        dependency_probe=_fit(p,configs['L2'],selection(p,configs['L2']),'SELECTION_TRAIN',(1,2,3),supervised)
+        dependency_probe=selection_fits['L2'] if comparison_model=='L2' else _fit(p,configs['L2'],selection(p,configs['L2']),'SELECTION_TRAIN',(1,2,3),supervised)
         if dependency_probe['status'] not in {'DEPENDENCY_BLOCKED','FIT_ENGINEERING_ONLY'}:raise ValueError('L2_PROBE_INVALID')
         vraw,vdata,vbundles,vevals=_evaluation(p,val_scores,selection_fits,selections,supervised,'SELECTION',eval_policy)
         policy=config['selection_policy']
@@ -132,7 +136,7 @@ def run_study(root,*,inputs=None,interrupt_at=None,drop_l0_forward_stock=False):
         decision={'schema':'v7-classical-selection-v1','policy':deepcopy(policy),'selected_model_kind':selected,'selected_recipe_id':configs[selected]['recipe_id'],'validation_means':means,'evaluation_identities':{k:v['evaluation_identity'] for k,v in vevals.items()},'role':'VALIDATION_MODEL_SELECTION_NOT_FINAL_TEST','research_admitted':False}
         before=canonical_hash(decision);refit_fits={};refits={};forwards={};forward_scores={}
         d=days[29];ready={k:d+v for k,v in {'model_built_at':'T07:10:00+08:00','artifact_verified_at':'T07:20:00+08:00','approval_at':'T07:30:00+08:00','ready_at':'T07:40:00+08:00'}.items()}
-        for kind in ('L0','L1'):
+        for kind in participants:
             refit=make_refit_run(selections[kind],'refit-'+kind,fold,ready);refit['selection_decision_sha256']=before;refits[kind]=refit
             fitted=_require(_fit(p,configs[kind],refit,'REFIT',(1,2,3,15,16,18),supervised),'FIT_ENGINEERING_ONLY');refit_fits[kind]=fitted
             forward=make_forward_run(refit,'forward-'+kind,fold);forwards[kind]=forward
@@ -142,7 +146,7 @@ def run_study(root,*,inputs=None,interrupt_at=None,drop_l0_forward_stock=False):
             forward_scores['L0']['scores']=[r for r in forward_scores['L0']['scores'] if r['stock_id']!='toy-3']
         # Only now make matured forward labels available to evaluation, never selection.
         forward_labels={sid:all_labels[sid] for sid in ids_for(p,(30,31))}
-        scores={'a':forward_scores['L1'],'b':forward_scores['L0']};fits={'a':refit_fits['L1'],'b':refit_fits['L0']};runs={'a':forwards['L1'],'b':forwards['L0']}
+        scores={'a':forward_scores[comparison_model],'b':forward_scores['L0']};fits={'a':refit_fits[comparison_model],'b':refit_fits['L0']};runs={'a':forwards[comparison_model],'b':forwards['L0']}
         extra={'features':features,'supervised_labels':supervised,'selection_policy_sha256':canonical_hash(policy)}
         raw,data,bundles,fevals=_evaluation(p,scores,fits,runs,forward_labels,'FORWARD',eval_policy,extra)
         pair=_require(compare(fevals['a'],canonical_hash(fevals['a']),fevals['b'],canonical_hash(fevals['b'])),'COMPARED')

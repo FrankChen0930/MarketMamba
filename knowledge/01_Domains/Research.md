@@ -197,3 +197,10 @@ validation+forward replay proven. V1 no-fit semantics retained; v2 classical-fit
 profile requires actual fitted producer ledger/lineage/config pins. L2 blocked by
 missing dependency; no real financial evidence, training resume or GPU acceptance.
 No remaining READY work under this grant; STOP/new bounded authorization required.
+
+## Window11 L2 and actual CPU resume
+
+[L2 evidence](../../research/v7/window11-l2-evidence.json): dedicated fixed official
+overlay actual fitting validated, no real research admission. E1 reused for actual
+CPU resume proof, status owned by [Window11 evidence](../../research/v7/window11-evidence.json)
+and sole Backlog. No unknown pickle, GPU or missing E1matrix reconstruction.

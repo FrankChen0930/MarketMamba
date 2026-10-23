@@ -1,0 +1,74 @@
+{
+  "schema": "v7-window11-l2-proof-v1",
+  "evidence_class": "SYNTHETIC",
+  "bundle_root": "research/v7/window11-l2-synthetic-bundle",
+  "run_key": "479685eb5b06e5815c7bb800d29107ee80a45bed2dbe8bfa935547a31463f50b",
+  "manifest_sha256": "660f6fed0bfd5a32d4333fdaf581f6c0e7cabe1683f3bea3cf1e83298357f759",
+  "selection_decision": {
+    "schema": "v7-classical-selection-v1",
+    "policy": {
+      "policy_id": "window10-toy-validation-5d-v1",
+      "status": "SYNTHETIC_NOT_ADMITTED",
+      "metric": "VALIDATION_MEAN_DAILY_RANK_IC",
+      "horizon": 5,
+      "tie_break": [
+        "L0",
+        "L1",
+        "L2"
+      ],
+      "participants": [
+        "L0",
+        "L2"
+      ]
+    },
+    "selected_model_kind": "L0",
+    "selected_recipe_id": "toy-L0",
+    "validation_means": {
+      "L0": 0.9999999999999998,
+      "L2": 0.9486832980505138
+    },
+    "evaluation_identities": {
+      "L0": "e2e9f0ea3fa242d3da8cb1e4d9da9db14d3d3a8fad809d5eeb5981b91b2ac60a",
+      "L2": "0507ff15580266512931753cbaa3ad56233f72fab7713968416b48fa398367da"
+    },
+    "role": "VALIDATION_MODEL_SELECTION_NOT_FINAL_TEST",
+    "research_admitted": false
+  },
+  "refit_models": {
+    "L0": {
+      "run_id": "refit-L0",
+      "fit_n": 24,
+      "kind": "L0",
+      "dependency": null
+    },
+    "L2": {
+      "run_id": "refit-L2",
+      "fit_n": 24,
+      "kind": "L2",
+      "dependency": {
+        "available": true,
+        "installed_version": "4.6.0",
+        "requirement_candidate": "lightgbm>=4,<5; exact version lock requires actual CPU verification",
+        "status": "SYNTHETIC_ENGINEERING_ONLY_NO_INSTALL_AUTHORITY"
+      }
+    }
+  },
+  "replay": {
+    "exit_code": 0,
+    "command": [
+      "-m",
+      "V6.experimental.v7_research_replay",
+      "--root",
+      "research/v7/window11-l2-synthetic-bundle",
+      "--run-key",
+      "479685eb5b06e5815c7bb800d29107ee80a45bed2dbe8bfa935547a31463f50b",
+      "--manifest-sha256",
+      "660f6fed0bfd5a32d4333fdaf581f6c0e7cabe1683f3bea3cf1e83298357f759",
+      "--output",
+      "research/v7/window11-l2-replay.json"
+    ],
+    "report": "research/v7/window11-l2-replay.json",
+    "sha256": "3d3fd65ac5f94141253c216c79d5193adeff1f46747cf699e4aa6f81dd52bd03"
+  },
+  "real_training_admission": false
+}

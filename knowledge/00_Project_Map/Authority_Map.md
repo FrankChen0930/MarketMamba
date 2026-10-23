@@ -5,6 +5,30 @@
 > Semantic change owner must update this map in the same change.
 > Prior research/Phase A map accepted `2026-09-20`; 2026-09-22 runtime additions are agent-observed, pending separate human review. Canonical means current navigation authority, not immutable final state.
 
+## Window11 L2 & CPU Resume — bounded engineering
+
+Window10 fixed `f25181637e40138c84dc3722292647d4325882fc` LOCAL_INTEGRATED/NOT_DEPLOYED
+by ff-only from `91fa82c2ac5e3b8f22109c55a73fa4e540a916b9`. Pre/post167testsPASS,
+40hashes/independent26tests GO,0Critical/Required;31treesclean. Main heldf251816;
+closure documents stay on isolated branch. Prior Window10 UNMERGED status historical.
+
+Window11 `development/v7-window11-l2-cpu-resume`, basef251816,
+`.worktrees/v7-window11-l2-cpu-resume`, UNMERGED/NOT_DEPLOYED. Two units only,
+<=2rework/unit; synthetic CPU fits and actual CPU interrupt/restart now authorized.
+U1 COMPLETE_REVIEWED:3focused/independent3PASS,0Critical/Required. Dedicated overlay
+LightGBM4.6.0/sklearn1.6.1/joblib1.6.0/threadpoolctl3.6.0/cloudpickle3.1.2,5official
+wheel hashes pinned. Base NumPy2.0.2/SciPy1.16.3/Torch2.10.0+cpu unchanged.
+Actual L2 fit/refit/forward/common-support and independent replay PASS. Setup corrected
+missing required cloudpickle using existing repo lock, no global/package upgrade.
+U2 IN_PROGRESS_UNREVIEWED: reuse E1 actual tiny CPU training, safe weights-only checkpoint codec,
+new-process interrupt/resume proof with explicit granularity; no second trainer.
+
+StrictSTOP/E1matrixBLOCKED/H2NOT_APPROVED/FairEvaluationPROPOSED/PreNextOpenPROPOSED/
+InferenceRecoveryDEFERRED. No GPU/realresearch/production/otherbranchmerge/admission.
+[Evidence](../../research/v7/window11-evidence.json),
+[sole Backlog](../../research/v7/research-program.md#window11-l2-and-cpu-resume).
+Resume HEAD/clean/maps/Charter/evidence on named branch; no next-window grant.
+
 ## Window10 Classical Synthetic Foundation — complete / STOP
 
 Window09 fixed `91fa82c2ac5e3b8f22109c55a73fa4e540a916b9` LOCAL_INTEGRATED /

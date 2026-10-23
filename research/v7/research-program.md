@@ -1,9 +1,24 @@
 # V7 Research Program and Current Development Backlog
 
-> Current planning owner: isolated Window10 engineering branch, linked by canonical
+> Current planning owner: isolated Window11 engineering branch, linked by canonical
 > Current State/Authority Map. Planning status does not grant research, execution,
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
+
+## Window11 L2 and CPU Resume
+
+Current sole queue: Human Window11, two synthetic CPU units, main f251816,
+branch `development/v7-window11-l2-cpu-resume`, UNMERGED/NOT_DEPLOYED.
+
+| Unit | Objective/authority | Acceptance/status |
+|---|---|---|
+| W11-U1 | Human actual LightGBM baseline completion | COMPLETE_REVIEWED:3focused/independent3PASS,0Critical/Required;5official wheels pinned,actual fit/refit/common-support/replay;setup dependency correction1 |
+| W11-U2 | Human actual PyTorch CPU interrupt/resume | IN_PROGRESS_UNREVIEWED: E1 train/store adapter reuse, full state/numeric comparisons across process, safe codec/no unknown payload, bounded granularity |
+
+Earlier L2 missing-dependency blocker is resolved ONLY in this dedicated overlay;
+other environments remain unqualified. Real-data/evaluation/admission/GPU policies
+still need Human. Full reproduction/GPU resume not claimed; E1matrix BLOCKED.
+[Evidence](window11-evidence.json),[report](../../reports/v7_window11_l2_cpu_resume.md).
 
 ## Window10 Classical Synthetic Foundation
 

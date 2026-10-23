@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "artifact_class": "CANONICAL",
+  "status": "U1_COMPLETE_U2_READY",
+  "branch": "development/v7-window11-l2-cpu-resume",
+  "base": "f25181637e40138c84dc3722292647d4325882fc",
+  "integration": {
+    "before": "91fa82c2ac5e3b8f22109c55a73fa4e540a916b9",
+    "after": "f25181637e40138c84dc3722292647d4325882fc",
+    "method": "ff-only",
+    "pre_tests": 167,
+    "post_tests": 167,
+    "hashes": 40,
+    "clean_trees": 31,
+    "independent_tests": 26,
+    "critical": 0,
+    "required": 0,
+    "main_doc_commit": false
+  },
+  "U1": {
+    "tests": 3,
+    "red": "======================================================================\nERROR: test_actual_l2_fit_refit_forward_and_replay (V6.experimental.v7_window11_l2_test.RealLightGBMTest.test_actual_l2_fit_refit_forward_and_replay)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/V6/experimental/v7_window11_l2_test.py\", line 12, in test_actual_l2_fit_refit_forward_and_replay\n    result=run_study(folder,comparison_model='L2')\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: run_study() got an unexpected keyword argument 'comparison_model'\n\n======================================================================\nERROR: test_forward_label_change_does_not_select_or_refit (V6.experimental.v7_window11_l2_test.RealLightGBMTest.test_forward_label_change_does_not_select_or_refit)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/V6/experimental/v7_window11_l2_test.py\", line 27, in test_forward_label_change_does_not_select_or_refit\n    p=panel();a=run_study(Path(folder)/'a',inputs=copy.deepcopy(p),comparison_model='L2')\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: run_study() got an unexpected keyword argument 'comparison_model'\n\n======================================================================\nERROR: test_same_support_and_coverage_exclusions (V6.experimental.v7_window11_l2_test.RealLightGBMTest.test_same_support_and_coverage_exclusions)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/V6/experimental/v7_window11_l2_test.py\", line 20, in test_same_support_and_coverage_exclusions\n    result=run_study(folder,comparison_model='L2',drop_l0_forward_stock=True)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: run_study() got an unexpected keyword argument 'comparison_model'\n\n----------------------------------------------------------------------\nRan 3 tests in 0.005s\n\nFAILED (errors=3)\n",
+    "green": "----------------------------------------------------------------------\nRan 3 tests in 2.364s\n\nOK\n",
+    "dependency_setup_corrections": 1,
+    "review_rework_rounds": 0,
+    "review": {
+      "reviewer": "/root/independent_review",
+      "critical": 0,
+      "required": 0,
+      "independent_tests": 3
+    },
+    "evidence": "research/v7/window11-l2-evidence.json",
+    "regression": {
+      "tests": 170,
+      "log": "----------------------------------------------------------------------\nRan 170 tests in 20.765s\n\nOK\n"
+    }
+  },
+  "U2": {
+    "status": "IN_PROGRESS_UNREVIEWED"
+  },
+  "runtime": {
+    "overlay": "/home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/.runtimes/window11-cpu/bin/python",
+    "base": "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv",
+    "python": "3.12.3",
+    "torch": "2.10.0+cpu",
+    "numpy": "2.0.2",
+    "scipy": "1.16.3",
+    "data_env": "UNSET",
+    "inputs": "SYNTHETIC_ONLY",
+    "CUDA_VISIBLE_DEVICES": ""
+  },
+  "boundaries": [
+    "StrictSTOP/E1matrixBLOCKED/H2NOT_APPROVED/FairEvaluationPROPOSED/PreNextOpenPROPOSED/InferenceRecoveryDEFERRED",
+    "No formalfeaturelabel/admission or production changes",
+    "No GPU/unknownhistoricalpayload/mainmergeofnewwork/push/deploy"
+  ]
+}

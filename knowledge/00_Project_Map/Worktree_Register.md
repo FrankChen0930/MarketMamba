@@ -1,5 +1,17 @@
 # Worktree Register
 
+## Window11 L2/CPU resume — 2026-10-23
+
+- Path `.worktrees/v7-window11-l2-cpu-resume`;branch `development/v7-window11-l2-cpu-resume`;
+  base `f25181637e40138c84dc3722292647d4325882fc`;owner Codex/HumanWindow11;
+  created2026-10-23;retiredN/A. ACTIVE/UNMERGED/NOT_DEPLOYED.
+- Existing31trees clean/distinct scope; none serves W11. Existing source/evidence/maps
+  reused. Dedicated `.runtimes/window11-cpu` overlay + cached officialwheels are GENERATED,
+  reference existing CPUbasevenv; no shared/global/Windows env changed. Preserve these
+  runtime refs until separately reviewed retirement; no cleanup authorized.
+- Mainf251816 held. Safe removal requires clean retained commits/bytes/evidence and
+  resolved venv/artifact references plus separate retirement review.
+
 ## Window10 classical synthetic study — 2026-10-23
 
 - Path `.worktrees/v7-window10-classical-e2e`; branch `development/v7-window10-classical-e2e`;
