@@ -7,7 +7,7 @@
 
 ## Window05 Feature Integrity and Cost-Effective Data Research
 
-ACTIVE / UNMERGED / NOT_DEPLOYED. Current Human grant permits only F0/F1/F2,
+WINDOW_COMPLETE / STOP / UNMERGED / NOT_DEPLOYED. Human grant covered only F0/F1/F2,
 CPU/read-only/synthetic preparation. Base main2ee4ca8; branch
 `research/v7-window05-feature-integrity` at `.worktrees/v7-window05-feature-integrity`.
 Prior queue rows below are historical checkpoints; this section is the single active queue.
@@ -16,13 +16,31 @@ Prior queue rows below are historical checkpoints; this section is the single ac
 |---|---|---|
 | F0 | Human Stage A + frozen48manifest/policy; audit not selection | COMPLETED source-level audit48ordered,4tests+independent4,0Critical/Required;21conditional27unknown; no payloadPIT promotion. Source syntax typo corrected once before firstGREEN, no review rework |
 | F1 | Human Stage B exploratory low-cost candidates | COMPLETED_SYNTHETIC_ONLY: timestamp-gated formulas9tests/independent9PASS,0Required,1timezone rework; real diagnostics BLOCKED; no training/input-dim changes |
-| F2 | Human Stage C official/repo PIT feasibility | IN_PROGRESS: original455040row scope/version pinned; no bulk data or repeat exhausted historical endpoint searches |
+| F2 | Human Stage C official/repo PIT feasibility | COMPLETED_NOT_CURRENTLY_FEASIBLE:4original metadata blobs verified/independent0Required;0newqualified rows,0rework; no new collector or policy |
 
 Priority: resolve t-close versus later decision semantics and availability evidence
 before new real-data feature diagnostics. F0 risk prohibits dependent empirical
-analysis; independent F1synthetic/F2feasibility may continue. Historical E5/E1
+analysis; independent F1synthetic/F2feasibility were permitted within this now-closed
+window and both completed. Historical E5/E1
 results unchanged. H2 NOT_APPROVED/StrictSTOP/E1BLOCKED/FairEvaluationPROPOSED.
 All engineering is additive research helpers, no production/contract edits.
+
+Final checkpoint: this containing F2/closure commit; F0 source9fbf1bd, F1source1a6a452.
+87 related tests PASS, F0 independent4/F1independent9, all3reviews0Critical/Required.
+F0 initial syntax correction1/reviewrework0; F1reviewrework1; F2rework0. STOP.
+Main remains2ee4ca8; no integration/push/deploy. Read local Current State/Authority,
+Charter and this section after checking branch/HEAD/clean. No full Roadmap Recovery
+or frozen-matrix rescan; next execution needs a new bounded Human grant.
+
+Highest-value next preparation: Human-frozen decision/availability semantics, then
+identity-qualified small unscaled panel + publication/vintage/missingness sidecar
+and matched historical-universe quality audit. Empirical F1diagnostics stay BLOCKED;
+synthetic formula completion does not admit any feature. F2forward-vintage pilot
+is only PROPOSED and needs source/terms/coverage/revision/cadence approval before
+collection. Genuine revenue surprise lacks ex-ante expectations. No GPU/Colab.
+Long-term Mamba-2, expanding baseline, quarterly refresh and ranking are planning
+directions, not amendments to existing frozen E5/E1 or current execution permission.
+
 [Evidence](window05-evidence.json), [F0 report](../../reports/v7_window05_feature_integrity.md),
 [F0 matrix](window05-feature-integrity.json). Maximum2evidenced review-rework rounds/unit.
 

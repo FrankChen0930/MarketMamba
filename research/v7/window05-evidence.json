@@ -53,14 +53,70 @@
       "reason": "Evidence-backed timezone-equivalent cutoff rejection corrected in research helper"
     },
     "empirical_RankIC": null,
-    "new_feature_admission": false
+    "new_feature_admission": false,
+    "commit": "1a6a4527e530395a66f6007fa19720f9b35e5177"
   },
   "F2": {
-    "status": "IN_PROGRESS"
+    "status": "COMPLETE_FEASIBILITY_NOT_CURRENTLY_FEASIBLE",
+    "report": "reports/v7_window05_revenue_pit.md",
+    "machine_evidence": "research/v7/window05-revenue-feasibility.json",
+    "commit": "Containing F2/closure commit",
+    "review": {
+      "reviewer": "/root/independent_review",
+      "critical": 0,
+      "required": 0,
+      "historical_metadata_blobs_independently_verified": 4,
+      "rework_rounds": 0
+    },
+    "new_verified_historical_rows": 0,
+    "original_policy_unchanged": true
   },
   "frozen_hashes": {
     "research/v7/corrected-baseline-v1/feature-manifest.json": "d3b2c2d23ccc071b6e0d49ca77d27f41ade085084ea8fd3952321f5352a32547",
     "research/v7/corrected-baseline-v1/policy.json": "ac32539b44ee80924e1c65785cfcda83d2efd7f7e289cf1ee94245879a09d115",
     "research/v7/corrected-e5-replication-v1/incumbent-contract.json": "3cb4a5fc9c1595689366a2b6bbd49210743b9160fe0f00516622b463eaf46e85"
+  },
+  "status": "WINDOW_COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+  "regression": {
+    "tests_passed": 87,
+    "log": "----------------------------------------------------------------------\nRan 87 tests in 1.739s\n\nOK\n",
+    "scope": "New audit/signal tests + corrected E5 contract/matrix + temporal/snapshot + E1 contract + knowledge governance; no training",
+    "health": "WARNING/noFAIL; same existing warning classes"
+  },
+  "output_hashes": {
+    "research/v7/window05-feature-integrity.json": "b535adfe4070497cd771dd4baaec0ef5b992e291d4bc3b2e8c2c20991fc468f4",
+    "research/v7/window05-candidate-shortlist.json": "5510bb3bab6014fd20171b156f2e05f266cd2885016a8ca9bddd99bcf999d5a4",
+    "research/v7/window05-revenue-feasibility.json": "5e54074ffe47383cd26f6a57f24473963350d27b490f54332e5faf6b7f3660d6",
+    "reports/v7_window05_feature_integrity.md": "19bd2b7a3a99ce483a271fa7a6b3b69ae02990df5aba81f04cbe16cce44f829d",
+    "reports/v7_window05_market_candidates.md": "254814a4dfb6d6942bec80143e1eedfc8b239b277d9bd5980bd927705145fa6d",
+    "reports/v7_window05_revenue_pit.md": "7d755ac0c9972a62e88061a4f6760d7108bd1a0b6ce4592bec0685dbb62a0289",
+    "V6/experimental/v7_window05_audit.py": "5a90a7c8787b5a58521d34fa154bccabaf2e74e5a6ee20b7ca11defe5ecb33b2",
+    "V6/experimental/v7_window05_signals.py": "d23902f1c7e504eeb95b9cad70999b2f9710e9d2d0c52dfbdd32be8002acbe4c",
+    "V6/experimental/v7_window05_audit_test.py": "9531752b0601d9f663d067402bd0864d5d559f055b1ef13eecec520a656a9d56",
+    "V6/experimental/v7_window05_signals_test.py": "a043c03e3786bc3355698d0e69bd59b40202ffc78c849f400a8e005672d5d18b"
+  },
+  "research_stop": "F0 material source timing/missingness risk; actual historical incidence/impact UNKNOWN; no dependent real-data factor/performance analysis, no historical-result rewrite",
+  "human_decisions": [
+    "Keep literal t-close cutoff or define a new pre-next-open availability/QC decision contract; no automatic selection",
+    "Approve exact raw/unscaled cache identity + historical universe + release/vintage evidence before empirical diagnostics",
+    "Any feature admission/evaluation design remains a future explicit decision",
+    "Monthly completeness/lag/vintage acquisition/forward collector require separate policy/expense/scheduling grant; no surprise without ex-ante expectations",
+    "H2/GPU/model architecture changes not authorized; Mamba-2/expanding/quarterly refresh remain planning directions"
+  ],
+  "next_checkpoint": "Containing final F2/closure commit on research/v7-window05-feature-integrity; main unchanged2ee4ca8; verifyclean then Current State/Authority/Charter/unique Backlog, no next window without Human grant",
+  "protected_scope_check": "PASS frozen manifests/policy/incumbent, V6 production source, Data/models unchanged vs base; no operational payload read",
+  "closure_review": {
+    "reviewer": "/root/independent_review",
+    "critical": 0,
+    "required_initial": 1,
+    "required_remaining": 0,
+    "rework_rounds": 1,
+    "finding": "Stale may-continue sentence in completed queue changed to past-tense completion; no implementation rework"
+  },
+  "usage_snapshot": {
+    "source": "native get_goal before finalclosure",
+    "tokensUsed": 413136,
+    "timeUsedSeconds": 872,
+    "scope": "tool reported aggregate; not audited billing/cost or hard budget"
   }
 }

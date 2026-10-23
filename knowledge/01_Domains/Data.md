@@ -160,3 +160,13 @@ and still Human-only. No formal data writes, live source checks or production ro
 [evidence](../../research/v7/data-evaluation-window03-evidence.json).
 Window02's historical provider probe must run at pinnedf34f9f3; its defect oracle
 is intentionally historical, not a regression expectation for this repaired parser.
+
+## Window05 monthly revenue feasibility — 2026-10-23
+
+Branch-local F2 reverified the bounded historical0/455040 archive audit (2334issuers,
+2002–2026), distinct from later455160mutable provider rows. No newly qualified
+historical publication/revision rows acquired. NOT_CURRENTLY_FEASIBLE refers to
+broad historical PIT restoration on available evidence, not universal impossibility.
+Monthly policy remains EXCLUDED_PUBLIC_RECONSTRUCTION_EXHAUSTED; forward vintages
+are PROPOSED/uncollected. [Report](../../reports/v7_window05_revenue_pit.md),
+[evidence](../../research/v7/window05-revenue-feasibility.json). UNMERGED/NOT_DEPLOYED.

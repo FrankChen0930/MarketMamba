@@ -5,7 +5,7 @@
 > Semantic change owner must update this map in the same change.
 > Prior research/Phase A map accepted `2026-09-20`; 2026-09-22 runtime additions are agent-observed, pending separate human review. Canonical means current navigation authority, not immutable final state.
 
-## Window05 Feature Integrity and Data Research — active bounded window
+## Window05 Feature Integrity and Data Research — complete / STOP
 
 Human authorized F0/F1/F2 only: read-only source audit, synthetic candidate formulas,
 and bounded monthly-revenue PIT feasibility. Branch `research/v7-window05-feature-integrity`,
@@ -16,13 +16,23 @@ unquantified risks; no real factor/performance analysis may depend on these
 unverified payloads. Historical conclusions are preserved; no result reclassification.
 
 F0 source audit complete:48ordered, VERIFIED0/CONDITIONAL21/UNKNOWN27/INVALID0,
-all empirical quality UNKNOWN. F1 completed synthetic-only formulas9tests/independent9PASS,1timezone rework;
-real diagnostics BLOCKED. Independent F2 feasibility remains in this window scope. See the local unique
-[Backlog](../../research/v7/research-program.md#window05-feature-integrity-and-cost-effective-data-research)
-and [evidence](../../research/v7/window05-evidence.json). No formal manifest, cutoff,
-label or admission changed. Strict Phase0 STOP; E1 matrix BLOCKED; H2 NOT_APPROVED;
-Fair Evaluation and all new feature/timing candidates PROPOSED. This current entry
-supersedes earlier window STOP solely for this grant; no automatic next window.
+all empirical quality UNKNOWN; F0 commit9fbf1bd,4tests/independent4 PASS.
+F1 completed PROPOSED shortlist/formulas,9tests/independent9 PASS,1timezone rework;
+source commit1a6a452, real diagnostics BLOCKED. F2 complete NOT_CURRENTLY_FEASIBLE
+for broad historical PIT recovery;4historical metadata blobs independently verified,
+0newqualified rows,0rework. All independent reviews0Critical/Required;87related tests
+PASS. Window complete: STOP / UNMERGED / NOT_DEPLOYED, no automatic continuation.
+
+The containing F2/closure commit on this branch is the final resume checkpoint.
+Verify HEAD/clean in the named worktree, then read this section, Authority Map,
+`knowledge/GOVERNANCE.md` and the local unique Backlog's Window05 section.
+[Backlog](../../research/v7/research-program.md#window05-feature-integrity-and-cost-effective-data-research),
+[evidence](../../research/v7/window05-evidence.json). Main stays2ee4ca8; pending
+integration documents stay here. No formal manifest/cutoff/label/admission changed.
+Strict Phase0 STOP; E1 matrix BLOCKED; H2 NOT_APPROVED; Fair Evaluation and all
+new feature/timing/forward-vintage candidates PROPOSED. Human timing/data identity/
+policy choices precede real-data diagnostics; a new bounded grant is required.
+Earlier window execution pointers below are historical; this entry owns latest state.
 
 ## Window04 W04B-LOG integration closure — STOP
 

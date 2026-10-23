@@ -1,0 +1,287 @@
+{
+  "schema_version": 1,
+  "artifact_class": "CANONICAL",
+  "decision": "NOT_CURRENTLY_FEASIBLE",
+  "scope": "Historical issuer-publication/revision qualified broad monthly revenue restoration; not universal impossibility",
+  "historical_evidence": [
+    {
+      "commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+      "path": "research/v7/historical-pit-reconstruction-v1/revenue-publications/coverage.json",
+      "sha256": "82a307393f5aeda1cdc7357612352489263f77836e37d5fd868acfbfda20f15e",
+      "bytes": 1969,
+      "content": {
+        "allowed_human_options": [
+          "EXCLUDE_REVENUE_FEATURES",
+          "CONSERVATIVE_LAG_APPROXIMATION",
+          "LICENSED_VINTAGE_SOURCE"
+        ],
+        "archive_issuers": 2334,
+        "archive_rows": 455040,
+        "archive_years": "2002-2026",
+        "decision_note": "No fallback selected; human decision remains required.",
+        "evidence_path": "research/v7/historical-pit-reconstruction-v1/revenue-publications/exhaustion-evidence.json",
+        "fallback_requires_human_decision": true,
+        "human_options": {
+          "A_EXCLUDE_REVENUE_FEATURES": {
+            "bias_risk": "lowest timestamp bias; changes feature set",
+            "engineering_impact": "rebuild prepared data, model and all downstream evidence",
+            "feature_coverage_impact": "Revenue_MoM and Revenue_YoY removed",
+            "phase0_effect": "can resolve B only after exclusion is accepted and rebuilt"
+          },
+          "B_CONSERVATIVE_LAG_APPROXIMATION": {
+            "bias_risk": "residual misspecification if the lag is not demonstrably conservative",
+            "engineering_impact": "define policy, rebuild and sensitivity-test",
+            "feature_coverage_impact": "features retained after an explicit worst-case lag",
+            "phase0_effect": "remains STOP until policy is accepted and validated"
+          },
+          "C_LICENSED_VINTAGE_SOURCE": {
+            "bias_risk": "lowest if archive semantics and revisions are certified",
+            "engineering_impact": "paid acquisition, ingestion, provenance validation and rebuild",
+            "feature_coverage_impact": "features retained where licensed timestamps cover rows",
+            "phase0_effect": "can resolve B only after verified coverage is sufficient"
+          }
+        },
+        "revision": "v7-revenue-publication-coverage-v2",
+        "status": "PUBLIC_RECONSTRUCTION_EXHAUSTED",
+        "surfaces": {
+          "issuer_submission_archive": true,
+          "mops_disclosure_index": true,
+          "old_mops_interfaces": true,
+          "repo_source_archives": true,
+          "twse_tpex_announcements": true
+        },
+        "unknown_publication_rows": 455040,
+        "verified_publication_rows": 0
+      }
+    },
+    {
+      "commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+      "path": "research/v7/historical-pit-reconstruction-v1/revenue-publications/exhaustion-evidence.json",
+      "sha256": "2a7d0c6c4141ef9665e5d7b28616a6499e0b99c53c395c30946fabe1158fb345",
+      "bytes": 6879,
+      "content": {
+        "bounded_search_contract": {
+          "required_surfaces": [
+            "mops_disclosure_index",
+            "issuer_submission_archive",
+            "twse_tpex_announcements",
+            "old_mops_interfaces",
+            "repo_source_archives"
+          ],
+          "stop_rule": "all five surfaces must be exhausted before PUBLIC_RECONSTRUCTION_EXHAUSTED"
+        },
+        "revision": "v7-revenue-public-exhaustion-v1",
+        "surfaces": {
+          "issuer_submission_archive": {
+            "checked": true,
+            "contains_issuer_publication_timestamp": false,
+            "coverage_attempted": "full category index",
+            "observed_categories": [],
+            "query_pattern": "enumerate public document categories before issuer-year search",
+            "result_semantics": "archive categories for uploaded document classes",
+            "snapshots": [
+              "research/v7/historical-pit-reconstruction-v1/revenue-publications/exhaustion-sources/manifests/4e481fb11bba7adc4fa4b5d97bc74432c838d7543bfd644a628e7f9c9a46c8e7-2026-09-17T043340.681063p0000.json"
+            ],
+            "source": "TWSE public document archive category index",
+            "why_insufficient": "monthly revenue is not an indexed document class; archive cannot enumerate its submission versions"
+          },
+          "mops_disclosure_index": {
+            "checked": true,
+            "contains_issuer_publication_timestamp": false,
+            "coverage_attempted": "representative issuer-month plus response-schema inspection",
+            "query_pattern": "issuer + ROC year + month",
+            "result_semantics": "historical monthly revenue values; response datetime is retrieval/query time",
+            "snapshots": [
+              "research/v7/historical-pit-reconstruction-v1/revenue-publications/sources/manifests/cdb11957dd8cae28dede623be27e15cc1ed91a7ff02689d331c11525ee59b969-2026-09-16T191356.154044p0000.json"
+            ],
+            "source": "MOPS t05st10_ifrs JSON API",
+            "why_insufficient": "no filing/upload/publication field exists in the response"
+          },
+          "old_mops_interfaces": {
+            "checked": true,
+            "contains_issuer_publication_timestamp": false,
+            "coverage_attempted": "representative historical issuer-month; stable response template inspected",
+            "query_pattern": "issuer + ROC year + month",
+            "result_semantics": "issuer-provided historical monthly revenue values and notes",
+            "snapshots": [
+              "research/v7/historical-pit-reconstruction-v1/revenue-publications/exhaustion-sources/manifests/dd0341db2d487a831b5eba46bb503128050ee1299b82b68dbcadfa559ad61af9-2026-09-17T043341.170466p0000.json"
+            ],
+            "source": "legacy mopsov ajax_t05st10_ifrs",
+            "timestamp_terms_found": [],
+            "why_insufficient": "HTML contains issuer, period, values and notes but no submission/publication/upload date or time"
+          },
+          "repo_source_archives": {
+            "checked": true,
+            "contains_issuer_publication_timestamp": false,
+            "coverage_attempted": "all 455160 local rows",
+            "current_archive_rows": 455160,
+            "current_columns": [
+              "Date",
+              "stock_id",
+              "country",
+              "revenue",
+              "revenue_month",
+              "revenue_year",
+              "create_time",
+              "first_observed_at"
+            ],
+            "current_create_time_non_null": 455160,
+            "current_sha256": "d2db379cd3f78c48f81465e8be5723b6704fdafbe0a6b2c9ec7d38339619e9dc",
+            "frozen_archive_rows": 455040,
+            "frozen_create_time_parseable_rows": 5162,
+            "frozen_missing_timestamp_rows": 449878,
+            "frozen_sha256": "180732c5a99f5f793b96084891d198b959170db9f0f74bc3e56bd39ec4bdebbe",
+            "post_freeze_row_drift": 120,
+            "query_pattern": "full archive schema and create_time census",
+            "result_semantics": "FinMind/provider observation archive; create_time is provider database-entry metadata, not certified issuer publication",
+            "snapshots": [
+              "research/v7/correctness-remediation-v1/local-data-inventory.json",
+              "V6/marketmamba/data/fetcher.py",
+              "V6/marketmamba/data/feature_engineer.py"
+            ],
+            "source": "local revenue_raw parquet, feature pipeline, fetcher source mapping, and prior data audit",
+            "why_insufficient": "missing create_time dominates and present values do not have issuer-publication semantics"
+          },
+          "twse_tpex_announcements": {
+            "checked": true,
+            "contains_issuer_publication_timestamp": false,
+            "coverage_attempted": "both listed and OTC official schemas and current full-market records",
+            "query_pattern": "catalog-wide schema enumeration and current full-market monthly-revenue payloads",
+            "result_semantics": "monthly revenue is a current aggregate dataset; daily material announcements are separate endpoints",
+            "snapshots": [
+              "research/v7/historical-pit-reconstruction-v1/revenue-publications/exhaustion-sources/manifests/2e3033931fdd806778bf2c30654dfb0e8db486c1ed255e94d8f8e38c98e1fcba-2026-09-17T043338.429331p0000.json",
+              "research/v7/historical-pit-reconstruction-v1/revenue-publications/exhaustion-sources/manifests/37f26423bc068da942afa14bf6e8ea0877b335c1b8b84143a54ab19a972305c7-2026-09-17T043340.168878p0000.json",
+              "research/v7/historical-pit-reconstruction-v1/revenue-publications/exhaustion-sources/manifests/84ee57165d86fb9ddc029fae911fd29b763c10d34537b5b1105e7e784ee200e1-2026-09-17T043340.352738p0000.json",
+              "research/v7/historical-pit-reconstruction-v1/revenue-publications/exhaustion-sources/manifests/364cad0ae445df148e365a7d0a7b11c781d66592178d322c0ebda101e5d923dc-2026-09-17T043340.632596p0000.json"
+            ],
+            "source": "TWSE and TPEx official OpenAPI catalogs plus current monthly-revenue endpoints",
+            "timestamp_fields_found": [],
+            "tpex_monthly_fields": [
+              "\u51fa\u8868\u65e5\u671f",
+              "\u8cc7\u6599\u5e74\u6708",
+              "\u516c\u53f8\u4ee3\u865f",
+              "\u516c\u53f8\u540d\u7a31",
+              "\u7522\u696d\u5225",
+              "\u71df\u696d\u6536\u5165-\u7576\u6708\u71df\u6536",
+              "\u71df\u696d\u6536\u5165-\u4e0a\u6708\u71df\u6536",
+              "\u71df\u696d\u6536\u5165-\u53bb\u5e74\u7576\u6708\u71df\u6536",
+              "\u71df\u696d\u6536\u5165-\u4e0a\u6708\u6bd4\u8f03\u589e\u6e1b(%)",
+              "\u71df\u696d\u6536\u5165-\u53bb\u5e74\u540c\u6708\u589e\u6e1b(%)",
+              "\u7d2f\u8a08\u71df\u696d\u6536\u5165-\u7576\u6708\u7d2f\u8a08\u71df\u6536",
+              "\u7d2f\u8a08\u71df\u696d\u6536\u5165-\u53bb\u5e74\u7d2f\u8a08\u71df\u6536",
+              "\u7d2f\u8a08\u71df\u696d\u6536\u5165-\u524d\u671f\u6bd4\u8f03\u589e\u6e1b(%)",
+              "\u5099\u8a3b"
+            ],
+            "twse_monthly_fields": [
+              "\u51fa\u8868\u65e5\u671f",
+              "\u8cc7\u6599\u5e74\u6708",
+              "\u516c\u53f8\u4ee3\u865f",
+              "\u516c\u53f8\u540d\u7a31",
+              "\u7522\u696d\u5225",
+              "\u71df\u696d\u6536\u5165-\u7576\u6708\u71df\u6536",
+              "\u71df\u696d\u6536\u5165-\u4e0a\u6708\u71df\u6536",
+              "\u71df\u696d\u6536\u5165-\u53bb\u5e74\u7576\u6708\u71df\u6536",
+              "\u71df\u696d\u6536\u5165-\u4e0a\u6708\u6bd4\u8f03\u589e\u6e1b(%)",
+              "\u71df\u696d\u6536\u5165-\u53bb\u5e74\u540c\u6708\u589e\u6e1b(%)",
+              "\u7d2f\u8a08\u71df\u696d\u6536\u5165-\u7576\u6708\u7d2f\u8a08\u71df\u6536",
+              "\u7d2f\u8a08\u71df\u696d\u6536\u5165-\u53bb\u5e74\u7d2f\u8a08\u71df\u6536",
+              "\u7d2f\u8a08\u71df\u696d\u6536\u5165-\u524d\u671f\u6bd4\u8f03\u589e\u6e1b(%)",
+              "\u5099\u8a3b"
+            ],
+            "why_insufficient": "both monthly-revenue schemas expose output date and period but no issuer filing time; announcement endpoints are daily/current rather than a complete historical filing ledger"
+          }
+        }
+      }
+    },
+    {
+      "commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+      "path": "research/v7/historical-pit-reconstruction-v1/revenue-publications/publication_table_validation_slice.json",
+      "sha256": "6c9b163e7de80f5c9ab21dd5253bc9a9300f1df11c8b5c2f7de0f19dbbd8bc14",
+      "bytes": 650,
+      "content": [
+        {
+          "available_session": null,
+          "entity_id": "2330",
+          "period": "2024-12",
+          "publication_date": null,
+          "published_at": null,
+          "response_datetime": "115/09/17 03:13:56",
+          "retrieval_method": "anonymous official JSON API",
+          "revision_sequence": 0,
+          "source": "https://mops.twse.com.tw/mops/api/t05st10_ifrs",
+          "source_record_available": true,
+          "timestamp_semantics": "official issuer publication timestamp absent",
+          "unknown_reason": "MISSING_PUBLICATION_TIMESTAMP",
+          "unknown_reason_detail": "MOPS response exposes query response time, not issuer publication time",
+          "verification_status": "UNKNOWN"
+        }
+      ]
+    },
+    {
+      "commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+      "path": "research/v7/corrected-baseline-v1/source-provenance.json",
+      "sha256": "1d25e3b793975b2367ff0d4b20acc81ff222fdd72fff6a4dcc899c7f47fc4e65",
+      "bytes": 1470,
+      "content": {
+        "bounded_search_policy": "completed reconstruction only",
+        "legacy_cache_snapshot_after": {
+          "identity_sha256": "043816abffe8eb09ab4ec42204c7d9f0c24e4368d8ef3cb265b3c8179bd0d6bd",
+          "metadata_files": 2244,
+          "parquet_files": 2244,
+          "total_bytes": 2286614881,
+          "tree_sha256": "3fe6a00f5c4d05d8c3c57f534f11289c76480b0dd47ee18ce211acb5b159c5e2"
+        },
+        "legacy_cache_snapshot_before": {
+          "identity_sha256": "043816abffe8eb09ab4ec42204c7d9f0c24e4368d8ef3cb265b3c8179bd0d6bd",
+          "metadata_files": 2244,
+          "parquet_files": 2244,
+          "total_bytes": 2286614881,
+          "tree_sha256": "3fe6a00f5c4d05d8c3c57f534f11289c76480b0dd47ee18ce211acb5b159c5e2"
+        },
+        "legacy_unchanged": true,
+        "schema_version": "v7-corrected-source-provenance-v1",
+        "sources": {
+          "cache": "3fe6a00f5c4d05d8c3c57f534f11289c76480b0dd47ee18ce211acb5b159c5e2",
+          "cache_identity": "043816abffe8eb09ab4ec42204c7d9f0c24e4368d8ef3cb265b3c8179bd0d6bd",
+          "calendar": "dd44d77f86b57ca5940c35dbd44f7a1475187f04650590644ba97fdb480e95d3",
+          "financial_coverage": "855780ff6337249697618ece3296252f76d71a44548d8d40096555b3fb5b85ec",
+          "financial_filings": "32f99c92a38cc68e080ec3ad6b03a738d4b5c372fc8a7f598374dd8257f1250e",
+          "lifecycle": "290dc09bff90059b6b04a97dbb256de48f50f0791e0af17a3832b70eb8ee8ac5",
+          "policy": "ac32539b44ee80924e1c65785cfcda83d2efd7f7e289cf1ee94245879a09d115",
+          "suspensions": "13e25132a7703e1499cd6dc700abbd2746978b8b14b2682fde6d011582574a5c"
+        }
+      }
+    }
+  ],
+  "new_verified_historical_rows": 0,
+  "new_historical_payloads_fetched": 0,
+  "policy_unchanged": "EXCLUDED_PUBLIC_RECONSTRUCTION_EXHAUSTED",
+  "official_document_checks": [
+    {
+      "url": "https://twse-regulation.twse.com.tw/ENG/TW/law/DOC01.aspx?FLCODE=FL007250&FLNO=3",
+      "status": "READ",
+      "finding": "Deadline with special exceptions is not issuer publication/vintage; current rule not retroactive history"
+    },
+    {
+      "url": "https://data.gov.tw/dataset/18420",
+      "status": "READ_METADATA_ONLY",
+      "finding": "Output date/period/revenue fields; Open Government Data License v1/free; no listed issuer publication or revision sequence; underlying CSV not fetched"
+    },
+    {
+      "url": "https://www.tpex.org.tw/storage/eb_data/11503/11500542341.html",
+      "status": "LIMITED_INDEX_ONLY_DIRECT_403",
+      "finding": "Official indexed excerpt suggests insurance15th-day exception; full rule unverified; no fixed lag adopted"
+    }
+  ],
+  "accessed_on": "2026-10-23",
+  "research_options": {
+    "Revenue_YoY": "PROPOSED; as-of R_m/R_m-12-1",
+    "growth_acceleration": "PROPOSED; YoY_m-YoY_m-1",
+    "genuine_revenue_surprise": "BLOCKED: no legitimate ex-ante historical expectations",
+    "announcement_age": "BLOCKED: verified availability clock missing"
+  },
+  "forward_vintages": "PROPOSED_NOT_COLLECTED_NOT_DEPLOYED",
+  "historical_exhaustion_scope": "Five bounded surfaces; representative schemas/category index and recorded local census, not every issuer historical web page",
+  "storage_requirements": "Raw immutable versions + provenance/timezone/retrieval/actual publication if evidenced + hash + correction relation + QA + dated issuer universe; retain resource attribution/terms",
+  "formal_admission": false
+}

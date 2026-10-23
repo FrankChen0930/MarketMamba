@@ -7,7 +7,8 @@
 - Purpose bounded F0/F1/F2. Existing23trees hold distinct frozen/source/audit roles,
   none serves this new objective; isolation protects main and historical payloads.
   Existing experimental/research/reports paths suffice; no new architecture/memory tree.
-- UNMERGED / NOT_DEPLOYED. Dependencies frozenmanifest/policy, pinned historical
+- WINDOW_COMPLETE / STOP / UNMERGED / NOT_DEPLOYED; final containing F2/closure commit.
+  Dependencies frozenmanifest/policy, pinned historical
   source metadata, existing CPUvenv and limited official-document reads. E1 matrix
   absent; no processed_v6 mount, inherited3trackedDatafiles unchanged/unread.
 - Safe removal requires clean tree, retained commits/artifacts and resolved
