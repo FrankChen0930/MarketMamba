@@ -9,15 +9,20 @@
 
 Human Window08: Window07 fixed1631020 integrated local main; Window08 base1631020,
 branch `development/v7-window08-ranking-evaluation`, UNMERGED/NOT_DEPLOYED.
-Only two synthetic CPU units; no real labels/training/policy adoption. Older queues
+WINDOW_COMPLETE/STOP:U1 826b8ddf798e752584d180181d24cc1db967e019; U2 containing closure commit.
+101joint CPUtests,24expectedcases,2schemas/3outputsPASS. Two units only; no real
+labels/training/policy adoption. Older queues
 are historical; this section is the sole current queue.
 
 | Priority / unit | Objective / authority | Acceptance / state |
 |---|---|---|
 | 1 W08-U1 | Human StageB common ranking + W07 isolation | COMPLETE_REVIEWED:19synthetic+independent19 tests;1rework/0remainingRequired; explicit tie/minN/weight policy, metadata-first maturity, keyed traceable support/daily rejections |
-| 2 W08-U2 | Human StageC fair paired comparison | READY: identical fold/label/calendar/policy + common valid support; daily deltas, exclusions, periods; independent review required |
+| 2 W08-U2 | Human StageC fair paired comparison | COMPLETE_REVIEWED:15synthetic tests; common valid support/daily deltas, exclusions, actual-session periods;0rework,0Critical/Required |
 | Next Window09 | Artifact/experiment tracking | NOT_AUTHORIZED: consume stable output schema only after separate bounded grant; no registry built |
 
+No remaining READY implementation under the exhausted Window08 grant. Next high-value
+CPU candidate (PROPOSED_NEXT_GRANT): consume these interfaces to retain/replay full
+prediction+eligibility inputs and manifests; reuse current hashes/manifests, no platform.
 Dependencies remaining: qualified actual data/source/vintage/time evidence and Human
 research decisions (minN/ties/aggregation/statistical policies/admission). E1matrix
 BLOCKED, StrictSTOP, H2unapproved; FairEvaluation/PreNextOpenPROPOSED, RecoveryDEFERRED.

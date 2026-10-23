@@ -3,7 +3,7 @@
   "artifact_class": "CANONICAL",
   "branch": "development/v7-window08-ranking-evaluation",
   "base": "1631020bce8223ac4337c7e97473a2a3d9a555f0",
-  "status": "U1_COMPLETE_U2_READY",
+  "status": "WINDOW_COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
   "integration": {
     "main_before": "465dca229fc1452aaf1b46572b06886a7d8a2c8f",
     "main_after": "1631020bce8223ac4337c7e97473a2a3d9a555f0",
@@ -16,7 +16,8 @@
     "independent_tests": 24,
     "critical": 0,
     "required": 0,
-    "no_main_document_commit": true
+    "no_main_document_commit": true,
+    "post_governance_health": "WARNING/noFAIL: Governance/AuthorityDrift/LegacyDocs, same existing classes"
   },
   "U1": {
     "red": "======================================================================\nERROR: v7_research_evaluation_test (unittest.loader._FailedTest.v7_research_evaluation_test)\n----------------------------------------------------------------------\nImportError: Failed to import test module: v7_research_evaluation_test\nTraceback (most recent call last):\n  File \"/usr/lib/python3.12/unittest/loader.py\", line 137, in loadTestsFromName\n    module = __import__(module_name)\n             ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window08-ranking-evaluation/V6/experimental/v7_research_evaluation_test.py\", line 8, in <module>\n    from V6.experimental.v7_research_evaluation import evaluate, prediction_hash\nModuleNotFoundError: No module named 'V6.experimental.v7_research_evaluation'\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (errors=1)\n",
@@ -35,10 +36,23 @@
     "regression": {
       "tests": 86,
       "log": "----------------------------------------------------------------------\nRan 86 tests in 0.270s\n\nOK\n"
-    }
+    },
+    "commit": "826b8ddf798e752584d180181d24cc1db967e019"
   },
   "U2": {
-    "status": "READY"
+    "status": "COMPLETE_REVIEWED",
+    "commit": "Containing Unit2/closure commit",
+    "tests": 15,
+    "red": "======================================================================\nERROR: v7_research_comparison_test (unittest.loader._FailedTest.v7_research_comparison_test)\n----------------------------------------------------------------------\nImportError: Failed to import test module: v7_research_comparison_test\nTraceback (most recent call last):\n  File \"/usr/lib/python3.12/unittest/loader.py\", line 137, in loadTestsFromName\n    module = __import__(module_name)\n             ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window08-ranking-evaluation/V6/experimental/v7_research_comparison_test.py\", line 10, in <module>\n    from V6.experimental.v7_research_comparison import compare\nModuleNotFoundError: No module named 'V6.experimental.v7_research_comparison'\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (errors=1)\n",
+    "first_green": "----------------------------------------------------------------------\nRan 14 tests in 0.145s\n\nOK\n",
+    "review": {
+      "reviewer": "/root/independent_review",
+      "critical": 0,
+      "required": 0,
+      "independent_tests_before_additional_regression": 33
+    },
+    "rework_rounds": 0,
+    "additional_regression": "Own support IC=-0.5 each versus common support delta=-2; review-driven extra regression, no implementation repair"
   },
   "runtime": {
     "python": "3.12.3",
@@ -69,5 +83,89 @@
     "Only SYNTHETIC evidence permitted; no real PIT claim",
     "No uncertainty policy or acceptance threshold"
   ],
-  "knowledge_health": "WARNING/noFAIL existing Governance/AuthorityDrift/LegacyDocs classes"
+  "knowledge_health": "WARNING/noFAIL existing Governance/AuthorityDrift/LegacyDocs classes",
+  "regression": {
+    "total_tests_passed": 101,
+    "log": "----------------------------------------------------------------------\nRan 101 tests in 0.514s\n\nOK\n",
+    "counts": {
+      "U1": 19,
+      "U2": 15,
+      "W07": 24,
+      "prior_temporal": 7,
+      "E1contract": 8,
+      "E1matrix": 5,
+      "governance": 23
+    }
+  },
+  "schemas": {
+    "status": "VALIDATED_DRAFT202012_SYSTEM_PYTHON_JSONSCHEMA",
+    "schemas_checked": 2,
+    "synthetic_outputs_validated": 3,
+    "limitations": "Structural schema necessary but not sufficient: executable semantic/role/identity checks still required"
+  },
+  "case_matrix": {
+    "path": "research/v7/window08-synthetic-cases.json",
+    "matched": 24,
+    "scope": "SYNTHETIC_ONLY_NO_HISTORICAL_PIT_CLAIM"
+  },
+  "human_decisions_required": [
+    "Qualified calendar/source/snapshot/vintage/availability and maturelabel evidence",
+    "Formal ranges/origins/purge/embargo/refit/feature freeze/deadlines",
+    "Tie/minN/missing/common-support/aggregation rules",
+    "Statistical CI/block/selection/multiplecomparison/acceptance rules",
+    "Real study/data/research admission; no parameters selected here"
+  ],
+  "next_checkpoint": "Containing Unit2/closure commit on development/v7-window08-ranking-evaluation; verify cleanHEAD, first CurrentState/Authority entry, Charter, sole Window08 Backlog. Main1631020. STOP, new bounded grant required for Window09.",
+  "scope_accounting": {
+    "engineering_units": 2,
+    "U1_rework_rounds": 1,
+    "U2_rework_rounds": 0,
+    "additional_human_intervention": 0,
+    "roadmap_rescans": 0,
+    "E1matrix_repeat_searches": 0,
+    "new_framework_registry_trainer": false,
+    "repeat_tests": "Only integration pre/post, TDD, new evidence repairs, relevant final regression and independent review; no duplicate research",
+    "goal_telemetry_observed": "2026-10-23 11:52:28 UTC: timeUsedSeconds919,tokensUsed139241; aggregate goal counter not billing/hard token or wallclock cap"
+  },
+  "source_identities": {
+    "V6/experimental/v7_research_temporal.py": "1e2a776099b063470dda673d1c717678d13aba35d7194f582d2e30c437fba119",
+    "V6/experimental/v7_research_isolation.py": "024f1474448d4e06e6f48cf1ef9c2bbd6bd6c3902f57f09e6a25dd48e34e9cbc",
+    "V6/experimental/v7_corrected_e5_train.py": "e5326ddd4dc3ef9e3d34df9e7dedca7cd1fbd420aac92d4480e5eeba97c46510",
+    "V6/experimental/v7_corrected_e5_replication.py": "8c3a2b37950c5a24028cf9a2081fa6a3ea1cd89ce4be8e05b29ba1811c5d3af8",
+    "V6/experimental/v7_e1_evaluate.py": "0a3c4e053ca5bd98a3c134761070f07be56802984e519709b60a018c3980ff18"
+  },
+  "frozen_hashes": {
+    "research/v7/corrected-baseline-v1/feature-manifest.json": "d3b2c2d23ccc071b6e0d49ca77d27f41ade085084ea8fd3952321f5352a32547",
+    "research/v7/corrected-baseline-v1/policy.json": "ac32539b44ee80924e1c65785cfcda83d2efd7f7e289cf1ee94245879a09d115",
+    "research/v7/corrected-e5-replication-v1/incumbent-contract.json": "3cb4a5fc9c1595689366a2b6bbd49210743b9160fe0f00516622b463eaf46e85",
+    "research/v7/e1-rolling-origin-refresh-v1/experiment-contract.json": "7a59d98744ac736e915ff5f6e0e8fead2f80f5ce7f8283b467ec0464bffe8d4c"
+  },
+  "artifact_hashes": {
+    "V6/experimental/v7_research_evaluation.py": "9ad8f4b1f6f6d3d6e18051c3c71c2f042a2f05ed64c4791d12ae59b862a301f3",
+    "V6/experimental/v7_research_evaluation_test.py": "ef5e4345ff57233f89e6747ff62e9aba434709a9d7dde30cbead1064064a389e",
+    "V6/experimental/v7_research_comparison.py": "529e8d94e39b99dd18cd6ad1992be075e0f56f27124ef60191fae0a98acd9155",
+    "V6/experimental/v7_research_comparison_test.py": "883f69e4bff8cbab2c7280e9c8eb184386f12d4cd850b14ab3b77fc70f8b22fc",
+    "research/v7/ranking-evaluation-output-schema.json": "63c60c40d62a08110e44fe7998cceac8597343343cf48f53c4e19918da8cd738",
+    "research/v7/ranking-comparison-output-schema.json": "c6ac93d7b8714773ceb275be53883afc7cf45aa2790d5cd8c7f3d5924e70f9f2",
+    "research/v7/window08-synthetic-inputs.json": "a83e9debc6729a91ddef813fe5a84c4690812fcdf18ee19a2acad99e8870ef66",
+    "research/v7/window08-synthetic-outputs.json": "d3cfaf3acff27f8a2a30007a921b6a9abb5ae5deaaf58290bc8d80473c82ac59",
+    "research/v7/window08-synthetic-cases.json": "c7cf508c2d776bf9516521f7b1362e92bf1a1863de1e038b66fbf314b41127b8",
+    "reports/v7_window08_ranking_evaluation.md": "627812027aef2c471762c356eedffea5c02ace452a310281897424037835b6e6"
+  },
+  "closure_review": {
+    "reviewer": "/root/independent_review",
+    "status": "GO",
+    "critical": 0,
+    "required": 0,
+    "independent_tests_passed": 34,
+    "artifact_hashes_verified": 10,
+    "frozen_hashes_verified": 4,
+    "source_hashes_verified": 5,
+    "schemas_checked": 2,
+    "outputs_validated": 3,
+    "cases_matched": 24,
+    "recovery": "PASS",
+    "main_head": "1631020bce8223ac4337c7e97473a2a3d9a555f0"
+  },
+  "diff_check": "PASS"
 }

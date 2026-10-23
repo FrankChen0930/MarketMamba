@@ -1,0 +1,284 @@
+{
+  "schema": "v7-window08-cases-v1",
+  "evidence_class": "SYNTHETIC",
+  "case_count": 24,
+  "cases": [
+    {
+      "case_id": "positive",
+      "evidence_class": "SYNTHETIC",
+      "expected": {
+        "rank_ic": 1.0
+      },
+      "actual": {
+        "rank_ic": 0.9999999999999998
+      },
+      "matched": true
+    },
+    {
+      "case_id": "negative",
+      "evidence_class": "SYNTHETIC",
+      "expected": {
+        "rank_ic": -1.0
+      },
+      "actual": {
+        "rank_ic": -0.9999999999999998
+      },
+      "matched": true
+    },
+    {
+      "case_id": "average_ties",
+      "evidence_class": "SYNTHETIC",
+      "expected": {
+        "rank_ic": 0.5
+      },
+      "actual": {
+        "rank_ic": 0.5000000000000001
+      },
+      "matched": true
+    },
+    {
+      "case_id": "constant_prediction",
+      "evidence_class": "SYNTHETIC",
+      "expected": {
+        "rank_ic": null
+      },
+      "actual": {
+        "rank_ic": null
+      },
+      "matched": true
+    },
+    {
+      "case_id": "constant_label",
+      "evidence_class": "SYNTHETIC",
+      "expected": {
+        "rank_ic": null
+      },
+      "actual": {
+        "rank_ic": null
+      },
+      "matched": true
+    },
+    {
+      "case_id": "insufficient_support",
+      "evidence_class": "SYNTHETIC",
+      "expected": {
+        "rank_ic": null
+      },
+      "actual": {
+        "rank_ic": null
+      },
+      "matched": true
+    },
+    {
+      "case_id": "nan",
+      "evidence_class": "SYNTHETIC",
+      "expected": {
+        "valid_n": 2,
+        "excluded": 2
+      },
+      "actual": {
+        "valid_n": 2,
+        "excluded": 2
+      },
+      "matched": true
+    },
+    {
+      "case_id": "inf",
+      "evidence_class": "SYNTHETIC",
+      "expected": {
+        "valid_n": 2,
+        "excluded": 2
+      },
+      "actual": {
+        "valid_n": 2,
+        "excluded": 2
+      },
+      "matched": true
+    },
+    {
+      "case_id": "missing",
+      "evidence_class": "SYNTHETIC",
+      "expected": {
+        "valid_n": 2,
+        "excluded": 2
+      },
+      "actual": {
+        "valid_n": 2,
+        "excluded": 2
+      },
+      "matched": true
+    },
+    {
+      "case_id": "duplicate_keys",
+      "evidence_class": "SYNTHETIC",
+      "expected": {
+        "reason": "DUPLICATE_KEY"
+      },
+      "actual": {
+        "reason": "DUPLICATE_KEY"
+      },
+      "matched": true
+    },
+    {
+      "case_id": "5d_10d_maturity",
+      "evidence_class": "SYNTHETIC",
+      "expected": {
+        "5d_n": 3,
+        "10d_n": 0
+      },
+      "actual": {
+        "5d_n": 3,
+        "10d_n": 0
+      },
+      "matched": true
+    },
+    {
+      "case_id": "horizon_mismatch",
+      "evidence_class": "SYNTHETIC",
+      "expected": {
+        "status": "REJECTED"
+      },
+      "actual": {
+        "status": "REJECTED"
+      },
+      "matched": true
+    },
+    {
+      "case_id": "date_mismatch",
+      "evidence_class": "SYNTHETIC",
+      "expected": {
+        "status": "REJECTED"
+      },
+      "actual": {
+        "status": "REJECTED"
+      },
+      "matched": true
+    },
+    {
+      "case_id": "stock_mismatch",
+      "evidence_class": "SYNTHETIC",
+      "expected": {
+        "reason": "LABEL_OWNER_OR_HORIZON_MISMATCH"
+      },
+      "actual": {
+        "reason": "LABEL_OWNER_OR_HORIZON_MISMATCH"
+      },
+      "matched": true
+    },
+    {
+      "case_id": "changed_vintage",
+      "evidence_class": "SYNTHETIC",
+      "expected": {
+        "reason": "LABEL_METADATA_IDENTITY_MISMATCH"
+      },
+      "actual": {
+        "reason": "LABEL_METADATA_IDENTITY_MISMATCH"
+      },
+      "matched": true
+    },
+    {
+      "case_id": "label_identity",
+      "evidence_class": "SYNTHETIC",
+      "expected": {
+        "reason": "LABEL_METADATA_IDENTITY_MISMATCH"
+      },
+      "actual": {
+        "reason": "LABEL_METADATA_IDENTITY_MISMATCH"
+      },
+      "matched": true
+    },
+    {
+      "case_id": "forward_to_selection",
+      "evidence_class": "SYNTHETIC",
+      "expected": {
+        "reason": "SELECTION_AFTER_CUTOFF"
+      },
+      "actual": {
+        "reason": "SELECTION_AFTER_CUTOFF"
+      },
+      "matched": true
+    },
+    {
+      "case_id": "unapproved_statistical_policy",
+      "evidence_class": "SYNTHETIC",
+      "expected": {
+        "status": "REJECTED"
+      },
+      "actual": {
+        "status": "REJECTED"
+      },
+      "matched": true
+    },
+    {
+      "case_id": "no_eligible_sessions",
+      "evidence_class": "SYNTHETIC",
+      "expected": {
+        "status": "NO_ELIGIBLE_SESSIONS"
+      },
+      "actual": {
+        "status": "NO_ELIGIBLE_SESSIONS"
+      },
+      "matched": true
+    },
+    {
+      "case_id": "different_model_coverage",
+      "evidence_class": "SYNTHETIC",
+      "expected": {
+        "common_n": 2,
+        "exclusions": 4,
+        "delta": -2.0
+      },
+      "actual": {
+        "common_n": 2,
+        "exclusions": 4,
+        "delta": -1.9999999999999996
+      },
+      "matched": true
+    },
+    {
+      "case_id": "empty_intersection",
+      "evidence_class": "SYNTHETIC",
+      "expected": {
+        "status": "NO_ELIGIBLE_PAIRED_SESSIONS"
+      },
+      "actual": {
+        "status": "NO_ELIGIBLE_PAIRED_SESSIONS"
+      },
+      "matched": true
+    },
+    {
+      "case_id": "unknown_availability",
+      "evidence_class": "SYNTHETIC",
+      "expected": {
+        "reason": "LABEL_METADATA_UNKNOWN"
+      },
+      "actual": {
+        "reason": "LABEL_METADATA_UNKNOWN"
+      },
+      "matched": true
+    },
+    {
+      "case_id": "malformed_payload",
+      "evidence_class": "SYNTHETIC",
+      "expected": {
+        "reason": "INVALID_LABEL_PAYLOAD_CONTAINER"
+      },
+      "actual": {
+        "reason": "INVALID_LABEL_PAYLOAD_CONTAINER"
+      },
+      "matched": true
+    },
+    {
+      "case_id": "same_fold_exposure",
+      "evidence_class": "SYNTHETIC",
+      "expected": {
+        "reason": "SAME_FOLD_FORWARD_CANNOT_SELECT"
+      },
+      "actual": {
+        "reason": "SAME_FOLD_FORWARD_CANNOT_SELECT"
+      },
+      "matched": true
+    }
+  ],
+  "historical_PIT_verified": false
+}

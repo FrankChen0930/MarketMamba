@@ -4,7 +4,8 @@
 
 - Path `.worktrees/v7-window08-ranking-evaluation`; branch `development/v7-window08-ranking-evaluation`;
   base `1631020bce8223ac4337c7e97473a2a3d9a555f0`; owner Codex/HumanWindow08;
-  created2026-10-23; retiredN/A. ACTIVE / UNMERGED / NOT_DEPLOYED.
+  created2026-10-23; retiredN/A. WINDOW_COMPLETE / STOP / UNMERGED / NOT_DEPLOYED.
+  Final HEAD is containing U2/closure commit; U1 826b8ddf798e752584d180181d24cc1db967e019.
 - Existing28trees checked clean/distinct purposes; none serves W08 evaluation.
   Isolate new work; reuse existing experimental/research/reports/maps directories,
   no alternate platform. Depends only integrated E5/W07 primitives, synthetic fixtures,
