@@ -16,8 +16,8 @@ unquantified risks; no real factor/performance analysis may depend on these
 unverified payloads. Historical conclusions are preserved; no result reclassification.
 
 F0 source audit complete:48ordered, VERIFIED0/CONDITIONAL21/UNKNOWN27/INVALID0,
-all empirical quality UNKNOWN. F1 synthetic-only preparation and independent F2
-feasibility remain in this window's three-unit scope. See the local unique
+all empirical quality UNKNOWN. F1 completed synthetic-only formulas9tests/independent9PASS,1timezone rework;
+real diagnostics BLOCKED. Independent F2 feasibility remains in this window scope. See the local unique
 [Backlog](../../research/v7/research-program.md#window05-feature-integrity-and-cost-effective-data-research)
 and [evidence](../../research/v7/window05-evidence.json). No formal manifest, cutoff,
 label or admission changed. Strict Phase0 STOP; E1 matrix BLOCKED; H2 NOT_APPROVED;

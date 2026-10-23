@@ -15,7 +15,7 @@ Prior queue rows below are historical checkpoints; this section is the single ac
 | Unit | Objective/authority | Status/acceptance/dependency |
 |---|---|---|
 | F0 | Human Stage A + frozen48manifest/policy; audit not selection | COMPLETED source-level audit48ordered,4tests+independent4,0Critical/Required;21conditional27unknown; no payloadPIT promotion. Source syntax typo corrected once before firstGREEN, no review rework |
-| F1 | Human Stage B exploratory low-cost candidates | IN_PROGRESS: timestamp-gated formulas +8synthetic tests; no qualified labels/cache, real diagnostics BLOCKED; no training/input-dim changes |
+| F1 | Human Stage B exploratory low-cost candidates | COMPLETED_SYNTHETIC_ONLY: timestamp-gated formulas9tests/independent9PASS,0Required,1timezone rework; real diagnostics BLOCKED; no training/input-dim changes |
 | F2 | Human Stage C official/repo PIT feasibility | IN_PROGRESS: original455040row scope/version pinned; no bulk data or repeat exhausted historical endpoint searches |
 
 Priority: resolve t-close versus later decision semantics and availability evidence

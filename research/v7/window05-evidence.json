@@ -34,10 +34,26 @@
       "INVALID": 0
     },
     "empirical_payload_quality": "UNKNOWN48/48",
-    "dependency_stop": "No real performance/factor inference using unverified payload; no historical reclassification"
+    "dependency_stop": "No real performance/factor inference using unverified payload; no historical reclassification",
+    "commit": "9fbf1bd7c1c73438c3751ffc24e3f12e8d583844"
   },
   "F1": {
-    "status": "IN_PROGRESS"
+    "status": "COMPLETE_SYNTHETIC_ONLY_REAL_DIAGNOSTICS_BLOCKED",
+    "report": "reports/v7_window05_market_candidates.md",
+    "shortlist": "research/v7/window05-candidate-shortlist.json",
+    "red": "======================================================================\nERROR: v7_window05_signals_test (unittest.loader._FailedTest.v7_window05_signals_test)\n----------------------------------------------------------------------\nImportError: Failed to import test module: v7_window05_signals_test\nTraceback (most recent call last):\n  File \"/usr/lib/python3.12/unittest/loader.py\", line 137, in loadTestsFromName\n    module = __import__(module_name)\n             ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window05-feature-integrity/V6/experimental/v7_window05_signals_test.py\", line 4, in <module>\n    from V6.experimental.v7_window05_signals import candidates\nModuleNotFoundError: No module named 'V6.experimental.v7_window05_signals'\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (errors=1)\n",
+    "green": "----------------------------------------------------------------------\nRan 9 tests in 0.085s\n\nOK\n",
+    "rework_red": "======================================================================\nERROR: test_equivalent_cutoff_instants_use_taipei_session_date (V6.experimental.v7_window05_signals_test.SignalCandidateTest.test_equivalent_cutoff_instants_use_taipei_session_date)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window05-feature-integrity/V6/experimental/v7_window05_signals_test.py\", line 16, in test_equivalent_cutoff_instants_use_taipei_session_date\n    result=self.get(at=cut)\n           ^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window05-feature-integrity/V6/experimental/v7_window05_signals_test.py\", line 12, in get\n    return candidates(self.frame if frame is None else frame,self.days,'A',self.days[20],at or self.days[20]+'T20:00:00+08:00')\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window05-feature-integrity/V6/experimental/v7_window05_signals.py\", line 30, in candidates\n    if cut.date().isoformat()<session:raise ValueError('decision precedes observation session')\n                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: decision precedes observation session\n\n----------------------------------------------------------------------\nRan 1 test in 0.007s\n\nFAILED (errors=1)\n",
+    "review": {
+      "reviewer": "/root/independent_review",
+      "critical": 0,
+      "required": 0,
+      "independent_tests_passed": 9,
+      "rework_rounds": 1,
+      "reason": "Evidence-backed timezone-equivalent cutoff rejection corrected in research helper"
+    },
+    "empirical_RankIC": null,
+    "new_feature_admission": false
   },
   "F2": {
     "status": "IN_PROGRESS"

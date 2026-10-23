@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "classification": "PROPOSED_EXPLORATORY_NOT_ADMISSION",
+  "real_data_diagnostics": "BLOCKED",
+  "candidates": [
+    {
+      "candidate": "Abnormal Volume",
+      "priority": 1,
+      "formula": "V_t/mean(V[t-20:t-1])-1",
+      "status": "PROPOSED_SHORTLIST",
+      "evidence": "SYNTHETIC_ONLY",
+      "empirical_RankIC": null,
+      "pit_requirement": "Actual availability <= Human-approved decision_at; as-of vintages, no date-only inference",
+      "limitation": "Price/volume vintage and adjustment evidence required",
+      "cost": "existing raw inputs + O(N) filtering/21lookups per fixture snapshot; no paid data or GPU",
+      "formal_feature_admission": false
+    },
+    {
+      "candidate": "Foreign Flow Intensity",
+      "priority": 2,
+      "formula": "Foreign_Net_t/V_t",
+      "status": "PROPOSED_CONDITIONAL_SHORTLIST",
+      "evidence": "SYNTHETIC_ONLY",
+      "empirical_RankIC": null,
+      "pit_requirement": "Actual availability <= Human-approved decision_at; as-of vintages, no date-only inference",
+      "limitation": "Flow units and historical publication/availability required",
+      "cost": "existing raw inputs + O(N) filtering/21lookups per fixture snapshot; no paid data or GPU",
+      "formal_feature_admission": false
+    },
+    {
+      "candidate": "Market-relative Momentum",
+      "priority": null,
+      "formula": "Close[t]/Close[t-20] - Benchmark[t]/Benchmark[t-20]",
+      "status": "DEFER_REDUNDANT",
+      "evidence": "SYNTHETIC_ONLY",
+      "empirical_RankIC": null,
+      "pit_requirement": "Actual availability <= Human-approved decision_at; as-of vintages, no date-only inference",
+      "limitation": "Equivalent existing RS_20d under equal conventions",
+      "cost": "existing raw inputs + O(N) filtering/21lookups per fixture snapshot; no paid data or GPU",
+      "formal_feature_admission": false
+    },
+    {
+      "candidate": "Short Reversal",
+      "priority": null,
+      "formula": "-(Close[t]/Close[t-1]-1)",
+      "status": "DEFER_REDUNDANT",
+      "evidence": "SYNTHETIC_ONLY",
+      "empirical_RankIC": null,
+      "pit_requirement": "Actual availability <= Human-approved decision_at; as-of vintages, no date-only inference",
+      "limitation": "Negative existing Return_1d",
+      "cost": "existing raw inputs + O(N) filtering/21lookups per fixture snapshot; no paid data or GPU",
+      "formal_feature_admission": false
+    }
+  ]
+}

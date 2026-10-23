@@ -92,3 +92,9 @@ admission or historical result reclassification. Empirical payload quality UNKNO
 Unverified date-only macro availability blocks dependent real-data factor analysis.
 [Report](../../reports/v7_window05_feature_integrity.md),
 [matrix](../../research/v7/window05-feature-integrity.json). UNMERGED/NOT_DEPLOYED.
+
+Window05 F1 shortlist is PROPOSED: Abnormal Volume and conditional Foreign Flow
+Intensity. Research-only timestamp-gated formulas and9synthetic tests provide no
+RankIC/admission evidence. Existing RS20 and reversal of Return1d are redundant
+under equal raw-data conventions. Real diagnostics remain BLOCKED by F0 evidence.
+[Report](../../reports/v7_window05_market_candidates.md).
