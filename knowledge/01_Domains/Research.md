@@ -212,3 +212,10 @@ No shuffled/multiworker/AMP/GPU or separateepochinterrupt claim. New safe codec
 weights_only=True with primitive NumPy RNG, original E1 default behavior unchanged.
 Checkpoint bytes retained locally, not derivable from hashes. U2 source complete;
 source-bound L2 republishing and final memory closure still pending.
+
+Window11 complete/STOP:211jointtests, actual cross-process CPU full-step/mid-epoch
+resume proven for fixed daily-order/0workers/FP32/1CPUthread only. Separateepoch
+interrupt/GPU/AMP/shuffledloader/full reproduction unverified. Code/source witnesses
+map actual bytes to U2 sourcecommit; originalL2snapshot retained, latest sourcebound
+L2run is current. CPU actual checkpointbytes stay local/preserved, not hash-only
+restoration. Source hashes/authenticity/research admission remain distinct.

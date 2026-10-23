@@ -1,0 +1,51 @@
+{
+  "schema": "window11-coverage-v1",
+  "evidence_class": "SYNTHETIC_CPU_ENGINEERING",
+  "method": "Executed assertions in V6.experimental.v7_cpu_resume_test.CPUResumeTest; owned temporary failure fixtures only",
+  "cases": [
+    {
+      "scenario": "CorruptedLatestValidPrevious",
+      "test": "test_corrupt_latest_uses_valid_previous"
+    },
+    {
+      "scenario": "MissingCheckpoint",
+      "test": "test_missing_checkpoint_and_wrong_identity_fail_without_fresh"
+    },
+    {
+      "scenario": "WrongRunDataModelIdentity",
+      "test": "test_data_or_model_binding_mismatch"
+    },
+    {
+      "scenario": "RestartAfterWarmup",
+      "test": "test_real_mid_epoch_new_process_exact_state"
+    },
+    {
+      "scenario": "DuplicateResume",
+      "test": "test_duplicate_resume_or_active_process_is_rejected"
+    },
+    {
+      "scenario": "InvalidScheduler",
+      "test": "test_missing_sampler_invalid_scheduler_and_incomplete_runtime_rejected"
+    },
+    {
+      "scenario": "BrokenLogWrite",
+      "test": "test_broken_log_and_interrupted_publication_not_success"
+    },
+    {
+      "scenario": "InterruptedCheckpointPublication",
+      "test": "test_broken_log_and_interrupted_publication_not_success"
+    },
+    {
+      "scenario": "MissingSampler",
+      "test": "test_missing_sampler_invalid_scheduler_and_incomplete_runtime_rejected"
+    },
+    {
+      "scenario": "IncompleteOptimizerState",
+      "test": "test_optimizer_moments_and_config_cannot_be_missing_or_replaced"
+    },
+    {
+      "scenario": "UnsafePickle",
+      "test": "test_safe_codec_rejects_pickle_and_inconsistent_lr_rng_or_cursor"
+    }
+  ]
+}

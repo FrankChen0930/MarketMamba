@@ -2,37 +2,38 @@
 
 > Status: `CANONICAL_CURRENT_PROJECT_MAP`
 
-## Window11 L2 & CPU Resume — bounded engineering
+## Window11 L2 & CPU Resume — complete / STOP
 
 Window10 fixed `f25181637e40138c84dc3722292647d4325882fc` LOCAL_INTEGRATED/NOT_DEPLOYED
-by ff-only from `91fa82c2ac5e3b8f22109c55a73fa4e540a916b9`. Pre/post167testsPASS,
-40hashes/independent26tests GO,0Critical/Required;31treesclean. Main heldf251816;
-closure documents stay on isolated branch. Prior Window10 UNMERGED status historical.
+ff-only from `91fa82c2ac5e3b8f22109c55a73fa4e540a916b9`;pre/post167testsPASS,
+40hashes/independent26 GO,0Critical/Required. Main heldf251816; no main closure commit.
+Older Window10 UNMERGED/STOP entries historical, superseded for integration only.
 
-Window11 `development/v7-window11-l2-cpu-resume`, basef251816,
-`.worktrees/v7-window11-l2-cpu-resume`, UNMERGED/NOT_DEPLOYED. Two units only,
-<=2rework/unit; synthetic CPU fits and actual CPU interrupt/restart now authorized.
-U1 COMPLETE_REVIEWED:3focused/independent3PASS,0Critical/Required. Dedicated overlay
-LightGBM4.6.0/sklearn1.6.1/joblib1.6.0/threadpoolctl3.6.0/cloudpickle3.1.2,5official
-wheel hashes pinned. Base NumPy2.0.2/SciPy1.16.3/Torch2.10.0+cpu unchanged.
-Actual L2 fit/refit/forward/common-support and independent replay PASS. Setup corrected
-missing required cloudpickle using existing repo lock, no global/package upgrade.
-U2 COMPLETE_REVIEWED:actual E1 train loop/modelFactory+safe codec,9CPUtestsPASS;
-211jointtestsPASS. New process exits0/75/0,step4(epoch1batch1) afterwarmup resumed
-to12steps/4epochs;all23nontelemetryfields equal forLATEST/PREVIOUS/BEST.
-CPU_STEP_BOUNDARY_RESUMABLE and CPU_MID_EPOCH_RESUMABLE only deterministic daily
-order/0workers/FP32/singleCPUthread. No separateepochinterrupt/GPU/AMP/shuffle claim.
-U2 used2bounded repairs (optimizer completeness,source-snapshot success-path);
-0remainingCritical/Required. CPUbytes retained .artifacts/window11-cpu-resume-proof
-(83files/~1.79MB),notrestorable fromhashes alone;noGC or worktree removal.
-Source commit checkpoint now; final source-bound L2 republishing/closure only
-remains. No more engineering under this grant. U1 source f00bebab33cdeaa75b8401c6a6988dfaa3d3e0e7.
+Window11 `development/v7-window11-l2-cpu-resume`,basef251816,
+`.worktrees/v7-window11-l2-cpu-resume`, WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED.
+U1 actualLightGBM4.6.0 fit/refit/forward/common-support/independentReplay PASS;
+5officialwheels pinned in dedicated overlay, baseCPU Torch/NumPy/SciPy unchanged.
+U2 reuses E1 actual train loop/store/adapter, safe weights_only=True probe codec.
+Three new-process exits0/75/0,step4(epoch1batch1) afterwarmup ->12steps/4epochs;
+23nontelemetryfields exactlyequal forLATEST/PREVIOUS/BEST. CPU_STEP_BOUNDARY_RESUMABLE
+and CPU_MID_EPOCH_RESUMABLE only deterministic daily cursor/0workers/FP32/1CPUthread.
+No separateepochinterrupt/GPU/AMP/shuffleworker/generalExactResume/full reproduction.
+211jointtestsPASS. U1 environment setupcorrection1,reviewrework0;U2rework2,0remaining
+Critical/Required. Source U1 f00bebab33cdeaa75b8401c6a6988dfaa3d3e0e7;U2 e28ac62ed95007e246185c5c2a134d17a5d0e08b.
+Final HEAD is containing artifact/closure commit; no further engineering/Window12.
 
-StrictSTOP/E1matrixBLOCKED/H2NOT_APPROVED/FairEvaluationPROPOSED/PreNextOpenPROPOSED/
-InferenceRecoveryDEFERRED. No GPU/realresearch/production/otherbranchmerge/admission.
-[Evidence](../../research/v7/window11-evidence.json),
+CPUbytes83files/~1.79MB retained `.artifacts/window11-cpu-resume-proof` under this
+worktree; exactinventory in CPUevidence. Hash-only Git metadata cannot restore lost
+checkpoints. Preserve this tree/basevenv/overlay/cache until separately reviewed.
+Current runtime-bound L2 source snapshot uses U2commit and fresh run identity;
+initialsourcebundle/report retained unchanged, requires original source to replay.
+[CPU proof](../../research/v7/window11-cpu-resume-evidence.json),
+[current L2](../../research/v7/window11-l2-runtime-evidence.json),
+[evidence](../../research/v7/window11-evidence.json),
 [sole Backlog](../../research/v7/research-program.md#window11-l2-and-cpu-resume).
-Resume HEAD/clean/maps/Charter/evidence on named branch; no next-window grant.
+StrictSTOP/E1matrixBLOCKED/H2NOT_APPROVED/FairEvaluationPROPOSED/PreNextOpenPROPOSED/
+InferenceRecoveryDEFERRED persist. No realresearch/GPU/production/admission/othermerge.
+Resume namedtree HEAD/clean/maps/Charter/evidence; new bounded authorization required.
 
 ## Window10 Classical Synthetic Foundation — complete / STOP
 

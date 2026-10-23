@@ -4,7 +4,10 @@
 
 - Path `.worktrees/v7-window11-l2-cpu-resume`;branch `development/v7-window11-l2-cpu-resume`;
   base `f25181637e40138c84dc3722292647d4325882fc`;owner Codex/HumanWindow11;
-  created2026-10-23;retiredN/A. ACTIVE/UNMERGED/NOT_DEPLOYED.
+  created2026-10-23;retiredN/A. WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED.
+  SourceU1 f00bebab33cdeaa75b8401c6a6988dfaa3d3e0e7;U2 e28ac62ed95007e246185c5c2a134d17a5d0e08b;finalcontainingclosurecommit.
+  Preserve .artifacts/window11-cpu-resume-proof bytes (~1.79MB) and exactinventory;
+  not restorable from Git hashes alone. No safe removal until bytes/env refs resolved.
 - Existing31trees clean/distinct scope; none serves W11. Existing source/evidence/maps
   reused. Dedicated `.runtimes/window11-cpu` overlay + cached officialwheels are GENERATED,
   reference existing CPUbasevenv; no shared/global/Windows env changed. Preserve these
@@ -16,7 +19,7 @@
 
 - Path `.worktrees/v7-window10-classical-e2e`; branch `development/v7-window10-classical-e2e`;
   base `91fa82c2ac5e3b8f22109c55a73fa4e540a916b9`; owner Codex/HumanWindow10;
-  created2026-10-23;retiredN/A. WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED.
+  created2026-10-23;retiredN/A. WINDOW_COMPLETE/LOCAL_INTEGRATED_BY_WINDOW11/NOT_DEPLOYED.
   U1 4ec22a4330ed6db7df0b3dafb4106cea820516e2; final U2/closure checkpoint is containing commit.
 - Existing30trees clean/distinct scope, none serves W10 adapters. Existing directories
   experimental/research/reports/maps sufficient; no new platform. Reuses integrated

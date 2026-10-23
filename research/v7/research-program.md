@@ -7,21 +7,27 @@
 
 ## Window11 L2 and CPU Resume
 
-Current sole queue: Human Window11, two synthetic CPU units, main f251816,
-branch `development/v7-window11-l2-cpu-resume`, UNMERGED/NOT_DEPLOYED.
+WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED. Branch development/v7-window11-l2-cpu-resume,
+base/main f251816. Sole queue below; older window entries historical.
 
 | Unit | Objective/authority | Acceptance/status |
 |---|---|---|
-| W11-U1 | Human actual LightGBM baseline completion | COMPLETE_REVIEWED:3focused/independent3PASS,0Critical/Required;5official wheels pinned,actual fit/refit/common-support/replay;setup dependency correction1 |
-| W11-U2 | Human actual PyTorch CPU interrupt/resume | COMPLETE_REVIEWED:9tests;realCPU0/75/0 resume12steps/4epochs,23fieldsx3roles exact;2rework,0Critical/Required;final source-bound artifact closure pending |
+| W11-U1 | Human actual LightGBM completion | COMPLETE_REVIEWED:LightGBM4.6.0 actual fit/refit/commonSupport/replay;5officialwheels pinned;setupcorrection1,0reviewrework,0Critical/Required |
+| W11-U2 | Human real PyTorchCPU interrupt/resume via E1 | COMPLETE_REVIEWED:9CPUtests,2bounded reworks;actual0/75/0processes,12steps/4epochs,23fieldsx3roles exact,0Critical/Required |
+| Closure/source handoff | Required evidence consistency | COMPLETE:211jointtestsPASS;new source-bound L2run uses U2commit, initial artifacts retained;source/wheel/data hashes checked |
 
-U1 source f00bebab33cdeaa75b8401c6a6988dfaa3d3e0e7; U2 source checkpoint is containing commit.
-211jointtestsPASS; final source-bound L2 artifact/closure packaging remains only.
-No training/GPU authority beyond this window. Retained .artifacts CPU bytes required
-for restoration; source hashes alone do not restore checkpoints.
-Earlier L2 missing-dependency blocker is resolved ONLY in this dedicated overlay;
-other environments remain unqualified. Real-data/evaluation/admission/GPU policies
-still need Human. Full reproduction/GPU resume not claimed; E1matrix BLOCKED.
+Source U1 f00bebab33cdeaa75b8401c6a6988dfaa3d3e0e7;U2 e28ac62ed95007e246185c5c2a134d17a5d0e08b. Final checkpoint is containing
+closure commit. No READY work remains in this exhausted grant. Exact proof only
+CPU FP32/1thread/deterministic daily cursor/0workers/fulloptimizerstep. No GPU/AMP/
+shuffled/multiworker/midbatch/full reproduction certification. CPU checkpoint bytes
+remain local .artifacts inventory; missingbytes means NOT_RESTORABLE, not hash recovery.
+
+Next PROPOSED_NEXT_GRANT: define a bounded LocalGPU synthetic compatibility/resume
+acceptance window (exact model/kernel/environment/precision/state/resource limits),
+then obtain Human approval. No execution here. Real-data training additionally needs
+qualified dataset/PIT/evaluation/selection/decision-time and research admission.
+Permanentstorage/retention/GC and GPU/Colab resource conditions remain Human decisions.
+E1matrixBLOCKED/H2unapproved/StrictSTOP/FairEvaluation&PreNextOpenPROPOSED unchanged.
 [Evidence](window11-evidence.json),[report](../../reports/v7_window11_l2_cpu_resume.md).
 
 ## Window10 Classical Synthetic Foundation
