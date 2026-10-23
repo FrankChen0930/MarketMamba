@@ -147,3 +147,11 @@ limits to Window03 review. All options PROPOSED; no final dates/thresholds or ne
 research classification. Historical logged epoch wall time is not a GPU cost forecast.
 Original matrix and unretained epochs independently limit replay; STOP/H2 unchanged.
 Current unique backlog records WINDOW_COMPLETE; next execution needs Human grant.
+
+## Window07 temporal foundation — 2026-10-23
+
+Branch-local engineering guard checks explicit calendar/fold/clock/required-horizon/
+owner/pin/maturity/interval/gap constraints. ELIGIBLE means consistency with supplied
+engineering inputs, not source truth, frozen study or admission. Calendar/maturity/
+cutoff/gap policy remains a Human dependency before real research. Existing E5/E1
+semantics/results unchanged. [Report](../../reports/v7_window07_temporal_isolation.md).

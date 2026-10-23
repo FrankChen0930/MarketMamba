@@ -2,6 +2,22 @@
 
 > Status: `CANONICAL_CURRENT_PROJECT_MAP`
 
+## Window07 temporal/isolation foundation — bounded engineering
+
+Human approved two CPU-only synthetic engineering units, no formal study config.
+Branch `development/v7-window07-temporal-isolation`, worktree `.worktrees/v7-window07-temporal-isolation`,
+base/main `465dca229fc1452aaf1b46572b06886a7d8a2c8f`. UNMERGED / NOT_DEPLOYED.
+U1parameterized calendar/fold/label eligibility reviewed13tests/independent13PASS,
+1owner-identity repair,0remainingCritical/Required. U2isolation guard READY under
+this grant; maximum2rework/unit. [Evidence](../../research/v7/window07-evidence.json),
+[decision](../02_History/Decisions/20261023-window07-temporal-isolation.json),
+[unique backlog](../../research/v7/research-program.md#window07-temporal-fold--research-isolation).
+No fixed validation/forward months/origins/30purge or metrics adopted; unknown policy/
+data failclosed. No realPIT certification, no formalFeatureLabel/E5E1/admission change.
+Window06/audit/recovery branches only pinned references, not merged or promoted.
+StrictSTOP/E1BLOCKED/H2unapproved/FairEvaluationPROPOSED/PreNextOpenPROPOSED/
+InferenceRecoveryDEFERRED persist. This grant does not authorize a Window08.
+
 ## Window06 — Window05 integrated; decision-time preparation authorized
 
 Fixed `65462ec185783eedb2ba81b66cfa04783f86c6e2` integrated ff-only from main

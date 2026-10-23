@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "artifact_class": "CANONICAL",
+  "base": "465dca229fc1452aaf1b46572b06886a7d8a2c8f",
+  "branch": "development/v7-window07-temporal-isolation",
+  "status": "UNIT1_COMPLETE_UNIT2_READY",
+  "authority": "Human Window07: only two bounded CPU engineering units, max2rework each",
+  "source_reuse": [
+    {
+      "role": "main calendar primitive",
+      "commit": "465dca229fc1452aaf1b46572b06886a7d8a2c8f",
+      "path": "V6/experimental/v7_temporal_contract.py",
+      "sha256": "867f8404f81f5b97f6b42a4e5db1d0af1e8e68b2ec4a1a0e38b6277e7ebfdcc8"
+    },
+    {
+      "role": "main identity utility",
+      "commit": "465dca229fc1452aaf1b46572b06886a7d8a2c8f",
+      "path": "V6/experimental/v7_corrected_e5_replication.py",
+      "sha256": "8c3a2b37950c5a24028cf9a2081fa6a3ea1cd89ce4be8e05b29ba1811c5d3af8"
+    },
+    {
+      "role": "reference only W06",
+      "commit": "96c6056487af35673dc6ec519c81901bf23dcbc2",
+      "path": "V6/experimental/v7_window06_decision.py",
+      "sha256": "a3e175b04fedbf5ee6ec1ae6391d2fe3e9e48d5608842f22ab821d97c789f4af"
+    },
+    {
+      "role": "audit planning only",
+      "commit": "8601c7371082f0c64f872881acfa093bf672d444",
+      "path": "research/v7/protocol-v01-capability-matrix.json",
+      "sha256": "1417084070d6366b9e9d04542d2981780bf8e97a4e97ea7c5f7e71325d5b259a"
+    }
+  ],
+  "formal_study_configuration_approved": false,
+  "calendar_scope": "SYNTHETIC fixtures only; caller reference qualifications not authenticated by guard",
+  "U1": {
+    "status": "COMPLETE_REVIEWED",
+    "commit": "Containing U1 local commit",
+    "red": "======================================================================\nERROR: v7_research_temporal_test (unittest.loader._FailedTest.v7_research_temporal_test)\n----------------------------------------------------------------------\nImportError: Failed to import test module: v7_research_temporal_test\nTraceback (most recent call last):\n  File \"/usr/lib/python3.12/unittest/loader.py\", line 137, in loadTestsFromName\n    module = __import__(module_name)\n             ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window07-temporal-isolation/V6/experimental/v7_research_temporal_test.py\", line 6, in <module>\n    from V6.experimental.v7_research_temporal import check_fold,check_sample,make_pin\nModuleNotFoundError: No module named 'V6.experimental.v7_research_temporal'\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (errors=1)\n",
+    "review_red": "======================================================================\nFAIL: test_labels_are_bound_to_stock_sample_and_signal_per_horizon (V6.experimental.v7_research_temporal_test.TemporalFoundationTest.test_labels_are_bound_to_stock_sample_and_signal_per_horizon)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window07-temporal-isolation/V6/experimental/v7_research_temporal_test.py\", line 51, in test_labels_are_bound_to_stock_sample_and_signal_per_horizon\n    self.assertIn('LABEL_SAMPLE_IDENTITY_MISMATCH',self.checked(x,y)['reasons'])\nAssertionError: 'LABEL_SAMPLE_IDENTITY_MISMATCH' not found in []\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n",
+    "green": "----------------------------------------------------------------------\nRan 13 tests in 0.020s\n\nOK\n",
+    "review": {
+      "reviewer": "/root/independent_review",
+      "critical": 0,
+      "required_initial": 1,
+      "required_remaining": 0,
+      "independent_tests_passed": 13,
+      "rework_rounds": 1,
+      "repair": "Bind labels perhorizon to sample/stock/signal,missingBLOCKED,mismatchREJECTED"
+    },
+    "regression": "----------------------------------------------------------------------\nRan 51 tests in 0.159s\n\nOK\n",
+    "knowledge_health": "WARNING/noFAIL existing classes"
+  },
+  "U2": {
+    "status": "READY_AUTHORIZED_NOT_STARTED"
+  },
+  "boundaries": [
+    "No trainer/model fitting/realRankIC/GPU/Colab",
+    "No main/pendingcandidate merge",
+    "FrozenFeatureLabel/E5E1/Admission unchanged",
+    "StrictSTOP/E1matrixBLOCKED/H2unapproved/FairEvaluationPROPOSED/PreNextOpenPROPOSED/InferenceRecoveryDEFERRED"
+  ]
+}

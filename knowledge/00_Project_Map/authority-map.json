@@ -613,7 +613,7 @@
       "topic": "Current V7 development backlog",
       "primary_authority": "research/v7/research-program.md",
       "authority_class": "CURRENT_REFERENCE",
-      "status": "WINDOW05_INTEGRATED_WINDOW06_PROPOSAL_AUTHORIZED",
+      "status": "WINDOW07_BOUNDED_ENGINEERING_U1_U2",
       "supersedes": [
         "CPU window closure queues as cross-domain next-work navigation",
         "historical tasks/plan.md and tasks/todo.md as active execution assumptions"
@@ -639,11 +639,13 @@
         "research/v7/window04-cpu-continuation-evidence.json",
         "research/v7/window04-log-integration-closure.json",
         "research/v7/window05-evidence.json",
-        "research/v7/window06-integration.json"
+        "research/v7/window06-integration.json",
+        "research/v7/window07-evidence.json"
       ],
       "conflicts": [
-        "Window05 source audit integrated, no admission or historic result reclassification",
-        "Window06 new decision contract remainsPROPOSED; no training/H2/production authority"
+        "Engineeringguards only, no formalstudy or dataadmission",
+        "W06/audit/recovery remainseparate/unmerged",
+        "Max2units and2reworkeach; no Window08authorization"
       ]
     }
   ],

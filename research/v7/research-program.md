@@ -1,9 +1,27 @@
 # V7 Research Program and Current Development Backlog
 
-> Current planning owner: WSL development main after W04B integration, linked by canonical
+> Current planning owner: isolated Window07 engineering branch, linked by canonical
 > Current State/Authority Map. Planning status does not grant research, execution,
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
+
+## Window07 Temporal Fold & Research Isolation
+
+ACTIVE_SCOPED_ENGINEERING / UNMERGED / NOT_DEPLOYED; branch
+`development/v7-window07-temporal-isolation`, base/main465dca2. Current grant only
+U1/U2; newstudy parameters not approved. No duplicate trainer/orchestrator/registry.
+
+| Unit | Objective/authority | Acceptance/state |
+|---|---|---|
+| W07-U1 | HumanUnit1 temporalfold+label eligibility, existing temporal/hash primitives | COMPLETED_REVIEWED:13synthetic+independent13PASS;calendar nextsession/horizon, owner/source/vintage/pins/clocks/maturity/overlap/gap checks;1labelbinding rework,0remainingRequired |
+| W07-U2 | HumanUnit2 data/read isolation, fresh refit identity, forward exposure | READY_AUTHORIZED: only eligible training/validation/refit view; no forwardlabel reads, fresh identity notresume, model-ready deadline, serializabledenials/exposure; synthetic mock only |
+| Future Common Evaluator | Prior auditRP-C2 | PROPOSED_NEXT_GRANT: can consume accepted identity/support views after this foundation; actual tie/minN/missing/statistical/admission rules not frozen |
+
+[Report](../../reports/v7_window07_temporal_isolation.md),[evidence](window07-evidence.json).
+Reuse mainnormalize_calendar/canonical_hash; W06validator96c6056 reference only,
+not merged/admitted. All calendar data synthetic, originalE1matrix stillBLOCKED;
+no data reacquisition/realRankIC/training/GPU. H2unapproved/StrictSTOP/newFairEval
+andPreNextOpenPROPOSED/InferenceRecoveryDEFERRED. Max2reviewrework/unit.
 
 ## Window06 — Window05 integrated; decision-time preparation authorized
 

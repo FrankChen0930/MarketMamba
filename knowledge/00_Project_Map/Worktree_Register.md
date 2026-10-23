@@ -1,5 +1,17 @@
 # Worktree Register
 
+## Window07 temporal/isolation — 2026-10-23
+
+- Path `.worktrees/v7-window07-temporal-isolation`; branch `development/v7-window07-temporal-isolation`;
+  base `465dca229fc1452aaf1b46572b06886a7d8a2c8f`; owner Codex/HumanWindow07;created2026-10-23;retiredN/A.
+- Existing27trees hold fixed/source/audit roles, no same-scope activeunit; new isolation
+  protects main/pending branches. Existing experimental/research/reports/maps suffice.
+- UNMERGED/NOT_DEPLOYED. Dependencies maincalendar/hash primitives, pinned W06/audit
+  reference only; syntheticfixtures, no manageddata/modelpayload. Sourceunit commits
+  retained. Safe removal: clean/preservedcommits/evidence/resolvedrefs and separate
+  retirement approval. No existingtree/history/data cleaned.
+
+
 ## Window05 feature integrity — 2026-10-23
 
 - Path `.worktrees/v7-window05-feature-integrity`; branch `research/v7-window05-feature-integrity`;
