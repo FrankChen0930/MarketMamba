@@ -2,6 +2,31 @@
 
 > Status: `CANONICAL_CURRENT_PROJECT_MAP`
 
+## Window08 Common Ranking Evaluation — active bounded grant
+
+Window07 fixed `1631020bce8223ac4337c7e97473a2a3d9a555f0` LOCAL_INTEGRATED /
+NOT_DEPLOYED by ff-only from `465dca229fc1452aaf1b46572b06886a7d8a2c8f`.
+Pre/post67tests PASS;10artifact/frozen hashes and16cases verified; independent24tests,
+Critical0/Required0 GO. Main remains exactly1631020; no main closure-doc commit.
+Window07 STOP/UNMERGED prose below is historical, superseded only for this integration.
+
+Window08 branch `development/v7-window08-ranking-evaluation`, base1631020, worktree
+`.worktrees/v7-window08-ranking-evaluation`. UNMERGED / NOT_DEPLOYED. Human grant
+permits only common evaluator and paired comparison, synthetic CPU fixtures, max2
+rework/unit. U1 COMPLETE_REVIEWED:19tests + independent19PASS, Critical0/Required0 after1rework
+(null payload guard and per-horizon summary). U2 next in scope.
+Existing E5 average-tie RankIC, canonical_hash and W07 calendar/fold/role guards reused.
+Policy remains named SYNTHETIC_NOT_ADMITTED; minN/weighting explicit, no statistics
+or acceptance policy frozen. Metadata-first label gating, raw references and daily
+rejection ledger are engineering evidence, not real historical PIT certification.
+
+No W06/recovery/audit branch integrated. Strict Phase0 STOP; E1 Frozen Matrix BLOCKED;
+H2 NOT_APPROVED; Fair Evaluation and Pre-next-open PROPOSED; Inference Recovery DEFERRED.
+[Evidence](../../research/v7/window08-evidence.json),
+[unique backlog](../../research/v7/research-program.md#window08-common-ranking-evaluation).
+Resume this branch by HEAD/clean, this entry, Authority Map, Charter, evidence and backlog.
+No automatic Window09, real-data evaluation, training or main merge of Window08.
+
 ## Window07 temporal/isolation foundation — completed / STOP
 
 Human approved two CPU-only synthetic engineering units, no formal study config.

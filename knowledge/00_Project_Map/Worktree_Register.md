@@ -1,5 +1,17 @@
 # Worktree Register
 
+## Window08 ranking evaluation — 2026-10-23
+
+- Path `.worktrees/v7-window08-ranking-evaluation`; branch `development/v7-window08-ranking-evaluation`;
+  base `1631020bce8223ac4337c7e97473a2a3d9a555f0`; owner Codex/HumanWindow08;
+  created2026-10-23; retiredN/A. ACTIVE / UNMERGED / NOT_DEPLOYED.
+- Existing28trees checked clean/distinct purposes; none serves W08 evaluation.
+  Isolate new work; reuse existing experimental/research/reports/maps directories,
+  no alternate platform. Depends only integrated E5/W07 primitives, synthetic fixtures,
+  existing CPUvenv; no real payload. W07 originaltree/history retained (now integrated).
+- Main held1631020, pending closure kept here. Safe removal requires clean preserved
+  commits/evidence, resolved artifact references and separate retirement review.
+
 ## Window07 temporal/isolation — 2026-10-23
 
 - Path `.worktrees/v7-window07-temporal-isolation`; branch `development/v7-window07-temporal-isolation`;

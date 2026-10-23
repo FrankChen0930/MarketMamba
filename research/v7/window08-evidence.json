@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "artifact_class": "CANONICAL",
+  "branch": "development/v7-window08-ranking-evaluation",
+  "base": "1631020bce8223ac4337c7e97473a2a3d9a555f0",
+  "status": "U1_COMPLETE_U2_READY",
+  "integration": {
+    "main_before": "465dca229fc1452aaf1b46572b06886a7d8a2c8f",
+    "main_after": "1631020bce8223ac4337c7e97473a2a3d9a555f0",
+    "method": "ff-only",
+    "worktrees_clean": 28,
+    "hashes_verified": 10,
+    "cases_verified": 16,
+    "pre_tests": 67,
+    "post_tests": 67,
+    "independent_tests": 24,
+    "critical": 0,
+    "required": 0,
+    "no_main_document_commit": true
+  },
+  "U1": {
+    "red": "======================================================================\nERROR: v7_research_evaluation_test (unittest.loader._FailedTest.v7_research_evaluation_test)\n----------------------------------------------------------------------\nImportError: Failed to import test module: v7_research_evaluation_test\nTraceback (most recent call last):\n  File \"/usr/lib/python3.12/unittest/loader.py\", line 137, in loadTestsFromName\n    module = __import__(module_name)\n             ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window08-ranking-evaluation/V6/experimental/v7_research_evaluation_test.py\", line 8, in <module>\n    from V6.experimental.v7_research_evaluation import evaluate, prediction_hash\nModuleNotFoundError: No module named 'V6.experimental.v7_research_evaluation'\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (errors=1)\n",
+    "green": "----------------------------------------------------------------------\nRan 19 tests in 0.079s\n\nOK\n",
+    "tests": 19,
+    "rework_rounds": 1,
+    "review": {
+      "reviewer": "/root/independent_review",
+      "critical": 0,
+      "required_initial": 2,
+      "required_remaining": 0,
+      "independent_tests": 19
+    },
+    "rework_red": "======================================================================\nERROR: test_malformed_payload_and_prediction_containers_fail_closed (V6.experimental.v7_research_evaluation_test.RankingEvaluationTest.test_malformed_payload_and_prediction_containers_fail_closed)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window08-ranking-evaluation/V6/experimental/v7_research_evaluation_test.py\", line 125, in test_malformed_payload_and_prediction_containers_fail_closed\n    r=run_eval(f);self.assertIn('INVALID_LABEL_PAYLOAD_CONTAINER',r['rejections'][0]['reasons'])\n      ^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window08-ranking-evaluation/V6/experimental/v7_research_evaluation_test.py\", line 42, in run_eval\n    return evaluate(b,prediction_hash(b),fold,cal,make_pin(fold,cal),p,canonical_hash(p),m,s)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window08-ranking-evaluation/V6/experimental/v7_research_evaluation.py\", line 170, in evaluate\n    if not _number(payload.get('value')):exclude('INVALID_LABEL_VALUE');continue\n                   ^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'get'\n\n======================================================================\nFAIL: test_summary_never_pools_5d_and_10d_without_policy (V6.experimental.v7_research_evaluation_test.RankingEvaluationTest.test_summary_never_pools_5d_and_10d_without_policy)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window08-ranking-evaluation/V6/experimental/v7_research_evaluation_test.py\", line 134, in test_summary_never_pools_5d_and_10d_without_policy\n    r=run_eval(f);self.assertNotIn('mean_rank_ic',r['summary'])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'mean_rank_ic' unexpectedly found in {'mean_rank_ic': 0.0, 'defined_session_horizons': 2, 'requested_session_horizons': 2, 'weighting': 'EQUAL_SESSION', 'statistical_inference': 'NOT_CONFIGURED_NOT_ADMITTED'}\n\n----------------------------------------------------------------------\nRan 2 tests in 0.008s\n\nFAILED (failures=1, errors=1)\n",
+    "repair": "Mapping guard for null/list payload; independent per-horizon summary, no unapproved pooling",
+    "regression": {
+      "tests": 86,
+      "log": "----------------------------------------------------------------------\nRan 86 tests in 0.270s\n\nOK\n"
+    }
+  },
+  "U2": {
+    "status": "READY"
+  },
+  "runtime": {
+    "python": "3.12.3",
+    "executable": "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+    "data_env": "UNSET",
+    "CUDA_VISIBLE_DEVICES": "",
+    "inputs": "SYNTHETIC_ONLY",
+    "real_payload_read": false
+  },
+  "limits": [
+    "StrictSTOP",
+    "E1matrixBLOCKED",
+    "H2NOT_APPROVED",
+    "FairEvaluationPROPOSED",
+    "PreNextOpenPROPOSED",
+    "InferenceRecoveryDEFERRED",
+    "No real RankIC, training, GPU, otherbranch merge, main merge of Window08"
+  ],
+  "source_reuse": [
+    "1631020:V6/experimental/v7_research_temporal.py",
+    "1631020:V6/experimental/v7_research_isolation.py",
+    "465dca2:V6/experimental/v7_corrected_e5_train.py:_rank_ic",
+    "465dca2:V6/experimental/v7_corrected_e5_replication.py:canonical_hash"
+  ],
+  "limitations": [
+    "Python guarded API only, not OS security",
+    "Caller pins compare identity but do not authenticate upstream eligibility or raw artifact bytes",
+    "Only SYNTHETIC evidence permitted; no real PIT claim",
+    "No uncertainty policy or acceptance threshold"
+  ],
+  "knowledge_health": "WARNING/noFAIL existing Governance/AuthorityDrift/LegacyDocs classes"
+}

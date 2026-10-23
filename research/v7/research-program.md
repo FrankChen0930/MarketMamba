@@ -1,9 +1,28 @@
 # V7 Research Program and Current Development Backlog
 
-> Current planning owner: isolated Window07 engineering branch, linked by canonical
+> Current planning owner: isolated Window08 engineering branch, linked by canonical
 > Current State/Authority Map. Planning status does not grant research, execution,
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
+
+## Window08 Common Ranking Evaluation
+
+Human Window08: Window07 fixed1631020 integrated local main; Window08 base1631020,
+branch `development/v7-window08-ranking-evaluation`, UNMERGED/NOT_DEPLOYED.
+Only two synthetic CPU units; no real labels/training/policy adoption. Older queues
+are historical; this section is the sole current queue.
+
+| Priority / unit | Objective / authority | Acceptance / state |
+|---|---|---|
+| 1 W08-U1 | Human StageB common ranking + W07 isolation | COMPLETE_REVIEWED:19synthetic+independent19 tests;1rework/0remainingRequired; explicit tie/minN/weight policy, metadata-first maturity, keyed traceable support/daily rejections |
+| 2 W08-U2 | Human StageC fair paired comparison | READY: identical fold/label/calendar/policy + common valid support; daily deltas, exclusions, periods; independent review required |
+| Next Window09 | Artifact/experiment tracking | NOT_AUTHORIZED: consume stable output schema only after separate bounded grant; no registry built |
+
+Dependencies remaining: qualified actual data/source/vintage/time evidence and Human
+research decisions (minN/ties/aggregation/statistical policies/admission). E1matrix
+BLOCKED, StrictSTOP, H2unapproved; FairEvaluation/PreNextOpenPROPOSED, RecoveryDEFERRED.
+No FrozenE5/E1 edits. [Report](../../reports/v7_window08_ranking_evaluation.md),
+[evidence](window08-evidence.json). Resume named branch/maps/Charter + this queue.
 
 ## Window07 Temporal Fold & Research Isolation
 

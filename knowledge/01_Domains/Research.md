@@ -161,3 +161,10 @@ exposure records. Forward views never read label_store; fresh-model/optimizer/
 schedule/RNG and readiness are mock declarations, not actual training/approval.
 Source/ledger pins and all-or-nothing views support a future synthetic comparator;
 no Common Evaluator policy, Window08 or real-data execution is authorized.
+
+## Window08 synthetic evaluator foundation
+
+Common ranking adapter reuses frozen E5 average-tie RankIC without changing historical
+results. Named synthetic policy owns minN/weighting; metadata-first maturity/role
+guards precede label payload reads. [Evidence](../../research/v7/window08-evidence.json)
+and sole Backlog own branch-local status; real policy/data admission remain absent.

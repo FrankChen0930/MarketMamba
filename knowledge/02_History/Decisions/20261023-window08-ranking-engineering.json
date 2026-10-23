@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "authority": "Human Window08 Common Ranking Evaluation & Fair Comparison",
+  "status": "BOUNDED_ENGINEERING_AUTHORIZATION_NOT_RESEARCH_POLICY",
+  "integration_source": "1631020bce8223ac4337c7e97473a2a3d9a555f0",
+  "authorized": [
+    "ff-only local W07 integration after gates",
+    "2synthetic CPU evaluator/comparison units; max2rework each; localcommits"
+  ],
+  "not_authorized": [
+    "Window08 main merge",
+    "formal tie/minN/weight/statistics/admission policy",
+    "real payload/RankIC/modeltraining/GPU/production",
+    "otherpendingbranch integration",
+    "Window09"
+  ]
+}
