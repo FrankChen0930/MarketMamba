@@ -7,16 +7,21 @@
 
 ## Window09 Durable Artifacts and Offline Replay
 
-Current sole queue: Human Window09, two SYNTHETIC/CPU units only. Branch
+WINDOW_COMPLETE/STOP. Current sole queue: Human Window09, two SYNTHETIC/CPU units only. Branch
 `development/v7-window09-artifact-replay`, base/main bdea30d. UNMERGED/NOT_DEPLOYED.
 Window08 integrated after pre/post101tests/independentGO; older queues historical.
 
 | Unit | Objective / authority | Acceptance / status |
 |---|---|---|
-| W09-U1 | Human Durable Artifact Completion; reuse E1 filesystem/hash primitives | COMPLETE_REVIEWED:18tests+independent18PASS; stage/verify/atomicpublish/idempotence/immutable/conflict/failures;1rework,0remainingCritical/Required |
-| W09-U2 | Human Offline Replay/Restore | READY: reconstruct W08 daily/pair/rejection results solely from verified bundle; safe synthetic checkpoint and dataset eligibility; no untrustedtorchload |
+| W09-U1 | Human Durable Artifact Completion; reuse E1 filesystem/hash primitives | COMPLETE_REVIEWED:20tests; stage/verify/atomicpublish/idempotence/immutable/conflict/failures/concurrency;2rework,0remainingCritical/Required |
+| W09-U2 | Human Offline Replay/Restore | COMPLETE_REVIEWED:20tests including separate CPU CLI; exact W08 daily/pair/rejection replay, safe JSON-only checkpoint/dataset eligibility;1rework,0Critical/Required |
 | Future Window10 | Further development | NOT_AUTHORIZED; stop after this bounded window |
 
+U1 source 79d6c556d1bb5648a40a02c3b6f0e628c6512b4a; final U1 container fix/U2 in containing closure commit.
+141joint tests/independent40PASS;2schemas/3outputsPASS. No READY task remains within
+this exhausted window. Next high-value candidate (PROPOSED_NEXT_GRANT): bind actual
+future runs to immutable data/runtime states and full dependency/bundle identities
+using existing E1 pipeline, after data/research permission; no duplicate trainer.
 Permanent storage location, retention/GC, formal data/admission and GPU runtime
 acceptance remain HUMAN_DECISION_REQUIRED. No real Frozen Matrix bytes recovered.
 [Evidence](window09-evidence.json),[report](../../reports/v7_window09_artifact_replay.md).

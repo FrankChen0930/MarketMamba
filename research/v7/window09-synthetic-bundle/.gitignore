@@ -1,0 +1,4 @@
+# Owned synthetic publication runtime files; retained locally, no GC authorized.
+/attempts/
+/staging/
+/locks/

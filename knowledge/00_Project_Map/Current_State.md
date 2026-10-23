@@ -2,7 +2,7 @@
 
 > Status: `CANONICAL_CURRENT_PROJECT_MAP`
 
-## Window09 Durable Artifacts & Offline Replay — bounded engineering
+## Window09 Durable Artifacts & Offline Replay — complete / STOP
 
 Window08 fixed `bdea30d877fa2c5d02308f343fa5591a35616aec` LOCAL_INTEGRATED /
 NOT_DEPLOYED, ff-only from `1631020bce8223ac4337c7e97473a2a3d9a555f0`.
@@ -13,17 +13,23 @@ Older Window08 UNMERGED/STOP entries are historical, superseded for this integra
 Window09 isolated `development/v7-window09-artifact-replay`, base bdea30d, path
 `.worktrees/v7-window09-artifact-replay`. UNMERGED / NOT_DEPLOYED. Human authorizes
 only two CPU/SYNTHETIC units, <=2evidence-based rework/unit, then STOP.
-U1 COMPLETE_REVIEWED:18focused/independent18PASS;1rework corrected traversal,
-metadata symlink and JSON exponent overflow. Immutable bundle profiles, required
+U1 COMPLETE_REVIEWED:20focusedPASS;2bounded rework rounds corrected traversal,
+metadata symlinks/JSON overflow, publication-null/sources containers. Immutable bundle profiles, required
 artifacts, staging+diagnostics, fsync/flock/rename, idempotence and verified external
-bytes references implemented. U2 offline replay/restore remains next authorized unit.
+bytes references implemented. U2 COMPLETE_REVIEWED:20testsPASS,1rework for nested
+containers and actual maturity recheck; independent final40testsPASS,0Critical/Required.
+Final141joint tests;2schemas/3outputs validated. METADATA_VERIFIED and
+EVALUATION_REPLAYABLE proven; TRAINING_RESUMABLE/FULL_REPRODUCTION_READY not proven.
+WINDOW_COMPLETE/STOP. U1 source 79d6c556d1bb5648a40a02c3b6f0e628c6512b4a; final U1 container repair
+and U2 source/evidence are in this containing closure commit.
 No tracking platform, retention/GC policy or training/research admission added.
 
 StrictSTOP/E1matrixBLOCKED/H2NOT_APPROVED/FairEvaluationPROPOSED/PreNextOpenPROPOSED/
 InferenceRecoveryDEFERRED. No W06/recovery/audit integration or original matrix search.
 [Evidence](../../research/v7/window09-evidence.json),
 [backlog](../../research/v7/research-program.md#window09-durable-artifacts-and-offline-replay).
-Resume named worktree cleanHEAD/maps/Charter/evidence/sole queue; no Window10 grant.
+Resume named worktree cleanHEAD/maps/Charter/evidence/sole queue; final HEAD is
+containing U2/closure commit. No remaining work in this grant; no Window10 grant.
 
 ## Window08 Common Ranking Evaluation — complete / STOP
 

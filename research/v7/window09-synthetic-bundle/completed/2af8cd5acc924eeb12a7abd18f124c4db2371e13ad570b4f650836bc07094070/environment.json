@@ -1,0 +1,1 @@
+{"runtime": {"dependencies": {"numpy": "2.0.2", "pandas": "2.2.2", "torch": "2.10.0+cpu"}, "platform": "linux", "python": "3.12.3"}, "schema": "v7-replay-environment-v1"}

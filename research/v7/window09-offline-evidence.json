@@ -1,0 +1,111 @@
+{
+  "schema": "v7-window09-offline-evidence-v1",
+  "artifact_class": "CANONICAL",
+  "evidence_class": "SYNTHETIC",
+  "publication": {
+    "root": "research/v7/window09-synthetic-bundle",
+    "run_key": "2af8cd5acc924eeb12a7abd18f124c4db2371e13ad570b4f650836bc07094070",
+    "manifest_sha256": "e5cfa9499898b4fce2b79c622c6b5d53e37acec8c86782730dff668b51a6abce",
+    "result": {
+      "status": "ARTIFACTS_VERIFIED",
+      "reasons": [],
+      "research_admitted": false,
+      "attempt_id": "ac9ce2f58bb044199806a8bee9836235",
+      "bundle_path": "/home/frank/projects/MarketMamba/.worktrees/v7-window09-artifact-replay/research/v7/window09-synthetic-bundle/completed/2af8cd5acc924eeb12a7abd18f124c4db2371e13ad570b4f650836bc07094070",
+      "manifest_sha256": "e5cfa9499898b4fce2b79c622c6b5d53e37acec8c86782730dff668b51a6abce"
+    }
+  },
+  "independent_process_replay": {
+    "command": [
+      "-m",
+      "V6.experimental.v7_research_replay",
+      "--root",
+      "research/v7/window09-synthetic-bundle",
+      "--run-key",
+      "2af8cd5acc924eeb12a7abd18f124c4db2371e13ad570b4f650836bc07094070",
+      "--manifest-sha256",
+      "e5cfa9499898b4fce2b79c622c6b5d53e37acec8c86782730dff668b51a6abce",
+      "--output",
+      "research/v7/window09-replay-evidence.json"
+    ],
+    "exit_code": 0,
+    "report": "research/v7/window09-replay-evidence.json",
+    "sha256": "488ce4d748163d05e6c24346b794567eb738a4fabd46fe4d74cb4c4c7fa19a80"
+  },
+  "restore": {
+    "checkpoint_root": "research/v7/window09-synthetic-restore/checkpoint",
+    "pointer_sha256": "4a9ae3fc12ac4d666a37b712dda696c12d10d507eae0c25199d38c6cccec85aa",
+    "identity": {
+      "contract_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "matrix_sha256": "e60934755547674c17af4677d38c4c12e7cc67c77c50bc5ce099f15784362616",
+      "seed": 0,
+      "run_id": "mock-run",
+      "model_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },
+    "dataset_root": "research/v7/window09-synthetic-restore",
+    "dataset_ref": {
+      "path": "dataset.json",
+      "sha256": "e60934755547674c17af4677d38c4c12e7cc67c77c50bc5ce099f15784362616",
+      "bytes": 51,
+      "identity_sha256": "e60934755547674c17af4677d38c4c12e7cc67c77c50bc5ce099f15784362616"
+    },
+    "result": {
+      "schema": "v7-safe-restore-evidence-v1",
+      "status": "SYNTHETIC_RESTORE_CONTRACT_VERIFIED",
+      "research_admitted": false,
+      "training_resumable": false,
+      "reasons": [],
+      "roles": {
+        "best": {
+          "status": "VERIFIED_SYNTHETIC_STATE",
+          "file": "state-best.json",
+          "sha256": "98483610e42f8b589fb79d4f498b00b1993e5ed807703f79f7cc0ffdf28b1910",
+          "runtime_proof": "MOCK_CONTAINERS_ONLY_NOT_REAL_TRAINING_STATE"
+        },
+        "latest": {
+          "status": "VERIFIED_SYNTHETIC_STATE",
+          "file": "state-latest.json",
+          "sha256": "98483610e42f8b589fb79d4f498b00b1993e5ed807703f79f7cc0ffdf28b1910",
+          "runtime_proof": "MOCK_CONTAINERS_ONLY_NOT_REAL_TRAINING_STATE"
+        },
+        "previous": {
+          "status": "VERIFIED_SYNTHETIC_STATE",
+          "file": "state-previous.json",
+          "sha256": "98483610e42f8b589fb79d4f498b00b1993e5ed807703f79f7cc0ffdf28b1910",
+          "runtime_proof": "MOCK_CONTAINERS_ONLY_NOT_REAL_TRAINING_STATE"
+        }
+      },
+      "resume_candidate": "latest",
+      "orphans_not_promoted": [],
+      "limitations": [
+        "Synthetic JSON state only; no PyTorch deserialization or real optimizer/RNG/AMP/sampler roundtrip",
+        "No full reproduction or research admission; no pointer writes or orphan promotion"
+      ],
+      "dataset_bytes_verified": true
+    }
+  },
+  "capabilities": {
+    "METADATA_VERIFIED": {
+      "proven": true,
+      "reasons": []
+    },
+    "EVALUATION_REPLAYABLE": {
+      "proven": true,
+      "reasons": []
+    },
+    "TRAINING_RESUMABLE": {
+      "proven": false,
+      "reasons": [
+        "NO_REAL_RUNTIME_STATE_OR_TRAINING_VERIFIED"
+      ]
+    },
+    "FULL_REPRODUCTION_READY": {
+      "proven": false,
+      "reasons": [
+        "NO_FULL_DATA_CODE_TRAINING_RUNTIME_REPRODUCTION_VERIFIED"
+      ]
+    }
+  },
+  "historical_E1_matrix": "BLOCKED_NOT_SEARCHED_OR_RECONSTRUCTED",
+  "storage_scope": "Small owned Git synthetic examples only, not a permanent storage/retention decision for real large artifacts"
+}

@@ -176,3 +176,9 @@ filesystem publication and safe offline validation. Artifacts verified != traini
 complete != research admitted. Hash without actual bytes is NOT_RESTORABLE. No old
 E1 matrix reconstruction or legacy unsafe checkpoint load. Main W08 integrated;
 new Window09 source and memory stay isolated; sole Backlog owns current status.
+
+Window09 complete: 141CPUtests, independent40,0Critical/Required. Replay is byte-/
+metadata-pinned W08 recomputation, not model retraining. Four proof flags remain
+independent: metadata/evaluation true; training/full reproduction false. Safe JSON
+checkpoint roles and latest->previous fallback do not validate actual PyTorch
+optimizer/RNG/AMP/sampler execution. New bounded authorization required; STOP.

@@ -102,6 +102,17 @@ class ArtifactPublicationTest(unittest.TestCase):
         self.files[name]=data;a=next(x for x in self.m['artifacts'] if x['name']==name)
         a.update(sha256=hashlib.sha256(data).hexdigest(),bytes=len(data))
         self.assertIn('NONFINITE_JSON',self.publish()['reasons'])
+    def test_corrupt_publication_container_and_sources_return_denial(self):
+        published=self.publish();(Path(published['bundle_path'])/'publication.json').write_text('null')
+        self.assertNotEqual(self.verify()['status'],'ARTIFACTS_VERIFIED')
+        m,files=bundle_fixture();m['identity']['run_id']='sources-null'
+        r=publish_bundle(self.root,m,canonical_hash(m),None)
+        self.assertIn('SOURCES_CONTAINER_INVALID',r['reasons'])
+    def test_concurrent_duplicate_publications_serialize(self):
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=2) as pool:results=list(pool.map(lambda _:self.publish(),range(2)))
+        self.assertEqual(sorted(x['status'] for x in results),['ALREADY_PUBLISHED','ARTIFACTS_VERIFIED'])
+        self.assertEqual(self.verify()['status'],'ARTIFACTS_VERIFIED')
     def test_publication_namespace_symlink_refused(self):
         self.root.mkdir();target=Path(self.temp.name)/'elsewhere';target.mkdir();(self.root/'completed').symlink_to(target,target_is_directory=True)
         self.assertEqual(self.publish()['status'],'INCOMPLETE');self.assertEqual(list(target.iterdir()),[])

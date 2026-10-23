@@ -109,6 +109,7 @@ def verify_artifact(bundle,a,external_roots=()):
 def _verify_at(path,expected,external_roots):
     path=_safe(path);m=strict_json(_safe(path/'manifest.json').read_bytes());validate_manifest(m,expected)
     pub=strict_json(_safe(path/'publication.json').read_bytes())
+    if not isinstance(pub,Mapping):raise BundleError('PUBLICATION_EVIDENCE_MISMATCH')
     if pub.get('schema')!='v7-bundle-publication-v1' or pub.get('manifest_sha256')!=expected or pub.get('state')!='ARTIFACTS_VERIFIED':raise BundleError('PUBLICATION_EVIDENCE_MISMATCH')
     instant(pub['generated_at'])
     for a in m['artifacts']:verify_artifact(path,a,external_roots)
@@ -149,7 +150,9 @@ def publish_bundle(root,manifest,expected_manifest_sha256,sources,*,external_roo
         for folder in ('attempts','staging','completed','locks'):_safe(root/folder).mkdir(exist_ok=True)
         _fsync_dir(root);_fsync_dir(root.parent)
         log=root/'attempts'/(attempt+'.json');atomic_json(log,{'state':'INCOMPLETE','started_at':_stamp()})
-        validate_manifest(manifest,expected_manifest_sha256);key=run_key(manifest['identity'])
+        validate_manifest(manifest,expected_manifest_sha256)
+        if not isinstance(sources,Mapping):raise BundleError('SOURCES_CONTAINER_INVALID')
+        key=run_key(manifest['identity'])
         final=root/'completed'/key
         with _lock(root/'locks'/(key+'.lock')):
             if final.exists():

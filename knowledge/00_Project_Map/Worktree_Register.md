@@ -4,7 +4,8 @@
 
 - Path `.worktrees/v7-window09-artifact-replay`; branch `development/v7-window09-artifact-replay`;
   base `bdea30d877fa2c5d02308f343fa5591a35616aec`; owner Codex/HumanWindow09;
-  created2026-10-23; retiredN/A. ACTIVE/UNMERGED/NOT_DEPLOYED.
+  created2026-10-23; retiredN/A. WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED.
+  U1 79d6c556d1bb5648a40a02c3b6f0e628c6512b4a; final container repair/U2 are in containing closure commit.
 - Existing29trees clean/distinct objectives, none serves W09. Existing experimental,
   research/reports/maps suffice; no new platform or memory tree. Dependencies E1
   safe filesystem/hash/state validator, integrated W08 outputs; synthetic bytes only.
@@ -15,7 +16,7 @@
 
 - Path `.worktrees/v7-window08-ranking-evaluation`; branch `development/v7-window08-ranking-evaluation`;
   base `1631020bce8223ac4337c7e97473a2a3d9a555f0`; owner Codex/HumanWindow08;
-  created2026-10-23; retiredN/A. WINDOW_COMPLETE / STOP / UNMERGED / NOT_DEPLOYED.
+  created2026-10-23; retiredN/A. WINDOW_COMPLETE / LOCAL_INTEGRATED_BY_WINDOW09 / NOT_DEPLOYED.
   Final HEAD is containing U2/closure commit; U1 826b8ddf798e752584d180181d24cc1db967e019.
 - Existing28trees checked clean/distinct purposes; none serves W08 evaluation.
   Isolate new work; reuse existing experimental/research/reports/maps directories,
