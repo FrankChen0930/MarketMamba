@@ -613,7 +613,7 @@
       "topic": "Current V7 development backlog",
       "primary_authority": "research/v7/research-program.md",
       "authority_class": "CURRENT_REFERENCE",
-      "status": "WINDOW05_COMPLETE_STOP_RESEARCH_PREPARATION_ONLY",
+      "status": "WINDOW05_INTEGRATED_WINDOW06_PROPOSAL_AUTHORIZED",
       "supersedes": [
         "CPU window closure queues as cross-domain next-work navigation",
         "historical tasks/plan.md and tasks/todo.md as active execution assumptions"
@@ -638,12 +638,12 @@
         "research/v7/window04-main-integration.json",
         "research/v7/window04-cpu-continuation-evidence.json",
         "research/v7/window04-log-integration-closure.json",
-        "research/v7/window05-evidence.json"
+        "research/v7/window05-evidence.json",
+        "research/v7/window06-integration.json"
       ],
       "conflicts": [
-        "Window05 source/synthetic research preparation only; official48features and frozenE5/E1 untouched",
-        "Timing mismatch/payload impact unresolved; dependent empirical analysis stopped",
-        "No training/H2/admission/research-proposal approval"
+        "Window05 source audit integrated, no admission or historic result reclassification",
+        "Window06 new decision contract remainsPROPOSED; no training/H2/production authority"
       ]
     }
   ],

@@ -5,6 +5,24 @@
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
 
+## Window06 — Window05 integrated; decision-time preparation authorized
+
+Fixed `65462ec185783eedb2ba81b66cfa04783f86c6e2` integrated ff-only from main
+`2ee4ca83e709af64be4dd63032ba4fb47903d769`; pre/post87 tests PASS,13source/output hashes
+verified, independent13tests/0Critical/Required. LOCAL_INTEGRATED / NOT_DEPLOYED.
+This containing main commit is integration closure documentation only.
+[Evidence](window06-integration.json).
+
+Same Human grant authorizes isolated `research/v7-window06-decision-time` at
+`.worktrees/v7-window06-decision-time` from this closure: VERSIONED PROPOSAL,
+<=3source families/~10sessions diagnostic panel and synthetic eligibility tests.
+New pre-next-open proposal does not replace frozen E5/E1. No formal cutoff/time,
+feature/label/admission or execution policy selected. StrictSTOP/E1BLOCKED/H2unapproved/
+FairEvaluationPROPOSED remain. No F2 repeat search/training/production changes.
+Read local Current State, Authority Map, Charter and unique Backlog on that branch
+for subsequent progress; all pending documents stay isolated. Older STOP entries
+are historical for their windows; no indefinite authorization.
+
 ## Window05 Feature Integrity and Cost-Effective Data Research
 
 WINDOW_COMPLETE / STOP / UNMERGED / NOT_DEPLOYED. Human grant covered only F0/F1/F2,
