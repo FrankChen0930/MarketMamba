@@ -1,5 +1,19 @@
 # Worktree Register
 
+## Window05 feature integrity — 2026-10-23
+
+- Path `.worktrees/v7-window05-feature-integrity`; branch `research/v7-window05-feature-integrity`;
+  base `2ee4ca83e709af64be4dd63032ba4fb47903d769`; owner Codex/current Human Window05; created2026-10-23; retired N/A.
+- Purpose bounded F0/F1/F2. Existing23trees hold distinct frozen/source/audit roles,
+  none serves this new objective; isolation protects main and historical payloads.
+  Existing experimental/research/reports paths suffice; no new architecture/memory tree.
+- UNMERGED / NOT_DEPLOYED. Dependencies frozenmanifest/policy, pinned historical
+  source metadata, existing CPUvenv and limited official-document reads. E1 matrix
+  absent; no processed_v6 mount, inherited3trackedDatafiles unchanged/unread.
+- Safe removal requires clean tree, retained commits/artifacts and resolved
+  references plus separate retirement authorization. No existing tree removed.
+
+
 ## W04B-LOG integrated — 2026-10-21
 
 - Fixed `development/v7-window04-cpu-continuation@97fb4c9d669f3aa237ef5545a0ef322a5cc2d6a9`

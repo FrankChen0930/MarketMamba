@@ -5,6 +5,27 @@
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
 
+## Window05 Feature Integrity and Cost-Effective Data Research
+
+ACTIVE / UNMERGED / NOT_DEPLOYED. Current Human grant permits only F0/F1/F2,
+CPU/read-only/synthetic preparation. Base main2ee4ca8; branch
+`research/v7-window05-feature-integrity` at `.worktrees/v7-window05-feature-integrity`.
+Prior queue rows below are historical checkpoints; this section is the single active queue.
+
+| Unit | Objective/authority | Status/acceptance/dependency |
+|---|---|---|
+| F0 | Human Stage A + frozen48manifest/policy; audit not selection | COMPLETED source-level audit48ordered,4tests+independent4,0Critical/Required;21conditional27unknown; no payloadPIT promotion. Source syntax typo corrected once before firstGREEN, no review rework |
+| F1 | Human Stage B exploratory low-cost candidates | IN_PROGRESS: timestamp-gated formulas +8synthetic tests; no qualified labels/cache, real diagnostics BLOCKED; no training/input-dim changes |
+| F2 | Human Stage C official/repo PIT feasibility | IN_PROGRESS: original455040row scope/version pinned; no bulk data or repeat exhausted historical endpoint searches |
+
+Priority: resolve t-close versus later decision semantics and availability evidence
+before new real-data feature diagnostics. F0 risk prohibits dependent empirical
+analysis; independent F1synthetic/F2feasibility may continue. Historical E5/E1
+results unchanged. H2 NOT_APPROVED/StrictSTOP/E1BLOCKED/FairEvaluationPROPOSED.
+All engineering is additive research helpers, no production/contract edits.
+[Evidence](window05-evidence.json), [F0 report](../../reports/v7_window05_feature_integrity.md),
+[F0 matrix](window05-feature-integrity.json). Maximum2evidenced review-rework rounds/unit.
+
 ## Window04 W04B-LOG integration closure — STOP
 
 Human-approved fixed `97fb4c9d669f3aa237ef5545a0ef322a5cc2d6a9` integrated by local ff-only

@@ -82,3 +82,13 @@ The manifest records `value_table_status=NOT_EMITTED_DOWNSTREAM_ADMISSION_BLOCKE
 Update whenever feature membership/order, transforms, graph policy, industry treatment, or matrix identity rules change.
 
 **2026-09-22 source identity:** The frozen 48-feature manifest is copied byte-identically into development main for research-source tests; the original branch/commit and blob are recorded in `research/v7/source-adoption-register-20260922.json`. Feature order and semantics are unchanged.
+
+## Window05 source integrity audit — 2026-10-23
+
+Branch-local source audit finds unresolved release-time/vintage/missing-default
+risks; exact48membership/scaling contract stays frozen. VERIFIED0/CONDITIONAL21/
+UNKNOWN27/INVALID0 refers to end-to-end audit certainty, not new formal feature
+admission or historical result reclassification. Empirical payload quality UNKNOWN.
+Unverified date-only macro availability blocks dependent real-data factor analysis.
+[Report](../../reports/v7_window05_feature_integrity.md),
+[matrix](../../research/v7/window05-feature-integrity.json). UNMERGED/NOT_DEPLOYED.

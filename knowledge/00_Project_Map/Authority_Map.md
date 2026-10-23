@@ -5,6 +5,25 @@
 > Semantic change owner must update this map in the same change.
 > Prior research/Phase A map accepted `2026-09-20`; 2026-09-22 runtime additions are agent-observed, pending separate human review. Canonical means current navigation authority, not immutable final state.
 
+## Window05 Feature Integrity and Data Research — active bounded window
+
+Human authorized F0/F1/F2 only: read-only source audit, synthetic candidate formulas,
+and bounded monthly-revenue PIT feasibility. Branch `research/v7-window05-feature-integrity`,
+worktree `.worktrees/v7-window05-feature-integrity`, base/main `2ee4ca83e709af64be4dd63032ba4fb47903d769`.
+UNMERGED / NOT_DEPLOYED. Source-derived macro Date joins do not prove t-close
+availability; missing source values may become defaults. F0 identified material
+unquantified risks; no real factor/performance analysis may depend on these
+unverified payloads. Historical conclusions are preserved; no result reclassification.
+
+F0 source audit complete:48ordered, VERIFIED0/CONDITIONAL21/UNKNOWN27/INVALID0,
+all empirical quality UNKNOWN. F1 synthetic-only preparation and independent F2
+feasibility remain in this window's three-unit scope. See the local unique
+[Backlog](../../research/v7/research-program.md#window05-feature-integrity-and-cost-effective-data-research)
+and [evidence](../../research/v7/window05-evidence.json). No formal manifest, cutoff,
+label or admission changed. Strict Phase0 STOP; E1 matrix BLOCKED; H2 NOT_APPROVED;
+Fair Evaluation and all new feature/timing candidates PROPOSED. This current entry
+supersedes earlier window STOP solely for this grant; no automatic next window.
+
 ## Window04 W04B-LOG integration closure — STOP
 
 Human-approved fixed `97fb4c9d669f3aa237ef5545a0ef322a5cc2d6a9` integrated by local ff-only
