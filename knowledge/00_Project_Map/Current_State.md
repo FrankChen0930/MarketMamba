@@ -2,6 +2,29 @@
 
 > Status: `CANONICAL_CURRENT_PROJECT_MAP`
 
+## Window10 Classical Synthetic Foundation — bounded CPU engineering
+
+Window09 fixed `91fa82c2ac5e3b8f22109c55a73fa4e540a916b9` LOCAL_INTEGRATED /
+NOT_DEPLOYED, ff-only from `bdea30d877fa2c5d02308f343fa5591a35616aec`.
+Pre/post141CPUtests PASS;39hashes/independent40tests GO,0Critical/Required;30trees
+clean. Main held91fa82c, all new closure/development documents stay isolated.
+Older Window09 UNMERGED/STOP entries superseded for integration only.
+
+Window10 branch `development/v7-window10-classical-e2e`, base91fa82c, worktree
+`.worktrees/v7-window10-classical-e2e`. UNMERGED/NOT_DEPLOYED; two units only,
+<=2rework/unit. Human now permits tiny CPU synthetic fits, not real-data research.
+U1 COMPLETE_REVIEWED:13tests/independent13PASS,1rework (full selection run hash and
+null containers). L0 explicit toy factor; L1 NumPy train-only scaled Ridge; L2
+adapter code present, dependency BLOCKED (lightgbm absent; no install performed).
+U2 READY: W07 guarded validation/selection/freshrefit/forward, W08 paired metrics,
+W09 versioned bundle profile and independent replay. No new split/evaluator/platform.
+
+StrictSTOP/E1matrixBLOCKED/H2NOT_APPROVED/FairEvaluationPROPOSED/PreNextOpenPROPOSED/
+InferenceRecoveryDEFERRED. No Frozen E5/E1 or production mutation; no other branch
+integration, GPU/Colab/search/real research. [Evidence](../../research/v7/window10-evidence.json),
+[sole backlog](../../research/v7/research-program.md#window10-classical-synthetic-foundation).
+Resume named branch HEAD/clean/maps/Charter/evidence/queue; no next-window grant.
+
 ## Window09 Durable Artifacts & Offline Replay — complete / STOP
 
 Window08 fixed `bdea30d877fa2c5d02308f343fa5591a35616aec` LOCAL_INTEGRATED /

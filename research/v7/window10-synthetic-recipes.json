@@ -1,0 +1,78 @@
+{
+  "schema": "v7-window10-fixture-config-v1",
+  "evidence_class": "SYNTHETIC",
+  "recipes": [
+    {
+      "schema": "v7-classical-recipe-v1",
+      "status": "SYNTHETIC_ENGINEERING_ONLY",
+      "recipe_id": "toy-L0",
+      "model_kind": "L0",
+      "features": [
+        "x",
+        "z"
+      ],
+      "horizon": 5,
+      "seed": 0,
+      "max_samples": 64,
+      "max_features": 4,
+      "config": {
+        "factor": "x",
+        "direction": 1.0
+      }
+    },
+    {
+      "schema": "v7-classical-recipe-v1",
+      "status": "SYNTHETIC_ENGINEERING_ONLY",
+      "recipe_id": "toy-L1",
+      "model_kind": "L1",
+      "features": [
+        "x",
+        "z"
+      ],
+      "horizon": 5,
+      "seed": 0,
+      "max_samples": 64,
+      "max_features": 4,
+      "config": {
+        "alpha": 1.0,
+        "scaling": "TRAIN_ONLY_ZSCORE",
+        "zero_variance": "UNIT_SCALE",
+        "fit_intercept": true
+      }
+    },
+    {
+      "schema": "v7-classical-recipe-v1",
+      "status": "SYNTHETIC_ENGINEERING_ONLY",
+      "recipe_id": "toy-L2",
+      "model_kind": "L2",
+      "features": [
+        "x",
+        "z"
+      ],
+      "horizon": 5,
+      "seed": 0,
+      "max_samples": 64,
+      "max_features": 4,
+      "config": {
+        "n_estimators": 4,
+        "num_leaves": 3,
+        "max_depth": 2,
+        "learning_rate": 0.1,
+        "min_child_samples": 1,
+        "n_jobs": 1
+      }
+    }
+  ],
+  "selection_policy": {
+    "policy_id": "window10-toy-validation-5d-v1",
+    "status": "SYNTHETIC_NOT_ADMITTED",
+    "metric": "VALIDATION_MEAN_DAILY_RANK_IC",
+    "horizon": 5,
+    "tie_break": [
+      "L0",
+      "L1",
+      "L2"
+    ]
+  },
+  "meaning": "Toy x/z and seed0 are fixture settings, not approved financial feature/direction/seed/selection choices"
+}

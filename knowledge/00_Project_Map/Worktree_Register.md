@@ -1,5 +1,16 @@
 # Worktree Register
 
+## Window10 classical synthetic study — 2026-10-23
+
+- Path `.worktrees/v7-window10-classical-e2e`; branch `development/v7-window10-classical-e2e`;
+  base `91fa82c2ac5e3b8f22109c55a73fa4e540a916b9`; owner Codex/HumanWindow10;
+  created2026-10-23;retiredN/A. ACTIVE/UNMERGED/NOT_DEPLOYED.
+- Existing30trees clean/distinct scope, none serves W10 adapters. Existing directories
+  experimental/research/reports/maps sufficient; no new platform. Reuses integrated
+  W07/08/09 + NumPy2.0.2; sklearn/lightgbm missing; no external data access/install.
+- Main91fa82c held; W09 originaltree/artifacts retained. Safe removal requires clean
+  preserved commits/evidence/resolved references and separate retirement review.
+
 ## Window09 artifact/replay — 2026-10-23
 
 - Path `.worktrees/v7-window09-artifact-replay`; branch `development/v7-window09-artifact-replay`;

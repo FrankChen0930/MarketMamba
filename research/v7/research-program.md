@@ -1,9 +1,25 @@
 # V7 Research Program and Current Development Backlog
 
-> Current planning owner: isolated Window09 engineering branch, linked by canonical
+> Current planning owner: isolated Window10 engineering branch, linked by canonical
 > Current State/Authority Map. Planning status does not grant research, execution,
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
+
+## Window10 Classical Synthetic Foundation
+
+Sole active queue: Human Window10, exactly two CPU/SYNTHETIC units. Main91fa82c,
+branch `development/v7-window10-classical-e2e`, UNMERGED/NOT_DEPLOYED. Older queues
+historical. No real research/model training admission implied by tiny toy fits.
+
+| Unit | Objective/authority | Acceptance/status |
+|---|---|---|
+| W10-U1 | Human Classical Baseline Adapters, W07 guards | COMPLETE_REVIEWED:13tests/independent13PASS,1rework,0Critical/Required; L0/Ridge tinyfits; L2 code present but dependency BLOCKED |
+| W10-U2 | Human synthetic end-to-end lifecycle | READY: guarded validation/selection/newRefit/forward, W08 metrics, honest W09 bundle training-state profile, independent replay |
+| L2 real synthetic fit verification | Human allows only installed qualified dependency | BLOCKED: lightgbm absent; candidate requirement >=4,<5, exact lock/test still needed; no network/global env change |
+
+Permanent artifact storage/retention, qualified real data, evaluation policy,
+actual CPU/GPU runtime acceptance require Human decisions. No Window11 authority.
+[Evidence](window10-evidence.json),[report](../../reports/v7_window10_classical_e2e.md).
 
 ## Window09 Durable Artifacts and Offline Replay
 

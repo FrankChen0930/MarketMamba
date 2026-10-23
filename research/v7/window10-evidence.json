@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "artifact_class": "CANONICAL",
+  "status": "U1_COMPLETE_U2_READY",
+  "branch": "development/v7-window10-classical-e2e",
+  "base": "91fa82c2ac5e3b8f22109c55a73fa4e540a916b9",
+  "integration": {
+    "before": "bdea30d877fa2c5d02308f343fa5591a35616aec",
+    "after": "91fa82c2ac5e3b8f22109c55a73fa4e540a916b9",
+    "method": "ff-only",
+    "pre_tests": 141,
+    "post_tests": 141,
+    "hashes_verified": 39,
+    "worktrees_clean": 30,
+    "independent_tests": 40,
+    "critical": 0,
+    "required": 0,
+    "main_doc_commit": false
+  },
+  "U1": {
+    "tests": 13,
+    "red": "======================================================================\nERROR: v7_classical_baseline_test (unittest.loader._FailedTest.v7_classical_baseline_test)\n----------------------------------------------------------------------\nImportError: Failed to import test module: v7_classical_baseline_test\nTraceback (most recent call last):\n  File \"/usr/lib/python3.12/unittest/loader.py\", line 137, in loadTestsFromName\n    module = __import__(module_name)\n             ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window10-classical-e2e/V6/experimental/v7_classical_baseline_test.py\", line 7, in <module>\n    from V6.experimental.v7_classical_baseline import fit_baseline,score_view,dependency_status\nModuleNotFoundError: No module named 'V6.experimental.v7_classical_baseline'\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (errors=1)\n",
+    "green": "----------------------------------------------------------------------\nRan 13 tests in 0.220s\n\nOK\n",
+    "rework_red": "======================================================================\nERROR: test_invalid_calendar_fold_containers_return_serializable_denial (V6.experimental.v7_classical_baseline_test.BaselineAdapterTest.test_invalid_calendar_fold_containers_return_serializable_denial)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window10-classical-e2e/V6/experimental/v7_classical_baseline_test.py\", line 103, in test_invalid_calendar_fold_containers_return_serializable_denial\n    result=fit_baseline(r,canonical_hash(r),run,canonical_hash(run),'SELECTION_TRAIN',ids_for(p,(1,2,3)),p[3],p[4],pins_for(p,'SELECTION_TRAIN'),fold,cal,fp)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window10-classical-e2e/V6/experimental/v7_classical_baseline.py\", line 61, in fit_baseline\n    if calendar.get('qualification')!='SYNTHETIC':return reject('SYNTHETIC_CALENDAR_REQUIRED')\n       ^^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'get'\n\n======================================================================\nFAIL: test_selection_manifest_same_id_changed_source_cannot_score (V6.experimental.v7_classical_baseline_test.BaselineAdapterTest.test_selection_manifest_same_id_changed_source_cannot_score)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window10-classical-e2e/V6/experimental/v7_classical_baseline_test.py\", line 98, in test_selection_manifest_same_id_changed_source_cannot_score\n    self.assertEqual(r['status'],'REJECTED');self.assertIn('SELECTION_MODEL_SCOPE_MISMATCH',r['reasons'])\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'SCORED' != 'REJECTED'\n- SCORED\n+ REJECTED\n\n\n----------------------------------------------------------------------\nRan 2 tests in 0.036s\n\nFAILED (failures=1, errors=1)\n",
+    "rework_rounds": 1,
+    "review": {
+      "reviewer": "/root/independent_review",
+      "critical": 0,
+      "required_initial": 2,
+      "required_remaining": 0,
+      "independent_tests": 13
+    },
+    "repair": "Bind selection fit run full hash; reject null/list calendar/fold/pin",
+    "models": {
+      "L0": "FIT_VERIFIED_SYNTHETIC",
+      "L1": "FIT_VERIFIED_SYNTHETIC",
+      "L2": "CODE_PRESENT_UNVERIFIED_DEPENDENCY_BLOCKED"
+    },
+    "regression": {
+      "tests": 154,
+      "log": "----------------------------------------------------------------------\nRan 154 tests in 9.678s\n\nOK\n"
+    }
+  },
+  "U2": {
+    "status": "READY"
+  },
+  "runtime": {
+    "python": "3.12.3",
+    "numpy": "2.0.2",
+    "sklearn": "MISSING",
+    "lightgbm": "MISSING",
+    "executable": "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+    "CUDA_VISIBLE_DEVICES": "",
+    "data_env": "UNSET",
+    "inputs": "TINY_SYNTHETIC_ONLY"
+  },
+  "limits": [
+    "StrictSTOP/E1matrixBLOCKED/H2NOT_APPROVED/FairEvaluationPROPOSED/PreNextOpenPROPOSED/InferenceRecoveryDEFERRED",
+    "No GPU/Colab/realdata/newfinancialpolicy/production/otherbranchmerge",
+    "No checkpointresume/newregistry/orchestrator/search/globaldependencyinstall"
+  ],
+  "knowledge_health": "WARNING/noFAIL existing classes"
+}

@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "authority": "Human Window10 Classical Baseline End-to-End Research Foundation",
+  "status": "BOUNDED_SYNTHETIC_CPU_FITTING_ENGINEERING_ONLY",
+  "integration_source": "91fa82c2ac5e3b8f22109c55a73fa4e540a916b9",
+  "authorized": [
+    "local W09 integration after gates",
+    "two units: minimal classical adapters and tiny synthetic end-to-end fit/refit/evaluate/publish/replay; <=2rework each"
+  ],
+  "not_authorized": [
+    "real historical model research",
+    "GPU/Colab/real data admission/production",
+    "formal features/labels/policy/search",
+    "dependency network/global install",
+    "Window10mainmerge/push/deploy/Window11"
+  ]
+}

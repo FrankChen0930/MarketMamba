@@ -182,3 +182,11 @@ metadata-pinned W08 recomputation, not model retraining. Four proof flags remain
 independent: metadata/evaluation true; training/full reproduction false. Safe JSON
 checkpoint roles and latest->previous fallback do not validate actual PyTorch
 optimizer/RNG/AMP/sampler execution. New bounded authorization required; STOP.
+
+## Window10 classical synthetic adapters
+
+Human authorizes tiny CPU toy fitting only. W07 owns eligibility/roles; new
+L0/Ridge adapters consume guarded views, no new split or ranking implementation.
+L2 dependency absent, code-present != fit-verified. [Evidence](../../research/v7/window10-evidence.json)
+and sole Backlog own current status. Actual fit status separate from immutable W07
+initial authorization declarations; no training resume or research admission.
