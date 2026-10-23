@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_class": "CANONICAL",
-  "status": "U1_COMPLETE_U2_READY",
+  "status": "WINDOW_COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
   "branch": "development/v7-window10-classical-e2e",
   "base": "91fa82c2ac5e3b8f22109c55a73fa4e540a916b9",
   "integration": {
@@ -39,10 +39,26 @@
     "regression": {
       "tests": 154,
       "log": "----------------------------------------------------------------------\nRan 154 tests in 9.678s\n\nOK\n"
-    }
+    },
+    "commit": "4ec22a4330ed6db7df0b3dafb4106cea820516e2"
   },
   "U2": {
-    "status": "READY"
+    "status": "COMPLETE_REVIEWED",
+    "commit": "Containing U2/closure commit",
+    "tests": 13,
+    "red": "======================================================================\nERROR: v7_classical_study_test (unittest.loader._FailedTest.v7_classical_study_test)\n----------------------------------------------------------------------\nImportError: Failed to import test module: v7_classical_study_test\nTraceback (most recent call last):\n  File \"/usr/lib/python3.12/unittest/loader.py\", line 137, in loadTestsFromName\n    module = __import__(module_name)\n             ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window10-classical-e2e/V6/experimental/v7_classical_study_test.py\", line 8, in <module>\n    from V6.experimental.v7_classical_study import run_study\nModuleNotFoundError: No module named 'V6.experimental.v7_classical_study'\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (errors=1)\n",
+    "green": "----------------------------------------------------------------------\nRan 13 tests in 8.188s\n\nOK\n",
+    "rework_red": "======================================================================\nFAIL: test_v2_missing_or_mismatched_fit_model_is_not_replayable (V6.experimental.v7_classical_study_test.ClassicalStudyTest.test_v2_missing_or_mismatched_fit_model_is_not_replayable)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window10-classical-e2e/V6/experimental/v7_classical_study_test.py\", line 85, in test_v2_missing_or_mismatched_fit_model_is_not_replayable\n    self.assertEqual(replay['status'],'REPLAY_REJECTED');self.assertTrue(replay['reasons'][0].startswith('CLASSICAL_'),replay['reasons'])\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'EVALUATION_REPLAYABLE' != 'REPLAY_REJECTED'\n- EVALUATION_REPLAYABLE\n+ REPLAY_REJECTED\n\n\n======================================================================\nFAIL: test_v2_training_configuration_hash_is_bound (V6.experimental.v7_classical_study_test.ClassicalStudyTest.test_v2_training_configuration_hash_is_bound)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window10-classical-e2e/V6/experimental/v7_classical_study_test.py\", line 89, in test_v2_training_configuration_hash_is_bound\n    self.assertEqual(replay['status'],'REPLAY_REJECTED');self.assertIn('CLASSICAL_CONFIG_IDENTITY_MISMATCH',replay['reasons'])\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'EVALUATION_REPLAYABLE' != 'REPLAY_REJECTED'\n- EVALUATION_REPLAYABLE\n+ REPLAY_REJECTED\n\n\n----------------------------------------------------------------------\nRan 2 tests in 1.136s\n\nFAILED (failures=2)\n",
+    "rework_rounds": 1,
+    "review": {
+      "reviewer": "/root/independent_review",
+      "critical": 0,
+      "required_initial": 1,
+      "required_remaining": 0,
+      "independent_tests": 53,
+      "includes_old_W09": 40
+    },
+    "repair": "Complete v2 fit/prediction/run/model/recipe/fold/refit lineage+configuration hash binding; independently replay validation and named toy selection as well as forward"
   },
   "runtime": {
     "python": "3.12.3",
@@ -52,12 +68,142 @@
     "executable": "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
     "CUDA_VISIBLE_DEVICES": "",
     "data_env": "UNSET",
-    "inputs": "TINY_SYNTHETIC_ONLY"
+    "inputs": "TINY_SYNTHETIC_ONLY",
+    "code_manifest_scope": "7critical adapter/evaluator sources, selectedPython/torch/numpy/pandas, not full transitive environment/study refit archive"
   },
   "limits": [
     "StrictSTOP/E1matrixBLOCKED/H2NOT_APPROVED/FairEvaluationPROPOSED/PreNextOpenPROPOSED/InferenceRecoveryDEFERRED",
     "No GPU/Colab/realdata/newfinancialpolicy/production/otherbranchmerge",
     "No checkpointresume/newregistry/orchestrator/search/globaldependencyinstall"
   ],
-  "knowledge_health": "WARNING/noFAIL existing classes"
+  "knowledge_health": "WARNING/noFAIL existing Governance/AuthorityDrift/LegacyDocs classes, main/candidate structural checks PASS",
+  "regression": {
+    "tests": 167,
+    "existing_tests": 141,
+    "U1": 13,
+    "U2": 13,
+    "log": "----------------------------------------------------------------------\nRan 167 tests in 19.848s\n\nOK\n"
+  },
+  "new_bundle_profile": {
+    "schema": "v7-study-run-bundle-v2",
+    "profile": "SYNTHETIC_CLASSICAL_FIT",
+    "training_status": "SYNTHETIC_CPU_FIT_COMPLETED",
+    "v1_semantics": "UNCHANGED",
+    "schema_valid": true,
+    "outputs_validated": 2
+  },
+  "end_to_end_evidence": "research/v7/window10-e2e-evidence.json",
+  "verification_coverage": "research/v7/window10-verification-coverage.json",
+  "capabilities": {
+    "METADATA_VERIFIED": true,
+    "EVALUATION_REPLAYABLE": true,
+    "TRAINING_RESUMABLE": false,
+    "FULL_REPRODUCTION_READY": false
+  },
+  "human_decisions_required": [
+    "Real data/PIT/feature/label/universe/availability qualification and data scope",
+    "Formal evaluation/selection/baseline/split/seed/decision-time admission",
+    "Exact isolated LightGBM environment lock/permission and actual CPU validation",
+    "Permanent large artifact location/retention/GC",
+    "Actual training runtime/resume acceptance and separate LocalGPU/Colab authorization"
+  ],
+  "next_checkpoint": "Containing U2/closure commit on development/v7-window10-classical-e2e; main91fa82c held. HEAD/clean/first maps+Charter+soleWindow10queue/evidence/e2e record then STOP; new bounded grant required.",
+  "source_reuse": {
+    "V6/experimental/v7_e1_checkpoint.py": "6a1ad9523e8e23cf1ceb506b6fae0a43550a5e2b6a60e60d8832d339222f2921",
+    "V6/experimental/v7_corrected_e5_train.py": "e5326ddd4dc3ef9e3d34df9e7dedca7cd1fbd420aac92d4480e5eeba97c46510",
+    "V6/experimental/v7_corrected_e5_replication.py": "8c3a2b37950c5a24028cf9a2081fa6a3ea1cd89ce4be8e05b29ba1811c5d3af8",
+    "V6/experimental/v7_research_temporal.py": "1e2a776099b063470dda673d1c717678d13aba35d7194f582d2e30c437fba119",
+    "V6/experimental/v7_research_isolation.py": "024f1474448d4e06e6f48cf1ef9c2bbd6bd6c3902f57f09e6a25dd48e34e9cbc",
+    "V6/experimental/v7_temporal_contract.py": "867f8404f81f5b97f6b42a4e5db1d0af1e8e68b2ec4a1a0e38b6277e7ebfdcc8"
+  },
+  "extended_existing_components": {
+    "base_commit": "91fa82c2ac5e3b8f22109c55a73fa4e540a916b9",
+    "paths": [
+      "V6/experimental/v7_research_artifacts.py",
+      "V6/experimental/v7_research_replay.py"
+    ],
+    "reason": "Versioned truthful tiny fit profile and stronger producer/validation replay bindings; old v1 tests preserved, no replacement platform"
+  },
+  "frozen_hashes": {
+    "research/v7/corrected-baseline-v1/feature-manifest.json": "d3b2c2d23ccc071b6e0d49ca77d27f41ade085084ea8fd3952321f5352a32547",
+    "research/v7/corrected-baseline-v1/policy.json": "ac32539b44ee80924e1c65785cfcda83d2efd7f7e289cf1ee94245879a09d115",
+    "research/v7/corrected-e5-replication-v1/incumbent-contract.json": "3cb4a5fc9c1595689366a2b6bbd49210743b9160fe0f00516622b463eaf46e85",
+    "research/v7/e1-rolling-origin-refresh-v1/experiment-contract.json": "7a59d98744ac736e915ff5f6e0e8fead2f80f5ce7f8283b467ec0464bffe8d4c"
+  },
+  "scope_accounting": {
+    "units": 2,
+    "U1_rework": 1,
+    "U2_rework": 1,
+    "additional_human_intervention": 0,
+    "network_installs": 0,
+    "GPU_Colab_real_training": false,
+    "tinyRidgefit_rows": [
+      12,
+      24
+    ],
+    "panel_feature_rows": 32,
+    "features": 2,
+    "model_horizon": 5,
+    "L2": "DEPENDENCY_BLOCKED",
+    "roadmap_rescans": 0,
+    "E1matrix_repeat_searches": 0,
+    "new_registry_or_orchestrator": false,
+    "telemetry_snapshot": {
+      "source": "tools.get_goal",
+      "tokensUsed": 234036,
+      "timeUsedSeconds": 1676,
+      "interpretation": "Aggregate goal counter; not billing or enforced hard cap"
+    }
+  },
+  "closure_review": {
+    "status": "GO",
+    "reviewer": "/root/independent_review",
+    "critical": 0,
+    "required": 0,
+    "independent_tests": 26,
+    "artifact_hashes_verified": 30,
+    "source_hashes_verified": 6,
+    "frozen_hashes_verified": 4,
+    "fixed_git_code_source_pins": 7,
+    "outputs_validated": 2,
+    "validation_selection_forward_replay": "PASS",
+    "L2": "DEPENDENCY_BLOCKED",
+    "resume_and_full": "NOT_PROVEN",
+    "navigation": "PASS",
+    "protected_paths": "UNCHANGED",
+    "main": "91fa82c2ac5e3b8f22109c55a73fa4e540a916b9"
+  },
+  "artifact_hashes": {
+    "V6/experimental/v7_classical_baseline.py": "6ad97ae807014705107b8af83df814ba80f513041e0959243f6738e0dac3a726",
+    "V6/experimental/v7_classical_baseline_test.py": "1d7016f3a256dafc1fc3959bc2f72e0938d0f2e2748d37881c62931ea96d9fd5",
+    "V6/experimental/v7_classical_study.py": "0f0a7b45940b788fefc136ebd040918741adc5e620db3fa3c14397c190fed25a",
+    "V6/experimental/v7_classical_study_test.py": "b311501c1ae6a98203e0039469359d7776328b1caf1b006ea5f67c66f3ea85a7",
+    "V6/experimental/v7_research_artifacts.py": "b0cc21a36f88dedf5dd4120475149feca17145f6d52e10269a7b4e0b7e329f99",
+    "V6/experimental/v7_research_replay.py": "906fdbfa9eb2ab2b1b848d048f8be8a3cea31b70adae7942845eb4bedb54388c",
+    "research/v7/study-run-bundle-v2-schema.json": "ff7cd2757d8e1406fbd929fdec3a066380db7040531ed95d1224d19c6069b9d3",
+    "research/v7/window10-synthetic-recipes.json": "d910d81c8719001a3a5c05e701f7d349d97cf7888e292f38f1143c033512a472",
+    "research/v7/window10-e2e-evidence.json": "17d257c0e2beb5a8d1671ed52b03616ee91de76d217519f8be040b5f4afb6162",
+    "research/v7/window10-replay-evidence.json": "8aa18247d326ecddbae454c01a98f1701d4c9aefdcf7aa52d3cb6bdc27091802",
+    "research/v7/window10-verification-coverage.json": "5905b748f24c7ea0fe2ee7bf7ef9dd6ad3f7c48a106d75a32b85a95fc1020895",
+    "reports/v7_window10_classical_e2e.md": "44efcbced3e97605ab85fde0c9f5ec4b52f1f90210c42ce71be72ef422f27529",
+    "research/v7/window10-synthetic-bundle/.gitignore": "639d11fd7ed5833e1d2f0454c1df26fdee29337a96f5255f67ce0861858250d7",
+    "research/v7/window10-synthetic-bundle/completed/3ab489fd3d8393ee29af5a12477ec3b424bc03bcfec2557125ddb78a09cafbab/code_manifest.json": "dd0282aad5325587c04f2cc5cce93ed52a0e86264de2687d5ad71d0eaae145d4",
+    "research/v7/window10-synthetic-bundle/completed/3ab489fd3d8393ee29af5a12477ec3b424bc03bcfec2557125ddb78a09cafbab/completion_evidence.json": "4b8832addb7b835fe701f597be55474db1dc81cdbed52a70a4547e8ea9cccc44",
+    "research/v7/window10-synthetic-bundle/completed/3ab489fd3d8393ee29af5a12477ec3b424bc03bcfec2557125ddb78a09cafbab/daily_metrics.json": "0c16419d6e18815dd9d25fe2112ae1071b456dc6d6c1cc7ff5398450bc384a3a",
+    "research/v7/window10-synthetic-bundle/completed/3ab489fd3d8393ee29af5a12477ec3b424bc03bcfec2557125ddb78a09cafbab/data_split_eligibility.json": "a65302a181ed9ffe65311d25be8ea97359d54b346b2394b6f3453efde14dd1e0",
+    "research/v7/window10-synthetic-bundle/completed/3ab489fd3d8393ee29af5a12477ec3b424bc03bcfec2557125ddb78a09cafbab/dataset.json": "878925030b06a0fb5775c818f568138d9d7518e1ab227b7cc5ac11d6f0fb76a1",
+    "research/v7/window10-synthetic-bundle/completed/3ab489fd3d8393ee29af5a12477ec3b424bc03bcfec2557125ddb78a09cafbab/environment.json": "1dc11dca0afffa47bddc8ddb1195ce1891f797220e542de85171d4b03e792a47",
+    "research/v7/window10-synthetic-bundle/completed/3ab489fd3d8393ee29af5a12477ec3b424bc03bcfec2557125ddb78a09cafbab/exposure_ledger.json": "fdb5a5efa361e0f0d40b07127e3f296340fc7829de207bdd70b0b7e8d1f3275e",
+    "research/v7/window10-synthetic-bundle/completed/3ab489fd3d8393ee29af5a12477ec3b424bc03bcfec2557125ddb78a09cafbab/manifest.json": "e05b07acb1a389c54bd5cff59f5f09448e777eea5639741ca5858950ddecf8b2",
+    "research/v7/window10-synthetic-bundle/completed/3ab489fd3d8393ee29af5a12477ec3b424bc03bcfec2557125ddb78a09cafbab/paired_comparison.json": "bb0d6859fefbad01173f85280a6037dc7534c1501254ddf161338d1ccbd0d603",
+    "research/v7/window10-synthetic-bundle/completed/3ab489fd3d8393ee29af5a12477ec3b424bc03bcfec2557125ddb78a09cafbab/predictions.json": "c343463d1ecc084e202a4ce2c6b0feb64a3a8b7b917da6d74a85a6d0908d0d27",
+    "research/v7/window10-synthetic-bundle/completed/3ab489fd3d8393ee29af5a12477ec3b424bc03bcfec2557125ddb78a09cafbab/publication.json": "f99b36e1e27651d648e2111bd3c9a681a2395ed9f46298729fca2f8db9dacd90",
+    "research/v7/window10-synthetic-bundle/completed/3ab489fd3d8393ee29af5a12477ec3b424bc03bcfec2557125ddb78a09cafbab/rejection_ledger.json": "45c8fdaa92095175065d564ed0613e3a91914e3633bc27aa04c4619289d52e0f",
+    "research/v7/window10-synthetic-bundle/completed/3ab489fd3d8393ee29af5a12477ec3b424bc03bcfec2557125ddb78a09cafbab/resolved_config.json": "0660d8fc8d6123555b9c2800655f51b984661b8f19cf13bd8752f58cde8f57b5",
+    "research/v7/window10-synthetic-bundle/completed/3ab489fd3d8393ee29af5a12477ec3b424bc03bcfec2557125ddb78a09cafbab/training_logs.json": "c9911a8c843ac5a8424b8d6c782ef6c707a2af4d2d33c1d5b960bfc73a73b1fc",
+    "research/v7/window10-synthetic-bundle/completed/3ab489fd3d8393ee29af5a12477ec3b424bc03bcfec2557125ddb78a09cafbab/validation_metrics.json": "acdb97e4a322b36b4b9951edddd9a1b9feed3deee2b070c026d33da203b31ab0",
+    "research/v7/window10-synthetic-bundle/completed/3ab489fd3d8393ee29af5a12477ec3b424bc03bcfec2557125ddb78a09cafbab/validation_predictions.json": "783c33126ba30a5687e7c4d8ea52ab6c9ef729416cfce22980fe099c493b6c28",
+    "research/v7/window10-synthetic-bundle/completed/3ab489fd3d8393ee29af5a12477ec3b424bc03bcfec2557125ddb78a09cafbab/validation_snapshot.json": "3b55745a5353459ac9dc132aa9c00d6fb7f293b9add6ed07d681a6e3962e7147"
+  },
+  "diff_check": "PASS"
 }

@@ -13,6 +13,7 @@ from V6.experimental.v7_e1_checkpoint import sha256,validate_state,POINTER_SCHEM
 from V6.experimental.v7_research_artifacts import verify_bundle,artifact_path,strict_json,_safe,_relative,BundleError
 from V6.experimental.v7_research_evaluation import evaluate,prediction_hash
 from V6.experimental.v7_research_comparison import compare
+from V6.experimental.v7_research_isolation import _run_issue
 from V6.experimental.v7_research_temporal import make_pin,_sha,_text
 
 ROOT=Path(__file__).resolve().parents[2]
@@ -34,6 +35,70 @@ def _capabilities():
        ('METADATA_VERIFIED','BUNDLE_NOT_VERIFIED'),('EVALUATION_REPLAYABLE','REPLAY_NOT_VERIFIED'),
        ('TRAINING_RESUMABLE','NO_REAL_RUNTIME_STATE_OR_TRAINING_VERIFIED'),
        ('FULL_REPRODUCTION_READY','NO_FULL_DATA_CODE_TRAINING_RUNTIME_REPRODUCTION_VERIFIED')]}
+
+
+def _classical_fit_bindings(ledger,config,identity,requests,fold):
+    """Validate saved producer lineage only; never rerun fitting or prove resume."""
+    try:
+        if not isinstance(config,Mapping) or canonical_hash(config)!=identity['training_contract_sha256']:raise BundleError('CLASSICAL_CONFIG_IDENTITY_MISMATCH')
+        names=('selection_fits','selection_declarations','refit_fits','refit_declarations','forward_declarations')
+        if any(not isinstance(ledger.get(name),Mapping) or not ledger[name] for name in names):raise BundleError('CLASSICAL_FIT_EVIDENCE_INVALID')
+        keys=set(ledger['refit_fits'])
+        if any(set(ledger[name])!=keys for name in names):raise BundleError('CLASSICAL_FIT_EVIDENCE_INVALID')
+        recipes={r['recipe_id']:r for r in config['recipes']}
+        decision=ledger['selection_decision'];decision_sha=canonical_hash(decision)
+        if ledger['selection_decision_sha256']!=decision_sha or decision['policy']!=config['selection_policy'] or decision.get('research_admitted') is not False:raise BundleError('CLASSICAL_SELECTION_IDENTITY_MISMATCH')
+        model_kinds={}
+        for kind in keys:
+            sel,ref,fwd=(ledger[name][kind] for name in ('selection_declarations','refit_declarations','forward_declarations'))
+            if _run_issue(fwd,fold,'FORWARD') or fwd['model']!=ref or ref['selection']!=sel or ref['selection_decision_sha256']!=decision_sha:raise BundleError('CLASSICAL_FIT_LINEAGE_MISMATCH')
+            for field,run,phase in [('selection_fits',sel,'SELECTION_TRAIN'),('refit_fits',ref,'REFIT')]:
+                fit=ledger[field][kind]
+                if not isinstance(fit,Mapping) or fit.get('status')!='FIT_ENGINEERING_ONLY' or fit.get('research_admitted') is not False or not isinstance(fit.get('model'),Mapping):raise BundleError('CLASSICAL_FIT_EVIDENCE_INVALID')
+                model=fit['model'];recipe=model['recipe'];config_recipe=recipes[run['recipe_id']]
+                if recipe!=config_recipe or model['recipe_sha256']!=canonical_hash(recipe) or model['kind']!=kind or recipe['model_kind']!=kind:raise BundleError('CLASSICAL_FIT_MODEL_IDENTITY_MISMATCH')
+                if model['fit_run_id']!=run['run_id'] or model['fit_run_sha256']!=canonical_hash(run) or model['fit_phase']!=phase or model['fold_sha256']!=canonical_hash(fold):raise BundleError('CLASSICAL_FIT_MODEL_IDENTITY_MISMATCH')
+                if model['initialization']!='NEW_SYNTHETIC_STATE' or model['resume_checkpoint'] is not None:raise BundleError('CLASSICAL_REFIT_IS_NOT_FRESH')
+                if model['feature_contract_id']!=fold['feature_contract_id'] or model['label_contract_id']!=fold['label_contract_id'] or model['seed']!=run['seed']:raise BundleError('CLASSICAL_FIT_MODEL_IDENTITY_MISMATCH')
+                fid=fit['identity']
+                if any(fid[k]!=run[k] for k in ('study_id','recipe_id','run_id','fold_id')) or fid['origin_at']!=fold['origin_at'] or fid['config_sha256']!=canonical_hash(recipe) or fid['data_view_sha256']!=model['fit_view_sha256']:raise BundleError('CLASSICAL_FIT_MODEL_IDENTITY_MISMATCH')
+            model_kinds[fwd['run_id']]=kind
+        matched=set()
+        for bundle in requests.values():
+            h=bundle['header'];kind=model_kinds[h['run_id']];fit=ledger['refit_fits'][kind];run=ledger['forward_declarations'][kind]
+            if canonical_hash(fit['model'])!=h['model_sha256'] or any(h[k]!=run[k] for k in ('study_id','recipe_id','run_id','fold_id')) or h['horizons']!=[fit['model']['recipe']['horizon']]:raise BundleError('CLASSICAL_PREDICTION_MODEL_IDENTITY_MISMATCH')
+            matched.add(kind)
+        if matched!=keys or not any(ledger['refit_fits'][k]['training_status']=='FITTED_TINY_SYNTHETIC_CPU' for k in matched):raise BundleError('CLASSICAL_FIT_EVIDENCE_INVALID')
+    except BundleError:raise
+    except (KeyError,TypeError,ValueError):raise BundleError('CLASSICAL_FIT_EVIDENCE_INVALID')
+
+
+def _classical_validation_replay(ledger,descriptors,bundle_path,external_roots,fold,cal,policy):
+    """Replay validation through W08 and verify ONLY the named toy selection rule."""
+    try:
+        values={}
+        for name,schema in [('validation_snapshot','v7-ranking-synthetic-input-evidence-v1'),('validation_predictions','v7-classical-validation-predictions-v1'),('validation_metrics','v7-classical-validation-metrics-v1')]:
+            a=descriptors[name]
+            if a['format']!='JSON' or a['schema_id']!=schema:raise BundleError('CLASSICAL_VALIDATION_SCHEMA_MISMATCH')
+            values[name]=strict_json(artifact_path(bundle_path,a,external_roots).read_bytes())
+        raw=values['validation_snapshot'];bundles=values['validation_predictions']['bundles'];expected=values['validation_metrics']['evaluations']
+        if raw['fold']!=fold or raw['calendar']!=cal or raw['policy']!=policy or set(bundles)!=set(ledger['selection_fits']) or set(expected)!=set(bundles):raise BundleError('CLASSICAL_VALIDATION_IDENTITY_MISMATCH')
+        evs={}
+        for kind,bundle in bundles.items():
+            fit=ledger['selection_fits'][kind];run=ledger['selection_declarations'][kind];h=bundle['header']
+            if h['prediction_role']!='SELECTION' or h['evaluation_role']!='SELECTION_VALIDATION' or h['run_id']!=run['run_id'] or h['model_sha256']!=canonical_hash(fit['model']):raise BundleError('CLASSICAL_VALIDATION_MODEL_MISMATCH')
+            if bundle['rows']!=raw['scores'][kind] or h['raw_predictions_ref']['sha256']!=descriptors['validation_snapshot']['sha256']:raise BundleError('CLASSICAL_VALIDATION_IDENTITY_MISMATCH')
+            ev=evaluate(bundle,prediction_hash(bundle),fold,cal,make_pin(fold,cal),policy,canonical_hash(policy),raw['label_metadata'],raw['label_payloads'])
+            if ev['status']!='EVALUATED' or canonical_hash(ev)!=canonical_hash(expected[kind]):raise BundleError('CLASSICAL_VALIDATION_REPLAY_MISMATCH')
+            evs[kind]=ev
+        decision=ledger['selection_decision'];sp=decision['policy']
+        if sp['status']!='SYNTHETIC_NOT_ADMITTED' or sp['metric']!='VALIDATION_MEAN_DAILY_RANK_IC' or sp['horizon']!=5:raise BundleError('CLASSICAL_SELECTION_POLICY_UNSUPPORTED')
+        means={k:next(row['mean_rank_ic'] for row in ev['summary']['by_horizon'] if row['horizon']==sp['horizon']) for k,ev in evs.items()}
+        selected=sorted(means,key=lambda k:(-means[k],sp['tie_break'].index(k)))[0]
+        if means!=decision['validation_means'] or decision['selected_model_kind']!=selected or decision['selected_recipe_id']!=ledger['selection_fits'][selected]['model']['recipe']['recipe_id'] or decision['evaluation_identities']!={k:v['evaluation_identity'] for k,v in evs.items()}:raise BundleError('CLASSICAL_SELECTION_REPLAY_MISMATCH')
+        return {'verified':True,'validation_evaluations_sha256':canonical_hash(evs),'selection_decision_sha256':canonical_hash(decision)}
+    except BundleError:raise
+    except (KeyError,TypeError,ValueError,StopIteration):raise BundleError('CLASSICAL_VALIDATION_EVIDENCE_INVALID')
 
 
 def replay_bundle(root,key,expected_manifest_sha256,*,external_roots=(),code_root=ROOT):
@@ -107,7 +172,17 @@ def replay_bundle(root,key,expected_manifest_sha256,*,external_roots=(),code_roo
             if out['recomputed_hashes'][name]!=out['expected_hashes'][name]:raise BundleError('REPLAY_RESULT_MISMATCH:'+name)
         # Exposure is retained only; replay is not permission to feed results into selection.
         if not isinstance(payloads['exposure_ledger']['events'],list):raise BundleError('EXPOSURE_LEDGER_MALFORMED')
-        if payloads['completion_evidence'].get('training_executed') is not False or payloads['completion_evidence'].get('historical_live_prediction_proven') is not False:raise BundleError('UNSUPPORTED_TRAINING_OR_HISTORICAL_CLAIM')
+        completion=payloads['completion_evidence']
+        tiny_fit=m['schema']=='v7-study-run-bundle-v2' and m['profile']=='SYNTHETIC_CLASSICAL_FIT'
+        if completion.get('training_executed') is not tiny_fit or completion.get('historical_live_prediction_proven') is not False:raise BundleError('UNSUPPORTED_TRAINING_OR_HISTORICAL_CLAIM')
+        if tiny_fit:
+            if completion.get('training_scope')!='TINY_SYNTHETIC_CPU':raise BundleError('UNSUPPORTED_TRAINING_SCOPE')
+            log=descriptors.get('training_logs')
+            if log is None or log['kind']!='TRAINING_LOGS' or log['format']!='JSON' or log['schema_id']!='v7-classical-fit-ledger-v1':raise BundleError('CLASSICAL_FIT_EVIDENCE_MISSING')
+            ledger=strict_json(artifact_path(v['bundle_path'],log,external_roots).read_bytes())
+            if not isinstance(ledger,Mapping) or ledger.get('scope')!='TINY_SYNTHETIC_CPU' or not isinstance(ledger.get('refit_fits'),Mapping):raise BundleError('CLASSICAL_FIT_EVIDENCE_INVALID')
+            _classical_fit_bindings(ledger,payloads['resolved_config'].get('study_configuration'),ident,requests,fold)
+            out['classical_validation_replay']=_classical_validation_replay(ledger,descriptors,v['bundle_path'],external_roots,fold,cal,policy)
         out['capabilities']['EVALUATION_REPLAYABLE']={'proven':True,'reasons':[]}
         return {**out,'status':'EVALUATION_REPLAYABLE','comparisons_match':True,
                 'daily':{k:v['daily'] for k,v in evaluations.items()},'paired_daily':paired['daily'],

@@ -2,7 +2,7 @@
 
 > Status: `CANONICAL_CURRENT_PROJECT_MAP`
 
-## Window10 Classical Synthetic Foundation — bounded CPU engineering
+## Window10 Classical Synthetic Foundation — complete / STOP
 
 Window09 fixed `91fa82c2ac5e3b8f22109c55a73fa4e540a916b9` LOCAL_INTEGRATED /
 NOT_DEPLOYED, ff-only from `bdea30d877fa2c5d02308f343fa5591a35616aec`.
@@ -16,14 +16,20 @@ Window10 branch `development/v7-window10-classical-e2e`, base91fa82c, worktree
 U1 COMPLETE_REVIEWED:13tests/independent13PASS,1rework (full selection run hash and
 null containers). L0 explicit toy factor; L1 NumPy train-only scaled Ridge; L2
 adapter code present, dependency BLOCKED (lightgbm absent; no install performed).
-U2 READY: W07 guarded validation/selection/freshrefit/forward, W08 paired metrics,
-W09 versioned bundle profile and independent replay. No new split/evaluator/platform.
+U2 COMPLETE_REVIEWED:13tests/independent53 including40oldW09testsPASS,1rework
+for fit/prediction/config lineage; validation+toyselection and forward pair replay
+verified in independent CPU process. Final167joint testsPASS. U1 source 4ec22a4330ed6db7df0b3dafb4106cea820516e2;
+U2+closure final HEAD is this containing commit. WINDOW_COMPLETE/STOP.
+W09 v1 no-fit profile unchanged; v2 honest tiny-classical-fit profile added. No new
+split/evaluator/platform. METADATA/EVALUATION replay proven; TRAINING_RESUMABLE/
+FULL_REPRODUCTION_READY unproven. L2 actual fit remains dependency BLOCKED.
 
 StrictSTOP/E1matrixBLOCKED/H2NOT_APPROVED/FairEvaluationPROPOSED/PreNextOpenPROPOSED/
 InferenceRecoveryDEFERRED. No Frozen E5/E1 or production mutation; no other branch
 integration, GPU/Colab/search/real research. [Evidence](../../research/v7/window10-evidence.json),
 [sole backlog](../../research/v7/research-program.md#window10-classical-synthetic-foundation).
-Resume named branch HEAD/clean/maps/Charter/evidence/queue; no next-window grant.
+Resume named branch HEAD/clean/maps/Charter/evidence/queue; final candidate is this
+containing U2/closure commit. No READY unit remains in this grant; no Window11.
 
 ## Window09 Durable Artifacts & Offline Replay — complete / STOP
 

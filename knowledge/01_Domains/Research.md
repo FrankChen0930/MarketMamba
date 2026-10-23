@@ -190,3 +190,10 @@ L0/Ridge adapters consume guarded views, no new split or ranking implementation.
 L2 dependency absent, code-present != fit-verified. [Evidence](../../research/v7/window10-evidence.json)
 and sole Backlog own current status. Actual fit status separate from immutable W07
 initial authorization declarations; no training resume or research admission.
+
+Window10 complete:167jointtests; independent final U2+oldW09=53PASS,0Critical/Required.
+L0/Ridge tiny synthetic validation/selection/freshrefit/forward and W09 independent
+validation+forward replay proven. V1 no-fit semantics retained; v2 classical-fit
+profile requires actual fitted producer ledger/lineage/config pins. L2 blocked by
+missing dependency; no real financial evidence, training resume or GPU acceptance.
+No remaining READY work under this grant; STOP/new bounded authorization required.

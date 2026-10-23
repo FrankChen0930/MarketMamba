@@ -7,16 +7,22 @@
 
 ## Window10 Classical Synthetic Foundation
 
-Sole active queue: Human Window10, exactly two CPU/SYNTHETIC units. Main91fa82c,
+WINDOW_COMPLETE/STOP. Sole queue: Human Window10, exactly two CPU/SYNTHETIC units. Main91fa82c,
 branch `development/v7-window10-classical-e2e`, UNMERGED/NOT_DEPLOYED. Older queues
 historical. No real research/model training admission implied by tiny toy fits.
 
 | Unit | Objective/authority | Acceptance/status |
 |---|---|---|
 | W10-U1 | Human Classical Baseline Adapters, W07 guards | COMPLETE_REVIEWED:13tests/independent13PASS,1rework,0Critical/Required; L0/Ridge tinyfits; L2 code present but dependency BLOCKED |
-| W10-U2 | Human synthetic end-to-end lifecycle | READY: guarded validation/selection/newRefit/forward, W08 metrics, honest W09 bundle training-state profile, independent replay |
+| W10-U2 | Human synthetic end-to-end lifecycle | COMPLETE_REVIEWED:13tests; independent53 incl40oldW09PASS;1rework/0Critical/Required; val+selection/forward replay and v2 fit lineage verified |
 | L2 real synthetic fit verification | Human allows only installed qualified dependency | BLOCKED: lightgbm absent; candidate requirement >=4,<5, exact lock/test still needed; no network/global env change |
 
+U1 4ec22a4330ed6db7df0b3dafb4106cea820516e2; U2/final checkpoint is containing closure commit.
+167jointtestsPASS. No READY work remains under this completed grant. Next high-value
+CPU candidate PROPOSED_NEXT_GRANT: exact isolated LightGBM dependency lock + tiny
+fit/scoring/e2e verification; do not claim existing untested L2 branch complete.
+Existing E1 resume/trainer is not rebuilt. Actual runtime-state/bundle binding, full
+source/runtime closure and real data eligibility need separate admission/authority.
 Permanent artifact storage/retention, qualified real data, evaluation policy,
 actual CPU/GPU runtime acceptance require Human decisions. No Window11 authority.
 [Evidence](window10-evidence.json),[report](../../reports/v7_window10_classical_e2e.md).

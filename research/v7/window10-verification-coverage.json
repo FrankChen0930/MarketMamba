@@ -1,0 +1,67 @@
+{
+  "schema": "v7-window10-verification-coverage-v1",
+  "evidence_class": "SYNTHETIC",
+  "verification_method": "Executed unittest assertions, not real historical financial observations",
+  "cases": [
+    {
+      "scenario": "Missing/ImmatureLabels",
+      "executable_test": "BaselineAdapterTest.test_missing_and_immature_training_labels"
+    },
+    {
+      "scenario": "FutureFeatureLeakage",
+      "executable_test": "BaselineAdapterTest.test_future_feature_is_rejected"
+    },
+    {
+      "scenario": "InvalidFoldIdentity",
+      "executable_test": "BaselineAdapterTest.test_changed_feature_or_label_pin_and_fold_identity"
+    },
+    {
+      "scenario": "ChangedLabelFeatureIdentity",
+      "executable_test": "ClassicalStudyTest.test_invalid_fold_or_changed_contract_fail_closed"
+    },
+    {
+      "scenario": "TrainOnlyPreprocessing",
+      "executable_test": "BaselineAdapterTest.test_scaling_uses_only_current_training_view"
+    },
+    {
+      "scenario": "SelectionForwardIsolation",
+      "executable_test": "ClassicalStudyTest.test_selection_cannot_read_forward_labels"
+    },
+    {
+      "scenario": "FreshRefit",
+      "executable_test": "BaselineAdapterTest.test_refit_fresh_identity_and_scaling_not_checkpoint_resume"
+    },
+    {
+      "scenario": "DuplicatePublication",
+      "executable_test": "ClassicalStudyTest.test_duplicate_publication_and_interruption_are_not_false_completion"
+    },
+    {
+      "scenario": "InterruptedSaveIncompleteBundle",
+      "executable_test": "ClassicalStudyTest.test_duplicate_publication_and_interruption_are_not_false_completion"
+    },
+    {
+      "scenario": "ModelCoveragePairedComparison",
+      "executable_test": "ClassicalStudyTest.test_coverage_mismatch_uses_common_support"
+    },
+    {
+      "scenario": "IndependentReplay",
+      "executable_test": "ClassicalStudyTest.test_independent_process_uses_existing_replay"
+    },
+    {
+      "scenario": "SyntheticIdentityPreservation",
+      "executable_test": "ClassicalStudyTest.test_synthetic_result_identities_are_persistent"
+    },
+    {
+      "scenario": "ForgedFitLedger",
+      "executable_test": "ClassicalStudyTest.test_v2_missing_or_mismatched_fit_model_is_not_replayable"
+    },
+    {
+      "scenario": "ConfigIdentityMismatch",
+      "executable_test": "ClassicalStudyTest.test_v2_training_configuration_hash_is_bound"
+    },
+    {
+      "scenario": "ValidationReplayMismatch",
+      "executable_test": "ClassicalStudyTest.test_validation_metrics_are_independently_replayed_too"
+    }
+  ]
+}

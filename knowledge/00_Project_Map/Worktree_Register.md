@@ -4,7 +4,8 @@
 
 - Path `.worktrees/v7-window10-classical-e2e`; branch `development/v7-window10-classical-e2e`;
   base `91fa82c2ac5e3b8f22109c55a73fa4e540a916b9`; owner Codex/HumanWindow10;
-  created2026-10-23;retiredN/A. ACTIVE/UNMERGED/NOT_DEPLOYED.
+  created2026-10-23;retiredN/A. WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED.
+  U1 4ec22a4330ed6db7df0b3dafb4106cea820516e2; final U2/closure checkpoint is containing commit.
 - Existing30trees clean/distinct scope, none serves W10 adapters. Existing directories
   experimental/research/reports/maps sufficient; no new platform. Reuses integrated
   W07/08/09 + NumPy2.0.2; sklearn/lightgbm missing; no external data access/install.
@@ -15,7 +16,7 @@
 
 - Path `.worktrees/v7-window09-artifact-replay`; branch `development/v7-window09-artifact-replay`;
   base `bdea30d877fa2c5d02308f343fa5591a35616aec`; owner Codex/HumanWindow09;
-  created2026-10-23; retiredN/A. WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED.
+  created2026-10-23; retiredN/A. WINDOW_COMPLETE/LOCAL_INTEGRATED_BY_WINDOW10/NOT_DEPLOYED.
   U1 79d6c556d1bb5648a40a02c3b6f0e628c6512b4a; final container repair/U2 are in containing closure commit.
 - Existing29trees clean/distinct objectives, none serves W09. Existing experimental,
   research/reports/maps suffice; no new platform or memory tree. Dependencies E1
