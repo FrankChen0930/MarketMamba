@@ -7,14 +7,18 @@
 
 ## Window07 Temporal Fold & Research Isolation
 
-ACTIVE_SCOPED_ENGINEERING / UNMERGED / NOT_DEPLOYED; branch
+WINDOW_COMPLETE / STOP / UNMERGED / NOT_DEPLOYED; branch
 `development/v7-window07-temporal-isolation`, base/main465dca2. Current grant only
 U1/U2; newstudy parameters not approved. No duplicate trainer/orchestrator/registry.
+U1 source5d736e9; containing Unit2/closure commit is final source identity.67related
+CPUtests and16explicitexpectedcasesPASS. STOP; no Window08 or mainintegration.
+Resume by verifyingHEAD/clean in this tree, Current State/Authority/Charter and
+this section. A new bounded grant and any necessary policy choices are required.
 
 | Unit | Objective/authority | Acceptance/state |
 |---|---|---|
 | W07-U1 | HumanUnit1 temporalfold+label eligibility, existing temporal/hash primitives | COMPLETED_REVIEWED:13synthetic+independent13PASS;calendar nextsession/horizon, owner/source/vintage/pins/clocks/maturity/overlap/gap checks;1labelbinding rework,0remainingRequired |
-| W07-U2 | HumanUnit2 data/read isolation, fresh refit identity, forward exposure | READY_AUTHORIZED: only eligible training/validation/refit view; no forwardlabel reads, fresh identity notresume, model-ready deadline, serializabledenials/exposure; synthetic mock only |
+| W07-U2 | HumanUnit2 data/read isolation, fresh refit identity, forward exposure | COMPLETED_REVIEWED:11focused tests;only eligible views,noForwardlabel reads,freshRefit/deadline/exposure;1source-hash rework,0remainingRequired |
 | Future Common Evaluator | Prior auditRP-C2 | PROPOSED_NEXT_GRANT: can consume accepted identity/support views after this foundation; actual tie/minN/missing/statistical/admission rules not frozen |
 
 [Report](../../reports/v7_window07_temporal_isolation.md),[evidence](window07-evidence.json).

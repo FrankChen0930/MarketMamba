@@ -3,7 +3,7 @@
   "artifact_class": "CANONICAL",
   "base": "465dca229fc1452aaf1b46572b06886a7d8a2c8f",
   "branch": "development/v7-window07-temporal-isolation",
-  "status": "UNIT1_COMPLETE_UNIT2_READY",
+  "status": "WINDOW_COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
   "authority": "Human Window07: only two bounded CPU engineering units, max2rework each",
   "source_reuse": [
     {
@@ -35,7 +35,7 @@
   "calendar_scope": "SYNTHETIC fixtures only; caller reference qualifications not authenticated by guard",
   "U1": {
     "status": "COMPLETE_REVIEWED",
-    "commit": "Containing U1 local commit",
+    "commit": "5d736e99a3dbbefb4ffaba225d0f62da2ee7880c",
     "red": "======================================================================\nERROR: v7_research_temporal_test (unittest.loader._FailedTest.v7_research_temporal_test)\n----------------------------------------------------------------------\nImportError: Failed to import test module: v7_research_temporal_test\nTraceback (most recent call last):\n  File \"/usr/lib/python3.12/unittest/loader.py\", line 137, in loadTestsFromName\n    module = __import__(module_name)\n             ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window07-temporal-isolation/V6/experimental/v7_research_temporal_test.py\", line 6, in <module>\n    from V6.experimental.v7_research_temporal import check_fold,check_sample,make_pin\nModuleNotFoundError: No module named 'V6.experimental.v7_research_temporal'\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (errors=1)\n",
     "review_red": "======================================================================\nFAIL: test_labels_are_bound_to_stock_sample_and_signal_per_horizon (V6.experimental.v7_research_temporal_test.TemporalFoundationTest.test_labels_are_bound_to_stock_sample_and_signal_per_horizon)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window07-temporal-isolation/V6/experimental/v7_research_temporal_test.py\", line 51, in test_labels_are_bound_to_stock_sample_and_signal_per_horizon\n    self.assertIn('LABEL_SAMPLE_IDENTITY_MISMATCH',self.checked(x,y)['reasons'])\nAssertionError: 'LABEL_SAMPLE_IDENTITY_MISMATCH' not found in []\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n",
     "green": "----------------------------------------------------------------------\nRan 13 tests in 0.020s\n\nOK\n",
@@ -52,12 +52,91 @@
     "knowledge_health": "WARNING/noFAIL existing classes"
   },
   "U2": {
-    "status": "READY_AUTHORIZED_NOT_STARTED"
+    "status": "COMPLETE_REVIEWED",
+    "commit": "Containing Unit2/closure commit",
+    "red": "======================================================================\nERROR: v7_research_isolation_test (unittest.loader._FailedTest.v7_research_isolation_test)\n----------------------------------------------------------------------\nImportError: Failed to import test module: v7_research_isolation_test\nTraceback (most recent call last):\n  File \"/usr/lib/python3.12/unittest/loader.py\", line 137, in loadTestsFromName\n    module = __import__(module_name)\n             ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window07-temporal-isolation/V6/experimental/v7_research_isolation_test.py\", line 7, in <module>\n    from V6.experimental.v7_research_isolation import make_refit_run,make_forward_run,authorize_view,expose_forward_result\nModuleNotFoundError: No module named 'V6.experimental.v7_research_isolation'\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (errors=1)\n",
+    "review_red": "======================================================================\nFAIL: test_unknown_or_malformed_forward_source_hash_is_closed (V6.experimental.v7_research_isolation_test.ResearchIsolationTest.test_unknown_or_malformed_forward_source_hash_is_closed)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window07-temporal-isolation/V6/experimental/v7_research_isolation_test.py\", line 93, in test_unknown_or_malformed_forward_source_hash_is_closed\n    self.assertNotEqual(r['status'],'EXPOSURE_RECORDED')\nAssertionError: 'EXPOSURE_RECORDED' == 'EXPOSURE_RECORDED'\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n",
+    "focused_tests": 11,
+    "independent_tests_before_final_extra_case": 10,
+    "review": {
+      "reviewer": "/root/independent_review",
+      "critical": 0,
+      "required_initial": 1,
+      "required_remaining": 0,
+      "rework_rounds": 1,
+      "repair": "Reject unknown/malformed source_sha256 for forward exposure; no result/ledger emitted",
+      "independent_tests_passed": 11
+    },
+    "scope": "Declared mock identities/readiness/read views/exposure, no actual trainer/reset/approval or globalregistry enforcement"
   },
   "boundaries": [
     "No trainer/model fitting/realRankIC/GPU/Colab",
     "No main/pendingcandidate merge",
     "FrozenFeatureLabel/E5E1/Admission unchanged",
     "StrictSTOP/E1matrixBLOCKED/H2unapproved/FairEvaluationPROPOSED/PreNextOpenPROPOSED/InferenceRecoveryDEFERRED"
-  ]
+  ],
+  "regression": {
+    "total_tests_passed": 67,
+    "log": "----------------------------------------------------------------------\nRan 67 tests in 0.170s\n\nOK\n",
+    "new_focused": 24,
+    "U1": 13,
+    "U2": 11,
+    "existing_temporal": 7,
+    "E1contract": 8,
+    "E1matrix": 5,
+    "governance": 23
+  },
+  "synthetic_case_matrix": "research/v7/window07-synthetic-cases.json",
+  "cases_expected_matched": 16,
+  "common_evaluator_readiness": "Engineering interfaces sufficient for next separately authorized synthetic-only evaluator foundation; real policy/data/admission not ready; no Window08 execution authorization",
+  "human_dependencies": [
+    "Qualified calendar/source/provenance/availability",
+    "Decision/freeze/maturity/requiredheads/phase ranges/origins/refit-length rules",
+    "Purge/embargo semantics and session parameters",
+    "Missing/stale/revised data policy and actual model-ready approval",
+    "Evaluator tie/minN/support/statistics/selection metric/budget/thresholds and formal research admission"
+  ],
+  "runtime": {
+    "python": "3.12.3",
+    "executable": "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+    "MARKETMAMBA_DATA_ROOT": "UNSET",
+    "CUDA_VISIBLE_DEVICES": "",
+    "operational_data_access": false,
+    "inputs": "SYNTHETIC_FIXTURES_ONLY",
+    "real_training_RankIC_GPU": false
+  },
+  "next_checkpoint": "Containing Unit2/closure commit on development/v7-window07-temporal-isolation; verifyHEADclean/maps/Charter/soleWindow07queue; main465dca2 and existingcandidate refs unchanged, no next window",
+  "scope_limits": [
+    "Python view guard, not OS enforcement; caller raw-store access outside trust boundary",
+    "Pinned identity comparisons do not authenticate source/qualification/approval claims",
+    "Freshness/readiness declarative only, actual runtime reset/verification not executed",
+    "Synthetic holiday fixture is not official Taiwan holiday evidence",
+    "Gap sum is explicit candidate interpretation, not formal embargo policy",
+    "Exposure recorded only via API, callers persist returned ledger; no globalregistry"
+  ],
+  "artifact_hashes": {
+    "V6/experimental/v7_research_temporal.py": "1e2a776099b063470dda673d1c717678d13aba35d7194f582d2e30c437fba119",
+    "V6/experimental/v7_research_temporal_test.py": "bc00ea4395aead4c710a0304ad8068cccc8836964fc9ac03c5621c3df017f3f6",
+    "V6/experimental/v7_research_isolation.py": "024f1474448d4e06e6f48cf1ef9c2bbd6bd6c3902f57f09e6a25dd48e34e9cbc",
+    "V6/experimental/v7_research_isolation_test.py": "35b5a83be797398cc6e45992997ae72b43dfa7b54cf92fc2107863b6491fb26a",
+    "research/v7/window07-synthetic-cases.json": "80e8a194f70e0a5ad6ce8d0d422e49fadb56c5d84be83c34fd0c8c8e27642e3c",
+    "reports/v7_window07_temporal_isolation.md": "ac18387f8760bb09d7c23b0ff3935fad2a967669cf1ebd8624fb0e6f030d7973"
+  },
+  "frozen_hashes": {
+    "research/v7/corrected-baseline-v1/feature-manifest.json": "d3b2c2d23ccc071b6e0d49ca77d27f41ade085084ea8fd3952321f5352a32547",
+    "research/v7/corrected-baseline-v1/policy.json": "ac32539b44ee80924e1c65785cfcda83d2efd7f7e289cf1ee94245879a09d115",
+    "research/v7/corrected-e5-replication-v1/incumbent-contract.json": "3cb4a5fc9c1595689366a2b6bbd49210743b9160fe0f00516622b463eaf46e85",
+    "research/v7/e1-rolling-origin-refresh-v1/experiment-contract.json": "7a59d98744ac736e915ff5f6e0e8fead2f80f5ce7f8283b467ec0464bffe8d4c"
+  },
+  "closure_review": {
+    "reviewer": "/root/independent_review",
+    "critical": 0,
+    "required": 0,
+    "artifact_hashes": 6,
+    "frozen_hashes": 4,
+    "cases_expected_matches": 16,
+    "recovery": "PASS"
+  },
+  "knowledge_health": "WARNING/noFAIL; existing governance/authority/legacy warning classes",
+  "diff_check": "PASS"
 }

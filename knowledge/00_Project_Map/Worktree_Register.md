@@ -6,7 +6,8 @@
   base `465dca229fc1452aaf1b46572b06886a7d8a2c8f`; owner Codex/HumanWindow07;created2026-10-23;retiredN/A.
 - Existing27trees hold fixed/source/audit roles, no same-scope activeunit; new isolation
   protects main/pending branches. Existing experimental/research/reports/maps suffice.
-- UNMERGED/NOT_DEPLOYED. Dependencies maincalendar/hash primitives, pinned W06/audit
+- WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED. Final containing Unit2/closure commit.
+  Dependencies maincalendar/hash primitives, pinned W06/audit
   reference only; syntheticfixtures, no manageddata/modelpayload. Sourceunit commits
   retained. Safe removal: clean/preservedcommits/evidence/resolvedrefs and separate
   retirement approval. No existingtree/history/data cleaned.

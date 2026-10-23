@@ -155,3 +155,9 @@ owner/pin/maturity/interval/gap constraints. ELIGIBLE means consistency with sup
 engineering inputs, not source truth, frozen study or admission. Calendar/maturity/
 cutoff/gap policy remains a Human dependency before real research. Existing E5/E1
 semantics/results unchanged. [Report](../../reports/v7_window07_temporal_isolation.md).
+
+Window07 U2 adds run-lineage/read-scope validation and explicit later-fold forward
+exposure records. Forward views never read label_store; fresh-model/optimizer/
+schedule/RNG and readiness are mock declarations, not actual training/approval.
+Source/ledger pins and all-or-nothing views support a future synthetic comparator;
+no Common Evaluator policy, Window08 or real-data execution is authorized.

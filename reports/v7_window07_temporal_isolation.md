@@ -53,7 +53,7 @@ or new approved research policy. Other gap/maturity interpretations require revi
 Fixture0 gaps are illustrative only. Feature warmup context is distinct from
 supervised label overlap; library does not construct context or rebuild a matrix.
 
-Thirteen initial/final U1 tests demonstrate allowed cases, immature5/10availability,
+Initial12 and final13 U1 tests demonstrate allowed cases, immature5/10availability,
 weekend/explicit synthetic holiday, interval overlap, future/missing/QC, changed
 vintage/contract pins, unresolved policies, additive gaps, legal newer refit sample,
 forward features, invalid deadline/naive clocks and serialization. Independent
@@ -69,9 +69,89 @@ Tests prove that caller-provided session adjacency matters, not real historical
 calendar correctness. Real use stays blocked until source-qualified calendar,
 availability/vintage and approved research semantics are supplied.
 
-## Pending Unit2
+## Unit2: read isolation and fresh identities
 
-Selection/refit/forward read-scope views and explicit exposure records are the
-second authorized unit. They must remain small library guards, not an orchestrator,
-trainer or registry. Unit2 completion/review will be recorded here and in the unique
-Backlog/evidence before this window closes.
+`V6.experimental.v7_research_isolation` builds declared selection/refit/forward
+manifests and authorizes small data views. It reuses Unit1 guards and canonical
+identity; no trainer, executor, global registry, scheduler or storage service.
+
+Selection kind may request only SELECTION_TRAIN or SELECTION_VALIDATION ranges at
+its supplied cutoff. Refit has a distinct run_id, pinned parent-selection identity,
+same explicitly selected recipe/seed, no resume checkpoint and NEW declarations
+for model/optimizer/scheduler/RNG. It can include newer qualified mature samples
+within the declared refit range, never forward labels. Forward requires the pinned
+refit model identity and chronological declared built/verified/approval/ready times
+by model-ready deadline/origin; a Selection checkpoint cannot masquerade as refit.
+No metric, epoch count or acceptance threshold is selected by these guards.
+
+These identities/readiness/freshness fields are **declarations for synthetic/mock
+flows**, not evidence a real model was reset, trained, artifact-verified or approved
+by Human. Actual runtime reset/restore/activation needs separately authorized
+acceptance. Manifest/pin consistency is not signature authentication. New run IDs
+are distinct within the validated parent/model lineage, not a globally persisted
+uniqueness service. Caller retention/uniqueness rules remain a future dependency.
+
+The guarded Forward view never queries/iterates label_store; NoLabelReads fixtures
+raise on access and still allow mock scores from features only. Selection/refit
+out-of-role samples are denied before loading labels. Each record must match its
+request key and expected pins; eligibility/denials include sample/fold/calendar/
+run identities and reason codes. A single rejected/blocked sample causes an empty
+batch view, with individual verdicts retained; no partial usable values escape.
+Returned structures are JSON-serializable and detached copies.
+
+This is a Python library trust boundary: a consumer must use the guarded returned
+view. Code retaining raw store references could bypass it; no OS/sandbox/security
+or encrypted data-access enforcement is claimed. No broad dataset is read here.
+
+If a former forward result is later used for recipe choice, expose_forward_result
+requires another later Fold, observed result availability before that selection
+cutoff, expected result/ledger roots and valid source identity. It returns the
+usable result together with a new explicit DEVELOPMENT_EXPOSED_NOT_FINAL event/list
+and root, leaving the prior list untouched. Same-fold forward cannot select itself.
+The event records source/target study/fold/run, decision_ref, actual supplied use
+time and prior ledger root; no automatic statistical/Final admission. This is a
+small explicit audit function, not a database/registry, and callers must persist
+its returned ledger. It cannot detect undocumented off-API research decisions.
+
+Initial9/final11 U2 tests (independent11PASS at final review) cover allowed train/validation, forward-label denial,
+NoLabelReads+mock prediction, fresh-refit versus resume, newer maturity, late
+readiness/wrong model, changed run/fold/vintage, atomic batch denial, same sample in
+another Fold, exposure and unknown/pin roots. Independent review found UNKNOWN
+text accepted as source_sha256; RED and bounded repair1 enforce SHA256 shape,
+never emitting result/ledger for unknown/invalid sources. Source hashes themselves
+still require upstream evidence; shape is not authenticity.
+
+## Expected results and verification
+
+[Case matrix](../research/v7/window07-synthetic-cases.json) records16 executed
+synthetic cases with explicit expected/actual outcomes and serializable decisions:
+5d/10d immaturity rejected; declared holiday respected; wrong holiday entry rejected;
+train/validation label overlap rejected; unknown publication blocked; revised
+feature/label pin rejected; wrong-stock labels rejected even with self-consistent
+new hash; future feature rejected; newer mature refit allowed; forward labels denied
+to selection; forward features usable without any label read; late model readiness
+rejected; prior forward sample may become validation in a later Fold when eligible;
+later result use records development exposure. Test sources preserve reproduction.
+
+Final67 CPU tests PASS:24new focused(U1=13,U2=11),existing temporal7,E1contract8,
+E1matrix5,governance23. No model fit, RankIC experiment, GPU or real historical PIT
+claim. Unit1 source commit5d736e9; containing Unit2/closure commit is final checkpoint.
+Each unit has one evidence-backed review repair; no other engineering units started.
+
+## Common Evaluator readiness and remaining Human choices
+
+The engineering interfaces are sufficient to start a **separately authorized,
+synthetic-only Common Evaluator foundation**: immutable run/fold/calendar/sample
+identity, per-horizon owner-bound labels, eligible-support views, denials and an
+exposure record. This does not grant Window08, real data or evaluator policy.
+
+Human still must freeze actual calendar/source qualification and per-event clocks,
+decision/freeze/maturity/required-head policy, ranges/origins/refit data/length,
+purge and embargo meanings/parameters, mandatory/missing/stale/revised handling,
+model-ready evidence/approval, tie/minN/NaN/common-support/statistics/metric/selection
+budget and acceptance/admission rules. No12/3/3 or30gap is adopted. Actual E1 matrix
+remains blocked; no substitute reconstruction/search. Existing E5/E1 results untouched.
+
+STOP after this window. Verify cleanHEAD in `.worktrees/v7-window07-temporal-isolation`,
+read Current State/Authority/Charter/unique Backlog and evidence. Pending source and
+closure stay on this branch, not main; a new bounded grant is needed for more work.

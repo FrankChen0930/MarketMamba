@@ -1,0 +1,518 @@
+{
+  "schema_version": 1,
+  "calendar_identity": "8fe5751741bd31fe636067e5ff2a67f27e04097a472cd0a48333dc38c43062ad",
+  "default_fold_identity": "2f2082084d90ce3d1825989b7c4d3ca606d9fd46c1bc09a71b154a4b1b9abb64",
+  "fixture_source": "V6/experimental/v7_research_temporal_test.py::fixtures/sample and v7_research_isolation_test.py",
+  "no_real_PIT_or_performance_evidence": true,
+  "cases": [
+    {
+      "case_id": "immature-5",
+      "evidence_class": "SYNTHETIC_ENGINEERING_NOT_REAL_PIT",
+      "fixture": {
+        "index": 2,
+        "horizon_available_after_selection": 5
+      },
+      "expected_status": "REJECTED",
+      "actual_status": "REJECTED",
+      "expected_matched": true,
+      "decision": {
+        "status": "REJECTED",
+        "reasons": [
+          "LABEL_NOT_AVAILABLE_AT_CUTOFF"
+        ],
+        "fold_id": "fold-A",
+        "schema": "v7-research-fold-engineering-v1",
+        "research_admitted": false,
+        "identities": {
+          "fold_sha256": "2f2082084d90ce3d1825989b7c4d3ca606d9fd46c1bc09a71b154a4b1b9abb64",
+          "calendar_sha256": "8fe5751741bd31fe636067e5ff2a67f27e04097a472cd0a48333dc38c43062ad",
+          "calendar_evidence": "SYNTHETIC",
+          "sample_id": "A-2024-01-04",
+          "stock_id": "A",
+          "signal_session": "2024-01-04",
+          "phase": "SELECTION_TRAIN",
+          "feature_sha256": "6df7a9da19177f7ef7968cf082a933ffb0c9f2c477ec138721ec914faed0f67b",
+          "labels_sha256": "72422764bce5e6833738a1b29e74522d239f75b94128cbcc2c405c6542322e73"
+        }
+      },
+      "returned_view_rows": 0
+    },
+    {
+      "case_id": "immature-10",
+      "evidence_class": "SYNTHETIC_ENGINEERING_NOT_REAL_PIT",
+      "fixture": {
+        "index": 2,
+        "horizon_available_after_selection": 10
+      },
+      "expected_status": "REJECTED",
+      "actual_status": "REJECTED",
+      "expected_matched": true,
+      "decision": {
+        "status": "REJECTED",
+        "reasons": [
+          "LABEL_NOT_AVAILABLE_AT_CUTOFF"
+        ],
+        "fold_id": "fold-A",
+        "schema": "v7-research-fold-engineering-v1",
+        "research_admitted": false,
+        "identities": {
+          "fold_sha256": "2f2082084d90ce3d1825989b7c4d3ca606d9fd46c1bc09a71b154a4b1b9abb64",
+          "calendar_sha256": "8fe5751741bd31fe636067e5ff2a67f27e04097a472cd0a48333dc38c43062ad",
+          "calendar_evidence": "SYNTHETIC",
+          "sample_id": "A-2024-01-04",
+          "stock_id": "A",
+          "signal_session": "2024-01-04",
+          "phase": "SELECTION_TRAIN",
+          "feature_sha256": "6df7a9da19177f7ef7968cf082a933ffb0c9f2c477ec138721ec914faed0f67b",
+          "labels_sha256": "9471361bb02f23f89de033935adb00e3e69ef2e293595a268ef8c90357c50d08"
+        }
+      },
+      "returned_view_rows": 0
+    },
+    {
+      "case_id": "calendar-declared-holiday-valid",
+      "evidence_class": "SYNTHETIC_ENGINEERING_NOT_REAL_PIT",
+      "fixture": {
+        "signal": "2024-01-12",
+        "expected_next": "2024-01-16",
+        "holiday_is_synthetic": true
+      },
+      "expected_status": "ELIGIBLE",
+      "actual_status": "ELIGIBLE",
+      "expected_matched": true,
+      "decision": {
+        "status": "ELIGIBLE",
+        "reasons": [],
+        "fold_id": "fold-A",
+        "schema": "v7-research-fold-engineering-v1",
+        "research_admitted": false,
+        "identities": {
+          "fold_sha256": "2f2082084d90ce3d1825989b7c4d3ca606d9fd46c1bc09a71b154a4b1b9abb64",
+          "calendar_sha256": "8fe5751741bd31fe636067e5ff2a67f27e04097a472cd0a48333dc38c43062ad",
+          "calendar_evidence": "SYNTHETIC",
+          "sample_id": "A-2024-01-12",
+          "stock_id": "A",
+          "signal_session": "2024-01-12",
+          "phase": "REFIT",
+          "feature_sha256": "8aa5934f9f3cdbb1240151b01bec142200ba5b3223a1986820bd59794fc25ad3",
+          "labels_sha256": "dad0f4043e96e2e0a0351970e3c0011b27ce3b6b8307b2505d5003ce6992460a"
+        }
+      },
+      "returned_view_rows": 0
+    },
+    {
+      "case_id": "calendar-holiday-wrong-entry",
+      "evidence_class": "SYNTHETIC_ENGINEERING_NOT_REAL_PIT",
+      "fixture": {
+        "wrong_entry": "2024-01-15"
+      },
+      "expected_status": "REJECTED",
+      "actual_status": "REJECTED",
+      "expected_matched": true,
+      "decision": {
+        "status": "REJECTED",
+        "reasons": [
+          "ENTRY_NOT_NEXT_SESSION"
+        ],
+        "fold_id": "fold-A",
+        "schema": "v7-research-fold-engineering-v1",
+        "research_admitted": false,
+        "identities": {
+          "sample_id": "A-2024-01-12"
+        }
+      },
+      "returned_view_rows": 0
+    },
+    {
+      "case_id": "train-validation-label-overlap",
+      "evidence_class": "SYNTHETIC_ENGINEERING_NOT_REAL_PIT",
+      "fixture": {
+        "index": 6,
+        "train_end_index": 6
+      },
+      "expected_status": "REJECTED",
+      "actual_status": "REJECTED",
+      "expected_matched": true,
+      "decision": {
+        "status": "REJECTED",
+        "reasons": [
+          "LABEL_INTERVAL_OVERLAP"
+        ],
+        "fold_id": "fold-A",
+        "schema": "v7-research-fold-engineering-v1",
+        "research_admitted": false,
+        "identities": {
+          "fold_sha256": "5ecfb97b25dffb465b74f084b6218c706f1c260308678be8f8f1a0f6139ae9e2",
+          "calendar_sha256": "8fe5751741bd31fe636067e5ff2a67f27e04097a472cd0a48333dc38c43062ad",
+          "calendar_evidence": "SYNTHETIC",
+          "sample_id": "A-2024-01-10",
+          "stock_id": "A",
+          "signal_session": "2024-01-10",
+          "phase": "SELECTION_TRAIN",
+          "feature_sha256": "d208bf3f6e396a3b5628c842d2140f03ae72942ab72c637169b814f43a28155d",
+          "labels_sha256": "69866de6a7e515077b8c9540f11855c2eb4532715848c1481c11db6d49e79746"
+        }
+      },
+      "returned_view_rows": 0
+    },
+    {
+      "case_id": "unknown-publication",
+      "evidence_class": "SYNTHETIC_ENGINEERING_NOT_REAL_PIT",
+      "fixture": {
+        "missing": "published_at"
+      },
+      "expected_status": "BLOCKED",
+      "actual_status": "BLOCKED",
+      "expected_matched": true,
+      "decision": {
+        "status": "BLOCKED",
+        "reasons": [
+          "FEATURE_CLOCK_OR_SERIALIZATION_UNKNOWN"
+        ],
+        "fold_id": "fold-A",
+        "schema": "v7-research-fold-engineering-v1",
+        "research_admitted": false,
+        "identities": {
+          "fold_sha256": "2f2082084d90ce3d1825989b7c4d3ca606d9fd46c1bc09a71b154a4b1b9abb64",
+          "calendar_sha256": "8fe5751741bd31fe636067e5ff2a67f27e04097a472cd0a48333dc38c43062ad",
+          "calendar_evidence": "SYNTHETIC",
+          "sample_id": "A-2024-01-04",
+          "stock_id": "A",
+          "signal_session": "2024-01-04",
+          "phase": "SELECTION_TRAIN",
+          "feature_sha256": "b7b6916fa135d295dc50bdfe7b8584577e974c5e4fc4d7e8c398e6fddebcea9d",
+          "labels_sha256": "c0e77e16135f9d381d5b4d2d1aa5a5d9fd7860ec31c356d129397d9e580d2644"
+        }
+      },
+      "returned_view_rows": 0
+    },
+    {
+      "case_id": "feature-vintage-mismatch",
+      "evidence_class": "SYNTHETIC_ENGINEERING_NOT_REAL_PIT",
+      "fixture": {
+        "pin": "original",
+        "vintage": "changed"
+      },
+      "expected_status": "REJECTED",
+      "actual_status": "REJECTED",
+      "expected_matched": true,
+      "decision": {
+        "status": "REJECTED",
+        "reasons": [
+          "FEATURE_IDENTITY_MISMATCH"
+        ],
+        "fold_id": "fold-A",
+        "schema": "v7-research-fold-engineering-v1",
+        "research_admitted": false,
+        "identities": {
+          "fold_sha256": "2f2082084d90ce3d1825989b7c4d3ca606d9fd46c1bc09a71b154a4b1b9abb64",
+          "calendar_sha256": "8fe5751741bd31fe636067e5ff2a67f27e04097a472cd0a48333dc38c43062ad",
+          "calendar_evidence": "SYNTHETIC",
+          "sample_id": "A-2024-01-04",
+          "stock_id": "A",
+          "signal_session": "2024-01-04",
+          "phase": "SELECTION_TRAIN",
+          "feature_sha256": "6df7a9da19177f7ef7968cf082a933ffb0c9f2c477ec138721ec914faed0f67b",
+          "labels_sha256": "c0e77e16135f9d381d5b4d2d1aa5a5d9fd7860ec31c356d129397d9e580d2644"
+        }
+      },
+      "returned_view_rows": 0
+    },
+    {
+      "case_id": "label-vintage-mismatch",
+      "evidence_class": "SYNTHETIC_ENGINEERING_NOT_REAL_PIT",
+      "fixture": {
+        "horizon": 10,
+        "vintage": "changed"
+      },
+      "expected_status": "REJECTED",
+      "actual_status": "REJECTED",
+      "expected_matched": true,
+      "decision": {
+        "status": "REJECTED",
+        "reasons": [
+          "LABEL_IDENTITY_MISMATCH"
+        ],
+        "fold_id": "fold-A",
+        "schema": "v7-research-fold-engineering-v1",
+        "research_admitted": false,
+        "identities": {
+          "fold_sha256": "2f2082084d90ce3d1825989b7c4d3ca606d9fd46c1bc09a71b154a4b1b9abb64",
+          "calendar_sha256": "8fe5751741bd31fe636067e5ff2a67f27e04097a472cd0a48333dc38c43062ad",
+          "calendar_evidence": "SYNTHETIC",
+          "sample_id": "A-2024-01-04",
+          "stock_id": "A",
+          "signal_session": "2024-01-04",
+          "phase": "SELECTION_TRAIN",
+          "feature_sha256": "6df7a9da19177f7ef7968cf082a933ffb0c9f2c477ec138721ec914faed0f67b",
+          "labels_sha256": "c0e77e16135f9d381d5b4d2d1aa5a5d9fd7860ec31c356d129397d9e580d2644"
+        }
+      },
+      "returned_view_rows": 0
+    },
+    {
+      "case_id": "label-stock-mismatch-with-matching-newpin",
+      "evidence_class": "SYNTHETIC_ENGINEERING_NOT_REAL_PIT",
+      "fixture": {
+        "feature_stock": "A",
+        "label5_stock": "B"
+      },
+      "expected_status": "REJECTED",
+      "actual_status": "REJECTED",
+      "expected_matched": true,
+      "decision": {
+        "status": "REJECTED",
+        "reasons": [
+          "LABEL_SAMPLE_IDENTITY_MISMATCH"
+        ],
+        "fold_id": "fold-A",
+        "schema": "v7-research-fold-engineering-v1",
+        "research_admitted": false,
+        "identities": {
+          "fold_sha256": "2f2082084d90ce3d1825989b7c4d3ca606d9fd46c1bc09a71b154a4b1b9abb64",
+          "calendar_sha256": "8fe5751741bd31fe636067e5ff2a67f27e04097a472cd0a48333dc38c43062ad",
+          "calendar_evidence": "SYNTHETIC",
+          "sample_id": "A-2024-01-04",
+          "stock_id": "A",
+          "signal_session": "2024-01-04",
+          "phase": "SELECTION_TRAIN",
+          "feature_sha256": "6df7a9da19177f7ef7968cf082a933ffb0c9f2c477ec138721ec914faed0f67b",
+          "labels_sha256": "7ec8013c67d0ae5c4871ba91390be056d4b60a39a8efb56cfac8ebc9467bd017"
+        }
+      },
+      "returned_view_rows": 0
+    },
+    {
+      "case_id": "future-feature-freeze",
+      "evidence_class": "SYNTHETIC_ENGINEERING_NOT_REAL_PIT",
+      "fixture": {
+        "freeze_after_entry": true
+      },
+      "expected_status": "REJECTED",
+      "actual_status": "REJECTED",
+      "expected_matched": true,
+      "decision": {
+        "status": "REJECTED",
+        "reasons": [
+          "FUTURE_FEATURE_OR_LATE_DECISION"
+        ],
+        "fold_id": "fold-A",
+        "schema": "v7-research-fold-engineering-v1",
+        "research_admitted": false,
+        "identities": {
+          "fold_sha256": "2f2082084d90ce3d1825989b7c4d3ca606d9fd46c1bc09a71b154a4b1b9abb64",
+          "calendar_sha256": "8fe5751741bd31fe636067e5ff2a67f27e04097a472cd0a48333dc38c43062ad",
+          "calendar_evidence": "SYNTHETIC",
+          "sample_id": "A-2024-01-04",
+          "stock_id": "A",
+          "signal_session": "2024-01-04",
+          "phase": "SELECTION_TRAIN",
+          "feature_sha256": "aef0f28ea140b2706aad61789083046b89b593e14d1f681a5c19151f00f007fa",
+          "labels_sha256": "c0e77e16135f9d381d5b4d2d1aa5a5d9fd7860ec31c356d129397d9e580d2644"
+        }
+      },
+      "returned_view_rows": 0
+    },
+    {
+      "case_id": "legal-newer-mature-refit",
+      "evidence_class": "SYNTHETIC_ENGINEERING_NOT_REAL_PIT",
+      "fixture": {
+        "index": 18,
+        "validation_end_index": 17
+      },
+      "expected_status": "ELIGIBLE",
+      "actual_status": "ELIGIBLE",
+      "expected_matched": true,
+      "decision": {
+        "status": "ELIGIBLE",
+        "reasons": [],
+        "fold_id": "fold-A",
+        "schema": "v7-research-fold-engineering-v1",
+        "research_admitted": false,
+        "identities": {
+          "fold_sha256": "2f2082084d90ce3d1825989b7c4d3ca606d9fd46c1bc09a71b154a4b1b9abb64",
+          "calendar_sha256": "8fe5751741bd31fe636067e5ff2a67f27e04097a472cd0a48333dc38c43062ad",
+          "calendar_evidence": "SYNTHETIC",
+          "sample_id": "A-2024-01-29",
+          "stock_id": "A",
+          "signal_session": "2024-01-29",
+          "phase": "REFIT",
+          "feature_sha256": "8ea46acaac28da8f9af4edd20326d567b21221056b88eca2eeddea548a5ce799",
+          "labels_sha256": "3df8445119b483251c00ee4ea5b01c5211cea1f63f3579c5b69bb8bffcaa4155"
+        }
+      },
+      "returned_view_rows": 0
+    },
+    {
+      "case_id": "forward-label-denied-to-selection",
+      "evidence_class": "SYNTHETIC_ENGINEERING_NOT_REAL_PIT",
+      "fixture": {
+        "index": 30,
+        "label_store": "raises_on_read"
+      },
+      "expected_status": "REJECTED",
+      "actual_status": "REJECTED",
+      "expected_matched": true,
+      "decision": {
+        "research_admitted": false,
+        "decisions": [
+          {
+            "status": "REJECTED",
+            "reasons": [
+              "OUTSIDE_ROLE_RANGE"
+            ],
+            "sample_id": "A-2024-02-14"
+          }
+        ],
+        "run_id": "selection-A",
+        "role": "SELECTION_VALIDATION",
+        "status": "REJECTED",
+        "reasons": [
+          "BATCH_HAS_INELIGIBLE_SAMPLE"
+        ]
+      },
+      "returned_view_rows": 0
+    },
+    {
+      "case_id": "forward-features-no-label-read",
+      "evidence_class": "SYNTHETIC_ENGINEERING_NOT_REAL_PIT",
+      "fixture": {
+        "index": 30,
+        "label_store": "raises_on_read",
+        "mock_prediction_only": true
+      },
+      "expected_status": "ELIGIBLE",
+      "actual_status": "ELIGIBLE",
+      "expected_matched": true,
+      "decision": {
+        "research_admitted": false,
+        "decisions": [
+          {
+            "status": "ELIGIBLE",
+            "reasons": [],
+            "fold_id": "fold-A",
+            "schema": "v7-research-fold-engineering-v1",
+            "research_admitted": false,
+            "identities": {
+              "fold_sha256": "2f2082084d90ce3d1825989b7c4d3ca606d9fd46c1bc09a71b154a4b1b9abb64",
+              "calendar_sha256": "8fe5751741bd31fe636067e5ff2a67f27e04097a472cd0a48333dc38c43062ad",
+              "calendar_evidence": "SYNTHETIC",
+              "sample_id": "A-2024-02-14",
+              "stock_id": "A",
+              "signal_session": "2024-02-14",
+              "phase": "FORWARD_FEATURES",
+              "feature_sha256": "63501e57a9c4ce4866c7aac981bca5b7db8a60d918f9fde708772c9ea4ffef0a",
+              "labels_sha256": null
+            }
+          }
+        ],
+        "run_id": "forward-A",
+        "role": "FORWARD_FEATURES",
+        "status": "ELIGIBLE",
+        "reasons": [],
+        "run_sha256": "3d347f63097474ae671a876ec7fc281c767b53acf69ecc22d8e0283298cf63b8",
+        "view_sha256": "15c8b6132eb0b0b33232946000d56900aa601fca6d0021e0c6dd572893074cfa",
+        "fold_sha256": "2f2082084d90ce3d1825989b7c4d3ca606d9fd46c1bc09a71b154a4b1b9abb64"
+      },
+      "returned_view_rows": 1
+    },
+    {
+      "case_id": "model-ready-deadline-missed",
+      "evidence_class": "SYNTHETIC_ENGINEERING_NOT_REAL_PIT",
+      "fixture": {
+        "ready_after_deadline": true
+      },
+      "expected_status": "REJECTED",
+      "actual_status": "REJECTED",
+      "expected_matched": true,
+      "decision": {
+        "research_admitted": false,
+        "decisions": [],
+        "run_id": "late-forward",
+        "role": "FORWARD_FEATURES",
+        "status": "REJECTED",
+        "reasons": [
+          "MODEL_READY_DEADLINE_MISSED"
+        ]
+      },
+      "returned_view_rows": 0
+    },
+    {
+      "case_id": "former-forward-now-nextfold-validation",
+      "evidence_class": "SYNTHETIC_ENGINEERING_NOT_REAL_PIT",
+      "fixture": {
+        "index": 30,
+        "source_fold": "fold-A-forward",
+        "target_fold": "fold-B-validation"
+      },
+      "expected_status": "ELIGIBLE",
+      "actual_status": "ELIGIBLE",
+      "expected_matched": true,
+      "decision": {
+        "status": "ELIGIBLE",
+        "reasons": [],
+        "fold_id": "fold-B",
+        "schema": "v7-research-fold-engineering-v1",
+        "research_admitted": false,
+        "identities": {
+          "fold_sha256": "63fee8e28302c4949983bba56ebaea5967f725ce22a4952e5c96a3da9998dcd5",
+          "calendar_sha256": "8fe5751741bd31fe636067e5ff2a67f27e04097a472cd0a48333dc38c43062ad",
+          "calendar_evidence": "SYNTHETIC",
+          "sample_id": "A-2024-02-14",
+          "stock_id": "A",
+          "signal_session": "2024-02-14",
+          "phase": "SELECTION_VALIDATION",
+          "feature_sha256": "63501e57a9c4ce4866c7aac981bca5b7db8a60d918f9fde708772c9ea4ffef0a",
+          "labels_sha256": "82c124e4f1fb0569ef6479d892c508908e880a29f1e6520aa3cc7397e86d8938"
+        }
+      },
+      "returned_view_rows": 0
+    },
+    {
+      "case_id": "later-fold-forward-result-exposure",
+      "evidence_class": "SYNTHETIC_ENGINEERING_NOT_REAL_PIT",
+      "fixture": {
+        "target_fold": "fold-B",
+        "role": "DEVELOPMENT_EXPOSED_NOT_FINAL"
+      },
+      "expected_status": "EXPOSURE_RECORDED",
+      "actual_status": "EXPOSURE_RECORDED",
+      "expected_matched": true,
+      "decision": {
+        "status": "EXPOSURE_RECORDED",
+        "reasons": [],
+        "research_admitted": false,
+        "result": {
+          "source_study_id": "study-fixture",
+          "source_fold_id": "fold-A",
+          "source_run_id": "forward-A",
+          "source_origin_at": "2024-02-13T08:30:00+08:00",
+          "available_at": "2024-02-29T15:00:00+08:00",
+          "source_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "evidence_class": "SYNTHETIC",
+          "payload": {
+            "mock_result": 1
+          }
+        },
+        "ledger": [
+          {
+            "schema": "v7-research-exposure-engineering-v1",
+            "source_study_id": "study-fixture",
+            "source_fold_id": "fold-A",
+            "source_run_id": "forward-A",
+            "target_study_id": "study-fixture",
+            "target_fold_id": "fold-B",
+            "role": "DEVELOPMENT_EXPOSED_NOT_FINAL",
+            "used_at": "2024-02-29T16:00:00+08:00",
+            "decision_ref": "choice",
+            "result_sha256": "10b2aeadc1827172907195c2b8393790618fadf3be844e7b9df99736fcb10408",
+            "prior_ledger_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "evidence_class": "SYNTHETIC"
+          }
+        ],
+        "ledger_sha256": "52876a32754a580be7e9121b9867755c4982f62ea8290c93fff3d6be1328caf7"
+      },
+      "returned_view_rows": 0
+    }
+  ]
+}

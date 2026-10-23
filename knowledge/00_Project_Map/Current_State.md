@@ -2,14 +2,18 @@
 
 > Status: `CANONICAL_CURRENT_PROJECT_MAP`
 
-## Window07 temporal/isolation foundation — bounded engineering
+## Window07 temporal/isolation foundation — completed / STOP
 
 Human approved two CPU-only synthetic engineering units, no formal study config.
 Branch `development/v7-window07-temporal-isolation`, worktree `.worktrees/v7-window07-temporal-isolation`,
 base/main `465dca229fc1452aaf1b46572b06886a7d8a2c8f`. UNMERGED / NOT_DEPLOYED.
-U1parameterized calendar/fold/label eligibility reviewed13tests/independent13PASS,
-1owner-identity repair,0remainingCritical/Required. U2isolation guard READY under
-this grant; maximum2rework/unit. [Evidence](../../research/v7/window07-evidence.json),
+U1 commit5d736e9:13focused/independent13PASS,1owner-binding repair.
+U2 complete:11focused/independent11PASS,
+1source-hash repair. Final67related tests/16expectedcasesPASS;0remainingCritical/Required.
+WINDOW_COMPLETE / STOP. No further work under this grant. Containing Unit2/closure
+commit is final checkpoint. Resume via cleanHEAD here/maps/Charter/uniquequeue;
+new bounded authorization required. CommonEvaluator synthetic foundation can be
+next scope, not approved policy/data/Window08. [Evidence](../../research/v7/window07-evidence.json),
 [decision](../02_History/Decisions/20261023-window07-temporal-isolation.json),
 [unique backlog](../../research/v7/research-program.md#window07-temporal-fold--research-isolation).
 No fixed validation/forward months/origins/30purge or metrics adopted; unknown policy/
