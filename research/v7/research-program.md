@@ -1,9 +1,28 @@
 # V7 Research Program and Current Development Backlog
 
-> Current planning owner: isolated Window15 dual-track preparation branch, linked by canonical
+> Current planning owner: isolated Window16 resource-proof branch, linked by canonical
 > Current State/Authority Map. Planning status does not grant research, execution,
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
+
+## Window16 Real Resource Coverage and Capture Proof
+
+WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED;research/v7-window16-resource-proof,
+base/main27dcb36. W15fixedff integrated, W14/W15rawbytes remainoriginaltrees.
+
+| Unit | HumanWindow16 objective | Result |
+|---|---|---|
+| W16-U1 | Exactlicensedresource coverage,1GETeach | BothHTTP200UTF8,2026-10-22 only;TWSE1383rows137956bytes/TPEx1017rows141480bytes;nohistory/fallback expansion |
+| W16-U2 | Immutablebytes+independentrestore/minimalresilience | 279436rawbytes/hash+rows restored;3targetedSnapshotPASS;fallbackPROPOSED/whitelistempty;no collector |
+
+[Brief](../../reports/v7_window16_resource_proof.md),[evidence](window16-evidence.json).
+SingleindependentreviewGO0Critical/Required,0repair;28focusedtests, no fullsuite repeat.
+HistoricalTrainingCoverageBLOCKED:two snapshot resources are Forwardraw CANDIDATES
+only. No newfit/RankIC/admission/collector/GPU. Human nextchoice: separatelyapprove
+legalhistoricalsource coverage qualification, OR limitedForwardoperations preparation
+(source/frequency/archive/backup/clock/QC/calendar/missing/notice). No READY execution
+within this finishedgrant. W12HALTED,StrictSTOP/E1BLOCKED/H2NOT_APPROVED/
+ExploratoryPROPOSED/CollectorNOT_APPROVED unchanged. No nextwindow/fallback access.
 
 ## Window15 Licensed Dual-track Foundations
 

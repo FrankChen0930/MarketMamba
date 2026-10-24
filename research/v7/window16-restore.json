@@ -1,0 +1,35 @@
+{
+  "schema": "window16-independent-restore-v1",
+  "observed_at": "2026-10-24T11:11:30.309756+00:00",
+  "restore_process_pid": 8,
+  "process_scope": "Separate Python invocation after capture completed; no network, only original immutable bytes used",
+  "restored_records": [
+    {
+      "dataset_id": "11549",
+      "status": "RESTORED_BYTES_AND_HASH_VERIFIED",
+      "original_manifest": "/home/frank/projects/MarketMamba/.worktrees/v7-window16-resource-proof/.artifacts/window16-resource-proof/snapshots/manifests/25a45db23f5dcaee689a1fcc7c22ed8693dcb8e00f0b90241d83c3b68c01844b-2026-10-24T110925.373190p0000.json",
+      "restored_manifest": "/home/frank/projects/MarketMamba/.worktrees/v7-window16-resource-proof/.artifacts/window16-resource-restore/manifests/25a45db23f5dcaee689a1fcc7c22ed8693dcb8e00f0b90241d83c3b68c01844b-2026-10-24T110925.373190p0000.json",
+      "restored_raw": "/home/frank/projects/MarketMamba/.worktrees/v7-window16-resource-proof/.artifacts/window16-resource-restore/raw/79bdd059e75a0a829dfef1e5c1330cb48a84b302e04ce040e77ee0dd35e5ec6a.bin",
+      "raw_bytes": 137956,
+      "raw_sha256": "79bdd059e75a0a829dfef1e5c1330cb48a84b302e04ce040e77ee0dd35e5ec6a",
+      "manifest_sha256": "30c0f47b248ae5dc7d638d5656eddcb06469ee62cd8e04d0d41f5229cc29ffce",
+      "csv_rows_rechecked": 1383,
+      "research_admitted": false
+    },
+    {
+      "dataset_id": "11371",
+      "status": "RESTORED_BYTES_AND_HASH_VERIFIED",
+      "original_manifest": "/home/frank/projects/MarketMamba/.worktrees/v7-window16-resource-proof/.artifacts/window16-resource-proof/snapshots/manifests/ed32d84297e415871b03646b01bd07c058cb9fb2655a66b29e18255556fd79ea-2026-10-24T110926.271271p0000.json",
+      "restored_manifest": "/home/frank/projects/MarketMamba/.worktrees/v7-window16-resource-proof/.artifacts/window16-resource-restore/manifests/ed32d84297e415871b03646b01bd07c058cb9fb2655a66b29e18255556fd79ea-2026-10-24T110926.271271p0000.json",
+      "restored_raw": "/home/frank/projects/MarketMamba/.worktrees/v7-window16-resource-proof/.artifacts/window16-resource-restore/raw/c57a72d7864203d633c76716e56c35b689c0134fffbed7f069e41f2646372d1a.bin",
+      "raw_bytes": 141480,
+      "raw_sha256": "c57a72d7864203d633c76716e56c35b689c0134fffbed7f069e41f2646372d1a",
+      "manifest_sha256": "339101c072b98361949880faa31c0ef8079ead7380c9b184d1a5b207ae682041",
+      "csv_rows_rechecked": 1017,
+      "research_admitted": false
+    }
+  ],
+  "network_requests": 0,
+  "backup_platform_or_permanent_storage_certified": false,
+  "restore_limit": "Source and restore copies remain local untracked worktree artifacts; loss/removal without other bytes makes hash-only restore impossible."
+}

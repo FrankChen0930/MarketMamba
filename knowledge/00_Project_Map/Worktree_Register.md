@@ -1,10 +1,23 @@
 # Worktree Register
 
+## Window16 real resource coverage — 2026-10-24
+
+- Path `.worktrees/v7-window16-resource-proof`;branch `research/v7-window16-resource-proof`;
+  base `27dcb36b5431b70e8aa831edb6cb9234cb3a40b3`;owner Codex/HumanWindow16;
+  created2026-10-24;retiredN/A. WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED;single reviewGO0Critical/Required,0repair.
+- Prior36trees clean/distinctscope; no samepurpose. Existing Snapshot/metadata/report/maps
+  reused; no newsourceplatform or testsframework. Mainff27dcb held;no W06/W12merge.
+- Preserve `.artifacts/window16-resource-proof` (requests ledger+2raw/manifests) and
+  `.artifacts/window16-resource-restore` (independent2bytecopies). Sameworktree not
+  crossdevicebackup; loss of tree canloseboth. W14/W15 originalbyte refs unchanged.
+- Safe removal only after clean retainedcommits/bytesrefs resolved and separate review;
+  no cleanup/move authorized. No furtherfetch/retry/fallback/collector execution.
+
 ## Window15 licensed dual-track — 2026-10-24
 
 - Path `.worktrees/v7-window15-dual-track`;branch `research/v7-window15-dual-track`;
   base `4da1bcfa81c8ff786de82d29ec461c0851d411d5`;owner Codex/HumanWindow15;
-  created2026-10-24;retiredN/A. WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED.
+  created2026-10-24;retiredN/A. WINDOW_COMPLETE/STOP/LOCAL_INTEGRATED_BY_WINDOW16/NOT_DEPLOYED.
 - Prior35trees clean/distinctscope; none serves this licensed dualtrack task.
   Existing experimental/research/Decisions/reports/maps reused; no platform.
 - Preserve .artifacts/window15-license-evidence (3officialHTML/raw/manifests) and

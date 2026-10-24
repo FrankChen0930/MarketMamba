@@ -21,10 +21,27 @@
   },
   "topics": [
     {
+      "topic": "Window16 real resource coverage and capture proof",
+      "primary_authority": "knowledge/02_History/Decisions/20261024-window16-resource-proof.json",
+      "authority_class": "CANONICAL",
+      "status": "WINDOW_COMPLETE_STOP_UNMERGED_SNAPSHOT_COVERAGE_PROOF_ONLY_NO_ADMISSION",
+      "secondary_evidence": [
+        "research/v7/window16-resource-coverage.json",
+        "research/v7/window16-restore.json",
+        "research/v7/window16-fallback-policy.json",
+        "research/v7/window16-evidence.json"
+      ],
+      "conflicts": [
+        "Single-session resources do not supply historical training coverage",
+        "Independent localrestore not permanentbackup or timelyoriginalvintage",
+        "Fallbackdesign not authorizedswitch/collector; GPU halted unchanged"
+      ]
+    },
+    {
       "topic": "Window15 licensed dual-track preparation",
       "primary_authority": "knowledge/02_History/Decisions/20261024-window15-licensed-dual-track.json",
       "authority_class": "CANONICAL",
-      "status": "WINDOW_COMPLETE_STOP_UNMERGED_SCOPED_LICENSE_EVIDENCE_AND_PROPOSALS_ONLY",
+      "status": "LOCAL_INTEGRATED_SCOPED_LICENSE_PROPOSALS_ONLY_NO_ADMISSION",
       "secondary_evidence": [
         "research/v7/window15-license-matrix.json",
         "research/v7/window15-exploratory-study.json",

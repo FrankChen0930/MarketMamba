@@ -1,0 +1,268 @@
+{
+  "data_requests": 2,
+  "license_matrix_sha256": "274f464b6ca58381b2b8cca4d71109428502a3b2c09c942512f93e99f801cd06",
+  "no_retries_or_fallback": true,
+  "records": [
+    {
+      "acquisition_class": "ONEOFF_RESOURCE_PROOF_NOT_HISTORICAL_OR_ORIGINAL_FORWARD_ADMISSION",
+      "content_type": "text/csv;charset=utf-8",
+      "current_catalogue": {
+        "OGDL1_label_observed": true,
+        "csv_urls": [
+          "https://www.twse.com.tw/exchangeReport/STOCK_DAY_ALL?response=open_data"
+        ],
+        "html_sha256": "37fe78e051d3feca4da7f9187084d3e719c7c07a145f6ecffa74fa8de9c8be06",
+        "retrieved_at": "2026-10-24T11:09:25.307197+00:00",
+        "url": "https://data.gov.tw/dataset/11549"
+      },
+      "data_request_count": 1,
+      "dataset_id": "11549",
+      "expected_resource_url": "https://www.twse.com.tw/exchangeReport/STOCK_DAY_ALL?response=open_data",
+      "forward_collector_active": false,
+      "http_status": 200,
+      "license_id": "OGDL-1.0",
+      "license_matrix_sha256": "274f464b6ca58381b2b8cca4d71109428502a3b2c09c942512f93e99f801cd06",
+      "license_version": "1.0",
+      "manifest_path": "/home/frank/projects/MarketMamba/.worktrees/v7-window16-resource-proof/.artifacts/window16-resource-proof/snapshots/manifests/25a45db23f5dcaee689a1fcc7c22ed8693dcb8e00f0b90241d83c3b68c01844b-2026-10-24T110925.373190p0000.json",
+      "manifest_sha256": "30c0f47b248ae5dc7d638d5656eddcb06469ee62cd8e04d0d41f5229cc29ffce",
+      "project_authority": "HumanWindow16oneoffonly",
+      "provider": "TWSE",
+      "raw_bytes": 137956,
+      "raw_path": "/home/frank/projects/MarketMamba/.worktrees/v7-window16-resource-proof/.artifacts/window16-resource-proof/snapshots/raw/79bdd059e75a0a829dfef1e5c1330cb48a84b302e04ce040e77ee0dd35e5ec6a.bin",
+      "raw_sha256": "79bdd059e75a0a829dfef1e5c1330cb48a84b302e04ce040e77ee0dd35e5ec6a",
+      "request_started_at": "2026-10-24T11:09:25.307799+00:00",
+      "research_admitted": false,
+      "resource_result": "SNAPSHOT_RESOURCE_AS_OBSERVED",
+      "response_complete": true,
+      "response_headers": {
+        "Content-Disposition": "attachment; filename=\"STOCK_DAY_ALL_20261022.csv\"",
+        "Content-Encoding": null,
+        "Content-Length": null,
+        "Content-Type": "text/csv;charset=utf-8",
+        "Date": "Sat, 24 Oct 2026 11:09:25 GMT",
+        "ETag": null,
+        "Last-Modified": null,
+        "Location": null
+      },
+      "retrieved_at": "2026-10-24T11:09:25.373190+00:00",
+      "returned_url": "https://www.twse.com.tw/exchangeReport/STOCK_DAY_ALL?response=open_data",
+      "snapshot_integrity": "VERIFIED_CAPTURE_BYTES_ONLY",
+      "encoding": "utf-8-sig",
+      "schema": [
+        "日期",
+        "證券代號",
+        "證券名稱",
+        "成交股數",
+        "成交金額",
+        "開盤價",
+        "最高價",
+        "最低價",
+        "收盤價",
+        "漲跌價差",
+        "成交筆數"
+      ],
+      "data_rows": 1383,
+      "csv_total_rows": 1384,
+      "date_field": "日期",
+      "date_calendar_conversion": "ROC year+1911 for7digits; date parsing only, no exchange calendar admission",
+      "earliest_observation_date": "2026-10-22",
+      "latest_observation_date": "2026-10-22",
+      "distinct_observation_sessions": 1,
+      "session_row_counts": {
+        "2026-10-22": 1383
+      },
+      "distinct_securities": 1383,
+      "duplicate_session_security_rows": 0,
+      "qc_counts": {
+        "PASS": 1368,
+        "MISSING_OHLCV_NO_FILL": 15
+      },
+      "valid_zero_volume_rows": 0,
+      "qc_failure_examples": [
+        {
+          "csv_line": 29,
+          "security_id": "00625K",
+          "session_field": "2026-10-22",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "csv_line": 44,
+          "security_id": "00643K",
+          "session_field": "2026-10-22",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "csv_line": 77,
+          "security_id": "00682U",
+          "session_field": "2026-10-22",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "csv_line": 92,
+          "security_id": "00707R",
+          "session_field": "2026-10-22",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "csv_line": 251,
+          "security_id": "020011",
+          "session_field": "2026-10-22",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "csv_line": 259,
+          "security_id": "020032",
+          "session_field": "2026-10-22",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        }
+      ],
+      "qc_checked_at": "2026-10-24T11:10:40.285103+00:00",
+      "qc_scope": "Schema/encoding/date/security key and finite positiveOHLC/nonnegative integerVolume/OHLCbounds only; not tradability or history universe",
+      "units": {
+        "volume": "成交股數 = shares as field-labelled, no lot conversion applied",
+        "price": "as-quoted numeric values; currency/price basis/security-type-specific units not certified",
+        "adjustment_split_and_segment_semantics": "UNKNOWN; not normalized or admitted"
+      },
+      "publication_at": null,
+      "original_forward_capture_verified": false,
+      "historical_original_vintage_verified": false,
+      "historical_training_coverage": "BLOCKED",
+      "forward_resource_candidate": "YES_RAW_SNAPSHOT_CANDIDATE_ONLY_SERVICE_AND_ACTIVATION_PENDING"
+    },
+    {
+      "acquisition_class": "ONEOFF_RESOURCE_PROOF_NOT_HISTORICAL_OR_ORIGINAL_FORWARD_ADMISSION",
+      "content_type": "application/csv;charset=utf-8",
+      "current_catalogue": {
+        "OGDL1_label_observed": true,
+        "csv_urls": [
+          "https://www.tpex.org.tw/web/stock/aftertrading/otc_quotes_no1430/stk_wn1430_result.php?l=zh-tw&se=EW&o=data"
+        ],
+        "html_sha256": "c37257a53b43888d5a7699eb9751c17f1110717f1b6c745a95db4ee1c8422cfe",
+        "retrieved_at": "2026-10-24T11:09:26.120536+00:00",
+        "url": "https://data.gov.tw/dataset/11371"
+      },
+      "data_request_count": 1,
+      "dataset_id": "11371",
+      "expected_resource_url": "https://www.tpex.org.tw/web/stock/aftertrading/otc_quotes_no1430/stk_wn1430_result.php?l=zh-tw&se=EW&o=data",
+      "forward_collector_active": false,
+      "http_status": 200,
+      "license_id": "OGDL-1.0",
+      "license_matrix_sha256": "274f464b6ca58381b2b8cca4d71109428502a3b2c09c942512f93e99f801cd06",
+      "license_version": "1.0",
+      "manifest_path": "/home/frank/projects/MarketMamba/.worktrees/v7-window16-resource-proof/.artifacts/window16-resource-proof/snapshots/manifests/ed32d84297e415871b03646b01bd07c058cb9fb2655a66b29e18255556fd79ea-2026-10-24T110926.271271p0000.json",
+      "manifest_sha256": "339101c072b98361949880faa31c0ef8079ead7380c9b184d1a5b207ae682041",
+      "project_authority": "HumanWindow16oneoffonly",
+      "provider": "TPEx",
+      "raw_bytes": 141480,
+      "raw_path": "/home/frank/projects/MarketMamba/.worktrees/v7-window16-resource-proof/.artifacts/window16-resource-proof/snapshots/raw/c57a72d7864203d633c76716e56c35b689c0134fffbed7f069e41f2646372d1a.bin",
+      "raw_sha256": "c57a72d7864203d633c76716e56c35b689c0134fffbed7f069e41f2646372d1a",
+      "request_started_at": "2026-10-24T11:09:26.120984+00:00",
+      "research_admitted": false,
+      "resource_result": "SNAPSHOT_RESOURCE_AS_OBSERVED",
+      "response_complete": true,
+      "response_headers": {
+        "Content-Disposition": "attachment; filename=\"SQUOTE_EW_1151022.csv\"",
+        "Content-Encoding": null,
+        "Content-Length": null,
+        "Content-Type": "application/csv;charset=utf-8",
+        "Date": "Sat, 24 Oct 2026 11:09:26 GMT",
+        "ETag": null,
+        "Last-Modified": null,
+        "Location": null
+      },
+      "retrieved_at": "2026-10-24T11:09:26.271271+00:00",
+      "returned_url": "https://www.tpex.org.tw/web/stock/aftertrading/otc_quotes_no1430/stk_wn1430_result.php?l=zh-tw&se=EW&o=data",
+      "snapshot_integrity": "VERIFIED_CAPTURE_BYTES_ONLY",
+      "encoding": "utf-8-sig",
+      "schema": [
+        "資料日期",
+        "代號",
+        "名稱",
+        "收盤",
+        "漲跌",
+        "開盤",
+        "最高",
+        "最低",
+        "成交股數",
+        "成交金額",
+        "成交筆數",
+        "最後買價",
+        "最後賣價",
+        "發行股數",
+        "次日漲停價",
+        "次日跌停價"
+      ],
+      "data_rows": 1017,
+      "csv_total_rows": 1018,
+      "date_field": "資料日期",
+      "date_calendar_conversion": "ROC year+1911 for7digits; date parsing only, no exchange calendar admission",
+      "earliest_observation_date": "2026-10-22",
+      "latest_observation_date": "2026-10-22",
+      "distinct_observation_sessions": 1,
+      "session_row_counts": {
+        "2026-10-22": 1017
+      },
+      "distinct_securities": 1017,
+      "duplicate_session_security_rows": 0,
+      "qc_counts": {
+        "PASS": 990,
+        "MISSING_OHLCV_NO_FILL": 27
+      },
+      "valid_zero_volume_rows": 0,
+      "qc_failure_examples": [
+        {
+          "csv_line": 148,
+          "security_id": "2073",
+          "session_field": "2026-10-22",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "csv_line": 159,
+          "security_id": "2724",
+          "session_field": "2026-10-22",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "csv_line": 181,
+          "security_id": "2949",
+          "session_field": "2026-10-22",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "csv_line": 182,
+          "security_id": "3064",
+          "session_field": "2026-10-22",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "csv_line": 190,
+          "security_id": "3085",
+          "session_field": "2026-10-22",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "csv_line": 197,
+          "security_id": "3115",
+          "session_field": "2026-10-22",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        }
+      ],
+      "qc_checked_at": "2026-10-24T11:10:40.296563+00:00",
+      "qc_scope": "Schema/encoding/date/security key and finite positiveOHLC/nonnegative integerVolume/OHLCbounds only; not tradability or history universe",
+      "units": {
+        "volume": "成交股數 = shares as field-labelled, no lot conversion applied",
+        "price": "as-quoted numeric values; currency/price basis/security-type-specific units not certified",
+        "adjustment_split_and_segment_semantics": "UNKNOWN; not normalized or admitted"
+      },
+      "publication_at": null,
+      "original_forward_capture_verified": false,
+      "historical_original_vintage_verified": false,
+      "historical_training_coverage": "BLOCKED",
+      "forward_resource_candidate": "YES_RAW_SNAPSHOT_CANDIDATE_ONLY_SERVICE_AND_ACTIVATION_PENDING"
+    }
+  ],
+  "schema": "window16-resource-coverage-v1",
+  "status": "EVIDENCE_ONLY_NOT_ADMITTED",
+  "stop_condition": "Both returned single-date snapshots: no hidden history inquiry, extra endpoints, retries or fallback",
+  "new_research_admission": false
+}

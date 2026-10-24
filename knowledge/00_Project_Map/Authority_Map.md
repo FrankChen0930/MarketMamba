@@ -5,6 +5,28 @@
 > Semantic change owner must update this map in the same change.
 > Prior research/Phase A map accepted `2026-09-20`; 2026-09-22 runtime additions are agent-observed, pending separate human review. Canonical means current navigation authority, not immutable final state.
 
+## Window16 Real Resource Proof — complete / STOP
+
+W15fixed27dcb36b5431b70e8aa831edb6cb9234cb3a40b3 LOCAL_INTEGRATED/NOT_DEPLOYED,
+ff-only from4da1bcf;25targetedCPUtestsPASS,source/review/hash/36cleantrees verified.
+W14 raw/W15 evidencebytes remain originaltrees;not moved to main. Mainheld27dcb36;
+W06/W12/othercandidates notmerged. OlderW15UNMERGED text historical for integration only.
+W16 research/v7-window16-resource-proof,base27dcb36,.worktrees/v7-window16-resource-proof,
+WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED;2units only,no newvalidator/platform. Two exactlicensedCSV GETs,
+1each/0retry/redirect/fallback. BothHTTP200 UTF8,only2026-10-22/1session:
+TWSE1383rows/1383securities/137956bytes,1368basicQCpass+15missing;
+TPEx1017/1017/141480bytes,990basicQCpass+27missing. Nozero-fill orcalendar/universe/
+pricecurrency/adjustment/tradabilityadmission. HistoricalTrainingCoverageBLOCKED;
+no hiddenhistorysearch. Forwardrawresource CANDIDATE_ONLY, activationNOT_APPROVED.
+IndependentPythonrestore2records/279436bytes/hash+rowsPASS;3focusedSnapshot testsPASS.
+Raw+restore both localuntrackedcopies in W16tree,not certifiedbackup;tree removalrisk.
+[Brief](../../reports/v7_window16_resource_proof.md),[evidence](../../research/v7/window16-evidence.json),
+[sole queue](../../research/v7/research-program.md#window16-real-resource-coverage-and-capture-proof).
+SingleindependentreviewGO0Critical/Required,0repair;28targetedtests, no fullsuite repeat.
+Fallbackpolicy PROPOSED,whitelistempty,no provider switch/collector/fit/RankIC/GPU.
+Old120files+4Frozenhashes unchanged. StrictSTOP/E1BLOCKED/H2NOT_APPROVED/
+ExploratoryPROPOSED/CollectorNOT_APPROVED/GPU_SAFETY_HALTED. No nextwindow.
+
 ## Window15 Licensed Foundations / Dual-track — complete / STOP
 
 W14fixed4da1bcfa81c8ff786de82d29ec461c0851d411d5 LOCAL_INTEGRATED/NOT_DEPLOYED,
