@@ -1,13 +1,33 @@
 # V7 Research Program and Current Development Backlog
 
-> Current planning owner: isolated Window17 forward-readiness branch, linked by canonical
+> Current planning owner: isolated Window18 manual-collector branch, linked by canonical
 > Current State/Authority Map. Planning status does not grant research, execution,
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
 
+## Window18 Limited Real Forward Collector Pilot
+
+WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED; branch development/v7-window18-manual-collector,
+base/main96e8c0c。W17已ff-only整合，W06/W12未整合。兩GET額度用完，不可重跑。
+
+| ID | Human Objective | Completion / remaining |
+|---|---|---|
+| W18-U1 | MinimalmanualCLI＋exactlicensedCSV1GETeach | COMPLETE；2HTTP200／279436bytes；原碼與第一次immutable記錄保留；無retry/redirect/fallback |
+| W18-U2 | QC／immutable保存／independentRestore／faulttest | COMPLETE；25targetedPASS；一次review3Required→唯一修復輪RED/GREEN/實際restore自行確認，無第二獨立GO；BACKUP_PENDING |
+
+原TPExQC_FAILED(27INVALID)保留；離線修後QC_EXCEPTIONS(27MISSING)，不重取、不重寫舊結果。
+資料皆10/22單session，publicationUNKNOWN，Capture時間未qualified；Raw成功不等於研究／股票Universe准入。
+下一步 POLICY_REQUIRED：daily19:00候選、執行環境／有界retry／QC缺漏／backup監測通知／停止撤銷；
+DATA_EVIDENCE_BLOCKED：TPEx有效日曆、來源更新時刻；不能以牆上日期判stale。
+ENGINEERING：每日啟用前將既有manual入口接有限授權run範圍（目前Window18一次性ledger已耗盡），
+並驗指定獨立backup/monitoring/恢復，不另建platform。
+HistoricalStudy PROPOSED，沿用W17限定官方授權/coverage文件調查建議；本輪無歷史payload/RankIC。
+[Brief](../../reports/v7_window18_manual_pilot.md)、[evidence](window18-evidence.json)、[dailycandidate](window18-daily-activation-candidate.json)。
+No remainingREADY work in completedgrant；STOP，下一窗口需新授權。
+
 ## Window17 Forward Vintage Operational Readiness
 
-WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED; branch research/v7-window17-forward-readiness,
+WINDOW_COMPLETE/STOP/LOCAL_INTEGRATED_BY_W18/NOT_DEPLOYED; branch research/v7-window17-forward-readiness,
 base/main000b0b9. W16ff-only整合，W06/W12未整合。
 
 | ID | Objective / Authority | Result / dependency |

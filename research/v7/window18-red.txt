@@ -1,0 +1,17 @@
+======================================================================
+ERROR: v7_manual_collector_test (unittest.loader._FailedTest.v7_manual_collector_test)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: v7_manual_collector_test
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/unittest/loader.py", line 137, in loadTestsFromName
+    module = __import__(module_name)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_manual_collector_test.py", line 5, in <module>
+    from V6.experimental.v7_manual_collector import archive,run_one,restore,source,CSV_HEADERS
+ModuleNotFoundError: No module named 'V6.experimental.v7_manual_collector'
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (errors=1)

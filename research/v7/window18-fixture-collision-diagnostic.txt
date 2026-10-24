@@ -1,0 +1,173 @@
+# Whitespace-normalized presentation; exact original: /home/frank/projects/MarketMamba/.artifacts/window18-manual-pilot/fixture-collision-original.txt
+test_403_429_redirect_timeout_never_retry_or_fallback (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_403_429_redirect_timeout_never_retry_or_fallback) ... ok
+test_atomic_record_failure_then_offline_recovery (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_atomic_record_failure_then_offline_recovery) ... ok
+test_backfill_not_forward_and_calendar_wall_day_not_stale (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_backfill_not_forward_and_calendar_wall_day_not_stale) ... ERROR
+test_bad_qc_raw_saved_not_research_ready (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_bad_qc_raw_saved_not_research_ready) ...
+  test_bad_qc_raw_saved_not_research_ready (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_bad_qc_raw_saved_not_research_ready) (body=b'\xe6\x97\xa5\xe6\x9c\x9f,\xe8\xad\x89') ... ERROR
+  test_bad_qc_raw_saved_not_research_ready (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_bad_qc_raw_saved_not_research_ready) (body=b'\xe6\x97\xa5\xe6\x9c\x9f,\xe8\xad\x89') ... ERROR
+test_both_source_schemas_and_no_research_promotion (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_both_source_schemas_and_no_research_promotion) ... ok
+test_budget_claimed_before_network_and_no_second_get (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_budget_claimed_before_network_and_no_second_get) ... ok
+test_idempotent_bytes_not_overwritten_and_revision_preserved (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_idempotent_bytes_not_overwritten_and_revision_preserved) ... ERROR
+test_independent_restore_preserves_bytes_and_row_counts (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_independent_restore_preserves_bytes_and_row_counts) ... ok
+test_missing_corrupt_hash_or_identity_not_restorable (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_missing_corrupt_hash_or_identity_not_restorable) ... ok
+test_missing_no_zero_fill_and_nonfinite_rejected (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_missing_no_zero_fill_and_nonfinite_rejected) ... ERROR
+test_unauthorized_source_refused_before_dispatch (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_unauthorized_source_refused_before_dispatch) ... ok
+test_wrong_encoding_truncated_response_and_storage_failure (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_wrong_encoding_truncated_response_and_storage_failure) ... ERROR
+
+======================================================================
+ERROR: test_backfill_not_forward_and_calendar_wall_day_not_stale (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_backfill_not_forward_and_calendar_wall_day_not_stale)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_source_snapshot.py", line 51, in _atomic_bytes
+    os.link(temporary, path)
+FileExistsError: [Errno 17] File exists: '/tmp/tmpko_fl9hs/store/snapshots/manifests/.01c6a94cd42429a7b9c74ffa2d68dedfe5abf382c08ac5bae2c8edec28a88af0-2026-10-24T140000p0000.json.k2p8y6x4.tmp' -> '/tmp/tmpko_fl9hs/store/snapshots/manifests/01c6a94cd42429a7b9c74ffa2d68dedfe5abf382c08ac5bae2c8edec28a88af0-2026-10-24T140000p0000.json'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_manual_collector_test.py", line 62, in test_backfill_not_forward_and_calendar_wall_day_not_stale
+    b=self.save();self.assertNotEqual(b['freshness'],'STALE_BY_WALL_DATE');self.assertFalse(b['verified_forward_vintage'])
+      ^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_manual_collector_test.py", line 17, in save
+    return archive(self.store,'11549',csv_bytes() if body is None else body,retrieved_at=AT,http_status=200,headers={'Content-Type':'text/csv;charset=utf-8'},mode='OFFLINE_REPLAY',**kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_manual_collector.py", line 49, in archive
+    manifest=snapshot_response(request,body,root/'snapshots',retrieved_at=receipt,parser_version='window18-csv-raw-v1',content_type=content_type,status_code=http_status)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_source_snapshot.py", line 147, in snapshot_response
+    _atomic_bytes(manifest_path, payload)
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_source_snapshot.py", line 54, in _atomic_bytes
+    raise SnapshotContractError("immutable snapshot identity conflicts with existing bytes")
+V6.experimental.v7_source_snapshot.SnapshotContractError: immutable snapshot identity conflicts with existing bytes
+
+======================================================================
+ERROR: test_bad_qc_raw_saved_not_research_ready (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_bad_qc_raw_saved_not_research_ready) (body=b'\xe6\x97\xa5\xe6\x9c\x9f,\xe8\xad\x89')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_source_snapshot.py", line 51, in _atomic_bytes
+    os.link(temporary, path)
+FileExistsError: [Errno 17] File exists: '/tmp/tmpqzbcf5cj/store/snapshots/manifests/.01c6a94cd42429a7b9c74ffa2d68dedfe5abf382c08ac5bae2c8edec28a88af0-2026-10-24T140000p0000.json.i_rghb05.tmp' -> '/tmp/tmpqzbcf5cj/store/snapshots/manifests/01c6a94cd42429a7b9c74ffa2d68dedfe5abf382c08ac5bae2c8edec28a88af0-2026-10-24T140000p0000.json'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_manual_collector_test.py", line 33, in test_bad_qc_raw_saved_not_research_ready
+    a=self.save(body);self.assertEqual(a['qc']['status'],'QC_FAILED');self.assertEqual(a['status'],'RAW_CAPTURED_WITH_QC_FAILURE');self.assertFalse(a['research_admitted'])
+      ^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_manual_collector_test.py", line 17, in save
+    return archive(self.store,'11549',csv_bytes() if body is None else body,retrieved_at=AT,http_status=200,headers={'Content-Type':'text/csv;charset=utf-8'},mode='OFFLINE_REPLAY',**kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_manual_collector.py", line 49, in archive
+    manifest=snapshot_response(request,body,root/'snapshots',retrieved_at=receipt,parser_version='window18-csv-raw-v1',content_type=content_type,status_code=http_status)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_source_snapshot.py", line 147, in snapshot_response
+    _atomic_bytes(manifest_path, payload)
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_source_snapshot.py", line 54, in _atomic_bytes
+    raise SnapshotContractError("immutable snapshot identity conflicts with existing bytes")
+V6.experimental.v7_source_snapshot.SnapshotContractError: immutable snapshot identity conflicts with existing bytes
+
+======================================================================
+ERROR: test_bad_qc_raw_saved_not_research_ready (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_bad_qc_raw_saved_not_research_ready) (body=b'\xe6\x97\xa5\xe6\x9c\x9f,\xe8\xad\x89')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_source_snapshot.py", line 51, in _atomic_bytes
+    os.link(temporary, path)
+FileExistsError: [Errno 17] File exists: '/tmp/tmpqzbcf5cj/store/snapshots/manifests/.01c6a94cd42429a7b9c74ffa2d68dedfe5abf382c08ac5bae2c8edec28a88af0-2026-10-24T140000p0000.json.e46oxfrh.tmp' -> '/tmp/tmpqzbcf5cj/store/snapshots/manifests/01c6a94cd42429a7b9c74ffa2d68dedfe5abf382c08ac5bae2c8edec28a88af0-2026-10-24T140000p0000.json'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_manual_collector_test.py", line 33, in test_bad_qc_raw_saved_not_research_ready
+    a=self.save(body);self.assertEqual(a['qc']['status'],'QC_FAILED');self.assertEqual(a['status'],'RAW_CAPTURED_WITH_QC_FAILURE');self.assertFalse(a['research_admitted'])
+      ^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_manual_collector_test.py", line 17, in save
+    return archive(self.store,'11549',csv_bytes() if body is None else body,retrieved_at=AT,http_status=200,headers={'Content-Type':'text/csv;charset=utf-8'},mode='OFFLINE_REPLAY',**kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_manual_collector.py", line 49, in archive
+    manifest=snapshot_response(request,body,root/'snapshots',retrieved_at=receipt,parser_version='window18-csv-raw-v1',content_type=content_type,status_code=http_status)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_source_snapshot.py", line 147, in snapshot_response
+    _atomic_bytes(manifest_path, payload)
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_source_snapshot.py", line 54, in _atomic_bytes
+    raise SnapshotContractError("immutable snapshot identity conflicts with existing bytes")
+V6.experimental.v7_source_snapshot.SnapshotContractError: immutable snapshot identity conflicts with existing bytes
+
+======================================================================
+ERROR: test_idempotent_bytes_not_overwritten_and_revision_preserved (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_idempotent_bytes_not_overwritten_and_revision_preserved)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_source_snapshot.py", line 51, in _atomic_bytes
+    os.link(temporary, path)
+FileExistsError: [Errno 17] File exists: '/tmp/tmpmgfic02a/store/snapshots/manifests/.01c6a94cd42429a7b9c74ffa2d68dedfe5abf382c08ac5bae2c8edec28a88af0-2026-10-24T140000p0000.json.x2y173mg.tmp' -> '/tmp/tmpmgfic02a/store/snapshots/manifests/01c6a94cd42429a7b9c74ffa2d68dedfe5abf382c08ac5bae2c8edec28a88af0-2026-10-24T140000p0000.json'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_manual_collector_test.py", line 24, in test_idempotent_bytes_not_overwritten_and_revision_preserved
+    c=self.save(csv_bytes(close='10'));self.assertNotEqual(a['raw_sha256'],c['raw_sha256']);self.assertTrue(p.exists());self.assertEqual(len(list((self.store/'snapshots/raw').glob('*'))),2)
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_manual_collector_test.py", line 17, in save
+    return archive(self.store,'11549',csv_bytes() if body is None else body,retrieved_at=AT,http_status=200,headers={'Content-Type':'text/csv;charset=utf-8'},mode='OFFLINE_REPLAY',**kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_manual_collector.py", line 49, in archive
+    manifest=snapshot_response(request,body,root/'snapshots',retrieved_at=receipt,parser_version='window18-csv-raw-v1',content_type=content_type,status_code=http_status)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_source_snapshot.py", line 147, in snapshot_response
+    _atomic_bytes(manifest_path, payload)
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_source_snapshot.py", line 54, in _atomic_bytes
+    raise SnapshotContractError("immutable snapshot identity conflicts with existing bytes")
+V6.experimental.v7_source_snapshot.SnapshotContractError: immutable snapshot identity conflicts with existing bytes
+
+======================================================================
+ERROR: test_missing_no_zero_fill_and_nonfinite_rejected (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_missing_no_zero_fill_and_nonfinite_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_source_snapshot.py", line 51, in _atomic_bytes
+    os.link(temporary, path)
+FileExistsError: [Errno 17] File exists: '/tmp/tmp8kopaxp9/store/snapshots/manifests/.01c6a94cd42429a7b9c74ffa2d68dedfe5abf382c08ac5bae2c8edec28a88af0-2026-10-24T140000p0000.json.is8tyued.tmp' -> '/tmp/tmp8kopaxp9/store/snapshots/manifests/01c6a94cd42429a7b9c74ffa2d68dedfe5abf382c08ac5bae2c8edec28a88af0-2026-10-24T140000p0000.json'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_manual_collector_test.py", line 36, in test_missing_no_zero_fill_and_nonfinite_rejected
+    b=self.save(csv_bytes(close='NaN'));self.assertEqual(b['qc']['counts']['INVALID_OHLCV'],1)
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_manual_collector_test.py", line 17, in save
+    return archive(self.store,'11549',csv_bytes() if body is None else body,retrieved_at=AT,http_status=200,headers={'Content-Type':'text/csv;charset=utf-8'},mode='OFFLINE_REPLAY',**kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_manual_collector.py", line 49, in archive
+    manifest=snapshot_response(request,body,root/'snapshots',retrieved_at=receipt,parser_version='window18-csv-raw-v1',content_type=content_type,status_code=http_status)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_source_snapshot.py", line 147, in snapshot_response
+    _atomic_bytes(manifest_path, payload)
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_source_snapshot.py", line 54, in _atomic_bytes
+    raise SnapshotContractError("immutable snapshot identity conflicts with existing bytes")
+V6.experimental.v7_source_snapshot.SnapshotContractError: immutable snapshot identity conflicts with existing bytes
+
+======================================================================
+ERROR: test_wrong_encoding_truncated_response_and_storage_failure (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_wrong_encoding_truncated_response_and_storage_failure)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_source_snapshot.py", line 51, in _atomic_bytes
+    os.link(temporary, path)
+FileExistsError: [Errno 17] File exists: '/tmp/tmpe_2vut66/store/snapshots/manifests/.01c6a94cd42429a7b9c74ffa2d68dedfe5abf382c08ac5bae2c8edec28a88af0-2026-10-24T140000p0000.json.di5x3wr8.tmp' -> '/tmp/tmpe_2vut66/store/snapshots/manifests/01c6a94cd42429a7b9c74ffa2d68dedfe5abf382c08ac5bae2c8edec28a88af0-2026-10-24T140000p0000.json'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_manual_collector_test.py", line 65, in test_wrong_encoding_truncated_response_and_storage_failure
+    a=archive(self.store,'11549',csv_bytes(),retrieved_at=AT,http_status=200,headers={'Content-Type':'text/csv'},mode='OFFLINE_REPLAY',complete=False)
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_manual_collector.py", line 49, in archive
+    manifest=snapshot_response(request,body,root/'snapshots',retrieved_at=receipt,parser_version='window18-csv-raw-v1',content_type=content_type,status_code=http_status)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_source_snapshot.py", line 147, in snapshot_response
+    _atomic_bytes(manifest_path, payload)
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_source_snapshot.py", line 54, in _atomic_bytes
+    raise SnapshotContractError("immutable snapshot identity conflicts with existing bytes")
+V6.experimental.v7_source_snapshot.SnapshotContractError: immutable snapshot identity conflicts with existing bytes
+
+----------------------------------------------------------------------
+Ran 12 tests in 1.185s
+
+FAILED (errors=6)

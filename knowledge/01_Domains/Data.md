@@ -59,6 +59,15 @@ Legacy V6 datasets remain useful for reproducing historical work, but cannot be 
 - Provenance eligibility is evaluated before any proxy rule.
 - Current-world classifications must not be backfilled into history without evidence.
 
+## Window18 branch-local manual pilot
+
+`development/v7-window18-manual-collector` adds a manual-only CLI and bounded CSV QC,
+UNMERGED/NOT_DEPLOYED. W18 exactCSV one-shot budget is consumed; no daily scheduler,
+production authority or data/research admission. Raw/manifest recovery reuses v1
+snapshot/W09 guards; original QC/source remains immutable, revised diagnostic separate.
+Root `.artifacts/window18-manual-pilot` has actual bytes; same-host restore is not
+independent backup (BACKUP_PENDING). See [pilot evidence](../../research/v7/window18-evidence.json).
+
 ## Known Limitations
 
 Branch-local engineering candidate `fix/v7-snapshot-immutability` (2026-10-20)

@@ -1,0 +1,30 @@
+[
+  {
+    "status": "RESTORED_BYTES_HASH_ROWS_VERIFIED",
+    "dataset_id": "11549",
+    "rows": 1383,
+    "original_qc_status": "QC_EXCEPTIONS",
+    "current_qc_status": "QC_EXCEPTIONS",
+    "qc_version_changed": true,
+    "framing_evidence": "UNKNOWN_NO_CONTENT_LENGTH",
+    "raw_bytes": 137956,
+    "raw_sha256": "79bdd059e75a0a829dfef1e5c1330cb48a84b302e04ce040e77ee0dd35e5ec6a",
+    "destination": "/home/frank/projects/MarketMamba/.artifacts/window18-reviewed-restore",
+    "research_admitted": false,
+    "backup_status": "BACKUP_PENDING_SAME_HOST_COPY"
+  },
+  {
+    "status": "RESTORED_BYTES_HASH_ROWS_VERIFIED",
+    "dataset_id": "11371",
+    "rows": 1017,
+    "original_qc_status": "QC_FAILED",
+    "current_qc_status": "QC_EXCEPTIONS",
+    "qc_version_changed": true,
+    "framing_evidence": "UNKNOWN_NO_CONTENT_LENGTH",
+    "raw_bytes": 141480,
+    "raw_sha256": "c57a72d7864203d633c76716e56c35b689c0134fffbed7f069e41f2646372d1a",
+    "destination": "/home/frank/projects/MarketMamba/.artifacts/window18-reviewed-restore",
+    "research_admitted": false,
+    "backup_status": "BACKUP_PENDING_SAME_HOST_COPY"
+  }
+]

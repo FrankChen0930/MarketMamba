@@ -1,10 +1,22 @@
 # Worktree Register
 
+## Window18 manual collector pilot — 2026-10-24
+
+- Path `.worktrees/v7-window18-manual-collector`;branch `development/v7-window18-manual-collector`;
+  base `96e8c0c4f2f7f78c508048e31f0f163d6c707128`;owner Codex/HumanWindow18;
+  created2026-10-24;retiredN/A;WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED。
+- Prior38treesclean，無同目標工作區；沿用experimental/research/reports/maps與根目錄.artifacts。
+- 唯一manualpilot已完成；兩exactCSV各1GET，budgetroot `.artifacts/window18-network-budget` 已用完。
+- Raw與first/source-reviewed code於根目錄`.artifacts/window18-manual-pilot`，初次Restore於
+  `.artifacts/window18-manual-restore`，修後Restore於`.artifacts/window18-reviewed-restore`；同機非獨立backup。
+- W14/W16/W17原bytes與W12HALTED保留；NO_GC。Safe removal須retainedcommits／resolvedbytes/runtime refs／
+  separatelyreviewedretirement；本輪無清理。Dailyactivation／researchadmission仍未批准，W06/W12未整合。
+
 ## Window17 forward operational readiness — 2026-10-24
 
 - Path `.worktrees/v7-window17-forward-readiness`;branch `research/v7-window17-forward-readiness`;
   base `000b0b9c40448b11a41d05396dffc6e0f3ea1235`;owner Codex/HumanWindow17;
-  created2026-10-24;retiredN/A;WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED。
+  created2026-10-24;retiredN/A;WINDOW_COMPLETE/STOP/LOCAL_INTEGRATED_BY_WINDOW18/NOT_DEPLOYED。
 - 37 existingclean trees distinctscope；new isolation only for two boundedunits；既有reports/research/experimental/maps沿用。
 - W16source/restorebytes保留不動；根目錄`.artifacts/window16-durable-evidence`持久副本獨立於本tree，
   仍同機同filesystem BACKUP_PENDING；`.artifacts/window17-official-documents`於根目錄保存官方文件bytes。

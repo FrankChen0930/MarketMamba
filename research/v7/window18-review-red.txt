@@ -1,0 +1,32 @@
+test_review_content_length_short_read_incomplete (V6.experimental.v7_manual_collector_test.ReviewRegressionTest.test_review_content_length_short_read_incomplete) ... FAIL
+test_review_missing_committed_raw_never_silent_retry_repair (V6.experimental.v7_manual_collector_test.ReviewRegressionTest.test_review_missing_committed_raw_never_silent_retry_repair) ... FAIL
+test_review_missing_four_dash_retained_as_missing (V6.experimental.v7_manual_collector_test.ReviewRegressionTest.test_review_missing_four_dash_retained_as_missing) ... FAIL
+
+======================================================================
+FAIL: test_review_content_length_short_read_incomplete (V6.experimental.v7_manual_collector_test.ReviewRegressionTest.test_review_content_length_short_read_incomplete)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_manual_collector_test.py", line 89, in test_review_content_length_short_read_incomplete
+    self.assertFalse(m.fetch_once(m.URLS['11549'])[3])
+AssertionError: True is not false
+
+======================================================================
+FAIL: test_review_missing_committed_raw_never_silent_retry_repair (V6.experimental.v7_manual_collector_test.ReviewRegressionTest.test_review_missing_committed_raw_never_silent_retry_repair)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_manual_collector_test.py", line 92, in test_review_missing_committed_raw_never_silent_retry_repair
+    with self.assertRaises(ValueError):self.save()
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_review_missing_four_dash_retained_as_missing (V6.experimental.v7_manual_collector_test.ReviewRegressionTest.test_review_missing_four_dash_retained_as_missing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector/V6/experimental/v7_manual_collector_test.py", line 81, in test_review_missing_four_dash_retained_as_missing
+    self.assertEqual(a['qc']['counts'].get('MISSING_OHLCV_NO_FILL'),1)
+AssertionError: None != 1
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.126s
+
+FAILED (failures=3)

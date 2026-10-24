@@ -21,10 +21,28 @@
   },
   "topics": [
     {
+      "topic": "Window18 Limited Real Manual Forward Collector Pilot",
+      "primary_authority": "knowledge/02_History/Decisions/20261024-window18-manual-collector.json",
+      "authority_class": "CANONICAL",
+      "status": "WINDOW_COMPLETE_STOP_UNMERGED_MANUAL_ONLY_NO_DATA_ADMISSION",
+      "secondary_evidence": [
+        "research/v7/window18-evidence.json",
+        "research/v7/window18-capture-results.json",
+        "research/v7/window18-review.json",
+        "reports/v7_window18_manual_pilot.md"
+      ],
+      "conflicts": [
+        "One-shot Human grant does not activate daily unattendedcollector",
+        "OriginalTPExQC_FAILED retained; newQC separatederived diagnostic",
+        "Raw/hash/rowrestore != historicalPIT/admission/independentbackup",
+        "Single review initial3Required; authorverifiedsingle repair, no second independentGO"
+      ]
+    },
+    {
       "topic": "Window17 Forward Vintage operational readiness",
       "primary_authority": "knowledge/02_History/Decisions/20261024-window17-forward-readiness.json",
       "authority_class": "CANONICAL",
-      "status": "WINDOW_COMPLETE_STOP_UNMERGED_PROPOSALS_ONLY_NO_ACTIVATION",
+      "status": "LOCAL_INTEGRATED_BY_W18_PROPOSALS_ONLY_NO_DAILY_ACTIVATION",
       "secondary_evidence": [
         "research/v7/window17-evidence.json",
         "research/v7/window17-activation-package.json",

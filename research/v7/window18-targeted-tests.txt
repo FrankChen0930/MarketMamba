@@ -1,0 +1,30 @@
+test_403_429_redirect_timeout_never_retry_or_fallback (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_403_429_redirect_timeout_never_retry_or_fallback) ... ok
+test_atomic_record_failure_then_offline_recovery (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_atomic_record_failure_then_offline_recovery) ... ok
+test_backfill_not_forward_and_calendar_wall_day_not_stale (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_backfill_not_forward_and_calendar_wall_day_not_stale) ... ok
+test_bad_qc_raw_saved_not_research_ready (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_bad_qc_raw_saved_not_research_ready) ... ok
+test_both_source_schemas_and_no_research_promotion (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_both_source_schemas_and_no_research_promotion) ... ok
+test_budget_claimed_before_network_and_no_second_get (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_budget_claimed_before_network_and_no_second_get) ... ok
+test_idempotent_bytes_not_overwritten_and_revision_preserved (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_idempotent_bytes_not_overwritten_and_revision_preserved) ... ok
+test_independent_restore_preserves_bytes_and_row_counts (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_independent_restore_preserves_bytes_and_row_counts) ... ok
+test_missing_corrupt_hash_or_identity_not_restorable (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_missing_corrupt_hash_or_identity_not_restorable) ... ok
+test_missing_no_zero_fill_and_nonfinite_rejected (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_missing_no_zero_fill_and_nonfinite_rejected) ... ok
+test_unauthorized_source_refused_before_dispatch (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_unauthorized_source_refused_before_dispatch) ... ok
+test_wrong_encoding_truncated_response_and_storage_failure (V6.experimental.v7_manual_collector_test.ManualCollectorTest.test_wrong_encoding_truncated_response_and_storage_failure) ... ok
+test_review_absent_length_is_explicit_unknown (V6.experimental.v7_manual_collector_test.ReviewRegressionTest.test_review_absent_length_is_explicit_unknown) ... ok
+test_review_content_length_short_read_incomplete (V6.experimental.v7_manual_collector_test.ReviewRegressionTest.test_review_content_length_short_read_incomplete) ... ok
+test_review_missing_committed_raw_never_silent_retry_repair (V6.experimental.v7_manual_collector_test.ReviewRegressionTest.test_review_missing_committed_raw_never_silent_retry_repair) ... ok
+test_review_missing_four_dash_retained_as_missing (V6.experimental.v7_manual_collector_test.ReviewRegressionTest.test_review_missing_four_dash_retained_as_missing) ... ok
+test_calendar_conflict_unknown_timezone_and_pending_session (V6.experimental.v7_capture_readiness_test.ReadinessTest.test_calendar_conflict_unknown_timezone_and_pending_session) ... ok
+test_changed_calendar_pin_rejected (V6.experimental.v7_capture_readiness_test.ReadinessTest.test_changed_calendar_pin_rejected) ... ok
+test_invalid_captured_identity_does_not_report_present (V6.experimental.v7_capture_readiness_test.ReadinessTest.test_invalid_captured_identity_does_not_report_present) ... ok
+test_missing_day_and_other_market_do_not_inherit (V6.experimental.v7_capture_readiness_test.ReadinessTest.test_missing_day_and_other_market_do_not_inherit) ... ok
+test_real_storage_write_failure_never_success (V6.experimental.v7_capture_readiness_test.ReadinessTest.test_real_storage_write_failure_never_success) ... ok
+test_required_closure_window (V6.experimental.v7_capture_readiness_test.ReadinessTest.test_required_closure_window) ... ok
+test_revisions_are_asof_and_must_link (V6.experimental.v7_capture_readiness_test.ReadinessTest.test_revisions_are_asof_and_must_link) ... ok
+test_storage_and_backup_are_separate_no_success_on_failure (V6.experimental.v7_capture_readiness_test.ReadinessTest.test_storage_and_backup_are_separate_no_success_on_failure) ... ok
+test_unknown_or_outside_calendar_blocks (V6.experimental.v7_capture_readiness_test.ReadinessTest.test_unknown_or_outside_calendar_blocks) ... ok
+
+----------------------------------------------------------------------
+Ran 25 tests in 1.528s
+
+OK
