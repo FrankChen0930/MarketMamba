@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "artifact_class": "CANONICAL",
+  "evidence_class": "READONLY_DECISION_PREPARATION_NOT_ADMISSION",
+  "status": "U1_COMPLETE_REVIEWED_U2_IN_PROGRESS",
+  "branch": "research/v7-window13-admission-preparation",
+  "base": "8db5b9111b98d4965a9f56f10a51c5157284b900",
+  "main_modified": false,
+  "source_checkpoint": "containing U1 commit",
+  "U1": {
+    "status": "COMPLETE_REVIEWED",
+    "decision": "knowledge/02_History/Decisions/20261024-window13-thermal-admission-preparation.json",
+    "reviewer": "/root/independent_review",
+    "critical": 0,
+    "required": 0,
+    "review_rework_rounds": 0,
+    "protected_files_independently_verified": 88
+  },
+  "U2": {
+    "status": "IN_PROGRESS",
+    "admitted": false,
+    "review_rework_rounds": 0
+  },
+  "validation": {
+    "main_components": {
+      "tests": 140,
+      "seconds": 12.178,
+      "log": "research/v7/window13-cpu-tests.txt",
+      "scope": "W07 fold/isolation,W08 evaluator/comparison,W09 publication/replay,sourceSnapshot,governance; synthetic only"
+    },
+    "W06": {
+      "commit": "96c6056487af35673dc6ec519c81901bf23dcbc2",
+      "tests": 13,
+      "seconds": 0.105,
+      "log": "research/v7/window13-w06-tests.txt",
+      "scope": "prototype tests run readonly in original unmerged tree, not adoption"
+    },
+    "real_samples": "research/v7/window13-verification.json",
+    "new_tests_written": 0,
+    "new_implementation": false
+  },
+  "network_requests": 0,
+  "gpu_calls": 0,
+  "real_rankic": false,
+  "model_fitting": false,
+  "gates": {
+    "strict_phase0": "STOP",
+    "e1_frozen_matrix": "BLOCKED",
+    "h2": "NOT_APPROVED",
+    "fair_evaluation": "PROPOSED",
+    "pre_next_open": "PROPOSED",
+    "gpu_validation": "SAFETY_HALTED",
+    "inference_recovery": "DEFERRED"
+  }
+}

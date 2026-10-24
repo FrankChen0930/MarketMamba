@@ -1,5 +1,16 @@
 # Worktree Register
 
+## Window13 thermal/admission preparation — 2026-10-24
+
+- Path `.worktrees/v7-window13-admission-preparation`;branch `research/v7-window13-admission-preparation`;
+  base `8db5b9111b98d4965a9f56f10a51c5157284b900`;owner Codex/HumanWindow13;
+  created2026-10-24;retiredN/A. ACTIVE/UNMERGED/NOT_DEPLOYED.
+- Prior33trees clean/distinct scopes; no W13 same-purpose tree. Existing Decisions/
+  reports/research/maps suffice; new isolation avoids changing main/pendingcandidates.
+  W12/W06/protocol/recovery read at fixedSHA only, no adoption. Preserve W12 rawHALTED
+  budget/diagnostics and W11 83CPUbytes files; no cleanup. Safe removal only after
+  clean retainedcommits/bytesrefs resolved and separate retirement review.
+
 ## Window11 L2/CPU resume — 2026-10-23
 
 - Path `.worktrees/v7-window11-l2-cpu-resume`;branch `development/v7-window11-l2-cpu-resume`;

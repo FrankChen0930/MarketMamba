@@ -21,10 +21,24 @@
   },
   "topics": [
     {
+      "topic": "Window13 thermal direction and data/evaluation admission preparation",
+      "primary_authority": "knowledge/02_History/Decisions/20261024-window13-thermal-admission-preparation.json",
+      "authority_class": "CANONICAL",
+      "status": "HUMAN_CONFIRMED_DESIGN_DIRECTION_GPU_RETEST_DEFERRED_NO_NEW_RESEARCH_ADMISSION",
+      "secondary_evidence": [
+        "research/v7/window13-verification.json",
+        "research/v7/research-program.md"
+      ],
+      "conflicts": [
+        "W12 remains UNMERGED_REFERENCE_ONLY and GPU_SAFETY_HALTED; future87C gate never changes old80C ledger",
+        "W06/Protocol references remain PROPOSED or DESIGN_SYNTHESIS; no frozen policy adoption"
+      ]
+    },
+    {
       "topic": "Window11 bounded L2 and CPU resume verification",
       "primary_authority": "research/v7/window11-evidence.json",
       "authority_class": "CANONICAL",
-      "status": "WINDOW_COMPLETE_STOP_UNMERGED_NOT_DEPLOYED_SYNTHETIC_CPU_PROOF_ONLY",
+      "status": "LOCAL_INTEGRATED_NOT_DEPLOYED_SYNTHETIC_CPU_PROOF_ONLY",
       "secondary_evidence": [
         "research/v7/window11-l2-evidence.json",
         "environments/v7-window11-cpu/wheel-provenance.json",

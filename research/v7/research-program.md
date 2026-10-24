@@ -1,9 +1,24 @@
 # V7 Research Program and Current Development Backlog
 
-> Current planning owner: isolated Window11 engineering branch, linked by canonical
+> Current planning owner: isolated Window13 decision-preparation branch, linked by canonical
 > Current State/Authority Map. Planning status does not grant research, execution,
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
+
+## Window13 Thermal and Admission Preparation
+
+UNMERGED/NOT_DEPLOYED; main8db unchanged, named W06/W12/Protocol/recovery references
+only, not adopted. No GPU/training/new admission. Two units maximum.
+
+| Unit | Authority/objective | Status / dependencies |
+|---|---|---|
+| W13-U1 | HumanWindow13 preserve thermal direction | COMPLETE_PENDING_REVIEW:87C reference/futurestop,83C warningPROPOSED; GPU_RETEST_DEFERRED; oldHALTEDbudget retained |
+| W13-U2 | HumanWindow13 minimal data/decision-time/evaluation brief | IN_PROGRESS; reuseW05/W06/Protocol andW07–11 evidence, bounded two176096-byte archives only; no eligible real48panel identified |
+
+[Decision](../../knowledge/02_History/Decisions/20261024-window13-thermal-admission-preparation.json),
+[evidence](window13-verification.json). Research options remainPROPOSED; no new READY
+study/training grant. StrictSTOP/E1BLOCKED/H2NOT_APPROVED/FairEvalPROPOSED/
+PreNextOpenPROPOSED/GPU_SAFETY_HALTED/RecoveryDEFERRED unchanged.
 
 ## Window11 L2 and CPU Resume
 

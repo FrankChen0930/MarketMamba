@@ -2,6 +2,25 @@
 
 > Status: `CANONICAL_CURRENT_PROJECT_MAP`
 
+## Window13 Thermal / Admission Preparation — isolated active checkpoint
+
+Main verified8db5b9111b98d4965a9f56f10a51c5157284b900 (W11 LOCAL_INTEGRATED,
+NOT_DEPLOYED); prior W11 UNMERGED entries below historical for integration only.
+W12 fixed16e444f/W06 fixed96c6056/ProtocolAudit8601c73/Recoverye181f36 remain
+UNMERGED_REFERENCE_ONLY; no candidate merged or policy adopted by reference.
+W13 research/v7-window13-admission-preparation,base8db,.worktrees/v7-window13-admission-preparation,
+UNMERGED/NOT_DEPLOYED. Two bounded CPU/read-only decision-preparation units only.
+U1 HUMAN_CONFIRMED_DESIGN_DIRECTION / GPU_RETEST_DEFERRED: Local-first RTX3060
+candidate; WindowsHost target87C reference/futurecontrolledstop87C; initialwarning83C
+PROPOSED. Not NVIDIA long-training certification. OldW12 80C gate/32.106942s/HALTED
+budget unchanged; no GPUkernel/F-B/resume/AMP/fullmodelfeasibility proven.
+U2 preparation IN_PROGRESS; no new data/evaluation admission or historicalstudy.
+[Decision](../02_History/Decisions/20261024-window13-thermal-admission-preparation.json),
+[bounded evidence](../../research/v7/window13-verification.json),
+[sole queue](../../research/v7/research-program.md#window13-thermal-and-admission-preparation).
+StrictSTOP/E1matrixBLOCKED/H2NOT_APPROVED/FairEvalPROPOSED/PreNextOpenPROPOSED/
+GPU_SAFETY_HALTED/RecoveryDEFERRED. Resume this named tree/evidence, not GPU retest.
+
 ## Window11 L2 & CPU Resume — complete / STOP
 
 Window10 fixed `f25181637e40138c84dc3722292647d4325882fc` LOCAL_INTEGRATED/NOT_DEPLOYED
