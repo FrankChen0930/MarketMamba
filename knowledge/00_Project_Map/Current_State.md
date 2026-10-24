@@ -2,6 +2,31 @@
 
 > Status: `CANONICAL_CURRENT_PROJECT_MAP`
 
+## Window14 Evidence-first Data Pilot — complete / STOP
+
+W13fixedc78098f3fdddb74e461bc54d700bde5baac0fcc1 LOCAL_INTEGRATED/NOT_DEPLOYED,
+ff-only from8db5b911;pre/post140CPUtestsPASS,independentGO0Critical/Required;
+12artifact/24source/88protectedhashes verified,34trees preflightclean. Mainheldc78098f;
+W06/W12/othercandidates notmerged. OlderW13 UNMERGED text historical for integration only.
+W14 research/v7-window14-data-admission,basec78098f,.worktrees/v7-window14-data-admission,
+WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED;2boundedunits,each1reviewrepair.
+U1COMPLETE_REVIEWED:2dailyofficialrequests TWSE20220901/TPEx20220902,337221bytes,
+4selectedstocks,currentstructuralQC. Both proposedRETROSPECTIVE_ONLY;0asof/0proxy
+qualified. Historicalpublication/revision/calendar/universe/labels and rights remain
+unresolved. Contentclass != usagepermission != researchadmission;no moredatarequests.
+U2COMPLETE_REVIEWED:PROPOSED forwardcontract+readonlyprototype reusesSnapshot/W07/W09;
+10synthetictests,150jointCPUtestsPASS;both0Critical/Required. No collector/scheduler/
+newplatform. PROTOTYPE_TIMELY neverauthenticates callerclock/pins oradmitshistoricaldata.
+[Brief](../../reports/v7_window14_decision_brief.md),
+[evidence](../../research/v7/window14-evidence.json),
+[sole queue](../../research/v7/research-program.md#window14-evidence-first-admission-pilot).
+NextHuman:permitdata route/rights, qualify asof/vintage or distinctlag-proxy/forward
+proposal, then calendar/universe/labels/restore+research/eval/CPUcompute. No trueCPUstudy
+ready or remainingauthorizedexecution. Raw4snapshotfiles retained locally;hash-only
+restore impossible. ProtectedW11 83bytesfiles/W12 5diagnostics and4Frozenhashes unchanged.
+StrictSTOP/E1matrixBLOCKED/H2NOT_APPROVED/FairEvalPROPOSED/PreNextOpenPROPOSED/
+GPU_SAFETY_HALTED/RecoveryDEFERRED. FinalHEAD containingclosurecommit;no newwindow.
+
 ## Window13 Thermal / Admission Preparation — complete / STOP
 
 Branch research/v7-window13-admission-preparation,base/main8db5b9111b98d4965a9f56f10a51c5157284b900,

@@ -1,0 +1,36 @@
+{
+  "schema": "window14-official-document-evidence-v1",
+  "observed_at": "2026-10-24T08:32:14.418670+00:00",
+  "bounded_web_operations": {
+    "search_queries": 2,
+    "page_open_attempts": 4,
+    "page_open_success": 3,
+    "page_open_403": 1
+  },
+  "no_more_data_requests": true,
+  "sources": [
+    {
+      "url": "https://www.twse.com.tw/zh/terms/use.html",
+      "status": "READ_OFFICIAL_PAGE",
+      "finding": "Terms sections6/8 restrict unconsented automated downloading and reuse; government-open-data exception exists but the two pilot endpoints are not established here as licensed under it. Public access alone is no blanket permission.",
+      "qualification": "No new collection/research/redistribution permission inferred; confirm authorized route/consent before ongoing collection"
+    },
+    {
+      "url": "https://eshop.twse.com.tw/zh/product/detail/cfec9a1470e448ec91bfde006db361e8",
+      "status": "READ_OFFICIAL_PAGE",
+      "finding": "Daily closing products describe14:00/15:30/17:30 generations with different session/volume inclusions and internal/external use categories.",
+      "qualification": "Documentation for paid files, not a historical MI_INDEX publication timestamp or original-vintage archive guarantee; no purchase or price recommendation"
+    },
+    {
+      "url": "https://www.tpex.org.tw/zh-tw/service/data/product/post.html",
+      "status": "403_FORBIDDEN",
+      "finding": "Search excerpt only; full product page not obtained; not bypassed/retried"
+    },
+    {
+      "url": "https://eshop.tpex.org.tw/zh/useTerms/index",
+      "status": "READ_OFFICIAL_PAGE",
+      "finding": "Shop terms sections6/8 restrict unconsented automated downloading and reuse.",
+      "qualification": "Shop-specific text is not proof of rights or exact terms applicable to the public otc endpoint; endpoint research/storage/redistribution rights UNKNOWN until confirmed"
+    }
+  ]
+}

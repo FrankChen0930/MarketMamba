@@ -1,0 +1,301 @@
+{
+  "schema_version": 1,
+  "status": "WINDOW_COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+  "artifact_class": "CANONICAL",
+  "evidence_class": "BOUNDED_DATA_DIAGNOSTICS_AND_SYNTHETIC_CONTRACT_NOT_ADMISSION",
+  "branch": "research/v7-window14-data-admission",
+  "base": "c78098f3fdddb74e461bc54d700bde5baac0fcc1",
+  "integration": {
+    "before": "8db5b9111b98d4965a9f56f10a51c5157284b900",
+    "fixed_candidate": "c78098f3fdddb74e461bc54d700bde5baac0fcc1",
+    "after": "c78098f3fdddb74e461bc54d700bde5baac0fcc1",
+    "method": "ff-only",
+    "pre140_tests_seconds": 11.568,
+    "post140_tests_seconds": 12.007,
+    "independent_critical": 0,
+    "independent_required": 0,
+    "scope_changed_files": 13,
+    "candidate_artifact_hashes_verified": 12,
+    "source_identities_verified": 24,
+    "protected_files_verified": 88,
+    "preflight_clean_worktrees": 34,
+    "other_candidate_merges": false
+  },
+  "U1": {
+    "objective": "HumanWindow14 bounded official historical data pilot/classification/decision package",
+    "status": "COMPLETE_REVIEWED_EVIDENCE_ONLY",
+    "evidence": "research/v7/window14-historical-panel.json",
+    "classes": "research/v7/window14-evidence-classes.json",
+    "docs": "research/v7/window14-official-documents.json",
+    "brief": "reports/v7_window14_decision_brief.md",
+    "requests": 2,
+    "market_dates": 2,
+    "selected_stock_rows": 4,
+    "raw_bytes": 337221,
+    "verified_historical_asof_panels": 0,
+    "conditional_proxy_qualified_records": 0,
+    "retrospective_records": 2,
+    "rights_gate": "UNKNOWN_REQUIRES_CONFIRMATION_NO_MORE_DATA_REQUESTS",
+    "research_admitted": false,
+    "rework_rounds": 1,
+    "repair": "Separate content evidence classification from independent rights/use gate",
+    "reviewer": "/root/independent_review",
+    "critical": 0,
+    "required": 0,
+    "independent_raw_bytes_verified": 337221
+  },
+  "U2": {
+    "objective": "HumanWindow14 minimal Forward Vintage proposal/read-only synthetic checks",
+    "status": "COMPLETE_REVIEWED_PROPOSED_READONLY_PROTOTYPE",
+    "contract": "research/v7/window14-forward-contract.json",
+    "new_modules": [
+      "V6/experimental/v7_forward_vintage.py",
+      "V6/experimental/v7_forward_vintage_test.py"
+    ],
+    "reuse": [
+      "v1 snapshots/verifier",
+      "W07 aware clocks",
+      "canonical hashing",
+      "W09 strict JSON/artifact patterns"
+    ],
+    "focused_tests": 10,
+    "red": "research/v7/window14-forward-red.txt",
+    "green": "research/v7/window14-forward-green.txt",
+    "collector_enabled": false,
+    "admitted": false,
+    "rework_rounds": 1,
+    "repair": "Malformed manifest/response containers explicit REJECTED, RED4AttributeErrors then10testsGREEN",
+    "reviewer": "/root/independent_review",
+    "critical": 0,
+    "required": 0,
+    "independent_tests": 10,
+    "independent_seconds": 0.407,
+    "repair_red": "research/v7/window14-forward-rework1-red.txt",
+    "repair_green": "research/v7/window14-forward-rework1-green.txt",
+    "initial_focused_tests": 9
+  },
+  "gates": {
+    "strict_phase0": "STOP",
+    "e1_frozen_matrix": "BLOCKED",
+    "h2": "NOT_APPROVED",
+    "fair_evaluation": "PROPOSED",
+    "pre_next_open": "PROPOSED",
+    "gpu": "SAFETY_HALTED",
+    "inference_recovery_implementation": "DEFERRED"
+  },
+  "scope": {
+    "units": 2,
+    "real_rankic": false,
+    "training": false,
+    "gpu_calls": 0,
+    "new_scheduler": false,
+    "formal_data_mutation": false,
+    "paid_services": false,
+    "new_platform_registry": false,
+    "full_feature_audit": false
+  },
+  "runtime": {
+    "python": "3.12.3",
+    "cpu_environment": "W11 isolated CPU overlay/unchanged CPUbase",
+    "gpu_environment_used": false,
+    "MARKETMAMBA_DATA_ROOT": "UNSET",
+    "operational_processed_realpath": "/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6",
+    "operational_payload_read": false
+  },
+  "protected_before_source": "research/v7/window13-verification.json protected_before (88files), byte verified at StageA",
+  "sources": [
+    {
+      "commit": "c78098f3fdddb74e461bc54d700bde5baac0fcc1",
+      "path": "V6/marketmamba/data/fetcher.py",
+      "sha256": "3c31d48e8e22aca0ed5e88b48136765caa1c359c5276d21b6d470d5a260095d2"
+    },
+    {
+      "commit": "c78098f3fdddb74e461bc54d700bde5baac0fcc1",
+      "path": "V6/experimental/v7_source_snapshot.py",
+      "sha256": "b8c114a86ba7a5fede2459e3afe6121fa2737d54fb5f5dcb44ad9474e1e66462"
+    },
+    {
+      "commit": "c78098f3fdddb74e461bc54d700bde5baac0fcc1",
+      "path": "V6/experimental/v7_research_temporal.py",
+      "sha256": "1e2a776099b063470dda673d1c717678d13aba35d7194f582d2e30c437fba119"
+    },
+    {
+      "commit": "c78098f3fdddb74e461bc54d700bde5baac0fcc1",
+      "path": "V6/experimental/v7_research_artifacts.py",
+      "sha256": "b0cc21a36f88dedf5dd4120475149feca17145f6d52e10269a7b4e0b7e329f99"
+    },
+    {
+      "commit": "c78098f3fdddb74e461bc54d700bde5baac0fcc1",
+      "path": "research/v7/window05-feature-integrity.json",
+      "sha256": "b535adfe4070497cd771dd4baaec0ef5b992e291d4bc3b2e8c2c20991fc468f4"
+    },
+    {
+      "commit": "c78098f3fdddb74e461bc54d700bde5baac0fcc1",
+      "path": "knowledge/02_History/Decisions/20261024-window13-thermal-admission-preparation.json",
+      "sha256": "8301d7ecca5280801a327f76bfea3fa744da2369fa92b3638cb7d3e533b0c5d3"
+    }
+  ],
+  "remaining_human_decisions": [
+    "Allowed API/open-data/contract and research/storage/redistribution rights",
+    "Original-vintage proof or separate lag/revision proxy contract and smaller feature/recipe identity if selected",
+    "Qualified calendar/universe/adjustments/labels/maturity/support and restore bytes",
+    "Freeze/missing/dates/purge/selection-refit/statistics/final/CPU compute",
+    "Forward execution/storage/intent-clock authenticity approval; not enabled"
+  ],
+  "final_regression": {
+    "tests": 150,
+    "seconds": 19.246,
+    "status": "PASS",
+    "log": "research/v7/window14-final-regression.txt",
+    "scope": "Synthetic/newprototype+W07/W08/W09/Snapshot/governance, no fits/realRankIC/GPU"
+  },
+  "preservation": {
+    "checked_at": "2026-10-24T08:44:51.373976+00:00",
+    "main_held": "c78098f3fdddb74e461bc54d700bde5baac0fcc1",
+    "w11_files_and_w12_diagnostics_verified_unchanged": 88,
+    "frozen_contract_hashes_unchanged": 4,
+    "w12_budget_halted_unchanged": true,
+    "other_pending_ancestries_not_in_main": {
+      "96c6056487af35673dc6ec519c81901bf23dcbc2": true,
+      "16e444f9840b53542fcae62c00fcc9ed8ad80e3a": true
+    }
+  },
+  "retained_raw_snapshot_bytes": {
+    ".artifacts/window14-historical-pilot/raw/d4688d96c3d3cad27d8533f8c99ab71ce235f5f4ddd5fe3c8e414df12de20566.json": {
+      "sha256": "d4688d96c3d3cad27d8533f8c99ab71ce235f5f4ddd5fe3c8e414df12de20566",
+      "bytes": 208587
+    },
+    ".artifacts/window14-historical-pilot/raw/0b90b27c726206976819e3b3fc2fe554f14bc7b270b20636660185c3e6278c47.json": {
+      "sha256": "0b90b27c726206976819e3b3fc2fe554f14bc7b270b20636660185c3e6278c47",
+      "bytes": 128634
+    },
+    ".artifacts/window14-historical-pilot/manifests/2e5d7dabda9595860321e3a7faa782601eea3a3a6940929873add5a466cb4ed4-2026-10-24T082919.596313p0000.json": {
+      "sha256": "1f446eca6c1ccae9177b751424f55435a0696a3a7523798010e22366fb23e9a9",
+      "bytes": 939
+    },
+    ".artifacts/window14-historical-pilot/manifests/08be4e5d932bf2b497261d079d835cf882fa49a8cf556e9046e9b31bd7040000-2026-10-24T082919.790040p0000.json": {
+      "sha256": "e52496baaafc8c35101b7aa325084231927bb0accf741b4235c4c57277e4a8ed",
+      "bytes": 931
+    }
+  },
+  "retained_bytes_restore_status": "PRESENT_VERIFIED_NOW; not restorable from Git hashes alone; preserve worktree, no permanent store/retention chosen",
+  "usage_snapshot": {
+    "tool_reported_tokens_used": 130948,
+    "tool_reported_elapsed_seconds": 1052,
+    "certified_cost": false,
+    "hard_aggregate_token_budget": false,
+    "note": "Goal counters only; fixed bounded2units then STOP, not indefinite authorization"
+  },
+  "closure_review": {
+    "reviewer": "/root/independent_review",
+    "status": "GO_TO_LOCAL_COMMIT_AND_STOP",
+    "critical": 0,
+    "required": 0,
+    "scope": "Final claims/navigation only; no extra GPU/network/research"
+  },
+  "knowledge_update": "CurrentState/AuthorityMap markdown+JSON/soleBacklog/DecisionRecord/WorktreeRegister updated. No global governance/frozen policy change.",
+  "final_checkpoint": "containing local closure commit",
+  "knowledge_health": {
+    "overall": "WARNING",
+    "structural_failures": 0,
+    "retained_warning_components": [
+      "Governance",
+      "Authority Drift",
+      "Legacy Docs"
+    ]
+  },
+  "artifact_hashes": {
+    "V6/experimental/v7_forward_vintage.py": {
+      "sha256": "ea3bec9bbd302fa714449ddee3538e45b18b4bace4f8f54fa3d9876ab56c71fe",
+      "bytes": 5568
+    },
+    "V6/experimental/v7_forward_vintage_test.py": {
+      "sha256": "b4d88f19a8e997f0d4d1f9de2f9f5b11a4d425ae6e52eff6839aec16b8225254",
+      "bytes": 5394
+    },
+    "knowledge/00_Project_Map/Authority_Map.md": {
+      "sha256": "da99aeb49a5ab319fbb8f5a9c1d9262b4325333836a7c8212c64f1e494950f5e",
+      "bytes": 57857
+    },
+    "knowledge/00_Project_Map/Current_State.md": {
+      "sha256": "2262581f9fd8af74cd7bec40bed24afa00a77ccab083a20021def984269e117b",
+      "bytes": 71915
+    },
+    "knowledge/00_Project_Map/Worktree_Register.md": {
+      "sha256": "e5c1ca316ed427db290eb8ba461fd422b3e64d6a2b2d4ca7c27ca8c196478738",
+      "bytes": 35567
+    },
+    "knowledge/00_Project_Map/authority-map.json": {
+      "sha256": "ed2e04ef3c7410fa76ba4892a4bb03f749734654d5b49286d68b82d9edc50923",
+      "bytes": 29236
+    },
+    "knowledge/02_History/Decisions/20261024-window14-data-admission-pilot.json": {
+      "sha256": "0790ac8a28e2c6127be7966fc10d27a90c460e3f1ad4accee8ced6542cbb2288",
+      "bytes": 1449
+    },
+    "reports/v7_window14_decision_brief.md": {
+      "sha256": "93baa8e138a306efa08f6b756aced5c2feec38c43629c826390ad2bed6ad1e24",
+      "bytes": 9433
+    },
+    "research/v7/research-program.md": {
+      "sha256": "b6d268ef113f37af63ae201bbb33d607cbca8b45c82fea6790f1fef8c12495ae",
+      "bytes": 78350
+    },
+    "research/v7/window14-evidence-classes.json": {
+      "sha256": "333db5656ad78d17d202db1464aadd5c0cec3f1f4cef18500e52c69861b052a0",
+      "bytes": 3266
+    },
+    "research/v7/window14-final-regression.txt": {
+      "sha256": "112a86aa05fd3428dbffb98ab4cd75c5431969738d706159e0a3dc794f235cdc",
+      "bytes": 100
+    },
+    "research/v7/window14-forward-contract.json": {
+      "sha256": "10895a6b002f9b6e9d8a9204f48885617695f9b30a4e285eb21c0c11b789083e",
+      "bytes": 4261
+    },
+    "research/v7/window14-forward-final-focused.txt": {
+      "sha256": "3eacb5e87eadaa095816f98dfdb489acf9c8374e6c9dab28fe96d2cbf17b1707",
+      "bytes": 97
+    },
+    "research/v7/window14-forward-green.txt": {
+      "sha256": "5e85180b2c6782ce103d4bfc84e13866fe95b756e60bcadc488b3cf02310d462",
+      "bytes": 97
+    },
+    "research/v7/window14-forward-red.txt": {
+      "sha256": "f0aac5584d88b980038573df7167e630587ecdd20b8c4068e00857b3fcb83411",
+      "bytes": 880
+    },
+    "research/v7/window14-forward-rework1-green.txt": {
+      "sha256": "97dc5a2e74990f4460c3517a05367be5612b1b1e6501f85469246e4b22a2acd9",
+      "bytes": 98
+    },
+    "research/v7/window14-forward-rework1-red.txt": {
+      "sha256": "ce25c1f5c07d4fc7bafe3be0bbda6a7196f866609d130b1b8b545244213dede1",
+      "bytes": 6171
+    },
+    "research/v7/window14-historical-panel.json": {
+      "sha256": "af78f68f656c599dc2ead65e45ffe892386c7285361d97ca5a1de57d50d3044a",
+      "bytes": 11448
+    },
+    "research/v7/window14-official-documents.json": {
+      "sha256": "72f4c75a0d63b7b4d43e319e3a917b0bea2cc202d40998a2128aee34323e5408",
+      "bytes": 1908
+    },
+    "research/v7/window14-post-integration-tests.txt": {
+      "sha256": "9fc1fcc029e3f4f306b2029c4a2b5b4a753be7b9ed8f10ad39bb4ba499535563",
+      "bytes": 100
+    },
+    "research/v7/window14-pre-integration-tests.txt": {
+      "sha256": "21d115b1703ee6264496a019b58dad3a94df33c94d81305e56ae68eaf2fdd4b0",
+      "bytes": 100
+    },
+    "research/v7/window14-knowledge-impact.txt": {
+      "sha256": "b4cacecbb720a7e1f69a45aa3e613da46a3e614625503e673e610f6d0a05cf45",
+      "bytes": 3928
+    },
+    "research/v7/window14-knowledge-health.txt": {
+      "sha256": "bf93f67ea1dfe58182f4c71dd1f609a034debb6e81c2599949e554cb6c78863c",
+      "bytes": 237
+    }
+  }
+}

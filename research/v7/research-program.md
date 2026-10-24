@@ -1,9 +1,34 @@
 # V7 Research Program and Current Development Backlog
 
-> Current planning owner: isolated Window13 decision-preparation branch, linked by canonical
+> Current planning owner: isolated Window14 evidence-pilot branch, linked by canonical
 > Current State/Authority Map. Planning status does not grant research, execution,
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
+
+## Window14 Evidence-first Admission Pilot
+
+WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED,branch research/v7-window14-data-admission,
+base/mainc78098f. W13ff integrated; W06/W12/other candidates remainunmerged.
+
+| Unit | HumanWindow14 objective | Status / evidence |
+|---|---|---|
+| W14-U1 | Bounded official daily-data pilot/classification/brief | COMPLETE_REVIEWED;2responses337221bytes/4stocks/2dates;RETROSPECTIVE_ONLY candidate,0asof/0proxy;rights separateUNKNOWNgate;1docrepair,0Critical/Required |
+| W14-U2 | ForwardVintage proposal/synthetic readonly checks | COMPLETE_REVIEWED;Snapshot/W07/W09reuse;10synthetictests/150jointPASS;1containerrepair,0Critical/Required;no collector/admission |
+
+[Decision Brief](../../reports/v7_window14_decision_brief.md),[evidence](window14-evidence.json),
+[classes](window14-evidence-classes.json),[forward proposal](window14-forward-contract.json).
+No READY execution remains in grant. Minimum nextHuman decisions:
+1. Confirm permittedsource/API/open-data/contract and research/storage/redistribution use.
+2. Qualify pinnedbytes/calendar/universe/labels/restore and historicalvintage evidence;
+   or separatelyapprove distinct conservative-lag/revision proxy/newfeatureidentity;
+   missingoldvintages may need licensedarchive evidence or futureforward accumulation.
+3. Freeze actualtiming/missing/dates/maturity/purge/eval/selection-refit/statistics/final/
+   CPUcompute before anyrealbaselinefit. Fourrows cannot supply rollingfeatures/labels.
+
+Prototype/callerpins/nowdownloads/QC cannot clearhistoricalPIT orrights. No further
+collection, realRankIC, fit, GPUretst or newwindow. Raw4files localretained, notGit.
+StrictSTOP/E1BLOCKED/H2NOT_APPROVED/FairEvalPROPOSED/PreNextOpenPROPOSED/
+GPU_SAFETY_HALTED/RecoveryDEFERRED. W11bytes/W12HALTED retained unchanged.
 
 ## Window13 Thermal and Admission Preparation
 

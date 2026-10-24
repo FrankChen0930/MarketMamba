@@ -1,0 +1,329 @@
+{
+  "schema": "window14-bounded-historical-pilot-v1",
+  "status": "EVIDENCE_ONLY_NOT_ADMITTED",
+  "source_data_requests": 2,
+  "request_retry_count": 0,
+  "max_response_bytes": 2097152,
+  "requested_market_dates": 2,
+  "records": [
+    {
+      "market": "TWSE",
+      "requested_session": "2022-09-01",
+      "selected_stock_ids": [
+        "2330",
+        "2317"
+      ],
+      "url": "https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX",
+      "params": {
+        "response": "json",
+        "date": "20220901",
+        "type": "ALLBUT0999"
+      },
+      "sent_at": "2026-10-24T08:29:19.292148+00:00",
+      "mode": "RETROSPECTIVE_FETCH_NOW_NOT_HISTORICAL_VINTAGE",
+      "publication_at": null,
+      "earliest_historical_availability_at": null,
+      "revision_history": "UNKNOWN",
+      "historical_qc_at": null,
+      "historical_calendar_universe": "UNKNOWN",
+      "label_maturity_provenance": "NOT_SUPPLIED",
+      "research_admitted": false,
+      "manifest": "/home/frank/projects/MarketMamba/.worktrees/v7-window14-data-admission/.artifacts/window14-historical-pilot/manifests/2e5d7dabda9595860321e3a7faa782601eea3a3a6940929873add5a466cb4ed4-2026-10-24T082919.596313p0000.json",
+      "manifest_sha256": "1f446eca6c1ccae9177b751424f55435a0696a3a7523798010e22366fb23e9a9",
+      "raw_bytes": 208587,
+      "raw_sha256": "d4688d96c3d3cad27d8533f8c99ab71ce235f5f4ddd5fe3c8e414df12de20566",
+      "retrieved_at": "2026-10-24T08:29:19.596313+00:00",
+      "http_status": 200,
+      "response_headers": {
+        "Date": "Sat, 24 Oct 2026 08:29:19 GMT",
+        "Last-Modified": null,
+        "ETag": null,
+        "Content-Type": "application/json;charset=UTF-8"
+      },
+      "snapshot_integrity": "VERIFIED_NOW_ONLY",
+      "response_date": "20220901",
+      "response_status": "OK",
+      "top_level_keys": [
+        "tables",
+        "type",
+        "params",
+        "stat",
+        "date"
+      ],
+      "tables": [
+        {
+          "title": "111年09月01日 每日收盤行情(全部(不含權證、牛熊證、可展延牛熊證))",
+          "fields": [
+            "證券代號",
+            "證券名稱",
+            "成交股數",
+            "成交筆數",
+            "成交金額",
+            "開盤價",
+            "最高價",
+            "最低價",
+            "收盤價",
+            "漲跌(+/-)",
+            "漲跌價差",
+            "最後揭示買價",
+            "最後揭示買量",
+            "最後揭示賣價",
+            "最後揭示賣量",
+            "本益比"
+          ],
+          "total_rows": 1173,
+          "selected_rows": [
+            [
+              "2317",
+              "鴻海",
+              "37,780,861",
+              "18,455",
+              "4,063,042,055",
+              "108.00",
+              "108.50",
+              "107.00",
+              "107.50",
+              "<p style= color:green>-</p>",
+              "1.50",
+              "107.50",
+              "498",
+              "108.00",
+              "2,026",
+              "10.34"
+            ],
+            [
+              "2330",
+              "台積電",
+              "42,008,490",
+              "93,631",
+              "20,696,930,527",
+              "495.00",
+              "495.50",
+              "490.00",
+              "490.50",
+              "<p style= color:green>-</p>",
+              "14.50",
+              "490.50",
+              "242",
+              "491.00",
+              "17",
+              "16.68"
+            ]
+          ]
+        }
+      ],
+      "response_identity_matches": true,
+      "selected_qc": [
+        {
+          "stock_id": "2317",
+          "values": {
+            "open": 108.0,
+            "high": 108.5,
+            "low": 107.0,
+            "close": 107.5,
+            "volume": 37780861.0
+          },
+          "local_structural_qc": "PASS",
+          "qc_at": "2026-10-24T08:32:14.417604+00:00",
+          "historical_qc": "UNKNOWN",
+          "historical_security_lifecycle": "UNKNOWN",
+          "adjustment_and_volume_segment_semantics": "UNKNOWN_REQUIRES_QUALIFICATION"
+        },
+        {
+          "stock_id": "2330",
+          "values": {
+            "open": 495.0,
+            "high": 495.5,
+            "low": 490.0,
+            "close": 490.5,
+            "volume": 42008490.0
+          },
+          "local_structural_qc": "PASS",
+          "qc_at": "2026-10-24T08:32:14.417664+00:00",
+          "historical_qc": "UNKNOWN",
+          "historical_security_lifecycle": "UNKNOWN",
+          "adjustment_and_volume_segment_semantics": "UNKNOWN_REQUIRES_QUALIFICATION"
+        }
+      ],
+      "evidence_class_candidate": "RETROSPECTIVE_ONLY",
+      "classification_status": "PROPOSED_CLASSIFICATION_NOT_ADMISSION",
+      "research_use_gate": "NOT_ADMITTED_RIGHTS_AND_DATA_QUALIFICATION_REQUIRED",
+      "documented_publication_evidence": "UNKNOWN for this endpoint/exact historical response; current EShop product schedules are separate products, not proof",
+      "vintage_id": "d4688d96c3d3cad27d8533f8c99ab71ce235f5f4ddd5fe3c8e414df12de20566",
+      "response_segment": "Daily listed/OTC quote endpoint; exact field/session/volume segment exclusions not certified by title alone"
+    },
+    {
+      "market": "TPEX",
+      "requested_session": "2022-09-02",
+      "selected_stock_ids": [
+        "6488",
+        "8069"
+      ],
+      "url": "https://www.tpex.org.tw/www/zh-tw/afterTrading/otc",
+      "params": {
+        "date": "2022/09/02",
+        "type": "EW",
+        "response": "json"
+      },
+      "sent_at": "2026-10-24T08:29:19.639815+00:00",
+      "mode": "RETROSPECTIVE_FETCH_NOW_NOT_HISTORICAL_VINTAGE",
+      "publication_at": null,
+      "earliest_historical_availability_at": null,
+      "revision_history": "UNKNOWN",
+      "historical_qc_at": null,
+      "historical_calendar_universe": "UNKNOWN",
+      "label_maturity_provenance": "NOT_SUPPLIED",
+      "research_admitted": false,
+      "manifest": "/home/frank/projects/MarketMamba/.worktrees/v7-window14-data-admission/.artifacts/window14-historical-pilot/manifests/08be4e5d932bf2b497261d079d835cf882fa49a8cf556e9046e9b31bd7040000-2026-10-24T082919.790040p0000.json",
+      "manifest_sha256": "e52496baaafc8c35101b7aa325084231927bb0accf741b4235c4c57277e4a8ed",
+      "raw_bytes": 128634,
+      "raw_sha256": "0b90b27c726206976819e3b3fc2fe554f14bc7b270b20636660185c3e6278c47",
+      "retrieved_at": "2026-10-24T08:29:19.790040+00:00",
+      "http_status": 200,
+      "response_headers": {
+        "Date": "Sat, 24 Oct 2026 08:29:19 GMT",
+        "Last-Modified": null,
+        "ETag": null,
+        "Content-Type": "application/json;charset=UTF-8"
+      },
+      "snapshot_integrity": "VERIFIED_NOW_ONLY",
+      "response_date": "20220902",
+      "response_status": "ok",
+      "top_level_keys": [
+        "tables",
+        "date",
+        "flagField",
+        "stat"
+      ],
+      "tables": [
+        {
+          "title": "上櫃股票每日收盤行情(不含定價)",
+          "fields": [
+            "代號",
+            "名稱",
+            "收盤 ",
+            "漲跌",
+            "開盤 ",
+            "最高 ",
+            "最低",
+            "成交股數  ",
+            " 成交金額(元)",
+            " 成交筆數 ",
+            "最後買價",
+            "最後買量<br>(千股)",
+            "最後賣價",
+            "最後賣量<br>(千股)",
+            "發行股數 ",
+            "次日漲停價 ",
+            "次日跌停價"
+          ],
+          "total_rows": 902,
+          "selected_rows": [
+            [
+              "6488",
+              "環球晶",
+              "466.00",
+              "-5.50",
+              "471.00",
+              "474.00",
+              "466.00",
+              "1,637,000",
+              "769,162,500",
+              "1,225",
+              "466.00",
+              "34",
+              "466.50",
+              "1",
+              "437,250,000",
+              "512.00",
+              "419.50"
+            ],
+            [
+              "8069",
+              "元太",
+              "242.00",
+              "+8.50",
+              "236.00",
+              "246.00",
+              "235.50",
+              "17,253,000",
+              "4,154,484,000",
+              "11,011",
+              "241.50",
+              "147",
+              "242.00",
+              "111",
+              "1,140,404,715",
+              "266.00",
+              "218.00"
+            ]
+          ]
+        }
+      ],
+      "response_identity_matches": true,
+      "selected_qc": [
+        {
+          "stock_id": "6488",
+          "values": {
+            "open": 471.0,
+            "high": 474.0,
+            "low": 466.0,
+            "close": 466.0,
+            "volume": 1637000.0
+          },
+          "local_structural_qc": "PASS",
+          "qc_at": "2026-10-24T08:32:14.417800+00:00",
+          "historical_qc": "UNKNOWN",
+          "historical_security_lifecycle": "UNKNOWN",
+          "adjustment_and_volume_segment_semantics": "UNKNOWN_REQUIRES_QUALIFICATION"
+        },
+        {
+          "stock_id": "8069",
+          "values": {
+            "open": 236.0,
+            "high": 246.0,
+            "low": 235.5,
+            "close": 242.0,
+            "volume": 17253000.0
+          },
+          "local_structural_qc": "PASS",
+          "qc_at": "2026-10-24T08:32:14.417810+00:00",
+          "historical_qc": "UNKNOWN",
+          "historical_security_lifecycle": "UNKNOWN",
+          "adjustment_and_volume_segment_semantics": "UNKNOWN_REQUIRES_QUALIFICATION"
+        }
+      ],
+      "evidence_class_candidate": "RETROSPECTIVE_ONLY",
+      "classification_status": "PROPOSED_CLASSIFICATION_NOT_ADMISSION",
+      "research_use_gate": "NOT_ADMITTED_RIGHTS_AND_DATA_QUALIFICATION_REQUIRED",
+      "documented_publication_evidence": "UNKNOWN for this endpoint/exact historical response; current EShop product schedules are separate products, not proof",
+      "vintage_id": "0b90b27c726206976819e3b3fc2fe554f14bc7b270b20636660185c3e6278c47",
+      "response_segment": "Daily listed/OTC quote endpoint; exact field/session/volume segment exclusions not certified by title alone"
+    }
+  ],
+  "note": "All requests today retrieve retrospective bytes; no original historical publication/vintage inferred; only selected securities inspected, entire responses retained locally.",
+  "scope": {
+    "data_requests": 2,
+    "total_raw_bytes": 337221,
+    "market_dates": 2,
+    "selected_stock_rows": 4,
+    "real_rankic": false,
+    "new_training": false,
+    "PIT_panel_verified": false,
+    "scope_not_full_universe": true
+  },
+  "classification_unit": "market-date HTTP response, not individual security",
+  "current_qc_rule": [
+    "Requested compact session equals response.date",
+    "Bind OHLCV by unique stripped field names; only selected stock IDs inspected",
+    "Selected OHLC finite positive, Volume nonnegative, Low<=min(Open,Close)<=max(Open,Close)<=High",
+    "Current snapshot byte verification; NOT historical QC/adjustment/unit/segment/universe eligibility"
+  ],
+  "observed_code_identity": {
+    "git_head": "c78098f3fdddb74e461bc54d700bde5baac0fcc1",
+    "fetcher_endpoint_source_path": "V6/marketmamba/data/fetcher.py",
+    "fetcher_sha256": "3c31d48e8e22aca0ed5e88b48136765caa1c359c5276d21b6d470d5a260095d2",
+    "request_capture": "one-shot bounded urllib script reused v1 snapshot_response; no production fetcher invocation",
+    "qc": "header-bound four-row diagnostic, no persistent production transform"
+  }
+}

@@ -1,10 +1,24 @@
 # Worktree Register
 
+## Window14 bounded data admission pilot — 2026-10-24
+
+- Path `.worktrees/v7-window14-data-admission`;branch `research/v7-window14-data-admission`;
+  base `c78098f3fdddb74e461bc54d700bde5baac0fcc1`;owner Codex/HumanWindow14;
+  created2026-10-24;retiredN/A. WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED.
+- Prior34trees clean/distinctscope; no sameW14pilot. Existing experimental/research/
+  reports/Decisions reused, no platform. MainffW13heldc78098f; W06/W12notmerged.
+- Preserve `.artifacts/window14-historical-pilot` immutable raw/manifests (337221rawbytes),
+  no hash-only restore claim; preserve W11 83CPUfiles and W12 HALTED5diagnostics.
+  Safe removal requires clean retainedcommits/bytes/refs resolved+separate review.
+
+- U1/U2independent0Critical/Required,1boundedrepair each;150CPUtestsPASS.
+  Futurestudy/collection rights/data/policy approval pending;finalHEAD containingclosure.
+
 ## Window13 thermal/admission preparation — 2026-10-24
 
 - Path `.worktrees/v7-window13-admission-preparation`;branch `research/v7-window13-admission-preparation`;
   base `8db5b9111b98d4965a9f56f10a51c5157284b900`;owner Codex/HumanWindow13;
-  created2026-10-24;retiredN/A. WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED.
+  created2026-10-24;retiredN/A. WINDOW_COMPLETE/STOP/LOCAL_INTEGRATED_BY_WINDOW14/NOT_DEPLOYED.
 - U1sourcef26dbf5; final containingU2closurecommit. CPUverification140+13tests,
   reviews0Critical/Required/0rework; no implementation/GPU/dataadmission.
 - Prior33trees clean/distinct scopes; no W13 same-purpose tree. Existing Decisions/

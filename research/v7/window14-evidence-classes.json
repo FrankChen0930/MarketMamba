@@ -1,0 +1,52 @@
+{
+  "schema": "window14-evidence-class-candidates-v1",
+  "status": "PROPOSED_NOT_ADMITTED",
+  "classification_is_not_permission": true,
+  "classes": [
+    {
+      "name": "VERIFIED_HISTORICAL_ASOF",
+      "acceptance": [
+        "Exact original version bytes/hash and historical availability/publication or independent contemporaneous receipt evidence <= approved decision freeze",
+        "Historically attributable QC and revision chain/pins; qualified calendar/universe/security lifecycle and source/field semantics",
+        "Approved data rights/use scope and label entry/exit/maturity/provenance for supervised research; recoverable bytes"
+      ],
+      "current_matching_records": 0,
+      "potential_future_use": "After Human approval, asof research under specified evidence class; never automatically trading/executable admission"
+    },
+    {
+      "name": "CONDITIONAL_RESEARCH_PROXY",
+      "acceptance": [
+        "Traceable immutable raw bytes/units/market segment, qualified calendar/universe and permitted use",
+        "Human approves a separate fixed conservative-lag/proxy contract, revision limitations and missing/support rules BEFORE outcomes",
+        "Documented release/availability upper bounds or justified assumptions and predeclared sensitivity/exposure limits; lag cannot repair unknown historical revisions",
+        "Qualified labels/maturity, separated selection/forward/final and explicit non-PIT evidence class"
+      ],
+      "current_matching_records": 0,
+      "potential_future_use": "New separately identified limited historical ranking proxy, only after new Human data/evaluation/compute authorization"
+    },
+    {
+      "name": "RETROSPECTIVE_ONLY",
+      "acceptance": [
+        "Known endpoint/request/session identity and immutable bytes with actual current retrieval time",
+        "Current QC/integrity scoped and historical availability/vintage gaps explicitly retained",
+        "No inference of original historical publication or permission from public access"
+      ],
+      "current_matching_records": 2,
+      "potential_future_use": "Source/schema/QC/restore diagnostics now; research-fit only after separate proxy qualification and approval"
+    },
+    {
+      "name": "UNKNOWN / REJECTED",
+      "acceptance": [
+        "UNKNOWN if source/request/session/current-receipt/bytes identity cannot be established; absence of historical asof evidence with those retrospective identities established remains RETROSPECTIVE_ONLY. Rights UNKNOWN is a separate blocking use gate.",
+        "REJECTED for observed date/source/hash mismatch, invalid payload or failed required QC; preserve reasons, never zero-fill or silently use"
+      ],
+      "current_matching_records": 0,
+      "potential_future_use": "Diagnostics/rejection ledger; not model input until resolved and separately approved"
+    }
+  ],
+  "independent_axes": {
+    "content_evidence_class": "Provenance/bytes/session/retrieval and historical-vintage evidence only",
+    "usage_permission_gate": "Rights unconfirmed blocks research/collection independently; it does not erase a verified retrospective byte identity",
+    "research_execution_gate": "Calendar/universe/labels/contract/compute admission separate; class alone never permits research"
+  }
+}
