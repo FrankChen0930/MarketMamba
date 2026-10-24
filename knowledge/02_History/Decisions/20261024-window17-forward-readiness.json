@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "authority": "Human Window17 Forward Vintage Operational Readiness",
+  "scope": "W16assetprotection/localff, boundedofficialdocuments andCPUoffline/synthetic readiness only",
+  "source_fixed": "000b0b9c40448b11a41d05396dffc6e0f3ea1235",
+  "new_policy_status": "PROPOSED_NOT_ACTIVE",
+  "max_units": 2,
+  "review_limit": 1,
+  "repair_limit": 1,
+  "collector_or_scheduler_authorized": false,
+  "new_data_or_research_admission": false,
+  "protected_assets": "OriginalW16/W14/W15/W11/W12 bytes retained; W16persistentcopy allowed, no cleanup",
+  "gates": {
+    "strict_phase0": "STOP",
+    "e1_frozen_matrix": "BLOCKED",
+    "h2": "NOT_APPROVED",
+    "historical_exploratory_study": "PROPOSED",
+    "forward_collector_activation": "NOT_APPROVED",
+    "w12_gpu": "SAFETY_HALTED",
+    "fair_evaluation": "PROPOSED",
+    "pre_next_open": "PROPOSED",
+    "inference_recovery": "DEFERRED"
+  }
+}

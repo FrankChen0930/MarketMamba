@@ -1,13 +1,30 @@
 # V7 Research Program and Current Development Backlog
 
-> Current planning owner: isolated Window16 resource-proof branch, linked by canonical
+> Current planning owner: isolated Window17 forward-readiness branch, linked by canonical
 > Current State/Authority Map. Planning status does not grant research, execution,
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
 
+## Window17 Forward Vintage Operational Readiness
+
+WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED; branch research/v7-window17-forward-readiness,
+base/main000b0b9. W16ff-only整合，W06/W12未整合。
+
+| ID | Objective / Authority | Result / dependency |
+|---|---|---|
+| W17-U1 | HumanW17 W16資產保護與整合 | COMPLETE；14deliverable／9localhash，279436rawbytes＋manifests／request獨立於worktree持久保存並重驗；BACKUP_PENDING；原129protectedfiles不動 |
+| W17-U2 | HumanW17 offline操作準備 | COMPLETE；參數化daily-calendar/asof修訂及storageguard＋既有Synthetic vintage29tests，6日面板；不啟用collector；exactCSV定期服務條件及TPEx直接calendar仍BLOCKED |
+
+下一步 POLICY_REQUIRED：runtime／明確時間頻率與有限重試／QC與missing／storage及獨立backup／通知／backfill／停止恢復撤銷。
+LICENSE_SERVICE_UNRESOLVED：每日更新不是numericquota／自動化permission／SLA；不可探測或換API。
+DATA_EVIDENCE_BLOCKED：TPEx直接日曆及10/27實際交易證據；已知休市不計漏抓。
+HistoricalStudy PROPOSED：下次限定查W14兩歷史route授權及coverage官方文件，或一項Human指定合法歷史產品；不取payload／不全面PIT搜尋／不fit／不RankIC。
+No READY execution in this completedgrant；下一窗口須單獨授權。
+[Brief](../../reports/v7_window17_activation_brief.md)、[Activation](window17-activation-package.json)、[evidence](window17-evidence.json)。
+
 ## Window16 Real Resource Coverage and Capture Proof
 
-WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED;research/v7-window16-resource-proof,
+WINDOW_COMPLETE/STOP/LOCAL_INTEGRATED_BY_W17/NOT_DEPLOYED;research/v7-window16-resource-proof,
 base/main27dcb36. W15fixedff integrated, W14/W15rawbytes remainoriginaltrees.
 
 | Unit | HumanWindow16 objective | Result |

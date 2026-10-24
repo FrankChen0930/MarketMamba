@@ -1,0 +1,55 @@
+{
+  "observed_at": "2026-10-24T12:58:28.240351+00:00",
+  "main_before": "27dcb36b5431b70e8aa831edb6cb9234cb3a40b3",
+  "candidate": "000b0b9c40448b11a41d05396dffc6e0f3ea1235",
+  "clean_worktrees": 37,
+  "deliverable_hashes_verified": 14,
+  "W16_local_hashes_verified": 9,
+  "raw_bytes": 279436,
+  "files": [
+    {
+      "original": "/home/frank/projects/MarketMamba/.worktrees/v7-window16-resource-proof/.artifacts/window16-resource-proof/requests.json",
+      "persistent": "/home/frank/projects/MarketMamba/.artifacts/window16-durable-evidence/requests.json",
+      "sha256": "514601f58de4cc3c255ddad5ff84687a355d53966255e3d6ee7d01b9a4784597",
+      "bytes": 525,
+      "artifact_class": "CANONICAL"
+    },
+    {
+      "original": "/home/frank/projects/MarketMamba/.worktrees/v7-window16-resource-proof/.artifacts/window16-resource-proof/snapshots/raw/c57a72d7864203d633c76716e56c35b689c0134fffbed7f069e41f2646372d1a.bin",
+      "persistent": "/home/frank/projects/MarketMamba/.artifacts/window16-durable-evidence/snapshots/raw/c57a72d7864203d633c76716e56c35b689c0134fffbed7f069e41f2646372d1a.bin",
+      "sha256": "c57a72d7864203d633c76716e56c35b689c0134fffbed7f069e41f2646372d1a",
+      "bytes": 141480,
+      "artifact_class": "CANONICAL"
+    },
+    {
+      "original": "/home/frank/projects/MarketMamba/.worktrees/v7-window16-resource-proof/.artifacts/window16-resource-proof/snapshots/raw/79bdd059e75a0a829dfef1e5c1330cb48a84b302e04ce040e77ee0dd35e5ec6a.bin",
+      "persistent": "/home/frank/projects/MarketMamba/.artifacts/window16-durable-evidence/snapshots/raw/79bdd059e75a0a829dfef1e5c1330cb48a84b302e04ce040e77ee0dd35e5ec6a.bin",
+      "sha256": "79bdd059e75a0a829dfef1e5c1330cb48a84b302e04ce040e77ee0dd35e5ec6a",
+      "bytes": 137956,
+      "artifact_class": "CANONICAL"
+    },
+    {
+      "original": "/home/frank/projects/MarketMamba/.worktrees/v7-window16-resource-proof/.artifacts/window16-resource-proof/snapshots/manifests/ed32d84297e415871b03646b01bd07c058cb9fb2655a66b29e18255556fd79ea-2026-10-24T110926.271271p0000.json",
+      "persistent": "/home/frank/projects/MarketMamba/.artifacts/window16-durable-evidence/snapshots/manifests/ed32d84297e415871b03646b01bd07c058cb9fb2655a66b29e18255556fd79ea-2026-10-24T110926.271271p0000.json",
+      "sha256": "339101c072b98361949880faa31c0ef8079ead7380c9b184d1a5b207ae682041",
+      "bytes": 941,
+      "artifact_class": "CANONICAL"
+    },
+    {
+      "original": "/home/frank/projects/MarketMamba/.worktrees/v7-window16-resource-proof/.artifacts/window16-resource-proof/snapshots/manifests/25a45db23f5dcaee689a1fcc7c22ed8693dcb8e00f0b90241d83c3b68c01844b-2026-10-24T110925.373190p0000.json",
+      "persistent": "/home/frank/projects/MarketMamba/.artifacts/window16-durable-evidence/snapshots/manifests/25a45db23f5dcaee689a1fcc7c22ed8693dcb8e00f0b90241d83c3b68c01844b-2026-10-24T110925.373190p0000.json",
+      "sha256": "30c0f47b248ae5dc7d638d5656eddcb06469ee62cd8e04d0d41f5229cc29ffce",
+      "bytes": 898,
+      "artifact_class": "CANONICAL"
+    }
+  ],
+  "persistent_root": "/home/frank/projects/MarketMamba/.artifacts/window16-durable-evidence",
+  "originals_retained": true,
+  "backup_status": "BACKUP_PENDING",
+  "independent_backup": false,
+  "same_machine_same_filesystem": true,
+  "artifact_class": "EXTERNAL_LARGE_DATA",
+  "no_gc": true,
+  "source_manifest_and_request_bytes_preserved": true,
+  "independent_process_verification": "PASS_5_FILES_279436_RAW_BYTES_2_SNAPSHOT_MANIFESTS"
+}

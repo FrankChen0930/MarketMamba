@@ -1,10 +1,21 @@
 # Worktree Register
 
+## Window17 forward operational readiness — 2026-10-24
+
+- Path `.worktrees/v7-window17-forward-readiness`;branch `research/v7-window17-forward-readiness`;
+  base `000b0b9c40448b11a41d05396dffc6e0f3ea1235`;owner Codex/HumanWindow17;
+  created2026-10-24;retiredN/A;WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED。
+- 37 existingclean trees distinctscope；new isolation only for two boundedunits；既有reports/research/experimental/maps沿用。
+- W16source/restorebytes保留不動；根目錄`.artifacts/window16-durable-evidence`持久副本獨立於本tree，
+  仍同機同filesystem BACKUP_PENDING；`.artifacts/window17-official-documents`於根目錄保存官方文件bytes。
+- Safe removal requires clean retainedcommit、resolvedbyte/runtime/dependencyrefs及separate retirement review；本輪不清理。
+- Authority僅離線readiness/proposal；正式collector／研究admission未批准；main固定W16，W06/W12未整合。
+
 ## Window16 real resource coverage — 2026-10-24
 
 - Path `.worktrees/v7-window16-resource-proof`;branch `research/v7-window16-resource-proof`;
   base `27dcb36b5431b70e8aa831edb6cb9234cb3a40b3`;owner Codex/HumanWindow16;
-  created2026-10-24;retiredN/A. WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED;single reviewGO0Critical/Required,0repair.
+  created2026-10-24;retiredN/A. WINDOW_COMPLETE/STOP/LOCAL_INTEGRATED_BY_WINDOW17/NOT_DEPLOYED;single reviewGO0Critical/Required,0repair.
 - Prior36trees clean/distinctscope; no samepurpose. Existing Snapshot/metadata/report/maps
   reused; no newsourceplatform or testsframework. Mainff27dcb held;no W06/W12merge.
 - Preserve `.artifacts/window16-resource-proof` (requests ledger+2raw/manifests) and

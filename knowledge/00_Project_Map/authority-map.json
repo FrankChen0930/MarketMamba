@@ -21,10 +21,28 @@
   },
   "topics": [
     {
+      "topic": "Window17 Forward Vintage operational readiness",
+      "primary_authority": "knowledge/02_History/Decisions/20261024-window17-forward-readiness.json",
+      "authority_class": "CANONICAL",
+      "status": "WINDOW_COMPLETE_STOP_UNMERGED_PROPOSALS_ONLY_NO_ACTIVATION",
+      "secondary_evidence": [
+        "research/v7/window17-evidence.json",
+        "research/v7/window17-activation-package.json",
+        "research/v7/window17-official-evidence.json",
+        "reports/v7_window17_activation_brief.md"
+      ],
+      "conflicts": [
+        "Calendar pin verifies consistency, not authenticity or market-wide admission",
+        "Daily update not periodic service permission; TPEx directcalendar missing",
+        "Same-machine durable copy not independent backup; BACKUP_PENDING",
+        "NoCollector/GPU/Admission; W16onlymerged"
+      ]
+    },
+    {
       "topic": "Window16 real resource coverage and capture proof",
       "primary_authority": "knowledge/02_History/Decisions/20261024-window16-resource-proof.json",
       "authority_class": "CANONICAL",
-      "status": "WINDOW_COMPLETE_STOP_UNMERGED_SNAPSHOT_COVERAGE_PROOF_ONLY_NO_ADMISSION",
+      "status": "LOCAL_INTEGRATED_BY_W17_SCOPED_CAPTURE_EVIDENCE_ONLY",
       "secondary_evidence": [
         "research/v7/window16-resource-coverage.json",
         "research/v7/window16-restore.json",
