@@ -1,0 +1,160 @@
+{
+  "status": "AUTHORIZED_BOUNDED_DIAGNOSTIC_PLAN_NOT_DATASET_ADMISSION",
+  "evidence_why_continue": "stage1price+stage2metadata raw/schema/independentrestore pass; pricepanels independentofunqualifiedvendorcalendar/universe",
+  "normal_price_including_initial": 14,
+  "metadata_already_used": 3,
+  "repeat_reserved": 1,
+  "planned_total": 18,
+  "limits_total": 22,
+  "extra_sources_or_fallback": false,
+  "stock_selection": {
+    "2330": "W14TWSE20220901 identity; observed20100104..15lowerbound",
+    "8069": "W14TPEx20220902 identity, not assumptionalloldmarketdates",
+    "2499": "FinMindDelisting row20201110; StockInfo currentupdate isnot activeproof",
+    "6515": "W20officialtechnical specific20200319emergingexample, nowStockInfoTWSE",
+    "8272": "W20officialtechnical firstemerging20231017 + currentmetadata tpex; recentlistingdateUNVERIFIED",
+    "9929": "W20officialtechnical20250731positivevolume/noOHLC andStockInfoTWSE identity"
+  },
+  "queries": [
+    {
+      "params": {
+        "dataset": "TaiwanStockPrice",
+        "data_id": "8069",
+        "start_date": "2010-01-04",
+        "end_date": "2010-01-15"
+      },
+      "role": "EARLY_LONG_OTC_CANDIDATE",
+      "market_context": {}
+    },
+    {
+      "params": {
+        "dataset": "TaiwanStockPrice",
+        "data_id": "2499",
+        "start_date": "2010-01-04",
+        "end_date": "2010-01-15"
+      },
+      "role": "EARLY_DELISTED_CANDIDATE",
+      "market_context": {}
+    },
+    {
+      "params": {
+        "dataset": "TaiwanStockPrice",
+        "data_id": "2499",
+        "start_date": "2020-11-02",
+        "end_date": "2020-11-13"
+      },
+      "role": "AROUND_REPORTED_DELIST_20201110",
+      "market_context": {}
+    },
+    {
+      "params": {
+        "dataset": "TaiwanStockPrice",
+        "data_id": "2499",
+        "start_date": "2022-09-01",
+        "end_date": "2022-09-14"
+      },
+      "role": "POST_REPORTED_DELIST_DIAGNOSTIC",
+      "market_context": {}
+    },
+    {
+      "params": {
+        "dataset": "TaiwanStockPrice",
+        "data_id": "6515",
+        "start_date": "2020-03-16",
+        "end_date": "2020-03-27"
+      },
+      "role": "DOCUMENTED_EMERGING_EXCEPTION",
+      "market_context": {
+        "2020-03-19": {
+          "market": "emerging",
+          "evidence": "W20FinMindTechnicalofficial archived example6515_20200319; DOCUMENTED_CONTEXT_ONLY_NOT_UNIVERSE_ADMISSION"
+        }
+      }
+    },
+    {
+      "params": {
+        "dataset": "TaiwanStockPrice",
+        "data_id": "6515",
+        "start_date": "2022-09-01",
+        "end_date": "2022-09-14"
+      },
+      "role": "POST_TRANSFER_CANDIDATE_MARKET_DATE_UNQUALIFIED",
+      "market_context": {}
+    },
+    {
+      "params": {
+        "dataset": "TaiwanStockPrice",
+        "data_id": "8272",
+        "start_date": "2023-10-16",
+        "end_date": "2023-10-27"
+      },
+      "role": "DOCUMENTED_EMERGING_FIRST_DAY",
+      "market_context": {
+        "2023-10-17": {
+          "market": "emerging",
+          "evidence": "W20FinMindTechnicalofficial archived example8272_20231017; DOCUMENTED_CONTEXT_ONLY_NOT_UNIVERSE_ADMISSION"
+        }
+      }
+    },
+    {
+      "params": {
+        "dataset": "TaiwanStockPrice",
+        "data_id": "8272",
+        "start_date": "2025-07-21",
+        "end_date": "2025-08-01"
+      },
+      "role": "LATER_TPEX_CANDIDATE_NOT_LISTING_DATE_PROOF",
+      "market_context": {}
+    },
+    {
+      "params": {
+        "dataset": "TaiwanStockPrice",
+        "data_id": "9929",
+        "start_date": "2010-01-04",
+        "end_date": "2010-01-15"
+      },
+      "role": "EARLY_PRICE_HISTORY_CANDIDATE",
+      "market_context": {}
+    },
+    {
+      "params": {
+        "dataset": "TaiwanStockPrice",
+        "data_id": "9929",
+        "start_date": "2025-07-21",
+        "end_date": "2025-08-01"
+      },
+      "role": "DOCUMENTED_POSITIVE_VOLUME_NO_PUBLISHED_PRICE",
+      "market_context": {}
+    },
+    {
+      "params": {
+        "dataset": "TaiwanStockPrice",
+        "data_id": "8069",
+        "start_date": "2022-09-01",
+        "end_date": "2022-09-14"
+      },
+      "role": "MIDDLE_OFFICIAL_W14_ID_ANCHOR",
+      "market_context": {}
+    },
+    {
+      "params": {
+        "dataset": "TaiwanStockPrice",
+        "data_id": "2330",
+        "start_date": "2022-09-01",
+        "end_date": "2022-09-14"
+      },
+      "role": "MIDDLE_LISTED_ID_ANCHOR",
+      "market_context": {}
+    },
+    {
+      "params": {
+        "dataset": "TaiwanStockPrice",
+        "data_id": "2330",
+        "start_date": "2025-07-21",
+        "end_date": "2025-08-01"
+      },
+      "role": "RECENT_LISTED_ID_ANCHOR",
+      "market_context": {}
+    }
+  ]
+}

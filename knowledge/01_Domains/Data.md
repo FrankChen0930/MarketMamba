@@ -59,6 +59,16 @@ Legacy V6 datasets remain useful for reproducing historical work, but cannot be 
 - Provenance eligibility is evaluated before any proxy rule.
 - Current-world classifications must not be backfilled into history without evidence.
 
+## Window21 bounded FinMind proof
+
+Branch research/v7-window21-finmind-proof is UNMERGED/NOT_DEPLOYED; its finite
+18-query grant is CLOSED. Actual retrospective price samples support six identifiers,
+not market-wide coverage or formal admission. Raw/zero/emerging semantics stay distinct;
+vendor TradingDate contains future dates and a known20261023 closure, so it is not
+actual-session authority. StockInfo update date is not historical membership.
+Canonical bounded evidence: [proof](../../research/v7/window21-evidence.json).
+W19 protected collector/runtime is not changed by these data findings.
+
 ## Window18 branch-local manual pilot
 
 `development/v7-window18-manual-collector` adds a manual-only CLI and bounded CSV QC,

@@ -1,0 +1,24 @@
+{
+  "copied_from_existingW20_only_no_network": true,
+  "documents": [
+    {
+      "id": "finmind_pricing",
+      "raw": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/license-source/raw/d0efd60e487e6563e72b5e39a32552482257e162759191f391f06f5659b55430.bin",
+      "raw_sha256": "d0efd60e487e6563e72b5e39a32552482257e162759191f391f06f5659b55430",
+      "manifest": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/license-source/manifests/e7fab6489d57947a26dbc4fde322d52857174ed5e2c3189bcb0c94b5753d6e49-2026-10-24T162950.924416p0000.json"
+    },
+    {
+      "id": "finmind_disclaimer",
+      "raw": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/license-source/raw/1c0e6f88268472474087ba56fade2ed57eabadd12aeec9dbc91f2e96a7df68ee.bin",
+      "raw_sha256": "1c0e6f88268472474087ba56fade2ed57eabadd12aeec9dbc91f2e96a7df68ee",
+      "manifest": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/license-source/manifests/76ae904c465d567483bee24d72655028278c67bc077cc4ca94e9cb20a8ea7707-2026-10-24T162952.242177p0000.json"
+    },
+    {
+      "id": "finmind_quickstart",
+      "raw": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/license-source/raw/52fe1f750d0ea4a92643b1318c54c1bb37bed4cee1d02cb64bc62366f217a756.bin",
+      "raw_sha256": "52fe1f750d0ea4a92643b1318c54c1bb37bed4cee1d02cb64bc62366f217a756",
+      "manifest": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/license-source/manifests/e5777c443174d4034e38637b86bfc3220cb6f4fc6d3028281a5a3d5c0cc83388-2026-10-24T162952.766979p0000.json"
+    }
+  ],
+  "no_rawredistribution": true
+}

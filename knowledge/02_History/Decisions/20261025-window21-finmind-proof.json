@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "authority": "Human Window21 FinMind Historical Data Proof",
+  "scope": "W20fixedff; anonymousexactFinMindAPI up to22/18price+3meta+1repeat,6symbols/3smallwindows; privateimmutablecapture/restore",
+  "actual_requests": 18,
+  "unused_authorization_closed": 4,
+  "formal_data_admission": false,
+  "HistoricalStudy": "PROPOSED",
+  "W19": "PROTECTED_NO_OPERATIONS",
+  "not_authorized": [
+    "modelFit",
+    "RankIC",
+    "fullmarketdownload",
+    "GPU/Colab",
+    "Token/login/payment",
+    "scheduler/productionchanges",
+    "othermerge",
+    "W21merge/push/deploy/nextwindow"
+  ]
+}

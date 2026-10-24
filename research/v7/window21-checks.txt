@@ -1,0 +1,2 @@
+PASS: AST/JSON;18claims+18records HTTP200;14price+3metadata+1repeat;6securities/116normalpriceRows/48dates;4unused CLOSED;133localfilehashes;18postrepairindependentRestore;QCsum116;noW19operations.
+15targetedCPUtests PASS, no training/evaluator full-suite repeat.

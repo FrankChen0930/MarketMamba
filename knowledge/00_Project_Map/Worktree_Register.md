@@ -1,10 +1,21 @@
 # Worktree Register
 
+## Window21 FinMind proof — 2026-10-25
+
+- Path `.worktrees/v7-window21-finmind-proof`;branch `research/v7-window21-finmind-proof`;
+  base `6a34520d8f9c1166172af3503cad531e23f5ecec`;owner Codex/HumanWindow21;
+  created2026-10-25;retiredN/A;COMPLETE/STOP/UNMERGED/NOT_DEPLOYED。
+- ExistingW20onlydocumentation，無同目標真實proof；沿用experimental/research/reports/Decisions及root.artifacts，無新平台。
+- Actualraw/snapshot/record/claims/source/closedmarker位於根目錄.artifacts/window21-finmind-proof，
+  root.artifacts/window21-finmind-restore是同機copy，BACKUP_PENDING；source/與source-reviewed/分開留存，18originalrecords不改。
+- Safe removal需clean retainedcommit、resolvedrootbyte/restore/source/license refs與獨立退役review；本輪不刪任何artifacts。
+- W19 worktree/task/artifact/budget PROTECTED，不操作、不觸發；main只ffW20，不merge其他branch。
+
 ## Window20 historical source decision — 2026-10-25
 
 - Path `.worktrees/v7-window20-historical-sources`;branch `research/v7-window20-historical-sources`;
   base `87695e4d5dc6e047f5ab39ca3cd8294b971bbc3a`;owner Codex/HumanWindow20;
-  created2026-10-25;retiredN/A;COMPLETE/STOP/UNMERGED/NOT_DEPLOYED。
+  created2026-10-25;retiredN/A;COMPLETE/STOP/LOCAL_INTEGRATED_BY_WINDOW21/NOT_DEPLOYED。
 - Prior40treesclean/distinctscope；本tree隔離文件調查，沿用research/reports/maps，沒有platform或實作。
 - `.artifacts/window20-documents`保存8官方HTML及Snapshotmanifest，不含行情；Git只有URLs/hash/report，不能靠hash還原bytes。
 - Safe removal需clean retainedcommit、resolvedHTMLbyte/dependencyrefs及separate退役review；不清理W14/16/18或W19。

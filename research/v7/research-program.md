@@ -1,13 +1,26 @@
 # V7 Research Program and Current Development Backlog
 
-> Current planning owner: isolated Window20 historical-source decision branch, linked by canonical
+> Current planning owner: isolated Window21 bounded FinMind proof branch, linked by canonical
 > Current State/Authority Map. Planning status does not grant research, execution,
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
 
+## Window21 FinMind Historical Data Proof
+
+COMPLETE/STOP/UNMERGED/NOT_DEPLOYED；research/v7-window21-finmind-proof，base/main6a34520。
+U1：W20verifiedff＋有限匿名實測18/22（14price/3meta/1repeat），六檔116rows/48dates2010..2025；
+U2：source/schema/QC/raw/provenance/18independentRestore＋一次review/單輪修復；15focusedPASS；無第二次獨立GO。
+根目錄.artifacts/window21-finmind-proof/restore保存actualbytes；CLOSED，4unused不可重跑；備份BACKUP_PENDING。
+來源CONDITIONAL_CANDIDATE，非Dataset/研究准入；3zeroPrice不補、2marketexception/11unknown保留。
+BLOCKED：actualCalendar（vendor含future/20261023休市）、historicalUniverse/lifecycle、missing/actions/Labelmaturity與eval/compute批准。
+下市2499earlyprice可取但near/post空不證實missing；上市/轉板確切日期未知。不得以六檔推全市場完整性。
+NextHuman：先批准獨立少特徵retrospective dataset範圍／合格日曆生命週期，再Label/eval/有限CPUStudy與取得預算；本輪不開研究。
+W19工作樹/Task/artifact/預算不操作，無runtime新觀測；不merge其他candidate。
+[Report](../../reports/v7_window21_finmind_proof.md)、[summary](window21-proof-summary.json)、[evidence](window21-evidence.json)。
+
 ## Window20 Historical Data Source Decision Sprint
 
-COMPLETE/STOP/UNMERGED/NOT_DEPLOYED；research/v7-window20-historical-sources，base87695e4。
+COMPLETE/STOP/LOCAL_INTEGRATED_BY_W21/NOT_DEPLOYED；research/v7-window20-historical-sources，base87695e4。
 U1：三類來源documentmatrix完成；U2：主FinMind／備富邦條件建議、次輪22request資格Pilot方案完成。
 RECOMMENDATION_PROPOSED：非商業Free/anonymous優先，不是資料准入；多年度Coverage／下市／市場轉換／adjustment／bytesRestore未實測。
 BLOCKED：W14兩歷史route下載重用資格、富邦帳號及使用權、永久保存／完整歷史Universe與Label/evaluationpolicy。

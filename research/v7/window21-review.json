@@ -1,0 +1,36 @@
+{
+  "reviewer": "/root/independent_review",
+  "major_rounds": 1,
+  "initial_verdict": "NO_GO",
+  "critical": 0,
+  "required": 2,
+  "optional": 0,
+  "independent_tests": 10,
+  "independent_seconds": 1.063,
+  "independent_restore": "18records allPASS inreviewer/temp independentprocess;838854bytes/116priceRows/48dates/QC100+2+11+3verified",
+  "findings": [
+    {
+      "id": "R1",
+      "issue": "Publishedraw loss silently repaired by repeat",
+      "repair": "Verifyallpublishedrecord dependencies beforedispatch; any missing/corrupt/unfinished priorclaim STOP; nonewGETrepair",
+      "test": "test_missing_published_raw_stops_before_repeat_no_repair"
+    },
+    {
+      "id": "R2",
+      "issue": "HTTP IncompleteReadescapednoSTOP; repeatcouldretry failedclaim",
+      "repair": "CatchHTTPException/IncompleteRead, durablefailure+STOP,spentclaimretained; repeat onlypriorCAPTURED/http200/completeandverifiedbytes",
+      "tests": [
+        "test_incomplete_read_consumes_claim_and_stops_repeat",
+        "test_dangling_claim_without_terminal_fails_closed"
+      ]
+    }
+  ],
+  "repair_rounds": 1,
+  "author_postrepair_verification": "15focusedPASS +18actualrecords independentprocessRestorePASS; no furtherAPIrequests",
+  "second_independent_review": false,
+  "postrepair_independent_GO": "NOT_REQUESTED_UNDER_SINGLE_MAIN_REVIEW_LIMIT",
+  "remaining_known_required": 0,
+  "original_code_sha256": "be7052834fb57479c08c10a368493b99105fc35a9797513f42fa9cce30941444",
+  "repaired_code_sha256": "14aa7a4623c45f9400d08faf0147316c28735fd8e179f922f80143e37ed274f7",
+  "old_records_or_source_overwritten": false
+}
