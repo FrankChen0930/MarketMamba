@@ -4,7 +4,9 @@
 
 - Path `.worktrees/v7-window13-admission-preparation`;branch `research/v7-window13-admission-preparation`;
   base `8db5b9111b98d4965a9f56f10a51c5157284b900`;owner Codex/HumanWindow13;
-  created2026-10-24;retiredN/A. ACTIVE/UNMERGED/NOT_DEPLOYED.
+  created2026-10-24;retiredN/A. WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED.
+- U1sourcef26dbf5; final containingU2closurecommit. CPUverification140+13tests,
+  reviews0Critical/Required/0rework; no implementation/GPU/dataadmission.
 - Prior33trees clean/distinct scopes; no W13 same-purpose tree. Existing Decisions/
   reports/research/maps suffice; new isolation avoids changing main/pendingcandidates.
   W12/W06/protocol/recovery read at fixedSHA only, no adoption. Preserve W12 rawHALTED

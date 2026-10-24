@@ -2,24 +2,33 @@
 
 > Status: `CANONICAL_CURRENT_PROJECT_MAP`
 
-## Window13 Thermal / Admission Preparation — isolated active checkpoint
+## Window13 Thermal / Admission Preparation — complete / STOP
 
-Main verified8db5b9111b98d4965a9f56f10a51c5157284b900 (W11 LOCAL_INTEGRATED,
-NOT_DEPLOYED); prior W11 UNMERGED entries below historical for integration only.
-W12 fixed16e444f/W06 fixed96c6056/ProtocolAudit8601c73/Recoverye181f36 remain
-UNMERGED_REFERENCE_ONLY; no candidate merged or policy adopted by reference.
-W13 research/v7-window13-admission-preparation,base8db,.worktrees/v7-window13-admission-preparation,
-UNMERGED/NOT_DEPLOYED. Two bounded CPU/read-only decision-preparation units only.
-U1 HUMAN_CONFIRMED_DESIGN_DIRECTION / GPU_RETEST_DEFERRED: Local-first RTX3060
-candidate; WindowsHost target87C reference/futurecontrolledstop87C; initialwarning83C
-PROPOSED. Not NVIDIA long-training certification. OldW12 80C gate/32.106942s/HALTED
-budget unchanged; no GPUkernel/F-B/resume/AMP/fullmodelfeasibility proven.
-U2 preparation IN_PROGRESS; no new data/evaluation admission or historicalstudy.
+Branch research/v7-window13-admission-preparation,base/main8db5b9111b98d4965a9f56f10a51c5157284b900,
+.worktrees/v7-window13-admission-preparation,WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED.
+Main unchanged; W11 localintegration verified (olderUNMERGED text historical).
+W06 fixed96c60564/ProtocolAudit8601c737/Recoverye181f366/W12 fixed16e444f9 only
+UNMERGED_REFERENCE_ONLY; no merge or authority promotion.
+
+U1 COMPLETE_REVIEWED,sourcef26dbf5: HUMAN_CONFIRMED_DESIGN_DIRECTION/GPU_RETEST_DEFERRED;
+RTX3060 local-first candidate,WindowsHost target87C reference/futurestop87C;
+83C warningPROPOSED, not NVIDIA longtraining certification. OldW12 80C/HALTED/
+32.106942s unchanged. GPUkernel/F-B/resume/AMP/fullmodelshape NOT_VERIFIED.
+U2 COMPLETE_REVIEWED: [Human Decision Brief](../../reports/v7_window13_decision_brief.md),
+DT1–4/EV1–6 options PROPOSED only. W05 audit reused0VERIFIED/21CONDITIONAL/27UNKNOWN;
+2TPEx oddlot archives176096bytes currentlyverified, no historicalavailability/QC/
+calendar/universe/labels/full48panel proven. No realRankIC or dataadmission.
+ENGINEERING_READY scopedW07–11 tools; POLICY_REQUIRED/DATA_BLOCKED/RUNTIME_BLOCKED
+separate. 140mainCPUtests+13fixedW06prototypePASS; bothreviewCritical0/Required0,
+0rework. ProtectedW11 83files+W12 5diagnostics unchanged; no newsource/framework.
 [Decision](../02_History/Decisions/20261024-window13-thermal-admission-preparation.json),
-[bounded evidence](../../research/v7/window13-verification.json),
+[evidence](../../research/v7/window13-evidence.json),
 [sole queue](../../research/v7/research-program.md#window13-thermal-and-admission-preparation).
+NextHuman: freeze timing/missing/source/evidenceclass, identify qualified bytes or
+approve futurevintage collection, then evaluation/compute contract. No READY execution
+in this completedgrant; new boundedauthorization required. Do notclearHALTED/retestGPU.
 StrictSTOP/E1matrixBLOCKED/H2NOT_APPROVED/FairEvalPROPOSED/PreNextOpenPROPOSED/
-GPU_SAFETY_HALTED/RecoveryDEFERRED. Resume this named tree/evidence, not GPU retest.
+GPU_SAFETY_HALTED/RecoveryDEFERRED unchanged. FinalHEAD containingU2closurecommit.
 
 ## Window11 L2 & CPU Resume — complete / STOP
 

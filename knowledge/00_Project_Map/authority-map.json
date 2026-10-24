@@ -24,10 +24,12 @@
       "topic": "Window13 thermal direction and data/evaluation admission preparation",
       "primary_authority": "knowledge/02_History/Decisions/20261024-window13-thermal-admission-preparation.json",
       "authority_class": "CANONICAL",
-      "status": "HUMAN_CONFIRMED_DESIGN_DIRECTION_GPU_RETEST_DEFERRED_NO_NEW_RESEARCH_ADMISSION",
+      "status": "WINDOW_COMPLETE_STOP_UNMERGED_HUMAN_DESIGN_DIRECTION_ONLY_GPU_RETEST_DEFERRED_NO_ADMISSION",
       "secondary_evidence": [
         "research/v7/window13-verification.json",
-        "research/v7/research-program.md"
+        "research/v7/research-program.md",
+        "reports/v7_window13_decision_brief.md",
+        "research/v7/window13-evidence.json"
       ],
       "conflicts": [
         "W12 remains UNMERGED_REFERENCE_ONLY and GPU_SAFETY_HALTED; future87C gate never changes old80C ledger",

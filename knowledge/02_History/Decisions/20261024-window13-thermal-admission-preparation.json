@@ -62,5 +62,18 @@
     "pre_next_open": "PROPOSED",
     "gpu_validation": "SAFETY_HALTED",
     "inference_recovery_implementation": "DEFERRED"
+  },
+  "admission_preparation": {
+    "status": "PROPOSED_OPTIONS_NOT_ADMITTED",
+    "decision_brief": "reports/v7_window13_decision_brief.md",
+    "unfrozen_human_decisions": [
+      "DT1–4",
+      "EV1–6"
+    ],
+    "exact_freeze": null,
+    "deadline": null,
+    "source_missing_policy": null,
+    "formal_evaluation_policy": null,
+    "new_training_authorization": false
   }
 }

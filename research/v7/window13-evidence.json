@@ -2,11 +2,11 @@
   "schema_version": 1,
   "artifact_class": "CANONICAL",
   "evidence_class": "READONLY_DECISION_PREPARATION_NOT_ADMISSION",
-  "status": "U1_COMPLETE_REVIEWED_U2_IN_PROGRESS",
+  "status": "WINDOW_COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
   "branch": "research/v7-window13-admission-preparation",
   "base": "8db5b9111b98d4965a9f56f10a51c5157284b900",
   "main_modified": false,
-  "source_checkpoint": "containing U1 commit",
+  "source_checkpoint": "f26dbf5dfdc568abc154aac540fba2c5b77f5859",
   "U1": {
     "status": "COMPLETE_REVIEWED",
     "decision": "knowledge/02_History/Decisions/20261024-window13-thermal-admission-preparation.json",
@@ -17,9 +17,15 @@
     "protected_files_independently_verified": 88
   },
   "U2": {
-    "status": "IN_PROGRESS",
+    "status": "COMPLETE_REVIEWED_DECISION_PACKAGE_ONLY",
     "admitted": false,
-    "review_rework_rounds": 0
+    "review_rework_rounds": 0,
+    "decision_brief": "reports/v7_window13_decision_brief.md",
+    "reviewer": "/root/independent_review",
+    "critical": 0,
+    "required": 0,
+    "independent_source_identities_verified": 24,
+    "independent_raw_bytes_verified": 176096
   },
   "validation": {
     "main_components": {
@@ -37,7 +43,12 @@
     },
     "real_samples": "research/v7/window13-verification.json",
     "new_tests_written": 0,
-    "new_implementation": false
+    "new_implementation": false,
+    "commands": {
+      "main": "CUDA_VISIBLE_DEVICES=empty CPU Python -B -m unittest v7_research_temporal_test v7_research_isolation_test v7_research_evaluation_test v7_research_comparison_test v7_research_artifacts_test v7_research_replay_test v7_source_snapshot_test tools.project_knowledge.test_knowledge_governance -q (modules under V6.experimental)",
+      "W06": "same CPU env, original fixed W06 worktree: python -B -m unittest V6.experimental.v7_window06_decision_test -q",
+      "identity": "git show fixedSHA:path -> SHA256; named snapshots reuse V6.experimental.v7_source_snapshot.verify_snapshot; no directory discovery or downloads"
+    }
   },
   "network_requests": 0,
   "gpu_calls": 0,
@@ -51,5 +62,116 @@
     "pre_next_open": "PROPOSED",
     "gpu_validation": "SAFETY_HALTED",
     "inference_recovery": "DEFERRED"
+  },
+  "final_checkpoint": "containing U2 closure commit",
+  "readiness": {
+    "ENGINEERING_READY": "Scoped existing W07\u201311 synthetic/controlled CPU components; not real study authorization",
+    "POLICY_DECISION_REQUIRED": [
+      "DT1\u20134",
+      "EV1\u20136"
+    ],
+    "DATA_EVIDENCE_BLOCKED": "No eligible full48 historical panel identified within the two named archives; scope not universal",
+    "RUNTIME_BLOCKED": "GPU SAFETY_HALTED; no retest in grant"
+  },
+  "work_scope": {
+    "units": 2,
+    "implementation_changes": 0,
+    "new_frameworks": 0,
+    "feature_reaudit": false,
+    "repeated_gpu_audit": false,
+    "new_external_sources": 0,
+    "model_fits": 0,
+    "extra_human_intervention": 0,
+    "u1_review_rework_rounds": 0,
+    "u2_review_rework_rounds": 0
+  },
+  "remaining_human_decisions": {
+    "priority1": "DT1\u20134 freeze/deadline/source/missingness/evidence class/storage choice",
+    "priority2": "Identify authorized immutable panel/calendar/universe/label/restore bytes or separately approve prospective vintage collection",
+    "priority3": "EV1\u20136 geometry/maturity/purge/common evaluator/refit/statistics/final/compute freeze after data qualification"
+  },
+  "knowledge_update": "CurrentState/AuthorityMap markdown+JSON/DecisionRecord/soleBacklog/WorktreeRegister updated; no global governance/frozen policy change",
+  "protected_after": {
+    "verified_at": "2026-10-24T07:19:48.578499+00:00",
+    "files": 88,
+    "byte_identical_to_before": true,
+    "w12_halted_unchanged": true,
+    "w11_checkpoint_bytes_untouched": true,
+    "frozen_four_sha_unchanged": true,
+    "main_head": "8db5b9111b98d4965a9f56f10a51c5157284b900"
+  },
+  "closure_review": {
+    "reviewer": "/root/independent_review",
+    "status": "GO_TO_LOCAL_COMMIT_AND_STOP",
+    "critical": 0,
+    "required": 0,
+    "additional_rework": 0
+  },
+  "knowledge_health": {
+    "status": "WARNING",
+    "structural_failures": 0,
+    "existing_warning_components": [
+      "Governance",
+      "Authority Drift",
+      "Legacy Docs"
+    ],
+    "record": "research/v7/window13-knowledge-health.txt"
+  },
+  "usage_snapshot": {
+    "tool_reported_tokens": 200181,
+    "tool_reported_elapsed_seconds": 561,
+    "certified_billing_cost": false,
+    "aggregate_token_wallclock_cap_enforced": false,
+    "note": "Goal surface unbudgeted counters only; bounded2units completed and STOP, not an indefinite run."
+  },
+  "artifact_hashes": {
+    "knowledge/02_History/Decisions/20261024-window13-thermal-admission-preparation.json": {
+      "sha256": "8301d7ecca5280801a327f76bfea3fa744da2369fa92b3638cb7d3e533b0c5d3",
+      "bytes": 3431
+    },
+    "reports/v7_window13_decision_brief.md": {
+      "sha256": "30f5173a7a92b97251ec242126258f06b32d4c12e445d9b603fda13424846dea",
+      "bytes": 11725
+    },
+    "knowledge/00_Project_Map/Current_State.md": {
+      "sha256": "1d4565f783f8d7999a6d809de62d45d0e7848ccfc052b713472f38c23f9f4fee",
+      "bytes": 70038
+    },
+    "knowledge/00_Project_Map/Authority_Map.md": {
+      "sha256": "3a8007553208ba43af716f299c417be9033864be6a415ad1122a9ff7e5fb0359",
+      "bytes": 55980
+    },
+    "knowledge/00_Project_Map/authority-map.json": {
+      "sha256": "ad36fdd6798322853aa48e781618209b9312fc81423b23da182a25cbd9a0f5d9",
+      "bytes": 28415
+    },
+    "knowledge/00_Project_Map/Worktree_Register.md": {
+      "sha256": "94a2c898dee74f2fda8bf938c469de305ebd33d1237dca06664aa84ce72b3521",
+      "bytes": 34655
+    },
+    "research/v7/research-program.md": {
+      "sha256": "bd4200da3919f249a8ec2ccc7175ae3aa914d2e2dd01c32ee898dcff8c48ad02",
+      "bytes": 76551
+    },
+    "research/v7/window13-verification.json": {
+      "sha256": "d4317e93108a37e9842d2965de554891df2a93fe434245bef6fbd97ea6ecf4bb",
+      "bytes": 36205
+    },
+    "research/v7/window13-cpu-tests.txt": {
+      "sha256": "9ad17918e081c8b0b4b12b109df5c22534e031e38c4fc0996ebcbab0cf7a788f",
+      "bytes": 100
+    },
+    "research/v7/window13-w06-tests.txt": {
+      "sha256": "9e15a2ffa0e2e275a02a26770181aad4fe00a665db46d1983129f5702dfecaaa",
+      "bytes": 98
+    },
+    "research/v7/window13-knowledge-health.txt": {
+      "sha256": "bf93f67ea1dfe58182f4c71dd1f609a034debb6e81c2599949e554cb6c78863c",
+      "bytes": 237
+    },
+    "research/v7/window13-knowledge-impact.txt": {
+      "sha256": "cd2862649fdd211e6ce1d79e92b8bb8c95b462b7e959fdc22ce05bedf2440648",
+      "bytes": 2186
+    }
   }
 }

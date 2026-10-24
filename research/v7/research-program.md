@@ -7,18 +7,29 @@
 
 ## Window13 Thermal and Admission Preparation
 
-UNMERGED/NOT_DEPLOYED; main8db unchanged, named W06/W12/Protocol/recovery references
-only, not adopted. No GPU/training/new admission. Two units maximum.
+WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED. Branch research/v7-window13-admission-preparation,
+base/main8db unchanged. U1sourcef26dbf5; finalHEAD containingU2closurecommit.
 
-| Unit | Authority/objective | Status / dependencies |
+| Unit | Authority/objective | Status / evidence |
 |---|---|---|
-| W13-U1 | HumanWindow13 preserve thermal direction | COMPLETE_PENDING_REVIEW:87C reference/futurestop,83C warningPROPOSED; GPU_RETEST_DEFERRED; oldHALTEDbudget retained |
-| W13-U2 | HumanWindow13 minimal data/decision-time/evaluation brief | IN_PROGRESS; reuseW05/W06/Protocol andW07–11 evidence, bounded two176096-byte archives only; no eligible real48panel identified |
+| W13-U1 | HumanWindow13 preserve thermal direction | COMPLETE_REVIEWED;87C reference/futurestop,83C warningPROPOSED,GPU_RETEST_DEFERRED;oldHALTEDbudget retained;0Critical/Required/0rework |
+| W13-U2 | HumanWindow13 minimal data/decision-time/evaluation brief | COMPLETE_REVIEWED;DT1–4/EV1–6 PROPOSED;140main+13fixedW06CPUtestsPASS;24sourceidentities/2raw176096bytes checked;no qualified full48panel in named scope;0Critical/Required/0rework |
 
-[Decision](../../knowledge/02_History/Decisions/20261024-window13-thermal-admission-preparation.json),
-[evidence](window13-verification.json). Research options remainPROPOSED; no new READY
-study/training grant. StrictSTOP/E1BLOCKED/H2NOT_APPROVED/FairEvalPROPOSED/
-PreNextOpenPROPOSED/GPU_SAFETY_HALTED/RecoveryDEFERRED unchanged.
+[Decision Brief](../../reports/v7_window13_decision_brief.md),
+[Decision Record](../../knowledge/02_History/Decisions/20261024-window13-thermal-admission-preparation.json),
+[evidence](window13-evidence.json),[bounded verification](window13-verification.json).
+No READY execution remains in completedgrant. Next priorities (HUMAN_DECISION_REQUIRED):
+1. DT1–4 actualfreeze/deadline/source/missing/stale/revision/evidenceclass/storage.
+2. Specify authorized immutable smallpanel/calendar/universe/label/restorebytes;
+   DATA_EVIDENCE_BLOCKED if unavailable, or separatelyapprove forwardvintage collection.
+3. EV1–6 actualfolds/maturity/purge/evaluator/selection-refit/statistics/final/compute;
+   then consider separatelyauthorized smallCPUbaseline research. GPU SAFETY_HALTED
+   is independent; no retest/reset/driver/thermal change here.
+
+ENGINEERING_READY limited existingW07–11 synthetictools/CPUevidence. W06/Protocol/
+Recovery/W12 remain fixedSHA references only, not merged/adopted; formalresearch/newdata
+admission unapproved. StrictSTOP/E1BLOCKED/H2NOT_APPROVED/FairEvalPROPOSED/
+PreNextOpenPROPOSED/GPU_SAFETY_HALTED/RecoveryDEFERRED. No nextwindow execution.
 
 ## Window11 L2 and CPU Resume
 
