@@ -80,3 +80,18 @@ class ReviewRegressionTest(unittest.TestCase):
   self.assertEqual(self.call()['status'],'WINDOW_CLOSED');self.fetch.assert_not_called()
 
 if __name__=='__main__':unittest.main()
+
+class Window22ScopeTest(unittest.TestCase):
+ def test_continuous_window_separate_scope_and_no_reopen(self):
+  with tempfile.TemporaryDirectory() as d:
+   root=Path(d);p={**P,'start_date':'2019-01-01','end_date':'2023-12-31'}
+   f=Mock(return_value=(200,{},body(date='2019-01-02'),True))
+   r=request(root,p,kind='price',fetch=f,scope='W22')
+   self.assertEqual(r['status'],'CAPTURED');self.assertEqual(r['authority_scope'],'W22')
+   self.assertEqual(request(root,P,kind='price',fetch=f)['status'],'REFUSED');self.assertEqual(f.call_count,1)
+ def test_w22_rejects_unplanned_diagnostic_and_outside_period(self):
+  with tempfile.TemporaryDirectory() as d:
+   f=Mock()
+   for p,k in [(P,'price'),({**P,'start_date':'2019-01-01','end_date':'2023-12-31'},'repeat')]:
+    self.assertEqual(request(Path(d),p,kind=k,fetch=f,scope='W22')['status'],'REFUSED')
+   f.assert_not_called()

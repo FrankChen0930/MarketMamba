@@ -21,10 +21,27 @@
   },
   "topics": [
     {
+      "topic": "Window22 continuous historical panel candidate",
+      "primary_authority": "research/v7/window22-evidence.json",
+      "authority_class": "CANONICAL",
+      "status": "COMPLETE_STOP_UNMERGED_RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "secondary_evidence": [
+        "research/v7/window22-panel-summary.json",
+        "research/v7/window22-lifecycle.json",
+        "research/v7/window22-official-evidence.json",
+        "reports/v7_window22_historical_panel.md"
+      ],
+      "conflicts": [
+        "No full daily qualified calendar/universe",
+        "No label formula or research admission",
+        "W19 no access; W12 HALTED unchanged"
+      ]
+    },
+    {
       "topic": "Window21 bounded real FinMind historical source proof",
       "primary_authority": "knowledge/02_History/Decisions/20261025-window21-finmind-proof.json",
       "authority_class": "CANONICAL",
-      "status": "COMPLETE_STOP_UNMERGED_OBSERVED_RETROSPECTIVE_SAMPLE_ONLY",
+      "status": "LOCAL_INTEGRATED_BY_W22_FIXED428a5fa_PRIOR_REVIEW_HISTORY_PRESERVED",
       "secondary_evidence": [
         "research/v7/window21-evidence.json",
         "research/v7/window21-proof-summary.json",

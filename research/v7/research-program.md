@@ -1,15 +1,32 @@
 # V7 Research Program and Current Development Backlog
 
-> Current planning owner: isolated Window21 bounded FinMind proof branch, linked by canonical
+> Current planning owner: isolated Window22 continuous panel proof branch, linked by canonical
 > Current State/Authority Map. Planning status does not grant research, execution,
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
 
+## Window22 Continuous Historical Panel
+
+W21兩Required獨立複核CLOSED，15testsPASS/Critical0Required0；133localfiles驗Hash。
+main由6a34520 ff-only至 `428a5fa5cb7b771db39a053f88c7046501399f7e`；沒有提前main文件commit。
+W22 `.worktrees/v7-window22-historical-panel` / `research/v7-window22-historical-panel`，base428a5fa；UNMERGED/NOT_DEPLOYED。
+10FinMindpriceGET、0metadata/diagnostic，均HTTP200，unused20CLOSED；10檔9864rows/1762931rawbytes，2019–2023。
+6檔同1216reference日期（不是合格officialcalendar），9725structuralVALID/131UNVERIFIED/8zero，不fill或算return/RankIC。
+官方18419/25036/11543CSV各1GET；TPExdelisted403立即停，共4resourceattempts；cataloguedocs另3GET。
+6515TWSE上市20210120、8272TPEx上櫃20241023、2499終止上市20201110有officialCSV證據；逐日suspension/membership未知。
+實際5d/10d eligible0：calendar/actions/availability/labelmaturity仍UNKNOWN，historicalstudyPROPOSED，不作admission。
+Root.artifacts/window22-historical-panel與同機restore保存raw/panel/mask；15產物獨立程序restorePASS，BACKUP_PENDING。
+[Report](../../reports/v7_window22_historical_panel.md)、[coverage](window22-panel-summary.json)、
+[唯一Backlog](research-program.md#window22-continuous-historical-panel)。
+23focusedtestsPASS／獨立GO0CriticalRequired／0rework；研究執行無READY。
+下一步只建議精準calendar/lifecycle補證與Human統一data/label/eval/CPU授權；本輪完成後STOP。
+W19工作樹/排程/Artifacts/budget不讀寫不觸發不整合；W12SAFETY_HALTED/StrictSTOP/E1BLOCKED/H2NOT_APPROVED不變。
+
 ## Window21 FinMind Historical Data Proof
 
-COMPLETE/STOP/UNMERGED/NOT_DEPLOYED；research/v7-window21-finmind-proof，base/main6a34520。
+COMPLETE/STOP/LOCAL_INTEGRATED_BY_W22/NOT_DEPLOYED；research/v7-window21-finmind-proof，base/main6a34520。
 U1：W20verifiedff＋有限匿名實測18/22（14price/3meta/1repeat），六檔116rows/48dates2010..2025；
-U2：source/schema/QC/raw/provenance/18independentRestore＋一次review/單輪修復；15focusedPASS；無第二次獨立GO。
+U2：source/schema/QC/raw/provenance/18independentRestore＋一次review/單輪修復；15focusedPASS；W22已針對R1/R2取得獨立複核GO並整合固定428a5fa。
 根目錄.artifacts/window21-finmind-proof/restore保存actualbytes；CLOSED，4unused不可重跑；備份BACKUP_PENDING。
 來源CONDITIONAL_CANDIDATE，非Dataset/研究准入；3zeroPrice不補、2marketexception/11unknown保留。
 BLOCKED：actualCalendar（vendor含future/20261023休市）、historicalUniverse/lifecycle、missing/actions/Labelmaturity與eval/compute批准。

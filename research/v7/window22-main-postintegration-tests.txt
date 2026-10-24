@@ -1,0 +1,20 @@
+test_access_error_stops_all_without_retry (V6.experimental.v7_finmind_proof_test.FinMindProofTest.test_access_error_stops_all_without_retry) ... ok
+test_api_application_denial_and_partial_stop (V6.experimental.v7_finmind_proof_test.FinMindProofTest.test_api_application_denial_and_partial_stop) ... ok
+test_duplicate_normal_query_refused_repeat_distinct_capture_no_overwrite (V6.experimental.v7_finmind_proof_test.FinMindProofTest.test_duplicate_normal_query_refused_repeat_distinct_capture_no_overwrite) ... ok
+test_durable_raw_and_restore_and_lost_bytes (V6.experimental.v7_finmind_proof_test.FinMindProofTest.test_durable_raw_and_restore_and_lost_bytes) ... ok
+test_emerging_only_with_explicit_context_no_universe_inference (V6.experimental.v7_finmind_proof_test.FinMindProofTest.test_emerging_only_with_explicit_context_no_universe_inference) ... ok
+test_exact_22_total_and_six_symbol_three_window_budget (V6.experimental.v7_finmind_proof_test.FinMindProofTest.test_exact_22_total_and_six_symbol_three_window_budget) ... ok
+test_mismatched_stock_date_and_invalid_schema_rejected (V6.experimental.v7_finmind_proof_test.FinMindProofTest.test_mismatched_stock_date_and_invalid_schema_rejected) ... ok
+test_token_unknown_dataset_and_large_window_no_dispatch (V6.experimental.v7_finmind_proof_test.FinMindProofTest.test_token_unknown_dataset_and_large_window_no_dispatch) ... ok
+test_total_metadata_and_symbol_limits (V6.experimental.v7_finmind_proof_test.FinMindProofTest.test_total_metadata_and_symbol_limits) ... ok
+test_unknown_calendar_empty_not_claim_missing_trading_day (V6.experimental.v7_finmind_proof_test.FinMindProofTest.test_unknown_calendar_empty_not_claim_missing_trading_day) ... ok
+test_valid_zero_and_missing_semantics (V6.experimental.v7_finmind_proof_test.FinMindProofTest.test_valid_zero_and_missing_semantics) ... ok
+test_closed_window_refuses_unused_budget (V6.experimental.v7_finmind_proof_test.ReviewRegressionTest.test_closed_window_refuses_unused_budget) ... ok
+test_dangling_claim_without_terminal_fails_closed (V6.experimental.v7_finmind_proof_test.ReviewRegressionTest.test_dangling_claim_without_terminal_fails_closed) ... ok
+test_incomplete_read_consumes_claim_and_stops_repeat (V6.experimental.v7_finmind_proof_test.ReviewRegressionTest.test_incomplete_read_consumes_claim_and_stops_repeat) ... ok
+test_missing_published_raw_stops_before_repeat_no_repair (V6.experimental.v7_finmind_proof_test.ReviewRegressionTest.test_missing_published_raw_stops_before_repeat_no_repair) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 2.693s
+
+OK

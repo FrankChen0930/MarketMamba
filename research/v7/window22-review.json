@@ -1,0 +1,31 @@
+{
+  "reviewer": "/root/independent_review",
+  "main_rounds": 1,
+  "verdict": "GO",
+  "Critical": 0,
+  "Required": 0,
+  "Optional": 0,
+  "independent_tests": 23,
+  "seconds": 3.04,
+  "artifacts_verified": 78,
+  "FinMind_records_verified": 10,
+  "actual_rows": 9864,
+  "response_bytes": 1762931,
+  "qc": [
+    9725,
+    131,
+    8
+  ],
+  "label_mask_rows": 19728,
+  "eligible": 0,
+  "restore_verified": "10FinMind records/raw/manifest +3official +2derived byte-identical",
+  "official_boundaries_verified": [
+    "6515TWSE20210120",
+    "8272TPEx20241023",
+    "2499delist1091110"
+  ],
+  "rework_rounds": 0,
+  "network_calls": 0,
+  "W19_operations": 0,
+  "authority": "Engineering evidence only; no data/research admission or new GET permission"
+}

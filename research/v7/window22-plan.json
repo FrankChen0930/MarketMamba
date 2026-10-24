@@ -1,0 +1,35 @@
+{
+  "base": "428a5fa5cb7b771db39a053f88c7046501399f7e",
+  "scope": "HumanWindow22",
+  "sample": "HINDSIGHT_SELECTED_SAMPLE",
+  "period": [
+    "2019-01-01",
+    "2023-12-31"
+  ],
+  "initial": [
+    "2330",
+    "8069",
+    "2499",
+    "6515",
+    "8272",
+    "9929"
+  ],
+  "expansion": [
+    "2303",
+    "2317",
+    "3105",
+    "5483"
+  ],
+  "expansion_reason": "Initial six mix diagnostic emerging/delist/zero-price cases; add two long-listed per market with current official listing-start evidence before period. Identity-based engineering coverage, no return/performance selection, no representative universe claim. Stop at ten price queries.",
+  "budgets": {
+    "FinMind": 30,
+    "price": 24,
+    "metadata": 4,
+    "diagnostic": 2,
+    "planned_actual_price": 10,
+    "official_resource": 4
+  },
+  "formal_calendar": "UNKNOWN; reference2330/8069dateintersection plus documented annual totals not full official daily calendar",
+  "labels": "diagnostic eligibility only; formula and admission unapproved",
+  "W19": "NO_ACCESS"
+}

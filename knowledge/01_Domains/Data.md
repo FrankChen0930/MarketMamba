@@ -189,3 +189,10 @@ broad historical PIT restoration on available evidence, not universal impossibil
 Monthly policy remains EXCLUDED_PUBLIC_RECONSTRUCTION_EXHAUSTED; forward vintages
 are PROPOSED/uncollected. [Report](../../reports/v7_window05_revenue_pit.md),
 [evidence](../../research/v7/window05-revenue-feasibility.json). UNMERGED/NOT_DEPLOYED.
+
+## Window22 bounded continuous proof
+
+10 hindsight-selected stocks2019–2023,9864rows, current retrospective versions only.
+Official listing/delisting boundaries partial; daily tradability/calendar/actions remain UNKNOWN.
+No label values/RankIC/fit/admission; zero/missing not filled. Private root and same-host restore BACKUP_PENDING.
+See [bounded report](../../reports/v7_window22_historical_panel.md) and sole backlog. W19 protected, W12HALTED unchanged.

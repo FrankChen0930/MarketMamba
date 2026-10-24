@@ -1,10 +1,20 @@
 # Worktree Register
 
+## Window22 historical panel — 2026-10-25
+
+- Path `.worktrees/v7-window22-historical-panel`; branch `research/v7-window22-historical-panel`;
+  base428a5fa5cb7b771db39a053f88c7046501399f7e; owner Codex/HumanWindow22; created2026-10-25; retiredN/A.
+- COMPLETE/STOP/UNMERGED/NOT_DEPLOYED. W21 only short windows; this isolated two-unit scope adds bounded continuous proof.
+- Existing experimental/research/reports/Decisions and root.artifacts reused; no second platform.
+- Root.artifacts/window22-historical-panel and restore own unique raw/panel/mask/source; BACKUP_PENDING, no GC.
+- Safe removal requires retained clean branch/commit, resolved artifact/source references and explicit retirement review.
+- W19 protected; no operations. W21 locally integrated fixed428a5fa, original bytes remain untouched.
+
 ## Window21 FinMind proof — 2026-10-25
 
 - Path `.worktrees/v7-window21-finmind-proof`;branch `research/v7-window21-finmind-proof`;
   base `6a34520d8f9c1166172af3503cad531e23f5ecec`;owner Codex/HumanWindow21;
-  created2026-10-25;retiredN/A;COMPLETE/STOP/UNMERGED/NOT_DEPLOYED。
+  created2026-10-25;retiredN/A;COMPLETE/STOP/LOCAL_INTEGRATED_BY_W22/NOT_DEPLOYED。
 - ExistingW20onlydocumentation，無同目標真實proof；沿用experimental/research/reports/Decisions及root.artifacts，無新平台。
 - Actualraw/snapshot/record/claims/source/closedmarker位於根目錄.artifacts/window21-finmind-proof，
   root.artifacts/window21-finmind-restore是同機copy，BACKUP_PENDING；source/與source-reviewed/分開留存，18originalrecords不改。

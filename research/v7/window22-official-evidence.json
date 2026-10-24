@@ -1,0 +1,119 @@
+{
+  "checked_at": "2026-10-24T18:42:14.362002+00:00",
+  "official_resource_budget": {
+    "maximum": 4,
+    "used": 4,
+    "direct_csv_gets": 3,
+    "web_page_attempts": 1,
+    "catalogue_document_gets_separate": 3,
+    "search_metadata": "bounded official document lookup; no market-data API probing",
+    "retry_redirect_fallback": 0
+  },
+  "resource_rows": [
+    {
+      "dataset": "18419",
+      "url": "https://mopsfin.twse.com.tw/opendata/t187ap03_L.csv",
+      "license": "OGDL1.0",
+      "catalogue": "https://data.gov.tw/dataset/18419",
+      "rows": 1097,
+      "raw_bytes": 674470,
+      "use": "private historical lifecycle crosscheck; attribution SFB/TWSE; present snapshotnot original historical vintage"
+    },
+    {
+      "dataset": "25036",
+      "url": "https://mopsfin.twse.com.tw/opendata/t187ap03_O.csv",
+      "license": "OGDL1.0",
+      "catalogue": "https://data.gov.tw/dataset/25036",
+      "rows": 894,
+      "raw_bytes": 551698,
+      "use": "private lifecycle crosscheck; attribution SFB/TPEx"
+    },
+    {
+      "dataset": "11543",
+      "url": "https://www.twse.com.tw/company/suspendListingCsvAndHtml?type=open_data",
+      "license": "OGDL1.0",
+      "catalogue": "https://data.gov.tw/en/datasets/11543",
+      "rows": 265,
+      "raw_bytes": 7905,
+      "use": "private delisting-date verification; attribution SFB/TWSE"
+    },
+    {
+      "url": "https://www.tpex.org.tw/zh-tw/mainboard/listed/delisted.html",
+      "http_status": 403,
+      "status": "STOPPED_NO_RETRY_NO_ALTERNATE",
+      "raw_bytes": "NOT_SAVED_BY_WEB_TOOL; error observation only",
+      "license": "UNKNOWN_NOT_DOWNLOADED"
+    }
+  ],
+  "calendar_claims": [
+    {
+      "year": 2019,
+      "business_days": 242,
+      "url": "https://www.twse.com.tw/downloads/zh/about/company/annual_108.pdf"
+    },
+    {
+      "year": 2020,
+      "business_days": 245,
+      "url": "https://www.twse.com.tw/downloads/zh/about/company/Annual/109/ebook/files/basic-html/page16.html"
+    },
+    {
+      "year": 2021,
+      "business_days": 244,
+      "url": "https://investoredu.twse.com.tw/Mobile_Pages/..%2FFileSystem%2FFileUpload%2F08581726-a4ed-49a4-beeb-b5a37031d58e.pdf"
+    },
+    {
+      "year": 2022,
+      "business_days": 246,
+      "url": "https://wwwc.twse.com.tw/downloads/zh/about/company/Annual/111/ebook/files/basic-html/page18.html"
+    },
+    {
+      "year": 2023,
+      "business_days": 239,
+      "url": "https://wwwc.twse.com.tw/downloads/en/about/company/annual/2023/P2.pdf"
+    }
+  ],
+  "calendar_claims_evidence_class": "OFFICIAL_DOCUMENT_SEARCH_INDEX_EXCERPTS_NOT_ARCHIVED_FULL_DOCUMENT_BYTES; count-level corroboration, not complete calendar",
+  "events": [
+    {
+      "session": "2023-08-03",
+      "role": "TEMPORARY_CLOSURE",
+      "source": "https://investoredu.twse.com.tw/Mobile_pages/..%2FFileSystem%2FFileUpload%2Fbe0109d1-76a0-4412-a00d-58a88c6e1714.pdf",
+      "evidence": "official press-release search extract; no full bytes archived"
+    },
+    {
+      "session": "2019-08-09",
+      "role": "TEMPORARY_CLOSURE_TWSE_UNCONFIRMED_IN_THIS_SPRINT",
+      "source": "https://www.taifex.com.tw/cht/11/newsDetail.do?idx=9624&thetype=2",
+      "evidence": "TAIFEX says its futures market closed; cannot promote this into TWSE official authority"
+    },
+    {
+      "session": "2020-11-10",
+      "security": "2499",
+      "role": "TWSE_DELISTED",
+      "source": "CSV11543; official raw hash in localresource record"
+    },
+    {
+      "session": "2020-09-30",
+      "security": "2499",
+      "role": "ALREADY_SUSPENDED_BY_THIS_DATE_EXACT_START_UNKNOWN",
+      "source": "https://www.twse.com.tw/staticFiles/news/news/tsecnews/ff8080817447bceb0174dd31d24f0415.pdf",
+      "evidence": "official search extract states already suspended, then additional suspension Sep30; does not explain Apr7last-priceboundary"
+    },
+    {
+      "session": "2021-01-20",
+      "security": "6515",
+      "role": "TWSE_LISTING_START",
+      "source": "CSV18419; corroborated https://www.twse.com.tw/pdf/ch/6515_ch.pdf"
+    }
+  ],
+  "calendar_status": "UNKNOWN_FULL_DATE_LEVEL_QUALIFICATION; do not use FinMindTradingDate as qualified",
+  "historical_universe_status": "PARTIAL_LIFECYCLE_BOUNDARIES_NOT_DAILY_TRADABILITY",
+  "vendor_calendar_contrast": {
+    "source": "W21 closed record04 reused read-only",
+    "raw_sha256": "10966c633a664900f78c40721265c4e7c3b0481a009bd4d927697617b415cfd6",
+    "vendor_dates_in_period": 1216,
+    "vendor_only_not_price_reference": [],
+    "price_reference_only_not_vendor": [],
+    "qualification": "UNKNOWN; neither a qualified calendar nor claim every missing row is a closure"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "main_before": "6a34520d8f9c1166172af3503cad531e23f5ecec",
+  "fixed_source": "428a5fa5cb7b771db39a053f88c7046501399f7e",
+  "main_after": "428a5fa5cb7b771db39a053f88c7046501399f7e",
+  "method": "ff-only",
+  "targeted_independent_closure": {
+    "reviewer": "/root/independent_review",
+    "R1": "CLOSED",
+    "R2": "CLOSED",
+    "Critical": 0,
+    "Required": 0,
+    "tests": 15,
+    "seconds": 2.814,
+    "source_sha256": "14aa7a4623c45f9400d08faf0147316c28735fd8e179f922f80143e37ed274f7"
+  },
+  "preflight": {
+    "main_source_clean": true,
+    "local_artifact_files_verified": 133,
+    "diff_check": true,
+    "scope": "W21only; contracts/productionunchanged"
+  },
+  "W19": "NO_WORKTREE_ARTIFACT_SCHEDULER_BUDGET_ACCESS",
+  "extra_main_closure_commit": false
+}

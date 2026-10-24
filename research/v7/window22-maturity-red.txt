@@ -1,0 +1,77 @@
+EEEEEE
+======================================================================
+ERROR: test_future_and_immature (V6.experimental.v7_historical_panel_test.LabelDiagnosticTest.test_future_and_immature)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window22-historical-panel/V6/experimental/v7_historical_panel_test.py", line 19, in test_future_and_immature
+    self.assertIn('FUTURE_FEATURE',self.call(feature_available_at='2023-12-16T00:00:00+00:00')['reasons'])
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window22-historical-panel/V6/experimental/v7_historical_panel_test.py", line 9, in call
+    args=dict(signal=self.days[0],horizon=5,sessions=self.days,prices=self.rows,asof='2024-01-02T00:00:00+00:00',calendar_verified=True,membership_verified=True,actions_verified=True,feature_available_at='2023-12-14T10:00:00+00:00',decision_at='2023-12-15T00:00:00+00:00',label_available_at='2023-12-29T08:00:00+00:00');args.update(kw);return label_diagnostic(**args)
+                                                                                                                                                                                                                                                                                                                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: label_diagnostic() got an unexpected keyword argument 'label_available_at'
+
+======================================================================
+ERROR: test_label_publication_unknown_is_not_maturity (V6.experimental.v7_historical_panel_test.LabelDiagnosticTest.test_label_publication_unknown_is_not_maturity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window22-historical-panel/V6/experimental/v7_historical_panel_test.py", line 27, in test_label_publication_unknown_is_not_maturity
+    self.assertIn('LABEL_MATURITY_EVIDENCE_UNKNOWN',self.call(label_available_at=None)['reasons'])
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window22-historical-panel/V6/experimental/v7_historical_panel_test.py", line 9, in call
+    args=dict(signal=self.days[0],horizon=5,sessions=self.days,prices=self.rows,asof='2024-01-02T00:00:00+00:00',calendar_verified=True,membership_verified=True,actions_verified=True,feature_available_at='2023-12-14T10:00:00+00:00',decision_at='2023-12-15T00:00:00+00:00',label_available_at='2023-12-29T08:00:00+00:00');args.update(kw);return label_diagnostic(**args)
+                                                                                                                                                                                                                                                                                                                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: label_diagnostic() got an unexpected keyword argument 'label_available_at'
+
+======================================================================
+ERROR: test_missing_entry_exit_and_delisting (V6.experimental.v7_historical_panel_test.LabelDiagnosticTest.test_missing_entry_exit_and_delisting)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window22-historical-panel/V6/experimental/v7_historical_panel_test.py", line 13, in test_missing_entry_exit_and_delisting
+    r=dict(self.rows);del r['2023-12-15'];self.assertIn('MISSING_ENTRY_PRICE',self.call(prices=r)['reasons'])
+                                                                              ^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window22-historical-panel/V6/experimental/v7_historical_panel_test.py", line 9, in call
+    args=dict(signal=self.days[0],horizon=5,sessions=self.days,prices=self.rows,asof='2024-01-02T00:00:00+00:00',calendar_verified=True,membership_verified=True,actions_verified=True,feature_available_at='2023-12-14T10:00:00+00:00',decision_at='2023-12-15T00:00:00+00:00',label_available_at='2023-12-29T08:00:00+00:00');args.update(kw);return label_diagnostic(**args)
+                                                                                                                                                                                                                                                                                                                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: label_diagnostic() got an unexpected keyword argument 'label_available_at'
+
+======================================================================
+ERROR: test_session_offsets_not_stock_rows (V6.experimental.v7_historical_panel_test.LabelDiagnosticTest.test_session_offsets_not_stock_rows)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window22-historical-panel/V6/experimental/v7_historical_panel_test.py", line 11, in test_session_offsets_not_stock_rows
+    q=self.call();self.assertEqual(q['entry'],'2023-12-15');self.assertEqual(q['exit'],'2023-12-21');self.assertTrue(q['structural_ready']);self.assertFalse(q['research_admitted'])
+      ^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window22-historical-panel/V6/experimental/v7_historical_panel_test.py", line 9, in call
+    args=dict(signal=self.days[0],horizon=5,sessions=self.days,prices=self.rows,asof='2024-01-02T00:00:00+00:00',calendar_verified=True,membership_verified=True,actions_verified=True,feature_available_at='2023-12-14T10:00:00+00:00',decision_at='2023-12-15T00:00:00+00:00',label_available_at='2023-12-29T08:00:00+00:00');args.update(kw);return label_diagnostic(**args)
+                                                                                                                                                                                                                                                                                                                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: label_diagnostic() got an unexpected keyword argument 'label_available_at'
+
+======================================================================
+ERROR: test_ten_day_missing_tail_and_zero_not_imputed (V6.experimental.v7_historical_panel_test.LabelDiagnosticTest.test_ten_day_missing_tail_and_zero_not_imputed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window22-historical-panel/V6/experimental/v7_historical_panel_test.py", line 22, in test_ten_day_missing_tail_and_zero_not_imputed
+    self.assertEqual(self.call(horizon=10)['exit'],'2023-12-28')
+                     ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window22-historical-panel/V6/experimental/v7_historical_panel_test.py", line 9, in call
+    args=dict(signal=self.days[0],horizon=5,sessions=self.days,prices=self.rows,asof='2024-01-02T00:00:00+00:00',calendar_verified=True,membership_verified=True,actions_verified=True,feature_available_at='2023-12-14T10:00:00+00:00',decision_at='2023-12-15T00:00:00+00:00',label_available_at='2023-12-29T08:00:00+00:00');args.update(kw);return label_diagnostic(**args)
+                                                                                                                                                                                                                                                                                                                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: label_diagnostic() got an unexpected keyword argument 'label_available_at'
+
+======================================================================
+ERROR: test_unknown_calendar_membership_actions_feature_failclosed (V6.experimental.v7_historical_panel_test.LabelDiagnosticTest.test_unknown_calendar_membership_actions_feature_failclosed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window22-historical-panel/V6/experimental/v7_historical_panel_test.py", line 17, in test_unknown_calendar_membership_actions_feature_failclosed
+    q=self.call(**{key:val});self.assertFalse(q['eligible']);self.assertIn(reason,q['reasons'])
+      ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window22-historical-panel/V6/experimental/v7_historical_panel_test.py", line 9, in call
+    args=dict(signal=self.days[0],horizon=5,sessions=self.days,prices=self.rows,asof='2024-01-02T00:00:00+00:00',calendar_verified=True,membership_verified=True,actions_verified=True,feature_available_at='2023-12-14T10:00:00+00:00',decision_at='2023-12-15T00:00:00+00:00',label_available_at='2023-12-29T08:00:00+00:00');args.update(kw);return label_diagnostic(**args)
+                                                                                                                                                                                                                                                                                                                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: label_diagnostic() got an unexpected keyword argument 'label_available_at'
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.002s
+
+FAILED (errors=6)
