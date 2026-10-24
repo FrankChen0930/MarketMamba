@@ -5,6 +5,37 @@
 > Semantic change owner must update this map in the same change.
 > Prior research/Phase A map accepted `2026-09-20`; 2026-09-22 runtime additions are agent-observed, pending separate human review. Canonical means current navigation authority, not immutable final state.
 
+## Window15 Licensed Foundations / Dual-track — complete / STOP
+
+W14fixed4da1bcfa81c8ff786de82d29ec461c0851d411d5 LOCAL_INTEGRATED/NOT_DEPLOYED,
+ff-only fromc78098f;pre/post150CPUtestsPASS,independent0Critical/Required.
+W14original337221rawbytes/4snapshotfiles remain in W14tree, NOT moved to main.
+Mainheld4da1bcf; W06/W12/othercandidates notmerged. OlderW14UNMERGED prose historical.
+
+W15 research/v7-window15-dual-track,base4da1bcf,.worktrees/v7-window15-dual-track,
+WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED. Humanconfirmed dualtrackdirection only.
+U1 COMPLETE_REVIEWED:govdatasets11549/11371 exactCSV scopedOGDL1.0+attribution confirmed;
+periodicservice/rate/activation conditional; oldhistoricalroutes permissionUNCLEAR.
+3officialmetadata/licenseHTML1547650bytes locallyretained/independentverified;0market
+payloadrequests. Licensing never implieshistoricalPIT/dataset/researchadmission.
+U2 COMPLETE_REVIEWED:independentexploratoryStudy/Dataset/Feature drafts PROPOSED;
+7synthetictests. Lag/dates/parameters/universe/calendar/labels/bytes/compute unapproved,
+DATA_READY=false; oldsyntheticadapters require separatelyreviewed realdata scope.
+U3 COMPLETE_REVIEWED:SYNTHETIC-onlythinarchive adapter reusesSnapshot/W14/W09;
+18tests,2boundedrepairs,0remainingCritical/Required. Idempotentraw/newrevision,
+currentQC/late vsfirstcapture separated; missingintent/binding/snapshotNOT_RESTORABLE,
+no hiddenretryrepair. Initialdryrun+oldsource retained, finalofflinevalidation separate.
+175jointCPUtestsPASS; allthree reviews0Critical/Required, U1/U2rework0. No livecollector/
+fits/realRankIC/GPU. W11/W12/W14old92files+4Frozenhashes unchanged; no cleanup.
+[Brief](../../reports/v7_window15_dual_track_brief.md),
+[evidence](../../research/v7/window15-evidence.json),
+[sole queue](../../research/v7/research-program.md#window15-licensed-dual-track-foundations).
+NextHuman:boundedlicenseddata/coverage/restore qualification, newstudy/eval/admission
+policy, separateTrackBoperation/storage/frequency/QC/notice authorization. No READY
+execution remains in this completedgrant. FinalHEAD containingclosurecommit.
+StrictSTOP/E1BLOCKED/H2NOT_APPROVED/FairEvalPROPOSED/PreNextOpenPROPOSED/
+GPU_SAFETY_HALTED/InferenceRecoveryDEFERRED remain. No nextwindow activation.
+
 ## Window14 Evidence-first Data Pilot — complete / STOP
 
 W13fixedc78098f3fdddb74e461bc54d700bde5baac0fcc1 LOCAL_INTEGRATED/NOT_DEPLOYED,

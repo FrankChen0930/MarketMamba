@@ -1,0 +1,36 @@
+======================================================================
+ERROR: test_late_duplicate_keeps_first_but_marks_current_attempt_late (V6.experimental.v7_vintage_dryrun_test.VintageDryrunTest.test_late_duplicate_keeps_first_but_marks_current_attempt_late)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window15-dual-track/V6/experimental/v7_vintage_dryrun_test.py", line 54, in test_late_duplicate_keeps_first_but_marks_current_attempt_late
+    self.assertEqual(r['status'],'ALREADY_PUBLISHED');self.assertEqual(r['attempt_capture_class'],'LATE_CAPTURE');self.assertEqual(r['first_capture_class'],'ORIGINAL_FORWARD_CAPTURE')
+                                                                       ~^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'attempt_capture_class'
+
+======================================================================
+FAIL: test_duplicate_qc_failure_never_reports_current_attempt_success (V6.experimental.v7_vintage_dryrun_test.VintageDryrunTest.test_duplicate_qc_failure_never_reports_current_attempt_success)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window15-dual-track/V6/experimental/v7_vintage_dryrun_test.py", line 51, in test_duplicate_qc_failure_never_reports_current_attempt_success
+    self.publish();self.obs['qc_status']='FAIL';self.assertEqual(self.publish()['status'],'FAILED')
+                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'ALREADY_PUBLISHED' != 'FAILED'
+- ALREADY_PUBLISHED
++ FAILED
+
+
+======================================================================
+FAIL: test_unknown_publication_never_claims_qualified_original_forward (V6.experimental.v7_vintage_dryrun_test.VintageDryrunTest.test_unknown_publication_never_claims_qualified_original_forward)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window15-dual-track/V6/experimental/v7_vintage_dryrun_test.py", line 57, in test_unknown_publication_never_claims_qualified_original_forward
+    self.assertEqual(self.publish()['capture_class'],'UNQUALIFIED_CAPTURE')
+AssertionError: 'ORIGINAL_FORWARD_CAPTURE' != 'UNQUALIFIED_CAPTURE'
+- ORIGINAL_FORWARD_CAPTURE
++ UNQUALIFIED_CAPTURE
+
+
+----------------------------------------------------------------------
+Ran 15 tests in 2.332s
+
+FAILED (failures=2, errors=1)

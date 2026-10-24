@@ -21,10 +21,28 @@
   },
   "topics": [
     {
+      "topic": "Window15 licensed dual-track preparation",
+      "primary_authority": "knowledge/02_History/Decisions/20261024-window15-licensed-dual-track.json",
+      "authority_class": "CANONICAL",
+      "status": "WINDOW_COMPLETE_STOP_UNMERGED_SCOPED_LICENSE_EVIDENCE_AND_PROPOSALS_ONLY",
+      "secondary_evidence": [
+        "research/v7/window15-license-matrix.json",
+        "research/v7/window15-exploratory-study.json",
+        "research/v7/window15-forward-activation.json",
+        "research/v7/window15-evidence.json",
+        "reports/v7_window15_dual_track_brief.md"
+      ],
+      "conflicts": [
+        "Specific openCSV grant does not license old historical API or guarantee service/calendar/vintage",
+        "Dualtrackdirection does not admit data/research or activatecollector",
+        "GPU SAFETY_HALTED unchanged; W14rawbytes still external originaltree"
+      ]
+    },
+    {
       "topic": "Window14 evidence-first data pilot and proposed forward collection records",
       "primary_authority": "knowledge/02_History/Decisions/20261024-window14-data-admission-pilot.json",
       "authority_class": "CANONICAL",
-      "status": "WINDOW_COMPLETE_STOP_UNMERGED_PILOT_PROPOSALS_ONLY_NO_RESEARCH_ADMISSION",
+      "status": "LOCAL_INTEGRATED_W14_PROPOSALS_ONLY_NO_RESEARCH_ADMISSION",
       "secondary_evidence": [
         "research/v7/window14-evidence.json",
         "research/v7/window14-evidence-classes.json",

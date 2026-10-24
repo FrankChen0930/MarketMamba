@@ -1,9 +1,36 @@
 # V7 Research Program and Current Development Backlog
 
-> Current planning owner: isolated Window14 evidence-pilot branch, linked by canonical
+> Current planning owner: isolated Window15 dual-track preparation branch, linked by canonical
 > Current State/Authority Map. Planning status does not grant research, execution,
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
+
+## Window15 Licensed Dual-track Foundations
+
+WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED;research/v7-window15-dual-track,
+base/main4da1bcf. W14ff integrated, originalrawstillW14tree; noW06/W12merge.
+
+| Unit | HumanWindow15 objective | Status / evidence |
+|---|---|---|
+| W15-U1 | Exactsource/license verification | COMPLETE_REVIEWED;2exactgovCSV OGDL1.0scoped,legacyhistoricalAPIunclear;3HTML1547650bytes archived;0marketpayload;0rework/0CriticalRequired |
+| W15-U2 | Separate exploratory study/dataset/features | COMPLETE_REVIEWED;PROPOSED;7synthetictests;DATA_READY/execution/admission=false;lag/paramsnull;0rework/0CriticalRequired |
+| W15-U3 | Forwardvintage syntheticdurability | COMPLETE_REVIEWED;18tests/8persistentevents/3vintages;W14+Snapshot+W09reuse,2repairs/1fixturecorrection,0CriticalRequired;no collector |
+
+[Brief](../../reports/v7_window15_dual_track_brief.md),[evidence](window15-evidence.json),
+[license](window15-license-matrix.json),[study](window15-exploratory-study.json),
+[activation](window15-forward-activation.json). Final175CPUtestsPASS14.625s.
+No READY execution in completedgrant. Minimum nextHuman decisions:
+1. Approve bounded exactlicensedresource/coverage/bytes/restore qualification, plus
+   necessary historicalcalendar/universe/label source qualification; not realfit yet.
+2. Freeze independentStudy evidenceclass/feature/timing/maturity/fold/purge/selection/
+   refit/eval/final/CPUbudget and data/researchadmission once evidenceavailable.
+3. Separately approve TrackB exactsource/frequency/service/archive/backup/capacity/
+   clock/QC/missing-backfill/monitoring/notice operation scope. None activated here.
+Oldhistoricalroute permission unclear, originalvintage missing, no conservative lag
+assumed. Actualdataset DATA_READY=false; licensing2currentresources is one cleared
+scopeddependency only. Existing adapters stillsynthetic-only; scopeextension requires
+review/grant, no statusflipshortcut. StrictSTOP/E1BLOCKED/H2NOT_APPROVED/FairEvalPROPOSED/
+PreNextOpenPROPOSED/GPU_SAFETY_HALTED/RecoveryDEFERRED unchanged; no nextwindow.
 
 ## Window14 Evidence-first Admission Pilot
 

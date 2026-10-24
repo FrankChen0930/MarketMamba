@@ -1,0 +1,216 @@
+{
+  "schema": "window15-source-license-matrix-v1",
+  "status": "EVIDENCE_REVIEW_ONLY_NOT_DATA_ADMISSION",
+  "observed_at": "2026-10-24T09:25:24.346238+00:00",
+  "license_documents": [
+    {
+      "id": "OGDL-1.0",
+      "version": "1.0",
+      "url": "https://data.gov.tw/license",
+      "document_date": "2015-07-27",
+      "reviewed_at": "2026-10-24T09:25:24.346238+00:00",
+      "grant_summary": "For designated open data: reproduction, distribution, public transmission, editing/adaptation and derivatives without purpose/time/territory limitation, subject to attribution. No patents/trademarks or accuracy/SLA guarantee.",
+      "attribution": "Provider/unit, year, dataset name/version, Open Government Data License statement and https://data.gov.tw/license; preserve source statements and respect moral rights.",
+      "automation_vs_service": "Copyright permission does not fix service access/rate/SLA; periodic automation requires exact route and service restrictions review plus Human operational authorization."
+    }
+  ],
+  "records": [
+    {
+      "provider": "TWSE",
+      "catalogue_agency": "金融監督管理委員會證券期貨局",
+      "dataset_id": "11549",
+      "dataset_name": "上市個股日成交資訊",
+      "exact_resource_url": "https://www.twse.com.tw/exchangeReport/STOCK_DAY_ALL?response=open_data",
+      "catalogue_url": "https://data.gov.tw/dataset/11549",
+      "license_id": "OGDL-1.0",
+      "license_version": "1.0",
+      "license_source": [
+        "https://data.gov.tw/license",
+        "https://data.gov.tw/dataset/11549"
+      ],
+      "evidence_retrieved_at": "2026-10-24T09:23:32.692187+00:00",
+      "metadata_html_sha256": "e1fba28d693b9d86ded801c6c4327f356cfd0c01a33b510e7c5b4db0247be98f",
+      "classification": "LICENSE_CONFIRMED_FOR_SCOPED_USE",
+      "confirmed_scope": "Only dataset-linked CSV resource/data released under this dataset license; lawful reproduction/storage/derivatives/research/display/redistribution with attribution. Not other provider endpoints.",
+      "permissions": {
+        "download_local_storage": "ALLOWED_WITH_ATTRIBUTION",
+        "derived_data": "ALLOWED_WITH_ATTRIBUTION",
+        "personal_research": "ALLOWED_WITH_ATTRIBUTION",
+        "public_display_redistribution": "ALLOWED_WITH_ATTRIBUTION_BY_LICENSE_PROJECT_RELEASE_NOT_AUTHORIZED",
+        "automatic_periodic_acquisition": "LICENSE_CONDITIONAL_SERVICE_RATE_AND_HUMAN_ACTIVATION_UNRESOLVED"
+      },
+      "attribution_ref": "OGDL-1.0 attribution",
+      "rate_service_restrictions": "No numeric quota or uptime/update-time guarantee established in reviewed catalogue/license; do not infer unlimited automated access.",
+      "documented_update_frequency": "daily",
+      "historical_data_coverage": "UNKNOWN; listing date and daily cadence do not establish historical query/archive/version coverage",
+      "dataset_bytes": "NOT_FETCHED_THIS_WINDOW",
+      "historical_asof": "NOT_VERIFIED",
+      "ambiguous_permissions": [
+        "Periodic service route/rate/redirect handling not verified",
+        "Any alternate OpenAPI or historical parameters require explicit mapping, not inherited",
+        "Current security coverage is not historical universe/lifecycle admission"
+      ],
+      "project_data_or_research_admitted": false,
+      "archived_catalogue_manifest": "/home/frank/projects/MarketMamba/.worktrees/v7-window15-dual-track/.artifacts/window15-license-evidence/manifests/739b9a999f70128315cb04735c72b7287c653e31d8de57ce05e504abb78558f8-2026-10-24T092656.317871p0000.json",
+      "archived_retrieved_at": "2026-10-24T09:26:56.317871+00:00",
+      "archived_catalogue_html_sha256": "e709a605fc615a4bda56d404035ef2151cda718d8243a3d15eb0fb30355484ee",
+      "literal_license_field": "政府資料開放授權條款-第1版"
+    },
+    {
+      "provider": "TPEx",
+      "catalogue_agency": "金融監督管理委員會證券期貨局",
+      "dataset_id": "11371",
+      "dataset_name": "上櫃股票收盤行情",
+      "exact_resource_url": "https://www.tpex.org.tw/web/stock/aftertrading/otc_quotes_no1430/stk_wn1430_result.php?l=zh-tw&se=EW&o=data",
+      "catalogue_url": "https://data.gov.tw/dataset/11371",
+      "license_id": "OGDL-1.0",
+      "license_version": "1.0",
+      "license_source": [
+        "https://data.gov.tw/license",
+        "https://data.gov.tw/dataset/11371"
+      ],
+      "evidence_retrieved_at": "2026-10-24T09:23:33.250476+00:00",
+      "metadata_html_sha256": "c87103e6b7ab128a7199ef446dca4abfd7fd15d2ebfd076e3b97b08a120ad2aa",
+      "classification": "LICENSE_CONFIRMED_FOR_SCOPED_USE",
+      "confirmed_scope": "Only dataset-linked CSV resource/data released under this dataset license; lawful reproduction/storage/derivatives/research/display/redistribution with attribution. Not other provider endpoints.",
+      "permissions": {
+        "download_local_storage": "ALLOWED_WITH_ATTRIBUTION",
+        "derived_data": "ALLOWED_WITH_ATTRIBUTION",
+        "personal_research": "ALLOWED_WITH_ATTRIBUTION",
+        "public_display_redistribution": "ALLOWED_WITH_ATTRIBUTION_BY_LICENSE_PROJECT_RELEASE_NOT_AUTHORIZED",
+        "automatic_periodic_acquisition": "LICENSE_CONDITIONAL_SERVICE_RATE_AND_HUMAN_ACTIVATION_UNRESOLVED"
+      },
+      "attribution_ref": "OGDL-1.0 attribution",
+      "rate_service_restrictions": "No numeric quota or uptime/update-time guarantee established in reviewed catalogue/license; do not infer unlimited automated access.",
+      "documented_update_frequency": "daily",
+      "historical_data_coverage": "UNKNOWN; listing date and daily cadence do not establish historical query/archive/version coverage",
+      "dataset_bytes": "NOT_FETCHED_THIS_WINDOW",
+      "historical_asof": "NOT_VERIFIED",
+      "ambiguous_permissions": [
+        "Periodic service route/rate/redirect handling not verified",
+        "Any alternate OpenAPI or historical parameters require explicit mapping, not inherited",
+        "Current security coverage is not historical universe/lifecycle admission"
+      ],
+      "project_data_or_research_admitted": false,
+      "archived_catalogue_manifest": "/home/frank/projects/MarketMamba/.worktrees/v7-window15-dual-track/.artifacts/window15-license-evidence/manifests/59ff8557d27d2709282e4344f3b0fcf6e644ec5c9cfcf51bdcff6f1c9155a273-2026-10-24T092656.862660p0000.json",
+      "archived_retrieved_at": "2026-10-24T09:26:56.862660+00:00",
+      "archived_catalogue_html_sha256": "09f2f0b8ce42cd5b1408f9dee0f1761a7218fbb0f9c29d51e5c28d1852d35ce4",
+      "literal_license_field": "政府資料開放授權條款-第1版"
+    },
+    {
+      "provider": "TWSE",
+      "dataset_id": null,
+      "exact_resource_url": "https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX",
+      "params": {
+        "date": "20220901",
+        "type": "ALLBUT0999",
+        "response": "json"
+      },
+      "classification": "PERMISSION_UNCLEAR",
+      "license_version": "UNKNOWN_FOR_THIS_ROUTE",
+      "license_source": [
+        "https://www.twse.com.tw/zh/terms/use.html"
+      ],
+      "evidence_retrieved_at": "2026-10-24T09:25:24.346238+00:00",
+      "permissions": {
+        "download_local_storage": "UNKNOWN_NO_USE_OR_REDOWNLOAD_GRANTED",
+        "derived_data": "UNKNOWN_NO_USE_OR_REDOWNLOAD_GRANTED",
+        "automatic_periodic_acquisition": "UNKNOWN_NO_USE_OR_REDOWNLOAD_GRANTED",
+        "personal_research": "UNKNOWN_NO_USE_OR_REDOWNLOAD_GRANTED",
+        "public_display_redistribution": "UNKNOWN_NO_USE_OR_REDOWNLOAD_GRANTED"
+      },
+      "attribution_obligations": "Unresolved for this endpoint; attribution alone does not grant permission",
+      "rate_service_restrictions": "No more requests; no blanket inference from HTTP200/provider/domain",
+      "historical_data_coverage": "W14 retained one dated response only; neither original vintage nor history service permission established",
+      "ambiguous_permissions": [
+        "No official link mapping this historical endpoint to dataset11549/11371 license"
+      ],
+      "project_data_or_research_admitted": false
+    },
+    {
+      "provider": "TPEx",
+      "dataset_id": null,
+      "exact_resource_url": "https://www.tpex.org.tw/www/zh-tw/afterTrading/otc",
+      "params": {
+        "date": "2022/09/02",
+        "type": "EW",
+        "response": "json"
+      },
+      "classification": "PERMISSION_UNCLEAR",
+      "license_version": "UNKNOWN_FOR_THIS_ROUTE",
+      "license_source": [
+        "https://www.tpex.org.tw/zh-tw/gtsm_disclaimer.html"
+      ],
+      "evidence_retrieved_at": "2026-10-24T09:25:24.346238+00:00",
+      "permissions": {
+        "download_local_storage": "UNKNOWN_NO_USE_OR_REDOWNLOAD_GRANTED",
+        "derived_data": "UNKNOWN_NO_USE_OR_REDOWNLOAD_GRANTED",
+        "automatic_periodic_acquisition": "UNKNOWN_NO_USE_OR_REDOWNLOAD_GRANTED",
+        "personal_research": "UNKNOWN_NO_USE_OR_REDOWNLOAD_GRANTED",
+        "public_display_redistribution": "UNKNOWN_NO_USE_OR_REDOWNLOAD_GRANTED"
+      },
+      "attribution_obligations": "Unresolved for this endpoint; attribution alone does not grant permission",
+      "rate_service_restrictions": "No more requests; no blanket inference from HTTP200/provider/domain",
+      "historical_data_coverage": "W14 retained one dated response only; neither original vintage nor history service permission established",
+      "ambiguous_permissions": [
+        "No official link mapping this historical endpoint to dataset11549/11371 license"
+      ],
+      "project_data_or_research_admitted": false
+    },
+    {
+      "provider": "UNSELECTED",
+      "dataset_id": null,
+      "exact_resource_url": null,
+      "classification": "PERMISSION_UNCLEAR",
+      "dependency": "qualified historical exchange calendar",
+      "permissions": "UNKNOWN_SOURCE_NOT_SELECTED",
+      "historical_data_coverage": "UNKNOWN",
+      "project_data_or_research_admitted": false
+    },
+    {
+      "provider": "UNSELECTED",
+      "dataset_id": null,
+      "exact_resource_url": null,
+      "classification": "PERMISSION_UNCLEAR",
+      "dependency": "historical security type/lifecycle/universe",
+      "permissions": "UNKNOWN_SOURCE_NOT_SELECTED",
+      "historical_data_coverage": "UNKNOWN",
+      "project_data_or_research_admitted": false
+    }
+  ],
+  "official_documents": [
+    {
+      "url": "https://www.twse.com.tw/zh/terms/use.html",
+      "status": "READ",
+      "scope": "General restrictions and government-open-data exception, not blanket endpoint grant"
+    },
+    {
+      "url": "https://www.tpex.org.tw/zh-tw/gtsm_disclaimer.html",
+      "status": "403_NOT_BYPASSED",
+      "scope": "No specific general-site permission inferred; does not undo explicit catalogue resource license"
+    }
+  ],
+  "network_scope": {
+    "government_metadata_html_requests": 5,
+    "web_official_page_opens": 5,
+    "market_data_payload_requests": 0,
+    "unknown_endpoint_requests": 0,
+    "retained_license_archive_pages": 3
+  },
+  "no_license_to_pit_inference": true,
+  "project_operation_authorization": "No collection/public release/training execution in this window",
+  "classification_vocabulary": [
+    "LICENSE_CONFIRMED_FOR_SCOPED_USE",
+    "LICENSE_CONDITIONAL",
+    "PERMISSION_UNCLEAR",
+    "RESTRICTED"
+  ],
+  "license_archive": "research/v7/window15-license-evidence.json",
+  "review": {
+    "critical": 0,
+    "required": 0,
+    "reviewer": "/root/independent_review",
+    "source_bytes_independently_verified": 1547650,
+    "rework_rounds": 0
+  }
+}

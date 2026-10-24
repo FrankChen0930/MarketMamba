@@ -1,0 +1,53 @@
+{
+  "schema": "window15-forward-activation-proposal-v1",
+  "status": "PROPOSED_ACTIVATION_DEFERRED",
+  "collector_enabled": false,
+  "source_candidates": {
+    "dataset11549": "Only exactCSV link in license matrix",
+    "dataset11371": "Only exactCSV link in license matrix"
+  },
+  "legal_method": "OGDL1.0 attribution + exact service route/rate/redirect review; no historical API license inference",
+  "storage": {
+    "production_archive_path": null,
+    "runtime_environment": null,
+    "proposal": "WSL-native persistent immutable archive plus independently verified backup; actual location/permission Human chooses",
+    "dryrun_paths": [
+      ".artifacts/window15-synthetic-vintage",
+      ".artifacts/window15-license-evidence"
+    ],
+    "raw_w14_stays_external_worktree": true
+  },
+  "capacity": {
+    "measured_real_market_csv_bytes": null,
+    "expected_disk_requirement": "UNKNOWN until separately authorized bounded exact-resource measurement; W14API size/synthetic size not equivalent",
+    "estimation_formula": "sum(per-source raw bytes+manifests+records+attempts+revision bytes) * retained capture count * verified copy count; retention/capture cadence not selected"
+  },
+  "gaps_backfill": "Record MISSING_CAPTURE while offline; any authorized later retrieval retains actual receipt+HISTORICAL_BACKFILL/RECOVERY identity, never relabel ontime",
+  "monitoring": "Existing Operations/W04B-LOG error propagation + local durable attempt/error records and nonzero caller failure. Remote notices/channel/recipients not selected or activated.",
+  "operation_authorization_required": [
+    "Allowed source/resource and frequency/service limits",
+    "Actual archive/backup/capacity/retention and clock/intent audit requirements",
+    "QC/security identity/calendar/source-field eligibility, freshness/missing/revision rules",
+    "Recovery/backfill request scope and bounded retries",
+    "Monitoring/notice delivery recipients and Human collector activation approval"
+  ],
+  "minimal_fields": [
+    "source/dataset/exact endpoint/license identity binding",
+    "source/session and stock IDs in raw+QC sidecar; historical universe not inferred",
+    "observation/reported publication/source availability/actual retrieval with unknown publication retained",
+    "raw bytes/hash+snapshot manifest and immutable intent",
+    "QC result/evidence, missing/late/stale/recovery/backfill",
+    "revision/prior version and actual archive creation time"
+  ],
+  "synthetic_adapter_scope": "Source-wide raw capture, metadata/pin/time checks only; no per-security economic QC, historical lifecycle/calendar authentication or live request engine certified",
+  "capture_classes": [
+    "ORIGINAL_FORWARD_CAPTURE",
+    "LATE_CAPTURE",
+    "HISTORICAL_BACKFILL",
+    "REVISION_CAPTURE",
+    "MISSING_CAPTURE",
+    "UNQUALIFIED_CAPTURE"
+  ],
+  "research_admitted": false,
+  "gpu_state": "SAFETY_HALTED"
+}

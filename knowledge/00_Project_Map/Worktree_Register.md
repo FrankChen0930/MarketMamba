@@ -1,10 +1,24 @@
 # Worktree Register
 
+## Window15 licensed dual-track — 2026-10-24
+
+- Path `.worktrees/v7-window15-dual-track`;branch `research/v7-window15-dual-track`;
+  base `4da1bcfa81c8ff786de82d29ec461c0851d411d5`;owner Codex/HumanWindow15;
+  created2026-10-24;retiredN/A. WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED.
+- Prior35trees clean/distinctscope; none serves this licensed dualtrack task.
+  Existing experimental/research/Decisions/reports/maps reused; no platform.
+- Preserve .artifacts/window15-license-evidence (3officialHTML/raw/manifests) and
+  .artifacts/window15-synthetic-vintage (records/intents/snapshots/attempts and old
+  observedsource). Hash-onlymetadata cannot restore lostbytes; no GC/move authorized.
+- W14originalrawstill onlyW14tree; mainff4daheld, W06/W12notmerged. Old92files and
+  4Frozencontracts retainedunchanged. Safe removal requires clean retainedcommits,
+  resolved byte/runtime refs and separate reviewedretirement. FinalHEAD containingclosure.
+
 ## Window14 bounded data admission pilot — 2026-10-24
 
 - Path `.worktrees/v7-window14-data-admission`;branch `research/v7-window14-data-admission`;
   base `c78098f3fdddb74e461bc54d700bde5baac0fcc1`;owner Codex/HumanWindow14;
-  created2026-10-24;retiredN/A. WINDOW_COMPLETE/STOP/UNMERGED/NOT_DEPLOYED.
+  created2026-10-24;retiredN/A. WINDOW_COMPLETE/STOP/LOCAL_INTEGRATED_BY_WINDOW15_SOURCE_ONLY/NOT_DEPLOYED.
 - Prior34trees clean/distinctscope; no sameW14pilot. Existing experimental/research/
   reports/Decisions reused, no platform. MainffW13heldc78098f; W06/W12notmerged.
 - Preserve `.artifacts/window14-historical-pilot` immutable raw/manifests (337221rawbytes),

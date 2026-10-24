@@ -1,0 +1,55 @@
+{
+  "schema": "v7-exploratory-study-proposal-v1",
+  "study_id": "v7-exploratory-ohlcv-study-v0.1",
+  "track": "A_EXPLORATORY_HISTORICAL",
+  "status": "PROPOSED",
+  "evidence_class": "EXPLORATORY_PREPARATION_NOT_PIT_CONFIRMATION",
+  "human_research_authorized": false,
+  "execution_authorized": false,
+  "independent_final_test_claim": false,
+  "e5_e1_replication_claim": false,
+  "dataset_id": "v7-exploratory-ohlcv-dataset-v0.1",
+  "dataset_spec_sha256": "ac5431f826e676d7b45134be26b9fecb3e50d6637ab2ebd7e9cba481d787925c",
+  "feature_manifest_id": "v7-exploratory-ohlcv-features-v0.1",
+  "feature_spec_sha256": "fa379fc4b02456c38b963e7da22bee6bd8903b6352530536de98c442d995f3df",
+  "data_content_sha256": null,
+  "conservative_lag_sessions": null,
+  "parameters": {
+    "cutoff": null,
+    "folds_origins_dates": null,
+    "required_heads_maturity": null,
+    "purge_embargo": null,
+    "selection_metric_ties_minN_aggregation": null,
+    "selection_seed_search_budget": null,
+    "refit_length_rule": null,
+    "statistics_acceptance_final": null,
+    "compute_budget": null
+  },
+  "candidate_directions": {
+    "training_history": "Expanding candidate; eligible start unresolved",
+    "horizons": [
+      5,
+      10
+    ],
+    "validation_months": 12,
+    "forward_quarter": true,
+    "origins": 3,
+    "selection": "MeanDailyRankIC5 candidate;10secondary",
+    "refit": "From-scratch candidate; new run, not resume"
+  },
+  "chain": [
+    "Dataset+approvedmanifest",
+    "W07 Fold/eligibility/selection-refit-forward guards",
+    "W10/W11 L0/Ridge/L2 adapters (currently synthetic-only)",
+    "W08 CommonEvaluator/commonSupport",
+    "W09 durableArtifacts",
+    "offlineReplay"
+  ],
+  "activation_blockers": [
+    "Exactroute/usage/service permission and actual historical bytes/restore identity",
+    "Temporal eligibility or explicitly approved retrospective/proxy limitations, no automaticlag",
+    "Qualified historical universe/calendar/label definitions and maturity",
+    "Frozen new selection/refit/eval recipe, final exposure and Human realCPUresearch authorization",
+    "Existing adapters/publishers explicitly synthetic-only; separate reviewed scope extension required before real data, no status flip shortcut"
+  ]
+}
