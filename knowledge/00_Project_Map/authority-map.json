@@ -21,6 +21,22 @@
   },
   "topics": [
     {
+      "topic": "Window20 bounded historical-source decision sprint",
+      "primary_authority": "research/v7/window20-evidence.json",
+      "authority_class": "CANONICAL",
+      "status": "COMPLETE_STOP_UNMERGED_SOURCE_RECOMMENDATION_ONLY",
+      "secondary_evidence": [
+        "research/v7/window20-source-matrix.json",
+        "reports/v7_window20_source_decision.md"
+      ],
+      "conflicts": [
+        "Documentationcoverage claim is not observedhistory/PIT",
+        "FinMindnoncommercialdatause != SDKlicense/permanentstorage/redistribution",
+        "Fubonaccountrights andW14APIpermission remainblocked",
+        "W19limitedTaskgrant remainsseparateatcf1a84f; no newruntimeclaim/control"
+      ]
+    },
+    {
       "topic": "Window18 Limited Real Manual Forward Collector Pilot",
       "primary_authority": "knowledge/02_History/Decisions/20261024-window18-manual-collector.json",
       "authority_class": "CANONICAL",

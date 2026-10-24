@@ -1,5 +1,15 @@
 # Worktree Register
 
+## Window20 historical source decision — 2026-10-25
+
+- Path `.worktrees/v7-window20-historical-sources`;branch `research/v7-window20-historical-sources`;
+  base `87695e4d5dc6e047f5ab39ca3cd8294b971bbc3a`;owner Codex/HumanWindow20;
+  created2026-10-25;retiredN/A;COMPLETE/STOP/UNMERGED/NOT_DEPLOYED。
+- Prior40treesclean/distinctscope；本tree隔離文件調查，沿用research/reports/maps，沒有platform或實作。
+- `.artifacts/window20-documents`保存8官方HTML及Snapshotmanifest，不含行情；Git只有URLs/hash/report，不能靠hash還原bytes。
+- Safe removal需clean retainedcommit、resolvedHTMLbyte/dependencyrefs及separate退役review；不清理W14/16/18或W19。
+- W19獨立Task/root/codepins不修改或觸發；本輪只readfixedcf1a84f/policy/armhash，main未前進。
+
 ## Window18 manual collector pilot — 2026-10-24
 
 - Path `.worktrees/v7-window18-manual-collector`;branch `development/v7-window18-manual-collector`;

@@ -1,0 +1,310 @@
+{
+  "schema": "w20-historical-source-decision-v1",
+  "status": "PROPOSED_SOURCE_RECOMMENDATION_ONLY_STOP",
+  "observed_at": "2026-10-24T16:32:38.288818+00:00",
+  "levels": [
+    "DOCUMENTED",
+    "INFERRED",
+    "UNKNOWN",
+    "BLOCKED"
+  ],
+  "level_definitions": {
+    "DOCUMENTED": "Explicit officialpageoridentifiedrepoevidence; statementsnotpayloadcoverage unlessactual_coverage_evidence saysso",
+    "INFERRED": "Reasoned assumption/formula, notverifiedrights/coverage",
+    "UNKNOWN": "No supportingactual evidence",
+    "BLOCKED": "A currentuse/account/policy condition preventsexecution"
+  },
+  "main": "87695e4d5dc6e047f5ab39ca3cd8294b971bbc3a",
+  "primary": "finmind",
+  "backup": "fubon",
+  "no_current_source_ADMITTED_or_training_ready": true,
+  "candidates": [
+    {
+      "id": "official_history",
+      "family": "W14_TWSE_TPEx_HISTORY",
+      "decision": "BLOCKED_FOR_AUTOMATED_ACQUISITION_UNTIL_ROUTE_RIGHTS_QUALIFIED",
+      "endpoints": [
+        {
+          "url": "https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX",
+          "params": {
+            "date": "YYYYMMDD",
+            "type": "ALLBUT0999",
+            "response": "json"
+          }
+        },
+        {
+          "url": "https://www.tpex.org.tw/www/zh-tw/afterTrading/otc",
+          "params": {
+            "date": "YYYY/MM/DD",
+            "type": "EW",
+            "response": "json"
+          }
+        }
+      ],
+      "legal_use": {
+        "level": "BLOCKED",
+        "finding": "TWSEterms6/8 andTPExterms5/7 restrict unagreedautomation/reuse, with open-dataexceptions. No exactmapping ofW14history routes toW15licensedCSV grant. Not a claim all official APIs illegal.",
+        "sources": [
+          "twse_terms",
+          "tpex_terms",
+          "repo_W15_license"
+        ]
+      },
+      "storage_redistribution": {
+        "level": "UNKNOWN",
+        "finding": "No scoped historicalAPI download/storage/derivatives/redistribution grant established; data visibility andCSVlicense not inherited.",
+        "sources": [
+          "twse_terms",
+          "tpex_terms"
+        ]
+      },
+      "historical_coverage": {
+        "level": "DOCUMENTED",
+        "finding": "TWSE UI advertises since2004-02-11; TPEx currentpricing since2007-01, older2003-08..2006-12 linked elsewhere andexcluded. Claims do not prove exactW14endpoint coverage.",
+        "sources": [
+          "twse_history",
+          "tpex_history"
+        ]
+      },
+      "actual_coverage_evidence": {
+        "level": "DOCUMENTED",
+        "finding": "RepoW14 retained onlyTWSE2022-09-01/TPEx2022-09-02,337221rawbytes; selected2stocks/marketbasicQC. Not a multiyearpanel.",
+        "sources": [
+          "repo_W14_panel"
+        ]
+      },
+      "markets": {
+        "level": "DOCUMENTED",
+        "finding": "One listed andoneOTCday resource; mixedsecurities, no ordinary-stockuniverse ordelistedcompleteness certified.",
+        "sources": [
+          "twse_history",
+          "tpex_history",
+          "repo_W14_panel"
+        ]
+      },
+      "delisted_survivorship": {
+        "level": "UNKNOWN",
+        "finding": "Historical dailycross-sections might retain oldsecurities, butcode reuse/lifecycle/delisting coverage unproved; do notuse todaycodes as historicaluniverse.",
+        "sources": []
+      },
+      "corporate_actions": {
+        "level": "UNKNOWN",
+        "finding": "Exactunadjusted/adjustment/volumeinclusions needroute-specificcheck. Missingprices notzero, no returns policy inferred.",
+        "sources": []
+      },
+      "OHLCV_units_schema": {
+        "level": "DOCUMENTED",
+        "finding": "W14retained permarketfieldnames/schema, source-shares labels; no blanketadjustment/currency/ordinary-stock eligibility established.",
+        "sources": [
+          "repo_W14_panel"
+        ]
+      },
+      "request_quota": {
+        "level": "UNKNOWN",
+        "finding": "No documented numeric quota for these exact historical routes in reviewedmaterial. No probe.",
+        "sources": []
+      },
+      "acquisition_cost": {
+        "level": "INFERRED",
+        "finding": "Illustrative T=4000sessions:2T=8000datedrequests ifonefullmarketresponse/day/market holds; license/fees/rate andactualearliestroute unknown. Not executionplan.",
+        "sources": []
+      },
+      "historical_availability": {
+        "level": "UNKNOWN",
+        "finding": "No original historical publication/vintage ledger proven; current retrospective response is not historical-asof or StrictPIT.",
+        "sources": []
+      },
+      "calendar_universe": {
+        "level": "BLOCKED",
+        "finding": "Point-in-time lifecycle/security-type and qualified sessions required; current listings alone create survivorship bias.",
+        "sources": []
+      },
+      "long_term_reproducibility": {
+        "level": "INFERRED",
+        "finding": "Requires lawful locally retained exactbytes, hashes, request/schema/config identities, immutable source revisions; refetching vendor history is not exact restoration.",
+        "sources": []
+      }
+    },
+    {
+      "id": "finmind",
+      "family": "FINMIND_TAIWAN_STOCK_PRICE",
+      "decision": "PRIMARY_CONDITIONAL_CANDIDATE_NOT_DATASET_ADMITTED",
+      "endpoint": "https://api.finmindtrade.com/api/v4/data",
+      "dataset": "TaiwanStockPrice",
+      "legal_use": {
+        "level": "DOCUMENTED",
+        "finding": "Free permits noncommercialpersonal/academicuse withFinMindattribution; not commercialAI/productlicense. SDKsoftwarelicense is not data license; originalproviderattribution when externaluse.",
+        "sources": [
+          "finmind_pricing",
+          "finmind_disclaimer",
+          "finmind_terms"
+        ]
+      },
+      "storage_redistribution": {
+        "level": "UNKNOWN",
+        "finding": "Private localresearchcache is inferred frompermitteduse, not explicitunlimitedretention grant. Reviewedterms do notspecify preservationperiod/terminationhandling; rawredistribution/resale/mirrorAPI prohibited. Keepraw outofpublicGit; clarify beforefull permanentarchive.",
+        "sources": [
+          "finmind_pricing",
+          "finmind_disclaimer",
+          "finmind_terms"
+        ]
+      },
+      "historical_coverage": {
+        "level": "DOCUMENTED",
+        "finding": "TaiwanStockPrice documentationclaims1994-10-01..now; symbol/listing-specificstart not proven. No marketAPI called.",
+        "sources": [
+          "finmind_technical"
+        ]
+      },
+      "actual_coverage_evidence": {
+        "level": "UNKNOWN",
+        "finding": "No payload requested thiswindow; no history/anonymousaccess success validated.",
+        "sources": []
+      },
+      "markets": {
+        "level": "DOCUMENTED",
+        "finding": "ListsTWSE/TPEx/emerging; proposedfirstbaseline excludesemerging andothernonordinarysecurities, subjecttoseparateuniverseapproval.",
+        "sources": [
+          "finmind_technical"
+        ]
+      },
+      "delisted_survivorship": {
+        "level": "DOCUMENTED",
+        "finding": "SeparateTaiwanStockDelisting documented2001-01-01..now, Freeplanlisted. Does notprove oldprice bytes orcompletehistoricaluniverse; todayStockInfo latestmarket cannot be backfilled.",
+        "sources": [
+          "finmind_fundamental",
+          "finmind_pricing"
+        ]
+      },
+      "corporate_actions": {
+        "level": "DOCUMENTED",
+        "finding": "SeparatepaidPriceAdj usesretrospective adjustment; rawPrice hasmissing-zero convention. Do notsubstitutePriceAdj orclaim totalreturn labels; lifecycleandactions remain needed.",
+        "sources": [
+          "finmind_technical",
+          "finmind_pricing"
+        ]
+      },
+      "OHLCV_units_schema": {
+        "level": "DOCUMENTED",
+        "finding": "date/stock_id/open/max/min/close/Trading_Volume/shares/Trading_money/tradecount. Pricezeros canencode noannouncedprice, evenpositivevolume. Emergingopen=prioraverage; dailyvolume mayinclude blocktrades. Nozero/ffill asprices; source docs examplesnot observedpayloads.",
+        "sources": [
+          "finmind_technical"
+        ]
+      },
+      "request_quota": {
+        "level": "DOCUMENTED",
+        "finding": "Free300requests/hour anonymous,600registered; quickstartTokenoptional. Rateentitlement/access/enddate limits/rowtruncation needactualsmalltest. Bulkallstocks-by-date ispaidtier.",
+        "sources": [
+          "finmind_pricing",
+          "finmind_quickstart"
+        ]
+      },
+      "acquisition_cost": {
+        "level": "INFERRED",
+        "finding": "IllustrationN=2000evereligiblecodes,Y=16years2010..2025: optimisticN=2000requests onlyif fullrangecomplete; annualchunksN*Y=32000 ifneeded. At300/h:6.67/106.67 quota-equivalenthours, not elapsedtime/minimumwallclock or performance evidence. Datasetmetadata/lifecycle/retries extra; no measuredbytescost. Freefee0documented forscopeduse only.",
+        "sources": []
+      },
+      "historical_availability": {
+        "level": "UNKNOWN",
+        "finding": "No original historical publication/vintage ledger proven; current retrospective response is not historical-asof or StrictPIT.",
+        "sources": []
+      },
+      "calendar_universe": {
+        "level": "BLOCKED",
+        "finding": "Point-in-time lifecycle/security-type and qualified sessions required; current listings alone create survivorship bias.",
+        "sources": []
+      },
+      "long_term_reproducibility": {
+        "level": "INFERRED",
+        "finding": "Requires lawful locally retained exactbytes, hashes, request/schema/config identities, immutable source revisions; refetching vendor history is not exact restoration.",
+        "sources": []
+      }
+    },
+    {
+      "id": "fubon",
+      "family": "FUBON_HISTORICAL_CANDLES",
+      "decision": "CONDITIONAL_BACKUP_ACCOUNT_AND_USAGE_BLOCKED_STOP_DEEPER_RESEARCH",
+      "endpoint": "historical/candles/{symbol} (SDK route,not invoked)",
+      "legal_use": {
+        "level": "BLOCKED",
+        "finding": "SDKdocs require loginID/password/certificate/marketdataentitlement. Noaccount/credential use authorizedthiswindow; academicreuse grant not established bytechnicaldocs.",
+        "sources": [
+          "fubon_candles",
+          "fubon_getting_started"
+        ]
+      },
+      "storage_redistribution": {
+        "level": "UNKNOWN",
+        "finding": "Historicalcandlesdocs are not storage/research/redistributionlicense. Applicableaccount/marketdataagreement, retentionandredistribution rights unresolved. Stopbeforelogin.",
+        "sources": []
+      },
+      "historical_coverage": {
+        "level": "DOCUMENTED",
+        "finding": "Listed/OTC daily from2010claimed; indices2015,emerging2024 notfirstbaseline. Perquerydateinterval strictly<1year. Not symbolcoverageproof.",
+        "sources": [
+          "fubon_candles"
+        ]
+      },
+      "actual_coverage_evidence": {
+        "level": "UNKNOWN",
+        "finding": "Noaccount/token/API request; no realcoverage/fees/entitlement confirmed.",
+        "sources": []
+      },
+      "markets": {
+        "level": "DOCUMENTED",
+        "finding": "Response includes exchange/market/type/symbol; no historicalordinary-stockmembership inference.",
+        "sources": [
+          "fubon_candles"
+        ]
+      },
+      "delisted_survivorship": {
+        "level": "UNKNOWN",
+        "finding": "Delisted/reusedcodes/markettransfercoverage notguaranteed bydocs. Currentinstrumentlist cannotdefine historicaluniverse.",
+        "sources": []
+      },
+      "corporate_actions": {
+        "level": "DOCUMENTED",
+        "finding": "Explicitadjusted=true/false availablefromSDKv2.2.8; corporateactionadjustmentbasis/vintages stillneedsample andterms. Do notassume default ormodel labeltotalreturn.",
+        "sources": [
+          "fubon_candles"
+        ]
+      },
+      "OHLCV_units_schema": {
+        "level": "DOCUMENTED",
+        "finding": "Daily OHLC/volume; shareunits forordinarydailyK, intradaylotunits differ. Explicittimeframe=D/fields/adjustedflag. Do notreuse intradayunits.",
+        "sources": [
+          "fubon_candles"
+        ]
+      },
+      "request_quota": {
+        "level": "DOCUMENTED",
+        "finding": "Historical60requests/minute; 429overlimit, abnormalconnectionbursts canblock. No cost/paid entitlement inference.",
+        "sources": [
+          "fubon_quota"
+        ]
+      },
+      "acquisition_cost": {
+        "level": "INFERRED",
+        "finding": "N=2000,Y=16:~32000per-symbol calendar-yearchunks (<1year each),533.33quota-equivalentminutes(~8.89hours) at60/min. Not wallclockestimate; metadata/extraadjustedseries/auth/errors/fees extra. Monetaryprice UNKNOWN.",
+        "sources": []
+      },
+      "historical_availability": {
+        "level": "UNKNOWN",
+        "finding": "No original historical publication/vintage ledger proven; current retrospective response is not historical-asof or StrictPIT.",
+        "sources": []
+      },
+      "calendar_universe": {
+        "level": "BLOCKED",
+        "finding": "Point-in-time lifecycle/security-type and qualified sessions required; current listings alone create survivorship bias.",
+        "sources": []
+      },
+      "long_term_reproducibility": {
+        "level": "INFERRED",
+        "finding": "Requires lawful locally retained exactbytes, hashes, request/schema/config identities, immutable source revisions; refetching vendor history is not exact restoration.",
+        "sources": []
+      }
+    }
+  ],
+  "network_market_or_auth_requests": 0,
+  "new_trainer_evaluator_platform": false
+}

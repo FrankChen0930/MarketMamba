@@ -1,9 +1,19 @@
 # V7 Research Program and Current Development Backlog
 
-> Current planning owner: isolated Window18 manual-collector branch, linked by canonical
+> Current planning owner: isolated Window20 historical-source decision branch, linked by canonical
 > Current State/Authority Map. Planning status does not grant research, execution,
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
+
+## Window20 Historical Data Source Decision Sprint
+
+COMPLETE/STOP/UNMERGED/NOT_DEPLOYED；research/v7-window20-historical-sources，base87695e4。
+U1：三類來源documentmatrix完成；U2：主FinMind／備富邦條件建議、次輪22request資格Pilot方案完成。
+RECOMMENDATION_PROPOSED：非商業Free/anonymous優先，不是資料准入；多年度Coverage／下市／市場轉換／adjustment／bytesRestore未實測。
+BLOCKED：W14兩歷史route下載重用資格、富邦帳號及使用權、永久保存／完整歷史Universe與Label/evaluationpolicy。
+下一Human：是否批准6檔×3小窗口18price+3metadata+1重取=22匿名FinMind請求；匿名拒絕就STOP，不註冊/Token/自動備援。
+無本輪剩餘READY，不自行開始研究。W19cf1a84f獨立限期Collector不修改／停用／觸發／整合；本輪無新runtime觀測。
+[Brief](../../reports/v7_window20_source_decision.md)、[Matrix](window20-source-matrix.json)、[Evidence](window20-evidence.json)。
 
 ## Window18 Limited Real Forward Collector Pilot
 

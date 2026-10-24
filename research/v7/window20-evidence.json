@@ -1,0 +1,195 @@
+{
+  "schema_version": 1,
+  "status": "COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+  "evidence_class": "OFFICIAL_DOCUMENTATION_AND_REPO_REFERENCE_NOT_NEW_MARKET_COVERAGE",
+  "observed_at": "2026-10-24T16:34:13.235989+00:00",
+  "branch": "research/v7-window20-historical-sources",
+  "base": "87695e4d5dc6e047f5ab39ca3cd8294b971bbc3a",
+  "units": [
+    "U1_threefamily_documentation_matrix",
+    "U2_main_backup_decision_and_bounded_nextpilot_proposal"
+  ],
+  "sources": {
+    "finmind_pricing": {
+      "location": "https://finmind.github.io/Pricing/",
+      "evidence_class": "OFFICIAL_DOCUMENTATION_REVIEW",
+      "raw_HTML_archived": true
+    },
+    "finmind_technical": {
+      "location": "https://finmind.github.io/tutor/TaiwanMarket/Technical/",
+      "evidence_class": "OFFICIAL_DOCUMENTATION_REVIEW",
+      "raw_HTML_archived": true
+    },
+    "finmind_disclaimer": {
+      "location": "https://finmind.github.io/Disclaimer/",
+      "evidence_class": "OFFICIAL_DOCUMENTATION_REVIEW",
+      "raw_HTML_archived": true
+    },
+    "finmind_terms": {
+      "location": "https://finmind.github.io/PrivacyPolicy/",
+      "evidence_class": "OFFICIAL_DOCUMENTATION_REVIEW",
+      "raw_HTML_archived": false
+    },
+    "finmind_quickstart": {
+      "location": "https://finmind.github.io/quickstart/",
+      "evidence_class": "OFFICIAL_DOCUMENTATION_REVIEW",
+      "raw_HTML_archived": true
+    },
+    "finmind_fundamental": {
+      "location": "https://finmind.github.io/tutor/TaiwanMarket/Fundamental/",
+      "evidence_class": "OFFICIAL_DOCUMENTATION_REVIEW",
+      "raw_HTML_archived": false
+    },
+    "fubon_candles": {
+      "location": "https://www.fbs.com.tw/TradeAPI/docs/market-data/http-api/historical/candles/",
+      "evidence_class": "OFFICIAL_DOCUMENTATION_REVIEW",
+      "raw_HTML_archived": true
+    },
+    "fubon_quota": {
+      "location": "https://www.fbs.com.tw/TradeAPI/docs/market-data/rate-limit/",
+      "evidence_class": "OFFICIAL_DOCUMENTATION_REVIEW",
+      "raw_HTML_archived": true
+    },
+    "fubon_getting_started": {
+      "location": "https://www.fbs.com.tw/TradeAPI/docs/market-data/http-api/getting-started/",
+      "evidence_class": "OFFICIAL_DOCUMENTATION_REVIEW",
+      "raw_HTML_archived": false
+    },
+    "twse_history": {
+      "location": "https://www.twse.com.tw/zh/trading/historical/mi-index.html",
+      "evidence_class": "OFFICIAL_DOCUMENTATION_REVIEW",
+      "raw_HTML_archived": false
+    },
+    "tpex_history": {
+      "location": "https://www.tpex.org.tw/zh-tw/mainboard/trading/info/pricing.html",
+      "evidence_class": "OFFICIAL_DOCUMENTATION_REVIEW",
+      "raw_HTML_archived": false
+    },
+    "twse_terms": {
+      "location": "https://www.twse.com.tw/zh/terms/use.html",
+      "evidence_class": "OFFICIAL_DOCUMENTATION_REVIEW",
+      "raw_HTML_archived": true
+    },
+    "tpex_terms": {
+      "location": "https://www.tpex.org.tw/zh-tw/gtsm_disclaimer.html",
+      "evidence_class": "OFFICIAL_DOCUMENTATION_REVIEW",
+      "raw_HTML_archived": true
+    },
+    "repo_W15_license": {
+      "location": "research/v7/window15-license-matrix.json@87695e4d5dc6e047f5ab39ca3cd8294b971bbc3a",
+      "evidence_class": "REPO_FIXED_REFERENCE",
+      "raw_HTML_archived": false
+    },
+    "repo_W14_panel": {
+      "location": "research/v7/window14-historical-panel.json@87695e4d5dc6e047f5ab39ca3cd8294b971bbc3a",
+      "evidence_class": "REPO_FIXED_REFERENCE",
+      "raw_HTML_archived": false
+    }
+  },
+  "document_archive": "research/v7/window20-document-archive.json",
+  "network": {
+    "market_data_API_requests": 0,
+    "auth_or_login_requests": 0,
+    "accounts_or_tokens_used": false,
+    "fixed_HTML_archives": 8,
+    "new_source_categories": 3,
+    "API_probes": 0,
+    "thirdparty_search_results_used_as_authority": false,
+    "bounds": "4initialsearchqueries+3targetedsearches, onlyofficialpagesused; no unknownendpoint探測/credentials/marketpayload"
+  },
+  "classification": "DOCUMENTED source claims != observed coverage; INFERRED costs/preservation separate; UNKNOWN/BLOCKED failclosed",
+  "actual_history_evidence": "Only reusedW14 twoday337221rawbytes; no historicalpayload fetched thiswindow",
+  "proposal": {
+    "primary": "FinMind_TaiwanStockPrice_conditional",
+    "backup": "FubonHistoricalCandles_accountblocked",
+    "next_finmind_request_max": 22,
+    "next_finmind_price_requests": 18,
+    "next_finmind_metadata_requests": 3,
+    "next_finmind_repeat_requests": 1,
+    "stock_roles": 6,
+    "window_roles": 3,
+    "max_sessions_per_window": 10,
+    "next_fubon_conditional_price_requests": 20,
+    "none_authorized_by_this_recommendation": true
+  },
+  "W19_protection": "known cf1a84f onlyread; no worktree/task changes/disable/trigger/merge; policy+armhashes compare; no new runtime observation",
+  "W19_pins": {
+    "/home/frank/projects/MarketMamba/.artifacts/window19-daily-pilot/policy.json": "b1fdaf47c2632fa6c59468faff87912d13f3e14d7c25729d44ff5f38db827e81",
+    "/home/frank/projects/MarketMamba/.artifacts/window19-daily-pilot/AUTHORIZED.json": "8dbcd765275cda550d339a9bf70eda97c852712afbae88a8b5cbda14690e1f00"
+  },
+  "research_admitted": false,
+  "new_implementation_or_test_suite": false,
+  "review": {
+    "status": "GO_DOCUMENT_CLOSURE_ONLY",
+    "reviewer": "/root/independent_review",
+    "rounds": 1,
+    "critical": 0,
+    "required": 0,
+    "optional": 0,
+    "repairs": 0,
+    "independent_checks": "8HTMLmanifests/924253bytes;3families/15sources/22requests/180+10rows;W19policy+armhashesunchanged",
+    "network_market_auth_GPU_or_suite_runs": 0,
+    "limitation": "Otherunarchivedsourcesnotindependentlyrefetched; recommendationnotAPIauthorization"
+  },
+  "artifact_hashes": {
+    "knowledge/00_Project_Map/Authority_Map.md": {
+      "sha256": "834690b2ae40facdc46efb79f52a39880c8c156be988a4a6a27ea7a711cc26a4",
+      "bytes": 67912
+    },
+    "knowledge/00_Project_Map/Current_State.md": {
+      "sha256": "a6388d29d2022739c36b4638e56af54059e1edd88b587e8e598dd42ff1d8c929",
+      "bytes": 81970
+    },
+    "knowledge/00_Project_Map/Worktree_Register.md": {
+      "sha256": "4c2ac8d380d39efa158836055eaa615df1ed1231edaa198adc4d09e799e39572",
+      "bytes": 40278
+    },
+    "knowledge/00_Project_Map/authority-map.json": {
+      "sha256": "52524d26d74094278c2531327fb2a533b6f552e168a23357917ad25d0e5494b7",
+      "bytes": 33375
+    },
+    "reports/v7_window20_source_decision.md": {
+      "sha256": "eb20217512c2c8eb1f8dabf065d2c5b920e8c21a47388db2b86ad1f003655a34",
+      "bytes": 6893
+    },
+    "research/v7/research-program.md": {
+      "sha256": "38d239484bd14fb8ada50e3591f849725618639bbd1d9c6c5ec20c83d60f30df",
+      "bytes": 85904
+    },
+    "research/v7/window20-checks.txt": {
+      "sha256": "66168e28a97f84a4bdfff3f637a61e3c57fab7e02ae1b81d2430e357b0ac63c2",
+      "bytes": 249
+    },
+    "research/v7/window20-document-archive.json": {
+      "sha256": "6b2f9d400693e15e359bb6d5cab8d09c6068a4b48baced9c47fbab129c979751",
+      "bytes": 7537
+    },
+    "research/v7/window20-knowledge-health.txt": {
+      "sha256": "bf93f67ea1dfe58182f4c71dd1f609a034debb6e81c2599949e554cb6c78863c",
+      "bytes": 237
+    },
+    "research/v7/window20-knowledge-impact.txt": {
+      "sha256": "cc91dd22d7d6fbac37da5aec5d92cee61d48b69d45037fa1ce8dd52045c6390b",
+      "bytes": 2560
+    },
+    "research/v7/window20-source-matrix.json": {
+      "sha256": "fd92dc1372b69f15a96dc7fd12f3c0e492cf1876d7386df2e941801af6aed338",
+      "bytes": 13442
+    }
+  },
+  "knowledge_health": {
+    "status": "WARNING",
+    "structural_failures": 0,
+    "retained_warnings": [
+      "Governance",
+      "Authority Drift",
+      "Legacy Docs"
+    ]
+  },
+  "usage_snapshot": {
+    "tool_goal_tokens_used": 123848,
+    "tool_goal_elapsed_seconds": 643,
+    "certified_billing_or_hard_budget": false,
+    "bounded_scope_completed_then_stop": true
+  }
+}

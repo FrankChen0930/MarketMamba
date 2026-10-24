@@ -1,0 +1,111 @@
+{
+  "scope": "8fixedofficialHTMLdocumentsonly; no API/account/token/marketdata, no retry/redirect/bypass",
+  "files": [
+    {
+      "id": "finmind_pricing",
+      "url": "https://finmind.github.io/Pricing/",
+      "retrieved_at": "2026-10-24T16:29:50.924416+00:00",
+      "status": 200,
+      "manifest": "/home/frank/projects/MarketMamba/.worktrees/v7-window20-historical-sources/.artifacts/window20-documents/manifests/e7fab6489d57947a26dbc4fde322d52857174ed5e2c3189bcb0c94b5753d6e49-2026-10-24T162950.924416p0000.json",
+      "manifest_sha256": "7d5382127c6012e367f24e768379ae0a473962db8287a48c67cec735a83a15c6",
+      "raw": "/home/frank/projects/MarketMamba/.worktrees/v7-window20-historical-sources/.artifacts/window20-documents/raw/d0efd60e487e6563e72b5e39a32552482257e162759191f391f06f5659b55430.bin",
+      "raw_sha256": "d0efd60e487e6563e72b5e39a32552482257e162759191f391f06f5659b55430",
+      "bytes": 61119,
+      "class": "OFFICIAL_DOCUMENT_BYTES_NOT_MARKET_COVERAGE",
+      "success": true
+    },
+    {
+      "id": "finmind_technical",
+      "url": "https://finmind.github.io/tutor/TaiwanMarket/Technical/",
+      "retrieved_at": "2026-10-24T16:29:51.505926+00:00",
+      "status": 200,
+      "manifest": "/home/frank/projects/MarketMamba/.worktrees/v7-window20-historical-sources/.artifacts/window20-documents/manifests/84a7de43ee7cc2f5536b246ef60bbc16be5c00b15f3ca36df07517b778d3fbcd-2026-10-24T162951.505926p0000.json",
+      "manifest_sha256": "18525ddccfef3f33906a357e805b382dc2cc666595c68a227b5de51d883493f7",
+      "raw": "/home/frank/projects/MarketMamba/.worktrees/v7-window20-historical-sources/.artifacts/window20-documents/raw/bf96f6352fbe8d18771c068030df87825707d99551be0cf615155af89b0ad63d.bin",
+      "raw_sha256": "bf96f6352fbe8d18771c068030df87825707d99551be0cf615155af89b0ad63d",
+      "bytes": 582298,
+      "class": "OFFICIAL_DOCUMENT_BYTES_NOT_MARKET_COVERAGE",
+      "success": true
+    },
+    {
+      "id": "finmind_disclaimer",
+      "url": "https://finmind.github.io/Disclaimer/",
+      "retrieved_at": "2026-10-24T16:29:52.242177+00:00",
+      "status": 200,
+      "manifest": "/home/frank/projects/MarketMamba/.worktrees/v7-window20-historical-sources/.artifacts/window20-documents/manifests/76ae904c465d567483bee24d72655028278c67bc077cc4ca94e9cb20a8ea7707-2026-10-24T162952.242177p0000.json",
+      "manifest_sha256": "db78762391fe885149ea11e18f1a3debacbdd7815e8a0858ac05cc6448543e52",
+      "raw": "/home/frank/projects/MarketMamba/.worktrees/v7-window20-historical-sources/.artifacts/window20-documents/raw/1c0e6f88268472474087ba56fade2ed57eabadd12aeec9dbc91f2e96a7df68ee.bin",
+      "raw_sha256": "1c0e6f88268472474087ba56fade2ed57eabadd12aeec9dbc91f2e96a7df68ee",
+      "bytes": 51058,
+      "class": "OFFICIAL_DOCUMENT_BYTES_NOT_MARKET_COVERAGE",
+      "success": true
+    },
+    {
+      "id": "finmind_quickstart",
+      "url": "https://finmind.github.io/quickstart/",
+      "retrieved_at": "2026-10-24T16:29:52.766979+00:00",
+      "status": 200,
+      "manifest": "/home/frank/projects/MarketMamba/.worktrees/v7-window20-historical-sources/.artifacts/window20-documents/manifests/e5777c443174d4034e38637b86bfc3220cb6f4fc6d3028281a5a3d5c0cc83388-2026-10-24T162952.766979p0000.json",
+      "manifest_sha256": "da9ef3559c9a28d3fa403ec2a66d32dcf2a5388961f5f09420444a249e344522",
+      "raw": "/home/frank/projects/MarketMamba/.worktrees/v7-window20-historical-sources/.artifacts/window20-documents/raw/52fe1f750d0ea4a92643b1318c54c1bb37bed4cee1d02cb64bc62366f217a756.bin",
+      "raw_sha256": "52fe1f750d0ea4a92643b1318c54c1bb37bed4cee1d02cb64bc62366f217a756",
+      "bytes": 55625,
+      "class": "OFFICIAL_DOCUMENT_BYTES_NOT_MARKET_COVERAGE",
+      "success": true
+    },
+    {
+      "id": "fubon_candles",
+      "url": "https://www.fbs.com.tw/TradeAPI/docs/market-data/http-api/historical/candles/",
+      "retrieved_at": "2026-10-24T16:29:53.493295+00:00",
+      "status": 200,
+      "manifest": "/home/frank/projects/MarketMamba/.worktrees/v7-window20-historical-sources/.artifacts/window20-documents/manifests/73079b05f5f1c160f87e7463837b351b9565822163bfac59479446da8003a15c-2026-10-24T162953.493295p0000.json",
+      "manifest_sha256": "1a07909a4f547f383d941622af1886ecf893f31ebbe300db399d22b31c2f5939",
+      "raw": "/home/frank/projects/MarketMamba/.worktrees/v7-window20-historical-sources/.artifacts/window20-documents/raw/bf414375b378f2d391140dec3c41bfe8303f337e29218911c9b3555695fad6a0.bin",
+      "raw_sha256": "bf414375b378f2d391140dec3c41bfe8303f337e29218911c9b3555695fad6a0",
+      "bytes": 118679,
+      "class": "OFFICIAL_DOCUMENT_BYTES_NOT_MARKET_COVERAGE",
+      "success": true
+    },
+    {
+      "id": "fubon_quota",
+      "url": "https://www.fbs.com.tw/TradeAPI/docs/market-data/rate-limit/",
+      "retrieved_at": "2026-10-24T16:29:53.636611+00:00",
+      "status": 200,
+      "manifest": "/home/frank/projects/MarketMamba/.worktrees/v7-window20-historical-sources/.artifacts/window20-documents/manifests/97c508111ebd634c121587ff1fe3deec47b43d3c22145f750323d49681df4711-2026-10-24T162953.636611p0000.json",
+      "manifest_sha256": "9bc5d4fba230ddf0ae202aaaf4d3206107ee52ab52205887e98f47511b6fa71b",
+      "raw": "/home/frank/projects/MarketMamba/.worktrees/v7-window20-historical-sources/.artifacts/window20-documents/raw/d168e45e8974099f6c6b6f0d70a9ded0476fdc88cbec8cea5a74c8377192860a.bin",
+      "raw_sha256": "d168e45e8974099f6c6b6f0d70a9ded0476fdc88cbec8cea5a74c8377192860a",
+      "bytes": 26481,
+      "class": "OFFICIAL_DOCUMENT_BYTES_NOT_MARKET_COVERAGE",
+      "success": true
+    },
+    {
+      "id": "twse_terms",
+      "url": "https://www.twse.com.tw/zh/terms/use.html",
+      "retrieved_at": "2026-10-24T16:29:53.763749+00:00",
+      "status": 200,
+      "manifest": "/home/frank/projects/MarketMamba/.worktrees/v7-window20-historical-sources/.artifacts/window20-documents/manifests/3d84f83f83288b1492bf8bffa5f79b6fd26ae601435757f2104c11937852065f-2026-10-24T162953.763749p0000.json",
+      "manifest_sha256": "b767a4f79fd35f4958884777b249ed7753a92be83c8725fb9507a20e104d5620",
+      "raw": "/home/frank/projects/MarketMamba/.worktrees/v7-window20-historical-sources/.artifacts/window20-documents/raw/13ad3d4507111e71f652941b670c84df332b43638d9bd2112e96dedadbfb3e10.bin",
+      "raw_sha256": "13ad3d4507111e71f652941b670c84df332b43638d9bd2112e96dedadbfb3e10",
+      "bytes": 15458,
+      "class": "OFFICIAL_DOCUMENT_BYTES_NOT_MARKET_COVERAGE",
+      "success": true
+    },
+    {
+      "id": "tpex_terms",
+      "url": "https://www.tpex.org.tw/zh-tw/gtsm_disclaimer.html",
+      "retrieved_at": "2026-10-24T16:29:53.885461+00:00",
+      "status": 200,
+      "manifest": "/home/frank/projects/MarketMamba/.worktrees/v7-window20-historical-sources/.artifacts/window20-documents/manifests/084e460d330a7ed5b6821189723277f0b810ab54f8e585c7d7149c7e41b64331-2026-10-24T162953.885461p0000.json",
+      "manifest_sha256": "5440988ff6e62ac56353bbc0cb053592c07c6779f93b6c741b799b4803ce22d9",
+      "raw": "/home/frank/projects/MarketMamba/.worktrees/v7-window20-historical-sources/.artifacts/window20-documents/raw/c5ff6b481f2d993b6f09633f3098692f10bba980319e8a040d3650a53b25c3f2.bin",
+      "raw_sha256": "c5ff6b481f2d993b6f09633f3098692f10bba980319e8a040d3650a53b25c3f2",
+      "bytes": 13535,
+      "class": "OFFICIAL_DOCUMENT_BYTES_NOT_MARKET_COVERAGE",
+      "success": true
+    }
+  ],
+  "worktree_removal_risk": "localuntrackedHTMLarchive; Git retainsURL/hash/report notactualHTMLbytes; preserve untilseparatelyreviewed",
+  "public_redistribution": false
+}

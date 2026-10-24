@@ -1,0 +1,2 @@
+PASS:3sourcefamilies/15sourceIDs; alllevel/referencebindings;8immutableHTMLmanifests/924253rawdocumentbytes;22requestbudgetarithmetic;W19policy+armunchanged; market/authrequests0.
+No implementation changed; training/evaluator regression not needed.

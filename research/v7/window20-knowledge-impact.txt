@@ -1,0 +1,96 @@
+{
+  "acknowledgment": null,
+  "automatic_updates_performed": false,
+  "changed": [
+    "knowledge/00_Project_Map/Authority_Map.md",
+    "knowledge/00_Project_Map/Current_State.md",
+    "knowledge/00_Project_Map/Worktree_Register.md",
+    "knowledge/00_Project_Map/authority-map.json",
+    "reports/v7_window20_source_decision.md",
+    "research/v7/research-program.md",
+    "research/v7/window20-checks.txt",
+    "research/v7/window20-document-archive.json",
+    "research/v7/window20-evidence.json",
+    "research/v7/window20-knowledge-health.txt",
+    "research/v7/window20-knowledge-impact.txt",
+    "research/v7/window20-source-matrix.json"
+  ],
+  "matched_rules": {
+    "knowledge/00_Project_Map/Authority_Map.md": [
+      "canonical-knowledge"
+    ],
+    "knowledge/00_Project_Map/Current_State.md": [
+      "canonical-knowledge"
+    ],
+    "knowledge/00_Project_Map/Worktree_Register.md": [
+      "worktree-responsibility",
+      "canonical-knowledge"
+    ],
+    "knowledge/00_Project_Map/authority-map.json": [
+      "canonical-knowledge"
+    ],
+    "reports/v7_window20_source_decision.md": [
+      "history-reports-tasks"
+    ],
+    "research/v7/research-program.md": [
+      "DEFAULT"
+    ],
+    "research/v7/window20-checks.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window20-document-archive.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window20-evidence.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window20-knowledge-health.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window20-knowledge-impact.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window20-source-matrix.json": [
+      "DEFAULT"
+    ]
+  },
+  "potential_knowledge_impact": [
+    {
+      "artifact": "knowledge/01_Domains/Operations.md",
+      "rules": [
+        "worktree-responsibility"
+      ],
+      "severity": "REVIEW_REQUIRED"
+    },
+    {
+      "artifact": "knowledge/GOVERNANCE.md",
+      "rules": [
+        "canonical-knowledge"
+      ],
+      "severity": "REVIEW_REQUIRED"
+    },
+    {
+      "artifact": "knowledge/00_Project_Map/Authority_Map.md",
+      "rules": [
+        "worktree-responsibility"
+      ],
+      "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+    },
+    {
+      "artifact": "knowledge/00_Project_Map/Current_State.md",
+      "rules": [
+        "worktree-responsibility"
+      ],
+      "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+    },
+    {
+      "artifact": "knowledge/02_History/README.md",
+      "rules": [
+        "history-reports-tasks"
+      ],
+      "severity": "NO_KNOWLEDGE_IMPACT"
+    }
+  ],
+  "schema_version": 1,
+  "status": "WARNING"
+}
