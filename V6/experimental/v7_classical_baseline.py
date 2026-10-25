@@ -46,6 +46,18 @@ def _recipe(r,expected):
     else:raise ValueError('MODEL_KIND_UNSUPPORTED')
 
 
+def ridge_fit_state(x,y,alpha):
+    """Shared existing Ridge solve; no data or research authorization implied."""
+    if x.ndim!=2 or not len(x) or y.shape!=(len(x),) or not np.isfinite(x).all() or not np.isfinite(y).all() or not math.isfinite(alpha) or alpha<=0:raise ValueError('INVALID_RIDGE_NUMERIC_INPUT')
+    mean=x.mean(axis=0);std=x.std(axis=0);std=np.where(std==0,1.,std);z=(x-mean)/std;ym=float(y.mean())
+    coef=np.linalg.solve(z.T@z+alpha*np.eye(x.shape[1]),z.T@(y-ym))
+    return {'scaling':{'mean':mean.tolist(),'std':std.tolist()},'coef':coef.tolist(),'intercept':ym}
+
+
+def ridge_predict(model,x):
+    return ((x-np.asarray(model['scaling']['mean']))/np.asarray(model['scaling']['std']))@np.asarray(model['coef'])+model['intercept']
+
+
 def _matrix(rows,features):
     if any(not isinstance(row,Mapping) or not isinstance(row.get('features'),Mapping) or set(row['features']['values'])!=set(features) for row in rows):raise ValueError('FEATURE_SCHEMA_MISMATCH')
     x=np.asarray([[row['features']['values'][f] for f in features] for row in rows],dtype=np.float64)
@@ -78,9 +90,7 @@ def fit_baseline(recipe,expected_recipe_sha256,run,expected_run_sha256,phase,sam
                'universe_sha256':canonical_hash(sorted({r['features']['stock_id'] for r in rows})),
                'initialization':'NEW_SYNTHETIC_STATE','resume_checkpoint':None}
         if recipe['model_kind']=='L1':
-            mean=x.mean(axis=0);std=x.std(axis=0);std=np.where(std==0,1.,std);z=(x-mean)/std;ym=float(y.mean())
-            coef=np.linalg.solve(z.T@z+recipe['config']['alpha']*np.eye(x.shape[1]),z.T@(y-ym))
-            model.update(scaling={'mean':mean.tolist(),'std':std.tolist()},coef=coef.tolist(),intercept=ym)
+            model.update(ridge_fit_state(x,y,recipe['config']['alpha']))
         elif recipe['model_kind']=='L2':
             import lightgbm as lgb
             estimator=lgb.LGBMRegressor(**recipe['config'],random_state=recipe['seed'],deterministic=True,force_col_wise=True,verbosity=-1,device_type='cpu')
@@ -116,7 +126,7 @@ def score_view(fit,expected_fit_sha256,authorized,expected_authorization_sha256,
         rows=authorized['view'];x=_matrix(rows,r['features'])
         if any(row['features']['feature_contract_id']!=m['feature_contract_id'] for row in rows):return fail('FEATURE_CONTRACT_MISMATCH')
         if m['kind']=='L0':scores=x[:,r['features'].index(r['config']['factor'])]*r['config']['direction']
-        elif m['kind']=='L1':scores=((x-np.asarray(m['scaling']['mean']))/np.asarray(m['scaling']['std']))@np.asarray(m['coef'])+m['intercept']
+        elif m['kind']=='L1':scores=ridge_predict(m,x)
         else:
             if not dependency_status()['available']:return fail('lightgbm dependency unavailable for scores')
             import lightgbm as lgb

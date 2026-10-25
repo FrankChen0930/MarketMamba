@@ -57,7 +57,9 @@ def _relative(value):
 def validate_manifest(m,expected_sha256):
     if not isinstance(m,Mapping) or canonical_hash(m)!=expected_sha256:raise BundleError('MANIFEST_IDENTITY_MISMATCH')
     profile=(m.get('schema'),m.get('profile'),m.get('training_status'))
-    if profile not in {(SCHEMA,'SYNTHETIC_EVALUATION','NOT_RUN_SYNTHETIC'),('v7-study-run-bundle-v2','SYNTHETIC_CLASSICAL_FIT','SYNTHETIC_CPU_FIT_COMPLETED')} or m.get('evidence_class')!='SYNTHETIC':raise BundleError('BUNDLE_SCHEMA_OR_SCOPE_MISMATCH')
+    synthetic=profile in {(SCHEMA,'SYNTHETIC_EVALUATION','NOT_RUN_SYNTHETIC'),('v7-study-run-bundle-v2','SYNTHETIC_CLASSICAL_FIT','SYNTHETIC_CPU_FIT_COMPLETED')} and m.get('evidence_class')=='SYNTHETIC'
+    engineering=profile==('v7-study-run-bundle-v2','RETROSPECTIVE_ENGINEERING_SMOKE','CPU_ENGINEERING_SMOKE_COMPLETED') and m.get('evidence_class')=='RETROSPECTIVE_ENGINEERING_SMOKE' and m.get('authority_scope')=='HumanWindow23_LIMITED_ENGINEERING_SMOKE'
+    if not (synthetic or engineering):raise BundleError('BUNDLE_SCHEMA_OR_SCOPE_MISMATCH')
     if m.get('research_admitted') is not False:raise BundleError('AUTHORITY_OR_TRAINING_STATUS_MISMATCH')
     i=m['identity']
     if not isinstance(i,Mapping) or not all(_text(i.get(k)) for k in ('study_id','recipe_id','run_id','fold_id','origin_id')):raise BundleError('RUN_IDENTITY_UNKNOWN')

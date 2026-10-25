@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window23-calendar-smoke/research/v7/window23-pipeline.py", line 134, in <module>
+    if __name__=='__main__':{'build':build,'run':run,'replay':replay}[sys.argv[1]]()
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window23-calendar-smoke/research/v7/window23-pipeline.py", line 126, in replay
+    pred=load('predictions');expected=load('daily_metrics');actual=metrics(pred,load('resolved_config')['evaluation']);assert canonical_hash(actual)==canonical_hash(expected),'DAILY_REPLAY_MISMATCH'
+                                                                                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: DAILY_REPLAY_MISMATCH

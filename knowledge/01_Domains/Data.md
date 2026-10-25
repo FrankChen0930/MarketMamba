@@ -196,3 +196,10 @@ are PROPOSED/uncollected. [Report](../../reports/v7_window05_revenue_pit.md),
 Official listing/delisting boundaries partial; daily tradability/calendar/actions remain UNKNOWN.
 No label values/RankIC/fit/admission; zero/missing not filled. Private root and same-host restore BACKUP_PENDING.
 See [bounded report](../../reports/v7_window22_historical_panel.md) and sole backlog. W19 protected, W12HALTED unchanged.
+
+## Window23 engineering-only real-data smoke
+
+W22strictmask remains19,728false. Independent engineering mask7,009 samples under explicit W23 scope,
+not historical data admission.2019/20andTPExfullcalendar unavailable; only2021–23TWSE subset used.
+Raw-price diagnostic labels/actions/publication/vintage limitations explicit. No executable-return claim.
+See [report](../../reports/v7_window23_calendar_smoke.md) and existing sole backlog; W19 untouched.

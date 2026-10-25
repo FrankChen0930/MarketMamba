@@ -21,10 +21,28 @@
   },
   "topics": [
     {
+      "topic": "Window23 calendar and limited retrospective engineering smoke",
+      "primary_authority": "research/v7/window23-evidence.json",
+      "authority_class": "CANONICAL",
+      "status": "COMPLETE_STOP_UNMERGED_LIMITED_ENGINEERING_ONLY_NOT_RESEARCH_ADMISSION",
+      "secondary_evidence": [
+        "research/v7/window23-smoke-contract.json",
+        "research/v7/window23-diagnostics-summary.json",
+        "research/v7/window23-run-summary.json",
+        "research/v7/window23-replay.json",
+        "reports/v7_window23_calendar_smoke.md"
+      ],
+      "conflicts": [
+        "W22Strictmaskunchanged;data/studyadmissionnotapproved",
+        "Calendar2019/2020andTPExfullhistorynotqualified;companyactions/PITUNKNOWN",
+        "W19nooperations;W12SAFETY_HALTED"
+      ]
+    },
+    {
       "topic": "Window22 continuous historical panel candidate",
       "primary_authority": "research/v7/window22-evidence.json",
       "authority_class": "CANONICAL",
-      "status": "COMPLETE_STOP_UNMERGED_RETROSPECTIVE_DIAGNOSTIC_ONLY",
+      "status": "LOCAL_INTEGRATED_BY_W23_FIXED7027f03_RETROSPECTIVE_DIAGNOSTIC_ONLY",
       "secondary_evidence": [
         "research/v7/window22-panel-summary.json",
         "research/v7/window22-lifecycle.json",

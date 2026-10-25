@@ -1,10 +1,21 @@
 # Worktree Register
 
+## Window23 calendar and engineering smoke — 2026-10-25
+
+- Path `.worktrees/v7-window23-calendar-smoke`; branch `research/v7-window23-calendar-smoke`;
+  base7027f03ebdb7b7b3bd90bc2bf5ce97a4c267c470; owner Codex/HumanWindow23; created2026-10-25; retiredN/A.
+- COMPLETE/STOP/UNMERGED/NOT_DEPLOYED. W22 covered proof but no allowed real-data smoke; distinct bounded authorization.
+- Reuse existing experimental, research/reports, W09publisher/W08kernel/W10numeric core; no new platform.
+- Root.artifacts/window23-calendar-smoke and same-host window23-restore own unique docs/masks/bundle/source-at-run;
+  BACKUP_PENDING. Original immutable bundle and raw preserved; safe removal needs retained clean commit,
+  resolved artifact refs and explicit retirement review. No cleanup authorized.
+- W22 fixed7027f03 locally integrated; W19/task/artifacts/budget/runtime PROTECTED and untouched.
+
 ## Window22 historical panel — 2026-10-25
 
 - Path `.worktrees/v7-window22-historical-panel`; branch `research/v7-window22-historical-panel`;
   base428a5fa5cb7b771db39a053f88c7046501399f7e; owner Codex/HumanWindow22; created2026-10-25; retiredN/A.
-- COMPLETE/STOP/UNMERGED/NOT_DEPLOYED. W21 only short windows; this isolated two-unit scope adds bounded continuous proof.
+- COMPLETE/STOP/LOCAL_INTEGRATED_BY_W23_FIXED7027f03/NOT_DEPLOYED. W21 only short windows; this isolated two-unit scope adds bounded continuous proof.
 - Existing experimental/research/reports/Decisions and root.artifacts reused; no second platform.
 - Root.artifacts/window22-historical-panel and restore own unique raw/panel/mask/source; BACKUP_PENDING, no GC.
 - Safe removal requires retained clean branch/commit, resolved artifact/source references and explicit retirement review.

@@ -1,0 +1,282 @@
+{
+  "root": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke",
+  "artifact_class": "EXTERNAL_LARGE_DATA_PRIVATE",
+  "files": [
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/RUN_CLOSED.json",
+      "bytes": 2877,
+      "sha256": "01d2792c5dcb1c692bdb23c8932879ff8b9a969707fd6d708f3362edfec2391d"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/bundles/attempts/125b2ac06e2b42859512834def5a35e6.json",
+      "bytes": 178,
+      "sha256": "379ba428d1b4e05f9345c55c5d8c431d46669a08392483697eb4d8c545e1d40e"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/bundles/completed/fb2d5542cedd2df4756162d1d79fe6ecb17406fb8e0d27099b61673ca0109edb/completion_evidence.json",
+      "bytes": 236,
+      "sha256": "89af3515854b0715d1ad23f6869bfafeb16e3ac58fd0d7233bb604e73be5980c"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/bundles/completed/fb2d5542cedd2df4756162d1d79fe6ecb17406fb8e0d27099b61673ca0109edb/daily_metrics.json",
+      "bytes": 700875,
+      "sha256": "57c1ac3350fbe77940fd230815dad22a033cf7c5bb1d7294feb409dd51719a1f"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/bundles/completed/fb2d5542cedd2df4756162d1d79fe6ecb17406fb8e0d27099b61673ca0109edb/data_split_eligibility.json",
+      "bytes": 3455,
+      "sha256": "699665906cf8359cc11b228edbde0292e15837b53732dc21dc8e0bce54520b68"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/bundles/completed/fb2d5542cedd2df4756162d1d79fe6ecb17406fb8e0d27099b61673ca0109edb/dataset_snapshot.json",
+      "bytes": 3948077,
+      "sha256": "8ad08ebfcfe4c41669d673d92d04016004348351f385bbe482bdf4cbb2a31326"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/bundles/completed/fb2d5542cedd2df4756162d1d79fe6ecb17406fb8e0d27099b61673ca0109edb/environment.json",
+      "bytes": 149,
+      "sha256": "0c3ff99b61798d96b7b27191414d7771c6f26ef8cb56c644765c07a6a5aaa26a"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/bundles/completed/fb2d5542cedd2df4756162d1d79fe6ecb17406fb8e0d27099b61673ca0109edb/manifest.json",
+      "bytes": 5196,
+      "sha256": "9f60a8c823b7313f3967eba601fd59d7994cdc49f927800ac01a7cf076302c51"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/bundles/completed/fb2d5542cedd2df4756162d1d79fe6ecb17406fb8e0d27099b61673ca0109edb/models.json",
+      "bytes": 1068,
+      "sha256": "7baf0cce35891bc2dddc94f0c6f23b955eb8918514ee6bbf0e04e56b29db0547"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/bundles/completed/fb2d5542cedd2df4756162d1d79fe6ecb17406fb8e0d27099b61673ca0109edb/predictions.json",
+      "bytes": 3341812,
+      "sha256": "5c08c979962b7976b25d80117a281ee14fe6cdf321e7c59f77ff58d5cc22a6e3"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/bundles/completed/fb2d5542cedd2df4756162d1d79fe6ecb17406fb8e0d27099b61673ca0109edb/publication.json",
+      "bytes": 248,
+      "sha256": "e4befaf4b982ce959a83c5abb005f413f0aafa65fba17349f62ebc3e5d07ed0f"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/bundles/completed/fb2d5542cedd2df4756162d1d79fe6ecb17406fb8e0d27099b61673ca0109edb/rejection_ledger.json",
+      "bytes": 9532739,
+      "sha256": "c7f54d3731f6a975307c0ed360c968e06144bf9111f9d17b5d9f53cd91a8f2fe"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/bundles/completed/fb2d5542cedd2df4756162d1d79fe6ecb17406fb8e0d27099b61673ca0109edb/resolved_config.json",
+      "bytes": 2526,
+      "sha256": "b95c16c00a53005a874342fc3687aff37f2087b9dbcc73289b928b397b6732f4"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/bundles/completed/fb2d5542cedd2df4756162d1d79fe6ecb17406fb8e0d27099b61673ca0109edb/training_logs.json",
+      "bytes": 442,
+      "sha256": "44a3e7cace570a45e2f4290d4f05fa7121339f8e354622a1efb016c249ff204f"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/diagnostics/calendar.json",
+      "bytes": 570398,
+      "sha256": "49c5536642c4f7536adf0411f73ea5dce77b87337b916f244059e816c0d15133"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/diagnostics/dataset.json",
+      "bytes": 3947976,
+      "sha256": "f016768628b9d60c1bdbbca0f2ee646e5e9cbbd1d8262e69e9e8db30b997454f"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/diagnostics/engineering-mask.json",
+      "bytes": 9532638,
+      "sha256": "bc75517802c4695774137496131c4ba472626a325d7ae4c902b6beeeaadeee74"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/diagnostics/membership.json",
+      "bytes": 2360298,
+      "sha256": "e511b6550be765cfa0b4dce58a8c01e169104743fa1eb72e758886cf4ecf6874"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/2019.claim.json",
+      "bytes": 223,
+      "sha256": "40af9a60b39ef1fe613127271dc2d24878924686fd9b198f24e50579862e6c9b"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/2019.record.json",
+      "bytes": 578,
+      "sha256": "cc59ae1e7e9dc3f0491cf65177e113cf7249c473d995db31cae9cfd080c19647"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/2020.claim.json",
+      "bytes": 223,
+      "sha256": "a8d3eb1cfd2242669611e398765c566bb7382739b24ba1d59560c0fb296029f7"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/2020.record.json",
+      "bytes": 578,
+      "sha256": "6213c62f44bc6fa1e2c5813a06685d59e1f4d45003c7c79f133894af2f7198b8"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/2021.claim.json",
+      "bytes": 223,
+      "sha256": "972cfd6bf167d8d8500f1ba3ecb1e0ec92692c33581823a4fee8d9d788e4ab7a"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/2021.record.json",
+      "bytes": 578,
+      "sha256": "10ef37d21f1348e189171bc71d76436cdd466f16bb6d922e2c874bac0b99cc2c"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/2022.claim.json",
+      "bytes": 223,
+      "sha256": "e04521b8a074a880f352b2a5280d3dc041875e07920601fd9a727c4fe35cc96b"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/2022.record.json",
+      "bytes": 578,
+      "sha256": "59029981053647f107ea491c687a6d3740e83680d3d76071c30e3994d016bdb9"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/2023.claim.json",
+      "bytes": 223,
+      "sha256": "292d0658f4d11d6dc639d291ecf8e9c7c438a896b05a71a69ed9d9a49bd155ac"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/2023.record.json",
+      "bytes": 578,
+      "sha256": "0201e09a27f2cf9ebb0f097870e2c2aeadd40defb8f7e1e3bcc076df4b0e7def"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/closure20230803.claim.json",
+      "bytes": 216,
+      "sha256": "05362c5e2be3a769c51672ccce74c1922b4366416448364c87d83e610c5ed947"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/closure20230803.record.json",
+      "bytes": 603,
+      "sha256": "b1406631c699400060314c01c16b265f4b5c8fdb1f01eb328ffc21edbaf05802"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/manifests/037589bef829a87fa4bfe5e15f6328d60fbd918d230f3890997ca2a40917c67f-2026-10-25T051917.624008p0000.json",
+      "bytes": 742,
+      "sha256": "139d8ce1718779c4bc0fc609a3f754151d907787273e8a2e56addad902268710"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/manifests/14d391efea783a536353d76314344fcfb2d06bed5245cc585d2a7061403185be-2026-10-25T051917.480803p0000.json",
+      "bytes": 751,
+      "sha256": "1f179b26b4c96be1c0d789e7a70a0922499b819601c481d865f6fd4ac82b4155"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/manifests/2347f80bb0cdd691429322091155aaf17f9f134baf1aab33367a997a575674c0-2026-10-25T051652.085514p0000.json",
+      "bytes": 800,
+      "sha256": "d035286270544a64832e3db8015868b9ea027e553bf7c0fd5074b3e3934cec5c"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/manifests/5488e85a7dae05aa742a5ccb7fadddccac46e11ea3fea403860449ee3740acaa-2026-10-25T051651.397206p0000.json",
+      "bytes": 799,
+      "sha256": "30bdea9de18251c44d6e20bc8f4f42324e9d1d6a737f8fe6801b28aae9e828bc"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/manifests/a6a833c207ca2a757d7119381e72c1f816636ee5db06a35dcc78d52ce57f2703-2026-10-25T051651.772051p0000.json",
+      "bytes": 800,
+      "sha256": "cbdd4e231e2798d4f006bac1ca2bad1e27796f0e91de2176c798eb1cd843f492"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/manifests/b900874e647f523cc6332be9a4982361862ba4a79a9aca79280d78e933e204c4-2026-10-25T051651.615365p0000.json",
+      "bytes": 799,
+      "sha256": "2df2e5f5e519afb7681b138a70ae2bf6313a300eaa5b88cd3ea9f3aeaed3ad4a"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/manifests/c62207d15b48a3d80b75d9f8f1a942bb74cc26153f7c5285b44b6ac432960f31-2026-10-25T051917.323444p0000.json",
+      "bytes": 802,
+      "sha256": "2d5a85eb839fb962d66dcc4e19d44a910a1e9beadba9b1c3ef82afb43ab7d53d"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/manifests/d7a1ff5fc58a9247e7db27059cc340178fbe1d0b3b6496d9907f4087c3e858cf-2026-10-25T051651.957068p0000.json",
+      "bytes": 800,
+      "sha256": "1a2b142cdc45b7ab1c835ccf392d4762a6f640e29d96ec448b35b724fd3ed9a7"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/raw/13e991f1b4b97c7e9e1e6b39b5a20b0fa5134f82b3de8fd7393baa54f0c9f126.bin",
+      "bytes": 47135,
+      "sha256": "13e991f1b4b97c7e9e1e6b39b5a20b0fa5134f82b3de8fd7393baa54f0c9f126"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/raw/186aa3fd7eac14ae7ff4c774e75cba1d83d72d5b85fd134d450fae57dd94a094.json",
+      "bytes": 145,
+      "sha256": "186aa3fd7eac14ae7ff4c774e75cba1d83d72d5b85fd134d450fae57dd94a094"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/raw/4cd9a4c9e6d1a6772bc68c20b045450164c60c3cca18b1a05a88fc92910b6ce3.bin",
+      "bytes": 103919,
+      "sha256": "4cd9a4c9e6d1a6772bc68c20b045450164c60c3cca18b1a05a88fc92910b6ce3"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/raw/57ac0ea5fdb48cc8dccdc2c691cc3e331f62909d2f63424778aa7a391ca26740.json",
+      "bytes": 4311,
+      "sha256": "57ac0ea5fdb48cc8dccdc2c691cc3e331f62909d2f63424778aa7a391ca26740"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/raw/684fa93fd2db2b9dd00054172d7063014f5d5a1c77bedf12474c16778d5ff419.bin",
+      "bytes": 14551,
+      "sha256": "684fa93fd2db2b9dd00054172d7063014f5d5a1c77bedf12474c16778d5ff419"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/raw/c49edf8212319a24ce1a964e4997b86409971c79cc300bb3e614749ccf7bce8d.json",
+      "bytes": 1589,
+      "sha256": "c49edf8212319a24ce1a964e4997b86409971c79cc300bb3e614749ccf7bce8d"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/raw/cc048d412679032846398c796975bbbb14339e1ad657efbb4c97c252495cc876.json",
+      "bytes": 2709,
+      "sha256": "cc048d412679032846398c796975bbbb14339e1ad657efbb4c97c252495cc876"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/raw/fc44a422f0b927abbab2f0decaba91c6d8f3edff323c25bae4ff592444bdd576.json",
+      "bytes": 145,
+      "sha256": "fc44a422f0b927abbab2f0decaba91c6d8f3edff323c25bae4ff592444bdd576"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/tpex2020notice.claim.json",
+      "bytes": 162,
+      "sha256": "5d219ea2ddf8fb9d5c7b9992531befb80c6bca424df6ddc98651884de3aa6d5e"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/tpex2020notice.record.json",
+      "bytes": 549,
+      "sha256": "5b56005742683b730ba051828e13235f5bcc542192ebc47de783f77a13806d8d"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/tpex2023.claim.json",
+      "bytes": 164,
+      "sha256": "b0f3848cab825851020c0d1ff2ef404356b6b227ffe4c3f180f4678182ee6a28"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/tpex2023.record.json",
+      "bytes": 551,
+      "sha256": "d72f7538880c44c660c21ef7cc3480beccbe1dec5382259c8b4d517477df8414"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/source-at-run/V6/experimental/v7_classical_baseline.py",
+      "bytes": 11611,
+      "sha256": "115ee84194417e87f6ba885dee5e4a26594cccd6a223e26c863a288bedeefb1e"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/source-at-run/V6/experimental/v7_research_artifacts.py",
+      "bytes": 13196,
+      "sha256": "471466d528b04a06ccf269a685b231faa6afef646982bc5f7a37a6b259c52f46"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/source-at-run/V6/experimental/v7_research_evaluation.py",
+      "bytes": 14418,
+      "sha256": "9ad8f4b1f6f6d3d6e18051c3c71c2f042a2f05ed64c4791d12ae59b862a301f3"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/source-at-run/V6/experimental/v7_retrospective_smoke.py",
+      "bytes": 2606,
+      "sha256": "7f1d5496c0e041b839a619ce1a9daa4b5f91bb2448b347664386082fed48d7a9"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/source-at-run/research/v7/window23-pipeline.py",
+      "bytes": 15831,
+      "sha256": "5085553f31dcaf0eb149ee46c9afe6e86d2dff8fcddbc32019a41c6a94338ddf"
+    }
+  ],
+  "backup": "BACKUP_PENDING"
+}
