@@ -571,5 +571,18 @@
     "strict_phase0": "STOP",
     "e1_frozen_matrix": "BLOCKED",
     "next_action": "STOP; use integrated main as baseline only for separately authorized next CPU work"
+  },
+  "window26_label_integrity": {
+    "branch": "research/v7-window26-label-contract",
+    "base": "27055f7ec34cd4aa6d47f67bd89e5b6616244bc8",
+    "status": "COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+    "evidence": "research/v7/window26-evidence.json",
+    "proposal": "research/v7/window26-next-study-candidate.json",
+    "exposure": "research/v7/window26-exposure-ledger.json",
+    "authority": "Human Window26 bounded forensic and proposed study preparation; no formal admission",
+    "W25_integration": "27055f7ec34cd4aa6d47f67bd89e5b6616244bc8",
+    "known_action": "2321 68% loss-offset reduction; 3 raw labels cross share units",
+    "suspension_primary_notice": "UNKNOWN",
+    "next_action": "Human label/data/universe/fold/evaluation/compute decisions; no new window authorized"
   }
 }

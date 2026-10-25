@@ -1,0 +1,1 @@
+{"status": "BYTES_HASH_RESTORED", "files": 15, "bytes": 4785564, "prior": {"window24": 191, "window25": 12}, "event_records": 1, "backup": "BACKUP_PENDING_SAME_HOST_NOT_INDEPENDENT_BACKUP"}

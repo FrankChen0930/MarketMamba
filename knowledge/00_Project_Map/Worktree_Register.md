@@ -1,10 +1,20 @@
 # Worktree Register
 
+## Window26 label integrity / next-study proposal — 2026-10-25
+
+- Path `.worktrees/v7-window26-label-contract`; branch `research/v7-window26-label-contract`; base `27055f7ec34cd4aa6d47f67bd89e5b6616244bc8`.
+- Owner Codex / Human Window26; created 2026-10-25; retired N/A. COMPLETE / STOP / UNMERGED / NOT_DEPLOYED.
+- Reuses W24/W25 immutable bytes and source snapshots; new report/spec/forensic scripts only, no new platform or V6 implementation.
+- Authority: bounded event forensics and PROPOSED study preparation; no new model fit, predictions, RankIC, formal admission, GPU or scheduler operations.
+- Artifacts `.artifacts/window26-label-integrity/`; same-host restore `.artifacts/window26-restore/`; BACKUP_PENDING.
+- Dependencies W24/W25 source bytes and W26 event/document snapshots; preserve originals. W19 protected, W12 HALTED, W06 not adopted.
+- Safe removal requires clean retained commit, resolved raw/source/restore references and explicit retirement review; no cleanup authorized here.
+
 ## Window25 fixed-prediction audit — 2026-10-25
 
 - Path `.worktrees/v7-window25-robustness-audit`; branch `research/v7-window25-robustness-audit`;
   base90b1327560f717727ad3fd53dfe86cb421c70f5b; owner Codex/HumanWindow25;created2026-10-25;retiredN/A.
-- COMPLETE/STOP/UNMERGED/NOT_DEPLOYED. W24executedlimitedpilot; thisdistinctauthorization only audits existing evidence.
+- COMPLETE/STOP/LOCAL_INTEGRATED_BY_W26_FIXED27055f7/NOT_DEPLOYED. W24executedlimitedpilot; thisdistinctauthorization only audits existing evidence.
 - Reuse experimental/research/reports/Decisions, W08metric/E1circularhelper/W09verify/W24artifacts;no newplatform.
 - Root.artifacts/window25-robustness-audit and samehostwindow25-audit-restore own generateddiagnostics/source,
   BACKUP_PENDING. W24source191files immutable; no oldartifact/worktreecleanup.

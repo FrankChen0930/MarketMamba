@@ -1,0 +1,27 @@
+{
+  "acknowledgment": null,
+  "automatic_updates_performed": false,
+  "changed": [
+    "reports/v7_window26_label_integrity.md",
+    "research/v7/window26-evidence.json"
+  ],
+  "matched_rules": {
+    "reports/v7_window26_label_integrity.md": [
+      "history-reports-tasks"
+    ],
+    "research/v7/window26-evidence.json": [
+      "DEFAULT"
+    ]
+  },
+  "potential_knowledge_impact": [
+    {
+      "artifact": "knowledge/02_History/README.md",
+      "rules": [
+        "history-reports-tasks"
+      ],
+      "severity": "NO_KNOWLEDGE_IMPACT"
+    }
+  ],
+  "schema_version": 1,
+  "status": "PASS"
+}

@@ -1,0 +1,62 @@
+{
+  "schema": "w26-evidence-v1",
+  "status": "COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+  "branch": "research/v7-window26-label-contract",
+  "base": "27055f7ec34cd4aa6d47f67bd89e5b6616244bc8",
+  "authority": "Human Window26 bounded forensics and next-study PROPOSAL only",
+  "units": [
+    "U1 Corporate action and label integrity",
+    "U2 Next exploratory study candidate"
+  ],
+  "evidence": [
+    "window26-integration.json",
+    "window26-network-ledger.json",
+    "window26-event-matrix.json",
+    "window26-independent-restore.json",
+    "window26-label-policy-candidates.json",
+    "window26-next-study-candidate.json",
+    "window26-exposure-ledger.json"
+  ],
+  "tests": {
+    "direct_unittest": 3,
+    "source_formula_checks": 3,
+    "old_private_byte_checks": 203,
+    "restore_files": 15
+  },
+  "repair_rounds": 1,
+  "limitations": [
+    "Original official suspension notice not verified",
+    "Other action coverage incomplete",
+    "Historical availability/vintage unknown",
+    "No corrected metrics or formal admission",
+    "No qualified untouched historical evaluation established"
+  ],
+  "zero_operations": [
+    "fit",
+    "refit",
+    "new_predictions",
+    "RankIC_recalculation",
+    "new_TaiwanStockPrice",
+    "GPU",
+    "W19_operations",
+    "V6_changes",
+    "Frozen_contract_changes",
+    "production_changes",
+    "push",
+    "deploy"
+  ],
+  "backup": "BACKUP_PENDING_SAME_HOST",
+  "next_action": "Human label route/data/event/universe/fold/evaluation/compute decision, no autonomous new window",
+  "required_repair": "Exposure Ledger W26 matrix source pin synchronized after prior matrix metadata update",
+  "review": "window26-review.json",
+  "review_verdict": "GO_AFTER_INDEPENDENT_REQUIRED_CLOSURE",
+  "review_limitations": [
+    "PDF bytes verified; reviewer did not independently extract page38 text"
+  ],
+  "governance": "knowledge_health --ci WARNING, no FAIL; existing Governance/AuthorityDrift/LegacyDocs warnings",
+  "usage_observation": {
+    "goal_counter_observed_tokens": 238258,
+    "goal_counter_observed_seconds": 1899,
+    "interpretation": "Tool counter observed during closure, not independently certified billing cost or hard budget"
+  }
+}

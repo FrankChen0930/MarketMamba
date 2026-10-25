@@ -215,3 +215,9 @@ See [report](../../reports/v7_window24_expanded_pilot.md)/solebacklog; W19untouc
 
 Source2321 rawproxycase crosses6missing sessions; causeUNKNOWN, no newactionthreshold/filter. Historicalpublication/vintage/actions notqualified; originalW24data/masksunchanged.
 See [report](../../reports/v7_window25_robustness_audit.md) and solebacklog. 0datarequests/fit;W19protected;FormalAdmissionNOT_APPROVED.
+
+## Window26 bounded label evidence — branch-local / not admitted
+
+2321 的 68% 虧損減資與市場股數單位轉換已有來源證據；三筆既有 10d raw labels 算式正確，但不具同股數未調整報酬語意。
+原始停牌公告與其他事件覆蓋仍 UNKNOWN；W24/W25 結果不改寫／不重算。兩路 Label Policy 與 next-study 全為 PROPOSED。
+參見 [W26 evidence](../../research/v7/window26-evidence.json) 與 [事件矩陣](../../research/v7/window26-event-matrix.json)。

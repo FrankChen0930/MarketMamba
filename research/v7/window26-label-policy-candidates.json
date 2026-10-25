@@ -1,0 +1,46 @@
+{
+  "schema": "w26-label-policy-options-v1",
+  "status": "VERSIONED_PROPOSAL_HUMAN_DECISION_REQUIRED_NOT_ADMITTED",
+  "old_W24_W25_labels_masks_predictions_metrics": "PRESERVED_NO_RESCORING",
+  "routes": [
+    {
+      "id": "A_RAW_PRICE_DIAGNOSTIC_v0.1",
+      "label_evidence": "RAW_PRICE_DIAGNOSTIC_NOT_PRICE_TOTAL_OR_EXECUTABLE_RETURN_ADMISSION",
+      "data": "existingretrospectiveTaiwanStockPricebytes/sourcevintagespinned",
+      "feature_interval": "fromearliestinputsessionthroughsignal; supervisedintervalentrythroughexit",
+      "known_unit_actions": "PROPOSEDEXCLUDEcapitalreduction/split/parvaluecrossingsforeitherinterval, evenifendpointsfinite",
+      "interior_missing_zero": "PROPOSEDEXCLUDE_OR_UNKNOWN_fullsupervisedpath,notjustendpoints; noffill/roll",
+      "cash_dividends": "HUMAN_CHOICE:rawprice-returneventtagvsconservativeexclusion;neverclaimtotalreturnwithoutcashflows",
+      "unknown_action_or_suspension_coverage": "UNKNOWN_NOT_AUTOMATIC_CLEAN; onlyexplicitdevelopmentproxyscopeifHumanapproves",
+      "return_formula_status": "PROPOSED_ONLY; oldarithmeticnotmodified",
+      "guard": "eventdefinitionsbeforemodeloutcomes; nooutliercutoffdesignedtoimproveRankIC"
+    },
+    {
+      "id": "B_CORPORATE_ACTION_AWARE_RESEARCH_v0.1",
+      "label_evidence": "REQUIRES_NEW_DATA_AND_RESEARCH_ADMISSION",
+      "price_return": "comparable-unitentry/exitpricesorequivalentsharequantitymapping,excludingcashdistributionsbyexplicitdefinition",
+      "total_return": "sharequantitychanges+qualifiedcashdistributions/costsandexplicitreinvestmentassumption;notavailablefromAdjustedClosealone",
+      "executable_return": "requiresactualtradability/fills/costs/timing,Strict0/H2remainblocked;notclaimedbyresearchadjustment",
+      "adjusted_open": "mustobtainverifiedsame-factoradjustedopenoruseactualrawopenandverifiedquantity/cashmapping;AdjustedCloseneverentryopen",
+      "required_events": [
+        "decision_date",
+        "original_publication_time",
+        "trading_halt_start_end",
+        "market_unit_effective_date",
+        "share_ratio_before_after",
+        "cashflows",
+        "reference_price_vsactualquote",
+        "revision_identity"
+      ],
+      "known2321": "2022accountingbase differsfrom2023-02-17marketreference;do notusetheaccountingdateaspriceadjustmentdate",
+      "source_limits": "onlyCapitalReductionReferencePriceindividualFreeproved;otherdatasetpermissions/schema/coveragemustbeverifiedbeforeuse",
+      "incomplete_events": "DATA_EVIDENCE_BLOCKED,notautomaticadjustorfill"
+    }
+  ],
+  "explicit_non_admission": [
+    "FrozenE5E1untouched",
+    "Noformallabelformulachange",
+    "NoalternativeW24RankICorcorrectedperformancecomputed",
+    "No claimentireW24signaldisappearsorpersistsaftereventcorrection"
+  ]
+}

@@ -21,10 +21,28 @@
   },
   "topics": [
     {
+      "topic": "Window26 label integrity and next-study proposal",
+      "primary_authority": "research/v7/window26-evidence.json",
+      "authority_class": "CANONICAL",
+      "status": "COMPLETE_STOP_UNMERGED_PROPOSALS_NOT_ADMITTED",
+      "secondary_evidence": [
+        "research/v7/window26-event-matrix.json",
+        "research/v7/window26-label-policy-candidates.json",
+        "research/v7/window26-next-study-candidate.json",
+        "research/v7/window26-exposure-ledger.json"
+      ],
+      "conflicts": [
+        "No new formal Label or Study approval",
+        "2321 original official suspension notice remains UNKNOWN",
+        "No unchanged-unit economic return inference from affected raw labels",
+        "No untouched historical period established; W19 protected; W12 halted"
+      ]
+    },
+    {
       "topic": "Window25 fixed-prediction robustness and leakage audit",
       "primary_authority": "research/v7/window25-evidence.json",
       "authority_class": "CANONICAL",
-      "status": "COMPLETE_STOP_UNMERGED_CONDITIONAL_RAW_PROXY_DIAGNOSTICS_NOT_ADMISSION",
+      "status": "LOCAL_INTEGRATED_FIXED27055f7_CONDITIONAL_RAW_PROXY_DIAGNOSTICS_NOT_ADMISSION",
       "secondary_evidence": [
         "research/v7/window25-analysis-plan.json",
         "research/v7/window25-leakage-matrix.json",
