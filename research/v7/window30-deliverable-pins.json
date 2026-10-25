@@ -1,0 +1,143 @@
+{
+  "status": "CONTENT_IDENTITIES",
+  "base": "e83dfe68e4bc73b59cb6390ec130ba967138e7f1",
+  "prefit_commit": "60e7ca7b88b43181c0b819cb5b76e43de33a3c14",
+  "final_HEAD": "git rev-parse HEAD after local closure commit",
+  "files": [
+    {
+      "path": "research/v7/window30-archive.py",
+      "bytes": 2062,
+      "sha256": "d46b8bfafc4002e49d2067b6dd8d20e2ae47445d04058041768f9ead750a7492"
+    },
+    {
+      "path": "research/v7/window30-evaluate-process.txt",
+      "bytes": 2593,
+      "sha256": "46c029f1330bf1419932a807d11fb3cdd7da56243aff2991ccc366b7ab559791"
+    },
+    {
+      "path": "research/v7/window30-evidence.json",
+      "bytes": 3557,
+      "sha256": "bac804b6d3abe95116ed06f93dc5278116529004aac0781c21e66d3f834cc436"
+    },
+    {
+      "path": "research/v7/window30-execution-evidence.json",
+      "bytes": 1517,
+      "sha256": "35a5e1a656bf272b30c201ea5d70adf5f676e6ef74660681b8605ffee851c7f5"
+    },
+    {
+      "path": "research/v7/window30-fit10-process.txt",
+      "bytes": 244,
+      "sha256": "58a09d8b98347c6c070361fa8c55cfcd5d5da5bc39d428e2cf3a42a70fb2e0fc"
+    },
+    {
+      "path": "research/v7/window30-fit5-process.txt",
+      "bytes": 242,
+      "sha256": "f348a663af9dc205527215ad79076f6671b362d3c6772f46ba62b1ce66b936ca"
+    },
+    {
+      "path": "research/v7/window30-fixture-error.txt",
+      "bytes": 1416,
+      "sha256": "053080696c974e36f25c697d3b6ba19c1b0b4727470a1d629a692485fab7cc5a"
+    },
+    {
+      "path": "research/v7/window30-integration.json",
+      "bytes": 427,
+      "sha256": "e19b31965df57db909736133fece8d09ae68a8bba5c866be6fd3fb6edc32086c"
+    },
+    {
+      "path": "research/v7/window30-knowledge-health.txt",
+      "bytes": 237,
+      "sha256": "bf93f67ea1dfe58182f4c71dd1f609a034debb6e81c2599949e554cb6c78863c"
+    },
+    {
+      "path": "research/v7/window30-knowledge-impact.json",
+      "bytes": 595,
+      "sha256": "7c019349bd9cfbd5fea7af214c8c9458dc429da446a91024b56c1292d7897922"
+    },
+    {
+      "path": "research/v7/window30-knowledge-impact.txt",
+      "bytes": 595,
+      "sha256": "7c019349bd9cfbd5fea7af214c8c9458dc429da446a91024b56c1292d7897922"
+    },
+    {
+      "path": "research/v7/window30-lgbm.py",
+      "bytes": 15353,
+      "sha256": "8fc94f781a3700f115ecc088fef1653d2e99cf4df6f93e3c51b9132aacaefdaa"
+    },
+    {
+      "path": "research/v7/window30-local-artifacts.json",
+      "bytes": 3311,
+      "sha256": "08fe77791b8afce584c75c2ce44373e13a2072ac490133a015a727e16ccb040e"
+    },
+    {
+      "path": "research/v7/window30-prepare-process.txt",
+      "bytes": 1530,
+      "sha256": "ecb15f9290ac3c2b599fe5be53584523cf48d8648de53b06631cd937deed7677"
+    },
+    {
+      "path": "research/v7/window30-prepared.json",
+      "bytes": 3942,
+      "sha256": "89883eba9c891ed087321c92e8792e42f7ac5d282682bb6b9adf287feb36eca8"
+    },
+    {
+      "path": "research/v7/window30-recipe.json",
+      "bytes": 2898,
+      "sha256": "21c28ba203846cc3173f9ace62f4f4c199bb59126702559b46485cad91259c79"
+    },
+    {
+      "path": "research/v7/window30-red.txt",
+      "bytes": 856,
+      "sha256": "0030656c96b1d0bebf58c65048775888877d40d5fa7c55d2dd9d214baefe5e40"
+    },
+    {
+      "path": "research/v7/window30-replay-process.txt",
+      "bytes": 213,
+      "sha256": "919c2dd6c08852ca13c9bfe08e18c8aef27488d65a0067c2d4c1d9dad62b23cc"
+    },
+    {
+      "path": "research/v7/window30-replay.json",
+      "bytes": 213,
+      "sha256": "5a3c5baf3bb56ca5a95352be494f289fefbaf5d12729fb619fe25dee1ae0e289"
+    },
+    {
+      "path": "research/v7/window30-resource-evidence.json",
+      "bytes": 1112,
+      "sha256": "ef8477c6744d42e9bb53c025295b38dba0ec40a717eeb82eb09d333b50f726d5"
+    },
+    {
+      "path": "research/v7/window30-restore-process.txt",
+      "bytes": 182,
+      "sha256": "d082a477ab565f4046f4484c63ae34b59a6eb64f3cd7ad81ff2f18f663a89836"
+    },
+    {
+      "path": "research/v7/window30-results.json",
+      "bytes": 1880,
+      "sha256": "463323cf66afc92b64134f7c4570f1ccf4922835be4e86a16d23004a87a2d5e9"
+    },
+    {
+      "path": "research/v7/window30-review.json",
+      "bytes": 957,
+      "sha256": "c82ee74e81ffcba1868a88be70745a69bde0d464645398f62a45700a9e74789e"
+    },
+    {
+      "path": "research/v7/window30-run.json",
+      "bytes": 3343,
+      "sha256": "a725cc21fe4ad0a32eba0e11f72eb3eeede03c2b6664ae9601c74f35e87ed6a4"
+    },
+    {
+      "path": "research/v7/window30-targeted-tests.txt",
+      "bytes": 104,
+      "sha256": "1a5eea5c0b37bca09e33403d67f3c80a2e8543ad0339f036be7bfc2893e691f0"
+    },
+    {
+      "path": "research/v7/window30-tests.py",
+      "bytes": 3078,
+      "sha256": "e0f72ca16971b84ef8e2e9aaffad8c38ccb600bd5af9344f737708950e84fad7"
+    },
+    {
+      "path": "reports/v7_window30_fixed_lightgbm.md",
+      "bytes": 7503,
+      "sha256": "27f787c2e44a55210a0c7eaf7bc451d6f1c76422ac129943350ec310887063c1"
+    }
+  ]
+}

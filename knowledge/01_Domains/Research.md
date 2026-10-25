@@ -244,3 +244,10 @@ Human限定批准W27安全Mask下的2021 Ridge fresh fits各horizon一次（2/2�
 最小research feature-only介面先保存Predictions，再做Label Join；future label刪除只改evaluation coverage，18回歸tests與獨立Raw-derivedReplay驗證。
 5d正向Mean/Median在新樣本延續、10d不一致；未知actions/asof/vintage與2022/2023曝光保留，不作模型選擇/投資/Strict PIT claim。
 [Evidence](../../research/v7/window29-evidence.json)、[Report](../../reports/v7_window29_expanded_development.md)。
+
+## Window30 fixed real LightGBM development baseline
+
+Human明確批准一組小型real-data recipe，60e7ca7在Fit前固定；W11環境4.6.0不變，2fits/64trees、TRAIN-only bins，無validation earlystop或search。
+60726 feature-only predictions /same W29support與獨立Replay通過；5d正、10d負，4組Mean均低於舊Ridge，但不宣告winner/研究准入。
+Expanding各Origin仍需另凍結model-ready/maturity/purge/refit/selection與資源；本次不自動批准。
+[Evidence](../../research/v7/window30-evidence.json)、[Report](../../reports/v7_window30_fixed_lightgbm.md)。

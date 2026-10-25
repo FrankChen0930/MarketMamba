@@ -3,7 +3,7 @@
 ## Window30 real LightGBM — 2026-10-25
 
 - Path `.worktrees/v7-window30-real-lightgbm`; branch `research/v7-window30-real-lightgbm`; base `e83dfe68e4bc73b59cb6390ec130ba967138e7f1`.
-- Owner Codex/HumanWindow30;created2026-10-25;retiredN/A. PREFIT / UNMERGED / NOT_DEPLOYED.
+- Owner Codex/HumanWindow30;created2026-10-25;retiredN/A. COMPLETE / STOP / UNMERGED / NOT_DEPLOYED; see window30-run/replay/review.
 - One bounded unit; existing W11 LightGBM/wheel/lib/CPU env, W29 frozen feature-only rows/labels/support, W08 metrics and existing atomic/lock primitives. Existing synthetic guard is unchanged; Human authorizes one real-data research adapter.
 - Private `.artifacts/window30-real-lightgbm/`, restore `.artifacts/window30-restore/`; W29 private raw/predictions/dataset and W11 env must remain available. Code/navigation restored via retained Git checkout. BACKUP_PENDING.
 - Limits2LGBM fits, CPU1200s/fit300s/artifacts256MiB;zero Ridge/API/GPU/W19 operations. Safe-removal requires retainedcleancommit, allsource/model/prediction/restore dependencies resolved and explicitretirementreview.
@@ -11,7 +11,7 @@
 ## Window29 expanded development — 2026-10-25
 
 - Path `.worktrees/v7-window29-expanded-development`; branch `research/v7-window29-expanded-development`; base `1d9a2a7a1ee57c455ba58250f63681efbbdd9050`.
-- Owner Codex/HumanWindow29;created2026-10-25;retiredN/A. COMPLETE / STOP / UNMERGED / NOT_DEPLOYED; review window29-review.json.
+- Owner Codex/HumanWindow29;created2026-10-25;retiredN/A. COMPLETE / STOP / LOCAL_INTEGRATED_FIXEDe83dfe6 / NOT_DEPLOYED; review window29-review.json.
 - Reuse official W22bytes, existing source snapshots/atomic locks/W27 safety/W10 Ridge/W08 evaluator; minimal feature-only split is necessary because W24 wrapper gates future Entry/Exit before returning features. No new platform/V6 change.
 - Private `.artifacts/window29-expanded-development/`, restore `.artifacts/window29-restore/`; local shared FinMind rate ledger only, not dataset registry.
 - Authorized ≤80requests/70price,2Ridgefits,CPU3600s/artifacts1GiB; W19 protected/W12HALTED. Safe-removal requires retained cleancommit, resolved raw/model/prediction/restore dependencies and explicit retirement review.

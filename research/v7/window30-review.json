@@ -1,0 +1,25 @@
+{
+  "reviewer": "/root/independent_review",
+  "verdict": "GO",
+  "Critical": 0,
+  "Required": 0,
+  "main_review_rounds": 1,
+  "review_rework_rounds": 0,
+  "mock_only_tests": 6,
+  "W30_original_and_restore_files": 11,
+  "W29_original_files_unchanged": 299,
+  "prefit_commit": "60e7ca7",
+  "prefit_recipe_prepared_code_exact": true,
+  "TRAIN_n": [
+    14113,
+    13711
+  ],
+  "TRAIN_view_arrays_maturity": "PASS",
+  "fixed_feature_order_params_trees64": "PASS",
+  "prediction_keys_and_model_data_identity": 60726,
+  "daily_common_support": 970,
+  "paired_support_and_saved_arithmetic": 2910,
+  "additional_real_fit_scores_API_GPU_W19_operations": 0,
+  "limitation": "stdout did not preserve shell timeout launch command, reviewer could not independently re-prove wrapper; actual controller tool reference recorded in window30-execution-evidence.json, no fit rerun",
+  "authority": "GO limited to current development delivery, no merge/next-window approval"
+}

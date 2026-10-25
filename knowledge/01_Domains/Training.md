@@ -159,3 +159,10 @@ Human限定批准W27安全Mask下的2021 Ridge fresh fits各horizon一次（2/2�
 2022/2023同W27 support為已曝光Development；18個有限future OHLCV數值擾動不改Features/固定模型Predictions。
 此pass不驗未來Label eligibility gate為as-of，也不認證完整公司行動/vintage。
 [Run](../../research/v7/window28-run.json)、[Report](../../reports/v7_window28_clean_refit.md)。
+
+## Window30 fixed real LightGBM development baseline
+
+Human明確批准一組小型real-data recipe，60e7ca7在Fit前固定；W11環境4.6.0不變，2fits/64trees、TRAIN-only bins，無validation earlystop或search。
+60726 feature-only predictions /same W29support與獨立Replay通過；5d正、10d負，4組Mean均低於舊Ridge，但不宣告winner/研究准入。
+Expanding各Origin仍需另凍結model-ready/maturity/purge/refit/selection與資源；本次不自動批准。
+[Evidence](../../research/v7/window30-evidence.json)、[Report](../../reports/v7_window30_fixed_lightgbm.md)。

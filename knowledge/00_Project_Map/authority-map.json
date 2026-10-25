@@ -21,10 +21,29 @@
   },
   "topics": [
     {
+      "topic": "Window30 fixed real-data CPU LightGBM baseline",
+      "primary_authority": "research/v7/window30-evidence.json",
+      "authority_class": "CANONICAL",
+      "status": "COMPLETE_STOP_UNMERGED_DEVELOPMENT_NOT_ADMITTED",
+      "secondary_evidence": [
+        "research/v7/window30-recipe.json",
+        "research/v7/window30-prepared.json",
+        "research/v7/window30-run.json",
+        "research/v7/window30-results.json",
+        "reports/v7_window30_fixed_lightgbm.md"
+      ],
+      "conflicts": [
+        "Unique real recipe authorized in this window; synthetic guard/FrozenE5E1 unchanged",
+        "60726 feature-only predictions before label join; same W29 support, no future label filtering",
+        "2022/2023 exposed, unknown actions/asof/vintage retained; no winner/statistical/trading claim",
+        "No automatic Expanding/maturity-policy/GPU approval;W19protected/W12halted"
+      ]
+    },
+    {
       "topic": "Window29 disjoint expanded development cohort and feature-only predictions",
       "primary_authority": "research/v7/window29-evidence.json",
       "authority_class": "CANONICAL",
-      "status": "COMPLETE_STOP_UNMERGED_DEVELOPMENT_NOT_ADMITTED",
+      "status": "LOCAL_INTEGRATED_FIXEDe83dfe6_DEVELOPMENT_NOT_ADMITTED",
       "secondary_evidence": [
         "research/v7/window29-cohort.json",
         "research/v7/window29-plan.json",

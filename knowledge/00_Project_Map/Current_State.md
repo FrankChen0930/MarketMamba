@@ -2,22 +2,31 @@
 
 > Status: `CANONICAL_CURRENT_PROJECT_MAP`
 
-## Window30 Fixed Real-data LightGBM — PREFIT CHECKPOINT
+## Window30 Fixed Real-data LightGBM — COMPLETE / STOP
 
-W29 fixed `e83dfe68e4bc73b59cb6390ec130ba967138e7f1` 已由main1d9a2a7本機ff-only整合；340pins/restore、4tests、ReviewGO驗證。
-W30 `.worktrees/v7-window30-real-lightgbm`，branch `research/v7-window30-real-lightgbm`，base同固定SHA；UNMERGED / NOT_DEPLOYED。
-[Recipe](../../research/v7/window30-recipe.json)／[Prepared](../../research/v7/window30-prepared.json) 在任何Fit前固定：LightGBM4.6.0、L2、64trees、7leaves/depth3、lr.05、minleaf100、L2=1、seed0、thread1。
-原W29 Cohort/Data/兩Features/Labels/Fold/support不變；TRAIN N14113/13711，latest exit2021-12-30；無preprocessing，只由TRAIN建bin mapper，無eval_set/earlystop/search。
-W11現有環境Python3.12.3/NumPy2.0.2/SciPy1.16.3/LightGBM4.6.0/Native lib SHA核對，不安裝或升級。
-6targeted零實際Fit tests通過；首個測試fixture漏entry欄位已修正，未改Recipe。ModelSpec ID/Train view/environment/preprocessing/seed完整precommit；weights SHA僅Fit後產生。
-預算CPU1200秒（含60verification reserve）、每Fit真正timeout300秒、最多兩個LGBM fits，Ridge/API/GPU0；Artifact+Restore≤256MiB。
-Predictions先immutable保存後LabelJoin；min40/AVERAGE/sameSupport，2022/2023 EXPOSED DEVELOPMENT，不做正式admission/選模/收益。
-Fit/Replay/Review待執行；W19不操作/W12HALTED/StrictSTOP/E1BLOCKED/H2NOT_APPROVED維持。
+W29 fixed `e83dfe68e4bc73b59cb6390ec130ba967138e7f1` 已由main1d9a2a7本機ff-only整合；340pins/restore、4tests、ReviewGO核對。
+W30 branch `research/v7-window30-real-lightgbm`，base同固定SHA，worktree `.worktrees/v7-window30-real-lightgbm`；UNMERGED / NOT_DEPLOYED。
+任何Fit前60e7ca7固定唯一Recipe/版本/native-lib SHA/feature order/seed/TRAIN view/planned ModelSpec IDs；weights SHA僅Fit後產生。
+W11環境LightGBM4.6.0/NumPy2.0.2/SciPy1.16.3/sklearn1.6.1不變；L2/64trees/7leaves/depth3/lr.05/minleaf100/L2=1/maxbin63/seed0/thread1，無eval_set/earlystop/search。
+W29 Cohort/Data/兩Features/Labels/Fold/support完全沿用；TRAIN14113/13711，最新exit2021-12-30；identity preprocessing，bin mapper只學TRAIN。
+2個fresh LGBM fits各horizon一次，皆64trees，fit約.02777/.02791秒，modeltext52369/54849bytes；Ridge/API/GPU0。
+60726完整Feature-only Predictions先immutable保存後Label Join；同W29 support/AVERAGE/min40，970groups940defined N58–64，30tail/maturity保留拒絕。
+LGBM Mean/Median：2022/5d .018814/.021627、2022/10d −.012617/−.016793、2023/5d .021182/.026036、2023/10d −.013374/−.013470。
+5d正但四組Mean均低於既有Ridge，10d兩年負；沒有改Recipe重Fit、選winner或批准Mamba2。2022/2023 EXPOSED，UNKNOWN actions/asof/vintage與Cohort bias仍保留。
+6 mock-only tests PASS；獨立Replay60726pred/970daily/2910paired PASS，0Fit；1主要Review GO Critical0 Required0／0 review rework。
+Reviewer不能只由stdout獨立重證shell timeout wrapper；已保存實際tool command/session/start/complete reference，未重跑Fit；OS CPU guard及實測fit保留。
+11files34874071bytes/份同機restore、W29原299files hash未變；artifact+restore69749181<256MiB，CPU30.723458＋60reserve<1200；BACKUP_PENDING。
+[Recipe](../../research/v7/window30-recipe.json)、[Prepared](../../research/v7/window30-prepared.json)、[Run](../../research/v7/window30-run.json)、
+[Results](../../research/v7/window30-results.json)、[Evidence](../../research/v7/window30-evidence.json)、[Report](../../reports/v7_window30_fixed_lightgbm.md)、
+[唯一Backlog](../../research/v7/research-program.md#window30-fixed-real-data-lightgbm-baseline)。
+下一Human：Expanding origins/model-ready cutoffs/train/validation/forward/maturity/purge/selection/refit/evaluation與data/proxy/universe/events/exposure/CPU/storage上限。
+固定CPU E2E基礎已驗，但W29 masks為固定split，各新Origin需重新核對maturity/purge，不能直接宣稱Expanding實驗已批准或認證；無剩餘已授權READY，STOP。
+StrictSTOP/FormalAdmissionNOT_APPROVED/W19PROTECTED/W12SAFETY_HALTED/E1BLOCKED/H2NOT_APPROVED；不mergeW30/push/deploy/nextwindow。
 
 ## Window29 Expanded Cross-sectional Development — COMPLETE / STOP
 
 W28 fixed `1d9a2a7a1ee57c455ba58250f63681efbbdd9050` 已由main39e2fed本機ff-only整合；35pins/restore、6tests、ReviewGO核對。
-W29 branch `research/v7-window29-expanded-development`，base同固定SHA；worktree `.worktrees/v7-window29-expanded-development`；UNMERGED / NOT_DEPLOYED。
+W29 branch `research/v7-window29-expanded-development`，base同固定SHA；worktree `.worktrees/v7-window29-expanded-development`；LOCAL_INTEGRATED_FIXEDe83dfe6 / NOT_DEPLOYED。
 GET前746ca04固定68新Cohort（W24重疊0）：60pre2021 current issuers＋4periodlisting＋4delisted start/typeUNKNOWN；64檔進Prediction，仍HINDSIGHT/存活者偏差，非HistoricalUniverseVerified。
 68真實FinMind price GET／metadata0／8387840rawbytes，全部HTTP200；單並發、實際起始間隔min5.001297秒，known-local100/hour（外部匿名用量UNKNOWN），unused預算CLOSED。
 一次本機mutable counter修復：seq1保留不重送、seq2由Trace證明尚未GET；E1atomic_json只修counter，失敗CPU保守扣600秒未reset；不清除providerSTOP、不擴預算。
