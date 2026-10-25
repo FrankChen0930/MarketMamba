@@ -67,7 +67,7 @@ def train(features,labels,plan):
   with (ROOT/f'RIDGE_{h}_FIT_CLAIM.json').open('x') as f:json.dump({'horizon':h,'fit_limit':1,'fresh':True},f)
   x=np.asarray([index[tuple(q['key'][:2])]['features'] for q in rows]);y=np.asarray([q['label'] for q in rows]);state=ridge_fit_state(x,y,1.0)
   np.testing.assert_array_equal(state['scaling']['mean'],x.mean(axis=0));np.testing.assert_array_equal(state['scaling']['std'],np.where(x.std(axis=0)==0,1.,x.std(axis=0)))
-  models[str(h)]={'run_id':f'w29-fresh-ridge-{h}-train2021','state':state,'train_n':len(rows),'train_label_keys_sha256':H([q['key'] for q in rows]),'train_feature_sha256':H(x.tolist()),'alpha':1.0,'resume':False,'scaling':'TRAIN_ONLY_ZSCORE','selection':'NONE','latest_label_exit':max(q['exit'] for q in rows)}
+  models[str(h)]={'run_id':f'w29-fresh-ridge-{h}-train2021','state':state,'train_n':len(rows),'train_label_keys_sha256':H([q['key'] for q in rows]),'train_feature_sha256':H(x.tolist()),'alpha':1.0,'seed':0,'resume':False,'scaling':'TRAIN_ONLY_ZSCORE','selection':'NONE','latest_label_exit':max(q['exit'] for q in rows)}
   put(ROOT/f'model-{h}.json',models[str(h)])
  return models
 
@@ -88,7 +88,7 @@ def evaluate(pred,labels,days,policy,label_contract):
   for model in MODELS:
    seen=set()
    for r in pred[f'{model}|{h}|{role}']:
-    k=(r['signal_session'],r['stock_id'],r['horizon']);assert k not in seen;seen.add(k);q=li[k]
+    k=(r['signal_session'],r['stock_id'],r['horizon']);assert k not in seen;seen.add(k);q=li.get(k,{'eligible':False,'reasons':['LABEL_RECORD_MISSING']})
     if not q['eligible']:
      if model=='L0_POS':join_rejections.append({'key':list(k),'reasons':q['reasons']})
      continue
@@ -116,6 +116,7 @@ def main(mode):
    models=train(features,labels,plan)
   else:
    completed=json.loads((ROOT/'COMPLETE.json').read_text());assert completed['code']==code
+   build()  # independently rederive feature-only rows/label masks from raw; immutable writes must match
    for ref in completed['artifacts'].values():checked(ref)
    models=checked(completed['artifacts']['models'])
    # Replay validates train-only state algebra without performing another fit/solve.

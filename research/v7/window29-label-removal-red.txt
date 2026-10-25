@@ -1,0 +1,17 @@
+..E.
+======================================================================
+ERROR: test_entire_future_label_records_can_be_removed_without_editing_predictions (__main__.FeaturePredictionBoundary.test_entire_future_label_records_can_be_removed_without_editing_predictions)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window29-expanded-development/research/v7/window29-study-tests.py", line 22, in test_entire_future_label_records_can_be_removed_without_editing_predictions
+    before=copy.deepcopy(self.pred);r=M['evaluate'](self.pred,[],['2022-06-01','2023-06-01'],{'min_valid_n':40},'contract');self.assertEqual(before,self.pred);self.assertTrue(all(q['valid_n']==0 for q in r[0]))
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window29-expanded-development/research/v7/window29-study.py", line 91, in evaluate
+    k=(r['signal_session'],r['stock_id'],r['horizon']);assert k not in seen;seen.add(k);q=li[k]
+                                                                                          ~~^^^
+KeyError: ('2022-06-01', 'X', 5)
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.006s
+
+FAILED (errors=1)

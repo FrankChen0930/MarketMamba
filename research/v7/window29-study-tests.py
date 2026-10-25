@@ -18,6 +18,8 @@ class FeaturePredictionBoundary(unittest.TestCase):
   for r in self.labels:r.update(eligible=False,label=None,reasons=['TEST_MISSING'])
   b=M['evaluate'](self.pred,self.labels,days,policy,'contract')
   self.assertEqual(before,self.pred);self.assertTrue(all(r['valid_n']==2 for r in a[0]));self.assertTrue(all(r['valid_n']==0 for r in b[0]));self.assertTrue(all(r['rank_ic'] is None for r in b[0]))
+ def test_entire_future_label_records_can_be_removed_without_editing_predictions(self):
+  before=copy.deepcopy(self.pred);r=M['evaluate'](self.pred,[],['2022-06-01','2023-06-01'],{'min_valid_n':40},'contract');self.assertEqual(before,self.pred);self.assertTrue(all(q['valid_n']==0 for q in r[0]))
  def test_changed_expected_prediction_universe_refuses(self):
   with self.assertRaises(AssertionError):M['predict'](self.features,self.models,'wrong')
 if __name__=='__main__':unittest.main()
