@@ -2,6 +2,16 @@
 
 > Status: `CANONICAL_CURRENT_PROJECT_MAP`
 
+## Window27 — Label Safety Policy / Mask frozen; diagnostic pending
+
+W26 fixed `367005dfaba0988fca5e294d9b3e281408bbfce8` 已本機 ff-only 整合；38 pins／3 focused tests／獨立 Closure GO 核對。
+W27 branch `research/v7-window27-label-safety`，base 同固定 SHA；UNMERGED / NOT_DEPLOYED。
+[Development-only Policy](../../research/v7/window27-policy.json) 與 [Mask Manifest](../../research/v7/window27-mask-manifest.json)
+已在新 metric calculation 前固定，限 Human Window27 frozen-prediction sensitivity，不是正式 Label／Data Admission。
+Feature、Entry/Exit、holding path 分別檢查，不補值；confirmed unit-event 優先排除，重疊 reasons 用 disjoint primary 計數；UNKNOWN 不變 CLEAN。
+Unit1 Mask complete；Unit2 paired diagnostic / independent replay / review PENDING。0 API／fit／new prediction／GPU／V6／W19 修改。
+Strict STOP／E1 BLOCKED／H2 NOT APPROVED／W12 SAFETY_HALTED；W19 不操作。
+
 ## Window26 Label Integrity & Next Study — COMPLETE / STOP
 
 W25 固定候選 `27055f7ec34cd4aa6d47f67bd89e5b6616244bc8` 已由 main `90b1327` 本機 ff-only 整合；

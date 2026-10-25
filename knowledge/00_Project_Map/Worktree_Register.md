@@ -1,5 +1,12 @@
 # Worktree Register
 
+## Window27 label safety — 2026-10-25
+
+- Path `.worktrees/v7-window27-label-safety`; branch `research/v7-window27-label-safety`; base `367005dfaba0988fca5e294d9b3e281408bbfce8`.
+- Owner Codex/Human Window27; created 2026-10-25; retired N/A. UNMERGED / NOT_DEPLOYED. Policy/mask frozen; metrics/review pending.
+- Private `.artifacts/window27-label-safety/`, references W24/W25/W26 immutable bytes. Reuse W25 paired helper/W08 primitive; no new framework.
+- No API/fit/production/scheduler/GPU authority. W19 protected, W12 HALTED. Safe removal requires retained clean commit and resolved artifact dependencies, explicit retirement review.
+
 ## Window26 label integrity / next-study proposal — 2026-10-25
 
 - Path `.worktrees/v7-window26-label-contract`; branch `research/v7-window26-label-contract`; base `27055f7ec34cd4aa6d47f67bd89e5b6616244bc8`.
