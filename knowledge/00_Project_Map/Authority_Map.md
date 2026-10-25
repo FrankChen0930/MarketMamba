@@ -5,12 +5,17 @@
 > Semantic change owner must update this map in the same change.
 > Prior research/Phase A map accepted `2026-09-20`; 2026-09-22 runtime additions are agent-observed, pending separate human review. Canonical means current navigation authority, not immutable final state.
 
-## Window33 Recent Shadow Model Preparation — PREFETCH FROZEN
+## Window33 Recent Data & Initial Shadow Model — DATA PRESERVED / FIT BLOCKED / STOP
 
-W32 fixed `8fa41869a2583f0b5db698db83eed98611f24a7e` 已由main67e2d25本機ff-only整合；Review GO、11個Synthetic原檔/restore、13tests及治理核對通過。W33 branch `research/v7-window33-recent-shadow`，base同固定SHA，UNMERGED / NOT_DEPLOYED。
-首次GET前固定window33-cohort.json／window33-plan.json：沿用W29可產生Feature的64檔，2024-01-01至2026-10-22，最多70price GET，單並發/≥5秒/共享known-local100hour stop，0metadata/token/fallback。資料/Calendar/Universe/CSV相容驗收前不Fit；上限Ridge2+LGBM2、CPU1800秒/fit300秒/artifact1GiB。
-狀態尚未GET/Fit；W19 Task/worktree/artifacts完全不讀不動。W16/W18獨立官方CSV可唯讀比對。StrictSTOP/FormalAdmissionNOT_APPROVED/W33SHADOW_PREPARATION_ONLY/W12SAFETY_HALTED/E1BLOCKED/H2NOT_APPROVED。不得真實每日PREOPEN或排程啟用。
-恢復：W33 worktree → window33-plan.json／window33-cohort.json；只在network未CLOSED/STOP且無不明pending claim時依本輪固定授權執行，不能重用舊窗口預算。
+W32 fixed `8fa41869a2583f0b5db698db83eed98611f24a7e` 已由main67e2d25本機ff-only整合；Review GO/11Synthetic原檔及restore/13tests/治理核對。W33 branch `research/v7-window33-recent-shadow`，base同固定SHA，worktree `.worktrees/v7-window33-recent-shadow`；UNMERGED / NOT_DEPLOYED。GET前91d7cca固定W29同64檔/日期/guard。
+64 FinMind price GET全200、0metadata/retry/token/fallback，7604573rawbytes；最小間隔5.001249s、最高known prior hour63<100，額度CLOSED/剩6不重用。43437rows，2024-01-02～2026-10-22、679OBSERVED sessions（242/243/194）；58zero、19union-relative missing，不補值或推定停牌。
+[Data](../../research/v7/window33-data-evidence.json)：43319數值Feature候選，5d42720／10d42173數值Label候選；近期Calendar沒有合格官方/例外休市/時鐘證據，W07回CALENDAR_QUALIFICATION_UNKNOWN。全部新mask fitFalse；未因Vintage未知全面拒絕資料，也不把價格union升成qualified。8422於2025-11-17疑似單位不連續，事件原因UNKNOWN，沿用既有flags不修價。
+[Compatibility](../../research/v7/window33-compatibility.json)：W16/W18同Oct22原始CSV；64檔OHLCV精確相等，官方current＋明示FinMind prior的兩Feature hybrid全相等；非連續兩官方Snapshots獨立parity。Feature order/shape2保持。
+實際Training N0／Ridge0／LGBM0／Offline Scores NOT_RUN_DEPENDENCY_BLOCKED；沒有新模型、Prediction或RankIC。Prediction Replay N/A，不能冒充完整Shadow準備成功。W30Recipe與W27 safety不變；2024–2026 EXPOSED。
+264files58910660bytes/份獨立程序Raw/Derived restore，68old rawpins未變；CPU28.817576＋60reserve<1800，artifact+restore117822087<1GiB。Private `.artifacts/window33-recent-shadow/`／`.artifacts/window33-restore/`，BACKUP_PENDING同機非獨立備份。
+8targetedtests PASS；獨立Review GO（資料保存與阻塞收尾）Critical0／Required0，0輪review rework；見window33-review.json，不代表訓練Gate已通過。[Evidence](../../research/v7/window33-evidence.json)、[Report](../../reports/v7_window33_recent_shadow.md)。初期interpreter/import/probe shape失敗trace與CPU計帳保留，無額外GET或輸出覆寫。
+下一Human：有界補足近期合格calendar/休市證據，或批准另具身份的觀測Calendar代理語義；不得只改qualification字串。解除Gate後另授權固定4fits及Offline驗收；真正PREOPEN另需模型/source/time/missing/recovery及操作授權。本輪STOP，不自動續期Collector或開下一窗口。
+恢復：W33 worktree → Current_State → 唯一Backlog → window33-evidence.json；不得重跑已CLOSED source。StrictSTOP/FormalAdmissionNOT_APPROVED/W19PROTECTED無任何讀寫/W12SAFETY_HALTED/E1BLOCKED/H2NOT_APPROVED，無Scheduler/GPU/Push/Deploy操作。
 
 ## Window32 Expanding Closure & Prospective Shadow — PREPARATION COMPLETE / STOP
 

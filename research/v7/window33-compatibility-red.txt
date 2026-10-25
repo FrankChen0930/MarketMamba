@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window33-recent-shadow/research/v7/window33-compatibility-tests.py", line 4, in <module>
+    M=runpy.run_path(str(Path(__file__).with_name('window33-compatibility.py')))
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 285, in run_path
+  File "<frozen runpy>", line 254, in _get_code_from_file
+FileNotFoundError: [Errno 2] No such file or directory: '/home/frank/projects/MarketMamba/.worktrees/v7-window33-recent-shadow/research/v7/window33-compatibility.py'

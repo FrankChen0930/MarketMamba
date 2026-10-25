@@ -1,0 +1,90 @@
+{
+  "schema": "w33-independent-review-v1",
+  "reviewer": "independent_review",
+  "status": "GO_DATA_PRESERVATION_AND_BLOCKED_CLOSURE",
+  "critical": 0,
+  "required": 0,
+  "base": "8fa41869a2583f0b5db698db83eed98611f24a7e",
+  "prefetch_commit": "91d7cca92b79f4a5d24ffc3b9de93d481f58d906",
+  "scope": "Single targeted main review, including initial calendar contract determination and final STOP navigation. GO is not model-fit readiness, research admission, merge or renewed source authorization.",
+  "calendar_determination": "W07 caller qualification pins are trust assertions, not authenticity. W31 QUALIFIED_REFERENCE is scoped to W23/W29 2021–2023 evidence. Recent observed price union must remain unqualified; existing W33 frozen fit gate correctly BLOCKED.",
+  "independent_checks": {
+    "source_tests_passed": 4,
+    "compatibility_calendar_tests_passed": 4,
+    "additional_Fit_inference_RankIC": 0,
+    "prefetch_plan_cohort_source_bytes": "exact91d7cca",
+    "raw_snapshot_verifications": 64,
+    "raw_to_panel_exact_records": 64,
+    "raw_rows": 43437,
+    "observed_sessions": 679,
+    "union_relative_missing": 19,
+    "zero_OHLC_rows": 58,
+    "numeric_candidates_5d": 42720,
+    "numeric_candidates_10d": 42173,
+    "all_masks_fit_false": 86638,
+    "official_same_day_securities_checked": 64,
+    "official_equal_fields_each": [
+      "open",
+      "max",
+      "min",
+      "close",
+      "Trading_Volume"
+    ],
+    "W16_W18_identical_raw_hash": "79bdd059e75a0a829dfef1e5c1330cb48a84b302e04ce040e77ee0dd35e5ec6a",
+    "hybrid_feature_claim_scope": "official current plus FinMind previous row; not two official sessions",
+    "record_claim_counts": 64,
+    "record_HTTP200": 64,
+    "raw_bytes": 7604573,
+    "minimum_record_request_start_interval_seconds": 5.001249,
+    "maximum_declared_known_prior_hour": 63,
+    "restore_file_pairs_hash_size_verified": 264,
+    "bytes_per_copy": 58910660,
+    "CPU_ledger_seconds": 28.817576,
+    "CPU_reserve_seconds": 60,
+    "artifact_plus_restore_bytes": 117822087,
+    "source_code_pins_verified": 8,
+    "git_diff_check": "PASS"
+  },
+  "warnings": [
+    {
+      "id": "W33-W1",
+      "finding": "Observed-session union cannot distinguish synchronized provider omissions from actual closure. Numeric candidate horizons are not qualified labels; all fit flags remain false."
+    },
+    {
+      "id": "W33-W2",
+      "finding": "Same-day OHLCV agreement and mixed-source feature parity do not certify two official sessions, full lifecycle/universe, original vintage or corporate-action completeness.8422 discontinuity remains suspected with cause UNKNOWN."
+    },
+    {
+      "id": "W33-W3",
+      "finding": "Known-local source quota is not global provider quota control; external anonymous usage UNKNOWN. Network CLOSED, unused6 not reusable."
+    },
+    {
+      "id": "W33-W4",
+      "finding": "Same-host restoration is not independent backup. Interpreter/import/calendar-probe failures and failed-stage CPU charges remain recorded, not erased."
+    }
+  ],
+  "final_navigation": "Current_State/Authority_Map/machine authority/sole backlog/register all DATA_PRESERVED FIT_BLOCKED STOP;0models/0scores; source CLOSED; future calendar evidence or separately authorized proxy semantics and freshfit window required.",
+  "source_pins": {
+    "window33-plan.json": "b474f716ff942a21ce395a0e53a8712988b447d5451422d448d42d6ffcd85c29",
+    "window33-cohort.json": "8a8a43c32253835a7f406170eeeb4992cb33252bf5c24d207d1378bbb86ede53",
+    "window33-sources.py": "22af7188d3db8f02a70d899049b1976be893d5ab6feb61806e7d220d23905c6a",
+    "window33-common.py": "caceac51c579e837737df54ec5726822f938e3e66ab50d91629a0ef8816c8f87",
+    "window33-data-audit.py": "813539417ca3794dc0f13d4132fb8cbd151b55d152fa56858efb9f8236feb7d0",
+    "window33-compatibility.py": "01dad7c1a6d474705c915172271b6b1f992154cae8de5a79d5d552c7ec5fa702",
+    "window33-data-evidence.json": "d272fbb5c6454b23762c3e46f9971550361019cb435dcadaf0eb1d8d0dc3e634",
+    "window33-compatibility.json": "c7de2183f935cfb05409fe1eab9b66622cb1812a1f90d34260b3e309b87cf975",
+    "window33-local-artifacts.json": "ac897ddf650a08a600aa00f1570c949c785c89f17ef6b28549f6d11af894a949",
+    "window33-resource-evidence.json": "e7b4833f8c89a009b6df3b4255bb815385b92393e20ee0293c01bfa056c52ccd"
+  },
+  "remaining_required": [],
+  "reviewer_operations": {
+    "API_network": 0,
+    "Fit_training_GPU": 0,
+    "real_prediction_RankIC": 0,
+    "W19_access": 0,
+    "writes": [
+      "research/v7/window33-review.json"
+    ]
+  },
+  "observed_at": "2026-10-25T13:04:47.865643+00:00"
+}

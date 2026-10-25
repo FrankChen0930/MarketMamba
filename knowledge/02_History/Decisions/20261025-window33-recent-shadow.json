@@ -1,0 +1,24 @@
+{
+  "decision_id": "WINDOW33_RECENT_SHADOW_PREPARATION",
+  "authority": "Human Window33 bounded conditional authorization",
+  "status": "DATA_COMPLETE_MODEL_BLOCKED_STOP",
+  "integration": "W32fixed8fa4186 localff-only from67e2d25",
+  "prefetch_commit": "91d7cca",
+  "period": [
+    "2024-01-01",
+    "2026-10-22"
+  ],
+  "requests": "64price GET/0metadata/6unusedCLOSED",
+  "dataset_status": "CURRENT_RETROSPECTIVE_HINDSIGHT_COHORT_NOT_FORMALLY_ADMITTED",
+  "model_status": "0FIT_0OFFLINE_SCORES_RECENT_CALENDAR_BLOCKED",
+  "evidence": "research/v7/window33-evidence.json",
+  "remaining": "Qualified2024–2026 calendar/closure/time evidence or separate Human-approved proxy semantics; then separately authorized fresh fit/offline acceptance. No automatic PREOPEN/Collector extension.",
+  "protected": [
+    "StrictSTOP",
+    "W19PROTECTED",
+    "W12SAFETY_HALTED",
+    "FormalAdmissionNOT_APPROVED",
+    "E1BLOCKED",
+    "H2NOT_APPROVED"
+  ]
+}

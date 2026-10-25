@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window33-recent-shadow/research/v7/window33-data-audit.py", line 50, in <module>
+    with C['budget']('recent-data-audit'):main()
+                                          ^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window33-recent-shadow/research/v7/window33-data-audit.py", line 42, in main
+    _,_,calendar_reason=_calendar({'source_sha256':H(days),'vintage_id':'W33_CURRENT_RETROSPECTIVE','qualification_ref':'OBSERVED prices only; official complete closure/session evidence missing','qualification':'OBSERVED_MARKET_SESSION','sessions':days});assert calendar_reason=='CALENDAR_QUALIFICATION_UNKNOWN'
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window33-recent-shadow/V6/experimental/v7_research_temporal.py", line 43, in _calendar
+    sessions=cal['sessions'];days=normalize_calendar([s['session'] for s in sessions])
+                                                      ~^^^^^^^^^^^
+TypeError: string indices must be integers, not 'str'

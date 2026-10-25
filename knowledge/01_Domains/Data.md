@@ -228,3 +228,7 @@ See [report](../../reports/v7_window25_robustness_audit.md) and solebacklog. 0da
 最小research feature-only介面先保存Predictions，再做Label Join；future label刪除只改evaluation coverage，18回歸tests與獨立Raw-derivedReplay驗證。
 5d正向Mean/Median在新樣本延續、10d不一致；未知actions/asof/vintage與2022/2023曝光保留，不作模型選擇/投資/Strict PIT claim。
 [Evidence](../../research/v7/window29-evidence.json)、[Report](../../reports/v7_window29_expanded_development.md)。
+
+## Window33 recent-data preparation
+
+[W33 evidence](../../research/v7/window33-evidence.json) pins64 TWSE historical price captures2024–2026; raw bytes preserved, SHADOW_PREPARATION_ONLY / UNMERGED / NOT_DEPLOYED. The679 observed price sessions are not a qualified calendar; W07 rejects qualification, so model Fit/Offline scores remain BLOCKED. W16/W18 one-session parity does not establish two official consecutive vintages. UNKNOWN events/vintage and current-survivor bias remain; no research admission or W19 access.
