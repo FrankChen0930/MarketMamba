@@ -203,3 +203,10 @@ W22strictmask remains19,728false. Independent engineering mask7,009 samples unde
 not historical data admission.2019/20andTPExfullcalendar unavailable; only2021–23TWSE subset used.
 Raw-price diagnostic labels/actions/publication/vintage limitations explicit. No executable-return claim.
 See [report](../../reports/v7_window23_calendar_smoke.md) and existing sole backlog; W19 untouched.
+
+## Window24 limited retrospective raw-price proxy pilot
+
+36frozenhindsightcohort,31new+5oldraw;33eligiblecurrent/newnames,3delistedstartsUNKNOWN retaineddiagnostic.
+Threeindependentmasks:engineering46291/limitedexploratory44266/strict0;nocorporateaction/PITqualificationpromoted.
+Paired27–33stocks supports only fixedL0/Ridge rawproxy diagnostics; no superiority/trading/admission claim.
+See [report](../../reports/v7_window24_expanded_pilot.md)/solebacklog; W19untouched; rawprivate/backuppending.

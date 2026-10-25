@@ -1,0 +1,11 @@
+{
+  "python": "3.12.3",
+  "numpy": "2.0.2",
+  "torch": "2.10.0+cpu",
+  "runtime": "W11isolatedCPUenv unchanged;noinstallation",
+  "CUDA_VISIBLE_DEVICES": "",
+  "OPENBLAS_NUM_THREADS": "1",
+  "OMP_NUM_THREADS": "1",
+  "main_data_root": "unset;operationalpayloadnotaccessed",
+  "gpu_operations": false
+}

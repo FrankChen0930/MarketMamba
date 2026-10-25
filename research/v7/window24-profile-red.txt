@@ -1,0 +1,16 @@
+F
+======================================================================
+FAIL: test_only_explicit_W24_scope_no_formal_admission (V6.experimental.v7_expanded_pilot_test.ExpandedProfileTest.test_only_explicit_W24_scope_no_formal_admission)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window24-expanded-pilot/V6/experimental/v7_expanded_pilot_test.py", line 31, in test_only_explicit_W24_scope_no_formal_admission
+    self.assertEqual(publish_bundle(Path(d)/'ok',m,canonical_hash(m),f)['status'],'ARTIFACTS_VERIFIED')
+AssertionError: 'INCOMPLETE' != 'ARTIFACTS_VERIFIED'
+- INCOMPLETE
++ ARTIFACTS_VERIFIED
+
+
+----------------------------------------------------------------------
+Ran 1 test in 1.557s
+
+FAILED (failures=1)

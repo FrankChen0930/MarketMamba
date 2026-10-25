@@ -95,3 +95,13 @@ class Window22ScopeTest(unittest.TestCase):
    for p,k in [(P,'price'),({**P,'start_date':'2019-01-01','end_date':'2023-12-31'},'repeat')]:
     self.assertEqual(request(Path(d),p,kind=k,fetch=f,scope='W22')['status'],'REFUSED')
    f.assert_not_called()
+
+class Window24ScopeTest(unittest.TestCase):
+ def test_frozen_cohort_only_single_contiguous_query_and_no_old_scope(self):
+  from V6.experimental.v7_corrected_e5_replication import canonical_hash
+  with tempfile.TemporaryDirectory() as d:
+   root=Path(d);c={'new_price_queries':['1101'],'metadata_queries':[]};(root/'FROZEN_COHORT.json').write_text(json.dumps(c));(root/'COHORT_PIN.json').write_text(json.dumps({'semantic_sha256':canonical_hash(c)}))
+   p={**P,'data_id':'1101','start_date':'2021-01-01','end_date':'2023-12-31'};f=Mock(return_value=(200,{},body(date='2021-01-04',stock_id='1101'),True))
+   a=request(root/'finmind',p,kind='price',fetch=f,scope='W24');self.assertEqual(a['status'],'CAPTURED')
+   self.assertEqual(request(root/'finmind',{**p,'data_id':'9999'},kind='price',fetch=f,scope='W24')['status'],'REFUSED');self.assertEqual(f.call_count,1)
+   c['new_price_queries'].append('9999');(root/'FROZEN_COHORT.json').write_text(json.dumps(c));self.assertEqual(request(root/'finmind',p,kind='price',fetch=f,scope='W24')['status'],'REFUSED');self.assertEqual(f.call_count,1)

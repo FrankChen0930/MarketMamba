@@ -1,0 +1,123 @@
+{
+  "status": "RESTORED_RAW_HASH_SCHEMA_BUNDLE_VERIFIED",
+  "independent_process": true,
+  "root": "/home/frank/projects/MarketMamba/.artifacts/window24-expanded-pilot",
+  "restore": "/home/frank/projects/MarketMamba/.artifacts/window24-pilot-restore",
+  "W24_files_copied_verified": 193,
+  "new_raw_snapshots": 31,
+  "reused_W22_raw_copied_verified": [
+    {
+      "status": "RESTORED_BYTES_HASH_SCHEMA_RECORDS_VERIFIED",
+      "sequence": 7,
+      "raw_sha256": "3fd4f2933e35beea814c482f36c71f50ca6188247fb1f84e392ee542783cbca8",
+      "raw_bytes": 219018,
+      "schema": [
+        "Trading_Volume",
+        "Trading_money",
+        "Trading_turnover",
+        "close",
+        "date",
+        "max",
+        "min",
+        "open",
+        "spread",
+        "stock_id"
+      ],
+      "records": 1216,
+      "query_id": "a599d09ec21e3fe7e98f127946af4180abba1f840144b67c1bad37c59336470b",
+      "source_http_status": 200,
+      "research_admitted": false
+    },
+    {
+      "status": "RESTORED_BYTES_HASH_SCHEMA_RECORDS_VERIFIED",
+      "sequence": 8,
+      "raw_sha256": "d75174d002a2975b205f32299aa99cc90ed106e48f27b018b68bb5aab1258db4",
+      "raw_bytes": 219560,
+      "schema": [
+        "Trading_Volume",
+        "Trading_money",
+        "Trading_turnover",
+        "close",
+        "date",
+        "max",
+        "min",
+        "open",
+        "spread",
+        "stock_id"
+      ],
+      "records": 1216,
+      "query_id": "64afe3cd577c76b74be7e3ac39c435bfe055daf35d46feff707a6ff621748d42",
+      "source_http_status": 200,
+      "research_admitted": false
+    },
+    {
+      "status": "RESTORED_BYTES_HASH_SCHEMA_RECORDS_VERIFIED",
+      "sequence": 1,
+      "raw_sha256": "e61f7b2b2f60f34d7a1864b2788d0523aebf9859f591db0f5a706bf97db5165a",
+      "raw_bytes": 222956,
+      "schema": [
+        "Trading_Volume",
+        "Trading_money",
+        "Trading_turnover",
+        "close",
+        "date",
+        "max",
+        "min",
+        "open",
+        "spread",
+        "stock_id"
+      ],
+      "records": 1216,
+      "query_id": "e8d5b61c993bffcdafacd92b96cf6d5c5e2ae8e9dd84f4ad3c5e38df9d041520",
+      "source_http_status": 200,
+      "research_admitted": false
+    },
+    {
+      "status": "RESTORED_BYTES_HASH_SCHEMA_RECORDS_VERIFIED",
+      "sequence": 4,
+      "raw_sha256": "7f2b0e41bff859a871e4a35fc4f5d64c8e48b2e983e584941edbfec112cf6388",
+      "raw_bytes": 179182,
+      "schema": [
+        "Trading_Volume",
+        "Trading_money",
+        "Trading_turnover",
+        "close",
+        "date",
+        "max",
+        "min",
+        "open",
+        "spread",
+        "stock_id"
+      ],
+      "records": 1005,
+      "query_id": "2ee768fa5dd07a2c95679eba09baf1d30ef7bf5e03c9705296a2939d4fba7f09",
+      "source_http_status": 200,
+      "research_admitted": false
+    },
+    {
+      "status": "RESTORED_BYTES_HASH_SCHEMA_RECORDS_VERIFIED",
+      "sequence": 6,
+      "raw_sha256": "db8d7b72c5edb9aac4162964631daeef7da6286fbcc6def0fce5eeb7d5d9437e",
+      "raw_bytes": 205612,
+      "schema": [
+        "Trading_Volume",
+        "Trading_money",
+        "Trading_turnover",
+        "close",
+        "date",
+        "max",
+        "min",
+        "open",
+        "spread",
+        "stock_id"
+      ],
+      "records": 1209,
+      "query_id": "3149ac040073ca574cf48670803e2217947a40a0bf96bf4e85bfd3943c1dc3ab",
+      "source_http_status": 200,
+      "research_admitted": false
+    }
+  ],
+  "total_raw_sources": 36,
+  "backup": "BACKUP_PENDING_SAME_HOST_DEVICE",
+  "no_old_bytes_moved_deleted_overwritten": true
+}

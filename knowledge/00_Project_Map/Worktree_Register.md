@@ -1,10 +1,21 @@
 # Worktree Register
 
+## Window24 expanded limited pilot — 2026-10-25
+
+- Path `.worktrees/v7-window24-expanded-pilot`; branch `research/v7-window24-expanded-pilot`;
+  base87af76b038fcbbda9e1e4b3a4349e693a3b1ba48; owner Codex/HumanWindow24; created2026-10-25; retiredN/A.
+- COMPLETE/STOP/UNMERGED/NOT_DEPLOYED. W23onlyfive-stocksmoke; W24hasdistinct bounded expanded data/pilot authorization.
+- Reuse experimental/research/reports/Decisions, existingrequestguard/numeric/evaluator/publisher; no newplatform.
+- Root.artifacts/window24-expanded-pilot unique raw/three-masks/bundle/predictions/sourcecopies; samehost
+  window24-price-restore and window24-pilot-restore are not independent backups(BACKUP_PENDING).
+- Safe removal requires retainedcleancommit, all source/raw/restore references resolved and explicitretirementreview.
+  Noartifactworktreecleanupauthorized. W23fixed87af76b integrated; W19/task/artifacts/budget/runtime PROTECTED.
+
 ## Window23 calendar and engineering smoke — 2026-10-25
 
 - Path `.worktrees/v7-window23-calendar-smoke`; branch `research/v7-window23-calendar-smoke`;
   base7027f03ebdb7b7b3bd90bc2bf5ce97a4c267c470; owner Codex/HumanWindow23; created2026-10-25; retiredN/A.
-- COMPLETE/STOP/UNMERGED/NOT_DEPLOYED. W22 covered proof but no allowed real-data smoke; distinct bounded authorization.
+- COMPLETE/STOP/LOCAL_INTEGRATED_BY_W24_FIXED87af76b/NOT_DEPLOYED. W22 covered proof but no allowed real-data smoke; distinct bounded authorization.
 - Reuse existing experimental, research/reports, W09publisher/W08kernel/W10numeric core; no new platform.
 - Root.artifacts/window23-calendar-smoke and same-host window23-restore own unique docs/masks/bundle/source-at-run;
   BACKUP_PENDING. Original immutable bundle and raw preserved; safe removal needs retained clean commit,

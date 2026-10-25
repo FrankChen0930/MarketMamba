@@ -1,0 +1,282 @@
+{
+  "schema_version": 1,
+  "artifact_class": "CANONICAL",
+  "status": "WINDOW_COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+  "authority": "HumanWindow24LimitedExploratoryPilotOnly_NOT_FORMAL_RESEARCH_ADMISSION",
+  "branch": "research/v7-window24-expanded-pilot",
+  "base": "87af76b038fcbbda9e1e4b3a4349e693a3b1ba48",
+  "final_head": "containingclosurecommit",
+  "integration": "research/v7/window24-integration.json",
+  "cohort": "research/v7/window24-cohort.json",
+  "label_recipe": "research/v7/window24-label-recipe.json",
+  "coverage": "research/v7/window24-coverage.json",
+  "lifecycle": "research/v7/window24-lifecycle-diagnostics.json",
+  "temporal_audit": "research/v7/window24-temporal-audit.json",
+  "run": "research/v7/window24-run-summary.json",
+  "replay": "research/v7/window24-replay.json",
+  "runtime": "research/v7/window24-runtime.json",
+  "storage": {
+    "root": "/home/frank/projects/MarketMamba/.artifacts/window24-expanded-pilot",
+    "price_restore": "/home/frank/projects/MarketMamba/.artifacts/window24-price-restore",
+    "pilot_restore": "/home/frank/projects/MarketMamba/.artifacts/window24-pilot-restore",
+    "evidence": "research/v7/window24-independent-restore.json",
+    "backup": "BACKUP_PENDING_SAME_HOST",
+    "inventory": "research/v7/window24-local-artifacts.json",
+    "raw_pred_label_payloads_not_git": true
+  },
+  "network": {
+    "endpoint": "https://api.finmindtrade.com/api/v4/data",
+    "FinMind_limit": 45,
+    "price_limit": 40,
+    "new_actual": 31,
+    "price": 31,
+    "metadata": 0,
+    "reused_old_raw": 5,
+    "unused": 14,
+    "CLOSED": true,
+    "retry_redirect_token_paid_fallback": false,
+    "new_official_requests": 0,
+    "socket_timeout": 25,
+    "response_bound": 2097152
+  },
+  "execution": {
+    "real_ridge_fits": 2,
+    "L0": "directfixedmomentum",
+    "hyperparametersearch_multiseed_selection_refit": false,
+    "process_timeout_seconds": 300,
+    "threads": 1,
+    "CPU_only": true
+  },
+  "verification": {
+    "tests": 50,
+    "independent_replay": "1880daily940paired; prediction scores recomputed without refit",
+    "raw_formula_rows_audited": 44266,
+    "mismatches": 0,
+    "strict_eligible": 0,
+    "main_postintegration_tests": 26,
+    "independent_tests": 44,
+    "independent_review": "GO0CriticalRequired",
+    "governance": "structuralPASS;existingGovernance/AuthorityDrift/LegacyDocsWARNINGretained"
+  },
+  "review": "research/v7/window24-review.json",
+  "rework_rounds": 0,
+  "remaining": [
+    "Hindsight/current-survivor cohort and delistedstartUNKNOWN, not representative/unbiased",
+    "Corporateactions/rawpriceproxy and historicalavailability/vintageUNKNOWN",
+    "Formalresearchdata/evaluation/refit/compute policy notadmitted",
+    "Independentbackupdestination"
+  ],
+  "boundaries": {
+    "StrictPhase0": "STOP",
+    "FormalResearchAdmission": "NOT_APPROVED",
+    "W19": "NO_WORKTREE_TASK_ARTIFACT_BUDGET_RUNTIME_OPERATIONS",
+    "W12GPU": "SAFETY_HALTED",
+    "E1FrozenMatrix": "BLOCKED",
+    "H2": "NOT_APPROVED",
+    "GPUColabProductionSchedulerPushDeploy": false,
+    "mergeW24": false,
+    "FrozenE5E1_and_oldstrictmasks": "UNCHANGED"
+  },
+  "review_result": {
+    "reviewer": "/root/independent_review",
+    "verdict": "GO",
+    "Critical": 0,
+    "Required": 0,
+    "main_rounds": 1,
+    "tests": 44,
+    "seconds": 5.923,
+    "W24_artifacts_verified": 191,
+    "restore_bytes_verified": true,
+    "source_cohort_recipe_bundle_code_pins_verified": true,
+    "training_mean_std_trainonly_verified": true,
+    "prediction_scores_recomputed_without_refit": true,
+    "daily_metrics": 1880,
+    "paired_rows": 940,
+    "support_N_range": [
+      27,
+      33
+    ],
+    "sample_metadata_verified": 44266,
+    "no_false_formal_or_strict_admission": true,
+    "network": 0,
+    "actual_refit": 0,
+    "W19_operations": 0,
+    "rework_rounds": 0,
+    "limitations": "hindsight/current-survivors;3retireesnotcompared;actions/PITunknown;2022/23exposed;samehostnotindependentbackup"
+  },
+  "deliverables": [
+    {
+      "path": "V6/experimental/v7_finmind_proof.py",
+      "bytes": 12962,
+      "sha256": "43a6757bf6b5091aff3d48eb78b847090dd6663198eed8c1037efba1f707a5e5"
+    },
+    {
+      "path": "V6/experimental/v7_finmind_proof_test.py",
+      "bytes": 8575,
+      "sha256": "62525c89d3e860d9ef8bd4ed7d5d8f17c15d828200383f36e9dab31611cbcfc6"
+    },
+    {
+      "path": "V6/experimental/v7_expanded_pilot.py",
+      "bytes": 1679,
+      "sha256": "def603dd573089fa7785d4804a08304aa1434ee6773f44733ecf51b7be6ed334"
+    },
+    {
+      "path": "V6/experimental/v7_expanded_pilot_test.py",
+      "bytes": 3256,
+      "sha256": "9cc17dc720dce115838e56ce652f8c099cb4f09f4dff1d2abad274213307c36b"
+    },
+    {
+      "path": "V6/experimental/v7_research_artifacts.py",
+      "bytes": 13470,
+      "sha256": "63782997bec3220cf9fdb38d2b6c5eb92aa025525e351edd23c20b79f13b53ec"
+    },
+    {
+      "path": "reports/v7_window24_expanded_pilot.md",
+      "bytes": 9061,
+      "sha256": "7b04bd040e7aca6affdc42bf8b64f00c988b793073bdae25c09f5476126bea49"
+    },
+    {
+      "path": "research/v7/window24-capture.py",
+      "bytes": 1117,
+      "sha256": "7a98cba05cf12e72568993a4bb47b13bd08bc4f1b5d9bd98e0dfbbc67a6c8a46"
+    },
+    {
+      "path": "research/v7/window24-cohort.json",
+      "bytes": 25060,
+      "sha256": "0e1fe295399ad737270d4a31137ceda5e8750a9712522a9b64a283cbca6b4133"
+    },
+    {
+      "path": "research/v7/window24-coverage.json",
+      "bytes": 47976,
+      "sha256": "13dd9c12045e09315637615e5344095fc63b9e967d0b9ba64b100f29a67c560e"
+    },
+    {
+      "path": "research/v7/window24-freeze-cohort.py",
+      "bytes": 5041,
+      "sha256": "5f27c8e4babee1c4d3e1a12703ac6cb09b5777c5929dff28ce4231158b3bce35"
+    },
+    {
+      "path": "research/v7/window24-independent-restore.json",
+      "bytes": 3528,
+      "sha256": "a760a55c9d5df339be5fa6cfc75c9e291e1d1ddabfc9fd83c45f29f18e48821e"
+    },
+    {
+      "path": "research/v7/window24-integration.json",
+      "bytes": 438,
+      "sha256": "9c7a68db6c8f79a9b137bd35e92d459f9d07f2e78c108b3a3bff19dc5342377a"
+    },
+    {
+      "path": "research/v7/window24-knowledge-health.txt",
+      "bytes": 237,
+      "sha256": "bf93f67ea1dfe58182f4c71dd1f609a034debb6e81c2599949e554cb6c78863c"
+    },
+    {
+      "path": "research/v7/window24-knowledge-impact.json",
+      "bytes": 646,
+      "sha256": "ce3a7e9f3bccb1ac42926acf5fd0599ce35ab5c44703151ff824d52908e2d027"
+    },
+    {
+      "path": "research/v7/window24-knowledge-impact.txt",
+      "bytes": 646,
+      "sha256": "ce3a7e9f3bccb1ac42926acf5fd0599ce35ab5c44703151ff824d52908e2d027"
+    },
+    {
+      "path": "research/v7/window24-label-recipe.json",
+      "bytes": 3212,
+      "sha256": "c5868c2e1089d45ffcd5bd41ff3f478f93e50479b9ebdd4bcd3298e7d5d1dd90"
+    },
+    {
+      "path": "research/v7/window24-lifecycle-diagnostics.json",
+      "bytes": 14517,
+      "sha256": "587a518c3f90bca1db91d6a6c093e8d4b95d79495387107c08ffb81e754a133f"
+    },
+    {
+      "path": "research/v7/window24-local-artifacts.json",
+      "bytes": 49964,
+      "sha256": "c94ece8645af1c7ec2dec9cddfd9d55a1b8a13af345c3d8e09850f974b2caaa7"
+    },
+    {
+      "path": "research/v7/window24-mask-red.txt",
+      "bytes": 892,
+      "sha256": "4282ff0134ac8d914c3fcacc7c91d6344309dfe4a58dd3349cb5232ac39b260f"
+    },
+    {
+      "path": "research/v7/window24-pipeline.py",
+      "bytes": 18254,
+      "sha256": "598a6d0e5858f3bed5de92cd106c09a71717f64cb044ad3b612fcc54862b8a3d"
+    },
+    {
+      "path": "research/v7/window24-postintegration-tests.txt",
+      "bytes": 125,
+      "sha256": "0bb58ba4b516e51165d688d530ce53f2aa9901560403e4f4cd5f198577179791"
+    },
+    {
+      "path": "research/v7/window24-profile-red.txt",
+      "bytes": 834,
+      "sha256": "93ab563b88486edeae94d020ad951dad5a0eacf4d4fb1e4cf8603bf49120c07c"
+    },
+    {
+      "path": "research/v7/window24-replay-process.txt",
+      "bytes": 574,
+      "sha256": "0ac8f11ce8c9a6442abee218c9324c8df0d58d1d58caa947e4abfa15e1c498d3"
+    },
+    {
+      "path": "research/v7/window24-replay.json",
+      "bytes": 574,
+      "sha256": "50cec6a1057d4914caf5a6641dec51d6188964852586cfef4cd245d7687432bf"
+    },
+    {
+      "path": "research/v7/window24-request-red.txt",
+      "bytes": 961,
+      "sha256": "5fb5a276b17a2648bf8d333e83582f7396af9a11a137df44fd8c489a182df788"
+    },
+    {
+      "path": "research/v7/window24-request-tests.txt",
+      "bytes": 117,
+      "sha256": "3677d5da9e743b999cfb0df1095668f765e9540bc175031232b909de004d4963"
+    },
+    {
+      "path": "research/v7/window24-review.json",
+      "bytes": 768,
+      "sha256": "bc3e34caeb0171ec517755bd8c66ae5f6988ded573b3b37617fb5e2a52e01e7b"
+    },
+    {
+      "path": "research/v7/window24-run-process.txt",
+      "bytes": 2391,
+      "sha256": "c4a39664e30ffe3c533ddf580aa62f111e7e9540589d770e0d3c09c03ab0a865"
+    },
+    {
+      "path": "research/v7/window24-run-summary.json",
+      "bytes": 5245,
+      "sha256": "5ef1cba95bc59d012406951698ca402585752157cd30aafc7f6df23c6952c102"
+    },
+    {
+      "path": "research/v7/window24-runtime.json",
+      "bytes": 302,
+      "sha256": "3826f7fb25e672fc20a54fb6579ebe588d0fd9036a7d911574c296cac2e6a822"
+    },
+    {
+      "path": "research/v7/window24-targeted-tests.txt",
+      "bytes": 149,
+      "sha256": "cb88bc42edd4177acbb4e6211fea63b13bab89df7b8488a0692b1a1322a6a6dc"
+    },
+    {
+      "path": "research/v7/window24-temporal-audit.json",
+      "bytes": 472,
+      "sha256": "7916f6bf018477d1317ca26fbd7d5278a1255e15c35d2f766e8ec82d1a567be0"
+    },
+    {
+      "path": "research/v7/window24-unit1-tests.txt",
+      "bytes": 122,
+      "sha256": "a7a5d70072e423ef18955f2ead6919cea052c82804afbfeaa464b5177690cc9b"
+    }
+  ],
+  "final_checks": {
+    "W22localfiles": 78,
+    "W23localfiles": 55,
+    "W24localfiles": 191,
+    "source_raw_not_git": true,
+    "main_clean": true,
+    "W19operations": 0
+  }
+}
