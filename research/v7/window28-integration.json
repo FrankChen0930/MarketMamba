@@ -1,0 +1,14 @@
+{
+  "status": "LOCAL_FF_ONLY_INTEGRATED",
+  "before_main": "367005dfaba0988fca5e294d9b3e281408bbfce8",
+  "fixed_source": "39e2fedeb550a08d00f4abddc9a6caa7b1d570f8",
+  "after_main": "39e2fedeb550a08d00f4abddc9a6caa7b1d570f8",
+  "source_review": "window27-review.json GO Critical0 Required0",
+  "preflight_tests": 14,
+  "deliverable_private_pins": 35,
+  "original_calculation_source_and_restore": "HASH_VERIFIED",
+  "main_source_clean": true,
+  "other_candidates_integrated": false,
+  "W28_prefit_commit": "ec0b072",
+  "postintegration": "W28 base equals fixed source; prior W24/W25/W26/W27 private identities reverified by prefit"
+}

@@ -3,7 +3,7 @@
 ## Window28 clean training / causality — 2026-10-25
 
 - Path `.worktrees/v7-window28-clean-refit`; branch `research/v7-window28-clean-refit`; base `39e2fedeb550a08d00f4abddc9a6caa7b1d570f8`.
-- Owner Codex / Human Window28; created 2026-10-25; retired N/A. PREFIT / UNMERGED / NOT_DEPLOYED.
+- Owner Codex / Human Window28; created 2026-10-25; retired N/A. COMPLETE / STOP / UNMERGED / NOT_DEPLOYED. 2fits completed; see window28-run/replay/review.
 - Reuses W24 numeric Ridge/feature pipeline, W27 mask/support, W25/W08 evaluator; no new framework or V6 change.
 - Private `.artifacts/window28-clean-refit/`; preserve W24/W27 originals. Exact two CPU fits authorized, API/GPU/W19 operations zero.
 - Safe removal requires retained clean commit, resolved raw/model/prediction/replay dependencies and explicit retirement review.
@@ -11,7 +11,7 @@
 ## Window27 label safety — 2026-10-25
 
 - Path `.worktrees/v7-window27-label-safety`; branch `research/v7-window27-label-safety`; base `367005dfaba0988fca5e294d9b3e281408bbfce8`.
-- Owner Codex/Human Window27; created 2026-10-25; retired N/A. COMPLETE / STOP / UNMERGED / NOT_DEPLOYED. Freeze commit e77f32d; four-group diagnostic and replay completed; review evidence in window27-review.json.
+- Owner Codex/Human Window27; created 2026-10-25; retired N/A. COMPLETE / STOP / LOCAL_INTEGRATED_FIXED39e2fed / NOT_DEPLOYED. Freeze commit e77f32d; four-group diagnostic and replay completed; review evidence in window27-review.json.
 - Private `.artifacts/window27-label-safety/`, references W24/W25/W26 immutable bytes. Reuse W25 paired helper/W08 primitive; no new framework.
 - No API/fit/production/scheduler/GPU authority. W19 protected, W12 HALTED. Safe removal requires retained clean commit and resolved artifact dependencies, explicit retirement review.
 

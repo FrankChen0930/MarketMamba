@@ -152,3 +152,10 @@ W04B-LOG local integration update (2026-10-21): fixed97fb4c9 now included in
 WSL development main; earlier UNMERGED label above is historical. NOT_DEPLOYED;
 fixture scope and no live Colab/Drive certification unchanged. See
 [integration closure](../../research/v7/window04-log-integration-closure.json).
+
+## Window28 limited clean Ridge / causal check
+
+Human限定批准W27安全Mask下的2021 Ridge fresh fits各horizon一次（2/2已用），原alpha1與兩Features不變；Scaling只取clean TRAIN。
+2022/2023同W27 support為已曝光Development；18個有限future OHLCV數值擾動不改Features/固定模型Predictions。
+此pass不驗未來Label eligibility gate為as-of，也不認證完整公司行動/vintage。
+[Run](../../research/v7/window28-run.json)、[Report](../../reports/v7_window28_clean_refit.md)。

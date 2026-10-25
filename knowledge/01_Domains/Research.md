@@ -230,3 +230,10 @@ See [report](../../reports/v7_window25_robustness_audit.md) and solebacklog. 0da
 2321 的 68% 虧損減資與市場股數單位轉換已有來源證據；三筆既有 10d raw labels 算式正確，但不具同股數未調整報酬語意。
 原始停牌公告與其他事件覆蓋仍 UNKNOWN；W24/W25 結果不改寫／不重算。兩路 Label Policy 與 next-study 全為 PROPOSED。
 參見 [W26 evidence](../../research/v7/window26-evidence.json) 與 [事件矩陣](../../research/v7/window26-event-matrix.json)。
+
+## Window28 limited clean Ridge / causal check
+
+Human限定批准W27安全Mask下的2021 Ridge fresh fits各horizon一次（2/2已用），原alpha1與兩Features不變；Scaling只取clean TRAIN。
+2022/2023同W27 support為已曝光Development；18個有限future OHLCV數值擾動不改Features/固定模型Predictions。
+此pass不驗未來Label eligibility gate為as-of，也不認證完整公司行動/vintage。
+[Run](../../research/v7/window28-run.json)、[Report](../../reports/v7_window28_clean_refit.md)。

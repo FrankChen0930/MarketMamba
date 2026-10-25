@@ -1,0 +1,128 @@
+{
+  "status": "CONTENT_IDENTITIES",
+  "base": "39e2fedeb550a08d00f4abddc9a6caa7b1d570f8",
+  "prefit_code_commit": "ec0b0721763ead15cdb63caad400998ed92a0c83",
+  "final_HEAD": "git rev-parse HEAD after closure commit",
+  "files": [
+    {
+      "path": "research/v7/window28-archive.py",
+      "bytes": 1500,
+      "sha256": "f1e740b764ccdd1273cd2496374bda91b54fd209dee185c8c96a2ec0069cb75e"
+    },
+    {
+      "path": "research/v7/window28-causality.json",
+      "bytes": 10488,
+      "sha256": "e62920bce6091fbc9a8c494acf25dfddda369b33b957ea2208b747ac34975eb7"
+    },
+    {
+      "path": "research/v7/window28-evidence.json",
+      "bytes": 2279,
+      "sha256": "effd07b656e5b6404a88b0c666b9d8afac7cb6b2b6ca36e51d42097892b1cb2d"
+    },
+    {
+      "path": "research/v7/window28-integration.json",
+      "bytes": 632,
+      "sha256": "29fe8cf354af3766a1379c660320e43fdcb9352e5a15051fb12a32671cdc1380"
+    },
+    {
+      "path": "research/v7/window28-knowledge-health.txt",
+      "bytes": 237,
+      "sha256": "bf93f67ea1dfe58182f4c71dd1f609a034debb6e81c2599949e554cb6c78863c"
+    },
+    {
+      "path": "research/v7/window28-knowledge-impact.json",
+      "bytes": 589,
+      "sha256": "4d666298f712ee61146268b1eae63a6db99813d442301b1a9d6bcd2d2586f24d"
+    },
+    {
+      "path": "research/v7/window28-knowledge-impact.txt",
+      "bytes": 589,
+      "sha256": "4d666298f712ee61146268b1eae63a6db99813d442301b1a9d6bcd2d2586f24d"
+    },
+    {
+      "path": "research/v7/window28-local-artifacts.json",
+      "bytes": 3487,
+      "sha256": "5f9a7f2e5b38ea254087c99baae6709ef9703f6295dd2b36304ad586e574c72c"
+    },
+    {
+      "path": "research/v7/window28-plan.json",
+      "bytes": 2979,
+      "sha256": "f17fa58514bae58e39340acc3a0587e4a726abbded414ac0f0e986fa4f66c170"
+    },
+    {
+      "path": "research/v7/window28-prefit-case-repair.json",
+      "bytes": 449,
+      "sha256": "e74cd4908fb94a0bf133d2abe6f4142ed6f6930d72038e7c7f03c715121739d1"
+    },
+    {
+      "path": "research/v7/window28-prefit-process.txt",
+      "bytes": 615,
+      "sha256": "17bc8aaaf24a0f19c1247a83fa75743dc98e565cd2f3f5ff7011f0df88b96eed"
+    },
+    {
+      "path": "research/v7/window28-prefit.json",
+      "bytes": 615,
+      "sha256": "1aaa67714e3653488bc4f97bc83c5c6d25ce012badb7b128c946b26cd66a31ce"
+    },
+    {
+      "path": "research/v7/window28-red.txt",
+      "bytes": 873,
+      "sha256": "bc13998e67bc080152d18795d3f97524f48a0d10ba1a9c698e8f5f1c554dc72c"
+    },
+    {
+      "path": "research/v7/window28-replay-process.txt",
+      "bytes": 254,
+      "sha256": "ffe01496e425133326041602c0212a5d31e0045302d913d964636f6e32661c14"
+    },
+    {
+      "path": "research/v7/window28-replay.json",
+      "bytes": 254,
+      "sha256": "897326173ef76e892482f15dadce6a4c7c1e7cccd70f53fa6c9177faa78208dd"
+    },
+    {
+      "path": "research/v7/window28-restore-process.txt",
+      "bytes": 155,
+      "sha256": "64595adb4032d2f483ff19b9f4ca81517c3babdf14d7f6553f1da581174407cf"
+    },
+    {
+      "path": "research/v7/window28-results.json",
+      "bytes": 1785,
+      "sha256": "3f3d83d204ae58ec185db8426ccaad8e4277bbc979d86626442be3fa24b58ab3"
+    },
+    {
+      "path": "research/v7/window28-review.json",
+      "bytes": 910,
+      "sha256": "ce9f5af57c2fbf5d26173753087f4df217633290b608535d302ca695b41c2fef"
+    },
+    {
+      "path": "research/v7/window28-run-process.txt",
+      "bytes": 2414,
+      "sha256": "f6e6cb89c1017e24241ffcc0d7d7bacffc040dcdf7349181f49858f45a301e9c"
+    },
+    {
+      "path": "research/v7/window28-run.json",
+      "bytes": 3476,
+      "sha256": "3268e9264ec9400113268259f3f345be83fb295152a7c702b17a409044f01875"
+    },
+    {
+      "path": "research/v7/window28-study.py",
+      "bytes": 15664,
+      "sha256": "b4ebbf3fc692f5e86e4a8fe5363c476dbf7a0282f4adf30777135ec9bfe48ecb"
+    },
+    {
+      "path": "research/v7/window28-targeted-tests.txt",
+      "bytes": 104,
+      "sha256": "065c7d15facfd20f14fb9182747be315f3349fa1d5e1a0e966047509f4bfa9b1"
+    },
+    {
+      "path": "research/v7/window28-tests.py",
+      "bytes": 2372,
+      "sha256": "5cff13a89317be6724f6566d0cc09e5bb6e02b5e9c324150d1000a9bc8ce054b"
+    },
+    {
+      "path": "reports/v7_window28_clean_refit.md",
+      "bytes": 7025,
+      "sha256": "e9e96c0b4c96ae1dfe0c4589f9cbcaec6bd1867f28e46b6096338e1b2a359855"
+    }
+  ]
+}

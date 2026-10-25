@@ -1,23 +1,34 @@
 # V7 Research Program and Current Development Backlog
 
-> Current planning owner: isolated Window27 frozen-prediction label-safety branch, linked by canonical
+> Current planning owner: isolated Window28 clean-training/causality branch, linked by canonical
 > Current State/Authority Map. Planning status does not grant research, execution,
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
 
-## Window28 Clean Training Refit & Temporal Causality — PREFIT CHECKPOINT
+## Window28 Clean Training Refit and Temporal Causality
 
-W27 fixed `39e2fedeb550a08d00f4abddc9a6caa7b1d570f8` 已本機 ff-only 整合；35 pins、原計算source/restore、14 tests、Review GO 驗證。
-W28 `.worktrees/v7-window28-clean-refit`，branch `research/v7-window28-clean-refit`，base同固定SHA；UNMERGED / NOT_DEPLOYED。
-[Plan](window28-plan.json) 與 [Prefit](window28-prefit.json) 先固定：原 W24 features/Ridge alpha1，W27 mask清理2021，5d7164／10d6841。
-最多兩次 fresh fit，每horizon一次、TRAIN-only scaling；Eval恰為W27相同support，不search/refit選模。
-18個poison案例於任何fit前依原Mask資格固定；2022原July1之2321不在W24，採第一共同合格日July18，規則未放寬。
-新Run/Prediction/Evaluation與獨立Replay/Review待執行；0 API/GPU/Production/W19操作，W12HALTED/StrictSTOP維持。
+W27 fixed `39e2fedeb550a08d00f4abddc9a6caa7b1d570f8` 已本機 ff-only 整合（main前367005d）；35pins＋原計算source/restore、14tests、ReviewGO核對。
+W28 branch `research/v7-window28-clean-refit`，base同固定SHA，worktree `.worktrees/v7-window28-clean-refit`；UNMERGED / NOT_DEPLOYED。
+Plan/code/prefit先commit `ec0b072` 再執行；原W24兩Features／Ridgealpha1／W27Policy與Mask不變，2021各horizon只fresh fit一次，總2fits，0resume/search。
+5d TRAIN 7338→7164、10d 7188→6841；mean/std僅在clean TRAIN重估並逐值驗證。2022/2023完全不參與Fit/Scaling。
+同一W27 Eval support、940日期×horizon、N>=20未降：Ridge舊→新 2022/5d .033873→.034682、2022/10d .045471→.044561、
+2023/5d .080008→.080407、2023/10d .053166→.054248；2022/2023皆EXPOSED Development，非模型選擇或獨立效能證明。
+18個future有效OHLCV數值擾動案例，Features/固定模型Predictions exact-equal、當日positive control有效，Raw不改。
+只驗數值因果性：既有feature wrapper也有未來Label資格gate，不宣稱row eligibility為as-of線上接口，亦非歷史publication/vintage認證。
+原July1之2321不在W24資料；任何Fit前依原Mask第一共同合格日固定2022-07-18，不改Mask或樣本池。
+6targetedtests；獨立Replay1880daily/940paired/29143newRidge scores/18cases PASS，Replay0Fit。獨立Review GO，Critical0／Required0，1輪主要審查／0 review rework。
+227 prior private source identities核對；W28 11files／28170524bytes同機restore，BACKUP_PENDING，原W24/W27 models/predictions/metrics均保留。
+[Plan](window28-plan.json)、[Run](window28-run.json)、[Results](window28-results.json)、
+[Causality](window28-causality.json)、[Evidence](window28-evidence.json)、[Report](../../reports/v7_window28_clean_refit.md)、
+[唯一Backlog](research-program.md#window28-clean-training-refit-and-temporal-causality)。
+UNKNOWN actions/suspension/asof/vintage、hindsight/universe/已曝光仍保留；不宣稱完整污染已去除或投資收益。
+下一Human：限定新資料/universe/事件未知政策及Label用途，凍結Exposure-aware Study/Fold/Recipe/evaluation與資料/CPU/儲存/備份上限；無剩餘已授權READY，STOP。
+0 API/GPU/Colab/Bootstrap/LOSO/V6/W19操作。StrictSTOP／FormalAdmissionNOT_APPROVED／W12SAFETY_HALTED／E1BLOCKED／H2NOT_APPROVED。
 
 ## Window27 Pragmatic Label Safety and Frozen-Prediction Sensitivity
 
 W26 fixed `367005dfaba0988fca5e294d9b3e281408bbfce8` 已本機 ff-only 整合（main 前27055f7）；38 pins／3 tests／獨立 Closure GO。
-W27 branch `research/v7-window27-label-safety`，base367005d，worktree `.worktrees/v7-window27-label-safety`；UNMERGED / NOT_DEPLOYED。
+W27 branch `research/v7-window27-label-safety`，base367005d，worktree `.worktrees/v7-window27-label-safety`；LOCAL_INTEGRATED_FIXED39e2fed / NOT_DEPLOYED。
 Policy `W27_RAW_PRICE_DIAGNOSTIC_DEVELOPMENT_ONLY_v1`／Predicate／Mask 先在 `e77f32d` commit 固定，再重評既有 W24 預測。
 原44266→新43148樣本；排除1118（Training521僅診斷，evaluation597），disjoint primary：confirmed event3／missing33／zero1082。
 UNKNOWN event/suspension/asof 對所有樣本保留，不升格 CLEAN；新 Mask 不修改原 W24 mask，沒有 refit 或消除原模型 Training 風險。

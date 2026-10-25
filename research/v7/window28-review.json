@@ -1,0 +1,35 @@
+{
+  "reviewer": "/root/independent_review",
+  "verdict": "GO",
+  "Critical": 0,
+  "Required": 0,
+  "main_review_rounds": 1,
+  "review_rework_rounds": 0,
+  "synthetic_tests": 6,
+  "seconds": 0.003,
+  "prior_pins": 227,
+  "new_artifacts": 11,
+  "restore_bytes": 28170524,
+  "plan_code_prefit_frozen_before_fit": true,
+  "fit_claims": 2,
+  "clean_training_n": [
+    7164,
+    6841
+  ],
+  "train_hash_scaling_intercept": "PASS",
+  "normal_equation_residual_max_abs": [
+    1.78e-15,
+    8.88e-16
+  ],
+  "independent_solve_fit_calls": 0,
+  "same_support_new_Ridge_predictions": 29143,
+  "L0_unchanged": true,
+  "saved_poison_cases": 18,
+  "limitations_preserved": [
+    "finite valid future numerical perturbations only",
+    "label eligibility gate not certified asof",
+    "historical vintage and complete cleanup not certified",
+    "exposed diagnostics not model selection"
+  ],
+  "network_W19_operations": 0
+}
