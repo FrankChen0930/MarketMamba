@@ -219,3 +219,8 @@ interrupt/GPU/AMP/shuffledloader/full reproduction unverified. Code/source witne
 map actual bytes to U2 sourcecommit; originalL2snapshot retained, latest sourcebound
 L2run is current. CPU actual checkpointbytes stay local/preserved, not hash-only
 restoration. Source hashes/authenticity/research admission remain distinct.
+
+## Window25 bounded robustness audit
+
+Fixedpredictions showconditional exploratorypositivity, not formalrelativeperformance:2022CBBblock-sensitive,2023exposed. LOSOonlyevaluation,nottraininginfluence; matchedbaseline/statisticaldesign requiresHuman.
+See [report](../../reports/v7_window25_robustness_audit.md) and solebacklog. 0datarequests/fit;W19protected;FormalAdmissionNOT_APPROVED.

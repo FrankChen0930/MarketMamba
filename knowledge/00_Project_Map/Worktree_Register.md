@@ -1,10 +1,21 @@
 # Worktree Register
 
+## Window25 fixed-prediction audit — 2026-10-25
+
+- Path `.worktrees/v7-window25-robustness-audit`; branch `research/v7-window25-robustness-audit`;
+  base90b1327560f717727ad3fd53dfe86cb421c70f5b; owner Codex/HumanWindow25;created2026-10-25;retiredN/A.
+- COMPLETE/STOP/UNMERGED/NOT_DEPLOYED. W24executedlimitedpilot; thisdistinctauthorization only audits existing evidence.
+- Reuse experimental/research/reports/Decisions, W08metric/E1circularhelper/W09verify/W24artifacts;no newplatform.
+- Root.artifacts/window25-robustness-audit and samehostwindow25-audit-restore own generateddiagnostics/source,
+  BACKUP_PENDING. W24source191files immutable; no oldartifact/worktreecleanup.
+- Safe removal requires retainedcleancommit, allsource/raw/result/restore references resolved and explicitretirementreview.
+- W24fixed90b1327 localintegrated; W19/task/artifacts/budget/runtimePROTECTED, nooperations.
+
 ## Window24 expanded limited pilot — 2026-10-25
 
 - Path `.worktrees/v7-window24-expanded-pilot`; branch `research/v7-window24-expanded-pilot`;
   base87af76b038fcbbda9e1e4b3a4349e693a3b1ba48; owner Codex/HumanWindow24; created2026-10-25; retiredN/A.
-- COMPLETE/STOP/UNMERGED/NOT_DEPLOYED. W23onlyfive-stocksmoke; W24hasdistinct bounded expanded data/pilot authorization.
+- COMPLETE/STOP/LOCAL_INTEGRATED_BY_W25_FIXED90b1327/NOT_DEPLOYED. W23onlyfive-stocksmoke; W24hasdistinct bounded expanded data/pilot authorization.
 - Reuse experimental/research/reports/Decisions, existingrequestguard/numeric/evaluator/publisher; no newplatform.
 - Root.artifacts/window24-expanded-pilot unique raw/three-masks/bundle/predictions/sourcecopies; samehost
   window24-price-restore and window24-pilot-restore are not independent backups(BACKUP_PENDING).

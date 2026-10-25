@@ -1,0 +1,16 @@
+{
+  "authority": "HumanWindow25readonlyaudit",
+  "status": "AUDIT_COMPLETE_OBSERVED_DIAGNOSTIC_CLASSIFICATION_NOT_HUMAN_CORRECTNESS_GATE",
+  "base": "90b1327560f717727ad3fd53dfe86cb421c70f5b",
+  "evidence": "research/v7/window25-evidence.json",
+  "classification": "research/v7/window25-classification.json",
+  "decisions": [
+    "OnlyW24localffintegration",
+    "No newdata/fit/prediction/policychange",
+    "L10/20circularsensitivitybothreported;nofavorablechoice",
+    "NoL0directionflip/recohort/thresholdfilter",
+    "W19PROTECTED;StrictSTOP/FormalAdmissionNOT_APPROVED"
+  ],
+  "remaining": "Corporateactions/asofUNKNOWN;2022comparisonfragile;Human matchedbaseline/newunexposedstudy/statisticaldesign approval",
+  "stop": "STOPafterlocalcommit;noW25merge"
+}

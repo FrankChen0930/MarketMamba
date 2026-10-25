@@ -21,10 +21,29 @@
   },
   "topics": [
     {
+      "topic": "Window25 fixed-prediction robustness and leakage audit",
+      "primary_authority": "research/v7/window25-evidence.json",
+      "authority_class": "CANONICAL",
+      "status": "COMPLETE_STOP_UNMERGED_CONDITIONAL_RAW_PROXY_DIAGNOSTICS_NOT_ADMISSION",
+      "secondary_evidence": [
+        "research/v7/window25-analysis-plan.json",
+        "research/v7/window25-leakage-matrix.json",
+        "research/v7/window25-robustness.json",
+        "research/v7/window25-classification.json",
+        "reports/v7_window25_robustness_audit.md"
+      ],
+      "conflicts": [
+        "No full historical no-leakage/PIT/actions certification",
+        "2022 comparisonblock-sensitive;2023alreadyexposed",
+        "LOSO cannotundo TRAINinfluence;nosampleselection/retrainingpermitted",
+        "No formalresearch/statisticalgate approval;W19protected/W12halted"
+      ]
+    },
+    {
       "topic": "Window24 expanded limited retrospective ranking pilot",
       "primary_authority": "research/v7/window24-evidence.json",
       "authority_class": "CANONICAL",
-      "status": "COMPLETE_STOP_UNMERGED_LIMITED_EXPLORATORY_PROXY_ONLY_FORMAL_ADMISSION_FALSE",
+      "status": "LOCAL_INTEGRATED_BY_W25_FIXED90b1327_LIMITED_EXPLORATORY_RAW_PROXY_ONLY",
       "secondary_evidence": [
         "research/v7/window24-cohort.json",
         "research/v7/window24-label-recipe.json",

@@ -1,0 +1,67 @@
+{
+  "root": "/home/frank/projects/MarketMamba/.artifacts/window25-robustness-audit",
+  "files": [
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window25-robustness-audit/case-trace.json",
+      "bytes": 2652,
+      "sha256": "27c23fb604c8ffe92532ccdd3f6fc8683c2a4e98cbb23ad1baa8108b63274e44"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window25-robustness-audit/evidence/window25-analysis-plan.json",
+      "bytes": 2642,
+      "sha256": "d0f252b99c913e5cf65a2a51551a8ba11da05692485c6ec42c385831d2050e0d"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window25-robustness-audit/evidence/window25-case-trace.py",
+      "bytes": 1969,
+      "sha256": "e2f180aa3707fdee762aeb112de8a986290e63c62e2b0705af473637924ee41c"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window25-robustness-audit/evidence/window25-classification.json",
+      "bytes": 2172,
+      "sha256": "fcda7dc4df7d7bddd324edd2c3d82b5a41e9df09955fdd881403f68082419e09"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window25-robustness-audit/evidence/window25-completion.json",
+      "bytes": 918,
+      "sha256": "68abf4d1a61903d1442786a00085640ec333e76ff619b864ffad77916d24d848"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window25-robustness-audit/evidence/window25-leakage-matrix.json",
+      "bytes": 2746,
+      "sha256": "1016eb1c1718e8d63a0a597fab37c823cea36ce4e2161522f72b53d6b2453a15"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window25-robustness-audit/evidence/window25-robustness.json",
+      "bytes": 60200,
+      "sha256": "9d04d5675d220238a913bd15f8be11c253f939c1e9a0c056d1bf696d9bafe2b7"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window25-robustness-audit/loso-daily.json",
+      "bytes": 9797763,
+      "sha256": "d013d260f2aae4f9e2b3f86143bc1ebc0a841998b1e3cda51423ff79515cf5f7"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window25-robustness-audit/raw-label-candidates.json",
+      "bytes": 9716,
+      "sha256": "02c4f55208fbe499ef78277c21e422e4a4bafc3867cf00cdd2a42a728b98d29d"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window25-robustness-audit/source/V6/experimental/v7_e1_evaluate.py",
+      "bytes": 9202,
+      "sha256": "0a3c4e053ca5bd98a3c134761070f07be56802984e519709b60a018c3980ff18"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window25-robustness-audit/source/V6/experimental/v7_robustness_audit.py",
+      "bytes": 2549,
+      "sha256": "2e857a9d7fa1fda8602872ac2c930d608dc278f181f7ed3c427baa2f24e81681"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window25-robustness-audit/source/research/v7/window25-audit.py",
+      "bytes": 13662,
+      "sha256": "d4f58abfa856d2bf168192e61b6a369a0e7ad552cc50a58ed3b56621abe217ad"
+    }
+  ],
+  "artifact_class": "GENERATED_PRIVATE_DIAGNOSTICS_WITH_ARCHIVED_SOURCE",
+  "backup": "BACKUP_PENDING"
+}

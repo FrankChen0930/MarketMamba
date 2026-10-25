@@ -210,3 +210,8 @@ See [report](../../reports/v7_window23_calendar_smoke.md) and existing sole back
 Threeindependentmasks:engineering46291/limitedexploratory44266/strict0;nocorporateaction/PITqualificationpromoted.
 Paired27–33stocks supports only fixedL0/Ridge rawproxy diagnostics; no superiority/trading/admission claim.
 See [report](../../reports/v7_window24_expanded_pilot.md)/solebacklog; W19untouched; rawprivate/backuppending.
+
+## Window25 bounded robustness audit
+
+Source2321 rawproxycase crosses6missing sessions; causeUNKNOWN, no newactionthreshold/filter. Historicalpublication/vintage/actions notqualified; originalW24data/masksunchanged.
+See [report](../../reports/v7_window25_robustness_audit.md) and solebacklog. 0datarequests/fit;W19protected;FormalAdmissionNOT_APPROVED.

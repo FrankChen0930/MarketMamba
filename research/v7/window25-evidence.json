@@ -1,0 +1,206 @@
+{
+  "schema_version": 1,
+  "artifact_class": "CANONICAL",
+  "status": "WINDOW_COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+  "authority": "HumanWindow25boundedreadonlyaudit_notformalresearchorstatisticaladmission",
+  "branch": "research/v7-window25-robustness-audit",
+  "base": "90b1327560f717727ad3fd53dfe86cb421c70f5b",
+  "final_head": "containingclosurecommit",
+  "integration": "research/v7/window25-integration.json",
+  "analysis_plan": "research/v7/window25-analysis-plan.json",
+  "leakage_matrix": "research/v7/window25-leakage-matrix.json",
+  "four_group_diagnostics": "research/v7/window25-robustness.json",
+  "classification": "research/v7/window25-classification.json",
+  "completion": "research/v7/window25-completion.json",
+  "source_identity": "W24immutablebundle503f9651.../manifest0f52fac9..., originalpredictions/data/masks/policyunchanged",
+  "storage": {
+    "root": "/home/frank/projects/MarketMamba/.artifacts/window25-robustness-audit",
+    "restore": "/home/frank/projects/MarketMamba/.artifacts/window25-audit-restore",
+    "inventory": "research/v7/window25-local-artifacts.json",
+    "restore_evidence": "research/v7/window25-independent-restore.json",
+    "raw_label_cases_private": true,
+    "backup": "BACKUP_PENDING"
+  },
+  "tests": "research/v7/window25-targeted-tests.txt",
+  "review": "research/v7/window25-review.json",
+  "rework_rounds": 0,
+  "reuse": [
+    "W08dailyRankIC/ties/minN/common-support",
+    "E1circularblockbootstraploweronly—notE1acceptance",
+    "W09bundleverification/hash",
+    "W24originalprediction/masks/calendar/fold/data/source"
+  ],
+  "new": "boundeddescriptives/LOSO/pairedcircularboundswrapper andreadonlycaseaudit;noevaluator/trainer/platform",
+  "boundaries": {
+    "new_requests": 0,
+    "fit_refit": 0,
+    "new_model_predictions": 0,
+    "original_predictions_modified": false,
+    "W24policy_or_masks_modified": false,
+    "W19": "NO_TASK_WORKTREE_ARTIFACT_BUDGET_RUNTIME_OPERATIONS",
+    "StrictPhase0": "STOP",
+    "FormalResearchAdmission": "NOT_APPROVED",
+    "W24": "RETROSPECTIVE_EXPLORATORY_LIMITED",
+    "year2023": "EXPOSED_DIAGNOSTIC",
+    "W12GPU": "SAFETY_HALTED",
+    "E1FrozenMatrix": "BLOCKED",
+    "H2": "NOT_APPROVED",
+    "GPUColabProductionSchedulerPushDeploy": false,
+    "mergeW25": false
+  },
+  "runtime": "W11Python3.12.3/NumPy2.0.2/torch2.10.0cpu;CUDAempty,threads1;network/solve/fitdeniedinsideaudit;timeout300",
+  "remaining": [
+    "Historicalavailability/vintageUNKNOWN",
+    "Datedcorporateactions/suspensions/pricecomparabilityUNKNOWN,2321gapneedstargetedevidence",
+    "2022relativecomparisonfragile,2023exposed",
+    "Matched-directionbaselines/finalunexposedstudy/uncertainty/multiplicity/refit/compute requireHuman",
+    "Independentbackupdestination"
+  ],
+  "review_result": {
+    "reviewer": "/root/independent_review",
+    "verdict": "GO",
+    "Critical": 0,
+    "Required": 0,
+    "main_rounds": 1,
+    "new_focused_tests": 4,
+    "seconds": 0.01,
+    "W24_source_hashes_unchanged": 191,
+    "W25_artifacts_and_restored_bytes": 12,
+    "bootstrap_bounds_independently_recomputed": 16,
+    "LOSO_summaries_checked": 132,
+    "LOSO_daily_cases_independently_recomputed": 264,
+    "gap_zero_trace_samples_reproduced": 44266,
+    "classification_scope": "conditionalexistingrawproxyonly;notformalresearch/PITcertification",
+    "limitations_preserved": [
+      "2022block-sensitive",
+      "2023exposed",
+      "LOSOcannotundoTRAINinfluence",
+      "action-sensitivityNOT_ESTIMABLE"
+    ],
+    "network_fit_newpredictions_W19_operations": 0,
+    "rework_rounds": 0
+  },
+  "verification": {
+    "focused_tests": 10,
+    "main_postintegration_tests": 26,
+    "independent_new_tests": 4,
+    "review": "GO0CriticalRequired",
+    "rework": 0,
+    "knowledge_health": "structuralPASS;existingGovernance/AuthorityDrift/LegacyDocsWARNING"
+  },
+  "deliverables": [
+    {
+      "path": "V6/experimental/v7_robustness_audit.py",
+      "bytes": 2549,
+      "sha256": "2e857a9d7fa1fda8602872ac2c930d608dc278f181f7ed3c427baa2f24e81681"
+    },
+    {
+      "path": "V6/experimental/v7_robustness_audit_test.py",
+      "bytes": 1900,
+      "sha256": "92870b328fe05bf2904f8200042be39e46214ab6be5db42fef46fec1b3ecc5a1"
+    },
+    {
+      "path": "reports/v7_window25_robustness_audit.md",
+      "bytes": 9913,
+      "sha256": "1458a8daa288b47e1bee4e305516b0f84361cd653e655b592398832d7e0f8f8e"
+    },
+    {
+      "path": "research/v7/window25-analysis-plan.json",
+      "bytes": 2642,
+      "sha256": "d0f252b99c913e5cf65a2a51551a8ba11da05692485c6ec42c385831d2050e0d"
+    },
+    {
+      "path": "research/v7/window25-analysis-process.txt",
+      "bytes": 1795,
+      "sha256": "53f6d7705c089d9a6306680d684bd15f06083e57fceea3cc7d154e83659ed3b0"
+    },
+    {
+      "path": "research/v7/window25-audit.py",
+      "bytes": 13662,
+      "sha256": "d4f58abfa856d2bf168192e61b6a369a0e7ad552cc50a58ed3b56621abe217ad"
+    },
+    {
+      "path": "research/v7/window25-case-trace.py",
+      "bytes": 1969,
+      "sha256": "e2f180aa3707fdee762aeb112de8a986290e63c62e2b0705af473637924ee41c"
+    },
+    {
+      "path": "research/v7/window25-classification.json",
+      "bytes": 2172,
+      "sha256": "fcda7dc4df7d7bddd324edd2c3d82b5a41e9df09955fdd881403f68082419e09"
+    },
+    {
+      "path": "research/v7/window25-completion.json",
+      "bytes": 918,
+      "sha256": "68abf4d1a61903d1442786a00085640ec333e76ff619b864ffad77916d24d848"
+    },
+    {
+      "path": "research/v7/window25-independent-restore.json",
+      "bytes": 434,
+      "sha256": "c6eeea51552f4c3a0e7ccb6905b8a3b5646480d121442e597a62c8c6f9e805c6"
+    },
+    {
+      "path": "research/v7/window25-integration.json",
+      "bytes": 474,
+      "sha256": "9686bf9e8d5943d29496ac5542a1ee3dd3ddd0eac741efc05374609dde1c75af"
+    },
+    {
+      "path": "research/v7/window25-knowledge-health.txt",
+      "bytes": 237,
+      "sha256": "bf93f67ea1dfe58182f4c71dd1f609a034debb6e81c2599949e554cb6c78863c"
+    },
+    {
+      "path": "research/v7/window25-knowledge-impact.json",
+      "bytes": 543,
+      "sha256": "a0e0ce839e9ed6c3b71d5c831e64cdfa4c2bbe81b4c53b3ce2c32b98c11de069"
+    },
+    {
+      "path": "research/v7/window25-knowledge-impact.txt",
+      "bytes": 543,
+      "sha256": "a0e0ce839e9ed6c3b71d5c831e64cdfa4c2bbe81b4c53b3ce2c32b98c11de069"
+    },
+    {
+      "path": "research/v7/window25-leakage-matrix.json",
+      "bytes": 2746,
+      "sha256": "1016eb1c1718e8d63a0a597fab37c823cea36ce4e2161522f72b53d6b2453a15"
+    },
+    {
+      "path": "research/v7/window25-local-artifacts.json",
+      "bytes": 3054,
+      "sha256": "90ef149eaadfe93034b0ff4690fd49344d3ba29000a8747956d944fde7caf023"
+    },
+    {
+      "path": "research/v7/window25-postintegration-tests.txt",
+      "bytes": 125,
+      "sha256": "96782816f1be14a8da3bf2dc512c2dfdac9350397f01a7a71e7a91669a9f176d"
+    },
+    {
+      "path": "research/v7/window25-red.txt",
+      "bytes": 910,
+      "sha256": "0a24ad4a917dd65506be895100cca1d856a28a5d1b3d72d8e15731b41952a508"
+    },
+    {
+      "path": "research/v7/window25-review.json",
+      "bytes": 747,
+      "sha256": "fa718474e7c617a0b1baac02ae225f04917edcea81d40c4265eef058407295a1"
+    },
+    {
+      "path": "research/v7/window25-robustness.json",
+      "bytes": 60200,
+      "sha256": "9d04d5675d220238a913bd15f8be11c253f939c1e9a0c056d1bf696d9bafe2b7"
+    },
+    {
+      "path": "research/v7/window25-targeted-tests.txt",
+      "bytes": 109,
+      "sha256": "e3c1f2f30e4098620f178e31b731f56a751437d5689a0fb18ed45b9622bb9bcc"
+    }
+  ],
+  "final_checks": {
+    "W24sourcefiles_unchanged": 191,
+    "W25privatefiles": 12,
+    "raw_vendor_data_not_git": true,
+    "main_clean": true,
+    "W19operations": 0,
+    "new_requests_fit_new_model_predictions": 0
+  }
+}
