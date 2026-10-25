@@ -1,0 +1,6 @@
+{
+  "metadata_records_checked": 127,
+  "full_range_matches": [],
+  "scope": "known immutable W21/W22/W24/W29 only,not W19 or mutableData",
+  "observed_at": "2026-10-25T12:50:33.371577+00:00"
+}

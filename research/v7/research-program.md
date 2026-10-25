@@ -1,14 +1,21 @@
 # V7 Research Program and Current Development Backlog
 
-> Current planning owner: isolated Window32 prospective shadow preparation branch, linked by canonical
+> Current planning owner: isolated Window33 recent shadow preparation branch, linked by canonical
 > Current State/Authority Map. Planning status does not grant research, execution,
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
 
+## Window33 Recent Shadow Model Preparation — PREFETCH FROZEN
+
+W32 fixed `8fa41869a2583f0b5db698db83eed98611f24a7e` 已由main67e2d25本機ff-only整合；Review GO、11個Synthetic原檔/restore、13tests及治理核對通過。W33 branch `research/v7-window33-recent-shadow`，base同固定SHA，UNMERGED / NOT_DEPLOYED。
+首次GET前固定window33-cohort.json／window33-plan.json：沿用W29可產生Feature的64檔，2024-01-01至2026-10-22，最多70price GET，單並發/≥5秒/共享known-local100hour stop，0metadata/token/fallback。資料/Calendar/Universe/CSV相容驗收前不Fit；上限Ridge2+LGBM2、CPU1800秒/fit300秒/artifact1GiB。
+狀態尚未GET/Fit；W19 Task/worktree/artifacts完全不讀不動。W16/W18獨立官方CSV可唯讀比對。StrictSTOP/FormalAdmissionNOT_APPROVED/W33SHADOW_PREPARATION_ONLY/W12SAFETY_HALTED/E1BLOCKED/H2NOT_APPROVED。不得真實每日PREOPEN或排程啟用。
+恢復：W33 worktree → window33-plan.json／window33-cohort.json；只在network未CLOSED/STOP且無不明pending claim時依本輪固定授權執行，不能重用舊窗口預算。
+
 ## Window32 Expanding Closure & Prospective Shadow — PREPARATION COMPLETE / STOP
 
 W31 fixed `67e2d25a710273646d41c0ad861b4a993593ba4d` 已由main b64ac35本機ff-only整合；72原檔/restore、24views/24model identities、maturity及10tests核對。Refit−Train−Validation差額5d300/305/310、10d597/610/620均為TRAIN邊界排除後已成熟的舊labels，非Forward。未重Fit/重算舊RankIC，W31歷史Warning保留。
-W32 branch `research/v7-window32-shadow-preparation`，base同固定SHA；worktree `.worktrees/v7-window32-shadow-preparation`，UNMERGED / NOT_DEPLOYED。
+W32 branch `research/v7-window32-shadow-preparation`，base同固定SHA；worktree `.worktrees/v7-window32-shadow-preparation`，LOCAL_INTEGRATED_FIXED8fa4186 / NOT_DEPLOYED。
 [Shadow Contract](window32-shadow-contract.json) 為PROPOSED；正常目標07–08Asia/Taipei，持久發布嚴格早於合格Entry開盤才PREOPEN，晚到MISSED_PREOPEN/RESEARCH_ONLY。未凍結精確source freeze/wait/missing政策或啟用排程。
 Synthetic-only薄入口重用W07時鐘/日曆、W09 strict JSON/lock/safe path及既有atomic-no-clobber；無真實模型載入、Fit或Inference CLI。Feature-only keys先保存，5d/10d成熟後才Join，Backfill不冒充Forward。13targetedtests PASS；11個Synthetic檔16123bytes/份同機restore；BACKUP_PENDING。
 [Readiness](window32-readiness.json)：已核immutable訓練資料僅2021–2023，不能宣稱2026FreshRefit就緒。W31兩Feature schema可重用，Daily CSV尚需units/security/market/feature parity及合格Universe/Calendar/events；V6的56/59維Inference不可直接沿用。

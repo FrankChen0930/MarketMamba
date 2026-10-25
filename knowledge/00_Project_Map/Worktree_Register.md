@@ -1,5 +1,11 @@
 # Worktree Register
 
+## Window33 recent shadow — 2026-10-25
+
+- Path `.worktrees/v7-window33-recent-shadow`; branch `research/v7-window33-recent-shadow`; base `8fa41869a2583f0b5db698db83eed98611f24a7e`; owner Codex/HumanWindow33;created2026-10-25;retiredN/A. PREFETCH_FROZEN / UNMERGED / NOT_DEPLOYED.
+- Reuse W29 bounded source driver, W31 clocks/maturity/common resource guards, W27 safety, W30 fixed LGBM, W16/W18 bytes. Thin new dated query guard needed; no second collector/platform.
+- Private `.artifacts/window33-recent-shadow/` and `.artifacts/window33-restore/`; preserve all previous evidence/W11 environment. Safe-removal needs clean retained Git, resolved bytes/pins/dependencies and explicit review. BACKUP_PENDING.
+
 ## Window32 shadow preparation — 2026-10-25
 
 - Path `.worktrees/v7-window32-shadow-preparation`; branch `research/v7-window32-shadow-preparation`; base `67e2d25a710273646d41c0ad861b4a993593ba4d`. Owner Codex/HumanWindow32;created2026-10-25;retiredN/A. PREPARATION_COMPLETE / STOP / UNMERGED / NOT_DEPLOYED.

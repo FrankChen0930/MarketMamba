@@ -1,0 +1,1 @@
+{"frozen_securities": 64, "first": ["1102", "1104", "1218"], "cohort_sha256": "ffb8377a4923f832d13212fc7bc8cd2b0e9ba7a3db99c30516c855bf058f5e2e"}
