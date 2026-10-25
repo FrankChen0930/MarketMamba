@@ -2,6 +2,15 @@
 
 > Status: `CANONICAL_CURRENT_PROJECT_MAP`
 
+## Window28 Clean Training Refit & Temporal Causality — PREFIT CHECKPOINT
+
+W27 fixed `39e2fedeb550a08d00f4abddc9a6caa7b1d570f8` 已本機 ff-only 整合；35 pins、原計算source/restore、14 tests、Review GO 驗證。
+W28 `.worktrees/v7-window28-clean-refit`，branch `research/v7-window28-clean-refit`，base同固定SHA；UNMERGED / NOT_DEPLOYED。
+[Plan](../../research/v7/window28-plan.json) 與 [Prefit](../../research/v7/window28-prefit.json) 先固定：原 W24 features/Ridge alpha1，W27 mask清理2021，5d7164／10d6841。
+最多兩次 fresh fit，每horizon一次、TRAIN-only scaling；Eval恰為W27相同support，不search/refit選模。
+18個poison案例於任何fit前依原Mask資格固定；2022原July1之2321不在W24，採第一共同合格日July18，規則未放寬。
+新Run/Prediction/Evaluation與獨立Replay/Review待執行；0 API/GPU/Production/W19操作，W12HALTED/StrictSTOP維持。
+
 ## Window27 Pragmatic Label Safety & Frozen-Prediction Sensitivity — COMPLETE / STOP
 
 W26 fixed `367005dfaba0988fca5e294d9b3e281408bbfce8` 已本機 ff-only 整合（main 前27055f7）；38 pins／3 tests／獨立 Closure GO。
