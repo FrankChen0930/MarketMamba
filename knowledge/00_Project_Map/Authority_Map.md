@@ -5,6 +5,19 @@
 > Semantic change owner must update this map in the same change.
 > Prior research/Phase A map accepted `2026-09-20`; 2026-09-22 runtime additions are agent-observed, pending separate human review. Canonical means current navigation authority, not immutable final state.
 
+## Window29 Expanded Cross-sectional Development — PRE-DATA CHECKPOINT
+
+W28 fixed `1d9a2a7a1ee57c455ba58250f63681efbbdd9050` 已本機 ff-only 整合；35 pins/restore、6tests、ReviewGO驗證。
+W29 branch `research/v7-window29-expanded-development`，base同固定SHA；UNMERGED / NOT_DEPLOYED。
+[固定Cohort](../../research/v7/window29-cohort.json)：68新TWSE候選、W24重疊0，60舊上市current survivors＋4期間上市＋4下市起日未知（不自動Prediction合格）。
+產業round-robin/hash排序，不以價格、RankIC、資本額選樣；HINDSIGHT_SELECTED，非HistoricalUniverseVerified；無cache可重用，預定68price GET、0metadata。
+[Plan](../../research/v7/window29-plan.json) 固定原兩Features、L0正/反（反向為post-W25 control）、Ridgealpha1兩fits、minN40。
+LightGBM略過：既有recipe/adapter僅synthetic≤64，沒有本panel可直接套用之既定recipe，不繞過guard。
+最小feature-only介面已分離未來Label：9 isolation＋3 request-budget tests PASS；未來Label變動只能改evaluation join，不改Prediction universe。
+新GET前固定Cohort/Plan/Requestallowlist。單並發5秒間隔、known-local hourly100上限、80total/70price、0token/retry/fallback，unknown外部匿名用量不推定為0。
+CPU研究stage每次600s/總3600s含60s驗證reserve；新增artifact含同機restore≤1GiB，無GC。Fit/真實GET/Replay/Review尚未執行。
+StrictSTOP/FormalAdmissionNOT_APPROVED/W12HALTED/E1BLOCKED/H2NOT_APPROVED/W19不操作；候選不自行整合，完成後STOP。
+
 ## Window28 Clean Training Refit & Temporal Causality — COMPLETE / STOP
 
 W27 fixed `39e2fedeb550a08d00f4abddc9a6caa7b1d570f8` 已本機 ff-only 整合（main前367005d）；35pins＋原計算source/restore、14tests、ReviewGO核對。

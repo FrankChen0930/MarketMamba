@@ -1,5 +1,13 @@
 # Worktree Register
 
+## Window29 expanded development — 2026-10-25
+
+- Path `.worktrees/v7-window29-expanded-development`; branch `research/v7-window29-expanded-development`; base `1d9a2a7a1ee57c455ba58250f63681efbbdd9050`.
+- Owner Codex/HumanWindow29;created2026-10-25;retiredN/A. PRE-DATA / UNMERGED / NOT_DEPLOYED.
+- Reuse official W22bytes, existing source snapshots/atomic locks/W27 safety/W10 Ridge/W08 evaluator; minimal feature-only split is necessary because W24 wrapper gates future Entry/Exit before returning features. No new platform/V6 change.
+- Private `.artifacts/window29-expanded-development/`, restore `.artifacts/window29-restore/`; local shared FinMind rate ledger only, not dataset registry.
+- Authorized ≤80requests/70price,2Ridgefits,CPU3600s/artifacts1GiB; W19 protected/W12HALTED. Safe-removal requires retained cleancommit, resolved raw/model/prediction/restore dependencies and explicit retirement review.
+
 ## Window28 clean training / causality — 2026-10-25
 
 - Path `.worktrees/v7-window28-clean-refit`; branch `research/v7-window28-clean-refit`; base `39e2fedeb550a08d00f4abddc9a6caa7b1d570f8`.
