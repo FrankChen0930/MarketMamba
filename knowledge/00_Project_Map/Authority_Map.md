@@ -5,10 +5,19 @@
 > Semantic change owner must update this map in the same change.
 > Prior research/Phase A map accepted `2026-09-20`; 2026-09-22 runtime additions are agent-observed, pending separate human review. Canonical means current navigation authority, not immutable final state.
 
+## Window31 First Expanding CPU Development — PREFIT_FROZEN
+
+W30 fixed `b64ac353833a9248121f12ebe61e1333decb2dbf` 已由main e83dfe6本機ff-only整合。940 defined＋30 undefined＝970 daily，paired2820＋90＝2910；None未當0納入Mean。兩個既有LGBM模型有351/379 split nodes、非退化預測，無重Fit。
+W31 branch `research/v7-window31-expanding`，base同固定SHA；worktree `.worktrees/v7-window31-expanding`，UNMERGED / NOT_DEPLOYED。
+[Contract](../../research/v7/window31-contract.json) 與 [Prepared](../../research/v7/window31-prepared.json) 在首次Fit前固定；三origin2023-01-03／04-06／07-03，validation約前12月、refit只用origin前成熟labels，0額外固定purge，依實際持有窗口排除重疊。
+10 targeted tests PASS。沿用W29兩Features/W27 safety/W30固定LGBM，Ridgealpha1；上限各12fits，CPU1800秒/artifact512MiB。先Validation診斷後freshrefit，所有Forward評分延至三origin訓練完成；不調參或用Forward回饋。
+狀態PREFIT_FROZEN，尚無本輪模型結果。2023 EXPOSED / DEVELOPMENT_ONLY；publication/vintage、historical universe、UNKNOWN events仍未驗證。StrictSTOP/FormalAdmissionNOT_APPROVED/W19PROTECTED/W12SAFETY_HALTED/E1BLOCKED/H2NOT_APPROVED。
+恢復：上述worktree使用W11 CPU環境執行 `research/v7/window31-study.py O1`，再O2/O3/evaluate/replay；須有prefitcommit且不重跑已有claim的Fit。不得合併W31或啟動下一窗口。
+
 ## Window30 Fixed Real-data LightGBM — COMPLETE / STOP
 
 W29 fixed `e83dfe68e4bc73b59cb6390ec130ba967138e7f1` 已由main1d9a2a7本機ff-only整合；340pins/restore、4tests、ReviewGO核對。
-W30 branch `research/v7-window30-real-lightgbm`，base同固定SHA，worktree `.worktrees/v7-window30-real-lightgbm`；UNMERGED / NOT_DEPLOYED。
+W30 branch `research/v7-window30-real-lightgbm`，base同固定SHA，worktree `.worktrees/v7-window30-real-lightgbm`；LOCAL_INTEGRATED_FIXEDb64ac35 / NOT_DEPLOYED。
 任何Fit前60e7ca7固定唯一Recipe/版本/native-lib SHA/feature order/seed/TRAIN view/planned ModelSpec IDs；weights SHA僅Fit後產生。
 W11環境LightGBM4.6.0/NumPy2.0.2/SciPy1.16.3/sklearn1.6.1不變；L2/64trees/7leaves/depth3/lr.05/minleaf100/L2=1/maxbin63/seed0/thread1，無eval_set/earlystop/search。
 W29 Cohort/Data/兩Features/Labels/Fold/support完全沿用；TRAIN14113/13711，最新exit2021-12-30；identity preprocessing，bin mapper只學TRAIN。

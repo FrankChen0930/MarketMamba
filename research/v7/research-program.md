@@ -1,9 +1,18 @@
 # V7 Research Program and Current Development Backlog
 
-> Current planning owner: isolated Window30 fixed real-data LightGBM branch, linked by canonical
+> Current planning owner: isolated Window31 expanding development branch, linked by canonical
 > Current State/Authority Map. Planning status does not grant research, execution,
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
+
+## Window31 First Expanding CPU Development — PREFIT_FROZEN
+
+W30 fixed `b64ac353833a9248121f12ebe61e1333decb2dbf` 已由main e83dfe6本機ff-only整合。940 defined＋30 undefined＝970 daily，paired2820＋90＝2910；None未當0納入Mean。兩個既有LGBM模型有351/379 split nodes、非退化預測，無重Fit。
+W31 branch `research/v7-window31-expanding`，base同固定SHA；worktree `.worktrees/v7-window31-expanding`，UNMERGED / NOT_DEPLOYED。
+[Contract](window31-contract.json) 與 [Prepared](window31-prepared.json) 在首次Fit前固定；三origin2023-01-03／04-06／07-03，validation約前12月、refit只用origin前成熟labels，0額外固定purge，依實際持有窗口排除重疊。
+10 targeted tests PASS。沿用W29兩Features/W27 safety/W30固定LGBM，Ridgealpha1；上限各12fits，CPU1800秒/artifact512MiB。先Validation診斷後freshrefit，所有Forward評分延至三origin訓練完成；不調參或用Forward回饋。
+狀態PREFIT_FROZEN，尚無本輪模型結果。2023 EXPOSED / DEVELOPMENT_ONLY；publication/vintage、historical universe、UNKNOWN events仍未驗證。StrictSTOP/FormalAdmissionNOT_APPROVED/W19PROTECTED/W12SAFETY_HALTED/E1BLOCKED/H2NOT_APPROVED。
+恢復：上述worktree使用W11 CPU環境執行 `research/v7/window31-study.py O1`，再O2/O3/evaluate/replay；須有prefitcommit且不重跑已有claim的Fit。不得合併W31或啟動下一窗口。
 
 ## Window30 Fixed Real-data LightGBM Baseline
 
