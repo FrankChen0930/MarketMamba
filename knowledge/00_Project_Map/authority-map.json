@@ -21,9 +21,25 @@
   },
   "topics": [
     {
+      "topic": "Window32 prospective shadow preparation",
+      "primary_authority": "research/v7/window32-evidence.json",
+      "authority_class": "CANONICAL",
+      "status": "PREPARATION_COMPLETE_STOP_UNMERGED_NOT_ACTIVATED",
+      "secondary_evidence": [
+        "research/v7/window32-shadow-contract.json",
+        "research/v7/window32-readiness.json",
+        "reports/v7_window32_shadow_preparation.md"
+      ],
+      "conflicts": [
+        "Proposal and Synthetic-only adapter do not authorize actual inference/training/schedule",
+        "W19 source Git reference only; no runtime observation or renewal",
+        "Current2026 training readiness blocked; W31 not rebranded as2026model"
+      ]
+    },
+    {
       "topic": "Window31 bounded expanding CPU development",
       "primary_authority": "research/v7/window31-evidence.json",
-      "status": "COMPLETE_STOP_UNMERGED_DEVELOPMENT_NOT_ADMITTED",
+      "status": "LOCAL_INTEGRATED_FIXED67e2d25_DEVELOPMENT_NOT_ADMITTED",
       "evidence": "research/v7/window31-prepared.json",
       "limits": "12 Ridge+12 LGBM fits,1800CPU seconds,512MiB,0API/GPU/W19 operations; not research admission",
       "authority_class": "CANONICAL",

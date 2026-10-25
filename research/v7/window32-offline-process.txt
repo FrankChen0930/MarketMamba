@@ -1,0 +1,1 @@
+{"status": "SYNTHETIC_OFFLINE_ACCEPTANCE_ONLY", "files": 11, "bytes_per_copy": 16123, "pending": "PENDING_MATURITY", "mature": "ELIGIBLE_SYNTHETIC_JOIN", "real_inference": 0}

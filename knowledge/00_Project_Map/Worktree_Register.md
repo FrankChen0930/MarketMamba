@@ -1,8 +1,15 @@
 # Worktree Register
 
+## Window32 shadow preparation — 2026-10-25
+
+- Path `.worktrees/v7-window32-shadow-preparation`; branch `research/v7-window32-shadow-preparation`; base `67e2d25a710273646d41c0ad861b4a993593ba4d`. Owner Codex/HumanWindow32;created2026-10-25;retiredN/A. PREPARATION_COMPLETE / STOP / UNMERGED / NOT_DEPLOYED.
+- Bounded W31 closure and Synthetic-only prediction-first publication/late-label eligibility; existing W09 complete bundle needs metrics, so reuse its primitives without fabricating metrics or a new registry. No actual inference/Fit/network/schedule.
+- Private `.artifacts/window32-shadow-preparation/` and `.artifacts/window32-shadow-restore/` contain11 tiny Synthetic fixture files, not market data; retained W31/W29/W30 references remain protected. BACKUP_PENDING.
+- Safe-removal requires retained clean Git history, resolved evidence dependencies and explicit retirement review. W19 untouched.
+
 ## Window31 expanding development — 2026-10-25
 
-- Path `.worktrees/v7-window31-expanding`; branch `research/v7-window31-expanding`; base `b64ac353833a9248121f12ebe61e1333decb2dbf`. Owner Codex/HumanWindow31;created2026-10-25;retiredN/A. COMPLETE / STOP / UNMERGED / NOT_DEPLOYED.
+- Path `.worktrees/v7-window31-expanding`; branch `research/v7-window31-expanding`; base `b64ac353833a9248121f12ebe61e1333decb2dbf`. Owner Codex/HumanWindow31;created2026-10-25;retiredN/A. COMPLETE / STOP / LOCAL_INTEGRATED_FIXED67e2d25 / NOT_DEPLOYED.
 - Three fixed origins reuse W07 geometry/W29 data/W30 LGBM/W10 Ridge/W08 evaluator; thin origin-neutral label/view adapter required because prior masks hardcode old yearly splits. No new framework.
 - Private `.artifacts/window31-expanding/`, restore `.artifacts/window31-restore/`; W29/W30 source evidence and W11 environment retained. BACKUP_PENDING.
 - Limits12Ridge+12LGBMfits,CPU1800s/artifact512MiB,0API/GPU/W19 operations. Safe-removal requires clean retained commit, resolved data/model/prediction/restore dependencies and explicit retirement review.

@@ -165,3 +165,7 @@ at exactf7af348 (supersedes its branch-local status only). Pre/post CPU regressi
 and authority checks are in [integration evidence](../../research/v7/charter-integration-20261021.json).
 A separate Human-authorized cross-domain CPU window may proceed in isolation;
 research contracts, formal data, production and StrictSTOP boundaries are unchanged.
+
+## Window32 prospective research preparation
+
+[W32 proposal](../../research/v7/window32-shadow-contract.json) and [readiness](../../research/v7/window32-readiness.json) define Synthetic-only prediction-first publication and delayed-label gates, UNMERGED/NOT_DEPLOYED. This is neither the existing fetch-only ops/shadow.py nor a V6 ranking serving change. Actual Shadow activation, exact time/source/missing rules and2026model preparation remain blocked/unapproved. W19 task/runtime/artifacts untouched; its policy is read only as a pinned Git source reference.

@@ -1,0 +1,80 @@
+{
+  "schema": "w32-readiness-matrix-v1",
+  "scope": "bounded saved evidence/code audit; no inventory of all Data/worktrees",
+  "base": "67e2d25a710273646d41c0ad861b4a993593ba4d",
+  "rows": [
+    {
+      "capability": "Historical immutable training data",
+      "status": "PARTIAL",
+      "source": "research/v7/window31-prepared.json",
+      "limitation": "Verified scoped inputs2021–2023 only; no checked/admitted2024–2026 training manifest. Existing mutable Data is not automatic admission.",
+      "next_requirement": "Approve bounded period/coverage and lawful acquisition; no requests in W32"
+    },
+    {
+      "capability": "2026 initial model",
+      "status": "BLOCKED_BY_DATA_AND_AUTHORIZATION",
+      "source": "research/v7/window31-run.json",
+      "limitation": "W31 models are retrospective Origin models, not2026 fresh refits; compatible two-column weights alone do not establish current model readiness.",
+      "next_requirement": "Approve dataset/universe/labels/cutoff/maturity and fixed budget fresh preparation of all models"
+    },
+    {
+      "capability": "Feature schema",
+      "status": "REUSABLE_WITH_ADAPTER",
+      "source": "research/v7/window30-recipe.json",
+      "limitation": "[close_t/close_prev-1,(high_t-low_t)/close_t]; two consecutive qualified sessions per security. W19 CSV encoding/columns/units/security market mapping still need pinned normalization and schema parity; source raw vs adjusted must not mix.",
+      "next_requirement": "Read-only mapping + identical-feature fixtures, qualified universe/calendar/events"
+    },
+    {
+      "capability": "W19 capture",
+      "status": "SOURCE_DESIGN_ONLY_NOT_RUNTIME_OBSERVED",
+      "source": "cf1a84fbbc205f28c051d650814a284d31d2f439:research/v7/window19-policy.json",
+      "limitation": "Five scheduled opportunities2026-10-27–11-02; latest-session resources, not historical backfill/full training data. No Task/worktree/artifact/budget runtime read or change in W32.",
+      "next_requirement": "Explicit future read-only handoff after actual receipts; no renewal implied"
+    },
+    {
+      "capability": "Daily inference",
+      "status": "INCOMPATIBLE_LEGACY_ENTRY",
+      "source": "V6/run_daily_inference.py",
+      "limitation": "V6.1 uses56 features; V6.2/dual59 context. Neither is W31 two-feature L0/Ridge/LGBM serving. Existing ops/shadow.py observes fetch-only and is not a ranking runner.",
+      "next_requirement": "Add bounded research-only model-loading/score adapter under future approval; do not repurpose V6"
+    },
+    {
+      "capability": "Prediction-first publication",
+      "status": "SYNTHETIC_VERIFIED",
+      "source": "research/v7/window32-shadow.py",
+      "limitation": "Reuses W09 locks/safe paths/strict JSON and source atomic no-clobber publish. No real model loading/inference entry.",
+      "next_requirement": "Approve source/model/calendar/time prerequisites before real execution"
+    },
+    {
+      "capability": "Label/evaluation isolation",
+      "status": "SYNTHETIC_VERIFIED",
+      "source": "research/v7/window32-shadow-tests.py",
+      "limitation": "Feature-only full keys; saved immutable synthetic scores precede label gate;5d/10d session exits checked separately. No empirical RankIC recomputation.",
+      "next_requirement": "Approve real label events/eligibility and join W08 evaluator after actual maturity"
+    },
+    {
+      "capability": "Complete artifacts / recovery",
+      "status": "REUSABLE_NOT_PROSPECTIVE_CERTIFIED",
+      "source": "V6/experimental/v7_research_artifacts.py",
+      "limitation": "W09 completion requires daily metrics: cannot mark prediction-only artifact as completed study. Same-host bytes restore is not independent backup.",
+      "next_requirement": "After labels/evaluation assemble allowed bundle; future prospective schema/admission/runtime profile requires review"
+    },
+    {
+      "capability": "Shadow activation",
+      "status": "NOT_AUTHORIZED",
+      "source": "research/v7/window32-shadow-contract.json",
+      "limitation": "07–08 target, durable publication strictly before actual entry open; exact freeze/wait/missing/stale/evaluation and runtime window unapproved.",
+      "next_requirement": "Human bounded Shadow start/end, runtime, data/model preparation, source/backup/monitor/recovery authorization"
+    }
+  ],
+  "data_root_environment": "UNSET",
+  "checkout_Data_realpath": "/home/frank/projects/MarketMamba/.worktrees/v7-window32-shadow-preparation/Data",
+  "real_data_consumed": "Only prior W31 integration immutable refs; no W19 artifact access; no production payload",
+  "W19_policy_reference_only": {
+    "source_commit": "cf1a84fbbc205f28c051d650814a284d31d2f439",
+    "source_path": "research/v7/window19-policy.json",
+    "source_bytes_sha256": "222323d53914de73a5c22c76db79a9ac3d36d85900ad1c673b593cf13b56c594",
+    "runtime_observed": false
+  },
+  "observed_at": "2026-10-25T12:21:05.702317+00:00"
+}
