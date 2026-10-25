@@ -1,25 +1,34 @@
 # V7 Research Program and Current Development Backlog
 
-> Current planning owner: isolated Window26 label integrity and study-candidate branch, linked by canonical
+> Current planning owner: isolated Window27 frozen-prediction label-safety branch, linked by canonical
 > Current State/Authority Map. Planning status does not grant research, execution,
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
 
-## Window27 — Label Safety Policy / Mask frozen; diagnostic pending
+## Window27 Pragmatic Label Safety and Frozen-Prediction Sensitivity
 
-W26 fixed `367005dfaba0988fca5e294d9b3e281408bbfce8` 已本機 ff-only 整合；38 pins／3 focused tests／獨立 Closure GO 核對。
-W27 branch `research/v7-window27-label-safety`，base 同固定 SHA；UNMERGED / NOT_DEPLOYED。
-[Development-only Policy](window27-policy.json) 與 [Mask Manifest](window27-mask-manifest.json)
-已在新 metric calculation 前固定，限 Human Window27 frozen-prediction sensitivity，不是正式 Label／Data Admission。
-Feature、Entry/Exit、holding path 分別檢查，不補值；confirmed unit-event 優先排除，重疊 reasons 用 disjoint primary 計數；UNKNOWN 不變 CLEAN。
-Unit1 Mask complete；Unit2 paired diagnostic / independent replay / review PENDING。0 API／fit／new prediction／GPU／V6／W19 修改。
-Strict STOP／E1 BLOCKED／H2 NOT APPROVED／W12 SAFETY_HALTED；W19 不操作。
+W26 fixed `367005dfaba0988fca5e294d9b3e281408bbfce8` 已本機 ff-only 整合（main 前27055f7）；38 pins／3 tests／獨立 Closure GO。
+W27 branch `research/v7-window27-label-safety`，base367005d，worktree `.worktrees/v7-window27-label-safety`；UNMERGED / NOT_DEPLOYED。
+Policy `W27_RAW_PRICE_DIAGNOSTIC_DEVELOPMENT_ONLY_v1`／Predicate／Mask 先在 `e77f32d` commit 固定，再重評既有 W24 預測。
+原44266→新43148樣本；排除1118（Training521僅診斷，evaluation597），disjoint primary：confirmed event3／missing33／zero1082。
+UNKNOWN event/suspension/asof 對所有樣本保留，不升格 CLEAN；新 Mask 不修改原 W24 mask，沒有 refit 或消除原模型 Training 風險。
+四組原940日期×horizon仍全可計算；N>=20未降，Ridge均值：2022/5d .037016→.033873、2022/10d .043930→.045471、
+2023/5d .080310→.080008、2023/10d .054056→.053166。這是 post-hoc development sensitivity，非正式模型選擇／獨立驗證。
+2023/5d排除68筆持有路徑零價，沒有本輪已確認減資跨界；不得用三筆10d事件解釋5d。無 event-only 追加評分。
+14 targeted tests PASS；獨立 Replay1880 daily／940 paired，原44266 Mask 由 raw 重建吻合；W24/W25/W26 218 prior byte pins 未變。
+一次 import namespace 修正在任何 metric 前；Replay int-key JSON 比較問題以 canonical hash 修復，原計算source留存、calculate AST相同，metrics不覆寫。
+獨立 Review GO，Critical0／Required0，1輪主要審查／0輪 review rework；新成果留候選。0 API／fit/refit／new prediction／Bootstrap／LOSO／GPU／V6或W19修改。
+Private `.artifacts/window27-label-safety/` 與同機 `.artifacts/window27-restore/`；BACKUP_PENDING，不宣稱獨立備份。
+[Policy](window27-policy.json)、[Mask](window27-mask-manifest.json)、[Results](window27-results.json)、
+[Report](../../reports/v7_window27_label_safety.md)、[Evidence](window27-evidence.json)、[唯一Backlog](research-program.md#window27-pragmatic-label-safety-and-frozen-prediction-sensitivity)。
+下一 Human：更大研究 Universe/事件覆蓋/未知政策/Label路線、Fold/maturity/selection/refit/evaluation/exposure及精確資料/CPU/保存上限；無剩餘已授權 READY，STOP。
+StrictSTOP／FormalAdmissionNOT_APPROVED／W12SAFETY_HALTED／E1BLOCKED／H2NOT_APPROVED；W19完全隔離。
 
 ## Window26 Label Integrity and Next Study Contract
 
 W25 固定候選 `27055f7ec34cd4aa6d47f67bd89e5b6616244bc8` 已由 main `90b1327` 本機 ff-only 整合；
 4 focused tests、12 private artifacts／21 deliverable pins 與 Review GO 已核對。W26 base 等於該固定 SHA。
-W26 branch `research/v7-window26-label-contract`，worktree `.worktrees/v7-window26-label-contract`；UNMERGED / NOT_DEPLOYED。
+W26 branch `research/v7-window26-label-contract`，worktree `.worktrees/v7-window26-label-contract`；LOCAL_INTEGRATED_FIXED367005d / NOT_DEPLOYED。
 2321 已確認 68% 虧損減資；2023-02-17 市場參考價單位變更與 2022-12-08 會計減資基準日分離。
 三筆既有 10d Label 算式／市場索引吻合，但跨股數單位變更，不可作未調整持有期報酬。
 六個缺行情日期是市場交易日，非市場休市；原始官方停牌公告尚未核實，精確停牌區間保留 UNKNOWN。

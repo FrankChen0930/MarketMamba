@@ -83,3 +83,10 @@ Update when direct evidence becomes available, the proxy policy is versioned, la
 2321 的 68% 虧損減資與市場股數單位轉換已有來源證據；三筆既有 10d raw labels 算式正確，但不具同股數未調整報酬語意。
 原始停牌公告與其他事件覆蓋仍 UNKNOWN；W24/W25 結果不改寫／不重算。兩路 Label Policy 與 next-study 全為 PROPOSED。
 參見 [W26 evidence](../../research/v7/window26-evidence.json) 與 [事件矩陣](../../research/v7/window26-event-matrix.json)。
+
+## Window27 development-only safety sensitivity
+
+Human 限定批准在固定規則下對 W24 原預測重評，Policy/Mask 先於 metrics commit。
+原 Strict/W24 masks 不動；新規則為 Development-only，完整事件／停牌／asof UNKNOWN 不變 CLEAN。
+Training Mask 是診斷，不代表 frozen fitted model 已去除污染。
+[Policy](../../research/v7/window27-policy.json)、[Report](../../reports/v7_window27_label_safety.md)。

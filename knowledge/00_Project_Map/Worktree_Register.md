@@ -3,14 +3,14 @@
 ## Window27 label safety — 2026-10-25
 
 - Path `.worktrees/v7-window27-label-safety`; branch `research/v7-window27-label-safety`; base `367005dfaba0988fca5e294d9b3e281408bbfce8`.
-- Owner Codex/Human Window27; created 2026-10-25; retired N/A. UNMERGED / NOT_DEPLOYED. Policy/mask frozen; metrics/review pending.
+- Owner Codex/Human Window27; created 2026-10-25; retired N/A. COMPLETE / STOP / UNMERGED / NOT_DEPLOYED. Freeze commit e77f32d; four-group diagnostic and replay completed; review evidence in window27-review.json.
 - Private `.artifacts/window27-label-safety/`, references W24/W25/W26 immutable bytes. Reuse W25 paired helper/W08 primitive; no new framework.
 - No API/fit/production/scheduler/GPU authority. W19 protected, W12 HALTED. Safe removal requires retained clean commit and resolved artifact dependencies, explicit retirement review.
 
 ## Window26 label integrity / next-study proposal — 2026-10-25
 
 - Path `.worktrees/v7-window26-label-contract`; branch `research/v7-window26-label-contract`; base `27055f7ec34cd4aa6d47f67bd89e5b6616244bc8`.
-- Owner Codex / Human Window26; created 2026-10-25; retired N/A. COMPLETE / STOP / UNMERGED / NOT_DEPLOYED.
+- Owner Codex / Human Window26; created 2026-10-25; retired N/A. COMPLETE / STOP / LOCAL_INTEGRATED_FIXED367005d / NOT_DEPLOYED.
 - Reuses W24/W25 immutable bytes and source snapshots; new report/spec/forensic scripts only, no new platform or V6 implementation.
 - Authority: bounded event forensics and PROPOSED study preparation; no new model fit, predictions, RankIC, formal admission, GPU or scheduler operations.
 - Artifacts `.artifacts/window26-label-integrity/`; same-host restore `.artifacts/window26-restore/`; BACKUP_PENDING.

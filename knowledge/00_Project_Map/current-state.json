@@ -575,7 +575,7 @@
   "window26_label_integrity": {
     "branch": "research/v7-window26-label-contract",
     "base": "27055f7ec34cd4aa6d47f67bd89e5b6616244bc8",
-    "status": "COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+    "status": "LOCAL_INTEGRATED_FIXED367005d_NOT_DEPLOYED",
     "evidence": "research/v7/window26-evidence.json",
     "proposal": "research/v7/window26-next-study-candidate.json",
     "exposure": "research/v7/window26-exposure-ledger.json",
@@ -584,5 +584,15 @@
     "known_action": "2321 68% loss-offset reduction; 3 raw labels cross share units",
     "suspension_primary_notice": "UNKNOWN",
     "next_action": "Human label/data/universe/fold/evaluation/compute decisions; no new window authorized"
+  },
+  "window27_label_safety": {
+    "status": "COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+    "base": "367005dfaba0988fca5e294d9b3e281408bbfce8",
+    "branch": "research/v7-window27-label-safety",
+    "freeze_commit": "e77f32d",
+    "policy_id": "W27_RAW_PRICE_DIAGNOSTIC_DEVELOPMENT_ONLY_v1",
+    "authority": "Human Window27 development-only sensitivity; not formal Data/Research/Label admission",
+    "evidence": "research/v7/window27-evidence.json",
+    "next_action": "STOP; Human larger-study policy/data/CPU decisions required"
   }
 }

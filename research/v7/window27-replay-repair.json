@@ -1,0 +1,13 @@
+{
+  "issue": "JSON object numeric keys become strings; summary Python object equality failed",
+  "minimal_reproduction": "{20:1} != JSON roundtrip; canonical JSON hashes equal",
+  "change": "Use existing canonical_hash for replay content comparisons; no metric/support/policy change",
+  "original_calculation_source": {
+    "path": "/home/frank/projects/MarketMamba/.artifacts/window27-label-safety/source-at-calculation/window27-diagnostic.py",
+    "sha256": "ba27ee80fafff8a322ad5f5c18a478977249f5df40863ead05c2dbbc009d8576",
+    "restore": "/home/frank/projects/MarketMamba/.artifacts/window27-restore/source-at-calculation/window27-diagnostic.py"
+  },
+  "replay_driver_sha256": "c1e2055a7d1cd5c243e9734fe7f1bbcd0fd4a7b9b25867ce7612a95f394132ec",
+  "new_calculation_function_unchanged": true,
+  "prior_import_failure": "_safe belongs to v7_research_artifacts; corrected import before any metric calculation"
+}

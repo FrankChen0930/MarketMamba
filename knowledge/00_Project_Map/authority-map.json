@@ -21,10 +21,28 @@
   },
   "topics": [
     {
+      "topic": "Window27 development-only pragmatic raw label safety",
+      "primary_authority": "research/v7/window27-evidence.json",
+      "authority_class": "CANONICAL",
+      "status": "COMPLETE_STOP_UNMERGED_POST_HOC_SENSITIVITY_NOT_ADMISSION",
+      "secondary_evidence": [
+        "research/v7/window27-policy.json",
+        "research/v7/window27-mask-manifest.json",
+        "research/v7/window27-results.json",
+        "reports/v7_window27_label_safety.md"
+      ],
+      "conflicts": [
+        "UNKNOWN actions/asof/suspension remain UNKNOWN",
+        "No model refit or undo of Training contamination",
+        "2022/2023 exposed; no model superiority/statistical gate",
+        "W19 protected; W12 halted; StrictSTOP preserved"
+      ]
+    },
+    {
       "topic": "Window26 label integrity and next-study proposal",
       "primary_authority": "research/v7/window26-evidence.json",
       "authority_class": "CANONICAL",
-      "status": "COMPLETE_STOP_UNMERGED_PROPOSALS_NOT_ADMITTED",
+      "status": "LOCAL_INTEGRATED_FIXED367005d_PROPOSALS_NOT_ADMITTED",
       "secondary_evidence": [
         "research/v7/window26-event-matrix.json",
         "research/v7/window26-label-policy-candidates.json",

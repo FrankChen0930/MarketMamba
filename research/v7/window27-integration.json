@@ -1,0 +1,12 @@
+{
+  "before_main": "27055f7ec34cd4aa6d47f67bd89e5b6616244bc8",
+  "fixed_source": "367005dfaba0988fca5e294d9b3e281408bbfce8",
+  "after_main": "367005dfaba0988fca5e294d9b3e281408bbfce8",
+  "status": "LOCAL_FF_ONLY_INTEGRATED",
+  "source_and_main_clean": true,
+  "review": "W26 Required independently CLOSED; Critical0 Required0",
+  "preflight_tests": 3,
+  "preflight_deliverable_raw_pins": 38,
+  "postintegration": "W27 HEAD/base equals exact candidate; no V6/Frozen changes in W26; required prior bytes verified by mask process",
+  "no_other_candidate_integration": true
+}
