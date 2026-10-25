@@ -26,6 +26,8 @@ class Isolation(unittest.TestCase):
   self.c['reported_twse_start']=None;self.assertIn('LISTING_START_UNKNOWN',self.f()['reasons'])
  def test_training_maturity_and_minimum40(self):
   f=self.f();f['split']='TRAIN';self.assertIn('LABEL_NOT_MATURE_BEFORE_SPLIT',m.label_at(f,5,self.days,self.p,[])['reasons']);self.assertFalse(m.coverage_gate([39,60]));self.assertTrue(m.coverage_gate([40,60]))
+ def test_known_delisting_end_only_restricts_future_label_not_past_feature(self):
+  self.c['reported_end']=self.days[6];f=self.f();self.assertTrue(f['eligible']);self.assertIn('DELISTING_BOUNDARY',m.label_at(f,5,self.days,self.p,[])['reasons'])
  def test_discontinuity_threshold_is_data_only(self):
   self.p[self.days[3]]={k:v*3 for k,v in self.p[self.days[3]].items()};self.assertIn(self.days[3],m.suspect_events(self.p))
 if __name__=='__main__':unittest.main()

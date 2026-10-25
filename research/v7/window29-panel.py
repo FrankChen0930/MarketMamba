@@ -27,7 +27,7 @@ def feature_at(sec,day,sessions,prices,cohort,events):
  if prev and any(prev<e<=day for e in events):reasons.append('FEATURE_OBSERVED_UNIT_DISCONTINUITY')
  if not reasons:
   p=prices[day];values=[p['close']/prices[prev]['close']-1,(p['max']-p['min'])/p['close']]
- return {'stock_id':sec,'signal_session':day,'split':split(day),'features':values,'eligible':not reasons,'reasons':reasons}
+ return {'stock_id':sec,'signal_session':day,'split':split(day),'features':values,'known_membership_end':end,'eligible':not reasons,'reasons':reasons}
 
 def label_at(feature,h,sessions,prices,events):
  day=feature['signal_session'];i=sessions.index(day);boundary={'TRAIN':'2022-01-01','VALIDATION':'2023-01-01','EXPOSED_DIAGNOSTIC':'2024-01-01'}[feature['split']]
@@ -36,6 +36,7 @@ def label_at(feature,h,sessions,prices,events):
  if not feature['eligible']:return {**base,'reasons':['FEATURE_NOT_ELIGIBLE']}
  if i+h>=len(sessions):return {**base,'reasons':['LABEL_CALENDAR_TAIL']}
  entry,exit=sessions[i+1],sessions[i+h];base.update(entry=entry,exit=exit)
+ if feature.get('known_membership_end') and exit>=feature['known_membership_end']:return {**base,'reasons':['DELISTING_BOUNDARY']}
  if exit>=boundary:return {**base,'reasons':['LABEL_NOT_MATURE_BEFORE_SPLIT']}
  row={'stock_id':feature['stock_id'],'signal_session':day,'horizon':h,'entry':entry,'exit':exit,'split':'FORWARD_DIAGNOSTIC' if feature['split']=='EXPOSED_DIAGNOSTIC' else feature['split']}
  q=S['classify'](row,sessions,prices,[]);reasons=list(q['reasons'])

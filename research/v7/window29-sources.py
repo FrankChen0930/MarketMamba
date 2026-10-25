@@ -29,11 +29,19 @@ def main():
  plan=json.loads((OUT/'window29-plan.json').read_text());assert plan['requests']['minimum_interval_seconds']==5
  net=ROOT/'finmind';net.mkdir(exist_ok=True)
  if any((net/n).exists() for n in ('CLOSED.json','STOP.json')):raise ValueError('W29_NETWORK_ALREADY_CLOSED')
- if any((net/'claims').glob('*.json')):raise ValueError('NO_REQUEST_REDISPATCH_AFTER_PRIOR_ATTEMPT')
+ recovery=json.loads((net/'ENGINEERING_RECOVERY.json').read_text()) if (net/'ENGINEERING_RECOVERY.json').exists() else {}
+ if any((net/'claims').glob('*.json')) and recovery.get('only_unsent_sequence')!=2:raise ValueError('NO_REQUEST_REDISPATCH_AFTER_UNCLASSIFIED_ATTEMPT')
  with C['cpu_stage']('source-capture'):
-  for sec in cohort['price_queries']:
+  for number,sec in enumerate(cohort['price_queries'],1):
    q={'dataset':'TaiwanStockPrice','data_id':sec,'start_date':'2021-01-01','end_date':'2023-12-31'};validate_query(q,cohort)
-   claims=list((net/'claims').glob('*.json'));number=len(claims)+1;C['capacity'](2*(LIMIT+1))
+   existing=net/'records'/f'{number:02d}.json'
+   if existing.exists():
+    prior=json.loads(existing.read_text());assert prior['params']==q and prior['status']=='CAPTURED' and sha(Path(prior['raw_path']))==prior['raw_sha256'] and verify_snapshot(Path(prior['manifest']))
+    continue
+   pending=net/'claims'/f'{number:02d}.json'
+   if pending.exists():
+    prior_claim=json.loads(pending.read_text());assert number==recovery.get('only_unsent_sequence') and prior_claim['params']==q and sha(pending)==recovery['unsent_claim_sha256'], 'UNPROVEN_PENDING_DISPATCH'
+   claims=list((net/'claims').glob('*.json'));C['capacity'](2*(LIMIT+1))
    with _lock(SHARED.with_suffix('.lock')):
     ledger=json.loads(SHARED.read_text()) if SHARED.exists() else {'schema':'local-anonymous-finmind-rate-ledger-v1','external_other_process_account_usage':'UNKNOWN','events':[]}
     now=datetime.now(timezone.utc);events=prior_claims()+ledger['events'];last=max((datetime.fromisoformat(r['at']) for r in events),default=now-timedelta(seconds=6))
@@ -41,8 +49,8 @@ def main():
     delay=max(0,5-(now-last).total_seconds())
     if delay:time.sleep(delay)
     now=datetime.now(timezone.utc);known=sum(datetime.fromisoformat(r['at'])>=now-timedelta(hours=1) for r in events);budget_check(len(claims),len(claims),known)
-    claim={'sequence':number,'kind':'price','params':q,'endpoint':ENDPOINT,'claimed_at':now.isoformat(),'known_requests_previous_hour':known,'shared_counter_scope':'known local W21/W22/W24/W26 plus cooperating ledger; unrelated clients UNKNOWN','min_interval_seconds':5,'authorization':'HumanWindow29','cohort_sha256':pin['semantic_sha256']};put(net/'claims'/f'{number:02d}.json',claim)
-    ledger['events'].append({'at':claim['claimed_at'],'source':'HumanWindow29','query_sha256':hashof(q)});_atomic_bytes(SHARED,enc(ledger))
+    claim={'sequence':number,'kind':'price','params':q,'endpoint':ENDPOINT,'claimed_at':now.isoformat(),'known_requests_previous_hour':known,'shared_counter_scope':'known local W21/W22/W24/W26 plus cooperating ledger; unrelated clients UNKNOWN','min_interval_seconds':5,'authorization':'HumanWindow29','cohort_sha256':pin['semantic_sha256']};put(net/'claims'/f'{number:02d}.json',claim) if not pending.exists() else None
+    ledger['events'].append({'at':claim['claimed_at'],'source':'HumanWindow29','query_sha256':hashof(q)});C['mutable_json'](SHARED,ledger)
     try:
      code,headers,body,complete=fetch_once(q);at=stamp();m=snapshot_response(RequestSpec('GET',ENDPOINT,params=q),body,net/'snapshots',retrieved_at=at,parser_version='w29-existing-finmind-fetch-v1',content_type=headers.get('content-type','UNKNOWN'),status_code=code);assert verify_snapshot(m);md=json.loads(m.read_text());qc=diagnose(body,q);stop=source_stop(code,qc,complete)
      r={'schema':'w29-finmind-capture-v1','sequence':number,'params':q,'request_started_at':claim['claimed_at'],'retrieved_at':at,'publication_time':'UNKNOWN','http_status':code,'headers':{k:v for k,v in headers.items() if k in ['content-type','content-length','date','retry-after','location']},'response_complete':complete,'manifest':str(m),'manifest_sha256':sha(m),'raw_path':str(net/'snapshots'/md['response']['path']),'raw_sha256':md['response']['sha256'],'raw_bytes':len(body),'qc':qc,'status':'SOURCE_STOP' if stop else 'CAPTURED','license_identity':cohort['FinMind_license'],'attribution':'FinMind; underlying TWSE/TPEx providers; private noncommercial, no raw redistribution','historical_version':'RETROSPECTIVE_CURRENT_NOT_ORIGINAL_ASOF','code_sha256':sha(Path(__file__))};put(net/'records'/f'{number:02d}.json',r)

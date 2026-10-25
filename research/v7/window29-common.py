@@ -5,6 +5,7 @@ from contextlib import contextmanager
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
 from V6.experimental.v7_corrected_e5_replication import canonical_hash,file_sha256
 from V6.experimental.v7_source_snapshot import _atomic_bytes
+from V6.experimental.v7_e1_checkpoint import atomic_json as mutable_json
 from V6.experimental.v7_research_artifacts import _safe,_lock
 REPO=Path(__file__).resolve().parents[2];OUT=REPO/'research/v7';ROOT=Path('/home/frank/projects/MarketMamba/.artifacts/window29-expanded-development');RESTORE=ROOT.parent/'window29-restore'
 def enc(x):return (json.dumps(x,sort_keys=True,ensure_ascii=False,allow_nan=False)+'\n').encode()
@@ -28,9 +29,9 @@ def cpu_stage(stage):
   if any(r['status']=='RUNNING' for r in ledger['stages']):raise ValueError('PRIOR_CPU_STAGE_INCOMPLETE_NO_UNBOUNDED_RETRY')
   used=sum(r['cpu_seconds'] for r in ledger['stages']);remaining=3540-used
   if remaining<10:raise ValueError('CPU_TOTAL_BUDGET_EXHAUSTED')
-  cap=min(600,int(remaining));r={'stage':stage,'status':'RUNNING','reserved_seconds':cap,'cpu_seconds':cap};ledger['stages'].append(r);_atomic_bytes(p,enc(ledger))
+  cap=min(600,int(remaining));r={'stage':stage,'status':'RUNNING','reserved_seconds':cap,'cpu_seconds':cap};ledger['stages'].append(r);mutable_json(p,ledger)
  resource.setrlimit(resource.RLIMIT_CPU,(cap,cap));start=time.monotonic()
  try:yield
  finally:
   usage=resource.getrusage(resource.RUSAGE_SELF);r.update(status='TERMINAL',cpu_seconds=usage.ru_utime+usage.ru_stime,wall_seconds=time.monotonic()-start)
-  with _lock(ROOT/'cpu-budget.lock'):_atomic_bytes(p,enc(ledger))
+  with _lock(ROOT/'cpu-budget.lock'):mutable_json(p,ledger)

@@ -1,4 +1,4 @@
-import importlib.util,unittest
+import importlib.util,unittest,tempfile,json
 from pathlib import Path
 s=importlib.util.spec_from_file_location('src',Path(__file__).with_name('window29-sources.py'));m=importlib.util.module_from_spec(s);s.loader.exec_module(m)
 class Budget(unittest.TestCase):
@@ -10,6 +10,9 @@ class Budget(unittest.TestCase):
   m.budget_check(68,68,99)
   for args in ((80,68,0),(70,70,0),(1,1,100)):
    with self.assertRaises(ValueError):m.budget_check(*args)
+ def test_mutable_counter_update_keeps_raw_writer_immutable(self):
+  with tempfile.TemporaryDirectory() as d:
+   p=Path(d)/'counter.json';m.C['mutable_json'](p,{'n':1});m.C['mutable_json'](p,{'n':2});self.assertEqual(json.loads(p.read_text()),{'n':2})
  def test_stop_signals_and_no_incomplete_success(self):
   for code in (402,403,429,302):self.assertTrue(m.source_stop(code,{'status':'OBSERVED_PRICE'},True))
   self.assertTrue(m.source_stop(200,{'status':'SOURCE_ERROR'},True));self.assertTrue(m.source_stop(200,{'status':'OBSERVED_PRICE'},False));self.assertFalse(m.source_stop(200,{'status':'MISSING_DATA'},True))
