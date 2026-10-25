@@ -2,7 +2,7 @@
 
 ## Window31 expanding development — 2026-10-25
 
-- Path `.worktrees/v7-window31-expanding`; branch `research/v7-window31-expanding`; base `b64ac353833a9248121f12ebe61e1333decb2dbf`. Owner Codex/HumanWindow31;created2026-10-25;retiredN/A. PREFIT_FROZEN / UNMERGED / NOT_DEPLOYED.
+- Path `.worktrees/v7-window31-expanding`; branch `research/v7-window31-expanding`; base `b64ac353833a9248121f12ebe61e1333decb2dbf`. Owner Codex/HumanWindow31;created2026-10-25;retiredN/A. COMPLETE / STOP / UNMERGED / NOT_DEPLOYED.
 - Three fixed origins reuse W07 geometry/W29 data/W30 LGBM/W10 Ridge/W08 evaluator; thin origin-neutral label/view adapter required because prior masks hardcode old yearly splits. No new framework.
 - Private `.artifacts/window31-expanding/`, restore `.artifacts/window31-restore/`; W29/W30 source evidence and W11 environment retained. BACKUP_PENDING.
 - Limits12Ridge+12LGBMfits,CPU1800s/artifact512MiB,0API/GPU/W19 operations. Safe-removal requires clean retained commit, resolved data/model/prediction/restore dependencies and explicit retirement review.
@@ -10,7 +10,7 @@
 ## Window30 real LightGBM — 2026-10-25
 
 - Path `.worktrees/v7-window30-real-lightgbm`; branch `research/v7-window30-real-lightgbm`; base `e83dfe68e4bc73b59cb6390ec130ba967138e7f1`.
-- Owner Codex/HumanWindow30;created2026-10-25;retiredN/A. COMPLETE / STOP / UNMERGED / NOT_DEPLOYED; see window30-run/replay/review.
+- Owner Codex/HumanWindow30;created2026-10-25;retiredN/A. COMPLETE / STOP / LOCAL_INTEGRATED_FIXEDb64ac35 / NOT_DEPLOYED; see window30-run/replay/review.
 - One bounded unit; existing W11 LightGBM/wheel/lib/CPU env, W29 frozen feature-only rows/labels/support, W08 metrics and existing atomic/lock primitives. Existing synthetic guard is unchanged; Human authorizes one real-data research adapter.
 - Private `.artifacts/window30-real-lightgbm/`, restore `.artifacts/window30-restore/`; W29 private raw/predictions/dataset and W11 env must remain available. Code/navigation restored via retained Git checkout. BACKUP_PENDING.
 - Limits2LGBM fits, CPU1200s/fit300s/artifacts256MiB;zero Ridge/API/GPU/W19 operations. Safe-removal requires retainedcleancommit, allsource/model/prediction/restore dependencies resolved and explicitretirementreview.

@@ -2,14 +2,18 @@
 
 > Status: `CANONICAL_CURRENT_PROJECT_MAP`
 
-## Window31 First Expanding CPU Development — PREFIT_FROZEN
+## Window31 First Expanding CPU Development — COMPLETE / STOP
 
-W30 fixed `b64ac353833a9248121f12ebe61e1333decb2dbf` 已由main e83dfe6本機ff-only整合。940 defined＋30 undefined＝970 daily，paired2820＋90＝2910；None未當0納入Mean。兩個既有LGBM模型有351/379 split nodes、非退化預測，無重Fit。
-W31 branch `research/v7-window31-expanding`，base同固定SHA；worktree `.worktrees/v7-window31-expanding`，UNMERGED / NOT_DEPLOYED。
-[Contract](../../research/v7/window31-contract.json) 與 [Prepared](../../research/v7/window31-prepared.json) 在首次Fit前固定；三origin2023-01-03／04-06／07-03，validation約前12月、refit只用origin前成熟labels，0額外固定purge，依實際持有窗口排除重疊。
-10 targeted tests PASS。沿用W29兩Features/W27 safety/W30固定LGBM，Ridgealpha1；上限各12fits，CPU1800秒/artifact512MiB。先Validation診斷後freshrefit，所有Forward評分延至三origin訓練完成；不調參或用Forward回饋。
-狀態PREFIT_FROZEN，尚無本輪模型結果。2023 EXPOSED / DEVELOPMENT_ONLY；publication/vintage、historical universe、UNKNOWN events仍未驗證。StrictSTOP/FormalAdmissionNOT_APPROVED/W19PROTECTED/W12SAFETY_HALTED/E1BLOCKED/H2NOT_APPROVED。
-恢復：上述worktree使用W11 CPU環境執行 `research/v7/window31-study.py O1`，再O2/O3/evaluate/replay；須有prefitcommit且不重跑已有claim的Fit。不得合併W31或啟動下一窗口。
+W30 fixed `b64ac353833a9248121f12ebe61e1333decb2dbf` 已由main e83dfe6本機ff-only整合；38pins/restore及6mock-only tests通過。970 daily＝940 defined＋30 None；2910 paired＝2820 defined＋90 None；原模型351/379 split nodes、預測非退化，未重Fit。見 [Integration](../../research/v7/window31-integration.json)。
+W31 branch `research/v7-window31-expanding`，base同固定SHA，worktree `.worktrees/v7-window31-expanding`；UNMERGED / NOT_DEPLOYED。首次Fit前 `ddcf5d835b43578ed9fc5567ee677d88e928e203` 固定 [Contract](../../research/v7/window31-contract.json)／[Prepared](../../research/v7/window31-prepared.json)。
+三Origin2023-01-03／04-06／07-03，Forward54／59／63sessions。5d TRAIN14113/17559/21321，REFIT29229/32574/36276；10d TRAIN13711/17143/20890，REFIT28743/32046/35715。持有窗跨界/未成熟Label排除，額外purge/embargo0不是E530sessions。每Origin Validation Fit與Fresh Refit不同run/scaler/state；Validation診斷後refit，全部Forward評分延至三Origin完成，無Forward-feedback tuning。
+Ridge12fits＋LGBM12fits已達本輪上限；L0±固定。453192完整Feature-only Predictions先保存後Label Join；7264daily/10896paired，含Validation明確None尾端不當0。Forward352個session×horizon全部可算，Daily N59–64，min40未降。
+Forward Ridge5d O1/O2/O3 Mean .028606/.035161/.024427；10d −.012394/.008584/−.002463。LGBM5d .023592/.058135/.065496、10d −.021556/.026531/.000766。全部為EXPOSED DEVELOPMENT，不選winner/不宣稱獨立統計或收益。
+10純數值/mock tests PASS；獨立程序Replay453192pred/7264daily/10896paired完全吻合，0追加Fit。72files91000410bytes/份同機Restore，310 prior W29/W30pins未變；CPU87.690630＋60reserve<1800，artifact+restore182002029<512MiB；BACKUP_PENDING。
+初始導航authority_class缺漏使healthFAIL；prefit shell未set-e，未攔住O1。已修導航，保留原FAIL與修後WARNING證據，數值code/contract未變；不可宣稱所有preflight從未失敗。獨立Review GO Critical0／Required0，0輪review rework；見window31-review.json。無額外API/GPU/W19或V6操作。
+[Run](../../research/v7/window31-run.json)、[Results](../../research/v7/window31-results.json)、[Evidence](../../research/v7/window31-evidence.json)、[Report](../../reports/v7_window31_expanding_cpu.md)。0未授權整合；main保持b64ac35，W31未合併。
+下一Human：正式Dataset/Universe與UNKNOWN事件政策、Decision-time/Label/maturity/purge、selection/refit/evaluation/statistics、Exposure/prospective評估、運算/獨立備份。無剩餘已授權READY；不得重跑已用完額度的O1/O2/O3。
+恢復只讀入口：上述worktree → Current_State → 唯一Backlog → window31-evidence.json；W29/W30 raw/models/restore、W11環境依賴保留。StrictSTOP/FormalAdmissionNOT_APPROVED/W19PROTECTED/W12SAFETY_HALTED/E1BLOCKED/H2NOT_APPROVED。STOP，不開下一窗口。
 
 ## Window30 Fixed Real-data LightGBM — COMPLETE / STOP
 

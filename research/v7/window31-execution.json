@@ -1,0 +1,40 @@
+{
+  "prefit_commit": "ddcf5d835b43578ed9fc5567ee677d88e928e203",
+  "executed_not_merely_planned": true,
+  "tool_references": [
+    {
+      "stage": "O1",
+      "chunk": "1774cb",
+      "session": 98259,
+      "completion_chunk": "1811e4"
+    },
+    {
+      "stage": "O2",
+      "chunk": "65ee0b",
+      "session": 63972,
+      "completion_chunk": "81cce7"
+    },
+    {
+      "stage": "O3",
+      "chunk": "a511ef",
+      "session": 50876,
+      "completion_chunk": "c50e96"
+    },
+    {
+      "stage": "evaluate",
+      "chunk": "40591a",
+      "session": 26407,
+      "completion_chunk": "61b3b8"
+    },
+    {
+      "stage": "replay_and_archive",
+      "chunk": "d9f98d",
+      "session": 10774
+    }
+  ],
+  "command_template": "PYTHONDONTWRITEBYTECODE=1 CUDA_VISIBLE_DEVICES='' OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 timeout --signal=TERM --kill-after=5s 300s W11_PYTHON -B research/v7/window31-study.py STAGE",
+  "limits": "OS RLIMIT_CPU per process+locked cumulative ledger+shell timeout; not independently OS-signed wrapper telemetry",
+  "forward_eval_after_all_origin_complete": true,
+  "W19_operations": 0,
+  "API_GPU": 0
+}
