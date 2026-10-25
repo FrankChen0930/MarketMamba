@@ -3,7 +3,7 @@
 ## Window29 expanded development — 2026-10-25
 
 - Path `.worktrees/v7-window29-expanded-development`; branch `research/v7-window29-expanded-development`; base `1d9a2a7a1ee57c455ba58250f63681efbbdd9050`.
-- Owner Codex/HumanWindow29;created2026-10-25;retiredN/A. PRE-DATA / UNMERGED / NOT_DEPLOYED.
+- Owner Codex/HumanWindow29;created2026-10-25;retiredN/A. COMPLETE / STOP / UNMERGED / NOT_DEPLOYED; review window29-review.json.
 - Reuse official W22bytes, existing source snapshots/atomic locks/W27 safety/W10 Ridge/W08 evaluator; minimal feature-only split is necessary because W24 wrapper gates future Entry/Exit before returning features. No new platform/V6 change.
 - Private `.artifacts/window29-expanded-development/`, restore `.artifacts/window29-restore/`; local shared FinMind rate ledger only, not dataset registry.
 - Authorized ≤80requests/70price,2Ridgefits,CPU3600s/artifacts1GiB; W19 protected/W12HALTED. Safe-removal requires retained cleancommit, resolved raw/model/prediction/restore dependencies and explicit retirement review.
@@ -11,7 +11,7 @@
 ## Window28 clean training / causality — 2026-10-25
 
 - Path `.worktrees/v7-window28-clean-refit`; branch `research/v7-window28-clean-refit`; base `39e2fedeb550a08d00f4abddc9a6caa7b1d570f8`.
-- Owner Codex / Human Window28; created 2026-10-25; retired N/A. COMPLETE / STOP / UNMERGED / NOT_DEPLOYED. 2fits completed; see window28-run/replay/review.
+- Owner Codex / Human Window28; created 2026-10-25; retired N/A. COMPLETE / STOP / LOCAL_INTEGRATED_FIXED1d9a2a7 / NOT_DEPLOYED. 2fits completed; see window28-run/replay/review.
 - Reuses W24 numeric Ridge/feature pipeline, W27 mask/support, W25/W08 evaluator; no new framework or V6 change.
 - Private `.artifacts/window28-clean-refit/`; preserve W24/W27 originals. Exact two CPU fits authorized, API/GPU/W19 operations zero.
 - Safe removal requires retained clean commit, resolved raw/model/prediction/replay dependencies and explicit retirement review.

@@ -596,7 +596,7 @@
     "next_action": "STOP; Human larger-study policy/data/CPU decisions required"
   },
   "window28_clean_refit": {
-    "status": "COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+    "status": "LOCAL_INTEGRATED_FIXED1d9a2a7_NOT_DEPLOYED",
     "base": "39e2fedeb550a08d00f4abddc9a6caa7b1d570f8",
     "branch": "research/v7-window28-clean-refit",
     "prefit_code_commit": "ec0b0721763ead15cdb63caad400998ed92a0c83",
@@ -605,5 +605,18 @@
     "run": "research/v7/window28-run.json",
     "fits": 2,
     "next_action": "STOP; Human new qualified/exposure-aware study and resource authorization required"
+  },
+  "window29_expanded_development": {
+    "status": "COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+    "base": "1d9a2a7a1ee57c455ba58250f63681efbbdd9050",
+    "branch": "research/v7-window29-expanded-development",
+    "cohort_freeze_commit": "746ca04",
+    "source_repair_commit": "eeb1016",
+    "prefit_panel_commit": "16ea18d",
+    "evidence": "research/v7/window29-evidence.json",
+    "authority": "Human Window29 DEVELOPMENT_ONLY bounded new-cohort study, not formal Data/Research Admission",
+    "fits": 2,
+    "GETs": 68,
+    "next_action": "STOP; Human new-universe/event/exposure-aware data/time study and exact resource decisions required"
   }
 }

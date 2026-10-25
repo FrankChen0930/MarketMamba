@@ -237,3 +237,10 @@ Human限定批准W27安全Mask下的2021 Ridge fresh fits各horizon一次（2/2�
 2022/2023同W27 support為已曝光Development；18個有限future OHLCV數值擾動不改Features/固定模型Predictions。
 此pass不驗未來Label eligibility gate為as-of，也不認證完整公司行動/vintage。
 [Run](../../research/v7/window28-run.json)、[Report](../../reports/v7_window28_clean_refit.md)。
+
+## Window29 disjoint development / feature-label isolation
+
+68新TWSE候選（W24重疊0）、64有conditional Prediction身分；current survivor/hindsight與4下市起日/普通股UNKNOWN不升格歷史Universe。
+最小research feature-only介面先保存Predictions，再做Label Join；future label刪除只改evaluation coverage，18回歸tests與獨立Raw-derivedReplay驗證。
+5d正向Mean/Median在新樣本延續、10d不一致；未知actions/asof/vintage與2022/2023曝光保留，不作模型選擇/投資/Strict PIT claim。
+[Evidence](../../research/v7/window29-evidence.json)、[Report](../../reports/v7_window29_expanded_development.md)。

@@ -1,0 +1,33 @@
+{
+  "decision_id": "Human-Window29-expanded-ranking-development",
+  "authority": "Current Human Window29 request",
+  "approved": [
+    "W28 reviewed fixed local ff-only integration",
+    "precommitted new development TWSE cohort",
+    "<=80FinMindrequests/70price, actual68price/0metadata",
+    "mandatory feature-only prediction / posthoc label isolation",
+    "Ridgealpha1 max2freshfits plus fixed L0positive/negative",
+    "independent replay/review/localcommit"
+  ],
+  "not_approved": [
+    "formal Data/Research Admission",
+    "Independent Test/performance/winner claim",
+    "GPU/Colab/Production/V6/W19 scheduler change",
+    "W29 integration/push/deploy/nextwindow"
+  ],
+  "scope": {
+    "status": "COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+    "base": "1d9a2a7a1ee57c455ba58250f63681efbbdd9050",
+    "branch": "research/v7-window29-expanded-development",
+    "cohort_freeze_commit": "746ca04",
+    "source_repair_commit": "eeb1016",
+    "prefit_panel_commit": "16ea18d",
+    "evidence": "research/v7/window29-evidence.json",
+    "authority": "Human Window29 DEVELOPMENT_ONLY bounded new-cohort study, not formal Data/Research Admission",
+    "fits": 2,
+    "GETs": 68,
+    "next_action": "STOP; Human new-universe/event/exposure-aware data/time study and exact resource decisions required"
+  },
+  "conditional_LightGBM": "SKIPPED; existing recipe is synthetic<=64/toy; no qualified real-panel recipe path",
+  "budgets": "unused network budget closed;2Ridgefits exhausted;failedCPU600 conservatively charged, not reset"
+}

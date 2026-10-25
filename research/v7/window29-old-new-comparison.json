@@ -1,0 +1,44 @@
+{
+  "status": "SAVED_RESULT_CONTRAST_NO_OLD_RESCORING",
+  "comparisons": [
+    {
+      "year": 2022,
+      "horizon": 5,
+      "W24_original_Ridge_mean": 0.03701608678804136,
+      "W28_clean_old_cohort_mean": 0.034682195749260444,
+      "W29_new_cohort_mean": 0.037333378110257505,
+      "W29_new_cohort_median": 0.03301352270151847,
+      "interpretation": "Different stock/universe/source/label interface/minN policies; development contrast, not strict out-of-sample improvement"
+    },
+    {
+      "year": 2022,
+      "horizon": 10,
+      "W24_original_Ridge_mean": 0.04392969729691167,
+      "W28_clean_old_cohort_mean": 0.04456061505984516,
+      "W29_new_cohort_mean": 0.012073308423720251,
+      "W29_new_cohort_median": -0.004079474201102969,
+      "interpretation": "Different stock/universe/source/label interface/minN policies; development contrast, not strict out-of-sample improvement"
+    },
+    {
+      "year": 2023,
+      "horizon": 5,
+      "W24_original_Ridge_mean": 0.08031012352143238,
+      "W28_clean_old_cohort_mean": 0.08040711870333436,
+      "W29_new_cohort_mean": 0.04713755398461752,
+      "W29_new_cohort_median": 0.05051512488083561,
+      "interpretation": "Different stock/universe/source/label interface/minN policies; development contrast, not strict out-of-sample improvement"
+    },
+    {
+      "year": 2023,
+      "horizon": 10,
+      "W24_original_Ridge_mean": 0.0540561784352447,
+      "W28_clean_old_cohort_mean": 0.054247552848938944,
+      "W29_new_cohort_mean": -0.008579724792829077,
+      "W29_new_cohort_median": -0.0024173717336555415,
+      "interpretation": "Different stock/universe/source/label interface/minN policies; development contrast, not strict out-of-sample improvement"
+    }
+  ],
+  "continued": "5d positive mean/median in both years; positive-momentum baseline negative",
+  "not_continued": "10d four-group positivity/consistency:2023 Ridge mean and median negative,2022mediannegative; L0_POS2022/10d direction differs",
+  "no_recipe_or_direction_change": true
+}

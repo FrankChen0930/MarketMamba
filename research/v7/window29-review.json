@@ -1,0 +1,35 @@
+{
+  "reviewer": "/root/independent_review",
+  "verdict": "GO",
+  "Critical": 0,
+  "Required": 0,
+  "main_review_rounds": 1,
+  "review_rework_rounds": 0,
+  "zero_fit_tests": 18,
+  "restored_files": 299,
+  "bytes_per_copy": 74612661,
+  "feature_only_prediction_keys": 182178,
+  "prediction_stocks": 64,
+  "all_model_daily_groups_common_support": 970,
+  "defined_groups": 940,
+  "defined_N_range": [
+    58,
+    64
+  ],
+  "min_N": 40,
+  "TRAIN_scaling_intercept_exact": true,
+  "normal_equation_residual_max_abs": [
+    1.776e-15,
+    2.776e-17
+  ],
+  "additional_solve_fit_real_metrics": 0,
+  "GETs": 68,
+  "minimum_actual_start_interval_seconds": 5.001297,
+  "cohort_plan_before_GET_commit": "746ca04",
+  "panel_study_before_fit_commit": "16ea18d",
+  "seq2_dispatch_failure_proven_before_GET": true,
+  "seq1_never_redispatched": true,
+  "failed_CPU600_retained": true,
+  "scope": "Development delivery only; no admission/merge/next-window authority",
+  "network_GPU_W19_operations": 0
+}

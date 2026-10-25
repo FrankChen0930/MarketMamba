@@ -2,23 +2,30 @@
 
 > Status: `CANONICAL_CURRENT_PROJECT_MAP`
 
-## Window29 Expanded Cross-sectional Development — PRE-DATA CHECKPOINT
+## Window29 Expanded Cross-sectional Development — COMPLETE / STOP
 
-W28 fixed `1d9a2a7a1ee57c455ba58250f63681efbbdd9050` 已本機 ff-only 整合；35 pins/restore、6tests、ReviewGO驗證。
-W29 branch `research/v7-window29-expanded-development`，base同固定SHA；UNMERGED / NOT_DEPLOYED。
-[固定Cohort](../../research/v7/window29-cohort.json)：68新TWSE候選、W24重疊0，60舊上市current survivors＋4期間上市＋4下市起日未知（不自動Prediction合格）。
-產業round-robin/hash排序，不以價格、RankIC、資本額選樣；HINDSIGHT_SELECTED，非HistoricalUniverseVerified；無cache可重用，預定68price GET、0metadata。
-[Plan](../../research/v7/window29-plan.json) 固定原兩Features、L0正/反（反向為post-W25 control）、Ridgealpha1兩fits、minN40。
-LightGBM略過：既有recipe/adapter僅synthetic≤64，沒有本panel可直接套用之既定recipe，不繞過guard。
-最小feature-only介面已分離未來Label：9 isolation＋3 request-budget tests PASS；未來Label變動只能改evaluation join，不改Prediction universe。
-新GET前固定Cohort/Plan/Requestallowlist。單並發5秒間隔、known-local hourly100上限、80total/70price、0token/retry/fallback，unknown外部匿名用量不推定為0。
-CPU研究stage每次600s/總3600s含60s驗證reserve；新增artifact含同機restore≤1GiB，無GC。Fit/真實GET/Replay/Review尚未執行。
-StrictSTOP/FormalAdmissionNOT_APPROVED/W12HALTED/E1BLOCKED/H2NOT_APPROVED/W19不操作；候選不自行整合，完成後STOP。
+W28 fixed `1d9a2a7a1ee57c455ba58250f63681efbbdd9050` 已由main39e2fed本機ff-only整合；35pins/restore、6tests、ReviewGO核對。
+W29 branch `research/v7-window29-expanded-development`，base同固定SHA；worktree `.worktrees/v7-window29-expanded-development`；UNMERGED / NOT_DEPLOYED。
+GET前746ca04固定68新Cohort（W24重疊0）：60pre2021 current issuers＋4periodlisting＋4delisted start/typeUNKNOWN；64檔進Prediction，仍HINDSIGHT/存活者偏差，非HistoricalUniverseVerified。
+68真實FinMind price GET／metadata0／8387840rawbytes，全部HTTP200；單並發、實際起始間隔min5.001297秒，known-local100/hour（外部匿名用量UNKNOWN），unused預算CLOSED。
+一次本機mutable counter修復：seq1保留不重送、seq2由Trace證明尚未GET；E1atomic_json只修counter，失敗CPU保守扣600秒未reset；不清除providerSTOP、不擴預算。
+最小feature-only介面分離原W24未來Label gate；只讀當前/前一session和當下membership，Predictions先保存後Label Join；未來Label刪除/eligibility變動不能改PredictionUniverse。
+48061raw rows／44899feature-only rows；940核心groups N58–64，min40未降；30tail/maturity groups/model N0保留拒絕證據，尾端Predictions仍保存。
+原兩Features，L0正／反（反向post-W25 control）、Ridgealpha1兩次freshfit、TRAIN-only scaling，TRAIN N14113/13711。LGBM於GET前略過既有synthetic≤64/toy guard，沒有新Recipe或繞過。
+5d Ridge Mean/Median：2022 .037333/.033014、2023 .047138/.050515，正向延續；10d2022 .012073/−.004079、2023 −.008580/−.002417，一致正向未延續。
+不能宣稱跨Cohort泛化/優勢/正式統計成立：來源/Universe/support/protocol不同，2022/2023皆EXPOSED；UNKNOWN actions/suspension/asof/vintage保留。
+182178predictions，3模型相同可評估Support；18targetedtests，獨立Replay Raw-derived feature/masks＋2910daily/2910paired PASS，0額外Fit。獨立Review GO，Critical0／Required0，1主要輪／0 review rework。
+299files／74612661bytes同機restore；總artifact+restore149226490bytes<1GiB，CPU計帳647.740401秒（含failed600）＋60reserve<3600；BACKUP_PENDING。
+[Plan](../../research/v7/window29-plan.json)、[Cohort](../../research/v7/window29-cohort.json)、[Coverage](../../research/v7/window29-coverage.json)、
+[Run](../../research/v7/window29-run.json)、[Results](../../research/v7/window29-results.json)、[Evidence](../../research/v7/window29-evidence.json)、[Report](../../reports/v7_window29_expanded_development.md)、
+[唯一Backlog](../../research/v7/research-program.md#window29-expanded-cross-sectional-ranking-development)。
+下一Human：補強ordinary/historical membership與事件未知政策，事先固定新資料/新時間或prospective的5d primary/10dsecondary＋L0±/Ridge研究與精確資料/CPU/storage/backup上限；不因本結果調參或選勝者。
+本輪無剩餘已授權READY，STOP；StrictSTOP/FormalAdmissionNOT_APPROVED/W12SAFETY_HALTED/E1BLOCKED/H2NOT_APPROVED/W19完全隔離。
 
 ## Window28 Clean Training Refit & Temporal Causality — COMPLETE / STOP
 
 W27 fixed `39e2fedeb550a08d00f4abddc9a6caa7b1d570f8` 已本機 ff-only 整合（main前367005d）；35pins＋原計算source/restore、14tests、ReviewGO核對。
-W28 branch `research/v7-window28-clean-refit`，base同固定SHA，worktree `.worktrees/v7-window28-clean-refit`；UNMERGED / NOT_DEPLOYED。
+W28 branch `research/v7-window28-clean-refit`，base同固定SHA，worktree `.worktrees/v7-window28-clean-refit`；LOCAL_INTEGRATED_FIXED1d9a2a7 / NOT_DEPLOYED。
 Plan/code/prefit先commit `ec0b072` 再執行；原W24兩Features／Ridgealpha1／W27Policy與Mask不變，2021各horizon只fresh fit一次，總2fits，0resume/search。
 5d TRAIN 7338→7164、10d 7188→6841；mean/std僅在clean TRAIN重估並逐值驗證。2022/2023完全不參與Fit/Scaling。
 同一W27 Eval support、940日期×horizon、N>=20未降：Ridge舊→新 2022/5d .033873→.034682、2022/10d .045471→.044561、

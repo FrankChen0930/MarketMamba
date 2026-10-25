@@ -90,3 +90,10 @@ Human 限定批准在固定規則下對 W24 原預測重評，Policy/Mask 先於
 原 Strict/W24 masks 不動；新規則為 Development-only，完整事件／停牌／asof UNKNOWN 不變 CLEAN。
 Training Mask 是診斷，不代表 frozen fitted model 已去除污染。
 [Policy](../../research/v7/window27-policy.json)、[Report](../../reports/v7_window27_label_safety.md)。
+
+## Window29 disjoint development / feature-label isolation
+
+68新TWSE候選（W24重疊0）、64有conditional Prediction身分；current survivor/hindsight與4下市起日/普通股UNKNOWN不升格歷史Universe。
+最小research feature-only介面先保存Predictions，再做Label Join；future label刪除只改evaluation coverage，18回歸tests與獨立Raw-derivedReplay驗證。
+5d正向Mean/Median在新樣本延續、10d不一致；未知actions/asof/vintage與2022/2023曝光保留，不作模型選擇/投資/Strict PIT claim。
+[Evidence](../../research/v7/window29-evidence.json)、[Report](../../reports/v7_window29_expanded_development.md)。
