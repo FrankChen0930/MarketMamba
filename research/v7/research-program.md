@@ -5,6 +5,18 @@
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
 
+## Window30 Fixed Real-data LightGBM — PREFIT CHECKPOINT
+
+W29 fixed `e83dfe68e4bc73b59cb6390ec130ba967138e7f1` 已由main1d9a2a7本機ff-only整合；340pins/restore、4tests、ReviewGO驗證。
+W30 `.worktrees/v7-window30-real-lightgbm`，branch `research/v7-window30-real-lightgbm`，base同固定SHA；UNMERGED / NOT_DEPLOYED。
+[Recipe](window30-recipe.json)／[Prepared](window30-prepared.json) 在任何Fit前固定：LightGBM4.6.0、L2、64trees、7leaves/depth3、lr.05、minleaf100、L2=1、seed0、thread1。
+原W29 Cohort/Data/兩Features/Labels/Fold/support不變；TRAIN N14113/13711，latest exit2021-12-30；無preprocessing，只由TRAIN建bin mapper，無eval_set/earlystop/search。
+W11現有環境Python3.12.3/NumPy2.0.2/SciPy1.16.3/LightGBM4.6.0/Native lib SHA核對，不安裝或升級。
+6targeted零實際Fit tests通過；首個測試fixture漏entry欄位已修正，未改Recipe。ModelSpec ID/Train view/environment/preprocessing/seed完整precommit；weights SHA僅Fit後產生。
+預算CPU1200秒（含60verification reserve）、每Fit真正timeout300秒、最多兩個LGBM fits，Ridge/API/GPU0；Artifact+Restore≤256MiB。
+Predictions先immutable保存後LabelJoin；min40/AVERAGE/sameSupport，2022/2023 EXPOSED DEVELOPMENT，不做正式admission/選模/收益。
+Fit/Replay/Review待執行；W19不操作/W12HALTED/StrictSTOP/E1BLOCKED/H2NOT_APPROVED維持。
+
 ## Window29 Expanded Cross-sectional Ranking Development
 
 W28 fixed `1d9a2a7a1ee57c455ba58250f63681efbbdd9050` 已由main39e2fed本機ff-only整合；35pins/restore、6tests、ReviewGO核對。

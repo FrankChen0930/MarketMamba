@@ -1,0 +1,12 @@
+{
+  "status": "LOCAL_FF_ONLY_INTEGRATED",
+  "before_main": "1d9a2a7a1ee57c455ba58250f63681efbbdd9050",
+  "fixed_source": "e83dfe68e4bc73b59cb6390ec130ba967138e7f1",
+  "after_main": "e83dfe68e4bc73b59cb6390ec130ba967138e7f1",
+  "source_review": "W29GO Critical0 Required0",
+  "preflight_tests": 4,
+  "deliverable_private_pins": 340,
+  "raw_restore": "PASS",
+  "source_main_clean": true,
+  "other_candidates_integrated": false
+}
