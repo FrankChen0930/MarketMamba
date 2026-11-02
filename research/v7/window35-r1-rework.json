@@ -1,0 +1,10 @@
+{
+  "finding": "R1 one failure parent consumed by multiple distinct retry children after pending/success",
+  "main_review_sha256": "30ae5db37744b3b3babb0239b73716203d408faa74fa2706973bc7ccd35e7a91",
+  "RED": "window35-r1-red.txt",
+  "GREEN": "window35-tests.txt;15 tests PASS",
+  "fix": "atomic locked parent-claim SHA single-child guard; same event idempotent; next retry must reference new failed child",
+  "repair_round": 1,
+  "closure": "PENDING_INDEPENDENT_CLOSURE",
+  "network_task_model_operations": 0
+}

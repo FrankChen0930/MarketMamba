@@ -232,3 +232,7 @@ See [report](../../reports/v7_window25_robustness_audit.md) and solebacklog. 0da
 ## Window33 recent-data preparation
 
 [W33 evidence](../../research/v7/window33-evidence.json) pins64 TWSE historical price captures2024–2026; raw bytes preserved, SHADOW_PREPARATION_ONLY / UNMERGED / NOT_DEPLOYED. The679 observed price sessions are not a qualified calendar; W07 rejects qualification, so model Fit/Offline scores remain BLOCKED. W16/W18 one-session parity does not establish two official consecutive vintages. UNKNOWN events/vintage and current-survivor bias remain; no research admission or W19 access.
+
+## Window35 complete raw missingness
+
+[W35 closure](../../research/v7/window35-closure.json) rebuilds all217 missing rows from12031 raw CSV rows, not capped exception samples. All are outside the current fixedTWSE64, whose5-session Feature-only inputs are64/64 each day. This is scope impact, not confirmation of legitimate no-price/suspension or instrument type. Original raw/vintage/QC retained, no zero-fill/ffill/data admission; [full distribution](../../research/v7/window35-missing-distribution.json) keeps UNKNOWN causes and lexical type hints separate.

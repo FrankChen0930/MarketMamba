@@ -1,0 +1,69 @@
+[
+  {
+    "market": "TWSE",
+    "session": "2026-10-28",
+    "added": [],
+    "absent_vs_previous": [],
+    "meaning": "ROWSET_CHANGE_CAUSE_UNKNOWN_NOT_SUSPENSION_OR_SOURCE_FAILURE_INFERENCE"
+  },
+  {
+    "market": "TWSE",
+    "session": "2026-10-29",
+    "added": [
+      "009831",
+      "009832"
+    ],
+    "absent_vs_previous": [],
+    "meaning": "ROWSET_CHANGE_CAUSE_UNKNOWN_NOT_SUSPENSION_OR_SOURCE_FAILURE_INFERENCE"
+  },
+  {
+    "market": "TWSE",
+    "session": "2026-10-30",
+    "added": [
+      "7867"
+    ],
+    "absent_vs_previous": [],
+    "meaning": "ROWSET_CHANGE_CAUSE_UNKNOWN_NOT_SUSPENSION_OR_SOURCE_FAILURE_INFERENCE"
+  },
+  {
+    "market": "TWSE",
+    "session": "2026-11-02",
+    "added": [],
+    "absent_vs_previous": [],
+    "meaning": "ROWSET_CHANGE_CAUSE_UNKNOWN_NOT_SUSPENSION_OR_SOURCE_FAILURE_INFERENCE"
+  },
+  {
+    "market": "TPEx",
+    "session": "2026-10-28",
+    "added": [],
+    "absent_vs_previous": [],
+    "meaning": "ROWSET_CHANGE_CAUSE_UNKNOWN_NOT_SUSPENSION_OR_SOURCE_FAILURE_INFERENCE"
+  },
+  {
+    "market": "TPEx",
+    "session": "2026-10-29",
+    "added": [],
+    "absent_vs_previous": [
+      "4207",
+      "5355",
+      "8176"
+    ],
+    "meaning": "ROWSET_CHANGE_CAUSE_UNKNOWN_NOT_SUSPENSION_OR_SOURCE_FAILURE_INFERENCE"
+  },
+  {
+    "market": "TPEx",
+    "session": "2026-10-30",
+    "added": [
+      "6825"
+    ],
+    "absent_vs_previous": [],
+    "meaning": "ROWSET_CHANGE_CAUSE_UNKNOWN_NOT_SUSPENSION_OR_SOURCE_FAILURE_INFERENCE"
+  },
+  {
+    "market": "TPEx",
+    "session": "2026-11-02",
+    "added": [],
+    "absent_vs_previous": [],
+    "meaning": "ROWSET_CHANGE_CAUSE_UNKNOWN_NOT_SUSPENSION_OR_SOURCE_FAILURE_INFERENCE"
+  }
+]

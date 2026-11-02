@@ -1,5 +1,11 @@
 # Worktree Register
 
+## Window35 collector closure / recovery — 2026-11-02
+
+- Path `.worktrees/v7-window35-recovery-v04`; branch `research/v7-window35-recovery-v04`; base `c57ac3d7822f229ae08849e56581ebb3c969441c`; owner Codex/HumanWindow35;created2026-11-02;retiredN/A. COMPLETE / STOP / UNMERGED / NOT_DEPLOYED.
+- W19 diverged; no branch merge/runtime port. Reuse mainSnapshot/QC/Restore and add minimal offline classifier/decision/attempt records, no secondcollector/platform.
+- Private `.artifacts/window35-recovery-v04/` and `.artifacts/window35-restore/` hold analysis/offline evidence only; originalW19/W34 retained. No liveGET/Fit/GPU/Taskchanges. BACKUP_PENDING. Safe-removal requires retained cleanhistory and resolved bytes/pins/references plus explicit retirement review.
+
 ## Window33 recent shadow — 2026-10-25
 
 - Path `.worktrees/v7-window33-recent-shadow`; branch `research/v7-window33-recent-shadow`; base `8fa41869a2583f0b5db698db83eed98611f24a7e`; owner Codex/HumanWindow33;created2026-10-25;retiredN/A. DATA_PRESERVED / FIT_BLOCKED / STOP / UNMERGED / NOT_DEPLOYED.

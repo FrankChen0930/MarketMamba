@@ -2,6 +2,17 @@
 
 > Status: `CANONICAL_CURRENT_PROJECT_MAP`
 
+## Window35 Five-session Collector Closure / Recovery v0.4 — COMPLETE / STOP
+
+W35 branch `research/v7-window35-recovery-v04`，base main `c57ac3d7822f229ae08849e56581ebb3c969441c`，UNMERGED / NOT_DEPLOYED。W19cf1與main分岔於87695，無合併/Runtime移植；main既有verified_record/QC/snapshot/restore可驗證既有scheduled records。W34僅exactGit82cd固定64ID只讀，無模型載入/修改/整合。
+五日5/5runs、10/10sources、原10GET證據確認12031rows/11814basicPASS/217missing/Fatal0。完整Raw TWSE72 vs69exceptions、TPEx145 vs100，補48明細；121個market/security缺1/2/3/4/5天69/23/17/9/3。217全部OUT_OF_W34_TWSE64_UNIVERSE；cause仍UNKNOWN，已確認合法無價/停牌0、SourceFailure0，不因持續性或商品樣式推定。64股每day64有效OHLCV/兩Featureinput，共320，0RankingScores。
+Task唯讀觀測2026-11-02T21:27:33+08：Ready/enabled/last19:00:01result0/NextRun=null（不據此稱停用），原End23:59:59觀測時未到，EXPIRING_PROTECTED_EVIDENCE。W19Task/政策/10GETbudget/135原檔hash均保留未改；不延長或重啟。
+最小v7_data_recovery.py僅offline分類/決策/immutable claims/outcomes；resource/session整份CSV計數非per-stock，1content與候選2network retries分開，offline physical參考cap4，正式營運Retry參數未凍結。來源停止跨Session保留，wrongSession/sameContent/stillMissing停止，Backfill不冒充Forward。
+主要Review原NO_GO/Required1保留；R1 failure-parent retry分叉已單輪修復與[Independent Closure](../../research/v7/window35-review-closure.json) GO Critical0／Required0。15tests PASS；同event冪等、每失敗parent一次、下一retry只能跟新failure。原replay保留，postrepair獨立[Replay](../../research/v7/window35-replay-closure.json) 重現12031/217與Synthetic修復/limit-stop，0GET/Fit/GPU/Taskchanges。
+10個W19只讀replay、41offline檔9409116bytes/份restore，135原W19files未變；BACKUP_PENDING，同機非獨立備份。[Evidence](../../research/v7/window35-evidence.json)、[完整Missing](../../research/v7/window35-missing-distribution.json)、[Report](../../reports/v7_window35_collector_recovery.md)。
+[Activation Candidate](../../research/v7/window35-activation-candidate.json) 僅PROPOSED：Normal19／Conditional07、Interactive限制/原W19期滿隔離/新限期Task/保存備份監測。真正live Normal/Recovery dispatcher仍未移植接合，不能直接啟用；下一Human最少批准W35整合、有界live adapter/驗收及限期操作設定、calendar/retry/update-evidence與獨立備份位置。
+恢復：W35 worktree → Current_State → 唯一Backlog → window35-evidence.json → closure/report。無剩餘本輪READY，STOP；StrictSTOP/FormalAdmissionNOT_APPROVED/W34OFFLINE_PREPARATION_ONLY/W12SAFETY_HALTED。不得自整合W35/新GET/長期Task/Shadow/下一窗口。
+
 ## Window33 Recent Data & Initial Shadow Model — DATA PRESERVED / FIT BLOCKED / STOP
 
 W32 fixed `8fa41869a2583f0b5db698db83eed98611f24a7e` 已由main67e2d25本機ff-only整合；Review GO/11Synthetic原檔及restore/13tests/治理核對。W33 branch `research/v7-window33-recent-shadow`，base同固定SHA，worktree `.worktrees/v7-window33-recent-shadow`；UNMERGED / NOT_DEPLOYED。GET前91d7cca固定W29同64檔/日期/guard。

@@ -21,6 +21,25 @@
   },
   "topics": [
     {
+      "topic": "Window35 five-session evidence closure and offline recovery v0.4",
+      "primary_authority": "research/v7/window35-evidence.json",
+      "authority_class": "CANONICAL",
+      "status": "COMPLETE_STOP_OFFLINE_RECOVERY_CLOSURE_GO_UNMERGED_NOT_ACTIVATED",
+      "secondary_evidence": [
+        "research/v7/window35-closure.json",
+        "research/v7/window35-recovery-policy.json",
+        "research/v7/window35-review-closure.json",
+        "research/v7/window35-activation-candidate.json",
+        "reports/v7_window35_collector_recovery.md"
+      ],
+      "conflicts": [
+        "W19 diverged protected evidence retained,no merge or policy/budget/taskreset",
+        "217 missing alloutsidecurrent64scope;cause UNKNOWN,not automaticno-trade/suspension",
+        "Reference retry/ledger onlyoffline,liveadapter and limitedactivation not approved",
+        "W34 onlyreadonlyGitcohort,models notloaded/integrated"
+      ]
+    },
+    {
       "topic": "Window33 recent data and initial shadow model preparation",
       "primary_authority": "research/v7/window33-evidence.json",
       "authority_class": "CANONICAL",

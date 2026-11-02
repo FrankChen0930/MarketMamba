@@ -1,0 +1,74 @@
+{
+  "schema": "w35-long-term-activation-candidate-v1",
+  "status": "PROPOSED_NOT_INSTALLED_NOT_ACTIVATED",
+  "runtime": {
+    "candidate": "Windows Task Scheduler -> specified WSL distro/user/exact approved commit; separate V7 task names/root,neverV6",
+    "normal_time": "19:00 Asia/Taipei",
+    "recovery_time": "07:00 Asia/Taipei conditional only",
+    "calendar": "actual trading sessions/closure revision/source freshness evidence; no wall-date yesterday shortcut",
+    "morning_policy_pending": "Human freeze next civil morning vs next trading preopen morning/weekend handling",
+    "interactive": "Like W19 Interactive requires logged-in user; logout prevents execution; asleep/offline may miss captures",
+    "wake_power_service_account": "not configured, no new credentials/permissions/power settings",
+    "missed_run": "StartWhenAvailable only bounded window; preserve true resume time, latest CSV cannot recreate all missed sessions",
+    "concurrency": "IgnoreNew + local file lock + immutable resource/session claims; pending attempt blocks redispatch",
+    "expiry": "explicit start/end and scoped normal/content/network/physical budgets; no indefinite task",
+    "W19_transition": "do not modify/delete/disable original task; verify past EndBoundary and consumed10GET before activating any new disjoint task; if uncertain block activation",
+    "stop_resume": "future newtask only disable+STOP ledger; preserve all bytes; resume only after reason resolved with approved new window, never reset historical attempts"
+  },
+  "sources": {
+    "11371": {
+      "attribution": "TPEx / 上櫃股票收盤行情 / OGDL-1.0 https://data.gov.tw/license; source year as observation session; local capture does not imply original vintage",
+      "dataset_id": "11371",
+      "license_id": "OGDL-1.0",
+      "license_matrix_sha256": "274f464b6ca58381b2b8cca4d71109428502a3b2c09c942512f93e99f801cd06",
+      "provider": "TPEx",
+      "resource_url": "https://www.tpex.org.tw/web/stock/aftertrading/otc_quotes_no1430/stk_wn1430_result.php?l=zh-tw&se=EW&o=data"
+    },
+    "11549": {
+      "attribution": "TWSE / 上市個股日成交資訊 / OGDL-1.0 https://data.gov.tw/license; source year as observation session; local capture does not imply original vintage",
+      "dataset_id": "11549",
+      "license_id": "OGDL-1.0",
+      "license_matrix_sha256": "274f464b6ca58381b2b8cca4d71109428502a3b2c09c942512f93e99f801cd06",
+      "provider": "TWSE",
+      "resource_url": "https://www.twse.com.tw/exchangeReport/STOCK_DAY_ALL?response=open_data"
+    }
+  },
+  "storage": {
+    "persistent_primary_candidate": "existing repo .artifacts governance, NEW approved task namespace outside worktree; exact path Human approval pending",
+    "W19_root": "PRESERVE_IN_PLACE_NO_MOVE_OVERWRITE_GC",
+    "independent_backup": "BACKUP_PENDING; Human specify different physical disk or approved NAS,not an assumed /mnt/d same-disk copy",
+    "procedure": "copy immutable bytes/manifests, verify sizes+SHA256, separate-process restore; failed storage/backup not silently successful",
+    "retention": "all existing evidence preserved; future retention/delete policy Human approval, no automatic GC",
+    "capacity_assumptions": {
+      "sample_raw_bytes_5sessions": 1396903,
+      "mean_raw_bytes_session_two_sources": 279380.6,
+      "assumed_sessions_year": 250,
+      "normal_raw_bytes_year": 69845150,
+      "normal_plus_one_content_cycle_raw_bytes_year": 139690300,
+      "reference_four_physical_attempts_fullbody_upper_bytes_year": 279380600,
+      "note": "scenario estimate only,not measured yearly growth; allow additional metadata/log/primary+backup capacity"
+    }
+  },
+  "monitoring": [
+    "latest successful session per source",
+    "actual retrieval time",
+    "missing execution/session vs closed day",
+    "raw/QC/restore exceptions",
+    "required-field recoverable/unrecoverable counts",
+    "separate normal/network/content/physical counts",
+    "BACKUP_PENDING/source halt",
+    "Task last/next/expiry with observed_at; local status only,no new external webhook"
+  ],
+  "minimum_human_approvals": [
+    "W35 engineering integration plus bounded live-dispatcher adapter and limited activation acceptance; current offline-only code is not activation ready",
+    "bounded activation dates/environment/task settings/calendar/morning/missing/update-evidence/network retry policy",
+    "storage/independent backup destination and monitoring/stop/recovery operator procedure"
+  ],
+  "true_forward_rule": "retrieval/publication/archive/vintage separate; offlinereplay/backfill never qualified original forward",
+  "implementation_status": "OFFLINE_POLICY_AND_LEDGER_ONLY; live normal/recovery dispatcher not ported or wired to new tasks",
+  "before_enable_required": [
+    "bounded adapter joining existing approved one-shot capture to new policy/attempt claims/source/session guards and recovery validation",
+    "independent acceptance of new runtime and disjoint limited tasks before actual activation",
+    "Human explicit dates/environment/GET/retry/source/storage/backup/monitoring authorization"
+  ]
+}

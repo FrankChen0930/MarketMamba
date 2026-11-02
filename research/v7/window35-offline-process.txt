@@ -1,0 +1,1 @@
+{"status": "OFFLINE_RECOVERY_REPLAY_AND_W19_BYTES_RESTORE_PASS", "W19_replays": 10, "synthetic_repair": "REPAIRED_NEW_IMMUTABLE_VINTAGE", "after_limit": "UNRECOVERABLE_AFTER_POLICY_LIMIT", "files": 41, "bytes_per_copy": 9409116, "real_requests": 0}

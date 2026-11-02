@@ -169,3 +169,7 @@ research contracts, formal data, production and StrictSTOP boundaries are unchan
 ## Window32 prospective research preparation
 
 [W32 proposal](../../research/v7/window32-shadow-contract.json) and [readiness](../../research/v7/window32-readiness.json) define Synthetic-only prediction-first publication and delayed-label gates, UNMERGED/NOT_DEPLOYED. This is neither the existing fetch-only ops/shadow.py nor a V6 ranking serving change. Actual Shadow activation, exact time/source/missing rules and2026model preparation remain blocked/unapproved. W19 task/runtime/artifacts untouched; its policy is read only as a pinned Git source reference.
+
+## Window35 finite collector closure / offline recovery
+
+[W35 evidence](../../research/v7/window35-evidence.json) verifies the protected W19 five-session10GET record without modifying its task or data. Existing main snapshot/QC/restore suffice for reading; no diverged runtime is merged. New offline recovery decisions/append-only claims separate normal/content/network budgets and single-child retry chains; [R1 closure](../../research/v7/window35-review-closure.json) closes the retained NO_GO finding. Actual live normal/recovery dispatcher and new limited Task activation remain unimplemented/unapproved, UNMERGED/NOT_DEPLOYED. BACKUP_PENDING; task expiry language is tied to observed_at, never assumed elapsed.

@@ -1,0 +1,1 @@
+{"status": "INDEPENDENT_OFFLINE_RECOVERY_REPLAY_PASS", "rows": 12031, "missing": 217, "missing_security_count": 121, "W19_original_files_unchanged": 135, "offline_restore_files_verified": 41, "synthetic_outcome_reproduced": true, "budget_stop_decision_reproduced": true, "actual_GET_Fit_GPU_ranking_task_changes": 0, "actual_replayed_at": "2026-11-02T13:46:55.759967+00:00"}

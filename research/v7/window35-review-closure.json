@@ -1,0 +1,33 @@
+{
+  "schema": "w35-independent-closure-v1",
+  "status": "GO_R1_CLOSED",
+  "critical": 0,
+  "required": 0,
+  "main_review_sha256": "30ae5db37744b3b3babb0239b73716203d408faa74fa2706973bc7ccd35e7a91",
+  "finding": "W35-R1",
+  "finding_status": "CLOSED",
+  "scope": "Targeted independent R1 closure only. Original NO_GO review preserved. Engineering closure is not activation/integration approval.",
+  "independent_checks": {
+    "focused_tests": 15,
+    "seconds": 0.71,
+    "original_reproduction": "PENDING/SUCCESS/NETWORK_FAILURE parent reuse rejected with FAILURE_PARENT_ALREADY_CONSUMED_BY_RETRY; same event idempotent; next retry on newly failed child accepted",
+    "locking": "single-child check and claim publication within existing lock",
+    "red_evidence": "15 tests, 2 subtest failures before patch",
+    "owner_separate_process_replay": "new closure file retained beside original; patched code SHA verified, 12031 rows/217 missing/41 restored files/135 original files unchanged reported"
+  },
+  "pins": {
+    "V6/experimental/v7_data_recovery.py": "6aaec335e8a6ef8584e109f89c34c484e2bb77e8487fd568fd73200c5881cc66",
+    "research/v7/window35-recovery-tests.py": "feaad2d3e94178283e963d39d295f1c7ebcf2333b178a4939de016f730896122",
+    "research/v7/window35-replay-closure.json": "1117de36d749c22bb73ec657f2235c671aeb2bf9d3ce69d76459d604bdacdd1f",
+    "research/v7/window35-r1-red.txt": "71df1ff787d5a081bd337d92716cb8607bb2df08e466f6010492e2ad1111aa64",
+    "research/v7/window35-r1-rework.json": "d0f0a924510137c1b6bdee0d280884ba65f8a8fcc3cf16faddb0e3141d614030"
+  },
+  "remaining": "Owner may update final maps/report to COMPLETE/STOP and local commit within grant; no further GET/Task/model operations authorized. Existing main-review warnings retained.",
+  "operations": {
+    "network": 0,
+    "Task": 0,
+    "W19_writes": 0,
+    "fit_model_score_GPU": 0
+  },
+  "observed_at": "2026-11-02T13:55:15.921973+00:00"
+}

@@ -1,0 +1,13 @@
+{
+  "decision_id": "WINDOW35_W19_CLOSURE_RECOVERY_V04",
+  "authority": "HumanWindow35 bounded CPU offline authorization",
+  "status": "COMPLETE_STOP_UNMERGED_NOT_ACTIVATED",
+  "base": "c57ac3d7822f229ae08849e56581ebb3c969441c",
+  "W19": "diverged cf1protected,10GETconsumed,no task/budget/data changes",
+  "W34": "readonly82cdcohort only,no models loaded/integrated",
+  "design_direction": "normal19AsiaTaipei;conditional07oncecontentcyclepermarket/resource/session ifrequired+updateevidence+sourcepermission+unusedbudget;network retries separately bounded candidate",
+  "formal_operation_parameters": "not frozen/activated; offline example network2shared/physical4 is not new live authority",
+  "review": "one main NO_GO R1 preserved;one rework;independent closure GO",
+  "remaining": "bounded live-dispatcher adapter, exact retry/calendar/missing policy, new limited task/runtime/storage/backup/monitoring authority",
+  "evidence": "research/v7/window35-evidence.json"
+}
