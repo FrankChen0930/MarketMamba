@@ -1,9 +1,14 @@
 # V7 Research Program and Current Development Backlog
 
-> Current planning owner: isolated Window35 collector closure and recovery branch, linked by canonical
+> Current planning owner: isolated Window37 manual preopen shadow branch, linked by canonical
 > Current State/Authority Map. Planning status does not grant research, execution,
 > merge or production approval. Existing machine contracts win all conflicts.
 > Historical per-window tasks are checkpoints, not parallel active queues.
+
+## Window37 W34 Read-only Model Integration — VERIFIED CANDIDATE
+
+Main72d35e7/W34 source82cd49c diverged atc57ac3d. Isolated `integration/v7-window37-w34-models` ports only readonly loader and original scores function, plus byte-identical model/recipe/feature/replay evidence. No new Fit/GET, no old training/fetch entrypoints, W35 Recovery unchanged. W34 original161files+restore verified; necessary JSON model/scaler/recipe/serving-schema pins retained. [Integration](window37-integration.json), [adoption](window37-model-adoption.json). Independent Gate GO Critical0 Required0；2models tests＋15W35 regression PASS，512原分數exact Replay；Human已授權必要驗證後main ff-only，實際整合identity由W37 closure補記。
+W36 remains separate protected branch b2bc041; no Task/runtime/artifact/budget mutation. Its limited tasks are independently active under HumanW36 only, not a Shadow authorization. W34 models OFFLINE_VALIDATED, no Production/StrictPIT admission. BACKUP_PENDING deferred by Human; no independent backup claim. W37 manual Shadow implementation only after integration, no schedule or waiting; current Nov2 night is not Preopen.
 
 ## Window35 Five-session Collector Closure / Recovery v0.4 — COMPLETE / STOP
 

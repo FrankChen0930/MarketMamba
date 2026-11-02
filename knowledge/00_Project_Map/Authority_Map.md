@@ -5,6 +5,11 @@
 > Semantic change owner must update this map in the same change.
 > Prior research/Phase A map accepted `2026-09-20`; 2026-09-22 runtime additions are agent-observed, pending separate human review. Canonical means current navigation authority, not immutable final state.
 
+## Window37 W34 Read-only Model Integration — VERIFIED CANDIDATE
+
+Main72d35e7/W34 source82cd49c diverged atc57ac3d. Isolated `integration/v7-window37-w34-models` ports only readonly loader and original scores function, plus byte-identical model/recipe/feature/replay evidence. No new Fit/GET, no old training/fetch entrypoints, W35 Recovery unchanged. W34 original161files+restore verified; necessary JSON model/scaler/recipe/serving-schema pins retained. [Integration](../../research/v7/window37-integration.json), [adoption](../../research/v7/window37-model-adoption.json). Independent Gate GO Critical0 Required0；2models tests＋15W35 regression PASS，512原分數exact Replay；Human已授權必要驗證後main ff-only，實際整合identity由W37 closure補記。
+W36 remains separate protected branch b2bc041; no Task/runtime/artifact/budget mutation. Its limited tasks are independently active under HumanW36 only, not a Shadow authorization. W34 models OFFLINE_VALIDATED, no Production/StrictPIT admission. BACKUP_PENDING deferred by Human; no independent backup claim. W37 manual Shadow implementation only after integration, no schedule or waiting; current Nov2 night is not Preopen.
+
 ## Window35 Five-session Collector Closure / Recovery v0.4 — COMPLETE / STOP
 
 W35 branch `research/v7-window35-recovery-v04`，base main `c57ac3d7822f229ae08849e56581ebb3c969441c`，UNMERGED / NOT_DEPLOYED。W19cf1與main分岔於87695，無合併/Runtime移植；main既有verified_record/QC/snapshot/restore可驗證既有scheduled records。W34僅exactGit82cd固定64ID只讀，無模型載入/修改/整合。

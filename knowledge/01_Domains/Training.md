@@ -166,3 +166,7 @@ Human明確批准一組小型real-data recipe，60e7ca7在Fit前固定；W11環�
 60726 feature-only predictions /same W29support與獨立Replay通過；5d正、10d負，4組Mean均低於舊Ridge，但不宣告winner/研究准入。
 Expanding各Origin仍需另凍結model-ready/maturity/purge/refit/selection與資源；本次不自動批准。
 [Evidence](../../research/v7/window30-evidence.json)、[Report](../../reports/v7_window30_fixed_lightgbm.md)。
+
+## W37 readonly adoption
+
+W34 model JSON/scaler/recipe/feature identity is available through `V6/experimental/v7_shadow_models.py`; only readonly scoring port, no fitting. See [integration](../../research/v7/window37-integration.json). Original training evidence remains W34@82cd49c; no new model or research admission.

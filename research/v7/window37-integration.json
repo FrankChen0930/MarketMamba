@@ -1,0 +1,23 @@
+{
+  "schema": "w37-w34-bounded-integration-v1",
+  "status": "VERIFIED_CANDIDATE_GO",
+  "main_before": "72d35e78a3372d79373064a31dc6891d5ca3db83",
+  "W34_source": "82cd49c25e585d857c05e9835af6c77f6ac9e860",
+  "common_ancestor": "c57ac3d7822f229ae08849e56581ebb3c969441c",
+  "strategy": "bounded readonly scores port; necessary immutable identity records only; no W34 trainer/fetch drivers or old navigation overwrite",
+  "original_restore_verified": {
+    "files": 161,
+    "bytes_per_copy": 51236054
+  },
+  "adoption": "window37-model-adoption.json",
+  "tests": "window37-integration-tests.txt 2PASS; original512scores exact replay/invalidhash failclosed",
+  "new_Fit_GET_GPU": 0,
+  "backup": "BACKUP_PENDING",
+  "W35": "PRESERVED",
+  "W36": "PROTECTED_UNMODIFIED",
+  "observed_at": "2026-11-02T15:25:16.047827+00:00",
+  "review": "window37-integration-review.json GO Critical0 Required0",
+  "W35_regression": "15PASS window37-w35-regression.txt",
+  "authority_note": "Only readonly model adoption; no formal admission/PREOPEN activation",
+  "knowledge": "WARNING no structural FAIL"
+}

@@ -1,0 +1,30 @@
+{
+  "schema": "w34-readonly-model-adoption-v1",
+  "source_commit": "82cd49c25e585d857c05e9835af6c77f6ac9e860",
+  "base": "72d35e78a3372d79373064a31dc6891d5ca3db83",
+  "original_file_sha256": "e140eeaa28b6dc4214e71fe2fd1e9995c9553a20a25d16d9d242cca17134c96d",
+  "prepared": {
+    "path": "research/v7/window34-prepared.json",
+    "sha256": "c419b422d94aa7f75f758a9068c14e26c37351578bf4cdf9f36440d605d54b91"
+  },
+  "run": {
+    "path": "research/v7/window34-run.json",
+    "sha256": "8add72baccbea04e5f62d2ae0c7cdf58949e82e06ba8ea0f001266a422070503"
+  },
+  "envelope": {
+    "path": "research/v7/window34-offline-envelope.json",
+    "sha256": "1f9fc29c6e9e524eab1e4fe5a5ea0c19a1a61cae4a3fa524e0a3ca44b9f67ef2"
+  },
+  "files_ported": [
+    "window34-prepared.json",
+    "window34-run.json",
+    "window34-review.json",
+    "window34-replay.json",
+    "window34-offline-envelope.json",
+    "window34-local-artifacts.json",
+    "window34-calendar.json",
+    "window34-evidence.json"
+  ],
+  "scope": "READONLY_W34_MODEL_ADOPTION_NO_FIT_OR_NETWORK",
+  "research_admitted": false
+}

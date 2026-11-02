@@ -21,6 +21,19 @@
   },
   "topics": [
     {
+      "topic": "Window37 readonly W34 model integration",
+      "primary_authority": "research/v7/window37-integration.json",
+      "authority_class": "CANONICAL",
+      "status": "VERIFIED_CANDIDATE_NO_PRODUCTION_OR_RESEARCH_ADMISSION",
+      "secondary_evidence": [
+        "research/v7/window37-model-adoption.json",
+        "research/v7/window34-review.json"
+      ],
+      "conflicts": [
+        "No formal data or research admission; W36 protected separate runtime; no W34 training entrypoint adopted"
+      ]
+    },
+    {
       "topic": "Window35 five-session evidence closure and offline recovery v0.4",
       "primary_authority": "research/v7/window35-evidence.json",
       "authority_class": "CANONICAL",

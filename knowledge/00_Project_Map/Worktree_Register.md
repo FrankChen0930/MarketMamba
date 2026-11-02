@@ -1,5 +1,11 @@
 # Worktree Register
 
+## Window37 W34 bounded integration — 2026-11-02
+
+- Path `.worktrees/v7-window37-w34-integration`; branch `integration/v7-window37-w34-models`; base72d35e78a3372d79373064a31dc6891d5ca3db83;owner HumanW37/Codex;created2026-11-02;retiredN/A. VERIFIED_CANDIDATE / NOT_DEPLOYED.
+- Bounded port needed because W34 diverged and its model.py includes exhausted Fit/fetch/budget entrypoints; no whole-branch merge. Readonly loader preserves original score semantics and model/scaler/recipe/feature artifact identities.
+- Artifact dependency W34 originals and161restore files, W11 isolated environment; no data moved/deleted. Safe removal requires clean retained source/history, resolved references and review; BACKUP_PENDING.
+
 ## Window35 collector closure / recovery — 2026-11-02
 
 - Path `.worktrees/v7-window35-recovery-v04`; branch `research/v7-window35-recovery-v04`; base `c57ac3d7822f229ae08849e56581ebb3c969441c`; owner Codex/HumanWindow35;created2026-11-02;retiredN/A. COMPLETE / STOP / UNMERGED / NOT_DEPLOYED.

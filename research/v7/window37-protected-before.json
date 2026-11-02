@@ -1,0 +1,71 @@
+{
+  "observed_at": "2026-11-02T23:25:15.5914000+08:00",
+  "tasks": [
+    {
+      "name": "MarketMamba-V7-W36-Normal-5Sessions",
+      "enabled": true,
+      "state": "Ready",
+      "next_run": "2026-11-03T19:00:00.0000000+08:00",
+      "definition_sha256": "667a773f1b3757fbced94fc7d5112be2b6957d9e1555699ab1af9181dff95bc3"
+    },
+    {
+      "name": "MarketMamba-V7-W36-Recovery-5Windows",
+      "enabled": true,
+      "state": "Ready",
+      "next_run": "2026-11-04T07:00:00.0000000+08:00",
+      "definition_sha256": "feacbf8f8911cc2ef60f756dbd410b82712dbdc4a2d23dbebd23e1a3d4c4d70a"
+    }
+  ],
+  "mutation": false,
+  "W36_root_files": [
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window36-limited-collector/AUTHORIZED.json",
+      "sha256": "3b8783181a0a52c3d5d8809dd8a5c75f25e3eeaf4e9d8ebc0081d94aa1c98865"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window36-limited-collector/BUDGET_IDENTITY.json",
+      "sha256": "b86da8dd9cdac6c100c5e72fd0e3aa29d7e31d69bd66f3a90213260045d0ed7f"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window36-limited-collector/activation-preflight.json",
+      "sha256": "5c0531c363417eaa276e1cc89181a3cab44614e67ffa8299cbe57286a99e4fbc"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window36-limited-collector/calendar/annual-2026.json",
+      "sha256": "7fefe785ea7155a5004a2eb74486ad865ea5c4b5f02ee0cffbbdacb1ca2ea390"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window36-limited-collector/control/000001.json",
+      "sha256": "5807f4b6a6037d9c282d397860f822da98ad8c8a0b4a563aa441160a5f60f432"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window36-limited-collector/control.lock",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window36-limited-collector/ledger/attempt.lock",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window36-limited-collector/ledger/head.json",
+      "sha256": "4d784d2743aaac74a037edcc2e573c1635adbcd5bbb3a5bbf1ffc975ca2a0ca7"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window36-limited-collector/ledger/identity.json",
+      "sha256": "4636833cbd18bc4ca2a41e68e39699d67fa64939fc7f0df82cbdd11d77e01af1"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window36-limited-collector/ledger/policy.json",
+      "sha256": "46a3d1738d036dde10f7a686b5df0aef1d5de2c60d10aa21ab8f6e929e121512"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window36-limited-collector/policy.json",
+      "sha256": "46a3d1738d036dde10f7a686b5df0aef1d5de2c60d10aa21ab8f6e929e121512"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window36-limited-collector/task-observation.json",
+      "sha256": "a8897f8403e683415b70ee5b22357484604ff0468af82f6d1fdcff40f5fa367a"
+    }
+  ],
+  "W36_branch": "b2bc041a799f18a67153f1bc036edeba026d3957"
+}
