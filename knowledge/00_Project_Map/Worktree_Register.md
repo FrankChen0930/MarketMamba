@@ -1,5 +1,12 @@
 # Worktree Register
 
+## Run status count patch adoption — 2026-11-13
+
+- Path `.worktrees/run-status-count-validation`; branch `feat/run-status-count-validation`; base `8b0786018d763942d0ea68eb9ce537cb33f8b1fd`; owner Human/Codex, task independent MAS patch adoption; created 2026-11-13; retired N/A. LOCAL_VERIFIED / UNMERGED / NOT_DEPLOYED.
+- Existing worktrees do not serve this independent adoption. Reusing the MAS goal worktree would alter protected historical evidence; reuse the existing `.worktrees/` container with a separate bounded checkout. Native worktree creation was relocated here before source changes.
+- Authority: display-only implementation/tests and branch-local knowledge; merge dependency: separate Human approval. Artifact dependency: original MAS goal `19459dd37dab44748c88a69b469eccad` delivery.patch (2,542 bytes, SHA-256 `d8c25509dab82400f212e803a8c44a92d5b5d854bf926c8b41f0e60f898d20ad`) and tracked portfolio-history JSON fixture; no private data dependency.
+- Safe removal requires a clean checkout, retained branch/commit history, resolved path/artifact references and explicit retirement review. No existing worktree or MAS evidence is retired or modified.
+
 ## Window37 W34 bounded integration — 2026-11-02
 
 - Path `.worktrees/v7-window37-w34-integration`; branch `integration/v7-window37-w34-models`; base72d35e78a3372d79373064a31dc6891d5ca3db83;owner HumanW37/Codex;created2026-11-02;retiredN/A. VERIFIED_CANDIDATE / NOT_DEPLOYED.

@@ -25,7 +25,7 @@ export function normalizeRunState(state) {
 }
 
 export function formatRunCount(value) {
-  return typeof value === 'number' && Number.isFinite(value)
+  return Number.isInteger(value) && value >= 0
     ? new Intl.NumberFormat('zh-TW').format(value)
     : '—';
 }

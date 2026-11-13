@@ -1,5 +1,22 @@
 # MarketMamba Current State
 
+## Run status count patch adoption — 2026-11-13
+
+Human-authorized independent adoption on `feat/run-status-count-validation`,
+worktree `.worktrees/run-status-count-validation`, base
+`8b0786018d763942d0ea68eb9ce537cb33f8b1fd`; UNMERGED / NOT_DEPLOYED.
+The original MAS delivery patch (2,542 bytes, SHA-256
+`d8c25509dab82400f212e803a8c44a92d5b5d854bf926c8b41f0e60f898d20ad`)
+changes only `runStatusSummary.mjs` and its test: non-negative integer counts
+retain localized formatting; invalid counts display an em dash without coercion.
+Four existing Node test files: baseline 25/25; patch regression RED 5 pass/2 fail;
+complete patch GREEN 28/28, no skipped tests, using `--test-isolation=none`.
+JSON fixture `research/v7/portfolio-history-artifact.json` is readable (7 events,
+SHA-256 `d7fd650132e1261a7fb5275cf44c7481b9f86f226253f35f8dd49003953035d6`).
+Original main and MAS goal `19459dd37dab44748c88a69b469eccad` evidence/state
+remain untouched; historical Git Delivery remains incomplete. No merge/push/deploy.
+Next action: review the local feature commit; integration requires separate approval.
+
 > Status: `CANONICAL_CURRENT_PROJECT_MAP`
 
 ## Window37 W34 Read-only Model Integration — VERIFIED CANDIDATE

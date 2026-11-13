@@ -142,3 +142,15 @@ No real data/model admission, formal performance policy or research approval.
 Static UI UNMERGED badge is inherited candidate wording, not live Git status;
 canonical state records local integration. No UX changes made during integration.
 Strict Phase0 STOP/E1 BLOCKED/H2 unapproved. Stop; next Program needs separate scope.
+
+## Run status integer counts — 2026-11-13
+
+Human-authorized adoption on `feat/run-status-count-validation`, UNMERGED /
+NOT_DEPLOYED: `formatRunCount` accepts only numbers satisfying
+`Number.isInteger(value) && value >= 0`. Zero and zh-TW grouping are preserved;
+negative/fractional/non-finite/non-numeric values display `—`, without coercion.
+Source and regression tests remain in `app/frontend/src/components/runStatusSummary.mjs`
+and `runStatusSummary.test.mjs`; four Node test files pass 28/28 via
+`node --test --test-isolation=none`. This is presentation-only engineering evidence.
+Backend schemas, source counts, publication decisions and runtime authority are unchanged.
+See [adoption state](../00_Project_Map/Current_State.md#run-status-count-patch-adoption--2026-11-13).
