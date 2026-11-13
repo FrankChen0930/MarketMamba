@@ -4,7 +4,8 @@
 
 `feat/run-status-count-validation` carries the independently adopted MAS count
 formatting patch from base `8b0786018d763942d0ea68eb9ce537cb33f8b1fd`,
-UNMERGED / NOT_DEPLOYED. Branch-local implementation and executable tests at
+LOCAL_MAIN_INTEGRATED / NOT_DEPLOYED at `e06fb256211f21612a25af4b10f709a756540d32`
+via Human-authorized fast-forward. Implementation and executable tests at
 `app/frontend/src/components/runStatusSummary.mjs` and
 `app/frontend/src/components/runStatusSummary.test.mjs` define this display-only
 behavior. Patch identity and verification are recorded in [Current State](Current_State.md#run-status-count-patch-adoption--2026-11-13).

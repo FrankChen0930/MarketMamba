@@ -145,8 +145,9 @@ Strict Phase0 STOP/E1 BLOCKED/H2 unapproved. Stop; next Program needs separate s
 
 ## Run status integer counts — 2026-11-13
 
-Human-authorized adoption on `feat/run-status-count-validation`, UNMERGED /
-NOT_DEPLOYED: `formatRunCount` accepts only numbers satisfying
+Human-authorized adoption from `feat/run-status-count-validation` is
+LOCAL_MAIN_INTEGRATED / NOT_DEPLOYED at `e06fb256211f21612a25af4b10f709a756540d32`
+via fast-forward. `formatRunCount` accepts only numbers satisfying
 `Number.isInteger(value) && value >= 0`. Zero and zh-TW grouping are preserved;
 negative/fractional/non-finite/non-numeric values display `—`, without coercion.
 Source and regression tests remain in `app/frontend/src/components/runStatusSummary.mjs`

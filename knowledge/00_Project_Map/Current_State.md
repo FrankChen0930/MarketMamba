@@ -4,7 +4,9 @@
 
 Human-authorized independent adoption on `feat/run-status-count-validation`,
 worktree `.worktrees/run-status-count-validation`, base
-`8b0786018d763942d0ea68eb9ce537cb33f8b1fd`; UNMERGED / NOT_DEPLOYED.
+`8b0786018d763942d0ea68eb9ce537cb33f8b1fd`; LOCAL_MAIN_INTEGRATED / NOT_DEPLOYED.
+Human-authorized fast-forward integrated `e06fb256211f21612a25af4b10f709a756540d32` into local main.
+The feature worktree is retained, clean at that commit; retired N/A.
 The original MAS delivery patch (2,542 bytes, SHA-256
 `d8c25509dab82400f212e803a8c44a92d5b5d854bf926c8b41f0e60f898d20ad`)
 changes only `runStatusSummary.mjs` and its test: non-negative integer counts
@@ -13,9 +15,9 @@ Four existing Node test files: baseline 25/25; patch regression RED 5 pass/2 fai
 complete patch GREEN 28/28, no skipped tests, using `--test-isolation=none`.
 JSON fixture `research/v7/portfolio-history-artifact.json` is readable (7 events,
 SHA-256 `d7fd650132e1261a7fb5275cf44c7481b9f86f226253f35f8dd49003953035d6`).
-Original main and MAS goal `19459dd37dab44748c88a69b469eccad` evidence/state
-remain untouched; historical Git Delivery remains incomplete. No merge/push/deploy.
-Next action: review the local feature commit; integration requires separate approval.
+Original MAS goal `19459dd37dab44748c88a69b469eccad` evidence/state
+remain untouched; historical Git Delivery remains incomplete. No push/deploy.
+Local integration is complete; no further action is authorized by this adoption.
 
 > Status: `CANONICAL_CURRENT_PROJECT_MAP`
 
