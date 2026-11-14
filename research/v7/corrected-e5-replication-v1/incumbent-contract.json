@@ -1,0 +1,122 @@
+{
+  "schema_version": "v7-corrected-e5-replication-contract-v1",
+  "name": "Corrected E5 Replication Run",
+  "baseline": "E5-PIT-Clean-v1",
+  "intent": "faithful incumbent replication; not model search and not tradability evidence",
+  "authority_order": [
+    "completed final result manifest",
+    "final delivery runner source",
+    "corrected policy and remediation evidence",
+    "superseded architecture draft"
+  ],
+  "source_commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+  "fields": {
+    "features": {
+      "value": {"input_dim": 48, "group_dims": [15, 20, 1, 12], "order_from": "feature-manifest.json"},
+      "source": "research/v7/corrected-baseline-v1/feature-manifest.json",
+      "authority": "corrected canonical policy",
+      "confidence": "high"
+    },
+    "architecture": {
+      "value": {
+        "d_model": 64, "d_state": 32, "expand": 2, "head_dim": 8,
+        "n_groups": 1, "sequence_length": 60, "temporal_layers": 1,
+        "cross_stock_forward_layers": 1, "cross_stock_reverse_layers": 1,
+        "dropout": 0.0, "horizons": [5, 10],
+        "graph": {"enabled": false, "edge_count": 0, "fusion_branch": "ABSENT"}
+      },
+      "source": "deliveries/capacity-v1-fp32/E5-state32/result.json#/config and corrected policy graph contract",
+      "artifact_identity": "4608b82eb7ea1ab8cde9fcd86554c18cd3b0f5c6c3f4d47bd9e2596ee3568634",
+      "authority": "completed final result manifest",
+      "confidence": "high"
+    },
+    "training": {
+      "value": {
+        "epochs": 20, "patience": 5, "minimum_epochs": 5,
+        "learning_rate": 0.0001, "weight_decay": 0.01,
+        "warmup_fraction": 0.15, "minimum_lr_factor": 0.0001,
+        "gradient_clip": 1.0, "precision": "fp32", "optimizer": "AdamW",
+        "schedule": "linear warmup then cosine",
+        "selection_metric": "mean_daily_rank_ic_5d",
+        "secondary_metric": "mean_daily_rank_ic_10d_from_same_best_ic5_checkpoint"
+      },
+      "source": ".artifacts/v7-confirmation-verification/package-source/V6/experimental/v7_experiment_suite.py and v7_experiment_train.py",
+      "authority": "final delivery runner source",
+      "confidence": "high"
+    },
+    "seeds": {
+      "value": [17, 29, 43],
+      "source": "deliveries/confirmation-v1-fp32/summary.json",
+      "authority": "completed final result manifest",
+      "confidence": "high"
+    },
+    "split": {
+      "value": {
+        "train_start": "2013-01-02", "train_end": "2023-11-17",
+        "purge_start": "2023-11-20", "purge_end": "2023-12-29",
+        "research_evaluation_start": "2024-01-02",
+        "research_evaluation_end": "2026-09-11",
+        "embargo_trading_days": 20,
+        "label_horizon_trading_days": 10,
+        "total_purge_trading_days": 30,
+        "training_sessions": 2661,
+        "research_evaluation_sessions": 653,
+        "calendar_sha256": "dd44d77f86b57ca5940c35dbd44f7a1475187f04650590644ba97fdb480e95d3",
+        "terminology": "research-used historical evaluation"
+      },
+      "source": "final delivery README plus calendar-through-20260911.json and incumbent total_purge_rows=30",
+      "authority": "completed final result manifest",
+      "confidence": "high"
+    },
+    "labels": {
+      "value": {
+        "evidence_class": "HISTORICAL_SIMULATION_PROXY", "proxy_policy": "P0",
+        "valid_5d": 6889229, "valid_10d": 6790554
+      },
+      "source": "research/v7/ohlcv-provenance-remediation-v1/label-coverage.json",
+      "authority": "correctness remediation evidence",
+      "confidence": "high"
+    },
+    "environment": {
+      "value": "Colab 2026.04 / Python 3.12.13 exact lock",
+      "source": "environments/v7-colab-2026.04/requirements.lock.txt",
+      "authority": "final environment lock",
+      "confidence": "high"
+    }
+  },
+  "conflicts": [
+    {
+      "field": "architecture.d_model",
+      "superseded_value": 32,
+      "superseded_source": "research/v7/corrected-baseline-v1/architecture-config.json",
+      "selected_value": 64,
+      "resolution": "completed E5 capacity and confirmation result manifests outrank the earlier corrected architecture draft"
+    },
+    {
+      "field": "architecture.d_state",
+      "superseded_value": 8,
+      "superseded_source": "research/v7/corrected-baseline-v1/architecture-config.json",
+      "selected_value": 32,
+      "resolution": "completed E5 capacity and confirmation result manifests outrank the earlier corrected architecture draft"
+    }
+  ],
+  "correctness_semantics": {
+    "strict_phase0": "STOP",
+    "historical_simulation_readiness": "PASS",
+    "corrected_verified_executable_labels": {"5d": 0, "10d": 0},
+    "legacy_abc_status": "unchanged; reference only; never PIT-valid relabelled"
+  },
+  "matrix": {
+    "namespace": "Data/v7_corrected_e5_replication_v1",
+    "build_mode": "full_memory_first",
+    "chunk_fallback": "only after a recorded actual MemoryError in CPU matrix materialization",
+    "ordering": ["Date", "stock_id"],
+    "preprocessing": {
+      "industry_neutralization": false,
+      "current_industry_backfill": false,
+      "cross_sectional_scaling": "causal per-session",
+      "macro_scaling": "causal expanding"
+    }
+  },
+  "output_directory": "MarketMamba_V7_Corrected_E5_Replication"
+}

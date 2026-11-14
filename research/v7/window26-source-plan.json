@@ -1,0 +1,16 @@
+{
+ "schema":"w26-bounded-event-source-plan-v1",
+ "endpoint":"https://api.finmindtrade.com/api/v4/data",
+ "finmind_limit":6,
+ "price_requests":0,
+ "planned_finmind_queries":[{"dataset":"TaiwanStockCapitalReductionReferencePrice","data_id":"2321","start_date":"2021-01-01","end_date":"2023-12-31"}],
+ "source_qualification":"OfficialFinMindFundamentaldocument archivedW26: individualstockFree,data_idrequired forFree; existingW20Pricing/Quickstart/Disclaimeranonymous/noncommercial/attribution/no rawredistribution reused",
+ "other_candidate_datasets":"SplitPrice/ParValueChange/DividendResult documented; not requested unless distinct necessary evidence and permissionclear; no bulk or paidqueries",
+ "official_document_limit":4,
+ "document_requests_already":[{"id":"finmind-fundamental","result":"HTTP200rawarchived","count":1},{"id":"tecom112annualreport","result":"WEB_TOOL_NOT_ACCESSIBLE_NO_RETRY","count":1}],
+ "scope":"private bounded event/integrity research; sourcecurrentversionnotoriginalPIT; noformaladmission",
+ "retry_redirect_token_paid_fallback":false,
+ "response_limit_bytes":2097152,
+ "timeout_seconds":25,
+ "stop_on":"403/429/accesslimit/unclearpermission/schemafailure; no retry or endpointbypass"
+}

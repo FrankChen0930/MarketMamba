@@ -1,0 +1,278 @@
+[
+  {
+    "dataset_id": "11549",
+    "evidence_class": "OFFLINE_QC_REASSESSMENT_NOT_ORIGINAL_CAPTURE_REWRITE",
+    "actual_analysis_at": "2026-10-24T13:49:23.777369+00:00",
+    "parent_capture_record_sha256": "bbbcd7bdfae295a884760e24e24a393bf6e1403ae32adac7d0e0dc42230065a9",
+    "parent_capture_qc_code_sha256": "14b81444ef14c9001991c55627b464a639d99db0f94a88f4c32a3cd895bfd55d",
+    "current_qc_code_sha256": "3a590f7f336bff394db23c55a6afcde1a1c7d3eb1c1bdacf78fdb06e0bf4ddd9",
+    "raw_sha256": "79bdd059e75a0a829dfef1e5c1330cb48a84b302e04ce040e77ee0dd35e5ec6a",
+    "raw_bytes": 137956,
+    "qc": {
+      "status": "QC_EXCEPTIONS",
+      "encoding": "UTF-8",
+      "schema": [
+        "日期",
+        "證券代號",
+        "證券名稱",
+        "成交股數",
+        "成交金額",
+        "開盤價",
+        "最高價",
+        "最低價",
+        "收盤價",
+        "漲跌價差",
+        "成交筆數"
+      ],
+      "rows": 1383,
+      "distinct_securities": 1383,
+      "sessions": [
+        "2026-10-22"
+      ],
+      "earliest": "2026-10-22",
+      "latest": "2026-10-22",
+      "counts": {
+        "PASS": 1368,
+        "MISSING_OHLCV_NO_FILL": 15
+      },
+      "exceptions": [
+        {
+          "session": "2026-10-22",
+          "security_id": "00625K",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "00643K",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "00682U",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "00707R",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "020011",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "020032",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "020036",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "1341",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "1441",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "1538",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "1583",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "2321",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "2891C",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "4581",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "6921",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        }
+      ],
+      "fatal_errors": [],
+      "volume_unit": "FIELD_LABEL_SHARES_NO_CONVERSION",
+      "security_scope": "RESOURCE_SECURITIES_MIX_NOT_ADMITTED_STOCK_UNIVERSE",
+      "currency_adjustment_segment": "UNKNOWN_NOT_CERTIFIED",
+      "research_admitted": false
+    },
+    "framing": "UNKNOWN_NO_CONTENT_LENGTH_IN_RETAINED_METADATA",
+    "publication": "UNKNOWN",
+    "research_admitted": false
+  },
+  {
+    "dataset_id": "11371",
+    "evidence_class": "OFFLINE_QC_REASSESSMENT_NOT_ORIGINAL_CAPTURE_REWRITE",
+    "actual_analysis_at": "2026-10-24T13:49:26.059845+00:00",
+    "parent_capture_record_sha256": "ea4a8bad4bd22afaca9614a88365d5cfc5666463a40bf99e977dd1ee798612e7",
+    "parent_capture_qc_code_sha256": "14b81444ef14c9001991c55627b464a639d99db0f94a88f4c32a3cd895bfd55d",
+    "current_qc_code_sha256": "3a590f7f336bff394db23c55a6afcde1a1c7d3eb1c1bdacf78fdb06e0bf4ddd9",
+    "raw_sha256": "c57a72d7864203d633c76716e56c35b689c0134fffbed7f069e41f2646372d1a",
+    "raw_bytes": 141480,
+    "qc": {
+      "status": "QC_EXCEPTIONS",
+      "encoding": "UTF-8",
+      "schema": [
+        "資料日期",
+        "代號",
+        "名稱",
+        "收盤",
+        "漲跌",
+        "開盤",
+        "最高",
+        "最低",
+        "成交股數",
+        "成交金額",
+        "成交筆數",
+        "最後買價",
+        "最後賣價",
+        "發行股數",
+        "次日漲停價",
+        "次日跌停價"
+      ],
+      "rows": 1017,
+      "distinct_securities": 1017,
+      "sessions": [
+        "2026-10-22"
+      ],
+      "earliest": "2026-10-22",
+      "latest": "2026-10-22",
+      "counts": {
+        "PASS": 990,
+        "MISSING_OHLCV_NO_FILL": 27
+      },
+      "exceptions": [
+        {
+          "session": "2026-10-22",
+          "security_id": "2073",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "2724",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "2949",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "3064",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "3085",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "3115",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "4139",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "4305",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "4530",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "4535",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "4728",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "5348",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "5455",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "5520",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "5703",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "6212",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "6236",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "6242",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "6597",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "6843",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        }
+      ],
+      "fatal_errors": [],
+      "volume_unit": "FIELD_LABEL_SHARES_NO_CONVERSION",
+      "security_scope": "RESOURCE_SECURITIES_MIX_NOT_ADMITTED_STOCK_UNIVERSE",
+      "currency_adjustment_segment": "UNKNOWN_NOT_CERTIFIED",
+      "research_admitted": false
+    },
+    "framing": "UNKNOWN_NO_CONTENT_LENGTH_IN_RETAINED_METADATA",
+    "publication": "UNKNOWN",
+    "research_admitted": false
+  }
+]

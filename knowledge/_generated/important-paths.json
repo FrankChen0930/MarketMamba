@@ -1,0 +1,27 @@
+{
+  "authority": "NAVIGATION_ONLY",
+  "authority_refs": [
+    "e3bce91:research/v7/corrected-baseline-v1/policy.json",
+    "e3bce91:research/v7/corrected-baseline-v1/feature-manifest.json",
+    "e3bce91:research/v7/corrected-baseline-v1/label-manifest.json",
+    "e3bce91:research/v7/corrected-baseline-v1/universe-manifest.json",
+    "e3bce91:research/v7/ohlcv-provenance-remediation-v1/readiness.json",
+    "044eef7:research/v7/corrected-e5-replication-v1/incumbent-contract.json",
+    "044eef7:research/v7/e1-rolling-origin-refresh-v1/experiment-contract.json",
+    "f5b0ff3:V6/marketmamba/ops/",
+    "9efed7b:reports/marketmamba_production_system_audit.md"
+  ],
+  "generated": true,
+  "local_paths": [
+    "AGENTS.md",
+    "knowledge/00_Project_Map/Current_State.md",
+    "knowledge/00_Project_Map/Authority_Map.md",
+    "V6/run_v62_daily.py",
+    "V6/scripts/v62_daily.bat",
+    "V6/experimental/v7_portfolio_contract.py",
+    "app/backend/main.py",
+    "app/frontend/src/App.jsx"
+  ],
+  "notice": "GENERATED / DO NOT HAND EDIT",
+  "schema_version": 2
+}

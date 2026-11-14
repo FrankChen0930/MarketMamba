@@ -1,0 +1,111 @@
+{
+  "acceptance": {
+    "10d_mean_ic_min": 0.03,
+    "10d_paired_delta_bootstrap_lower_95_gt": 0.0,
+    "5d_mean_ic_min": 0.04,
+    "5d_noninferiority_lower_95_gt": -0.01,
+    "both_seeds_non_negative_both_horizons": true,
+    "d10_minus_d1_positive_both_horizons": true
+  },
+  "baseline": "E5-PIT-Clean-v1",
+  "contract_sha256": "fea9948f05bb096596cb2cacfc522bad27a7e1f587d0a5a08f704da458d29152",
+  "correctness_semantics": {
+    "corrected_verified_executable_labels": {
+      "10d": 0,
+      "5d": 0
+    },
+    "evidence_class": "HISTORICAL_SIMULATION_PROXY",
+    "historical_simulation_readiness": "PASS",
+    "proxy_policy": "P0",
+    "strict_phase0": "STOP"
+  },
+  "frozen": {
+    "architecture": {
+      "cross_stock_forward_layers": 1,
+      "cross_stock_reverse_layers": 1,
+      "d_model": 64,
+      "d_state": 32,
+      "dropout": 0.0,
+      "expand": 2,
+      "graph": {
+        "edge_count": 0,
+        "enabled": false,
+        "fusion_branch": "ABSENT"
+      },
+      "head_dim": 8,
+      "horizons": [
+        5,
+        10
+      ],
+      "n_groups": 1,
+      "sequence_length": 60,
+      "temporal_layers": 1
+    },
+    "environment": "Colab 2026.04 / Python 3.12.13 exact lock",
+    "features": {
+      "group_dims": [
+        15,
+        20,
+        1,
+        12
+      ],
+      "input_dim": 48,
+      "order_from": "feature-manifest.json"
+    },
+    "labels": {
+      "evidence_class": "HISTORICAL_SIMULATION_PROXY",
+      "proxy_policy": "P0",
+      "source_version": "v2",
+      "valid_10d": 6923464,
+      "valid_5d": 7023920
+    },
+    "preprocessing": {
+      "cross_sectional_scaling": "causal per-session",
+      "current_industry_backfill": false,
+      "industry_neutralization": false,
+      "macro_scaling": "causal expanding"
+    },
+    "training": {
+      "epochs": 20,
+      "gradient_clip": 1.0,
+      "learning_rate": 0.0001,
+      "minimum_epochs": 5,
+      "minimum_lr_factor": 0.0001,
+      "optimizer": "AdamW",
+      "patience": 5,
+      "precision": "fp32",
+      "schedule": "linear warmup then cosine",
+      "secondary_metric": "mean_daily_rank_ic_10d_from_same_best_ic5_checkpoint",
+      "selection_metric": "mean_daily_rank_ic_5d",
+      "warmup_fraction": 0.15,
+      "weight_decay": 0.01
+    }
+  },
+  "hypothesis": "Temporal/regime staleness is the primary cause.",
+  "matrix": {
+    "namespace": "Data/v7_e1_rolling_origin_refresh_v1",
+    "ordering": [
+      "Date",
+      "stock_id"
+    ],
+    "reuse_incumbent_matrix": false,
+    "reuse_stable_inputs": true
+  },
+  "name": "E1 Rolling-Origin Unchanged-Contract Refresh",
+  "output_namespace": "MarketMamba_V7_E1_Rolling_Origin_Refresh",
+  "schema_version": "v7-e1-rolling-origin-refresh-contract-v1",
+  "seeds": [
+    17,
+    29
+  ],
+  "split": {
+    "evaluation_end_10d": "2026-08-28",
+    "evaluation_end_5d": "2026-09-04",
+    "evaluation_start": "2026-01-02",
+    "purge_end": "2025-12-31",
+    "purge_sessions": 30,
+    "purge_start": "2025-11-19",
+    "train_end": "2025-11-18",
+    "train_start": "2013-01-02"
+  }
+}

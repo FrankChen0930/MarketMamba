@@ -1,0 +1,17 @@
+{
+  "decision_id": "WINDOW32_PROSPECTIVE_SHADOW_PREPARATION",
+  "status": "PREPARATION_ONLY_STOP",
+  "authority": "HumanWindow32",
+  "integration_approved_and_completed": "W31fixed67e2d25 localff-only fromb64ac35",
+  "proposed_contract": "research/v7/window32-shadow-contract.json",
+  "evidence": "research/v7/window32-evidence.json",
+  "confirmed_direction": "all four Classical models retained;5dprimary/10dsecondary;07–08Taipei target;durable preopen publication;late research-only;prediction/label isolation",
+  "not_approved": [
+    "New API or Fit/Refit",
+    "Actual daily ranking or Shadow scheduler",
+    "Formal Data/Research Admission",
+    "W19 access/renewal/integration",
+    "W32 merge or next window"
+  ],
+  "remaining": "Data/model readiness, exact availability/missing/evaluation contract, bounded operational authorization"
+}

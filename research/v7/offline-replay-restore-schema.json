@@ -1,0 +1,227 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:marketmamba:synthetic-offline-replay-restore-v1",
+  "title": "Independent synthetic capability proofs, not research admission",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/replay"
+    },
+    {
+      "$ref": "#/$defs/restore"
+    }
+  ],
+  "$defs": {
+    "replay": {
+      "type": "object",
+      "required": [
+        "schema",
+        "status",
+        "research_admitted",
+        "capabilities",
+        "reasons",
+        "comparisons_match",
+        "replayed_at",
+        "historical_live_prediction_proven",
+        "manifest_sha256",
+        "run_key",
+        "simulated_evaluation_times"
+      ],
+      "properties": {
+        "schema": {
+          "const": "v7-offline-replay-evidence-v1"
+        },
+        "status": {
+          "enum": [
+            "REPLAY_REJECTED",
+            "EVALUATION_REPLAYABLE"
+          ]
+        },
+        "research_admitted": {
+          "const": false
+        },
+        "capabilities": {
+          "type": "object",
+          "required": [
+            "METADATA_VERIFIED",
+            "EVALUATION_REPLAYABLE",
+            "TRAINING_RESUMABLE",
+            "FULL_REPRODUCTION_READY"
+          ],
+          "properties": {
+            "METADATA_VERIFIED": {
+              "type": "object",
+              "required": [
+                "proven",
+                "reasons"
+              ],
+              "properties": {
+                "proven": {
+                  "type": "boolean"
+                },
+                "reasons": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "EVALUATION_REPLAYABLE": {
+              "type": "object",
+              "required": [
+                "proven",
+                "reasons"
+              ],
+              "properties": {
+                "proven": {
+                  "type": "boolean"
+                },
+                "reasons": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "TRAINING_RESUMABLE": {
+              "type": "object",
+              "required": [
+                "proven",
+                "reasons"
+              ],
+              "properties": {
+                "proven": {
+                  "type": "boolean"
+                },
+                "reasons": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "FULL_REPRODUCTION_READY": {
+              "type": "object",
+              "required": [
+                "proven",
+                "reasons"
+              ],
+              "properties": {
+                "proven": {
+                  "type": "boolean"
+                },
+                "reasons": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "comparisons_match": {
+          "type": "boolean"
+        },
+        "historical_live_prediction_proven": {
+          "const": false
+        },
+        "manifest_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "run_key": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "EVALUATION_REPLAYABLE"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "recomputed_hashes",
+              "expected_hashes",
+              "daily",
+              "paired_daily",
+              "rejection_ledger"
+            ],
+            "properties": {
+              "comparisons_match": {
+                "const": true
+              }
+            }
+          }
+        }
+      ]
+    },
+    "restore": {
+      "type": "object",
+      "required": [
+        "schema",
+        "status",
+        "research_admitted",
+        "training_resumable",
+        "reasons",
+        "roles",
+        "resume_candidate",
+        "orphans_not_promoted",
+        "limitations"
+      ],
+      "properties": {
+        "schema": {
+          "const": "v7-safe-restore-evidence-v1"
+        },
+        "status": {
+          "enum": [
+            "NOT_RESTORABLE",
+            "SYNTHETIC_RESTORE_CONTRACT_VERIFIED"
+          ]
+        },
+        "research_admitted": {
+          "const": false
+        },
+        "training_resumable": {
+          "const": false
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "resume_candidate": {
+          "enum": [
+            "latest",
+            "previous",
+            null
+          ]
+        },
+        "roles": {
+          "type": "object"
+        },
+        "orphans_not_promoted": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "$comment": "Proof flags independent, not an ordinal hierarchy. This scope cannot prove real training resume/full reproduction. Runtime semantic/hash/role checks required beyond structure."
+}

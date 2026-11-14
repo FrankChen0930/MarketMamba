@@ -1,0 +1,40 @@
+{
+  "reviewer": "/root/independent_review",
+  "rounds": 1,
+  "initial_decision": "NO_GO_PENDING_SINGLE_REPAIR",
+  "critical": 0,
+  "required": 3,
+  "independent_tests": 12,
+  "independent_seconds": 1.321,
+  "reviewed_actual_bytes": "2raw+2manifest+2records originals/initialRestore exact;4archivedsourcehashes verified",
+  "findings": [
+    {
+      "id": "R1",
+      "finding": "TPEx ---- token misclassified INVALID",
+      "fix": "Add token; preserve original records and code; explicit legacy QC version replay; separate new QC reassessment",
+      "RED": "test_review_missing_four_dash_retained_as_missing",
+      "verification": "GREEN; initialTPExQC_FAILED retained, newQC_EXCEPTIONS27missing; independent-processrestore replays initialQC and reportscurrent separately"
+    },
+    {
+      "id": "R2",
+      "finding": "Content-Length mismatch acceptedcomplete",
+      "fix": "Validate declared length in fetch and archive; missing header explicitly UNKNOWN, not a declared-length verification",
+      "RED": "test_review_content_length_short_read_incomplete",
+      "verification": "GREEN; short-read not complete; noheader testUNKNOWN"
+    },
+    {
+      "id": "R3",
+      "finding": "Retry could silently recreate lost committedraw",
+      "fix": "verified_record reader checks full dependencies before snapshot writes; only unpublished interruptedrecord can recover",
+      "RED": "test_review_missing_committed_raw_never_silent_retry_repair",
+      "verification": "GREEN; raw staysabsent; interrupted unpublishedrecord recovery stillPASS"
+    }
+  ],
+  "repairs_used": 1,
+  "max_repairs": 1,
+  "author_postrepair_verification": "ALL3_REQUIRED_RESOLVED_BY_25_TARGETED_TESTS_AND_SEPARATE_PROCESS_ACTUAL_RESTORE",
+  "remaining_known_required": 0,
+  "second_independent_review": false,
+  "postrepair_independent_GO": "NOT_REQUESTED_UNDER_ONE_REVIEW_LIMIT",
+  "no_repair_network_requests": true
+}

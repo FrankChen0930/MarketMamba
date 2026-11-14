@@ -1,0 +1,361 @@
+{
+  "as_of": "2026-09-20",
+  "authority": "VALIDATION_OUTPUT_ONLY",
+  "components": [
+    {
+      "details": {
+        "authority_topics": 24,
+        "broken_links": 0,
+        "duplicate_topics": 0,
+        "json_files": 2,
+        "markdown_files": 2,
+        "status": "PASS"
+      },
+      "error": null,
+      "label": "Project Map",
+      "status": "PASS"
+    },
+    {
+      "details": {
+        "agents_bytes": 7344,
+        "claude_bytes": 1391,
+        "claude_threshold_bytes": 5000,
+        "legacy_archive_preserved": true,
+        "status": "PASS"
+      },
+      "error": null,
+      "label": "Agent Guides",
+      "status": "PASS"
+    },
+    {
+      "details": {
+        "important_authority_refs": 9,
+        "important_local_paths": 8,
+        "optional_domains": 1,
+        "required_domains": 11,
+        "status": "PASS",
+        "validated_notes": 12
+      },
+      "error": null,
+      "label": "Domains",
+      "status": "PASS"
+    },
+    {
+      "details": {
+        "authority_refs_checked": 15,
+        "explicit_invariants": 5,
+        "generated_indexes": "PASS",
+        "json_files": 15,
+        "markdown_links_checked": 146,
+        "runtime_observations": 1,
+        "status": "PASS",
+        "warnings": []
+      },
+      "error": null,
+      "label": "Governance",
+      "status": "PASS"
+    },
+    {
+      "details": {
+        "as_of": "2026-09-20T23:59:59+08:00",
+        "authority": "VALIDATION_OUTPUT_ONLY",
+        "authority_refs": [
+          {
+            "branch": "fix/v7-historical-pit-reconstruction",
+            "commit": "e3bce91",
+            "findings": [],
+            "fragment": null,
+            "path": "research/v7/ohlcv-provenance-remediation-v1/source-reliability.json",
+            "raw": "fix/v7-historical-pit-reconstruction@e3bce91:research/v7/ohlcv-provenance-remediation-v1/source-reliability.json",
+            "resolved_commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+            "status": "PASS",
+            "topic": "Data provenance policy"
+          },
+          {
+            "branch": "fix/v7-historical-pit-reconstruction",
+            "commit": "e3bce91",
+            "findings": [],
+            "fragment": null,
+            "path": "research/v7/corrected-baseline-v1/policy.json",
+            "raw": "fix/v7-historical-pit-reconstruction@e3bce91:research/v7/corrected-baseline-v1/policy.json",
+            "resolved_commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+            "status": "PASS",
+            "topic": "PIT policy"
+          },
+          {
+            "branch": "fix/v7-historical-pit-reconstruction",
+            "commit": "e3bce91",
+            "findings": [],
+            "fragment": null,
+            "path": "research/v7/corrected-baseline-v1/feature-manifest.json",
+            "raw": "fix/v7-historical-pit-reconstruction@e3bce91:research/v7/corrected-baseline-v1/feature-manifest.json",
+            "resolved_commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+            "status": "PASS",
+            "topic": "Feature contract"
+          },
+          {
+            "branch": "fix/v7-historical-pit-reconstruction",
+            "commit": "e3bce91",
+            "findings": [],
+            "fragment": "ordered_features",
+            "path": "research/v7/corrected-baseline-v1/feature-manifest.json",
+            "raw": "fix/v7-historical-pit-reconstruction@e3bce91:research/v7/corrected-baseline-v1/feature-manifest.json#ordered_features",
+            "resolved_commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+            "status": "PASS",
+            "topic": "Feature list"
+          },
+          {
+            "branch": "fix/v7-historical-pit-reconstruction",
+            "commit": "e3bce91",
+            "findings": [],
+            "fragment": null,
+            "path": "research/v7/corrected-baseline-v1/label-manifest.json",
+            "raw": "fix/v7-historical-pit-reconstruction@e3bce91:research/v7/corrected-baseline-v1/label-manifest.json",
+            "resolved_commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+            "status": "PASS",
+            "topic": "Label contract"
+          },
+          {
+            "branch": "fix/v7-historical-pit-reconstruction",
+            "commit": "e3bce91",
+            "findings": [],
+            "fragment": null,
+            "path": "research/v7/corrected-baseline-v1/universe-manifest.json",
+            "raw": "fix/v7-historical-pit-reconstruction@e3bce91:research/v7/corrected-baseline-v1/universe-manifest.json",
+            "resolved_commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+            "status": "PASS",
+            "topic": "Universe contract"
+          },
+          {
+            "branch": "fix/v7-historical-pit-reconstruction",
+            "commit": "e3bce91",
+            "findings": [],
+            "fragment": null,
+            "path": "research/v7/historical-execution-proxy-v1/execution-proxy-policy.json",
+            "raw": "fix/v7-historical-pit-reconstruction@e3bce91:research/v7/historical-execution-proxy-v1/execution-proxy-policy.json",
+            "resolved_commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+            "status": "PASS",
+            "topic": "Historical simulation proxy"
+          },
+          {
+            "branch": "fix/v7-historical-pit-reconstruction",
+            "commit": "e3bce91",
+            "findings": [],
+            "fragment": null,
+            "path": "research/v7/ohlcv-provenance-remediation-v1/readiness.json",
+            "raw": "fix/v7-historical-pit-reconstruction@e3bce91:research/v7/ohlcv-provenance-remediation-v1/readiness.json",
+            "resolved_commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+            "status": "PASS",
+            "topic": "Strict executable evidence"
+          },
+          {
+            "branch": "feature/v7-e1-rolling-origin-refresh",
+            "commit": "044eef7",
+            "findings": [],
+            "fragment": null,
+            "path": "research/v7/corrected-e5-replication-v1/incumbent-contract.json",
+            "raw": "feature/v7-e1-rolling-origin-refresh@044eef7:research/v7/corrected-e5-replication-v1/incumbent-contract.json",
+            "resolved_commit": "044eef73712d2189d4e0e28e3d44b352eed6b5e3",
+            "status": "PASS",
+            "topic": "Corrected E5 architecture"
+          },
+          {
+            "branch": "feature/v7-e1-rolling-origin-refresh",
+            "commit": "044eef7",
+            "findings": [],
+            "fragment": "/fields/training",
+            "path": "research/v7/corrected-e5-replication-v1/incumbent-contract.json",
+            "raw": "feature/v7-e1-rolling-origin-refresh@044eef7:research/v7/corrected-e5-replication-v1/incumbent-contract.json#/fields/training",
+            "resolved_commit": "044eef73712d2189d4e0e28e3d44b352eed6b5e3",
+            "status": "PASS",
+            "topic": "Training recipe"
+          },
+          {
+            "branch": "feature/v7-e1-rolling-origin-refresh",
+            "commit": "044eef7",
+            "findings": [],
+            "fragment": null,
+            "path": "research/v7/corrected-e5-diagnostic-v1/summary.json",
+            "raw": "feature/v7-e1-rolling-origin-refresh@044eef7:research/v7/corrected-e5-diagnostic-v1/summary.json",
+            "resolved_commit": "044eef73712d2189d4e0e28e3d44b352eed6b5e3",
+            "status": "PASS",
+            "topic": "Diagnostic v1"
+          },
+          {
+            "branch": "feature/v7-e1-rolling-origin-refresh",
+            "commit": "044eef7",
+            "findings": [],
+            "fragment": null,
+            "path": "research/v7/corrected-e5-diagnostic-v2/diagnostic-summary.json",
+            "raw": "feature/v7-e1-rolling-origin-refresh@044eef7:research/v7/corrected-e5-diagnostic-v2/diagnostic-summary.json",
+            "resolved_commit": "044eef73712d2189d4e0e28e3d44b352eed6b5e3",
+            "status": "PASS",
+            "topic": "Extended diagnostic v2"
+          },
+          {
+            "branch": "feature/v7-e1-rolling-origin-refresh",
+            "commit": "044eef7",
+            "findings": [],
+            "fragment": null,
+            "path": "research/v7/e1-rolling-origin-refresh-v1/experiment-contract.json",
+            "raw": "feature/v7-e1-rolling-origin-refresh@044eef7:research/v7/e1-rolling-origin-refresh-v1/experiment-contract.json",
+            "resolved_commit": "044eef73712d2189d4e0e28e3d44b352eed6b5e3",
+            "status": "PASS",
+            "topic": "E1 experiment specification"
+          },
+          {
+            "branch": "docs/production-system-architecture-audit",
+            "commit": "9efed7b",
+            "findings": [],
+            "fragment": null,
+            "path": "reports/marketmamba_production_system_audit.md",
+            "raw": "docs/production-system-architecture-audit@9efed7b:reports/marketmamba_production_system_audit.md",
+            "resolved_commit": "9efed7b94b7737c7990b57640b1d6f9ed8d28796",
+            "status": "PASS",
+            "topic": "Production-system architecture"
+          },
+          {
+            "branch": "feature/production-phase-a-shadow-ledger",
+            "commit": "f5b0ff3",
+            "findings": [],
+            "fragment": null,
+            "path": "V6/marketmamba/ops/",
+            "raw": "feature/production-phase-a-shadow-ledger@f5b0ff3:V6/marketmamba/ops/",
+            "resolved_commit": "f5b0ff3df7645098cc01a9eeb36f5df22c4a3e41",
+            "status": "PASS",
+            "topic": "Phase A implementation"
+          }
+        ],
+        "findings": [],
+        "runtime_freshness": {
+          "as_of": "2026-09-20T23:59:59+08:00",
+          "observations": [
+            {
+              "actor": "K0 project knowledge discovery",
+              "evidence_ref": "research/project-knowledge/k0/runtime-map.json",
+              "expires_at": "2026-09-27T01:30:00+08:00",
+              "method": "Windows Task Scheduler inspection",
+              "observation_id": "windows-scheduler-20260920T013000+0800",
+              "observed_at": "2026-09-20T01:30:00+08:00",
+              "status": "FRESH",
+              "topic": "Windows Scheduler",
+              "value": {
+                "fetch_only_task": "ACTIVE_READY_LAST_RESULT_0",
+                "full_v62_task": "DISABLED_LAST_RESULT_255"
+              }
+            }
+          ],
+          "schema_version": 1,
+          "status": "PASS"
+        },
+        "schema_version": 2,
+        "status": "PASS"
+      },
+      "error": null,
+      "label": "Authority Drift",
+      "status": "PASS"
+    },
+    {
+      "details": {},
+      "error": null,
+      "label": "Runtime Freshness",
+      "status": "PASS"
+    },
+    {
+      "details": {
+        "mismatches": [],
+        "mode": "CHECK",
+        "outputs": [
+          "knowledge/_generated/tier-a-domain-index.json",
+          "knowledge/_generated/coverage.json",
+          "knowledge/_generated/important-paths.json",
+          "knowledge/_generated/domain-dependencies.md",
+          "knowledge/_generated/authority-history-summary.json",
+          "knowledge/_generated/legacy-documentation-drift.json"
+        ],
+        "status": "PASS"
+      },
+      "error": null,
+      "label": "Generated Index",
+      "status": "PASS"
+    },
+    {
+      "details": {
+        "authority": "VALIDATION_OUTPUT_ONLY",
+        "automatic_edits_performed": false,
+        "documents_scanned": [
+          "README.md",
+          "OVERVIEW.md",
+          "PROJECT.md"
+        ],
+        "generated": true,
+        "hits": [
+          {
+            "claim_id": "LEGACY_ARCHITECTURE_CURRENT",
+            "document": "README.md",
+            "excerpt": "\u5404\u7d44\u6295\u5f71\u5f8c Concat \u2192 d_model=256",
+            "line": 85,
+            "severity": "WARNING"
+          },
+          {
+            "claim_id": "LEGACY_FEATURE_COUNT",
+            "document": "README.md",
+            "excerpt": "**\u7279\u5fb5\u7dad\u5ea6**\uff1a56 \u7dad\uff08\u500b\u4eba\u5be6\u76e4\u4e3b\u7dda\uff0c\u4e0d\u542b\u76f8\u5c0d\u5f37\u5ea6\u7279\u5fb5\uff09\uff0f59 \u7dad\uff08\u591a\u6a21\u578b\u4e26\u884c\u7dda\uff0c\u591a\u7d0d\u5165 RS_5d/RS_20d/RS_60d \u76f8\u5c0d\u5f37\u5ea6\u7279\u5fb5\uff0c\u7e3d\u9ad4\u74b0\u5883\u7dad\u5ea6\u4ee5 mask \u65b9\u5f0f\u6b78\u96f6\u2014\u2014\u6d88\u878d\u5be6\u9a57\u8b49\u5be6\u7e3d\u9ad4\u74b0\u5883\u56e0\u5b50\u5728\u6a6b\u65b7\u9762\u6392\u5e8f\u4e0a\u7b49\u540c\u6bcf\u65e5\u5e38\u6578\u3001\u62ff\u6389\u5f8c\u8a0a\u865f\u54c1\u8cea\u53cd\u800c\u986f\u8457\u4e0a\u5347\uff09\u3002",
+            "line": 113,
+            "severity": "WARNING"
+          },
+          {
+            "claim_id": "FULL_DAILY_ACTIVE",
+            "document": "OVERVIEW.md",
+            "excerpt": "> \u53f0\u80a1 AI \u9078\u80a1\u7cfb\u7d71\uff1aMamba SSM + KG-Enhanced GATv2 \u00b7 \u6bcf\u65e5\u81ea\u52d5\u5316\u63a8\u8ad6 \u00b7 \u5168\u68e7 Web Dashboard",
+            "line": 3,
+            "severity": "WARNING"
+          },
+          {
+            "claim_id": "LEGACY_FEATURE_COUNT",
+            "document": "OVERVIEW.md",
+            "excerpt": "### \u8f38\u5165\u8cc7\u6599\uff0856 \u7dad\u7279\u5fb5 \u00d7 252 \u5929\u5e8f\u5217\uff09",
+            "line": 27,
+            "severity": "WARNING"
+          },
+          {
+            "claim_id": "LEGACY_FEATURE_COUNT",
+            "document": "OVERVIEW.md",
+            "excerpt": "> V6.2 \u8a13\u7df4\u7248\uff08`INPUT_DIM=59`\uff09\u984d\u5916\u555f\u7528 RS_5d/RS_20d/RS_60d \u4e09\u500b\u76f8\u5c0d\u5f37\u5ea6\u7279\u5fb5\u3002",
+            "line": 36,
+            "severity": "WARNING"
+          },
+          {
+            "claim_id": "LEGACY_ARCHITECTURE_CURRENT",
+            "document": "OVERVIEW.md",
+            "excerpt": "\u2193 FactorGroupedEmbedding\uff08\u5404\u7fa4\u7d44\u7368\u7acb\u6295\u5f71 \u2192 \u6bd4\u4f8b\u5206\u914d\u5b50\u7dad\u5ea6 \u2192 Concat \u2192 d_model=256\uff09",
+            "line": 46,
+            "severity": "WARNING"
+          },
+          {
+            "claim_id": "FULL_DAILY_ACTIVE",
+            "document": "OVERVIEW.md",
+            "excerpt": "**\u7528\u9014**\uff1a\u5c55\u793a Claude LLM \u6bcf\u65e5\u81ea\u52d5\u751f\u6210\u7684\u5e02\u5834\u5206\u6790\u5831\u544a\uff0c\u4ee5\u53ca\u63a8\u8ad6\u6642\u7684\u5927\u76e4\u5feb\u7167\u3002",
+            "line": 324,
+            "severity": "WARNING"
+          },
+          {
+            "claim_id": "LEGACY_ARCHITECTURE_CURRENT",
+            "document": "PROJECT.md",
+            "excerpt": "MambaBlocks \u00d7 8 (d_model=256, d_state=32)  # \u6355\u6349\u6642\u5e8f\u6a21\u5f0f",
+            "line": 77,
+            "severity": "WARNING"
+          }
+        ],
+        "notice": "GENERATED / DO NOT HAND EDIT",
+        "schema_version": 1,
+        "status": "WARNING"
+      },
+      "error": null,
+      "label": "Legacy Docs",
+      "status": "WARNING"
+    }
+  ],
+  "overall": "WARNING",
+  "schema_version": 1
+}

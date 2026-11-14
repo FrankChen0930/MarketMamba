@@ -1,0 +1,90 @@
+{
+  "schema": "w35-independent-review-v1",
+  "reviewer": "independent_review",
+  "status": "NO_GO_REQUIRED_REPAIR",
+  "critical": 0,
+  "required": 1,
+  "base": "c57ac3d7822f229ae08849e56581ebb3c969441c",
+  "scope": "Single targeted main review of offline recovery logic, read-only W19 evidence, final report/activation candidate/replay/resource evidence and canonical Current State/Authority Map/sole backlog/Worktree Register. Final navigation consistently states REVIEW_REWORK_REQUIRED, UNMERGED/NOT_DEPLOYED; no activation or research authority promotion. No dispatch, source/task mutation, fit or model scoring authority.",
+  "findings": [
+    {
+      "id": "W35-R1",
+      "severity": "Required",
+      "status": "OPEN",
+      "location": "V6/experimental/v7_data_recovery.py:AttemptLedger.reserve NETWORK_RETRY",
+      "problem": "A failed parent can authorize multiple different retry children, including after a prior child succeeds or while that child remains unresolved. The total cap does not establish a single transient-failure retry chain.",
+      "reproduction": [
+        "reserve NORMAL_CAPTURE a; finish a NETWORK_FAILURE",
+        "reserve NETWORK_RETRY b retry_of=a; finish b SUCCESS",
+        "reserve NETWORK_RETRY c retry_of=a is accepted; counts NETWORK_RETRY=2"
+      ],
+      "actual": "Second independent retry of consumed old failure is accepted. Same issue permits pending-child branching.",
+      "expected": "A failure claim may have at most one distinct retry child. Exact same event retry remains idempotent; next new retry must reference the previous child after its own NETWORK_FAILURE. No new retry after SUCCESS or unresolved child.",
+      "evidence": "Reviewer ran pure tempfile counterexample; no HTTP or real dispatch. Existing14 tests still PASS.",
+      "repair_acceptance": "RED→GREEN cases for successful child, pending child and valid two-failure linear chain; preserve same-event idempotence, per-resource/session caps and cross-session source halt."
+    }
+  ],
+  "independent_checks": {
+    "existing_tests_passed": 14,
+    "test_seconds": 0.54,
+    "read_only_verified_W19_capture_records": 10,
+    "raw_rows": 12031,
+    "PASS_rows": 11814,
+    "missing_rows": 217,
+    "fatal_errors": 0,
+    "missing_TWSE": 72,
+    "missing_TPEx": 145,
+    "missing_market_security_ids": 121,
+    "missing_frequency_days": {
+      "1": 69,
+      "2": 23,
+      "3": 17,
+      "4": 9,
+      "5": 3
+    },
+    "missing_outside_fixed_research_universe": 217,
+    "TWSE_fixed64_daily_basic_QC": "all5sessions64valid",
+    "W34_cohort_reference": "Git82cd prepared bytes/hash matched; no model loading",
+    "offline_restore_file_pairs": 41,
+    "offline_bytes_per_copy": 9409116,
+    "unchanged_W19_inventory_files": 135,
+    "git_diff_check": "PASS"
+  },
+  "warnings": [
+    {
+      "id": "W35-W1",
+      "finding": "Missing/persistent prices do not identify instrument class, no-trade, suspension or vendor cause. Exclusion from exact research universe is separate from cause UNKNOWN."
+    },
+    {
+      "id": "W35-W2",
+      "finding": "Source/update/QC/evidence bindings are offline caller assertions. Reference retry policy is not activated production policy and there is no GET dispatcher."
+    },
+    {
+      "id": "W35-W3",
+      "finding": "W19 Task observation is timestamped owner evidence; reviewer did not invoke scheduler cmdlets/CLI. Enabled/Ready before expiry is not proof of disabled state after expiry."
+    },
+    {
+      "id": "W35-W4",
+      "finding": "Same-host restore is not independent backup; raw retrieval/calendars remain unqualified for formal PIT/admission."
+    }
+  ],
+  "source_pins": {
+    "V6/experimental/v7_data_recovery.py": "8ee5ba2a11affc9bf4325b80dfb0b66a73c3249d46d3530d0baf6d62c972253a",
+    "window35-recovery-tests.py": "c6e145d0b1eda6366a9369eef2792b8995615a74ac0fd1807b9fcb93f5120d7d",
+    "window35-closure.json": "95b1d93ffafcaf7f36b7721097595130d5313ad95c7f11f25d9364892e1c48cb",
+    "window35-cohort-reference.json": "61e5b6e777fc6c69c13c5e3dc97868dcb84be51f088a26233a9df42079693189",
+    "window35-offline-evidence.json": "b01c40992371e15a75a5a00a8dc9ea08ec1bdf146973bd89e196841dc531bdcb",
+    "window35-w19-inventory-before.json": "60ec1705a1e71e1a948289781e6fd78bdba04652c370afb24d1ca1c8cc8e2208"
+  },
+  "reviewer_operations": {
+    "network_GET": 0,
+    "Task_or_runtime_operations": 0,
+    "W19_writes": 0,
+    "Fit_GPU_real_model_scores_RankIC": 0,
+    "writes": [
+      "research/v7/window35-review.json"
+    ]
+  },
+  "observed_at": "2026-11-02T13:48:47.150008+00:00",
+  "remaining_owner_closure": "Repair W35-R1 with evidenced RED/GREEN; independent targeted closure required. No other Required from completed main review."
+}

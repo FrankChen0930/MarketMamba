@@ -1,0 +1,189 @@
+{
+  "observed_at": "2026-10-24T13:54:03.094102+00:00",
+  "files": [
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-manual-pilot/captures/11371/b0e532a300f4ed5ab69d79477f58919998471a89693c010df28efc803c8a0d90.json",
+      "bytes": 4224,
+      "sha256": "ea4a8bad4bd22afaca9614a88365d5cfc5666463a40bf99e977dd1ee798612e7",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE_NOT_ADMISSION"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-manual-pilot/captures/11549/ddeb69691380709c749a797a009cfd342b914f1f1631c303c07af1e0c805566c.json",
+      "bytes": 4382,
+      "sha256": "bbbcd7bdfae295a884760e24e24a393bf6e1403ae32adac7d0e0dc42230065a9",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE_NOT_ADMISSION"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-manual-pilot/pilot-config.json",
+      "bytes": 2053,
+      "sha256": "154ecdd2ef774a8b02ec115204166d7ac1c661ff322ac5e4d91f7a4f58f35480",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE_NOT_ADMISSION"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-manual-pilot/snapshots/manifests/01c6a94cd42429a7b9c74ffa2d68dedfe5abf382c08ac5bae2c8edec28a88af0-2026-10-24T134157.318907p0000.json",
+      "bytes": 760,
+      "sha256": "a475f89ecf31e5c0719a54c8f8bd882999cfe8755e029c1736cc78412f31844d",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE_NOT_ADMISSION"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-manual-pilot/snapshots/manifests/75489ba4d2af589fb622f836bd1d9facbe44626e8a11f78f38a38f519352a42f-2026-10-24T134211.501060p0000.json",
+      "bytes": 803,
+      "sha256": "0983b4b4d28be224c3091a2390f281fcfa89d181a5e565a32d126800c131f6ea",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE_NOT_ADMISSION"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-manual-pilot/snapshots/raw/79bdd059e75a0a829dfef1e5c1330cb48a84b302e04ce040e77ee0dd35e5ec6a.bin",
+      "bytes": 137956,
+      "sha256": "79bdd059e75a0a829dfef1e5c1330cb48a84b302e04ce040e77ee0dd35e5ec6a",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-manual-pilot/snapshots/raw/c57a72d7864203d633c76716e56c35b689c0134fffbed7f069e41f2646372d1a.bin",
+      "bytes": 141480,
+      "sha256": "c57a72d7864203d633c76716e56c35b689c0134fffbed7f069e41f2646372d1a",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-manual-pilot/source/V6/experimental/v7_csv_capture_qc.py",
+      "bytes": 3796,
+      "sha256": "14b81444ef14c9001991c55627b464a639d99db0f94a88f4c32a3cd895bfd55d",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE_NOT_ADMISSION"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-manual-pilot/source/V6/experimental/v7_manual_collector.py",
+      "bytes": 12582,
+      "sha256": "146eca8d33584a1a0351a10f1d1746349bc929ada409c55d82bff7e3ab76ebf6",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE_NOT_ADMISSION"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-manual-pilot/source/research/v7/window15-license-matrix.json",
+      "bytes": 11416,
+      "sha256": "274f464b6ca58381b2b8cca4d71109428502a3b2c09c942512f93e99f801cd06",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE_NOT_ADMISSION"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-manual-pilot/source/research/v7/window17-calendar-panel.json",
+      "bytes": 5032,
+      "sha256": "94acb534bd4ae901c35b10ad4abb6bc5f3c45f1fe0314a203b4923805409a953",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE_NOT_ADMISSION"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-manual-pilot/source-reviewed/V6/experimental/v7_csv_capture_qc.py",
+      "bytes": 3846,
+      "sha256": "3a590f7f336bff394db23c55a6afcde1a1c7d3eb1c1bdacf78fdb06e0bf4ddd9",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE_NOT_ADMISSION"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-manual-pilot/source-reviewed/V6/experimental/v7_manual_collector.py",
+      "bytes": 14703,
+      "sha256": "75f0aedf701a765b2a448c312b606f362db6a0460bf200188c90e1b909a73bf8",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE_NOT_ADMISSION"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-network-budget/11371-result.json",
+      "bytes": 4412,
+      "sha256": "b55a85fdc072768af982489116993560a41981b521bc46f3394e0f1d4870b6ae",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE_NOT_ADMISSION"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-network-budget/11371.json",
+      "bytes": 678,
+      "sha256": "8b55c22a5eeac52b99525f3a6101002e61c856722b87739b1b347e13f0ff279c",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE_NOT_ADMISSION"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-network-budget/11549-result.json",
+      "bytes": 4570,
+      "sha256": "b4274d0fa1c601e7ddd9fa6af0e41e4c667be4ce0e9768e6193e95275bd5da1f",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE_NOT_ADMISSION"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-network-budget/11549.json",
+      "bytes": 645,
+      "sha256": "71f66b49bc53401cbc4993def7e06a329d4ee769de565e13774b58d4ed12307f",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE_NOT_ADMISSION"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-manual-restore/captures/11371/b0e532a300f4ed5ab69d79477f58919998471a89693c010df28efc803c8a0d90.json",
+      "bytes": 4224,
+      "sha256": "ea4a8bad4bd22afaca9614a88365d5cfc5666463a40bf99e977dd1ee798612e7",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE_NOT_ADMISSION"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-manual-restore/captures/11549/ddeb69691380709c749a797a009cfd342b914f1f1631c303c07af1e0c805566c.json",
+      "bytes": 4382,
+      "sha256": "bbbcd7bdfae295a884760e24e24a393bf6e1403ae32adac7d0e0dc42230065a9",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE_NOT_ADMISSION"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-manual-restore/snapshots/manifests/01c6a94cd42429a7b9c74ffa2d68dedfe5abf382c08ac5bae2c8edec28a88af0-2026-10-24T134157.318907p0000.json",
+      "bytes": 760,
+      "sha256": "a475f89ecf31e5c0719a54c8f8bd882999cfe8755e029c1736cc78412f31844d",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE_NOT_ADMISSION"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-manual-restore/snapshots/manifests/75489ba4d2af589fb622f836bd1d9facbe44626e8a11f78f38a38f519352a42f-2026-10-24T134211.501060p0000.json",
+      "bytes": 803,
+      "sha256": "0983b4b4d28be224c3091a2390f281fcfa89d181a5e565a32d126800c131f6ea",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE_NOT_ADMISSION"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-manual-restore/snapshots/raw/79bdd059e75a0a829dfef1e5c1330cb48a84b302e04ce040e77ee0dd35e5ec6a.bin",
+      "bytes": 137956,
+      "sha256": "79bdd059e75a0a829dfef1e5c1330cb48a84b302e04ce040e77ee0dd35e5ec6a",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-manual-restore/snapshots/raw/c57a72d7864203d633c76716e56c35b689c0134fffbed7f069e41f2646372d1a.bin",
+      "bytes": 141480,
+      "sha256": "c57a72d7864203d633c76716e56c35b689c0134fffbed7f069e41f2646372d1a",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-reviewed-restore/captures/11371/b0e532a300f4ed5ab69d79477f58919998471a89693c010df28efc803c8a0d90.json",
+      "bytes": 4224,
+      "sha256": "ea4a8bad4bd22afaca9614a88365d5cfc5666463a40bf99e977dd1ee798612e7",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE_NOT_ADMISSION"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-reviewed-restore/captures/11549/ddeb69691380709c749a797a009cfd342b914f1f1631c303c07af1e0c805566c.json",
+      "bytes": 4382,
+      "sha256": "bbbcd7bdfae295a884760e24e24a393bf6e1403ae32adac7d0e0dc42230065a9",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE_NOT_ADMISSION"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-reviewed-restore/snapshots/manifests/01c6a94cd42429a7b9c74ffa2d68dedfe5abf382c08ac5bae2c8edec28a88af0-2026-10-24T134157.318907p0000.json",
+      "bytes": 760,
+      "sha256": "a475f89ecf31e5c0719a54c8f8bd882999cfe8755e029c1736cc78412f31844d",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE_NOT_ADMISSION"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-reviewed-restore/snapshots/manifests/75489ba4d2af589fb622f836bd1d9facbe44626e8a11f78f38a38f519352a42f-2026-10-24T134211.501060p0000.json",
+      "bytes": 803,
+      "sha256": "0983b4b4d28be224c3091a2390f281fcfa89d181a5e565a32d126800c131f6ea",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE_NOT_ADMISSION"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-reviewed-restore/snapshots/raw/79bdd059e75a0a829dfef1e5c1330cb48a84b302e04ce040e77ee0dd35e5ec6a.bin",
+      "bytes": 137956,
+      "sha256": "79bdd059e75a0a829dfef1e5c1330cb48a84b302e04ce040e77ee0dd35e5ec6a",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-reviewed-restore/snapshots/raw/c57a72d7864203d633c76716e56c35b689c0134fffbed7f069e41f2646372d1a.bin",
+      "bytes": 141480,
+      "sha256": "c57a72d7864203d633c76716e56c35b689c0134fffbed7f069e41f2646372d1a",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window18-manual-pilot/fixture-collision-original.txt",
+      "bytes": 19642,
+      "sha256": "c5f27619b563a18188c38dddf0d4ac090cf24f8b09c1e09e5dcbea4727611483",
+      "artifact_class": "ARCHIVE"
+    }
+  ],
+  "no_cleanup": true,
+  "same_host_same_filesystem": true,
+  "independent_backup": false,
+  "backup_status": "BACKUP_PENDING"
+}

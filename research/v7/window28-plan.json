@@ -1,0 +1,77 @@
+{
+  "schema": "w28-development-clean-refit-v1",
+  "study_id": "W28_CLEAN_TRAINING_DEVELOPMENT_ONLY",
+  "recipe_id": "W24_RIDGE_ALPHA1_FEATURES_UNCHANGED_W27_TRAIN_MASK",
+  "status": "HUMAN_LIMITED_DEVELOPMENT_CPU_AUTHORIZATION_NOT_FORMAL_ADMISSION",
+  "source_commit": "39e2fedeb550a08d00f4abddc9a6caa7b1d570f8",
+  "policy_id": "W27_RAW_PRICE_DIAGNOSTIC_DEVELOPMENT_ONLY_v1",
+  "horizons": [
+    5,
+    10
+  ],
+  "expected_training_counts": {
+    "5": {
+      "old": 7338,
+      "clean": 7164
+    },
+    "10": {
+      "old": 7188,
+      "clean": 6841
+    }
+  },
+  "training": "2021 only, W27 mask eligible; raw original feature/label identity and shared calendar geometry; exit before 2022",
+  "evaluation": "2022 Validation Diagnostic / 2023 Exposed Development; exact W27 frozen subset keys and labels, no additions/removals",
+  "ridge": {
+    "alpha": 1.0,
+    "scaling": "CLEAN_TRAIN_ONLY_ZSCORE",
+    "fit_intercept": true,
+    "zero_variance": "UNIT_SCALE"
+  },
+  "features": [
+    "raw_close_momentum1",
+    "raw_intraday_range"
+  ],
+  "fit_limit": 2,
+  "per_horizon_fit_limit": 1,
+  "resume": false,
+  "fit_dispatch": "exclusive claim before each fresh fit; no retries or repeated fit if claim exists; independent replay uses persisted state only",
+  "evaluation_policy": "exact W24/W27 average-tie Spearman, minimum20, equal-session weighting; no thresholds/search/model selection",
+  "L0": "frozen W27 direction/scores unchanged; comparison is old Ridge versus new clean-trained Ridge on identical support",
+  "poison_cases": {
+    "stocks": [
+      "2303",
+      "2321",
+      "2330"
+    ],
+    "signals": [
+      "2021-07-01",
+      "2022-07-18",
+      "2023-03-01"
+    ],
+    "horizons": [
+      5,
+      10
+    ],
+    "maximum_cases": 18,
+    "selection": "Fixed before fits/results: first common W27-eligible session at/after anchors 2021-07-01/2022-07-01/2023-03-01 for all3stocks and2horizons; July1 2321 was absent from original W24; July18 is first eligible common date; no mask relaxation"
+  },
+  "poison": "only date > signal in private memory copy: finite positive factor on OHLC, alter volume/turnover when present; preserve all past bytes; reuse existing engineering_sample feature code and persisted models; exact feature/prediction equality",
+  "poison_acceptance": "all18 specified decision cases must have original eligible features; mismatch or unavailable case fails proof; no cherry-picking replacements; current-session positive control must alter features",
+  "limits": {
+    "new_API": 0,
+    "GPU": 0,
+    "Colab": 0,
+    "hyperparameter_search": 0,
+    "new_universe_or_period": 0,
+    "bootstrap_LOSO": 0,
+    "process_timeout_seconds": 300
+  },
+  "authority_limits": [
+    "2022/2023 exposed, not Independent Test",
+    "Unknown actions/suspension/asof/vintage retained",
+    "No Strict PIT/executable/investment claims",
+    "W19 protected, W12 halted",
+    "No V6/Frozen Contracts change",
+    "No W28 merge/push/deploy/next window"
+  ]
+}

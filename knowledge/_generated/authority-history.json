@@ -1,0 +1,176 @@
+{
+  "schema_version": 1,
+  "status": "APPEND_ONLY_FROM_K2",
+  "authority": "GOVERNANCE_HISTORY_INDEX",
+  "events": [
+    {
+      "topic": "Knowledge governance",
+      "old_authority": "research/project-knowledge/k0/knowledge-impact-policy-proposal.md (PROPOSAL_ONLY)",
+      "new_authority": "092b65b:knowledge/GOVERNANCE.md",
+      "changed_at": "2026-09-20",
+      "change_commit": "092b65b",
+      "reason": "K2 established the first reviewed governance lifecycle and operational contracts.",
+      "evidence": [
+        "knowledge/GOVERNANCE.md",
+        "knowledge/knowledge-impact-map.json",
+        "knowledge/runtime-observations/scheduler.json"
+      ]
+    },
+    {
+      "topic": "E1 completed result",
+      "old_authority": "external-only unverified result state",
+      "new_authority": "eec63c5:research/v7/e1-rolling-origin-refresh-v1/results/result-manifest.json",
+      "changed_at": "2026-09-21",
+      "change_commit": "eec63c5",
+      "reason": "Formal seed 17/29 results and paired evaluation were hash-validated and admitted as historical-simulation research evidence; strict Phase 0 remains STOP.",
+      "evidence": [
+        "research/v7/e1-rolling-origin-refresh-v1/results/result-manifest.json",
+        "research/v7/e1-rolling-origin-refresh-v1/results/evaluation.json"
+      ]
+    },
+    {
+      "topic": "E1 post-run diagnostic",
+      "old_authority": "undiagnosed post-run state",
+      "new_authority": "ef020e5:research/v7/e1-postrun-diagnostic-v1/diagnostic-summary.json",
+      "changed_at": "2026-09-21",
+      "change_commit": "ef020e5",
+      "reason": "Exact paired month and sensitivity analyses were completed; absent matrix/checkpoint and ex-ante regime inputs remain explicit UNKNOWN.",
+      "evidence": [
+        "research/v7/e1-postrun-diagnostic-v1/diagnostic-summary.json",
+        "research/v7/e1-postrun-diagnostic-v1/monthly-comparison.json"
+      ]
+    },
+    {
+      "topic": "Scheduler state",
+      "old_authority": "knowledge/runtime-observations/scheduler.json (observed 2026-09-20T01:30:00+08:00)",
+      "new_authority": "knowledge/runtime-observations/scheduler-20260922T132135+0800.json",
+      "changed_at": "2026-09-22T13:21:35+08:00",
+      "change_commit": "git commit containing this event (git log -1 -- knowledge/_generated/authority-history.json)",
+      "reason": "Read-only live Task Scheduler query confirms fetch-only enabled, full V6.2 disabled, last run/result and exact action; older observation retained.",
+      "evidence": [
+        "knowledge/runtime-observations/scheduler-20260922T132135+0800.json",
+        "knowledge/runtime-observations/operational-path-20260922T132521+0800.json",
+        "D: V6/logs/scheduler.log",
+        "D: V6/logs/v62_daily.log"
+      ]
+    },
+    {
+      "topic": "Task 4 limited engineering correctness",
+      "old_authority": "NOT_APPROVED at 63a040d",
+      "new_authority": "knowledge/02_History/Decisions/20261021-task4-human-approval.json",
+      "changed_at": "2026-10-21",
+      "change_commit": "containing commit",
+      "reason": "Explicit Human approval in current conversation, after fixed 1e119ef index and 12 evidence digests revalidated. No research/production/Task5 approval.",
+      "evidence": [
+        "1e119ef:research/production-system/phase-a/task4-evidence-recovery.json"
+      ]
+    },
+    {
+      "topic": "Task 5 limited offline engineering correctness",
+      "old_authority": "NOT_APPROVED at 1c5250e",
+      "new_authority": "knowledge/02_History/Decisions/20261021-task5-human-approval.json",
+      "changed_at": "2026-10-21",
+      "change_commit": "containing commit",
+      "reason": "Explicit Human decision in Final Engineering Review request after fixed artifacts and indexed digests matched. No final Phase A, merge, research or production approval.",
+      "evidence": [
+        "1c5250e:research/production-system/phase-a/task5-evidence-index.json",
+        "1c5250e:research/production-system/phase-a/acceptance.json"
+      ]
+    },
+    {
+      "topic": "Phase A implementation",
+      "old_authority": "feature/production-phase-a-shadow-ledger@f5b0ff3:V6/marketmamba/ops/",
+      "new_authority": "integration/phase-a-task5@1c5250e:V6/marketmamba/ops/",
+      "changed_at": "2026-10-21",
+      "change_commit": "containing commit",
+      "reason": "Point implementation navigation at the verified unmerged candidate including aggregation and isolation/replay evidence. Retain f5b0ff3 as historical source; no production or main authority promotion.",
+      "evidence": [
+        "1c5250e:research/production-system/phase-a/task5-evidence-index.json",
+        "1e119ef:research/production-system/phase-a/task4-evidence-recovery.json"
+      ]
+    },
+    {
+      "topic": "Phase A local development integration",
+      "old_authority": "integration/phase-a-task5@1c5250e:V6/marketmamba/ops/",
+      "new_authority": "89f9496:V6/marketmamba/ops/",
+      "changed_at": "2026-10-21",
+      "change_commit": "containing closure commit",
+      "reason": "Explicit Human local ff-only approval; main reached exact89f9496 and pre/post tests passed. No production/research promotion.",
+      "evidence": [
+        "research/production-system/phase-a/integration-closure.json"
+      ]
+    },
+    {
+      "topic": "Current V7 development planning ownership",
+      "old_authority": "Historical umbrella and per-window queues; no unified active cross-domain backlog",
+      "new_authority": "research/v7/research-program.md#current-development-program--2026-10-21",
+      "changed_at": "2026-10-21",
+      "change_commit": "containing strategic recovery commit",
+      "reason": "Human explicitly requested evidence-grounded persistent backlog in existing mechanisms. Reuse original program; planning only, proposals not granted execution or research approval.",
+      "evidence": [
+        "reports/v7_strategic_roadmap_recovery.md",
+        "research/v7/cpu-integration-candidate-20261021.json"
+      ]
+    },
+    {
+      "topic": "V7 H1 Portfolio History engineering scope",
+      "old_authority": "PORT-01–04 proposed pending H1",
+      "new_authority": "knowledge/02_History/Decisions/20261021-portfolio-history-h1.json",
+      "changed_at": "2026-10-21",
+      "change_commit": "containing PORT-01 commit",
+      "reason": "Explicit Human approval of four fixture-only CPU read-only engineering units; no research or merge promotion.",
+      "evidence": [
+        "knowledge/02_History/Decisions/20261021-portfolio-history-h1.json",
+        "research/v7/portfolio-history-evidence.json"
+      ]
+    },
+    {
+      "topic": "Portfolio History UX direction",
+      "old_authority": "Original H1 engineering slice; no dual-mode product decision",
+      "new_authority": "knowledge/02_History/Decisions/20261021-portfolio-ux-human-decision.json",
+      "changed_at": "2026-10-21",
+      "change_commit": "containing UX preflight commit",
+      "reason": "Explicit Human UX-01–04 authorization; no financial or deployment authority changed",
+      "evidence": [
+        "knowledge/02_History/Decisions/20261021-portfolio-ux-human-decision.json",
+        "research/v7/portfolio-ux-skill-preflight.json"
+      ]
+    },
+    {
+      "topic": "Portfolio History final UX closure scope",
+      "old_authority": "UX01–04 complete; Human direction review pending",
+      "new_authority": "knowledge/02_History/Decisions/20261021-portfolio-ux-closure-decision.json",
+      "changed_at": "2026-10-21",
+      "change_commit": "containing final UX closure commit",
+      "reason": "Explicit Human acceptance of dual-mode direction and authorization of only selection visibility and event readability. No H0/H2 or final-result approval inferred.",
+      "evidence": [
+        "knowledge/02_History/Decisions/20261021-portfolio-ux-closure-decision.json",
+        "research/v7/portfolio-ux-closure-evidence.json"
+      ]
+    },
+    {
+      "topic": "Final H0 late-font browser blocker correction",
+      "old_authority": "Original6c894794 candidate; H0 stopped in evidence-only audit7ecb920",
+      "new_authority": "knowledge/02_History/Decisions/20261021-portfolio-font-blocker-authorization.json",
+      "changed_at": "2026-10-21",
+      "change_commit": "containing font-blocker correction commit",
+      "reason": "Explicit Human minimal repair/new candidate/preflight authorization; prior limited UX acceptance retained; no new SHA H0 or H2 granted",
+      "evidence": [
+        "knowledge/02_History/Decisions/20261021-portfolio-font-blocker-authorization.json",
+        "research/v7/portfolio-font-visibility-evidence.json"
+      ]
+    },
+    {
+      "topic": "Portfolio History exact-candidate H0 local integration",
+      "old_authority": "fix/v7-timeline-font-visibility@4a66928 preintegration candidate; new SHA H0 pending",
+      "new_authority": "knowledge/02_History/Decisions/20261021-portfolio-final-h0-approval.json",
+      "changed_at": "2026-10-21",
+      "change_commit": "containing main documentation closure commit",
+      "reason": "Explicit Human exact4a66928 H0 approval; main ff-only from83a6a2e, pre/post checks passed. Limited product acceptance/local source status only; no research or deployment authority promotion.",
+      "evidence": [
+        "knowledge/02_History/Decisions/20261021-portfolio-final-h0-approval.json",
+        "research/v7/portfolio-h0-integration-closure.json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+# MarketMamba — Root .gitignore
+# ================================
+
+# Secrets — NEVER commit
+.env
+*.env
+secrets.py
+
+# 玉山證券 API 憑證與設定（含 API Key/Secret，2026-06-12 發現曾外流到 git 歷史）
+玉山/
+*.p12
+*.ini
+
+# Model checkpoints (too large)
+**/*.pt
+**/*.pth
+**/*.ckpt
+
+# Data directories (regenerate locally) — 整個目錄一律排除
+#
+# 2026-07-30 改為整目錄：原本是逐項列舉（processed_v6/、*.parquet、
+# **Data/processed_v6.zip** …），而 F6 上傳包叫 `processed_v6_f6.zip`，
+# 只差一個後綴就從縫隙漏出來，`git status` 把 0.56 GB 列為未追蹤檔案——
+# 任何一次 `git add -A` 都會把它推上 GitHub，而大檔進了歷史極難清除
+# （2026-06-12 為了玉山金鑰做過一次 filter-repo，代價很高）。
+#
+# ⚠️ 已被追蹤的檔案不受 .gitignore 影響。目前仍在追蹤中的有：
+#     Data/2330_2023.parquet、Data/fix_data.py、Data/verify_data.py
+#   要真正排除需另外 `git rm --cached`（本次未動，避免誤刪他人依賴）。
+Data/
+**/Data/
+
+# V6 result archives (dated subdirs only — root CSVs are committed)
+V6/results/20*/
+
+# Python cache
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Frontend build artifacts
+node_modules/
+dist/
+.vite/
+
+# Checkout-local generated state. Ignore is a Git staging boundary, not deletion authority.
+/.artifacts/
+/.runtimes/
+/.worktrees/
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Personal Obsidian vault (private notes, not for public repo)
+market_mamba_note/
+obsidian_note/
+
+# Claude Code local settings (machine-specific permission grants)
+# 例外：Agent / Advisor 角色定義要進 git（版本紀錄 + repo-level 可重建性）
+# 注意順序：父目錄被 ignore 時無法用 ! 重新納入子項，所以要先開父層再關子層
+.claude/*
+!.claude/agents/
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/advisor/
+
+# Temporary debug / test output
+app/backend/_api_check.txt
+
+# 實驗產出的模型分數 parquet（~140 MB，可由 baseline_*/score_mamba_local/wf_scores 重現）
+V6/experimental/result/scores/
+V6/experimental/result/wf/
+
+# Research paper PDFs are kept locally for literature review but should not bloat git.
+research/literature/papers/
+
+# 每日推論用的 baseline 權重（2026-08-08）。使用者決定不進 git——目前只在這台機器跑。
+# 可由 baseline_ridge_lasso.py --save-model / baseline_gbdt.py --tag 重建，
+# 但 ⚠️ GBDT 重建出來的**訊號層不會一樣**（ρ≈0.92），組合層才一致（11.0% vs 11.2%）。
+# 已追蹤的 V6/experimental/result/gbdt_5d.txt（2026-07-13 舊版）不受影響。
+V6/experimental/result/ridge_5d*.npz
+V6/experimental/result/gbdt_5d__*.txt
+V6/experimental/result/gru_5d*.pt

@@ -1,0 +1,38 @@
+{
+  "python": "3.12.13",
+  "torch_cuda": "12.8",
+  "cxx11_abi": true,
+  "packages": {
+    "torch": "2.10.0+cu128",
+    "mamba-ssm": "2.3.2.post1",
+    "torch-geometric": "2.7.0",
+    "numpy": "2.0.2",
+    "pandas": "2.2.2",
+    "scipy": "1.16.3",
+    "pyarrow": "18.1.0",
+    "triton": "3.6.0",
+    "einops": "0.8.2",
+    "transformers": "5.0.0",
+    "huggingface-hub": "1.8.0"
+  },
+  "native_mamba_extension_import": "passed",
+  "official_ssd_import": "passed",
+  "gpu_tensor_execution": false,
+  "verified_at": "2026-09-12T04:28:04.705400+00:00",
+  "runtime": "2026.04",
+  "pip_check": "passed",
+  "unit_tests_passed": 47,
+  "delivery_regression_tests_passed": 3,
+  "real_sample_rows": 2244,
+  "real_features_compared": 47,
+  "mas_runtime_resolved": true,
+  "colab_gpu_executed": false,
+  "full_raw_data_cleared": false,
+  "test_fixture_note": "CPU synthetic optimizer test mocks CUDA availability as false for Torch 2.10; production V7 code unchanged.",
+  "logs_sha256": {
+    "v7-unit-tests.log": "8670319eb356f101ccdf3f9227a390386ee1df2049333425efbd21937d2ab7c1",
+    "v7-real-data-tests-final.log": "3ee64e3ae8d1e7150bc822a1339b3cf6ae301477540935b7749d0131a20f45b3",
+    "pip-check.log": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09",
+    "native-verification.log": "c25053ef7731e9994c997620c9777c768a9a67de3af7ea28f391255dbecdc9f0"
+  }
+}

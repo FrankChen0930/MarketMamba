@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "authority": "Human Window18 Limited Real Forward Collector Pilot",
+  "authorized": [
+    "W17fixedlocalff",
+    "minimalmanualCLI",
+    "exactCSV11549/11371oneGETeach",
+    "durablelocalraw/qc/provenance/restore",
+    "boundedofflinefaulttesting"
+  ],
+  "source_candidate": "96e8c0c4f2f7f78c508048e31f0f163d6c707128",
+  "formal_data_admission": false,
+  "daily_collector_activation": false,
+  "new_research_or_training": false,
+  "unapproved_fallback": false,
+  "max_review": 1,
+  "max_repair": 1,
+  "gates": {
+    "strict_phase0": "STOP",
+    "e1_frozen_matrix": "BLOCKED",
+    "h2": "NOT_APPROVED",
+    "historical_exploratory_study": "PROPOSED",
+    "forward_collector_activation": "NOT_APPROVED",
+    "w12_gpu": "SAFETY_HALTED",
+    "fair_evaluation": "PROPOSED",
+    "pre_next_open": "PROPOSED",
+    "inference_recovery": "DEFERRED"
+  },
+  "scope_clarification": "ForwardCollectorActivation NOT_APPROVED refers DAILY/UNATTENDED; this finitemanualpilot specificallyapproved/completed, not ongoingauthority"
+}

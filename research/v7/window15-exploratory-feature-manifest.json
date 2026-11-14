@@ -1,0 +1,32 @@
+{
+  "schema": "v7-exploratory-feature-proposal-v1",
+  "feature_manifest_id": "v7-exploratory-ohlcv-features-v0.1",
+  "status": "PROPOSED",
+  "admitted": false,
+  "ordered_candidates": [
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume_shares",
+    "return_1",
+    "volume_ratio_L",
+    "volatility_L"
+  ],
+  "formulas": {
+    "return_1": "Close(t)/Close(previous qualified session)-1; no gap-by-row shortcut",
+    "volume_ratio_L": "Volume(t)/mean(Volume(t-L:t-1)); priorL qualified sessions only",
+    "volatility_L": "std of L prior returns through t-1; definition/estimator unapproved"
+  },
+  "not_selected_alternatives": [
+    "momentum/reversal from lagged returns, not both automatically admitted"
+  ],
+  "parameters": {
+    "L": null,
+    "adjustment_policy": null,
+    "zero_denominator_missing_policy": null,
+    "scaling_policy": null
+  },
+  "timing": "All dependency availability/vintages must satisfy separately approved cutoff/proxy assumptions; causal formula does not establish raw historical PIT",
+  "frozen_e5_mutated": false
+}

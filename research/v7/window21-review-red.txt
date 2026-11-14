@@ -1,0 +1,68 @@
+test_closed_window_refuses_unused_budget (V6.experimental.v7_finmind_proof_test.ReviewRegressionTest.test_closed_window_refuses_unused_budget) ... FAIL
+test_dangling_claim_without_terminal_fails_closed (V6.experimental.v7_finmind_proof_test.ReviewRegressionTest.test_dangling_claim_without_terminal_fails_closed) ... FAIL
+test_incomplete_read_consumes_claim_and_stops_repeat (V6.experimental.v7_finmind_proof_test.ReviewRegressionTest.test_incomplete_read_consumes_claim_and_stops_repeat) ... ERROR
+test_missing_published_raw_stops_before_repeat_no_repair (V6.experimental.v7_finmind_proof_test.ReviewRegressionTest.test_missing_published_raw_stops_before_repeat_no_repair) ... FAIL
+
+======================================================================
+ERROR: test_incomplete_read_consumes_claim_and_stops_repeat (V6.experimental.v7_finmind_proof_test.ReviewRegressionTest.test_incomplete_read_consumes_claim_and_stops_repeat)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window21-finmind-proof/V6/experimental/v7_finmind_proof_test.py", line 73, in test_incomplete_read_consumes_claim_and_stops_repeat
+    self.assertEqual(self.call()['status'],'FAILED');self.assertEqual(len(list((self.root/'claims').glob('*.json'))),1)
+                     ^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window21-finmind-proof/V6/experimental/v7_finmind_proof_test.py", line 13, in call
+    def call(self,params=None,kind='price'):return request(self.root,params or P,kind=kind,fetch=self.fetch)
+                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window21-finmind-proof/V6/experimental/v7_finmind_proof.py", line 81, in request
+    code,headers,body,complete=fetch(params);at=stamp();safeheaders={k.lower():str(v) for k,v in headers.items() if k.lower() in {'content-type','content-length','date','retry-after','location'}}
+                               ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/unittest/mock.py", line 1134, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/unittest/mock.py", line 1138, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/unittest/mock.py", line 1193, in _execute_mock_call
+    raise effect
+http.client.IncompleteRead: IncompleteRead(7 bytes read, 10 more expected)
+
+======================================================================
+FAIL: test_closed_window_refuses_unused_budget (V6.experimental.v7_finmind_proof_test.ReviewRegressionTest.test_closed_window_refuses_unused_budget)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window21-finmind-proof/V6/experimental/v7_finmind_proof_test.py", line 80, in test_closed_window_refuses_unused_budget
+    self.assertEqual(self.call()['status'],'WINDOW_CLOSED');self.fetch.assert_not_called()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'CAPTURED' != 'WINDOW_CLOSED'
+- CAPTURED
++ WINDOW_CLOSED
+
+
+======================================================================
+FAIL: test_dangling_claim_without_terminal_fails_closed (V6.experimental.v7_finmind_proof_test.ReviewRegressionTest.test_dangling_claim_without_terminal_fails_closed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window21-finmind-proof/V6/experimental/v7_finmind_proof_test.py", line 77, in test_dangling_claim_without_terminal_fails_closed
+    self.assertEqual(self.call(kind='repeat')['status'],'STOPPED_EVIDENCE_FAILURE');self.fetch.assert_not_called()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'CAPTURED' != 'STOPPED_EVIDENCE_FAILURE'
+- CAPTURED
++ STOPPED_EVIDENCE_FAILURE
+
+
+======================================================================
+FAIL: test_missing_published_raw_stops_before_repeat_no_repair (V6.experimental.v7_finmind_proof_test.ReviewRegressionTest.test_missing_published_raw_stops_before_repeat_no_repair)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window21-finmind-proof/V6/experimental/v7_finmind_proof_test.py", line 69, in test_missing_published_raw_stops_before_repeat_no_repair
+    x=self.call(kind='repeat');self.assertEqual(x['status'],'STOPPED_EVIDENCE_FAILURE');self.assertEqual(self.fetch.call_count,1);self.assertFalse(raw.exists());self.assertTrue((self.root/'STOP.json').exists())
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'CAPTURED' != 'STOPPED_EVIDENCE_FAILURE'
+- CAPTURED
++ STOPPED_EVIDENCE_FAILURE
+
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.291s
+
+FAILED (failures=3, errors=1)

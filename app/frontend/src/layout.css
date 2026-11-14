@@ -1,0 +1,398 @@
+/* ── App Shell ──────────────────────────────── */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ── Top Navigation Bar ─────────────────────── */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: 52px;
+  padding: 0 20px;
+  background: rgba(13, 17, 23, 0.95);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 32px;
+  text-decoration: none;
+}
+
+.topbar-brand .logo-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #00d4ff, #0088cc);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  font-family: var(--font-mono);
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.4);
+}
+
+.topbar-brand .brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.topbar-brand .brand-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+}
+
+.topbar-brand .brand-sub {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+/* ── Nav Tabs ───────────────────────────────── */
+.nav-tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+}
+
+.nav-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: transparent;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.nav-tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.nav-tab.active {
+  color: var(--accent-blue);
+  background: rgba(0, 212, 255, 0.08);
+  border-color: rgba(0, 212, 255, 0.2);
+}
+
+/* 圖示是 lucide SVG，用 flex 對齊到文字中線；
+   stroke 走 currentColor，所以 hover / active 換色會一起跟著換 */
+.nav-tab .tab-icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.nav-tab .tab-icon svg { width: 15px; height: 15px; }
+
+/* ── Topbar Right ───────────────────────────── */
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+}
+
+.topbar-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.2;
+}
+
+.topbar-stat .ts-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.topbar-stat .ts-value { font-family: var(--font-mono); font-size: 13px; font-weight: 600; }
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--positive);
+  box-shadow: 0 0 6px var(--positive);
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* ── Ticker Bar ─────────────────────────────── */
+.ticker-bar {
+  height: 28px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.ticker-track {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  animation: ticker 40s linear infinite;
+  white-space: nowrap;
+}
+
+.ticker-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 24px;
+  border-right: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.ticker-item .ti-name { color: var(--text-secondary); }
+.ticker-item .ti-price { color: var(--text-primary); font-weight: 600; }
+.ticker-item .ti-change { }
+
+/* ── Page Content ───────────────────────────── */
+.page-content {
+  flex: 1;
+  padding: 20px;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── Grid Layouts ───────────────────────────── */
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.dashboard-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 330px;
+  gap: 16px;
+  align-items: start;
+}
+.grid-main { display: grid; grid-template-columns: 1fr 360px; gap: 16px; }
+.grid-main-left { display: grid; grid-template-columns: 1fr; gap: 16px; }
+
+/* ── Panel ──────────────────────────────────── */
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.panel-title-icon { font-size: 15px; }
+
+.panel-body { padding: 16px; }
+.panel-body-flush { padding: 0; }
+
+/* ── Page Header ────────────────────────────── */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.page-title { font-size: 18px; font-weight: 700; }
+.page-subtitle { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+/* ── Responsive ─────────────────────────────── */
+
+/* ── Tablet (≤ 1024px) ── */
+@media (max-width: 1024px) {
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .grid-main,
+  .dashboard-main-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Mobile Status Bar (only visible < 640px) ── */
+.mobile-status-bar {
+  display: none; /* hidden on desktop */
+}
+
+/* ── Mobile (≤ 640px) ── */
+@media (max-width: 640px) {
+  /* Topbar */
+  .topbar { padding: 0 12px; height: 50px; }
+  .topbar-brand { margin-right: 8px; }
+  .topbar-brand .brand-text { display: none; }
+  .topbar-right { display: none; } /* replaced by mobile-status-bar */
+
+  /* 主導覽：窄螢幕只剩圖示，靠 aria-label / title 帶語意（見 AppLayout） */
+  .nav-tabs { justify-content: space-around; gap: 0; }
+  .nav-tabs .nav-tab { padding: 6px 8px; flex: 1; justify-content: center; min-height: 44px; }
+  .nav-tabs .nav-tab span:not(.tab-icon) { display: none; }
+  .nav-tabs .nav-tab .tab-icon svg { width: 19px; height: 19px; }
+
+  /* 子導覽會換行，空間夠 → 保留文字標籤。
+     只剩圖示的分頁列在子層級太難認（同一排可能有五六個相似的圖示） */
+  .nav-tab { min-height: 40px; }
+
+  /* Mobile status strip (Model IC + status dot) */
+  .mobile-status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 12px;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+  }
+  .mobile-status-bar .msb-left  { display: flex; align-items: center; gap: 6px; }
+  .mobile-status-bar .msb-right { display: flex; align-items: center; gap: 5px; }
+  .mobile-status-bar .msb-label { color: var(--text-muted); text-transform: uppercase; }
+  .mobile-status-bar .msb-value { font-family: var(--font-mono); font-weight: 600; }
+
+  /* Ticker */
+  .ticker-bar { height: 24px; }
+  .ticker-item { padding: 0 16px; font-size: 10px; gap: 4px; }
+
+  /* Page */
+  .page-content { padding: 10px; }
+  .page-header  { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .page-title   { font-size: 16px; }
+
+  /* Grids */
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }   /* 2×2 on mobile */
+  .grid-3, .grid-2 { grid-template-columns: 1fr; }
+
+  /* Panels */
+  .panel-header { padding: 10px 12px; }
+  .panel-title  { font-size: 12px; }
+  .panel-body   { padding: 10px; }
+
+  /* Stat cards */
+  .stat-card        { padding: 12px 14px; }
+  .stat-card .value { font-size: 18px; }
+
+  /* Tables — horizontal scroll on mobile */
+  .panel-body-flush,
+  .panel-body { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .data-table th, .data-table td { padding: 7px 10px; font-size: 12px; white-space: nowrap; }
+
+  /* Hide non-essential table columns on mobile */
+  .col-hide-mobile { display: none !important; }
+
+  /* AlphaBar compact on mobile */
+  .alpha-bar-track { width: 32px !important; }
+  .alpha-bar-value { min-width: 40px !important; font-size: 10px !important; }
+
+  /* Dashboard right-panel: reorder Top5 → Macro → Sector on mobile */
+  .dash-right-panel {
+    display: flex !important;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .dash-panel-top5   { order: -2; }
+  .dash-panel-macro  { order: -1; }
+  .dash-panel-sector { order: 0; }
+
+  /* Panel header can wrap when space is tight */
+  .panel-header-wrap { flex-wrap: wrap; gap: 8px; }
+}
+
+
+/* ═══════════════════════════════════════════════
+   Dashboard Responsive Grid
+   ═══════════════════════════════════════════════ */
+
+/* ── AlphaBar ───────────────────────────────── */
+.alpha-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.alpha-bar-track {
+  width: 52px;
+  height: 5px;
+  background: var(--bg-hover);
+  border-radius: 3px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.alpha-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+}
+.alpha-bar-value {
+  font-size: 11px;
+  min-width: 52px;
+}
+
+/* ── Main 2-col layout ──────────────────────── */
+.dash-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 330px;
+  gap: 16px;
+  align-items: start;
+}
+
+/* Right panel: default flex column */
+.dash-right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* ── Tablet (641px – 1024px):
+      Main grid collapses to 1 col,
+      Right panel becomes a 3-col horizontal row  ── */
+@media (max-width: 1024px) {
+  .dash-main-grid {
+    grid-template-columns: 1fr;
+  }
+  .dash-right-panel {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  /* Grid children need min-width to avoid overflow */
+  .dash-right-panel > * { min-width: 0; }
+}
+
+/* ── Narrow tablet / large phone (641px – 767px):
+      Right panel drops to 2 cols           ── */
+@media (max-width: 767px) and (min-width: 641px) {
+  .dash-right-panel {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+

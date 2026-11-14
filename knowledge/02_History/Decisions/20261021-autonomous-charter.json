@@ -1,0 +1,39 @@
+{
+  "status": "ACCEPTED",
+  "authority": "HUMAN",
+  "recorded_on": "2026-10-21",
+  "source": "Human message: /goal Market Mamba V7 — Autonomous Development Charter & First Work Program",
+  "approved_base": "6d74d7384caa5fa90b1b050ce507bfb8282f19df",
+  "scope": "Reusable governance charter plus first bounded CPU-only window, at most 3–5 valuable units; fewer if no suitable READY work. Stop after this window.",
+  "engineering": [
+    "data fetching reliability",
+    "schema drift detection",
+    "PIT/data correctness validation",
+    "checkpoint/restart/version handoff",
+    "portfolio/backtesting engineering",
+    "existing artifact inspection",
+    "approved experiment CPU preparation",
+    "necessary tests/review/fixes"
+  ],
+  "research_preparation": "Proposals and audits only; not formal research approval",
+  "human_only": [
+    "hypotheses/experiments",
+    "prediction/ranking/portfolio admission",
+    "formal data changes",
+    "new training/GPU/paid resources",
+    "deploy/schedule/trading",
+    "correctness/readiness/gates"
+  ],
+  "strict_phase0": "STOP",
+  "e1_frozen_matrix": "BLOCKED; no repeated search without new evidence",
+  "exclusions": [
+    "main merge",
+    "push",
+    "Windows operations",
+    "V6 production/models",
+    "MAS Core Live",
+    "MAS expansion",
+    "unbounded execution"
+  ],
+  "recording_limit": "Summary of explicit Human grant; no approval of agent-selected research results."
+}

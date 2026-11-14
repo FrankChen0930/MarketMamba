@@ -1,0 +1,98 @@
+{
+  "schema": "w31-independent-review-v1",
+  "reviewer": "independent_review",
+  "status": "GO",
+  "scope": "Single targeted main review of fixed W31 study, execution evidence, saved outputs, restoration and final canonical STOP navigation. No merge/admission/new execution authority.",
+  "base": "b64ac353833a9248121f12ebe61e1333decb2dbf",
+  "prefit_commit": "ddcf5d835b43578ed9fc5567ee677d88e928e203",
+  "critical": 0,
+  "required": 0,
+  "warnings": [
+    {
+      "id": "W31-W1",
+      "finding": "Initial navigation structural FAIL did not block O1 because original shell lacked fail-fast handling. Repaired schema passes structural health; original FAIL and corrected WARNING are preserved. This is a historical process deviation, not evidence that prefit governance passed.",
+      "evidence": [
+        "window31-health-initial.txt",
+        "window31-health-schema-fixed.txt",
+        "window31-evidence.json"
+      ]
+    },
+    {
+      "id": "W31-W2",
+      "finding": "GNU timeout execution is supported by supplied tool/session references and command template, not independent OS-signed wrapper telemetry. CPU ledger scope excludes unrelated processes."
+    },
+    {
+      "id": "W31-W3",
+      "finding": "Same-host byte restoration is verified; independent backup remains pending. Geometry and mature views do not certify historical publication/vintage, universe or unknown actions; exposed overlapping folds are not independent tests."
+    }
+  ],
+  "independent_checks": {
+    "tests": {
+      "pure_tests": 6,
+      "mock_tests": 4,
+      "passed": 10,
+      "additional_real_fits": 0
+    },
+    "prefit_code_contract_prepared_bytes": "match ddcf5d8",
+    "origin_horizon_role_views": 24,
+    "entry_exit_shared_session_geometry": "exact",
+    "model_view_arrays_hashes": "24 models exact",
+    "Ridge_models": 12,
+    "LightGBM_models": 12,
+    "Ridge_own_scaler_and_intercept": "exact authorized TRAIN/REFIT arrays",
+    "Ridge_max_normal_equation_residual_without_solve": 3.552713678800501e-15,
+    "LightGBM_trees_each": 64,
+    "prediction_keys_and_model_identity": 453192,
+    "saved_paired_support_and_difference_arithmetic": 10896,
+    "new_empirical_RankIC_computation": 0,
+    "restored_files": 72,
+    "bytes_per_copy": 91000410,
+    "unchanged_prior_W29_W30_files": 310,
+    "CPU_ledger_seconds": 87.69063,
+    "CPU_reserve_seconds": 60,
+    "CPU_limit_seconds": 1800,
+    "artifact_plus_restore_bytes": 182002029,
+    "artifact_limit_bytes": 536870912,
+    "V6_Data_diff": "empty",
+    "git_diff_check": "PASS"
+  },
+  "owner_replay_evidence": {
+    "status": "INDEPENDENT_PROCESS_REPLAY_PASS",
+    "predictions": 453192,
+    "daily": 7264,
+    "paired": 10896,
+    "fits": 0,
+    "reviewer_did_not_rerun_replay": true
+  },
+  "source_pins": {
+    "window31-contract.json": "4e002caa3a3497363d236152964f76a8b05bf26ebd4a076bca0818d3b6af59ec",
+    "window31-prepared.json": "11187d45c79cebbc077ddce54ccb3642805b3d8e9e9bfaca0e8258a38af53726",
+    "window31-folds.py": "99a8dadc1ba1329d3dca5cbcc5cded28282d85450f288a4fb6b5018c5a97f92a",
+    "window31-study.py": "0e857da8af65829ea437986e18f9598a031ea2b06a7fd12bbad8e87dbeda2c5d",
+    "window31-common.py": "2d0198a05cd7df72e6f5524ebcab42c8d081d93a3b15dd6d70f51711c6bd8454",
+    "window31-run.json": "2fd56864bc2978c6a178041b1b8e41da29e031f26228edbf8c48e7c5ee7df957",
+    "window31-results.json": "5bf2ba5cd8d6902564896973c954e925f2d62c1ee21a4ddf86fca26d290fc66b",
+    "window31-replay.json": "75485c7913b4df9cf69cea5084fd42286f1f4cde40fb1b3bfe36d24962b5aff2",
+    "window31-local-artifacts.json": "4465f5150acbe32f340eb9500bc75dee01e915f90609f741f742e269433491ce",
+    "window31-resource-evidence.json": "35dd88f78d9f599bdc17e43a5d5890bf1ba2298338c9d177102ef696ed697225"
+  },
+  "reviewer_operations": {
+    "network_API": 0,
+    "GPU": 0,
+    "Fit_training": 0,
+    "actual_new_predictions_or_RankIC": 0,
+    "W19_access": 0,
+    "writes": [
+      "research/v7/window31-review.json"
+    ]
+  },
+  "observed_at": "2026-10-25T11:51:05.173202+00:00",
+  "closure_navigation": {
+    "Current_State": "COMPLETE_STOP; fit budgets exhausted; read-only resume",
+    "Authority_Map_and_machine_authority": "DEVELOPMENT_NOT_ADMITTED_UNMERGED",
+    "sole_backlog": "COMPLETE_STOP; no O1/O2/O3 rerun",
+    "Worktree_Register": "COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+    "health": "Project Map PASS; Overall WARNING, existing categories",
+    "remaining": "Owner records GO in evidence and locally commits; no more fit/next window/merge granted"
+  }
+}

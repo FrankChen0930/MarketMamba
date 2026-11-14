@@ -1,0 +1,1 @@
+{"origin": "O1", "fits": {"Ridge": 4, "LightGBM": 4}, "model_ids": ["W31-O1-H5-Ridge-VALIDATION_FIT", "W31-O1-H5-LightGBM-VALIDATION_FIT", "W31-O1-H10-Ridge-VALIDATION_FIT", "W31-O1-H10-LightGBM-VALIDATION_FIT", "W31-O1-H5-Ridge-REFIT", "W31-O1-H5-LightGBM-REFIT", "W31-O1-H10-Ridge-REFIT", "W31-O1-H10-LightGBM-REFIT"]}

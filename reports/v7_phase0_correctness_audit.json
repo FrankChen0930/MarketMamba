@@ -1,0 +1,383 @@
+{
+  "baseline": "E5 fixed three-seed ensemble evaluated on 2024-2026 research-used predictions",
+  "blocking_findings": [
+    {
+      "affected_scope": "Every current Alpha_5d and Alpha_10d training/evaluation label and every IC derived from them; 2005-2026 prepared history and 2024-2026 A/B/C evaluations.",
+      "domain": "label_execution_alignment",
+      "evidence": [
+        {
+          "lines": "177-193",
+          "observation": "calendar_labels uses close[indices+horizon] / close[indices] - 1 for both horizons.",
+          "path": "V6/experimental/v7_integrated_data_quality.py"
+        },
+        {
+          "lines": "135-175",
+          "observation": "A 17:00 signal cannot execute at the same timestamp; the first valid fill example is next session at 09:00.",
+          "path": "V6/experimental/v7_portfolio_engine_test.py"
+        }
+      ],
+      "finding": "Current labels are Close[t+h] / Close[t] - 1, but a prediction that consumes session-t close information is not executable at Close[t]. The portfolio contract rejects execution at the signal timestamp and first fills at the next session. Both 5d and 10d IC therefore include the untradeable Close[t]-to-next-execution interval.",
+      "id": "label_execution_alignment.close_denominator_precedes_execution",
+      "minimum_fix": "Freeze an execution convention (for example next-session open), redefine both horizons from the executable entry price to an explicit end price, regenerate labels, retrain the incumbent seeds, and regenerate predictions before signal/portfolio validation.",
+      "requires_rebuild": true,
+      "severity": "CRITICAL",
+      "status": "FAIL"
+    },
+    {
+      "affected_scope": "Revenue_MoM and Revenue_YoY rows without historical create_time; full-history affected-row count is not present in the returned A/B/C deliveries.",
+      "domain": "feature_point_in_time",
+      "evidence": [
+        {
+          "lines": "6-34",
+          "observation": "Missing release timestamps use the fixed fallback and increment revenue_assumed_release_rows.",
+          "path": "V6/experimental/v7_integrated_point_in_time.py"
+        },
+        {
+          "lines": "point_in_time_alignment",
+          "observation": "The recorded diagnostic metadata reports revenue_assumed_release_rows=1156.",
+          "path": "deliveries/history/before-handoff-20260913/v7-colab/MarketMamba/delivery/smoke-data/feature_metadata.json"
+        }
+      ],
+      "finding": "Revenue rows with create_time use next-session availability, but missing create_time falls back to month-end plus 11 calendar days. The pipeline records assumed rows but does not prove the actual historical publication timestamp for them; the smoke metadata shows 1,156 assumed-release rows.",
+      "id": "feature_point_in_time.revenue_assumed_release_dates",
+      "minimum_fix": "Obtain vintage publication timestamps or conservatively exclude/lag all assumed rows, quantify the full-history scope, then rebuild features, labels, training, and predictions.",
+      "requires_rebuild": true,
+      "severity": "MAJOR",
+      "status": "UNKNOWN"
+    },
+    {
+      "affected_scope": "EPS, EPS_Surprise, Gross_Margin, ROE, Book_Value, and Free_Cash_Flow across the prepared history.",
+      "domain": "feature_point_in_time",
+      "evidence": [
+        {
+          "lines": "790-909",
+          "observation": "Financial statement available_from is derived only from period end plus a fixed 45/90-day lag.",
+          "path": "V6/marketmamba/data/feature_engineer.py"
+        },
+        {
+          "lines": "1220-1319",
+          "observation": "Cash-flow available_from is quarter-end plus a fixed 45-day lag.",
+          "path": "V6/marketmamba/data/feature_engineer.py"
+        }
+      ],
+      "finding": "Quarterly statements use quarter-end plus 45 days and year-end plus 90 days rather than issuer-specific historical filing timestamps. This is a conservative-looking approximation but is not vintage certification, especially around non-business-day deadlines and late filings.",
+      "id": "feature_point_in_time.financial_statement_fixed_lag",
+      "minimum_fix": "Bind each filing to a verified historical publication timestamp (usable no earlier than the next executable session), then rebuild affected features and dependent model artifacts.",
+      "requires_rebuild": true,
+      "severity": "MAJOR",
+      "status": "UNKNOWN"
+    },
+    {
+      "affected_scope": "All historical rows whose 42 non-excluded features are industry demeaned; practical membership-change count is not yet quantified.",
+      "domain": "feature_point_in_time",
+      "evidence": [
+        {
+          "lines": "26-68",
+          "observation": "The classification policy is emitted as frozen accumulated snapshot, not historical PIT, and affects 42 neutralized columns.",
+          "path": "V6/experimental/v7_integrated_industry.py"
+        },
+        {
+          "lines": "classification_limit",
+          "observation": "The C delivery repeats the non-PIT frozen-classification limitation.",
+          "path": "deliveries/stability-c-v1/summary.json"
+        }
+      ],
+      "finding": "Industry-neutralized features use one frozen accumulated stock_info snapshot for all historical dates. The implementation and delivered metadata explicitly state that the classification is not historical point-in-time.",
+      "id": "feature_point_in_time.industry_snapshot",
+      "minimum_fix": "Provide effective-dated industry membership or remove historical industry neutralization, then rebuild features, retrain, and regenerate predictions.",
+      "requires_rebuild": true,
+      "severity": "MAJOR",
+      "status": "FAIL"
+    },
+    {
+      "affected_scope": "All graph messages for all training and evaluation dates.",
+      "domain": "feature_point_in_time",
+      "evidence": [
+        {
+          "lines": "731-740",
+          "observation": "Preparation fingerprints a single knowledge_graph_v2.npz source.",
+          "path": "V6/experimental/v7_integrated_train.py"
+        },
+        {
+          "lines": "19-19",
+          "observation": "The plan converts the single graph artifact to CSR and does not define effective-dated edges.",
+          "path": "research/v7/integrated-candidate-plan.md"
+        }
+      ],
+      "finding": "One knowledge_graph_v2 snapshot is converted and used across the full history. No effective dates or historical graph vintages are present in the training contract, so future-known relationships cannot currently be ruled out.",
+      "id": "feature_point_in_time.graph_vintage",
+      "minimum_fix": "Audit edge sources and effective dates; either build date-valid graph snapshots/edge masks or exclude unverifiable relationships, then retrain and regenerate predictions.",
+      "requires_rebuild": true,
+      "severity": "MAJOR",
+      "status": "UNKNOWN"
+    },
+    {
+      "affected_scope": "Historical cross-sections from 2005 through 2026, including IPO entry, delisting tails, suspensions, and stocks outside the frozen graph.",
+      "domain": "historical_universe",
+      "evidence": [
+        {
+          "lines": "1-8",
+          "observation": "The summary declares 5,263 sessions, 2,244 stocks, and the limitation that first/last observation intervals are not verified listing history.",
+          "path": "deliveries/history/before-handoff-20260913/v7-colab/MarketMamba/delivery/full-history-calendar-candidate-summary.json"
+        },
+        {
+          "lines": "universe_provenance/universe_limitations",
+          "observation": "Provenance explicitly excludes unbiased-universe certification and notes frozen-graph omissions.",
+          "path": "deliveries/history/before-handoff-20260913/v7-colab/MarketMamba/delivery/inputs/calendar-through-20260911.json"
+        }
+      ],
+      "finding": "The declared universe is a graph-supported candidate inferred from first/last archived observations, not verified listing/delisting history. It explicitly cannot detect boundary omissions, excludes new listings outside 2,244 frozen graph-supported IDs, and is not unbiased-universe certification.",
+      "id": "historical_universe.inferred_observation_intervals",
+      "minimum_fix": "Build an effective-dated TWSE/TPEX ordinary-stock membership table with listing, delisting, suspension, and eligibility rules independent of price coverage and graph availability; re-prepare the universe and all dependent artifacts.",
+      "requires_rebuild": true,
+      "severity": "MAJOR",
+      "status": "FAIL"
+    }
+  ],
+  "decision": "STOP",
+  "domains": {
+    "feature_point_in_time": [
+      {
+        "affected_scope": "Daily OHLCV-derived features.",
+        "evidence": [
+          {
+            "lines": "135-175",
+            "observation": "The execution contract separates a 17:00 signal from the next 09:00 market session.",
+            "path": "V6/experimental/v7_portfolio_engine_test.py"
+          }
+        ],
+        "finding": "Daily price/volume at session t is compatible with an after-close prediction and next-session execution, provided no same-close execution is claimed.",
+        "id": "feature_point_in_time.after_close_price_volume",
+        "minimum_fix": "Retain the after-close prediction and next-session execution convention.",
+        "requires_rebuild": false,
+        "severity": "INFO",
+        "status": "PASS"
+      },
+      {
+        "affected_scope": "Revenue_MoM and Revenue_YoY rows without historical create_time; full-history affected-row count is not present in the returned A/B/C deliveries.",
+        "evidence": [
+          {
+            "lines": "6-34",
+            "observation": "Missing release timestamps use the fixed fallback and increment revenue_assumed_release_rows.",
+            "path": "V6/experimental/v7_integrated_point_in_time.py"
+          },
+          {
+            "lines": "point_in_time_alignment",
+            "observation": "The recorded diagnostic metadata reports revenue_assumed_release_rows=1156.",
+            "path": "deliveries/history/before-handoff-20260913/v7-colab/MarketMamba/delivery/smoke-data/feature_metadata.json"
+          }
+        ],
+        "finding": "Revenue rows with create_time use next-session availability, but missing create_time falls back to month-end plus 11 calendar days. The pipeline records assumed rows but does not prove the actual historical publication timestamp for them; the smoke metadata shows 1,156 assumed-release rows.",
+        "id": "feature_point_in_time.revenue_assumed_release_dates",
+        "minimum_fix": "Obtain vintage publication timestamps or conservatively exclude/lag all assumed rows, quantify the full-history scope, then rebuild features, labels, training, and predictions.",
+        "requires_rebuild": true,
+        "severity": "MAJOR",
+        "status": "UNKNOWN"
+      },
+      {
+        "affected_scope": "EPS, EPS_Surprise, Gross_Margin, ROE, Book_Value, and Free_Cash_Flow across the prepared history.",
+        "evidence": [
+          {
+            "lines": "790-909",
+            "observation": "Financial statement available_from is derived only from period end plus a fixed 45/90-day lag.",
+            "path": "V6/marketmamba/data/feature_engineer.py"
+          },
+          {
+            "lines": "1220-1319",
+            "observation": "Cash-flow available_from is quarter-end plus a fixed 45-day lag.",
+            "path": "V6/marketmamba/data/feature_engineer.py"
+          }
+        ],
+        "finding": "Quarterly statements use quarter-end plus 45 days and year-end plus 90 days rather than issuer-specific historical filing timestamps. This is a conservative-looking approximation but is not vintage certification, especially around non-business-day deadlines and late filings.",
+        "id": "feature_point_in_time.financial_statement_fixed_lag",
+        "minimum_fix": "Bind each filing to a verified historical publication timestamp (usable no earlier than the next executable session), then rebuild affected features and dependent model artifacts.",
+        "requires_rebuild": true,
+        "severity": "MAJOR",
+        "status": "UNKNOWN"
+      },
+      {
+        "affected_scope": "All historical rows whose 42 non-excluded features are industry demeaned; practical membership-change count is not yet quantified.",
+        "evidence": [
+          {
+            "lines": "26-68",
+            "observation": "The classification policy is emitted as frozen accumulated snapshot, not historical PIT, and affects 42 neutralized columns.",
+            "path": "V6/experimental/v7_integrated_industry.py"
+          },
+          {
+            "lines": "classification_limit",
+            "observation": "The C delivery repeats the non-PIT frozen-classification limitation.",
+            "path": "deliveries/stability-c-v1/summary.json"
+          }
+        ],
+        "finding": "Industry-neutralized features use one frozen accumulated stock_info snapshot for all historical dates. The implementation and delivered metadata explicitly state that the classification is not historical point-in-time.",
+        "id": "feature_point_in_time.industry_snapshot",
+        "minimum_fix": "Provide effective-dated industry membership or remove historical industry neutralization, then rebuild features, retrain, and regenerate predictions.",
+        "requires_rebuild": true,
+        "severity": "MAJOR",
+        "status": "FAIL"
+      },
+      {
+        "affected_scope": "All graph messages for all training and evaluation dates.",
+        "evidence": [
+          {
+            "lines": "731-740",
+            "observation": "Preparation fingerprints a single knowledge_graph_v2.npz source.",
+            "path": "V6/experimental/v7_integrated_train.py"
+          },
+          {
+            "lines": "19-19",
+            "observation": "The plan converts the single graph artifact to CSR and does not define effective-dated edges.",
+            "path": "research/v7/integrated-candidate-plan.md"
+          }
+        ],
+        "finding": "One knowledge_graph_v2 snapshot is converted and used across the full history. No effective dates or historical graph vintages are present in the training contract, so future-known relationships cannot currently be ruled out.",
+        "id": "feature_point_in_time.graph_vintage",
+        "minimum_fix": "Audit edge sources and effective dates; either build date-valid graph snapshots/edge masks or exclude unverifiable relationships, then retrain and regenerate predictions.",
+        "requires_rebuild": true,
+        "severity": "MAJOR",
+        "status": "UNKNOWN"
+      }
+    ],
+    "historical_universe": [
+      {
+        "affected_scope": "Historical cross-sections from 2005 through 2026, including IPO entry, delisting tails, suspensions, and stocks outside the frozen graph.",
+        "evidence": [
+          {
+            "lines": "1-8",
+            "observation": "The summary declares 5,263 sessions, 2,244 stocks, and the limitation that first/last observation intervals are not verified listing history.",
+            "path": "deliveries/history/before-handoff-20260913/v7-colab/MarketMamba/delivery/full-history-calendar-candidate-summary.json"
+          },
+          {
+            "lines": "universe_provenance/universe_limitations",
+            "observation": "Provenance explicitly excludes unbiased-universe certification and notes frozen-graph omissions.",
+            "path": "deliveries/history/before-handoff-20260913/v7-colab/MarketMamba/delivery/inputs/calendar-through-20260911.json"
+          }
+        ],
+        "finding": "The declared universe is a graph-supported candidate inferred from first/last archived observations, not verified listing/delisting history. It explicitly cannot detect boundary omissions, excludes new listings outside 2,244 frozen graph-supported IDs, and is not unbiased-universe certification.",
+        "id": "historical_universe.inferred_observation_intervals",
+        "minimum_fix": "Build an effective-dated TWSE/TPEX ordinary-stock membership table with listing, delisting, suspension, and eligibility rules independent of price coverage and graph availability; re-prepare the universe and all dependent artifacts.",
+        "requires_rebuild": true,
+        "severity": "MAJOR",
+        "status": "FAIL"
+      },
+      {
+        "affected_scope": "Rows inside the supplied candidate universe only; this does not cure candidate construction bias.",
+        "evidence": [
+          {
+            "lines": "53-69",
+            "observation": "The universe contract requires explicit expected IDs for every chosen session.",
+            "path": "V6/experimental/v7_integrated_data_quality.py"
+          },
+          {
+            "lines": "140-173",
+            "observation": "Quality assessment retains valid mixed-source observations and reports coverage against the declared denominator.",
+            "path": "V6/experimental/v7_integrated_data_quality.py"
+          }
+        ],
+        "finding": "Within the declared candidate, the preparation contract keeps the union of declared IDs and does not use current market membership to discard numerically valid historical rows.",
+        "id": "historical_universe.valid_rows_not_silently_dropped",
+        "minimum_fix": "Preserve this admission behavior when replacing the candidate membership source.",
+        "requires_rebuild": false,
+        "severity": "INFO",
+        "status": "PASS"
+      }
+    ],
+    "label_execution_alignment": [
+      {
+        "affected_scope": "Every current Alpha_5d and Alpha_10d training/evaluation label and every IC derived from them; 2005-2026 prepared history and 2024-2026 A/B/C evaluations.",
+        "evidence": [
+          {
+            "lines": "177-193",
+            "observation": "calendar_labels uses close[indices+horizon] / close[indices] - 1 for both horizons.",
+            "path": "V6/experimental/v7_integrated_data_quality.py"
+          },
+          {
+            "lines": "135-175",
+            "observation": "A 17:00 signal cannot execute at the same timestamp; the first valid fill example is next session at 09:00.",
+            "path": "V6/experimental/v7_portfolio_engine_test.py"
+          }
+        ],
+        "finding": "Current labels are Close[t+h] / Close[t] - 1, but a prediction that consumes session-t close information is not executable at Close[t]. The portfolio contract rejects execution at the signal timestamp and first fills at the next session. Both 5d and 10d IC therefore include the untradeable Close[t]-to-next-execution interval.",
+        "id": "label_execution_alignment.close_denominator_precedes_execution",
+        "minimum_fix": "Freeze an execution convention (for example next-session open), redefine both horizons from the executable entry price to an explicit end price, regenerate labels, retrain the incumbent seeds, and regenerate predictions before signal/portfolio validation.",
+        "requires_rebuild": true,
+        "severity": "CRITICAL",
+        "status": "FAIL"
+      }
+    ],
+    "preprocessing_leakage": [
+      {
+        "affected_scope": "Cross-sectional stock-varying features.",
+        "evidence": [
+          {
+            "lines": "1775-1852",
+            "observation": "Winsor quantiles and mean/std are grouped by Date; no global future-period fit is used.",
+            "path": "V6/marketmamba/data/feature_engineer.py"
+          }
+        ],
+        "finding": "Winsorization and z-scoring for stock-varying features use only the same-date cross-section. Under the after-close/next-session convention this does not use future sessions.",
+        "id": "preprocessing_leakage.daily_cross_section_statistics",
+        "minimum_fix": "Keep calculations date-local and bind them to the corrected historical universe.",
+        "requires_rebuild": false,
+        "severity": "INFO",
+        "status": "PASS"
+      },
+      {
+        "affected_scope": "Macro time-series normalized features; Group D is currently masked in the E5 contract.",
+        "evidence": [
+          {
+            "lines": "1752-1772",
+            "observation": "Both expanding statistics call shift(1), excluding the current and future observations from fitted moments.",
+            "path": "V6/marketmamba/data/feature_engineer.py"
+          }
+        ],
+        "finding": "Macro time-series normalization uses expanding mean/std shifted by one session.",
+        "id": "preprocessing_leakage.macro_expanding_statistics",
+        "minimum_fix": "Retain the shifted expanding implementation if these features become active.",
+        "requires_rebuild": false,
+        "severity": "INFO",
+        "status": "PASS"
+      },
+      {
+        "affected_scope": "All 59 feature columns.",
+        "evidence": [
+          {
+            "lines": "1830-1874",
+            "observation": "The final fillna(0) happens after cross-sectional and macro normalization.",
+            "path": "V6/marketmamba/data/feature_engineer.py"
+          }
+        ],
+        "finding": "Remaining missing values are filled with zero only after per-date/expanding normalization, so imputation does not fit global future statistics.",
+        "id": "preprocessing_leakage.imputation_after_scaling",
+        "minimum_fix": "Retain the post-normalization imputation order and continue reporting missingness.",
+        "requires_rebuild": false,
+        "severity": "INFO",
+        "status": "PASS"
+      },
+      {
+        "affected_scope": "Any claim treating 2024-2026 as a pristine final holdout.",
+        "evidence": [
+          {
+            "lines": "1-120",
+            "observation": "The project record summarizes repeated capacity, confirmation, stability, and ensemble decisions using this period.",
+            "path": "research/v7/current-state.md"
+          }
+        ],
+        "finding": "The 2024-2026 evaluation period has already influenced research decisions. This is selection contamination rather than a row-level preprocessing leak, so it does not independently trigger the correctness hard gate but it prevents final-holdout claims.",
+        "id": "preprocessing_leakage.research_period_reuse",
+        "minimum_fix": "Use paired/non-IID inference for diagnostics and reserve a future forward period for final confirmation.",
+        "requires_rebuild": false,
+        "severity": "MINOR",
+        "status": "FAIL"
+      }
+    ]
+  },
+  "schema_version": "v7-correctness-audit-v1",
+  "timing": {
+    "earliest_execution": "session t+1 open (09:00 Asia/Taipei contract example)",
+    "feature_information_cutoff": "session t close",
+    "label_end": "session t+5 close or session t+10 close on the independent trading calendar",
+    "label_start": "session t close in current Alpha_5d/Alpha_10d implementation",
+    "prediction_timestamp": "session t after close (17:00 Asia/Taipei contract example)"
+  }
+}

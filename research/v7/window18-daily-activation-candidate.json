@@ -1,0 +1,23 @@
+{
+  "status": "PROPOSED_NOT_APPROVED_NOT_ACTIVE",
+  "manual_pilot_authorized_this_window_only": true,
+  "candidate_frequency": "Once per actual eligible trading session",
+  "candidate_time": "19:00 Asia/Taipei; not frozen or update-SLA verified",
+  "sources": [
+    "W15exactCSV11549",
+    "W15exactCSV11371"
+  ],
+  "fallbacks": [],
+  "minimum_requirements": [
+    "Human explicit daily runtime/scheduler authorization, isolated from WindowsV6",
+    "Effective per-exchange calendar incl temporaryclosure/revisions, TPExprovisional resolved or failclosed",
+    "Documented observed update/freshness andQC/missing rules;19:00 approval; honor publishedservice limits, no highfrequency polling",
+    "Finite timeout/retry attempt budgets andstop/resume/revoke semantics, no automaticunapprovedfallback",
+    "Independent backup destination and restore acceptance, capacity/retention; samehostcopy not backup",
+    "Failure monitoring plus approved notification recipients/channel; missedday/backfill identity andsourcecoverage"
+  ],
+  "license_scope": "OGDLscopedCSV attribution maintained. No new blanket requirement for official written reply; one-shot explicitHumanauthorization fulfilled. Periodicoperation still needs boundedservice/operationsdecision, not comprehensive re-audit.",
+  "recovery": "Record actual missed session; laptopoffline recovery/backfill nottimelyforward; dailySnapshot resource maynotrestore missedhistory",
+  "research_admitted": false,
+  "collector_daily_enabled": false
+}

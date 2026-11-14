@@ -1,0 +1,1 @@
+{"status": "INDEPENDENT_LOCAL_BYTES_RESTORED", "file_count": 299, "bytes": 74612661, "raw_responses": 68, "raw_response_bytes": 8387840, "minimum_actual_GET_start_interval_seconds": 5.001297, "backup": "BACKUP_PENDING_SAME_HOST_NOT_INDEPENDENT_BACKUP"}

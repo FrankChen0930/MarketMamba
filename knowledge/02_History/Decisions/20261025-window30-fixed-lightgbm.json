@@ -1,0 +1,30 @@
+{
+  "decision_id": "Human-Window30-fixed-real-LightGBM",
+  "authority": "Current Human Window30 request",
+  "approved": [
+    "W29 fixed local ff-only integration",
+    "one precommitted small real-data LGBM recipe in W11 CPU env",
+    "max1fit per5d/10d with conditional secondary",
+    "same W29 data/feature-only universe/labels/support, 0newAPI/Ridge",
+    "independent replay/review/localcommit"
+  ],
+  "not_approved": [
+    "formal admission/model winner/Independent Test/investment performance",
+    "parameter feedback/search/additional fits",
+    "GPU/Colab/production/W19/V6scheduler",
+    "W30 merge/push/deploy/nextwindow"
+  ],
+  "scope": {
+    "status": "COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+    "base": "e83dfe68e4bc73b59cb6390ec130ba967138e7f1",
+    "branch": "research/v7-window30-real-lightgbm",
+    "prefit_commit": "60e7ca7",
+    "evidence": "research/v7/window30-evidence.json",
+    "authority": "HumanWindow30 fixed real-data LightGBM Development-only, not formal admission/model selection",
+    "fits": 2,
+    "API_Ridge_GPU": 0,
+    "next_action": "STOP; Human expanding origin/maturity/refit/eval/data/CPU/storage decisions required"
+  },
+  "budget_status": "2LGBMfits exhausted;API/Ridge/GPU0;CPU30.723458+reserve60<1200;artifact+restore69749181<268435456",
+  "next_research": "Expanding plan requires separate Human freeze/authorization, origin-specific maturity/purge"
+}

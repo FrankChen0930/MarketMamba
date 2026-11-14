@@ -1,0 +1,61 @@
+{
+  "status": "COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+  "scope": {
+    "status": "COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+    "base": "39e2fedeb550a08d00f4abddc9a6caa7b1d570f8",
+    "branch": "research/v7-window28-clean-refit",
+    "prefit_code_commit": "ec0b0721763ead15cdb63caad400998ed92a0c83",
+    "authority": "Human Window28 limited development-only CPU clean refit/causality; no formal admission",
+    "evidence": "research/v7/window28-evidence.json",
+    "run": "research/v7/window28-run.json",
+    "fits": 2,
+    "next_action": "STOP; Human new qualified/exposure-aware study and resource authorization required"
+  },
+  "integration": "window28-integration.json",
+  "plan": "window28-plan.json",
+  "prefit": "window28-prefit.json",
+  "results": "window28-results.json",
+  "causality": "window28-causality.json",
+  "replay": "window28-replay.json",
+  "review": "window28-review.json",
+  "review_verdict": "GO_CRITICAL0_REQUIRED0",
+  "review_rework_rounds": 0,
+  "fit_count": 2,
+  "fit_budget_exhausted": true,
+  "targeted_tests": 6,
+  "poison_cases": 18,
+  "causality_scope": "Finite valid future OHLCV numerical-value perturbations only; not a proof of label-dependent eligibility gate or original historical vintages",
+  "original_private_identities_verified": 227,
+  "restored_new_files": 11,
+  "restored_bytes": 28170524,
+  "backup": "BACKUP_PENDING_SAME_HOST",
+  "known_limitations": [
+    "Incomplete actions/suspension/asof/vintage",
+    "Exposed2022/2023 and hindsight/current-capital/universe selection",
+    "No statistical/model superiority or investment inference"
+  ],
+  "zero_operations": [
+    "new_API",
+    "GPU",
+    "Colab",
+    "hyperparameter_search",
+    "bootstrap",
+    "LOSO",
+    "V6_changes",
+    "W19_operations",
+    "production",
+    "push",
+    "deploy"
+  ],
+  "environment": {
+    "device": "CPU",
+    "numpy": "2.0.2",
+    "python": "3.12.3",
+    "threads": "OMP/MKL/OPENBLAS=1",
+    "MARKETMAMBA_DATA_ROOT": "UNSET",
+    "Data_realpath": "/home/frank/projects/MarketMamba/Data",
+    "data_used": "explicit private W24/W27 pinned paths; Data not consumed",
+    "interpreter": "/home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/.runtimes/window11-cpu/bin/python"
+  },
+  "observed_at": "2026-10-25T09:25:45.168383+00:00"
+}

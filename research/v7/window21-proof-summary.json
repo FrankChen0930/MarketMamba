@@ -1,0 +1,511 @@
+{
+  "schema": "window21-bounded-history-proof-summary-v1",
+  "evidence_class": "OBSERVED_RETROSPECTIVE_SAMPLE_NOT_DATA_ADMISSION",
+  "requests_total": 18,
+  "request_breakdown": {
+    "price": 14,
+    "metadata": 3,
+    "repeat": 1
+  },
+  "max_authorized": 22,
+  "unused": 4,
+  "all_http_status": {
+    "200": 18
+  },
+  "source_errors_observed": 0,
+  "securities": [
+    "2330",
+    "2499",
+    "6515",
+    "8069",
+    "8272",
+    "9929"
+  ],
+  "normal_price_windows": 14,
+  "normal_price_rows": 116,
+  "distinct_observation_dates": 48,
+  "earliest": "2010-01-04",
+  "latest": "2025-08-01",
+  "years_observed": [
+    "2010",
+    "2020",
+    "2022",
+    "2023",
+    "2025"
+  ],
+  "qc_class_counts": {
+    "VALID_PRICE": 100,
+    "MARKET_SEMANTIC_EXCEPTION": 2,
+    "UNVERIFIED": 11,
+    "NO_PUBLISHED_PRICE": 3
+  },
+  "classification_semantics": "VALID_PRICE isstructuralonly; marketexceptions only2documentedexactdates, notuniverseadmission; no0/ffill/adj mix",
+  "windows": [
+    {
+      "sequence": 1,
+      "security": "2330",
+      "requested_from": "2010-01-04",
+      "requested_to": "2010-01-15",
+      "actual_first": "2010-01-04",
+      "actual_last": "2010-01-15",
+      "records": 10,
+      "sessions": [
+        "2010-01-04",
+        "2010-01-05",
+        "2010-01-06",
+        "2010-01-07",
+        "2010-01-08",
+        "2010-01-11",
+        "2010-01-12",
+        "2010-01-13",
+        "2010-01-14",
+        "2010-01-15"
+      ],
+      "counts": {
+        "VALID_PRICE": 10
+      },
+      "empty_interpretation": "BOUNDED_OBSERVED_ONLY",
+      "record_path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/01.json",
+      "record_sha256": "212e74049a6f36b4ca67006f53a49477e458a9ec87d599154802ed4512c1ab23",
+      "raw_sha256": "6e7c2555a1cac86e59bbb7df941b4485f9f57052a772dc16eb652807692a891a",
+      "raw_bytes": 1819
+    },
+    {
+      "sequence": 5,
+      "security": "8069",
+      "requested_from": "2010-01-04",
+      "requested_to": "2010-01-15",
+      "actual_first": "2010-01-04",
+      "actual_last": "2010-01-15",
+      "records": 10,
+      "sessions": [
+        "2010-01-04",
+        "2010-01-05",
+        "2010-01-06",
+        "2010-01-07",
+        "2010-01-08",
+        "2010-01-11",
+        "2010-01-12",
+        "2010-01-13",
+        "2010-01-14",
+        "2010-01-15"
+      ],
+      "counts": {
+        "VALID_PRICE": 10
+      },
+      "empty_interpretation": "BOUNDED_OBSERVED_ONLY",
+      "record_path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/05.json",
+      "record_sha256": "ea62506e9d8d78b65e31c8d1ebb1545dad30c9d274a6d4fb30eddf0e6fa14436",
+      "raw_sha256": "105e01cf65cdbe0172f5a95f73249cccb5cd2ceab720caee016e920bc2b3f3c2",
+      "raw_bytes": 1817
+    },
+    {
+      "sequence": 6,
+      "security": "2499",
+      "requested_from": "2010-01-04",
+      "requested_to": "2010-01-15",
+      "actual_first": "2010-01-04",
+      "actual_last": "2010-01-15",
+      "records": 10,
+      "sessions": [
+        "2010-01-04",
+        "2010-01-05",
+        "2010-01-06",
+        "2010-01-07",
+        "2010-01-08",
+        "2010-01-11",
+        "2010-01-12",
+        "2010-01-13",
+        "2010-01-14",
+        "2010-01-15"
+      ],
+      "counts": {
+        "VALID_PRICE": 10
+      },
+      "empty_interpretation": "BOUNDED_OBSERVED_ONLY",
+      "record_path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/06.json",
+      "record_sha256": "ac78c7152f2d6aa7d91bd17847ff47bcbac43de65262a729398cdc0c47ead38a",
+      "raw_sha256": "b00b3e92f4306ff7c2a6047e85a902b200ec3604d567d95aaec5bd9c1600709f",
+      "raw_bytes": 1795
+    },
+    {
+      "sequence": 7,
+      "security": "2499",
+      "requested_from": "2020-11-02",
+      "requested_to": "2020-11-13",
+      "actual_first": null,
+      "actual_last": null,
+      "records": 0,
+      "sessions": [],
+      "counts": {},
+      "empty_interpretation": "UNVERIFIED_NOT_CONFIRMED_MISSING_TRADING_SESSIONS",
+      "record_path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/07.json",
+      "record_sha256": "f28e87c31b618a953126143cd0fe750d05541ba543ed763ce51ce77f28b10087",
+      "raw_sha256": "bd3deae97b9bbf5496db1c19da707df924ec244a8568f606429c0a6532ddca72",
+      "raw_bytes": 40
+    },
+    {
+      "sequence": 8,
+      "security": "2499",
+      "requested_from": "2022-09-01",
+      "requested_to": "2022-09-14",
+      "actual_first": null,
+      "actual_last": null,
+      "records": 0,
+      "sessions": [],
+      "counts": {},
+      "empty_interpretation": "UNVERIFIED_NOT_CONFIRMED_MISSING_TRADING_SESSIONS",
+      "record_path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/08.json",
+      "record_sha256": "030c3a8fd500d58c37f371e3c9dd1bb5b1660325ae83af441b873fe8310962c9",
+      "raw_sha256": "bd3deae97b9bbf5496db1c19da707df924ec244a8568f606429c0a6532ddca72",
+      "raw_bytes": 40
+    },
+    {
+      "sequence": 9,
+      "security": "6515",
+      "requested_from": "2020-03-16",
+      "requested_to": "2020-03-27",
+      "actual_first": "2020-03-16",
+      "actual_last": "2020-03-27",
+      "records": 10,
+      "sessions": [
+        "2020-03-16",
+        "2020-03-17",
+        "2020-03-18",
+        "2020-03-19",
+        "2020-03-20",
+        "2020-03-23",
+        "2020-03-24",
+        "2020-03-25",
+        "2020-03-26",
+        "2020-03-27"
+      ],
+      "counts": {
+        "MARKET_SEMANTIC_EXCEPTION": 1,
+        "UNVERIFIED": 5,
+        "VALID_PRICE": 4
+      },
+      "empty_interpretation": "BOUNDED_OBSERVED_ONLY",
+      "record_path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/09.json",
+      "record_sha256": "60600a42cec83efb5a5b0e4dded4ce02844fdc5d1251c71093c00c3783cd282d",
+      "raw_sha256": "915b2f5f701eef2f9fa7749e09fa43105dc7ee465734cf9580b68c12aab11a54",
+      "raw_bytes": 1837
+    },
+    {
+      "sequence": 10,
+      "security": "6515",
+      "requested_from": "2022-09-01",
+      "requested_to": "2022-09-14",
+      "actual_first": "2022-09-01",
+      "actual_last": "2022-09-14",
+      "records": 9,
+      "sessions": [
+        "2022-09-01",
+        "2022-09-02",
+        "2022-09-05",
+        "2022-09-06",
+        "2022-09-07",
+        "2022-09-08",
+        "2022-09-12",
+        "2022-09-13",
+        "2022-09-14"
+      ],
+      "counts": {
+        "VALID_PRICE": 9
+      },
+      "empty_interpretation": "BOUNDED_OBSERVED_ONLY",
+      "record_path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/10.json",
+      "record_sha256": "9450623b0d2312d2df779cdb044ac471c6759ca23889d03058f08504c7d1305e",
+      "raw_sha256": "b173c003062465857bbedbc9dce04da9d0a19c51af177a61ea5d5ffc93bd4f0f",
+      "raw_bytes": 1643
+    },
+    {
+      "sequence": 11,
+      "security": "8272",
+      "requested_from": "2023-10-16",
+      "requested_to": "2023-10-27",
+      "actual_first": "2023-10-17",
+      "actual_last": "2023-10-27",
+      "records": 9,
+      "sessions": [
+        "2023-10-17",
+        "2023-10-18",
+        "2023-10-19",
+        "2023-10-20",
+        "2023-10-23",
+        "2023-10-24",
+        "2023-10-25",
+        "2023-10-26",
+        "2023-10-27"
+      ],
+      "counts": {
+        "MARKET_SEMANTIC_EXCEPTION": 1,
+        "UNVERIFIED": 6,
+        "VALID_PRICE": 2
+      },
+      "empty_interpretation": "BOUNDED_OBSERVED_ONLY",
+      "record_path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/11.json",
+      "record_sha256": "de73b88e8e93d2b05df34d55373d4cabfca654cdb6a8e7d5c65021bbc1b6f629",
+      "raw_sha256": "e595ded127e849c6bc07f19996a7b6f6121b98614a93dcd83eae7283f3cb4be9",
+      "raw_bytes": 1597
+    },
+    {
+      "sequence": 12,
+      "security": "8272",
+      "requested_from": "2025-07-21",
+      "requested_to": "2025-08-01",
+      "actual_first": "2025-07-21",
+      "actual_last": "2025-08-01",
+      "records": 10,
+      "sessions": [
+        "2025-07-21",
+        "2025-07-22",
+        "2025-07-23",
+        "2025-07-24",
+        "2025-07-25",
+        "2025-07-28",
+        "2025-07-29",
+        "2025-07-30",
+        "2025-07-31",
+        "2025-08-01"
+      ],
+      "counts": {
+        "VALID_PRICE": 10
+      },
+      "empty_interpretation": "BOUNDED_OBSERVED_ONLY",
+      "record_path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/12.json",
+      "record_sha256": "459434e305c1712eef52ef98cf63d94a40ebf7a7e213d7a66847a04f8a9f6379",
+      "raw_sha256": "4449ab2b7f86ee13839a0497a420215c1e65ed905180433f4ec1a73e6dbf20bf",
+      "raw_bytes": 1722
+    },
+    {
+      "sequence": 13,
+      "security": "9929",
+      "requested_from": "2010-01-04",
+      "requested_to": "2010-01-15",
+      "actual_first": "2010-01-04",
+      "actual_last": "2010-01-15",
+      "records": 10,
+      "sessions": [
+        "2010-01-04",
+        "2010-01-05",
+        "2010-01-06",
+        "2010-01-07",
+        "2010-01-08",
+        "2010-01-11",
+        "2010-01-12",
+        "2010-01-13",
+        "2010-01-14",
+        "2010-01-15"
+      ],
+      "counts": {
+        "VALID_PRICE": 10
+      },
+      "empty_interpretation": "BOUNDED_OBSERVED_ONLY",
+      "record_path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/13.json",
+      "record_sha256": "f3374eaaf6df345c9a9c0f6ae9a079ac2ea5c661c73f09d153d2ab24273dc4af",
+      "raw_sha256": "de1c233755198f7bc7126ee4f125cad2b140e8faf8db5c716f6b1509c5a4f89d",
+      "raw_bytes": 1762
+    },
+    {
+      "sequence": 14,
+      "security": "9929",
+      "requested_from": "2025-07-21",
+      "requested_to": "2025-08-01",
+      "actual_first": "2025-07-21",
+      "actual_last": "2025-08-01",
+      "records": 10,
+      "sessions": [
+        "2025-07-21",
+        "2025-07-22",
+        "2025-07-23",
+        "2025-07-24",
+        "2025-07-25",
+        "2025-07-28",
+        "2025-07-29",
+        "2025-07-30",
+        "2025-07-31",
+        "2025-08-01"
+      ],
+      "counts": {
+        "NO_PUBLISHED_PRICE": 3,
+        "VALID_PRICE": 7
+      },
+      "empty_interpretation": "BOUNDED_OBSERVED_ONLY",
+      "record_path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/14.json",
+      "record_sha256": "f72b9df0d42c556ef7a7e363ef79c6500f9dea6d16a5d939166d63a842e1891a",
+      "raw_sha256": "20399e159c71fe56ed8d595ad349093a08ef48178b3b0423a51d2dbf1d713da2",
+      "raw_bytes": 1689
+    },
+    {
+      "sequence": 15,
+      "security": "8069",
+      "requested_from": "2022-09-01",
+      "requested_to": "2022-09-14",
+      "actual_first": "2022-09-01",
+      "actual_last": "2022-09-14",
+      "records": 9,
+      "sessions": [
+        "2022-09-01",
+        "2022-09-02",
+        "2022-09-05",
+        "2022-09-06",
+        "2022-09-07",
+        "2022-09-08",
+        "2022-09-12",
+        "2022-09-13",
+        "2022-09-14"
+      ],
+      "counts": {
+        "VALID_PRICE": 9
+      },
+      "empty_interpretation": "BOUNDED_OBSERVED_ONLY",
+      "record_path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/15.json",
+      "record_sha256": "d34327d30024f0ecabc26040210e50007deffa24971e9de31327c54f031ba239",
+      "raw_sha256": "302ca98507950f042e9546becf4357dc5500c362a89242cb00d081aa3a62e6a0",
+      "raw_bytes": 1685
+    },
+    {
+      "sequence": 16,
+      "security": "2330",
+      "requested_from": "2022-09-01",
+      "requested_to": "2022-09-14",
+      "actual_first": "2022-09-01",
+      "actual_last": "2022-09-14",
+      "records": 9,
+      "sessions": [
+        "2022-09-01",
+        "2022-09-02",
+        "2022-09-05",
+        "2022-09-06",
+        "2022-09-07",
+        "2022-09-08",
+        "2022-09-12",
+        "2022-09-13",
+        "2022-09-14"
+      ],
+      "counts": {
+        "VALID_PRICE": 9
+      },
+      "empty_interpretation": "BOUNDED_OBSERVED_ONLY",
+      "record_path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/16.json",
+      "record_sha256": "95a0fb603a01e7e29e4895c7ae75f6768e7d607fcdd2561350ad83bc2ce4f419",
+      "raw_sha256": "0116bc13915b80a12ef5a6e79bf52b17ca52708b0dd264b1464bc3dc31d5e82c",
+      "raw_bytes": 1693
+    },
+    {
+      "sequence": 17,
+      "security": "2330",
+      "requested_from": "2025-07-21",
+      "requested_to": "2025-08-01",
+      "actual_first": "2025-07-21",
+      "actual_last": "2025-08-01",
+      "records": 10,
+      "sessions": [
+        "2025-07-21",
+        "2025-07-22",
+        "2025-07-23",
+        "2025-07-24",
+        "2025-07-25",
+        "2025-07-28",
+        "2025-07-29",
+        "2025-07-30",
+        "2025-07-31",
+        "2025-08-01"
+      ],
+      "counts": {
+        "VALID_PRICE": 10
+      },
+      "empty_interpretation": "BOUNDED_OBSERVED_ONLY",
+      "record_path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/17.json",
+      "record_sha256": "c4655a189960b4ef96c79bbfc066f02219a54a1399e53bc9db0c7f0364249372",
+      "raw_sha256": "90100557b4c105cfa6d8c409cc7ecc55405ea07d912fef821fd3f60acd26f759",
+      "raw_bytes": 1918
+    }
+  ],
+  "zero_price_examples": [
+    {
+      "security_id": "9929",
+      "session": "2025-07-25",
+      "all_OHLC_zero": true,
+      "volume": 177,
+      "classification": "NO_PUBLISHED_PRICE_PROVIDER_CONVENTION",
+      "not_independent_original_exchange_certification": true
+    },
+    {
+      "security_id": "9929",
+      "session": "2025-07-30",
+      "all_OHLC_zero": true,
+      "volume": 0,
+      "classification": "NO_PUBLISHED_PRICE_PROVIDER_CONVENTION",
+      "not_independent_original_exchange_certification": true
+    },
+    {
+      "security_id": "9929",
+      "session": "2025-07-31",
+      "all_OHLC_zero": true,
+      "volume": 451,
+      "classification": "NO_PUBLISHED_PRICE_PROVIDER_CONVENTION",
+      "not_independent_original_exchange_certification": true
+    }
+  ],
+  "metadata": {
+    "stockinfo_rows": 4367,
+    "delisting_rows": 727,
+    "calendar_rows": 6936,
+    "calendar_min": "1999-01-05",
+    "calendar_max": "2026-12-31",
+    "calendar_has_20261023": true,
+    "calendar_issue": "20261023 conflictswithW17fixedTWSEofficialclosure; futuredates included, therefore noqualifiedactual-sessionauthority. Do notpropagate toW19 or labelmaturity.",
+    "calendar_official_comparison_ref": "research/v7/window17-official-evidence.json@6a34520",
+    "stockinfo_issue": "2330hasmultipleindustryrows;2499stillhas2026updatedrows despiteproviderreported20201110delist;updateddate isnotactive/listingdate. Nohistoricaluniverseadmission."
+  },
+  "delisted_proof": {
+    "security": "2499",
+    "provider_delisting_date": "2020-11-10",
+    "early2010_rows": 10,
+    "near_and_after_windows_empty": true,
+    "conclusion": "Somehistoricpriceforprovider-reportedde-listedidentifierexists; no lasttradingdate/terminationreturn/completehistory proof"
+  },
+  "transfer_proof": {
+    "6515": "Providerdocsdated20200319emerging+observedexception; currentmetadataTWSE; exacttransferdateUNKNOWN",
+    "8272": "Providerdocs20231017firstemerging+observedopen0exception; metadataemerginglastupdate20241021/currentTPEx; exactlisting/transferdateUNKNOWN",
+    "short_listing_role": "UNVERIFIED_AS_ACTUAL_LISTING_DATE"
+  },
+  "repeat": {
+    "query_id": "455e97582e2d5b2e0a6d02924863f52210fd0d4e2b1af3668a3491131aff50f9",
+    "first_sequence": 1,
+    "repeat_sequence": 18,
+    "same_query": true,
+    "byte_identical": true,
+    "evidence_limit": "one shortintervalcomparison, notlongtermvintageimmutability"
+  },
+  "bytes": {
+    "received_all_responses": 838854,
+    "unique_raw_stored": 836995,
+    "price_normal_response_bytes": 21057,
+    "measured_price_response_bytes_per_row": 181.52586206896552,
+    "repeat_included_records": 10
+  },
+  "restore": {
+    "independent_process": true,
+    "response_records": 18,
+    "all_pass": true,
+    "same_host_not_backup": true,
+    "backup_status": "BACKUP_PENDING"
+  },
+  "cost_estimate": {
+    "level": "INFERRED_FROM_SMALL_SAMPLE_NOT_FULL_MARKET_MEASUREMENT",
+    "assumptions": {
+      "N_ever_eligible_securities": 2000,
+      "years": 16,
+      "sessions_per_year": 250
+    },
+    "rows": 8000000,
+    "uncompressed_JSON_bytes": 1452206897,
+    "extra": "Metadata/manifests/logs/revisions/restore2ndcopy/derivedmatrix extra; full-market sizes/range limits not verified",
+    "requests": "N ifwhole-rangecomplete UNKNOWN, elseN*Y~32000 annualchunks; quota300/hourDOCUMENTED notmeasuredlimit; not executionauthorization"
+  },
+  "verdict": "CONDITIONAL_SOURCE_CANDIDATE_FOR_SEPARATE_RETROSPECTIVE_LOW_FEATURE_STUDY; calendar/universe/label/researchadmission BLOCKED",
+  "FormalDataAdmission": false
+}

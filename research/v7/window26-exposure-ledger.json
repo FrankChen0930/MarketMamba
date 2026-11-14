@@ -1,0 +1,113 @@
+{
+  "schema": "w26-research-exposure-ledger-candidate-v1",
+  "status": "PARTIAL_VERIFIED_NAVIGATION_NOT_EXHAUSTIVE_UNTOUCHED_CERTIFICATION",
+  "source_base": "27055f7ec34cd4aa6d47f67bd89e5b6616244bc8",
+  "records": [
+    {
+      "study": "CorrectedE5",
+      "role": "TRAINING_USED",
+      "start": "2013-01-02",
+      "end": "2023-11-17",
+      "source": "research/v7/corrected-e5-replication-v1/incumbent-contract.json",
+      "source_sha256": "3cb4a5fc9c1595689366a2b6bbd49210743b9160fe0f00516622b463eaf46e85"
+    },
+    {
+      "study": "CorrectedE5",
+      "role": "RESEARCH_EVALUATION_AND_SELECTION_EXPOSED",
+      "start": "2024-01-02",
+      "end": "2026-09-11",
+      "source": "research/v7/corrected-e5-replication-v1/incumbent-contract.json",
+      "source_sha256": "3cb4a5fc9c1595689366a2b6bbd49210743b9160fe0f00516622b463eaf46e85",
+      "selection_evidence": "fields.training.value.selection_metric=mean_daily_rank_ic_5d; nountouchedclaim"
+    },
+    {
+      "study": "E1",
+      "role": "TRAINING_USED",
+      "start": "2013-01-02",
+      "end": "2025-11-18",
+      "source": "research/v7/e1-rolling-origin-refresh-v1/experiment-contract.json",
+      "source_sha256": "7a59d98744ac736e915ff5f6e0e8fead2f80f5ce7f8283b467ec0464bffe8d4c",
+      "frozen_matrix": "BLOCKED_NOT_SEARCHED_OR_REBUILT"
+    },
+    {
+      "study": "E1",
+      "role": "RESEARCH_EVALUATION_EXPOSED",
+      "start": "2026-01-02",
+      "end_5d": "2026-09-04",
+      "end_10d": "2026-08-28",
+      "source": "research/v7/e1-rolling-origin-refresh-v1/experiment-contract.json",
+      "source_sha256": "7a59d98744ac736e915ff5f6e0e8fead2f80f5ce7f8283b467ec0464bffe8d4c"
+    },
+    {
+      "study": "W21",
+      "role": "RAW_BOUNDED_SOURCE_INSPECTION_NOT_MODEL_TEST",
+      "years": [
+        2010,
+        2020,
+        2022,
+        2023,
+        2025
+      ],
+      "source": "research/v7/window21-proof-summary.json",
+      "source_sha256": "890177743057bdbea63c35867922a491d5ef13b0aaa372c19118b4e5ac5e8edc"
+    },
+    {
+      "study": "W22",
+      "role": "TEN_STOCK_RAW_PANEL_INSPECTED",
+      "start": "2019-01-01",
+      "end": "2023-12-31",
+      "source": "research/v7/window22-panel-summary.json",
+      "source_sha256": "40dfe50863939ff8d418ae765240e37c26490f927c7d1d722e9864b95ab2d094"
+    },
+    {
+      "study": "W23",
+      "role": "ENGINEERING_MODEL_DIAGNOSTICS_EXPOSED",
+      "training": "2021",
+      "validation": "2022",
+      "forward_style": "2023",
+      "untouched": false,
+      "source": "research/v7/window23-run-summary.json",
+      "source_sha256": "01d2792c5dcb1c692bdb23c8932879ff8b9a969707fd6d708f3362edfec2391d"
+    },
+    {
+      "study": "W24",
+      "role": "LIMITED_EXPLORATORY_MODEL_COMPARISON_EXPOSED",
+      "training": "2021",
+      "validation": "2022",
+      "forward_style": "2023",
+      "cohort": "HINDSIGHT_SELECTED36,33compared",
+      "untouched": false,
+      "source": "research/v7/window24-run-summary.json",
+      "source_sha256": "5ef1cba95bc59d012406951698ca402585752157cd30aafc7f6df23c6952c102"
+    },
+    {
+      "study": "W25",
+      "role": "BOOTSTRAP_LOSO_PRICE_CASE_AUDIT_EXPOSED",
+      "start": "2022-01-01",
+      "end": "2023-12-31",
+      "source": "research/v7/window25-robustness.json",
+      "source_sha256": "9d04d5675d220238a913bd15f8be11c253f939c1e9a0c056d1bf696d9bafe2b7"
+    },
+    {
+      "study": "W26",
+      "role": "EVENT_AND_LABEL_FORENSIC_INSPECTION_NO_NEW_METRICS",
+      "start": "2021-01-01",
+      "end": "2023-12-31",
+      "source": "research/v7/window26-event-matrix.json",
+      "source_sha256": "4451f37860243beb2ba4d812964c3fdd21c2e4584fe241d0ff5806ce1c766849"
+    },
+    {
+      "study": "W19",
+      "role": "PROTECTED_NOT_INSPECTED",
+      "payload_exposure": "UNKNOWN_THIS_AUDIT_NO_RUNTIME_TASK_OR_ARTIFACT_OPERATIONS",
+      "does_not_authorize_new_study_use": true
+    }
+  ],
+  "unlisted_periods": "EXPOSURE_UNKNOWN_NOT_AUTOMATICALLY_UNTOUCHED",
+  "conclusion": "No qualified genuinelyunexposed historicalpanel established; do not nominateanother year asindependenttest",
+  "future_options": [
+    "developmentonly withfull prior exposuredeclared",
+    "prospectiveforwardstudy after separate collection/data/prediction/compute approval andoutcomesnotseen"
+  ],
+  "no_new_data_requests_or_execution": true
+}

@@ -1,0 +1,110 @@
+{
+  "broader_flags": {
+    "FORWARD_DIAGNOSTIC_CONFIRMED_CAPITAL_EVENT": 3,
+    "FORWARD_DIAGNOSTIC_MISSING_PATH": 7,
+    "FORWARD_DIAGNOSTIC_ZERO_PATH": 222,
+    "TRAIN_MISSING_PATH": 3,
+    "TRAIN_ZERO_PATH": 518,
+    "VALIDATION_MISSING_PATH": 26,
+    "VALIDATION_ZERO_PATH": 348
+  },
+  "events": [
+    {
+      "accounting_base_date": "2022-12-08",
+      "accounting_date_is_not_market_price_unit_effective_date": true,
+      "cash_or_totalreturn_ledger": "NOT_ESTABLISHED;no automaticcashassumption",
+      "id": "2321-share-capital-reduction",
+      "ratio": 0.68,
+      "share_retention_fraction": 0.32,
+      "status": "CONFIRMED_ISSUER_AND_PROVIDER",
+      "type": "LOSS_OFFSET_CAPITAL_REDUCTION"
+    },
+    {
+      "actual_observed_open": 19.6,
+      "effective_reference_date": "2023-02-17",
+      "id": "2321-market-reference-change",
+      "ideal_share_unit_factor": 3.125,
+      "last_old_close": 6.38,
+      "minus1_ExrightReferencePrice": "UNKNOWN_SENTINEL_NOT_A_CASH_FLOW",
+      "opening_reference": 19.95,
+      "post_reduction_reference": 19.93,
+      "reference_is_not_executable_entry": true,
+      "scale_ratio": 3.123824451410658,
+      "status": "PROVIDER_EVENT_VERIFIED_RAW_PRICE_CORROBORATED"
+    },
+    {
+      "id": "2321-six-session-gap",
+      "market_open_evidence": "existingTWSEcalendar andcohortpricesincluding2330eachdate",
+      "no_global_suspension_inference": true,
+      "secondary_notice": "2023-01-10issuerstatementcarriedbyYahoo/CNA,notusedasprimaryproof;20230209..16stop/20230217resume",
+      "sessions": [
+        "2023-02-09",
+        "2023-02-10",
+        "2023-02-13",
+        "2023-02-14",
+        "2023-02-15",
+        "2023-02-16"
+      ],
+      "status": "CONFIRMED_INDIVIDUAL_RECORD_GAP_NOT_MARKET_CLOSURE",
+      "suspension_cause": "CORROBORATED_BY_RESUMPTION_REFERENCE_AND_SECONDARY_NOTICE;ORIGINAL_SUSPENSION_NOTICE_NOT_VERIFIED"
+    },
+    {
+      "affected_samples": 3,
+      "horizon": 10,
+      "id": "2321-crossing-labels",
+      "metric_impact": "NOT_RECALCULATED_NOT_ESTIMATED",
+      "original_artifacts_or_metrics_modified": false,
+      "role": "FORWARD_DIAGNOSTIC2023",
+      "signal_sessions": [
+        "2023-02-03",
+        "2023-02-06",
+        "2023-02-07"
+      ],
+      "status": "ARITHMETIC_CORRECT_BUT_INVALID_AS_UNADJUSTED_SAME_UNIT_HOLDING_RETURN",
+      "stored_label_max": 2.2436974789915967
+    },
+    {
+      "candidate_types": "capitalreduction/split/parvalue/dividend/sourcegaps",
+      "id": "other-cohort-actions",
+      "new_queries_for_others": 0,
+      "status": "UNKNOWN_NOT_EXHAUSTIVELY_COVERED"
+    }
+  ],
+  "formal_admission": false,
+  "individual_gap_event_count": 11,
+  "no_new_price_fit_prediction_rankic": true,
+  "private_broader": {
+    "bytes": 210399,
+    "path": "/home/frank/projects/MarketMamba/.artifacts/window26-label-integrity/broader-label-flags.json",
+    "sha256": "76c54f2cb4e04ce14a85ec725a2b728d4e3d402006313f8a9828253a36bd421b"
+  },
+  "private_details": {
+    "bytes": 4760,
+    "path": "/home/frank/projects/MarketMamba/.artifacts/window26-label-integrity/2321-case-details.json",
+    "sha256": "4ea9a6cd3d9a8585f613d42ff4b808a991026bd4bea27de157970756eb749306"
+  },
+  "schema": "w26-event-evidence-matrix-v1",
+  "sources": {
+    "FinMindCapital": {
+      "current_version_only": true,
+      "raw_sha256": "b689012fd4b353dd1ca4f872c2fe2e2860f35743212309363621951c56405b7f",
+      "record": "/home/frank/projects/MarketMamba/.artifacts/window26-label-integrity/finmind/record.json"
+    },
+    "issuer112financialreport": {
+      "claim": "68percentlossoffsetcapitalreduction;shareface10;approved2022-12-06;accountingbase2022-12-08",
+      "page_zero_based": 37,
+      "raw_record": "/home/frank/projects/MarketMamba/.artifacts/window26-label-integrity/documents/tecom112-financial-report.record.json",
+      "report_approval": "2024-03-04",
+      "stop_resume_dates_not_in_this_note": true,
+      "url": "https://www.tecom.com.tw/wp-content/uploads/2025/01/2023%E5%B9%B4%E5%BA%A6-FS-AllReport%E5%90%AB%E9%99%84%E8%A8%BB%E9%99%84%E8%A1%A8-CHT-IFRS.pdf"
+    }
+  },
+  "status": "EVENT_INTEGRITY_FINDING_NOT_NEW_LABEL_ADMISSION",
+  "existing_time_audit_reused": {
+    "source": "research/v7/window25-leakage-matrix.json",
+    "source_sha256": "1016eb1c1718e8d63a0a597fab37c823cea36ce4e2161522f72b53d6b2453a15",
+    "raw_formula_samples_previously_checked": 44266,
+    "confirmed_crossperiod_errors_previously_found": 0,
+    "scope": "No repeatbootstrap/LOSO/RankIC;eventcrossingisadditionalqualificationfinding"
+  }
+}

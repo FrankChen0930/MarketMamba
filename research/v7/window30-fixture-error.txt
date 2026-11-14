@@ -1,0 +1,20 @@
+....E
+======================================================================
+ERROR: test_training_rows_cannot_contain_future_maturity (__main__.BoundedLGBM.test_training_rows_cannot_contain_future_maturity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window30-real-lightgbm/research/v7/window30-tests.py", line 11, in test_training_rows_cannot_contain_future_maturity
+    with self.assertRaises(ValueError):m.training(f,q,5)
+                                       ^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window30-real-lightgbm/research/v7/window30-lgbm.py", line 60, in training
+    if not qs or any(not q['key'][0]<q['entry']<=q['exit']<'2022-01-01' for q in qs):raise ValueError('TRAINING_LABEL_MATURITY_OR_SPLIT_FAILURE')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window30-real-lightgbm/research/v7/window30-lgbm.py", line 60, in <genexpr>
+    if not qs or any(not q['key'][0]<q['entry']<=q['exit']<'2022-01-01' for q in qs):raise ValueError('TRAINING_LABEL_MATURITY_OR_SPLIT_FAILURE')
+                                     ~^^^^^^^^^
+KeyError: 'entry'
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.036s
+
+FAILED (errors=1)

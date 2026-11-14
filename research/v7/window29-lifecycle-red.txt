@@ -1,0 +1,14 @@
+.....F....
+======================================================================
+FAIL: test_known_delisting_end_only_restricts_future_label_not_past_feature (__main__.Isolation.test_known_delisting_end_only_restricts_future_label_not_past_feature)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window29-expanded-development/research/v7/window29-tests.py", line 30, in test_known_delisting_end_only_restricts_future_label_not_past_feature
+    self.c['reported_end']=self.days[6];f=self.f();self.assertTrue(f['eligible']);self.assertIn('DELISTING_BOUNDARY',m.label_at(f,5,self.days,self.p,[])['reasons'])
+                                                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'DELISTING_BOUNDARY' not found in []
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.002s
+
+FAILED (failures=1)

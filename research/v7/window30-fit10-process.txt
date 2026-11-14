@@ -1,0 +1,1 @@
+{"model_id": "W30_LGBM_H10_TRAIN2021_FRESH_v1", "model_sha256": "baf665c12e2c063279f3218d73d2fa0ad827a30728f70b039787bde8bc4f963b", "train_n": 13711, "actual_iterations": 64, "fit_wall_seconds": 0.027906524992431514, "model_text_bytes": 54849}

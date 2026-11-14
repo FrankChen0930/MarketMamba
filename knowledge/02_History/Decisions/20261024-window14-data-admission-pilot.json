@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "authority": "Human Window14 Evidence-First Data Admission Pilot",
+  "status": "BOUNDED_CPU_PILOT_AND_PROPOSED_CONTRACT_ONLY",
+  "integration_authorized": "W13fixedc78098f localff aftergates",
+  "units": [
+    "Bounded official daily historical data evidence/classification pilot",
+    "Minimal PROPOSED Forward Vintage contract and readonly synthetic prototype"
+  ],
+  "data_requests_scope": "Two one-shot requests existing TWSE MI_INDEX/TPEx otc;2MiB cap/response; no more data requests after rights ambiguity identified",
+  "not_authorized": [
+    "new historical/research admission or conservative lag approval",
+    "realRankIC/model training/GPU/Colab",
+    "Frozen E5/E1 feature/label/policy or production/Windows scheduler changes",
+    "W06/W12/other candidate merge",
+    "GPU HALTED reset",
+    "paid subscriptions/push/deploy/new platform/next window"
+  ],
+  "proposals": [
+    "VERIFIED_HISTORICAL_ASOF",
+    "CONDITIONAL_RESEARCH_PROXY",
+    "RETROSPECTIVE_ONLY",
+    "UNKNOWN / REJECTED",
+    "forward collection record contract v0.1"
+  ],
+  "proposal_does_not_admit": true,
+  "formal_freeze_lag_policy": null,
+  "forward_collection_enabled": false,
+  "gates": {
+    "strict_phase0": "STOP",
+    "e1_frozen_matrix": "BLOCKED",
+    "h2": "NOT_APPROVED",
+    "fair_evaluation": "PROPOSED",
+    "pre_next_open": "PROPOSED",
+    "gpu": "SAFETY_HALTED",
+    "inference_recovery_implementation": "DEFERRED"
+  }
+}

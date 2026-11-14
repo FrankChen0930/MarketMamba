@@ -1,0 +1,419 @@
+test_duplicate_member_cli_refuses_without_repair (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_member_cli_refuses_without_repair) ... FAIL
+test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) ... 
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='records', replacement='"seq":999,"seq":1') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='replay', replacement='"seq":999,"seq":1') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='retry', replacement='"seq":999,"seq":1') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='append', replacement='"seq":999,"seq":1') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='records', replacement='"event_id":"other","event_id":"g"') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='replay', replacement='"event_id":"other","event_id":"g"') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='retry', replacement='"event_id":"other","event_id":"g"') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='append', replacement='"event_id":"other","event_id":"g"') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='records', replacement='"kind":"SIGNAL","kind":"GENESIS"') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='replay', replacement='"kind":"SIGNAL","kind":"GENESIS"') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='retry', replacement='"kind":"SIGNAL","kind":"GENESIS"') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='append', replacement='"kind":"SIGNAL","kind":"GENESIS"') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='records', replacement='"payload":{},"payload":{') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='replay', replacement='"payload":{},"payload":{') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='retry', replacement='"payload":{},"payload":{') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='append', replacement='"payload":{},"payload":{') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='records', replacement='"holdings_count":2,"holdings_count":1') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='replay', replacement='"holdings_count":2,"holdings_count":1') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='retry', replacement='"holdings_count":2,"holdings_count":1') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='append', replacement='"holdings_count":2,"holdings_count":1') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='records', replacement='"scores":{"A":"9","A":"1"}') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='replay', replacement='"scores":{"A":"9","A":"1"}') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='retry', replacement='"scores":{"A":"9","A":"1"}') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='append', replacement='"scores":{"A":"9","A":"1"}') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='records', replacement='"quotes":{},"quotes":{') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='replay', replacement='"quotes":{},"quotes":{') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='retry', replacement='"quotes":{},"quotes":{') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='append', replacement='"quotes":{},"quotes":{') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='records', replacement='"quotes":{"A":{},"A":{') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='replay', replacement='"quotes":{"A":{},"A":{') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='retry', replacement='"quotes":{"A":{},"A":{') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='append', replacement='"quotes":{"A":{},"A":{') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='records', replacement='"price":"999","price":"10"') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='replay', replacement='"price":"999","price":"10"') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='retry', replacement='"price":"999","price":"10"') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='append', replacement='"price":"999","price":"10"') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='records', replacement='"price":"10","price":"10"') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='replay', replacement='"price":"10","price":"10"') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='retry', replacement='"price":"10","price":"10"') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='append', replacement='"price":"10","price":"10"') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='records', replacement='"price":"999","\\u0070rice":"10"') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='replay', replacement='"price":"999","\\u0070rice":"10"') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='retry', replacement='"price":"999","\\u0070rice":"10"') ... FAIL
+  test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='append', replacement='"price":"999","\\u0070rice":"10"') ... FAIL
+test_legal_key_order_whitespace_and_unicode_encoding_remain_readable (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_legal_key_order_whitespace_and_unicode_encoding_remain_readable) ... ok
+
+======================================================================
+FAIL: test_duplicate_member_cli_refuses_without_repair (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_member_cli_refuses_without_repair)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 448, in test_duplicate_member_cli_refuses_without_repair
+    self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+AssertionError: 0 != 2 : 事件數：2
+最後 session：market
+淨值：1
+現金：1
+持股數：0
+累計成本：0
+待成交：否
+
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='records', replacement='"seq":999,"seq":1')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='replay', replacement='"seq":999,"seq":1')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='retry', replacement='"seq":999,"seq":1')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='append', replacement='"seq":999,"seq":1')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='records', replacement='"event_id":"other","event_id":"g"')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='replay', replacement='"event_id":"other","event_id":"g"')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='retry', replacement='"event_id":"other","event_id":"g"')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='append', replacement='"event_id":"other","event_id":"g"')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='records', replacement='"kind":"SIGNAL","kind":"GENESIS"')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='replay', replacement='"kind":"SIGNAL","kind":"GENESIS"')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='retry', replacement='"kind":"SIGNAL","kind":"GENESIS"')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='append', replacement='"kind":"SIGNAL","kind":"GENESIS"')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='records', replacement='"payload":{},"payload":{')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='replay', replacement='"payload":{},"payload":{')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='retry', replacement='"payload":{},"payload":{')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='append', replacement='"payload":{},"payload":{')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='records', replacement='"holdings_count":2,"holdings_count":1')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='replay', replacement='"holdings_count":2,"holdings_count":1')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='retry', replacement='"holdings_count":2,"holdings_count":1')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='append', replacement='"holdings_count":2,"holdings_count":1')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='records', replacement='"scores":{"A":"9","A":"1"}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='replay', replacement='"scores":{"A":"9","A":"1"}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='retry', replacement='"scores":{"A":"9","A":"1"}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='append', replacement='"scores":{"A":"9","A":"1"}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='records', replacement='"quotes":{},"quotes":{')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='replay', replacement='"quotes":{},"quotes":{')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='retry', replacement='"quotes":{},"quotes":{')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='append', replacement='"quotes":{},"quotes":{')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='records', replacement='"quotes":{"A":{},"A":{')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='replay', replacement='"quotes":{"A":{},"A":{')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='retry', replacement='"quotes":{"A":{},"A":{')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='append', replacement='"quotes":{"A":{},"A":{')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='records', replacement='"price":"999","price":"10"')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='replay', replacement='"price":"999","price":"10"')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='retry', replacement='"price":"999","price":"10"')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='append', replacement='"price":"999","price":"10"')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='records', replacement='"price":"10","price":"10"')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='replay', replacement='"price":"10","price":"10"')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='retry', replacement='"price":"10","price":"10"')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='append', replacement='"price":"10","price":"10"')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='records', replacement='"price":"999","\\u0070rice":"10"')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='replay', replacement='"price":"999","\\u0070rice":"10"')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='retry', replacement='"price":"999","\\u0070rice":"10"')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_duplicate_members_at_each_depth_refuse_read_replay_and_append (V6.experimental.v7_portfolio_journal_test.PortfolioJournalJsonMemberTest.test_duplicate_members_at_each_depth_refuse_read_replay_and_append) (operation='append', replacement='"price":"999","\\u0070rice":"10"')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 430, in test_duplicate_members_at_each_depth_refuse_read_replay_and_append
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate JSON key"):
+AssertionError: JournalIntegrityError not raised
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.451s
+
+FAILED (failures=45)

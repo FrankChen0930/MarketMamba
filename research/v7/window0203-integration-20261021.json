@@ -1,0 +1,287 @@
+{
+  "before": "9956446d49371dbc5c09e1ea0bd9eaa750064532",
+  "candidate": "eba6b649479eeaa77d4bb034c0eebafd7efb396d",
+  "worktrees_clean": 19,
+  "source_hash_checks": 23,
+  "parser_hash_checks": 2,
+  "report_hash_checks": 1,
+  "result_hash_checks": 7,
+  "protected_paths_unchanged": [
+    "Data",
+    "V6/models",
+    "environments",
+    "research/v7/e1-rolling-origin-refresh-v1/experiment-contract.json",
+    "research/v7/corrected-e5-replication-v1/incumbent-contract.json",
+    "research/v7/corrected-baseline-v1"
+  ],
+  "branches_containing_candidate": "development/v7-data-evaluation-preparation",
+  "review_history": {
+    "window02": {
+      "data": {
+        "reviewer": "/root/independent_review",
+        "critical": 0,
+        "required": 0,
+        "independent_reproduction": "7 cases,9 fake transport calls,source/probe hashes PASS"
+      },
+      "prep": {
+        "reviewer": "/root/independent_review",
+        "critical": 0,
+        "required": 0,
+        "independent_tests": 14,
+        "training": false
+      },
+      "eval": {
+        "reviewer": "/root/independent_review",
+        "critical": 0,
+        "required": 0,
+        "independent_tests": 6,
+        "training": false
+      },
+      "model": {
+        "reviewer": "/root/independent_review",
+        "critical": 0,
+        "required": 0,
+        "verified_sources": 11
+      },
+      "closure": {
+        "reviewer": "/root/independent_review",
+        "initial_required": 1,
+        "finding": "stale resume instruction could imply continuing closed grant",
+        "resolution": "explicit CLOSED/new bounded grant and commit checkpoint references",
+        "critical": 0,
+        "required_after_rework": 0,
+        "minimal_session_resume": "PASS; no historical rediscovery needed"
+      }
+    },
+    "window03": {
+      "integration_review": {
+        "reviewer": "/root/independent_review",
+        "critical": 0,
+        "required": 0,
+        "identity_reverified": "5 output hashes,11 sources,7 V6 blobs",
+        "result": "GO isolated candidate only; Human main integration approval required",
+        "repair_rounds": 0
+      },
+      "fairness_review": {
+        "reviewer": "/root/independent_review",
+        "critical": 0,
+        "required": 0,
+        "sources_reviewed": 12,
+        "copied_artifacts": 7,
+        "seed_identity_chains": 2,
+        "repair_rounds": 0
+      },
+      "closure_review": {
+        "reviewer": "/root/independent_review",
+        "critical": 0,
+        "required": 0,
+        "minimal_resume": "PASS without historical rediscovery; main unchanged, explicit new worktree entry",
+        "repair_rounds": 1,
+        "repair": "final runtime check corrected assumed absent Data to three tracked historical files; no processed_v6 mount or content read",
+        "runtime_correction_confirmation": "PASS independent metadata-only check,0 Critical/Required"
+      }
+    }
+  },
+  "data_realpath": "/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6",
+  "candidate_data": "three inherited tracked files; no processed_v6 mount; no content read",
+  "status": "LOCAL_DEVELOPMENT_INTEGRATED_NOT_DEPLOYED",
+  "after": "eba6b649479eeaa77d4bb034c0eebafd7efb396d",
+  "method": "ff-only",
+  "pre_tests": [
+    {
+      "group": "pit",
+      "command": [
+        "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "V6.experimental.v7_source_snapshot_test",
+        "V6.experimental.v7_temporal_contract_test",
+        "V6.experimental.v7_executable_labels_test",
+        "V6.experimental.v7_ohlcv_provenance_test",
+        "V6.experimental.v7_historical_security_master_test",
+        "V6.experimental.v7_historical_label_materialize_test",
+        "-q"
+      ],
+      "exit_code": 0,
+      "seconds": 2.261834312999781,
+      "log": "----------------------------------------------------------------------\nRan 49 tests in 1.149s\n\nOK\n"
+    },
+    {
+      "group": "e1_no_training",
+      "command": [
+        "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "V6.experimental.v7_e1_contract_test",
+        "V6.experimental.v7_e1_matrix_test",
+        "V6.experimental.v7_e1_evaluate_test",
+        "V6.experimental.v7_e1_checkpoint_test",
+        "V6.experimental.v7_e1_colab_runtime_test",
+        "V6.experimental.v7_e1_run_test.E1RunTest.test_lifecycle_adapter_round_trip",
+        "-q"
+      ],
+      "exit_code": 0,
+      "seconds": 7.910704186999283,
+      "log": "\n----------------------------------------------------------------------\nRan 36 tests in 4.587s\n\nOK\n"
+    },
+    {
+      "group": "portfolio",
+      "command": [
+        "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "V6.experimental.v7_portfolio_contract_test",
+        "V6.experimental.v7_portfolio_engine_test",
+        "V6.experimental.v7_portfolio_journal_test",
+        "V6.experimental.v7_portfolio_history_test",
+        "V6.experimental.v7_portfolio_process_test",
+        "V6.experimental.v7_health_summary_test",
+        "V6.experimental.v7_correctness_audit_test",
+        "-q"
+      ],
+      "exit_code": 0,
+      "seconds": 3.12186581899914,
+      "log": "{\"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exits\": [0, 0], \"journal_sha256\": \"f2b40d1b9bcb49d0463bb35e80fef93a595c53f5b81b1696895986e8026636fd\", \"results\": [{\"appended\": true, \"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}, {\"event\": \"error\", \"message\": \"event_id 'market' has different content\", \"type\": \"EventConflictError\"}], \"scenario\": \"concurrent_conflict\"}\n{\"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exits\": [0, 0], \"journal_sha256\": \"f2b40d1b9bcb49d0463bb35e80fef93a595c53f5b81b1696895986e8026636fd\", \"results\": [{\"appended\": true, \"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}, {\"appended\": false, \"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}], \"scenario\": \"concurrent_duplicate\"}\n{\"blocked\": {\"event\": \"lock_blocked\", \"operation\": 1}, \"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exit\": 0, \"journal_sha256\": \"f2b40d1b9bcb49d0463bb35e80fef93a595c53f5b81b1696895986e8026636fd\", \"result\": {\"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}, \"scenario\": \"reader_during_split_write\"}\n{\"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exits\": [-9, 0], \"journal_sha256\": \"f2b40d1b9bcb49d0463bb35e80fef93a595c53f5b81b1696895986e8026636fd\", \"result\": {\"appended\": false, \"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}, \"scenario\": \"sigkill_durable_before_response\"}\n{\"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exits\": [-9, 0], \"journal_sha256\": \"fd78812e4fdd32f4cebea6c6011d3bc75dc4faf1cf4d5ebcd9a53664667fe802\", \"refusal\": {\"event\": \"error\", \"message\": \"journal has a truncated final line\", \"type\": \"JournalIntegrityError\"}, \"scenario\": \"sigkill_partial_tail\"}\n----------------------------------------------------------------------\nRan 67 tests in 2.947s\n\nOK\n"
+    },
+    {
+      "group": "ops",
+      "command": [
+        "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "V6/marketmamba/ops",
+        "-p",
+        "test_*.py",
+        "-q"
+      ],
+      "exit_code": 0,
+      "seconds": 17.2706474860006,
+      "log": "synthetic duplicate hygiene warning\n[shadow-ledger] projection callback failed (IsADirectoryError); legacy fetch outcome is unchanged\nProcess SpawnProcess-6:\nTraceback (most recent call last):\n  File \"/usr/lib/python3.12/multiprocessing/process.py\", line 314, in _bootstrap\n    self.run()\n  File \"/usr/lib/python3.12/multiprocessing/process.py\", line 108, in run\n    self._target(*self._args, **self._kwargs)\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/ops/test_phase_a_replay.py\", line 103, in failing_callback_child\n    observe_fetch_only(\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/ops/shadow.py\", line 433, in observe_fetch_only\n    result = fetch_operation()\n             ^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/ops/test_phase_a_replay.py\", line 101, in fail\n    raise RuntimeError(\"synthetic child fetch failure\")\nRuntimeError: synthetic child fetch failure\n[shadow-ledger] lease conflict failed (LeaseConflictError); legacy fetch outcome is unchanged\n[shadow-ledger] projection callback failed (OSError); legacy fetch outcome is unchanged\n[shadow-ledger] projection callback failed (ProjectionLockTimeout); legacy fetch outcome is unchanged\n[shadow-ledger] projection callback failed (ProjectionLockTimeout); legacy fetch outcome is unchanged\n{\"after_generation\": \"bf5e9ee3c87c9fe845c92d50590eb750518b4d3bca53807c3f46cbd771ef11ec\", \"before_generation\": \"a9320d77383819d27daa42c8bd7bbc0c9997fe91ab94af9319059c67f5768d2a\", \"case\": \"before_snapshot-0\", \"during_generation\": \"bf5e9ee3c87c9fe845c92d50590eb750518b4d3bca53807c3f46cbd771ef11ec\", \"writer_exitcode\": 0}\n{\"after_generation\": \"69fbc581acbccab991449d3435898eeaf03975736f10ea7912db9ff0b1f6532a\", \"before_generation\": \"4bc6abe359bd7d37661928e9a32f2ee75650df30ba03b72f3b2f61b5ab1f2efe\", \"case\": \"before_snapshot-1\", \"during_generation\": \"69fbc581acbccab991449d3435898eeaf03975736f10ea7912db9ff0b1f6532a\", \"writer_exitcode\": 0}\n{\"after_generation\": \"a47443670b819bdd261d26ecc5daba9ffeca3cd62ccc2183b7a2cb54325db79a\", \"before_generation\": \"ea1d97a0eabd7d2d800749e38e33d04b14b9a8b3c0f4df10c7d51579b1320312\", \"case\": \"mid_watermark-0\", \"during_generation\": \"ea1d97a0eabd7d2d800749e38e33d04b14b9a8b3c0f4df10c7d51579b1320312\", \"writer_exitcode\": 0}\n{\"after_generation\": \"2544a78f60a3fdcd74b9ad4569561835e0af52fa9110c93e2d7ac991fab79b10\", \"before_generation\": \"4c5b12bac49a649a4346db960d3193255079d01689987ef71065cb9f7b9dabaa\", \"case\": \"mid_watermark-1\", \"during_generation\": \"4c5b12bac49a649a4346db960d3193255079d01689987ef71065cb9f7b9dabaa\", \"writer_exitcode\": 0}\n{\"after_generation\": \"83cf784860c37d65b8429b8e9a2c45a5c1269c84e63510f5ae1e9099cde9c25f\", \"before_generation\": \"f45075d28531a51981643801774e66c171966e8f7930c1f3c531da0f55e0696b\", \"case\": \"after_watermark-0\", \"during_generation\": \"f45075d28531a51981643801774e66c171966e8f7930c1f3c531da0f55e0696b\", \"writer_exitcode\": 0}\n{\"after_generation\": \"7a87113e5f3bfd4d1fa70123b939e8932baffd6449ff260c964f14767b9e9eee\", \"before_generation\": \"cd0c8782a41bcfbeaa1dd1bdfaf2021711a4a25cbe219ea34e15ee13cb42cb70\", \"case\": \"after_watermark-1\", \"during_generation\": \"cd0c8782a41bcfbeaa1dd1bdfaf2021711a4a25cbe219ea34e15ee13cb42cb70\", \"writer_exitcode\": 0}\n{\"after_generation\": \"44b590bf5ebd17cfab5921e48fb0b3fcebd63d0b40ccf38258cd9fa9c0ba5e90\", \"before_generation\": \"7a3e3fc0f74db2246e3ac62c7ffe1166a35be8fcaa7fecd5f18a811d4815ca9d\", \"case\": \"before_artifacts-0\", \"during_generation\": \"7a3e3fc0f74db2246e3ac62c7ffe1166a35be8fcaa7fecd5f18a811d4815ca9d\", \"writer_exitcode\": 0}\n{\"after_generation\": \"a8f0e382359fcc981ababe150e5f72ef3b3bd15405ee434eb3a31441c8613697\", \"before_generation\": \"43b21a1031ea22a4da367117b5a415c565a38ef69786e7d890d3d43cb4aa5b48\", \"case\": \"before_artifacts-1\", \"during_generation\": \"43b21a1031ea22a4da367117b5a415c565a38ef69786e7d890d3d43cb4aa5b48\", \"writer_exitcode\": 0}\n{\"after_generation\": \"aaf2e753b70d9d411258eb9abea15b446d27a9531b4520241831db016867174a\", \"before_generation\": \"39b15a9ec6657de87f643ad9dc71acb5447c5b5cf39483ff0129a16048b2998f\", \"case\": \"negative-control-no-BEGIN\", \"during_generation\": \"61e06e022458308d0948ff30303312f37bb46e9fa2a9b46ccfd3c4a1ad66f346\", \"writer_exitcode\": 0}\n{\"after_generation\": \"f1c3fbb04b12d302d6df148bf8f38ec1bdb716358ea286be5bbfc9f826fd6d52\", \"before_generation\": \"db95c096313219236db9afc7996594962e1699f9b51612d63c6e764326c73426\", \"case\": \"commit\", \"during_generation\": \"db95c096313219236db9afc7996594962e1699f9b51612d63c6e764326c73426\", \"writer_exitcode\": 0}\n{\"after_generation\": \"96b5ae221f6aa338c5deb7529aac6af89d9ae636df3f5f6511a1d517c52f612d\", \"before_generation\": \"96b5ae221f6aa338c5deb7529aac6af89d9ae636df3f5f6511a1d517c52f612d\", \"case\": \"rollback\", \"during_generation\": \"96b5ae221f6aa338c5deb7529aac6af89d9ae636df3f5f6511a1d517c52f612d\", \"writer_exitcode\": 0}\n{\"after_generation\": \"34a3cf2802c354e4981b917521f662f4c32348ea95ebe4cafdb7eb855b0c62e1\", \"before_generation\": \"34a3cf2802c354e4981b917521f662f4c32348ea95ebe4cafdb7eb855b0c62e1\", \"case\": \"kill\", \"during_generation\": \"34a3cf2802c354e4981b917521f662f4c32348ea95ebe4cafdb7eb855b0c62e1\", \"writer_exitcode\": -9}\n----------------------------------------------------------------------\nRan 81 tests in 17.084s\n\nOK\n"
+    },
+    {
+      "group": "fetch_governance",
+      "command": [
+        "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "V6.scripts.test_v62_fetch_only",
+        "tools.project_knowledge.test_knowledge_governance",
+        "-q"
+      ],
+      "exit_code": 0,
+      "seconds": 0.195401730001322,
+      "log": "2026-10-21 19:35:43,409 INFO ==============================================================\n2026-10-21 19:35:43,409 INFO [fetch-only] \u53ea\u66f4\u65b0\u6bcf\u65e5 raw parquet\uff1b\u4e0d\u5efa\u77e9\u9663\u3001\u4e0d\u8f09\u6a21\u578b\u3001\u4e0d\u63a8\u8ad6\u3001\u4e0d\u767c\u5e03\n2026-10-21 19:35:43,409 INFO ==============================================================\n2026-10-21 19:35:43,409 INFO [fetch-only] \u5b8c\u6574\u4f86\u6e90 0/10\n2026-10-21 19:35:43,409 ERROR [fetch-only] \u5931\u6557\uff5c\u7f3a\u6f0f 1 \u500b\u6bcf\u65e5\u6e90\uff5cexit=1\n2026-10-21 19:35:43,410 INFO ==============================================================\n2026-10-21 19:35:43,410 INFO [fetch-only] \u53ea\u66f4\u65b0\u6bcf\u65e5 raw parquet\uff1b\u4e0d\u5efa\u77e9\u9663\u3001\u4e0d\u8f09\u6a21\u578b\u3001\u4e0d\u63a8\u8ad6\u3001\u4e0d\u767c\u5e03\n2026-10-21 19:35:43,410 INFO ==============================================================\n2026-10-21 19:35:43,410 INFO [fetch-only] \u5b8c\u6574\u4f86\u6e90 10/10\n2026-10-21 19:35:43,410 INFO [fetch-only] \u5b8c\u6210\uff5c\u6bcf\u65e5\u6e90 10/10\uff5c\u8017\u6642 0.0 \u79d2\uff5cexit=0\n2026-10-21 19:35:43,411 INFO ==============================================================\n2026-10-21 19:35:43,411 INFO [fetch-only] \u53ea\u66f4\u65b0\u6bcf\u65e5 raw parquet\uff1b\u4e0d\u5efa\u77e9\u9663\u3001\u4e0d\u8f09\u6a21\u578b\u3001\u4e0d\u63a8\u8ad6\u3001\u4e0d\u767c\u5e03\n2026-10-21 19:35:43,411 INFO ==============================================================\n2026-10-21 19:35:43,411 INFO [fetch-only] \u5b8c\u6574\u4f86\u6e90 10/10\n2026-10-21 19:35:43,411 INFO [fetch-only] \u5b8c\u6210\uff5c\u6bcf\u65e5\u6e90 10/10\uff5c\u8017\u6642 0.0 \u79d2\uff5cexit=0\n----------------------------------------------------------------------\nRan 26 tests in 0.061s\n\nOK\n"
+    }
+  ],
+  "post_tests": [
+    {
+      "group": "pit",
+      "command": [
+        "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "V6.experimental.v7_source_snapshot_test",
+        "V6.experimental.v7_temporal_contract_test",
+        "V6.experimental.v7_executable_labels_test",
+        "V6.experimental.v7_ohlcv_provenance_test",
+        "V6.experimental.v7_historical_security_master_test",
+        "V6.experimental.v7_historical_label_materialize_test",
+        "-q"
+      ],
+      "exit_code": 0,
+      "seconds": 1.8322043959997245,
+      "log": "----------------------------------------------------------------------\nRan 49 tests in 1.222s\n\nOK\n"
+    },
+    {
+      "group": "e1_no_training",
+      "command": [
+        "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "V6.experimental.v7_e1_contract_test",
+        "V6.experimental.v7_e1_matrix_test",
+        "V6.experimental.v7_e1_evaluate_test",
+        "V6.experimental.v7_e1_checkpoint_test",
+        "V6.experimental.v7_e1_colab_runtime_test",
+        "V6.experimental.v7_e1_run_test.E1RunTest.test_lifecycle_adapter_round_trip",
+        "-q"
+      ],
+      "exit_code": 0,
+      "seconds": 6.329320074999487,
+      "log": "\n----------------------------------------------------------------------\nRan 36 tests in 4.143s\n\nOK\n"
+    },
+    {
+      "group": "portfolio",
+      "command": [
+        "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "V6.experimental.v7_portfolio_contract_test",
+        "V6.experimental.v7_portfolio_engine_test",
+        "V6.experimental.v7_portfolio_journal_test",
+        "V6.experimental.v7_portfolio_history_test",
+        "V6.experimental.v7_portfolio_process_test",
+        "V6.experimental.v7_health_summary_test",
+        "V6.experimental.v7_correctness_audit_test",
+        "-q"
+      ],
+      "exit_code": 0,
+      "seconds": 2.736671024000316,
+      "log": "{\"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exits\": [0, 0], \"journal_sha256\": \"61106cc0e853b3bbbb08fe7b0ad80205c4607b68538404ea87ff1f6aff650fec\", \"results\": [{\"event\": \"error\", \"message\": \"event_id 'market' has different content\", \"type\": \"EventConflictError\"}, {\"appended\": true, \"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0.5\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": null, \"last_session_id\": \"market\", \"net_value\": \"0.99925112331502745881178232651023464802795806290564\", \"pending\": {\"as_of\": \"2026-09-16T17:00:00+08:00\", \"created_session\": 0, \"signal_id\": \"signal\", \"target_tickers\": [\"A\"]}, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.049925112331502745881178232651023464802795806290564\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.00074887668497254118821767348976535197204193709435846\"}}], \"scenario\": \"concurrent_conflict\"}\n{\"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exits\": [0, 0], \"journal_sha256\": \"f2b40d1b9bcb49d0463bb35e80fef93a595c53f5b81b1696895986e8026636fd\", \"results\": [{\"appended\": true, \"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}, {\"appended\": false, \"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}], \"scenario\": \"concurrent_duplicate\"}\n{\"blocked\": {\"event\": \"lock_blocked\", \"operation\": 1}, \"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exit\": 0, \"journal_sha256\": \"f2b40d1b9bcb49d0463bb35e80fef93a595c53f5b81b1696895986e8026636fd\", \"result\": {\"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}, \"scenario\": \"reader_during_split_write\"}\n{\"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exits\": [-9, 0], \"journal_sha256\": \"f2b40d1b9bcb49d0463bb35e80fef93a595c53f5b81b1696895986e8026636fd\", \"result\": {\"appended\": false, \"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}, \"scenario\": \"sigkill_durable_before_response\"}\n{\"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exits\": [-9, 0], \"journal_sha256\": \"fd78812e4fdd32f4cebea6c6011d3bc75dc4faf1cf4d5ebcd9a53664667fe802\", \"refusal\": {\"event\": \"error\", \"message\": \"journal has a truncated final line\", \"type\": \"JournalIntegrityError\"}, \"scenario\": \"sigkill_partial_tail\"}\n----------------------------------------------------------------------\nRan 67 tests in 2.585s\n\nOK\n"
+    },
+    {
+      "group": "ops",
+      "command": [
+        "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "V6/marketmamba/ops",
+        "-p",
+        "test_*.py",
+        "-q"
+      ],
+      "exit_code": 0,
+      "seconds": 17.442726131999734,
+      "log": "synthetic duplicate hygiene warning\n[shadow-ledger] projection callback failed (IsADirectoryError); legacy fetch outcome is unchanged\nProcess SpawnProcess-6:\nTraceback (most recent call last):\n  File \"/usr/lib/python3.12/multiprocessing/process.py\", line 314, in _bootstrap\n    self.run()\n  File \"/usr/lib/python3.12/multiprocessing/process.py\", line 108, in run\n    self._target(*self._args, **self._kwargs)\n  File \"/home/frank/projects/MarketMamba/V6/marketmamba/ops/test_phase_a_replay.py\", line 103, in failing_callback_child\n    observe_fetch_only(\n  File \"/home/frank/projects/MarketMamba/V6/marketmamba/ops/shadow.py\", line 433, in observe_fetch_only\n    result = fetch_operation()\n             ^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/V6/marketmamba/ops/test_phase_a_replay.py\", line 101, in fail\n    raise RuntimeError(\"synthetic child fetch failure\")\nRuntimeError: synthetic child fetch failure\n[shadow-ledger] lease conflict failed (LeaseConflictError); legacy fetch outcome is unchanged\n[shadow-ledger] projection callback failed (OSError); legacy fetch outcome is unchanged\n[shadow-ledger] projection callback failed (ProjectionLockTimeout); legacy fetch outcome is unchanged\n[shadow-ledger] projection callback failed (ProjectionLockTimeout); legacy fetch outcome is unchanged\n{\"after_generation\": \"6b211fced4b40713659dad81999135e177f70acabb9a3f3cf3d044144dfab505\", \"before_generation\": \"3a3b8bfca33ca05b22d9ebb67edf9a1cf0dd5fbe856ab570f4ee9592160aba1e\", \"case\": \"before_snapshot-0\", \"during_generation\": \"6b211fced4b40713659dad81999135e177f70acabb9a3f3cf3d044144dfab505\", \"writer_exitcode\": 0}\n{\"after_generation\": \"21f0382d0be11ec91b4663165db96089ce0084caced7332e105c6545d3eaa7a5\", \"before_generation\": \"6fe71216519d5f9ad908a7b6e8ea49056ac3d2cb372d4504448dd3ac5cae33b9\", \"case\": \"before_snapshot-1\", \"during_generation\": \"21f0382d0be11ec91b4663165db96089ce0084caced7332e105c6545d3eaa7a5\", \"writer_exitcode\": 0}\n{\"after_generation\": \"518de5bfd037958de997cbba1f1086b17448563ed9d4e93bf00123728138d735\", \"before_generation\": \"d1b58d1dcbc908b0a45eb1f3b5b8b9678a26879d15dd9af1b06c5b0fcadfebb9\", \"case\": \"mid_watermark-0\", \"during_generation\": \"d1b58d1dcbc908b0a45eb1f3b5b8b9678a26879d15dd9af1b06c5b0fcadfebb9\", \"writer_exitcode\": 0}\n{\"after_generation\": \"464e44541531ddbe5358f8e360218b7732c5ea74f5276ac1f5f682a6405f3d49\", \"before_generation\": \"566a24009ac64752927d306cbea924e8d55be66a5fd57205b1663de1120c8d4e\", \"case\": \"mid_watermark-1\", \"during_generation\": \"566a24009ac64752927d306cbea924e8d55be66a5fd57205b1663de1120c8d4e\", \"writer_exitcode\": 0}\n{\"after_generation\": \"246acecd7e4520eeb67ecf7dff2706ff70560adcb62c075c371786886c8be922\", \"before_generation\": \"df0fa02b9eeb8904f44c54f66a0d370a1c3beef0ed02eb6109f08b71baaba74f\", \"case\": \"after_watermark-0\", \"during_generation\": \"df0fa02b9eeb8904f44c54f66a0d370a1c3beef0ed02eb6109f08b71baaba74f\", \"writer_exitcode\": 0}\n{\"after_generation\": \"48401170ffa186b1399c4b8bd387357231fa77d1802dd83724f9235e77705544\", \"before_generation\": \"cc387f92a90eb712c2968f52772dda8b3aec61c12fe5e9d8fa0079301e6974f2\", \"case\": \"after_watermark-1\", \"during_generation\": \"cc387f92a90eb712c2968f52772dda8b3aec61c12fe5e9d8fa0079301e6974f2\", \"writer_exitcode\": 0}\n{\"after_generation\": \"dbc7d95c69544ba0bbdb64f0bc7bceadc34c47262585ae7fd197fc7b3a33c4fa\", \"before_generation\": \"ad8ea045498843f610cc6f1c9947a16d93cb2ea04a6dc122eb2f620883e5a03a\", \"case\": \"before_artifacts-0\", \"during_generation\": \"ad8ea045498843f610cc6f1c9947a16d93cb2ea04a6dc122eb2f620883e5a03a\", \"writer_exitcode\": 0}\n{\"after_generation\": \"3db4af6c3dcb4be5e8acbf2191fabf2ac2af7bdec08de982e6e0bdb462533928\", \"before_generation\": \"7011ec173284fbb9589864536517fe2196f104dc014508a5b8bfc2831c5af2ab\", \"case\": \"before_artifacts-1\", \"during_generation\": \"7011ec173284fbb9589864536517fe2196f104dc014508a5b8bfc2831c5af2ab\", \"writer_exitcode\": 0}\n{\"after_generation\": \"97be485a49f082939389538660933d8f6326b8275a4b3af8e1faecccd75833e7\", \"before_generation\": \"84d7d614fa345744a3d85e6f3fd8b4eae2b20e52edefc779fcfc75baeb37e37c\", \"case\": \"negative-control-no-BEGIN\", \"during_generation\": \"88d69cfa2544ae215af3c1af0e73865ec12298ca289df9cc2b04a059e26520c8\", \"writer_exitcode\": 0}\n{\"after_generation\": \"d758ff78369e62df7179f835dfd4ad1edeb8e524e5c970e0712255543779b4c5\", \"before_generation\": \"31b6ba9d53477014abb1e49f7b68c9639ebf6fa1f2f4819173d898e7247bdd96\", \"case\": \"commit\", \"during_generation\": \"31b6ba9d53477014abb1e49f7b68c9639ebf6fa1f2f4819173d898e7247bdd96\", \"writer_exitcode\": 0}\n{\"after_generation\": \"cda1416b8ecf57a40aabf0b404731307d3409add62563ffe2ab5aa946bfb4cf1\", \"before_generation\": \"cda1416b8ecf57a40aabf0b404731307d3409add62563ffe2ab5aa946bfb4cf1\", \"case\": \"rollback\", \"during_generation\": \"cda1416b8ecf57a40aabf0b404731307d3409add62563ffe2ab5aa946bfb4cf1\", \"writer_exitcode\": 0}\n{\"after_generation\": \"6242c14a0459d706d4adc5589af5038cd71b21e4be0f91605e1bf8e593560674\", \"before_generation\": \"6242c14a0459d706d4adc5589af5038cd71b21e4be0f91605e1bf8e593560674\", \"case\": \"kill\", \"during_generation\": \"6242c14a0459d706d4adc5589af5038cd71b21e4be0f91605e1bf8e593560674\", \"writer_exitcode\": -9}\n----------------------------------------------------------------------\nRan 81 tests in 17.274s\n\nOK\n"
+    },
+    {
+      "group": "fetch_governance",
+      "command": [
+        "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "V6.scripts.test_v62_fetch_only",
+        "tools.project_knowledge.test_knowledge_governance",
+        "-q"
+      ],
+      "exit_code": 0,
+      "seconds": 0.2420854789997975,
+      "log": "2026-10-21 19:36:57,009 INFO ==============================================================\n2026-10-21 19:36:57,009 INFO [fetch-only] \u53ea\u66f4\u65b0\u6bcf\u65e5 raw parquet\uff1b\u4e0d\u5efa\u77e9\u9663\u3001\u4e0d\u8f09\u6a21\u578b\u3001\u4e0d\u63a8\u8ad6\u3001\u4e0d\u767c\u5e03\n2026-10-21 19:36:57,009 INFO ==============================================================\n2026-10-21 19:36:57,010 INFO [fetch-only] \u5b8c\u6574\u4f86\u6e90 0/10\n2026-10-21 19:36:57,010 ERROR [fetch-only] \u5931\u6557\uff5c\u7f3a\u6f0f 1 \u500b\u6bcf\u65e5\u6e90\uff5cexit=1\n2026-10-21 19:36:57,010 INFO ==============================================================\n2026-10-21 19:36:57,010 INFO [fetch-only] \u53ea\u66f4\u65b0\u6bcf\u65e5 raw parquet\uff1b\u4e0d\u5efa\u77e9\u9663\u3001\u4e0d\u8f09\u6a21\u578b\u3001\u4e0d\u63a8\u8ad6\u3001\u4e0d\u767c\u5e03\n2026-10-21 19:36:57,010 INFO ==============================================================\n2026-10-21 19:36:57,010 INFO [fetch-only] \u5b8c\u6574\u4f86\u6e90 10/10\n2026-10-21 19:36:57,011 INFO [fetch-only] \u5b8c\u6210\uff5c\u6bcf\u65e5\u6e90 10/10\uff5c\u8017\u6642 0.0 \u79d2\uff5cexit=0\n2026-10-21 19:36:57,011 INFO ==============================================================\n2026-10-21 19:36:57,011 INFO [fetch-only] \u53ea\u66f4\u65b0\u6bcf\u65e5 raw parquet\uff1b\u4e0d\u5efa\u77e9\u9663\u3001\u4e0d\u8f09\u6a21\u578b\u3001\u4e0d\u63a8\u8ad6\u3001\u4e0d\u767c\u5e03\n2026-10-21 19:36:57,012 INFO ==============================================================\n2026-10-21 19:36:57,012 INFO [fetch-only] \u5b8c\u6574\u4f86\u6e90 10/10\n2026-10-21 19:36:57,012 INFO [fetch-only] \u5b8c\u6210\uff5c\u6bcf\u65e5\u6e90 10/10\uff5c\u8017\u6642 0.0 \u79d2\uff5cexit=0\n----------------------------------------------------------------------\nRan 26 tests in 0.077s\n\nOK\n"
+    }
+  ],
+  "parser_pre": "MOPS \u6708\u71df\u6536 otc 2026-05 \u6293\u53d6\u5931\u6557\uff1afixture failure\nMOPS financials 2026Q2\uff1aotc \u7121\u8cc7\u6599 \u2192 \u6574\u5b63\u653e\u68c4\uff08\u5be7\u53ef\u6c92\u6709\uff0c\u4e0d\u8981\u53ea\u6709\u4e00\u534a\uff09\nMOPS financials 2026Q2\uff1aotc \u7121\u8cc7\u6599 \u2192 \u6574\u5b63\u653e\u68c4\uff08\u5be7\u53ef\u6c92\u6709\uff0c\u4e0d\u8981\u53ea\u6709\u4e00\u534a\uff09\nMOPS financials 2026Q1\uff1aotc \u7121\u8cc7\u6599 \u2192 \u6574\u5b63\u653e\u68c4\uff08\u5be7\u53ef\u6c92\u6709\uff0c\u4e0d\u8981\u53ea\u6709\u4e00\u534a\uff09\nMOPS financials 2026Q2\uff1a\u6293\u4e0d\u5230\u4e0a\u4e00\u5b63\u7d2f\u8a08\u6578\uff0c\u7121\u6cd5\u9084\u539f\u55ae\u5b63\u503c \u2192 \u653e\u68c4\u672c\u5b63\uff08\u4e0d\u5beb\u5165\u7d2f\u8a08\u6578\uff0c\u907f\u514d\u8207\u6b77\u53f2\u4e0d\u540c\u7fa9\uff09\nTPEX price: \u56de\u50b3\u65e5\u671f 20260717 != \u8acb\u6c42 20260716\uff0c\u6368\u68c4\uff08\u6b64\u985e\u7aef\u9ede\u6703\u975c\u9ed8\u56de\u50b3\u7576\u5929\u8cc7\u6599\uff0c\u898b docstring\uff09\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', 'UNKNOWN', '\u6f32\u8dcc', '\u958b\u76e4', '\u6700\u9ad8', '\u6700\u4f4e', '\u6210\u4ea4\u80a1\u6578']\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', 'UNKNOWN', '\u6700\u9ad8', '\u6700\u4f4e', '\u6210\u4ea4\u80a1\u6578']\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', '\u958b\u76e4', 'UNKNOWN', '\u6700\u4f4e', '\u6210\u4ea4\u80a1\u6578']\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', '\u958b\u76e4', '\u6700\u9ad8', 'UNKNOWN', '\u6210\u4ea4\u80a1\u6578']\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', '\u958b\u76e4', '\u6700\u9ad8', '\u6700\u4f4e', 'UNKNOWN']\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', '\u958b\u76e4', '\u6700\u9ad8', '\u6700\u4f4e', '\u6210\u4ea4\u80a1\u6578', '\u6536\u76e4']\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', '\u6536\u76e4', '\u6700\u9ad8', '\u6700\u4f4e', '\u6210\u4ea4\u80a1\u6578']\nTPEX price: malformed field names\nTWSE price: response date 20260717 != requested 20260716\nTWSE price: response date None != requested 20260716\nTWSE price: response date None != requested 20260716\nTWSE price: response date ['20260716'] != requested 20260716\nTWSE price: stat=no data\nTWSE price: response date None != requested 20260716\n----------------------------------------------------------------------\nRan 8 tests in 0.092s\n\nOK\n",
+  "parser_post": "MOPS \u6708\u71df\u6536 otc 2026-05 \u6293\u53d6\u5931\u6557\uff1afixture failure\nMOPS financials 2026Q2\uff1aotc \u7121\u8cc7\u6599 \u2192 \u6574\u5b63\u653e\u68c4\uff08\u5be7\u53ef\u6c92\u6709\uff0c\u4e0d\u8981\u53ea\u6709\u4e00\u534a\uff09\nMOPS financials 2026Q2\uff1aotc \u7121\u8cc7\u6599 \u2192 \u6574\u5b63\u653e\u68c4\uff08\u5be7\u53ef\u6c92\u6709\uff0c\u4e0d\u8981\u53ea\u6709\u4e00\u534a\uff09\nMOPS financials 2026Q1\uff1aotc \u7121\u8cc7\u6599 \u2192 \u6574\u5b63\u653e\u68c4\uff08\u5be7\u53ef\u6c92\u6709\uff0c\u4e0d\u8981\u53ea\u6709\u4e00\u534a\uff09\nMOPS financials 2026Q2\uff1a\u6293\u4e0d\u5230\u4e0a\u4e00\u5b63\u7d2f\u8a08\u6578\uff0c\u7121\u6cd5\u9084\u539f\u55ae\u5b63\u503c \u2192 \u653e\u68c4\u672c\u5b63\uff08\u4e0d\u5beb\u5165\u7d2f\u8a08\u6578\uff0c\u907f\u514d\u8207\u6b77\u53f2\u4e0d\u540c\u7fa9\uff09\nTPEX price: \u56de\u50b3\u65e5\u671f 20260717 != \u8acb\u6c42 20260716\uff0c\u6368\u68c4\uff08\u6b64\u985e\u7aef\u9ede\u6703\u975c\u9ed8\u56de\u50b3\u7576\u5929\u8cc7\u6599\uff0c\u898b docstring\uff09\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', 'UNKNOWN', '\u6f32\u8dcc', '\u958b\u76e4', '\u6700\u9ad8', '\u6700\u4f4e', '\u6210\u4ea4\u80a1\u6578']\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', 'UNKNOWN', '\u6700\u9ad8', '\u6700\u4f4e', '\u6210\u4ea4\u80a1\u6578']\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', '\u958b\u76e4', 'UNKNOWN', '\u6700\u4f4e', '\u6210\u4ea4\u80a1\u6578']\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', '\u958b\u76e4', '\u6700\u9ad8', 'UNKNOWN', '\u6210\u4ea4\u80a1\u6578']\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', '\u958b\u76e4', '\u6700\u9ad8', '\u6700\u4f4e', 'UNKNOWN']\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', '\u958b\u76e4', '\u6700\u9ad8', '\u6700\u4f4e', '\u6210\u4ea4\u80a1\u6578', '\u6536\u76e4']\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', '\u6536\u76e4', '\u6700\u9ad8', '\u6700\u4f4e', '\u6210\u4ea4\u80a1\u6578']\nTPEX price: malformed field names\nTWSE price: response date 20260717 != requested 20260716\nTWSE price: response date None != requested 20260716\nTWSE price: response date None != requested 20260716\nTWSE price: response date ['20260716'] != requested 20260716\nTWSE price: stat=no data\nTWSE price: response date None != requested 20260716\n----------------------------------------------------------------------\nRan 8 tests in 0.063s\n\nOK\n",
+  "tests_each": 267,
+  "independent_review": {
+    "reviewer": "/root/independent_review",
+    "critical": 0,
+    "required": 0,
+    "result": "GO"
+  },
+  "health": "KNOWLEDGE HEALTH\n\nProject Map        PASS\nAgent Guides       PASS\nDomains            PASS\nGovernance         WARNING\nAuthority Drift    WARNING\nRuntime Freshness  PASS\nGenerated Index    PASS\nLegacy Docs        WARNING\n\nOverall: WARNING\n",
+  "probe_note": "branch decoration + initially tripped probe; explicit refname format corrected; candidate unmodified"
+}

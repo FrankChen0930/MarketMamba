@@ -1,0 +1,21 @@
+{
+ "schema":"w29-development-study-v1",
+ "study_id":"W29_DISJOINT_EXPANDED_TWSE_DEVELOPMENT",
+ "authority":"Human Window29 DEVELOPMENT_ONLY; not Data/Research Admission/Independent Test",
+ "dates":{"TRAIN":["2021-01-01","2021-12-31"],"VALIDATION":["2022-01-01","2022-12-31"],"EXPOSED_DIAGNOSTIC":["2023-01-01","2023-12-31"]},
+ "features":["raw_close_momentum1","raw_intraday_range"],
+ "feature_formulas":["close[t]/close[previous_shared_session]-1","(max[t]-min[t])/close[t]"],
+ "prediction_universe":"Only known-at-logical-decision membership interval and previous/current valid OHLC, plus already-observed feature-unit jump; no entry/exit/path/label maturity or label payload dependency. Unknown historical publication/asof retained. Feature-only predictions include tail rows even without labels.",
+ "label_policy":"W27_RAW_PRICE_DIAGNOSTIC_DEVELOPMENT_ONLY_v1; shared-calendar entry=t+1 open, exit=t+h close; separate post-hoc label join; all holding OHLC valid; split exit<nextsplit; missing/zero/no fill; no adjusted-price mixing",
+ "suspicious_unit_rule":"Before any metrics, flag consecutive valid observed closes with ratio>=2 or<=0.5, including individual gaps; not proof of action. Exclude supervised crossings or feature lookback crossing; only events<=signal may affect current features. No return/RankIC-based tuning.",
+ "known_events":"W26 verified 2321 event only, but excluded via disjoint W24 cohort; no new event API",
+ "models":{"L0_POS":{"direction":1},"L0_NEG":{"direction":-1,"role":"POST_W25_EXPOSURE_DEVELOPMENT_CONTROL"},"Ridge":{"alpha":1.0,"train_only_zscore":true,"fresh_state":true,"fits":2}},
+ "LightGBM":{"status":"SKIPPED_BEFORE_DATA","reason":"Existing W10/W11 fixed recipe is SYNTHETIC_ENGINEERING_ONLY max_samples64/toy features; no existing qualified real-panel fixed recipe/adapter path. No new parameter recipe or guard bypass; does not block Ridge."},
+ "evaluation":{"min_valid_n":40,"tie_policy":"AVERAGE","aggregation_weighting":"EQUAL_SESSION","statistical_policy":"NOT_CONFIGURED_NO_INFERENCE","common_support":"allmodels identical feature prediction keys joined to eligible label keys; keep all sessions and rejection/empty/tail reasons"},
+ "fit_gate":"Every non-tail 2022/2023 session/horizon with exit before split must have common eligible N>=40; if not, no fits and report coverage without relaxing rules",
+ "requests":{"total_max":80,"price_max":70,"metadata_max":10,"planned_metadata":0,"parallelism":1,"minimum_interval_seconds":5,"known_local_hourly_cap":100,"documented_free_hourly_reference":300,"unobservable_external_anonymous_usage":"UNKNOWN; cannot guarantee provider-wide headroom","stop":[402,403,429],"retry_redirect_token_fallback":false},
+ "resources":{"CPU_total_seconds":3600,"verification_reserve_seconds":60,"CPU_per_stage_seconds":600,"training_wall_timeout_seconds":600,"artifact_bytes_max":1073741824,"admin_reserve_bytes":16777216,"same_host_restore_counted":true},
+ "limits":{"Ridge_fits":2,"LightGBM_fits":0,"GPU":0,"Colab":0,"search":0,"bootstrap_LOSO":0},
+ "no_promotion":"2022/2023 exposed; retrospective current vintage; unknown events/suspension/asof and survivor/selection bias retained; no winner/investment/performance/Strict PIT claim",
+ "next_action":"STOP after artifacts/replay/review/local commit; no W29 merge/push/deploy/next window"
+}

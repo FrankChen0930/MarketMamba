@@ -1,0 +1,37 @@
+# MarketMamba V6 — Git Ignore
+# ============================
+
+# Environment & Secrets — NEVER commit these
+.env
+*.env
+secrets.py
+
+# Model checkpoints (too large for git)
+models/*.pt
+models/*.pth
+models/*.ckpt
+
+# V6.2 實驗/上線 checkpoint（不放 models/：那個目錄受保護、規則 5 禁止改動）
+checkpoints/
+
+# Processed data (too large, regenerate locally)
+/Data/processed_v6/
+/Data/raw_v6/
+/Data/cache_v6/
+
+# Result archives (tracked via rolling window in results/ root only)
+results/20*/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

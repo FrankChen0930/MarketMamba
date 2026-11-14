@@ -1,0 +1,27 @@
+{
+  "status": "ACCEPTED",
+  "authority": "HUMAN",
+  "recorded_on": "2026-10-21",
+  "source": "Human /goal Market Mamba V7 — Charter Integration & Cross-Domain Autonomous Development",
+  "approved_main": "6d74d7384caa5fa90b1b050ce507bfb8282f19df",
+  "approved_candidate": "f7af348710467ac381b2a84e8d192670ced89932",
+  "integration": "local WSL ff-only; stop on failed prerequisites; do not modify approved candidate",
+  "next_window": "3–5 valuable CPU-only units; cross-domain Data/Model Research/Experiment Preparation then Portfolio/Reliability; two repair rounds maximum each",
+  "includes": [
+    "independent review",
+    "local commits",
+    "canonical memory/backlog"
+  ],
+  "excludes": [
+    "push/deploy",
+    "GPU/Colab/training/large inference",
+    "V6 production/Windows operations/schedules",
+    "research approval/admission/correctness",
+    "MAS Core Live/infrastructure",
+    "new paid services",
+    "indefinite execution"
+  ],
+  "strict_phase0": "STOP",
+  "e1_matrix": "BLOCKED",
+  "recording_limit": "Human scope summary, not agent approval of results"
+}

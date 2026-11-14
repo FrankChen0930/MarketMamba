@@ -1,0 +1,28 @@
+{
+  "decision_id": "WINDOW31_BOUNDED_EXPANDING_CPU_DEVELOPMENT",
+  "authority": "Human Window31 specific bounded authorization; not formal Research/Data/Evaluation Admission",
+  "state": "EXECUTED_DEVELOPMENT_ONLY_STOP_UNMERGED",
+  "base": "b64ac353833a9248121f12ebe61e1333decb2dbf",
+  "branch": "research/v7-window31-expanding",
+  "prefit_commit": "ddcf5d835b43578ed9fc5567ee677d88e928e203",
+  "contract": "research/v7/window31-contract.json",
+  "evidence": "research/v7/window31-evidence.json",
+  "confirmed_scope": [
+    "Three2023 origins,12month validation,expanding train,mature-only freshrefit",
+    "L0 positive/negative,Ridgealpha1,W30exactLGBM recipe",
+    "Max12Ridge+12LGBMfits,CPU1800,512MiB,0API/GPU",
+    "W30 local ff-only;W31 must stay isolated"
+  ],
+  "not_approved": [
+    "Formal study/data admission",
+    "Untouched independent evaluation",
+    "Strict PIT/executable results",
+    "W19/W12 integration or runtime change",
+    "W31 merge or next window"
+  ],
+  "remaining_human_decisions": [
+    "Formal Dataset/Universe and unknown event/missing policies",
+    "Decision-time,label,maturity,purge,selection/refit/evaluation/statistical/exposure policies",
+    "Resources and independent backup destination"
+  ]
+}

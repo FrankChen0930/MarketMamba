@@ -1,0 +1,24 @@
+{
+  "authority": "HUMAN",
+  "status": "ACCEPTED_SCOPED_ENGINEERING_AND_PREPARATION",
+  "source": "Human /goal Market Mamba V7 \u2014 Data Reliability & Research Evaluation Preparation",
+  "baseline": "9956446d49371dbc5c09e1ea0bd9eaa750064532",
+  "window02": "f34f9f32a86a0ee97a8dcdb74faad996bf5f5b4e",
+  "authorized": [
+    "isolated integration readiness",
+    "offline deterministic TWSE/TPEx/MOPS parser fixes under existing semantics",
+    "evaluation fairness research preparation PROPOSED only",
+    "existing-contract CPU readiness checks",
+    "independent review and local commits"
+  ],
+  "forbidden": [
+    "main merge/push/deploy",
+    "formal data/Windows/scheduler changes",
+    "new research/evaluation policy approval",
+    "training/large inference/GPU/Colab",
+    "new MOPS completeness policy",
+    "MAS expansion"
+  ],
+  "strict_phase0": "STOP",
+  "e1_frozen_matrix": "BLOCKED"
+}

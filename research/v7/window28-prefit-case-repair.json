@@ -1,0 +1,8 @@
+{
+  "status": "BEFORE_ANY_FIT_OR_W28_METRIC",
+  "original_plan_sha256": "9cd43479fb0a937718a450ee44baa22c595411fc6d3fc61ae3de1b3643737429",
+  "unavailable_case": "2321 2022-07-01 horizons5/10 absent from W24 frozen dataset",
+  "replacement": "2022-07-18, deterministic first original-mask-eligible shared session for all three stocks and horizons at/after July1",
+  "mask_policy_support_unchanged": true,
+  "no_FIT_claims_created_at_repair": true
+}

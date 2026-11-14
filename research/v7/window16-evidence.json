@@ -1,0 +1,235 @@
+{
+  "schema_version": 1,
+  "status": "WINDOW_COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+  "evidence_class": "BOUNDED_REAL_RESOURCE_CAPTURE_AND_RESTORE_NOT_RESEARCH_ADMISSION",
+  "branch": "research/v7-window16-resource-proof",
+  "base": "27dcb36b5431b70e8aa831edb6cb9234cb3a40b3",
+  "integration": {
+    "before": "4da1bcfa81c8ff786de82d29ec461c0851d411d5",
+    "fixed_candidate": "27dcb36b5431b70e8aa831edb6cb9234cb3a40b3",
+    "after": "27dcb36b5431b70e8aa831edb6cb9234cb3a40b3",
+    "method": "ff-only",
+    "preflight_clean_worktrees": 36,
+    "deliverable_hashes_verified": 36,
+    "W15_local_files_verified": 28,
+    "old_protected_verified": 92,
+    "frozen_hashes_verified": 4,
+    "existing_W15_reviews": "U1/U2/U3/closure Critical0 Required0 verified; no duplicate new StageA independent review under W16 one-review limit",
+    "targeted_tests": 25,
+    "targeted_seconds": 3.141,
+    "post_integration": "Source bytes unchanged; no full175suite repeated",
+    "old_snapshot_bytes_moved_to_main": false,
+    "other_pending_branches_merged": false
+  },
+  "U1": {
+    "status": "COMPLETED",
+    "coverage": "research/v7/window16-resource-coverage.json",
+    "source_entry": "research/v7/window15-license-matrix.json",
+    "data_requests_each": 1,
+    "data_requests_total": 2,
+    "metadata_html_requests": 2,
+    "official_web_page_opens": 4,
+    "retries": 0,
+    "redirects_followed": 0,
+    "fallback_requests": 0,
+    "classification": "SINGLE_SESSION_SNAPSHOT_RESOURCES_AS_OBSERVED",
+    "historical_training_coverage": "BLOCKED",
+    "forward_resource": "CANDIDATE_ONLY_NOT_ACTIVE"
+  },
+  "U2": {
+    "status": "COMPLETED",
+    "restore": "research/v7/window16-restore.json",
+    "restored_raw_bytes": 279436,
+    "restore_network_requests": 0,
+    "capture_targeted_tests": 3,
+    "capture_targeted_seconds": 0.207,
+    "fallback_policy": "research/v7/window16-fallback-policy.json",
+    "new_frameworks_or_implementations": false,
+    "untracked_raw_root": ".artifacts/window16-resource-proof/snapshots",
+    "untracked_restore_root": ".artifacts/window16-resource-restore",
+    "permanent_backup_certified": false,
+    "worktree_removal_risk": "Both local copies can be lost together; Git metadata/hashes are not bytes."
+  },
+  "review_budget": {
+    "independent_rounds_allowed": 1,
+    "repair_rounds_allowed": 1,
+    "used_review_rounds": 1,
+    "used_repair_rounds": 0
+  },
+  "tests": {
+    "integration": "research/v7/window16-integration-targeted.txt",
+    "capture": "research/v7/window16-capture-targeted.txt",
+    "full_existing_suite_repeated": false,
+    "real_models_rankic_gpu": false
+  },
+  "local_bytes": {
+    ".artifacts/window16-resource-proof/requests.json": {
+      "sha256": "514601f58de4cc3c255ddad5ff84687a355d53966255e3d6ee7d01b9a4784597",
+      "bytes": 525,
+      "artifact_class": "CANONICAL"
+    },
+    ".artifacts/window16-resource-proof/snapshots/raw/c57a72d7864203d633c76716e56c35b689c0134fffbed7f069e41f2646372d1a.bin": {
+      "sha256": "c57a72d7864203d633c76716e56c35b689c0134fffbed7f069e41f2646372d1a",
+      "bytes": 141480,
+      "artifact_class": "CANONICAL"
+    },
+    ".artifacts/window16-resource-proof/snapshots/raw/79bdd059e75a0a829dfef1e5c1330cb48a84b302e04ce040e77ee0dd35e5ec6a.bin": {
+      "sha256": "79bdd059e75a0a829dfef1e5c1330cb48a84b302e04ce040e77ee0dd35e5ec6a",
+      "bytes": 137956,
+      "artifact_class": "CANONICAL"
+    },
+    ".artifacts/window16-resource-proof/snapshots/manifests/ed32d84297e415871b03646b01bd07c058cb9fb2655a66b29e18255556fd79ea-2026-10-24T110926.271271p0000.json": {
+      "sha256": "339101c072b98361949880faa31c0ef8079ead7380c9b184d1a5b207ae682041",
+      "bytes": 941,
+      "artifact_class": "CANONICAL"
+    },
+    ".artifacts/window16-resource-proof/snapshots/manifests/25a45db23f5dcaee689a1fcc7c22ed8693dcb8e00f0b90241d83c3b68c01844b-2026-10-24T110925.373190p0000.json": {
+      "sha256": "30c0f47b248ae5dc7d638d5656eddcb06469ee62cd8e04d0d41f5229cc29ffce",
+      "bytes": 898,
+      "artifact_class": "CANONICAL"
+    },
+    ".artifacts/window16-resource-restore/raw/c57a72d7864203d633c76716e56c35b689c0134fffbed7f069e41f2646372d1a.bin": {
+      "sha256": "c57a72d7864203d633c76716e56c35b689c0134fffbed7f069e41f2646372d1a",
+      "bytes": 141480,
+      "artifact_class": "GENERATED"
+    },
+    ".artifacts/window16-resource-restore/raw/79bdd059e75a0a829dfef1e5c1330cb48a84b302e04ce040e77ee0dd35e5ec6a.bin": {
+      "sha256": "79bdd059e75a0a829dfef1e5c1330cb48a84b302e04ce040e77ee0dd35e5ec6a",
+      "bytes": 137956,
+      "artifact_class": "GENERATED"
+    },
+    ".artifacts/window16-resource-restore/manifests/ed32d84297e415871b03646b01bd07c058cb9fb2655a66b29e18255556fd79ea-2026-10-24T110926.271271p0000.json": {
+      "sha256": "339101c072b98361949880faa31c0ef8079ead7380c9b184d1a5b207ae682041",
+      "bytes": 941,
+      "artifact_class": "GENERATED"
+    },
+    ".artifacts/window16-resource-restore/manifests/25a45db23f5dcaee689a1fcc7c22ed8693dcb8e00f0b90241d83c3b68c01844b-2026-10-24T110925.373190p0000.json": {
+      "sha256": "30c0f47b248ae5dc7d638d5656eddcb06469ee62cd8e04d0d41f5229cc29ffce",
+      "bytes": 898,
+      "artifact_class": "GENERATED"
+    }
+  },
+  "preservation_checked_at": "2026-10-24T11:14:45.461233+00:00",
+  "gates": {
+    "strict_phase0": "STOP",
+    "e1_frozen_matrix": "BLOCKED",
+    "h2": "NOT_APPROVED",
+    "historical_exploratory_study": "PROPOSED",
+    "forward_collector_activation": "NOT_APPROVED",
+    "w12_gpu": "SAFETY_HALTED",
+    "fair_evaluation": "PROPOSED",
+    "pre_next_open": "PROPOSED",
+    "inference_recovery": "DEFERRED"
+  },
+  "runtime": {
+    "python": "3.12.3",
+    "CPU_env": "existingW11CPUoverlay",
+    "MARKETMAMBA_DATA_ROOT": "UNSET",
+    "operational_data_realpath": "/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6",
+    "operational_payload_read": false,
+    "gpu_calls": 0
+  },
+  "next_human_choice": [
+    "Separately authorize legal historical source/coverage qualification, not fitting",
+    "Or authorize bounded Forward operation preparation with exact sources/frequency/storage/backup/clock/QC/calendar/gap/notice scope; collector currently NOT_APPROVED"
+  ],
+  "scope_units": 2,
+  "final_checkpoint": "containing local closure commit",
+  "protected_reference": {
+    "source_commit": "27dcb36b5431b70e8aa831edb6cb9234cb3a40b3",
+    "path": "research/v7/window15-evidence.json",
+    "sha256": "2af49a4281f65149eae87aa1ed5903268c834d681e0b35eb29a225a038ef1261",
+    "fields": [
+      "protected_bytes_unchanged",
+      "local_new_bytes_retained"
+    ],
+    "W15_local_paths_relative_to": "/home/frank/projects/MarketMamba/.worktrees/v7-window15-dual-track",
+    "files_verified_unchanged": 120,
+    "note": "Reuse fixed prior inventories rather than duplicate120entries. All actual bytes verified unchanged in W16."
+  },
+  "review": {
+    "reviewer": "/root/independent_review",
+    "status": "GO_TO_LOCAL_COMMIT_AND_STOP",
+    "critical": 0,
+    "required": 0,
+    "independent_scope": "Local CSV date/rows/QC recomputation, exactlicensedrequest/source hashes/original+restore bytes and claims; no network/GPU/full-suite repeat"
+  },
+  "knowledge_update": "CurrentState/AuthorityMap markdown+JSON/soleBacklog/DecisionRecord/WorktreeRegister updated; no new implementation/global governance/production authority.",
+  "usage_snapshot": {
+    "tool_reported_goal_tokens_used": 795223,
+    "tool_reported_goal_elapsed_seconds": 635,
+    "certified_billing_cost": false,
+    "aggregate_token_hard_cap_enforced": false,
+    "note": "Unbudgeted Goal counters only; bounded2units/one review completed then STOP."
+  },
+  "artifact_class": "CANONICAL",
+  "artifact_class_scope": "Canonical bounded capture/review evidence only, not dataset/research admission.",
+  "local_byte_protection": "No GC/move authorized; retain original capture and restore bytes until separately reviewed storage/retirement. Canonical evidence does not imply PIT/research admission.",
+  "knowledge_health": {
+    "status": "WARNING",
+    "structural_failures": 0,
+    "retained_warning_components": [
+      "Governance",
+      "Authority Drift",
+      "Legacy Docs"
+    ]
+  },
+  "artifact_hashes": {
+    "knowledge/00_Project_Map/Authority_Map.md": {
+      "sha256": "5b3b04e4c421c93da91c44eb7742139bfab7d01425fac16886b49c2dc1d7bec9",
+      "bytes": 61806
+    },
+    "knowledge/00_Project_Map/Current_State.md": {
+      "sha256": "508861e9682be526bbddf4e2ae44eab5652186924c17b29fdc21d12e33551467",
+      "bytes": 75864
+    },
+    "knowledge/00_Project_Map/Worktree_Register.md": {
+      "sha256": "63fca71bf65502aaed247efec1c133dfc42a71be10bacb76b4cb201ec47d66a8",
+      "bytes": 37508
+    },
+    "knowledge/00_Project_Map/authority-map.json": {
+      "sha256": "fb403e156136c03ea682d14aa5a3864822e5e3fdee31bddf8b94979e0cfae950",
+      "bytes": 30921
+    },
+    "knowledge/02_History/Decisions/20261024-window16-resource-proof.json": {
+      "sha256": "685c8e28710fee7546e000957c2deab53e0530027caa88fe633a479ffc496ff5",
+      "bytes": 1061
+    },
+    "reports/v7_window16_resource_proof.md": {
+      "sha256": "aade022741e67758409c047976439572dcf556ea2944e0af4bb9a71bcb38c880",
+      "bytes": 3962
+    },
+    "research/v7/research-program.md": {
+      "sha256": "15d9e081529b03e4b676bb3ec40e9e9225cda722787ba2a52fbfffbdf1737fe1",
+      "bytes": 81703
+    },
+    "research/v7/window16-capture-targeted.txt": {
+      "sha256": "d1d501e226132e4f9f2d02ef045d1857d231c87a7cd1366a4d2f4ab90becb803",
+      "bytes": 97
+    },
+    "research/v7/window16-fallback-policy.json": {
+      "sha256": "f45d91ef69bbfa00cd30cdf658fa359dfdeab85e0a91daf0107ab28f18daf8be",
+      "bytes": 2336
+    },
+    "research/v7/window16-integration-targeted.txt": {
+      "sha256": "331b4d70aa6e97100fa8fad0c0f7803fe9d9d9cc3dba09e89d5e8464927bc88b",
+      "bytes": 98
+    },
+    "research/v7/window16-resource-coverage.json": {
+      "sha256": "b48ed5360e4bdea5d7a665965d7f6d486d350590f489232cd80eaf97d47dc2b5",
+      "bytes": 11095
+    },
+    "research/v7/window16-restore.json": {
+      "sha256": "ccfb40c5b29e6e58d7cc6933db1072ca8930368afc2c60d392448ab3abde6db8",
+      "bytes": 2682
+    },
+    "research/v7/window16-knowledge-impact.txt": {
+      "sha256": "209f11bd7d66d77b2cda4ec7a2be6acac157a0019bdcddf3737e402cca6f3347",
+      "bytes": 2767
+    },
+    "research/v7/window16-knowledge-health.txt": {
+      "sha256": "bf93f67ea1dfe58182f4c71dd1f609a034debb6e81c2599949e554cb6c78863c",
+      "bytes": 237
+    }
+  }
+}

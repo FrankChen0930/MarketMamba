@@ -1,0 +1,123 @@
+{
+  "status": "DELIVERABLE_CONTENT_IDENTITIES",
+  "source_commit": "27055f7ec34cd4aa6d47f67bd89e5b6616244bc8",
+  "files": [
+    {
+      "path": "research/v7/window26-analyse.py",
+      "bytes": 8690,
+      "sha256": "6575327d504ed4e83af53621b2963ef25b9ca2680b26a9dc9bd0df7ca8dad04d"
+    },
+    {
+      "path": "research/v7/window26-documents.py",
+      "bytes": 1930,
+      "sha256": "3eaaa192cd105a30c705fa025e28854c26f96c46624b29984e5c281e0d3fbaa9"
+    },
+    {
+      "path": "research/v7/window26-event-matrix.json",
+      "bytes": 4531,
+      "sha256": "4451f37860243beb2ba4d812964c3fdd21c2e4584fe241d0ff5806ce1c766849"
+    },
+    {
+      "path": "research/v7/window26-event-request.txt",
+      "bytes": 1567,
+      "sha256": "fd42d0db82768b7f32270f43c72a28db1eddc1448f3ea33a6222510b64243378"
+    },
+    {
+      "path": "research/v7/window26-evidence.json",
+      "bytes": 2186,
+      "sha256": "f0dd55ca60cf5a860a4e3c037e93f682a326b8981f6a5036c5a5d46ea951d10e"
+    },
+    {
+      "path": "research/v7/window26-exposure-ledger.json",
+      "bytes": 4288,
+      "sha256": "b4c9699ab3d91b5396e6df7ec7b0556313fb7d2968cb318d6ddf0c3aa162b071"
+    },
+    {
+      "path": "research/v7/window26-independent-restore.json",
+      "bytes": 5775,
+      "sha256": "ed459d85695155d62866d8ab240920eb96122c36e6cb1b2bc5b527a69463b294"
+    },
+    {
+      "path": "research/v7/window26-integration.json",
+      "bytes": 633,
+      "sha256": "28e680bc915c6f0596b06975197500e3a01366ec4526dbbfdd4c635b7cd9018b"
+    },
+    {
+      "path": "research/v7/window26-knowledge-health.txt",
+      "bytes": 237,
+      "sha256": "bf93f67ea1dfe58182f4c71dd1f609a034debb6e81c2599949e554cb6c78863c"
+    },
+    {
+      "path": "research/v7/window26-knowledge-impact.json",
+      "bytes": 597,
+      "sha256": "f778de0bc17a517b0ed740240505d3e997ec3ac73594424607e18079357cf43c"
+    },
+    {
+      "path": "research/v7/window26-knowledge-impact.txt",
+      "bytes": 597,
+      "sha256": "f778de0bc17a517b0ed740240505d3e997ec3ac73594424607e18079357cf43c"
+    },
+    {
+      "path": "research/v7/window26-label-policy-candidates.json",
+      "bytes": 2765,
+      "sha256": "e5af1c3967a875ee3e9c05ec2ddd886b20169779fb3cf8b2c3231286a72b692d"
+    },
+    {
+      "path": "research/v7/window26-network-ledger.json",
+      "bytes": 2358,
+      "sha256": "7c7909a0ae1bbb55e536d9f2d9013dd2594cca22d748dbb958a5e9cda4a53f28"
+    },
+    {
+      "path": "research/v7/window26-next-study-candidate.json",
+      "bytes": 6323,
+      "sha256": "c2c4031941c0b0d36a0514af8c05c24e0a37e9d4643c9d78eb6cae6d9755b5f7"
+    },
+    {
+      "path": "research/v7/window26-red.txt",
+      "bytes": 1007,
+      "sha256": "8234d2132998d84a0da427da9f08da25dab895471dadb9ad61ea22fc1febfd5a"
+    },
+    {
+      "path": "research/v7/window26-restore-process.txt",
+      "bytes": 190,
+      "sha256": "8d5208d0cbbcf2c3000847397cecdfe04677d7b2c5cf77c7095fe50192425115"
+    },
+    {
+      "path": "research/v7/window26-restore.py",
+      "bytes": 1892,
+      "sha256": "5cc24efb3474cfdb38ee1ff1775d2ea76d6038dea92ff0d7e365931256eb655a"
+    },
+    {
+      "path": "research/v7/window26-review.json",
+      "bytes": 779,
+      "sha256": "bbc410e869fce0f71a4d9a05f167dd22abccac5a8df5c91d7170364044de110b"
+    },
+    {
+      "path": "research/v7/window26-source-plan.json",
+      "bytes": 1218,
+      "sha256": "2b17c3beb6c80b923af55acc86ba57f0ae10fc0cf6e9b2106cdf3003d2b7cfa3"
+    },
+    {
+      "path": "research/v7/window26-sources.py",
+      "bytes": 4291,
+      "sha256": "7b79214847320f8b0c80a2c765ec44bbb8dc6192eb401d4cfc87e84e2f8dafc7"
+    },
+    {
+      "path": "research/v7/window26-targeted-tests.txt",
+      "bytes": 101,
+      "sha256": "921b60a7fd52e978fbb551cacd29df2d6708879400278e1fcc70fceeb0c6f8e0"
+    },
+    {
+      "path": "research/v7/window26-tests.py",
+      "bytes": 1165,
+      "sha256": "e0ee167caac47766ce29621c0c127728b0cfd6dd72b1de34dc1154b49e7f3df3"
+    },
+    {
+      "path": "reports/v7_window26_label_integrity.md",
+      "bytes": 9155,
+      "sha256": "3e06eed1c7d5250b9b18e2c82535e0e4a61230bc2ee3515c9ef73de4cee24b38"
+    }
+  ],
+  "head_identity": "Use git rev-parse HEAD after local closure commit; no self-referential commit SHA",
+  "private_raw": "Excluded from Git; independent restore inventory references actual bytes"
+}

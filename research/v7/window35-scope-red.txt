@@ -1,0 +1,21 @@
+..........F.F.
+======================================================================
+FAIL: test_recovery_decision_cannot_use_other_session (__main__.Recovery.test_recovery_decision_cannot_use_other_session)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window35-recovery-v04/research/v7/window35-recovery-tests.py", line 38, in test_recovery_decision_cannot_use_other_session
+    with self.assertRaises(ValueError):M.decide(self.missing(),scope=scope,update_evidence='fixture',source_permitted=True,quota_available=True,ledger=self.ledger)
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_source_halt_persists_across_sessions (__main__.Recovery.test_source_halt_persists_across_sessions)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window35-recovery-v04/research/v7/window35-recovery-tests.py", line 42, in test_source_halt_persists_across_sessions
+    with self.assertRaises(ValueError):self.ledger.reserve(other,'NORMAL_CAPTURE','new-day')
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.595s
+
+FAILED (failures=2)

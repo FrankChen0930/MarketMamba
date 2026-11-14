@@ -1,0 +1,189 @@
+{
+  "schema_version": 1,
+  "artifact_class": "CANONICAL",
+  "evidence_class": "BOUNDED_OFFLINE_OPERATIONAL_READINESS_NOT_ACTIVATION_OR_ADMISSION",
+  "status": "WINDOW_COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+  "branch": "research/v7-window17-forward-readiness",
+  "base": "000b0b9c40448b11a41d05396dffc6e0f3ea1235",
+  "final_head": "containing local closure commit",
+  "observed_at": "2026-10-24T13:06:00.658149+00:00",
+  "integration": {
+    "before": "27dcb36b5431b70e8aa831edb6cb9234cb3a40b3",
+    "candidate": "000b0b9c40448b11a41d05396dffc6e0f3ea1235",
+    "after": "000b0b9c40448b11a41d05396dffc6e0f3ea1235",
+    "method": "ff-only",
+    "clean_worktrees_before": 37,
+    "W16_deliverable_hashes": 14,
+    "W16_local_files": 9,
+    "tests": 3,
+    "existing_independent_review": "W16GO Critical0/Required0; verified source and evidence, no duplicate new integration review",
+    "post_validation": "W16 identities remain exact; same snapshot code later29testsmodule coverage; newmain no implementationdiff",
+    "other_candidates_merged": false
+  },
+  "U1": {
+    "status": "COMPLETED",
+    "asset_protection": "research/v7/window17-asset-protection.json",
+    "persistent_raw_bytes": 279436,
+    "independent_verification": "5files＋2v1manifests verified in separate process",
+    "backup_status": "BACKUP_PENDING",
+    "originals_retained": true
+  },
+  "U2": {
+    "status": "COMPLETED_BOUNDED_READINESS_ONLY",
+    "tests": 29,
+    "new_tests": 9,
+    "calendar_cases": 6,
+    "calendar_actual_source_scope": "TWSE title/date/time+annualschedule only; TPExdirectevidence BLOCKED; future27scheduled-only",
+    "official_evidence": "research/v7/window17-official-evidence.json",
+    "activation": "research/v7/window17-activation-package.json",
+    "fallback": "W16proposal reused unchanged, alternatives=[], backupProviders=[]",
+    "market_payload_requests": 0,
+    "network_collector_created": false,
+    "calendar_platform_created": false
+  },
+  "preservation": {
+    "reference": "research/v7/window15-evidence.json:protected_bytes_unchanged/local_new_bytes_retained + window16-evidence.json:local_bytes",
+    "verified_files_unchanged": 129,
+    "frozen_contracts": "No changedpaths; gitdiff main..W17 verified excludes all Frozencontracts; source mainW16 has documentationonlydelta",
+    "W12_HALTED": "unchangedbyprotectedhashinventory"
+  },
+  "tests": {
+    "red": "research/v7/window17-red.txt",
+    "initial_green": "research/v7/window17-initial-green.txt",
+    "final_targeted": "research/v7/window17-targeted-tests.txt",
+    "integration": "research/v7/window17-integration-tests.txt",
+    "full_suite_repeated": false,
+    "one_off_script_correction": "beforecopy verify_snapshot signature TypeError, fixed tooneargument after readingactual API; no original data changed",
+    "pdf_probe": "Official announcement PDF link returned404HTML; noPDFparseravailable; no dependency installed or furtherrequest retries"
+  },
+  "review": {
+    "status": "GO_TO_LOCAL_COMMIT_AND_STOP",
+    "reviewer": "/root/independent_review",
+    "critical": 0,
+    "required": 0,
+    "optional": 0,
+    "rounds_used": 1,
+    "repairs_used": 0,
+    "max_rounds": 1,
+    "max_repairs": 1,
+    "independent_CPU_tests": 9,
+    "independent_CPU_seconds": 5.92,
+    "independent_byte_verification": "5persistentfiles exactoriginalbyteequality/2manifests/279436rawbytes/8officialdocumenthashes PASS",
+    "review_scope": "No edits/network/GPU; calendar/time/authority/service/storage boundaries verified"
+  },
+  "gates": {
+    "strict_phase0": "STOP",
+    "e1_frozen_matrix": "BLOCKED",
+    "h2": "NOT_APPROVED",
+    "historical_exploratory_study": "PROPOSED",
+    "forward_collector_activation": "NOT_APPROVED",
+    "w12_gpu": "SAFETY_HALTED",
+    "fair_evaluation": "PROPOSED",
+    "pre_next_open": "PROPOSED",
+    "inference_recovery": "DEFERRED"
+  },
+  "runtime": {
+    "CPU_env": "existingW11CPUoverlay Python3.12.3",
+    "MARKETMAMBA_DATA_ROOT": "UNSET",
+    "operational_data_realpath": "/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6",
+    "operational_payload_read": false,
+    "gpu_calls": 0,
+    "activated_schedulers": 0
+  },
+  "knowledge_update": "CurrentState/AuthorityMap markdown+JSON/solebacklog/DecisionRecord/WorktreeRegister; no global policy change",
+  "artifact_hashes": {
+    "V6/experimental/v7_capture_readiness.py": {
+      "sha256": "90f3523556ddd7c5ec0ff372c0c8ce42f2b0e9b163a9352e067903fa83f63a9d",
+      "bytes": 5348
+    },
+    "V6/experimental/v7_capture_readiness_test.py": {
+      "sha256": "ac6a843f315d22e6d7440d0d6d7fbd1aba877cec3f1fc6736b0beb0826024240",
+      "bytes": 4907
+    },
+    "knowledge/00_Project_Map/Authority_Map.md": {
+      "sha256": "225e557764e324241c03b5deea1e94268ae145971579d3883d42602b1475c3f3",
+      "bytes": 63821
+    },
+    "knowledge/00_Project_Map/Current_State.md": {
+      "sha256": "02ee4a16bf6732d09eeda9d792d9af2f4871abc2c23c656c486bb1486ed9599f",
+      "bytes": 77879
+    },
+    "knowledge/00_Project_Map/Worktree_Register.md": {
+      "sha256": "2fcf91c556bbeaa02c742a3333fe806bced9eb32cc758e169000b8d11b4d8f1b",
+      "bytes": 38467
+    },
+    "knowledge/00_Project_Map/authority-map.json": {
+      "sha256": "4eb64d8ba3f8335f8d75bb62b38709bda1a6c9a992ee9c3afc994fe3fa6febad",
+      "bytes": 31773
+    },
+    "knowledge/02_History/Decisions/20261024-window17-forward-readiness.json": {
+      "sha256": "ae8a540d50bb0b47900407d0854c3a14a7442d6717d35417c5153c7ab98b27c2",
+      "bytes": 912
+    },
+    "reports/v7_window17_activation_brief.md": {
+      "sha256": "ee55bd7b022854c4a95b07fc480b9a159de4e832c09caafeffc18fcd0259a45b",
+      "bytes": 4723
+    },
+    "research/v7/research-program.md": {
+      "sha256": "28c48633ced60491cf71b9b69f28a1e119c9ff9f1a9a4e0029b4f0391d0bb278",
+      "bytes": 83210
+    },
+    "research/v7/window17-activation-package.json": {
+      "sha256": "d18a4c81f8583985a4ed73a0bf295916d0faacb9c96bfd4b3e1e0b2b6a70345e",
+      "bytes": 4602
+    },
+    "research/v7/window17-asset-protection.json": {
+      "sha256": "680c1feb37ca8a0c46866cb04c10f210d2b60813886f0a42a10f536a262d655b",
+      "bytes": 3462
+    },
+    "research/v7/window17-calendar-panel.json": {
+      "sha256": "94acb534bd4ae901c35b10ad4abb6bc5f3c45f1fe0314a203b4923805409a953",
+      "bytes": 5032
+    },
+    "research/v7/window17-initial-green.txt": {
+      "sha256": "605b64a4e034ce1efbf8ab125143fd3aa08f4f023733c15eb6189241882270d5",
+      "bytes": 98
+    },
+    "research/v7/window17-integration-tests.txt": {
+      "sha256": "7b3e723aa3fe72e81f49845226461585dea4e39d57541bf77173a11fc19793d4",
+      "bytes": 97
+    },
+    "research/v7/window17-knowledge-health.txt": {
+      "sha256": "bf93f67ea1dfe58182f4c71dd1f609a034debb6e81c2599949e554cb6c78863c",
+      "bytes": 237
+    },
+    "research/v7/window17-knowledge-impact.txt": {
+      "sha256": "294a55276219932f64e7d6141d3840a6bf40d5d6623987b070c5613844573941",
+      "bytes": 3620
+    },
+    "research/v7/window17-official-evidence.json": {
+      "sha256": "879c55cba18556f60fa765fa449d751bca699cb574fb2b43f1e2f9ef7ad332c3",
+      "bytes": 5190
+    },
+    "research/v7/window17-red.txt": {
+      "sha256": "84efe430097871c6a641168f4255b31ce255eebfeabd03401ac92745535fb2e4",
+      "bytes": 912
+    },
+    "research/v7/window17-targeted-tests.txt": {
+      "sha256": "7e03d2e2daf8c62aadcbcc6956201b150f7f07a9639bd7704a0410fae69b5b4a",
+      "bytes": 4910
+    }
+  },
+  "knowledge_health": {
+    "status": "WARNING",
+    "structural_failures": 0,
+    "existing_warning_components": [
+      "Governance",
+      "Authority Drift",
+      "Legacy Docs"
+    ]
+  },
+  "usage_snapshot": {
+    "tool_goal_tokens_used": 296315,
+    "tool_goal_elapsed_seconds": 603,
+    "billing_or_certified_cost": false,
+    "aggregate_token_or_wallclock_hard_cap": false,
+    "scope_enforced": "twounits/oneindependentreview/zero rework then STOP",
+    "counter_limit": "goal tokens are unverified telemetry, not billing or hard budget"
+  }
+}

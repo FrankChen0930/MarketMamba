@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=42"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "marketmamba"
+version = "6.0.0"
+description = "MarketMamba V6 — Mamba+GAT Quant Trading System"
+requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["marketmamba*"]

@@ -1,0 +1,143 @@
+{
+  "status": "CONTENT_IDENTITIES",
+  "base": "367005dfaba0988fca5e294d9b3e281408bbfce8",
+  "freeze_commit": "e77f32d5e778cd0fd803f5b74ab8d604e9b07156",
+  "final_HEAD": "git rev-parse HEAD after local closure commit",
+  "files": [
+    {
+      "path": "research/v7/window27-closure.py",
+      "bytes": 2334,
+      "sha256": "ba0ccbdab1ce0742034a876d28d290883461f95b31c3a2f167b9cd0ded8814c6"
+    },
+    {
+      "path": "research/v7/window27-diagnostic-manifest.json",
+      "bytes": 2216,
+      "sha256": "9472eec812b745eb11a151aeb76f31a53b4a170a987b1e10bb13883cc0ed6db9"
+    },
+    {
+      "path": "research/v7/window27-diagnostic-process.txt",
+      "bytes": 3214,
+      "sha256": "373c614b8b0fb9877de520dca6b8856753572983244c75a35611c0d680ff4f3a"
+    },
+    {
+      "path": "research/v7/window27-diagnostic.py",
+      "bytes": 9043,
+      "sha256": "c1e2055a7d1cd5c243e9734fe7f1bbcd0fd4a7b9b25867ce7612a95f394132ec"
+    },
+    {
+      "path": "research/v7/window27-evaluation-tests.py",
+      "bytes": 1773,
+      "sha256": "51743e2c5e95ae7bd60839c231d6402adf24ec8ce20c5ab2e323ca8e53b1a138"
+    },
+    {
+      "path": "research/v7/window27-evaluation-tests.txt",
+      "bytes": 102,
+      "sha256": "6db4710eb496aaf9a4c7b492c2454e8aeac89ebd52bb789f431a334cef7dade2"
+    },
+    {
+      "path": "research/v7/window27-evidence.json",
+      "bytes": 2775,
+      "sha256": "16d14f1b7a4ffd07c39dd3f915902c778c0f2e59b176aaf61ca3820783863331"
+    },
+    {
+      "path": "research/v7/window27-integration.json",
+      "bytes": 572,
+      "sha256": "d66fff003b5920d89ee265343bc10b0a0c1bcab05da1065f117bde76c1c160ec"
+    },
+    {
+      "path": "research/v7/window27-knowledge-health.txt",
+      "bytes": 237,
+      "sha256": "bf93f67ea1dfe58182f4c71dd1f609a034debb6e81c2599949e554cb6c78863c"
+    },
+    {
+      "path": "research/v7/window27-knowledge-impact.json",
+      "bytes": 591,
+      "sha256": "b9da45e6440c3ab5c58110c5da32adbca42ffbfefb0f05852a29e696940d2030"
+    },
+    {
+      "path": "research/v7/window27-knowledge-impact.txt",
+      "bytes": 591,
+      "sha256": "b9da45e6440c3ab5c58110c5da32adbca42ffbfefb0f05852a29e696940d2030"
+    },
+    {
+      "path": "research/v7/window27-local-artifacts.json",
+      "bytes": 2220,
+      "sha256": "f652f2c8640f83f0fe063f531c2bac71bd45b316d7b48b0f31a007dea22f12c8"
+    },
+    {
+      "path": "research/v7/window27-mask-manifest.json",
+      "bytes": 3231,
+      "sha256": "9696bd98bf9a37a4b76f417c7c2646eeeddbc0a633fee9089e8213a796132d3a"
+    },
+    {
+      "path": "research/v7/window27-mask-process.txt",
+      "bytes": 1633,
+      "sha256": "4571cbdb35e09089db422fd3b962b0b0fd2cfcb45e52065eb290c64f830b24e5"
+    },
+    {
+      "path": "research/v7/window27-policy.json",
+      "bytes": 3261,
+      "sha256": "f0b52cc046c79889885709ce22d99bfcad20bad8ec73140255c32693278c3e11"
+    },
+    {
+      "path": "research/v7/window27-price-reasons.json",
+      "bytes": 776,
+      "sha256": "a02a48d8019fb0d20a4f289abe0b5ae216f2df9e22677697f2a1ed7fc0b50ff9"
+    },
+    {
+      "path": "research/v7/window27-red.txt",
+      "bytes": 682,
+      "sha256": "90f86cf102a5150ea4d8fb986d456d2888593b6134c676f0687e2ba212816324"
+    },
+    {
+      "path": "research/v7/window27-replay-process.txt",
+      "bytes": 357,
+      "sha256": "57ae5044b6292aa2b0b9c920d7294ef8d95da64909c95e3ae8f106cee156bcf4"
+    },
+    {
+      "path": "research/v7/window27-replay-repair.json",
+      "bytes": 913,
+      "sha256": "ee686b172f8c8e685b7a819640058d6225536258f2b627e2a2e21bafb266e22c"
+    },
+    {
+      "path": "research/v7/window27-replay.json",
+      "bytes": 357,
+      "sha256": "c2282f60d1bbf825e1621d791f1a1442c06b107520e8810394c54c4355eb2fa5"
+    },
+    {
+      "path": "research/v7/window27-restore-process.txt",
+      "bytes": 181,
+      "sha256": "0d7fdc6f8736423facbd334b8636061b8cacbae1f3fcd4380bfa8c9e924f9900"
+    },
+    {
+      "path": "research/v7/window27-results.json",
+      "bytes": 3214,
+      "sha256": "ed7aa9a822bc4c1f895ffa01114e90df89846db44e46444e06bd224db3cc4919"
+    },
+    {
+      "path": "research/v7/window27-review.json",
+      "bytes": 872,
+      "sha256": "6269ea506a2649c199802d0612fdecf027788af05b97313ced01804f5e09e186"
+    },
+    {
+      "path": "research/v7/window27-safety.py",
+      "bytes": 7009,
+      "sha256": "ea8bdf642fccf5a1d33b22aae064daddc2c8bef82144efa0880affbff7d7d6f2"
+    },
+    {
+      "path": "research/v7/window27-targeted-tests.txt",
+      "bytes": 109,
+      "sha256": "cf8d3a2572a7898fcf32a4c2dd1445509b3d59e66061853243c4627f80695068"
+    },
+    {
+      "path": "research/v7/window27-tests.py",
+      "bytes": 2123,
+      "sha256": "c560e87211c51ca32e3a0e576e4990ddca5cf317da417a307f4f9a29f58a74e4"
+    },
+    {
+      "path": "reports/v7_window27_label_safety.md",
+      "bytes": 7473,
+      "sha256": "4bc8ed11d95e63e3485f4e91937f00eccc975df0037400e9e08166cc7f32c2c6"
+    }
+  ]
+}

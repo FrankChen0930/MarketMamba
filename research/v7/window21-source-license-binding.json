@@ -1,0 +1,70 @@
+{
+  "schema": "w21-fixed-source-license-binding-v1",
+  "source_git_base": "6a34520d8f9c1166172af3503cad531e23f5ecec",
+  "source_code_sha256": "be7052834fb57479c08c10a368493b99105fc35a9797513f42fa9cce30941444",
+  "license_class": "FinMindFree_ANONYMOUS_NONCOMMERCIAL_PRIVATE_RESEARCH_NO_RAW_REDISTRIBUTION",
+  "official_documents": [
+    {
+      "id": "finmind_pricing",
+      "url": "https://finmind.github.io/Pricing/",
+      "retrieved_at": "2026-10-24T16:29:50.924416+00:00",
+      "status": 200,
+      "manifest": "/home/frank/projects/MarketMamba/.worktrees/v7-window20-historical-sources/.artifacts/window20-documents/manifests/e7fab6489d57947a26dbc4fde322d52857174ed5e2c3189bcb0c94b5753d6e49-2026-10-24T162950.924416p0000.json",
+      "manifest_sha256": "7d5382127c6012e367f24e768379ae0a473962db8287a48c67cec735a83a15c6",
+      "raw": "/home/frank/projects/MarketMamba/.worktrees/v7-window20-historical-sources/.artifacts/window20-documents/raw/d0efd60e487e6563e72b5e39a32552482257e162759191f391f06f5659b55430.bin",
+      "raw_sha256": "d0efd60e487e6563e72b5e39a32552482257e162759191f391f06f5659b55430",
+      "bytes": 61119,
+      "class": "OFFICIAL_DOCUMENT_BYTES_NOT_MARKET_COVERAGE",
+      "success": true
+    },
+    {
+      "id": "finmind_disclaimer",
+      "url": "https://finmind.github.io/Disclaimer/",
+      "retrieved_at": "2026-10-24T16:29:52.242177+00:00",
+      "status": 200,
+      "manifest": "/home/frank/projects/MarketMamba/.worktrees/v7-window20-historical-sources/.artifacts/window20-documents/manifests/76ae904c465d567483bee24d72655028278c67bc077cc4ca94e9cb20a8ea7707-2026-10-24T162952.242177p0000.json",
+      "manifest_sha256": "db78762391fe885149ea11e18f1a3debacbdd7815e8a0858ac05cc6448543e52",
+      "raw": "/home/frank/projects/MarketMamba/.worktrees/v7-window20-historical-sources/.artifacts/window20-documents/raw/1c0e6f88268472474087ba56fade2ed57eabadd12aeec9dbc91f2e96a7df68ee.bin",
+      "raw_sha256": "1c0e6f88268472474087ba56fade2ed57eabadd12aeec9dbc91f2e96a7df68ee",
+      "bytes": 51058,
+      "class": "OFFICIAL_DOCUMENT_BYTES_NOT_MARKET_COVERAGE",
+      "success": true
+    },
+    {
+      "id": "finmind_quickstart",
+      "url": "https://finmind.github.io/quickstart/",
+      "retrieved_at": "2026-10-24T16:29:52.766979+00:00",
+      "status": 200,
+      "manifest": "/home/frank/projects/MarketMamba/.worktrees/v7-window20-historical-sources/.artifacts/window20-documents/manifests/e5777c443174d4034e38637b86bfc3220cb6f4fc6d3028281a5a3d5c0cc83388-2026-10-24T162952.766979p0000.json",
+      "manifest_sha256": "da9ef3559c9a28d3fa403ec2a66d32dcf2a5388961f5f09420444a249e344522",
+      "raw": "/home/frank/projects/MarketMamba/.worktrees/v7-window20-historical-sources/.artifacts/window20-documents/raw/52fe1f750d0ea4a92643b1318c54c1bb37bed4cee1d02cb64bc62366f217a756.bin",
+      "raw_sha256": "52fe1f750d0ea4a92643b1318c54c1bb37bed4cee1d02cb64bc62366f217a756",
+      "bytes": 55625,
+      "class": "OFFICIAL_DOCUMENT_BYTES_NOT_MARKET_COVERAGE",
+      "success": true
+    }
+  ],
+  "capture_record_hashes": {
+    "records/10.json": "9450623b0d2312d2df779cdb044ac471c6759ca23889d03058f08504c7d1305e",
+    "records/05.json": "ea62506e9d8d78b65e31c8d1ebb1545dad30c9d274a6d4fb30eddf0e6fa14436",
+    "records/13.json": "f3374eaaf6df345c9a9c0f6ae9a079ac2ea5c661c73f09d153d2ab24273dc4af",
+    "records/11.json": "de73b88e8e93d2b05df34d55373d4cabfca654cdb6a8e7d5c65021bbc1b6f629",
+    "records/06.json": "ac78c7152f2d6aa7d91bd17847ff47bcbac43de65262a729398cdc0c47ead38a",
+    "records/03.json": "04c19e83ed54fc04926f1965905a6cdec2100473af6b1e261aa1f1064dfe1a22",
+    "records/12.json": "459434e305c1712eef52ef98cf63d94a40ebf7a7e213d7a66847a04f8a9f6379",
+    "records/18.json": "1b24dc2a3527d89cf27c1dd7d52175a6fbbacb0e319b61252d49bc987aa838c6",
+    "records/02.json": "e085a5349983f83f8b2cb4c71f7e4455edf317c71967d74dc87c1a9cec64ee13",
+    "records/14.json": "f72b9df0d42c556ef7a7e363ef79c6500f9dea6d16a5d939166d63a842e1891a",
+    "records/09.json": "60600a42cec83efb5a5b0e4dded4ce02844fdc5d1251c71093c00c3783cd282d",
+    "records/01.json": "212e74049a6f36b4ca67006f53a49477e458a9ec87d599154802ed4512c1ab23",
+    "records/08.json": "030c3a8fd500d58c37f371e3c9dd1bb5b1660325ae83af441b873fe8310962c9",
+    "records/07.json": "f28e87c31b618a953126143cd0fe750d05541ba543ed763ce51ce77f28b10087",
+    "records/15.json": "d34327d30024f0ecabc26040210e50007deffa24971e9de31327c54f031ba239",
+    "records/16.json": "95a0fb603a01e7e29e4895c7ae75f6768e7d607fcdd2561350ad83bc2ce4f419",
+    "records/17.json": "c4655a189960b4ef96c79bbfc066f02219a54a1399e53bc9db0c7f0364249372",
+    "records/04.json": "c2f9589afc58c564ae36cde8c60dbba9f965e656264d19f372f58019ab9901f2"
+  },
+  "dataset_contract_status": "NO_FORMAL_ADMISSION",
+  "dataset": "TaiwanStockPrice; auxiliary3metadata only",
+  "not_retroactive_vintage": true
+}

@@ -1,0 +1,98 @@
+{
+  "actual_archive_observed_at": "2026-10-25T12:18:51.770094+00:00",
+  "backup": "BACKUP_PENDING_SAME_HOST_SYNTHETIC_ONLY",
+  "bytes_per_copy": 16123,
+  "clock_note": "2030 fixtures are simulated clocks, not real observations or verified market sessions",
+  "files": [
+    {
+      "bytes": 38,
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window32-shadow-preparation/fixture/L0_NEG10.json",
+      "restore": "/home/frank/projects/MarketMamba/.artifacts/window32-shadow-restore/fixture/L0_NEG10.json",
+      "sha256": "920d0d29ac76ced63a7c5dc70612a51c7c8ca020b0d16c7c109e55b378aafb60"
+    },
+    {
+      "bytes": 37,
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window32-shadow-preparation/fixture/L0_NEG5.json",
+      "restore": "/home/frank/projects/MarketMamba/.artifacts/window32-shadow-restore/fixture/L0_NEG5.json",
+      "sha256": "d42e7911dcf12e5d6f582f34abdae3660cd57d1d998f041484aaddfa6f048354"
+    },
+    {
+      "bytes": 38,
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window32-shadow-preparation/fixture/L0_POS10.json",
+      "restore": "/home/frank/projects/MarketMamba/.artifacts/window32-shadow-restore/fixture/L0_POS10.json",
+      "sha256": "a078251d69f13a6a73189d3c40e41b623f332e310128502c1a1bb397041106c9"
+    },
+    {
+      "bytes": 37,
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window32-shadow-preparation/fixture/L0_POS5.json",
+      "restore": "/home/frank/projects/MarketMamba/.artifacts/window32-shadow-restore/fixture/L0_POS5.json",
+      "sha256": "cb103a3c1b5e4dccb52b0bd5b1b824f8b73c460367fc34b5510527ecd236dc26"
+    },
+    {
+      "bytes": 40,
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window32-shadow-preparation/fixture/LightGBM10.json",
+      "restore": "/home/frank/projects/MarketMamba/.artifacts/window32-shadow-restore/fixture/LightGBM10.json",
+      "sha256": "8db3cc9a2782f9193f7e204d6c3dd438b6f41289bd51bdd7bade7123778b2a4e"
+    },
+    {
+      "bytes": 39,
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window32-shadow-preparation/fixture/LightGBM5.json",
+      "restore": "/home/frank/projects/MarketMamba/.artifacts/window32-shadow-restore/fixture/LightGBM5.json",
+      "sha256": "38d3086a8adcbb44ddd2368e3258e313e533aebe5d5c2a00f9597bef100b7a28"
+    },
+    {
+      "bytes": 37,
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window32-shadow-preparation/fixture/Ridge10.json",
+      "restore": "/home/frank/projects/MarketMamba/.artifacts/window32-shadow-restore/fixture/Ridge10.json",
+      "sha256": "3c632251ca3dc50d0bc453ca9e13c7b63cbe29cf876bb537beccc152ffddd22c"
+    },
+    {
+      "bytes": 36,
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window32-shadow-preparation/fixture/Ridge5.json",
+      "restore": "/home/frank/projects/MarketMamba/.artifacts/window32-shadow-restore/fixture/Ridge5.json",
+      "sha256": "0e7812876ebae567476d663b3aa56482b5145b5590a346efbe019cf6e09e0cc4"
+    },
+    {
+      "bytes": 18,
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window32-shadow-preparation/fixture/raw.json",
+      "restore": "/home/frank/projects/MarketMamba/.artifacts/window32-shadow-restore/fixture/raw.json",
+      "sha256": "a8198524f58e72b56283ab71ebddada22840f108b46ef7165bb3fca9919c5558"
+    },
+    {
+      "bytes": 7899,
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window32-shadow-preparation/predictions/34b9859d59a85e586ad0cddd77d80d4f5b0c49fb5694b3dcf5fd4672d4c828da.json",
+      "restore": "/home/frank/projects/MarketMamba/.artifacts/window32-shadow-restore/predictions/34b9859d59a85e586ad0cddd77d80d4f5b0c49fb5694b3dcf5fd4672d4c828da.json",
+      "sha256": "14ea9ec1428f64fd64833719d341a0142db48c81e211cae7b2f9397a91ca60a4"
+    },
+    {
+      "bytes": 7904,
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window32-shadow-preparation/predictions/a8cbb07f1d2368e2576d7e2c5d6c7a2304bfc31eff05890869485445c7170314.json",
+      "restore": "/home/frank/projects/MarketMamba/.artifacts/window32-shadow-restore/predictions/a8cbb07f1d2368e2576d7e2c5d6c7a2304bfc31eff05890869485445c7170314.json",
+      "sha256": "2da18076a97c8ac36f397c881548fab2e305b3297bbdf82855e6acae2fd49d9e"
+    }
+  ],
+  "late": {
+    "bytes": 7904,
+    "path": "/home/frank/projects/MarketMamba/.artifacts/window32-shadow-preparation/predictions/a8cbb07f1d2368e2576d7e2c5d6c7a2304bfc31eff05890869485445c7170314.json",
+    "sha256": "2da18076a97c8ac36f397c881548fab2e305b3297bbdf82855e6acae2fd49d9e"
+  },
+  "mature_label": {
+    "prediction_sha256": "14ea9ec1428f64fd64833719d341a0142db48c81e211cae7b2f9397a91ca60a4",
+    "reason": "NOT_REAL_LABEL_ADMISSION_OR_EVALUATION",
+    "research_admitted": false,
+    "status": "ELIGIBLE_SYNTHETIC_JOIN"
+  },
+  "pending_label": {
+    "prediction_sha256": "14ea9ec1428f64fd64833719d341a0142db48c81e211cae7b2f9397a91ca60a4",
+    "reason": "NO_LABEL_JOIN_YET",
+    "research_admitted": false,
+    "status": "PENDING_MATURITY"
+  },
+  "preopen": {
+    "bytes": 7899,
+    "path": "/home/frank/projects/MarketMamba/.artifacts/window32-shadow-preparation/predictions/34b9859d59a85e586ad0cddd77d80d4f5b0c49fb5694b3dcf5fd4672d4c828da.json",
+    "sha256": "14ea9ec1428f64fd64833719d341a0142db48c81e211cae7b2f9397a91ca60a4"
+  },
+  "real_inference_API_fit_RankIC": 0,
+  "status": "SYNTHETIC_OFFLINE_ACCEPTANCE_ONLY"
+}

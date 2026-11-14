@@ -1,0 +1,21 @@
+{
+  "authority": "HUMAN",
+  "status": "ACCEPTED_SCOPED",
+  "source": "Human /goal Engineering Integration & Fair Evaluation Research Preparation",
+  "approved_before": "9956446d49371dbc5c09e1ea0bd9eaa750064532",
+  "approved_candidate": "eba6b649479eeaa77d4bb034c0eebafd7efb396d",
+  "authorized": [
+    "WSL local ff-only after gates",
+    "bounded CPU research decision package",
+    "existing-contract readiness validation",
+    "independent review/local commits/memory"
+  ],
+  "not_authorized": [
+    "new comparison design or acceptance thresholds",
+    "training/Colab/GPU/large inference",
+    "research correctness/H2/portfolio admission",
+    "production data/Windows/push/deploy"
+  ],
+  "strict_phase0": "STOP",
+  "e1_matrix": "BLOCKED"
+}

@@ -1,0 +1,15 @@
+{
+  "before": "87af76b038fcbbda9e1e4b3a4349e693a3b1ba48",
+  "fixed_source": "90b1327560f717727ad3fd53dfe86cb421c70f5b",
+  "after": "90b1327560f717727ad3fd53dfe86cb421c70f5b",
+  "method": "ff-only",
+  "W24GO": "0CriticalRequired",
+  "focused_tests": 26,
+  "source_artifacts_verified": 191,
+  "deliverable_pins": 33,
+  "restore_evidence_reverified": true,
+  "main_source_clean": true,
+  "other_candidates_merged": false,
+  "main_closure_commit": false,
+  "W19operations": 0
+}

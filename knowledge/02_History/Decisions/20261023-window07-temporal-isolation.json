@@ -1,0 +1,17 @@
+{
+  "authority": "HUMAN",
+  "status": "SCOPED_ENGINEERING_ONLY",
+  "source": "Human Window07 Temporal Fold & Research Isolation Foundation",
+  "base": "465dca229fc1452aaf1b46572b06886a7d8a2c8f",
+  "authorized": [
+    "Isolated temporal fold/label eligibility component",
+    "Isolated selection/refit/forward read-scope/exposure guards",
+    "Syntheticfixtures/tests/independentreview/max2reworkperunit/localcommits/memory"
+  ],
+  "not_authorized": [
+    "Formal dates/months/origins/purge/metric/threshold adoption",
+    "Training/GPU/Colab/realRankIC/datareconstruction/production",
+    "Main/pendingbranch merges or FrozenE5E1 changes"
+  ],
+  "next_contracts": "Remain PROPOSED; unresolved policy/data BLOCKED"
+}

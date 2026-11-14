@@ -1,0 +1,22 @@
+{
+  "status": "ACCEPTED",
+  "authority": "HUMAN",
+  "recorded_on": "2026-10-21",
+  "source": "Human /goal Market Mamba V7 — Final H0 Browser Blocker Resolution",
+  "verbatim_decision": "批准修復 H0 Preflight 發現的最後一項 Required Browser Finding。",
+  "scope": "Only selected timeline clipping after delayed font loading: minimal frontend/tests/browser/review/local commit/memory/bounded H0 preflight",
+  "base_product_commit": "6c89479416ad9fa429db7818cc645f729367eac9",
+  "audit_evidence_commit": "7ecb92016557af135ffd28c80892aa6be9d727df",
+  "prior_product_decision": "Limited Portfolio History Product Slice UX Closure accepted by Human in prior H0 request; direction remains accepted",
+  "prior_h0_scope": "Old H0 approval bound to fixed6c894794, failed preflight, not executed; does not authorize unknown new commit",
+  "excludes": [
+    "main merge",
+    "push/deploy",
+    "UX redesign",
+    "new financial semantics",
+    "Engine/Exporter/API changes",
+    "H2 real data or research correctness",
+    "GPU/Colab/training"
+  ],
+  "stop": "After new fixed candidate and engineering H0 readiness, stop for explicit Human approval of its SHA"
+}

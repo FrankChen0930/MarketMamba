@@ -1,0 +1,486 @@
+{
+  "models": {
+    "5d": {
+      "ridge": {
+        "best_alpha": 10.0,
+        "val_ic_by_alpha": {
+          "1e+01": 0.1051,
+          "3e+01": 0.105,
+          "1e+02": 0.1048,
+          "3e+02": 0.1046,
+          "1e+03": 0.1043,
+          "3e+03": 0.1041,
+          "1e+04": 0.1037,
+          "3e+04": 0.1028,
+          "1e+05": 0.1006,
+          "3e+05": 0.097,
+          "1e+06": 0.0929,
+          "3e+06": 0.089,
+          "1e+07": 0.0852
+        },
+        "test_ic": {
+          "n_days": 580,
+          "mean_ic": 0.0977,
+          "ic_std": 0.0922,
+          "icir": 1.06,
+          "pct_pos": 0.869,
+          "t_naive": 25.53,
+          "t_newey_west": 13.55
+        },
+        "top_coefficients": [
+          {
+            "feature": "Close_lag1",
+            "coef_std": -0.26571
+          },
+          {
+            "feature": "Mom_60d",
+            "coef_std": 0.2588
+          },
+          {
+            "feature": "RS_60d",
+            "coef_std": -0.24183
+          },
+          {
+            "feature": "Low",
+            "coef_std": 0.22118
+          },
+          {
+            "feature": "High",
+            "coef_std": 0.19548
+          },
+          {
+            "feature": "Close_rmean20",
+            "coef_std": -0.19318
+          },
+          {
+            "feature": "Close",
+            "coef_std": -0.18528
+          },
+          {
+            "feature": "MA_60",
+            "coef_std": -0.17226
+          },
+          {
+            "feature": "RS_20d_lag20",
+            "coef_std": -0.15017
+          },
+          {
+            "feature": "Return_20d_lag20",
+            "coef_std": 0.1494
+          },
+          {
+            "feature": "Close_rmean5",
+            "coef_std": -0.13604
+          },
+          {
+            "feature": "Close_rmean60",
+            "coef_std": 0.13291
+          },
+          {
+            "feature": "High_lag1",
+            "coef_std": 0.09792
+          },
+          {
+            "feature": "Foreign_Holding_Pct_rmean5",
+            "coef_std": -0.08773
+          },
+          {
+            "feature": "MA_20",
+            "coef_std": 0.08461
+          },
+          {
+            "feature": "Return_1d_rmean5",
+            "coef_std": -0.08019
+          },
+          {
+            "feature": "MA_20_lag1",
+            "coef_std": 0.06608
+          },
+          {
+            "feature": "Foreign_Holding_Pct",
+            "coef_std": 0.06394
+          },
+          {
+            "feature": "High_lag5",
+            "coef_std": 0.05758
+          },
+          {
+            "feature": "RS_20d",
+            "coef_std": -0.05198
+          }
+        ],
+        "test_portfolio": {
+          "n_days": 592,
+          "n_rebalances": 116,
+          "n_bad_return_days": 0,
+          "ann_return": 0.0798,
+          "ann_sharpe": 0.543,
+          "max_drawdown": -0.2732,
+          "avg_turnover_per_rebalance": 0.747,
+          "total_return": 0.1976,
+          "n_price_missing": 426,
+          "excess_vs_twii": -1.365,
+          "excess_window": "2024-01-03 ~ 2026-06-02（macro TWII 覆蓋範圍）"
+        }
+      },
+      "lasso": {
+        "best_alpha": 1e-05,
+        "n_nonzero": 238,
+        "val_ic_by_alpha": {
+          "3.2e-03": 0.0867,
+          "1.4e-03": 0.0927,
+          "6.1e-04": 0.0992,
+          "2.7e-04": 0.1018,
+          "1.2e-04": 0.1028,
+          "5.2e-05": 0.1035,
+          "2.3e-05": 0.104,
+          "1.0e-05": 0.1042
+        },
+        "test_ic": {
+          "n_days": 580,
+          "mean_ic": 0.0979,
+          "ic_std": 0.0937,
+          "icir": 1.045,
+          "pct_pos": 0.866,
+          "t_naive": 25.17,
+          "t_newey_west": 13.31
+        },
+        "top_coefficients": [
+          {
+            "feature": "Open",
+            "coef_std": 0.07377
+          },
+          {
+            "feature": "Return_1d_rmean5",
+            "coef_std": -0.06906
+          },
+          {
+            "feature": "MA_20",
+            "coef_std": -0.06359
+          },
+          {
+            "feature": "Mom_5d",
+            "coef_std": 0.06099
+          },
+          {
+            "feature": "High",
+            "coef_std": 0.05263
+          },
+          {
+            "feature": "Close",
+            "coef_std": -0.04516
+          },
+          {
+            "feature": "MA_60_lag20",
+            "coef_std": -0.03776
+          },
+          {
+            "feature": "KD_K_lag1",
+            "coef_std": 0.03546
+          },
+          {
+            "feature": "KD_K",
+            "coef_std": -0.03184
+          },
+          {
+            "feature": "Close_rmean5",
+            "coef_std": -0.03108
+          },
+          {
+            "feature": "ATR_14",
+            "coef_std": -0.0306
+          },
+          {
+            "feature": "Close_rmean60",
+            "coef_std": 0.02983
+          },
+          {
+            "feature": "Low",
+            "coef_std": 0.02758
+          },
+          {
+            "feature": "Close_lag1",
+            "coef_std": -0.02704
+          },
+          {
+            "feature": "Return_1d_rmean60",
+            "coef_std": -0.02599
+          },
+          {
+            "feature": "MA_20_lag20",
+            "coef_std": 0.02493
+          },
+          {
+            "feature": "EPS",
+            "coef_std": 0.02439
+          },
+          {
+            "feature": "Margin_Balance_rmean20",
+            "coef_std": -0.02062
+          },
+          {
+            "feature": "MA_60",
+            "coef_std": -0.01875
+          },
+          {
+            "feature": "Volatility_20d_rmean60",
+            "coef_std": -0.01831
+          }
+        ],
+        "test_portfolio": {
+          "n_days": 592,
+          "n_rebalances": 116,
+          "n_bad_return_days": 0,
+          "ann_return": 0.0631,
+          "ann_sharpe": 0.453,
+          "max_drawdown": -0.2757,
+          "avg_turnover_per_rebalance": 0.743,
+          "total_return": 0.1545,
+          "n_price_missing": 403,
+          "excess_vs_twii": -1.3973,
+          "excess_window": "2024-01-03 ~ 2026-06-02（macro TWII 覆蓋範圍）"
+        }
+      }
+    },
+    "20d": {
+      "ridge": {
+        "best_alpha": 10.0,
+        "val_ic_by_alpha": {
+          "1e+01": 0.1315,
+          "3e+01": 0.1314,
+          "1e+02": 0.1312,
+          "3e+02": 0.131,
+          "1e+03": 0.1307,
+          "3e+03": 0.1305,
+          "1e+04": 0.1304,
+          "3e+04": 0.1297,
+          "1e+05": 0.1276,
+          "3e+05": 0.1237,
+          "1e+06": 0.119,
+          "3e+06": 0.1144,
+          "1e+07": 0.11
+        },
+        "test_ic": {
+          "n_days": 580,
+          "mean_ic": 0.0989,
+          "ic_std": 0.123,
+          "icir": 0.804,
+          "pct_pos": 0.781,
+          "t_naive": 19.37,
+          "t_newey_west": 5.1
+        },
+        "top_coefficients": [
+          {
+            "feature": "Mom_60d",
+            "coef_std": 0.30309
+          },
+          {
+            "feature": "RS_60d",
+            "coef_std": -0.27832
+          },
+          {
+            "feature": "RS_20d_lag20",
+            "coef_std": -0.22502
+          },
+          {
+            "feature": "Close_rmean60",
+            "coef_std": 0.22478
+          },
+          {
+            "feature": "Return_20d_lag20",
+            "coef_std": 0.22284
+          },
+          {
+            "feature": "High",
+            "coef_std": 0.19166
+          },
+          {
+            "feature": "Close_lag1",
+            "coef_std": -0.18948
+          },
+          {
+            "feature": "MA_60",
+            "coef_std": -0.17439
+          },
+          {
+            "feature": "Close_rmean5",
+            "coef_std": -0.14491
+          },
+          {
+            "feature": "High_lag1",
+            "coef_std": 0.1421
+          },
+          {
+            "feature": "Low",
+            "coef_std": 0.13319
+          },
+          {
+            "feature": "RS_20d_lag5",
+            "coef_std": -0.12823
+          },
+          {
+            "feature": "High_lag5",
+            "coef_std": 0.12263
+          },
+          {
+            "feature": "RS_20d",
+            "coef_std": -0.12061
+          },
+          {
+            "feature": "Return_20d_lag5",
+            "coef_std": 0.11965
+          },
+          {
+            "feature": "Close",
+            "coef_std": -0.11474
+          },
+          {
+            "feature": "Close_rmean20",
+            "coef_std": -0.08808
+          },
+          {
+            "feature": "High_lag20",
+            "coef_std": 0.07874
+          },
+          {
+            "feature": "Close_lag20",
+            "coef_std": -0.0782
+          },
+          {
+            "feature": "Close_lag5",
+            "coef_std": -0.07151
+          }
+        ]
+      },
+      "lasso": {
+        "best_alpha": 1e-05,
+        "n_nonzero": 234,
+        "val_ic_by_alpha": {
+          "3.2e-03": 0.1171,
+          "1.4e-03": 0.1213,
+          "6.1e-04": 0.1261,
+          "2.7e-04": 0.1282,
+          "1.2e-04": 0.1287,
+          "5.2e-05": 0.1299,
+          "2.3e-05": 0.1303,
+          "1.0e-05": 0.1305
+        },
+        "test_ic": {
+          "n_days": 580,
+          "mean_ic": 0.1,
+          "ic_std": 0.1244,
+          "icir": 0.803,
+          "pct_pos": 0.784,
+          "t_naive": 19.35,
+          "t_newey_west": 5.08
+        },
+        "top_coefficients": [
+          {
+            "feature": "Close_rmean60",
+            "coef_std": 0.06679
+          },
+          {
+            "feature": "MA_60_lag20",
+            "coef_std": -0.0651
+          },
+          {
+            "feature": "High",
+            "coef_std": 0.05988
+          },
+          {
+            "feature": "MA_20",
+            "coef_std": -0.05569
+          },
+          {
+            "feature": "High_lag1",
+            "coef_std": 0.03917
+          },
+          {
+            "feature": "Return_1d_rmean60",
+            "coef_std": -0.03632
+          },
+          {
+            "feature": "Close_lag1",
+            "coef_std": -0.03088
+          },
+          {
+            "feature": "EPS",
+            "coef_std": 0.03082
+          },
+          {
+            "feature": "RSI_14_rmean60",
+            "coef_std": 0.02911
+          },
+          {
+            "feature": "Close_rmean5",
+            "coef_std": -0.02887
+          },
+          {
+            "feature": "Mom_60d",
+            "coef_std": 0.02524
+          },
+          {
+            "feature": "ATR_14",
+            "coef_std": -0.02069
+          },
+          {
+            "feature": "Return_1d_rmean5",
+            "coef_std": -0.02026
+          },
+          {
+            "feature": "Foreign_Holding_Pct_rmean20",
+            "coef_std": 0.01867
+          },
+          {
+            "feature": "High_lag5",
+            "coef_std": 0.01864
+          },
+          {
+            "feature": "Close_rstd20",
+            "coef_std": 0.01659
+          },
+          {
+            "feature": "Close_rstd60",
+            "coef_std": 0.01627
+          },
+          {
+            "feature": "Volatility_20d_rmean60",
+            "coef_std": -0.01593
+          },
+          {
+            "feature": "Close_lag5",
+            "coef_std": -0.01577
+          },
+          {
+            "feature": "Close_rmean20",
+            "coef_std": 0.01564
+          }
+        ]
+      }
+    }
+  },
+  "protocol": {
+    "TRAIN_START": "2012-01-01",
+    "TRAIN_END": "2023-12-31",
+    "TEST_START": "2024-01-01",
+    "TEST_END": "2026-06-02",
+    "VAL_RATIO": 0.15,
+    "MIN_HISTORY_DAYS": 202,
+    "TOP_N": 50,
+    "REBALANCE_DAYS": 5,
+    "COST_BUY": 0.0015,
+    "COST_SELL": 0.0045
+  },
+  "n_features": 300,
+  "train_rows_stride2": 3166100,
+  "test_rows_full": 1239353,
+  "notes": [
+    "訓練列以 day_stride=2（隔日）抽樣（5d 重疊窗冗餘高）；test IC 用全部交易日",
+    "與 Phase 3 harness 一致：train/test 邊界無 5d purge（邊界 label 重疊 5 天，佔比可忽略）",
+    "Alpha label 實為 raw forward return：macro_raw 只有 TWII_Close 欄、_add_alpha_targets 的 TWII 減基準分支從未觸發（Colab 訓練 Mamba 亦同路徑）——per-date rank 對當日常數平移免疫，label 與 Mamba 完全一致、日 IC 不受影響；組合層 excess_vs_twii 另以 macro TWII_Close 計算、只算到 2026-04-24（macro 停更日）",
+    "matrix 自 2010 起建（非 2005 全歷史）：macro ts z-score 以 2010 起 expanding——macro 為橫斷面常數，對排名類模型無影響（線性模型完全免疫、每日 IC 不變）",
+    "lag/rolling 以『列』為單位 shift（clean 後偶發缺日近似交易日 shift），衍生特徵 NaN→0",
+    "存活者偏差 D3 未修復：四階模型同資料相對比較公平，絕對數字偏高（協定 §2）"
+  ],
+  "generated_at": "2026-07-30 03:04"
+}

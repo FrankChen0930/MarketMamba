@@ -1,0 +1,136 @@
+{
+  "acknowledgment": null,
+  "automatic_updates_performed": false,
+  "changed": [
+    "V6/experimental/v7_forward_vintage.py",
+    "V6/experimental/v7_forward_vintage_test.py",
+    "knowledge/00_Project_Map/Authority_Map.md",
+    "knowledge/00_Project_Map/Current_State.md",
+    "knowledge/00_Project_Map/Worktree_Register.md",
+    "knowledge/00_Project_Map/authority-map.json",
+    "knowledge/02_History/Decisions/20261024-window14-data-admission-pilot.json",
+    "reports/v7_window14_decision_brief.md",
+    "research/v7/research-program.md",
+    "research/v7/window14-evidence-classes.json",
+    "research/v7/window14-evidence.json",
+    "research/v7/window14-final-regression.txt",
+    "research/v7/window14-forward-contract.json",
+    "research/v7/window14-forward-final-focused.txt",
+    "research/v7/window14-forward-green.txt",
+    "research/v7/window14-forward-red.txt",
+    "research/v7/window14-forward-rework1-green.txt",
+    "research/v7/window14-forward-rework1-red.txt",
+    "research/v7/window14-historical-panel.json",
+    "research/v7/window14-official-documents.json",
+    "research/v7/window14-post-integration-tests.txt",
+    "research/v7/window14-pre-integration-tests.txt"
+  ],
+  "matched_rules": {
+    "V6/experimental/v7_forward_vintage.py": [
+      "DEFAULT"
+    ],
+    "V6/experimental/v7_forward_vintage_test.py": [
+      "DEFAULT"
+    ],
+    "knowledge/00_Project_Map/Authority_Map.md": [
+      "canonical-knowledge"
+    ],
+    "knowledge/00_Project_Map/Current_State.md": [
+      "canonical-knowledge"
+    ],
+    "knowledge/00_Project_Map/Worktree_Register.md": [
+      "worktree-responsibility",
+      "canonical-knowledge"
+    ],
+    "knowledge/00_Project_Map/authority-map.json": [
+      "canonical-knowledge"
+    ],
+    "knowledge/02_History/Decisions/20261024-window14-data-admission-pilot.json": [
+      "history-reports-tasks"
+    ],
+    "reports/v7_window14_decision_brief.md": [
+      "history-reports-tasks"
+    ],
+    "research/v7/research-program.md": [
+      "DEFAULT"
+    ],
+    "research/v7/window14-evidence-classes.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window14-evidence.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window14-final-regression.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window14-forward-contract.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window14-forward-final-focused.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window14-forward-green.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window14-forward-red.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window14-forward-rework1-green.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window14-forward-rework1-red.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window14-historical-panel.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window14-official-documents.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window14-post-integration-tests.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window14-pre-integration-tests.txt": [
+      "DEFAULT"
+    ]
+  },
+  "potential_knowledge_impact": [
+    {
+      "artifact": "knowledge/01_Domains/Operations.md",
+      "rules": [
+        "worktree-responsibility"
+      ],
+      "severity": "REVIEW_REQUIRED"
+    },
+    {
+      "artifact": "knowledge/GOVERNANCE.md",
+      "rules": [
+        "canonical-knowledge"
+      ],
+      "severity": "REVIEW_REQUIRED"
+    },
+    {
+      "artifact": "knowledge/00_Project_Map/Authority_Map.md",
+      "rules": [
+        "worktree-responsibility"
+      ],
+      "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+    },
+    {
+      "artifact": "knowledge/00_Project_Map/Current_State.md",
+      "rules": [
+        "worktree-responsibility"
+      ],
+      "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+    },
+    {
+      "artifact": "knowledge/02_History/README.md",
+      "rules": [
+        "history-reports-tasks"
+      ],
+      "severity": "NO_KNOWLEDGE_IMPACT"
+    }
+  ],
+  "schema_version": 1,
+  "status": "WARNING"
+}

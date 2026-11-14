@@ -1,0 +1,99 @@
+{
+  "schema": "w34-independent-review-v1",
+  "reviewer": "independent_review",
+  "status": "GO_OFFLINE_SHADOW_PREPARATION_ONLY",
+  "critical": 0,
+  "required": 0,
+  "base": "c57ac3d7822f229ae08849e56581ebb3c969441c",
+  "prefetch_commit": "f53f912cb6d94b30399ba7e65f49f87f0c259028",
+  "prefit_commit": "ac941faedd7066b9fc426f954f6fe61dff634258",
+  "scope": "One targeted main review including final STOP navigation. No formal research/data/PREOPEN/trading admission or merge/next-window authorization.",
+  "independent_checks": {
+    "pure_parser_model_tests_passed": 6,
+    "additional_Fit_or_model_inference": 0,
+    "official_snapshot_hash_verifications": 36,
+    "official_monthly_parses": 34,
+    "official_recent_dates": 679,
+    "combined_calendar_sessions": 1408,
+    "prefetch_plan_and_prefit_prepared_model_common_bytes": "match fixed commits",
+    "training_rows": {
+      "5": 87195,
+      "10": 86302
+    },
+    "latest_exit": "2026-10-22",
+    "shared_session_entry_exit_maturity": "all training rows checked",
+    "fresh_model_spec_train_array_hashes_verified": 4,
+    "Ridge_own_training_scaler_intercept": "exact",
+    "Ridge_max_normal_equation_residual_without_solve": {
+      "5": 1.4210854715202004e-14,
+      "10": 1.4210854715202004e-14
+    },
+    "LightGBM_trees_each": 64,
+    "saved_feature_only_score_keys_verified": 512,
+    "stocks": 64,
+    "new_score_computation": 0,
+    "suspected8422_10d_rejections_verified": 3,
+    "training_crossing_suspected8422_event": 0,
+    "envelope_refs_pins_feature_formula_vs_source_table_identity": "verified",
+    "official_claims": 36,
+    "minimum_claim_start_interval_seconds": 2.015126,
+    "restore_file_pairs_size_hash_verified": 161,
+    "bytes_per_copy": 51236054,
+    "CPU_ledger_seconds": 47.602272,
+    "CPU_reserve_seconds": 60,
+    "CPU_limit_seconds": 1200,
+    "artifact_plus_restore_bytes": 102473868,
+    "artifact_limit_bytes": 536870912,
+    "git_diff_check": "PASS"
+  },
+  "owner_replay_evidence": {
+    "status": "INDEPENDENT_PROCESS_OFFLINE_MODEL_PREDICTION_REPLAY_PASS",
+    "score_rows": 512,
+    "fits": 0,
+    "reviewer_did_not_rerun_inference": true
+  },
+  "warnings": [
+    {
+      "id": "W34-W1",
+      "finding": "Official market-positive dates qualify only under explicit HumanW34 development grant. Cached17closures are partial; normal-hours geometry does not reconstruct all historical closure/publication/tradability evidence. W33 masks remain unchanged."
+    },
+    {
+      "id": "W34-W2",
+      "finding": "Oct23 exclusive cutoff is numerical label maturity, not proof of source availability then. Current retrospective data, universe/survivor bias and UNKNOWN actions remain; offline Oct22 scores actually generated Oct25 are not PREOPEN."
+    },
+    {
+      "id": "W34-W3",
+      "finding": "prepared.feature_id is source W33 table hash. Current serving identity is feature_formula_id plus explicit order and combined table bytes, clarified in pinned envelope."
+    },
+    {
+      "id": "W34-W4",
+      "finding": "Same-host restoration is not independent backup. Shell timeout evidence is tool/session-referenced rather than independent OS-signed telemetry; task resource accounting does not measure unrelated processes."
+    }
+  ],
+  "final_navigation": "Current_State/Authority/sole backlog/machine authority/register COMPLETE STOP UNMERGED;4fit budget exhausted and official network CLOSED; no automatic daily shadow/collector/next-window activation.",
+  "remaining_required": [],
+  "source_pins": {
+    "window34-source-plan.json": "15187fe9223f863b8e2fa2975780385a35869f6285f0211b2013902395a87200",
+    "window34-calendar-source.py": "8e3dd40aa3942d3a24e784e2b487aa11e303b16ff188e0949cd2ccdbe4002f70",
+    "window34-calendar-close.py": "00b75328343aef92b6b4382483bd96e67a83c1f7de6675ac751995308b4ccc13",
+    "window34-calendar.json": "2b12282a166d3339dfe05e1f9a0937e76887120b4eeb0180ddf9d7fd73cde4d2",
+    "window34-model.py": "e140eeaa28b6dc4214e71fe2fd1e9995c9553a20a25d16d9d242cca17134c96d",
+    "window34-prepared.json": "c419b422d94aa7f75f758a9068c14e26c37351578bf4cdf9f36440d605d54b91",
+    "window34-common.py": "92d1114c54cb91ee83f56cffc8460846c0a9664b75b221f77d7e353e6cc1551d",
+    "window34-run.json": "8add72baccbea04e5f62d2ae0c7cdf58949e82e06ba8ea0f001266a422070503",
+    "window34-replay.json": "fe9acdbabda78eb7875b26d808e5ea31fe5ec23888d772d874f6728eed99b521",
+    "window34-offline-envelope.json": "1f9fc29c6e9e524eab1e4fe5a5ea0c19a1a61cae4a3fa524e0a3ca44b9f67ef2",
+    "window34-local-artifacts.json": "c0f3ecf17319ffaa6c5b387d00977981f650baacb280a035eda68379d56e47cd",
+    "window34-resource-evidence.json": "eb1c2e2aed073be6f2f90b3a89b9c290f11fd3c75fc09acebd41601b1cbfbc46"
+  },
+  "reviewer_operations": {
+    "API_network": 0,
+    "Fit_training_GPU": 0,
+    "new_actual_model_predictions_or_RankIC": 0,
+    "W19_access": 0,
+    "writes": [
+      "research/v7/window34-review.json"
+    ]
+  },
+  "observed_at": "2026-10-25T13:36:58.371718+00:00"
+}

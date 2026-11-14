@@ -1,0 +1,164 @@
+{
+  "acknowledgment": null,
+  "automatic_updates_performed": false,
+  "changed": [
+    "V6/experimental/v7_csv_capture_qc.py",
+    "V6/experimental/v7_manual_collector.py",
+    "V6/experimental/v7_manual_collector_test.py",
+    "knowledge/00_Project_Map/Authority_Map.md",
+    "knowledge/00_Project_Map/Current_State.md",
+    "knowledge/00_Project_Map/Worktree_Register.md",
+    "knowledge/00_Project_Map/authority-map.json",
+    "knowledge/01_Domains/Data.md",
+    "knowledge/01_Domains/Operations.md",
+    "knowledge/02_History/Decisions/20261024-window18-manual-collector.json",
+    "reports/v7_window18_manual_pilot.md",
+    "research/v7/research-program.md",
+    "research/v7/window18-capture-results.json",
+    "research/v7/window18-daily-activation-candidate.json",
+    "research/v7/window18-evidence.json",
+    "research/v7/window18-fixture-collision-diagnostic.txt",
+    "research/v7/window18-initial-green.txt",
+    "research/v7/window18-initial-restore.json",
+    "research/v7/window18-integration-tests.txt",
+    "research/v7/window18-knowledge-health.txt",
+    "research/v7/window18-knowledge-impact.txt",
+    "research/v7/window18-local-artifacts.json",
+    "research/v7/window18-pilot-config.json",
+    "research/v7/window18-qc-reassessment.json",
+    "research/v7/window18-red.txt",
+    "research/v7/window18-review-red.txt",
+    "research/v7/window18-review.json",
+    "research/v7/window18-reviewed-restore.json",
+    "research/v7/window18-targeted-tests.txt"
+  ],
+  "matched_rules": {
+    "V6/experimental/v7_csv_capture_qc.py": [
+      "DEFAULT"
+    ],
+    "V6/experimental/v7_manual_collector.py": [
+      "DEFAULT"
+    ],
+    "V6/experimental/v7_manual_collector_test.py": [
+      "DEFAULT"
+    ],
+    "knowledge/00_Project_Map/Authority_Map.md": [
+      "canonical-knowledge"
+    ],
+    "knowledge/00_Project_Map/Current_State.md": [
+      "canonical-knowledge"
+    ],
+    "knowledge/00_Project_Map/Worktree_Register.md": [
+      "worktree-responsibility",
+      "canonical-knowledge"
+    ],
+    "knowledge/00_Project_Map/authority-map.json": [
+      "canonical-knowledge"
+    ],
+    "knowledge/01_Domains/Data.md": [
+      "canonical-knowledge"
+    ],
+    "knowledge/01_Domains/Operations.md": [
+      "canonical-knowledge"
+    ],
+    "knowledge/02_History/Decisions/20261024-window18-manual-collector.json": [
+      "history-reports-tasks"
+    ],
+    "reports/v7_window18_manual_pilot.md": [
+      "history-reports-tasks"
+    ],
+    "research/v7/research-program.md": [
+      "DEFAULT"
+    ],
+    "research/v7/window18-capture-results.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window18-daily-activation-candidate.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window18-evidence.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window18-fixture-collision-diagnostic.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window18-initial-green.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window18-initial-restore.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window18-integration-tests.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window18-knowledge-health.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window18-knowledge-impact.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window18-local-artifacts.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window18-pilot-config.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window18-qc-reassessment.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window18-red.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window18-review-red.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window18-review.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window18-reviewed-restore.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window18-targeted-tests.txt": [
+      "DEFAULT"
+    ]
+  },
+  "potential_knowledge_impact": [
+    {
+      "artifact": "knowledge/01_Domains/Operations.md",
+      "rules": [
+        "worktree-responsibility"
+      ],
+      "severity": "REVIEW_REQUIRED"
+    },
+    {
+      "artifact": "knowledge/GOVERNANCE.md",
+      "rules": [
+        "canonical-knowledge"
+      ],
+      "severity": "REVIEW_REQUIRED"
+    },
+    {
+      "artifact": "knowledge/00_Project_Map/Authority_Map.md",
+      "rules": [
+        "worktree-responsibility"
+      ],
+      "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+    },
+    {
+      "artifact": "knowledge/00_Project_Map/Current_State.md",
+      "rules": [
+        "worktree-responsibility"
+      ],
+      "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+    },
+    {
+      "artifact": "knowledge/02_History/README.md",
+      "rules": [
+        "history-reports-tasks"
+      ],
+      "severity": "NO_KNOWLEDGE_IMPACT"
+    }
+  ],
+  "schema_version": 1,
+  "status": "WARNING"
+}

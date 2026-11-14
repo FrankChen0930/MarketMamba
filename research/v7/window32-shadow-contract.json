@@ -1,0 +1,81 @@
+{
+  "schema": "w32-prospective-shadow-proposal-v1",
+  "status": "PROPOSED_IMPLEMENTATION_ENTRY_SYNTHETIC_ONLY_NOT_ACTIVATED",
+  "authority": "HumanWindow32 preparation only; no actual ranking/Fit/API/schedule",
+  "models": [
+    "L0_POS",
+    "L0_NEG",
+    "Ridge",
+    "LightGBM"
+  ],
+  "horizons": [
+    5,
+    10
+  ],
+  "primary": 5,
+  "feature_order": [
+    "raw_close_momentum1",
+    "raw_intraday_range"
+  ],
+  "timing": {
+    "timezone": "Asia/Taipei",
+    "normal_target": "07:00–08:00",
+    "qualification": "prediction durably published strictly before qualified entry-session actual open; starting inference before open is insufficient",
+    "late": "MISSED_PREOPEN / RESEARCH_ONLY; never backdate",
+    "recovery": "retry before open retains actual execution/publication times; after open research-only",
+    "freeze": "PROPOSED; exact source freeze, bounded-wait, required/optional sources not approved"
+  },
+  "separation": [
+    "capture",
+    "QC/availability",
+    "feature-only universe",
+    "inference",
+    "immutable publication",
+    "5d/10d maturity",
+    "evaluation join",
+    "coverage/missing/recovery"
+  ],
+  "identity": [
+    "study",
+    "dataset",
+    "universe",
+    "feature order",
+    "label policy",
+    "calendar/vintage",
+    "recipe",
+    "per-family/horizon model bytes hash",
+    "signal/entry session",
+    "actual inference/publish/archive clocks",
+    "raw refs",
+    "prediction rows/hash"
+  ],
+  "implementation": "research/v7/window32-shadow.py; offline supplied synthetic scores/model stubs only, no inference/loader/Fit/network/scheduler",
+  "reuse": {
+    "clock_calendar": "W07 aware clocks and calendar normalization",
+    "bytes_publication": "v7_source_snapshot._atomic_bytes; W09 strict_json/_safe/_lock",
+    "scoring_after_admission": "existing W10 Ridge and W30 LightGBM score paths; not called in W32",
+    "evaluation_after_admission": "W08 common evaluator and W09 completion/replay, not called for empirical metrics in W32"
+  },
+  "prediction_vs_bundle": "W09 complete bundle requires daily metrics; prediction-first record reuses atomic primitives; do not invent metrics to mark completion",
+  "label_plan": "candidate same W31 entry signal+1, exit signal+h shared-session close; numerical/market/CA/eligibility contract must be separately approved for prospective use",
+  "availability": "local retrieval/QC is not source publication. Historical backfill/recovery retains classification and cannot become verified forward capture. Proposed shadow scope must distinguish observed receipt-qualified inputs from strict PIT",
+  "dataset_readiness": "BLOCKED_2026_TRAINING_DATA_AND_UNIVERSE_POLICY; existing2021–2023 immutable bytes not current2026 refit set; no unsaved2024–2026 coverage assumed",
+  "model_preparation": "Human approve scoped data acquisition/admission, universe/events/labels/cutoffs, fixed recipe/budget; fresh fit Ridge/LightGBM and freeze both L0 configurations then pin bytes/scaler/config/environment; never reuse W31 model as2026freshrefit",
+  "W19_integration": "source-only reference cf1a84fbbc205f28c051d650814a284d31d2f439; no task/worktree/artifact/runtime access/change; future read-only handoff requires explicit authority and verified manifests; no renewal implied",
+  "activation_required": [
+    "initial training data period/cohort/calendar/events/missing/label policy",
+    "fresh model fitting and CPU budget",
+    "feature-source reconciliation and units/security mapping",
+    "shadow study scope/start/end/coverage/minN/evaluation/exposure policy",
+    "exact preopen cutoff/recovery/stale/source policy",
+    "persistent prediction storage/backup and explicit runtime/scheduler authorization"
+  ],
+  "protected": {
+    "StrictPhase0": "STOP",
+    "FormalAdmission": "NOT_APPROVED",
+    "W19": "PROTECTED",
+    "W12_GPU": "SAFETY_HALTED",
+    "E1": "BLOCKED",
+    "H2": "NOT_APPROVED"
+  }
+}

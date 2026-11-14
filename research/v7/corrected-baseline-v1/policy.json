@@ -1,0 +1,132 @@
+{
+  "baseline_id": "E5-PIT-Clean-v1",
+  "features": {
+    "corrected_count": 48,
+    "drop_reasons": {
+      "Dividend_Yield_Fwd": "historical announcement timestamp fields are empty; generic date semantics are not certified",
+      "PER,PBR,EPS,EPS_Surprise,Gross_Margin,ROE,Book_Value,Free_Cash_Flow": "dependent filing keys have only 2.255% strict PIT coverage",
+      "Revenue_MoM,Revenue_YoY": "0/455040 publication timestamps verified; public reconstruction exhausted"
+    },
+    "dropped": [
+      "PER",
+      "PBR",
+      "Revenue_MoM",
+      "Revenue_YoY",
+      "EPS",
+      "EPS_Surprise",
+      "Gross_Margin",
+      "ROE",
+      "Book_Value",
+      "Dividend_Yield_Fwd",
+      "Free_Cash_Flow"
+    ],
+    "financial_policy": "VERIFIED_TIMESTAMP_REPORT_TYPE_AND_ASOF_ONLY",
+    "financial_unknown_policy": "EXCLUDE_DEPENDENT_FEATURE",
+    "kept": [
+      "Open",
+      "High",
+      "Low",
+      "Close",
+      "Volume",
+      "Return_1d",
+      "Return_5d",
+      "Return_20d",
+      "MA_20",
+      "MA_60",
+      "RSI_14",
+      "ATR_14",
+      "RS_5d",
+      "RS_20d",
+      "RS_60d",
+      "Foreign_Buy",
+      "Foreign_Sell",
+      "Foreign_Net",
+      "Investment_Trust_Net",
+      "Dealer_Net",
+      "Margin_Purchase",
+      "Margin_Repay",
+      "Short_Sale",
+      "Short_Cover",
+      "Margin_Balance",
+      "Short_Balance",
+      "Day_Trade_Volume",
+      "KD_K",
+      "KD_D",
+      "OBV",
+      "Volatility_20d",
+      "Holdings_Large_Pct",
+      "Holdings_Large_Change",
+      "Securities_Balance",
+      "Foreign_Holding_Pct",
+      "Market_Cap_Log",
+      "TWII_Return",
+      "SPX_Return",
+      "VIX",
+      "TNX",
+      "Gold_Return",
+      "Oil_Return",
+      "USD_TWD",
+      "Futures_OI_Foreign",
+      "Options_PC_Ratio",
+      "Fear_Greed",
+      "Business_Signal",
+      "FED_Rate"
+    ],
+    "legacy_count": 59,
+    "monthly_revenue_policy": "EXCLUDED_PUBLIC_RECONSTRUCTION_EXHAUSTED",
+    "retained_feature_reasons": {
+      "Market_Cap_Log": "daily market-value observation is aligned no later than session-t close"
+    },
+    "retained_independent_fundamentals": [
+      "Market_Cap_Log"
+    ],
+    "verified_only_family_decision": "DROP_AS_UNSTABLE_SPARSE_AND_PERIOD_BIASED"
+  },
+  "graph": {
+    "enabled": false,
+    "explicit_edge_count": 0,
+    "implicit_cross_stock_interaction": "S-Mamba/Bi-Mamba retained",
+    "legacy_edges": "EXCLUDED_UNCERTIFIED",
+    "verified_sector_edges": "EVIDENCE_ONLY_FUTURE_ABLATION"
+  },
+  "labels": {
+    "entry": "next calendar session open, only when explicitly executable",
+    "feature_cutoff": "session t close",
+    "formula": "exit_close / entry_open - 1",
+    "holding": "entry session is 1; exit is holding session h close",
+    "horizons": [
+      5,
+      10
+    ],
+    "invalidators": [
+      "missing_or_locked_open",
+      "suspension",
+      "interior_gap",
+      "invalid_price",
+      "insufficient_tail",
+      "unknown_tradability"
+    ],
+    "prediction": "session t after close",
+    "unknown_policy": "FAIL_CLOSED"
+  },
+  "preprocessing": {
+    "industry_backfill": "PROHIBITED",
+    "industry_neutralization": "DISABLED",
+    "scaling": "causal macro expanding z-score plus per-session cross-sectional scaling",
+    "source_stage": "pre-neutralization prepared cache"
+  },
+  "raw_archive_retention": {
+    "monthly_revenue": "RETAIN_FUTURE_LICENSED_OR_VINTAGE_AUGMENTATION",
+    "verified_financial_filings": "RETAIN_CANONICAL_EVIDENCE",
+    "verified_industry_intervals": "RETAIN_CANONICAL_EVIDENCE"
+  },
+  "schema_version": "v7-corrected-baseline-policy-v1",
+  "universe": {
+    "membership_and_tradability": "SEPARATE",
+    "membership_source": "canonical verified lifecycle intervals",
+    "price_or_graph_membership_inference": "PROHIBITED",
+    "security_type": "COMMON_STOCK",
+    "unknown_lifecycle": "EXCLUDED",
+    "unknown_tradability": "UNKNOWN"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "reviewer": "/root/independent_review",
+  "main_review_rounds": 1,
+  "initial_verdict": "NO_GO",
+  "initial_Critical": 0,
+  "initial_Required": 1,
+  "finding": "W26 event-matrix hash stale in exposure ledger",
+  "rework_rounds": 1,
+  "independent_closure": "GO_REQUIRED_CLOSED",
+  "final_Critical": 0,
+  "final_Required": 0,
+  "focused_tests": 3,
+  "focused_seconds": 0.003,
+  "restored_W26_files": 15,
+  "prior_byte_pins": 203,
+  "exposure_source_pins": 10,
+  "three_stored_label_formula_session_checks": "PASS",
+  "authority_boundary": "PROPOSED_NOT_ADMITTED; W19 no operations",
+  "limitation": "PDF bytes verified; reviewer could not independently extract PDF page38 text; primary agent read official PDF via bounded web tool",
+  "network_fit_metrics_recalculation": 0
+}

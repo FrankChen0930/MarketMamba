@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "candidate": "MarketMamba V7 integrated preparation",
+  "mamba_ssm_pin": "2.3.2.post1",
+  "installation_policy": {
+    "allow_source_build": false,
+    "allow_implicit_compilation": false,
+    "require_local_wheel": true,
+    "require_sha256": true,
+    "official_release_api": "https://api.github.com/repos/state-spaces/mamba/releases/tags/v2.3.2.post1",
+    "note": "The explicit Colab setup helper populates a writable manifest copy only after matching exact runtime metadata and downloading an official pinned-release asset. No URL or compatibility is implied by this template."
+  },
+  "release_import_requirements": {
+    "selective_scan_cuda": "required by the pinned release package eager import and must be present in the matching binary wheel",
+    "einops": "required",
+    "transformers": "required because mixer/generation modules are eagerly imported",
+    "causal_conv1d": "optional for this candidate's no-conv SSD path; upstream SSD combined import guards it",
+    "torch_scatter_and_torch_sparse": "not declared native requirements unless the selected installed GAT backend proves otherwise",
+    "verification": "Inspect the downloaded wheel's real dist-info/METADATA; do not infer dependencies from moving main."
+  },
+  "compatibility_keys": [
+    "python_tag",
+    "torch",
+    "cuda",
+    "cxx11_abi",
+    "platform"
+  ],
+  "wheel_candidates": [],
+  "observed_development_environment": {
+    "python": "3.12.3",
+    "python_tag": "cp312",
+    "torch": "2.14.0",
+    "cuda_build_metadata": "13.0",
+    "cxx11_abi": true,
+    "platform": "linux-x86_64",
+    "evidence_kind": "metadata-only; not Mamba-2 runtime compatibility evidence",
+    "installed": [
+      "torch",
+      "torch-geometric",
+      "numpy",
+      "pandas",
+      "scipy",
+      "pyarrow",
+      "triton"
+    ],
+    "missing": [
+      "mamba-ssm",
+      "einops",
+      "transformers"
+    ],
+    "observed_but_not_required_for_no_conv": [
+      "causal-conv1d"
+    ]
+  }
+}

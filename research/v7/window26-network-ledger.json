@@ -1,0 +1,62 @@
+{
+  "schema": "w26-network-ledger-v1",
+  "FinMind": {
+    "maximum_nonprice": 6,
+    "actual": 1,
+    "dataset": "TaiwanStockCapitalReductionReferencePrice",
+    "security": "2321",
+    "period": [
+      "2021-01-01",
+      "2023-12-31"
+    ],
+    "HTTP": 200,
+    "raw_bytes": 293,
+    "records": 1,
+    "TaiwanStockPrice": 0,
+    "unused": 5,
+    "CLOSED": true,
+    "no_budget_reuse": true
+  },
+  "official_documents": {
+    "maximum": 4,
+    "loads_or_attempts": 4,
+    "direct_archived_GETs": [
+      {
+        "id": "finmind-fundamental",
+        "URL": "https://finmind.github.io/tutor/TaiwanMarket/Fundamental/",
+        "bytes": 378968,
+        "status": 200
+      },
+      {
+        "id": "issuer-financial-report",
+        "URL": "https://www.tecom.com.tw/wp-content/uploads/2025/01/2023%E5%B9%B4%E5%BA%A6-FS-AllReport%E5%90%AB%E9%99%84%E8%A8%BB%E9%99%84%E8%A1%A8-CHT-IFRS.pdf",
+        "bytes": 4184711,
+        "status": 200
+      }
+    ],
+    "web_loads": [
+      {
+        "id": "issuer112annualreport",
+        "status": "WEB_TOOL_NOT_ACCESSIBLE_NO_RETRY",
+        "URL": "https://www.tecom.com.tw/tw/wp-content/uploads/sites/3/2024/07/%E6%9D%B1%E8%A8%8A112%E5%B9%B4%E5%B9%B4%E5%A0%B1%E4%B8%8A%E5%82%B3%E6%AA%94.pdf",
+        "raw": "NOT_OBTAINED"
+      },
+      {
+        "id": "issuer-financial-report-textread",
+        "status": 200,
+        "URL": "https://www.tecom.com.tw/wp-content/uploads/2025/01/2023%E5%B9%B4%E5%BA%A6-FS-AllReport%E5%90%AB%E9%99%84%E8%A8%BB%E9%99%84%E8%A1%A8-CHT-IFRS.pdf"
+      }
+    ],
+    "cached_pdf_finds": "localtoolcache references, no additionaldocumentloads",
+    "metadata_searches": "bounded source-index discovery separate fromdata/APIrequests",
+    "CLOSED": true
+  },
+  "license_boundaries": {
+    "FinMind": "Officialfundamentalsingle-stockFree + existingofficialPricing/Disclaimer/Quickstart scopedprivate noncommercial/attribution/no rawredistribution; currentversionnotPIT",
+    "IssuerPDF": "publicissuerdisclosure read/privatearchivalpurpose only; not OGDL or redistributiongrant",
+    "othercandidateDatasets": "notqueried;no blanketpermissionsinferred",
+    "annualreportunavailable": "notretried; differentauditedfinancialreport wasindependentratioevidence,notaccess-controlbypass"
+  },
+  "retry_redirect_token_paid_fallback": false,
+  "future_finmind_nonprice_price_official_requests": 0
+}

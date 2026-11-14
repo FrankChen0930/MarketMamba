@@ -1,0 +1,15 @@
+{
+  "status": "HUMAN_LIMITED_ENGINEERING_AUTHORIZATION_EXERCISED_NOT_RESEARCH_ADMISSION",
+  "authority": "HumanWindow23",
+  "base": "7027f03ebdb7b7b3bd90bc2bf5ce97a4c267c470",
+  "evidence": "research/v7/window23-evidence.json",
+  "contract": "research/v7/window23-smoke-contract.json",
+  "decisions": [
+    "W22localffintegration",
+    "Officialdocs<=10;FinMind0",
+    "OnefixedL0/Ridgesmoke,2realRidgefits;noqualityconclusion",
+    "Originalstrictmask/frozencontractsunchanged;W19PROTECTED"
+  ],
+  "remaining": "Formal exploratory dataset/calendar/universe/label/evaluation/compute admission remains Human-only",
+  "stop": "STOPafterlocalcommit"
+}

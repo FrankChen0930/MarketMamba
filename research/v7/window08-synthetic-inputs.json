@@ -1,0 +1,703 @@
+{
+  "schema": "v7-ranking-synthetic-input-evidence-v1",
+  "artifact_class": "CANONICAL",
+  "evidence_class": "SYNTHETIC",
+  "scores": {
+    "a": [
+      {
+        "stock_id": "stock-0",
+        "signal_session": "2024-02-14",
+        "horizon": 5,
+        "score": 1.0,
+        "label_id": "stock-0-2024-02-14-5",
+        "label_metadata_sha256": "3f0d8de09c848a17d0fccdf69500870aa8af10dd3af2a59277531ce483320588",
+        "prediction_at": "2024-02-14T18:01:00+08:00",
+        "feature_eligibility_ref": "6666666666666666666666666666666666666666666666666666666666666666"
+      },
+      {
+        "stock_id": "stock-0",
+        "signal_session": "2024-02-14",
+        "horizon": 10,
+        "score": 1.0,
+        "label_id": "stock-0-2024-02-14-10",
+        "label_metadata_sha256": "0e8ec0815a4934740461f97891ac51347f2afa180124e1dce7415592a508c13f",
+        "prediction_at": "2024-02-14T18:01:00+08:00",
+        "feature_eligibility_ref": "6666666666666666666666666666666666666666666666666666666666666666"
+      },
+      {
+        "stock_id": "stock-1",
+        "signal_session": "2024-02-14",
+        "horizon": 5,
+        "score": 2.0,
+        "label_id": "stock-1-2024-02-14-5",
+        "label_metadata_sha256": "18488e0d52ca1ee2d8b88632a62f3e29f676bbadd4f8e8135a8b080399618d4a",
+        "prediction_at": "2024-02-14T18:01:00+08:00",
+        "feature_eligibility_ref": "6666666666666666666666666666666666666666666666666666666666666666"
+      },
+      {
+        "stock_id": "stock-1",
+        "signal_session": "2024-02-14",
+        "horizon": 10,
+        "score": 2.0,
+        "label_id": "stock-1-2024-02-14-10",
+        "label_metadata_sha256": "324630d79e3554f40bbc29ee73711de609f48d08442773c3b98ec3582cdf1513",
+        "prediction_at": "2024-02-14T18:01:00+08:00",
+        "feature_eligibility_ref": "6666666666666666666666666666666666666666666666666666666666666666"
+      },
+      {
+        "stock_id": "stock-2",
+        "signal_session": "2024-02-14",
+        "horizon": 5,
+        "score": 3.0,
+        "label_id": "stock-2-2024-02-14-5",
+        "label_metadata_sha256": "cee148be42326050822e242f58deb651489e51b490c0f308f9e69de0bd5fc0f2",
+        "prediction_at": "2024-02-14T18:01:00+08:00",
+        "feature_eligibility_ref": "6666666666666666666666666666666666666666666666666666666666666666"
+      },
+      {
+        "stock_id": "stock-2",
+        "signal_session": "2024-02-14",
+        "horizon": 10,
+        "score": 3.0,
+        "label_id": "stock-2-2024-02-14-10",
+        "label_metadata_sha256": "d90157339224c9d042031b885884b37151a0b7af5f64a3540bd0084e2de3bf1c",
+        "prediction_at": "2024-02-14T18:01:00+08:00",
+        "feature_eligibility_ref": "6666666666666666666666666666666666666666666666666666666666666666"
+      }
+    ],
+    "b": [
+      {
+        "stock_id": "stock-1",
+        "signal_session": "2024-02-14",
+        "horizon": 5,
+        "score": -2.0,
+        "label_id": "stock-1-2024-02-14-5",
+        "label_metadata_sha256": "18488e0d52ca1ee2d8b88632a62f3e29f676bbadd4f8e8135a8b080399618d4a",
+        "prediction_at": "2024-02-14T18:01:00+08:00",
+        "feature_eligibility_ref": "6666666666666666666666666666666666666666666666666666666666666666"
+      },
+      {
+        "stock_id": "stock-1",
+        "signal_session": "2024-02-14",
+        "horizon": 10,
+        "score": -2.0,
+        "label_id": "stock-1-2024-02-14-10",
+        "label_metadata_sha256": "324630d79e3554f40bbc29ee73711de609f48d08442773c3b98ec3582cdf1513",
+        "prediction_at": "2024-02-14T18:01:00+08:00",
+        "feature_eligibility_ref": "6666666666666666666666666666666666666666666666666666666666666666"
+      },
+      {
+        "stock_id": "stock-2",
+        "signal_session": "2024-02-14",
+        "horizon": 5,
+        "score": -3.0,
+        "label_id": "stock-2-2024-02-14-5",
+        "label_metadata_sha256": "cee148be42326050822e242f58deb651489e51b490c0f308f9e69de0bd5fc0f2",
+        "prediction_at": "2024-02-14T18:01:00+08:00",
+        "feature_eligibility_ref": "6666666666666666666666666666666666666666666666666666666666666666"
+      },
+      {
+        "stock_id": "stock-2",
+        "signal_session": "2024-02-14",
+        "horizon": 10,
+        "score": -3.0,
+        "label_id": "stock-2-2024-02-14-10",
+        "label_metadata_sha256": "d90157339224c9d042031b885884b37151a0b7af5f64a3540bd0084e2de3bf1c",
+        "prediction_at": "2024-02-14T18:01:00+08:00",
+        "feature_eligibility_ref": "6666666666666666666666666666666666666666666666666666666666666666"
+      },
+      {
+        "stock_id": "stock-3",
+        "signal_session": "2024-02-14",
+        "horizon": 5,
+        "score": -4.0,
+        "label_id": "stock-3-2024-02-14-5",
+        "label_metadata_sha256": "b1f6bc0216a7a1c34e601d112095ff8881732952c5011adf574c8b47b66c42e0",
+        "prediction_at": "2024-02-14T18:01:00+08:00",
+        "feature_eligibility_ref": "6666666666666666666666666666666666666666666666666666666666666666"
+      },
+      {
+        "stock_id": "stock-3",
+        "signal_session": "2024-02-14",
+        "horizon": 10,
+        "score": -4.0,
+        "label_id": "stock-3-2024-02-14-10",
+        "label_metadata_sha256": "abe0e7155d88c434d3800ee10f5d38510be9e4ad5f584f9b23285fb9bbe1ae17",
+        "prediction_at": "2024-02-14T18:01:00+08:00",
+        "feature_eligibility_ref": "6666666666666666666666666666666666666666666666666666666666666666"
+      }
+    ]
+  },
+  "label_metadata": {
+    "stock-0-2024-02-14-5": {
+      "sample_id": "stock-0-2024-02-14",
+      "stock_id": "stock-0",
+      "signal_session": "2024-02-14",
+      "entry_session": "2024-02-15",
+      "entry_at": "2024-02-15T09:00:00+08:00",
+      "exit_session": "2024-02-21",
+      "exit_at": "2024-02-21T13:30:00+08:00",
+      "mature_at": "2024-02-21T13:30:00+08:00",
+      "available_at": "2024-02-21T14:00:00+08:00",
+      "quality_status": "PASS",
+      "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "vintage_id": "label-original",
+      "label_contract_id": "label-fixture-next-open-v1",
+      "horizon": 5,
+      "snapshot_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "payload_sha256": "82e478bce407d96c6e9ad12d337085798793feac26b332141134107fc9561b20",
+      "eligibility_status": "ELIGIBLE_SYNTHETIC",
+      "eligibility_ref": "5555555555555555555555555555555555555555555555555555555555555555"
+    },
+    "stock-0-2024-02-14-10": {
+      "sample_id": "stock-0-2024-02-14",
+      "stock_id": "stock-0",
+      "signal_session": "2024-02-14",
+      "entry_session": "2024-02-15",
+      "entry_at": "2024-02-15T09:00:00+08:00",
+      "exit_session": "2024-02-28",
+      "exit_at": "2024-02-28T13:30:00+08:00",
+      "mature_at": "2024-02-28T13:30:00+08:00",
+      "available_at": "2024-02-28T14:00:00+08:00",
+      "quality_status": "PASS",
+      "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "vintage_id": "label-original",
+      "label_contract_id": "label-fixture-next-open-v1",
+      "horizon": 10,
+      "snapshot_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "payload_sha256": "4681529d6d9bcd6b3ce014cdc465b9e9ab56273978c40ab9562ba893c44e4cd8",
+      "eligibility_status": "ELIGIBLE_SYNTHETIC",
+      "eligibility_ref": "5555555555555555555555555555555555555555555555555555555555555555"
+    },
+    "stock-1-2024-02-14-5": {
+      "sample_id": "stock-1-2024-02-14",
+      "stock_id": "stock-1",
+      "signal_session": "2024-02-14",
+      "entry_session": "2024-02-15",
+      "entry_at": "2024-02-15T09:00:00+08:00",
+      "exit_session": "2024-02-21",
+      "exit_at": "2024-02-21T13:30:00+08:00",
+      "mature_at": "2024-02-21T13:30:00+08:00",
+      "available_at": "2024-02-21T14:00:00+08:00",
+      "quality_status": "PASS",
+      "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "vintage_id": "label-original",
+      "label_contract_id": "label-fixture-next-open-v1",
+      "horizon": 5,
+      "snapshot_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "payload_sha256": "97c913841866ef6e41fd274365f1b676c927c9bf33a02a99621e45688d832ff3",
+      "eligibility_status": "ELIGIBLE_SYNTHETIC",
+      "eligibility_ref": "5555555555555555555555555555555555555555555555555555555555555555"
+    },
+    "stock-1-2024-02-14-10": {
+      "sample_id": "stock-1-2024-02-14",
+      "stock_id": "stock-1",
+      "signal_session": "2024-02-14",
+      "entry_session": "2024-02-15",
+      "entry_at": "2024-02-15T09:00:00+08:00",
+      "exit_session": "2024-02-28",
+      "exit_at": "2024-02-28T13:30:00+08:00",
+      "mature_at": "2024-02-28T13:30:00+08:00",
+      "available_at": "2024-02-28T14:00:00+08:00",
+      "quality_status": "PASS",
+      "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "vintage_id": "label-original",
+      "label_contract_id": "label-fixture-next-open-v1",
+      "horizon": 10,
+      "snapshot_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "payload_sha256": "1d8e27b04fd02db7ef965344a05bf0bcd0e945855965151804023acfa4d664fe",
+      "eligibility_status": "ELIGIBLE_SYNTHETIC",
+      "eligibility_ref": "5555555555555555555555555555555555555555555555555555555555555555"
+    },
+    "stock-2-2024-02-14-5": {
+      "sample_id": "stock-2-2024-02-14",
+      "stock_id": "stock-2",
+      "signal_session": "2024-02-14",
+      "entry_session": "2024-02-15",
+      "entry_at": "2024-02-15T09:00:00+08:00",
+      "exit_session": "2024-02-21",
+      "exit_at": "2024-02-21T13:30:00+08:00",
+      "mature_at": "2024-02-21T13:30:00+08:00",
+      "available_at": "2024-02-21T14:00:00+08:00",
+      "quality_status": "PASS",
+      "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "vintage_id": "label-original",
+      "label_contract_id": "label-fixture-next-open-v1",
+      "horizon": 5,
+      "snapshot_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "payload_sha256": "5d29a5a10d7bc4212d5f42e90b1b2e820105bebbd7bba15d071a8d55f7a1ff38",
+      "eligibility_status": "ELIGIBLE_SYNTHETIC",
+      "eligibility_ref": "5555555555555555555555555555555555555555555555555555555555555555"
+    },
+    "stock-2-2024-02-14-10": {
+      "sample_id": "stock-2-2024-02-14",
+      "stock_id": "stock-2",
+      "signal_session": "2024-02-14",
+      "entry_session": "2024-02-15",
+      "entry_at": "2024-02-15T09:00:00+08:00",
+      "exit_session": "2024-02-28",
+      "exit_at": "2024-02-28T13:30:00+08:00",
+      "mature_at": "2024-02-28T13:30:00+08:00",
+      "available_at": "2024-02-28T14:00:00+08:00",
+      "quality_status": "PASS",
+      "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "vintage_id": "label-original",
+      "label_contract_id": "label-fixture-next-open-v1",
+      "horizon": 10,
+      "snapshot_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "payload_sha256": "cbd62e64c4fc10cd866bbb5ee7195ba0dd02a9bbf22dadabfdf8c2db4af51e73",
+      "eligibility_status": "ELIGIBLE_SYNTHETIC",
+      "eligibility_ref": "5555555555555555555555555555555555555555555555555555555555555555"
+    },
+    "stock-3-2024-02-14-5": {
+      "sample_id": "stock-3-2024-02-14",
+      "stock_id": "stock-3",
+      "signal_session": "2024-02-14",
+      "entry_session": "2024-02-15",
+      "entry_at": "2024-02-15T09:00:00+08:00",
+      "exit_session": "2024-02-21",
+      "exit_at": "2024-02-21T13:30:00+08:00",
+      "mature_at": "2024-02-21T13:30:00+08:00",
+      "available_at": "2024-02-21T14:00:00+08:00",
+      "quality_status": "PASS",
+      "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "vintage_id": "label-original",
+      "label_contract_id": "label-fixture-next-open-v1",
+      "horizon": 5,
+      "snapshot_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "payload_sha256": "15864bd244dea05cf1ee92e0b34c3827c1f59c0556d377834dd373d0b3318aaf",
+      "eligibility_status": "ELIGIBLE_SYNTHETIC",
+      "eligibility_ref": "5555555555555555555555555555555555555555555555555555555555555555"
+    },
+    "stock-3-2024-02-14-10": {
+      "sample_id": "stock-3-2024-02-14",
+      "stock_id": "stock-3",
+      "signal_session": "2024-02-14",
+      "entry_session": "2024-02-15",
+      "entry_at": "2024-02-15T09:00:00+08:00",
+      "exit_session": "2024-02-28",
+      "exit_at": "2024-02-28T13:30:00+08:00",
+      "mature_at": "2024-02-28T13:30:00+08:00",
+      "available_at": "2024-02-28T14:00:00+08:00",
+      "quality_status": "PASS",
+      "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "vintage_id": "label-original",
+      "label_contract_id": "label-fixture-next-open-v1",
+      "horizon": 10,
+      "snapshot_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "payload_sha256": "3e06dc55d775db40ad27a53ae2133d439a55964da445cec2258acd599cbcff59",
+      "eligibility_status": "ELIGIBLE_SYNTHETIC",
+      "eligibility_ref": "5555555555555555555555555555555555555555555555555555555555555555"
+    }
+  },
+  "label_payloads": {
+    "stock-0-2024-02-14-5": {
+      "sample_id": "stock-0-2024-02-14",
+      "stock_id": "stock-0",
+      "signal_session": "2024-02-14",
+      "entry_session": "2024-02-15",
+      "entry_at": "2024-02-15T09:00:00+08:00",
+      "exit_session": "2024-02-21",
+      "exit_at": "2024-02-21T13:30:00+08:00",
+      "mature_at": "2024-02-21T13:30:00+08:00",
+      "available_at": "2024-02-21T14:00:00+08:00",
+      "quality_status": "PASS",
+      "value": 1.0,
+      "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "vintage_id": "label-original",
+      "label_contract_id": "label-fixture-next-open-v1"
+    },
+    "stock-0-2024-02-14-10": {
+      "sample_id": "stock-0-2024-02-14",
+      "stock_id": "stock-0",
+      "signal_session": "2024-02-14",
+      "entry_session": "2024-02-15",
+      "entry_at": "2024-02-15T09:00:00+08:00",
+      "exit_session": "2024-02-28",
+      "exit_at": "2024-02-28T13:30:00+08:00",
+      "mature_at": "2024-02-28T13:30:00+08:00",
+      "available_at": "2024-02-28T14:00:00+08:00",
+      "quality_status": "PASS",
+      "value": 1.0,
+      "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "vintage_id": "label-original",
+      "label_contract_id": "label-fixture-next-open-v1"
+    },
+    "stock-1-2024-02-14-5": {
+      "sample_id": "stock-1-2024-02-14",
+      "stock_id": "stock-1",
+      "signal_session": "2024-02-14",
+      "entry_session": "2024-02-15",
+      "entry_at": "2024-02-15T09:00:00+08:00",
+      "exit_session": "2024-02-21",
+      "exit_at": "2024-02-21T13:30:00+08:00",
+      "mature_at": "2024-02-21T13:30:00+08:00",
+      "available_at": "2024-02-21T14:00:00+08:00",
+      "quality_status": "PASS",
+      "value": 2.0,
+      "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "vintage_id": "label-original",
+      "label_contract_id": "label-fixture-next-open-v1"
+    },
+    "stock-1-2024-02-14-10": {
+      "sample_id": "stock-1-2024-02-14",
+      "stock_id": "stock-1",
+      "signal_session": "2024-02-14",
+      "entry_session": "2024-02-15",
+      "entry_at": "2024-02-15T09:00:00+08:00",
+      "exit_session": "2024-02-28",
+      "exit_at": "2024-02-28T13:30:00+08:00",
+      "mature_at": "2024-02-28T13:30:00+08:00",
+      "available_at": "2024-02-28T14:00:00+08:00",
+      "quality_status": "PASS",
+      "value": 2.0,
+      "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "vintage_id": "label-original",
+      "label_contract_id": "label-fixture-next-open-v1"
+    },
+    "stock-2-2024-02-14-5": {
+      "sample_id": "stock-2-2024-02-14",
+      "stock_id": "stock-2",
+      "signal_session": "2024-02-14",
+      "entry_session": "2024-02-15",
+      "entry_at": "2024-02-15T09:00:00+08:00",
+      "exit_session": "2024-02-21",
+      "exit_at": "2024-02-21T13:30:00+08:00",
+      "mature_at": "2024-02-21T13:30:00+08:00",
+      "available_at": "2024-02-21T14:00:00+08:00",
+      "quality_status": "PASS",
+      "value": 3.0,
+      "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "vintage_id": "label-original",
+      "label_contract_id": "label-fixture-next-open-v1"
+    },
+    "stock-2-2024-02-14-10": {
+      "sample_id": "stock-2-2024-02-14",
+      "stock_id": "stock-2",
+      "signal_session": "2024-02-14",
+      "entry_session": "2024-02-15",
+      "entry_at": "2024-02-15T09:00:00+08:00",
+      "exit_session": "2024-02-28",
+      "exit_at": "2024-02-28T13:30:00+08:00",
+      "mature_at": "2024-02-28T13:30:00+08:00",
+      "available_at": "2024-02-28T14:00:00+08:00",
+      "quality_status": "PASS",
+      "value": 3.0,
+      "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "vintage_id": "label-original",
+      "label_contract_id": "label-fixture-next-open-v1"
+    },
+    "stock-3-2024-02-14-5": {
+      "sample_id": "stock-3-2024-02-14",
+      "stock_id": "stock-3",
+      "signal_session": "2024-02-14",
+      "entry_session": "2024-02-15",
+      "entry_at": "2024-02-15T09:00:00+08:00",
+      "exit_session": "2024-02-21",
+      "exit_at": "2024-02-21T13:30:00+08:00",
+      "mature_at": "2024-02-21T13:30:00+08:00",
+      "available_at": "2024-02-21T14:00:00+08:00",
+      "quality_status": "PASS",
+      "value": 4.0,
+      "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "vintage_id": "label-original",
+      "label_contract_id": "label-fixture-next-open-v1"
+    },
+    "stock-3-2024-02-14-10": {
+      "sample_id": "stock-3-2024-02-14",
+      "stock_id": "stock-3",
+      "signal_session": "2024-02-14",
+      "entry_session": "2024-02-15",
+      "entry_at": "2024-02-15T09:00:00+08:00",
+      "exit_session": "2024-02-28",
+      "exit_at": "2024-02-28T13:30:00+08:00",
+      "mature_at": "2024-02-28T13:30:00+08:00",
+      "available_at": "2024-02-28T14:00:00+08:00",
+      "quality_status": "PASS",
+      "value": 4.0,
+      "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "vintage_id": "label-original",
+      "label_contract_id": "label-fixture-next-open-v1"
+    }
+  },
+  "calendar": {
+    "sessions": [
+      {
+        "session": "2024-01-02",
+        "open_at": "2024-01-02T09:00:00+08:00",
+        "close_at": "2024-01-02T13:30:00+08:00"
+      },
+      {
+        "session": "2024-01-03",
+        "open_at": "2024-01-03T09:00:00+08:00",
+        "close_at": "2024-01-03T13:30:00+08:00"
+      },
+      {
+        "session": "2024-01-04",
+        "open_at": "2024-01-04T09:00:00+08:00",
+        "close_at": "2024-01-04T13:30:00+08:00"
+      },
+      {
+        "session": "2024-01-05",
+        "open_at": "2024-01-05T09:00:00+08:00",
+        "close_at": "2024-01-05T13:30:00+08:00"
+      },
+      {
+        "session": "2024-01-08",
+        "open_at": "2024-01-08T09:00:00+08:00",
+        "close_at": "2024-01-08T13:30:00+08:00"
+      },
+      {
+        "session": "2024-01-09",
+        "open_at": "2024-01-09T09:00:00+08:00",
+        "close_at": "2024-01-09T13:30:00+08:00"
+      },
+      {
+        "session": "2024-01-10",
+        "open_at": "2024-01-10T09:00:00+08:00",
+        "close_at": "2024-01-10T13:30:00+08:00"
+      },
+      {
+        "session": "2024-01-11",
+        "open_at": "2024-01-11T09:00:00+08:00",
+        "close_at": "2024-01-11T13:30:00+08:00"
+      },
+      {
+        "session": "2024-01-12",
+        "open_at": "2024-01-12T09:00:00+08:00",
+        "close_at": "2024-01-12T13:30:00+08:00"
+      },
+      {
+        "session": "2024-01-16",
+        "open_at": "2024-01-16T09:00:00+08:00",
+        "close_at": "2024-01-16T13:30:00+08:00"
+      },
+      {
+        "session": "2024-01-17",
+        "open_at": "2024-01-17T09:00:00+08:00",
+        "close_at": "2024-01-17T13:30:00+08:00"
+      },
+      {
+        "session": "2024-01-18",
+        "open_at": "2024-01-18T09:00:00+08:00",
+        "close_at": "2024-01-18T13:30:00+08:00"
+      },
+      {
+        "session": "2024-01-19",
+        "open_at": "2024-01-19T09:00:00+08:00",
+        "close_at": "2024-01-19T13:30:00+08:00"
+      },
+      {
+        "session": "2024-01-22",
+        "open_at": "2024-01-22T09:00:00+08:00",
+        "close_at": "2024-01-22T13:30:00+08:00"
+      },
+      {
+        "session": "2024-01-23",
+        "open_at": "2024-01-23T09:00:00+08:00",
+        "close_at": "2024-01-23T13:30:00+08:00"
+      },
+      {
+        "session": "2024-01-24",
+        "open_at": "2024-01-24T09:00:00+08:00",
+        "close_at": "2024-01-24T13:30:00+08:00"
+      },
+      {
+        "session": "2024-01-25",
+        "open_at": "2024-01-25T09:00:00+08:00",
+        "close_at": "2024-01-25T13:30:00+08:00"
+      },
+      {
+        "session": "2024-01-26",
+        "open_at": "2024-01-26T09:00:00+08:00",
+        "close_at": "2024-01-26T13:30:00+08:00"
+      },
+      {
+        "session": "2024-01-29",
+        "open_at": "2024-01-29T09:00:00+08:00",
+        "close_at": "2024-01-29T13:30:00+08:00"
+      },
+      {
+        "session": "2024-01-30",
+        "open_at": "2024-01-30T09:00:00+08:00",
+        "close_at": "2024-01-30T13:30:00+08:00"
+      },
+      {
+        "session": "2024-01-31",
+        "open_at": "2024-01-31T09:00:00+08:00",
+        "close_at": "2024-01-31T13:30:00+08:00"
+      },
+      {
+        "session": "2024-02-01",
+        "open_at": "2024-02-01T09:00:00+08:00",
+        "close_at": "2024-02-01T13:30:00+08:00"
+      },
+      {
+        "session": "2024-02-02",
+        "open_at": "2024-02-02T09:00:00+08:00",
+        "close_at": "2024-02-02T13:30:00+08:00"
+      },
+      {
+        "session": "2024-02-05",
+        "open_at": "2024-02-05T09:00:00+08:00",
+        "close_at": "2024-02-05T13:30:00+08:00"
+      },
+      {
+        "session": "2024-02-06",
+        "open_at": "2024-02-06T09:00:00+08:00",
+        "close_at": "2024-02-06T13:30:00+08:00"
+      },
+      {
+        "session": "2024-02-07",
+        "open_at": "2024-02-07T09:00:00+08:00",
+        "close_at": "2024-02-07T13:30:00+08:00"
+      },
+      {
+        "session": "2024-02-08",
+        "open_at": "2024-02-08T09:00:00+08:00",
+        "close_at": "2024-02-08T13:30:00+08:00"
+      },
+      {
+        "session": "2024-02-09",
+        "open_at": "2024-02-09T09:00:00+08:00",
+        "close_at": "2024-02-09T13:30:00+08:00"
+      },
+      {
+        "session": "2024-02-12",
+        "open_at": "2024-02-12T09:00:00+08:00",
+        "close_at": "2024-02-12T13:30:00+08:00"
+      },
+      {
+        "session": "2024-02-13",
+        "open_at": "2024-02-13T09:00:00+08:00",
+        "close_at": "2024-02-13T13:30:00+08:00"
+      },
+      {
+        "session": "2024-02-14",
+        "open_at": "2024-02-14T09:00:00+08:00",
+        "close_at": "2024-02-14T13:30:00+08:00"
+      },
+      {
+        "session": "2024-02-15",
+        "open_at": "2024-02-15T09:00:00+08:00",
+        "close_at": "2024-02-15T13:30:00+08:00"
+      },
+      {
+        "session": "2024-02-16",
+        "open_at": "2024-02-16T09:00:00+08:00",
+        "close_at": "2024-02-16T13:30:00+08:00"
+      },
+      {
+        "session": "2024-02-19",
+        "open_at": "2024-02-19T09:00:00+08:00",
+        "close_at": "2024-02-19T13:30:00+08:00"
+      },
+      {
+        "session": "2024-02-20",
+        "open_at": "2024-02-20T09:00:00+08:00",
+        "close_at": "2024-02-20T13:30:00+08:00"
+      },
+      {
+        "session": "2024-02-21",
+        "open_at": "2024-02-21T09:00:00+08:00",
+        "close_at": "2024-02-21T13:30:00+08:00"
+      },
+      {
+        "session": "2024-02-22",
+        "open_at": "2024-02-22T09:00:00+08:00",
+        "close_at": "2024-02-22T13:30:00+08:00"
+      },
+      {
+        "session": "2024-02-23",
+        "open_at": "2024-02-23T09:00:00+08:00",
+        "close_at": "2024-02-23T13:30:00+08:00"
+      },
+      {
+        "session": "2024-02-26",
+        "open_at": "2024-02-26T09:00:00+08:00",
+        "close_at": "2024-02-26T13:30:00+08:00"
+      },
+      {
+        "session": "2024-02-27",
+        "open_at": "2024-02-27T09:00:00+08:00",
+        "close_at": "2024-02-27T13:30:00+08:00"
+      },
+      {
+        "session": "2024-02-28",
+        "open_at": "2024-02-28T09:00:00+08:00",
+        "close_at": "2024-02-28T13:30:00+08:00"
+      },
+      {
+        "session": "2024-02-29",
+        "open_at": "2024-02-29T09:00:00+08:00",
+        "close_at": "2024-02-29T13:30:00+08:00"
+      },
+      {
+        "session": "2024-03-01",
+        "open_at": "2024-03-01T09:00:00+08:00",
+        "close_at": "2024-03-01T13:30:00+08:00"
+      },
+      {
+        "session": "2024-03-04",
+        "open_at": "2024-03-04T09:00:00+08:00",
+        "close_at": "2024-03-04T13:30:00+08:00"
+      },
+      {
+        "session": "2024-03-05",
+        "open_at": "2024-03-05T09:00:00+08:00",
+        "close_at": "2024-03-05T13:30:00+08:00"
+      }
+    ],
+    "source_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "vintage_id": "fixture-v1",
+    "qualification": "SYNTHETIC",
+    "qualification_ref": "window07-fixture-not-real-PIT"
+  },
+  "fold": {
+    "schema": "v7-research-fold-engineering-v1",
+    "study_id": "study-fixture",
+    "fold_id": "fold-A",
+    "calendar_sha256": "8fe5751741bd31fe636067e5ff2a67f27e04097a472cd0a48333dc38c43062ad",
+    "feature_contract_id": "feature-fixture-v1",
+    "label_contract_id": "label-fixture-next-open-v1",
+    "label_definition": "NEXT_SESSION_OPEN_HOLD_H_CLOSE",
+    "required_horizons": [
+      5,
+      10
+    ],
+    "train": [
+      "2024-01-02",
+      "2024-01-05"
+    ],
+    "validation": [
+      "2024-01-24",
+      "2024-01-26"
+    ],
+    "refit": [
+      "2024-01-02",
+      "2024-01-29"
+    ],
+    "forward": [
+      "2024-02-14",
+      "2024-02-21"
+    ],
+    "selection_cutoff_at": "2024-02-12T18:00:00+08:00",
+    "refit_cutoff_at": "2024-02-13T07:00:00+08:00",
+    "model_ready_deadline_at": "2024-02-13T08:00:00+08:00",
+    "origin_at": "2024-02-13T08:30:00+08:00",
+    "purge_sessions": 0,
+    "embargo_sessions": 0,
+    "unresolved_policies": [],
+    "policy_status": "SYNTHETIC_PARAMETERS_NOT_APPROVED"
+  },
+  "policy": {
+    "schema": "v7-ranking-policy-prototype-v1",
+    "policy_id": "synthetic-average-equal-v1",
+    "status": "SYNTHETIC_NOT_ADMITTED",
+    "tie_policy": "AVERAGE",
+    "min_valid_n": 2,
+    "aggregation_weighting": "EQUAL_SESSION",
+    "invalid_support": "EXCLUDE_WITH_LEDGER",
+    "statistical_policy": "NOT_CONFIGURED_NO_INFERENCE"
+  }
+}

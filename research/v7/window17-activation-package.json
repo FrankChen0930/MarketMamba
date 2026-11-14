@@ -1,0 +1,56 @@
+{
+  "schema": "v7-forward-activation-proposal-v1",
+  "status": "PROPOSED_NOT_APPROVED_NOT_ACTIVE",
+  "implementation": "Offline guards plus W14/W15 snapshot prototypes only; no executable network collector provided",
+  "sources_entry": "research/v7/window15-license-matrix.json",
+  "source_resource_urls": [
+    "https://www.twse.com.tw/exchangeReport/STOCK_DAY_ALL?response=open_data",
+    "https://www.tpex.org.tw/web/stock/aftertrading/otc_quotes_no1430/stk_wn1430_result.php?l=zh-tw&se=EW&o=data"
+  ],
+  "operational_blockers": [
+    "Provider-specific periodic automated access terms/rate/redirect/update-time confirmation",
+    "Qualified effective exchange-specific calendar/temporary closure revision feed, especially TPEx",
+    "Human runtime/time/frequency/retry/timeout/size bounds approval",
+    "Durable storage/independent backup/restore and capacity/retention approval",
+    "QC/missing/late/security/units policy and monitoring/notification approval"
+  ],
+  "human_decisions": {
+    "runtime": "Recommend explicit WSL-native development host/manual supervised first pilot; not Windows production. No activation now.",
+    "frequency_time": "Candidate one request per resource per confirmed actual trading session after documented update; exact time/catchup/retry remain undecided.07-08 inference preference does not set fetch schedule.",
+    "approved_sources": "Only the two exact dataset-linked CSV URLs; no alternative endpoint/provider. License metadata pin, attribution and service terms must be rechecked.",
+    "QC_missing": "Preserve missing OHLCV reasons15TWSE/27TPEx in W16, no zero-fill or silent unit changes. Schema/date/duplicate/finite/value bounds; raw evidence may remain archived even when qualified snapshot rejected; minN/universe/tradability not inferred.",
+    "storage_backup": "Existingroot.artifacts chosen only to protectW16bytes. Proposed daily retention/backup destination/restore interval/capacity not approved; BACKUP_PENDING. Approximately279436raw bytes per pairedcapture (~70MB/250sessions) measuredonepaironly, manifests/revisions/restore copies/overhead extra, not a capacity guarantee.",
+    "monitoring_notice": "Local failures must remain non-success. Disk free/write/hash/QC/calendar/source freshness/backup state. Existing reporting channels only; recipient/channel/frequency Human decision, no new notification service.",
+    "backfill": "Record missed actual session; separately approved bounded recovery/backfill with real receipt/creation timestamps. Snapshot resources may no longer supply old session; no hidden historical request.",
+    "stop_resume_revoke": "Future collector must stop dispatch on authorization revoke, unknowncalendar/license change/schema drift/QC failure/storagefailure; preserve attempt records/incomplete state. Resume only after cause resolved and explicit valid authorization, no silent replay-as-forward."
+  },
+  "capture_contract": {
+    "reuses": [
+      "v7_source_snapshot",
+      "v7_forward_vintage",
+      "v7_vintage_dryrun SYNTHETIC_ONLY",
+      "W09_artifact_integrity_helpers",
+      "W16_proposed_fallback"
+    ],
+    "separate_clocks": [
+      "observation session",
+      "source-reported publication or UNKNOWN",
+      "actual receipt",
+      "QC completion",
+      "actual archive creation"
+    ],
+    "publication_imputed_from_receipt": false,
+    "failure_semantics": "Same-content idempotency does not mask current QC/late failure; revised content needs new vintage and parent identity. Partial/storagefailure never completed. BackupPENDING separate from capture success. Real production capture adapter still needs separately authorized implementation and acceptance."
+  },
+  "fallback": {
+    "policy_ref": "research/v7/window16-fallback-policy.json",
+    "status": "PROPOSED_NOT_ACTIVE",
+    "same_endpoint_retry": "same source, only future explicit finite budget and retryable class; no retries this window",
+    "approved_alternative_endpoints": [],
+    "independent_backup_providers": [],
+    "unrecoverable_source_failure": "Persist failure and missing-session evidence; no qualified snapshot emitted.403/terms/identity/QC never bypassed; calendar-closed day is NON_TRADING_DAY, not missing-data failure."
+  },
+  "historical_track": "PROPOSED; next request limited to official licensing/coverage documents for W14 two historicalroutes or one explicitly selected licensed historical product, no payloads/other providers/PIT rescan/fits/RankIC. Existing twoCSVonly single-session snapshots, cannot supply historical training.",
+  "research_admitted": false,
+  "collector_enabled": false
+}

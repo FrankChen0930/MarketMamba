@@ -1,0 +1,152 @@
+{
+  "acknowledgment": null,
+  "automatic_updates_performed": false,
+  "changed": [
+    "V6/experimental/v7_finmind_proof.py",
+    "V6/experimental/v7_finmind_proof_test.py",
+    "knowledge/00_Project_Map/Authority_Map.md",
+    "knowledge/00_Project_Map/Current_State.md",
+    "knowledge/00_Project_Map/Worktree_Register.md",
+    "knowledge/00_Project_Map/authority-map.json",
+    "knowledge/01_Domains/Data.md",
+    "knowledge/02_History/Decisions/20261025-window21-finmind-proof.json",
+    "reports/v7_window21_finmind_proof.md",
+    "research/v7/research-program.md",
+    "research/v7/window21-checks.txt",
+    "research/v7/window21-durable-license-documents.json",
+    "research/v7/window21-evidence.json",
+    "research/v7/window21-independent-restore.json",
+    "research/v7/window21-knowledge-health.txt",
+    "research/v7/window21-knowledge-impact.txt",
+    "research/v7/window21-local-artifacts.json",
+    "research/v7/window21-pilot-plan.json",
+    "research/v7/window21-postrepair-restore.json",
+    "research/v7/window21-proof-summary.json",
+    "research/v7/window21-red.txt",
+    "research/v7/window21-review-red.txt",
+    "research/v7/window21-review.json",
+    "research/v7/window21-source-license-binding.json",
+    "research/v7/window21-stage3-price-plan.json",
+    "research/v7/window21-targeted-tests.txt"
+  ],
+  "matched_rules": {
+    "V6/experimental/v7_finmind_proof.py": [
+      "DEFAULT"
+    ],
+    "V6/experimental/v7_finmind_proof_test.py": [
+      "DEFAULT"
+    ],
+    "knowledge/00_Project_Map/Authority_Map.md": [
+      "canonical-knowledge"
+    ],
+    "knowledge/00_Project_Map/Current_State.md": [
+      "canonical-knowledge"
+    ],
+    "knowledge/00_Project_Map/Worktree_Register.md": [
+      "worktree-responsibility",
+      "canonical-knowledge"
+    ],
+    "knowledge/00_Project_Map/authority-map.json": [
+      "canonical-knowledge"
+    ],
+    "knowledge/01_Domains/Data.md": [
+      "canonical-knowledge"
+    ],
+    "knowledge/02_History/Decisions/20261025-window21-finmind-proof.json": [
+      "history-reports-tasks"
+    ],
+    "reports/v7_window21_finmind_proof.md": [
+      "history-reports-tasks"
+    ],
+    "research/v7/research-program.md": [
+      "DEFAULT"
+    ],
+    "research/v7/window21-checks.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window21-durable-license-documents.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window21-evidence.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window21-independent-restore.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window21-knowledge-health.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window21-knowledge-impact.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window21-local-artifacts.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window21-pilot-plan.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window21-postrepair-restore.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window21-proof-summary.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window21-red.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window21-review-red.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window21-review.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window21-source-license-binding.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window21-stage3-price-plan.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window21-targeted-tests.txt": [
+      "DEFAULT"
+    ]
+  },
+  "potential_knowledge_impact": [
+    {
+      "artifact": "knowledge/01_Domains/Operations.md",
+      "rules": [
+        "worktree-responsibility"
+      ],
+      "severity": "REVIEW_REQUIRED"
+    },
+    {
+      "artifact": "knowledge/GOVERNANCE.md",
+      "rules": [
+        "canonical-knowledge"
+      ],
+      "severity": "REVIEW_REQUIRED"
+    },
+    {
+      "artifact": "knowledge/00_Project_Map/Authority_Map.md",
+      "rules": [
+        "worktree-responsibility"
+      ],
+      "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+    },
+    {
+      "artifact": "knowledge/00_Project_Map/Current_State.md",
+      "rules": [
+        "worktree-responsibility"
+      ],
+      "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+    },
+    {
+      "artifact": "knowledge/02_History/README.md",
+      "rules": [
+        "history-reports-tasks"
+      ],
+      "severity": "NO_KNOWLEDGE_IMPACT"
+    }
+  ],
+  "schema_version": 1,
+  "status": "WARNING"
+}

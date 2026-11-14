@@ -1,0 +1,1 @@
+{"cohort_n": 68, "current_pre2021": 60, "duringperiod": 4, "delisted_start_unknown": 4, "overlap_W24": 0, "cache": 0, "new_price_queries": 68, "sha256": "7945f58bbe354000bd2b0dbfaee3749c52a70235114e511036b3c33519ae8dfd"}

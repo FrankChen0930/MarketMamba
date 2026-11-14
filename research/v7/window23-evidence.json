@@ -1,0 +1,216 @@
+{
+  "schema_version": 1,
+  "artifact_class": "CANONICAL",
+  "status": "WINDOW_COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+  "scope": "HumanWindow23 LIMITED_ENGINEERING_AUTHORIZATION_NOT_RESEARCH_ADMISSION",
+  "branch": "research/v7-window23-calendar-smoke",
+  "base": "7027f03ebdb7b7b3bd90bc2bf5ce97a4c267c470",
+  "final_head": "containingclosurecommit",
+  "integration": "research/v7/window23-integration.json",
+  "contract": "research/v7/window23-smoke-contract.json",
+  "diagnostics": "research/v7/window23-diagnostics-summary.json",
+  "run": "research/v7/window23-run-summary.json",
+  "replay": "research/v7/window23-replay.json",
+  "network": "research/v7/window23-network-ledger.json",
+  "storage": {
+    "root": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke",
+    "restore": "/home/frank/projects/MarketMamba/.artifacts/window23-restore",
+    "inventory": "research/v7/window23-local-artifacts.json",
+    "raw_and_predictions_not_git": true,
+    "backup": "BACKUP_PENDING"
+  },
+  "review": "research/v7/window23-review.json",
+  "rework": {
+    "rounds": 1,
+    "reason": "Immutablepublishedmetrics list-order changed after JSON key sorting;valuesallidentical",
+    "red": "research/v7/window23-replay-red.txt",
+    "regression_red": "research/v7/window23-order-test-red.txt",
+    "fix": "keyed metric identity; duplicatekeys refused;original bundle and source-at-run preserved; separate replayadapter hash",
+    "fit_repeated": false
+  },
+  "boundaries": {
+    "W19": "NO_WORKTREE_ARTIFACT_TASK_BUDGET_RUNTIME_OPERATIONS",
+    "W12GPU": "SAFETY_HALTED",
+    "StrictPhase0": "STOP",
+    "E1FrozenMatrix": "BLOCKED",
+    "H2": "NOT_APPROVED",
+    "FormalDataAdmission": "NOT_APPROVED",
+    "ExploratoryStudy": "PROPOSED",
+    "GPUColabProductionSchedulerPushDeploy": false,
+    "frozen_contracts_changed": false,
+    "W22strict_mask_changed": false
+  },
+  "runtime": {
+    "python": "W11isolatedCPU Python3.12.3",
+    "MARKETMAMBA_DATA_ROOT": "unset",
+    "data_payload": "W22private immutable only; operationalData notread",
+    "training_process_timeout_seconds": 300,
+    "threads": 1,
+    "ridge_fit_count": 2
+  },
+  "review_result": {
+    "reviewer": "/root/independent_review",
+    "verdict": "GO",
+    "Critical": 0,
+    "Required": 0,
+    "main_rounds": 1,
+    "independent_tests": 26,
+    "seconds": 3.046,
+    "W22_artifacts_verified": 78,
+    "W23_artifacts_verified": 55,
+    "daily_replayed": 1880,
+    "defined": 1864,
+    "dataset_rows": 7009,
+    "original_run_code_pins_verified": true,
+    "split_train_data_prediction_identity_verified": true,
+    "network": 0,
+    "actual_data_refit": 0,
+    "W19_operations": 0,
+    "scope": "Engineeringonly,notdata/researchadmission/quality/tradingevidence",
+    "rework_rounds": 1,
+    "rework": "pre-reviewkeyorderingfix; originalimmutablebundle/models/sourcepreserved; no refit"
+  },
+  "tests": {
+    "focused": 58,
+    "main_postintegration": 23,
+    "independent": 26,
+    "syntax_schema": "PASS",
+    "diff_check": "PASS",
+    "knowledge_health": "existingWARNINGonly;structuralPASS"
+  },
+  "restore": "research/v7/window23-independent-restore.json",
+  "deliverables": [
+    {
+      "path": "V6/experimental/v7_classical_baseline.py",
+      "sha256": "115ee84194417e87f6ba885dee5e4a26594cccd6a223e26c863a288bedeefb1e",
+      "bytes": 11611
+    },
+    {
+      "path": "V6/experimental/v7_research_artifacts.py",
+      "sha256": "471466d528b04a06ccf269a685b231faa6afef646982bc5f7a37a6b259c52f46",
+      "bytes": 13196
+    },
+    {
+      "path": "V6/experimental/v7_retrospective_smoke.py",
+      "sha256": "7f1d5496c0e041b839a619ce1a9daa4b5f91bb2448b347664386082fed48d7a9",
+      "bytes": 2606
+    },
+    {
+      "path": "V6/experimental/v7_retrospective_smoke_test.py",
+      "sha256": "51ea2efde3296ac03ae81d74f3fb306c6fdb3ed493b58f65a6498a9657fed4d1",
+      "bytes": 4241
+    },
+    {
+      "path": "reports/v7_window23_calendar_smoke.md",
+      "sha256": "f3039a2075ce0c2c102f5b872ab1847d45c4a59afc0e1e0fab6ce95e6a562a46",
+      "bytes": 8775
+    },
+    {
+      "path": "research/v7/window23-diagnostics-summary.json",
+      "sha256": "73aea96ed36cfc302b9fef48ea829e253b0322cfd8779b3b44b0888ff26ef119",
+      "bytes": 3348
+    },
+    {
+      "path": "research/v7/window23-independent-restore.json",
+      "sha256": "dea715ddddd6b46b65a214653f1629188cc901dbff0ba8e9ca9f74261f7a0f9c",
+      "bytes": 323
+    },
+    {
+      "path": "research/v7/window23-integration.json",
+      "sha256": "282f7eebe1c8beb44c7db5c3fecd5ef2563f75f18a4afbf67924b837f4e5efc1",
+      "bytes": 420
+    },
+    {
+      "path": "research/v7/window23-knowledge-health.txt",
+      "sha256": "bf93f67ea1dfe58182f4c71dd1f609a034debb6e81c2599949e554cb6c78863c",
+      "bytes": 237
+    },
+    {
+      "path": "research/v7/window23-knowledge-impact.json",
+      "sha256": "d5b97c094ffe6ded7db1851a81c157638b60c0454b623ddc0e5c9cf833203a4e",
+      "bytes": 666
+    },
+    {
+      "path": "research/v7/window23-knowledge-impact.txt",
+      "sha256": "d5b97c094ffe6ded7db1851a81c157638b60c0454b623ddc0e5c9cf833203a4e",
+      "bytes": 666
+    },
+    {
+      "path": "research/v7/window23-local-artifacts.json",
+      "sha256": "efbf65e8038dcde2f787976215e01f3b62f70a9aad64ee2419fc75284d5416de",
+      "bytes": 15364
+    },
+    {
+      "path": "research/v7/window23-network-ledger.json",
+      "sha256": "e29dc57bfdd4456a0277bdca76fd57b4ce7759bb19c7b3ca07499df1cba06065",
+      "bytes": 6545
+    },
+    {
+      "path": "research/v7/window23-order-test-red.txt",
+      "sha256": "b017845b5121e6b2fb159639f76d79dcf3d7912888bc8b31567a02f5fc0ad1b8",
+      "bytes": 957
+    },
+    {
+      "path": "research/v7/window23-pipeline.py",
+      "sha256": "30d3c8dbbd1177a30c60a74be279de23799fb4d6c7da5aaf995857a68d153c9c",
+      "bytes": 16434
+    },
+    {
+      "path": "research/v7/window23-postintegration-tests.txt",
+      "sha256": "80b501a031c22883dd5eca5f8d7f6579da219fda30f237a8b0a2a3142c24aa9c",
+      "bytes": 122
+    },
+    {
+      "path": "research/v7/window23-profile-red.txt",
+      "sha256": "bd8c764e8e24bdab44735a6bbbdb32c1f68f3f8063fd92b6f00d01bce96c81a9",
+      "bytes": 1125
+    },
+    {
+      "path": "research/v7/window23-red.txt",
+      "sha256": "04f84fb77f423ef2292b80e591e169d214d85b7d0f190926cf6e06b05914cb20",
+      "bytes": 928
+    },
+    {
+      "path": "research/v7/window23-replay-process.txt",
+      "sha256": "b7bc204a022c89471fad0e44611a69ec3d26276f8aa992d04c5fa18526330b81",
+      "bytes": 765
+    },
+    {
+      "path": "research/v7/window23-replay-red.txt",
+      "sha256": "f2b43b7560cea47a0ff0727431531dbde03bd347f97d33baff855e8f329e0903",
+      "bytes": 887
+    },
+    {
+      "path": "research/v7/window23-replay.json",
+      "sha256": "75c31cca545e98a9c98678110fabab65e81521060c595edba19710afc50631ab",
+      "bytes": 765
+    },
+    {
+      "path": "research/v7/window23-review.json",
+      "sha256": "347c1215573c9c978a1323a62fa653f3e6be38640a172c4ff85b1fa45c9b6d25",
+      "bytes": 663
+    },
+    {
+      "path": "research/v7/window23-run-summary.json",
+      "sha256": "01d2792c5dcb1c692bdb23c8932879ff8b9a969707fd6d708f3362edfec2391d",
+      "bytes": 2877
+    },
+    {
+      "path": "research/v7/window23-smoke-contract.json",
+      "sha256": "a28584636f042d643afd4f0e668bf92416733a9b9dbd6a698875f111f2341d91",
+      "bytes": 2404
+    },
+    {
+      "path": "research/v7/window23-targeted-tests.txt",
+      "sha256": "34a9c5e2c74db6392c4096d5871343d5073084eb05561a62a77a07904abe6108",
+      "bytes": 158
+    }
+  ],
+  "final_checks": {
+    "W22_originals_unchanged": 78,
+    "W23_localfiles": 55,
+    "raw_payloads_staged": false,
+    "W19_operations": 0,
+    "main_clean": true
+  }
+}

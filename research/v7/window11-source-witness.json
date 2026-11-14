@@ -1,0 +1,11 @@
+{
+  "schema": "window11-source-version-witness-v1",
+  "source_commit": "e28ac62ed95007e246185c5c2a134d17a5d0e08b",
+  "cpu_observed_source_head": "f00bebab33cdeaa75b8401c6a6988dfaa3d3e0e7",
+  "cpu_source_was_task_dirty": true,
+  "cpu_source_hashes_committed_unchanged": true,
+  "cpu_sources_verified": 4,
+  "l2_sources_verified": 7,
+  "current_l2_evidence": "research/v7/window11-l2-runtime-evidence.json",
+  "note": "Commit binds exactly the source content used; does not pretend runtime HEAD was already this commit."
+}

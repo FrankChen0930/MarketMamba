@@ -1,0 +1,27 @@
+{
+  "status": "ACCEPTED",
+  "authority": "HUMAN",
+  "recorded_on": "2026-10-21",
+  "source": "Human /goal Market Mamba V7 — Final H0 Integration & Portfolio History Closure",
+  "verbatim_decision": "我接受 Market Mamba V7 Portfolio History 的限定 Product Slice UX Closure，並批准將新的固定候選整合至 WSL 本機 development main。",
+  "approved_candidate": "4a66928aa4c9bd8a1ddf99a5b42866e9b22efb74",
+  "expected_main": "83a6a2e6f4a56db318ee07e7e737cc01de3ce48e",
+  "scope": [
+    "CPU Window01/02",
+    "PORT01–04",
+    "UX01–04",
+    "UX Final Closure",
+    "Timeline Font Visibility correction",
+    "WSL local main ff-only and separate documentation closure"
+  ],
+  "excludes": [
+    "remote push",
+    "Windows operational checkout",
+    "production deployment/scheduling",
+    "H2 research correctness or real-data/model admission",
+    "GPU/Colab/training",
+    "Strict Phase0 PASS"
+  ],
+  "conditions": "Exact identity/parent/ancestry/clean/provenance; necessary pre/post regression and Chrome; stop on material mismatch",
+  "result_record": "research/v7/portfolio-h0-integration-closure.json"
+}

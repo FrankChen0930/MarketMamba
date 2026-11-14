@@ -1,0 +1,805 @@
+{
+  "observed_at": "2026-10-24T17:16:24.419423+00:00",
+  "files": [
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/CLOSED.json",
+      "bytes": 202,
+      "sha256": "2fa06f8bb09157a911fccf5200b90931059581e598080e1534fe3103ebf33e36",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/claims/01.json",
+      "bytes": 311,
+      "sha256": "bdc5c67bdbf0730eede00aaa2bb1d89098f2276aafc8393ab8549331391f0235",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/claims/02.json",
+      "bytes": 240,
+      "sha256": "fad18dc4e14c30353daaf5d64a355ee496999687b86ca8beb16a7ac1a33aa84e",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/claims/03.json",
+      "bytes": 245,
+      "sha256": "055e93cdca1162346a485019fa1588ae5c59af14d4587be9f725886ad1f43dc6",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/claims/04.json",
+      "bytes": 247,
+      "sha256": "4bc25bcf0bcd17583dfd9c418622562695cd34c5aa9bf7f469b584ffef490421",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/claims/05.json",
+      "bytes": 311,
+      "sha256": "70f7c8e113946997d9635cda6f96c4998f38d7e2acc6a26a090583d24c1ecd93",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/claims/06.json",
+      "bytes": 311,
+      "sha256": "1c4843ad760813d84dfb3f6c29591d057925e1ad507ac5d23f95f7f2e833c31b",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/claims/07.json",
+      "bytes": 311,
+      "sha256": "af1b9eeddcdbe5f110bcc5ce2e83f2257c8a501ffd4295f654f55865145d953e",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/claims/08.json",
+      "bytes": 311,
+      "sha256": "6fd14f86ed40d3b216fe52413c42a179b1bcebaf36880ef42bed9e7aa12d3fde",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/claims/09.json",
+      "bytes": 311,
+      "sha256": "8cdde9db6142325adb343295a37cecd0152652d558af2c57d8a106b31df6e4d4",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/claims/10.json",
+      "bytes": 312,
+      "sha256": "ceb4da2d78bdc0a476a8f53339c146913ac2c01caa5dd6ca97596f60f96074c7",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/claims/11.json",
+      "bytes": 312,
+      "sha256": "52ce3e6bbfa35275348f686103c399d8a5993b84d3f005a910082cdf15bbbb0c",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/claims/12.json",
+      "bytes": 312,
+      "sha256": "5e0e62577cb8c306467fe5e6ce02d2b5ea9caea25a4d2b57d0f79ce778b0682e",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/claims/13.json",
+      "bytes": 312,
+      "sha256": "bfc3663851682992bc0a4a2a2dbc56fb038a3c26aeee5f3925aad9366e8a5666",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/claims/14.json",
+      "bytes": 312,
+      "sha256": "a7630e4f5a860c52b553b8915f6c0abb55e4822f29a54205e3fe3ef9bdf3d548",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/claims/15.json",
+      "bytes": 312,
+      "sha256": "fca8d46feef27b19c7b3b8d1cdae40a14c39a1578ae57c5c20f6f608ac8a3516",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/claims/16.json",
+      "bytes": 312,
+      "sha256": "983f7f3f97f40fbe3d67f50cb9baf7fdf225530ca337d2198367796ea6f97bf3",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/claims/17.json",
+      "bytes": 312,
+      "sha256": "b41eea4d87ad5ad9982848eb43404895a2aabc1f0550c99353326bd566f360a6",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/claims/18.json",
+      "bytes": 313,
+      "sha256": "570b1170406a7d12b88d877990983b28560c203ab9a6086622efd7c76473a805",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/license-source/manifests/76ae904c465d567483bee24d72655028278c67bc077cc4ca94e9cb20a8ea7707-2026-10-24T162952.242177p0000.json",
+      "bytes": 731,
+      "sha256": "db78762391fe885149ea11e18f1a3debacbdd7815e8a0858ac05cc6448543e52",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/license-source/manifests/e5777c443174d4034e38637b86bfc3220cb6f4fc6d3028281a5a3d5c0cc83388-2026-10-24T162952.766979p0000.json",
+      "bytes": 731,
+      "sha256": "da9ef3559c9a28d3fa403ec2a66d32dcf2a5388961f5f09420444a249e344522",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/license-source/manifests/e7fab6489d57947a26dbc4fde322d52857174ed5e2c3189bcb0c94b5753d6e49-2026-10-24T162950.924416p0000.json",
+      "bytes": 728,
+      "sha256": "7d5382127c6012e367f24e768379ae0a473962db8287a48c67cec735a83a15c6",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/license-source/raw/1c0e6f88268472474087ba56fade2ed57eabadd12aeec9dbc91f2e96a7df68ee.bin",
+      "bytes": 51058,
+      "sha256": "1c0e6f88268472474087ba56fade2ed57eabadd12aeec9dbc91f2e96a7df68ee",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/license-source/raw/52fe1f750d0ea4a92643b1318c54c1bb37bed4cee1d02cb64bc62366f217a756.bin",
+      "bytes": 55625,
+      "sha256": "52fe1f750d0ea4a92643b1318c54c1bb37bed4cee1d02cb64bc62366f217a756",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/license-source/raw/d0efd60e487e6563e72b5e39a32552482257e162759191f391f06f5659b55430.bin",
+      "bytes": 61119,
+      "sha256": "d0efd60e487e6563e72b5e39a32552482257e162759191f391f06f5659b55430",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/pilot-plan.json",
+      "bytes": 1182,
+      "sha256": "fd4f2ab7c583662e8d1da22e7c973c660311892aa02788e938764040ceddc36b",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/01.json",
+      "bytes": 2132,
+      "sha256": "212e74049a6f36b4ca67006f53a49477e458a9ec87d599154802ed4512c1ab23",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/02.json",
+      "bytes": 1840,
+      "sha256": "e085a5349983f83f8b2cb4c71f7e4455edf317c71967d74dc87c1a9cec64ee13",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/03.json",
+      "bytes": 1813,
+      "sha256": "04c19e83ed54fc04926f1965905a6cdec2100473af6b1e261aa1f1064dfe1a22",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/04.json",
+      "bytes": 1792,
+      "sha256": "c2f9589afc58c564ae36cde8c60dbba9f965e656264d19f372f58019ab9901f2",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/05.json",
+      "bytes": 2132,
+      "sha256": "ea62506e9d8d78b65e31c8d1ebb1545dad30c9d274a6d4fb30eddf0e6fa14436",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/06.json",
+      "bytes": 2132,
+      "sha256": "ac78c7152f2d6aa7d91bd17847ff47bcbac43de65262a729398cdc0c47ead38a",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/07.json",
+      "bytes": 1834,
+      "sha256": "f28e87c31b618a953126143cd0fe750d05541ba543ed763ce51ce77f28b10087",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/08.json",
+      "bytes": 1834,
+      "sha256": "030c3a8fd500d58c37f371e3c9dd1bb5b1660325ae83af441b873fe8310962c9",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/09.json",
+      "bytes": 2337,
+      "sha256": "60600a42cec83efb5a5b0e4dded4ce02844fdc5d1251c71093c00c3783cd282d",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/10.json",
+      "bytes": 2117,
+      "sha256": "9450623b0d2312d2df779cdb044ac471c6759ca23889d03058f08504c7d1305e",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/11.json",
+      "bytes": 2323,
+      "sha256": "de73b88e8e93d2b05df34d55373d4cabfca654cdb6a8e7d5c65021bbc1b6f629",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/12.json",
+      "bytes": 2133,
+      "sha256": "459434e305c1712eef52ef98cf63d94a40ebf7a7e213d7a66847a04f8a9f6379",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/13.json",
+      "bytes": 2133,
+      "sha256": "f3374eaaf6df345c9a9c0f6ae9a079ac2ea5c661c73f09d153d2ab24273dc4af",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/14.json",
+      "bytes": 2157,
+      "sha256": "f72b9df0d42c556ef7a7e363ef79c6500f9dea6d16a5d939166d63a842e1891a",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/15.json",
+      "bytes": 2117,
+      "sha256": "d34327d30024f0ecabc26040210e50007deffa24971e9de31327c54f031ba239",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/16.json",
+      "bytes": 2117,
+      "sha256": "95a0fb603a01e7e29e4895c7ae75f6768e7d607fcdd2561350ad83bc2ce4f419",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/17.json",
+      "bytes": 2133,
+      "sha256": "c4655a189960b4ef96c79bbfc066f02219a54a1399e53bc9db0c7f0364249372",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/records/18.json",
+      "bytes": 2134,
+      "sha256": "1b24dc2a3527d89cf27c1dd7d52175a6fbbacb0e319b61252d49bc987aa838c6",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/manifests/1c9b650345616201949a06f8755a99ebebd85bec7b3e7e682040fc72141d2f3f-2026-10-24T170439.061008p0000.json",
+      "bytes": 855,
+      "sha256": "fc7edd73fb60ddc4c51f455d2971cdccd179c3cc00926464305635e5ab2ed736",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/manifests/233bd138773ebcca19fd7beb6e3461ffb679337cb77369f353922f2b091b9423-2026-10-24T170436.671402p0000.json",
+      "bytes": 853,
+      "sha256": "e57da33d5127d6f0f699290f11478315eae2e7e3dfe985465de61d870dc411f5",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/manifests/432c72ac04e44b5fb3416c585da47b1491b6864f6f36a9d68f43220d4eae8a65-2026-10-24T170107.334889p0000.json",
+      "bytes": 769,
+      "sha256": "ebc357b9958fa7c0f0c02986301bda32ce5dfab020f5c4dea39e0e4876a9b2b5",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/manifests/6022815a991e0d66e74d386c648a3517e19017ff236b4f0e542a779d1c3376bb-2026-10-24T170437.826886p0000.json",
+      "bytes": 855,
+      "sha256": "9f20a38d14565169890b2f550b89ce6b103698099e6a2b2a9b20a3875c09ab29",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/manifests/62a537f7f74c1e57ab152186ea4c53f30b456a4861cfd603b1cb68f4c35c8d3d-2026-10-24T170436.369374p0000.json",
+      "bytes": 853,
+      "sha256": "e7789cf6fb00761c6f86ca8cc324265aa95f2a5f0e4b47aa39db14db56381e2a",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/manifests/679d53be6124c9216ad78968d75ba79707abf8f9b4a3aa1f3cd3060d8df19992-2026-10-24T170438.120600p0000.json",
+      "bytes": 855,
+      "sha256": "32bb997765c84edae142c5d328e5ba4ee77cebf0eab1bda6884a7d2396d29e96",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/manifests/86495b921a3a25b562611ad82135a2cef0b6401f7a6bb9e589e733829b6817d8-2026-10-24T170438.425931p0000.json",
+      "bytes": 855,
+      "sha256": "1ce302ac95d75e0bf349eba6a5b48cbb90083dc0d593654d9c86aa078a58e28d",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/manifests/952dd6ea217b242e861acd27103203882b69ff8ee1c7c72836f845afedb64dd3-2026-10-24T170438.761726p0000.json",
+      "bytes": 855,
+      "sha256": "373dcbeaded2f02986f5e6adf057178257aa5b94c70fcfc2211c6681455e0f9e",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/manifests/97cfde6fc5052c447fd3e1352816069deed1c4f4f1cb851d6785af72e59f6074-2026-10-24T170437.222246p0000.json",
+      "bytes": 855,
+      "sha256": "fdc7a61de587d93786c1a8786e684bcdbc4b9c7d054e8307be7a21fc65e756ea",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/manifests/994c1d52848b2df5eeb13a80236fd1818c13b38965bf5aad6ccea6211c00fda5-2026-10-24T165937.479077p0000.json",
+      "bytes": 855,
+      "sha256": "0aa8c8fa453d82a4490c9e24f1456c0da9f0d612b254861042765297c4d5aee0",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/manifests/994c1d52848b2df5eeb13a80236fd1818c13b38965bf5aad6ccea6211c00fda5-2026-10-24T170542.858645p0000.json",
+      "bytes": 855,
+      "sha256": "20220c7b4ff412faac64a9f0e5fab39255ae34d2aaf20ce9ae6872341d61a503",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/manifests/a6f05f698ae7bba279fad68c04f6f3e3592c354bdffbf16757e272120ed2c514-2026-10-24T170435.780144p0000.json",
+      "bytes": 855,
+      "sha256": "7bc6450e93895094fef470e61cd6470e010527132a4b1ac66409b96911558712",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/manifests/b223c987aee868f98ef0de4d17948a7f1bc0719373034026e65f0209c4a939e7-2026-10-24T170436.935776p0000.json",
+      "bytes": 855,
+      "sha256": "bc35ea17c71d76d22b207dccde1bc4b6ed46a8e4ab55eaa31b47abc26b7170af",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/manifests/ca6b0b7ba938c04002a965553ff0a93bcbdea7d97e893222dbfe181400cf5e20-2026-10-24T170437.515267p0000.json",
+      "bytes": 855,
+      "sha256": "92de200b2616b3108094259d48a2be009d7375571da8ea307eebe45606abcd6b",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/manifests/e4e5ae51911c7c324d30ad811f601b4c9fe54c4d3a10ed991ea79d1bbfb0399e-2026-10-24T170051.505165p0000.json",
+      "bytes": 765,
+      "sha256": "6fc5f77cef9efeb06028e890abb7c74b79f736367882487bbc7563cac9a982ad",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/manifests/eca5e2e725956caa87a1330c6be27742875acf33d9a9f8ddb93f0d68f45d1707-2026-10-24T170436.079999p0000.json",
+      "bytes": 855,
+      "sha256": "cd1f5d376c163fbad5f1145f2da75550f4f44b4a4f3abf14e0495f28727b99d9",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/manifests/ee5dfaded7c873118eb0b4e7f4d658c8daa1e59a0bc7bfbe181d37d0b135511c-2026-10-24T170439.348588p0000.json",
+      "bytes": 855,
+      "sha256": "b339687c2e53077ac9b7099a52e8a17d747225f70b8d2446d7eee8a762bce2f2",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/manifests/f60e50a6f3ef5864bfecde65ad73deb83c6217983798b6e41429ac1daac251e6-2026-10-24T170123.820313p0000.json",
+      "bytes": 772,
+      "sha256": "61924066ae243023a45e895de01f10deed3b2e2190d0cbb401edbc7f9580ded2",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/raw/0116bc13915b80a12ef5a6e79bf52b17ca52708b0dd264b1464bc3dc31d5e82c.json",
+      "bytes": 1693,
+      "sha256": "0116bc13915b80a12ef5a6e79bf52b17ca52708b0dd264b1464bc3dc31d5e82c",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/raw/09cfb5cf3b98e6e6cf9ae532ba0f75a38df714c9f37a1b01829772b2d58b2784.json",
+      "bytes": 603178,
+      "sha256": "09cfb5cf3b98e6e6cf9ae532ba0f75a38df714c9f37a1b01829772b2d58b2784",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/raw/105e01cf65cdbe0172f5a95f73249cccb5cd2ceab720caee016e920bc2b3f3c2.json",
+      "bytes": 1817,
+      "sha256": "105e01cf65cdbe0172f5a95f73249cccb5cd2ceab720caee016e920bc2b3f3c2",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/raw/10966c633a664900f78c40721265c4e7c3b0481a009bd4d927697617b415cfd6.json",
+      "bytes": 152631,
+      "sha256": "10966c633a664900f78c40721265c4e7c3b0481a009bd4d927697617b415cfd6",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/raw/20399e159c71fe56ed8d595ad349093a08ef48178b3b0423a51d2dbf1d713da2.json",
+      "bytes": 1689,
+      "sha256": "20399e159c71fe56ed8d595ad349093a08ef48178b3b0423a51d2dbf1d713da2",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/raw/302ca98507950f042e9546becf4357dc5500c362a89242cb00d081aa3a62e6a0.json",
+      "bytes": 1685,
+      "sha256": "302ca98507950f042e9546becf4357dc5500c362a89242cb00d081aa3a62e6a0",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/raw/4449ab2b7f86ee13839a0497a420215c1e65ed905180433f4ec1a73e6dbf20bf.json",
+      "bytes": 1722,
+      "sha256": "4449ab2b7f86ee13839a0497a420215c1e65ed905180433f4ec1a73e6dbf20bf",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/raw/6e7c2555a1cac86e59bbb7df941b4485f9f57052a772dc16eb652807692a891a.json",
+      "bytes": 1819,
+      "sha256": "6e7c2555a1cac86e59bbb7df941b4485f9f57052a772dc16eb652807692a891a",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/raw/90100557b4c105cfa6d8c409cc7ecc55405ea07d912fef821fd3f60acd26f759.json",
+      "bytes": 1918,
+      "sha256": "90100557b4c105cfa6d8c409cc7ecc55405ea07d912fef821fd3f60acd26f759",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/raw/915b2f5f701eef2f9fa7749e09fa43105dc7ee465734cf9580b68c12aab11a54.json",
+      "bytes": 1837,
+      "sha256": "915b2f5f701eef2f9fa7749e09fa43105dc7ee465734cf9580b68c12aab11a54",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/raw/b00b3e92f4306ff7c2a6047e85a902b200ec3604d567d95aaec5bd9c1600709f.json",
+      "bytes": 1795,
+      "sha256": "b00b3e92f4306ff7c2a6047e85a902b200ec3604d567d95aaec5bd9c1600709f",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/raw/b173c003062465857bbedbc9dce04da9d0a19c51af177a61ea5d5ffc93bd4f0f.json",
+      "bytes": 1643,
+      "sha256": "b173c003062465857bbedbc9dce04da9d0a19c51af177a61ea5d5ffc93bd4f0f",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/raw/bd3deae97b9bbf5496db1c19da707df924ec244a8568f606429c0a6532ddca72.json",
+      "bytes": 40,
+      "sha256": "bd3deae97b9bbf5496db1c19da707df924ec244a8568f606429c0a6532ddca72",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/raw/d381e5c9bdaee8d640571cbd95303088be863fbc796c317af409355fd9c6c291.json",
+      "bytes": 60169,
+      "sha256": "d381e5c9bdaee8d640571cbd95303088be863fbc796c317af409355fd9c6c291",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/raw/de1c233755198f7bc7126ee4f125cad2b140e8faf8db5c716f6b1509c5a4f89d.json",
+      "bytes": 1762,
+      "sha256": "de1c233755198f7bc7126ee4f125cad2b140e8faf8db5c716f6b1509c5a4f89d",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/snapshots/raw/e595ded127e849c6bc07f19996a7b6f6121b98614a93dcd83eae7283f3cb4be9.json",
+      "bytes": 1597,
+      "sha256": "e595ded127e849c6bc07f19996a7b6f6121b98614a93dcd83eae7283f3cb4be9",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/source/v7_finmind_proof.py",
+      "bytes": 10043,
+      "sha256": "be7052834fb57479c08c10a368493b99105fc35a9797513f42fa9cce30941444",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/source-license-binding.json",
+      "bytes": 4839,
+      "sha256": "992056d7c5f3cf0050561259fa4ee3360afedb9dd07e4c72612cac80364f97d7",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof/source-reviewed/v7_finmind_proof.py",
+      "bytes": 11297,
+      "sha256": "14aa7a4623c45f9400d08faf0147316c28735fd8e179f922f80143e37ed274f7",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/records/01.json",
+      "bytes": 2132,
+      "sha256": "212e74049a6f36b4ca67006f53a49477e458a9ec87d599154802ed4512c1ab23",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/records/02.json",
+      "bytes": 1840,
+      "sha256": "e085a5349983f83f8b2cb4c71f7e4455edf317c71967d74dc87c1a9cec64ee13",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/records/03.json",
+      "bytes": 1813,
+      "sha256": "04c19e83ed54fc04926f1965905a6cdec2100473af6b1e261aa1f1064dfe1a22",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/records/04.json",
+      "bytes": 1792,
+      "sha256": "c2f9589afc58c564ae36cde8c60dbba9f965e656264d19f372f58019ab9901f2",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/records/05.json",
+      "bytes": 2132,
+      "sha256": "ea62506e9d8d78b65e31c8d1ebb1545dad30c9d274a6d4fb30eddf0e6fa14436",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/records/06.json",
+      "bytes": 2132,
+      "sha256": "ac78c7152f2d6aa7d91bd17847ff47bcbac43de65262a729398cdc0c47ead38a",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/records/07.json",
+      "bytes": 1834,
+      "sha256": "f28e87c31b618a953126143cd0fe750d05541ba543ed763ce51ce77f28b10087",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/records/08.json",
+      "bytes": 1834,
+      "sha256": "030c3a8fd500d58c37f371e3c9dd1bb5b1660325ae83af441b873fe8310962c9",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/records/09.json",
+      "bytes": 2337,
+      "sha256": "60600a42cec83efb5a5b0e4dded4ce02844fdc5d1251c71093c00c3783cd282d",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/records/10.json",
+      "bytes": 2117,
+      "sha256": "9450623b0d2312d2df779cdb044ac471c6759ca23889d03058f08504c7d1305e",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/records/11.json",
+      "bytes": 2323,
+      "sha256": "de73b88e8e93d2b05df34d55373d4cabfca654cdb6a8e7d5c65021bbc1b6f629",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/records/12.json",
+      "bytes": 2133,
+      "sha256": "459434e305c1712eef52ef98cf63d94a40ebf7a7e213d7a66847a04f8a9f6379",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/records/13.json",
+      "bytes": 2133,
+      "sha256": "f3374eaaf6df345c9a9c0f6ae9a079ac2ea5c661c73f09d153d2ab24273dc4af",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/records/14.json",
+      "bytes": 2157,
+      "sha256": "f72b9df0d42c556ef7a7e363ef79c6500f9dea6d16a5d939166d63a842e1891a",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/records/15.json",
+      "bytes": 2117,
+      "sha256": "d34327d30024f0ecabc26040210e50007deffa24971e9de31327c54f031ba239",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/records/16.json",
+      "bytes": 2117,
+      "sha256": "95a0fb603a01e7e29e4895c7ae75f6768e7d607fcdd2561350ad83bc2ce4f419",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/records/17.json",
+      "bytes": 2133,
+      "sha256": "c4655a189960b4ef96c79bbfc066f02219a54a1399e53bc9db0c7f0364249372",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/records/18.json",
+      "bytes": 2134,
+      "sha256": "1b24dc2a3527d89cf27c1dd7d52175a6fbbacb0e319b61252d49bc987aa838c6",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/manifests/1c9b650345616201949a06f8755a99ebebd85bec7b3e7e682040fc72141d2f3f-2026-10-24T170439.061008p0000.json",
+      "bytes": 855,
+      "sha256": "fc7edd73fb60ddc4c51f455d2971cdccd179c3cc00926464305635e5ab2ed736",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/manifests/233bd138773ebcca19fd7beb6e3461ffb679337cb77369f353922f2b091b9423-2026-10-24T170436.671402p0000.json",
+      "bytes": 853,
+      "sha256": "e57da33d5127d6f0f699290f11478315eae2e7e3dfe985465de61d870dc411f5",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/manifests/432c72ac04e44b5fb3416c585da47b1491b6864f6f36a9d68f43220d4eae8a65-2026-10-24T170107.334889p0000.json",
+      "bytes": 769,
+      "sha256": "ebc357b9958fa7c0f0c02986301bda32ce5dfab020f5c4dea39e0e4876a9b2b5",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/manifests/6022815a991e0d66e74d386c648a3517e19017ff236b4f0e542a779d1c3376bb-2026-10-24T170437.826886p0000.json",
+      "bytes": 855,
+      "sha256": "9f20a38d14565169890b2f550b89ce6b103698099e6a2b2a9b20a3875c09ab29",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/manifests/62a537f7f74c1e57ab152186ea4c53f30b456a4861cfd603b1cb68f4c35c8d3d-2026-10-24T170436.369374p0000.json",
+      "bytes": 853,
+      "sha256": "e7789cf6fb00761c6f86ca8cc324265aa95f2a5f0e4b47aa39db14db56381e2a",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/manifests/679d53be6124c9216ad78968d75ba79707abf8f9b4a3aa1f3cd3060d8df19992-2026-10-24T170438.120600p0000.json",
+      "bytes": 855,
+      "sha256": "32bb997765c84edae142c5d328e5ba4ee77cebf0eab1bda6884a7d2396d29e96",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/manifests/86495b921a3a25b562611ad82135a2cef0b6401f7a6bb9e589e733829b6817d8-2026-10-24T170438.425931p0000.json",
+      "bytes": 855,
+      "sha256": "1ce302ac95d75e0bf349eba6a5b48cbb90083dc0d593654d9c86aa078a58e28d",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/manifests/952dd6ea217b242e861acd27103203882b69ff8ee1c7c72836f845afedb64dd3-2026-10-24T170438.761726p0000.json",
+      "bytes": 855,
+      "sha256": "373dcbeaded2f02986f5e6adf057178257aa5b94c70fcfc2211c6681455e0f9e",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/manifests/97cfde6fc5052c447fd3e1352816069deed1c4f4f1cb851d6785af72e59f6074-2026-10-24T170437.222246p0000.json",
+      "bytes": 855,
+      "sha256": "fdc7a61de587d93786c1a8786e684bcdbc4b9c7d054e8307be7a21fc65e756ea",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/manifests/994c1d52848b2df5eeb13a80236fd1818c13b38965bf5aad6ccea6211c00fda5-2026-10-24T165937.479077p0000.json",
+      "bytes": 855,
+      "sha256": "0aa8c8fa453d82a4490c9e24f1456c0da9f0d612b254861042765297c4d5aee0",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/manifests/994c1d52848b2df5eeb13a80236fd1818c13b38965bf5aad6ccea6211c00fda5-2026-10-24T170542.858645p0000.json",
+      "bytes": 855,
+      "sha256": "20220c7b4ff412faac64a9f0e5fab39255ae34d2aaf20ce9ae6872341d61a503",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/manifests/a6f05f698ae7bba279fad68c04f6f3e3592c354bdffbf16757e272120ed2c514-2026-10-24T170435.780144p0000.json",
+      "bytes": 855,
+      "sha256": "7bc6450e93895094fef470e61cd6470e010527132a4b1ac66409b96911558712",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/manifests/b223c987aee868f98ef0de4d17948a7f1bc0719373034026e65f0209c4a939e7-2026-10-24T170436.935776p0000.json",
+      "bytes": 855,
+      "sha256": "bc35ea17c71d76d22b207dccde1bc4b6ed46a8e4ab55eaa31b47abc26b7170af",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/manifests/ca6b0b7ba938c04002a965553ff0a93bcbdea7d97e893222dbfe181400cf5e20-2026-10-24T170437.515267p0000.json",
+      "bytes": 855,
+      "sha256": "92de200b2616b3108094259d48a2be009d7375571da8ea307eebe45606abcd6b",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/manifests/e4e5ae51911c7c324d30ad811f601b4c9fe54c4d3a10ed991ea79d1bbfb0399e-2026-10-24T170051.505165p0000.json",
+      "bytes": 765,
+      "sha256": "6fc5f77cef9efeb06028e890abb7c74b79f736367882487bbc7563cac9a982ad",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/manifests/eca5e2e725956caa87a1330c6be27742875acf33d9a9f8ddb93f0d68f45d1707-2026-10-24T170436.079999p0000.json",
+      "bytes": 855,
+      "sha256": "cd1f5d376c163fbad5f1145f2da75550f4f44b4a4f3abf14e0495f28727b99d9",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/manifests/ee5dfaded7c873118eb0b4e7f4d658c8daa1e59a0bc7bfbe181d37d0b135511c-2026-10-24T170439.348588p0000.json",
+      "bytes": 855,
+      "sha256": "b339687c2e53077ac9b7099a52e8a17d747225f70b8d2446d7eee8a762bce2f2",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/manifests/f60e50a6f3ef5864bfecde65ad73deb83c6217983798b6e41429ac1daac251e6-2026-10-24T170123.820313p0000.json",
+      "bytes": 772,
+      "sha256": "61924066ae243023a45e895de01f10deed3b2e2190d0cbb401edbc7f9580ded2",
+      "artifact_class": "CANONICAL_SCOPED_EVIDENCE"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/raw/0116bc13915b80a12ef5a6e79bf52b17ca52708b0dd264b1464bc3dc31d5e82c.json",
+      "bytes": 1693,
+      "sha256": "0116bc13915b80a12ef5a6e79bf52b17ca52708b0dd264b1464bc3dc31d5e82c",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/raw/09cfb5cf3b98e6e6cf9ae532ba0f75a38df714c9f37a1b01829772b2d58b2784.json",
+      "bytes": 603178,
+      "sha256": "09cfb5cf3b98e6e6cf9ae532ba0f75a38df714c9f37a1b01829772b2d58b2784",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/raw/105e01cf65cdbe0172f5a95f73249cccb5cd2ceab720caee016e920bc2b3f3c2.json",
+      "bytes": 1817,
+      "sha256": "105e01cf65cdbe0172f5a95f73249cccb5cd2ceab720caee016e920bc2b3f3c2",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/raw/10966c633a664900f78c40721265c4e7c3b0481a009bd4d927697617b415cfd6.json",
+      "bytes": 152631,
+      "sha256": "10966c633a664900f78c40721265c4e7c3b0481a009bd4d927697617b415cfd6",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/raw/20399e159c71fe56ed8d595ad349093a08ef48178b3b0423a51d2dbf1d713da2.json",
+      "bytes": 1689,
+      "sha256": "20399e159c71fe56ed8d595ad349093a08ef48178b3b0423a51d2dbf1d713da2",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/raw/302ca98507950f042e9546becf4357dc5500c362a89242cb00d081aa3a62e6a0.json",
+      "bytes": 1685,
+      "sha256": "302ca98507950f042e9546becf4357dc5500c362a89242cb00d081aa3a62e6a0",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/raw/4449ab2b7f86ee13839a0497a420215c1e65ed905180433f4ec1a73e6dbf20bf.json",
+      "bytes": 1722,
+      "sha256": "4449ab2b7f86ee13839a0497a420215c1e65ed905180433f4ec1a73e6dbf20bf",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/raw/6e7c2555a1cac86e59bbb7df941b4485f9f57052a772dc16eb652807692a891a.json",
+      "bytes": 1819,
+      "sha256": "6e7c2555a1cac86e59bbb7df941b4485f9f57052a772dc16eb652807692a891a",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/raw/90100557b4c105cfa6d8c409cc7ecc55405ea07d912fef821fd3f60acd26f759.json",
+      "bytes": 1918,
+      "sha256": "90100557b4c105cfa6d8c409cc7ecc55405ea07d912fef821fd3f60acd26f759",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/raw/915b2f5f701eef2f9fa7749e09fa43105dc7ee465734cf9580b68c12aab11a54.json",
+      "bytes": 1837,
+      "sha256": "915b2f5f701eef2f9fa7749e09fa43105dc7ee465734cf9580b68c12aab11a54",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/raw/b00b3e92f4306ff7c2a6047e85a902b200ec3604d567d95aaec5bd9c1600709f.json",
+      "bytes": 1795,
+      "sha256": "b00b3e92f4306ff7c2a6047e85a902b200ec3604d567d95aaec5bd9c1600709f",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/raw/b173c003062465857bbedbc9dce04da9d0a19c51af177a61ea5d5ffc93bd4f0f.json",
+      "bytes": 1643,
+      "sha256": "b173c003062465857bbedbc9dce04da9d0a19c51af177a61ea5d5ffc93bd4f0f",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/raw/bd3deae97b9bbf5496db1c19da707df924ec244a8568f606429c0a6532ddca72.json",
+      "bytes": 40,
+      "sha256": "bd3deae97b9bbf5496db1c19da707df924ec244a8568f606429c0a6532ddca72",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/raw/d381e5c9bdaee8d640571cbd95303088be863fbc796c317af409355fd9c6c291.json",
+      "bytes": 60169,
+      "sha256": "d381e5c9bdaee8d640571cbd95303088be863fbc796c317af409355fd9c6c291",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/raw/de1c233755198f7bc7126ee4f125cad2b140e8faf8db5c716f6b1509c5a4f89d.json",
+      "bytes": 1762,
+      "sha256": "de1c233755198f7bc7126ee4f125cad2b140e8faf8db5c716f6b1509c5a4f89d",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore/snapshots/raw/e595ded127e849c6bc07f19996a7b6f6121b98614a93dcd83eae7283f3cb4be9.json",
+      "bytes": 1597,
+      "sha256": "e595ded127e849c6bc07f19996a7b6f6121b98614a93dcd83eae7283f3cb4be9",
+      "artifact_class": "EXTERNAL_LARGE_DATA"
+    }
+  ],
+  "backup_status": "BACKUP_PENDING_SAME_HOST_RESTORE_NOT_INDEPENDENT",
+  "no_cleanup": true
+}

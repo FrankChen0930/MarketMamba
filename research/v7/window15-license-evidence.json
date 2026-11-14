@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "metadata_license_requests": 3,
+  "market_payload_requests": 0,
+  "records": [
+    {
+      "url": "https://data.gov.tw/dataset/11549",
+      "retrieved_at": "2026-10-24T09:26:56.317871+00:00",
+      "manifest": "/home/frank/projects/MarketMamba/.worktrees/v7-window15-dual-track/.artifacts/window15-license-evidence/manifests/739b9a999f70128315cb04735c72b7287c653e31d8de57ce05e504abb78558f8-2026-10-24T092656.317871p0000.json",
+      "manifest_sha256": "a6c247390a75be743d49c33f786f06d2584aa0332a28e3a7f5ac3c5322735148",
+      "html_sha256": "e709a605fc615a4bda56d404035ef2151cda718d8243a3d15eb0fb30355484ee",
+      "bytes": 534668,
+      "purpose": "license/catalogue metadata evidence, not market data",
+      "license_field_observed": "政府資料開放授權條款-第1版"
+    },
+    {
+      "url": "https://data.gov.tw/dataset/11371",
+      "retrieved_at": "2026-10-24T09:26:56.862660+00:00",
+      "manifest": "/home/frank/projects/MarketMamba/.worktrees/v7-window15-dual-track/.artifacts/window15-license-evidence/manifests/59ff8557d27d2709282e4344f3b0fcf6e644ec5c9cfcf51bdcff6f1c9155a273-2026-10-24T092656.862660p0000.json",
+      "manifest_sha256": "33756577171445b9ea68d44fee15a3291128e59989cc6b3f47cf17906ab1649a",
+      "html_sha256": "09f2f0b8ce42cd5b1408f9dee0f1761a7218fbb0f9c29d51e5c28d1852d35ce4",
+      "bytes": 528512,
+      "purpose": "license/catalogue metadata evidence, not market data",
+      "license_field_observed": "政府資料開放授權條款-第1版"
+    },
+    {
+      "url": "https://data.gov.tw/license",
+      "retrieved_at": "2026-10-24T09:26:56.998739+00:00",
+      "manifest": "/home/frank/projects/MarketMamba/.worktrees/v7-window15-dual-track/.artifacts/window15-license-evidence/manifests/603b3d4054714c50adcec587c965fde0183f1914e15a01ba6f5ee52e266d5e55-2026-10-24T092656.998739p0000.json",
+      "manifest_sha256": "ff1d20cda58bd7c8f4916f596bd42b1e030cea60fb0da277ab33feba29c6d054",
+      "html_sha256": "8a11501d5e8f19808c8d57d07066533c86713b966e2c3de386fb47083a750688",
+      "bytes": 484470,
+      "purpose": "license/catalogue metadata evidence, not market data",
+      "license_field_observed": "Open Government Data License, version 1.0"
+    }
+  ],
+  "scope": "Newly archived retrievals, not reconstructed earlier responses. Public metadata/license HTML retained locally; hashes alone not restorable."
+}

@@ -1,0 +1,1 @@
+{"captured": 64, "max_price": 70, "max_total": 70, "metadata_requests": 0, "no_retry_redirect_token_fallback": true, "price_requests": 64, "raw_bytes": 7604573, "requests": 64, "shared_ledger_sha256": "ae9147838b7ff08431086f9104202bf885bd483efa9bc1a39a6ad23ef1d43e0b", "source_stopped": false, "status": "CLOSED_NO_UNUSED_BUDGET_REUSE", "unused_total": 6}

@@ -1,0 +1,37 @@
+{
+  "observed_at": "2026-11-02T13:57:26.560295+00:00",
+  "cpu_stages": [
+    {
+      "cpu_seconds": 3.8979549999999996,
+      "reserved": 300,
+      "stage": "w19-readonly-closure",
+      "status": "TERMINAL",
+      "wall_seconds": 2.705057166000188
+    },
+    {
+      "cpu_seconds": 2.2148839999999996,
+      "reserved": 300,
+      "stage": "offline-recovery-acceptance",
+      "status": "TERMINAL",
+      "wall_seconds": 2.558848164000665
+    },
+    {
+      "cpu_seconds": 3.4057749999999998,
+      "reserved": 300,
+      "stage": "independent-recovery-replay",
+      "status": "TERMINAL",
+      "wall_seconds": 1.9389696149992233
+    },
+    {
+      "cpu_seconds": 3.142285,
+      "reserved": 300,
+      "stage": "independent-recovery-replay",
+      "status": "TERMINAL",
+      "wall_seconds": 1.858110958000907
+    }
+  ],
+  "CPU_seconds": 12.660898999999999,
+  "artifact_plus_restore_bytes": 20272634,
+  "new_actual_GET_Fit_GPU_rankings_Taskchanges": 0,
+  "verification_scope": "offline stages; not aggregate agent-token billing or unrelated processes"
+}

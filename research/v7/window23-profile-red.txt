@@ -1,0 +1,17 @@
+F..................................................
+======================================================================
+FAIL: test_new_profile_is_explicit_and_never_admitted (V6.experimental.v7_retrospective_smoke_test.EngineeringBundleScopeTest.test_new_profile_is_explicit_and_never_admitted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window23-calendar-smoke/V6/experimental/v7_retrospective_smoke_test.py", line 39, in test_new_profile_is_explicit_and_never_admitted
+    bad=copy.deepcopy(m);bad['research_admitted']=True;self.assertEqual(publish_bundle(Path(d)/'bad',bad,canonical_hash(bad),f)['status'],'PUBLICATION_REJECTED')
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'INCOMPLETE' != 'PUBLICATION_REJECTED'
+- INCOMPLETE
++ PUBLICATION_REJECTED
+
+
+----------------------------------------------------------------------
+Ran 51 tests in 12.156s
+
+FAILED (failures=1)

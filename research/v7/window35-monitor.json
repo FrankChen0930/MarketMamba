@@ -1,0 +1,55 @@
+{
+  "observed_at": "2026-11-02T13:57:26.559098+00:00",
+  "source": "saved W19 runs/captures/restore + read-only Task observation,not new capture",
+  "latest": {
+    "11371": {
+      "session": "2026-11-02",
+      "retrieved_at": "2026-11-02T11:00:06.565399+00:00"
+    },
+    "11549": {
+      "session": "2026-11-02",
+      "retrieved_at": "2026-11-02T11:00:05.160035+00:00"
+    }
+  },
+  "missing_executions": [],
+  "missing_trading_sessions": [],
+  "QC_missing": 217,
+  "fatal": 0,
+  "required_W34_cohort_missing": 0,
+  "real_recoverable_candidates": 0,
+  "real_content_recovery_attempts": 0,
+  "real_network_retries": 0,
+  "actual_normal_captures_in_original_W19": 10,
+  "simulated_attempts": "separate W35 synthetic ledger only,not W19 GET budget",
+  "backup": "BACKUP_PENDING",
+  "source_halt": [],
+  "task_observation": {
+    "actions": [
+      {
+        "arguments": "--distribution Ubuntu-24.04 --user frank --cd /home/frank/projects/MarketMamba/.worktrees/v7-window19-limited-daily --exec /usr/bin/timeout --signal=TERM --kill-after=5s 150s /usr/bin/env CUDA_VISIBLE_DEVICES= PYTHONDONTWRITEBYTECODE=1 /home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/.runtimes/window11-cpu/bin/python -B -m V6.experimental.v7_daily_pilot run --root /home/frank/projects/MarketMamba/.artifacts/window19-daily-pilot --policy-sha 4264cb79697d70570d006d8f6a208d3097d2423fcbc9d96b7703b9d8b6ae265e",
+        "execute": "C:\\WINDOWS\\System32\\wsl.exe"
+      }
+    ],
+    "enabled": true,
+    "last_result": 0,
+    "last_run": "2026-11-02T19:00:01.0000000+08:00",
+    "logon_type": "Interactive",
+    "missed_runs": 0,
+    "multiple_instances": "IgnoreNew",
+    "next_run": null,
+    "observed_at": "2026-11-02T21:27:33.8781610+08:00",
+    "registered": true,
+    "start_when_available": true,
+    "state": "Ready",
+    "task_name": "MarketMamba-V7-W19-ForwardVintage-5Sessions",
+    "triggers": [
+      {
+        "enabled": true,
+        "end": "2026-11-02T23:59:59+08:00",
+        "start": "2026-10-27T19:00:00+08:00"
+      }
+    ]
+  },
+  "task_expiry_status_at_original_observation": "EXPIRING_PROTECTED_EVIDENCE",
+  "live_dispatcher": "NOT_IMPLEMENTED_OR_ACTIVATED"
+}

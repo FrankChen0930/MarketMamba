@@ -1,0 +1,9 @@
+{
+  "separate_process": true,
+  "status": "RESTORED_BYTES_HASH_AND_BUNDLE_VERIFIED",
+  "files": 56,
+  "root": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke",
+  "restore": "/home/frank/projects/MarketMamba/.artifacts/window23-restore",
+  "backup": "BACKUP_PENDING_SAME_HOST",
+  "no_overwrite": true
+}

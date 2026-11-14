@@ -1,0 +1,192 @@
+{
+  "schema_version": 1,
+  "artifact_class": "CANONICAL",
+  "branch": "development/v7-window09-artifact-replay",
+  "base": "bdea30d877fa2c5d02308f343fa5591a35616aec",
+  "status": "WINDOW_COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+  "integration": {
+    "before": "1631020bce8223ac4337c7e97473a2a3d9a555f0",
+    "after": "bdea30d877fa2c5d02308f343fa5591a35616aec",
+    "method": "ff-only",
+    "pre_tests": 101,
+    "post_tests": 101,
+    "hashes_verified": 19,
+    "cases_verified": 24,
+    "worktrees_clean": 29,
+    "independent_tests": 34,
+    "critical": 0,
+    "required": 0,
+    "main_closure_doc_commit": false
+  },
+  "U1": {
+    "red": "======================================================================\nERROR: v7_research_artifacts_test (unittest.loader._FailedTest.v7_research_artifacts_test)\n----------------------------------------------------------------------\nImportError: Failed to import test module: v7_research_artifacts_test\nTraceback (most recent call last):\n  File \"/usr/lib/python3.12/unittest/loader.py\", line 137, in loadTestsFromName\n    module = __import__(module_name)\n             ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window09-artifact-replay/V6/experimental/v7_research_artifacts_test.py\", line 5, in <module>\n    from V6.experimental.v7_research_artifacts import publish_bundle,verify_bundle,run_key\nModuleNotFoundError: No module named 'V6.experimental.v7_research_artifacts'\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (errors=1)\n",
+    "green": "----------------------------------------------------------------------\nRan 18 tests in 2.566s\n\nOK\n",
+    "rework_red": "======================================================================\nFAIL: test_external_reference_parent_traversal_is_not_allowed (V6.experimental.v7_research_artifacts_test.ArtifactPublicationTest.test_external_reference_parent_traversal_is_not_allowed)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window09-artifact-replay/V6/experimental/v7_research_artifacts_test.py\", line 90, in test_external_reference_parent_traversal_is_not_allowed\n    self.assertNotEqual(self.publish(external_roots=[allowed])['status'],'ARTIFACTS_VERIFIED')\nAssertionError: 'ARTIFACTS_VERIFIED' == 'ARTIFACTS_VERIFIED'\n\n======================================================================\nFAIL: test_manifest_and_publication_leaf_symlinks_are_refused (V6.experimental.v7_research_artifacts_test.ArtifactPublicationTest.test_manifest_and_publication_leaf_symlinks_are_refused) (leaf='manifest.json')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window09-artifact-replay/V6/experimental/v7_research_artifacts_test.py\", line 98, in test_manifest_and_publication_leaf_symlinks_are_refused\n    self.assertNotEqual(self.verify()['status'],'ARTIFACTS_VERIFIED')\nAssertionError: 'ARTIFACTS_VERIFIED' == 'ARTIFACTS_VERIFIED'\n\n======================================================================\nFAIL: test_manifest_and_publication_leaf_symlinks_are_refused (V6.experimental.v7_research_artifacts_test.ArtifactPublicationTest.test_manifest_and_publication_leaf_symlinks_are_refused) (leaf='publication.json')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window09-artifact-replay/V6/experimental/v7_research_artifacts_test.py\", line 98, in test_manifest_and_publication_leaf_symlinks_are_refused\n    self.assertNotEqual(self.verify()['status'],'ARTIFACTS_VERIFIED')\nAssertionError: 'ARTIFACTS_VERIFIED' == 'ARTIFACTS_VERIFIED'\n\n======================================================================\nFAIL: test_json_exponent_overflow_is_rejected_recursively (V6.experimental.v7_research_artifacts_test.ArtifactPublicationTest.test_json_exponent_overflow_is_rejected_recursively)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window09-artifact-replay/V6/experimental/v7_research_artifacts_test.py\", line 104, in test_json_exponent_overflow_is_rejected_recursively\n    self.assertIn('NONFINITE_JSON',self.publish()['reasons'])\nAssertionError: 'NONFINITE_JSON' not found in []\n\n----------------------------------------------------------------------\nRan 3 tests in 0.591s\n\nFAILED (failures=4)\n",
+    "tests": 20,
+    "rework_rounds": 2,
+    "review": {
+      "reviewer": "/root/independent_review",
+      "critical": 0,
+      "required_initial": 3,
+      "required_remaining": 0,
+      "independent_tests": 18,
+      "independent_final_joint_tests": 40,
+      "second_rework": "Publication-null and sources container guard; additional concurrency proof"
+    },
+    "repair": "Reject parent traversal, symlink metadata leaves, nonfinite JSON exponent floats",
+    "regression": {
+      "tests": 119,
+      "log": "----------------------------------------------------------------------\nRan 119 tests in 3.087s\n\nOK\n"
+    },
+    "commit": "79d6c556d1bb5648a40a02c3b6f0e628c6512b4a",
+    "final_container_repair_commit": "Containing U2/closure commit",
+    "second_rework_red": "======================================================================\nERROR: test_corrupt_publication_container_and_sources_return_denial (V6.experimental.v7_research_artifacts_test.ArtifactPublicationTest.test_corrupt_publication_container_and_sources_return_denial)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window09-artifact-replay/V6/experimental/v7_research_artifacts_test.py\", line 107, in test_corrupt_publication_container_and_sources_return_denial\n    self.assertNotEqual(self.verify()['status'],'ARTIFACTS_VERIFIED')\n                        ^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window09-artifact-replay/V6/experimental/v7_research_artifacts_test.py\", line 33, in verify\n    def verify(self):return verify_bundle(self.root,run_key(self.m['identity']),canonical_hash(self.m))\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window09-artifact-replay/V6/experimental/v7_research_artifacts.py\", line 124, in verify_bundle\n    m,pub=_verify_at(p,expected_manifest_sha256,external_roots)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window09-artifact-replay/V6/experimental/v7_research_artifacts.py\", line 112, in _verify_at\n    if pub.get('schema')!='v7-bundle-publication-v1' or pub.get('manifest_sha256')!=expected or pub.get('state')!='ARTIFACTS_VERIFIED':raise BundleError('PUBLICATION_EVIDENCE_MISMATCH')\n       ^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'get'\n\n----------------------------------------------------------------------\nRan 1 test in 0.147s\n\nFAILED (errors=1)\n",
+    "final_green": "----------------------------------------------------------------------\nRan 20 tests in 2.783s\n\nOK\n"
+  },
+  "U2": {
+    "status": "COMPLETE_REVIEWED",
+    "commit": "Containing U2/closure commit",
+    "red": "======================================================================\nERROR: v7_research_replay_test (unittest.loader._FailedTest.v7_research_replay_test)\n----------------------------------------------------------------------\nImportError: Failed to import test module: v7_research_replay_test\nTraceback (most recent call last):\n  File \"/usr/lib/python3.12/unittest/loader.py\", line 137, in loadTestsFromName\n    module = __import__(module_name)\n             ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window09-artifact-replay/V6/experimental/v7_research_replay_test.py\", line 9, in <module>\n    from V6.experimental.v7_research_replay import replay_bundle,restore_eligibility\nModuleNotFoundError: No module named 'V6.experimental.v7_research_replay'\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (errors=1)\n",
+    "green": "----------------------------------------------------------------------\nRan 20 tests in 7.454s\n\nOK\n",
+    "rework_red": "======================================================================\nERROR: test_malformed_nested_snapshot_has_serializable_denial (V6.experimental.v7_research_replay_test.OfflineReplayTest.test_malformed_nested_snapshot_has_serializable_denial)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window09-artifact-replay/V6/experimental/v7_research_replay_test.py\", line 100, in test_malformed_nested_snapshot_has_serializable_denial\n    r=self.replay();self.assertEqual(r['status'],'REPLAY_REJECTED');self.assertIn('REPLAY_NESTED_CONTAINER_INVALID',r['reasons']);json.dumps(r)\n      ^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window09-artifact-replay/V6/experimental/v7_research_replay_test.py\", line 65, in replay\n    def replay(self):return replay_bundle(self.root,run_key(self.m['identity']),canonical_hash(self.m))\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window09-artifact-replay/V6/experimental/v7_research_replay.py\", line 73, in replay_bundle\n    universe=sorted({r['stock_id'] for rows in raw['scores'].values() for r in rows})\n                                               ^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'values'\n\n======================================================================\nERROR: test_unknown_restore_identity_container_is_rejected (V6.experimental.v7_research_replay_test.RestoreEligibilityTest.test_unknown_restore_identity_container_is_rejected)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window09-artifact-replay/V6/experimental/v7_research_replay_test.py\", line 178, in test_unknown_restore_identity_container_is_rejected\n    args=list(self.args);args[2]=None;r=restore_eligibility(*args)\n                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window09-artifact-replay/V6/experimental/v7_research_replay.py\", line 135, in restore_eligibility\n    if not all(_sha(identity.get(k)) for k in ('contract_sha256','matrix_sha256','model_sha256')) or type(identity.get('seed')) is not int or not isinstance(identity.get('run_id'),str):raise BundleError('RESTORE_IDENTITY_INVALID')\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window09-artifact-replay/V6/experimental/v7_research_replay.py\", line 135, in <genexpr>\n    if not all(_sha(identity.get(k)) for k in ('contract_sha256','matrix_sha256','model_sha256')) or type(identity.get('seed')) is not int or not isinstance(identity.get('run_id'),str):raise BundleError('RESTORE_IDENTITY_INVALID')\n                    ^^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'get'\n\n======================================================================\nFAIL: test_missing_or_late_maturity_reaches_actual_label_gate (V6.experimental.v7_research_replay_test.OfflineReplayTest.test_missing_or_late_maturity_reaches_actual_label_gate)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window09-artifact-replay/V6/experimental/v7_research_replay_test.py\", line 123, in test_missing_or_late_maturity_reaches_actual_label_gate\n    self.assertTrue(result['reasons'][0].startswith('LABEL_ELIGIBILITY_RECHECK_MISMATCH:'),result['reasons'])\nAssertionError: False is not true : ['REPLAY_RESULT_MISMATCH:daily_metrics']\n\n----------------------------------------------------------------------\nRan 3 tests in 0.424s\n\nFAILED (failures=1, errors=2)\n",
+    "tests": 20,
+    "rework_rounds": 1,
+    "review": {
+      "reviewer": "/root/independent_review",
+      "critical": 0,
+      "required_initial": 1,
+      "required_remaining": 0,
+      "independent_tests": 20,
+      "final_joint_focused": 40
+    },
+    "repair": "Nested Mapping/list guards and restore identity; actual missing/late-label gate,6critical code source identities"
+  },
+  "runtime": {
+    "python": "3.12.3",
+    "executable": "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+    "CUDA_VISIBLE_DEVICES": "",
+    "data_env": "UNSET",
+    "inputs": "SYNTHETIC_ONLY",
+    "production_payload_access": false,
+    "code_manifest_scope": "6criticalW08sources+selectedpython/torch/numpy/pandas versions, not full transitive runtime archive"
+  },
+  "limitations": [
+    "POSIX local same-filesystem flock/rename, not distributed object storage",
+    "Caller pins compare declared identities, no source authenticity/admission",
+    "External references require explicit allowed roots and live matching bytes each verification",
+    "Generated_at is actual local publication observation, historical signal/evaluation clocks are simulated roles, not proof of historic live issuance",
+    "No training resume/reproduction implied by artifact completeness"
+  ],
+  "knowledge_health": "WARNING/noFAIL existing Governance/AuthorityDrift/LegacyDocs classes; main and candidate structural checks PASS",
+  "regression": {
+    "total_tests_passed": 141,
+    "log": "----------------------------------------------------------------------\nRan 141 tests in 10.601s\n\nOK\n",
+    "existing_tests": 101,
+    "U1": 20,
+    "U2": 20
+  },
+  "schemas": {
+    "schema_count": 2,
+    "outputs_validated": 3,
+    "validator": "system Python jsonschema Draft202012",
+    "semantic_validation": "Executable guards required beyond structure"
+  },
+  "offline_evidence": "research/v7/window09-offline-evidence.json",
+  "failure_coverage": "research/v7/window09-failure-coverage.json",
+  "capabilities": {
+    "METADATA_VERIFIED": true,
+    "EVALUATION_REPLAYABLE": true,
+    "TRAINING_RESUMABLE": false,
+    "FULL_REPRODUCTION_READY": false
+  },
+  "human_decisions_required": [
+    "Permanent storage location for large actual artifacts",
+    "Retention duration/checkpointGC policy",
+    "Formal data scope/source/availability/label and research admission policies",
+    "Complete GPU/Colab runtime acceptance",
+    "Any future Registry/Dashboard deployment"
+  ],
+  "next_checkpoint": "Containing U2/closure commit on development/v7-window09-artifact-replay. Main bdea30d held. CleanHEAD/maps/Charter/soleWindow09Backlog then window09-evidence + offline-evidence; STOP/new bounded grant required, noWindow10.",
+  "source_reuse": {
+    "V6/experimental/v7_e1_checkpoint.py": "6a1ad9523e8e23cf1ceb506b6fae0a43550a5e2b6a60e60d8832d339222f2921",
+    "V6/experimental/v7_corrected_e5_replication.py": "8c3a2b37950c5a24028cf9a2081fa6a3ea1cd89ce4be8e05b29ba1811c5d3af8",
+    "V6/experimental/v7_research_temporal.py": "1e2a776099b063470dda673d1c717678d13aba35d7194f582d2e30c437fba119",
+    "V6/experimental/v7_research_evaluation.py": "9ad8f4b1f6f6d3d6e18051c3c71c2f042a2f05ed64c4791d12ae59b862a301f3",
+    "V6/experimental/v7_research_comparison.py": "529e8d94e39b99dd18cd6ad1992be075e0f56f27124ef60191fae0a98acd9155",
+    "V6/experimental/v7_temporal_contract.py": "867f8404f81f5b97f6b42a4e5db1d0af1e8e68b2ec4a1a0e38b6277e7ebfdcc8"
+  },
+  "frozen_hashes": {
+    "research/v7/corrected-baseline-v1/feature-manifest.json": "d3b2c2d23ccc071b6e0d49ca77d27f41ade085084ea8fd3952321f5352a32547",
+    "research/v7/corrected-baseline-v1/policy.json": "ac32539b44ee80924e1c65785cfcda83d2efd7f7e289cf1ee94245879a09d115",
+    "research/v7/corrected-e5-replication-v1/incumbent-contract.json": "3cb4a5fc9c1595689366a2b6bbd49210743b9160fe0f00516622b463eaf46e85",
+    "research/v7/e1-rolling-origin-refresh-v1/experiment-contract.json": "7a59d98744ac736e915ff5f6e0e8fead2f80f5ce7f8283b467ec0464bffe8d4c"
+  },
+  "scope_accounting": {
+    "units": 2,
+    "U1_rework": 2,
+    "U2_rework": 1,
+    "additional_human_intervention": 0,
+    "roadmap_rescans": 0,
+    "E1matrix_repeat_searches": 0,
+    "untrusted_checkpoint_payloads_loaded": 0,
+    "GPU_training_largeinference": false,
+    "new_registry_or_framework": false,
+    "telemetry_snapshot": {
+      "source": "tools.get_goal",
+      "timeUsedSeconds": 1423,
+      "tokensUsed": 147410,
+      "interpretation": "Aggregate goal counter, not billing or enforced hard wallclock/token limit"
+    }
+  },
+  "closure_review": {
+    "status": "GO",
+    "reviewer": "/root/independent_review",
+    "critical": 0,
+    "required": 0,
+    "independent_tests_passed": 40,
+    "artifact_hashes_verified": 29,
+    "source_hashes_verified": 6,
+    "frozen_hashes_verified": 4,
+    "schemas_valid": 2,
+    "outputs_valid": 3,
+    "saved_bundle_replay": "PASS",
+    "safe_JSON_restore": "PASS",
+    "navigation": "PASS",
+    "protected_paths": "UNCHANGED",
+    "main": "bdea30d877fa2c5d02308f343fa5591a35616aec"
+  },
+  "artifact_hashes": {
+    "V6/experimental/v7_research_artifacts.py": "c11c1d345f5490902914721c5f85f06ab48f896128ca8056d95bfa34b9b29285",
+    "V6/experimental/v7_research_artifacts_test.py": "5ae3fb1ac820943f535fdddd62e56bfcca01f471d292a9581e6028e49f20399e",
+    "V6/experimental/v7_research_replay.py": "31305bf5388249d7458fb105503380776fc7d96e9fa4861f57f20b4a66adb060",
+    "V6/experimental/v7_research_replay_test.py": "f979a20e6a3ee54812e5e594267b8a768d76d19e472b9fa76f11611e6ee095fa",
+    "research/v7/study-run-bundle-schema.json": "d10d58f4b0cbde7c86d2e1b3904c59ea089d5c1665642f791e4b1ead4f8822a5",
+    "research/v7/offline-replay-restore-schema.json": "2d79a63efac392e9fa293adbac7904d7d57e5021c86d844791afe6a99f8c77af",
+    "research/v7/window09-offline-evidence.json": "a88e36a7ed242ca35eef76d18cadb0d3ac23f16c8f4eb9ecae10dfbb13f2f146",
+    "research/v7/window09-replay-evidence.json": "488ce4d748163d05e6c24346b794567eb738a4fabd46fe4d74cb4c4c7fa19a80",
+    "research/v7/window09-failure-coverage.json": "6b8290025ecf4f5c9a65bb045f43f50d96a3afd11b48cb1660372deabc368b3c",
+    "reports/v7_window09_artifact_replay.md": "fcc10dbf480c045dab633e78149522746556f04e3807cdf82c0836e8ea8dc8bf",
+    "research/v7/window09-synthetic-bundle/.gitignore": "f13a71acea8b24de469d68df27771337d8dd7210ccd39fd8da9865b43e070d2a",
+    "research/v7/window09-synthetic-bundle/completed/2af8cd5acc924eeb12a7abd18f124c4db2371e13ad570b4f650836bc07094070/code_manifest.json": "9a660eca38f31b0a9858cfc56f64990878479911fd824e29219fd5794bab56da",
+    "research/v7/window09-synthetic-bundle/completed/2af8cd5acc924eeb12a7abd18f124c4db2371e13ad570b4f650836bc07094070/completion_evidence.json": "adaf0c2489c7fc7b62c95290002ee65354df31f16566a9c10da6903b82b71e16",
+    "research/v7/window09-synthetic-bundle/completed/2af8cd5acc924eeb12a7abd18f124c4db2371e13ad570b4f650836bc07094070/daily_metrics.json": "2c7c799265ffaadade6323cce2673b04f9dee5d01edf858c5abdbc70ffd09725",
+    "research/v7/window09-synthetic-bundle/completed/2af8cd5acc924eeb12a7abd18f124c4db2371e13ad570b4f650836bc07094070/data_split_eligibility.json": "b03f22e35035835236cea0fc4e39233b1ac94226cfed7afd2ee9e6c9f0a4c86f",
+    "research/v7/window09-synthetic-bundle/completed/2af8cd5acc924eeb12a7abd18f124c4db2371e13ad570b4f650836bc07094070/dataset.json": "a83e9debc6729a91ddef813fe5a84c4690812fcdf18ee19a2acad99e8870ef66",
+    "research/v7/window09-synthetic-bundle/completed/2af8cd5acc924eeb12a7abd18f124c4db2371e13ad570b4f650836bc07094070/environment.json": "b144b996581cae0759a163168281bfa6e5559380d14e27fe9b717f088137ce5a",
+    "research/v7/window09-synthetic-bundle/completed/2af8cd5acc924eeb12a7abd18f124c4db2371e13ad570b4f650836bc07094070/exposure_ledger.json": "fdb5a5efa361e0f0d40b07127e3f296340fc7829de207bdd70b0b7e8d1f3275e",
+    "research/v7/window09-synthetic-bundle/completed/2af8cd5acc924eeb12a7abd18f124c4db2371e13ad570b4f650836bc07094070/manifest.json": "0927bf26cd1416e06487dec088cab889e1a113ab784cbc93597e0ea591be2f81",
+    "research/v7/window09-synthetic-bundle/completed/2af8cd5acc924eeb12a7abd18f124c4db2371e13ad570b4f650836bc07094070/paired_comparison.json": "e1117dfdb4cc0e4ca2c39417046c8b6fb05dd6ba3de0069f220e1ba62757c7cb",
+    "research/v7/window09-synthetic-bundle/completed/2af8cd5acc924eeb12a7abd18f124c4db2371e13ad570b4f650836bc07094070/predictions.json": "90a7d96babc462b8f2f6a4e5c01e3dc1eb68ebc8a36b5562dcd3c8c12a23a9c4",
+    "research/v7/window09-synthetic-bundle/completed/2af8cd5acc924eeb12a7abd18f124c4db2371e13ad570b4f650836bc07094070/publication.json": "24957192388632935c85109d3c6fe42e6ed84357d281ba9e8962bcda18a19161",
+    "research/v7/window09-synthetic-bundle/completed/2af8cd5acc924eeb12a7abd18f124c4db2371e13ad570b4f650836bc07094070/rejection_ledger.json": "dc1e777bebdbccba193cbb88593fce3abbb55ee6ab944b360ef89fa56b3202ea",
+    "research/v7/window09-synthetic-bundle/completed/2af8cd5acc924eeb12a7abd18f124c4db2371e13ad570b4f650836bc07094070/resolved_config.json": "062a808272ee716c84ec81da9cf539d6fd08a9f5e94fd13afd76af81d2c6b305",
+    "research/v7/window09-synthetic-restore/checkpoint/checkpoint.json": "4a9ae3fc12ac4d666a37b712dda696c12d10d507eae0c25199d38c6cccec85aa",
+    "research/v7/window09-synthetic-restore/checkpoint/state-best.json": "98483610e42f8b589fb79d4f498b00b1993e5ed807703f79f7cc0ffdf28b1910",
+    "research/v7/window09-synthetic-restore/checkpoint/state-latest.json": "98483610e42f8b589fb79d4f498b00b1993e5ed807703f79f7cc0ffdf28b1910",
+    "research/v7/window09-synthetic-restore/checkpoint/state-previous.json": "98483610e42f8b589fb79d4f498b00b1993e5ed807703f79f7cc0ffdf28b1910",
+    "research/v7/window09-synthetic-restore/dataset.json": "e60934755547674c17af4677d38c4c12e7cc67c77c50bc5ce099f15784362616"
+  },
+  "fixed_git_code_sources_verified": 6,
+  "complete_example_bundle_artifacts": 11,
+  "diff_check": "PASS"
+}

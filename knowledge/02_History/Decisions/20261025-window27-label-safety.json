@@ -1,0 +1,29 @@
+{
+  "decision_id": "Human-Window27-development-label-safety",
+  "authority": "Current Human Window27 request",
+  "approved": [
+    "W26 fixed local ff-only integration",
+    "Development-only raw label safety policy fixed before metrics",
+    "One W24 frozen-prediction four-group sensitivity plus independent replay"
+  ],
+  "not_approved": [
+    "formal Data/Research/Label Admission",
+    "new fit/refit/predictions",
+    "new API/event sources",
+    "W27 integration",
+    "GPU/Colab",
+    "W19/V6/production/scheduler changes"
+  ],
+  "scope": {
+    "status": "COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+    "base": "367005dfaba0988fca5e294d9b3e281408bbfce8",
+    "branch": "research/v7-window27-label-safety",
+    "freeze_commit": "e77f32d",
+    "policy_id": "W27_RAW_PRICE_DIAGNOSTIC_DEVELOPMENT_ONLY_v1",
+    "authority": "Human Window27 development-only sensitivity; not formal Data/Research/Label admission",
+    "evidence": "research/v7/window27-evidence.json",
+    "next_action": "STOP; Human larger-study policy/data/CPU decisions required"
+  },
+  "unknown_status": "Never CLEAN; no original historical vintage reconstruction required for this limited diagnostic",
+  "original_artifacts": "PRESERVED"
+}

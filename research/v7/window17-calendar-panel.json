@@ -1,0 +1,142 @@
+{
+  "evidence_class": "BOUNDED_DIAGNOSTIC_NOT_ADMITTED",
+  "calendar": {
+    "schema": "v7-capture-calendar-proposal-v1",
+    "market": "TWSE_BOUNDED_DIAGNOSTIC_NOT_ADMITTED",
+    "coverage_start": "2026-10-22",
+    "coverage_end": "2026-10-27",
+    "days": [
+      {
+        "session": "2026-10-22",
+        "state": "TRADED",
+        "evidence_ref": "W16_source_bytes_20261022_not_full_market_universe_admission",
+        "known_at": "2026-10-24T13:03:04.603327+00:00",
+        "revision_id": "w17-retrieved-v1",
+        "supersedes": null
+      },
+      {
+        "session": "2026-10-23",
+        "state": "CLOSED",
+        "evidence_ref": "TWSE_8a8216d6a0fa351b01a1638507a10203_official_title",
+        "known_at": "2026-10-24T13:03:04.603327+00:00",
+        "revision_id": "w17-retrieved-v1",
+        "supersedes": null
+      },
+      {
+        "session": "2026-10-24",
+        "state": "CLOSED",
+        "evidence_ref": "Saturday_explicit_bounded_fixture",
+        "known_at": "2026-10-24T13:03:04.603327+00:00",
+        "revision_id": "w17-retrieved-v1",
+        "supersedes": null
+      },
+      {
+        "session": "2026-10-25",
+        "state": "CLOSED",
+        "evidence_ref": "Sunday_explicit_bounded_fixture",
+        "known_at": "2026-10-24T13:03:04.603327+00:00",
+        "revision_id": "w17-retrieved-v1",
+        "supersedes": null
+      },
+      {
+        "session": "2026-10-26",
+        "state": "CLOSED",
+        "evidence_ref": "TWSE_115_annual_schedule_20261026",
+        "known_at": "2026-10-24T13:03:04.603327+00:00",
+        "revision_id": "w17-retrieved-v1",
+        "supersedes": null
+      },
+      {
+        "session": "2026-10-27",
+        "state": "SCHEDULED",
+        "evidence_ref": "Annual_schedule_candidate_subject_to_later_notice",
+        "known_at": "2026-10-24T13:03:04.603327+00:00",
+        "revision_id": "w17-retrieved-v1",
+        "supersedes": null
+      }
+    ]
+  },
+  "important": "known_at conservatively uses actual current review time; does not pretend records locally known on10/22. Test fixture uses synthetic earlier clocks separately. TPEx actual calendar qualification remains BLOCKED.",
+  "expected_asof": "2026-10-24T13:03:04.603327+00:00",
+  "next_actual_verified": false,
+  "offline_results": [
+    {
+      "session": "2026-10-22",
+      "status": "CAPTURE_PRESENT",
+      "reasons": [],
+      "missing_session": false,
+      "last_actual_session": "2026-10-22",
+      "next_scheduled_session": "2026-10-27",
+      "next_actual_verified": false,
+      "research_admitted": false,
+      "collector_activated": false,
+      "calendar_sha256": "42782a012e883d1bd3bc3f5b283034d27101b701c0d5af017c6b0e744e3a8f55",
+      "revision_id": "w17-retrieved-v1"
+    },
+    {
+      "session": "2026-10-23",
+      "status": "NON_TRADING_DAY",
+      "reasons": [],
+      "missing_session": false,
+      "last_actual_session": "2026-10-22",
+      "next_scheduled_session": "2026-10-27",
+      "next_actual_verified": false,
+      "research_admitted": false,
+      "collector_activated": false,
+      "calendar_sha256": "42782a012e883d1bd3bc3f5b283034d27101b701c0d5af017c6b0e744e3a8f55",
+      "revision_id": "w17-retrieved-v1"
+    },
+    {
+      "session": "2026-10-24",
+      "status": "NON_TRADING_DAY",
+      "reasons": [],
+      "missing_session": false,
+      "last_actual_session": "2026-10-22",
+      "next_scheduled_session": "2026-10-27",
+      "next_actual_verified": false,
+      "research_admitted": false,
+      "collector_activated": false,
+      "calendar_sha256": "42782a012e883d1bd3bc3f5b283034d27101b701c0d5af017c6b0e744e3a8f55",
+      "revision_id": "w17-retrieved-v1"
+    },
+    {
+      "session": "2026-10-25",
+      "status": "NON_TRADING_DAY",
+      "reasons": [],
+      "missing_session": false,
+      "last_actual_session": "2026-10-22",
+      "next_scheduled_session": "2026-10-27",
+      "next_actual_verified": false,
+      "research_admitted": false,
+      "collector_activated": false,
+      "calendar_sha256": "42782a012e883d1bd3bc3f5b283034d27101b701c0d5af017c6b0e744e3a8f55",
+      "revision_id": "w17-retrieved-v1"
+    },
+    {
+      "session": "2026-10-26",
+      "status": "NON_TRADING_DAY",
+      "reasons": [],
+      "missing_session": false,
+      "last_actual_session": "2026-10-22",
+      "next_scheduled_session": "2026-10-27",
+      "next_actual_verified": false,
+      "research_admitted": false,
+      "collector_activated": false,
+      "calendar_sha256": "42782a012e883d1bd3bc3f5b283034d27101b701c0d5af017c6b0e744e3a8f55",
+      "revision_id": "w17-retrieved-v1"
+    },
+    {
+      "session": "2026-10-27",
+      "status": "SCHEDULED_NOT_YET_VERIFIED",
+      "reasons": [],
+      "missing_session": false,
+      "last_actual_session": "2026-10-22",
+      "next_scheduled_session": null,
+      "next_actual_verified": false,
+      "research_admitted": false,
+      "collector_activated": false,
+      "calendar_sha256": "42782a012e883d1bd3bc3f5b283034d27101b701c0d5af017c6b0e744e3a8f55",
+      "revision_id": "w17-retrieved-v1"
+    }
+  ]
+}

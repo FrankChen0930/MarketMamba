@@ -1,0 +1,378 @@
+{
+  "schema_version": 1,
+  "artifact_class": "GENERATED",
+  "evidence_class": "OFFLINE_ENGINEERING_AND_SOURCE_REVIEW",
+  "observed_at": "2026-10-20T17:57:40.055237+00:00",
+  "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+  "candidate_branch": "integration/v7-cpu-roadmap",
+  "candidate_closure_commit": "containing strategic recovery commit; executable source fixed at source_commit",
+  "main_expected": "83a6a2e6f4a56db318ee07e7e737cc01de3ce48e",
+  "main_actual": "83a6a2e6f4a56db318ee07e7e737cc01de3ce48e",
+  "ancestry": [
+    "11ae71d1a3ea7f68ed10d5623bc9d639689e4e8b docs(e1): preserve verified recovery inventory and replay stop",
+    "585ad650c0a3fab5a1ec69348262cec317d9295c fix(v7): preserve completed portfolio state before rebalance is due",
+    "f42aef0ddc77da087fee24522b8483182cf0fd6b fix(v7): validate journal transitions before durable append",
+    "7eb9cd9027a312a06d526666e4ad31d2255ff4f2 fix(v7): isolate journal readers and verify process recovery",
+    "735ae6f9cc027505c01f2ee48bb1a27fed202db5 fix(v7): reject normalized journal quote collisions before append",
+    "cd5c83adb84a91f4baa2bba43340cc1401426983 fix(v7): reject ambiguous duplicate JSON journal members",
+    "4c388ded57062194114ea3e221d00c177eb96892 docs(v7): record final CPU window verification limits"
+  ],
+  "merge_base": "83a6a2e6f4a56db318ee07e7e737cc01de3ce48e",
+  "cherry_picks": 0,
+  "implementation_fixes_this_window": 0,
+  "candidate_source_sha256": {
+    "V6/experimental/v7_portfolio_engine.py": "0ec986ac4eda4ddaa4310bd8b8ae1c746eb62af59d3e8fd371b4729f7bc4a39c",
+    "V6/experimental/v7_portfolio_engine_test.py": "8347ac6236b4dbe0990efe8603e4e59179f356e51738b202dea8e941d2beb943",
+    "V6/experimental/v7_portfolio_journal.py": "45d2fed51a4696db6897c71f98a8de44c1e0d3f7fdac4e00b741af8505c65f5a",
+    "V6/experimental/v7_portfolio_journal_test.py": "83e1dae9634e13bdfe3550ecffa3de38549d1462539681d89b377db12ccc4911",
+    "V6/experimental/v7_portfolio_process_test.py": "ab3d6d6abca893b70cb77740265ecd93546751e0f14a887b02376a0e7aa374c7"
+  },
+  "window_artifact_checks": 19,
+  "source_catalog": [
+    {
+      "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+      "path": "research/v7/research-program.md",
+      "sha256": "cf7cc35051639fc05127d7cc80d683a4cb55ae94804034c36222f60b1d8a4213"
+    },
+    {
+      "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+      "path": "research/v7/product-architecture-alignment.md",
+      "sha256": "347752f50fbb66622693fb5eda2c5d45da54c7f8716b2d390777354ad5a02a22"
+    },
+    {
+      "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+      "path": "research/v7/research-output-contract.md",
+      "sha256": "36d1f9fce4839c079bb7f40843bf6a8546fab7cb65cd0ba162adadcfaffd0b89"
+    },
+    {
+      "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+      "path": "research/v7/historical-notes-register-20260922.md",
+      "sha256": "cfec09158f3d49d0ccb568eb317f2ac1cfe97302257eb6e72df7c3288441dbc8"
+    },
+    {
+      "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+      "path": "research/v7/experiment-hypotheses.md",
+      "sha256": "facb2da4a27535f1ad06593542627f2be1ce43e2a45d8c8040afff4ccc57ee39"
+    },
+    {
+      "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+      "path": "tasks/plan.md",
+      "sha256": "ae7b5dccd3bdd1b59dc15c2debe1f036e1b796ddb55a159b1d391957fb4c9407"
+    },
+    {
+      "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+      "path": "tasks/todo.md",
+      "sha256": "63d6c2f9727517996ac30382ef1f41811fa476f46b6fbaae52eebd224f00fdb9"
+    },
+    {
+      "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+      "path": "tasks/v7-signal-to-portfolio-validation-todo.md",
+      "sha256": "6759150992dbca13881f86c71c645b35aec896052909264f35724f55572d8457"
+    },
+    {
+      "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+      "path": "docs/superpowers/specs/2026-09-16-v7-replayable-portfolio-engine-design.md",
+      "sha256": "0da9d9dd01e133dc00d2cf813329c1b6f0c702d6860360569ab513f6b4879aad"
+    },
+    {
+      "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+      "path": "docs/superpowers/specs/2026-09-16-v7-signal-to-portfolio-validation-design.md",
+      "sha256": "23e35df7c38411c17d4de26ad1508cd6c259a46c06f091aae4993498fa030022"
+    },
+    {
+      "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+      "path": "research/production-system/implementation-roadmap.md",
+      "sha256": "516953d692b714436aefcda09fc042ef6f5c2c1c1ba09fb9539dcb6db3af6df1"
+    },
+    {
+      "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+      "path": "research/v7/system-observability-foundation-review-20260916.md",
+      "sha256": "c4dcb9b6db67d69c97f7677d8467dd9bca4e520bea4bc402cd4055bc60eb50d8"
+    },
+    {
+      "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+      "path": "research/v7/source-adoption-register-20260922.json",
+      "sha256": "63b9c817f305b63cb149465b7565e718f011a8c30ab91bf3552b5f7a1b9e667a"
+    },
+    {
+      "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+      "path": "knowledge/01_Domains/Operations.md",
+      "sha256": "738642c63ac9ac6b3cfecba6d7c7e6a1470c2a106a83b804563f7285c45a7599"
+    },
+    {
+      "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+      "path": "knowledge/01_Domains/Research.md",
+      "sha256": "d27fdfb19aa6de27b13917d72004d5cbbbc2044efa140e930775ac56f5b89bdf"
+    },
+    {
+      "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+      "path": "knowledge/01_Domains/Data.md",
+      "sha256": "4d7fdf4de856b268a0b0fd358b26ebe757f0bc7a5035a2c5eaafebc9e3e50655"
+    },
+    {
+      "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+      "path": "knowledge/01_Domains/Universe.md",
+      "sha256": "bd1f4ade2d8473e16053e6bdb67f31de1a5619afa47530d498c441115b6df49f"
+    },
+    {
+      "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+      "path": "knowledge/01_Domains/UI.md",
+      "sha256": "5fcb823b9e7d1634af74537aea462b7cdd3a61b0123318b8297fc25716e6927b"
+    },
+    {
+      "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+      "path": "knowledge/01_Domains/Models.md",
+      "sha256": "8dbeb84f661c9cee1a0e56c9d52a3dcd03d5caf6b79489cecb305fec84b88a7e"
+    },
+    {
+      "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+      "path": "knowledge/01_Domains/Features.md",
+      "sha256": "077840e2a6d3373aec91be52c25827ee7c1d1b7a95445b90ff60829248e44808"
+    },
+    {
+      "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+      "path": "knowledge/01_Domains/Labels.md",
+      "sha256": "b1d33a9290e754991fbc124f2d1cf7f80051087a062cbb26eaca5fc377d9279b"
+    },
+    {
+      "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+      "path": "knowledge/01_Domains/Execution.md",
+      "sha256": "ae7a9c660822e8135eb925b0da34385e0ff8bd9ad7232e2cff6b872f7e6a047b"
+    },
+    {
+      "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+      "path": "knowledge/01_Domains/Production.md",
+      "sha256": "199eac77f6ca9f954a8e46a0a482b31c33d096f0633d99ee20d481e8e7685ff2"
+    },
+    {
+      "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+      "path": "knowledge/01_Domains/Training.md",
+      "sha256": "7dd3be7936bf577d5d16a06c5a272c841209f6b2caaf37592c475cf60fb690ed"
+    },
+    {
+      "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+      "path": "knowledge/01_Domains/Portfolio.md",
+      "sha256": "dbaedd52fd215758467f94a5e44ee408876a1867cfc481faf3c9c9be865e3355"
+    },
+    {
+      "source_commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+      "path": "research/v7/corrected-baseline-v1/policy.json",
+      "sha256": "ac32539b44ee80924e1c65785cfcda83d2efd7f7e289cf1ee94245879a09d115"
+    },
+    {
+      "source_commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+      "path": "research/v7/corrected-baseline-v1/feature-manifest.json",
+      "sha256": "d3b2c2d23ccc071b6e0d49ca77d27f41ade085084ea8fd3952321f5352a32547"
+    },
+    {
+      "source_commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+      "path": "research/v7/corrected-baseline-v1/label-manifest.json",
+      "sha256": "fe3d5e8b497dcb55fcb04fb70eba7fa6a3904ae3f8ec7955f14d69e990c07f34"
+    },
+    {
+      "source_commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+      "path": "research/v7/corrected-baseline-v1/universe-manifest.json",
+      "sha256": "26699b41e876d89184945a211eea56a66b85f2604be77399cde147a7339dba86"
+    },
+    {
+      "source_commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+      "path": "research/v7/ohlcv-provenance-remediation-v1/readiness.json",
+      "sha256": "f294c649426ed5953aff0e3a8dcf117e6ba0b0e662da953e66d6d50ece0318cc"
+    },
+    {
+      "source_commit": "044eef73712d2189d4e0e28e3d44b352eed6b5e3",
+      "path": "research/v7/corrected-e5-replication-v1/incumbent-contract.json",
+      "sha256": "3cb4a5fc9c1595689366a2b6bbd49210743b9160fe0f00516622b463eaf46e85"
+    },
+    {
+      "source_commit": "044eef73712d2189d4e0e28e3d44b352eed6b5e3",
+      "path": "research/v7/e1-rolling-origin-refresh-v1/experiment-contract.json",
+      "sha256": "7a59d98744ac736e915ff5f6e0e8fead2f80f5ce7f8283b467ec0464bffe8d4c"
+    },
+    {
+      "source_commit": "eec63c551270f271e26a5aca831fe5b3b38e3f42",
+      "path": "research/v7/e1-rolling-origin-refresh-v1/results/result-manifest.json",
+      "sha256": "f4d63c74af623991814d301230f065818850829d69a176309bd7769c7b76a1a6"
+    },
+    {
+      "source_commit": "ef020e5075f773605a5465982a2222afc013dac5",
+      "path": "research/v7/e1-postrun-diagnostic-v1/diagnostic-summary.json",
+      "sha256": "6615742d6dfc80259e9f05055f3faae15f3e38d779542e8ac19ba465564a0a86"
+    },
+    {
+      "source_commit": "11ae71d1a3ea7f68ed10d5623bc9d639689e4e8b",
+      "path": "reports/v7_e1_evidence_recovery.md",
+      "sha256": "92fba44423cc0a241f733a3c83eefe9941473a4192bebceea896954ab0284541"
+    },
+    {
+      "source_commit": "83a6a2e6f4a56db318ee07e7e737cc01de3ce48e",
+      "path": "knowledge/02_History/Decisions/20261021-task4-human-approval.json",
+      "sha256": "fdbd3acc89bc29f970543e3bd798e144f2da9a077ec4694e855e7165c6ee9203"
+    },
+    {
+      "source_commit": "83a6a2e6f4a56db318ee07e7e737cc01de3ce48e",
+      "path": "knowledge/02_History/Decisions/20261021-task5-human-approval.json",
+      "sha256": "8e65c7e3dce51ccd8600e9344db0204102273749ca14f79369b70bdfa6a0bb9f"
+    }
+  ],
+  "validation_file": "research/v7/cpu-integration-validation-20261021.json",
+  "validation_sha256": "02821d40b1b87a7b9d0d6a60179c57b27fad7b4f74714fed5bb2aa7df63317f6",
+  "independent_review": {
+    "integration": "GO_LOCAL_CANDIDATE_ONLY",
+    "critical": 0,
+    "required": 0,
+    "old_writer_journal_sha256": "f2b40d1b9bcb49d0463bb35e80fef93a595c53f5b81b1696895986e8026636fd",
+    "roadmap": "GO_PLANNING_CANDIDATE_ONLY; zero Critical/Required; optional consumer trust clarification incorporated"
+  },
+  "runtime": {
+    "python": "3.12.3",
+    "MARKETMAMBA_DATA_ROOT": null,
+    "candidate_data_exists": false,
+    "main_data_realpath": "/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6",
+    "gpu": "not used; hidden during tests",
+    "formal_data": "not read/modified",
+    "new_training": false,
+    "model_weights": "not read/modified"
+  },
+  "worktrees": [
+    {
+      "path": "/home/frank/projects/MarketMamba",
+      "identity": [
+        "HEAD 83a6a2e6f4a56db318ee07e7e737cc01de3ce48e",
+        "branch refs/heads/main"
+      ],
+      "status": "## main...origin/main [ahead 26]"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.worktrees/e1-frozen-evidence",
+      "identity": [
+        "HEAD 11ae71d1a3ea7f68ed10d5623bc9d639689e4e8b",
+        "branch refs/heads/recovery/e1-frozen-evidence"
+      ],
+      "status": "## recovery/e1-frozen-evidence"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.worktrees/memory-lifecycle-hardening",
+      "identity": [
+        "HEAD 91db7d115a50f3add48e4a45dfd0473ad036ee8b",
+        "branch refs/heads/fix/memory-lifecycle-hardening"
+      ],
+      "status": "## fix/memory-lifecycle-hardening"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.worktrees/phase-a-task4-evidence",
+      "identity": [
+        "HEAD 1e119ef855f8fd319f774162beca0bd729d4b921",
+        "branch refs/heads/fix/phase-a-task4-evidence"
+      ],
+      "status": "## fix/phase-a-task4-evidence"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.worktrees/phase-a-task5",
+      "identity": [
+        "HEAD 89f9496b7898fa559f63742592c2e67225242161",
+        "branch refs/heads/integration/phase-a-task5"
+      ],
+      "status": "## integration/phase-a-task5"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.worktrees/v7-corrected-e5-2026-diagnostic",
+      "identity": [
+        "HEAD 044eef73712d2189d4e0e28e3d44b352eed6b5e3",
+        "branch refs/heads/feature/v7-e1-rolling-origin-refresh"
+      ],
+      "status": "## feature/v7-e1-rolling-origin-refresh"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-roadmap",
+      "identity": [
+        "HEAD 4c388ded57062194114ea3e221d00c177eb96892",
+        "branch refs/heads/integration/v7-cpu-roadmap"
+      ],
+      "status": "## integration/v7-cpu-roadmap\n M knowledge/00_Project_Map/Authority_Map.md\n M knowledge/00_Project_Map/Current_State.md\n M knowledge/00_Project_Map/Worktree_Register.md\n M knowledge/00_Project_Map/authority-map.json\n M knowledge/00_Project_Map/current-state.json\n M knowledge/01_Domains/Data.md\n M knowledge/01_Domains/Operations.md\n M knowledge/01_Domains/Portfolio.md\n M knowledge/01_Domains/Research.md\n M knowledge/01_Domains/UI.md\n M knowledge/_generated/authority-history.json\n M research/v7/research-program.md\n?? reports/v7_strategic_roadmap_recovery.md\n?? research/v7/cpu-integration-validation-20261021.json"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01",
+      "identity": [
+        "HEAD 4c388ded57062194114ea3e221d00c177eb96892",
+        "branch refs/heads/development/v7-cpu-window-01"
+      ],
+      "status": "## development/v7-cpu-window-01"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery",
+      "identity": [
+        "HEAD 0f06e368fe73b6a5e5cd80f87d1c5ec2fb2da97d",
+        "branch refs/heads/fix/v7-e1-colab-recovery"
+      ],
+      "status": "## fix/v7-e1-colab-recovery"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.worktrees/v7-e1-postrun-diagnostics",
+      "identity": [
+        "HEAD 1d8e23fb713105aaaf73fd62568a0374ab63421d",
+        "branch refs/heads/research/v7-e1-postrun-diagnostics"
+      ],
+      "status": "## research/v7-e1-postrun-diagnostics"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.worktrees/v7-historical-pit-reconstruction",
+      "identity": [
+        "HEAD f5b0ff3df7645098cc01a9eeb36f5df22c4a3e41",
+        "branch refs/heads/feature/production-phase-a-shadow-ledger"
+      ],
+      "status": "## feature/production-phase-a-shadow-ledger"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.worktrees/v7-snapshot-immutability",
+      "identity": [
+        "HEAD 63a040d306e402dbc22e8592f57f034fd4a9a863",
+        "branch refs/heads/fix/v7-snapshot-immutability"
+      ],
+      "status": "## fix/v7-snapshot-immutability"
+    }
+  ],
+  "strict_phase0": "STOP",
+  "e1_frozen_matrix": "BLOCKED",
+  "research_admission": false,
+  "human_additional_decisions": 0,
+  "new_program_approval": "NOT_GRANTED",
+  "main_merge": false,
+  "push": false,
+  "deploy": false,
+  "mas_core_execution": false,
+  "limits": [
+    "Historical results are branch-qualified; not all formal data recomputed",
+    "2 original RED log whitespace warnings remain in inherited full diff",
+    "No power-loss/network filesystem/full training or current browser verification",
+    "No aggregate token hard-cap claim; goal counters are observations only"
+  ],
+  "single_backlog": "research/v7/research-program.md#current-development-program--2026-10-21",
+  "final_checks": {
+    "source_catalog_sha256": 37,
+    "fixed_source_sha256_and_ast": 5,
+    "historical_window_hashes": 19,
+    "protected_main_artifacts": 3,
+    "historical_research_program_suffix": "PRESERVED_VERBATIM",
+    "executable_changes_after_4c388de": 0,
+    "new_changes_diff_check": "PASS",
+    "full_ancestry_diff_check": "Two known raw RED-log whitespace warnings preserved; remainder PASS",
+    "governance_tests": 23,
+    "governance_seconds": 0.07,
+    "knowledge_health": "WARNING: Governance, Authority Drift, Legacy Docs; no structural FAIL",
+    "final_navigation_review": "0 Critical, 0 Required; MD/JSON maps and domain pointers agree on single queue"
+  },
+  "goal_intermediate_observation": {
+    "threadId": "01a15a57-babe-79e2-9d27-018f19698e0e",
+    "objective": "V7 Strategic Roadmap Recovery & Autonomous Development Planning",
+    "status": "active",
+    "createdAt": 1792518421,
+    "updatedAt": 1792519115,
+    "tokensUsed": 394289,
+    "timeUsedSeconds": 688,
+    "interpretation": "API-observed counters only; not independently verified cross-agent aggregate; future automatic continuation untested"
+  },
+  "planning_artifact_sha256": {
+    "research/v7/research-program.md": "431c5e0cb3baf4055bfe54bb786608c6214585a14d93da23c698b3c833afac4e"
+  }
+}

@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window30-real-lightgbm/research/v7/window30-tests.py", line 3, in <module>
+    s=importlib.util.spec_from_file_location('w30',Path(__file__).with_name('window30-lgbm.py'));m=importlib.util.module_from_spec(s);s.loader.exec_module(m)
+                                                                                                                                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap_external>", line 991, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 1128, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1186, in get_data
+FileNotFoundError: [Errno 2] No such file or directory: '/home/frank/projects/MarketMamba/.worktrees/v7-window30-real-lightgbm/research/v7/window30-lgbm.py'

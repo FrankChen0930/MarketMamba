@@ -1,0 +1,17 @@
+F
+======================================================================
+FAIL: test_frozen_cohort_only_single_contiguous_query_and_no_old_scope (V6.experimental.v7_finmind_proof_test.Window24ScopeTest.test_frozen_cohort_only_single_contiguous_query_and_no_old_scope)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window24-expanded-pilot/V6/experimental/v7_finmind_proof_test.py", line 105, in test_frozen_cohort_only_single_contiguous_query_and_no_old_scope
+    a=request(root/'finmind',p,kind='price',fetch=f,scope='W24');self.assertEqual(a['status'],'CAPTURED')
+                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'REFUSED' != 'CAPTURED'
+- REFUSED
++ CAPTURED
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.002s
+
+FAILED (failures=1)

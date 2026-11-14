@@ -1,0 +1,34 @@
+test_calendar_conflict_unknown_timezone_and_pending_session (V6.experimental.v7_capture_readiness_test.ReadinessTest.test_calendar_conflict_unknown_timezone_and_pending_session) ... ok
+test_changed_calendar_pin_rejected (V6.experimental.v7_capture_readiness_test.ReadinessTest.test_changed_calendar_pin_rejected) ... ok
+test_invalid_captured_identity_does_not_report_present (V6.experimental.v7_capture_readiness_test.ReadinessTest.test_invalid_captured_identity_does_not_report_present) ... ok
+test_missing_day_and_other_market_do_not_inherit (V6.experimental.v7_capture_readiness_test.ReadinessTest.test_missing_day_and_other_market_do_not_inherit) ... ok
+test_real_storage_write_failure_never_success (V6.experimental.v7_capture_readiness_test.ReadinessTest.test_real_storage_write_failure_never_success) ... ok
+test_required_closure_window (V6.experimental.v7_capture_readiness_test.ReadinessTest.test_required_closure_window) ... ok
+test_revisions_are_asof_and_must_link (V6.experimental.v7_capture_readiness_test.ReadinessTest.test_revisions_are_asof_and_must_link) ... ok
+test_storage_and_backup_are_separate_no_success_on_failure (V6.experimental.v7_capture_readiness_test.ReadinessTest.test_storage_and_backup_are_separate_no_success_on_failure) ... ok
+test_unknown_or_outside_calendar_blocks (V6.experimental.v7_capture_readiness_test.ReadinessTest.test_unknown_or_outside_calendar_blocks) ... ok
+test_archive_creation_not_historical_time_and_publication_not_imputed (V6.experimental.v7_vintage_dryrun_test.VintageDryrunTest.test_archive_creation_not_historical_time_and_publication_not_imputed) ... ok
+test_changed_content_creates_revision_retains_original (V6.experimental.v7_vintage_dryrun_test.VintageDryrunTest.test_changed_content_creates_revision_retains_original) ... ok
+test_corrupt_raw_not_repaired (V6.experimental.v7_vintage_dryrun_test.VintageDryrunTest.test_corrupt_raw_not_repaired) ... ok
+test_duplicate_qc_failure_never_reports_current_attempt_success (V6.experimental.v7_vintage_dryrun_test.VintageDryrunTest.test_duplicate_qc_failure_never_reports_current_attempt_success) ... ok
+test_interruption_before_record_retry_recoverable (V6.experimental.v7_vintage_dryrun_test.VintageDryrunTest.test_interruption_before_record_retry_recoverable) ... ok
+test_late_and_recovery_not_timely (V6.experimental.v7_vintage_dryrun_test.VintageDryrunTest.test_late_and_recovery_not_timely) ... ok
+test_late_duplicate_keeps_first_but_marks_current_attempt_late (V6.experimental.v7_vintage_dryrun_test.VintageDryrunTest.test_late_duplicate_keeps_first_but_marks_current_attempt_late) ... ok
+test_missing_binding_no_retry_reconstruction (V6.experimental.v7_vintage_dryrun_test.VintageDryrunTest.test_missing_binding_no_retry_reconstruction) ... ok
+test_missing_or_corrupt_intent_not_restorable_no_retry_repair (V6.experimental.v7_vintage_dryrun_test.VintageDryrunTest.test_missing_or_corrupt_intent_not_restorable_no_retry_repair) ... ok
+test_missing_retained_then_backfill_has_own_identity (V6.experimental.v7_vintage_dryrun_test.VintageDryrunTest.test_missing_retained_then_backfill_has_own_identity) ... ok
+test_missing_snapshot_not_restorable_and_no_overwrite_repair (V6.experimental.v7_vintage_dryrun_test.VintageDryrunTest.test_missing_snapshot_not_restorable_and_no_overwrite_repair) ... ok
+test_new_content_without_previous_link_refused (V6.experimental.v7_vintage_dryrun_test.VintageDryrunTest.test_new_content_without_previous_link_refused) ... ok
+test_publish_retry_dedup_and_zero_preserved (V6.experimental.v7_vintage_dryrun_test.VintageDryrunTest.test_publish_retry_dedup_and_zero_preserved) ... ok
+test_qc_failure_never_success (V6.experimental.v7_vintage_dryrun_test.VintageDryrunTest.test_qc_failure_never_success) ... ok
+test_real_profile_and_cross_track_rejected (V6.experimental.v7_vintage_dryrun_test.VintageDryrunTest.test_real_profile_and_cross_track_rejected) ... ok
+test_source_license_identity_change_cannot_reuse_archive (V6.experimental.v7_vintage_dryrun_test.VintageDryrunTest.test_source_license_identity_change_cannot_reuse_archive) ... ok
+test_stale_or_unknown_freshness_stored_but_not_qualified (V6.experimental.v7_vintage_dryrun_test.VintageDryrunTest.test_stale_or_unknown_freshness_stored_but_not_qualified) ... ok
+test_unknown_publication_never_claims_qualified_original_forward (V6.experimental.v7_vintage_dryrun_test.VintageDryrunTest.test_unknown_publication_never_claims_qualified_original_forward) ... ok
+test_failed_publication_preserves_existing_snapshot (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_failed_publication_preserves_existing_snapshot) ... ok
+test_killed_publisher_recovers_before_and_after_manifest_commit (V6.experimental.v7_source_snapshot_test.SnapshotTest.test_killed_publisher_recovers_before_and_after_manifest_commit) ... ok
+
+----------------------------------------------------------------------
+Ran 29 tests in 3.468s
+
+OK

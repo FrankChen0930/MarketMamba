@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "artifact_class": "CANONICAL",
+  "status": "LOCAL_INTEGRATION_NOT_DEPLOYED",
+  "observed_at": "2026-10-23T08:22:00.977767+00:00",
+  "main_before": "2ee4ca83e709af64be4dd63032ba4fb47903d769",
+  "main_after_ff": "65462ec185783eedb2ba81b66cfa04783f86c6e2",
+  "closure_identity": "Containing docs-only main commit",
+  "authority": "Human Window06 StageA fixed Window05 integration; same grant next isolated proposed contract/panel/tests only",
+  "preflight_clean_worktrees": 24,
+  "source_hashes_verified": 13,
+  "protected_scope_unchanged": true,
+  "pre_tests": "----------------------------------------------------------------------\nRan 87 tests in 1.623s\n\nOK\n",
+  "post_tests": "----------------------------------------------------------------------\nRan 87 tests in 1.620s\n\nOK\n",
+  "independent_review": {
+    "reviewer": "/root/independent_review",
+    "critical": 0,
+    "required": 0,
+    "independent_tests": 13
+  },
+  "knowledge_health": "WARNING/noFAIL existing categories",
+  "boundaries": [
+    "StrictSTOP",
+    "E1matrixBLOCKED",
+    "H2NOT_APPROVED",
+    "FairEvaluationPROPOSED",
+    "NewDecisionContractPROPOSED",
+    "NoTrainingProductionDeployment"
+  ],
+  "next_scope": "Window06 isolation .worktrees/v7-window06-decision-time branch research/v7-window06-decision-time; no further merge authorized"
+}

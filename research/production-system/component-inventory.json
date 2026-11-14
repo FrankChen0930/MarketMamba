@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-09-18",
+  "audit_commit": "af8ac8229a1f558370c7f059b537c6e1a6d13723",
+  "status_definitions": {
+    "ACTIVE": "已觀察到由正式排程執行。",
+    "PARTIALLY_ACTIVE": "可用或曾正式運作，但目前停用或缺少完整控制面。",
+    "RESEARCH_ONLY": "具測試／研究證據，尚未獲准接正式路徑。",
+    "DEPRECATED": "已被取代，只保留相容或歷史用途。",
+    "DEAD": "明確禁止使用或無有效 caller。",
+    "UNKNOWN": "證據不足。"
+  },
+  "observed_runtime_state": {
+    "observed_at": "2026-09-18",
+    "active_schedule": "MarketMamba_DataFetch，平日 22:30 Asia/Taipei",
+    "active_entrypoint": "V6/scripts/v62_daily.bat --fetch-only",
+    "latest_observed_result": "2026-09-17 exit 0；10/10 daily sources fresh",
+    "disabled_schedules": ["MarketMamba_V62", "PersonalOS_Daily"]
+  },
+  "components": [
+    {"id":"scheduler.data_fetch","layer":"orchestration","status":"ACTIVE","evidence":["Windows Task Scheduler: MarketMamba_DataFetch","V6/scripts/v62_daily.bat"]},
+    {"id":"orchestrator.fetch_only","layer":"orchestration","status":"ACTIVE","evidence":["V6/run_v62_daily.py","logs/v62_daily_2026-09-17.log"]},
+    {"id":"data.daily_fetcher","layer":"data","status":"ACTIVE","evidence":["V6/marketmamba/data/fetcher.py"]},
+    {"id":"storage.raw_parquet","layer":"storage","status":"ACTIVE","evidence":["V6/data/raw"]},
+    {"id":"data.hygiene","layer":"data","status":"ACTIVE","evidence":["V6/marketmamba/data/fetcher.py","logs/v62_daily_2026-09-17.log"]},
+    {"id":"logs.file","layer":"observability","status":"ACTIVE","evidence":["V6/scripts/v62_daily.bat","logs"]},
+    {"id":"testing.operational","layer":"quality","status":"ACTIVE","evidence":["V6/scripts/run_operational_regressions.py"]},
+    {"id":"orchestrator.full_v62","layer":"orchestration","status":"PARTIALLY_ACTIVE","evidence":["V6/run_v62_daily.py","Windows Task Scheduler: MarketMamba_V62"],"note":"已實作，排程停用。"},
+    {"id":"features.v62","layer":"features","status":"PARTIALLY_ACTIVE","evidence":["V6/marketmamba/features"]},
+    {"id":"inference.v62","layer":"model","status":"PARTIALLY_ACTIVE","evidence":["V6/v62_inference.py"]},
+    {"id":"portfolio.v62","layer":"portfolio","status":"PARTIALLY_ACTIVE","evidence":["V6/v62_portfolio.py"]},
+    {"id":"performance.v62","layer":"evaluation","status":"PARTIALLY_ACTIVE","evidence":["V6/v62_performance.py"]},
+    {"id":"publish.direct_git","layer":"delivery","status":"PARTIALLY_ACTIVE","evidence":["V6/run_v62_daily.py"]},
+    {"id":"alerts.telegram","layer":"operations","status":"PARTIALLY_ACTIVE","evidence":["V6/run_v62_daily.py"]},
+    {"id":"api.fastapi","layer":"serving","status":"PARTIALLY_ACTIVE","evidence":["app/backend/main.py","app/backend/routers/v62.py"]},
+    {"id":"ui.v62","layer":"serving","status":"PARTIALLY_ACTIVE","evidence":["app/frontend","app/backend/routers/v62.py"]},
+    {"id":"health.liveness","layer":"observability","status":"PARTIALLY_ACTIVE","evidence":["app/backend/main.py"],"note":"只有 liveness，不是 production readiness。"},
+    {"id":"research.pit_contracts","layer":"research","status":"RESEARCH_ONLY","evidence":["research/v7/ohlcv-provenance-remediation-v1/readiness.json"]},
+    {"id":"research.corrected_e5","layer":"research","status":"RESEARCH_ONLY","evidence":["V6/experimental","reports/v7_corrected_e5_colab_bundle_and_training_lifecycle_audit.md"]},
+    {"id":"research.v7_portfolio","layer":"portfolio","status":"RESEARCH_ONLY","evidence":["V6/experimental/v7_portfolio_engine.py","V6/experimental/v7_portfolio_journal.py"]},
+    {"id":"legacy.v61_dual_scanner_sim","layer":"legacy","status":"DEPRECATED","evidence":["V6"]},
+    {"id":"models.generic_inference","layer":"model","status":"DEAD","evidence":["V6/marketmamba/models/inference.py"]},
+    {"id":"deploy.publisher","layer":"delivery","status":"DEAD","evidence":["V6/marketmamba/deploy/publisher.py"],"note":"未發現 active caller；刪除前仍須正式 call-graph 確認。"}
+  ],
+  "requirement_coverage": [
+    {"capability":"daily ingestion","coverage":"EXISTS_AND_USABLE"},
+    {"capability":"provider registry and provenance contract","coverage":"MISSING"},
+    {"capability":"canonical certification","coverage":"MISSING"},
+    {"capability":"feature/matrix reuse","coverage":"PARTIAL"},
+    {"capability":"model inference and portfolio","coverage":"EXISTS_NEEDS_HARDENING"},
+    {"capability":"unified run state and resumability","coverage":"MISSING"},
+    {"capability":"structured current state and incidents","coverage":"MISSING"},
+    {"capability":"atomic publication and rollback","coverage":"PARTIAL"}
+  ],
+  "summary": {"ACTIVE":7,"PARTIALLY_ACTIVE":10,"RESEARCH_ONLY":3,"DEPRECATED":1,"DEAD":2,"UNKNOWN":0}
+}

@@ -1,0 +1,61 @@
+{
+  "schema": "w32-independent-review-v1",
+  "status": "GO",
+  "critical": 0,
+  "required": 0,
+  "reviewer": "independent_review",
+  "scope": "One targeted main review; synthetic preparation and final STOP navigation only; not real shadow activation or merge authorization.",
+  "base": "67e2d25a710273646d41c0ad861b4a993593ba4d",
+  "independent_checks": {
+    "synthetic_tests_passed": 13,
+    "test_seconds": 0.184,
+    "original_and_restore_file_pairs_verified": 11,
+    "bytes_per_copy": 16123,
+    "source_code_hashes_verified": 3,
+    "W19_policy_source": "Git object hash only; no runtime access",
+    "preopen": "strict published_at<entry open; equality/late MISSED_PREOPEN/RESEARCH_ONLY",
+    "temporal": "aware session clocks, observation/retrieval/QC/execution/publication order; label maturity and no evaluation before publication",
+    "isolation": "feature/prediction fields exclude labels; caller-supplied synthetic scores only; no fit/inference/metric implementation",
+    "immutability": "idempotent equal payload; changed payload no-clobber conflict",
+    "backfill": "capture class retained; verified_forward_vintage remains false",
+    "readiness": "2026 dataset/fresh models/real serving not claimed ready",
+    "final_navigation": "Current_State, Authority_Map, sole backlog PREPARATION_COMPLETE STOP; W31 LOCAL_INTEGRATED_FIXED67e2d25",
+    "git_diff_check": "PASS"
+  },
+  "integration_review_scope": "Read saved W32 bounded integration evidence and reuse prior independent W31 review; no repetition of W31 fit or empirical metrics.",
+  "warnings": [
+    {
+      "id": "W32-W1",
+      "finding": "Synthetic supplied clocks, QC, calendar and model-stub/hash assertions establish fixture consistency only. They do not authenticate source publication, real model training cutoff, score provenance or actual durable preopen operation."
+    },
+    {
+      "id": "W32-W2",
+      "finding": "Only pinned2021–2023 evidence was checked for readiness; no verified2026 training dataset/fresh model or prospective activation. Exact source/deadline/unknown/recovery/evaluation policies remain Human decisions."
+    },
+    {
+      "id": "W32-W3",
+      "finding": "Same-host restoration is not independent backup. W31 initial healthFAIL process warning is retained, not rewritten as clean preflight."
+    }
+  ],
+  "source_pins": {
+    "window32-shadow.py": "1cb0e4e83c20d5fd0c6ce690a44e3994e3212f5326bc62244034a77eaf5bf2da",
+    "window32-shadow-tests.py": "7219d27689fa679b4584c1e5896c36bb487e7ac97c2098a06de02f985f0131d9",
+    "window32-shadow-contract.json": "db4771f8bc447e2109876e50e9763e645bec06a204b8b0e04d26c5030840e6dd",
+    "window32-readiness.json": "58347b252cfd1631083f764f82ffae4322928987522a5bd296ad1590d7d7d882",
+    "window32-integration.json": "97318081c61128c99b5620d85aa93e36b6f7edff55515fb181fc0d1af5e7ae42",
+    "window32-offline-evidence.json": "ba8f31e8c0ba680054a92de743ecf5e67b9e12692bf8c871e6af149cbff49651"
+  },
+  "remaining_required": [],
+  "reviewer_operations": {
+    "API_network": 0,
+    "GPU": 0,
+    "Fit_training": 0,
+    "real_prediction_RankIC": 0,
+    "W19_runtime_task_worktree_artifacts_access": 0,
+    "writes": [
+      "research/v7/window32-review.json"
+    ]
+  },
+  "observed_at": "2026-10-25T12:23:21.247975+00:00",
+  "tests_only_finalization": "Reviewed added 10d assertions: correct planned exit2030-01-12 remains PENDING at5d maturity then ELIGIBLE after10d availability; implementation hash unchanged. Owner reran13 tests PASS0.180s; reviewer did not rerun suite."
+}

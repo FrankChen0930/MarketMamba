@@ -1,0 +1,233 @@
+test_collision_cannot_be_treated_as_duplicate_retry (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_cannot_be_treated_as_duplicate_retry) ... FAIL
+test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) ... 
+  test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias=' A ', reverse=False, same_price=False, as_object=False) ... FAIL
+  test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias=' A ', reverse=False, same_price=False, as_object=True) ... FAIL
+  test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias=' A ', reverse=False, same_price=True, as_object=False) ... FAIL
+  test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias=' A ', reverse=False, same_price=True, as_object=True) ... FAIL
+  test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias=' A ', reverse=True, same_price=False, as_object=False) ... FAIL
+  test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias=' A ', reverse=True, same_price=False, as_object=True) ... FAIL
+  test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias=' A ', reverse=True, same_price=True, as_object=False) ... FAIL
+  test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias=' A ', reverse=True, same_price=True, as_object=True) ... FAIL
+  test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\tA\t', reverse=False, same_price=False, as_object=False) ... FAIL
+  test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\tA\t', reverse=False, same_price=False, as_object=True) ... FAIL
+  test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\tA\t', reverse=False, same_price=True, as_object=False) ... FAIL
+  test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\tA\t', reverse=False, same_price=True, as_object=True) ... FAIL
+  test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\tA\t', reverse=True, same_price=False, as_object=False) ... FAIL
+  test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\tA\t', reverse=True, same_price=False, as_object=True) ... FAIL
+  test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\tA\t', reverse=True, same_price=True, as_object=False) ... FAIL
+  test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\tA\t', reverse=True, same_price=True, as_object=True) ... FAIL
+  test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\u3000A\u3000', reverse=False, same_price=False, as_object=False) ... FAIL
+  test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\u3000A\u3000', reverse=False, same_price=False, as_object=True) ... FAIL
+  test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\u3000A\u3000', reverse=False, same_price=True, as_object=False) ... FAIL
+  test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\u3000A\u3000', reverse=False, same_price=True, as_object=True) ... FAIL
+  test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\u3000A\u3000', reverse=True, same_price=False, as_object=False) ... FAIL
+  test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\u3000A\u3000', reverse=True, same_price=False, as_object=True) ... FAIL
+  test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\u3000A\u3000', reverse=True, same_price=True, as_object=False) ... FAIL
+  test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\u3000A\u3000', reverse=True, same_price=True, as_object=True) ... FAIL
+test_hash_valid_persisted_collision_is_refused_without_repair (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_hash_valid_persisted_collision_is_refused_without_repair) ... ok
+test_unique_whitespace_key_and_empty_quotes_remain_legal (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_unique_whitespace_key_and_empty_quotes_remain_legal) ... ok
+
+======================================================================
+FAIL: test_collision_cannot_be_treated_as_duplicate_retry (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_cannot_be_treated_as_duplicate_retry)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 357, in test_collision_cannot_be_treated_as_duplicate_retry
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias=' A ', reverse=False, same_price=False, as_object=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 334, in test_collision_refuses_without_write_and_valid_retry_recovers
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias=' A ', reverse=False, same_price=False, as_object=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 334, in test_collision_refuses_without_write_and_valid_retry_recovers
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias=' A ', reverse=False, same_price=True, as_object=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 334, in test_collision_refuses_without_write_and_valid_retry_recovers
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias=' A ', reverse=False, same_price=True, as_object=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 334, in test_collision_refuses_without_write_and_valid_retry_recovers
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias=' A ', reverse=True, same_price=False, as_object=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 334, in test_collision_refuses_without_write_and_valid_retry_recovers
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias=' A ', reverse=True, same_price=False, as_object=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 334, in test_collision_refuses_without_write_and_valid_retry_recovers
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias=' A ', reverse=True, same_price=True, as_object=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 334, in test_collision_refuses_without_write_and_valid_retry_recovers
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias=' A ', reverse=True, same_price=True, as_object=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 334, in test_collision_refuses_without_write_and_valid_retry_recovers
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\tA\t', reverse=False, same_price=False, as_object=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 334, in test_collision_refuses_without_write_and_valid_retry_recovers
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\tA\t', reverse=False, same_price=False, as_object=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 334, in test_collision_refuses_without_write_and_valid_retry_recovers
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\tA\t', reverse=False, same_price=True, as_object=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 334, in test_collision_refuses_without_write_and_valid_retry_recovers
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\tA\t', reverse=False, same_price=True, as_object=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 334, in test_collision_refuses_without_write_and_valid_retry_recovers
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\tA\t', reverse=True, same_price=False, as_object=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 334, in test_collision_refuses_without_write_and_valid_retry_recovers
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\tA\t', reverse=True, same_price=False, as_object=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 334, in test_collision_refuses_without_write_and_valid_retry_recovers
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\tA\t', reverse=True, same_price=True, as_object=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 334, in test_collision_refuses_without_write_and_valid_retry_recovers
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\tA\t', reverse=True, same_price=True, as_object=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 334, in test_collision_refuses_without_write_and_valid_retry_recovers
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\u3000A\u3000', reverse=False, same_price=False, as_object=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 334, in test_collision_refuses_without_write_and_valid_retry_recovers
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\u3000A\u3000', reverse=False, same_price=False, as_object=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 334, in test_collision_refuses_without_write_and_valid_retry_recovers
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\u3000A\u3000', reverse=False, same_price=True, as_object=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 334, in test_collision_refuses_without_write_and_valid_retry_recovers
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\u3000A\u3000', reverse=False, same_price=True, as_object=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 334, in test_collision_refuses_without_write_and_valid_retry_recovers
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\u3000A\u3000', reverse=True, same_price=False, as_object=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 334, in test_collision_refuses_without_write_and_valid_retry_recovers
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\u3000A\u3000', reverse=True, same_price=False, as_object=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 334, in test_collision_refuses_without_write_and_valid_retry_recovers
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\u3000A\u3000', reverse=True, same_price=True, as_object=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 334, in test_collision_refuses_without_write_and_valid_retry_recovers
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+AssertionError: JournalIntegrityError not raised
+
+======================================================================
+FAIL: test_collision_refuses_without_write_and_valid_retry_recovers (V6.experimental.v7_portfolio_journal_test.PortfolioJournalQuoteCollisionTest.test_collision_refuses_without_write_and_valid_retry_recovers) (alias='\u3000A\u3000', reverse=True, same_price=True, as_object=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01/V6/experimental/v7_portfolio_journal_test.py", line 334, in test_collision_refuses_without_write_and_valid_retry_recovers
+    with self.assertRaisesRegex(JournalIntegrityError, "duplicate quote ticker"):
+AssertionError: JournalIntegrityError not raised
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.657s
+
+FAILED (failures=25)

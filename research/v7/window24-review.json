@@ -1,0 +1,27 @@
+{
+  "reviewer": "/root/independent_review",
+  "verdict": "GO",
+  "Critical": 0,
+  "Required": 0,
+  "main_rounds": 1,
+  "tests": 44,
+  "seconds": 5.923,
+  "W24_artifacts_verified": 191,
+  "restore_bytes_verified": true,
+  "source_cohort_recipe_bundle_code_pins_verified": true,
+  "training_mean_std_trainonly_verified": true,
+  "prediction_scores_recomputed_without_refit": true,
+  "daily_metrics": 1880,
+  "paired_rows": 940,
+  "support_N_range": [
+    27,
+    33
+  ],
+  "sample_metadata_verified": 44266,
+  "no_false_formal_or_strict_admission": true,
+  "network": 0,
+  "actual_refit": 0,
+  "W19_operations": 0,
+  "rework_rounds": 0,
+  "limitations": "hindsight/current-survivors;3retireesnotcompared;actions/PITunknown;2022/23exposed;samehostnotindependentbackup"
+}

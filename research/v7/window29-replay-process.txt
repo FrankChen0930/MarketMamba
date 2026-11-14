@@ -1,0 +1,2 @@
+{"raw_rows": 48061, "feature_rows": 44899, "feature_rejected_rows": 4673, "core_N_distribution": {"60": 111, "61": 182, "62": 400, "59": 31, "58": 4, "63": 146, "64": 66}, "core_groups_below40": 0, "fit_gate": true}
+{"status": "INDEPENDENT_PROCESS_REPLAY_PASS", "fits": 0, "model_groups": 12, "predictions": 182178, "daily": 2910, "paired": 2910, "pure_prediction_hash": "74a3e18f733c9df763362b53b2881bbf6f1e93df1fa7b51847d24545d289936b", "labels_do_not_change_prediction_keys": true, "research_admitted": false}

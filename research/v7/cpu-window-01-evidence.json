@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "evidence_class": "OFFLINE_SYNTHETIC_COMPONENT_AND_REAL_PROCESS_FAULT_INJECTION",
+  "branch": "development/v7-cpu-window-01",
+  "base_commit": "11ae71d1a3ea7f68ed10d5623bc9d639689e4e8b",
+  "main_unchanged": "83a6a2e6f4a56db318ee07e7e737cc01de3ce48e",
+  "contract": "docs/superpowers/specs/2026-09-16-v7-replayable-portfolio-engine-design.md",
+  "runtime": {
+    "python": "3.12.3", "process_start_method": "spawn",
+    "filesystem": "WSL local temporary directories; POSIX advisory locks",
+    "portfolio_dependencies": "stdlib only",
+    "pit_runtime": "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+    "gpu": "not used; CUDA_VISIBLE_DEVICES empty",
+    "research_data": "not used", "aggregate_tokens": null,
+    "usage_limitation": "Goal API bound to blocked historical MAS objective; new goal creation refused. No new-goal hard-cap or complete-status claim."
+  },
+  "source_sha256": {
+    "V6/experimental/v7_portfolio_engine.py": "0ec986ac4eda4ddaa4310bd8b8ae1c746eb62af59d3e8fd371b4729f7bc4a39c",
+    "V6/experimental/v7_portfolio_journal.py": "65fcc1db9d65e8c8c74dda3fcbed88a6dd50f1936ab5d5c3e01f6108d976031b",
+    "V6/experimental/v7_portfolio_process_test.py": "ab3d6d6abca893b70cb77740265ecd93546751e0f14a887b02376a0e7aa374c7"
+  },
+  "units": [
+    {
+      "id": "U1", "commit": "585ad65",
+      "red": "Focused early signal test failed at assert pending is not None; exit 1",
+      "green": "35 tests PASS, 0.297s",
+      "independent": "35 PASS, 0.309s; RED independently reproduced on 11ae71d",
+      "initial_fix_rounds": 1, "review_rework_rounds": 0
+    },
+    {
+      "id": "U2", "commit": "f42aef0",
+      "red": "6 boundary tests, 2 byte-preservation failures; exit 1",
+      "green": "38 tests PASS, 0.305s",
+      "independent": "38 PASS, 0.294s; both RED tests independently reproduced on 585ad65",
+      "initial_fix_rounds": 1, "review_rework_rounds": 0
+    },
+    {
+      "id": "U3", "source_binding": "source_sha256; commit containing this index",
+      "red": "Reader observed truncated line while writer held LOCK_EX; exit 1",
+      "green": "5 process tests PASS, 0.752s",
+      "independent": "43 portfolio/process tests PASS, 1.062s; no Required/Critical",
+      "initial_fix_rounds": 1, "review_rework_rounds": 0
+    }
+  ],
+  "final_regression": [
+    {
+      "scope": "portfolio contract/engine/journal/process, health summary, correctness audit",
+      "passed": 53, "seconds": 1.053, "exit": 0,
+      "raw_log": "research/v7/cpu-window-01-portfolio-tests.txt",
+      "sha256": "b84e3de7fdde90a9b54ccb3fdb6e8947e2b6a644a4f2a21219d657d0370b0d7f"
+    },
+    {
+      "scope": "six PIT/snapshot/provenance/universe/label modules",
+      "passed": 47, "seconds": 1.045, "exit": 0,
+      "raw_log": "research/v7/cpu-window-01-pit-tests.txt",
+      "sha256": "3b91edad25f5173efefa8162aa478dd89007af09369b93711ef21465e2533ec4"
+    },
+    {
+      "scope": "tools.project_knowledge.test_knowledge_governance",
+      "passed": 23, "seconds": 0.057, "exit": 0, "raw_log": null,
+      "evidence": "tool execution output, no separately retained raw log"
+    }
+  ],
+  "process_boundaries": {
+    "duplicate": "one true and one false append, count=3, identical state, one fee",
+    "conflict": "one accepted and one EventConflictError; winner unspecified",
+    "reader": "actual LOCK_SH contention; reads full committed record after unlock",
+    "durable_sigkill": "real fsync before response, exit -9; fresh retry exit 0, bytes/count/cost unchanged",
+    "partial_sigkill": "exit -9; partial tail retained; replay/append refuse, no repair",
+    "successful_journal_sha256": "f2b40d1b9bcb49d0463bb35e80fef93a595c53f5b81b1696895986e8026636fd",
+    "one_buy_fee": "0.0014977533699450823764353469795307039440838741887169"
+  },
+  "limits": [
+    "No power-loss, disk-failure, network-filesystem or uncooperative-writer certification.",
+    "Writer tests synchronize start, not a forced lock acquisition order.",
+    "No performance benchmark or full repository suite including training.",
+    "Existing normalized quote collision remains a reproduced READY next-window bug.",
+    "Strict Phase 0 STOP. Preserved legacy audit evaluates STOP with six blockers; protected evidence and E1 contract bytes match main."
+  ],
+  "human_decisions_during_execution": 0,
+  "research_approval": false, "production_approval": false
+}

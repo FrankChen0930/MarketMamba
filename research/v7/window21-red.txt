@@ -1,0 +1,17 @@
+======================================================================
+ERROR: v7_finmind_proof_test (unittest.loader._FailedTest.v7_finmind_proof_test)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: v7_finmind_proof_test
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/unittest/loader.py", line 137, in loadTestsFromName
+    module = __import__(module_name)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window21-finmind-proof/V6/experimental/v7_finmind_proof_test.py", line 5, in <module>
+    from V6.experimental.v7_finmind_proof import request,diagnose,restore
+ModuleNotFoundError: No module named 'V6.experimental.v7_finmind_proof'
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (errors=1)

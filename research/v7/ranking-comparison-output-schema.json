@@ -1,0 +1,228 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:marketmamba:synthetic-ranking-comparison-v1",
+  "title": "Window08 paired evidence interface, NOT ADMITTED policy",
+  "type": "object",
+  "required": [
+    "schema",
+    "status",
+    "research_admitted",
+    "daily",
+    "paired_records",
+    "exclusions",
+    "periods",
+    "summary",
+    "statistical_inference"
+  ],
+  "properties": {
+    "schema": {
+      "const": "v7-ranking-comparison-v1"
+    },
+    "status": {
+      "enum": [
+        "REJECTED",
+        "COMPARED",
+        "NO_ELIGIBLE_PAIRED_SESSIONS"
+      ]
+    },
+    "research_admitted": {
+      "const": false
+    },
+    "daily": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "signal_session",
+          "horizon",
+          "valid_n",
+          "stock_ids",
+          "support_sha256",
+          "rank_ic_a",
+          "rank_ic_b",
+          "delta_b_minus_a",
+          "reasons",
+          "requested_a",
+          "requested_b",
+          "union_n",
+          "excluded_union_n"
+        ],
+        "properties": {
+          "signal_session": {
+            "type": "string"
+          },
+          "horizon": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "valid_n": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "rank_ic_a": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "rank_ic_b": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "delta_b_minus_a": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stock_ids": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "support_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    "paired_records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "stock_id",
+          "signal_session",
+          "horizon",
+          "label_id",
+          "label_metadata_sha256",
+          "score_a",
+          "score_b",
+          "label"
+        ]
+      }
+    },
+    "exclusions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "stock_id",
+          "signal_session",
+          "horizon",
+          "reasons_a",
+          "reasons_b",
+          "label_reference_a",
+          "label_reference_b"
+        ]
+      }
+    },
+    "periods": {
+      "type": "array"
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "delta_by_horizon"
+      ],
+      "properties": {
+        "delta_by_horizon": {
+          "type": "array"
+        }
+      },
+      "additionalProperties": false
+    },
+    "statistical_inference": {
+      "const": "NOT_CONFIGURED_NOT_ADMITTED"
+    },
+    "comparison_identity": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "policy_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "fold_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "calendar_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "source_artifact_sha256": {
+      "type": "object",
+      "required": [
+        "a",
+        "b"
+      ],
+      "properties": {
+        "a": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "b": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "source_evaluation_identities": {
+      "type": "object",
+      "required": [
+        "a",
+        "b"
+      ],
+      "properties": {
+        "a": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "b": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "COMPARED",
+              "NO_ELIGIBLE_PAIRED_SESSIONS"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "comparison_identity",
+          "source_artifact_sha256",
+          "source_evaluation_identities",
+          "policy",
+          "policy_sha256",
+          "fold_sha256",
+          "calendar_sha256",
+          "label_contract_id",
+          "models"
+        ]
+      }
+    }
+  ],
+  "$comment": "Delta B-A only when both metrics defined on common valid stock support. Period means conditioned on defined paired sessions; perhorizon, never implicitly pooled. Raw refs in models. NoCI/threshold/multiplecomparison policy. Semantics also require executable validators; this schema is necessary, not sufficient."
+}

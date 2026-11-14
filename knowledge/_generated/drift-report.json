@@ -1,0 +1,195 @@
+{
+  "as_of": "2026-09-20T23:59:59+08:00",
+  "authority": "VALIDATION_OUTPUT_ONLY",
+  "authority_refs": [
+    {
+      "branch": "fix/v7-historical-pit-reconstruction",
+      "commit": "e3bce91",
+      "findings": [],
+      "fragment": null,
+      "path": "research/v7/ohlcv-provenance-remediation-v1/source-reliability.json",
+      "raw": "fix/v7-historical-pit-reconstruction@e3bce91:research/v7/ohlcv-provenance-remediation-v1/source-reliability.json",
+      "resolved_commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+      "status": "PASS",
+      "topic": "Data provenance policy"
+    },
+    {
+      "branch": "fix/v7-historical-pit-reconstruction",
+      "commit": "e3bce91",
+      "findings": [],
+      "fragment": null,
+      "path": "research/v7/corrected-baseline-v1/policy.json",
+      "raw": "fix/v7-historical-pit-reconstruction@e3bce91:research/v7/corrected-baseline-v1/policy.json",
+      "resolved_commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+      "status": "PASS",
+      "topic": "PIT policy"
+    },
+    {
+      "branch": "fix/v7-historical-pit-reconstruction",
+      "commit": "e3bce91",
+      "findings": [],
+      "fragment": null,
+      "path": "research/v7/corrected-baseline-v1/feature-manifest.json",
+      "raw": "fix/v7-historical-pit-reconstruction@e3bce91:research/v7/corrected-baseline-v1/feature-manifest.json",
+      "resolved_commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+      "status": "PASS",
+      "topic": "Feature contract"
+    },
+    {
+      "branch": "fix/v7-historical-pit-reconstruction",
+      "commit": "e3bce91",
+      "findings": [],
+      "fragment": "ordered_features",
+      "path": "research/v7/corrected-baseline-v1/feature-manifest.json",
+      "raw": "fix/v7-historical-pit-reconstruction@e3bce91:research/v7/corrected-baseline-v1/feature-manifest.json#ordered_features",
+      "resolved_commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+      "status": "PASS",
+      "topic": "Feature list"
+    },
+    {
+      "branch": "fix/v7-historical-pit-reconstruction",
+      "commit": "e3bce91",
+      "findings": [],
+      "fragment": null,
+      "path": "research/v7/corrected-baseline-v1/label-manifest.json",
+      "raw": "fix/v7-historical-pit-reconstruction@e3bce91:research/v7/corrected-baseline-v1/label-manifest.json",
+      "resolved_commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+      "status": "PASS",
+      "topic": "Label contract"
+    },
+    {
+      "branch": "fix/v7-historical-pit-reconstruction",
+      "commit": "e3bce91",
+      "findings": [],
+      "fragment": null,
+      "path": "research/v7/corrected-baseline-v1/universe-manifest.json",
+      "raw": "fix/v7-historical-pit-reconstruction@e3bce91:research/v7/corrected-baseline-v1/universe-manifest.json",
+      "resolved_commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+      "status": "PASS",
+      "topic": "Universe contract"
+    },
+    {
+      "branch": "fix/v7-historical-pit-reconstruction",
+      "commit": "e3bce91",
+      "findings": [],
+      "fragment": null,
+      "path": "research/v7/historical-execution-proxy-v1/execution-proxy-policy.json",
+      "raw": "fix/v7-historical-pit-reconstruction@e3bce91:research/v7/historical-execution-proxy-v1/execution-proxy-policy.json",
+      "resolved_commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+      "status": "PASS",
+      "topic": "Historical simulation proxy"
+    },
+    {
+      "branch": "fix/v7-historical-pit-reconstruction",
+      "commit": "e3bce91",
+      "findings": [],
+      "fragment": null,
+      "path": "research/v7/ohlcv-provenance-remediation-v1/readiness.json",
+      "raw": "fix/v7-historical-pit-reconstruction@e3bce91:research/v7/ohlcv-provenance-remediation-v1/readiness.json",
+      "resolved_commit": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+      "status": "PASS",
+      "topic": "Strict executable evidence"
+    },
+    {
+      "branch": "feature/v7-e1-rolling-origin-refresh",
+      "commit": "044eef7",
+      "findings": [],
+      "fragment": null,
+      "path": "research/v7/corrected-e5-replication-v1/incumbent-contract.json",
+      "raw": "feature/v7-e1-rolling-origin-refresh@044eef7:research/v7/corrected-e5-replication-v1/incumbent-contract.json",
+      "resolved_commit": "044eef73712d2189d4e0e28e3d44b352eed6b5e3",
+      "status": "PASS",
+      "topic": "Corrected E5 architecture"
+    },
+    {
+      "branch": "feature/v7-e1-rolling-origin-refresh",
+      "commit": "044eef7",
+      "findings": [],
+      "fragment": "/fields/training",
+      "path": "research/v7/corrected-e5-replication-v1/incumbent-contract.json",
+      "raw": "feature/v7-e1-rolling-origin-refresh@044eef7:research/v7/corrected-e5-replication-v1/incumbent-contract.json#/fields/training",
+      "resolved_commit": "044eef73712d2189d4e0e28e3d44b352eed6b5e3",
+      "status": "PASS",
+      "topic": "Training recipe"
+    },
+    {
+      "branch": "feature/v7-e1-rolling-origin-refresh",
+      "commit": "044eef7",
+      "findings": [],
+      "fragment": null,
+      "path": "research/v7/corrected-e5-diagnostic-v1/summary.json",
+      "raw": "feature/v7-e1-rolling-origin-refresh@044eef7:research/v7/corrected-e5-diagnostic-v1/summary.json",
+      "resolved_commit": "044eef73712d2189d4e0e28e3d44b352eed6b5e3",
+      "status": "PASS",
+      "topic": "Diagnostic v1"
+    },
+    {
+      "branch": "feature/v7-e1-rolling-origin-refresh",
+      "commit": "044eef7",
+      "findings": [],
+      "fragment": null,
+      "path": "research/v7/corrected-e5-diagnostic-v2/diagnostic-summary.json",
+      "raw": "feature/v7-e1-rolling-origin-refresh@044eef7:research/v7/corrected-e5-diagnostic-v2/diagnostic-summary.json",
+      "resolved_commit": "044eef73712d2189d4e0e28e3d44b352eed6b5e3",
+      "status": "PASS",
+      "topic": "Extended diagnostic v2"
+    },
+    {
+      "branch": "feature/v7-e1-rolling-origin-refresh",
+      "commit": "044eef7",
+      "findings": [],
+      "fragment": null,
+      "path": "research/v7/e1-rolling-origin-refresh-v1/experiment-contract.json",
+      "raw": "feature/v7-e1-rolling-origin-refresh@044eef7:research/v7/e1-rolling-origin-refresh-v1/experiment-contract.json",
+      "resolved_commit": "044eef73712d2189d4e0e28e3d44b352eed6b5e3",
+      "status": "PASS",
+      "topic": "E1 experiment specification"
+    },
+    {
+      "branch": "docs/production-system-architecture-audit",
+      "commit": "9efed7b",
+      "findings": [],
+      "fragment": null,
+      "path": "reports/marketmamba_production_system_audit.md",
+      "raw": "docs/production-system-architecture-audit@9efed7b:reports/marketmamba_production_system_audit.md",
+      "resolved_commit": "9efed7b94b7737c7990b57640b1d6f9ed8d28796",
+      "status": "PASS",
+      "topic": "Production-system architecture"
+    },
+    {
+      "branch": "feature/production-phase-a-shadow-ledger",
+      "commit": "f5b0ff3",
+      "findings": [],
+      "fragment": null,
+      "path": "V6/marketmamba/ops/",
+      "raw": "feature/production-phase-a-shadow-ledger@f5b0ff3:V6/marketmamba/ops/",
+      "resolved_commit": "f5b0ff3df7645098cc01a9eeb36f5df22c4a3e41",
+      "status": "PASS",
+      "topic": "Phase A implementation"
+    }
+  ],
+  "findings": [],
+  "runtime_freshness": {
+    "as_of": "2026-09-20T23:59:59+08:00",
+    "observations": [
+      {
+        "actor": "K0 project knowledge discovery",
+        "evidence_ref": "research/project-knowledge/k0/runtime-map.json",
+        "expires_at": "2026-09-27T01:30:00+08:00",
+        "method": "Windows Task Scheduler inspection",
+        "observation_id": "windows-scheduler-20260920T013000+0800",
+        "observed_at": "2026-09-20T01:30:00+08:00",
+        "status": "FRESH",
+        "topic": "Windows Scheduler",
+        "value": {
+          "fetch_only_task": "ACTIVE_READY_LAST_RESULT_0",
+          "full_v62_task": "DISABLED_LAST_RESULT_255"
+        }
+      }
+    ],
+    "schema_version": 1,
+    "status": "PASS"
+  },
+  "schema_version": 2,
+  "status": "PASS"
+}

@@ -1,0 +1,42 @@
+{"request": 1, "security": "1102", "HTTP": 200, "rows": 729, "bytes": 129561, "status": "CAPTURED"}
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window29-expanded-development/V6/experimental/v7_source_snapshot.py", line 51, in _atomic_bytes
+    os.link(temporary, path)
+FileExistsError: [Errno 17] File exists: '/home/frank/projects/MarketMamba/.artifacts/.finmind-anonymous-window-budget.json.cl84urak.tmp' -> '/home/frank/projects/MarketMamba/.artifacts/finmind-anonymous-window-budget.json'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window29-expanded-development/research/v7/window29-common.py", line 33, in cpu_stage
+    try:yield
+        ^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window29-expanded-development/research/v7/window29-sources.py", line 45, in main
+    ledger['events'].append({'at':claim['claimed_at'],'source':'HumanWindow29','query_sha256':hashof(q)});_atomic_bytes(SHARED,enc(ledger))
+                                                                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window29-expanded-development/V6/experimental/v7_source_snapshot.py", line 54, in _atomic_bytes
+    raise SnapshotContractError("immutable snapshot identity conflicts with existing bytes")
+V6.experimental.v7_source_snapshot.SnapshotContractError: immutable snapshot identity conflicts with existing bytes
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window29-expanded-development/V6/experimental/v7_source_snapshot.py", line 51, in _atomic_bytes
+    os.link(temporary, path)
+FileExistsError: [Errno 17] File exists: '/home/frank/projects/MarketMamba/.artifacts/window29-expanded-development/.CPU_BUDGET.json.8cgx7ttl.tmp' -> '/home/frank/projects/MarketMamba/.artifacts/window29-expanded-development/CPU_BUDGET.json'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window29-expanded-development/research/v7/window29-sources.py", line 55, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window29-expanded-development/research/v7/window29-sources.py", line 33, in main
+    with C['cpu_stage']('source-capture'):
+  File "/usr/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window29-expanded-development/research/v7/window29-common.py", line 36, in cpu_stage
+    with _lock(ROOT/'cpu-budget.lock'):_atomic_bytes(p,enc(ledger))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window29-expanded-development/V6/experimental/v7_source_snapshot.py", line 54, in _atomic_bytes
+    raise SnapshotContractError("immutable snapshot identity conflicts with existing bytes")
+V6.experimental.v7_source_snapshot.SnapshotContractError: immutable snapshot identity conflicts with existing bytes

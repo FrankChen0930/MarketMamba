@@ -1,0 +1,50 @@
+{
+  "status": "PREPARATION_COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+  "branch": "research/v7-window32-shadow-preparation",
+  "base": "67e2d25a710273646d41c0ad861b4a993593ba4d",
+  "integration": "window32-integration.json",
+  "authority": "Human Window32 preparation only; no actual prospective prediction activation",
+  "proposal": "window32-shadow-contract.json",
+  "readiness": "window32-readiness.json",
+  "report": "reports/v7_window32_shadow_preparation.md",
+  "tests": {
+    "W31_integration_pure_mock": 10,
+    "W32_synthetic": 13,
+    "real_Fit_API_GPU_RankIC": 0
+  },
+  "offline_evidence": "window32-offline-evidence.json",
+  "synthetic_files_restored": 11,
+  "synthetic_bytes_per_copy": 16123,
+  "prediction_scope": "supplied synthetic scores /2030 fixture clocks only; actual archive timestamp separate; no model loader/inference entry",
+  "source_policy_read": "git object cf1a84f:research/v7/window19-policy.json only; no W19 runtime/task/worktree/artifact access",
+  "W31_original_evidence": "Integration verified72orig+72restore and24views/models; not overwritten",
+  "source_code": {
+    "window32-shadow.py": "1cb0e4e83c20d5fd0c6ce690a44e3994e3212f5326bc62244034a77eaf5bf2da",
+    "window32-offline-proof.py": "685451282566e46b23c794c2a6dea7771d2b1a75d42f3046ee80ca14fa3110b0",
+    "window32-shadow-tests.py": "7219d27689fa679b4584c1e5896c36bb487e7ac97c2098a06de02f985f0131d9"
+  },
+  "review": "window32-review.json GO Critical0 Required0; one targeted main review,0 Required rework",
+  "review_rework_rounds": 0,
+  "blockers": [
+    "2026 immutable training dataset/universe/calendar/events/labels not qualified",
+    "Fresh Ridge/LGBM prep not authorized; W31 model is retrospective",
+    "Daily source schema/units/market/security and feature parity adapter incomplete",
+    "Exact availability/freeze/missing/stale/late/recovery/evaluation/exposure policy pending",
+    "Actual Shadow runtime/start/end/schedule/backup not authorized"
+  ],
+  "protected": {
+    "StrictPhase0": "STOP",
+    "FormalAdmission": "NOT_APPROVED",
+    "W19": "PROTECTED",
+    "W12_GPU": "SAFETY_HALTED",
+    "E1": "BLOCKED",
+    "H2": "NOT_APPROVED",
+    "ShadowActivation": "NOT_APPROVED",
+    "InferenceRecoveryImplementation": "DEFERRED"
+  },
+  "observed_at": "2026-10-25T12:22:38.466953+00:00",
+  "main_before": "b64ac353833a9248121f12ebe61e1333decb2dbf",
+  "main_after": "67e2d25a710273646d41c0ad861b4a993593ba4d",
+  "integration_mode": "LOCAL_FF_ONLY_COMPLETED",
+  "integration_execution_ref": "tool chunk25b6fb; post-integration knowledge health passed before W32 worktree creation"
+}

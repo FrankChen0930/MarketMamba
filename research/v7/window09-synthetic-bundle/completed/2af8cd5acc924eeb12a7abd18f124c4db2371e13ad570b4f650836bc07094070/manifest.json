@@ -1,0 +1,163 @@
+{
+  "artifacts": [
+    {
+      "bytes": 1258,
+      "format": "JSON",
+      "kind": "RESOLVED_CONFIG",
+      "name": "resolved_config",
+      "path": "resolved_config.json",
+      "schema_id": "v7-replay-config-v1",
+      "sha256": "062a808272ee716c84ec81da9cf539d6fd08a9f5e94fd13afd76af81d2c6b305",
+      "storage": "BUNDLE"
+    },
+    {
+      "bytes": 171,
+      "format": "JSON",
+      "kind": "ENVIRONMENT",
+      "name": "environment",
+      "path": "environment.json",
+      "schema_id": "v7-replay-environment-v1",
+      "sha256": "b144b996581cae0759a163168281bfa6e5559380d14e27fe9b717f088137ce5a",
+      "storage": "BUNDLE"
+    },
+    {
+      "bytes": 296,
+      "format": "JSON",
+      "kind": "DATA_SPLIT_ELIGIBILITY",
+      "name": "data_split_eligibility",
+      "path": "data_split_eligibility.json",
+      "schema_id": "v7-replay-split-v1",
+      "sha256": "b03f22e35035835236cea0fc4e39233b1ac94226cfed7afd2ee9e6c9f0a4c86f",
+      "storage": "BUNDLE"
+    },
+    {
+      "bytes": 6214,
+      "format": "JSON",
+      "kind": "PREDICTIONS",
+      "name": "predictions",
+      "path": "predictions.json",
+      "schema_id": "v7-replay-predictions-v1",
+      "sha256": "90a7d96babc462b8f2f6a4e5c01e3dc1eb68ebc8a36b5562dcd3c8c12a23a9c4",
+      "storage": "BUNDLE"
+    },
+    {
+      "bytes": 23759,
+      "format": "JSON",
+      "kind": "DAILY_METRICS",
+      "name": "daily_metrics",
+      "path": "daily_metrics.json",
+      "schema_id": "v7-replay-expected-evaluations-v1",
+      "sha256": "2c7c799265ffaadade6323cce2673b04f9dee5d01edf858c5abdbc70ffd09725",
+      "storage": "BUNDLE"
+    },
+    {
+      "bytes": 8375,
+      "format": "JSON",
+      "kind": "PAIRED_COMPARISON",
+      "name": "paired_comparison",
+      "path": "paired_comparison.json",
+      "schema_id": "v7-ranking-comparison-v1",
+      "sha256": "e1117dfdb4cc0e4ca2c39417046c8b6fb05dd6ba3de0069f220e1ba62757c7cb",
+      "storage": "BUNDLE"
+    },
+    {
+      "bytes": 1587,
+      "format": "JSON",
+      "kind": "REJECTION_LEDGER",
+      "name": "rejection_ledger",
+      "path": "rejection_ledger.json",
+      "schema_id": "v7-replay-rejections-v1",
+      "sha256": "dc1e777bebdbccba193cbb88593fce3abbb55ee6ab944b360ef89fa56b3202ea",
+      "storage": "BUNDLE"
+    },
+    {
+      "bytes": 50,
+      "format": "JSON",
+      "kind": "EXPOSURE_LEDGER",
+      "name": "exposure_ledger",
+      "path": "exposure_ledger.json",
+      "schema_id": "v7-replay-exposure-v1",
+      "sha256": "fdb5a5efa361e0f0d40b07127e3f296340fc7829de207bdd70b0b7e8d1f3275e",
+      "storage": "BUNDLE"
+    },
+    {
+      "bytes": 110,
+      "format": "JSON",
+      "kind": "COMPLETION_EVIDENCE",
+      "name": "completion_evidence",
+      "path": "completion_evidence.json",
+      "schema_id": "v7-replay-completion-v1",
+      "sha256": "adaf0c2489c7fc7b62c95290002ee65354df31f16566a9c10da6903b82b71e16",
+      "storage": "BUNDLE"
+    },
+    {
+      "bytes": 784,
+      "format": "JSON",
+      "kind": "CODE_MANIFEST",
+      "name": "code_manifest",
+      "path": "code_manifest.json",
+      "schema_id": "v7-replay-code-manifest-v1",
+      "sha256": "9a660eca38f31b0a9858cfc56f64990878479911fd824e29219fd5794bab56da",
+      "storage": "BUNDLE"
+    },
+    {
+      "bytes": 26643,
+      "format": "JSON",
+      "kind": "DATASET_SNAPSHOT",
+      "name": "dataset_snapshot",
+      "path": "dataset.json",
+      "schema_id": "v7-ranking-synthetic-input-evidence-v1",
+      "sha256": "a83e9debc6729a91ddef813fe5a84c4690812fcdf18ee19a2acad99e8870ef66",
+      "storage": "BUNDLE"
+    }
+  ],
+  "evidence_class": "SYNTHETIC",
+  "identity": {
+    "checkpoint_sha256": null,
+    "checkpoint_status": "NOT_GENERATED_SYNTHETIC_NO_TRAINING",
+    "code_commit": "bdea30d877fa2c5d02308f343fa5591a35616aec",
+    "code_manifest_sha256": "72c074ec20c375def4934a8d574ccd531141e5049c60b5261d163bdeca05cfd3",
+    "data_sha256": "ec04a7b1a304e22d70f24fc94ad862cabc21fee4bef5bf2a792a67ba443c2338",
+    "evaluation_policy_sha256": "8350e1b790e48d7b0103cd6e352f9ec67f5473b9ad4969f91a0bc3045c696179",
+    "feature_sha256": "179f4ff204dcd78b8f789d38cfdc608559afa18c8e5a33640549fa55976afb61",
+    "fold_id": "fold-A",
+    "label_sha256": "df91724fa08c62bf02d7151142ac9454fee5887f9257048ac30eb5974c271744",
+    "model_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "origin_at": "2024-02-13T08:30:00+08:00",
+    "origin_id": "synthetic-origin-A",
+    "prediction_role": "FORWARD",
+    "recipe_id": "recipe-A",
+    "run_id": "run-A",
+    "seed": 0,
+    "source_vintages": [
+      {
+        "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "vintage_id": "synthetic-original"
+      }
+    ],
+    "study_id": "study-fixture",
+    "training_contract_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "universe_sha256": "bc989942aff012e98e30ce600984323e691653e0a884ed24d70f6747dfcbc3d9"
+  },
+  "logical_observation_period": [
+    "2024-01-01",
+    "2024-03-01"
+  ],
+  "profile": "SYNTHETIC_EVALUATION",
+  "required_artifacts": [
+    "resolved_config",
+    "environment",
+    "data_split_eligibility",
+    "predictions",
+    "daily_metrics",
+    "paired_comparison",
+    "rejection_ledger",
+    "exposure_ledger",
+    "completion_evidence",
+    "code_manifest",
+    "dataset_snapshot"
+  ],
+  "research_admitted": false,
+  "schema": "v7-study-run-bundle-v1",
+  "training_status": "NOT_RUN_SYNTHETIC"
+}

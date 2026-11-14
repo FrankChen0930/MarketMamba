@@ -1,0 +1,17 @@
+======================================================================
+ERROR: v7_capture_readiness_test (unittest.loader._FailedTest.v7_capture_readiness_test)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: v7_capture_readiness_test
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/unittest/loader.py", line 137, in loadTestsFromName
+    module = __import__(module_name)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window17-forward-readiness/V6/experimental/v7_capture_readiness_test.py", line 5, in <module>
+    from V6.experimental.v7_capture_readiness import calendar_status, capture_status
+ModuleNotFoundError: No module named 'V6.experimental.v7_capture_readiness'
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (errors=1)

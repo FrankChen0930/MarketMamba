@@ -1,0 +1,27 @@
+{
+  "acknowledgment": null,
+  "automatic_updates_performed": false,
+  "changed": [
+    "V6/experimental/v7_expanded_pilot.py",
+    "V6/experimental/v7_finmind_proof.py",
+    "V6/experimental/v7_research_artifacts.py",
+    "research/v7/window24-evidence.json"
+  ],
+  "matched_rules": {
+    "V6/experimental/v7_expanded_pilot.py": [
+      "DEFAULT"
+    ],
+    "V6/experimental/v7_finmind_proof.py": [
+      "DEFAULT"
+    ],
+    "V6/experimental/v7_research_artifacts.py": [
+      "DEFAULT"
+    ],
+    "research/v7/window24-evidence.json": [
+      "DEFAULT"
+    ]
+  },
+  "potential_knowledge_impact": [],
+  "schema_version": 1,
+  "status": "PASS"
+}

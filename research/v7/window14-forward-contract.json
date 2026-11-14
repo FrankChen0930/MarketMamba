@@ -1,0 +1,73 @@
+{
+  "schema": "v7-forward-vintage-contract-proposal-v1",
+  "version": "0.1.0",
+  "status": "PROPOSED_NOT_ADMITTED",
+  "execution_authorized": false,
+  "collector_scheduler_enabled": false,
+  "purpose": "Immutable prospective capture records, not historical reconstruction or model input admission",
+  "reuse": [
+    "v7_source_snapshot.RequestSpec/snapshot_response/verify_snapshot",
+    "v7_research_temporal.instant",
+    "canonical_hash/file_sha256",
+    "v7_research_artifacts.strict_json and existing immutable bundle patterns"
+  ],
+  "intent_required": [
+    "schema/status",
+    "source_id/session/request_id",
+    "acquisition_mode FORWARD/RECOVERY/BACKFILL",
+    "planned_at",
+    "candidate_freeze_at",
+    "decision_deadline_at",
+    "externally retained immutable expected intent identity"
+  ],
+  "observation_required": [
+    "status CAPTURED or MISSING",
+    "source_id/session/acquisition_mode bound to intent",
+    "request_started_at",
+    "observation_at/published_at/source_available_at/retrieved_at",
+    "publication_evidence_ref",
+    "manifest_relpath/manifest_sha256/raw_sha256",
+    "qc_at/qc_status/qc_evidence_sha256",
+    "revision_id/prior_vintage_sha256",
+    "immutable expected record identity"
+  ],
+  "source_calendar_universe_label_scope": "Not inferred by this capture prototype; source response session/field/unit QC, qualified historical calendar/universe/lifecycle and labels need separate W07/data approval before research",
+  "clock_candidate": "Final market observations only: planned<=request<=receipt; observation<=publication<=source_available<=receipt<=QC<=candidate_freeze<=decision_deadline, timezone-aware. Broader event types need separate review. No actual times chosen.",
+  "missing": "Record expected source/session failure without raw/zero invented; no missing source can become eligible",
+  "late": "Retain actual receipt/QC afterfreeze as LATE, never rewrite old snapshot; no posthoc backfill labelled timely",
+  "modes": {
+    "FORWARD": "Prospectively registered intent and actual acquisition; caller claim not authentication",
+    "RECOVERY": "Later recovery under distinct identity; retain actual receipt time, never promote to timely",
+    "BACKFILL": "Retrospective source/session; retain actual retrieval and original gap, not original asof vintage"
+  },
+  "revision": "New immutable raw/manifest/record; retain old pinned bytes, new revision and prior link; lineage claims require external validation",
+  "prototype_result": "PROTOTYPE_TIMELY means declared clocks/pins and local integrity consistent ONLY; research_admitted=false/historical_asof_verified=false ALWAYS",
+  "trust_limitations": [
+    "Trusted stable local archive root; not a malicious concurrent filesystem boundary",
+    "Caller may backdate all fields/re-hash: consistency does not prove real-world chronology; no such output becomes asof evidence",
+    "Publication/QC references only metadata format here, not their content/authenticity",
+    "No complete dated calendar/next-open/prediction-time validation; reuse W07 plus Human-approved policy later",
+    "No actual immutable pre-fetch intent writer, trusted clock monitor or network collector enabled"
+  ],
+  "minimum_future_qc": [
+    "HTTP success/schema and requested response identity",
+    "Security/units/session/segment and bounded OHLCV checks, no unknown zero-fill",
+    "Raw/manifest byte verification and immutable intent/record publication",
+    "Missing/late/error ledger, revision pinning and independently traceable trusted acquisition clock/logs",
+    "Rights-qualified source/use and approved freeze/deadline/missing policies"
+  ],
+  "unresolved_human_decisions": [
+    "Allowed source API/open-data/contract and research/storage/redistribution rights",
+    "Required sources, actual freeze/deadline/wait/freshness/missing policy",
+    "Storage/restore/retention and clock/intent audit evidence sufficient for future admission",
+    "Approval of any forward collection execution, research or training"
+  ],
+  "no_changes": [
+    "Frozen E5/E1",
+    "formal feature/label/admission",
+    "production/Windows fetchonly/scheduler",
+    "W12 HALTED budget",
+    "W06 branch adoption"
+  ],
+  "synthetic_test_module": "V6.experimental.v7_forward_vintage_test"
+}

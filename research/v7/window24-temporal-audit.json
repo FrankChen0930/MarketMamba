@@ -1,0 +1,11 @@
+{
+  "status": "ALL_RAW_FORMULA_AND_TEMPORAL_CHECKS_PASS",
+  "rows": 44266,
+  "mismatches": 0,
+  "source_bytes_verified": 36,
+  "feature_inputs": "signal/prior only; neverentry/future",
+  "labels": "exactsharedmarketindices, nextopen5/10close diagnostic",
+  "lifecycle_span": "reportedTWSEstart<=featureprior;labelend<reported delist;unknownstartexcluded",
+  "strictPIT": "NOT_VERIFIED;revision/publication/actions remainUNKNOWN",
+  "research_superiority": "NOT_CLAIMED"
+}

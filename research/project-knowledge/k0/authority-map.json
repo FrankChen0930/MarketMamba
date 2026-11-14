@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "classification": "GENERATED_DISCOVERY_NOT_CANONICAL",
+  "rule":"machine-readable contract/evidence and executable tests outrank prose; runtime observations are time-stamped external evidence",
+  "topics": [
+    {"topic":"current project state","primary":"future knowledge/Current_State.md (not yet created)","secondary":["AGENTS.md","Git/worktree snapshot"],"superseded":["README current-state prose","old handoffs"],"conflicts":["main has local uncommitted candidates"],"authority_status":"MISSING_SINGLE_CANONICAL"},
+    {"topic":"production runtime","primary":"external scheduler observation + V6/scripts/v62_daily.bat","secondary":["V6/run_v62_daily.py"],"superseded":["README full-daily claims"],"conflicts":["full runtime executable but scheduler disabled"],"authority_status":"SPLIT_EXTERNAL_AND_CODE"},
+    {"topic":"data contract","primary":"research/v7 corrected/PIT manifests","secondary":["builder code","tests"],"superseded":["legacy mutable V6 data assumptions"],"conflicts":[],"authority_status":"CANONICAL"},
+    {"topic":"provider provenance","primary":"research/v7/ohlcv-provenance-remediation-v1","secondary":["official source snapshots","global mismatch inventory"],"superseded":["mixed-source OHLCV"],"conflicts":[],"authority_status":"CANONICAL"},
+    {"topic":"feature contract","primary":"research/v7/corrected-baseline-v1/feature-manifest.json","secondary":["v7_corrected_baseline.py"],"superseded":["56/59/66-feature legacy contracts"],"conflicts":[],"authority_status":"CANONICAL"},
+    {"topic":"label contract","primary":"research/v7/corrected-baseline-v1 policy/label manifests","secondary":["v7_historical_label_materialize.py"],"superseded":["legacy close-to-close labels"],"conflicts":["strict verified labels 0/0 versus simulated labels millions"],"authority_status":"CANONICAL_WITH_CLASSES"},
+    {"topic":"universe","primary":"verified lifecycle universe manifests","secondary":["v7_historical_security_master.py"],"superseded":["current constituent backfill"],"conflicts":[],"authority_status":"CANONICAL"},
+    {"topic":"model architecture","primary":"completed corrected E5 incumbent contract and final runner","secondary":["v7_corrected_e5_model.py"],"superseded":["draft architecture-config d_model32/d_state8"],"conflicts":[],"authority_status":"CANONICAL_FOR_REPLICATION"},
+    {"topic":"training recipe","primary":"E1 experiment-contract.json + v7_e1_run.py","secondary":["environment lock","generated notebook"],"superseded":["original replication notebook resume path"],"conflicts":[],"authority_status":"CURRENT_REFERENCE"},
+    {"topic":"checkpoints","primary":"E1 checkpoint manifest/pointer validation","secondary":["checkpoint files and telemetry"],"superseded":["unvalidated filename/pointer assumptions"],"conflicts":["seed43 original run has loadable orphan but incomplete final result"],"authority_status":"RUN_LOCAL"},
+    {"topic":"corrected baseline","primary":"E5-PIT-Clean-v1 manifests","secondary":["Phase 0 audit","tests"],"superseded":["legacy A/B/C"],"conflicts":[],"authority_status":"CANONICAL_RESEARCH"},
+    {"topic":"diagnostic results","primary":"research/v7/corrected-e5-diagnostic-v2","secondary":["diagnostic v1"],"superseded":["raw partial-run impressions"],"conflicts":[],"authority_status":"CURRENT_RESEARCH_EVIDENCE"},
+    {"topic":"portfolio","primary":"V6/experimental/v7_portfolio_contract.py and journal tests","secondary":["V6.2 portfolio for operational history"],"superseded":[],"conflicts":["research engine is not live execution"],"authority_status":"DOMAIN_SPLIT"},
+    {"topic":"production roadmap","primary":"research/production-system/implementation-roadmap.md","secondary":["production audit","Phase A branch"],"superseded":[],"conflicts":["branch progress newer than roadmap prose"],"authority_status":"CURRENT_REFERENCE"}
+  ]
+}

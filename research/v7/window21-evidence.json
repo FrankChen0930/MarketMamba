@@ -1,0 +1,264 @@
+{
+  "schema_version": 1,
+  "artifact_class": "CANONICAL",
+  "status": "WINDOW_COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+  "evidence_class": "OBSERVED_BOUNDED_RETROSPECTIVE_SAMPLE_NOT_DATASET_OR_RESEARCH_ADMISSION",
+  "branch": "research/v7-window21-finmind-proof",
+  "base": "6a34520d8f9c1166172af3503cad531e23f5ecec",
+  "final_head": "containing local closure commit",
+  "integration": {
+    "before": "87695e4d5dc6e047f5ab39ca3cd8294b971bbc3a",
+    "after": "6a34520d8f9c1166172af3503cad531e23f5ecec",
+    "method": "ff-only",
+    "W20_deliverablehashes_verified": 11,
+    "W20_documentpairs": 8,
+    "review": "ExistingW20GO0CriticalRequiredreverified",
+    "main_andW20clean": true,
+    "unapproved_branches_merged": false
+  },
+  "network": {
+    "endpoint": "https://api.finmindtrade.com/api/v4/data",
+    "anonymous": true,
+    "actual_requests": 18,
+    "maximum": 22,
+    "used": {
+      "price": 14,
+      "metadata": 3,
+      "repeat": 1
+    },
+    "unused": 4,
+    "window_CLOSED": true,
+    "all_HTTP": 200,
+    "token_account_payment": false,
+    "retry_redirect_fallback": 0,
+    "socket_timeout_seconds": 25,
+    "firstquery_process_timeout_seconds": 40,
+    "later13query_process_timeout_seconds": 240,
+    "each_response_maxbytes": 2097152,
+    "no_more_API_after_review": true
+  },
+  "data_summary": "research/v7/window21-proof-summary.json",
+  "source_and_license": "research/v7/window21-source-license-binding.json",
+  "durable_license_docs": "research/v7/window21-durable-license-documents.json",
+  "storage": {
+    "root": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-proof",
+    "restore": "/home/frank/projects/MarketMamba/.artifacts/window21-finmind-restore",
+    "received_bytes": 838854,
+    "unique_raw_bytes": 836995,
+    "raw_not_in_git": true,
+    "same_host_not_independent_backup": true,
+    "backup_status": "BACKUP_PENDING",
+    "inventory": "research/v7/window21-local-artifacts.json"
+  },
+  "restore": {
+    "initial_independent_process": "research/v7/window21-independent-restore.json",
+    "postrepair_independent_process": "research/v7/window21-postrepair-restore.json",
+    "records": 18,
+    "all_pass": true,
+    "reviewer_also_independently_restored18": true
+  },
+  "classification": {
+    "normalprice_rows": 116,
+    "distinct_dates": 48,
+    "earliest": "2010-01-04",
+    "latest": "2025-08-01",
+    "counts": {
+      "VALID_PRICE": 100,
+      "MARKET_SEMANTIC_EXCEPTION": 2,
+      "UNVERIFIED": 11,
+      "NO_PUBLISHED_PRICE": 3
+    },
+    "calendar_actual_authority": "BLOCKED_vendorfuture_dates_and_knownclosure_conflict",
+    "historical_universe": "BLOCKED_lifecycle_membership_not_proven",
+    "PIT": "NOT_VERIFIED_RETROSPECTIVE_ONLY",
+    "research_source": "CONDITIONAL_CANDIDATE_NOT_ADMITTED"
+  },
+  "review": {
+    "reviewer": "/root/independent_review",
+    "major_rounds": 1,
+    "initial_verdict": "NO_GO",
+    "critical": 0,
+    "required": 2,
+    "optional": 0,
+    "independent_tests": 10,
+    "independent_seconds": 1.063,
+    "independent_restore": "18records allPASS inreviewer/temp independentprocess;838854bytes/116priceRows/48dates/QC100+2+11+3verified",
+    "findings": [
+      {
+        "id": "R1",
+        "issue": "Publishedraw loss silently repaired by repeat",
+        "repair": "Verifyallpublishedrecord dependencies beforedispatch; any missing/corrupt/unfinished priorclaim STOP; nonewGETrepair",
+        "test": "test_missing_published_raw_stops_before_repeat_no_repair"
+      },
+      {
+        "id": "R2",
+        "issue": "HTTP IncompleteReadescapednoSTOP; repeatcouldretry failedclaim",
+        "repair": "CatchHTTPException/IncompleteRead, durablefailure+STOP,spentclaimretained; repeat onlypriorCAPTURED/http200/completeandverifiedbytes",
+        "tests": [
+          "test_incomplete_read_consumes_claim_and_stops_repeat",
+          "test_dangling_claim_without_terminal_fails_closed"
+        ]
+      }
+    ],
+    "repair_rounds": 1,
+    "author_postrepair_verification": "15focusedPASS +18actualrecords independentprocessRestorePASS; no furtherAPIrequests",
+    "second_independent_review": false,
+    "postrepair_independent_GO": "NOT_REQUESTED_UNDER_SINGLE_MAIN_REVIEW_LIMIT",
+    "remaining_known_required": 0,
+    "original_code_sha256": "be7052834fb57479c08c10a368493b99105fc35a9797513f42fa9cce30941444",
+    "repaired_code_sha256": "14aa7a4623c45f9400d08faf0147316c28735fd8e179f922f80143e37ed274f7",
+    "old_records_or_source_overwritten": false
+  },
+  "tests": {
+    "focused": 15,
+    "result": "PASS",
+    "output": "research/v7/window21-targeted-tests.txt",
+    "RED": "research/v7/window21-review-red.txt",
+    "independent_before_repair": 10,
+    "repair_rounds": 1,
+    "second_major_review": false,
+    "training_evaluator_suite_repeated": false
+  },
+  "W19_isolation": {
+    "worktree_scheduler_artifact_budget_not_operated": true,
+    "not_merged": true,
+    "no_Windows_commands": true,
+    "no_new_W19_runtime_observation": true,
+    "only_repository_worktree_metadata_listed": true
+  },
+  "runtime": {
+    "CPU": "existingW11overlayPython3.12.3",
+    "MARKETMAMBA_DATA_ROOT": "UNSET",
+    "operational_data_realpath": "/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6",
+    "operational_payload_read": false,
+    "GPU_Colab_training_RankIC": false
+  },
+  "gates": {
+    "StrictPhase0": "STOP",
+    "HistoricalStudy": "PROPOSED",
+    "FormalDataAdmission": "NOT_APPROVED",
+    "W19ScheduledPilot": "PROTECTED",
+    "W12GPU": "SAFETY_HALTED",
+    "E1FrozenMatrix": "BLOCKED",
+    "H2": "NOT_APPROVED"
+  },
+  "next_authorization": "Separatequalificationofcalendar/lifecycle/labels/corpactions/missingpolicy; explicitbounded datasetmaterialization andCPUstudy/eval/computeadmission; no execution now",
+  "artifact_hashes": {
+    "V6/experimental/v7_finmind_proof.py": {
+      "sha256": "14aa7a4623c45f9400d08faf0147316c28735fd8e179f922f80143e37ed274f7",
+      "bytes": 11297
+    },
+    "V6/experimental/v7_finmind_proof_test.py": {
+      "sha256": "d146cc274316e191a1792977a6f8be02b3919f8a9a4315f5b07b9e99ff77b9de",
+      "bytes": 6613
+    },
+    "knowledge/00_Project_Map/Authority_Map.md": {
+      "sha256": "656297fda5d81d2dd2b2e404a561cb034e9e1de62e0868b665b0016b628cf0af",
+      "bytes": 69903
+    },
+    "knowledge/00_Project_Map/Current_State.md": {
+      "sha256": "3f9de09c07696e759ad9d0eacd8845fdfa642954c2501bbfb2ebbf6cd34bba79",
+      "bytes": 83961
+    },
+    "knowledge/00_Project_Map/Worktree_Register.md": {
+      "sha256": "a95a69e05e5ccad2d295875aa599465a2b12783a9045d77fda1bd1e12ac7bc0e",
+      "bytes": 41217
+    },
+    "knowledge/00_Project_Map/authority-map.json": {
+      "sha256": "26a8c7b60bea3da86c64392a1e349e62dcbf37da3bbf12cd7a6445a89902637c",
+      "bytes": 34233
+    },
+    "knowledge/01_Domains/Data.md": {
+      "sha256": "3289105b7fab33057923f63dd653d40c60c5a08386476deb12358a54d894adc2",
+      "bytes": 10887
+    },
+    "knowledge/02_History/Decisions/20261025-window21-finmind-proof.json": {
+      "sha256": "503ba4517470462f1ff2a7f99802d3faed870eac3775b3ea012bb546098f104f",
+      "bytes": 608
+    },
+    "reports/v7_window21_finmind_proof.md": {
+      "sha256": "b47ca33b9d7eed2b3fa248d7ffa183fab8b699609646e068e7fc81da91c9fbf7",
+      "bytes": 6382
+    },
+    "research/v7/research-program.md": {
+      "sha256": "8c3a8119a49dc4f62a57d0f342f7ceb11c3e4086c86b6c124faa70f595a8f497",
+      "bytes": 87197
+    },
+    "research/v7/window21-checks.txt": {
+      "sha256": "58bc55ed8adaf300419087621ee4d5e70f44aa6df3adc7f73cc31bc3334293c4",
+      "bytes": 264
+    },
+    "research/v7/window21-durable-license-documents.json": {
+      "sha256": "0301247da50deadb471d9287465b3089cc0b08f0e5afc73a359d53cda3467209",
+      "bytes": 1658
+    },
+    "research/v7/window21-independent-restore.json": {
+      "sha256": "9f1ad2a3f0bc28fa2c2d0cdc5d12930e7e724f66ecb488136bb1d75fed9816bf",
+      "bytes": 9381
+    },
+    "research/v7/window21-knowledge-health.txt": {
+      "sha256": "bf93f67ea1dfe58182f4c71dd1f609a034debb6e81c2599949e554cb6c78863c",
+      "bytes": 237
+    },
+    "research/v7/window21-knowledge-impact.txt": {
+      "sha256": "aa238e17e73aabfaaf4c32453d90c190e07b823ef96bba9d87261a2dcb175b01",
+      "bytes": 4296
+    },
+    "research/v7/window21-local-artifacts.json": {
+      "sha256": "9a15cb50ef967757df97e9f541e73ea82f23f70bd611073a0af1bc3eb1d9a7b2",
+      "bytes": 42425
+    },
+    "research/v7/window21-pilot-plan.json": {
+      "sha256": "fd4f2ab7c583662e8d1da22e7c973c660311892aa02788e938764040ceddc36b",
+      "bytes": 1182
+    },
+    "research/v7/window21-postrepair-restore.json": {
+      "sha256": "9f1ad2a3f0bc28fa2c2d0cdc5d12930e7e724f66ecb488136bb1d75fed9816bf",
+      "bytes": 9381
+    },
+    "research/v7/window21-proof-summary.json": {
+      "sha256": "890177743057bdbea63c35867922a491d5ef13b0aaa372c19118b4e5ac5e8edc",
+      "bytes": 16589
+    },
+    "research/v7/window21-red.txt": {
+      "sha256": "de28c48d09a23a4e810685c501ea9044ca222c085e63d76fcefd2b7ec6a73c23",
+      "bytes": 877
+    },
+    "research/v7/window21-review-red.txt": {
+      "sha256": "3d73a2c6dadceacd0f79ddd02173bd7e2ef75db534f794a81323ef58727df54a",
+      "bytes": 5231
+    },
+    "research/v7/window21-review.json": {
+      "sha256": "999ea1a52bdeec767ca65b5f6ec3d6216c783db111d2bb50ed426cfb80e4bb16",
+      "bytes": 1607
+    },
+    "research/v7/window21-source-license-binding.json": {
+      "sha256": "992056d7c5f3cf0050561259fa4ee3360afedb9dd07e4c72612cac80364f97d7",
+      "bytes": 4839
+    },
+    "research/v7/window21-stage3-price-plan.json": {
+      "sha256": "cccfd189ef1639e9918b9d1cb76cf6889452fce456f11937d6026f273afc2f92",
+      "bytes": 4643
+    },
+    "research/v7/window21-targeted-tests.txt": {
+      "sha256": "39d297080146a5f729dfe3f53616cf45f99020ff176b887f44e3dd562cb75a1c",
+      "bytes": 2611
+    }
+  },
+  "knowledge_health": {
+    "status": "WARNING",
+    "structural_failures": 0,
+    "retained_warnings": [
+      "Governance",
+      "Authority Drift",
+      "Legacy Docs"
+    ]
+  },
+  "usage_snapshot": {
+    "tool_goal_tokens_used": 84848,
+    "tool_goal_elapsed_seconds": 1444,
+    "certified_billing_or_aggregate_hard_budget": false,
+    "network_limit": "18actualof22authorized;CLOSED;0afterreview",
+    "engineering_window_stops": true
+  }
+}

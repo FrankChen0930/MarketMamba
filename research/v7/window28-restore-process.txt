@@ -1,0 +1,1 @@
+{"status": "REAL_BYTES_RESTORED", "file_count": 11, "total_bytes": 28170524, "fit_claims": 2, "backup": "BACKUP_PENDING_SAME_HOST_NOT_INDEPENDENT_BACKUP"}

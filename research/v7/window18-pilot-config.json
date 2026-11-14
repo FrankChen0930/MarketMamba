@@ -1,0 +1,47 @@
+{
+  "authority": "HumanWindow18_LIMITED_REAL_MANUAL_PILOT",
+  "created_at": "2026-10-24T13:41:42.684837+00:00",
+  "base": "96e8c0c4f2f7f78c508048e31f0f163d6c707128",
+  "branch": "development/v7-window18-manual-collector",
+  "sources": [
+    "11549",
+    "11371"
+  ],
+  "max_GET_each": 1,
+  "retry": 0,
+  "redirects": false,
+  "fallbacks": [],
+  "network_timeout_seconds": 25,
+  "outer_process_timeout_seconds": 40,
+  "read_limit_bytes": 2097152,
+  "root": "/home/frank/projects/MarketMamba/.artifacts/window18-manual-pilot",
+  "budget_root": "/home/frank/projects/MarketMamba/.artifacts/window18-network-budget",
+  "backup_status": "BACKUP_PENDING",
+  "independent_backup_location": "NO_APPROVED_LOCATION_IN_CANONICAL_W17_PACKAGE",
+  "data_root_env": "UNSET",
+  "source_files": {
+    "V6/experimental/v7_manual_collector.py": {
+      "sha256": "146eca8d33584a1a0351a10f1d1746349bc929ada409c55d82bff7e3ab76ebf6",
+      "bytes": 12582,
+      "archived": "/home/frank/projects/MarketMamba/.artifacts/window18-manual-pilot/source/V6/experimental/v7_manual_collector.py"
+    },
+    "V6/experimental/v7_csv_capture_qc.py": {
+      "sha256": "14b81444ef14c9001991c55627b464a639d99db0f94a88f4c32a3cd895bfd55d",
+      "bytes": 3796,
+      "archived": "/home/frank/projects/MarketMamba/.artifacts/window18-manual-pilot/source/V6/experimental/v7_csv_capture_qc.py"
+    },
+    "research/v7/window15-license-matrix.json": {
+      "sha256": "274f464b6ca58381b2b8cca4d71109428502a3b2c09c942512f93e99f801cd06",
+      "bytes": 11416,
+      "archived": "/home/frank/projects/MarketMamba/.artifacts/window18-manual-pilot/source/research/v7/window15-license-matrix.json"
+    },
+    "research/v7/window17-calendar-panel.json": {
+      "sha256": "94acb534bd4ae901c35b10ad4abb6bc5f3c45f1fe0314a203b4923805409a953",
+      "bytes": 5032,
+      "archived": "/home/frank/projects/MarketMamba/.artifacts/window18-manual-pilot/source/research/v7/window17-calendar-panel.json"
+    }
+  },
+  "disk_free_bytes": 985463033856,
+  "daily_activation": false,
+  "research_admitted": false
+}

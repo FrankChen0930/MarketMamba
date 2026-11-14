@@ -1,0 +1,354 @@
+[
+  {
+    "schema": "v7-manual-capture-pilot-v1",
+    "source": {
+      "provider": "TWSE",
+      "dataset_id": "11549",
+      "resource_url": "https://www.twse.com.tw/exchangeReport/STOCK_DAY_ALL?response=open_data",
+      "license_id": "OGDL-1.0",
+      "license_matrix_sha256": "274f464b6ca58381b2b8cca4d71109428502a3b2c09c942512f93e99f801cd06",
+      "attribution": "TWSE / 上市個股日成交資訊 / OGDL-1.0 https://data.gov.tw/license; source year as observation session; local capture does not imply original vintage"
+    },
+    "status": "RAW_CAPTURED",
+    "request_started_at": "2026-10-24T13:41:57.190274+00:00",
+    "retrieved_at_utc": "2026-10-24T13:41:57.318907+00:00",
+    "retrieved_at_taipei": "2026-10-24T21:41:57.318907+08:00",
+    "archive_created_at": "2026-10-24T13:41:57.368199+00:00",
+    "published_at": null,
+    "publication_evidence": "UNKNOWN_NOT_RECEIPT_IMPUTED",
+    "http_status": 200,
+    "headers": {
+      "date": "Sat, 24 Oct 2026 13:41:57 GMT",
+      "content-type": "text/csv;charset=utf-8"
+    },
+    "response_complete": true,
+    "manifest_path": "snapshots/manifests/01c6a94cd42429a7b9c74ffa2d68dedfe5abf382c08ac5bae2c8edec28a88af0-2026-10-24T134157.318907p0000.json",
+    "manifest_sha256": "a475f89ecf31e5c0719a54c8f8bd882999cfe8755e029c1736cc78412f31844d",
+    "raw_path": "snapshots/raw/79bdd059e75a0a829dfef1e5c1330cb48a84b302e04ce040e77ee0dd35e5ec6a.bin",
+    "raw_sha256": "79bdd059e75a0a829dfef1e5c1330cb48a84b302e04ce040e77ee0dd35e5ec6a",
+    "raw_bytes": 137956,
+    "capture_classification": "MANUAL_RESOURCE_CAPTURE_TIME_UNQUALIFIED",
+    "acquisition_mode": "MANUAL_ONE_SHOT",
+    "previous_different_content": [],
+    "qc": {
+      "status": "QC_EXCEPTIONS",
+      "encoding": "UTF-8",
+      "schema": [
+        "日期",
+        "證券代號",
+        "證券名稱",
+        "成交股數",
+        "成交金額",
+        "開盤價",
+        "最高價",
+        "最低價",
+        "收盤價",
+        "漲跌價差",
+        "成交筆數"
+      ],
+      "rows": 1383,
+      "distinct_securities": 1383,
+      "sessions": [
+        "2026-10-22"
+      ],
+      "earliest": "2026-10-22",
+      "latest": "2026-10-22",
+      "counts": {
+        "PASS": 1368,
+        "MISSING_OHLCV_NO_FILL": 15
+      },
+      "exceptions": [
+        {
+          "session": "2026-10-22",
+          "security_id": "00625K",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "00643K",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "00682U",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "00707R",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "020011",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "020032",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "020036",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "1341",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "1441",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "1538",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "1583",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "2321",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "2891C",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "4581",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "6921",
+          "reason": "MISSING_OHLCV_NO_FILL"
+        }
+      ],
+      "fatal_errors": [],
+      "volume_unit": "FIELD_LABEL_SHARES_NO_CONVERSION",
+      "security_scope": "RESOURCE_SECURITIES_MIX_NOT_ADMITTED_STOCK_UNIVERSE",
+      "currency_adjustment_segment": "UNKNOWN_NOT_CERTIFIED",
+      "research_admitted": false
+    },
+    "freshness": {
+      "status": "BOUNDED_LAST_ACTUAL_MATCH_NOT_ADMITTED",
+      "calendar_verdict": {
+        "status": "NON_TRADING_DAY",
+        "reasons": [],
+        "missing_session": false,
+        "last_actual_session": "2026-10-22",
+        "next_scheduled_session": "2026-10-27",
+        "next_actual_verified": false,
+        "research_admitted": false,
+        "collector_activated": false,
+        "calendar_sha256": "42782a012e883d1bd3bc3f5b283034d27101b701c0d5af017c6b0e744e3a8f55",
+        "revision_id": "w17-retrieved-v1"
+      },
+      "calendar_sha256": "42782a012e883d1bd3bc3f5b283034d27101b701c0d5af017c6b0e744e3a8f55",
+      "qualification": "PROVISIONAL_NOT_ADMITTED"
+    },
+    "raw_capture_success": true,
+    "research_admitted": false,
+    "verified_forward_vintage": false,
+    "daily_collector_enabled": false,
+    "backup_status": "BACKUP_PENDING",
+    "capture_code_sha256": "146eca8d33584a1a0351a10f1d1746349bc929ada409c55d82bff7e3ab76ebf6",
+    "qc_code_sha256": "14b81444ef14c9001991c55627b464a639d99db0f94a88f4c32a3cd895bfd55d",
+    "record_path": "captures/11549/ddeb69691380709c749a797a009cfd342b914f1f1631c303c07af1e0c805566c.json",
+    "record_sha256": "bbbcd7bdfae295a884760e24e24a393bf6e1403ae32adac7d0e0dc42230065a9"
+  },
+  {
+    "schema": "v7-manual-capture-pilot-v1",
+    "source": {
+      "provider": "TPEx",
+      "dataset_id": "11371",
+      "resource_url": "https://www.tpex.org.tw/web/stock/aftertrading/otc_quotes_no1430/stk_wn1430_result.php?l=zh-tw&se=EW&o=data",
+      "license_id": "OGDL-1.0",
+      "license_matrix_sha256": "274f464b6ca58381b2b8cca4d71109428502a3b2c09c942512f93e99f801cd06",
+      "attribution": "TPEx / 上櫃股票收盤行情 / OGDL-1.0 https://data.gov.tw/license; source year as observation session; local capture does not imply original vintage"
+    },
+    "status": "RAW_CAPTURED_WITH_QC_FAILURE",
+    "request_started_at": "2026-10-24T13:42:11.276403+00:00",
+    "retrieved_at_utc": "2026-10-24T13:42:11.501060+00:00",
+    "retrieved_at_taipei": "2026-10-24T21:42:11.501060+08:00",
+    "archive_created_at": "2026-10-24T13:42:11.548230+00:00",
+    "published_at": null,
+    "publication_evidence": "UNKNOWN_NOT_RECEIPT_IMPUTED",
+    "http_status": 200,
+    "headers": {
+      "date": "Sat, 24 Oct 2026 13:42:11 GMT",
+      "content-type": "application/csv;charset=utf-8"
+    },
+    "response_complete": true,
+    "manifest_path": "snapshots/manifests/75489ba4d2af589fb622f836bd1d9facbe44626e8a11f78f38a38f519352a42f-2026-10-24T134211.501060p0000.json",
+    "manifest_sha256": "0983b4b4d28be224c3091a2390f281fcfa89d181a5e565a32d126800c131f6ea",
+    "raw_path": "snapshots/raw/c57a72d7864203d633c76716e56c35b689c0134fffbed7f069e41f2646372d1a.bin",
+    "raw_sha256": "c57a72d7864203d633c76716e56c35b689c0134fffbed7f069e41f2646372d1a",
+    "raw_bytes": 141480,
+    "capture_classification": "MANUAL_RESOURCE_CAPTURE_TIME_UNQUALIFIED",
+    "acquisition_mode": "MANUAL_ONE_SHOT",
+    "previous_different_content": [],
+    "qc": {
+      "status": "QC_FAILED",
+      "encoding": "UTF-8",
+      "schema": [
+        "資料日期",
+        "代號",
+        "名稱",
+        "收盤",
+        "漲跌",
+        "開盤",
+        "最高",
+        "最低",
+        "成交股數",
+        "成交金額",
+        "成交筆數",
+        "最後買價",
+        "最後賣價",
+        "發行股數",
+        "次日漲停價",
+        "次日跌停價"
+      ],
+      "rows": 1017,
+      "distinct_securities": 1017,
+      "sessions": [
+        "2026-10-22"
+      ],
+      "earliest": "2026-10-22",
+      "latest": "2026-10-22",
+      "counts": {
+        "PASS": 990,
+        "INVALID_OHLCV": 27
+      },
+      "exceptions": [
+        {
+          "session": "2026-10-22",
+          "security_id": "2073",
+          "reason": "INVALID_OHLCV"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "2724",
+          "reason": "INVALID_OHLCV"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "2949",
+          "reason": "INVALID_OHLCV"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "3064",
+          "reason": "INVALID_OHLCV"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "3085",
+          "reason": "INVALID_OHLCV"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "3115",
+          "reason": "INVALID_OHLCV"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "4139",
+          "reason": "INVALID_OHLCV"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "4305",
+          "reason": "INVALID_OHLCV"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "4530",
+          "reason": "INVALID_OHLCV"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "4535",
+          "reason": "INVALID_OHLCV"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "4728",
+          "reason": "INVALID_OHLCV"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "5348",
+          "reason": "INVALID_OHLCV"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "5455",
+          "reason": "INVALID_OHLCV"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "5520",
+          "reason": "INVALID_OHLCV"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "5703",
+          "reason": "INVALID_OHLCV"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "6212",
+          "reason": "INVALID_OHLCV"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "6236",
+          "reason": "INVALID_OHLCV"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "6242",
+          "reason": "INVALID_OHLCV"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "6597",
+          "reason": "INVALID_OHLCV"
+        },
+        {
+          "session": "2026-10-22",
+          "security_id": "6843",
+          "reason": "INVALID_OHLCV"
+        }
+      ],
+      "fatal_errors": [],
+      "volume_unit": "FIELD_LABEL_SHARES_NO_CONVERSION",
+      "security_scope": "RESOURCE_SECURITIES_MIX_NOT_ADMITTED_STOCK_UNIVERSE",
+      "currency_adjustment_segment": "UNKNOWN_NOT_CERTIFIED",
+      "research_admitted": false
+    },
+    "freshness": {
+      "status": "UNKNOWN_EXCHANGE_CALENDAR_UNQUALIFIED"
+    },
+    "raw_capture_success": true,
+    "research_admitted": false,
+    "verified_forward_vintage": false,
+    "daily_collector_enabled": false,
+    "backup_status": "BACKUP_PENDING",
+    "capture_code_sha256": "146eca8d33584a1a0351a10f1d1746349bc929ada409c55d82bff7e3ab76ebf6",
+    "qc_code_sha256": "14b81444ef14c9001991c55627b464a639d99db0f94a88f4c32a3cd895bfd55d",
+    "record_path": "captures/11371/b0e532a300f4ed5ab69d79477f58919998471a89693c010df28efc803c8a0d90.json",
+    "record_sha256": "ea4a8bad4bd22afaca9614a88365d5cfc5666463a40bf99e977dd1ee798612e7"
+  }
+]

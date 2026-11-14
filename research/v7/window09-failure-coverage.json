@@ -1,0 +1,119 @@
+{
+  "schema": "v7-window09-failure-coverage-v1",
+  "evidence_class": "SYNTHETIC",
+  "verification_method": "Executed unittest assertions; expected reasons below are covered by tests, not fabricated production observations",
+  "required_scenarios": 14,
+  "scenarios": [
+    {
+      "scenario": "Partial Artifact Publication",
+      "executable_test": "ArtifactPublicationTest.test_partial_publication_never_complete",
+      "expected_evidence": [
+        "INCOMPLETE",
+        "INTERRUPTED_AFTER_ARTIFACT"
+      ]
+    },
+    {
+      "scenario": "Missing Required Prediction File",
+      "executable_test": "ArtifactPublicationTest.test_missing_required_prediction",
+      "expected_evidence": [
+        "MISSING_ARTIFACT_BYTES:predictions"
+      ]
+    },
+    {
+      "scenario": "Corrupt Artifact Hash",
+      "executable_test": "ArtifactPublicationTest.test_corrupt_bytes_rejected",
+      "expected_evidence": [
+        "ARTIFACT_HASH_MISMATCH:predictions"
+      ]
+    },
+    {
+      "scenario": "Schema / Identity Mismatch",
+      "executable_test": "ArtifactPublicationTest.test_manifest_identity_pin_and_required_kinds",
+      "expected_evidence": [
+        "MANIFEST_IDENTITY_MISMATCH",
+        "REQUIRED_PROFILE_ARTIFACTS_MISSING"
+      ]
+    },
+    {
+      "scenario": "Duplicate Run Publication",
+      "executable_test": "ArtifactPublicationTest.test_duplicate_publication_is_idempotent_not_overwritten",
+      "expected_evidence": [
+        "ALREADY_PUBLISHED",
+        "IMMUTABLE_RUN_CONFLICT"
+      ]
+    },
+    {
+      "scenario": "Interrupted Publication",
+      "executable_test": "ArtifactPublicationTest.test_interrupted_after_publish_retry_recognizes_valid_bundle",
+      "expected_evidence": [
+        "ARTIFACTS_VERIFIED after atomic commit",
+        "ALREADY_PUBLISHED on retry"
+      ]
+    },
+    {
+      "scenario": "Missing Dataset Bytes",
+      "executable_test": "RestoreEligibilityTest.test_missing_dataset_bytes_not_restorable",
+      "expected_evidence": [
+        "MISSING_DATASET_BYTES"
+      ]
+    },
+    {
+      "scenario": "Missing Checkpoint Generation",
+      "executable_test": "RestoreEligibilityTest.test_missing_checkpoint_generation_not_restorable",
+      "expected_evidence": [
+        "NOT_RESTORABLE",
+        "MISSING_GENERATION"
+      ]
+    },
+    {
+      "scenario": "Corrupt Latest / Valid Previous",
+      "executable_test": "RestoreEligibilityTest.test_corrupt_latest_valid_previous_no_best_promotion",
+      "expected_evidence": [
+        "CORRUPT_GENERATION",
+        "resume_candidate=previous",
+        "BEST unchanged"
+      ]
+    },
+    {
+      "scenario": "Changed Evaluation Policy",
+      "executable_test": "OfflineReplayTest.test_changed_evaluation_policy_rejected",
+      "expected_evidence": [
+        "DATA_OR_POLICY_IDENTITY_MISMATCH"
+      ]
+    },
+    {
+      "scenario": "Missing Label / Maturity Evidence",
+      "executable_test": "OfflineReplayTest.test_missing_or_late_maturity_reaches_actual_label_gate",
+      "expected_evidence": [
+        "LABEL_ELIGIBILITY_RECHECK_MISMATCH:LABEL_METADATA_UNKNOWN",
+        "LABEL_ELIGIBILITY_RECHECK_MISMATCH:LABEL_NOT_MATURE_OR_AVAILABLE",
+        "LABEL_ELIGIBILITY_RECHECK_MISMATCH:LABEL_PAYLOAD_MISSING_OR_INVALID"
+      ]
+    },
+    {
+      "scenario": "Replay Result Mismatch",
+      "executable_test": "OfflineReplayTest.test_saved_metrics_mismatch_detected",
+      "expected_evidence": [
+        "REPLAY_RESULT_MISMATCH:daily_metrics"
+      ]
+    },
+    {
+      "scenario": "Historical vs Actually Generated Time Confusion",
+      "executable_test": "OfflineReplayTest.test_simulated_eval_time_not_actual_publication_time",
+      "expected_evidence": [
+        "historical_live_prediction_proven=False",
+        "simulated_evaluation_times=2024",
+        "replayed_at=actual UTC"
+      ]
+    },
+    {
+      "scenario": "Untrusted Checkpoint Payload",
+      "executable_test": "RestoreEligibilityTest.test_untrusted_pytorch_payload_rejected_without_loading",
+      "expected_evidence": [
+        "UNTRUSTED_CHECKPOINT_FORMAT",
+        "NOT_RESTORABLE",
+        "torch.load never called"
+      ]
+    }
+  ]
+}

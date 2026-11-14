@@ -1,0 +1,234 @@
+{
+  "schema": "v7-offline-replay-evidence-v1",
+  "status": "EVALUATION_REPLAYABLE",
+  "research_admitted": false,
+  "capabilities": {
+    "METADATA_VERIFIED": {
+      "proven": true,
+      "reasons": []
+    },
+    "EVALUATION_REPLAYABLE": {
+      "proven": true,
+      "reasons": []
+    },
+    "TRAINING_RESUMABLE": {
+      "proven": false,
+      "reasons": [
+        "NO_REAL_RUNTIME_STATE_OR_TRAINING_VERIFIED"
+      ]
+    },
+    "FULL_REPRODUCTION_READY": {
+      "proven": false,
+      "reasons": [
+        "NO_FULL_DATA_CODE_TRAINING_RUNTIME_REPRODUCTION_VERIFIED"
+      ]
+    }
+  },
+  "reasons": [],
+  "comparisons_match": true,
+  "replayed_at": "2026-10-23T12:43:51.268405+00:00",
+  "historical_live_prediction_proven": false,
+  "manifest_sha256": "e5cfa9499898b4fce2b79c622c6b5d53e37acec8c86782730dff668b51a6abce",
+  "run_key": "2af8cd5acc924eeb12a7abd18f124c4db2371e13ad570b4f650836bc07094070",
+  "simulated_evaluation_times": [
+    "2024-03-01T18:00:00+08:00",
+    "2024-03-01T18:00:00+08:00"
+  ],
+  "publication_generated_at": "2026-10-23T12:43:49.534737+00:00",
+  "recomputed_hashes": {
+    "daily_metrics": "91de3412b717b99f390b2fd7f00ba4dc2a1e69f22a97bcb839115cbe67b60d45",
+    "paired_comparison": "b6027f6abdcd117bf65b737224af97184d44a665ce8c6080b143ce5d9cec9afb",
+    "rejection_ledger": "443a1d8e8d797a0739e8f049aa1c9da140a9af17b89e8fbc5de2520a613c0c0d"
+  },
+  "expected_hashes": {
+    "daily_metrics": "91de3412b717b99f390b2fd7f00ba4dc2a1e69f22a97bcb839115cbe67b60d45",
+    "paired_comparison": "b6027f6abdcd117bf65b737224af97184d44a665ce8c6080b143ce5d9cec9afb",
+    "rejection_ledger": "443a1d8e8d797a0739e8f049aa1c9da140a9af17b89e8fbc5de2520a613c0c0d"
+  },
+  "daily": {
+    "a": [
+      {
+        "signal_session": "2024-02-14",
+        "horizon": 5,
+        "valid_n": 3,
+        "stock_ids": [
+          "stock-0",
+          "stock-1",
+          "stock-2"
+        ],
+        "rank_ic": 0.9999999999999998,
+        "reasons": [],
+        "support_sha256": "9c89aeb06675ff7d37380cd794ee8aab0c9c3dee374921ad6b69d2da3c8f6fe2",
+        "requested_n": 3,
+        "excluded_n": 0,
+        "evaluation_identity": "2818cd77d6d7ff4b2934e579bce6a3e728666b72e6953516672928b6af153ed7"
+      },
+      {
+        "signal_session": "2024-02-14",
+        "horizon": 10,
+        "valid_n": 3,
+        "stock_ids": [
+          "stock-0",
+          "stock-1",
+          "stock-2"
+        ],
+        "rank_ic": 0.9999999999999998,
+        "reasons": [],
+        "support_sha256": "092c1b5e4fbb46e7e7371d427328515378105cda1a1d373e5276dd0899615b44",
+        "requested_n": 3,
+        "excluded_n": 0,
+        "evaluation_identity": "649cddd3cd02d8f228e36116a6253aa9f5ba9403c6cdf16e0216a5cbdc262ea3"
+      }
+    ],
+    "b": [
+      {
+        "signal_session": "2024-02-14",
+        "horizon": 5,
+        "valid_n": 3,
+        "stock_ids": [
+          "stock-1",
+          "stock-2",
+          "stock-3"
+        ],
+        "rank_ic": -0.9999999999999998,
+        "reasons": [],
+        "support_sha256": "d4eb84c52e3a4bbe93b4c565d259acee69e152baedf42d5636596fdbc04f0781",
+        "requested_n": 3,
+        "excluded_n": 0,
+        "evaluation_identity": "b0462418a38f05f91bf569985e8d150e09829fa3eaa6c22c1463969e2d40325e"
+      },
+      {
+        "signal_session": "2024-02-14",
+        "horizon": 10,
+        "valid_n": 3,
+        "stock_ids": [
+          "stock-1",
+          "stock-2",
+          "stock-3"
+        ],
+        "rank_ic": -0.9999999999999998,
+        "reasons": [],
+        "support_sha256": "7641189da05fd8706f3604ac3879e1268ef779530711e0f26272b673fe3cce9b",
+        "requested_n": 3,
+        "excluded_n": 0,
+        "evaluation_identity": "72de078024348e71150804713fad78e3f9cc817a70cf8be4041b026a759f0a23"
+      }
+    ]
+  },
+  "paired_daily": [
+    {
+      "signal_session": "2024-02-14",
+      "horizon": 5,
+      "valid_n": 2,
+      "stock_ids": [
+        "stock-1",
+        "stock-2"
+      ],
+      "support_sha256": "64a7e5870bb4fac63ce468b0c1c2c606dd32b03e5b5d4ad58dc5071e7b59c2fb",
+      "rank_ic_a": 0.9999999999999998,
+      "rank_ic_b": -0.9999999999999998,
+      "delta_b_minus_a": -1.9999999999999996,
+      "reasons": [],
+      "requested_a": 3,
+      "requested_b": 3,
+      "union_n": 4,
+      "excluded_union_n": 2
+    },
+    {
+      "signal_session": "2024-02-14",
+      "horizon": 10,
+      "valid_n": 2,
+      "stock_ids": [
+        "stock-1",
+        "stock-2"
+      ],
+      "support_sha256": "e621da584bd59e6bbce0f0aadcd9e66f3363601ecf28514eea46059d4450450a",
+      "rank_ic_a": 0.9999999999999998,
+      "rank_ic_b": -0.9999999999999998,
+      "delta_b_minus_a": -1.9999999999999996,
+      "reasons": [],
+      "requested_a": 3,
+      "requested_b": 3,
+      "union_n": 4,
+      "excluded_union_n": 2
+    }
+  ],
+  "rejection_ledger": {
+    "schema": "v7-replay-rejections-v1",
+    "evaluations": {
+      "a": [],
+      "b": []
+    },
+    "comparison": [
+      {
+        "signal_session": "2024-02-14",
+        "stock_id": "stock-0",
+        "horizon": 5,
+        "reasons_a": [],
+        "label_reference_a": {
+          "stock_id": "stock-0",
+          "signal_session": "2024-02-14",
+          "horizon": 5,
+          "label_id": "stock-0-2024-02-14-5",
+          "label_metadata_sha256": "3f0d8de09c848a17d0fccdf69500870aa8af10dd3af2a59277531ce483320588"
+        },
+        "reasons_b": [
+          "MISSING_PREDICTION"
+        ],
+        "label_reference_b": null
+      },
+      {
+        "signal_session": "2024-02-14",
+        "stock_id": "stock-0",
+        "horizon": 10,
+        "reasons_a": [],
+        "label_reference_a": {
+          "stock_id": "stock-0",
+          "signal_session": "2024-02-14",
+          "horizon": 10,
+          "label_id": "stock-0-2024-02-14-10",
+          "label_metadata_sha256": "0e8ec0815a4934740461f97891ac51347f2afa180124e1dce7415592a508c13f"
+        },
+        "reasons_b": [
+          "MISSING_PREDICTION"
+        ],
+        "label_reference_b": null
+      },
+      {
+        "signal_session": "2024-02-14",
+        "stock_id": "stock-3",
+        "horizon": 5,
+        "reasons_a": [
+          "MISSING_PREDICTION"
+        ],
+        "label_reference_a": null,
+        "reasons_b": [],
+        "label_reference_b": {
+          "stock_id": "stock-3",
+          "signal_session": "2024-02-14",
+          "horizon": 5,
+          "label_id": "stock-3-2024-02-14-5",
+          "label_metadata_sha256": "b1f6bc0216a7a1c34e601d112095ff8881732952c5011adf574c8b47b66c42e0"
+        }
+      },
+      {
+        "signal_session": "2024-02-14",
+        "stock_id": "stock-3",
+        "horizon": 10,
+        "reasons_a": [
+          "MISSING_PREDICTION"
+        ],
+        "label_reference_a": null,
+        "reasons_b": [],
+        "label_reference_b": {
+          "stock_id": "stock-3",
+          "signal_session": "2024-02-14",
+          "horizon": 10,
+          "label_id": "stock-3-2024-02-14-10",
+          "label_metadata_sha256": "abe0e7155d88c434d3800ee10f5d38510be9e4ad5f584f9b23285fb9bbe1ae17"
+        }
+      }
+    ]
+  },
+  "exposure_events_retained": 0
+}

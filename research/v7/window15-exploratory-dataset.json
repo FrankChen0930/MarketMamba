@@ -1,0 +1,27 @@
+{
+  "schema": "v7-exploratory-dataset-proposal-v1",
+  "dataset_id": "v7-exploratory-ohlcv-dataset-v0.1",
+  "track": "A_EXPLORATORY_HISTORICAL",
+  "status": "PROPOSED",
+  "admitted": false,
+  "data_content_sha256": null,
+  "restore_bytes_ref": null,
+  "source_license_matrix_ref": "research/v7/window15-license-matrix.json",
+  "requested_data_class": null,
+  "candidate_data_classes": [
+    "VERIFIED_HISTORICAL_ASOF",
+    "CONDITIONAL_RESEARCH_PROXY",
+    "RETROSPECTIVE_ONLY",
+    "UNKNOWN / REJECTED"
+  ],
+  "historical_original_vintage_verified": false,
+  "source_dataset_candidates": [
+    "11549",
+    "11371"
+  ],
+  "historical_endpoint_use_granted": false,
+  "calendar_identity": null,
+  "historical_universe_identity": null,
+  "label_contract_identity": null,
+  "maturity_policy": null
+}

@@ -1,0 +1,15 @@
+{
+  "acknowledgment": null,
+  "automatic_updates_performed": false,
+  "changed": [
+    "research/v7/window31-study.py"
+  ],
+  "matched_rules": {
+    "research/v7/window31-study.py": [
+      "DEFAULT"
+    ]
+  },
+  "potential_knowledge_impact": [],
+  "schema_version": 1,
+  "status": "PASS"
+}

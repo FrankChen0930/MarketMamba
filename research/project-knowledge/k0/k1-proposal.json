@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "classification": "PROPOSAL_NOT_IMPLEMENTED",
+  "recommendation":"HYBRID",
+  "rationale":["repo knowledge follows branches and is agent-readable","external Obsidian remains useful for private thinking and rich navigation","a single canonical repo layer avoids Windows/WSL path and duplication drift"],
+  "structure": [
+    {"path":"knowledge/00_Project_Map/Current_State.md","purpose":"short current truth and blockers","owner":"project maintainer","update_rule":"active state or authority change"},
+    {"path":"knowledge/00_Project_Map/Authority_Map.md","purpose":"human-readable topic authority index","owner":"project maintainer","update_rule":"authority or supersession change"},
+    {"path":"knowledge/01_Domains/<Domain>.md","purpose":"stable domain contracts and boundaries","owner":"domain change author","update_rule":"semantic/boundary/limitation change"},
+    {"path":"knowledge/02_History/","purpose":"dated decisions, migrations and superseded states","owner":"change author","update_rule":"material milestone/deprecation"},
+    {"path":"knowledge/_generated/","purpose":"scanner outputs and drift reports","owner":"automation","update_rule":"regenerate, never hand-edit"}
+  ],
+  "current_state_schema":["observed_at","production_path","research_baseline","strict_gate_status","historical_simulation_status","active_experiment","active_branches","known_blockers","next_decision","authority_links"],
+  "authority_map_schema":["topic","canonical_path","status","supersedes","secondary_evidence","conflicts","notes"],
+  "domains":["Data","Features","Models","Training","Labels","Universe","Execution","Portfolio","Production","Operations","UI"],
+  "domain_note_schema":["what","why","authority","implementation","inputs","outputs","boundaries","current_status","known_issues","do_not_use"],
+  "migration_sequence":["create Current_State and human Authority_Map","add domain notes from accepted K0 evidence","thin AGENTS/CLAUDE into navigation","link external Obsidian to repo canonicals","add drift checker after structure stabilizes"],
+  "do_not_do":["copy all historical notes into canonical knowledge","make K0 generated files canonical","duplicate current state in multiple agent guides"]
+}

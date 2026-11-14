@@ -1,0 +1,42 @@
+{
+  "schema": "data-recovery-v0.4-design-and-offline-reference",
+  "status": "HUMAN_CONFIRMED_DIRECTION_OFFLINE_IMPLEMENTATION_NOT_ACTIVATED",
+  "normal_capture": {
+    "time_candidate": "19:00 Asia/Taipei actual trading sessions",
+    "max_normal_GET_per_market_resource_expected_session": 1,
+    "raw_capture_not_failed_for_partial_security_missing": true
+  },
+  "content_recovery": {
+    "time_candidate": "07:00 Asia/Taipei",
+    "max_extra_content_cycle_per_market_resource_observation_session": 1,
+    "whole_resource_not_single_stock": true,
+    "required": [
+      "necessary stock/feature affected",
+      "pinned traceable plausible source update rationale",
+      "not confirmed legitimate-no-price/suspension/outside scope",
+      "unused content cycle",
+      "source permission/quota/no stop signal"
+    ],
+    "response_session_must_equal_target": true,
+    "after_same_content_or_still_missing": "STOP; no artificial success; queue only pending lawful backfill path"
+  },
+  "network_retry": {
+    "separate_counter": true,
+    "candidate_max": 2,
+    "reference_scope": "shared across normal/content cycles per market/resource/session; physical reference cap4=normal1+content1+network2",
+    "actual_retry_count_interval_scope": "HUMAN_FREEZE_REQUIRED_BEFORE_ACTIVATION",
+    "stop_http": [
+      402,
+      403,
+      429
+    ],
+    "no_unapproved_fallback": true
+  },
+  "offline_reference": {
+    "status": "OFFLINE_REFERENCE_NOT_ACTIVATED",
+    "content_limit": 1,
+    "network_retry_limit": 2,
+    "physical_limit": 4
+  },
+  "review_resolution": "R1_CLOSED_window35-review-closure.json; no activation authorization"
+}

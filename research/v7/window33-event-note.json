@@ -1,0 +1,14 @@
+{
+  "security": "8422",
+  "observed_pre_gap": [
+    "2025-11-04",
+    "2025-11-05"
+  ],
+  "first_after_gap": "2025-11-17",
+  "missing_observed_market_sessions": 7,
+  "classification": "SUSPECTED_UNIT_DISCONTINUITY_NOT_CONFIRMED_CORPORATE_ACTION_OR_SUSPENSION",
+  "evidence": "W33 immutable raw panel; W29 fixed >=2 or<=.5 last-valid-close predicate; W26 saved event/network matrices have no matching8422 evidence",
+  "bounded_cross_source_check": "W16/W18 official2026-10-22 OHLCV equal FinMind for8422, but no saved official2025-11 event-window source; cannot establish cause or conversion factor",
+  "handling": "existing W27/W29/W31 feature/holding-path flags retained; no price correction; no qualified training or scoring",
+  "new_price_metadata_requests_for_case": 0
+}

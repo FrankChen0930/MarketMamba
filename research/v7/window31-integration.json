@@ -1,0 +1,9 @@
+{
+  "main_before": "e83dfe68e4bc73b59cb6390ec130ba967138e7f1",
+  "main_after": "b64ac353833a9248121f12ebe61e1333decb2dbf",
+  "mode": "local ff-only",
+  "closure": "research/v7/window31-w30-closure.json",
+  "W30_regression": "6 mock-only tests PASS; 38 identity/restore pins verified",
+  "W19_operations": 0,
+  "W06_W12_integrated": false
+}

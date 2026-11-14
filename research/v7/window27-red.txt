@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window27-label-safety/research/v7/window27-tests.py", line 4, in <module>
+    m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap_external>", line 991, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 1128, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1186, in get_data
+FileNotFoundError: [Errno 2] No such file or directory: '/home/frank/projects/MarketMamba/.worktrees/v7-window27-label-safety/research/v7/window27-safety.py'

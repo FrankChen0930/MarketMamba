@@ -1,0 +1,215 @@
+{
+  "status": "CONTENT_IDENTITIES",
+  "base": "1d9a2a7a1ee57c455ba58250f63681efbbdd9050",
+  "cohort_freeze": "746ca04",
+  "source_repair": "eeb1016",
+  "panel_prefit": "16ea18d",
+  "final_HEAD": "git rev-parse HEAD after closure local commit",
+  "files": [
+    {
+      "path": "research/v7/window29-archive.py",
+      "bytes": 3397,
+      "sha256": "26507b07478ff7db6b15111bd9b1b7c2b96e4518340356a302e6cd63bcfcc1ec"
+    },
+    {
+      "path": "research/v7/window29-build-process.txt",
+      "bytes": 216,
+      "sha256": "8430eb8a36b4bfff097613a59b46e72228eeea39fed78df9d8b25cf9d62a4580"
+    },
+    {
+      "path": "research/v7/window29-capture-continuation.txt",
+      "bytes": 7112,
+      "sha256": "393a170082a95d4856d6edebcf7a2d0ff646c99309e54af5071907f49da9bc6e"
+    },
+    {
+      "path": "research/v7/window29-capture-process.txt",
+      "bytes": 3337,
+      "sha256": "1f00aa12f9f9e4fe49881a73780b0a0e0c64273466165dc6b5f49f3e77f9fddc"
+    },
+    {
+      "path": "research/v7/window29-cohort-process.txt",
+      "bytes": 221,
+      "sha256": "0a66c563479750f96fd67bca23e001de9c92e96e1788832fe8d39b340cce5a29"
+    },
+    {
+      "path": "research/v7/window29-cohort.json",
+      "bytes": 38205,
+      "sha256": "94c34c0960969ebbe813ea8ef750733a0d550c1f35e56458afb3113a3d77da85"
+    },
+    {
+      "path": "research/v7/window29-common.py",
+      "bytes": 2542,
+      "sha256": "52809d8cc3815577762d012287dbae829d6ddac65d495ac8b8a5120bbd780c27"
+    },
+    {
+      "path": "research/v7/window29-counter-red.txt",
+      "bytes": 838,
+      "sha256": "aea854598578704eb90cdfb5e977f299b4d9ea0f9da0ad3b2f2f945c2a08c0fd"
+    },
+    {
+      "path": "research/v7/window29-coverage.json",
+      "bytes": 6661,
+      "sha256": "29df14737dcabeaa28a22ec5661be2078f18e5c462c7df7b01d66856ed659030"
+    },
+    {
+      "path": "research/v7/window29-evidence.json",
+      "bytes": 4117,
+      "sha256": "64710457174cb543e1f2bdca710828fa861eeea89e983524d35449e0d7a04e78"
+    },
+    {
+      "path": "research/v7/window29-freeze.py",
+      "bytes": 5735,
+      "sha256": "9eab51c02af1b43b623c27eb649b32855b610b58eba39b3d50ba6db5a9d9d442"
+    },
+    {
+      "path": "research/v7/window29-integration.json",
+      "bytes": 421,
+      "sha256": "13c21bb265a9d290f8f2aa25ae0e32f5e8dadcd3ee95e10153e9b5b910cb6c83"
+    },
+    {
+      "path": "research/v7/window29-knowledge-health.txt",
+      "bytes": 237,
+      "sha256": "bf93f67ea1dfe58182f4c71dd1f609a034debb6e81c2599949e554cb6c78863c"
+    },
+    {
+      "path": "research/v7/window29-knowledge-impact.json",
+      "bytes": 607,
+      "sha256": "142db3dd2ab600c88df1880136db89296a24b24b8851d0c7dd12b0382b41e2ce"
+    },
+    {
+      "path": "research/v7/window29-knowledge-impact.txt",
+      "bytes": 607,
+      "sha256": "142db3dd2ab600c88df1880136db89296a24b24b8851d0c7dd12b0382b41e2ce"
+    },
+    {
+      "path": "research/v7/window29-label-removal-red.txt",
+      "bytes": 1400,
+      "sha256": "fb434d7e97b53a45fc1f5ed9202ff1efa7159b3b75fc57a9133ffad25a562d74"
+    },
+    {
+      "path": "research/v7/window29-lifecycle-red.txt",
+      "bytes": 1053,
+      "sha256": "3eebdd5dd2038d314ea84fc217d97162b0e4a47d81d5ed621cbd4d5033563c8a"
+    },
+    {
+      "path": "research/v7/window29-local-artifacts.json",
+      "bytes": 114424,
+      "sha256": "7798f68ccef6ef42d0dd248a8a0d19f933b3b55af3261e7aa5e84b53ad716ed6"
+    },
+    {
+      "path": "research/v7/window29-network.json",
+      "bytes": 357,
+      "sha256": "8f998918df197702784d4e31e56b5b4bfcbff9a851b6820eedd14aaab8c0ff04"
+    },
+    {
+      "path": "research/v7/window29-old-new-comparison.json",
+      "bytes": 2027,
+      "sha256": "7b02ac396188e538ecdb7f7fa89fad6a019e7c12ad5fd91d78c3606b4fcb531b"
+    },
+    {
+      "path": "research/v7/window29-panel.py",
+      "bytes": 3383,
+      "sha256": "742e8c85a24e1bb480174700a43e06a1df43fc54963e91795753505e9f6fe86a"
+    },
+    {
+      "path": "research/v7/window29-plan.json",
+      "bytes": 3325,
+      "sha256": "7e11bad479a1f8f5a2e8def16d873e31c61a3bf493391fa5c7ad7a1bb1463854"
+    },
+    {
+      "path": "research/v7/window29-red.txt",
+      "bytes": 901,
+      "sha256": "01b296f7096f6eba52230b21b506d57fbc2ffd8dbe4ddbfab4ce014c01b33a7a"
+    },
+    {
+      "path": "research/v7/window29-replay-process.txt",
+      "bytes": 513,
+      "sha256": "01a9f36b9431df228b8162ddfe364082541d73856cde18baed1cf05fd1df858a"
+    },
+    {
+      "path": "research/v7/window29-replay.json",
+      "bytes": 297,
+      "sha256": "f9e39fa165d2419c5f1f997ef852f0b56827089847073e7ff2d2f134a99eed1d"
+    },
+    {
+      "path": "research/v7/window29-resource-evidence.json",
+      "bytes": 1281,
+      "sha256": "05a8814450e05a07b13f835e703e10905d540d1667abbb7c19461bb233f195c6"
+    },
+    {
+      "path": "research/v7/window29-restore-process.txt",
+      "bytes": 253,
+      "sha256": "c81b4f6a42ee5208f6184a0197f7c0314cc519ef96321d30a2aaec3095c04d19"
+    },
+    {
+      "path": "research/v7/window29-results.json",
+      "bytes": 6798,
+      "sha256": "aa3a567cfbff0765b05d1d4025e18f86d86b873da2f91ebc41703ba46f15c915"
+    },
+    {
+      "path": "research/v7/window29-review.json",
+      "bytes": 986,
+      "sha256": "8c0e5d986d61e643c949a36cb344e283f1f3e46895a36735a6f19276d5809187"
+    },
+    {
+      "path": "research/v7/window29-run-process.txt",
+      "bytes": 6872,
+      "sha256": "8e5ee5d3eac34077f176075b9449c7204b3ac7ca18d6621052a6369acee8d328"
+    },
+    {
+      "path": "research/v7/window29-run.json",
+      "bytes": 3596,
+      "sha256": "12beb945d770f0f1442ecfcf83fb498621d92f29df63db74c8620bbd7964a34f"
+    },
+    {
+      "path": "research/v7/window29-source-recovery.json",
+      "bytes": 577,
+      "sha256": "089a5a2ddfabd06eadf2d885091215154354b14ce7563acbf4f523930beb67d8"
+    },
+    {
+      "path": "research/v7/window29-source-tests.py",
+      "bytes": 1477,
+      "sha256": "2d65988851952aeb667914adf5648d5686696cf36ba8e91ddee5db2d8a5e7a6e"
+    },
+    {
+      "path": "research/v7/window29-source-tests.txt",
+      "bytes": 102,
+      "sha256": "f956005d0fffd32ac4a36ab5c68098cf29abcd859b0dd83722c4ea73d78658fd"
+    },
+    {
+      "path": "research/v7/window29-sources.py",
+      "bytes": 7015,
+      "sha256": "2cf536a9dbf47e09bc2763f7017e3cf6d5bb7dfc0cc06b1b82bdf57235b96616"
+    },
+    {
+      "path": "research/v7/window29-study-tests.py",
+      "bytes": 2351,
+      "sha256": "5cbed799ecaaa6dca2ab90b26585e1f0adac0afdb0a58df8f40ebc242c5bf64d"
+    },
+    {
+      "path": "research/v7/window29-study-tests.txt",
+      "bytes": 102,
+      "sha256": "af55efa5c3ceb122f8184c380aa405d3f3b4e7e0c1e892773d0eff31d0645c8a"
+    },
+    {
+      "path": "research/v7/window29-study.py",
+      "bytes": 15538,
+      "sha256": "71ed78f7e28e7a57f9063136b9750e619801d371a15b6c31b64d6f28f4a44c57"
+    },
+    {
+      "path": "research/v7/window29-targeted-tests.txt",
+      "bytes": 109,
+      "sha256": "cf8d3a2572a7898fcf32a4c2dd1445509b3d59e66061853243c4627f80695068"
+    },
+    {
+      "path": "research/v7/window29-tests.py",
+      "bytes": 2861,
+      "sha256": "240703849e8bbca890e4a80e65b3b2ebbe1b30ae20eed7ef80e277828ed0f4f0"
+    },
+    {
+      "path": "reports/v7_window29_expanded_development.md",
+      "bytes": 8577,
+      "sha256": "f8e6be1ecf5667803e727ee65bf000b519bfcf3a378fca8a107d8995f2992ffd"
+    }
+  ]
+}

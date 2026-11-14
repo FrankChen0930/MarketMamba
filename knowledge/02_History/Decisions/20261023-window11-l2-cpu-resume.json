@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "authority": "Human Window11 Classical Baseline Completion & Real Training Resume Verification",
+  "status": "BOUNDED_SYNTHETIC_CPU_ENGINEERING",
+  "integration_source": "f25181637e40138c84dc3722292647d4325882fc",
+  "authorized": [
+    "localW10integration aftergates",
+    "isolated pinned official dependencies",
+    "two units actualL2 and tiny realPyTorchCPU interruptresume, <=2rework each"
+  ],
+  "not_authorized": [
+    "realhistoricalresearch/GPU/Colab/Mamba largefit",
+    "formalFrozenFeatureLabelResearchPolicy mutation",
+    "production/Windows/mainmergeofnewwork/push/deploy/nextwindow"
+  ]
+}

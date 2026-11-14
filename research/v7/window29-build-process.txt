@@ -1,0 +1,1 @@
+{"raw_rows": 48061, "feature_rows": 44899, "feature_rejected_rows": 4673, "core_N_distribution": {"60": 111, "61": 182, "62": 400, "59": 31, "58": 4, "63": 146, "64": 66}, "core_groups_below40": 0, "fit_gate": true}

@@ -1,0 +1,99 @@
+{
+  "status": "COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+  "authority": "HumanWindow29 DEVELOPMENT_ONLY; not formal admission/Independent Test",
+  "base": "1d9a2a7a1ee57c455ba58250f63681efbbdd9050",
+  "branch": "research/v7-window29-expanded-development",
+  "cohort_total": 68,
+  "W24_overlap": 0,
+  "prediction_stocks": 64,
+  "historical_universe_verified": false,
+  "selection": "HINDSIGHT_SELECTED industry/hash fixed before GET; no capital/RankIC/outcome selection;4delisted start/typeUNKNOWN no predictions",
+  "raw_requests": 68,
+  "metadata_requests": 0,
+  "raw_bytes": 8387840,
+  "recovery": "window29-source-recovery.json; immutable writer misused for mutable counters; prior capture untouched;seq2proven unsent;no real-query retry;600CPU seconds charged conservatively",
+  "fit_count": 2,
+  "LightGBM": "SKIPPED fixed existing recipe is synthetic-only <=64/toyfeatures",
+  "feature_label_isolation": "feature-only universe/predictions published before posthoc label join; label-value or whole-label-record removal cannot change predictions",
+  "prediction_count": 182178,
+  "raw_rows": 48061,
+  "feature_rows": 44899,
+  "core_N_range": [
+    58,
+    64
+  ],
+  "min_N": 40,
+  "core_groups": 940,
+  "mean_median_results": "window29-results.json",
+  "comparison": "window29-old-new-comparison.json",
+  "continued": "5d positive mean/median in2022/2023",
+  "not_continued": "10d consistent positive signal;2023 Ridge mean/median negative and2022mediannegative",
+  "tests": {
+    "feature_isolation": 10,
+    "source_budget_counter": 4,
+    "prediction_label_join": 4
+  },
+  "replay": "window29-replay.json PASS,0fit,raw-derivedfeatures/masks/daily/common_support reproduced",
+  "review": "window29-review.json GO Critical0 Required0",
+  "restore_files": 299,
+  "restore_bytes": 74612661,
+  "backup": "BACKUP_PENDING_SAME_HOST",
+  "CPU_charged_seconds_including_failed600": 647.740401,
+  "verification_CPU_reserve_seconds": 60,
+  "artifact_plus_restore_bytes": 149226490,
+  "code_commit_at_fits": "16ea18debf2a59aa2c64c091b6dc91fba95f8981",
+  "source_license_evidence": {
+    "manifest": "research/v7/window20-document-archive.json",
+    "sha256": "6b2f9d400693e15e359bb6d5cab8d09c6068a4b48baced9c47fbab129c979751",
+    "scope": "Existing approved anonymous Free/private noncommercial/attribution/no rawredistribution; no new legal permission inference"
+  },
+  "exposure_record": {
+    "prior_ledger": "research/v7/window26-exposure-ledger.json",
+    "training": "2021",
+    "validation": "2022 EXPOSED",
+    "diagnostic": "2023 EXPOSED",
+    "cohort": "window29-cohort.json",
+    "L0_NEG": "POST_W25_DEVELOPMENT_CONTROL",
+    "untouched_test": false
+  },
+  "limitations": [
+    "Current survivor/industry selection; ordinary/historical membership incomplete",
+    "UNKNOWN action/suspension/asof/vintage; raw not adjusted/total/executable return",
+    "2022/2023 exposed, no formal significance/winner",
+    "Cross-cohort protocol/support differences prevent strict OOS attribution"
+  ],
+  "protected": {
+    "StrictPhase0": "STOP",
+    "FormalAdmission": "NOT_APPROVED",
+    "W19": "PROTECTED_NO_OPERATIONS",
+    "W12_GPU": "SAFETY_HALTED",
+    "E1_matrix": "BLOCKED",
+    "H2": "NOT_APPROVED"
+  },
+  "zero_operations": [
+    "GPU",
+    "Colab",
+    "hyperparameter_search",
+    "bootstrap_LOSO",
+    "V6_changes",
+    "W19_operations",
+    "production",
+    "push",
+    "deploy"
+  ],
+  "observed_at": "2026-10-25T10:21:45.727037+00:00",
+  "environment": {
+    "python": "3.12.3",
+    "numpy": "2.0.2",
+    "torch": "2.10.0+cpu",
+    "unused_LightGBM_installed": "4.6.0",
+    "device": "CPU",
+    "threads": "OPENBLAS/MKL/OMP=1",
+    "MARKETMAMBA_DATA_ROOT": "UNSET",
+    "main_Data_realpath": "/home/frank/projects/MarketMamba/Data",
+    "actual_data": "pinned private W22 official snapshots and W29 raw; no production/Data payload consumed",
+    "interpreter": "W11 isolated venv"
+  },
+  "review_rework_rounds": 0,
+  "historical_decision_semantics": "logical signal-session close using current retrospective version; historical actual publication/vintage remains UNKNOWN, not an admitted pre-next-open policy"
+}

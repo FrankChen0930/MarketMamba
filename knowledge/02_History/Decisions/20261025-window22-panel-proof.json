@@ -1,0 +1,13 @@
+{
+  "authority": "HumanWindow22",
+  "status": "ENGINEERING_PROOF_COMPLETE_RESEARCH_ADMISSION_NOT_APPROVED",
+  "base": "428a5fa5cb7b771db39a053f88c7046501399f7e",
+  "evidence": "research/v7/window22-evidence.json",
+  "decisions": [
+    "Only W21ff integration approved",
+    "10priceGETcontinuous proof, no new research semantics",
+    "W19PROTECTED;W12SAFETY_HALTED"
+  ],
+  "proposal": "Ten-symbol2019–2023 retrospective CPUstudy only after calendar/universe/action/label/eval decisions; not adopted",
+  "stop": "STOP_AFTER_LOCAL_COMMIT"
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "classification": "GENERATED_DISCOVERY_NOT_CANONICAL",
+  "snapshot":{"test_pattern_files":26,"note":"Count excludes tests present only on non-current branches and untracked main candidates may increase it."},
+  "subsystems": [
+    {"name":"fetch-only operational regression","categories":["operational","workflow"],"paths":["V6/scripts/test_v62_fetch_only.py"],"strength":"MEDIUM","coverage":"guards early exit before matrix/inference/publication","gaps":["external scheduler","provider availability"]},
+    {"name":"V7 correctness/PIT","categories":["policy","experimental","acceptance"],"paths":["V6/experimental/v7_*_test.py"],"strength":"STRONG","coverage":"PIT, lifecycle, provenance, label and STOP semantics","gaps":["official-source coverage is evidence-dependent"]},
+    {"name":"corrected E5/E1","categories":["model","workflow","acceptance"],"paths":["V6/experimental/v7_e1_*_test.py","V6/experimental/v7_corrected_e5_*_test.py"],"strength":"STRONG","coverage":"contract, matrix identity, checkpoint recovery, paired evaluation","gaps":["Colab preemption and Drive behavior require end-to-end runs"]},
+    {"name":"V7 portfolio","categories":["policy","state-machine","replay"],"paths":["V6/experimental/v7_portfolio_*_test.py"],"strength":"STRONG","coverage":"fills, costs, actions, journal integrity, replay","gaps":["no live broker integration"]},
+    {"name":"Phase A ops ledger","categories":["production-ops","concurrency","projection"],"paths":["feature/production-phase-a-shadow-ledger: V6/tests/test_ops_*.py"],"strength":"STRONG_ON_BRANCH","coverage":"schema, WAL, fencing, transactional commits, sanitization, projection","gaps":["not merged/deployed","only fetch-only observed"]},
+    {"name":"API/UI V7 status","categories":["API","frontend contract"],"paths":["app/backend/test_v7.py","app/frontend/src/api/v7.test.mjs","app/frontend/src/components/runStatusSummary.test.mjs"],"strength":"CANDIDATE","coverage":"fail-closed payload and rendering","gaps":["files are untracked on main","no deployment/browser acceptance"]},
+    {"name":"legacy V6.1/V6.2 end-to-end","categories":["operational","model","portfolio"],"paths":[],"strength":"WEAK","coverage":"scattered unit/regression checks","gaps":["no authoritative full scheduled E2E","mutable external data","publication integration"]},
+    {"name":"documentation/authority drift","categories":["knowledge"],"paths":[],"strength":"NONE","coverage":"manual K0 only","gaps":["no dead-link, duplicate-authority or stale-current-state checker"]}
+  ]
+}

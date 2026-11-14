@@ -1,0 +1,12 @@
+{
+  "status": "LOCAL_FF_ONLY_INTEGRATED",
+  "before_main": "39e2fedeb550a08d00f4abddc9a6caa7b1d570f8",
+  "fixed_source": "1d9a2a7a1ee57c455ba58250f63681efbbdd9050",
+  "after_main": "1d9a2a7a1ee57c455ba58250f63681efbbdd9050",
+  "review": "W28 GO Critical0 Required0",
+  "focused_tests": 6,
+  "deliverable_private_pins": 35,
+  "restore_hashes": "PASS",
+  "source_main_clean": true,
+  "other_candidates_integrated": false
+}

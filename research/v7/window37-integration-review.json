@@ -1,0 +1,39 @@
+{
+  "schema": "w37-stage-a-independent-review-v1",
+  "status": "GO_BOUNDED_INTEGRATION",
+  "critical": 0,
+  "required": 0,
+  "base": "72d35e78a3372d79373064a31dc6891d5ca3db83",
+  "source": "82cd49c25e585d857c05e9835af6c77f6ac9e860",
+  "scope": "Stage A of same W37 review only: necessary readonly model loader/scores and byte-identical metadata; not full W34 audit or Stage B acceptance.",
+  "independent_checks": {
+    "tests_passed": 2,
+    "seconds": 0.298,
+    "original_scores_replayed": 512,
+    "ported_JSON_exact_Git_bytes": 8,
+    "scores_AST": "exact match W34 research/v7/window34-model.py",
+    "identity": "prepared/run/envelope/models/recipe/features/scaler JSON and runtime package/native-library SHA verified by loader",
+    "git_diff_check": "PASS",
+    "maps": "Current/Authority/solebacklog/Worktree/Training/machine navigation inspected; bounded pending integration, W36 separate and protected"
+  },
+  "pins": {
+    "V6/experimental/v7_shadow_models.py": "0e9faa75e77d62f9ce53b52d74bff35a5f988df0442f3a966f3937158a7d13d9",
+    "research/v7/window37-model-adoption.json": "29bdce62febc6f00b7566d20ded26b2854586737c86cb8363457e75dbebb0984",
+    "research/v7/window37-model-tests.py": "5286ad62bf0e1396c7aece1511e5fcc20a3a52e3c42a4c422049875feee7aeb8"
+  },
+  "warnings": [
+    "Original model bytes remain local external artifacts; adoption metadata does not create an independent backup.",
+    "No production/StrictPIT or forward admission granted. Stage B manual preopen still requires its incremental review.",
+    "Owner to align sole backlog top planning-owner label from W35 to W37 before commit."
+  ],
+  "remaining_owner_gates": "Run planned W35 regression/governance; commit reviewed bounded candidate and verify authorized ff-only ancestry. Reviewer did not merge.",
+  "operations": {
+    "GET": 0,
+    "Fit": 0,
+    "GPU": 0,
+    "Task_operations": 0,
+    "W36_writes": 0,
+    "offline_replay_only": 512
+  },
+  "observed_at": "2026-11-02T15:26:00.776889+00:00"
+}

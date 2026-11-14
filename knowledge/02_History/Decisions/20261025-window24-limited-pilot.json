@@ -1,0 +1,16 @@
+{
+  "authority": "HumanWindow24",
+  "status": "LIMITED_PILOT_AUTHORIZATION_EXERCISED_FORMAL_RESEARCH_ADMISSION_NOT_APPROVED",
+  "base": "87af76b038fcbbda9e1e4b3a4349e693a3b1ba48",
+  "evidence": "research/v7/window24-evidence.json",
+  "cohort": "research/v7/window24-cohort.json",
+  "label_recipe": "research/v7/window24-label-recipe.json",
+  "decisions": [
+    "OnlyW23ffintegration",
+    "Cohortfixedbefore31GETs;nooutcomereselection",
+    "Rawproxylimitedcomparisonfixedrecipe,N>=20,2Ridgefits;nosuperiorityclaim",
+    "Allstrictmask/frozencontracts unchanged;W19PROTECTED"
+  ],
+  "remaining": "Formaluniverse/calendar/actions/availability/label/evaluation/compute policies Human-only; independentbackup pending",
+  "stop": "STOPafterlocalcommit;noW24merge"
+}

@@ -1,0 +1,209 @@
+{
+  "schema_version": "v7-corrected-e5-training-lifecycle-audit-v1",
+  "baseline": "E5-PIT-Clean-v1",
+  "intent": "faithful incumbent lifecycle replication; no training-variable search",
+  "authority_order": [
+    "final incumbent E5 runner actually used",
+    "completed result manifest",
+    "final delivery artifacts",
+    "archived Colab runner",
+    "earlier draft/config only if higher-authority source absent"
+  ],
+  "sources": {
+    "final_runner": {
+      "path": ".artifacts/v7-confirmation-verification/package-source/V6/experimental/v7_experiment_train.py",
+      "sha256": "ce5b323ff44bf5b1325d9185c3317aa5aa79403b085fda96f8f2dec31c2cdf8e",
+      "authority": "final incumbent E5 runner actually used"
+    },
+    "suite_runner": {
+      "path": ".artifacts/v7-confirmation-verification/package-source/V6/experimental/v7_experiment_suite.py",
+      "sha256": "2b14cae8ee386a2970e6d9cb1aecbb24256e37a504504825a751e04427467d20",
+      "authority": "final incumbent E5 runner actually used"
+    },
+    "checkpoint_store": {
+      "path": ".artifacts/v7-confirmation-verification/package-source/V6/experimental/v7_experiment_storage.py",
+      "sha256": "25e4535b77293d92ca358c404a5f2658c484ff95a009a153cacd6444097a6676",
+      "authority": "final incumbent E5 runner actually used"
+    },
+    "seed17_result": {
+      "path": "deliveries/capacity-v1-fp32/E5-state32/result.json",
+      "sha256": "26ecbfe1e9b28b806e23a04361506894b31e0531c3e937da07b0dd990490ec05",
+      "authority": "completed result manifest"
+    },
+    "confirmation_summary": {
+      "path": "deliveries/confirmation-v1-fp32/summary.json",
+      "sha256": "0076bb8fcda7f0f920d761c9da995f0b01c3ba45b200ba2910657ac3a31a769b",
+      "authority": "final delivery artifact"
+    }
+  },
+  "warmup": {
+    "warmup_enabled": true,
+    "type": "linear multiplier warmup",
+    "cadence": "per successful optimizer update",
+    "warmup_fraction": 0.15,
+    "warmup_steps_formula": "max(1, floor(total_planned_optimizer_updates * 0.15))",
+    "starting_lr_factor": 0.04,
+    "starting_lr": 0.000004,
+    "target_lr_factor": 1,
+    "target_lr": 0.0001,
+    "transition_scheduler": "cosine decay",
+    "evidence": [
+      "v7_experiment_suite.py:27-31",
+      "v7_experiment_train.py:23-30,61-63,150-152"
+    ],
+    "authority": "final incumbent E5 runner actually used",
+    "confidence": "high"
+  },
+  "scheduler": {
+    "implementation": "torch.optim.lr_scheduler.LambdaLR",
+    "optimizer": "AdamW",
+    "base_learning_rate": 0.0001,
+    "weight_decay": 0.01,
+    "step_cadence": "after each successful optimizer update; skipped no-target batches do not advance",
+    "total_steps_formula": "len(train_daily_cross_sections) * 20",
+    "post_warmup": "cosine decay",
+    "minimum_lr_factor": 0.0001,
+    "minimum_lr": 1e-8,
+    "state_serialized": true,
+    "resume_semantics": "load optimizer and scheduler state before continuing at saved batch/phase",
+    "evidence": [
+      "v7_experiment_suite.py:27-31",
+      "v7_experiment_train.py:59-73,116,150-152"
+    ],
+    "authority": "final incumbent E5 runner actually used",
+    "confidence": "high"
+  },
+  "early_stopping": {
+    "enabled": true,
+    "monitored_metric": "mean daily Rank IC 5d",
+    "direction": "maximize",
+    "patience": 5,
+    "minimum_delta": 0,
+    "best_improvement_rule": "score > best_metric",
+    "patience_reset_rule": "score > patience_reference + min_delta",
+    "tie_handling": "tie is not improvement and increments bad_epochs",
+    "first_eligible_epoch_formula": "max(min_epochs=5, ceil(epochs=20 * warmup_fraction=0.15) + 1)",
+    "first_eligible_epoch": 5,
+    "pre_eligibility_epochs_update_counter": true,
+    "scheduler_interaction": "none; scheduler continues per optimizer update until stop gate fires",
+    "evidence": [
+      "v7_experiment_suite.py:27-31",
+      "v7_experiment_train.py:32-48,218-239",
+      "deliveries/capacity-v1-fp32/E5-state32/result.json"
+    ],
+    "authority": "final incumbent E5 runner plus completed result manifest",
+    "confidence": "high"
+  },
+  "best_checkpoint": {
+    "selection_metric": "mean daily Rank IC 5d",
+    "comparison": "strict greater-than",
+    "saved_after": "completed epoch validation",
+    "best_generation_independent_from_latest": true,
+    "final_ic10_semantics": "IC10 is taken from the same epoch selected by IC5",
+    "required_for_completed_result": true,
+    "final_corrected_replication_requirement": "reload BEST, never LAST, before final predictions and metrics",
+    "evidence": [
+      "v7_experiment_train.py:218-245",
+      "v7_experiment_storage.py:56-108",
+      "v7_confirmation_suite.py:114-127",
+      "v7_confirmation_design.py:16-25"
+    ],
+    "authority": "final incumbent runner and final confirmation runner",
+    "confidence": "high"
+  },
+  "checkpoint_resume": {
+    "supported_granularity": [
+      "training batch",
+      "validation daily cross-section",
+      "epoch boundary"
+    ],
+    "saved_state": [
+      "model",
+      "optimizer",
+      "scheduler",
+      "scaler",
+      "epoch",
+      "batch",
+      "global step",
+      "phase",
+      "validation index",
+      "partial validation rows",
+      "best metric",
+      "patience reference",
+      "bad epochs",
+      "training history",
+      "loss accumulators",
+      "head counts",
+      "Python RNG",
+      "NumPy RNG",
+      "PyTorch CPU RNG",
+      "PyTorch CUDA RNG",
+      "data/config/suite identity"
+    ],
+    "durability": "immutable payload, SHA-256 verification, atomic pointer, latest/previous/best generations",
+    "mismatch_behavior": "fail closed",
+    "corruption_behavior": "fall back latest to previous; fail if no verified generation",
+    "evidence": [
+      "v7_experiment_train.py:32-36,67-94,103-245",
+      "v7_experiment_storage.py:56-108"
+    ],
+    "authority": "final incumbent E5 runner actually used",
+    "confidence": "high"
+  },
+  "incumbent_observed_result": {
+    "best_epoch": 12,
+    "last_epoch": 17,
+    "best_rank_ic_5d": 0.11447641659098151,
+    "stop_reason": "early_stopping",
+    "demonstrates_best_not_last": true,
+    "source": "deliveries/capacity-v1-fp32/E5-state32/result.json",
+    "authority": "completed result manifest",
+    "confidence": "high"
+  },
+  "corrected_implementation_audit": {
+    "status_before_remediation": "PARTIAL",
+    "faithful_fields": [
+      "AdamW",
+      "learning_rate",
+      "weight_decay",
+      "warmup_fraction",
+      "linear-warmup/cosine factor",
+      "per-update scheduler step",
+      "epochs",
+      "patience",
+      "minimum epochs",
+      "strict IC5 comparison",
+      "same-checkpoint IC10",
+      "model/optimizer/scheduler/RNG checkpoint payload",
+      "contract and matrix identity"
+    ],
+    "blocking_gaps": [
+      "no resumable validation phase/index/partial rows",
+      "no explicit patience_reference",
+      "no explicit best_epoch",
+      "no stop_reason in final result",
+      "single-file checkpoint lacks incumbent latest/previous corruption recovery",
+      "no deterministic continuous-versus-resumed equivalence proof",
+      "no explicit BEST-not-LAST final prediction proof"
+    ],
+    "remediation_rule": "correct implementation to match incumbent lifecycle without changing any recipe value"
+  },
+  "frozen_recipe": {
+    "epochs": 20,
+    "patience": 5,
+    "minimum_epochs": 5,
+    "minimum_delta": 0,
+    "learning_rate": 0.0001,
+    "weight_decay": 0.01,
+    "warmup_fraction": 0.15,
+    "minimum_lr_factor": 0.0001,
+    "gradient_clip": 1,
+    "precision": "fp32",
+    "selection_metric": "mean_daily_rank_ic_5d",
+    "seeds": [
+      17,
+      29,
+      43
+    ]
+  }
+}

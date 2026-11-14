@@ -1,0 +1,12 @@
+======================================================================
+FAIL: test_stale_or_unknown_freshness_stored_but_not_qualified (V6.experimental.v7_vintage_dryrun_test.VintageDryrunTest.test_stale_or_unknown_freshness_stored_but_not_qualified)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window15-dual-track/V6/experimental/v7_vintage_dryrun_test.py", line 62, in test_stale_or_unknown_freshness_stored_but_not_qualified
+    self.assertIn(r.get('capture_class',r.get('attempt_capture_class')),('UNQUALIFIED_CAPTURE',))
+AssertionError: 'ORIGINAL_FORWARD_CAPTURE' not found in ('UNQUALIFIED_CAPTURE',)
+
+----------------------------------------------------------------------
+Ran 1 test in 0.134s
+
+FAILED (failures=1)

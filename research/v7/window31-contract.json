@@ -1,0 +1,78 @@
+{
+  "schema": "w31-fixed-expanding-development-v1",
+  "study_id": "W31_FIRST_EXPANDING_CPU_DEVELOPMENT",
+  "source_commit": "b64ac353833a9248121f12ebe61e1333decb2dbf",
+  "authority": "HumanWindow31 limited DEVELOPMENT_ONLY; not formal research/data admission",
+  "data": "Exact W29 frozen cohort/current historical raw2021-2023/two feature rows/calendar; no API or new security/event data",
+  "origin_anchors": [
+    "2023-01-01",
+    "2023-04-01",
+    "2023-07-01"
+  ],
+  "next_quarter_anchors": [
+    "2023-04-01",
+    "2023-07-01",
+    "2023-10-01"
+  ],
+  "origin_resolution": "first qualified shared calendar session at/after quarter anchor",
+  "validation": "signals in [calendar anchor minus12months, quarter anchor); actual sessions resolved in manifest",
+  "training": "earlier feature-eligible signals starting2021; only numerical/safety-eligible labels with exit<first validation session",
+  "validation_diagnostic": "all validation feature-only predictions, joined only to eligible labels with exit<origin",
+  "refit": "fresh model/run/scaler on ALL numerical/safety-eligible source samples whose signal<origin and exit<origin; includes mature former-validation and formerly boundary-purged samples; not checkpoint resume",
+  "forward": "all current/past-only feature predictions whose signal in [origin,nextquarteranchor); evaluation after labels mature, allowing holdings across quarter boundary",
+  "clocks": {
+    "validation_training_freeze": "validation first session T00:00Asia/Taipei",
+    "refit_freeze": "origin T00:00Asia/Taipei",
+    "model_ready": "origin T09:00Asia/Taipei",
+    "evaluation_cutoff": "2024-01-01T00:00:00+08:00",
+    "meaning": "logical retrospective proxy only; actual source publication/vintage UNKNOWN; actual offline execution2026 not historical execution"
+  },
+  "purge": "horizon-dependent exclude labels whose exit reaches next role boundary; additional purge/embargo0, NOT E5fixed30. Shared past feature lookback is allowed known history, not independence. No forward labels in current fits.",
+  "safety": "W27 missing/zero/finite/consistentOHLC and full holding path; W29 known/suspected event policy unchanged. Recompute role-neutral numeric labels from same raw because old masks freeze2021/2022split; do not relabel old research roles to bypass guards.",
+  "label_formula": "rawclose[t+h]/rawopen[t+1]-1, shared-market sessions, h5/10; no fill or price adjustment; not executable/total return",
+  "models": {
+    "L0_POS": {
+      "direction": 1
+    },
+    "L0_NEG": {
+      "direction": -1,
+      "role": "POST_W25_DEVELOPMENT_CONTROL"
+    },
+    "Ridge": {
+      "alpha": 1.0,
+      "scaling": "OWN_AUTHORIZED_TRAIN_ONLY_ZSCORE",
+      "seed": 0
+    },
+    "LightGBM": "exact W30recipe config/version/64rounds, no validation earlystop/search"
+  },
+  "prediction_universe": "W29 feature-only rows by decision session/known interval; never outcome mask. No origin-forward event/result/label used to choose current predictions. Numeric label table is isolated from model scoring interface.",
+  "execution_order": "Per origin: fit fixed validation models, publish validation feature-only predictions and diagnostic metrics; no metrics argument/read in fit function. Then fresh refit all fixed models and publish forward predictions. Defer all forward evaluation until completed origins have finished, never feed forward metrics into any fit.",
+  "evaluation": {
+    "min_valid_n": 40,
+    "tie_policy": "AVERAGE",
+    "aggregation_weighting": "EQUAL_SESSION",
+    "statistical_policy": "NOT_CONFIGURED_NO_INFERENCE"
+  },
+  "acceptance": "W07 check_fold geometry ELIGIBLE is not PIT admission; every fit view verifies identity/role/exit cutoff. Nonempty train/refit, core validation/forward N>=40 before fit; block offending origin, do not relax thresholds.",
+  "exposure": "2023 alreadyEXPOSED; later validation/refit may reuse earlier-origin mature forward-period labels, recorded as historical data reuse, never current forward metric tuning. Overlapping train/validation folds are dependent, not independent tests.",
+  "budget": {
+    "Ridge_fits": 12,
+    "LightGBM_fits": 12,
+    "CPU_seconds": 1800,
+    "verification_reserve": 60,
+    "stage_CPU_wall_seconds": 300,
+    "artifact_plus_restore_bytes": 536870912,
+    "admin_reserve_bytes": 16777216,
+    "API_GPU_Colab": 0
+  },
+  "boundaries": [
+    "StrictSTOP",
+    "FormalAdmissionNOT_APPROVED",
+    "W19PROTECTED",
+    "W12SAFETY_HALTED",
+    "E1BLOCKED",
+    "H2NOT_APPROVED",
+    "NoFrozenContracts/V6/Production/Scheduler change",
+    "NoW31merge/push/deploy/nextwindow"
+  ]
+}

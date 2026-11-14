@@ -1,0 +1,12 @@
+KNOWLEDGE HEALTH
+
+Project Map        FAIL
+Agent Guides       PASS
+Domains            PASS
+Governance         WARNING
+Authority Drift    WARNING
+Runtime Freshness  PASS
+Generated Index    PASS
+Legacy Docs        WARNING
+
+Overall: FAIL

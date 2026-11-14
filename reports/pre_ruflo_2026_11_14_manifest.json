@@ -1,0 +1,1706 @@
+{
+  "schema_version": "marketmamba-preservation-baseline-v1",
+  "artifact_class": "ARCHIVE",
+  "evidence_class": "DEVELOPMENT_SOURCE_PRESERVATION_NOT_DISASTER_RECOVERY",
+  "name": "pre-ruflo-2026-11-14",
+  "observed_at": "2026-11-14T14:29:14.235847+00:00",
+  "repository": {
+    "url": "https://github.com/FrankChen0930/MarketMamba",
+    "visibility": "PUBLIC",
+    "remote_name": "origin",
+    "verified_remote_main": "50c5b785e8c373913c3301a056497eb955f36681",
+    "push": "NOT_PERFORMED_HUMAN_HOLD",
+    "fresh_remote_clone": "public-remote-audit.git; read-only security evidence, NOT baseline restore"
+  },
+  "source": {
+    "branch": "main",
+    "commit": "4bfaa7b3c7447ea54de67013b8cb3a9aab13003d",
+    "tree": "e1d7cb68e30b9887ba6e36e5280145e927edf180",
+    "status": "CLEAN",
+    "ahead_of_remote_main": 117,
+    "newest_integrated_capabilities": [
+      "Run count validation e06fb256211f21612a25af4b10f709a756540d32",
+      "Read-only W34 model adoption 8b0786018d763942d0ea68eb9ce537cb33f8b1fd",
+      "W35 recovery closure and earlier integrated research; no production promotion"
+    ]
+  },
+  "snapshot": {
+    "branch": "pre-ruflo-2026-11-14",
+    "annotated_tag": "pre-ruflo-2026-11-14",
+    "commit_identity": "Resolve annotated tag pre-ruflo-2026-11-14^{commit}; full SHA recorded after commit in local attestation.json (a file cannot embed its own commit SHA)",
+    "status": "UNMERGED_NOT_DEPLOYED",
+    "changes": "Preservation reports and knowledge only; source code identical to source main",
+    "worktree": "/home/frank/projects/MarketMamba/.worktrees/pre-ruflo-2026-11-14"
+  },
+  "ref_inventory": [
+    {
+      "ref": "refs/heads/audit/v7-h0-preflight",
+      "sha": "7ecb92016557af135ffd28c80892aa6be9d727df",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/audit/v7-research-protocol-v01",
+      "sha": "8601c7371082f0c64f872881acfa093bf672d444",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/audit/v7-window04-integration-stop",
+      "sha": "3330427a1d774d30e65216ddab89d668d97c187c",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/development/v7-autonomous-charter",
+      "sha": "f7af348710467ac381b2a84e8d192670ced89932",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/development/v7-cpu-window-01",
+      "sha": "4c388ded57062194114ea3e221d00c177eb96892",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/development/v7-cross-domain-window-02",
+      "sha": "f34f9f32a86a0ee97a8dcdb74faad996bf5f5b4e",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/development/v7-data-evaluation-preparation",
+      "sha": "eba6b649479eeaa77d4bb034c0eebafd7efb396d",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/development/v7-fair-evaluation-decision",
+      "sha": "489a127cf951f93f7bfc873e9333f05113f5b8e9",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/development/v7-portfolio-history",
+      "sha": "5a2bc6fcee4c0bf78190a6ac74d11f53f8becbd4",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/development/v7-portfolio-ux",
+      "sha": "6c89479416ad9fa429db7818cc645f729367eac9",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/development/v7-window04-cpu-continuation",
+      "sha": "97fb4c9d669f3aa237ef5545a0ef322a5cc2d6a9",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/development/v7-window07-temporal-isolation",
+      "sha": "1631020bce8223ac4337c7e97473a2a3d9a555f0",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/development/v7-window08-ranking-evaluation",
+      "sha": "bdea30d877fa2c5d02308f343fa5591a35616aec",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/development/v7-window09-artifact-replay",
+      "sha": "91fa82c2ac5e3b8f22109c55a73fa4e540a916b9",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/development/v7-window10-classical-e2e",
+      "sha": "f25181637e40138c84dc3722292647d4325882fc",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/development/v7-window11-l2-cpu-resume",
+      "sha": "8db5b9111b98d4965a9f56f10a51c5157284b900",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/development/v7-window12-local-gpu",
+      "sha": "16e444f9840b53542fcae62c00fcc9ed8ad80e3a",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/development/v7-window18-manual-collector",
+      "sha": "87695e4d5dc6e047f5ab39ca3cd8294b971bbc3a",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/development/v7-window19-limited-daily",
+      "sha": "cf1a84fbbc205f28c051d650814a284d31d2f439",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/development/v7-window36-limited-collector",
+      "sha": "b2bc041a799f18a67153f1bc036edeba026d3957",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/docs/production-system-architecture-audit",
+      "sha": "9efed7b94b7737c7990b57640b1d6f9ed8d28796",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/docs/project-knowledge-k0-discovery",
+      "sha": "c802f52d99047a681a85a761901cfacd64155dd9",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/docs/project-knowledge-k1-bootstrap",
+      "sha": "31dd74a0a207848f8ded4872a5aaf4f9fd533605",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/docs/project-knowledge-k1-domains",
+      "sha": "2c6c6f3aaa23d32deb11ccd717d0383f4d643cf8",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/docs/v7-inference-recovery-design-v01",
+      "sha": "e181f366ac5aba173796c7a59bc83029a9b601d5",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/feat/run-status-count-validation",
+      "sha": "e06fb256211f21612a25af4b10f709a756540d32",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/feature/production-phase-a-shadow-ledger",
+      "sha": "f5b0ff3df7645098cc01a9eeb36f5df22c4a3e41",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/feature/v7-corrected-e5-colab-bundle",
+      "sha": "af8ac8229a1f558370c7f059b537c6e1a6d13723",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/feature/v7-corrected-e5-replication",
+      "sha": "6abc6ef2735e82b0f6e00723848ca3fc28d81b50",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/feature/v7-e1-rolling-origin-refresh",
+      "sha": "044eef73712d2189d4e0e28e3d44b352eed6b5e3",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/fix/memory-lifecycle-hardening",
+      "sha": "91db7d115a50f3add48e4a45dfd0473ad036ee8b",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/fix/phase-a-task4-evidence",
+      "sha": "1e119ef855f8fd319f774162beca0bd729d4b921",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/fix/v7-correctness-remediation",
+      "sha": "23f75dffa78b964650560b6b551b25fa434361c8",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/fix/v7-e1-colab-recovery",
+      "sha": "0f06e368fe73b6a5e5cd80f87d1c5ec2fb2da97d",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/fix/v7-historical-pit-reconstruction",
+      "sha": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/fix/v7-ohlcv-provenance-remediation",
+      "sha": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/fix/v7-snapshot-immutability",
+      "sha": "63a040d306e402dbc22e8592f57f034fd4a9a863",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/fix/v7-timeline-font-visibility",
+      "sha": "4a66928aa4c9bd8a1ddf99a5b42866e9b22efb74",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/integration/phase-a-task5",
+      "sha": "89f9496b7898fa559f63742592c2e67225242161",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/integration/project-knowledge-k1",
+      "sha": "18152d0b27eca017c048eb269bc3010b1060d011",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/integration/v7-cpu-roadmap",
+      "sha": "bebf19ee937a2237641e09701d0564590ed30fc6",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/integration/v7-window04-reconciliation",
+      "sha": "98f270dd63f05831b2a42695d8005638fda2bbf5",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/integration/v7-window37-w34-models",
+      "sha": "8b0786018d763942d0ea68eb9ce537cb33f8b1fd",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/main",
+      "sha": "4bfaa7b3c7447ea54de67013b8cb3a9aab13003d",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/mas-personal/0b6a3d7ff13543cf99bfbfaa5e2fff75",
+      "sha": "8b0786018d763942d0ea68eb9ce537cb33f8b1fd",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/mas-personal/19459dd37dab44748c88a69b469eccad",
+      "sha": "8b0786018d763942d0ea68eb9ce537cb33f8b1fd",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/mas-personal/bdc808eb07d0495c92298fd9ea05ed75",
+      "sha": "135d07b1c520016b6fa9662e33e72ee5e93dc9cf",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/operations/v7-window38-one-shot-shadow",
+      "sha": "6dbfdee3ddc4396af7a854b03b1f59967c23e561",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/operations/v7-window39-multiday-shadow",
+      "sha": "5315a03a618283b326dddc682bab5c4fc12637ef",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/recovery/e1-frozen-evidence",
+      "sha": "11ae71d1a3ea7f68ed10d5623bc9d639689e4e8b",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/research/v7-corrected-e5-2026-diagnostic",
+      "sha": "7b1ed1b39204d0e0eb82308a05a4514360c78c6b",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/research/v7-corrected-e5-extended-diagnostic",
+      "sha": "2093eb3383193cf1ec098da4065b04b7ac111b87",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/research/v7-e1-postrun-diagnostics",
+      "sha": "1d8e23fb713105aaaf73fd62568a0374ab63421d",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/research/v7-window05-feature-integrity",
+      "sha": "65462ec185783eedb2ba81b66cfa04783f86c6e2",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/research/v7-window06-decision-time",
+      "sha": "96c6056487af35673dc6ec519c81901bf23dcbc2",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/research/v7-window13-admission-preparation",
+      "sha": "c78098f3fdddb74e461bc54d700bde5baac0fcc1",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/research/v7-window14-data-admission",
+      "sha": "4da1bcfa81c8ff786de82d29ec461c0851d411d5",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/research/v7-window15-dual-track",
+      "sha": "27dcb36b5431b70e8aa831edb6cb9234cb3a40b3",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/research/v7-window16-resource-proof",
+      "sha": "000b0b9c40448b11a41d05396dffc6e0f3ea1235",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/research/v7-window17-forward-readiness",
+      "sha": "96e8c0c4f2f7f78c508048e31f0f163d6c707128",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/research/v7-window20-historical-sources",
+      "sha": "6a34520d8f9c1166172af3503cad531e23f5ecec",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/research/v7-window21-finmind-proof",
+      "sha": "428a5fa5cb7b771db39a053f88c7046501399f7e",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/research/v7-window22-historical-panel",
+      "sha": "7027f03ebdb7b7b3bd90bc2bf5ce97a4c267c470",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/research/v7-window23-calendar-smoke",
+      "sha": "87af76b038fcbbda9e1e4b3a4349e693a3b1ba48",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/research/v7-window24-expanded-pilot",
+      "sha": "90b1327560f717727ad3fd53dfe86cb421c70f5b",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/research/v7-window25-robustness-audit",
+      "sha": "27055f7ec34cd4aa6d47f67bd89e5b6616244bc8",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/research/v7-window26-label-contract",
+      "sha": "367005dfaba0988fca5e294d9b3e281408bbfce8",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/research/v7-window27-label-safety",
+      "sha": "39e2fedeb550a08d00f4abddc9a6caa7b1d570f8",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/research/v7-window28-clean-refit",
+      "sha": "1d9a2a7a1ee57c455ba58250f63681efbbdd9050",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/research/v7-window29-expanded-development",
+      "sha": "e83dfe68e4bc73b59cb6390ec130ba967138e7f1",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/research/v7-window30-real-lightgbm",
+      "sha": "b64ac353833a9248121f12ebe61e1333decb2dbf",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/research/v7-window31-expanding",
+      "sha": "67e2d25a710273646d41c0ad861b4a993593ba4d",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/research/v7-window32-shadow-preparation",
+      "sha": "8fa41869a2583f0b5db698db83eed98611f24a7e",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/research/v7-window33-recent-shadow",
+      "sha": "c57ac3d7822f229ae08849e56581ebb3c969441c",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/research/v7-window34-calendar-model",
+      "sha": "82cd49c25e585d857c05e9835af6c77f6ac9e860",
+      "in_main": false
+    },
+    {
+      "ref": "refs/heads/research/v7-window35-recovery-v04",
+      "sha": "72d35e78a3372d79373064a31dc6891d5ca3db83",
+      "in_main": true
+    },
+    {
+      "ref": "refs/heads/research/v7-window37-manual-preopen",
+      "sha": "a256d2f0c857db2b3e292e1ef81f5a8620af6900",
+      "in_main": false
+    },
+    {
+      "ref": "refs/remotes/origin/HEAD",
+      "sha": "50c5b785e8c373913c3301a056497eb955f36681",
+      "in_main": true
+    },
+    {
+      "ref": "refs/remotes/origin/main",
+      "sha": "50c5b785e8c373913c3301a056497eb955f36681",
+      "in_main": true
+    },
+    {
+      "ref": "refs/tags/core-model",
+      "sha": "f79b809aa377aa76bd7a9155c24ccfe70c4679e3",
+      "in_main": false
+    },
+    {
+      "ref": "refs/tags/v3.1-T4",
+      "sha": "7175a4b8d5220f80fb0308dfb7dbe0266642f0a5",
+      "in_main": false
+    },
+    {
+      "ref": "refs/tags/v3.1-core",
+      "sha": "00a370198901fd11c28c12d0aca65a7179febcd1",
+      "in_main": false
+    },
+    {
+      "ref": "refs/tags/whl-for-mamba",
+      "sha": "f79b809aa377aa76bd7a9155c24ccfe70c4679e3",
+      "in_main": false
+    }
+  ],
+  "preserved_refs": [
+    {
+      "source_ref": "refs/heads/audit/v7-h0-preflight",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/audit/v7-h0-preflight",
+      "sha": "7ecb92016557af135ffd28c80892aa6be9d727df"
+    },
+    {
+      "source_ref": "refs/heads/audit/v7-research-protocol-v01",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/audit/v7-research-protocol-v01",
+      "sha": "8601c7371082f0c64f872881acfa093bf672d444"
+    },
+    {
+      "source_ref": "refs/heads/audit/v7-window04-integration-stop",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/audit/v7-window04-integration-stop",
+      "sha": "3330427a1d774d30e65216ddab89d668d97c187c"
+    },
+    {
+      "source_ref": "refs/heads/development/v7-autonomous-charter",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/development/v7-autonomous-charter",
+      "sha": "f7af348710467ac381b2a84e8d192670ced89932"
+    },
+    {
+      "source_ref": "refs/heads/development/v7-cpu-window-01",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/development/v7-cpu-window-01",
+      "sha": "4c388ded57062194114ea3e221d00c177eb96892"
+    },
+    {
+      "source_ref": "refs/heads/development/v7-cross-domain-window-02",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/development/v7-cross-domain-window-02",
+      "sha": "f34f9f32a86a0ee97a8dcdb74faad996bf5f5b4e"
+    },
+    {
+      "source_ref": "refs/heads/development/v7-data-evaluation-preparation",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/development/v7-data-evaluation-preparation",
+      "sha": "eba6b649479eeaa77d4bb034c0eebafd7efb396d"
+    },
+    {
+      "source_ref": "refs/heads/development/v7-fair-evaluation-decision",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/development/v7-fair-evaluation-decision",
+      "sha": "489a127cf951f93f7bfc873e9333f05113f5b8e9"
+    },
+    {
+      "source_ref": "refs/heads/development/v7-portfolio-history",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/development/v7-portfolio-history",
+      "sha": "5a2bc6fcee4c0bf78190a6ac74d11f53f8becbd4"
+    },
+    {
+      "source_ref": "refs/heads/development/v7-portfolio-ux",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/development/v7-portfolio-ux",
+      "sha": "6c89479416ad9fa429db7818cc645f729367eac9"
+    },
+    {
+      "source_ref": "refs/heads/development/v7-window04-cpu-continuation",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/development/v7-window04-cpu-continuation",
+      "sha": "97fb4c9d669f3aa237ef5545a0ef322a5cc2d6a9"
+    },
+    {
+      "source_ref": "refs/heads/development/v7-window07-temporal-isolation",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/development/v7-window07-temporal-isolation",
+      "sha": "1631020bce8223ac4337c7e97473a2a3d9a555f0"
+    },
+    {
+      "source_ref": "refs/heads/development/v7-window08-ranking-evaluation",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/development/v7-window08-ranking-evaluation",
+      "sha": "bdea30d877fa2c5d02308f343fa5591a35616aec"
+    },
+    {
+      "source_ref": "refs/heads/development/v7-window09-artifact-replay",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/development/v7-window09-artifact-replay",
+      "sha": "91fa82c2ac5e3b8f22109c55a73fa4e540a916b9"
+    },
+    {
+      "source_ref": "refs/heads/development/v7-window10-classical-e2e",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/development/v7-window10-classical-e2e",
+      "sha": "f25181637e40138c84dc3722292647d4325882fc"
+    },
+    {
+      "source_ref": "refs/heads/development/v7-window11-l2-cpu-resume",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/development/v7-window11-l2-cpu-resume",
+      "sha": "8db5b9111b98d4965a9f56f10a51c5157284b900"
+    },
+    {
+      "source_ref": "refs/heads/development/v7-window12-local-gpu",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/development/v7-window12-local-gpu",
+      "sha": "16e444f9840b53542fcae62c00fcc9ed8ad80e3a"
+    },
+    {
+      "source_ref": "refs/heads/development/v7-window18-manual-collector",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/development/v7-window18-manual-collector",
+      "sha": "87695e4d5dc6e047f5ab39ca3cd8294b971bbc3a"
+    },
+    {
+      "source_ref": "refs/heads/development/v7-window19-limited-daily",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/development/v7-window19-limited-daily",
+      "sha": "cf1a84fbbc205f28c051d650814a284d31d2f439"
+    },
+    {
+      "source_ref": "refs/heads/development/v7-window36-limited-collector",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/development/v7-window36-limited-collector",
+      "sha": "b2bc041a799f18a67153f1bc036edeba026d3957"
+    },
+    {
+      "source_ref": "refs/heads/docs/production-system-architecture-audit",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/docs/production-system-architecture-audit",
+      "sha": "9efed7b94b7737c7990b57640b1d6f9ed8d28796"
+    },
+    {
+      "source_ref": "refs/heads/docs/project-knowledge-k0-discovery",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/docs/project-knowledge-k0-discovery",
+      "sha": "c802f52d99047a681a85a761901cfacd64155dd9"
+    },
+    {
+      "source_ref": "refs/heads/docs/project-knowledge-k1-bootstrap",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/docs/project-knowledge-k1-bootstrap",
+      "sha": "31dd74a0a207848f8ded4872a5aaf4f9fd533605"
+    },
+    {
+      "source_ref": "refs/heads/docs/project-knowledge-k1-domains",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/docs/project-knowledge-k1-domains",
+      "sha": "2c6c6f3aaa23d32deb11ccd717d0383f4d643cf8"
+    },
+    {
+      "source_ref": "refs/heads/docs/v7-inference-recovery-design-v01",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/docs/v7-inference-recovery-design-v01",
+      "sha": "e181f366ac5aba173796c7a59bc83029a9b601d5"
+    },
+    {
+      "source_ref": "refs/heads/feat/run-status-count-validation",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/feat/run-status-count-validation",
+      "sha": "e06fb256211f21612a25af4b10f709a756540d32"
+    },
+    {
+      "source_ref": "refs/heads/feature/production-phase-a-shadow-ledger",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/feature/production-phase-a-shadow-ledger",
+      "sha": "f5b0ff3df7645098cc01a9eeb36f5df22c4a3e41"
+    },
+    {
+      "source_ref": "refs/heads/feature/v7-corrected-e5-colab-bundle",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/feature/v7-corrected-e5-colab-bundle",
+      "sha": "af8ac8229a1f558370c7f059b537c6e1a6d13723"
+    },
+    {
+      "source_ref": "refs/heads/feature/v7-corrected-e5-replication",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/feature/v7-corrected-e5-replication",
+      "sha": "6abc6ef2735e82b0f6e00723848ca3fc28d81b50"
+    },
+    {
+      "source_ref": "refs/heads/feature/v7-e1-rolling-origin-refresh",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/feature/v7-e1-rolling-origin-refresh",
+      "sha": "044eef73712d2189d4e0e28e3d44b352eed6b5e3"
+    },
+    {
+      "source_ref": "refs/heads/fix/memory-lifecycle-hardening",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/fix/memory-lifecycle-hardening",
+      "sha": "91db7d115a50f3add48e4a45dfd0473ad036ee8b"
+    },
+    {
+      "source_ref": "refs/heads/fix/phase-a-task4-evidence",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/fix/phase-a-task4-evidence",
+      "sha": "1e119ef855f8fd319f774162beca0bd729d4b921"
+    },
+    {
+      "source_ref": "refs/heads/fix/v7-correctness-remediation",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/fix/v7-correctness-remediation",
+      "sha": "23f75dffa78b964650560b6b551b25fa434361c8"
+    },
+    {
+      "source_ref": "refs/heads/fix/v7-e1-colab-recovery",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/fix/v7-e1-colab-recovery",
+      "sha": "0f06e368fe73b6a5e5cd80f87d1c5ec2fb2da97d"
+    },
+    {
+      "source_ref": "refs/heads/fix/v7-historical-pit-reconstruction",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/fix/v7-historical-pit-reconstruction",
+      "sha": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0"
+    },
+    {
+      "source_ref": "refs/heads/fix/v7-ohlcv-provenance-remediation",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/fix/v7-ohlcv-provenance-remediation",
+      "sha": "e3bce91be3e68cd1142ba2bfb21eeae43db6dec0"
+    },
+    {
+      "source_ref": "refs/heads/fix/v7-snapshot-immutability",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/fix/v7-snapshot-immutability",
+      "sha": "63a040d306e402dbc22e8592f57f034fd4a9a863"
+    },
+    {
+      "source_ref": "refs/heads/fix/v7-timeline-font-visibility",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/fix/v7-timeline-font-visibility",
+      "sha": "4a66928aa4c9bd8a1ddf99a5b42866e9b22efb74"
+    },
+    {
+      "source_ref": "refs/heads/integration/phase-a-task5",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/integration/phase-a-task5",
+      "sha": "89f9496b7898fa559f63742592c2e67225242161"
+    },
+    {
+      "source_ref": "refs/heads/integration/project-knowledge-k1",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/integration/project-knowledge-k1",
+      "sha": "18152d0b27eca017c048eb269bc3010b1060d011"
+    },
+    {
+      "source_ref": "refs/heads/integration/v7-cpu-roadmap",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/integration/v7-cpu-roadmap",
+      "sha": "bebf19ee937a2237641e09701d0564590ed30fc6"
+    },
+    {
+      "source_ref": "refs/heads/integration/v7-window04-reconciliation",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/integration/v7-window04-reconciliation",
+      "sha": "98f270dd63f05831b2a42695d8005638fda2bbf5"
+    },
+    {
+      "source_ref": "refs/heads/integration/v7-window37-w34-models",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/integration/v7-window37-w34-models",
+      "sha": "8b0786018d763942d0ea68eb9ce537cb33f8b1fd"
+    },
+    {
+      "source_ref": "refs/heads/main",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/main",
+      "sha": "4bfaa7b3c7447ea54de67013b8cb3a9aab13003d"
+    },
+    {
+      "source_ref": "refs/heads/mas-personal/0b6a3d7ff13543cf99bfbfaa5e2fff75",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/mas-personal/0b6a3d7ff13543cf99bfbfaa5e2fff75",
+      "sha": "8b0786018d763942d0ea68eb9ce537cb33f8b1fd"
+    },
+    {
+      "source_ref": "refs/heads/mas-personal/19459dd37dab44748c88a69b469eccad",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/mas-personal/19459dd37dab44748c88a69b469eccad",
+      "sha": "8b0786018d763942d0ea68eb9ce537cb33f8b1fd"
+    },
+    {
+      "source_ref": "refs/heads/mas-personal/bdc808eb07d0495c92298fd9ea05ed75",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/mas-personal/bdc808eb07d0495c92298fd9ea05ed75",
+      "sha": "135d07b1c520016b6fa9662e33e72ee5e93dc9cf"
+    },
+    {
+      "source_ref": "refs/heads/operations/v7-window38-one-shot-shadow",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/operations/v7-window38-one-shot-shadow",
+      "sha": "6dbfdee3ddc4396af7a854b03b1f59967c23e561"
+    },
+    {
+      "source_ref": "refs/heads/operations/v7-window39-multiday-shadow",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/operations/v7-window39-multiday-shadow",
+      "sha": "5315a03a618283b326dddc682bab5c4fc12637ef"
+    },
+    {
+      "source_ref": "refs/heads/recovery/e1-frozen-evidence",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/recovery/e1-frozen-evidence",
+      "sha": "11ae71d1a3ea7f68ed10d5623bc9d639689e4e8b"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-corrected-e5-2026-diagnostic",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-corrected-e5-2026-diagnostic",
+      "sha": "7b1ed1b39204d0e0eb82308a05a4514360c78c6b"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-corrected-e5-extended-diagnostic",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-corrected-e5-extended-diagnostic",
+      "sha": "2093eb3383193cf1ec098da4065b04b7ac111b87"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-e1-postrun-diagnostics",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-e1-postrun-diagnostics",
+      "sha": "1d8e23fb713105aaaf73fd62568a0374ab63421d"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-window05-feature-integrity",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-window05-feature-integrity",
+      "sha": "65462ec185783eedb2ba81b66cfa04783f86c6e2"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-window06-decision-time",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-window06-decision-time",
+      "sha": "96c6056487af35673dc6ec519c81901bf23dcbc2"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-window13-admission-preparation",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-window13-admission-preparation",
+      "sha": "c78098f3fdddb74e461bc54d700bde5baac0fcc1"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-window14-data-admission",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-window14-data-admission",
+      "sha": "4da1bcfa81c8ff786de82d29ec461c0851d411d5"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-window15-dual-track",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-window15-dual-track",
+      "sha": "27dcb36b5431b70e8aa831edb6cb9234cb3a40b3"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-window16-resource-proof",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-window16-resource-proof",
+      "sha": "000b0b9c40448b11a41d05396dffc6e0f3ea1235"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-window17-forward-readiness",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-window17-forward-readiness",
+      "sha": "96e8c0c4f2f7f78c508048e31f0f163d6c707128"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-window20-historical-sources",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-window20-historical-sources",
+      "sha": "6a34520d8f9c1166172af3503cad531e23f5ecec"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-window21-finmind-proof",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-window21-finmind-proof",
+      "sha": "428a5fa5cb7b771db39a053f88c7046501399f7e"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-window22-historical-panel",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-window22-historical-panel",
+      "sha": "7027f03ebdb7b7b3bd90bc2bf5ce97a4c267c470"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-window23-calendar-smoke",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-window23-calendar-smoke",
+      "sha": "87af76b038fcbbda9e1e4b3a4349e693a3b1ba48"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-window24-expanded-pilot",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-window24-expanded-pilot",
+      "sha": "90b1327560f717727ad3fd53dfe86cb421c70f5b"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-window25-robustness-audit",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-window25-robustness-audit",
+      "sha": "27055f7ec34cd4aa6d47f67bd89e5b6616244bc8"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-window26-label-contract",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-window26-label-contract",
+      "sha": "367005dfaba0988fca5e294d9b3e281408bbfce8"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-window27-label-safety",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-window27-label-safety",
+      "sha": "39e2fedeb550a08d00f4abddc9a6caa7b1d570f8"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-window28-clean-refit",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-window28-clean-refit",
+      "sha": "1d9a2a7a1ee57c455ba58250f63681efbbdd9050"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-window29-expanded-development",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-window29-expanded-development",
+      "sha": "e83dfe68e4bc73b59cb6390ec130ba967138e7f1"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-window30-real-lightgbm",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-window30-real-lightgbm",
+      "sha": "b64ac353833a9248121f12ebe61e1333decb2dbf"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-window31-expanding",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-window31-expanding",
+      "sha": "67e2d25a710273646d41c0ad861b4a993593ba4d"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-window32-shadow-preparation",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-window32-shadow-preparation",
+      "sha": "8fa41869a2583f0b5db698db83eed98611f24a7e"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-window33-recent-shadow",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-window33-recent-shadow",
+      "sha": "c57ac3d7822f229ae08849e56581ebb3c969441c"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-window34-calendar-model",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-window34-calendar-model",
+      "sha": "82cd49c25e585d857c05e9835af6c77f6ac9e860"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-window35-recovery-v04",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-window35-recovery-v04",
+      "sha": "72d35e78a3372d79373064a31dc6891d5ca3db83"
+    },
+    {
+      "source_ref": "refs/heads/research/v7-window37-manual-preopen",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/research/v7-window37-manual-preopen",
+      "sha": "a256d2f0c857db2b3e292e1ef81f5a8620af6900"
+    },
+    {
+      "source_worktree": "/home/frank/projects/multi-agent-system/worktrees/vision-v1.1-integration/worktrees/v4-runtime-fix/.local-artifacts/personal-goals/19459dd37dab44748c88a69b469eccad/worktree",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/dirty/19459dd37dab44748c88a69b469eccad",
+      "sha": "7cc4dbc661131cd1233d2253f971e29f38af3ab5",
+      "files": [
+        {
+          "path": "app/frontend/src/components/runStatusSummary.mjs",
+          "sha256": "51afc0a1f7ddd95195dbd3d4a78514f61b590a1f8ab264c084afb75b0a52ae02",
+          "bytes": 1748
+        },
+        {
+          "path": "app/frontend/src/components/runStatusSummary.test.mjs",
+          "sha256": "7b5c2aedb35c02813f346edda89769e319b1526ca3c3893a977fbbdb2094eeeb",
+          "bytes": 3118
+        }
+      ],
+      "excluded_untracked": [
+        ".env.local",
+        ".env.production",
+        "auth.json",
+        "credentials",
+        "credentials.json"
+      ]
+    },
+    {
+      "source_worktree": "/home/frank/projects/multi-agent-system/worktrees/vision-v1.1-integration/worktrees/v4-runtime-fix/worktrees/v4-git-delivery-recovery/.local-artifacts/personal-goals/bdc808eb07d0495c92298fd9ea05ed75/worktree",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/dirty/bdc808eb07d0495c92298fd9ea05ed75",
+      "sha": "91ccec50eee9216db9d743a872fe56104062e31e",
+      "files": [
+        {
+          "path": "app/frontend/src/components/runStatusSummary.mjs",
+          "sha256": "51afc0a1f7ddd95195dbd3d4a78514f61b590a1f8ab264c084afb75b0a52ae02",
+          "bytes": 1748
+        },
+        {
+          "path": "app/frontend/src/components/runStatusSummary.test.mjs",
+          "sha256": "fa1172184c04a2236a6908a8f3194dcd29ea1244e727841c092a6e2fcb186d88",
+          "bytes": 2679
+        }
+      ],
+      "excluded_untracked": [
+        ".env.local",
+        ".env.production",
+        "auth.json",
+        "credentials",
+        "credentials.json"
+      ]
+    },
+    {
+      "source_worktree": "/home/frank/projects/multi-agent-system/worktrees/vision-v1.1-integration/worktrees/v4-workbench/.local-artifacts/personal-goals/0b6a3d7ff13543cf99bfbfaa5e2fff75/worktree",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/dirty/0b6a3d7ff13543cf99bfbfaa5e2fff75",
+      "sha": "e7547ceab1131aafcde8e7b627cf006c1b501591",
+      "files": [
+        {
+          "path": "app/frontend/src/components/runStatusSummary.mjs",
+          "sha256": "51afc0a1f7ddd95195dbd3d4a78514f61b590a1f8ab264c084afb75b0a52ae02",
+          "bytes": 1748
+        },
+        {
+          "path": "app/frontend/src/components/runStatusSummary.test.mjs",
+          "sha256": "15bc4c10301a1562b10dd69814651ad4dc5c1377faa36fe7e1774f8bac033db7",
+          "bytes": 3017
+        },
+        {
+          "path": "app/frontend/src/components/tests/__init__.py",
+          "sha256": "2f5741e2bc1c63255c2817c6c4f14caa36beaaed6e17a563bf0f0fed5f80b3a3",
+          "bytes": 58
+        },
+        {
+          "path": "app/frontend/src/components/tests/test_run_status_summary.py",
+          "sha256": "46a44bd1b65a1c568784a651bad5841e9ea02b795b8ac2b13ed355b16f9a5ab5",
+          "bytes": 881
+        }
+      ],
+      "excluded_untracked": [
+        ".env.local",
+        ".env.production",
+        "auth.json",
+        "credentials",
+        "credentials.json"
+      ]
+    },
+    {
+      "source_ref": "Windows main",
+      "backup_ref": "refs/heads/preservation/pre-ruflo-2026-11-14/windows-main",
+      "sha": "8b82a681e43148ff5ee6389c8cb4f6394f5360e5"
+    }
+  ],
+  "worktree_inventory": [
+    {
+      "worktree": "/home/frank/projects/MarketMamba",
+      "HEAD": "4bfaa7b3c7447ea54de67013b8cb3a9aab13003d",
+      "branch": "refs/heads/main",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/.codex/worktrees/dd2f/MarketMamba",
+      "HEAD": "4bfaa7b3c7447ea54de67013b8cb3a9aab13003d",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/e1-frozen-evidence",
+      "HEAD": "11ae71d1a3ea7f68ed10d5623bc9d639689e4e8b",
+      "branch": "refs/heads/recovery/e1-frozen-evidence",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/memory-lifecycle-hardening",
+      "HEAD": "91db7d115a50f3add48e4a45dfd0473ad036ee8b",
+      "branch": "refs/heads/fix/memory-lifecycle-hardening",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/phase-a-task4-evidence",
+      "HEAD": "1e119ef855f8fd319f774162beca0bd729d4b921",
+      "branch": "refs/heads/fix/phase-a-task4-evidence",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/phase-a-task5",
+      "HEAD": "89f9496b7898fa559f63742592c2e67225242161",
+      "branch": "refs/heads/integration/phase-a-task5",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/run-status-count-validation",
+      "HEAD": "e06fb256211f21612a25af4b10f709a756540d32",
+      "branch": "refs/heads/feat/run-status-count-validation",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-autonomous-charter",
+      "HEAD": "f7af348710467ac381b2a84e8d192670ced89932",
+      "branch": "refs/heads/development/v7-autonomous-charter",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-corrected-e5-2026-diagnostic",
+      "HEAD": "044eef73712d2189d4e0e28e3d44b352eed6b5e3",
+      "branch": "refs/heads/feature/v7-e1-rolling-origin-refresh",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-roadmap",
+      "HEAD": "bebf19ee937a2237641e09701d0564590ed30fc6",
+      "branch": "refs/heads/integration/v7-cpu-roadmap",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-cpu-window-01",
+      "HEAD": "4c388ded57062194114ea3e221d00c177eb96892",
+      "branch": "refs/heads/development/v7-cpu-window-01",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-cross-domain-window-02",
+      "HEAD": "f34f9f32a86a0ee97a8dcdb74faad996bf5f5b4e",
+      "branch": "refs/heads/development/v7-cross-domain-window-02",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation",
+      "HEAD": "eba6b649479eeaa77d4bb034c0eebafd7efb396d",
+      "branch": "refs/heads/development/v7-data-evaluation-preparation",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery",
+      "HEAD": "0f06e368fe73b6a5e5cd80f87d1c5ec2fb2da97d",
+      "branch": "refs/heads/fix/v7-e1-colab-recovery",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-e1-postrun-diagnostics",
+      "HEAD": "1d8e23fb713105aaaf73fd62568a0374ab63421d",
+      "branch": "refs/heads/research/v7-e1-postrun-diagnostics",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-fair-evaluation-decision",
+      "HEAD": "489a127cf951f93f7bfc873e9333f05113f5b8e9",
+      "branch": "refs/heads/development/v7-fair-evaluation-decision",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-h0-preflight",
+      "HEAD": "7ecb92016557af135ffd28c80892aa6be9d727df",
+      "branch": "refs/heads/audit/v7-h0-preflight",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-historical-pit-reconstruction",
+      "HEAD": "f5b0ff3df7645098cc01a9eeb36f5df22c4a3e41",
+      "branch": "refs/heads/feature/production-phase-a-shadow-ledger",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-inference-recovery-design-v01",
+      "HEAD": "e181f366ac5aba173796c7a59bc83029a9b601d5",
+      "branch": "refs/heads/docs/v7-inference-recovery-design-v01",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-portfolio-history",
+      "HEAD": "5a2bc6fcee4c0bf78190a6ac74d11f53f8becbd4",
+      "branch": "refs/heads/development/v7-portfolio-history",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-portfolio-ux",
+      "HEAD": "6c89479416ad9fa429db7818cc645f729367eac9",
+      "branch": "refs/heads/development/v7-portfolio-ux",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-research-protocol-v01",
+      "HEAD": "8601c7371082f0c64f872881acfa093bf672d444",
+      "branch": "refs/heads/audit/v7-research-protocol-v01",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-snapshot-immutability",
+      "HEAD": "63a040d306e402dbc22e8592f57f034fd4a9a863",
+      "branch": "refs/heads/fix/v7-snapshot-immutability",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-timeline-font-visibility",
+      "HEAD": "4a66928aa4c9bd8a1ddf99a5b42866e9b22efb74",
+      "branch": "refs/heads/fix/v7-timeline-font-visibility",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window04-cpu-continuation",
+      "HEAD": "97fb4c9d669f3aa237ef5545a0ef322a5cc2d6a9",
+      "branch": "refs/heads/development/v7-window04-cpu-continuation",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window04-integration-stop",
+      "HEAD": "3330427a1d774d30e65216ddab89d668d97c187c",
+      "branch": "refs/heads/audit/v7-window04-integration-stop",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window04-reconciliation",
+      "HEAD": "98f270dd63f05831b2a42695d8005638fda2bbf5",
+      "branch": "refs/heads/integration/v7-window04-reconciliation",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window05-feature-integrity",
+      "HEAD": "65462ec185783eedb2ba81b66cfa04783f86c6e2",
+      "branch": "refs/heads/research/v7-window05-feature-integrity",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window06-decision-time",
+      "HEAD": "96c6056487af35673dc6ec519c81901bf23dcbc2",
+      "branch": "refs/heads/research/v7-window06-decision-time",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window07-temporal-isolation",
+      "HEAD": "1631020bce8223ac4337c7e97473a2a3d9a555f0",
+      "branch": "refs/heads/development/v7-window07-temporal-isolation",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window08-ranking-evaluation",
+      "HEAD": "bdea30d877fa2c5d02308f343fa5591a35616aec",
+      "branch": "refs/heads/development/v7-window08-ranking-evaluation",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window09-artifact-replay",
+      "HEAD": "91fa82c2ac5e3b8f22109c55a73fa4e540a916b9",
+      "branch": "refs/heads/development/v7-window09-artifact-replay",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window10-classical-e2e",
+      "HEAD": "f25181637e40138c84dc3722292647d4325882fc",
+      "branch": "refs/heads/development/v7-window10-classical-e2e",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume",
+      "HEAD": "8db5b9111b98d4965a9f56f10a51c5157284b900",
+      "branch": "refs/heads/development/v7-window11-l2-cpu-resume",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window12-local-gpu",
+      "HEAD": "16e444f9840b53542fcae62c00fcc9ed8ad80e3a",
+      "branch": "refs/heads/development/v7-window12-local-gpu",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window13-admission-preparation",
+      "HEAD": "c78098f3fdddb74e461bc54d700bde5baac0fcc1",
+      "branch": "refs/heads/research/v7-window13-admission-preparation",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window14-data-admission",
+      "HEAD": "4da1bcfa81c8ff786de82d29ec461c0851d411d5",
+      "branch": "refs/heads/research/v7-window14-data-admission",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window15-dual-track",
+      "HEAD": "27dcb36b5431b70e8aa831edb6cb9234cb3a40b3",
+      "branch": "refs/heads/research/v7-window15-dual-track",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window16-resource-proof",
+      "HEAD": "000b0b9c40448b11a41d05396dffc6e0f3ea1235",
+      "branch": "refs/heads/research/v7-window16-resource-proof",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window17-forward-readiness",
+      "HEAD": "96e8c0c4f2f7f78c508048e31f0f163d6c707128",
+      "branch": "refs/heads/research/v7-window17-forward-readiness",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window18-manual-collector",
+      "HEAD": "87695e4d5dc6e047f5ab39ca3cd8294b971bbc3a",
+      "branch": "refs/heads/development/v7-window18-manual-collector",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window19-limited-daily",
+      "HEAD": "cf1a84fbbc205f28c051d650814a284d31d2f439",
+      "branch": "refs/heads/development/v7-window19-limited-daily",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window20-historical-sources",
+      "HEAD": "6a34520d8f9c1166172af3503cad531e23f5ecec",
+      "branch": "refs/heads/research/v7-window20-historical-sources",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window21-finmind-proof",
+      "HEAD": "428a5fa5cb7b771db39a053f88c7046501399f7e",
+      "branch": "refs/heads/research/v7-window21-finmind-proof",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window22-historical-panel",
+      "HEAD": "7027f03ebdb7b7b3bd90bc2bf5ce97a4c267c470",
+      "branch": "refs/heads/research/v7-window22-historical-panel",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window23-calendar-smoke",
+      "HEAD": "87af76b038fcbbda9e1e4b3a4349e693a3b1ba48",
+      "branch": "refs/heads/research/v7-window23-calendar-smoke",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window24-expanded-pilot",
+      "HEAD": "90b1327560f717727ad3fd53dfe86cb421c70f5b",
+      "branch": "refs/heads/research/v7-window24-expanded-pilot",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window25-robustness-audit",
+      "HEAD": "27055f7ec34cd4aa6d47f67bd89e5b6616244bc8",
+      "branch": "refs/heads/research/v7-window25-robustness-audit",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window26-label-contract",
+      "HEAD": "367005dfaba0988fca5e294d9b3e281408bbfce8",
+      "branch": "refs/heads/research/v7-window26-label-contract",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window27-label-safety",
+      "HEAD": "39e2fedeb550a08d00f4abddc9a6caa7b1d570f8",
+      "branch": "refs/heads/research/v7-window27-label-safety",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window28-clean-refit",
+      "HEAD": "1d9a2a7a1ee57c455ba58250f63681efbbdd9050",
+      "branch": "refs/heads/research/v7-window28-clean-refit",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window29-expanded-development",
+      "HEAD": "e83dfe68e4bc73b59cb6390ec130ba967138e7f1",
+      "branch": "refs/heads/research/v7-window29-expanded-development",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window30-real-lightgbm",
+      "HEAD": "b64ac353833a9248121f12ebe61e1333decb2dbf",
+      "branch": "refs/heads/research/v7-window30-real-lightgbm",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window31-expanding",
+      "HEAD": "67e2d25a710273646d41c0ad861b4a993593ba4d",
+      "branch": "refs/heads/research/v7-window31-expanding",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window32-shadow-preparation",
+      "HEAD": "8fa41869a2583f0b5db698db83eed98611f24a7e",
+      "branch": "refs/heads/research/v7-window32-shadow-preparation",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window33-recent-shadow",
+      "HEAD": "c57ac3d7822f229ae08849e56581ebb3c969441c",
+      "branch": "refs/heads/research/v7-window33-recent-shadow",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window34-calendar-model",
+      "HEAD": "82cd49c25e585d857c05e9835af6c77f6ac9e860",
+      "branch": "refs/heads/research/v7-window34-calendar-model",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window35-recovery-v04",
+      "HEAD": "72d35e78a3372d79373064a31dc6891d5ca3db83",
+      "branch": "refs/heads/research/v7-window35-recovery-v04",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window36-limited-collector",
+      "HEAD": "b2bc041a799f18a67153f1bc036edeba026d3957",
+      "branch": "refs/heads/development/v7-window36-limited-collector",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window37-manual-preopen",
+      "HEAD": "a256d2f0c857db2b3e292e1ef81f5a8620af6900",
+      "branch": "refs/heads/research/v7-window37-manual-preopen",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window37-w34-integration",
+      "HEAD": "8b0786018d763942d0ea68eb9ce537cb33f8b1fd",
+      "branch": "refs/heads/integration/v7-window37-w34-models",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window38-one-shot-shadow",
+      "HEAD": "6dbfdee3ddc4396af7a854b03b1f59967c23e561",
+      "branch": "refs/heads/operations/v7-window38-one-shot-shadow",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/MarketMamba/.worktrees/v7-window39-multiday-shadow",
+      "HEAD": "5315a03a618283b326dddc682bab5c4fc12637ef",
+      "branch": "refs/heads/operations/v7-window39-multiday-shadow",
+      "status_porcelain": []
+    },
+    {
+      "worktree": "/home/frank/projects/multi-agent-system/worktrees/vision-v1.1-integration/worktrees/v4-runtime-fix/.local-artifacts/personal-goals/19459dd37dab44748c88a69b469eccad/worktree",
+      "HEAD": "8b0786018d763942d0ea68eb9ce537cb33f8b1fd",
+      "branch": "refs/heads/mas-personal/19459dd37dab44748c88a69b469eccad",
+      "status_porcelain": [
+        "M  app/frontend/src/components/runStatusSummary.mjs",
+        "M  app/frontend/src/components/runStatusSummary.test.mjs",
+        "?? .env.local",
+        "?? .env.production",
+        "?? auth.json",
+        "?? credentials",
+        "?? credentials.json"
+      ]
+    },
+    {
+      "worktree": "/home/frank/projects/multi-agent-system/worktrees/vision-v1.1-integration/worktrees/v4-runtime-fix/worktrees/v4-git-delivery-recovery/.local-artifacts/personal-goals/bdc808eb07d0495c92298fd9ea05ed75/worktree",
+      "HEAD": "135d07b1c520016b6fa9662e33e72ee5e93dc9cf",
+      "branch": "refs/heads/mas-personal/bdc808eb07d0495c92298fd9ea05ed75",
+      "status_porcelain": [
+        "?? .env.local",
+        "?? .env.production",
+        "?? auth.json",
+        "?? credentials",
+        "?? credentials.json"
+      ]
+    },
+    {
+      "worktree": "/home/frank/projects/multi-agent-system/worktrees/vision-v1.1-integration/worktrees/v4-workbench/.local-artifacts/personal-goals/0b6a3d7ff13543cf99bfbfaa5e2fff75/worktree",
+      "HEAD": "8b0786018d763942d0ea68eb9ce537cb33f8b1fd",
+      "branch": "refs/heads/mas-personal/0b6a3d7ff13543cf99bfbfaa5e2fff75",
+      "status_porcelain": [
+        " M app/frontend/src/components/runStatusSummary.mjs",
+        " M app/frontend/src/components/runStatusSummary.test.mjs",
+        "?? .env.local",
+        "?? .env.production",
+        "?? app/frontend/src/components/tests/__init__.py",
+        "?? app/frontend/src/components/tests/test_run_status_summary.py",
+        "?? auth.json",
+        "?? credentials",
+        "?? credentials.json"
+      ]
+    }
+  ],
+  "windows": {
+    "path": "/mnt/d/Desktop/work/ProjectForMe/MarketMamba",
+    "head": "8b82a681e43148ff5ee6389c8cb4f6394f5360e5\n",
+    "status": []
+  },
+  "coverage": {
+    "git": [
+      "All 77 original local branch tips (31 not ancestors of main), four original tags, complete reachable history",
+      "81 independent preservation branch refs: 77 branches, three source-only dirty snapshots, Windows main",
+      "Staged and unstaged binary patches retained locally; original dirty worktrees unchanged"
+    ],
+    "not_in_git": [
+      "Current env/auth/credential files; deliberately not copied or published",
+      "Data parquet/raw/cache and Windows Data symlink targets",
+      "Large .artifacts, deliveries, checkpoints, predictions, logs and mutable budget/ledger/task execution state",
+      "Runtime installations, provider state, Colab/Drive-only/missing artifacts and formal model weights outside inventory"
+    ],
+    "external_inventory": {
+      "local_file": "/home/frank/projects/MarketMamba/.artifacts/pre-ruflo-2026-11-14/external-artifacts.json",
+      "sha256": "19556d0c193ae588cbd13bff71cf4924fc473088f238d4182d766e7ebbe36696",
+      "summaries": [
+        {
+          "root": "/home/frank/projects/MarketMamba/.artifacts",
+          "files": 3160,
+          "bytes": 1390416140,
+          "restore_files_sha256_read": 1530,
+          "errors": []
+        },
+        {
+          "root": "/home/frank/projects/MarketMamba/Data",
+          "files": 5125,
+          "bytes": 4235723814,
+          "restore_files_sha256_read": 0,
+          "errors": []
+        },
+        {
+          "root": "/home/frank/projects/MarketMamba/V6/models",
+          "files": 1,
+          "bytes": 18497,
+          "restore_files_sha256_read": 0,
+          "errors": []
+        },
+        {
+          "root": "/home/frank/projects/MarketMamba/deliveries",
+          "files": 5576,
+          "bytes": 2551932613,
+          "restore_files_sha256_read": 0,
+          "errors": []
+        },
+        {
+          "root": "/home/frank/projects/MarketMamba/.worktrees/v7-portfolio-history/.artifacts",
+          "files": 6,
+          "bytes": 16778,
+          "restore_files_sha256_read": 0,
+          "errors": []
+        },
+        {
+          "root": "/home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/.artifacts",
+          "files": 85,
+          "bytes": 1788382,
+          "restore_files_sha256_read": 0,
+          "errors": []
+        },
+        {
+          "root": "/home/frank/projects/MarketMamba/.worktrees/v7-window12-local-gpu/.artifacts",
+          "files": 5,
+          "bytes": 36928,
+          "restore_files_sha256_read": 0,
+          "errors": []
+        },
+        {
+          "root": "/home/frank/projects/MarketMamba/.worktrees/v7-window14-data-admission/.artifacts",
+          "files": 4,
+          "bytes": 339091,
+          "restore_files_sha256_read": 0,
+          "errors": []
+        },
+        {
+          "root": "/home/frank/projects/MarketMamba/.worktrees/v7-window15-dual-track/.artifacts",
+          "files": 28,
+          "bytes": 1573883,
+          "restore_files_sha256_read": 0,
+          "errors": []
+        },
+        {
+          "root": "/home/frank/projects/MarketMamba/.worktrees/v7-window16-resource-proof/.artifacts",
+          "files": 9,
+          "bytes": 563075,
+          "restore_files_sha256_read": 4,
+          "errors": []
+        },
+        {
+          "root": "/home/frank/projects/MarketMamba/.worktrees/v7-window20-historical-sources/.artifacts",
+          "files": 16,
+          "bytes": 930138,
+          "restore_files_sha256_read": 0,
+          "errors": []
+        }
+      ],
+      "data_links": [
+        {
+          "path": "/home/frank/projects/MarketMamba/Data/raw_v6",
+          "realpath": "/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/raw_v6",
+          "exists": true
+        },
+        {
+          "path": "/home/frank/projects/MarketMamba/Data/processed_v6",
+          "realpath": "/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6",
+          "exists": true
+        },
+        {
+          "path": "/home/frank/projects/MarketMamba/Data/raw_cache",
+          "realpath": "/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/raw_cache",
+          "exists": true
+        },
+        {
+          "path": "/home/frank/projects/MarketMamba/Data/cache_v6",
+          "realpath": "/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/cache_v6",
+          "exists": true
+        }
+      ],
+      "limits": "No symlink traversal. Windows data/model/log content not exhaustively inventoried; no live DB snapshot; metadata inventory is not backup; only local restore candidates <=32MiB content-read. No offhost backup certified."
+    }
+  },
+  "environment": {
+    "observed_at": "2026-11-14T14:19:42.674516+00:00",
+    "python": "3.12.3",
+    "python_executable": "/usr/bin/python3",
+    "node": "v24.19.0",
+    "git": "git version 2.43.0",
+    "os": "Linux-6.18.58.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "MARKETMAMBA_DATA_ROOT": null,
+    "Data_realpath": "/home/frank/projects/MarketMamba/Data",
+    "dependency_files": [
+      {
+        "path": "app/frontend/package.json",
+        "bytes": 751,
+        "sha256": "a0c239ab017c5d061ceafb952d86374863c39ec6507b0ca351633a5b71aa88de"
+      },
+      {
+        "path": "app/frontend/package-lock.json",
+        "bytes": 112719,
+        "sha256": "35779b717d6c6c883f7697edb35d4bb9c3762ea3dbba464060196b946b6589d5"
+      },
+      {
+        "path": "app/backend/requirements.txt",
+        "bytes": 164,
+        "sha256": "590bf89e82ab8e94d957eb4a38a8b42ba933c0ec4320929be14589b0dd2c9bf7"
+      },
+      {
+        "path": "V6/requirements.txt",
+        "bytes": 816,
+        "sha256": "f7c969240fb70543d19abf6c6010ed1be68834d2470ce3f4ea485bb031fdb7b4"
+      },
+      {
+        "path": "V6/pyproject.toml",
+        "bytes": 302,
+        "sha256": "89a27ea910111474b9012e3b83267a9186a38309f9660e3b425680d97077ffa6"
+      },
+      {
+        "path": "environments/v7-window11-cpu/requirements.overlay.lock",
+        "bytes": 485,
+        "sha256": "81af774d2f1ebba0a7a2a81c4b3453f8aebbacb6d1c56670176cebd4ce072764"
+      },
+      {
+        "path": "environments/v7-colab-2026.04/requirements.lock.txt",
+        "bytes": 2587,
+        "sha256": "cebc665d6e4a4cfc5cd53113c7a52d594c7595b09ae0633903845f175cac1af5"
+      }
+    ],
+    "syntax_ast_passed": [
+      "V6/run_v62_daily.py",
+      "app/backend/main.py",
+      "tools/project_knowledge/check_knowledge_impact.py",
+      "tools/project_knowledge/knowledge_health.py",
+      "tools/project_knowledge/validate_project_map.py"
+    ],
+    "dependencies_reinstalled": false,
+    "limitation": "Smoke uses Node built-ins and Python standard library; no full dependency install/build/model inference certification"
+  },
+  "runtime_observation": {
+    "observed_at": "2026-11-14T14:21:47.3180008Z",
+    "tasks": [
+      {
+        "Name": "MarketMamba-V7-W19-ForwardVintage-5Sessions",
+        "State": "Ready",
+        "Actions": [
+          {
+            "Execute": "C:\\WINDOWS\\System32\\wsl.exe",
+            "Arguments": "--distribution Ubuntu-24.04 --user frank --cd /home/frank/projects/MarketMamba/.worktrees/v7-window19-limited-daily --exec /usr/bin/timeout --signal=TERM --kill-after=5s 150s /usr/bin/env CUDA_VISIBLE_DEVICES= PYTHONDONTWRITEBYTECODE=1 /home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/.runtimes/window11-cpu/bin/python -B -m V6.experimental.v7_daily_pilot run --root /home/frank/projects/MarketMamba/.artifacts/window19-daily-pilot --policy-sha 4264cb79697d70570d006d8f6a208d3097d2423fcbc9d96b7703b9d8b6ae265e",
+            "WorkingDirectory": null
+          }
+        ],
+        "LastRun": "/Date(1793617201000)/",
+        "LastResult": 0,
+        "NextRun": null
+      },
+      {
+        "Name": "MarketMamba-V7-W36-Normal-5Sessions",
+        "State": "Ready",
+        "Actions": [
+          {
+            "Execute": "C:\\WINDOWS\\System32\\wsl.exe",
+            "Arguments": "--distribution Ubuntu-24.04 --user frank --cd /home/frank/projects/MarketMamba/.worktrees/v7-window36-limited-collector --exec /usr/bin/timeout --signal=TERM --kill-after=5s 240s /usr/bin/env CUDA_VISIBLE_DEVICES= PYTHONDONTWRITEBYTECODE=1 /home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/.runtimes/window11-cpu/bin/python -B research/v7/window36-runtime.py normal --root /home/frank/projects/MarketMamba/.artifacts/window36-limited-collector --policy-sha a332fd06f423191751c47f2f89bd998b1b42cacddb6bc872473175de1277a612",
+            "WorkingDirectory": null
+          }
+        ],
+        "LastRun": "/Date(1794222000000)/",
+        "LastResult": 0,
+        "NextRun": null
+      },
+      {
+        "Name": "MarketMamba-V7-W36-Recovery-5Windows",
+        "State": "Ready",
+        "Actions": [
+          {
+            "Execute": "C:\\WINDOWS\\System32\\wsl.exe",
+            "Arguments": "--distribution Ubuntu-24.04 --user frank --cd /home/frank/projects/MarketMamba/.worktrees/v7-window36-limited-collector --exec /usr/bin/timeout --signal=TERM --kill-after=5s 240s /usr/bin/env CUDA_VISIBLE_DEVICES= PYTHONDONTWRITEBYTECODE=1 /home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/.runtimes/window11-cpu/bin/python -B research/v7/window36-runtime.py recovery --root /home/frank/projects/MarketMamba/.artifacts/window36-limited-collector --policy-sha a332fd06f423191751c47f2f89bd998b1b42cacddb6bc872473175de1277a612",
+            "WorkingDirectory": null
+          }
+        ],
+        "LastRun": "/Date(1794265200000)/",
+        "LastResult": 0,
+        "NextRun": null
+      },
+      {
+        "Name": "MarketMamba-V7-W38-Preopen-20261104-OneShot",
+        "State": "Ready",
+        "Actions": [
+          {
+            "Execute": "C:\\WINDOWS\\System32\\wsl.exe",
+            "Arguments": "--distribution Ubuntu-24.04 --user frank --cd /home/frank/projects/MarketMamba/.worktrees/v7-window38-one-shot-shadow --exec /usr/bin/timeout --signal=TERM --kill-after=5s 90s /usr/bin/env CUDA_VISIBLE_DEVICES= PYTHONDONTWRITEBYTECODE=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 /home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/.runtimes/window11-cpu/bin/python -B research/v7/window38-launch.py run --config-sha 14fabc4639d2699747dfeb187b6981ad73c20b35f6d588ebbe839556adb30dc7",
+            "WorkingDirectory": null
+          }
+        ],
+        "LastRun": "/Date(1793748600000)/",
+        "LastResult": 0,
+        "NextRun": null
+      },
+      {
+        "Name": "MarketMamba-V7-W39-Shadow-20261106",
+        "State": "Ready",
+        "Actions": [
+          {
+            "Execute": "C:\\WINDOWS\\System32\\wsl.exe",
+            "Arguments": "--distribution Ubuntu-24.04 --user frank --cd /home/frank/projects/MarketMamba/.worktrees/v7-window39-multiday-shadow --exec /usr/bin/timeout --signal=TERM --kill-after=5s 90s /usr/bin/env CUDA_VISIBLE_DEVICES= PYTHONDONTWRITEBYTECODE=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 /home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/.runtimes/window11-cpu/bin/python -B research/v7/window39-runtime.py run --target 2026-11-06 --config-sha fa9a79fc7747fc7fad13a8f8a527efbfda668138cd957b67da78f6884d7b722f",
+            "WorkingDirectory": null
+          }
+        ],
+        "LastRun": "/Date(1793921400000)/",
+        "LastResult": 0,
+        "NextRun": null
+      },
+      {
+        "Name": "MarketMamba-V7-W39-Shadow-20261109",
+        "State": "Ready",
+        "Actions": [
+          {
+            "Execute": "C:\\WINDOWS\\System32\\wsl.exe",
+            "Arguments": "--distribution Ubuntu-24.04 --user frank --cd /home/frank/projects/MarketMamba/.worktrees/v7-window39-multiday-shadow --exec /usr/bin/timeout --signal=TERM --kill-after=5s 90s /usr/bin/env CUDA_VISIBLE_DEVICES= PYTHONDONTWRITEBYTECODE=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 /home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/.runtimes/window11-cpu/bin/python -B research/v7/window39-runtime.py run --target 2026-11-09 --config-sha fa9a79fc7747fc7fad13a8f8a527efbfda668138cd957b67da78f6884d7b722f",
+            "WorkingDirectory": null
+          }
+        ],
+        "LastRun": "/Date(1794180600000)/",
+        "LastResult": 0,
+        "NextRun": null
+      },
+      {
+        "Name": "MarketMamba-V7-W39-Shadow-20261110",
+        "State": "Ready",
+        "Actions": [
+          {
+            "Execute": "C:\\WINDOWS\\System32\\wsl.exe",
+            "Arguments": "--distribution Ubuntu-24.04 --user frank --cd /home/frank/projects/MarketMamba/.worktrees/v7-window39-multiday-shadow --exec /usr/bin/timeout --signal=TERM --kill-after=5s 90s /usr/bin/env CUDA_VISIBLE_DEVICES= PYTHONDONTWRITEBYTECODE=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 /home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/.runtimes/window11-cpu/bin/python -B research/v7/window39-runtime.py run --target 2026-11-10 --config-sha fa9a79fc7747fc7fad13a8f8a527efbfda668138cd957b67da78f6884d7b722f",
+            "WorkingDirectory": null
+          }
+        ],
+        "LastRun": "/Date(1794267001000)/",
+        "LastResult": 0,
+        "NextRun": null
+      },
+      {
+        "Name": "MarketMamba_DataFetch",
+        "State": "Ready",
+        "Actions": [
+          {
+            "Execute": "wscript.exe",
+            "Arguments": "\"D:\\Desktop\\work\\ProjectForMe\\MarketMamba\\V6\\scripts\\run_hidden.vbs\" \"D:\\Desktop\\work\\ProjectForMe\\MarketMamba\\V6\\scripts\\v62_daily.bat\" --fetch-only",
+            "WorkingDirectory": null
+          }
+        ],
+        "LastRun": "/Date(1794580200000)/",
+        "LastResult": 0,
+        "NextRun": "/Date(1794839400000)/"
+      },
+      {
+        "Name": "MarketMamba_V62",
+        "State": "Disabled",
+        "Actions": [
+          {
+            "Execute": "wscript.exe",
+            "Arguments": "\"D:\\Desktop\\work\\ProjectForMe\\MarketMamba\\V6\\scripts\\run_hidden.vbs\" \"D:\\Desktop\\work\\ProjectForMe\\MarketMamba\\V6\\scripts\\v62_daily.bat\"",
+            "WorkingDirectory": null
+          }
+        ],
+        "LastRun": "/Date(1787667300000)/",
+        "LastResult": 255,
+        "NextRun": "/Date(1794838500000)/"
+      }
+    ]
+  },
+  "validation": {
+    "node_builtin_smoke": {
+      "command": "node --test --test-isolation=none app/frontend/src/api/portfolioHistory.test.mjs app/frontend/src/api/v7.test.mjs app/frontend/src/components/runStatusSummary.test.mjs app/frontend/src/components/portfolioHistoryPresentation.test.mjs",
+      "pass": 28,
+      "fail": 0
+    },
+    "syntax_ast_files_passed": [
+      "V6/run_v62_daily.py",
+      "app/backend/main.py",
+      "tools/project_knowledge/check_knowledge_impact.py",
+      "tools/project_knowledge/knowledge_health.py",
+      "tools/project_knowledge/validate_project_map.py"
+    ],
+    "knowledge_health_before_change": "WARNING; zero structural FAIL",
+    "post_commit_restore": "Actual result, hashes and full SHA recorded in local attestation.json after tag and bundle creation",
+    "dependencies": "Lock identities saved; fresh full dependency installation/build not performed; no model inference/training"
+  },
+  "known_issues": [
+    "Historical public FinMind JWT residuals match reported Aug11-12 incident; no new active credential exposure proven",
+    "Per-token revocation not independently verified; provider never contacted",
+    "Same-host bundle does not protect against host/disk loss; no remote baseline yet",
+    "Archive / restore inventory is incomplete for external/cloud/live state; full DR NOT_PASSED",
+    "Legacy map prose/JSON predates some branch runtime changes; this timestamped observation only supersedes corresponding observation claims"
+  ],
+  "credential_audit": "reports/pre_ruflo_2026_11_14_credentials.json",
+  "restore": {
+    "bundle": "/home/frank/projects/MarketMamba/.artifacts/pre-ruflo-2026-11-14/pre-ruflo-2026-11-14.bundle",
+    "attestation": "/home/frank/projects/MarketMamba/.artifacts/pre-ruflo-2026-11-14/attestation.json",
+    "commands": [
+      "sha256sum -c SHA256SUMS",
+      "git bundle verify pre-ruflo-2026-11-14.bundle",
+      "git clone --branch pre-ruflo-2026-11-14 pre-ruflo-2026-11-14.bundle /tmp/marketmamba-restored",
+      "git -C /tmp/marketmamba-restored rev-parse pre-ruflo-2026-11-14^{commit}",
+      "git -C /tmp/marketmamba-restored fsck --full"
+    ],
+    "safety": "Use new empty destination; do not reset/checkout existing worktrees; do not attach production data/.env or run collectors. Other saved branches are origin/preservation/pre-ruflo-2026-11-14/<original-name> in the restored clone."
+  },
+  "next_decision": {
+    "recommended": "New private GitHub archival repository, reviewed explicit refs and tag, preserving original SHAs/history; no need to rewrite history merely to establish a private backup. For retention of unconfirmed revoked strings without plaintext transfer, upload an encrypted full-history bundle to a private release with decryption key stored separately. These are proposals, no repo created/push/upload authorized now.",
+    "public_repository": "Historical credential cleanup optional separate authorized task; deleting current files alone does not remove old commits. Any derivative sanitized history must retain original archive and old-to-new commit mapping; never silently replace original research authority."
+  },
+  "ruflo_readiness": "LOCAL_SOURCE_ONLY_ISOLATED_EVALUATION_CONDITIONAL; no current authorization to launch Ruflo; never mount production, credentials, shared Git metadata or sole backup writable; offhost backup remains pending",
+  "worktree_inventory_note": "Initial observation includes native checkout at /home/frank/.codex/worktrees/dd2f/MarketMamba; subsequently relocated to .worktrees/pre-ruflo-2026-11-14 and assigned snapshot branch. 65 preexisting worktrees retained; 66 including this task checkout.",
+  "outside_project_copy": {
+    "destination": "/mnt/d/Desktop/work/project-audit/market-mamba/pre-ruflo-2026-11-14",
+    "reason": "Reuse existing external audit root, new dated namespace required to avoid overwriting historical audits; protects against project-tree corruption, not certified independent disk/offhost",
+    "status": "Actual copy/hash result recorded in post-commit attestation"
+  }
+}

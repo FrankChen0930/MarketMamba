@@ -1,0 +1,23 @@
+{
+ "schema":"w30-fixed-real-lightgbm-v1",
+ "recipe_id":"W30_LGBM_CPU_L2_64_DEPTH3_LEAVES7_SEED0_v1",
+ "study_id":"W30_FIXED_REAL_DATA_LIGHTGBM_DEVELOPMENT",
+ "status":"HUMAN_LIMITED_DEVELOPMENT_ONLY_NOT_FORMAL_ADMISSION",
+ "source_commit":"e83dfe68e4bc73b59cb6390ec130ba967138e7f1",
+ "feature_order":["raw_close_momentum1","raw_intraday_range"],
+ "horizons":[5,10],
+ "primary":5,
+ "training":"2021 eligible W29 labels, exit strictly before2022; exact W29 feature/data/universe/label identities",
+ "evaluation":"2022 DEVELOPMENT_VALIDATION /2023 EXPOSED_DEVELOPMENT; same W29 feature-only prediction universe and posthoc label join",
+ "preprocessing":"NONE identity transform. Internal LightGBM bins learn from TRAIN dataset only; no scaling/imputation/validation dataset",
+ "rationale":"Single generic bounded capacity recipe selected before fit;7leaves/depth3,64rounds,minleaf100,L2=1 control size. No W29 RankIC-directed optimization or post-feedback changes.",
+ "config":{"boosting_type":"gbdt","objective":"regression_l2","n_estimators":64,"num_leaves":7,"max_depth":3,"learning_rate":0.05,"min_child_samples":100,"min_child_weight":0.001,"min_split_gain":0.0,"reg_alpha":0.0,"reg_lambda":1.0,"max_bin":63,"subsample_for_bin":200000,"subsample":1.0,"subsample_freq":0,"colsample_bytree":1.0,"n_jobs":1,"random_state":0,"data_random_seed":0,"feature_fraction_seed":0,"bagging_seed":0,"drop_seed":0,"deterministic":true,"force_col_wise":true,"device_type":"cpu","metric":"l2","verbosity":-1,"importance_type":"split"},
+ "dependency_versions":{"python":"3.12.3","lightgbm":"4.6.0","numpy":"2.0.2","scipy":"1.16.3"},
+ "early_stopping":"NONE, no eval_set/callbacks/init_model; fixed upper iteration budget64, actual trees recorded if algorithm cannot split",
+ "planned_model_ids":{"5":"W30_LGBM_H5_TRAIN2021_FRESH_v1","10":"W30_LGBM_H10_TRAIN2021_FRESH_v1"},
+ "prediction_fields":["stock_id","signal_session","horizon","score","model_id","model_sha256","feature_id","dataset_id","recipe_id","source_evidence_ref"],
+ "evaluation_policy":"Exact W29 min40/AVERAGE-tie Spearman/EQUAL_SESSION; allmodels same Common Support; no selection/CI/winner claim",
+ "budget":{"LightGBM5d_fits":1,"LightGBM10d_fits":1,"Ridge_fits":0,"API":0,"GPU":0,"CPU_total_seconds":1200,"verification_reserve_seconds":60,"per_fit_wall_seconds":300,"per_stage_CPU_seconds":300,"artifact_plus_restore_bytes":268435456,"admin_reserve_bytes":8388608},
+ "secondary_condition":"Only after primary5d fit success, same frozen recipe/input identity, remaining CPU/storage; no evaluation feedback used to adjust10d",
+ "authority_boundaries":["DEVELOPMENT_ONLY;2022/2023EXPOSED","Unknown actions/suspension/asof/vintage retained","No strict PIT/executable/Independent Test/model winner","W19PROTECTED;W12SAFETY_HALTED;E1BLOCKED;H2NOT_APPROVED","No newAPI/Ridge/search/GPU/V6/scheduler/production","No W30merge/push/deploy/next window"]
+}

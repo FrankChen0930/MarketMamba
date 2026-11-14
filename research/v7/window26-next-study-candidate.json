@@ -1,0 +1,110 @@
+{
+  "schema": "v7-next-exploratory-study-candidate-v0.1",
+  "status": "PROPOSED_HUMAN_DECISION_REQUIRED_NO_EXECUTION_AUTHORITY",
+  "study_identity_options": {
+    "development": "v7-label-aware-ranking-development-v0.1-PROPOSED",
+    "prospective": "v7-prospective-ranking-comparison-v0.1-PROPOSED"
+  },
+  "dataset_identity": "newcontent-hashedmanifestdistinctfromW24,includechosenlabelpolicyID/events/feature/universe/calendar/vintage;neverrewriteoldartifacts",
+  "data_scope": {
+    "development_candidate": "W24fixed36TWSE2021–2023privatebytes;33conditionalcurrent/newnames,retireesstartUNKNOWNremainblockeduntilevidence;notunbiasedhistoricalmarket",
+    "historical_universe_method": "freezeissuer/securitytype/listing/end/transfer/suspensionintervalsbyoriginfromqualifiedsources;no currentlistbackprojection;predeclaredhindsightdevelopmentproxyif fulluniverseunavailable",
+    "legal_restore": "existingFinMindnoncommercial/no rawredistribution,attribution;pinnedbytesandverifiedrestoremandatory;eventsneedlicense/schema qualification",
+    "forward_candidate": "prospectivelycapturedimmutablevintageswithactualretrieval/QCbeforedecision;separatenewcaptureandstudyuseapproval;noW19activationorinspection"
+  },
+  "label_policy_choice": "A_RAW_PRICE_DIAGNOSTIC orB_CORPORATE_ACTION_AWARE_RESEARCH;HUMAN_SELECTION_REQUIRED; nevermixlabelclassesina comparison",
+  "data_policy_required": [
+    "knownactions",
+    "unknownactioncoverage",
+    "halt/missing/zeroentirepath",
+    "delistingentryexit",
+    "adjustedopen/cash/quantitydefinition",
+    "publicationandrevisionavailability"
+  ],
+  "features_candidate": {
+    "names": [
+      "raw_close_momentum1",
+      "raw_intraday_range"
+    ],
+    "direction": "existing2featuresonlyunlessseparateproposal;noE548manifestchange",
+    "decision_time": "Humanconfirmedpre-next-open direction; exactfreeze/deadline/requiredsource/missingpolicyUNAPPROVED",
+    "development_time": "logicalsessiontclosefeatures, nexteligible t+1open entry,availabilityUNKNOWNunderexplicitretrospectiveproxy",
+    "reference_only": "W06@96c6056487af35673dc6ec519c81901bf23dcbc2 PROPOSED/UNMERGED;notadoptedcontract"
+  },
+  "entry_exit_maturity": {
+    "candidate": "nextqualifiedsessionactualorconsistentlyadjustedopen[t+1] tosame-unitclose[t+h],h5main/10secondaryCANDIDATE",
+    "maturity": "exit+publication/availabilitybyorigin; unknownfailclosedforstrict,anyproxyassumptionrequiresHuman",
+    "purge": "excludeanysupervisedinformationoverlapwithnextsplit andanyrequiredlag; exactadditionalpurge/embargoparametersUNFROZEN; noautomaticE530sessions",
+    "calendar": "W23TWSE2021–2023boundedreferenceonly;newperiodmustbeindependentlyqualified"
+  },
+  "models_candidate": {
+    "L0_controls": [
+      "momentum+1",
+      "momentum-1"
+    ],
+    "why": "direction-matchedpredeclaredcontrols;notretroactiveflipofW24L0",
+    "Ridge": "alpha1/train-onlyscaling/fixedseed0candidate,nomodelsearch",
+    "LightGBM": "secondstageonlyafterHumanfixedoneCPUrecipe/dependencyacceptance;no search",
+    "Mamba2": "deferredfuturecandidate;W12SAFETY_HALTED/noGPU",
+    "proposal_motivation": "Direction-matchedcontrolsproposedafterW25exposure,notoriginalpreregistration;nextstudymustdeclarethisdevelopmentmotivation"
+  },
+  "minimum_expanding_design": {
+    "status": "PROPOSED_NOT_FROZEN",
+    "validation_length_candidate": "12months",
+    "forward_length_candidate": "onequarter",
+    "origins_candidate": [
+      "2023-01-01",
+      "2023-04-01",
+      "2023-07-01"
+    ],
+    "training_start_candidate": "2021-01-01expandingwithorigin",
+    "model_ready_deadline": "beforefirstqualifiednext-sessionopen; exactclockHumanrequired",
+    "development_only": "2023alreadyexposed; nofold independentfinaltestclaim",
+    "selection": "fixedrecipevalidationdiagnostics; anymetric/tie/winnerpolicyHumanfreeze;allmodels/foldresultsretained",
+    "refit": "newrun/freshstateusingonlyorigin-matureeligibletraining+validation;notcheckpointresume",
+    "exposure": "lateroriginusingearlierforwardresultsrequiresW07exposureledger;no samefold feedback"
+  },
+  "evaluation_candidate": {
+    "daily_N": "20candidateperdate/horizon,notformalstatisticalthreshold;stopifinsufficient,do notlowerafterresults",
+    "RankIC": "W08SpearmanAVERAGEties;equal-sessioncandidate;commonstock/session/horizon/labelsupport;fullrejection/tie/coverageledger",
+    "paired": "allpredeclaredmodels/signedL0controls onsamesupport;no independentmeans calledpaired",
+    "uncertainty": "block10/20sensitivityreferenceW25only;formalblock/CI/multiplicity/acceptancepolicyHumanrequired",
+    "final_evaluation": "NONEESTABLISHED;developmentonlyornewqualifiedprospectivephase;neverpicknewyearasuntouchedwithoutledger"
+  },
+  "exposure_ledger": "research/v7/window26-exposure-ledger.json",
+  "cost_caps_proposed_not_authorized": {
+    "new_price_requests_for_existing_development": 0,
+    "event_metadata_upper_envelope": 144,
+    "event_cost_assumption": "36stocks×up to4individuallyqualifiedeventdatasets;onlyiflicense/schema/needverified andHumanapproves;otherwiseBLOCKED;notassume144givescompleteactions",
+    "official_documents_upper_envelope": 4,
+    "paid_api_budget": 0,
+    "Ridge_max_fits": 12,
+    "optional_LightGBM_extra_fits": 12,
+    "CPU_total_minutes": 60,
+    "single_process_minutes": 10,
+    "incremental_storage_GiB": 1,
+    "limits": "ceilingsnotmeasuredcost/guarantee;stopwheninsufficient,noGC/oldoverwrite",
+    "storage": "separateapprovedroot.artifactsnamespace;independentbackupdestinationHumanrequired"
+  },
+  "minimum_Human_admission_decisions": [
+    "selectlabelrouteandreturnmeaning/action/unknown/missing/delistpolicy",
+    "approvequalifieddataset/calendar/universe/vintage/bias/retention/storage/backupscope",
+    "freezecomparisonbaselines/recipes/seed/folds/selection/refit/evaluationandstatisticalpolicies",
+    "chooseDEVELOPMENT_ONLYvsqualifiedPROSPECTIVE_FORWARD;confirmexposureledgerandnewunexposedoutcomes",
+    "authorizeexactfuturedatarequests/CPUresourcesandstudyexecutionseparately"
+  ],
+  "not_authorized_now": [
+    "Fit/refit",
+    "prediction",
+    "RankICrecalculation",
+    "DataAdmission",
+    "GPUColab",
+    "newpaiddata",
+    "collectoractivation",
+    "W19orV6operations",
+    "mainmergeW26",
+    "pushdeploy"
+  ],
+  "strict_phase0": "STOP",
+  "formal_data_admission": "NOT_APPROVED"
+}

@@ -1,0 +1,24 @@
+{
+  "reviewer": "/root/independent_review",
+  "verdict": "GO",
+  "Critical": 0,
+  "Required": 0,
+  "main_rounds": 1,
+  "new_focused_tests": 4,
+  "seconds": 0.01,
+  "W24_source_hashes_unchanged": 191,
+  "W25_artifacts_and_restored_bytes": 12,
+  "bootstrap_bounds_independently_recomputed": 16,
+  "LOSO_summaries_checked": 132,
+  "LOSO_daily_cases_independently_recomputed": 264,
+  "gap_zero_trace_samples_reproduced": 44266,
+  "classification_scope": "conditionalexistingrawproxyonly;notformalresearch/PITcertification",
+  "limitations_preserved": [
+    "2022block-sensitive",
+    "2023exposed",
+    "LOSOcannotundoTRAINinfluence",
+    "action-sensitivityNOT_ESTIMABLE"
+  ],
+  "network_fit_newpredictions_W19_operations": 0,
+  "rework_rounds": 0
+}

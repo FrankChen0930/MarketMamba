@@ -1,0 +1,21 @@
+...FF...........
+======================================================================
+FAIL: test_failure_parent_has_one_retry_child_even_pending_or_success (__main__.Recovery.test_failure_parent_has_one_retry_child_even_pending_or_success) (status='PENDING')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window35-recovery-v04/research/v7/window35-recovery-tests.py", line 37, in test_failure_parent_has_one_retry_child_even_pending_or_success
+    with self.assertRaises(ValueError):ledger.reserve(self.scope,'NETWORK_RETRY','second-child',retry_of=altered_ref)
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_failure_parent_has_one_retry_child_even_pending_or_success (__main__.Recovery.test_failure_parent_has_one_retry_child_even_pending_or_success) (status='SUCCESS')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window35-recovery-v04/research/v7/window35-recovery-tests.py", line 37, in test_failure_parent_has_one_retry_child_even_pending_or_success
+    with self.assertRaises(ValueError):ledger.reserve(self.scope,'NETWORK_RETRY','second-child',retry_of=altered_ref)
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.747s
+
+FAILED (failures=2)

@@ -1,0 +1,5 @@
+Metadata-Version: 2.4
+Name: marketmamba
+Version: 6.0.0
+Summary: MarketMamba V6 — Mamba+GAT Quant Trading System
+Requires-Python: >=3.10

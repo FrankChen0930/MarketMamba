@@ -1,0 +1,30 @@
+{
+  "decision_id": "Human-Window28-clean-training-causality",
+  "authority": "Current Human Window28 request",
+  "approved": [
+    "W27 fixed local ff-only integration",
+    "2 fresh Ridge CPU fits only using existing W27 clean2021 mask, original W24 alpha/features",
+    "Same W27 eval support diagnostics and independent replay",
+    "bounded future OHLCV memory-copy poisoning"
+  ],
+  "not_approved": [
+    "new formal Data/Research Admission",
+    "new Independent Test claim",
+    "new API/search/GPU/Colab",
+    "W28 integration/push/deploy",
+    "W19/V6/Production changes"
+  ],
+  "scope": {
+    "status": "COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+    "base": "39e2fedeb550a08d00f4abddc9a6caa7b1d570f8",
+    "branch": "research/v7-window28-clean-refit",
+    "prefit_code_commit": "ec0b0721763ead15cdb63caad400998ed92a0c83",
+    "authority": "Human Window28 limited development-only CPU clean refit/causality; no formal admission",
+    "evidence": "research/v7/window28-evidence.json",
+    "run": "research/v7/window28-run.json",
+    "fits": 2,
+    "next_action": "STOP; Human new qualified/exposure-aware study and resource authorization required"
+  },
+  "unknown_actions_asof": "Retained UNKNOWN",
+  "training_budget": "EXHAUSTED_2_OF_2; no autonomous additional fit"
+}

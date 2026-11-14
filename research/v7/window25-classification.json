@@ -1,0 +1,36 @@
+{
+  "schema": "w25-evidence-classification-v1",
+  "status": "AGENT_OBSERVED_CONDITIONAL_DIAGNOSTIC_NOT_HUMAN_CORRECTNESS_GATE",
+  "overall": "ENGINEERING_VALID_WITH_EXPLORATORY_SIGNAL",
+  "scope": "W24fixedraw-priceproxyonly;notformalResearchAdmission/strictPIT/totalreturn/executableevidence",
+  "reason": "Recordedlogicaltime/scaling/splitintegrityPASS;fourpositiveRidge means/medians,59–62%positive dates;single-security/top5date sensitivitiesretainpositive means",
+  "relative_comparison_2022": "SIGNAL_FRAGILE_BLOCK_LENGTH_SENSITIVE; nofavorableblockselected",
+  "relative_comparison_2023": "EXPLORATORY_DIRECTION_CONSISTENT_BUT_PREVIOUSLY_EXPOSED",
+  "historical_availability_and_actions": "INSUFFICIENT_EVIDENCE_UNKNOWN",
+  "no_confirmed_crossperiod_numeric_leakage": true,
+  "not_global_no_leakage_certification": true,
+  "price_proxy_risk": {
+    "predefinedtopcases_reveal": "2321 2023-10d maxrawproxy+224.37% across6unobservedsessions;causenotproven",
+    "interior_path_counts": {
+      "TRAIN_INTERIOR_ZERO": 518,
+      "VALIDATION_INTERIOR_ZERO": 348,
+      "FORWARD_DIAGNOSTIC_INTERIOR_ZERO": 222,
+      "VALIDATION_INTERIOR_MISSING": 26,
+      "TRAIN_INTERIOR_MISSING": 3,
+      "FORWARD_DIAGNOSTIC_INTERIOR_MISSING": 7
+    },
+    "scope": "diagnostics addedafterpredefinedtop10review; nofilter/metric/thresholdchanged",
+    "case_trace_path": "/home/frank/projects/MarketMamba/.artifacts/window25-robustness-audit/case-trace.json",
+    "case_trace_sha256": "27c23fb604c8ffe92532ccdd3f6fc8683c2a4e98cbb23ad1baa8108b63274e44",
+    "LOSO_cannot_remove_training_influence": true,
+    "known_action_exclusion_sensitivity": "NOT_ESTIMABLE_NOT_ZERO_EFFECT"
+  },
+  "next_minimum_requirements": [
+    "Qualified dated corporateactions/suspension/priceunit/adjustment policy, targeted2321gap evidence beforeeconomiclabelclaim",
+    "Historicaluniverse/calendar/availabilityorclearlyapprovedproxyandbias scope",
+    "Predeclared direction-matched baselines andnewunexposedcomparison window/selectionbudget",
+    "Humanfreezeevaluation/uncertainty/multiplecomparison/refit/compute;noautoapproval"
+  ],
+  "research_admitted": false,
+  "W24results_modified": false
+}

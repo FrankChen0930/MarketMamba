@@ -1,0 +1,115 @@
+{
+  "schema": "window17-official-document-evidence-v1",
+  "recorded_at": "2026-10-24T13:03:04.603327+00:00",
+  "artifact_class": "ARCHIVE",
+  "files": [
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window17-official-documents/w17-closure.json",
+      "bytes": 139202,
+      "sha256": "b3dbb60c8c69620f5b95c3d58184eabae66541ac5651c2b318eb6272a6c6c837"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window17-official-documents/w17-holidays.json",
+      "bytes": 2783,
+      "sha256": "7fefe785ea7155a5004a2eb74486ad865ea5c4b5f02ee0cffbbdacb1ca2ea390"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window17-official-documents/w17-closure-detail.json",
+      "bytes": 391,
+      "sha256": "0ee4c564cac1659a6255e287e20d58bbaa780436bbd7af7e97615b8ca0668fb9"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window17-official-documents/w17-closure-content.html",
+      "bytes": 11546,
+      "sha256": "aa8ccfb8b35152e4d06655bb282798dfbb02896c4be081faa44ee09bd76f1cd7"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window17-official-documents/w17-closure.pdf",
+      "bytes": 752,
+      "sha256": "a2b4cf27aef44aa3db9d84fed30ba13b024385cce4fe571c7518ee047b8fb56f"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window17-official-documents/w17-twse-news-page.html",
+      "bytes": 12185,
+      "sha256": "e1870140830418caea4c64eb4a70fb2e8510a99554ea3d967ece9a7c2d38400f"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window17-official-documents/w17-web-report.js",
+      "bytes": 19650,
+      "sha256": "fb42365f6eb8a1516408e7604f502c134c5e54de0c4f6449c6e10c2915685058"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window17-official-documents/w17-web.js",
+      "bytes": 16563,
+      "sha256": "9c1dbb81dd7d16d6b95a7e45fcbc5f561e3a1f764ff526f7936320b22c5ce993"
+    }
+  ],
+  "scope": "bounded manually invoked official document checks, not collector automation; no market CSV requests this window",
+  "documents": [
+    {
+      "provider": "TWSE",
+      "role": "temporary closure",
+      "url": "https://www.twse.com.tw/zh/about/news/news/content.html?8a8216d6a0fa351b01a1638507a10203",
+      "detail_url": "https://www.twse.com.tw/rwd/zh/news/newsDetail?id=8a8216d6a0fa351b01a1638507a10203&response=json",
+      "title": "臺灣證券交易所集中交易市場115年10月23日休市一天",
+      "official_reported_publication": "2026-10-22T20:10:00+08:00",
+      "status": "OFFICIAL_TITLE_ID_AND_PUBLICATION_VERIFIED",
+      "body": "PDF link resolved to404HTML; PDF content not verified; typhoon cause Human-provided/secondary corroborated, not authenticated from missing PDF",
+      "index_query": "https://www.twse.com.tw/rwd/zh/news/newsList?startDate=20261022&endDate=20261023&response=json",
+      "query_limit": "API returned recent broader news despite date parameters; inspected selected ID only, no pagination or expansion"
+    },
+    {
+      "provider": "TWSE",
+      "role": "annual holiday",
+      "url": "https://www.twse.com.tw/rwd/zh/holidaySchedule/holidaySchedule?date=20260101&response=json",
+      "page": "https://www.twse.com.tw/zh/trading/holiday.html",
+      "status": "OFFICIAL_2026_10_26_SUBSTITUTE_HOLIDAY_VERIFIED",
+      "actual_future_trade": "2026-10-27 SCHEDULED_ONLY, revalidate effective announcements before operation"
+    },
+    {
+      "provider": "TPEx",
+      "role": "annual/temporary closure",
+      "status": "DIRECT_EXCHANGE_ANNOUNCEMENT_NOT_RETRIEVED",
+      "annual_pdf": "https://www.tpex.org.tw/storage/eb_data/11411/114007545811-1.pdf",
+      "error": "403 via web; not bypassed",
+      "restriction": "TWSE closure not silently mapped into qualified TPEx calendar; synthetic shared scenario only"
+    }
+  ],
+  "licensed_resources": [
+    {
+      "dataset_id": "11549",
+      "url": "https://data.gov.tw/dataset/11549",
+      "license": "OGDL-1.0",
+      "observed_update_frequency": "每1日",
+      "resource_identity_ref": "research/v7/window15-license-matrix.json",
+      "status": "LICENSE_CONDITIONAL_FOR_PERIODIC_SERVICE",
+      "numeric_rate_quota": null,
+      "automated_route_terms": null,
+      "publication_clock_SLA": null
+    },
+    {
+      "dataset_id": "11371",
+      "url": "https://data.gov.tw/dataset/11371",
+      "license": "OGDL-1.0",
+      "observed_update_frequency": "每1日",
+      "resource_identity_ref": "research/v7/window15-license-matrix.json",
+      "status": "LICENSE_CONDITIONAL_FOR_PERIODIC_SERVICE",
+      "numeric_rate_quota": null,
+      "automated_route_terms": null,
+      "publication_clock_SLA": null
+    }
+  ],
+  "terms_checks": [
+    {
+      "url": "https://www.twse.com.tw/zh/terms/use.html",
+      "status": "TIMEOUT_CURRENT_CHECK_priorW15notSuperseded"
+    },
+    {
+      "url": "https://www.tpex.org.tw/zh-tw/gtsm_disclaimer.html",
+      "status": "403_NOT_BYPASSED"
+    }
+  ],
+  "regular_access_conclusion": "BLOCKED_SERVICE_TERMS_UNRESOLVED; daily update is not request permission/quota/SLA. No automated probing or CSV fetching.",
+  "calendar_admitted": false,
+  "collector_activated": false
+}

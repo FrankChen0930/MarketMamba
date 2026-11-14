@@ -1,0 +1,106 @@
+{
+  "status": "BYTES_HASH_RESTORED",
+  "separate_process": true,
+  "source": "/home/frank/projects/MarketMamba/.artifacts/window26-label-integrity",
+  "restore": "/home/frank/projects/MarketMamba/.artifacts/window26-restore",
+  "files": [
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window26-label-integrity/2321-case-details.json",
+      "relative": "2321-case-details.json",
+      "bytes": 4760,
+      "sha256": "4ea9a6cd3d9a8585f613d42ff4b808a991026bd4bea27de157970756eb749306"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window26-label-integrity/broader-label-flags.json",
+      "relative": "broader-label-flags.json",
+      "bytes": 210399,
+      "sha256": "76c54f2cb4e04ce14a85ec725a2b728d4e3d402006313f8a9828253a36bd421b"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window26-label-integrity/documents/finmind-fundamental.claim.json",
+      "relative": "documents/finmind-fundamental.claim.json",
+      "bytes": 172,
+      "sha256": "0334bdb1a47a778136701dbfdd7e1997cf769d7d2d69ad68328cd146b7a20281"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window26-label-integrity/documents/finmind-fundamental.record.json",
+      "relative": "documents/finmind-fundamental.record.json",
+      "bytes": 733,
+      "sha256": "262e718add8a85a9dda8cfd5568dd063eb51050fd4a6ca060378beeaa85f0334"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window26-label-integrity/documents/snapshots/manifests/6204404db595a78f194fe515d95a4d7ce21c8e86cc8a2be38d44b587d9e578c7-2026-10-25T080714.475509p0000.json",
+      "relative": "documents/snapshots/manifests/6204404db595a78f194fe515d95a4d7ce21c8e86cc8a2be38d44b587d9e578c7-2026-10-25T080714.475509p0000.json",
+      "bytes": 826,
+      "sha256": "ea75d72d457e22b0106565a6ea34b9570a9b2d1feab6a87753c501020bd97c5c"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window26-label-integrity/documents/snapshots/manifests/a2ec319dfb1e5550a359675e66ab90964fa988162ab0e88af1b7e6e49588ba99-2026-10-25T075907.368292p0000.json",
+      "relative": "documents/snapshots/manifests/a2ec319dfb1e5550a359675e66ab90964fa988162ab0e88af1b7e6e49588ba99-2026-10-25T075907.368292p0000.json",
+      "bytes": 746,
+      "sha256": "2bd11a05459c8ae078a39ce558d9bcc75eb1da6c2cf9bee06a90721930fa32d4"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window26-label-integrity/documents/snapshots/raw/6b09ccda8d0e249adeaa63ef75e3d47f00d0be1096cfda90ff2a1e58258e19f5.bin",
+      "relative": "documents/snapshots/raw/6b09ccda8d0e249adeaa63ef75e3d47f00d0be1096cfda90ff2a1e58258e19f5.bin",
+      "bytes": 378968,
+      "sha256": "6b09ccda8d0e249adeaa63ef75e3d47f00d0be1096cfda90ff2a1e58258e19f5"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window26-label-integrity/documents/snapshots/raw/94bf89313235185c54633f376f36f5833e14f8db24531c714588609f5a96d761.bin",
+      "relative": "documents/snapshots/raw/94bf89313235185c54633f376f36f5833e14f8db24531c714588609f5a96d761.bin",
+      "bytes": 4184711,
+      "sha256": "94bf89313235185c54633f376f36f5833e14f8db24531c714588609f5a96d761"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window26-label-integrity/documents/tecom112-financial-report.claim.json",
+      "relative": "documents/tecom112-financial-report.claim.json",
+      "bytes": 260,
+      "sha256": "3495e122e0d4e1f057903793b55809037eec6d636fd1024009b429366aa7cf80"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window26-label-integrity/documents/tecom112-financial-report.record.json",
+      "relative": "documents/tecom112-financial-report.record.json",
+      "bytes": 814,
+      "sha256": "f5cdd10825334b2767907ecd40ae2bd9d32a5536bfca2a92d149e8a48f639121"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window26-label-integrity/finmind/CLOSED.json",
+      "relative": "finmind/CLOSED.json",
+      "bytes": 110,
+      "sha256": "654780348c5ffcb41af0a5288345a62448a92244a0bbe4b5fd8129b217537e9c"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window26-label-integrity/finmind/finmind-01.claim.json",
+      "relative": "finmind/finmind-01.claim.json",
+      "bytes": 326,
+      "sha256": "b6cd7c028f42cc557f39ac1e51cf8d54ae3fc4bbfa3fe469810ea7b4ccfae032"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window26-label-integrity/finmind/record.json",
+      "relative": "finmind/record.json",
+      "bytes": 1567,
+      "sha256": "04c61a8ed40c6fbeb9e18cddf7f08f3281f3de51514ae40954b3d71ef9816c2e"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window26-label-integrity/finmind/snapshots/manifests/e72b7472b193c1068ef8d6ae8d6de8f0ea6cf63836e3ac37d7e61bdf1bb1a606-2026-10-25T080321.954672p0000.json",
+      "relative": "finmind/snapshots/manifests/e72b7472b193c1068ef8d6ae8d6de8f0ea6cf63836e3ac37d7e61bdf1bb1a606-2026-10-25T080321.954672p0000.json",
+      "bytes": 879,
+      "sha256": "0bc08c8ebbf0f13695ce2c412bd0a4748ed0a01378665d5b21564b358fdde278"
+    },
+    {
+      "path": "/home/frank/projects/MarketMamba/.artifacts/window26-label-integrity/finmind/snapshots/raw/b689012fd4b353dd1ca4f872c2fe2e2860f35743212309363621951c56405b7f.json",
+      "relative": "finmind/snapshots/raw/b689012fd4b353dd1ca4f872c2fe2e2860f35743212309363621951c56405b7f.json",
+      "bytes": 293,
+      "sha256": "b689012fd4b353dd1ca4f872c2fe2e2860f35743212309363621951c56405b7f"
+    }
+  ],
+  "event_records": 1,
+  "prior_immutable_files": {
+    "window24": 191,
+    "window25": 12
+  },
+  "backup": "BACKUP_PENDING_SAME_HOST_NOT_INDEPENDENT_BACKUP",
+  "unavailable_annual_report": "NO_BYTES_NO_RESTORE_CLAIM",
+  "research_admission": false
+}

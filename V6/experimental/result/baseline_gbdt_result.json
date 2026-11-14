@@ -1,0 +1,867 @@
+{
+  "models": {
+    "5d": {
+      "best_params": {
+        "num_leaves": 127,
+        "min_data_in_leaf": 2000,
+        "best_iteration": 107
+      },
+      "grid_sweep": [
+        {
+          "num_leaves": 31,
+          "min_data_in_leaf": 500,
+          "best_iteration": 231,
+          "val_l2": 0.082289,
+          "val_ic": 0.1138
+        },
+        {
+          "num_leaves": 31,
+          "min_data_in_leaf": 2000,
+          "best_iteration": 186,
+          "val_l2": 0.0823,
+          "val_ic": 0.1115
+        },
+        {
+          "num_leaves": 127,
+          "min_data_in_leaf": 500,
+          "best_iteration": 90,
+          "val_l2": 0.082246,
+          "val_ic": 0.1127
+        },
+        {
+          "num_leaves": 127,
+          "min_data_in_leaf": 2000,
+          "best_iteration": 107,
+          "val_l2": 0.082251,
+          "val_ic": 0.114
+        }
+      ],
+      "test_ic": {
+        "n_days": 580,
+        "mean_ic": 0.1098,
+        "ic_std": 0.1126,
+        "icir": 0.976,
+        "pct_pos": 0.864,
+        "t_naive": 23.49,
+        "t_newey_west": 13.92
+      },
+      "test_ic_by_liquidity": {
+        "L1_小量": {
+          "mean_ic": 0.1431,
+          "n_days": 580,
+          "avg_names_per_day": 711
+        },
+        "L2_中量": {
+          "mean_ic": 0.1087,
+          "n_days": 580,
+          "avg_names_per_day": 711
+        },
+        "L3_大量": {
+          "mean_ic": 0.0802,
+          "n_days": 580,
+          "avg_names_per_day": 711
+        }
+      },
+      "top_gain_importance": [
+        {
+          "feature": "Return_1d_rstd20",
+          "gain_pct": 0.0558
+        },
+        {
+          "feature": "Return_1d",
+          "gain_pct": 0.0443
+        },
+        {
+          "feature": "EPS",
+          "gain_pct": 0.0331
+        },
+        {
+          "feature": "Return_1d_rmean5",
+          "gain_pct": 0.0319
+        },
+        {
+          "feature": "ATR_14",
+          "gain_pct": 0.0243
+        },
+        {
+          "feature": "Investment_Trust_Net",
+          "gain_pct": 0.0217
+        },
+        {
+          "feature": "RSI_14_rmean60",
+          "gain_pct": 0.0194
+        },
+        {
+          "feature": "Return_1d_rstd60",
+          "gain_pct": 0.0169
+        },
+        {
+          "feature": "Return_1d_lag1",
+          "gain_pct": 0.0165
+        },
+        {
+          "feature": "Business_Signal_lag5",
+          "gain_pct": 0.0135
+        },
+        {
+          "feature": "TWII_Return_lag1",
+          "gain_pct": 0.0133
+        },
+        {
+          "feature": "Options_PC_Ratio_lag5",
+          "gain_pct": 0.0126
+        },
+        {
+          "feature": "Foreign_Net",
+          "gain_pct": 0.0125
+        },
+        {
+          "feature": "TWII_Return",
+          "gain_pct": 0.0123
+        },
+        {
+          "feature": "VIX_lag1",
+          "gain_pct": 0.0118
+        },
+        {
+          "feature": "Volatility_20d_rmean60",
+          "gain_pct": 0.0117
+        },
+        {
+          "feature": "USD_TWD",
+          "gain_pct": 0.0112
+        },
+        {
+          "feature": "Fear_Greed_lag20",
+          "gain_pct": 0.0102
+        },
+        {
+          "feature": "Business_Signal_lag1",
+          "gain_pct": 0.0099
+        },
+        {
+          "feature": "Foreign_Buy",
+          "gain_pct": 0.0096
+        }
+      ],
+      "top_shap": [
+        {
+          "feature": "Return_1d",
+          "mean_abs_shap": 0.008303
+        },
+        {
+          "feature": "Return_1d_rstd20",
+          "mean_abs_shap": 0.007174
+        },
+        {
+          "feature": "EPS",
+          "mean_abs_shap": 0.006688
+        },
+        {
+          "feature": "ATR_14",
+          "mean_abs_shap": 0.005328
+        },
+        {
+          "feature": "RSI_14_rmean60",
+          "mean_abs_shap": 0.004765
+        },
+        {
+          "feature": "Return_1d_rmean5",
+          "mean_abs_shap": 0.004152
+        },
+        {
+          "feature": "Foreign_Buy",
+          "mean_abs_shap": 0.003156
+        },
+        {
+          "feature": "Return_1d_lag1",
+          "mean_abs_shap": 0.003113
+        },
+        {
+          "feature": "Investment_Trust_Net",
+          "mean_abs_shap": 0.002646
+        },
+        {
+          "feature": "Return_1d_rstd60",
+          "mean_abs_shap": 0.002542
+        },
+        {
+          "feature": "Foreign_Sell",
+          "mean_abs_shap": 0.002452
+        },
+        {
+          "feature": "Foreign_Net",
+          "mean_abs_shap": 0.002417
+        },
+        {
+          "feature": "Foreign_Net_rmean20",
+          "mean_abs_shap": 0.00182
+        },
+        {
+          "feature": "FED_Rate_lag5",
+          "mean_abs_shap": 0.001742
+        },
+        {
+          "feature": "KD_K_lag5",
+          "mean_abs_shap": 0.001677
+        },
+        {
+          "feature": "RSI_14",
+          "mean_abs_shap": 0.001578
+        },
+        {
+          "feature": "RS_5d",
+          "mean_abs_shap": 0.001522
+        },
+        {
+          "feature": "KD_D_lag1",
+          "mean_abs_shap": 0.001335
+        },
+        {
+          "feature": "Volume_rstd20",
+          "mean_abs_shap": 0.00133
+        },
+        {
+          "feature": "PBR",
+          "mean_abs_shap": 0.001324
+        }
+      ],
+      "test_portfolio": {
+        "n_days": 592,
+        "n_rebalances": 116,
+        "n_bad_return_days": 0,
+        "ann_return": 0.1081,
+        "ann_sharpe": 0.615,
+        "max_drawdown": -0.3177,
+        "avg_turnover_per_rebalance": 0.843,
+        "total_return": 0.2727,
+        "n_price_missing": 22,
+        "excess_vs_twii": -0.9914,
+        "excess_window": "2024-01-03 ~ 2026-04-24（macro TWII 覆蓋範圍）"
+      },
+      "test_portfolio_cost_x2": {
+        "n_days": 592,
+        "n_rebalances": 116,
+        "n_bad_return_days": 0,
+        "ann_return": -0.1364,
+        "ann_sharpe": -0.603,
+        "max_drawdown": -0.4151,
+        "avg_turnover_per_rebalance": 0.843,
+        "total_return": -0.2915,
+        "n_price_missing": 22,
+        "excess_vs_twii": -1.5029,
+        "excess_window": "2024-01-03 ~ 2026-04-24（macro TWII 覆蓋範圍）"
+      },
+      "benchmark_equal_weight_all": {
+        "n_days": 592,
+        "n_rebalances": 116,
+        "n_bad_return_days": 0,
+        "ann_return": 0.1684,
+        "ann_sharpe": 0.939,
+        "max_drawdown": -0.29,
+        "avg_turnover_per_rebalance": 0.015,
+        "total_return": 0.4414,
+        "n_price_missing": 73,
+        "excess_vs_twii": -0.8721,
+        "excess_window": "2024-01-03 ~ 2026-04-24（macro TWII 覆蓋範圍）"
+      }
+    },
+    "20d": {
+      "best_params": {
+        "num_leaves": 127,
+        "min_data_in_leaf": 2000,
+        "best_iteration": 84
+      },
+      "grid_sweep": [
+        {
+          "num_leaves": 31,
+          "min_data_in_leaf": 500,
+          "best_iteration": 145,
+          "val_l2": 0.081647,
+          "val_ic": 0.1397
+        },
+        {
+          "num_leaves": 31,
+          "min_data_in_leaf": 2000,
+          "best_iteration": 103,
+          "val_l2": 0.081664,
+          "val_ic": 0.139
+        },
+        {
+          "num_leaves": 127,
+          "min_data_in_leaf": 500,
+          "best_iteration": 105,
+          "val_l2": 0.08152,
+          "val_ic": 0.1452
+        },
+        {
+          "num_leaves": 127,
+          "min_data_in_leaf": 2000,
+          "best_iteration": 84,
+          "val_l2": 0.081499,
+          "val_ic": 0.1463
+        }
+      ],
+      "test_ic": {
+        "n_days": 580,
+        "mean_ic": 0.1004,
+        "ic_std": 0.1304,
+        "icir": 0.77,
+        "pct_pos": 0.76,
+        "t_naive": 18.55,
+        "t_newey_west": 5.11
+      },
+      "test_ic_by_liquidity": {
+        "L1_小量": {
+          "mean_ic": 0.1407,
+          "n_days": 580,
+          "avg_names_per_day": 708
+        },
+        "L2_中量": {
+          "mean_ic": 0.1204,
+          "n_days": 580,
+          "avg_names_per_day": 708
+        },
+        "L3_大量": {
+          "mean_ic": 0.0685,
+          "n_days": 580,
+          "avg_names_per_day": 709
+        }
+      },
+      "top_gain_importance": [
+        {
+          "feature": "EPS",
+          "gain_pct": 0.0593
+        },
+        {
+          "feature": "ATR_14",
+          "gain_pct": 0.0546
+        },
+        {
+          "feature": "Return_1d_rstd20",
+          "gain_pct": 0.0456
+        },
+        {
+          "feature": "Return_1d_rstd60",
+          "gain_pct": 0.0363
+        },
+        {
+          "feature": "RSI_14_rmean60",
+          "gain_pct": 0.0329
+        },
+        {
+          "feature": "FED_Rate_lag20",
+          "gain_pct": 0.0222
+        },
+        {
+          "feature": "Business_Signal_lag1",
+          "gain_pct": 0.0201
+        },
+        {
+          "feature": "Business_Signal_lag5",
+          "gain_pct": 0.0198
+        },
+        {
+          "feature": "Business_Signal_lag20",
+          "gain_pct": 0.0194
+        },
+        {
+          "feature": "Volatility_20d_rmean60",
+          "gain_pct": 0.0164
+        },
+        {
+          "feature": "Business_Signal",
+          "gain_pct": 0.0157
+        },
+        {
+          "feature": "Short_Balance_rstd60",
+          "gain_pct": 0.0146
+        },
+        {
+          "feature": "FED_Rate",
+          "gain_pct": 0.0146
+        },
+        {
+          "feature": "Fear_Greed_lag20",
+          "gain_pct": 0.0133
+        },
+        {
+          "feature": "Investment_Trust_Net_rstd20",
+          "gain_pct": 0.0127
+        },
+        {
+          "feature": "Dealer_Net_rmean60",
+          "gain_pct": 0.0121
+        },
+        {
+          "feature": "Fear_Greed_lag5",
+          "gain_pct": 0.012
+        },
+        {
+          "feature": "TNX_lag20",
+          "gain_pct": 0.0104
+        },
+        {
+          "feature": "Mom_60d",
+          "gain_pct": 0.0104
+        },
+        {
+          "feature": "FED_Rate_lag5",
+          "gain_pct": 0.01
+        }
+      ],
+      "top_shap": [
+        {
+          "feature": "ATR_14",
+          "mean_abs_shap": 0.010916
+        },
+        {
+          "feature": "EPS",
+          "mean_abs_shap": 0.009953
+        },
+        {
+          "feature": "RSI_14_rmean60",
+          "mean_abs_shap": 0.007469
+        },
+        {
+          "feature": "Return_1d_rstd20",
+          "mean_abs_shap": 0.007332
+        },
+        {
+          "feature": "Return_1d_rstd60",
+          "mean_abs_shap": 0.00573
+        },
+        {
+          "feature": "Volume_rstd20",
+          "mean_abs_shap": 0.003125
+        },
+        {
+          "feature": "Foreign_Net_rmean20",
+          "mean_abs_shap": 0.002758
+        },
+        {
+          "feature": "Short_Balance_rstd60",
+          "mean_abs_shap": 0.002231
+        },
+        {
+          "feature": "Revenue_MoM_lag20",
+          "mean_abs_shap": 0.002204
+        },
+        {
+          "feature": "PBR",
+          "mean_abs_shap": 0.00214
+        },
+        {
+          "feature": "Investment_Trust_Net_rstd20",
+          "mean_abs_shap": 0.001893
+        },
+        {
+          "feature": "Mom_60d",
+          "mean_abs_shap": 0.00167
+        },
+        {
+          "feature": "Business_Signal_lag1",
+          "mean_abs_shap": 0.001554
+        },
+        {
+          "feature": "RS_60d",
+          "mean_abs_shap": 0.001548
+        },
+        {
+          "feature": "FED_Rate_lag20",
+          "mean_abs_shap": 0.001403
+        },
+        {
+          "feature": "Volume_rstd60",
+          "mean_abs_shap": 0.001384
+        },
+        {
+          "feature": "Business_Signal_lag5",
+          "mean_abs_shap": 0.00137
+        },
+        {
+          "feature": "KD_K_lag1",
+          "mean_abs_shap": 0.001346
+        },
+        {
+          "feature": "Volatility_20d_rmean60",
+          "mean_abs_shap": 0.001321
+        },
+        {
+          "feature": "FED_Rate",
+          "mean_abs_shap": 0.001306
+        }
+      ]
+    }
+  },
+  "protocol": {
+    "TRAIN_START": "2012-01-01",
+    "TRAIN_END": "2023-12-31",
+    "TEST_START": "2024-01-01",
+    "TEST_END": "2026-06-02",
+    "VAL_RATIO": 0.15,
+    "TOP_N": 50,
+    "REBALANCE_DAYS": 5,
+    "COST_BUY": 0.0015,
+    "COST_SELL": 0.0045
+  },
+  "fixed_params": {
+    "objective": "regression",
+    "metric": "l2",
+    "learning_rate": 0.05,
+    "feature_fraction": 0.8,
+    "bagging_fraction": 0.8,
+    "bagging_freq": 1,
+    "lambda_l2": 1.0,
+    "max_bin": 63,
+    "verbosity": -1,
+    "seed": 20260713,
+    "num_threads": 0
+  },
+  "notes": [
+    "訓練列 day_stride=2（同階 1）；test IC 用全部交易日",
+    "label=rank（同一 label 鐵律）、objective=regression L2——不用 lambdarank",
+    "網格僅 4 組（控制多重測試負擔），val 日 IC 選組、early stopping 用 val l2",
+    "分層 IC / 成本敏感度 / 等權宇宙基準為 2026-07-13 排查後的標準輸出（引用需分層）",
+    "存活者偏差 D3 未修復：絕對數字偏高，四階相對比較公平（協定 §2）"
+  ],
+  "generated_at": "2026-07-13 22:40",
+  "walk_forward_gbdt_5d": {
+    "params": {
+      "num_leaves": 127,
+      "min_data_in_leaf": 2000
+    },
+    "num_boost_round": 107,
+    "n_folds": 46,
+    "mean_fold_ic": 0.1285,
+    "fold_ic_std": 0.0241,
+    "pct_folds_positive": 1.0,
+    "min_fold_ic": 0.0686,
+    "max_fold_ic": 0.1665,
+    "folds": [
+      {
+        "test_start": "2015-01-01",
+        "test_end": "2015-07-01",
+        "n_train_rows": 554167,
+        "n_days": 58,
+        "mean_ic": 0.1428
+      },
+      {
+        "test_start": "2015-04-01",
+        "test_end": "2015-10-01",
+        "n_train_rows": 598860,
+        "n_days": 62,
+        "mean_ic": 0.1252
+      },
+      {
+        "test_start": "2015-07-01",
+        "test_end": "2016-01-01",
+        "n_train_rows": 646876,
+        "n_days": 64,
+        "mean_ic": 0.1334
+      },
+      {
+        "test_start": "2015-10-01",
+        "test_end": "2016-04-01",
+        "n_train_rows": 698156,
+        "n_days": 61,
+        "mean_ic": 0.1665
+      },
+      {
+        "test_start": "2016-01-01",
+        "test_end": "2016-07-01",
+        "n_train_rows": 750013,
+        "n_days": 59,
+        "mean_ic": 0.1599
+      },
+      {
+        "test_start": "2016-04-01",
+        "test_end": "2016-10-01",
+        "n_train_rows": 797483,
+        "n_days": 61,
+        "mean_ic": 0.1495
+      },
+      {
+        "test_start": "2016-07-01",
+        "test_end": "2017-01-01",
+        "n_train_rows": 847064,
+        "n_days": 63,
+        "mean_ic": 0.1495
+      },
+      {
+        "test_start": "2016-10-01",
+        "test_end": "2017-04-01",
+        "n_train_rows": 898674,
+        "n_days": 61,
+        "mean_ic": 0.1461
+      },
+      {
+        "test_start": "2017-01-01",
+        "test_end": "2017-07-01",
+        "n_train_rows": 952318,
+        "n_days": 59,
+        "mean_ic": 0.1581
+      },
+      {
+        "test_start": "2017-04-01",
+        "test_end": "2017-10-01",
+        "n_train_rows": 1001984,
+        "n_days": 63,
+        "mean_ic": 0.1624
+      },
+      {
+        "test_start": "2017-07-01",
+        "test_end": "2018-01-01",
+        "n_train_rows": 1053657,
+        "n_days": 64,
+        "mean_ic": 0.1606
+      },
+      {
+        "test_start": "2017-10-01",
+        "test_end": "2018-04-01",
+        "n_train_rows": 1110829,
+        "n_days": 60,
+        "mean_ic": 0.1517
+      },
+      {
+        "test_start": "2018-01-01",
+        "test_end": "2018-07-01",
+        "n_train_rows": 1164906,
+        "n_days": 59,
+        "mean_ic": 0.1282
+      },
+      {
+        "test_start": "2018-04-01",
+        "test_end": "2018-10-01",
+        "n_train_rows": 1216117,
+        "n_days": 62,
+        "mean_ic": 0.1538
+      },
+      {
+        "test_start": "2018-07-01",
+        "test_end": "2019-01-01",
+        "n_train_rows": 1269168,
+        "n_days": 65,
+        "mean_ic": 0.1517
+      },
+      {
+        "test_start": "2018-10-01",
+        "test_end": "2019-04-01",
+        "n_train_rows": 1325804,
+        "n_days": 60,
+        "mean_ic": 0.1281
+      },
+      {
+        "test_start": "2019-01-01",
+        "test_end": "2019-07-01",
+        "n_train_rows": 1384241,
+        "n_days": 57,
+        "mean_ic": 0.1321
+      },
+      {
+        "test_start": "2019-04-01",
+        "test_end": "2019-10-01",
+        "n_train_rows": 1432801,
+        "n_days": 62,
+        "mean_ic": 0.1593
+      },
+      {
+        "test_start": "2019-07-01",
+        "test_end": "2020-01-01",
+        "n_train_rows": 1486895,
+        "n_days": 64,
+        "mean_ic": 0.1552
+      },
+      {
+        "test_start": "2019-10-01",
+        "test_end": "2020-04-01",
+        "n_train_rows": 1544776,
+        "n_days": 60,
+        "mean_ic": 0.1442
+      },
+      {
+        "test_start": "2020-01-01",
+        "test_end": "2020-07-01",
+        "n_train_rows": 1603270,
+        "n_days": 58,
+        "mean_ic": 0.1164
+      },
+      {
+        "test_start": "2020-04-01",
+        "test_end": "2020-10-01",
+        "n_train_rows": 1654784,
+        "n_days": 63,
+        "mean_ic": 0.1212
+      },
+      {
+        "test_start": "2020-07-01",
+        "test_end": "2021-01-01",
+        "n_train_rows": 1710373,
+        "n_days": 64,
+        "mean_ic": 0.1268
+      },
+      {
+        "test_start": "2020-10-01",
+        "test_end": "2021-04-01",
+        "n_train_rows": 1771866,
+        "n_days": 59,
+        "mean_ic": 0.1282
+      },
+      {
+        "test_start": "2021-01-01",
+        "test_end": "2021-07-01",
+        "n_train_rows": 1830059,
+        "n_days": 58,
+        "mean_ic": 0.1439
+      },
+      {
+        "test_start": "2021-04-01",
+        "test_end": "2021-10-01",
+        "n_train_rows": 1883225,
+        "n_days": 62,
+        "mean_ic": 0.1433
+      },
+      {
+        "test_start": "2021-07-01",
+        "test_end": "2022-01-01",
+        "n_train_rows": 1940442,
+        "n_days": 64,
+        "mean_ic": 0.0811
+      },
+      {
+        "test_start": "2021-10-01",
+        "test_end": "2022-04-01",
+        "n_train_rows": 2001510,
+        "n_days": 60,
+        "mean_ic": 0.1258
+      },
+      {
+        "test_start": "2022-01-01",
+        "test_end": "2022-07-01",
+        "n_train_rows": 2063129,
+        "n_days": 59,
+        "mean_ic": 0.1304
+      },
+      {
+        "test_start": "2022-04-01",
+        "test_end": "2022-10-01",
+        "n_train_rows": 2117582,
+        "n_days": 63,
+        "mean_ic": 0.1084
+      },
+      {
+        "test_start": "2022-07-01",
+        "test_end": "2023-01-01",
+        "n_train_rows": 2177959,
+        "n_days": 64,
+        "mean_ic": 0.0999
+      },
+      {
+        "test_start": "2022-10-01",
+        "test_end": "2023-04-01",
+        "n_train_rows": 2240562,
+        "n_days": 59,
+        "mean_ic": 0.0686
+      },
+      {
+        "test_start": "2023-01-01",
+        "test_end": "2023-07-01",
+        "n_train_rows": 2303513,
+        "n_days": 57,
+        "mean_ic": 0.0701
+      },
+      {
+        "test_start": "2023-04-01",
+        "test_end": "2023-10-01",
+        "n_train_rows": 2357506,
+        "n_days": 61,
+        "mean_ic": 0.1095
+      },
+      {
+        "test_start": "2023-07-01",
+        "test_end": "2024-01-01",
+        "n_train_rows": 2417865,
+        "n_days": 63,
+        "mean_ic": 0.1333
+      },
+      {
+        "test_start": "2023-10-01",
+        "test_end": "2024-04-01",
+        "n_train_rows": 2480691,
+        "n_days": 60,
+        "mean_ic": 0.1186
+      },
+      {
+        "test_start": "2024-01-01",
+        "test_end": "2024-07-01",
+        "n_train_rows": 2546088,
+        "n_days": 58,
+        "mean_ic": 0.1075
+      },
+      {
+        "test_start": "2024-04-01",
+        "test_end": "2024-10-01",
+        "n_train_rows": 2603970,
+        "n_days": 62,
+        "mean_ic": 0.1203
+      },
+      {
+        "test_start": "2024-07-01",
+        "test_end": "2025-01-01",
+        "n_train_rows": 2666487,
+        "n_days": 63,
+        "mean_ic": 0.1309
+      },
+      {
+        "test_start": "2024-10-01",
+        "test_end": "2025-04-01",
+        "n_train_rows": 2733343,
+        "n_days": 58,
+        "mean_ic": 0.1185
+      },
+      {
+        "test_start": "2025-01-01",
+        "test_end": "2025-07-01",
+        "n_train_rows": 2798702,
+        "n_days": 58,
+        "mean_ic": 0.1211
+      },
+      {
+        "test_start": "2025-04-01",
+        "test_end": "2025-10-01",
+        "n_train_rows": 2856420,
+        "n_days": 63,
+        "mean_ic": 0.1009
+      },
+      {
+        "test_start": "2025-07-01",
+        "test_end": "2026-01-01",
+        "n_train_rows": 2922969,
+        "n_days": 63,
+        "mean_ic": 0.0917
+      },
+      {
+        "test_start": "2025-10-01",
+        "test_end": "2026-04-01",
+        "n_train_rows": 2992203,
+        "n_days": 59,
+        "mean_ic": 0.1267
+      },
+      {
+        "test_start": "2026-01-01",
+        "test_end": "2026-06-02",
+        "n_train_rows": 3060079,
+        "n_days": 47,
+        "mean_ic": 0.1262
+      },
+      {
+        "test_start": "2026-04-01",
+        "test_end": "2026-06-02",
+        "n_train_rows": 3122180,
+        "n_days": 19,
+        "mean_ic": 0.0855
+      }
+    ],
+    "note": "params/輪數沿用主切分 val 選定值（同階 1 慣例：早期 fold 對此有輕微樂觀性，已知妥協）"
+  }
+}

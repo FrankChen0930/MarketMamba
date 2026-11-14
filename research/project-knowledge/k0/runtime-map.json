@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "classification": "GENERATED_DISCOVERY_NOT_CANONICAL",
+  "observed_at": "2026-09-20T01:30:00+08:00",
+  "paths": [
+    {"id":"windows-fetch-only","entry":"MarketMamba_DataFetch -> V6/scripts/v62_daily.bat --fetch-only","currently_active":true,"manually_runnable":true,"disabled":false,"environment":"production acquisition","state":"Data/processed_v6","evidence":["Windows Task Scheduler: Enabled/Ready, last result 0","V6/scripts/v62_daily.bat:18-31","V6/run_v62_daily.py:402-416"],"confidence":"HIGH"},
+    {"id":"v62-full","entry":"V6/run_v62_daily.py","currently_active":false,"manually_runnable":true,"disabled":true,"environment":"legacy production-oriented","state":"V6/results and portfolio JSON/JSONL","evidence":["MarketMamba_V62 scheduler disabled","V6/run_v62_daily.py:418-565"],"confidence":"HIGH"},
+    {"id":"v61-manual","entry":"V6/run_daily_inference.py","currently_active":false,"manually_runnable":true,"disabled":null,"environment":"legacy","state":"V6 results","evidence":["V6/run_daily_inference.py:1492-1515"],"confidence":"MEDIUM"},
+    {"id":"v7-correctness-builders","entry":"V6/experimental/v7_*_build.py","currently_active":false,"manually_runnable":true,"disabled":false,"environment":"research","state":"Data/v7_* and research/v7 manifests","evidence":["artifact DAG; no single orchestrator"],"confidence":"HIGH"},
+    {"id":"e1-colab","entry":"V7-E1-Rolling-Origin-Refresh-Colab-Bundle notebook","currently_active":false,"manually_runnable":true,"disabled":false,"environment":"user-run Colab research","state":"Google Drive checkpoints/matrix/results","evidence":["V6/experimental/v7_e1_run.py","scripts/build_v7_e1_notebook.py"],"confidence":"HIGH"},
+    {"id":"api","entry":"app/backend/main.py","currently_active":null,"manually_runnable":true,"disabled":null,"environment":"delivery","state":"cache plus result artifacts","evidence":["router registrations present; live deployment not inspected"],"confidence":"MEDIUM"},
+    {"id":"frontend","entry":"app/frontend/src/App.jsx","currently_active":null,"manually_runnable":true,"disabled":null,"environment":"delivery","state":"browser","evidence":["routes present; deployed traffic not inspected"],"confidence":"MEDIUM"},
+    {"id":"phase-a-shadow","entry":"feature/production-phase-a-shadow-ledger","currently_active":false,"manually_runnable":true,"disabled":false,"environment":"unmerged shadow control plane","state":"SQLite WAL and current-state projection","evidence":["branch f5b0ff3; not main"],"confidence":"HIGH"}
+  ],
+  "external_scheduler_snapshot": [
+    {"name":"MarketMamba_DataFetch","enabled":true,"state":"Ready","last_result":0,"action":"v62_daily.bat --fetch-only"},
+    {"name":"MarketMamba_V62","enabled":false,"last_result":255,"action":"v62_daily.bat"},
+    {"name":"PersonalOS_Daily","enabled":false,"last_result":-1073741510}
+  ],
+  "gaps":["live API/frontend deployment not observed","notifications path not found as active authority","scheduler is external state and must be re-observed"]
+}

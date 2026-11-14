@@ -1,0 +1,15 @@
+{
+  "acknowledgment": null,
+  "automatic_updates_performed": false,
+  "changed": [
+    "V6/experimental/v7_data_recovery.py"
+  ],
+  "matched_rules": {
+    "V6/experimental/v7_data_recovery.py": [
+      "DEFAULT"
+    ]
+  },
+  "potential_knowledge_impact": [],
+  "schema_version": 1,
+  "status": "PASS"
+}

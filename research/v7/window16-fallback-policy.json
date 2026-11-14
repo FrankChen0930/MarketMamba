@@ -1,0 +1,34 @@
+{
+  "schema": "window16-source-resilience-proposal-v1",
+  "status": "PROPOSED_NOT_ACTIVE",
+  "automatic_switching": false,
+  "backup_provider_access_authorized": false,
+  "approved_fallback_urls": [],
+  "current_request_policy": {
+    "per_resource_attempts": 1,
+    "retries": 0,
+    "redirect_following": false,
+    "max_response_bytes": 2097152,
+    "request_timeout_seconds": 25
+  },
+  "future_bounded_retry": "Human must set explicit attempt/time/service caps before activation; transient timeout/429/5xx may be candidates, no unbounded retry. No retry in this window.",
+  "error_classes": {
+    "401_403_terms_or_permission": "STOP; do not bypass or switch provider",
+    "3xx": "Record Location; no automatic redirect to another endpoint",
+    "404_410": "Endpoint identity/service issue, not proof whole provider failed",
+    "timeout_429_5xx": "Transient candidate only under approved retry policy",
+    "200_nonCSV_schema_unit_date_drift": "QC fail closed, retain bytes/reasons, no model input"
+  },
+  "endpoint_vs_provider": "One failed URL is endpoint evidence only; provider outage needs independent authorized evidence, not unapproved probe requests.",
+  "fallback_gate": "Only exact licensed/authorized whitelist routes; match schema, units, security/session/segment/adjustment semantics, temporal eligibility; otherwise keep isolated source identity and reject use.",
+  "temporal_gate": "Actual observation/session and receipt/QC before approved freeze; unknown publication remains UNKNOWN, not receipt-imputed. Calendar/freshness must be qualified; no after-open info or rewriting old prediction.",
+  "qc_provenance": "Keep exact source/dataset/license/request/retrieval/raw/manifest hashes, QC and exclusions; missing is not zero; no silent unit conversion.",
+  "recovery": "Preserve missing-session gaps; only separately authorized bounded backfill, retain actual later receipt/BACKFILL or RECOVERY identity, never original timely forward capture.",
+  "unresolved": [
+    "Service rate/retry caps and operation authorization",
+    "Fallback source/route licenses and semantic compatibility; none authorized here",
+    "Qualified calendar/freshness/security universe/price units and field scope",
+    "Collector archive/backup/monitoring/retention/clock/QC and activation approval"
+  ],
+  "research_admitted": false
+}

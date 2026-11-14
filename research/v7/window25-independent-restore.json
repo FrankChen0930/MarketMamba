@@ -1,0 +1,10 @@
+{
+  "status": "ALL_AUDIT_BYTES_HASH_RESTORED",
+  "separate_process": true,
+  "files": 12,
+  "root": "/home/frank/projects/MarketMamba/.artifacts/window25-robustness-audit",
+  "restore": "/home/frank/projects/MarketMamba/.artifacts/window25-audit-restore",
+  "backup": "BACKUP_PENDING_SAME_HOST",
+  "source_W24_immutable_dependencies": "191files verified before/after, no mutation",
+  "no_full_reproduction_or_admission_claim": true
+}

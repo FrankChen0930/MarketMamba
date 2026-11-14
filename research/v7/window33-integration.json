@@ -1,0 +1,8 @@
+{
+  "before_main": "67e2d25a710273646d41c0ad861b4a993593ba4d",
+  "fixed_candidate": "8fa41869a2583f0b5db698db83eed98611f24a7e",
+  "review": "GO Critical0 Required0",
+  "restored_files": 11,
+  "per_copy_bytes": 16123,
+  "scope": "synthetic-only proposal/gates;no formal activation or changed frozen contracts"
+}

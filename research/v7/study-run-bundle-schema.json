@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:marketmamba:synthetic-study-run-bundle-v1",
+  "title": "Synthetic bundle profile; NOT a research admission contract",
+  "type": "object",
+  "required": [
+    "schema",
+    "identity",
+    "evidence_class",
+    "training_status",
+    "research_admitted",
+    "profile",
+    "required_artifacts",
+    "artifacts"
+  ],
+  "properties": {
+    "schema": {
+      "const": "v7-study-run-bundle-v1"
+    },
+    "identity": {
+      "type": "object",
+      "required": [
+        "study_id",
+        "recipe_id",
+        "run_id",
+        "fold_id",
+        "origin_id",
+        "origin_at",
+        "seed",
+        "code_commit",
+        "prediction_role",
+        "checkpoint_status",
+        "checkpoint_sha256",
+        "source_vintages",
+        "code_manifest_sha256",
+        "data_sha256",
+        "feature_sha256",
+        "label_sha256",
+        "universe_sha256",
+        "evaluation_policy_sha256",
+        "model_sha256",
+        "training_contract_sha256"
+      ],
+      "properties": {
+        "seed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "code_commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "prediction_role": {
+          "enum": [
+            "SELECTION",
+            "FORWARD"
+          ]
+        },
+        "checkpoint_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "code_manifest_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "data_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "feature_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "label_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "universe_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "evaluation_policy_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "model_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "training_contract_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "evidence_class": {
+      "const": "SYNTHETIC"
+    },
+    "training_status": {
+      "const": "NOT_RUN_SYNTHETIC"
+    },
+    "research_admitted": {
+      "const": false
+    },
+    "profile": {
+      "const": "SYNTHETIC_EVALUATION"
+    },
+    "required_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "kind",
+          "storage",
+          "path",
+          "sha256",
+          "bytes",
+          "format"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+$"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "storage": {
+            "enum": [
+              "BUNDLE",
+              "EXTERNAL_REFERENCE"
+            ]
+          },
+          "path": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "format": {
+            "enum": [
+              "JSON",
+              "BYTES"
+            ]
+          },
+          "schema_id": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "$comment": "Executable validate_manifest additionally enforces required profile kinds, clocks, safe paths, identity and bytes/schema checks. Format BYTES is opaque, never deserialized automatically."
+}

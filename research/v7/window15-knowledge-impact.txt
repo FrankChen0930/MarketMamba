@@ -1,0 +1,188 @@
+{
+  "acknowledgment": null,
+  "automatic_updates_performed": false,
+  "changed": [
+    "V6/experimental/v7_exploratory_proposal.py",
+    "V6/experimental/v7_exploratory_proposal_test.py",
+    "V6/experimental/v7_vintage_dryrun.py",
+    "V6/experimental/v7_vintage_dryrun_test.py",
+    "knowledge/00_Project_Map/Authority_Map.md",
+    "knowledge/00_Project_Map/Current_State.md",
+    "knowledge/00_Project_Map/Worktree_Register.md",
+    "knowledge/00_Project_Map/authority-map.json",
+    "knowledge/02_History/Decisions/20261024-window15-licensed-dual-track.json",
+    "reports/v7_window15_dual_track_brief.md",
+    "research/v7/research-program.md",
+    "research/v7/window15-evidence.json",
+    "research/v7/window15-exploratory-dataset.json",
+    "research/v7/window15-exploratory-feature-manifest.json",
+    "research/v7/window15-exploratory-study.json",
+    "research/v7/window15-final-tests.txt",
+    "research/v7/window15-forward-activation.json",
+    "research/v7/window15-license-evidence.json",
+    "research/v7/window15-license-matrix.json",
+    "research/v7/window15-post-tests.txt",
+    "research/v7/window15-pre-tests.txt",
+    "research/v7/window15-resource-metadata.json",
+    "research/v7/window15-restore-validation.json",
+    "research/v7/window15-synthetic-dryrun.json",
+    "research/v7/window15-u2-green.txt",
+    "research/v7/window15-u2-red.txt",
+    "research/v7/window15-u3-final-focused.txt",
+    "research/v7/window15-u3-green.txt",
+    "research/v7/window15-u3-red.txt",
+    "research/v7/window15-u3-rework1-green.txt",
+    "research/v7/window15-u3-rework1-red.txt",
+    "research/v7/window15-u3-rework2-green.txt",
+    "research/v7/window15-u3-rework2-red.txt",
+    "research/v7/window15-u3-setup-green.txt",
+    "research/v7/window15-u3-stale-red.txt"
+  ],
+  "matched_rules": {
+    "V6/experimental/v7_exploratory_proposal.py": [
+      "DEFAULT"
+    ],
+    "V6/experimental/v7_exploratory_proposal_test.py": [
+      "DEFAULT"
+    ],
+    "V6/experimental/v7_vintage_dryrun.py": [
+      "DEFAULT"
+    ],
+    "V6/experimental/v7_vintage_dryrun_test.py": [
+      "DEFAULT"
+    ],
+    "knowledge/00_Project_Map/Authority_Map.md": [
+      "canonical-knowledge"
+    ],
+    "knowledge/00_Project_Map/Current_State.md": [
+      "canonical-knowledge"
+    ],
+    "knowledge/00_Project_Map/Worktree_Register.md": [
+      "worktree-responsibility",
+      "canonical-knowledge"
+    ],
+    "knowledge/00_Project_Map/authority-map.json": [
+      "canonical-knowledge"
+    ],
+    "knowledge/02_History/Decisions/20261024-window15-licensed-dual-track.json": [
+      "history-reports-tasks"
+    ],
+    "reports/v7_window15_dual_track_brief.md": [
+      "history-reports-tasks"
+    ],
+    "research/v7/research-program.md": [
+      "DEFAULT"
+    ],
+    "research/v7/window15-evidence.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window15-exploratory-dataset.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window15-exploratory-feature-manifest.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window15-exploratory-study.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window15-final-tests.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window15-forward-activation.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window15-license-evidence.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window15-license-matrix.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window15-post-tests.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window15-pre-tests.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window15-resource-metadata.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window15-restore-validation.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window15-synthetic-dryrun.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window15-u2-green.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window15-u2-red.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window15-u3-final-focused.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window15-u3-green.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window15-u3-red.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window15-u3-rework1-green.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window15-u3-rework1-red.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window15-u3-rework2-green.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window15-u3-rework2-red.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window15-u3-setup-green.txt": [
+      "DEFAULT"
+    ],
+    "research/v7/window15-u3-stale-red.txt": [
+      "DEFAULT"
+    ]
+  },
+  "potential_knowledge_impact": [
+    {
+      "artifact": "knowledge/01_Domains/Operations.md",
+      "rules": [
+        "worktree-responsibility"
+      ],
+      "severity": "REVIEW_REQUIRED"
+    },
+    {
+      "artifact": "knowledge/GOVERNANCE.md",
+      "rules": [
+        "canonical-knowledge"
+      ],
+      "severity": "REVIEW_REQUIRED"
+    },
+    {
+      "artifact": "knowledge/00_Project_Map/Authority_Map.md",
+      "rules": [
+        "worktree-responsibility"
+      ],
+      "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+    },
+    {
+      "artifact": "knowledge/00_Project_Map/Current_State.md",
+      "rules": [
+        "worktree-responsibility"
+      ],
+      "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+    },
+    {
+      "artifact": "knowledge/02_History/README.md",
+      "rules": [
+        "history-reports-tasks"
+      ],
+      "severity": "NO_KNOWLEDGE_IMPACT"
+    }
+  ],
+  "schema_version": 1,
+  "status": "WARNING"
+}

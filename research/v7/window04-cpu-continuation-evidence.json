@@ -1,0 +1,172 @@
+{
+  "schema_version": 1,
+  "artifact_class": "CANONICAL",
+  "evidence_class": "OFFLINE_SYNTHETIC_ENGINEERING",
+  "work_id": "W04B-LOG",
+  "base": "31f7accc475b5b735684d5a06725a237d85d5693",
+  "branch": "development/v7-window04-cpu-continuation",
+  "source_identity": "27b9b41b01a44d3459ab66c6a0ea83395fc2d30a",
+  "observed_at": "2026-10-21T13:03:16.269094+00:00",
+  "authority": [
+    "Current Human Window04 Stage B System Reliability/Experiment Preparation",
+    "knowledge/GOVERNANCE.md Autonomous Development Charter",
+    "knowledge/01_Domains/Training.md preserve logs and reason for termination",
+    "source adoption a7992f0974d810bdaa035e8996c3eb46e48fba63"
+  ],
+  "acceptance": [
+    "log write/decode failure raises with original cause and path",
+    "running child terminated and reaped",
+    "already-exited child cannot promote reader failure to success",
+    "existing legal success/nonzero/heartbeat behavior retained"
+  ],
+  "red_log": "\nException in thread Thread-4 (stream):\nTraceback (most recent call last):\n  File \"/usr/lib/python3.12/threading.py\", line 1073, in _bootstrap_inner\n    self.run()\n  File \"/usr/lib/python3.12/threading.py\", line 1010, in run\n    self._target(*self._args, **self._kwargs)\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window04-cpu-continuation/V6/experimental/v7_e1_colab_runtime.py\", line 23, in stream\n    for line in process.stdout:\n  File \"<frozen codecs>\", line 322, in decode\nUnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte\nException in thread Thread-5 (stream):\nTraceback (most recent call last):\n  File \"/usr/lib/python3.12/threading.py\", line 1073, in _bootstrap_inner\n    self.run()\n  File \"/usr/lib/python3.12/threading.py\", line 1010, in run\n    self._target(*self._args, **self._kwargs)\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window04-cpu-continuation/V6/experimental/v7_e1_colab_runtime.py\", line 25, in stream\n    log.write(line); log.flush(); tail.append(line.rstrip())\n    ^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window04-cpu-continuation/V6/experimental/v7_e1_colab_runtime_test.py\", line 28, in write\n    if \"evidence\" in text: raise OSError(\"fixture disk unavailable\")\n                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nOSError: fixture disk unavailable\nException in thread Thread-6 (stream):\nTraceback (most recent call last):\n  File \"/usr/lib/python3.12/threading.py\", line 1073, in _bootstrap_inner\n    self.run()\n  File \"/usr/lib/python3.12/threading.py\", line 1010, in run\n    self._target(*self._args, **self._kwargs)\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window04-cpu-continuation/V6/experimental/v7_e1_colab_runtime.py\", line 23, in stream\n    for line in process.stdout:\n  File \"<frozen codecs>\", line 322, in decode\nUnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte\n======================================================================\nFAIL: test_reader_failure_after_child_exit_never_returns_success (V6.experimental.v7_e1_colab_runtime_test.E1ColabRuntimeTest.test_reader_failure_after_child_exit_never_returns_success)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window04-cpu-continuation/V6/experimental/v7_e1_colab_runtime_test.py\", line 45, in test_reader_failure_after_child_exit_never_returns_success\n    with self.assertRaisesRegex(RuntimeError,\"log stream failed\"):\nAssertionError: RuntimeError not raised\n\n======================================================================\nFAIL: test_reader_failure_stops_child_and_propagates_cause (V6.experimental.v7_e1_colab_runtime_test.E1ColabRuntimeTest.test_reader_failure_stops_child_and_propagates_cause) (failure='write')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window04-cpu-continuation/V6/experimental/v7_e1_colab_runtime_test.py\", line 35, in test_reader_failure_stops_child_and_propagates_cause\n    with self.assertRaisesRegex(RuntimeError,\"log stream failed.*failure.log\") as raised:\nAssertionError: RuntimeError not raised\n\n======================================================================\nFAIL: test_reader_failure_stops_child_and_propagates_cause (V6.experimental.v7_e1_colab_runtime_test.E1ColabRuntimeTest.test_reader_failure_stops_child_and_propagates_cause) (failure='decode')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window04-cpu-continuation/V6/experimental/v7_e1_colab_runtime_test.py\", line 35, in test_reader_failure_stops_child_and_propagates_cause\n    with self.assertRaisesRegex(RuntimeError,\"log stream failed.*failure.log\") as raised:\nAssertionError: RuntimeError not raised\n\n----------------------------------------------------------------------\nRan 6 tests in 6.191s\n\nFAILED (failures=3)\n",
+  "green_log": "\n----------------------------------------------------------------------\nRan 6 tests in 0.152s\n\nOK\n",
+  "review": {
+    "reviewer": "/root/independent_review",
+    "critical": 0,
+    "required": 0,
+    "tests_passed": 6,
+    "initial_fix_rounds": 1,
+    "review_rework_rounds": 0
+  },
+  "hashes": {
+    "V6/experimental/v7_e1_colab_runtime.py": "352b16c7762342d7120b88a985688a94e963e719bee0286ad7edb9323609abc6",
+    "V6/experimental/v7_e1_colab_runtime_test.py": "7a898dbbcd3454cdbf733831af7d4188db30ef14ea7ae7a04e7c6bba01c95531"
+  },
+  "runtime": {
+    "python": "3.12.3",
+    "venv": "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+    "CUDA_VISIBLE_DEVICES": "",
+    "MARKETMAMBA_DATA_ROOT": "UNSET",
+    "inputs": "temporary synthetic child processes and injected log faults only",
+    "operational_data": "NOT_READ_OR_WRITTEN"
+  },
+  "limitations": [
+    "No Colab/Drive runtime certification",
+    "No model training/inference",
+    "E1 Frozen Matrix BLOCKED; no repeat search",
+    "Strict Phase0 STOP; H2 NOT_APPROVED; proposals remain PROPOSED"
+  ],
+  "candidate_discovery": "Four domains evaluated in sole backlog; no equivalent runtime fix in all-branch path history; other known work completed or policy/input dependent",
+  "knowledge_impact": "Caller failure semantics/worktree ownership/next checkpoint updated; no global governance or financial/research policy change",
+  "regression": {
+    "total_passed": 274,
+    "groups": {
+      "PIT_Snapshot": 49,
+      "E1_nontraining": 38,
+      "Portfolio": 67,
+      "Operations": 81,
+      "Fetch_Governance": 26,
+      "Official_Parsers": 8,
+      "Metadata_Audit": 5
+    },
+    "logs": [
+      {
+        "group": "pit",
+        "command": [
+          "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+          "-B",
+          "-m",
+          "unittest",
+          "V6.experimental.v7_source_snapshot_test",
+          "V6.experimental.v7_temporal_contract_test",
+          "V6.experimental.v7_executable_labels_test",
+          "V6.experimental.v7_ohlcv_provenance_test",
+          "V6.experimental.v7_historical_security_master_test",
+          "V6.experimental.v7_historical_label_materialize_test",
+          "-q"
+        ],
+        "exit_code": 0,
+        "seconds": 1.9378847340012726,
+        "log": "----------------------------------------------------------------------\nRan 49 tests in 1.226s\n\nOK\n"
+      },
+      {
+        "group": "e1_no_training",
+        "command": [
+          "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+          "-B",
+          "-m",
+          "unittest",
+          "V6.experimental.v7_e1_contract_test",
+          "V6.experimental.v7_e1_matrix_test",
+          "V6.experimental.v7_e1_evaluate_test",
+          "V6.experimental.v7_e1_checkpoint_test",
+          "V6.experimental.v7_e1_colab_runtime_test",
+          "V6.experimental.v7_e1_run_test.E1RunTest.test_lifecycle_adapter_round_trip",
+          "-q"
+        ],
+        "exit_code": 0,
+        "seconds": 6.875855371999933,
+        "log": "\n----------------------------------------------------------------------\nRan 38 tests in 4.434s\n\nOK\n"
+      },
+      {
+        "group": "portfolio",
+        "command": [
+          "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+          "-B",
+          "-m",
+          "unittest",
+          "V6.experimental.v7_portfolio_contract_test",
+          "V6.experimental.v7_portfolio_engine_test",
+          "V6.experimental.v7_portfolio_journal_test",
+          "V6.experimental.v7_portfolio_history_test",
+          "V6.experimental.v7_portfolio_process_test",
+          "V6.experimental.v7_health_summary_test",
+          "V6.experimental.v7_correctness_audit_test",
+          "-q"
+        ],
+        "exit_code": 0,
+        "seconds": 3.0184396610002295,
+        "log": "{\"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exits\": [0, 0], \"journal_sha256\": \"f2b40d1b9bcb49d0463bb35e80fef93a595c53f5b81b1696895986e8026636fd\", \"results\": [{\"appended\": true, \"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}, {\"event\": \"error\", \"message\": \"event_id 'market' has different content\", \"type\": \"EventConflictError\"}], \"scenario\": \"concurrent_conflict\"}\n{\"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exits\": [0, 0], \"journal_sha256\": \"f2b40d1b9bcb49d0463bb35e80fef93a595c53f5b81b1696895986e8026636fd\", \"results\": [{\"appended\": true, \"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}, {\"appended\": false, \"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}], \"scenario\": \"concurrent_duplicate\"}\n{\"blocked\": {\"event\": \"lock_blocked\", \"operation\": 1}, \"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exit\": 0, \"journal_sha256\": \"f2b40d1b9bcb49d0463bb35e80fef93a595c53f5b81b1696895986e8026636fd\", \"result\": {\"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}, \"scenario\": \"reader_during_split_write\"}\n{\"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exits\": [-9, 0], \"journal_sha256\": \"f2b40d1b9bcb49d0463bb35e80fef93a595c53f5b81b1696895986e8026636fd\", \"result\": {\"appended\": false, \"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}, \"scenario\": \"sigkill_durable_before_response\"}\n{\"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exits\": [-9, 0], \"journal_sha256\": \"fd78812e4fdd32f4cebea6c6011d3bc75dc4faf1cf4d5ebcd9a53664667fe802\", \"refusal\": {\"event\": \"error\", \"message\": \"journal has a truncated final line\", \"type\": \"JournalIntegrityError\"}, \"scenario\": \"sigkill_partial_tail\"}\n----------------------------------------------------------------------\nRan 67 tests in 2.877s\n\nOK\n"
+      },
+      {
+        "group": "ops",
+        "command": [
+          "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+          "-B",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "V6/marketmamba/ops",
+          "-p",
+          "test_*.py",
+          "-q"
+        ],
+        "exit_code": 0,
+        "seconds": 18.12332176900054,
+        "log": "synthetic duplicate hygiene warning\n[shadow-ledger] projection callback failed (IsADirectoryError); legacy fetch outcome is unchanged\nProcess SpawnProcess-6:\nTraceback (most recent call last):\n  File \"/usr/lib/python3.12/multiprocessing/process.py\", line 314, in _bootstrap\n    self.run()\n  File \"/usr/lib/python3.12/multiprocessing/process.py\", line 108, in run\n    self._target(*self._args, **self._kwargs)\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window04-cpu-continuation/V6/marketmamba/ops/test_phase_a_replay.py\", line 103, in failing_callback_child\n    observe_fetch_only(\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window04-cpu-continuation/V6/marketmamba/ops/shadow.py\", line 433, in observe_fetch_only\n    result = fetch_operation()\n             ^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-window04-cpu-continuation/V6/marketmamba/ops/test_phase_a_replay.py\", line 101, in fail\n    raise RuntimeError(\"synthetic child fetch failure\")\nRuntimeError: synthetic child fetch failure\n[shadow-ledger] lease conflict failed (LeaseConflictError); legacy fetch outcome is unchanged\n[shadow-ledger] projection callback failed (OSError); legacy fetch outcome is unchanged\n[shadow-ledger] projection callback failed (ProjectionLockTimeout); legacy fetch outcome is unchanged\n[shadow-ledger] projection callback failed (ProjectionLockTimeout); legacy fetch outcome is unchanged\n{\"after_generation\": \"f93176f0191586a1b8b0096b0913fcd2f821c53e4cc22caa8da17969ae526567\", \"before_generation\": \"3fda21bf107e3d691a708e340bc93eb6ea76bad581fdfa58e6d0975e77dcb4c8\", \"case\": \"before_snapshot-0\", \"during_generation\": \"f93176f0191586a1b8b0096b0913fcd2f821c53e4cc22caa8da17969ae526567\", \"writer_exitcode\": 0}\n{\"after_generation\": \"8914c413f3720aac3a0f5dcc31e17efb3432d1f8d1f9f4af5db6e364a6e95f17\", \"before_generation\": \"049ddb493dfcb3953a75e36c08791305260c4abea648086554d65bd439adbf72\", \"case\": \"before_snapshot-1\", \"during_generation\": \"8914c413f3720aac3a0f5dcc31e17efb3432d1f8d1f9f4af5db6e364a6e95f17\", \"writer_exitcode\": 0}\n{\"after_generation\": \"1497476d6d5f312616703315190e00ab1f6b38bad21fd4b3ea2eca34a961efde\", \"before_generation\": \"f6d8b1a1a55adf2df86153499f03a656415a32fbf04213493c873d798c5cd114\", \"case\": \"mid_watermark-0\", \"during_generation\": \"f6d8b1a1a55adf2df86153499f03a656415a32fbf04213493c873d798c5cd114\", \"writer_exitcode\": 0}\n{\"after_generation\": \"c3b47ef2c1fee297e9dd17364c326b77fb37657cff67719471cfa7f1b7fb26fc\", \"before_generation\": \"5aacd4e1bb6da3dbd2d31f61278359632e973f97c92325411cf6064801836320\", \"case\": \"mid_watermark-1\", \"during_generation\": \"5aacd4e1bb6da3dbd2d31f61278359632e973f97c92325411cf6064801836320\", \"writer_exitcode\": 0}\n{\"after_generation\": \"275f2114a1d621cc56186f6695e25b7a789beb293525d6fbd976be9a6a9ee065\", \"before_generation\": \"5e56e6d30feeb817c81aa1fed37e2a6318ff73d09568a579778050c669275518\", \"case\": \"after_watermark-0\", \"during_generation\": \"5e56e6d30feeb817c81aa1fed37e2a6318ff73d09568a579778050c669275518\", \"writer_exitcode\": 0}\n{\"after_generation\": \"85fad42254511aec7c560ff6cf5d4f0d27337ee8cc923606b333cc43545edd6f\", \"before_generation\": \"e86e907123cc8f1838ae036e3079fd82ffd9242d3843cf3d5a7a1aed0ddaf73c\", \"case\": \"after_watermark-1\", \"during_generation\": \"e86e907123cc8f1838ae036e3079fd82ffd9242d3843cf3d5a7a1aed0ddaf73c\", \"writer_exitcode\": 0}\n{\"after_generation\": \"d758169b398cd09277129e9640b00a87f7101bcf52227bcb0c5fd18b00ae7499\", \"before_generation\": \"544b6e638de2fe943ee0e4ad85771262aaed07a4e6ac967d71d44c71e44c81c2\", \"case\": \"before_artifacts-0\", \"during_generation\": \"544b6e638de2fe943ee0e4ad85771262aaed07a4e6ac967d71d44c71e44c81c2\", \"writer_exitcode\": 0}\n{\"after_generation\": \"053c45ddfe2c2a0c09230b4d4d385e29773316a9d0ef3e8e733a7e2893134954\", \"before_generation\": \"3dc6e72f1474b4846bb7bacb6e72d22af2fb4a23b86bcc2e5a88a56ad4909c0d\", \"case\": \"before_artifacts-1\", \"during_generation\": \"3dc6e72f1474b4846bb7bacb6e72d22af2fb4a23b86bcc2e5a88a56ad4909c0d\", \"writer_exitcode\": 0}\n{\"after_generation\": \"839a55cffb0b8e5c8b4833093cbafd0300e710ffc288c024597cd9ebcdaff0c9\", \"before_generation\": \"8063b1ba4e74c638feba0f10f860302227b43c5bf2f50b689b0d81b9a60a383c\", \"case\": \"negative-control-no-BEGIN\", \"during_generation\": \"78e2a1a373aa438bb0158392a795945af36300052ae8dc818b447e94eb9f00d4\", \"writer_exitcode\": 0}\n{\"after_generation\": \"9a8d8ee1e016d46e956bacb1270183acdc398f7b0a8f58c699ab636a1be4b3c0\", \"before_generation\": \"657c092af62c779c07e1481fd2f33b450c1c850e0c186a8b5f3ff508cb92ca88\", \"case\": \"commit\", \"during_generation\": \"657c092af62c779c07e1481fd2f33b450c1c850e0c186a8b5f3ff508cb92ca88\", \"writer_exitcode\": 0}\n{\"after_generation\": \"0fd02483e9c523cd780e5e0a5e2bb9bc280e1b0663669005032ec15e8327270c\", \"before_generation\": \"0fd02483e9c523cd780e5e0a5e2bb9bc280e1b0663669005032ec15e8327270c\", \"case\": \"rollback\", \"during_generation\": \"0fd02483e9c523cd780e5e0a5e2bb9bc280e1b0663669005032ec15e8327270c\", \"writer_exitcode\": 0}\n{\"after_generation\": \"9ec5c24fc921a699ebc648544ece021822acccb7bcd88c70ad6dffacee2c6be8\", \"before_generation\": \"9ec5c24fc921a699ebc648544ece021822acccb7bcd88c70ad6dffacee2c6be8\", \"case\": \"kill\", \"during_generation\": \"9ec5c24fc921a699ebc648544ece021822acccb7bcd88c70ad6dffacee2c6be8\", \"writer_exitcode\": -9}\n----------------------------------------------------------------------\nRan 81 tests in 17.914s\n\nOK\n"
+      },
+      {
+        "group": "fetch_governance",
+        "command": [
+          "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+          "-B",
+          "-m",
+          "unittest",
+          "V6.scripts.test_v62_fetch_only",
+          "tools.project_knowledge.test_knowledge_governance",
+          "-q"
+        ],
+        "exit_code": 0,
+        "seconds": 0.22391001999858418,
+        "log": "2026-10-21 21:02:42,879 INFO ==============================================================\n2026-10-21 21:02:42,879 INFO [fetch-only] \u53ea\u66f4\u65b0\u6bcf\u65e5 raw parquet\uff1b\u4e0d\u5efa\u77e9\u9663\u3001\u4e0d\u8f09\u6a21\u578b\u3001\u4e0d\u63a8\u8ad6\u3001\u4e0d\u767c\u5e03\n2026-10-21 21:02:42,879 INFO ==============================================================\n2026-10-21 21:02:42,879 INFO [fetch-only] \u5b8c\u6574\u4f86\u6e90 0/10\n2026-10-21 21:02:42,879 ERROR [fetch-only] \u5931\u6557\uff5c\u7f3a\u6f0f 1 \u500b\u6bcf\u65e5\u6e90\uff5cexit=1\n2026-10-21 21:02:42,879 INFO ==============================================================\n2026-10-21 21:02:42,880 INFO [fetch-only] \u53ea\u66f4\u65b0\u6bcf\u65e5 raw parquet\uff1b\u4e0d\u5efa\u77e9\u9663\u3001\u4e0d\u8f09\u6a21\u578b\u3001\u4e0d\u63a8\u8ad6\u3001\u4e0d\u767c\u5e03\n2026-10-21 21:02:42,880 INFO ==============================================================\n2026-10-21 21:02:42,880 INFO [fetch-only] \u5b8c\u6574\u4f86\u6e90 10/10\n2026-10-21 21:02:42,880 INFO [fetch-only] \u5b8c\u6210\uff5c\u6bcf\u65e5\u6e90 10/10\uff5c\u8017\u6642 0.0 \u79d2\uff5cexit=0\n2026-10-21 21:02:42,881 INFO ==============================================================\n2026-10-21 21:02:42,881 INFO [fetch-only] \u53ea\u66f4\u65b0\u6bcf\u65e5 raw parquet\uff1b\u4e0d\u5efa\u77e9\u9663\u3001\u4e0d\u8f09\u6a21\u578b\u3001\u4e0d\u63a8\u8ad6\u3001\u4e0d\u767c\u5e03\n2026-10-21 21:02:42,881 INFO ==============================================================\n2026-10-21 21:02:42,881 INFO [fetch-only] \u5b8c\u6574\u4f86\u6e90 10/10\n2026-10-21 21:02:42,881 INFO [fetch-only] \u5b8c\u6210\uff5c\u6bcf\u65e5\u6e90 10/10\uff5c\u8017\u6642 0.0 \u79d2\uff5cexit=0\n----------------------------------------------------------------------\nRan 26 tests in 0.078s\n\nOK\n"
+      }
+    ],
+    "parser_log": "MOPS \u6708\u71df\u6536 otc 2026-05 \u6293\u53d6\u5931\u6557\uff1afixture failure\nMOPS financials 2026Q2\uff1aotc \u7121\u8cc7\u6599 \u2192 \u6574\u5b63\u653e\u68c4\uff08\u5be7\u53ef\u6c92\u6709\uff0c\u4e0d\u8981\u53ea\u6709\u4e00\u534a\uff09\nMOPS financials 2026Q2\uff1aotc \u7121\u8cc7\u6599 \u2192 \u6574\u5b63\u653e\u68c4\uff08\u5be7\u53ef\u6c92\u6709\uff0c\u4e0d\u8981\u53ea\u6709\u4e00\u534a\uff09\nMOPS financials 2026Q1\uff1aotc \u7121\u8cc7\u6599 \u2192 \u6574\u5b63\u653e\u68c4\uff08\u5be7\u53ef\u6c92\u6709\uff0c\u4e0d\u8981\u53ea\u6709\u4e00\u534a\uff09\nMOPS financials 2026Q2\uff1a\u6293\u4e0d\u5230\u4e0a\u4e00\u5b63\u7d2f\u8a08\u6578\uff0c\u7121\u6cd5\u9084\u539f\u55ae\u5b63\u503c \u2192 \u653e\u68c4\u672c\u5b63\uff08\u4e0d\u5beb\u5165\u7d2f\u8a08\u6578\uff0c\u907f\u514d\u8207\u6b77\u53f2\u4e0d\u540c\u7fa9\uff09\nTPEX price: \u56de\u50b3\u65e5\u671f 20260717 != \u8acb\u6c42 20260716\uff0c\u6368\u68c4\uff08\u6b64\u985e\u7aef\u9ede\u6703\u975c\u9ed8\u56de\u50b3\u7576\u5929\u8cc7\u6599\uff0c\u898b docstring\uff09\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', 'UNKNOWN', '\u6f32\u8dcc', '\u958b\u76e4', '\u6700\u9ad8', '\u6700\u4f4e', '\u6210\u4ea4\u80a1\u6578']\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', 'UNKNOWN', '\u6700\u9ad8', '\u6700\u4f4e', '\u6210\u4ea4\u80a1\u6578']\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', '\u958b\u76e4', 'UNKNOWN', '\u6700\u4f4e', '\u6210\u4ea4\u80a1\u6578']\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', '\u958b\u76e4', '\u6700\u9ad8', 'UNKNOWN', '\u6210\u4ea4\u80a1\u6578']\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', '\u958b\u76e4', '\u6700\u9ad8', '\u6700\u4f4e', 'UNKNOWN']\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', '\u958b\u76e4', '\u6700\u9ad8', '\u6700\u4f4e', '\u6210\u4ea4\u80a1\u6578', '\u6536\u76e4']\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', '\u6536\u76e4', '\u6700\u9ad8', '\u6700\u4f4e', '\u6210\u4ea4\u80a1\u6578']\nTPEX price: malformed field names\nTWSE price: response date 20260717 != requested 20260716\nTWSE price: response date None != requested 20260716\nTWSE price: response date None != requested 20260716\nTWSE price: response date ['20260716'] != requested 20260716\nTWSE price: stat=no data\nTWSE price: response date None != requested 20260716\n----------------------------------------------------------------------\nRan 8 tests in 0.086s\n\nOK\n",
+    "metadata_tests": "5PASS",
+    "knowledge_health": "WARNING, no FAIL; same existing classes",
+    "syntax": "PASS",
+    "diff_check": "PASS"
+  },
+  "status": "WINDOW_COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+  "remaining_ready": "NONE_DEMONSTRATED_IN_BOUNDED_DISCOVERY",
+  "resume": "Containing docs-only closure commit; verify branch/HEAD/clean, read Current State, Authority Map, Charter and sole backlog; new bounded grant required",
+  "closure_review": {
+    "reviewer": "/root/independent_review",
+    "critical": 0,
+    "required": 0,
+    "source_hashes_verified": 2,
+    "resume": "PASS"
+  }
+}

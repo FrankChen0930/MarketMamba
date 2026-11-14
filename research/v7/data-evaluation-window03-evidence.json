@@ -1,0 +1,565 @@
+{
+  "schema": "v7-data-evaluation-window03-v1",
+  "main_baseline": "9956446d49371dbc5c09e1ea0bd9eaa750064532",
+  "window02": "f34f9f32a86a0ee97a8dcdb74faad996bf5f5b4e",
+  "status": "WINDOW_COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+  "conflicts": [
+    "knowledge/00_Project_Map/Authority_Map.md",
+    "knowledge/00_Project_Map/Current_State.md",
+    "knowledge/00_Project_Map/Worktree_Register.md",
+    "knowledge/00_Project_Map/authority-map.json",
+    "research/v7/research-program.md"
+  ],
+  "resolution": "retain full Window02 canonical content; supersede navigation with new scoped grant; main pointer preserved in parent history",
+  "scope": "isolated candidate only; no main merge or production writes",
+  "runtime": {
+    "python": "3.12.3",
+    "CUDA_VISIBLE_DEVICES": "",
+    "MARKETMAMBA_DATA_ROOT": "UNSET",
+    "candidate_Data": "EXISTS: 3 inherited Git-tracked historical files, no processed_v6 mount; parquet contents not read",
+    "main_data_realpath": "/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6; not read",
+    "tracked_data_inventory": [
+      "100644 blob ed624547e5451c09224506acd58f499e23aac5a0\tData/2330_2023.parquet",
+      "100644 blob a1223102a4e7071d4b6125c8dda7631c00b697a0\tData/fix_data.py",
+      "100644 blob 555dc2886acb208349beb4c471b0bf120b07ebd1\tData/verify_data.py"
+    ]
+  },
+  "integration_identity": {
+    "window02_output_hashes": 5,
+    "model_source_hashes": 11,
+    "all_window02_V6_blobs": "EXACT",
+    "units": [
+      "371d55d",
+      "e17fcf0",
+      "164dbc1",
+      "f34f9f3"
+    ]
+  },
+  "integration_tests": [
+    {
+      "group": "pit",
+      "command": [
+        "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "V6.experimental.v7_source_snapshot_test",
+        "V6.experimental.v7_temporal_contract_test",
+        "V6.experimental.v7_executable_labels_test",
+        "V6.experimental.v7_ohlcv_provenance_test",
+        "V6.experimental.v7_historical_security_master_test",
+        "V6.experimental.v7_historical_label_materialize_test",
+        "-q"
+      ],
+      "exit_code": 0,
+      "seconds": 2.8732874530005574,
+      "log": "----------------------------------------------------------------------\nRan 49 tests in 1.326s\n\nOK\n"
+    },
+    {
+      "group": "e1_no_training",
+      "command": [
+        "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "V6.experimental.v7_e1_contract_test",
+        "V6.experimental.v7_e1_matrix_test",
+        "V6.experimental.v7_e1_evaluate_test",
+        "V6.experimental.v7_e1_checkpoint_test",
+        "V6.experimental.v7_e1_colab_runtime_test",
+        "V6.experimental.v7_e1_run_test.E1RunTest.test_lifecycle_adapter_round_trip",
+        "-q"
+      ],
+      "exit_code": 0,
+      "seconds": 9.006258988000809,
+      "log": "\n----------------------------------------------------------------------\nRan 36 tests in 5.301s\n\nOK\n"
+    },
+    {
+      "group": "portfolio",
+      "command": [
+        "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "V6.experimental.v7_portfolio_contract_test",
+        "V6.experimental.v7_portfolio_engine_test",
+        "V6.experimental.v7_portfolio_journal_test",
+        "V6.experimental.v7_portfolio_history_test",
+        "V6.experimental.v7_portfolio_process_test",
+        "V6.experimental.v7_health_summary_test",
+        "V6.experimental.v7_correctness_audit_test",
+        "-q"
+      ],
+      "exit_code": 0,
+      "seconds": 3.476893998000378,
+      "log": "{\"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exits\": [0, 0], \"journal_sha256\": \"61106cc0e853b3bbbb08fe7b0ad80205c4607b68538404ea87ff1f6aff650fec\", \"results\": [{\"event\": \"error\", \"message\": \"event_id 'market' has different content\", \"type\": \"EventConflictError\"}, {\"appended\": true, \"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0.5\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": null, \"last_session_id\": \"market\", \"net_value\": \"0.99925112331502745881178232651023464802795806290564\", \"pending\": {\"as_of\": \"2026-09-16T17:00:00+08:00\", \"created_session\": 0, \"signal_id\": \"signal\", \"target_tickers\": [\"A\"]}, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.049925112331502745881178232651023464802795806290564\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.00074887668497254118821767348976535197204193709435846\"}}], \"scenario\": \"concurrent_conflict\"}\n{\"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exits\": [0, 0], \"journal_sha256\": \"f2b40d1b9bcb49d0463bb35e80fef93a595c53f5b81b1696895986e8026636fd\", \"results\": [{\"appended\": true, \"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}, {\"appended\": false, \"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}], \"scenario\": \"concurrent_duplicate\"}\n{\"blocked\": {\"event\": \"lock_blocked\", \"operation\": 1}, \"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exit\": 0, \"journal_sha256\": \"f2b40d1b9bcb49d0463bb35e80fef93a595c53f5b81b1696895986e8026636fd\", \"result\": {\"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}, \"scenario\": \"reader_during_split_write\"}\n{\"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exits\": [-9, 0], \"journal_sha256\": \"f2b40d1b9bcb49d0463bb35e80fef93a595c53f5b81b1696895986e8026636fd\", \"result\": {\"appended\": false, \"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}, \"scenario\": \"sigkill_durable_before_response\"}\n{\"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exits\": [-9, 0], \"journal_sha256\": \"fd78812e4fdd32f4cebea6c6011d3bc75dc4faf1cf4d5ebcd9a53664667fe802\", \"refusal\": {\"event\": \"error\", \"message\": \"journal has a truncated final line\", \"type\": \"JournalIntegrityError\"}, \"scenario\": \"sigkill_partial_tail\"}\n----------------------------------------------------------------------\nRan 67 tests in 3.285s\n\nOK\n"
+    },
+    {
+      "group": "ops",
+      "command": [
+        "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "V6/marketmamba/ops",
+        "-p",
+        "test_*.py",
+        "-q"
+      ],
+      "exit_code": 0,
+      "seconds": 20.04191386400089,
+      "log": "synthetic duplicate hygiene warning\n[shadow-ledger] projection callback failed (IsADirectoryError); legacy fetch outcome is unchanged\nProcess SpawnProcess-6:\nTraceback (most recent call last):\n  File \"/usr/lib/python3.12/multiprocessing/process.py\", line 314, in _bootstrap\n    self.run()\n  File \"/usr/lib/python3.12/multiprocessing/process.py\", line 108, in run\n    self._target(*self._args, **self._kwargs)\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/ops/test_phase_a_replay.py\", line 103, in failing_callback_child\n    observe_fetch_only(\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/ops/shadow.py\", line 433, in observe_fetch_only\n    result = fetch_operation()\n             ^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/ops/test_phase_a_replay.py\", line 101, in fail\n    raise RuntimeError(\"synthetic child fetch failure\")\nRuntimeError: synthetic child fetch failure\n[shadow-ledger] lease conflict failed (LeaseConflictError); legacy fetch outcome is unchanged\n[shadow-ledger] projection callback failed (OSError); legacy fetch outcome is unchanged\n[shadow-ledger] projection callback failed (ProjectionLockTimeout); legacy fetch outcome is unchanged\n[shadow-ledger] projection callback failed (ProjectionLockTimeout); legacy fetch outcome is unchanged\n{\"after_generation\": \"76db586cb1c2e8adada7a2aed0b80ae83c04458912147f0bf84cb92e69aeb5eb\", \"before_generation\": \"bc85679d511205711c4009a79feb9b2a06f0550be8bab6518b5066745b78b080\", \"case\": \"before_snapshot-0\", \"during_generation\": \"76db586cb1c2e8adada7a2aed0b80ae83c04458912147f0bf84cb92e69aeb5eb\", \"writer_exitcode\": 0}\n{\"after_generation\": \"ab56f6f031c95a86c7573f398a02db518d0faef39f0b4f96484190eadab80200\", \"before_generation\": \"b70b828a2b705f83eca6ab94662049ce9d612fbc7f2116169f0fff53e2cbb104\", \"case\": \"before_snapshot-1\", \"during_generation\": \"ab56f6f031c95a86c7573f398a02db518d0faef39f0b4f96484190eadab80200\", \"writer_exitcode\": 0}\n{\"after_generation\": \"7d5ea86924d1803b1c6797c2b48460a3ccea3d89b9919d5992b227f9e7d0ca7a\", \"before_generation\": \"fab9efd085dfbd70cd433a350a03129a05991cd3b15bf8ed8aacd2fe8b765af4\", \"case\": \"mid_watermark-0\", \"during_generation\": \"fab9efd085dfbd70cd433a350a03129a05991cd3b15bf8ed8aacd2fe8b765af4\", \"writer_exitcode\": 0}\n{\"after_generation\": \"3b86fffc784da8474d00adc0ae7f4466718543c266c561152893fde8a70197a1\", \"before_generation\": \"36225235ca0f053048699d85dd366615c0d9c165455e4a1618cb642d95448aa8\", \"case\": \"mid_watermark-1\", \"during_generation\": \"36225235ca0f053048699d85dd366615c0d9c165455e4a1618cb642d95448aa8\", \"writer_exitcode\": 0}\n{\"after_generation\": \"b29c4843fd9554fde11c73da2ae6edaed85b4235c259fb47d959f96daeb8d63d\", \"before_generation\": \"f9cdb580114ee14582b893ab8229e9917c28ce60cb4f8068575741d0783db1b2\", \"case\": \"after_watermark-0\", \"during_generation\": \"f9cdb580114ee14582b893ab8229e9917c28ce60cb4f8068575741d0783db1b2\", \"writer_exitcode\": 0}\n{\"after_generation\": \"b105a3b22f5706878acbbd8460334cbbe6c62af24be0c40e39348f63716d94b6\", \"before_generation\": \"2d761d5920017a6e384c57afd7ff9764658ad9fa1047df0dece9fd2c8a913e1f\", \"case\": \"after_watermark-1\", \"during_generation\": \"2d761d5920017a6e384c57afd7ff9764658ad9fa1047df0dece9fd2c8a913e1f\", \"writer_exitcode\": 0}\n{\"after_generation\": \"40e7a54a9a4397176641684e98634b939a38e24d1a85e8219611ce7f7c4f1b34\", \"before_generation\": \"1d23cacf3de722f04329254b75ed64a344afc95337e97bea369c90b49efdd0a9\", \"case\": \"before_artifacts-0\", \"during_generation\": \"1d23cacf3de722f04329254b75ed64a344afc95337e97bea369c90b49efdd0a9\", \"writer_exitcode\": 0}\n{\"after_generation\": \"fda3148e20c9e2ac94173b31f0e4fc631b39eeb47ab4767f6a4a1e8b38f6c4a9\", \"before_generation\": \"2f8daf975c70ad5bd74d8770158b458bb8f663b28969ec7ff522ac43f31dd24f\", \"case\": \"before_artifacts-1\", \"during_generation\": \"2f8daf975c70ad5bd74d8770158b458bb8f663b28969ec7ff522ac43f31dd24f\", \"writer_exitcode\": 0}\n{\"after_generation\": \"86c18f2ce32ee15ba04993b46ccc0b016317770942bd97b8618fe5a94492a3fe\", \"before_generation\": \"cffa6caacfb49ff06e7a9224328d1abe933d78b1c9c19f85a0e344e25a482e23\", \"case\": \"negative-control-no-BEGIN\", \"during_generation\": \"3062d931f02afd5f226b30db55f889dc02cc14690231f7647e7ff8e5d5833471\", \"writer_exitcode\": 0}\n{\"after_generation\": \"b851011af9aa085fafa26173d0a7145f6a3ab0a8f64b3372069691ac1f715731\", \"before_generation\": \"a861a10d459f217a4e50523075cc3e3bb5b9685d3ffbee0da7517e2112c4c123\", \"case\": \"commit\", \"during_generation\": \"a861a10d459f217a4e50523075cc3e3bb5b9685d3ffbee0da7517e2112c4c123\", \"writer_exitcode\": 0}\n{\"after_generation\": \"7637a296f62b55a9682891ae6553063de44fb60c63a44c7acb0c888a76893b40\", \"before_generation\": \"7637a296f62b55a9682891ae6553063de44fb60c63a44c7acb0c888a76893b40\", \"case\": \"rollback\", \"during_generation\": \"7637a296f62b55a9682891ae6553063de44fb60c63a44c7acb0c888a76893b40\", \"writer_exitcode\": 0}\n{\"after_generation\": \"5186f344b9f5c60a6a3dd847d150cda802ec2c068ab2bb0bb6a42db4cec32172\", \"before_generation\": \"5186f344b9f5c60a6a3dd847d150cda802ec2c068ab2bb0bb6a42db4cec32172\", \"case\": \"kill\", \"during_generation\": \"5186f344b9f5c60a6a3dd847d150cda802ec2c068ab2bb0bb6a42db4cec32172\", \"writer_exitcode\": -9}\n----------------------------------------------------------------------\nRan 81 tests in 19.814s\n\nOK\n"
+    },
+    {
+      "group": "fetch_governance",
+      "command": [
+        "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "V6.scripts.test_v62_fetch_only",
+        "tools.project_knowledge.test_knowledge_governance",
+        "-q"
+      ],
+      "exit_code": 0,
+      "seconds": 0.224853009999606,
+      "log": "2026-10-21 18:29:02,446 INFO ==============================================================\n2026-10-21 18:29:02,446 INFO [fetch-only] \u53ea\u66f4\u65b0\u6bcf\u65e5 raw parquet\uff1b\u4e0d\u5efa\u77e9\u9663\u3001\u4e0d\u8f09\u6a21\u578b\u3001\u4e0d\u63a8\u8ad6\u3001\u4e0d\u767c\u5e03\n2026-10-21 18:29:02,446 INFO ==============================================================\n2026-10-21 18:29:02,446 INFO [fetch-only] \u5b8c\u6574\u4f86\u6e90 0/10\n2026-10-21 18:29:02,447 ERROR [fetch-only] \u5931\u6557\uff5c\u7f3a\u6f0f 1 \u500b\u6bcf\u65e5\u6e90\uff5cexit=1\n2026-10-21 18:29:02,447 INFO ==============================================================\n2026-10-21 18:29:02,447 INFO [fetch-only] \u53ea\u66f4\u65b0\u6bcf\u65e5 raw parquet\uff1b\u4e0d\u5efa\u77e9\u9663\u3001\u4e0d\u8f09\u6a21\u578b\u3001\u4e0d\u63a8\u8ad6\u3001\u4e0d\u767c\u5e03\n2026-10-21 18:29:02,447 INFO ==============================================================\n2026-10-21 18:29:02,447 INFO [fetch-only] \u5b8c\u6574\u4f86\u6e90 10/10\n2026-10-21 18:29:02,447 INFO [fetch-only] \u5b8c\u6210\uff5c\u6bcf\u65e5\u6e90 10/10\uff5c\u8017\u6642 0.0 \u79d2\uff5cexit=0\n2026-10-21 18:29:02,448 INFO ==============================================================\n2026-10-21 18:29:02,448 INFO [fetch-only] \u53ea\u66f4\u65b0\u6bcf\u65e5 raw parquet\uff1b\u4e0d\u5efa\u77e9\u9663\u3001\u4e0d\u8f09\u6a21\u578b\u3001\u4e0d\u63a8\u8ad6\u3001\u4e0d\u767c\u5e03\n2026-10-21 18:29:02,449 INFO ==============================================================\n2026-10-21 18:29:02,449 INFO [fetch-only] \u5b8c\u6574\u4f86\u6e90 10/10\n2026-10-21 18:29:02,449 INFO [fetch-only] \u5b8c\u6210\uff5c\u6bcf\u65e5\u6e90 10/10\uff5c\u8017\u6642 0.0 \u79d2\uff5cexit=0\n----------------------------------------------------------------------\nRan 26 tests in 0.078s\n\nOK\n"
+    }
+  ],
+  "integration_review": {
+    "reviewer": "/root/independent_review",
+    "critical": 0,
+    "required": 0,
+    "identity_reverified": "5 output hashes,11 sources,7 V6 blobs",
+    "result": "GO isolated candidate only; Human main integration approval required",
+    "repair_rounds": 0
+  },
+  "integration_candidate": "9bb4247bec9e6bf1eb06b01f001a6b795faa2a7d",
+  "parser": {
+    "status": "COMPLETED_OFFLINE_NOT_DEPLOYED",
+    "red": "MOPS \u6708\u71df\u6536 otc 2026-05 \u6293\u53d6\u5931\u6557\uff1afixture failure\nMOPS financials 2026Q2\uff1aotc \u7121\u8cc7\u6599 \u2192 \u6574\u5b63\u653e\u68c4\uff08\u5be7\u53ef\u6c92\u6709\uff0c\u4e0d\u8981\u53ea\u6709\u4e00\u534a\uff09\nMOPS financials 2026Q2\uff1aotc \u7121\u8cc7\u6599 \u2192 \u6574\u5b63\u653e\u68c4\uff08\u5be7\u53ef\u6c92\u6709\uff0c\u4e0d\u8981\u53ea\u6709\u4e00\u534a\uff09\nMOPS financials 2026Q1\uff1aotc \u7121\u8cc7\u6599 \u2192 \u6574\u5b63\u653e\u68c4\uff08\u5be7\u53ef\u6c92\u6709\uff0c\u4e0d\u8981\u53ea\u6709\u4e00\u534a\uff09\nMOPS financials 2026Q2\uff1a\u6293\u4e0d\u5230\u4e0a\u4e00\u5b63\u7d2f\u8a08\u6578\uff0c\u7121\u6cd5\u9084\u539f\u55ae\u5b63\u503c \u2192 \u653e\u68c4\u672c\u5b63\uff08\u4e0d\u5beb\u5165\u7d2f\u8a08\u6578\uff0c\u907f\u514d\u8207\u6b77\u53f2\u4e0d\u540c\u7fa9\uff09\nTPEX price: \u56de\u50b3\u65e5\u671f 20260717 != \u8acb\u6c42 20260716\uff0c\u6368\u68c4\uff08\u6b64\u985e\u7aef\u9ede\u6703\u975c\u9ed8\u56de\u50b3\u7576\u5929\u8cc7\u6599\uff0c\u898b docstring\uff09\nTWSE price: stat=no data\n======================================================================\nFAIL: test_tpex_header_binding_preserves_values_under_permutations (__main__.OfficialParserTest.test_tpex_header_binding_preserves_values_under_permutations) (order=[0, 1, 4, 3, 2, 5, 6, 7])\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/data/test_official_parsers.py\", line 94, in test_tpex_header_binding_preserves_values_under_permutations\n    pd.testing.assert_frame_equal(frame, baseline)\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/lib/python3.12/site-packages/pandas/_testing/asserters.py\", line 1279, in assert_frame_equal\n    assert_series_equal(\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/lib/python3.12/site-packages/pandas/_testing/asserters.py\", line 1067, in assert_series_equal\n    _testing.assert_almost_equal(\n  File \"testing.pyx\", line 55, in pandas._libs.testing.assert_almost_equal\n  File \"testing.pyx\", line 173, in pandas._libs.testing.assert_almost_equal\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/lib/python3.12/site-packages/pandas/_testing/asserters.py\", line 614, in raise_assert_detail\n    raise AssertionError(msg)\nAssertionError: DataFrame.iloc[:, 2] (column name=\"Open\") are different\n\nDataFrame.iloc[:, 2] (column name=\"Open\") values are different (100.0 %)\n[index]: [0]\n[left]:  [11.0]\n[right]: [10.0]\nAt positional index 0, first diff: 11.0 != 10.0\n\n======================================================================\nFAIL: test_tpex_header_binding_preserves_values_under_permutations (__main__.OfficialParserTest.test_tpex_header_binding_preserves_values_under_permutations) (order=[7, 6, 5, 4, 3, 2, 1, 0])\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/data/test_official_parsers.py\", line 94, in test_tpex_header_binding_preserves_values_under_permutations\n    pd.testing.assert_frame_equal(frame, baseline)\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/lib/python3.12/site-packages/pandas/_testing/asserters.py\", line 1210, in assert_frame_equal\n    _check_isinstance(left, right, DataFrame)\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/lib/python3.12/site-packages/pandas/_testing/asserters.py\", line 167, in _check_isinstance\n    raise AssertionError(\nAssertionError: DataFrame Expected type <class 'pandas.core.frame.DataFrame'>, found <class 'NoneType'> instead\n\n======================================================================\nFAIL: test_tpex_header_binding_preserves_values_under_permutations (__main__.OfficialParserTest.test_tpex_header_binding_preserves_values_under_permutations) (order=[7, 2, 0, 6, 4, 1, 3, 5])\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/data/test_official_parsers.py\", line 94, in test_tpex_header_binding_preserves_values_under_permutations\n    pd.testing.assert_frame_equal(frame, baseline)\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/lib/python3.12/site-packages/pandas/_testing/asserters.py\", line 1210, in assert_frame_equal\n    _check_isinstance(left, right, DataFrame)\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/lib/python3.12/site-packages/pandas/_testing/asserters.py\", line 167, in _check_isinstance\n    raise AssertionError(\nAssertionError: DataFrame Expected type <class 'pandas.core.frame.DataFrame'>, found <class 'NoneType'> instead\n\n======================================================================\nFAIL: test_tpex_header_binding_preserves_values_under_permutations (__main__.OfficialParserTest.test_tpex_header_binding_preserves_values_under_permutations)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/data/test_official_parsers.py\", line 95, in test_tpex_header_binding_preserves_values_under_permutations\n    pd.testing.assert_frame_equal(self.tpex(['extra']+fields,['unused']+row), baseline)\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/lib/python3.12/site-packages/pandas/_testing/asserters.py\", line 1210, in assert_frame_equal\n    _check_isinstance(left, right, DataFrame)\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/lib/python3.12/site-packages/pandas/_testing/asserters.py\", line 167, in _check_isinstance\n    raise AssertionError(\nAssertionError: DataFrame Expected type <class 'pandas.core.frame.DataFrame'>, found <class 'NoneType'> instead\n\n======================================================================\nFAIL: test_tpex_unknown_duplicate_or_missing_required_headers_rejected (__main__.OfficialParserTest.test_tpex_unknown_duplicate_or_missing_required_headers_rejected) (missing='\u6536\u76e4')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/data/test_official_parsers.py\", line 101, in test_tpex_unknown_duplicate_or_missing_required_headers_rejected\n    with self.subTest(missing=required): self.assertIsNone(self.tpex(bad))\n                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError:          Date stock_id  Open  High  Low  Close  Volume\n0  2026-07-16     1101  10.0  12.0  9.0   11.0  1000.0 is not None\n\n======================================================================\nFAIL: test_tpex_unknown_duplicate_or_missing_required_headers_rejected (__main__.OfficialParserTest.test_tpex_unknown_duplicate_or_missing_required_headers_rejected) (missing='\u958b\u76e4')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/data/test_official_parsers.py\", line 101, in test_tpex_unknown_duplicate_or_missing_required_headers_rejected\n    with self.subTest(missing=required): self.assertIsNone(self.tpex(bad))\n                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError:          Date stock_id  Open  High  Low  Close  Volume\n0  2026-07-16     1101  10.0  12.0  9.0   11.0  1000.0 is not None\n\n======================================================================\nFAIL: test_tpex_unknown_duplicate_or_missing_required_headers_rejected (__main__.OfficialParserTest.test_tpex_unknown_duplicate_or_missing_required_headers_rejected) (missing='\u6700\u9ad8')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/data/test_official_parsers.py\", line 101, in test_tpex_unknown_duplicate_or_missing_required_headers_rejected\n    with self.subTest(missing=required): self.assertIsNone(self.tpex(bad))\n                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError:          Date stock_id  Open  High  Low  Close  Volume\n0  2026-07-16     1101  10.0  12.0  9.0   11.0  1000.0 is not None\n\n======================================================================\nFAIL: test_tpex_unknown_duplicate_or_missing_required_headers_rejected (__main__.OfficialParserTest.test_tpex_unknown_duplicate_or_missing_required_headers_rejected) (missing='\u6700\u4f4e')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/data/test_official_parsers.py\", line 101, in test_tpex_unknown_duplicate_or_missing_required_headers_rejected\n    with self.subTest(missing=required): self.assertIsNone(self.tpex(bad))\n                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError:          Date stock_id  Open  High  Low  Close  Volume\n0  2026-07-16     1101  10.0  12.0  9.0   11.0  1000.0 is not None\n\n======================================================================\nFAIL: test_tpex_unknown_duplicate_or_missing_required_headers_rejected (__main__.OfficialParserTest.test_tpex_unknown_duplicate_or_missing_required_headers_rejected) (missing='\u6210\u4ea4\u80a1\u6578')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/data/test_official_parsers.py\", line 101, in test_tpex_unknown_duplicate_or_missing_required_headers_rejected\n    with self.subTest(missing=required): self.assertIsNone(self.tpex(bad))\n                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError:          Date stock_id  Open  High  Low  Close  Volume\n0  2026-07-16     1101  10.0  12.0  9.0   11.0  1000.0 is not None\n\n======================================================================\nFAIL: test_tpex_unknown_duplicate_or_missing_required_headers_rejected (__main__.OfficialParserTest.test_tpex_unknown_duplicate_or_missing_required_headers_rejected) (fields=['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', '\u958b\u76e4', '\u6700\u9ad8', '\u6700\u4f4e', '\u6210\u4ea4\u80a1\u6578', '\u6536\u76e4'])\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/data/test_official_parsers.py\", line 103, in test_tpex_unknown_duplicate_or_missing_required_headers_rejected\n    with self.subTest(fields=bad): self.assertIsNone(self.tpex(bad))\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError:          Date stock_id  Open  High  Low  Close  Volume\n0  2026-07-16     1101  10.0  12.0  9.0   11.0  1000.0 is not None\n\n======================================================================\nFAIL: test_tpex_unknown_duplicate_or_missing_required_headers_rejected (__main__.OfficialParserTest.test_tpex_unknown_duplicate_or_missing_required_headers_rejected) (fields=['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', '\u6536\u76e4', '\u6700\u9ad8', '\u6700\u4f4e', '\u6210\u4ea4\u80a1\u6578'])\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/data/test_official_parsers.py\", line 103, in test_tpex_unknown_duplicate_or_missing_required_headers_rejected\n    with self.subTest(fields=bad): self.assertIsNone(self.tpex(bad))\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError:          Date stock_id  Open  High  Low  Close  Volume\n0  2026-07-16     1101  10.0  12.0  9.0   11.0  1000.0 is not None\n\n======================================================================\nFAIL: test_tpex_unknown_duplicate_or_missing_required_headers_rejected (__main__.OfficialParserTest.test_tpex_unknown_duplicate_or_missing_required_headers_rejected) (fields=['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', None, '\u6700\u9ad8', '\u6700\u4f4e', '\u6210\u4ea4\u80a1\u6578'])\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/data/test_official_parsers.py\", line 103, in test_tpex_unknown_duplicate_or_missing_required_headers_rejected\n    with self.subTest(fields=bad): self.assertIsNone(self.tpex(bad))\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError:          Date stock_id  Open  High  Low  Close  Volume\n0  2026-07-16     1101  10.0  12.0  9.0   11.0  1000.0 is not None\n\n======================================================================\nFAIL: test_twse_rejects_missing_mismatched_response_identity (__main__.OfficialParserTest.test_twse_rejects_missing_mismatched_response_identity) (date='20260717')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/data/test_official_parsers.py\", line 72, in test_twse_rejects_missing_mismatched_response_identity\n    self.assertIsNone(self.twse(date=date))\nAssertionError:            Date stock_id  Open  High  Low  Close  Volume\n0    2026-07-16     1100  10.0  12.0  9.0   11.0  1000.0\n1    2026-07-16     1101  10.0  12.0  9.0   11.0  1000.0\n2    2026-07-16     1102  10.0  12.0  9.0   11.0  1000.0\n3    2026-07-16     1103  10.0  12.0  9.0   11.0  1000.0\n4    2026-07-16     1104  10.0  12.0  9.0   11.0  1000.0\n..          ...      ...   ...   ...  ...    ...     ...\n96   2026-07-16     1196  10.0  12.0  9.0   11.0  1000.0\n97   2026-07-16     1197  10.0  12.0  9.0   11.0  1000.0\n98   2026-07-16     1198  10.0  12.0  9.0   11.0  1000.0\n99   2026-07-16     1199  10.0  12.0  9.0   11.0  1000.0\n100  2026-07-16     1200  10.0  12.0  9.0   11.0  1000.0\n\n[101 rows x 7 columns] is not None\n\n======================================================================\nFAIL: test_twse_rejects_missing_mismatched_response_identity (__main__.OfficialParserTest.test_twse_rejects_missing_mismatched_response_identity) (date='')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/data/test_official_parsers.py\", line 72, in test_twse_rejects_missing_mismatched_response_identity\n    self.assertIsNone(self.twse(date=date))\nAssertionError:            Date stock_id  Open  High  Low  Close  Volume\n0    2026-07-16     1100  10.0  12.0  9.0   11.0  1000.0\n1    2026-07-16     1101  10.0  12.0  9.0   11.0  1000.0\n2    2026-07-16     1102  10.0  12.0  9.0   11.0  1000.0\n3    2026-07-16     1103  10.0  12.0  9.0   11.0  1000.0\n4    2026-07-16     1104  10.0  12.0  9.0   11.0  1000.0\n..          ...      ...   ...   ...  ...    ...     ...\n96   2026-07-16     1196  10.0  12.0  9.0   11.0  1000.0\n97   2026-07-16     1197  10.0  12.0  9.0   11.0  1000.0\n98   2026-07-16     1198  10.0  12.0  9.0   11.0  1000.0\n99   2026-07-16     1199  10.0  12.0  9.0   11.0  1000.0\n100  2026-07-16     1200  10.0  12.0  9.0   11.0  1000.0\n\n[101 rows x 7 columns] is not None\n\n======================================================================\nFAIL: test_twse_rejects_missing_mismatched_response_identity (__main__.OfficialParserTest.test_twse_rejects_missing_mismatched_response_identity) (date=None)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/data/test_official_parsers.py\", line 72, in test_twse_rejects_missing_mismatched_response_identity\n    self.assertIsNone(self.twse(date=date))\nAssertionError:            Date stock_id  Open  High  Low  Close  Volume\n0    2026-07-16     1100  10.0  12.0  9.0   11.0  1000.0\n1    2026-07-16     1101  10.0  12.0  9.0   11.0  1000.0\n2    2026-07-16     1102  10.0  12.0  9.0   11.0  1000.0\n3    2026-07-16     1103  10.0  12.0  9.0   11.0  1000.0\n4    2026-07-16     1104  10.0  12.0  9.0   11.0  1000.0\n..          ...      ...   ...   ...  ...    ...     ...\n96   2026-07-16     1196  10.0  12.0  9.0   11.0  1000.0\n97   2026-07-16     1197  10.0  12.0  9.0   11.0  1000.0\n98   2026-07-16     1198  10.0  12.0  9.0   11.0  1000.0\n99   2026-07-16     1199  10.0  12.0  9.0   11.0  1000.0\n100  2026-07-16     1200  10.0  12.0  9.0   11.0  1000.0\n\n[101 rows x 7 columns] is not None\n\n======================================================================\nFAIL: test_twse_rejects_missing_mismatched_response_identity (__main__.OfficialParserTest.test_twse_rejects_missing_mismatched_response_identity) (date=['20260716'])\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/data/test_official_parsers.py\", line 72, in test_twse_rejects_missing_mismatched_response_identity\n    self.assertIsNone(self.twse(date=date))\nAssertionError:            Date stock_id  Open  High  Low  Close  Volume\n0    2026-07-16     1100  10.0  12.0  9.0   11.0  1000.0\n1    2026-07-16     1101  10.0  12.0  9.0   11.0  1000.0\n2    2026-07-16     1102  10.0  12.0  9.0   11.0  1000.0\n3    2026-07-16     1103  10.0  12.0  9.0   11.0  1000.0\n4    2026-07-16     1104  10.0  12.0  9.0   11.0  1000.0\n..          ...      ...   ...   ...  ...    ...     ...\n96   2026-07-16     1196  10.0  12.0  9.0   11.0  1000.0\n97   2026-07-16     1197  10.0  12.0  9.0   11.0  1000.0\n98   2026-07-16     1198  10.0  12.0  9.0   11.0  1000.0\n99   2026-07-16     1199  10.0  12.0  9.0   11.0  1000.0\n100  2026-07-16     1200  10.0  12.0  9.0   11.0  1000.0\n\n[101 rows x 7 columns] is not None\n\n======================================================================\nFAIL: test_twse_rejects_missing_mismatched_response_identity (__main__.OfficialParserTest.test_twse_rejects_missing_mismatched_response_identity)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/data/test_official_parsers.py\", line 76, in test_twse_rejects_missing_mismatched_response_identity\n    self.assertIsNone(self.fetcher.fetch_prices_twse_direct('2026-07-16'))\nAssertionError:            Date stock_id  Open  High  Low  Close  Volume\n0    2026-07-16     1100  10.0  12.0  9.0   11.0  1000.0\n1    2026-07-16     1101  10.0  12.0  9.0   11.0  1000.0\n2    2026-07-16     1102  10.0  12.0  9.0   11.0  1000.0\n3    2026-07-16     1103  10.0  12.0  9.0   11.0  1000.0\n4    2026-07-16     1104  10.0  12.0  9.0   11.0  1000.0\n..          ...      ...   ...   ...  ...    ...     ...\n96   2026-07-16     1196  10.0  12.0  9.0   11.0  1000.0\n97   2026-07-16     1197  10.0  12.0  9.0   11.0  1000.0\n98   2026-07-16     1198  10.0  12.0  9.0   11.0  1000.0\n99   2026-07-16     1199  10.0  12.0  9.0   11.0  1000.0\n100  2026-07-16     1200  10.0  12.0  9.0   11.0  1000.0\n\n[101 rows x 7 columns] is not None\n\n----------------------------------------------------------------------\nRan 8 tests in 0.162s\n\nFAILED (failures=17)\n",
+    "green": "MOPS \u6708\u71df\u6536 otc 2026-05 \u6293\u53d6\u5931\u6557\uff1afixture failure\nMOPS financials 2026Q2\uff1aotc \u7121\u8cc7\u6599 \u2192 \u6574\u5b63\u653e\u68c4\uff08\u5be7\u53ef\u6c92\u6709\uff0c\u4e0d\u8981\u53ea\u6709\u4e00\u534a\uff09\nMOPS financials 2026Q2\uff1aotc \u7121\u8cc7\u6599 \u2192 \u6574\u5b63\u653e\u68c4\uff08\u5be7\u53ef\u6c92\u6709\uff0c\u4e0d\u8981\u53ea\u6709\u4e00\u534a\uff09\nMOPS financials 2026Q1\uff1aotc \u7121\u8cc7\u6599 \u2192 \u6574\u5b63\u653e\u68c4\uff08\u5be7\u53ef\u6c92\u6709\uff0c\u4e0d\u8981\u53ea\u6709\u4e00\u534a\uff09\nMOPS financials 2026Q2\uff1a\u6293\u4e0d\u5230\u4e0a\u4e00\u5b63\u7d2f\u8a08\u6578\uff0c\u7121\u6cd5\u9084\u539f\u55ae\u5b63\u503c \u2192 \u653e\u68c4\u672c\u5b63\uff08\u4e0d\u5beb\u5165\u7d2f\u8a08\u6578\uff0c\u907f\u514d\u8207\u6b77\u53f2\u4e0d\u540c\u7fa9\uff09\nTPEX price: \u56de\u50b3\u65e5\u671f 20260717 != \u8acb\u6c42 20260716\uff0c\u6368\u68c4\uff08\u6b64\u985e\u7aef\u9ede\u6703\u975c\u9ed8\u56de\u50b3\u7576\u5929\u8cc7\u6599\uff0c\u898b docstring\uff09\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', 'UNKNOWN', '\u6f32\u8dcc', '\u958b\u76e4', '\u6700\u9ad8', '\u6700\u4f4e', '\u6210\u4ea4\u80a1\u6578']\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', 'UNKNOWN', '\u6700\u9ad8', '\u6700\u4f4e', '\u6210\u4ea4\u80a1\u6578']\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', '\u958b\u76e4', 'UNKNOWN', '\u6700\u4f4e', '\u6210\u4ea4\u80a1\u6578']\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', '\u958b\u76e4', '\u6700\u9ad8', 'UNKNOWN', '\u6210\u4ea4\u80a1\u6578']\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', '\u958b\u76e4', '\u6700\u9ad8', '\u6700\u4f4e', 'UNKNOWN']\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', '\u958b\u76e4', '\u6700\u9ad8', '\u6700\u4f4e', '\u6210\u4ea4\u80a1\u6578', '\u6536\u76e4']\nTPEX price: missing or ambiguous required fields ['\u4ee3\u865f', '\u540d\u7a31', '\u6536\u76e4', '\u6f32\u8dcc', '\u6536\u76e4', '\u6700\u9ad8', '\u6700\u4f4e', '\u6210\u4ea4\u80a1\u6578']\nTPEX price: malformed field names\nTWSE price: response date 20260717 != requested 20260716\nTWSE price: response date None != requested 20260716\nTWSE price: response date None != requested 20260716\nTWSE price: response date ['20260716'] != requested 20260716\nTWSE price: stat=no data\nTWSE price: response date None != requested 20260716\n----------------------------------------------------------------------\nRan 8 tests in 0.064s\n\nOK\n",
+    "command": "CUDA_VISIBLE_DEVICES= PYTHONDONTWRITEBYTECODE=1 <recovery-venv>/python -B V6/marketmamba/data/test_official_parsers.py -q",
+    "repair_rounds": 1,
+    "review": {
+      "reviewer": "/root/independent_review",
+      "critical": 0,
+      "required": 0,
+      "independent_tests": 8
+    },
+    "mops": "source unchanged; quarterly missing-market guards pass, monthly partial policy unchanged and Human decision required",
+    "limitations": "isolated full module with fake config/HTTP; no live provider certification",
+    "provider_network_requests": 0,
+    "setup_notes": "package import triggers data/__init__; direct test file avoids it. Existing venv lacks requests/yfinance, fixture modules replace those imports; no dependency installation.",
+    "hashes": {
+      "V6/marketmamba/data/fetcher.py": "3c31d48e8e22aca0ed5e88b48136765caa1c359c5276d21b6d470d5a260095d2",
+      "V6/marketmamba/data/test_official_parsers.py": "0402c8762f55d719ec2d83cb2541391953a67efac75e5e69ba290cbab5949286"
+    },
+    "commit": "74ccb2df7e40110f1a4f45758cc26739ebab6674"
+  },
+  "readiness": {
+    "status": "CPU_METADATA_AND_ACCEPTANCE_ARTIFACT_INTEGRITY_VERIFIED_NOT_RUN_READY",
+    "result_commit": "eec63c551270f271e26a5aca831fe5b3b38e3f42",
+    "manifest_copied_files_verified": [
+      {
+        "path": "research/v7/e1-rolling-origin-refresh-v1/results/evaluation.json",
+        "sha256": "2229f7b8faf8672a39abaf9fd36798ff7d1a6b08cdbfb6c8af75c4312fa33fc0",
+        "bytes": 276578
+      },
+      {
+        "path": "research/v7/e1-rolling-origin-refresh-v1/results/report.md",
+        "sha256": "369bbc1aebe8c56208108b0af5241dc41929a75d1a46b935daa1c6bfe70086ee",
+        "bytes": 341
+      },
+      {
+        "path": "research/v7/e1-rolling-origin-refresh-v1/results/run-summary.json",
+        "sha256": "df986c987a7fc4273f234e46d2ebe2f80bbf05e47ee92ed0f17ccf747027e008",
+        "bytes": 1333
+      },
+      {
+        "path": "research/v7/e1-rolling-origin-refresh-v1/results/seed-17-result.json",
+        "sha256": "b1463b38f10f9ca20072b2aa870048c39c77ae4518b7d9605ba47553a92029ee",
+        "bytes": 25219
+      },
+      {
+        "path": "research/v7/e1-rolling-origin-refresh-v1/results/seed-29-result.json",
+        "sha256": "cc9abec8d52664741d8fc6f6f1587905f32714c55f0f2ff92adc373b51bd1d29",
+        "bytes": 25258
+      },
+      {
+        "path": "research/v7/e1-rolling-origin-refresh-v1/results/seed-17-checkpoint.json",
+        "sha256": "29e0518d4ef51ea9c7af2a813462530538f8628f44426fbf867794a68da32d9c",
+        "bytes": 1050
+      },
+      {
+        "path": "research/v7/e1-rolling-origin-refresh-v1/results/seed-29-checkpoint.json",
+        "sha256": "71ddd8a049d763205188f85c36922f16f9795c298c69075b914264b0bbe1ad2e",
+        "bytes": 1050
+      }
+    ],
+    "seed_metadata": {
+      "17": {
+        "result_keys": [
+          "best_epoch",
+          "checkpoint_identity",
+          "config_sha256",
+          "evidence_class",
+          "historical_simulation_readiness",
+          "history",
+          "last_epoch",
+          "matrix_identity",
+          "metrics",
+          "rank_ic_10d_semantics",
+          "schema_version",
+          "seed",
+          "selection_metric",
+          "status",
+          "stop_reason",
+          "strict_phase0"
+        ],
+        "result_identity": {
+          "best_epoch": 1,
+          "checkpoint_identity": "4b9b02ded3521a45005e1a17ecdd423a9f3bd5286842c84278580b96e5bb6de1",
+          "config_sha256": "acdfe7fb055eed26730fd6a01a1733e4a76f48a3fec4b08bd09546080397a2d4",
+          "matrix_identity": "a590b280f0700dcf36fde9ac51e767d735cc2737b613cbb3b49ef3f472947f62",
+          "seed": 17,
+          "status": "complete"
+        },
+        "best": {
+          "batch": 0,
+          "bytes": 1169099,
+          "epoch": 1,
+          "file": "state-5b901669d1ac402fa81a66f2d6893f12.pt",
+          "phase": "train",
+          "saved_at": "2026-09-19T16:38:49.933602+00:00",
+          "sha256": "4b9b02ded3521a45005e1a17ecdd423a9f3bd5286842c84278580b96e5bb6de1",
+          "step": 3146,
+          "terminal": false
+        },
+        "latest": {
+          "batch": 0,
+          "bytes": 1169675,
+          "epoch": 6,
+          "file": "state-7126fc7473134069bb76871f1e60ac5e.pt",
+          "phase": "finished",
+          "saved_at": "2026-09-19T18:10:51.735681+00:00",
+          "sha256": "18278fd3b67bc987882271eb2244083cab8be1894097d1f9c86f93de0eb922e1",
+          "step": 18876,
+          "terminal": true
+        }
+      },
+      "29": {
+        "result_keys": [
+          "best_epoch",
+          "checkpoint_identity",
+          "config_sha256",
+          "evidence_class",
+          "historical_simulation_readiness",
+          "history",
+          "last_epoch",
+          "matrix_identity",
+          "metrics",
+          "rank_ic_10d_semantics",
+          "schema_version",
+          "seed",
+          "selection_metric",
+          "status",
+          "stop_reason",
+          "strict_phase0"
+        ],
+        "result_identity": {
+          "best_epoch": 1,
+          "checkpoint_identity": "752bffa33f158b9dbd7040f4127abca1935c9c8fa1f3627af9664cba351a98f8",
+          "config_sha256": "acdfe7fb055eed26730fd6a01a1733e4a76f48a3fec4b08bd09546080397a2d4",
+          "matrix_identity": "a590b280f0700dcf36fde9ac51e767d735cc2737b613cbb3b49ef3f472947f62",
+          "seed": 29,
+          "status": "complete"
+        },
+        "best": {
+          "batch": 0,
+          "bytes": 1169099,
+          "epoch": 1,
+          "file": "state-7f8654e54e894222b38dda1886a0d3da.pt",
+          "phase": "train",
+          "saved_at": "2026-09-20T07:03:59.516825+00:00",
+          "sha256": "752bffa33f158b9dbd7040f4127abca1935c9c8fa1f3627af9664cba351a98f8",
+          "step": 3146,
+          "terminal": false
+        },
+        "latest": {
+          "batch": 0,
+          "bytes": 1169611,
+          "epoch": 6,
+          "file": "state-f0fd3867eaad43acb5e6ef81ea3cc63f.pt",
+          "phase": "finished",
+          "saved_at": "2026-09-20T09:01:07.234264+00:00",
+          "sha256": "97f5387a263a2941efe96e20fd087ec29a8d1eb66714dd6a427a9a4475f6e0e7",
+          "step": 18876,
+          "terminal": true
+        }
+      }
+    },
+    "limitations": [
+      "No checkpoint deserialization or weight-byte reread",
+      "No original matrix, actual split contents or inference",
+      "No replacement matrix or new launch bundle",
+      "Existing recovery evaluator gates retained branch-qualified, not reimplemented"
+    ],
+    "candidate_configuration_checks": {
+      "contract": "fea9948f05bb096596cb2cacfc522bad27a7e1f587d0a5a08f704da458d29152",
+      "config": "acdfe7fb055eed26730fd6a01a1733e4a76f48a3fec4b08bd09546080397a2d4",
+      "seeds": [
+        17,
+        29
+      ],
+      "split": {
+        "evaluation_end_10d": "2026-08-28",
+        "evaluation_end_5d": "2026-09-04",
+        "evaluation_start": "2026-01-02",
+        "purge_end": "2025-12-31",
+        "purge_sessions": 30,
+        "purge_start": "2025-11-19",
+        "train_end": "2025-11-18",
+        "train_start": "2013-01-02"
+      },
+      "result_to_best_pointer_identity": "PASS both seeds",
+      "terminal_latest_not_terminal_best": "EXPECTED; BEST-not-LAST",
+      "matrix_identity": "declared only; bytes unavailable"
+    },
+    "scope": "existing validator/config and immutable result metadata revalidation, not a new executable preflight or research admission"
+  },
+  "fairness_sources": [
+    {
+      "commit": "9bb4247bec9e6bf1eb06b01f001a6b795faa2a7d",
+      "path": "V6/experimental/v7_corrected_e5_train.py",
+      "sha256": "e5326ddd4dc3ef9e3d34df9e7dedca7cd1fbd420aac92d4480e5eeba97c46510",
+      "bytes": 23131
+    },
+    {
+      "commit": "9bb4247bec9e6bf1eb06b01f001a6b795faa2a7d",
+      "path": "V6/experimental/v7_e1_run.py",
+      "sha256": "0990aa8f1dcce900213a6d6986bcb9762fd2f29d0c04e4e7d824a911e151e2c3",
+      "bytes": 4696
+    },
+    {
+      "commit": "9bb4247bec9e6bf1eb06b01f001a6b795faa2a7d",
+      "path": "V6/experimental/v7_e1_contract.py",
+      "sha256": "96f22b9cd3a5bd412aa43dbbea4ea3cd3f6c85d076cd914e88ec6c0ec0efe547",
+      "bytes": 7165
+    },
+    {
+      "commit": "9bb4247bec9e6bf1eb06b01f001a6b795faa2a7d",
+      "path": "V6/experimental/v7_e1_matrix.py",
+      "sha256": "ee759fada9586291e7bf931e7f8cb1187e52527deef9c733aaa6dd603e160efc",
+      "bytes": 7611
+    },
+    {
+      "commit": "9bb4247bec9e6bf1eb06b01f001a6b795faa2a7d",
+      "path": "V6/experimental/v7_e1_checkpoint.py",
+      "sha256": "6a1ad9523e8e23cf1ceb506b6fae0a43550a5e2b6a60e60d8832d339222f2921",
+      "bytes": 11478
+    },
+    {
+      "commit": "9bb4247bec9e6bf1eb06b01f001a6b795faa2a7d",
+      "path": "research/v7/e1-rolling-origin-refresh-v1/experiment-contract.json",
+      "sha256": "7a59d98744ac736e915ff5f6e0e8fead2f80f5ce7f8283b467ec0464bffe8d4c",
+      "bytes": 3027
+    },
+    {
+      "commit": "9bb4247bec9e6bf1eb06b01f001a6b795faa2a7d",
+      "path": "research/v7/corrected-e5-replication-v1/incumbent-contract.json",
+      "sha256": "3cb4a5fc9c1595689366a2b6bbd49210743b9160fe0f00516622b463eaf46e85",
+      "bytes": 5204
+    },
+    {
+      "commit": "9bb4247bec9e6bf1eb06b01f001a6b795faa2a7d",
+      "path": "environments/v7-colab-2026.04/requirements.lock.txt",
+      "sha256": "cebc665d6e4a4cfc5cd53113c7a52d594c7595b09ae0633903845f175cac1af5",
+      "bytes": 2587
+    },
+    {
+      "commit": "de2b62e4d5ec2557b8446ccd2994d2d1cfa0c278",
+      "path": "V6/experimental/v7_e1_evaluate.py",
+      "sha256": "a34261037faf0cd695fc6a9c35ef0cec583abca951ea92d34cab83f994cba0ee",
+      "bytes": 17192
+    },
+    {
+      "commit": "eec63c551270f271e26a5aca831fe5b3b38e3f42",
+      "path": "research/v7/e1-rolling-origin-refresh-v1/results/result-manifest.json",
+      "sha256": "f4d63c74af623991814d301230f065818850829d69a176309bd7769c7b76a1a6",
+      "bytes": 1712
+    },
+    {
+      "commit": "9bb4247bec9e6bf1eb06b01f001a6b795faa2a7d",
+      "path": "V6/experimental/v7_corrected_e5_matrix.py",
+      "bytes": 17857,
+      "sha256": "b3735a7d8c01dd09bfdcd4e3a920ebd7ef0976a75195bbd3b8892310e639f671"
+    },
+    {
+      "commit": "9bb4247bec9e6bf1eb06b01f001a6b795faa2a7d",
+      "path": "research/v7/corrected-baseline-v1/feature-manifest.json",
+      "bytes": 1564,
+      "sha256": "d3b2c2d23ccc071b6e0d49ca77d27f41ade085084ea8fd3952321f5352a32547"
+    }
+  ],
+  "research_references": [
+    {
+      "url": "https://www.jmlr.org/papers/v11/cawley10a.html",
+      "read_scope": "abstract; selection criterion overfitting/selection bias",
+      "accessed_on": "2026-10-21"
+    },
+    {
+      "url": "https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.TimeSeriesSplit.html",
+      "read_scope": "official API documentation; temporal folds, gap and comparable duration caveat",
+      "accessed_on": "2026-10-21"
+    }
+  ],
+  "final_regression": [
+    {
+      "group": "pit",
+      "command": [
+        "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "V6.experimental.v7_source_snapshot_test",
+        "V6.experimental.v7_temporal_contract_test",
+        "V6.experimental.v7_executable_labels_test",
+        "V6.experimental.v7_ohlcv_provenance_test",
+        "V6.experimental.v7_historical_security_master_test",
+        "V6.experimental.v7_historical_label_materialize_test",
+        "-q"
+      ],
+      "exit_code": 0,
+      "seconds": 3.0708825730007447,
+      "log": "----------------------------------------------------------------------\nRan 49 tests in 1.870s\n\nOK\n"
+    },
+    {
+      "group": "e1_no_training",
+      "command": [
+        "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "V6.experimental.v7_e1_contract_test",
+        "V6.experimental.v7_e1_matrix_test",
+        "V6.experimental.v7_e1_evaluate_test",
+        "V6.experimental.v7_e1_checkpoint_test",
+        "V6.experimental.v7_e1_colab_runtime_test",
+        "V6.experimental.v7_e1_run_test.E1RunTest.test_lifecycle_adapter_round_trip",
+        "-q"
+      ],
+      "exit_code": 0,
+      "seconds": 9.128069012000196,
+      "log": "\n----------------------------------------------------------------------\nRan 36 tests in 4.496s\n\nOK\n"
+    },
+    {
+      "group": "portfolio",
+      "command": [
+        "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "V6.experimental.v7_portfolio_contract_test",
+        "V6.experimental.v7_portfolio_engine_test",
+        "V6.experimental.v7_portfolio_journal_test",
+        "V6.experimental.v7_portfolio_history_test",
+        "V6.experimental.v7_portfolio_process_test",
+        "V6.experimental.v7_health_summary_test",
+        "V6.experimental.v7_correctness_audit_test",
+        "-q"
+      ],
+      "exit_code": 0,
+      "seconds": 3.263826170000357,
+      "log": "{\"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exits\": [0, 0], \"journal_sha256\": \"61106cc0e853b3bbbb08fe7b0ad80205c4607b68538404ea87ff1f6aff650fec\", \"results\": [{\"event\": \"error\", \"message\": \"event_id 'market' has different content\", \"type\": \"EventConflictError\"}, {\"appended\": true, \"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0.5\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": null, \"last_session_id\": \"market\", \"net_value\": \"0.99925112331502745881178232651023464802795806290564\", \"pending\": {\"as_of\": \"2026-09-16T17:00:00+08:00\", \"created_session\": 0, \"signal_id\": \"signal\", \"target_tickers\": [\"A\"]}, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.049925112331502745881178232651023464802795806290564\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.00074887668497254118821767348976535197204193709435846\"}}], \"scenario\": \"concurrent_conflict\"}\n{\"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exits\": [0, 0], \"journal_sha256\": \"f2b40d1b9bcb49d0463bb35e80fef93a595c53f5b81b1696895986e8026636fd\", \"results\": [{\"appended\": false, \"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}, {\"appended\": true, \"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}], \"scenario\": \"concurrent_duplicate\"}\n{\"blocked\": {\"event\": \"lock_blocked\", \"operation\": 1}, \"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exit\": 0, \"journal_sha256\": \"f2b40d1b9bcb49d0463bb35e80fef93a595c53f5b81b1696895986e8026636fd\", \"result\": {\"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}, \"scenario\": \"reader_during_split_write\"}\n{\"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exits\": [-9, 0], \"journal_sha256\": \"f2b40d1b9bcb49d0463bb35e80fef93a595c53f5b81b1696895986e8026636fd\", \"result\": {\"appended\": false, \"count\": 3, \"event\": \"result\", \"state\": {\"cash\": \"0\", \"engine_version\": \"v7-portfolio-v1\", \"last_rebalance_session\": 1, \"last_session_id\": \"market\", \"net_value\": \"0.99850224663005491762356465302046929605591612581128\", \"pending\": null, \"positions\": {\"A\": {\"last_price\": \"10\", \"quantity\": \"0.099850224663005491762356465302046929605591612581128\"}}, \"session_count\": 1, \"spec\": {\"buffer_multiple\": \"1.5\", \"buy_cost_rate\": \"0.0015\", \"engine_version\": \"v7-portfolio-v1\", \"head\": \"5d\", \"holdings_count\": 1, \"rebalance_every_sessions\": 5, \"sell_cost_rate\": \"0.0045\"}, \"total_cost\": \"0.0014977533699450823764353469795307039440838741887169\"}}, \"scenario\": \"sigkill_durable_before_response\"}\n{\"evidence_class\": \"SYNTHETIC_REAL_PROCESS_FAULT_INJECTION\", \"exits\": [-9, 0], \"journal_sha256\": \"fd78812e4fdd32f4cebea6c6011d3bc75dc4faf1cf4d5ebcd9a53664667fe802\", \"refusal\": {\"event\": \"error\", \"message\": \"journal has a truncated final line\", \"type\": \"JournalIntegrityError\"}, \"scenario\": \"sigkill_partial_tail\"}\n----------------------------------------------------------------------\nRan 67 tests in 2.985s\n\nOK\n"
+    },
+    {
+      "group": "ops",
+      "command": [
+        "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "V6/marketmamba/ops",
+        "-p",
+        "test_*.py",
+        "-q"
+      ],
+      "exit_code": 0,
+      "seconds": 18.233540578999964,
+      "log": "synthetic duplicate hygiene warning\n[shadow-ledger] projection callback failed (IsADirectoryError); legacy fetch outcome is unchanged\nProcess SpawnProcess-6:\nTraceback (most recent call last):\n  File \"/usr/lib/python3.12/multiprocessing/process.py\", line 314, in _bootstrap\n    self.run()\n  File \"/usr/lib/python3.12/multiprocessing/process.py\", line 108, in run\n    self._target(*self._args, **self._kwargs)\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/ops/test_phase_a_replay.py\", line 103, in failing_callback_child\n    observe_fetch_only(\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/ops/shadow.py\", line 433, in observe_fetch_only\n    result = fetch_operation()\n             ^^^^^^^^^^^^^^^^^\n  File \"/home/frank/projects/MarketMamba/.worktrees/v7-data-evaluation-preparation/V6/marketmamba/ops/test_phase_a_replay.py\", line 101, in fail\n    raise RuntimeError(\"synthetic child fetch failure\")\nRuntimeError: synthetic child fetch failure\n[shadow-ledger] lease conflict failed (LeaseConflictError); legacy fetch outcome is unchanged\n[shadow-ledger] projection callback failed (OSError); legacy fetch outcome is unchanged\n[shadow-ledger] projection callback failed (ProjectionLockTimeout); legacy fetch outcome is unchanged\n[shadow-ledger] projection callback failed (ProjectionLockTimeout); legacy fetch outcome is unchanged\n{\"after_generation\": \"0015d3a2743cd61601af86f8aea9c1705865ab8ee4f527f8bb8a66ba0ad73e5e\", \"before_generation\": \"2e05b02bc3e7df5f7810c7511c1247c446ea1027b260f243643d3cb219717fc1\", \"case\": \"before_snapshot-0\", \"during_generation\": \"0015d3a2743cd61601af86f8aea9c1705865ab8ee4f527f8bb8a66ba0ad73e5e\", \"writer_exitcode\": 0}\n{\"after_generation\": \"3884508a29d2dde045503ca0190df8a8a2218e13180ef27be9ff7315f6ea330a\", \"before_generation\": \"7298bc9bea23d3dbd0504d8e9193693411e33ffc6793d3a1cf878c99063c7d9a\", \"case\": \"before_snapshot-1\", \"during_generation\": \"3884508a29d2dde045503ca0190df8a8a2218e13180ef27be9ff7315f6ea330a\", \"writer_exitcode\": 0}\n{\"after_generation\": \"014464cd001aa4e9a26ec8b0708b7ff77df2a9bfda9bef7226fd678f799b6977\", \"before_generation\": \"1aefb69eb69a22904d0ba402a4fe50034ea824c2687c06010e8b2ba83f22237f\", \"case\": \"mid_watermark-0\", \"during_generation\": \"1aefb69eb69a22904d0ba402a4fe50034ea824c2687c06010e8b2ba83f22237f\", \"writer_exitcode\": 0}\n{\"after_generation\": \"4cc7941fb35ce2563ba252a4d08fd2c8f1f5a16b0c1c43c0ceb212b19c1bec3c\", \"before_generation\": \"02e5a4e35db47dc931f0d1b630f526b7ff747177b5fd7066012935e1815dd7f7\", \"case\": \"mid_watermark-1\", \"during_generation\": \"02e5a4e35db47dc931f0d1b630f526b7ff747177b5fd7066012935e1815dd7f7\", \"writer_exitcode\": 0}\n{\"after_generation\": \"113f321228d96c6fbf371eea0973d7bc8392a550db2b721f6ae107886ad8bc08\", \"before_generation\": \"96bc59a8df362c1b54e42656a6a332e99e58c7c09943cf63dece6034dcdaedcf\", \"case\": \"after_watermark-0\", \"during_generation\": \"96bc59a8df362c1b54e42656a6a332e99e58c7c09943cf63dece6034dcdaedcf\", \"writer_exitcode\": 0}\n{\"after_generation\": \"ff1967f84063577db802797f774cb2be53e8c415469edc6e3d1e8ad02e4a9a4a\", \"before_generation\": \"57b3ebcb94c6afd2f6aa702c7af8a5091743e618ec507e31682dcf383fd440ab\", \"case\": \"after_watermark-1\", \"during_generation\": \"57b3ebcb94c6afd2f6aa702c7af8a5091743e618ec507e31682dcf383fd440ab\", \"writer_exitcode\": 0}\n{\"after_generation\": \"4a57a5a44fd3dc940a4adfb908aa1929441d8a05378eb0d031f2f3633ede7b9c\", \"before_generation\": \"53fa7dab46066e86b1289b1563dd58637f971b0c84fd6f709260c41d4ebc61d0\", \"case\": \"before_artifacts-0\", \"during_generation\": \"53fa7dab46066e86b1289b1563dd58637f971b0c84fd6f709260c41d4ebc61d0\", \"writer_exitcode\": 0}\n{\"after_generation\": \"76c029da0c1d0ff12fc1f831e5fe9b24cccad59136445a076c65ff6d1edec228\", \"before_generation\": \"7b3654f096dce38708636d19fb6c13fbe53bb38bec750c80bb6be6657564346e\", \"case\": \"before_artifacts-1\", \"during_generation\": \"7b3654f096dce38708636d19fb6c13fbe53bb38bec750c80bb6be6657564346e\", \"writer_exitcode\": 0}\n{\"after_generation\": \"7fae3b90e2a58f18049c20eebbd9a3b3862466cc885c956387b5c536842da098\", \"before_generation\": \"436ca317992fb177d120026d67799caba07788e457d2d1c0dd93ca17bf3bdb4b\", \"case\": \"negative-control-no-BEGIN\", \"during_generation\": \"4da870b90e272b42cb1e031f9ae2230640e8538616c900bd8a495768817e63df\", \"writer_exitcode\": 0}\n{\"after_generation\": \"2a75bf56b360fe4356c39acce8fdd541d57a219aed9640c2fad67f35470085ae\", \"before_generation\": \"7e96f2651d9c11f774af010d5f63db0ba7c9bda9c0aea499ad4d05495b6fcf4a\", \"case\": \"commit\", \"during_generation\": \"7e96f2651d9c11f774af010d5f63db0ba7c9bda9c0aea499ad4d05495b6fcf4a\", \"writer_exitcode\": 0}\n{\"after_generation\": \"a21db0e0ddc7841eca0202077e3efe2646b63d3312ded03b60a951cc848522b0\", \"before_generation\": \"a21db0e0ddc7841eca0202077e3efe2646b63d3312ded03b60a951cc848522b0\", \"case\": \"rollback\", \"during_generation\": \"a21db0e0ddc7841eca0202077e3efe2646b63d3312ded03b60a951cc848522b0\", \"writer_exitcode\": 0}\n{\"after_generation\": \"2741ede223c586c831325a41e01566862aa983e7a6800f4b576e52d8992fdc38\", \"before_generation\": \"2741ede223c586c831325a41e01566862aa983e7a6800f4b576e52d8992fdc38\", \"case\": \"kill\", \"during_generation\": \"2741ede223c586c831325a41e01566862aa983e7a6800f4b576e52d8992fdc38\", \"writer_exitcode\": -9}\n----------------------------------------------------------------------\nRan 81 tests in 18.014s\n\nOK\n"
+    },
+    {
+      "group": "fetch_governance",
+      "command": [
+        "/home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "V6.scripts.test_v62_fetch_only",
+        "tools.project_knowledge.test_knowledge_governance",
+        "-q"
+      ],
+      "exit_code": 0,
+      "seconds": 0.20926190600039263,
+      "log": "2026-10-21 18:37:14,516 INFO ==============================================================\n2026-10-21 18:37:14,516 INFO [fetch-only] \u53ea\u66f4\u65b0\u6bcf\u65e5 raw parquet\uff1b\u4e0d\u5efa\u77e9\u9663\u3001\u4e0d\u8f09\u6a21\u578b\u3001\u4e0d\u63a8\u8ad6\u3001\u4e0d\u767c\u5e03\n2026-10-21 18:37:14,516 INFO ==============================================================\n2026-10-21 18:37:14,516 INFO [fetch-only] \u5b8c\u6574\u4f86\u6e90 0/10\n2026-10-21 18:37:14,517 ERROR [fetch-only] \u5931\u6557\uff5c\u7f3a\u6f0f 1 \u500b\u6bcf\u65e5\u6e90\uff5cexit=1\n2026-10-21 18:37:14,517 INFO ==============================================================\n2026-10-21 18:37:14,517 INFO [fetch-only] \u53ea\u66f4\u65b0\u6bcf\u65e5 raw parquet\uff1b\u4e0d\u5efa\u77e9\u9663\u3001\u4e0d\u8f09\u6a21\u578b\u3001\u4e0d\u63a8\u8ad6\u3001\u4e0d\u767c\u5e03\n2026-10-21 18:37:14,517 INFO ==============================================================\n2026-10-21 18:37:14,517 INFO [fetch-only] \u5b8c\u6574\u4f86\u6e90 10/10\n2026-10-21 18:37:14,517 INFO [fetch-only] \u5b8c\u6210\uff5c\u6bcf\u65e5\u6e90 10/10\uff5c\u8017\u6642 0.0 \u79d2\uff5cexit=0\n2026-10-21 18:37:14,518 INFO ==============================================================\n2026-10-21 18:37:14,518 INFO [fetch-only] \u53ea\u66f4\u65b0\u6bcf\u65e5 raw parquet\uff1b\u4e0d\u5efa\u77e9\u9663\u3001\u4e0d\u8f09\u6a21\u578b\u3001\u4e0d\u63a8\u8ad6\u3001\u4e0d\u767c\u5e03\n2026-10-21 18:37:14,518 INFO ==============================================================\n2026-10-21 18:37:14,518 INFO [fetch-only] \u5b8c\u6574\u4f86\u6e90 10/10\n2026-10-21 18:37:14,518 INFO [fetch-only] \u5b8c\u6210\uff5c\u6bcf\u65e5\u6e90 10/10\uff5c\u8017\u6642 0.0 \u79d2\uff5cexit=0\n----------------------------------------------------------------------\nRan 26 tests in 0.068s\n\nOK\n"
+    }
+  ],
+  "final_tests_total": 267,
+  "fairness_review": {
+    "reviewer": "/root/independent_review",
+    "critical": 0,
+    "required": 0,
+    "sources_reviewed": 12,
+    "copied_artifacts": 7,
+    "seed_identity_chains": 2,
+    "repair_rounds": 0
+  },
+  "provider_network_requests": 0,
+  "literature_access": {
+    "primary_agent": "2 search queries,2 primary-source pages opened",
+    "reviewer": "2 primary-source pages opened",
+    "scope": "read-only references; no market data fetch"
+  },
+  "final_report_hash": "a1f08ff2af2b19d3fdb71a1f96b4543850fe500a253a39769865253ae18e9fcb",
+  "remaining": {
+    "integration": "HUMAN_APPROVAL_REQUIRED",
+    "mops_monthly_policy": "HUMAN_DECISION_REQUIRED",
+    "comparison_design": "PROPOSED_HUMAN_DECISION_REQUIRED",
+    "original_e1_matrix": "BLOCKED_NO_NEW_LOCATION",
+    "new_execution_window": "NEW_BOUNDED_GRANT_REQUIRED"
+  },
+  "closure_review": {
+    "reviewer": "/root/independent_review",
+    "critical": 0,
+    "required": 0,
+    "minimal_resume": "PASS without historical rediscovery; main unchanged, explicit new worktree entry",
+    "repair_rounds": 1,
+    "repair": "final runtime check corrected assumed absent Data to three tracked historical files; no processed_v6 mount or content read",
+    "runtime_correction_confirmation": "PASS independent metadata-only check,0 Critical/Required"
+  },
+  "usage_observation": {
+    "tokensUsed": 119839,
+    "timeUsedSeconds": 645,
+    "scope": "goal tool pre-closure snapshot; unaudited/not billing/not hard cap"
+  },
+  "closure_checks": {
+    "source_hashes": 12,
+    "parser_hashes": 2,
+    "AST_JSON": "PASS",
+    "modified_fetcher_functions_only": [
+      "fetch_prices_twse_direct",
+      "fetch_prices_tpex_direct"
+    ],
+    "candidate_Data": "TRACKED_LEGACY_ONLY_UNCHANGED; no processed_v6",
+    "main": "UNCHANGED_9956446",
+    "diff_check": "PASS",
+    "knowledge_health": "KNOWLEDGE HEALTH\n\nProject Map        PASS\nAgent Guides       PASS\nDomains            PASS\nGovernance         WARNING\nAuthority Drift    WARNING\nRuntime Freshness  PASS\nGenerated Index    PASS\nLegacy Docs        WARNING\n\nOverall: WARNING\n",
+    "post_documentation_governance_tests": 23,
+    "scope": "source/fixtures only, no formal policy or result rewriting"
+  }
+}

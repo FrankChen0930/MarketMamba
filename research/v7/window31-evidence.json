@@ -1,0 +1,93 @@
+{
+  "status": "COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+  "branch": "research/v7-window31-expanding",
+  "base": "b64ac353833a9248121f12ebe61e1333decb2dbf",
+  "prefit_commit": "ddcf5d835b43578ed9fc5567ee677d88e928e203",
+  "authority": "Human Window31 DEVELOPMENT_ONLY bounded expanding CPU study; no formal policy/admission",
+  "source_W30_integration": "window31-integration.json",
+  "contract": "window31-contract.json",
+  "contract_sha256": "4e002caa3a3497363d236152964f76a8b05bf26ebd4a076bca0818d3b6af59ec",
+  "prepared": "window31-prepared.json",
+  "dataset_id": "e8ce850390b17eac2b65c84bf502b113bbf94334d37bb19d4654f0ea4cdff9b6",
+  "feature_id": "c02671da2cdf85b6f834cdadc3a117bd5cce89c2dea2abff88584f9f506012d9",
+  "label_contract_id": "a9fd7caeda4ba262718146d99b7e25850ce34ca7fd43ae81e96280436c5b4ed2",
+  "run": "window31-run.json",
+  "results": "window31-results.json",
+  "replay": "window31-replay.json",
+  "report": "reports/v7_window31_expanding_cpu.md",
+  "Ridge_fits": 12,
+  "LightGBM_fits": 12,
+  "API_GPU_W19_operations": 0,
+  "predictions": 453192,
+  "daily": 7264,
+  "paired": 10896,
+  "counts": {
+    "O1-VALIDATION": {
+      "daily": 1968,
+      "defined": 1908,
+      "paired": 2952,
+      "defined_paired": 2862
+    },
+    "O1-FORWARD": {
+      "daily": 432,
+      "defined": 432,
+      "paired": 648,
+      "defined_paired": 648
+    },
+    "O2-VALIDATION": {
+      "daily": 1952,
+      "defined": 1892,
+      "paired": 2928,
+      "defined_paired": 2838
+    },
+    "O2-FORWARD": {
+      "daily": 472,
+      "defined": 472,
+      "paired": 708,
+      "defined_paired": 708
+    },
+    "O3-VALIDATION": {
+      "daily": 1936,
+      "defined": 1876,
+      "paired": 2904,
+      "defined_paired": 2814
+    },
+    "O3-FORWARD": {
+      "daily": 504,
+      "defined": 504,
+      "paired": 756,
+      "defined_paired": 756
+    }
+  },
+  "CPU_seconds": 87.69063,
+  "CPU_verification_reserve": 60,
+  "CPU_limit": 1800,
+  "artifact_plus_restore_bytes": 182002029,
+  "artifact_limit": 536870912,
+  "restored_files": 72,
+  "restored_bytes_per_copy": 91000410,
+  "prior_W29_W30_files_unchanged": 310,
+  "backup": "BACKUP_PENDING_SAME_HOST",
+  "tests": "10 pure/mock tests PASS,0 additional fit",
+  "review": "window31-review.json GO; Critical0 Required0; one main review;0 review rework",
+  "initial_navigation_validation": "authority_class missing caused structural FAIL in prefit checkpoint; corrected before O2; first shell lacked set-e and did not block O1. No numerical contract/code changed; final health required.",
+  "bounded_rework": "one pre-run test-fixture correction; one navigation schema repair; no study-fit or recipe rerun",
+  "remaining": "Human formal Dataset/Universe/action/maturity/time/evaluation/refit/exposure/resource/backup decisions; no additional authorized window",
+  "protected": {
+    "StrictPhase0": "STOP",
+    "FormalAdmission": "NOT_APPROVED",
+    "W19": "PROTECTED",
+    "W12_GPU": "SAFETY_HALTED",
+    "E1": "BLOCKED",
+    "H2": "NOT_APPROVED"
+  },
+  "observed_at": "2026-10-25T11:49:37.537388+00:00",
+  "review_rework_rounds": 0,
+  "goal_tool_observation": {
+    "tokensUsed": 236266,
+    "timeUsedSeconds": 1649,
+    "status_at_observation": "active_pre_final_commit",
+    "not_billing_or_hard_budget": true
+  },
+  "efficiency_limitations": "兩次不慎輸出大型單行JSON造成context浪費；未重做舊全面稽核/Bootstrap/LOSO，無額外Fit/API。後續應只輸出選定欄位。"
+}

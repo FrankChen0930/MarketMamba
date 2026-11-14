@@ -1,0 +1,1 @@
+Initial freeze used system python3; imported canonical helper requires numpy, which system interpreter lacks. ModuleNotFoundError: numpy (tool79aac0). No GET/Fit/artifact claim occurred. Correct runtime: existing W11 CPU venv; global environment unchanged.

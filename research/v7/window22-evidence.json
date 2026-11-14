@@ -1,0 +1,250 @@
+{
+  "schema_version": 1,
+  "artifact_class": "CANONICAL",
+  "status": "WINDOW_COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+  "authority": "HumanWindow22 two-unit bounded engineering proof, not admission",
+  "branch": "research/v7-window22-historical-panel",
+  "base": "428a5fa5cb7b771db39a053f88c7046501399f7e",
+  "final_head": "containing closure commit",
+  "integration": "research/v7/window22-integration.json",
+  "plan": "research/v7/window22-plan.json",
+  "source_and_license": "W20/W21official FinMind free noncommercial attribution/no raw redistribution evidence reused; officialCSV scopedOGDL1.0 catalogues",
+  "network": {
+    "FinMind": {
+      "limit": 30,
+      "price_limit": 24,
+      "metadata_limit": 4,
+      "diagnostic_limit": 2,
+      "actual": 10,
+      "price": 10,
+      "metadata": 0,
+      "diagnostic": 0,
+      "unused": 20,
+      "closed": true,
+      "retry_redirect_fallback_token": false
+    },
+    "official_resource": "3CSVGET+1TPEx403webattempt=4; separate3cataloguedocsGET; boundedsearchmetadata, noalternate"
+  },
+  "results": {
+    "rows": 9864,
+    "raw_response_bytes": 1762931,
+    "reference_sessions": 1216,
+    "securities": 10,
+    "structural_VALID_PRICE": 9725,
+    "UNVERIFIED": 131,
+    "NO_PUBLISHED_PRICE": 8,
+    "eligible_labels": 0,
+    "PIT": "NOT_VERIFIED",
+    "study": "PROPOSED",
+    "formal_admission": "NOT_APPROVED"
+  },
+  "storage": {
+    "root": "/home/frank/projects/MarketMamba/.artifacts/window22-historical-panel",
+    "restore": "/home/frank/projects/MarketMamba/.artifacts/window22-historical-restore",
+    "backup": "BACKUP_PENDING",
+    "independent_process_restored": 15,
+    "raw_not_git": true,
+    "inventory": "research/v7/window22-local-artifacts.json"
+  },
+  "reuse": [
+    "W21guard/snapshot/restore/QC",
+    "W07normalize_calendar/instant/session geometry",
+    "W09safe/lock/strict_json/hash",
+    "existingcanonicalmemory/backlog"
+  ],
+  "new": [
+    "W22explicit scope binding on existing request adapter; W21defaults preserved and oldCLOSED not reopened",
+    "small read-only geometry diagnostic and offline panel builder; no ranking implementation"
+  ],
+  "tests": "research/v7/window22-targeted-tests.txt",
+  "review": "research/v7/window22-review.json",
+  "knowledge_impact": "updatedCurrentState/AuthorityMap/backlog/register/domain",
+  "runtime": {
+    "python": "W11isolatedCPU Python3.12.3",
+    "MARKETMAMBA_DATA_ROOT": "unset",
+    "processed_data": "not accessed; W22tree no processed-data symlink, mainoperationalrealpath remains protected",
+    "gpu": false
+  },
+  "boundaries": {
+    "W19": "NO_WORKTREE_ARTIFACT_SCHEDULER_BUDGET_ACCESS",
+    "StrictPhase0": "STOP",
+    "E1FrozenMatrix": "BLOCKED",
+    "H2": "NOT_APPROVED",
+    "W12GPU": "SAFETY_HALTED",
+    "model_fit_rankic": "NOT_EXECUTED",
+    "FrozenContractsProduction": "UNCHANGED",
+    "push_deploy_mergeW22": false
+  },
+  "remaining": [
+    "Full daily qualified calendar/membership/action evidence or explicit scoped proxy approval",
+    "Independent retrospective feature/label/availability contract and admission",
+    "Fold/evaluator/selection/refit/compute authorization",
+    "Independent backup destination"
+  ],
+  "review_result": {
+    "reviewer": "/root/independent_review",
+    "main_rounds": 1,
+    "verdict": "GO",
+    "Critical": 0,
+    "Required": 0,
+    "Optional": 0,
+    "independent_tests": 23,
+    "seconds": 3.04,
+    "artifacts_verified": 78,
+    "FinMind_records_verified": 10,
+    "actual_rows": 9864,
+    "response_bytes": 1762931,
+    "qc": [
+      9725,
+      131,
+      8
+    ],
+    "label_mask_rows": 19728,
+    "eligible": 0,
+    "restore_verified": "10FinMind records/raw/manifest +3official +2derived byte-identical",
+    "official_boundaries_verified": [
+      "6515TWSE20210120",
+      "8272TPEx20241023",
+      "2499delist1091110"
+    ],
+    "rework_rounds": 0,
+    "network_calls": 0,
+    "W19_operations": 0,
+    "authority": "Engineering evidence only; no data/research admission or new GET permission"
+  },
+  "tests_count": 23,
+  "main_postintegration_tests": 15,
+  "units": {
+    "U1": "Official current lifecycle boundaries and partial historical calendar evidence; unqualified dates remainUNKNOWN",
+    "U2": "Continuous panel/restorable raw/diagnostic geometry complete; actuallabeladmissionBLOCKED"
+  },
+  "knowledge_health": "WARNING only existing Governance/AuthorityDrift/LegacyDocs; structural componentsPASS",
+  "deliverables": [
+    {
+      "path": "V6/experimental/v7_finmind_proof.py",
+      "bytes": 12140,
+      "sha256": "e8d196c4e0448c863f7aeb9442468eb3deef1df163960af44884d29d2e982900"
+    },
+    {
+      "path": "V6/experimental/v7_finmind_proof_test.py",
+      "bytes": 7488,
+      "sha256": "6c3091ab3980d91273e046202e0880bdd140b0f66fc3b64bdd6b1b7ee22c0215"
+    },
+    {
+      "path": "V6/experimental/v7_historical_panel.py",
+      "bytes": 3028,
+      "sha256": "28ec10e08678ee6cf64835f8e00e601c18f81d7c20c389e038d2f4f081264ee1"
+    },
+    {
+      "path": "V6/experimental/v7_historical_panel_test.py",
+      "bytes": 2465,
+      "sha256": "393d55f591948b013c28ee37deb30c0b7f8be6e0aa895b85f782b4240b71d276"
+    },
+    {
+      "path": "reports/v7_window22_historical_panel.md",
+      "bytes": 9076,
+      "sha256": "3e89b94bafd397cc32d0776c8ad3d5b919e62683b6a999c6dd3d54377bf004f9"
+    },
+    {
+      "path": "research/v7/window22-build-evidence.py",
+      "bytes": 6291,
+      "sha256": "96cf63b4a69f63525eb0d6295dbf451be69ceebb8ef629c6e2b3434426a849eb"
+    },
+    {
+      "path": "research/v7/window22-independent-restore.json",
+      "bytes": 5531,
+      "sha256": "6c532e9c4a5b3e4452791c0e7c353782cabaebb726fed05c34e07560b6058e1e"
+    },
+    {
+      "path": "research/v7/window22-integration.json",
+      "bytes": 767,
+      "sha256": "8d39a0c2143f4c4c5c8eafe2f9eb268eede9befc3f1186c6c64be21cc24a2086"
+    },
+    {
+      "path": "research/v7/window22-knowledge-health.txt",
+      "bytes": 237,
+      "sha256": "bf93f67ea1dfe58182f4c71dd1f609a034debb6e81c2599949e554cb6c78863c"
+    },
+    {
+      "path": "research/v7/window22-knowledge-impact.json",
+      "bytes": 529,
+      "sha256": "700b1e8da6d3702c792d95dfaa0b20862f706bf3429c2c712038015bbdb9092d"
+    },
+    {
+      "path": "research/v7/window22-knowledge-impact.txt",
+      "bytes": 529,
+      "sha256": "700b1e8da6d3702c792d95dfaa0b20862f706bf3429c2c712038015bbdb9092d"
+    },
+    {
+      "path": "research/v7/window22-lifecycle.json",
+      "bytes": 5358,
+      "sha256": "3f5f9b139a6a81a232c131a589fed81b29b154996829c9cfe0a96de0c80593fb"
+    },
+    {
+      "path": "research/v7/window22-local-artifacts.json",
+      "bytes": 20490,
+      "sha256": "1e84e61aba075e015895ff9de579f87a77b69ec7dbee49656e1b6bf49fa3e4b9"
+    },
+    {
+      "path": "research/v7/window22-main-postintegration-tests.txt",
+      "bytes": 2611,
+      "sha256": "41880dabff5020c0770e1abf2864b8df33af7ef9d400426c7d61c6f9fc572a88"
+    },
+    {
+      "path": "research/v7/window22-maturity-red.txt",
+      "bytes": 10018,
+      "sha256": "8de0d95d7b3dd2e9559397302a94448327b099818cbd369b27953f0d285aefb4"
+    },
+    {
+      "path": "research/v7/window22-official-evidence.json",
+      "bytes": 4625,
+      "sha256": "8cc21d03ffa6d280a0788ae952e94ee7084d610f0dddb82d789f67f977181ab9"
+    },
+    {
+      "path": "research/v7/window22-panel-red.txt",
+      "bytes": 892,
+      "sha256": "5ce6ee22582f1b609c4af2ce8e93c3c7e87736406856dd23e49fa803b00e3df7"
+    },
+    {
+      "path": "research/v7/window22-panel-summary.json",
+      "bytes": 50577,
+      "sha256": "40dfe50863939ff8d418ae765240e37c26490f927c7d1d722e9864b95ab2d094"
+    },
+    {
+      "path": "research/v7/window22-plan.json",
+      "bytes": 1033,
+      "sha256": "4e2cb793604d07f3f8a93492bb61bbbb71e019b0a3a6581143be57bb493b47b1"
+    },
+    {
+      "path": "research/v7/window22-red.txt",
+      "bytes": 1945,
+      "sha256": "0a09fdb74101414a67d0b5dc580da3bb670bcd97e8a26e781326ec69abaa9d91"
+    },
+    {
+      "path": "research/v7/window22-request-tests.txt",
+      "bytes": 2959,
+      "sha256": "7c5c455d73538c8d41bb2003d13143600b2d6140c9f0eb71732f3bf4faed823f"
+    },
+    {
+      "path": "research/v7/window22-review.json",
+      "bytes": 746,
+      "sha256": "5e3af49291c6c68b2688018ac10bffe351013fac6c6ce53ec3d52e6cf938725e"
+    },
+    {
+      "path": "research/v7/window22-targeted-tests.txt",
+      "bytes": 3885,
+      "sha256": "6e683002c7d7f61ab434322bcf4f3fd8a9d7c065d8b492eebcc572e7f4d6531f"
+    }
+  ],
+  "final_checks": {
+    "W22_local_files": 78,
+    "W21_protected_files_reverified": 133,
+    "claim_count": 10,
+    "capture_source_sha256": "e8d196c4e0448c863f7aeb9442468eb3deef1df163960af44884d29d2e982900",
+    "source_identity_matches_all_records": true,
+    "root_storage_not_worktree": true,
+    "main_postintegration_tests": 15,
+    "focused_tests": 23,
+    "raw_payload_in_git": false
+  }
+}

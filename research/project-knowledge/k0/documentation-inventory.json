@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "classification": "GENERATED_DISCOVERY_NOT_CANONICAL",
+  "documents": [
+    {"path":"README.md","relevance":"entry overview","claims":"V6/V6.1/V6.2 system and usage","accuracy":"PARTIAL","superseded_by":["machine contracts","runtime-map.json"],"stale":true,"conflicting":true},
+    {"path":"PROJECT.md","relevance":"historical architecture","claims":"V6 models, data flow and KG","accuracy":"HISTORICAL","superseded_by":["current code","corrected V7 contracts"],"stale":true,"conflicting":false},
+    {"path":"OVERVIEW.md","relevance":"historical broad system view","claims":"V6.1/V6.2/dashboard","accuracy":"PARTIAL","superseded_by":["runtime observation","current branches"],"stale":true,"conflicting":true},
+    {"path":"AGENTS.md","relevance":"current agent operating guide","claims":"project status, habits and boundaries","accuracy":"MOSTLY_CURRENT","superseded_by":["machine evidence on empirical state"],"stale":false,"conflicting":false},
+    {"path":"CLAUDE.md","relevance":"tool-specific legacy guide","claims":"near-duplicate old project knowledge","accuracy":"STALE","superseded_by":["AGENTS.md"],"stale":true,"conflicting":true},
+    {"path":"obsidian_note/🏠 Home.md","relevance":"local knowledge navigation","claims":"project note index","accuracy":"CURRENT_LOCAL","superseded_by":[],"stale":false,"conflicting":false},
+    {"path":"obsidian_note/01 系統現況/現況整理.md","relevance":"human summary","claims":"production/correctness/E1 separation","accuracy":"CURRENT_SUPPORTING","superseded_by":["runtime and research contracts"],"stale":false,"conflicting":false},
+    {"path":"obsidian_note/03 架構筆記/V7 資料處理與 Correctness 邊界.md","relevance":"correctness explanation","claims":"PIT/provenance boundary","accuracy":"CURRENT_SUPPORTING","superseded_by":["research/v7 manifests"],"stale":false,"conflicting":false},
+    {"path":"obsidian_note/03 架構筆記/Colab 訓練與續跑標準.md","relevance":"training UX memory","claims":"bundle/matrix/resume rules","accuracy":"CURRENT_SUPPORTING","superseded_by":["E1 runner/notebook/tests"],"stale":false,"conflicting":false},
+    {"path":"reports/marketmamba_production_system_audit.md","relevance":"production architecture audit","claims":"maturity 2.5/5 and roadmap gaps","accuracy":"CURRENT_REFERENCE","superseded_by":["later Phase A branch state"],"stale":false,"conflicting":false},
+    {"path":"research/production-system/implementation-roadmap.md","relevance":"Phase A-F roadmap","claims":"ordered production hardening plan","accuracy":"CURRENT_REFERENCE","superseded_by":[],"stale":false,"conflicting":false},
+    {"path":"research/v7/corrected-baseline-v1/feature-manifest.json","relevance":"feature authority","claims":"ordered 48-feature contract","accuracy":"AUTHORITATIVE","superseded_by":[],"stale":false,"conflicting":false},
+    {"path":"research/v7/corrected-baseline-v1/architecture-config.json","relevance":"draft corrected architecture","claims":"d_model32/d_state8","accuracy":"SUPERSEDED_FIELD_VALUES","superseded_by":["completed incumbent contract"],"stale":true,"conflicting":true},
+    {"path":"research/v7/ohlcv-provenance-remediation-v1/readiness.json","relevance":"readiness authority","claims":"historical PASS and strict STOP separation","accuracy":"AUTHORITATIVE","superseded_by":[],"stale":false,"conflicting":false},
+    {"path":"research/v7/corrected-e5-diagnostic-v2/next-experiment-decision.json","relevance":"research decision","claims":"E1 selected and not executed","accuracy":"REPO_CURRENT_EXTERNAL_STATE_UNKNOWN","superseded_by":[],"stale":false,"conflicting":false},
+    {"path":"deliveries/V7-Confirmation-20260914/V7-三種子確認與續跑.ipynb","relevance":"known-good resume reference","claims":"working Colab resume pattern","accuracy":"HISTORICAL_REFERENCE","superseded_by":["E1 notebook for current experiment"],"stale":false,"conflicting":false}
+  ],
+  "inventory_limit":"Important knowledge-bearing documents are individually classified; 382 markdown and 23 notebooks were counted, but low-value generated/vendor-like prose is not promoted to authority records."
+}

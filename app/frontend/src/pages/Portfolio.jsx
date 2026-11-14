@@ -1,0 +1,278 @@
+import React from 'react';
+import {
+  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  CartesianGrid, PieChart, Pie, Cell, Legend
+} from 'recharts';
+import { Info, RefreshCw } from 'lucide-react';
+import { useApi } from '../hooks/useApi';
+import { fetchPortfolio } from '../api/portfolio';
+import { fetchScannerSignals } from '../api/signals';
+import { SkeletonCard, SkeletonBlock, ApiError } from '../components/SkeletonLoader';
+
+const COLORS = ['var(--accent-blue)', 'var(--positive)', 'var(--accent-amber)', 'var(--accent-purple)'];
+
+function PnLBar({ pct }) {
+  const capped = Math.min(Math.abs(pct), 20);
+  const width  = (capped / 20) * 100;
+  const color  = pct >= 0 ? 'var(--positive)' : 'var(--negative)';
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{ width: 80, height: 5, background: 'var(--bg-hover)', borderRadius: 3, overflow: 'hidden' }}>
+        <div style={{ width: `${width}%`, height: '100%', background: color, borderRadius: 3, boxShadow: `0 0 4px ${color}` }} />
+      </div>
+      <span className={`mono ${pct >= 0 ? 'text-positive' : 'text-negative'}`} style={{ fontSize: 12, minWidth: 52 }}>
+        {pct >= 0 ? '+' : ''}{pct.toFixed(2)}%
+      </span>
+    </div>
+  );
+}
+
+const CustomTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="glass" style={{ padding: '10px 14px', fontSize: 12 }}>
+      <div style={{ color: 'var(--text-muted)', marginBottom: 4 }}>{label}</div>
+      {payload.map(p => (
+        <div key={p.dataKey} style={{ color: p.color, fontFamily: 'var(--font-mono)' }}>
+          {p.name}: {typeof p.value === 'number' ? p.value.toLocaleString() : p.value}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Build fake P&L history from positions for the sparkline
+function buildPnlHistory(positions) {
+  if (!positions?.length) return [];
+  const totalPnl = positions.reduce((a, p) => a + p.pnl, 0);
+  return Array.from({ length: 14 }, (_, i) => ({
+    day: `D-${13 - i}`,
+    pnl: Math.round(totalPnl * (0.6 + (i / 13) * 0.4) + Math.sin(i * 0.8) * 5000),
+  }));
+}
+
+export default function Portfolio() {
+  const { data: portfolio, loading, error, refetch } = useApi(fetchPortfolio);
+  const { data: scannerData } = useApi(fetchScannerSignals);
+  const positions = portfolio?.positions || [];
+  const totalPnl  = portfolio?.total_pnl ?? 0;
+  const pnlHistory = buildPnlHistory(positions);
+
+  // Cross-reference exit signals with holdings
+  const exitSignals = scannerData?.exit_signals || [];
+  const exitTickers = new Set(exitSignals.map(e => e.ticker));
+  const holdingExits = exitSignals.filter(e => positions.some(p => p.stock_id === e.ticker));
+
+  // Pie chart data
+  const pieData = positions.map((p, i) => ({
+    name: p.name,
+    value: Math.abs(p.qty * p.current_price),
+    color: COLORS[i % COLORS.length],
+  }));
+
+  if (error) return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="page-header"><div className="page-title">持倉追蹤</div></div>
+      <ApiError message={error} onRetry={refetch} />
+    </div>
+  );
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="page-header">
+        <div>
+          <div className="page-title">持倉追蹤</div>
+          <div className="page-subtitle">
+            自動同步永豐證券帳戶的實際持股
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <button className="btn btn-primary" onClick={refetch}>
+            <RefreshCw size={14} strokeWidth={2} aria-hidden="true" /> 重新整理
+          </button>
+        </div>
+      </div>
+
+      {/* 這頁的定位標註：它不屬於任何一個模型版本，是個人帳戶本身。
+          主要使用場景在 PersonalOS 桌面版，網頁這邊只是同一份資料的鏡像。 */}
+      <div style={{
+        display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-start',
+        padding: 'var(--space-3) var(--space-4)',
+        background: 'rgba(139,148,158,0.06)',
+        borderLeft: '3px solid var(--ver-planned)',
+        borderRadius: '0 var(--radius-sm) var(--radius-sm) 0',
+      }}>
+        <Info size={16} strokeWidth={2} color="var(--ver-planned)" style={{ flexShrink: 0, marginTop: 2 }} aria-hidden="true" />
+        <p style={{ margin: 0, fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.8 }}>
+          <b style={{ color: 'var(--text-primary)' }}>這頁主要在 PersonalOS 桌面版使用。</b>
+          {' '}它顯示的是真實帳戶部位，不歸屬於任何一個模型版本。
+          目前的退場提示還是沿用前一版（V6.1）的判斷條件，等新版接手後會一起換掉。
+        </p>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid-4">
+        {loading ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />) : <>
+          <div className="stat-card">
+            <div className="label">持倉股數</div>
+            <div className="value mono">{positions.length} 檔</div>
+          </div>
+          <div className="stat-card">
+            <div className="label">未實現損益</div>
+            <div className={`value mono ${totalPnl >= 0 ? 'text-positive' : 'text-negative'}`}>
+              {totalPnl >= 0 ? '+' : ''}{totalPnl.toLocaleString()}
+            </div>
+          </div>
+          <div className="stat-card">
+            <div className="label">模型建議一致</div>
+            <div className="value mono">
+              {positions.filter(p => p.model_signal === 'BUY' || p.model_signal === 'HOLD').length} / {positions.length}
+            </div>
+          </div>
+          <div className="stat-card">
+            <div className="label">資料更新</div>
+            <div className="value mono" style={{ fontSize: 14 }}>{portfolio?.last_updated || '—'}</div>
+          </div>
+        </>}
+      </div>
+
+      {/* Empty state */}
+      {!loading && positions.length === 0 && (
+        <div className="panel">
+          <div className="panel-body" style={{ textAlign: 'center', padding: '48px 24px' }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>🏖️</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>目前空手</div>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', maxWidth: 320, margin: '0 auto' }}>
+              尚無持倉部位。持倉資料透過 Shioaji 自動同步，每日 17:00 更新。
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* P&L Curve + Donut */}
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
+        <div className="panel">
+          <div className="panel-header">
+            <div className="panel-title"><span>📈</span> 累積損益曲線</div>
+          </div>
+          <div className="panel-body">
+            {loading ? <SkeletonBlock height={160} /> : (
+              <ResponsiveContainer width="100%" height={160}>
+                <LineChart data={pnlHistory}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(48,54,61,0.4)" />
+                  <XAxis dataKey="day" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
+                  <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Line type="monotone" dataKey="pnl" stroke="var(--accent-blue)" strokeWidth={2} dot={false} name="損益" />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
+
+        <div className="panel">
+          <div className="panel-header">
+            <div className="panel-title"><span>🥧</span> 持倉比例</div>
+          </div>
+          <div className="panel-body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {loading ? <SkeletonBlock height={160} /> : (
+              <ResponsiveContainer width="100%" height={160}>
+                <PieChart>
+                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={45} outerRadius={65}
+                    dataKey="value" nameKey="name" stroke="none">
+                    {pieData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                  </Pie>
+                  <Tooltip formatter={(v) => `$${v.toLocaleString()}`} />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Holdings Table */}
+      <div className="panel">
+        <div className="panel-header">
+          <div className="panel-title"><span>💼</span> 目前持倉</div>
+          <span className="badge badge-neutral">
+            {portfolio?.data_source === 'mock' ? '模擬資料' : '永豐 shioaji 直連'}
+          </span>
+        </div>
+        <div className="panel-body-flush">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>股票</th><th>持有量</th><th>平均成本</th>
+                <th>目前價格</th><th>損益</th><th>報酬率</th><th>模型建議</th>
+              </tr>
+            </thead>
+            <tbody>
+              {positions.map(p => (
+                <tr key={p.stock_id}>
+                  <td>
+                    <div style={{ fontWeight: 600 }}>{p.name}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{p.stock_id}</div>
+                  </td>
+                  <td className="mono">{p.qty.toLocaleString()}</td>
+                  <td className="mono">{p.avg_price.toFixed(1)}</td>
+                  <td className="mono">{p.current_price.toFixed(1)}</td>
+                  <td className={`mono ${p.pnl >= 0 ? 'text-positive' : 'text-negative'}`}>
+                    {p.pnl >= 0 ? '+' : ''}{p.pnl.toLocaleString()}
+                  </td>
+                  <td><PnLBar pct={p.pnl_pct} /></td>
+                  <td>
+                    <span className={`badge ${p.model_signal === 'BUY' ? 'badge-positive' : p.model_signal === 'SELL' ? 'badge-negative' : 'badge-neutral'}`}>
+                      {p.model_signal}
+                    </span>
+                    {exitTickers.has(p.stock_id) && (
+                      <span style={{ marginLeft: 6, fontSize: 10, color: 'var(--negative)', fontWeight: 600 }}>🔴 退場</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Exit Signals Panel */}
+      {holdingExits.length > 0 && (
+        <div className="panel" style={{ borderColor: 'rgba(255,71,87,0.3)', background: 'rgba(255,71,87,0.04)' }}>
+          <div className="panel-header">
+            <div className="panel-title"><span>🔴</span> 退場警告</div>
+            <span className="badge badge-negative">{holdingExits.length} 檔觸發</span>
+          </div>
+          <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {holdingExits.map(e => (
+              <div key={e.ticker} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 14px', background: 'rgba(255,71,87,0.06)', borderRadius: 8, border: '1px solid rgba(255,71,87,0.15)' }}>
+                <div>
+                  <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                    {positions.find(p => p.stock_id === e.ticker)?.name || e.ticker}
+                  </span>
+                  <span className="mono" style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>{e.ticker}</span>
+                </div>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  {e.reasons?.map((r, i) => (
+                    <span key={i} style={{ fontSize: 12, color: 'var(--negative)' }}>🔴 {r}</span>
+                  ))}
+                  {e.current_rank && <span className="mono" style={{ fontSize: 11, color: 'var(--text-muted)' }}>Rank #{e.current_rank}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Disclaimer */}
+      <div className="panel" style={{ borderColor: 'rgba(255,165,0,0.3)', background: 'rgba(255,165,0,0.04)' }}>
+        <div className="panel-body" style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <span style={{ fontSize: 20 }}>⚠️</span>
+          <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+            持倉資料來自永豐證券 API，僅供參考。模型建議不構成投資意見，實際交易請自行判斷。
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

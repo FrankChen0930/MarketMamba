@@ -1,0 +1,4 @@
+# Bounded synthetic publisher diagnostics retained locally, not GC.
+/attempts/
+/staging/
+/locks/

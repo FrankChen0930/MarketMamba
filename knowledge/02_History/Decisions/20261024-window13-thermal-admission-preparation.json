@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "decision_id": "V7-W13-THERMAL-AND-ADMISSION-PREPARATION-001",
+  "authority": "Human Window13 Thermal Policy Closure & Data/Evaluation Admission Preparation, current task instruction",
+  "recorded_date": "2026-10-24",
+  "status": "HUMAN_CONFIRMED_DESIGN_DIRECTION",
+  "implementation_status": "GPU_RETEST_DEFERRED",
+  "branch_state": "UNMERGED_NOT_DEPLOYED",
+  "human_confirmed_direction": {
+    "local_first": "RTX3060Laptop6GB remains Local-first training CANDIDATE",
+    "target_temperature_reference_c": 87,
+    "measurement_authority": "Windows Host nvidia-smi, future implementation binding not yet verified",
+    "future_controlled_gpu_stop_c": 87,
+    "stop_semantics": "Do not continue beyond stop threshold to complete epoch; CPU overheating/monitor failure/other hardware anomalies may stop earlier",
+    "long_training_preconditions": "Recheck cooling/RAM/VRAM/power/whole-system stability before separately authorized long training",
+    "possible_non_executed_actions": [
+      "Improve bottom intake",
+      "Reduce background GPU load without agent terminating user programs",
+      "Professional cooling-system service if necessary"
+    ]
+  },
+  "proposed_details": {
+    "warning_temperature_c": 83,
+    "warning_status": "PROPOSED_INITIAL_WARNING",
+    "cpu_temperature_threshold": null,
+    "monitor_poll_interval": null,
+    "host_ram_vram_margins": null,
+    "sensor_failure_handling_implementation": "DEFERRED"
+  },
+  "interpretation": "87C is a project candidate operating gate, not NVIDIA certification of prolonged-training safety, runtime acceptance or retest authorization",
+  "window12_preservation": {
+    "source_commit": "16e444f9840b53542fcae62c00fcc9ed8ad80e3a",
+    "state": "SAFETY_HALTED",
+    "budget_sha256": "935f7c33342661620b55b16d4c8a2e3612317db68c9b035b1dd2fa980ab3cca0",
+    "charged_seconds": 32.10694203499588,
+    "old_gate_c": 80,
+    "mutation_permitted": false,
+    "retest_permitted": false,
+    "no_retroactive_threshold_change": true,
+    "kernel_forward_backward_resume_amp_full_model_feasibility": "NOT_VERIFIED"
+  },
+  "window13_authorized": [
+    "CPU-only readonly bounded evidence checks",
+    "preserve decisions in existing records/maps/backlog",
+    "prepare minimal Human data/evaluation decision package",
+    "independent review and local isolated commits; at most2units/2rework each"
+  ],
+  "not_authorized": [
+    "GPU/Colab/training/benchmark",
+    "new data/research admission or formal cutoff/evaluation freeze",
+    "Frozen E5/E1 feature/label/policy mutation",
+    "Windows driver/power/thermal settings or production/scheduler changes",
+    "merge any pending branch/main integration/push/deploy",
+    "GC/overwrite W11 checkpoint bytes or W12 evidence",
+    "next work window"
+  ],
+  "gates": {
+    "strict_phase0": "STOP",
+    "e1_frozen_matrix": "BLOCKED",
+    "h2": "NOT_APPROVED",
+    "fair_evaluation": "PROPOSED",
+    "pre_next_open": "PROPOSED",
+    "gpu_validation": "SAFETY_HALTED",
+    "inference_recovery_implementation": "DEFERRED"
+  },
+  "admission_preparation": {
+    "status": "PROPOSED_OPTIONS_NOT_ADMITTED",
+    "decision_brief": "reports/v7_window13_decision_brief.md",
+    "unfrozen_human_decisions": [
+      "DT1–4",
+      "EV1–6"
+    ],
+    "exact_freeze": null,
+    "deadline": null,
+    "source_missing_policy": null,
+    "formal_evaluation_policy": null,
+    "new_training_authorization": false
+  }
+}

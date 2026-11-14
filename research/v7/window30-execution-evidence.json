@@ -1,0 +1,20 @@
+{
+  "status": "ACTUAL_PRIOR_TOOL_EXECUTION_REFERENCE_NOT_A_NEW_RUN",
+  "tool": "functions.exec -> tools.exec_command",
+  "workdir": "/home/frank/projects/MarketMamba/.worktrees/v7-window30-real-lightgbm",
+  "shell_prefix": "set -e",
+  "commands_already_executed": [
+    "PYTHONDONTWRITEBYTECODE=1 CUDA_VISIBLE_DEVICES='' OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 timeout --signal=TERM --kill-after=5s 300s /home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/.runtimes/window11-cpu/bin/python -B research/v7/window30-lgbm.py fit5 > research/v7/window30-fit5-process.txt 2>&1",
+    "PYTHONDONTWRITEBYTECODE=1 CUDA_VISIBLE_DEVICES='' OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 timeout --signal=TERM --kill-after=5s 300s /home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/.runtimes/window11-cpu/bin/python -B research/v7/window30-lgbm.py fit10 > research/v7/window30-fit10-process.txt 2>&1"
+  ],
+  "process_session_id": 14088,
+  "start_chunk_id": "d8388c",
+  "completion_chunk_id": "69448a",
+  "completion_exit_code": 0,
+  "stdout_artifacts": [
+    "research/v7/window30-fit5-process.txt",
+    "research/v7/window30-fit10-process.txt"
+  ],
+  "scope": "Recorded from actual tool invocation/completion; not an OS-signed independent process audit. Reviewer did not independently re-prove shell wrapper from stdout. No fit rerun.",
+  "additional_OS_CPU_limit": "window30-lgbm.py budget() RLIMIT_CPU<=300 per process, aggregate ledger1200 inclreserve60"
+}

@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "authority": "Human Window15 Licensed Data Foundations & Dual-Track Research Preparation",
+  "design_direction_status": "HUMAN_CONFIRMED_DESIGN_DIRECTION",
+  "tracks": [
+    "A Exploratory Historical Ranking Research",
+    "B Forward Vintage Collection"
+  ],
+  "execution_scope": "Three bounded CPU-only source/license/proposal/synthetic units only",
+  "integration_fixed_source": "4da1bcfa81c8ff786de82d29ec461c0851d411d5",
+  "proposed_study_contract": "research/v7/window15-exploratory-study.json",
+  "forward_activation": "PROPOSED_DEFERRED",
+  "research_or_data_admission": false,
+  "real_training_rankic_gpu_collector_scheduler": false,
+  "not_authorized": [
+    "new formal dataset/research admission",
+    "realhistoricalfit/RankIC/GPU/Colab",
+    "formalfeatures/labels/selection/FrozenE5E1 changes",
+    "production/Windows/scheduler changes",
+    "newcollector/clouddeployment",
+    "W06/W12/other pending branch merge",
+    "Window15mainmerge/push/deploy",
+    "W14rawmove/overwrite/publicredistribution",
+    "nextworkwindow"
+  ],
+  "gates": {
+    "strict_phase0": "STOP",
+    "e1_frozen_matrix": "BLOCKED",
+    "h2": "NOT_APPROVED",
+    "fair_evaluation": "PROPOSED",
+    "pre_next_open": "PROPOSED",
+    "window12_gpu": "SAFETY_HALTED",
+    "inference_recovery_implementation": "DEFERRED"
+  }
+}

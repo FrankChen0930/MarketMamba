@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "authority": "Human Window09 Durable Experiment Artifacts & Offline Replay",
+  "status": "BOUNDED_SYNTHETIC_ENGINEERING_ONLY",
+  "integration_source": "bdea30d877fa2c5d02308f343fa5591a35616aec",
+  "authorized": [
+    "local W08 integration after gates",
+    "2CPU synthetic bundle and offline replay/restore units, <=2rework each, localcommits"
+  ],
+  "not_authorized": [
+    "formal retention/storage/admission policy",
+    "real training/GPU/Colab/production",
+    "unknown PyTorch deserialization",
+    "historical E1matrix reconstruction",
+    "GC/push/deploy/Window09mainmerge/Window10"
+  ]
+}

@@ -1,0 +1,229 @@
+{
+  "schema": "v7-window10-e2e-evidence-v1",
+  "artifact_class": "CANONICAL",
+  "evidence_class": "SYNTHETIC",
+  "study_id": "study-fixture",
+  "fold_id": "fold-A",
+  "run_key": "3ab489fd3d8393ee29af5a12477ec3b424bc03bcfec2557125ddb78a09cafbab",
+  "manifest_sha256": "0af8e9c18ea8ad7f529b7169aa8471cf1e812324843e9e961d7152ae47ce24c8",
+  "bundle_root": "research/v7/window10-synthetic-bundle",
+  "stages": {
+    "selection_runs": {
+      "L0": {
+        "study_id": "study-fixture",
+        "recipe_id": "toy-L0",
+        "run_id": "selection-L0",
+        "fold_id": "fold-A",
+        "origin_at": "2024-02-13T08:30:00+08:00",
+        "horizon": 5,
+        "config_sha256": "981af5063addc3e3fa9a752491fbd517bd9325f1110421d07f3a456e258401e3",
+        "data_view_sha256": "77cea9adb07243f2d669966a58030fa9c319c9e9608c197eca5f24dfcb344b0e"
+      },
+      "L1": {
+        "study_id": "study-fixture",
+        "recipe_id": "toy-L1",
+        "run_id": "selection-L1",
+        "fold_id": "fold-A",
+        "origin_at": "2024-02-13T08:30:00+08:00",
+        "horizon": 5,
+        "config_sha256": "2c50d120fe3dbb42634fd6b069e5b59a80b3fe8c89904f9c9efd0fb921986f9c",
+        "data_view_sha256": "77cea9adb07243f2d669966a58030fa9c319c9e9608c197eca5f24dfcb344b0e"
+      }
+    },
+    "refit_runs": {
+      "L0": {
+        "study_id": "study-fixture",
+        "recipe_id": "toy-L0",
+        "run_id": "refit-L0",
+        "fold_id": "fold-A",
+        "origin_at": "2024-02-13T08:30:00+08:00",
+        "horizon": 5,
+        "config_sha256": "981af5063addc3e3fa9a752491fbd517bd9325f1110421d07f3a456e258401e3",
+        "data_view_sha256": "c246199824d8675cf9f1a2d75be7c458cc4374746f1f06312eeb0d8bf9ada63f"
+      },
+      "L1": {
+        "study_id": "study-fixture",
+        "recipe_id": "toy-L1",
+        "run_id": "refit-L1",
+        "fold_id": "fold-A",
+        "origin_at": "2024-02-13T08:30:00+08:00",
+        "horizon": 5,
+        "config_sha256": "2c50d120fe3dbb42634fd6b069e5b59a80b3fe8c89904f9c9efd0fb921986f9c",
+        "data_view_sha256": "c246199824d8675cf9f1a2d75be7c458cc4374746f1f06312eeb0d8bf9ada63f"
+      }
+    },
+    "forward_runs": {
+      "a": {
+        "schema": "v7-ranking-input-v1",
+        "study_id": "study-fixture",
+        "recipe_id": "toy-L1",
+        "run_id": "forward-L1",
+        "fold_id": "fold-A",
+        "origin_at": "2024-02-13T08:30:00+08:00",
+        "fold_sha256": "c19fa80016e12568f3a9679e6de656a00433d55cd2c166dfd98a77f2c78af3d7",
+        "model_sha256": "2bacf3b1f88f94490fe3ccf81485c1fd9aa569cf1529256817cfe2d8eb2cee86",
+        "source_sha256": "6baa089e4ba1f43e2597502169a050a2beb84564a29fd9e68655ca3d10040761",
+        "snapshot_sha256": "fe171de30712034139721934c4d50402a763d578650209fc4d38930b0ca53ddd",
+        "vintage_id": "window10-toy-original",
+        "evidence_class": "SYNTHETIC",
+        "prediction_role": "FORWARD",
+        "evaluation_role": "FORWARD_EVALUATION",
+        "evaluation_at": "2024-03-01T18:00:00+08:00",
+        "sessions": [
+          "2024-02-14",
+          "2024-02-15"
+        ],
+        "horizons": [
+          5
+        ],
+        "raw_predictions_ref": {
+          "path": "dataset.json",
+          "sha256": "878925030b06a0fb5775c818f568138d9d7518e1ab227b7cc5ac11d6f0fb76a1"
+        }
+      },
+      "b": {
+        "schema": "v7-ranking-input-v1",
+        "study_id": "study-fixture",
+        "recipe_id": "toy-L0",
+        "run_id": "forward-L0",
+        "fold_id": "fold-A",
+        "origin_at": "2024-02-13T08:30:00+08:00",
+        "fold_sha256": "c19fa80016e12568f3a9679e6de656a00433d55cd2c166dfd98a77f2c78af3d7",
+        "model_sha256": "2ec462ae9460bcf58ce4939144ddbfc926da21d091ec2daad8c0aa0a15ae08d0",
+        "source_sha256": "6baa089e4ba1f43e2597502169a050a2beb84564a29fd9e68655ca3d10040761",
+        "snapshot_sha256": "fe171de30712034139721934c4d50402a763d578650209fc4d38930b0ca53ddd",
+        "vintage_id": "window10-toy-original",
+        "evidence_class": "SYNTHETIC",
+        "prediction_role": "FORWARD",
+        "evaluation_role": "FORWARD_EVALUATION",
+        "evaluation_at": "2024-03-01T18:00:00+08:00",
+        "sessions": [
+          "2024-02-14",
+          "2024-02-15"
+        ],
+        "horizons": [
+          5
+        ],
+        "raw_predictions_ref": {
+          "path": "dataset.json",
+          "sha256": "878925030b06a0fb5775c818f568138d9d7518e1ab227b7cc5ac11d6f0fb76a1"
+        }
+      }
+    }
+  },
+  "selection_decision": {
+    "schema": "v7-classical-selection-v1",
+    "policy": {
+      "policy_id": "window10-toy-validation-5d-v1",
+      "status": "SYNTHETIC_NOT_ADMITTED",
+      "metric": "VALIDATION_MEAN_DAILY_RANK_IC",
+      "horizon": 5,
+      "tie_break": [
+        "L0",
+        "L1",
+        "L2"
+      ]
+    },
+    "selected_model_kind": "L0",
+    "selected_recipe_id": "toy-L0",
+    "validation_means": {
+      "L0": 0.9999999999999998,
+      "L1": 0.9999999999999998
+    },
+    "evaluation_identities": {
+      "L0": "97c284d12a08314a15de7662bcdf1eecab3661898fd58c139e997937dc62b878",
+      "L1": "3d607cd84747e5d8d1dfdb157b597c0b3255e303d64996643553be08e569076a"
+    },
+    "role": "VALIDATION_MODEL_SELECTION_NOT_FINAL_TEST",
+    "research_admitted": false
+  },
+  "selection_decision_before_sha256": "aedc9cc9893f5df2cc4327957d71047bbb188bb515a01c0d284ce19ef805668c",
+  "selection_decision_after_sha256": "aedc9cc9893f5df2cc4327957d71047bbb188bb515a01c0d284ce19ef805668c",
+  "model_results": {
+    "L0": {
+      "training_status": "DIRECT_SCORE_NO_OPTIMIZER",
+      "fit_n": 24,
+      "phase": "REFIT",
+      "model_sha256": "2ec462ae9460bcf58ce4939144ddbfc926da21d091ec2daad8c0aa0a15ae08d0"
+    },
+    "L1": {
+      "training_status": "FITTED_TINY_SYNTHETIC_CPU",
+      "fit_n": 24,
+      "phase": "REFIT",
+      "model_sha256": "2bacf3b1f88f94490fe3ccf81485c1fd9aa569cf1529256817cfe2d8eb2cee86"
+    }
+  },
+  "L2": {
+    "schema": "v7-classical-fit-v1",
+    "research_admitted": false,
+    "model": null,
+    "reasons": [
+      "lightgbm dependency missing or version not qualified"
+    ],
+    "status": "DEPENDENCY_BLOCKED",
+    "dependency": {
+      "available": false,
+      "installed_version": null,
+      "requirement_candidate": "lightgbm>=4,<5; exact version lock requires actual CPU verification",
+      "status": "SYNTHETIC_ENGINEERING_ONLY_NO_INSTALL_AUTHORITY"
+    }
+  },
+  "publication": {
+    "status": "ARTIFACTS_VERIFIED",
+    "reasons": [],
+    "research_admitted": false,
+    "attempt_id": "8acb1330e8b54a16b91fa50ba3835f06",
+    "bundle_path": "/home/frank/projects/MarketMamba/.worktrees/v7-window10-classical-e2e/research/v7/window10-synthetic-bundle/completed/3ab489fd3d8393ee29af5a12477ec3b424bc03bcfec2557125ddb78a09cafbab",
+    "manifest_sha256": "0af8e9c18ea8ad7f529b7169aa8471cf1e812324843e9e961d7152ae47ce24c8"
+  },
+  "independent_process_replay": {
+    "command": [
+      "-m",
+      "V6.experimental.v7_research_replay",
+      "--root",
+      "research/v7/window10-synthetic-bundle",
+      "--run-key",
+      "3ab489fd3d8393ee29af5a12477ec3b424bc03bcfec2557125ddb78a09cafbab",
+      "--manifest-sha256",
+      "0af8e9c18ea8ad7f529b7169aa8471cf1e812324843e9e961d7152ae47ce24c8",
+      "--output",
+      "research/v7/window10-replay-evidence.json"
+    ],
+    "exit_code": 0,
+    "report": "research/v7/window10-replay-evidence.json",
+    "sha256": "8aa18247d326ecddbae454c01a98f1701d4c9aefdcf7aa52d3cb6bdc27091802"
+  },
+  "capabilities": {
+    "METADATA_VERIFIED": {
+      "proven": true,
+      "reasons": []
+    },
+    "EVALUATION_REPLAYABLE": {
+      "proven": true,
+      "reasons": []
+    },
+    "TRAINING_RESUMABLE": {
+      "proven": false,
+      "reasons": [
+        "NO_REAL_RUNTIME_STATE_OR_TRAINING_VERIFIED"
+      ]
+    },
+    "FULL_REPRODUCTION_READY": {
+      "proven": false,
+      "reasons": [
+        "NO_FULL_DATA_CODE_TRAINING_RUNTIME_REPRODUCTION_VERIFIED"
+      ]
+    }
+  },
+  "selection_validation_replay": {
+    "verified": true,
+    "validation_evaluations_sha256": "753b55e159eb6965ad1d2c5fc785ebace0845ced03cd0817153cb6f79455ca78",
+    "selection_decision_sha256": "aedc9cc9893f5df2cc4327957d71047bbb188bb515a01c0d284ce19ef805668c"
+  },
+  "limitations": [
+    "Toy x/z features and engineered labels; no financial signal evidence",
+    "Only 5d model head exercised here; W07 required 5/10 training maturity still checked",
+    "2fixed comparison participants; L2 dependency blocked, no fabricated result",
+    "No real dataset admission or GPU/runtime resume/reproduction proof"
+  ]
+}

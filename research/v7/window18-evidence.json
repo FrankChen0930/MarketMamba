@@ -1,0 +1,273 @@
+{
+  "schema_version": 1,
+  "artifact_class": "CANONICAL",
+  "evidence_class": "LIMITED_REAL_MANUAL_CAPTURE_AND_OFFLINE_RESTORE_NOT_RESEARCH_ADMISSION",
+  "status": "WINDOW_COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+  "branch": "development/v7-window18-manual-collector",
+  "base": "96e8c0c4f2f7f78c508048e31f0f163d6c707128",
+  "final_head": "containing local closure commit",
+  "integration": {
+    "before": "000b0b9c40448b11a41d05396dffc6e0f3ea1235",
+    "fixed_candidate": "96e8c0c4f2f7f78c508048e31f0f163d6c707128",
+    "after": "96e8c0c4f2f7f78c508048e31f0f163d6c707128",
+    "method": "ff-only",
+    "clean_trees_before": 38,
+    "deliverable_hashes_verified": 19,
+    "durable_files_verified": 5,
+    "official_document_files_verified": 8,
+    "tests": 9,
+    "existing_W17_review": "GO Critical0/Required0 source/evidence reverified",
+    "postintegration": "same9W17tests included in final25targeted, no source difference onmain",
+    "other_pending_candidates_merged": false
+  },
+  "U1": {
+    "status": "COMPLETED",
+    "implementation": [
+      "V6/experimental/v7_manual_collector.py",
+      "V6/experimental/v7_csv_capture_qc.py"
+    ],
+    "source_entry": "research/v7/window15-license-matrix.json",
+    "GET_budget": {
+      "11549": 1,
+      "11371": 1,
+      "retry": 0,
+      "redirect": 0,
+      "fallback": 0,
+      "exhausted": true
+    },
+    "bounded_socket_seconds": 25,
+    "outer_process_timeout_seconds": 40,
+    "bytes_limit": 2097152,
+    "capture_results": "research/v7/window18-capture-results.json",
+    "config": "research/v7/window18-pilot-config.json"
+  },
+  "U2": {
+    "status": "COMPLETED_WITH_EXPLICIT_TIME_QC_AND_BACKUP_LIMITS",
+    "initial_restore": "research/v7/window18-initial-restore.json",
+    "reviewed_restore": "research/v7/window18-reviewed-restore.json",
+    "qc_reassessment": "research/v7/window18-qc-reassessment.json",
+    "raw_bytes": 279436,
+    "independent_processes": "Two initialCLIrestore childprocesses andtwo postrepairCLIrestore childprocesses, no network",
+    "originals_immutable": true,
+    "framing": "NoContentLength retained; UNKNOWN, no declaredsize/fullpublishercoverage proof",
+    "classification": "MANUAL_RESOURCE_CAPTURE_TIME_UNQUALIFIED",
+    "published_at": "UNKNOWN",
+    "storage": "repositorylevel.artifacts/window18-manual-pilot; outsideW18worktree",
+    "backup_status": "BACKUP_PENDING_SAME_HOST_RESTORE_NOT_INDEPENDENT_BACKUP",
+    "artifacts": "research/v7/window18-local-artifacts.json"
+  },
+  "review": {
+    "reviewer": "/root/independent_review",
+    "rounds": 1,
+    "initial_decision": "NO_GO_PENDING_SINGLE_REPAIR",
+    "critical": 0,
+    "required": 3,
+    "independent_tests": 12,
+    "independent_seconds": 1.321,
+    "reviewed_actual_bytes": "2raw+2manifest+2records originals/initialRestore exact;4archivedsourcehashes verified",
+    "findings": [
+      {
+        "id": "R1",
+        "finding": "TPEx ---- token misclassified INVALID",
+        "fix": "Add token; preserve original records and code; explicit legacy QC version replay; separate new QC reassessment",
+        "RED": "test_review_missing_four_dash_retained_as_missing",
+        "verification": "GREEN; initialTPExQC_FAILED retained, newQC_EXCEPTIONS27missing; independent-processrestore replays initialQC and reportscurrent separately"
+      },
+      {
+        "id": "R2",
+        "finding": "Content-Length mismatch acceptedcomplete",
+        "fix": "Validate declared length in fetch and archive; missing header explicitly UNKNOWN, not a declared-length verification",
+        "RED": "test_review_content_length_short_read_incomplete",
+        "verification": "GREEN; short-read not complete; noheader testUNKNOWN"
+      },
+      {
+        "id": "R3",
+        "finding": "Retry could silently recreate lost committedraw",
+        "fix": "verified_record reader checks full dependencies before snapshot writes; only unpublished interruptedrecord can recover",
+        "RED": "test_review_missing_committed_raw_never_silent_retry_repair",
+        "verification": "GREEN; raw staysabsent; interrupted unpublishedrecord recovery stillPASS"
+      }
+    ],
+    "repairs_used": 1,
+    "max_repairs": 1,
+    "author_postrepair_verification": "ALL3_REQUIRED_RESOLVED_BY_25_TARGETED_TESTS_AND_SEPARATE_PROCESS_ACTUAL_RESTORE",
+    "remaining_known_required": 0,
+    "second_independent_review": false,
+    "postrepair_independent_GO": "NOT_REQUESTED_UNDER_ONE_REVIEW_LIMIT",
+    "no_repair_network_requests": true
+  },
+  "tests": {
+    "integration": 9,
+    "final_targeted": 25,
+    "new_collector_and_review_cases": 16,
+    "W17_regressions": 9,
+    "RED": "research/v7/window18-red.txt",
+    "review_RED": "research/v7/window18-review-red.txt",
+    "GREEN": "research/v7/window18-targeted-tests.txt",
+    "full_suite_repeat": false,
+    "fixture_correction": "Initialdifferentbodies reusedsame request/time andcorrectlyhitnoclobber; fixturetimes fixed, existingSnapshotcontract unchanged",
+    "preflight_script_correction": "cwd-relativepath error, correctedabsolute path beforeanyintegration/datawrites",
+    "diagnostic_log_presentation": "Committedcollisionlog whitespace-normalized fordiffcheck; exactoriginal retained in rootpilot artifactinventory"
+  },
+  "preservation": {
+    "old_protected_files_verified": 129,
+    "W16durable_files_verified": 5,
+    "W17officialfiles_verified": 8,
+    "Frozen": "No changedFrozenpaths; main integration fixedW17 identity verified",
+    "W12HALTED": "protectedhashes unchanged"
+  },
+  "runtime": {
+    "environment": "existingW11 CPUoverlay, Python3.12.3",
+    "data_root_env": "UNSET",
+    "operational_data_realpath": "/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6",
+    "operational_payload_read": false,
+    "GPU_calls": 0,
+    "new_network_sources": 0,
+    "scheduler_changes": 0
+  },
+  "gates": {
+    "strict_phase0": "STOP",
+    "e1_frozen_matrix": "BLOCKED",
+    "h2": "NOT_APPROVED",
+    "historical_exploratory_study": "PROPOSED",
+    "forward_collector_activation": "NOT_APPROVED",
+    "w12_gpu": "SAFETY_HALTED",
+    "fair_evaluation": "PROPOSED",
+    "pre_next_open": "PROPOSED",
+    "inference_recovery": "DEFERRED"
+  },
+  "manual_authorization_clarification": "Only completed W18 one-shot pilot approved; forward_collector_activation remains NOT_APPROVED forDAILY/UNATTENDED",
+  "knowledge_update": "CurrentState/AuthorityMapJSON+MD/soleBacklog/WorktreeRegister/DecisionRecord/Data+Operations domain",
+  "daily_candidate": "research/v7/window18-daily-activation-candidate.json",
+  "remaining_authorized_execution": "NONE_STOP",
+  "artifact_hashes": {
+    "V6/experimental/v7_csv_capture_qc.py": {
+      "sha256": "3a590f7f336bff394db23c55a6afcde1a1c7d3eb1c1bdacf78fdb06e0bf4ddd9",
+      "bytes": 3846
+    },
+    "V6/experimental/v7_manual_collector.py": {
+      "sha256": "75f0aedf701a765b2a448c312b606f362db6a0460bf200188c90e1b909a73bf8",
+      "bytes": 14703
+    },
+    "V6/experimental/v7_manual_collector_test.py": {
+      "sha256": "4baca4771600288d134b72cfa329d6f0f3ed6250b57a3b6e3f6a7db9fd6a2f30",
+      "bytes": 8230
+    },
+    "knowledge/00_Project_Map/Authority_Map.md": {
+      "sha256": "4475a1a49b862d2c5ca01b36fe86cf98d1496b6f192c9f8698cb900837df01d7",
+      "bytes": 66088
+    },
+    "knowledge/00_Project_Map/Current_State.md": {
+      "sha256": "60cae0ca6e283c5f244c8dfb2ae2905f81550fbf64bbff8bf7c00ae886d9deb3",
+      "bytes": 80146
+    },
+    "knowledge/00_Project_Map/Worktree_Register.md": {
+      "sha256": "cc774aec85b520a6169ad5bf891dcf11da2b00d73b714ac3739fef0f5df2a24b",
+      "bytes": 39475
+    },
+    "knowledge/00_Project_Map/authority-map.json": {
+      "sha256": "7abb79492e1db93e346cdcc0ddd6d3ec3bb5839a430ff95cef78d67b7f451aa1",
+      "bytes": 32655
+    },
+    "knowledge/01_Domains/Data.md": {
+      "sha256": "0463ee5c9f764d626e369783c62d4f46ad4cccbf6c3e5ee980a5511677f8b387",
+      "bytes": 10286
+    },
+    "knowledge/01_Domains/Operations.md": {
+      "sha256": "e8a13c7a34daf07352987d103e2c3b4f76c90899456c75af4e705d447618a97a",
+      "bytes": 8831
+    },
+    "knowledge/02_History/Decisions/20261024-window18-manual-collector.json": {
+      "sha256": "69d3628d51ba7d72e3b44bd5ca5edc67be86192a18907f258c4bd177da51e133",
+      "bytes": 1041
+    },
+    "reports/v7_window18_manual_pilot.md": {
+      "sha256": "ecd43e7e4404f399244728bb6f1b94af005b616ee67c1cd2a026e07fc4508b6d",
+      "bytes": 5259
+    },
+    "research/v7/research-program.md": {
+      "sha256": "fde5576562211323235daeb0e585eb74103c7abe8a35d4740376c5156578b90b",
+      "bytes": 84896
+    },
+    "research/v7/window18-capture-results.json": {
+      "sha256": "e998229fb201b4d89a494bd543e2a55037f1ee4447ada2c5e24d8c363f3638f8",
+      "bytes": 11697
+    },
+    "research/v7/window18-daily-activation-candidate.json": {
+      "sha256": "4d84e7bcfe93b4fe3aa7c2863d1985ad0fe65cd5c970c9bdd9dd68e2439250e9",
+      "bytes": 1500
+    },
+    "research/v7/window18-fixture-collision-diagnostic.txt": {
+      "sha256": "d9f6cb95dee7153d10ad4d8310de4531e7c68f7de4837477f1e189ace2e002c4",
+      "bytes": 19792
+    },
+    "research/v7/window18-initial-green.txt": {
+      "sha256": "3eba8f991388d57797a7018a199ced94858c5f503bd0e992f8821ecdd4883d59",
+      "bytes": 2205
+    },
+    "research/v7/window18-initial-restore.json": {
+      "sha256": "9a5e67927756d1d57a974f397e4491d190b8768732550a2291d6250379a278e5",
+      "bytes": 785
+    },
+    "research/v7/window18-integration-tests.txt": {
+      "sha256": "e53a112bc580ef9eeff9a0debd844592175b862380775932d107d9bfe5eb68aa",
+      "bytes": 97
+    },
+    "research/v7/window18-knowledge-health.txt": {
+      "sha256": "bf93f67ea1dfe58182f4c71dd1f609a034debb6e81c2599949e554cb6c78863c",
+      "bytes": 237
+    },
+    "research/v7/window18-knowledge-impact.txt": {
+      "sha256": "cec54866840baee80811d9b3dfad944e3504b5d135a929cb948c7f1b672e8432",
+      "bytes": 4689
+    },
+    "research/v7/window18-local-artifacts.json": {
+      "sha256": "6345a4f69ba748e7ef0b16ad236bac54cfa6637c3f0e6e128b1e8b0ceefa8cbc",
+      "bytes": 10239
+    },
+    "research/v7/window18-pilot-config.json": {
+      "sha256": "154ecdd2ef774a8b02ec115204166d7ac1c661ff322ac5e4d91f7a4f58f35480",
+      "bytes": 2053
+    },
+    "research/v7/window18-qc-reassessment.json": {
+      "sha256": "765433a075f28174cbdf2c5c297a205259d4f7c93f091509d22ef019a1470112",
+      "bytes": 7994
+    },
+    "research/v7/window18-red.txt": {
+      "sha256": "f8c5853f45bb858690c6e433de9a861925c36bc49f18159165c92d0496c10d36",
+      "bytes": 916
+    },
+    "research/v7/window18-review-red.txt": {
+      "sha256": "926870785af4847be5c98c338dd41f71c0bf39ff1265bce5e2e908c10f9d8962",
+      "bytes": 2565
+    },
+    "research/v7/window18-review.json": {
+      "sha256": "68c297f96e27345e40105115b99a0ac142d9f8368501eca736b036c8d2dc9aa2",
+      "bytes": 1902
+    },
+    "research/v7/window18-reviewed-restore.json": {
+      "sha256": "4b883570e4081dc7d931718b42e01e145926854f5c2273fab6b6058e00b685ac",
+      "bytes": 1125
+    },
+    "research/v7/window18-targeted-tests.txt": {
+      "sha256": "1194ef4acb43dbabb8e854036d70a225a04657e485271a8280c248f9e45e509d",
+      "bytes": 4306
+    }
+  },
+  "knowledge_health": {
+    "status": "WARNING",
+    "structural_failures": 0,
+    "retained_warning_components": [
+      "Governance",
+      "Authority Drift",
+      "Legacy Docs"
+    ]
+  },
+  "usage_snapshot": {
+    "tool_goal_tokens_used": 153415,
+    "tool_goal_elapsed_seconds": 1207,
+    "certified_billing_cost": false,
+    "hard_aggregate_token_or_wallclock_budget": false,
+    "scope_limits": "2units/oneindependentreview/oneevidencedrepair; 2realGETtotal; timeout40secpernetworkprocess"
+  }
+}

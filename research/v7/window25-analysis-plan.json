@@ -1,0 +1,18 @@
+{
+ "schema":"w25-fixed-robustness-audit-plan-v1",
+ "scope":"READ_ONLY_EXISTING_W24_PREDICTIONS_NO_FIT_NO_NEW_DATA_NO_POLICY_CHANGE",
+ "input_commit":"90b1327560f717727ad3fd53dfe86cb421c70f5b",
+ "groups":["2022/5d","2022/10d","2023_EXPOSED_DIAGNOSTIC/5d","2023_EXPOSED_DIAGNOSTIC/10d"],
+ "original_policy":"W24AVERAGEties,minN20,EQUAL_SESSION unchanged; pairedidenticalstock/session/horizon/label support",
+ "summaries":["mean","median","sample_std_ddof1","q10/q25/q75/q90","positive/negative/zero fraction","dailyN","score/labelties","missing/skipped sessions","lag1/5/10 autocorrelation descriptive only"],
+ "bootstrap":{"method":"EXISTING_E1_CIRCULAR_MOVING_BLOCK_bootstrap_lower; upper=-lower(-values)","block_lengths":[10,20],"replicates":2000,"seed_base":2501,"seed_rule":"base+group_index*100+block_length; same sequence for pairedvectors","interval":"2.5/97.5percentile exploratory sensitivity bounds only","vectors":["RidgeDailyRankIC","RidgeMinusL0DailyRankIC"],"finite_contiguous_check":"rejectNaN/gaps rather than inheritedhelper compression","assumptions":"withinperiod approximate stationarity; circular wrap artificially joins period end/start; longregime dependence may remain; no multiplicity/coverage/significance certification"},
+ "security_influence":{"method":"leaveeachof33evaluatedsecuritiesoutusingfixedpredictions,noFit,recomputeW08RankICwithunchangedminN20andties","dates":"retainoriginalrequesteddateledger, reportanyundefinedafterdeletion","no_selection":"no security deletion or recohorting authorized"},
+ "date_concentration":{"method":"describe top5positiveRidge days and their removal effect on original dailymean; only sensitivity, never revised performance/cleaningrule"},
+ "actions":{"method":"existingrawquotes/labels and storedactionevidenceonly; p0/p1/p50/p99/p100 labeldescriptives andtop10absolute label cases private; no invented cutoff or filtering","event_sensitivity":"only if datedqualifiedknownaction records exist; otherwise UNKNOWN/NOT_ESTIMABLE","no_adjusted_data_or_fill":true},
+ "classification":"qualitative bounded evidence judgment, no formal acceptance threshold: confirmedcrossperiodleakage=>LEAKAGE_OR_DATA_CONTAMINATED; identityorcoveragefailure=>INSUFFICIENT_EVIDENCE; sign reversals in majority/median/single-security/date sensitivity=>SIGNAL_FRAGILE; consistentpositive descriptiveswithengineeringintegrity=>ENGINEERING_VALID_WITH_EXPLORATORY_SIGNAL (conditional rawproxy only). Bootstrap bounds not approval gates; PIT/actionsUNKNOWN always retained.",
+ "network_requests":0,
+ "fit_refit":0,
+ "CPU_process_timeout_seconds":300,
+ "W19":"NO_OPERATIONS",
+ "research_admitted":false
+}

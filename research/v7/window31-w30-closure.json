@@ -1,0 +1,139 @@
+{
+  "status": "W30_CLOSURE_RECONCILED_GO",
+  "pins": 38,
+  "daily": 970,
+  "defined_daily": 940,
+  "undefined_daily": 30,
+  "paired": 2910,
+  "defined_paired": 2820,
+  "undefined_paired": 90,
+  "groups": [
+    {
+      "year": 2022,
+      "horizon": 5,
+      "requested": 246,
+      "defined": 241,
+      "undefined": 5,
+      "undefined_sessions": [
+        "2022-12-26",
+        "2022-12-27",
+        "2022-12-28",
+        "2022-12-29",
+        "2022-12-30"
+      ],
+      "mean_from_saved_defined_daily": 0.018813644145876093,
+      "zero_in_mean": false
+    },
+    {
+      "year": 2022,
+      "horizon": 10,
+      "requested": 246,
+      "defined": 236,
+      "undefined": 10,
+      "undefined_sessions": [
+        "2022-12-19",
+        "2022-12-20",
+        "2022-12-21",
+        "2022-12-22",
+        "2022-12-23",
+        "2022-12-26",
+        "2022-12-27",
+        "2022-12-28",
+        "2022-12-29",
+        "2022-12-30"
+      ],
+      "mean_from_saved_defined_daily": -0.012617016802600613,
+      "zero_in_mean": false
+    },
+    {
+      "year": 2023,
+      "horizon": 5,
+      "requested": 239,
+      "defined": 234,
+      "undefined": 5,
+      "undefined_sessions": [
+        "2023-12-25",
+        "2023-12-26",
+        "2023-12-27",
+        "2023-12-28",
+        "2023-12-29"
+      ],
+      "mean_from_saved_defined_daily": 0.02118237630917113,
+      "zero_in_mean": false
+    },
+    {
+      "year": 2023,
+      "horizon": 10,
+      "requested": 239,
+      "defined": 229,
+      "undefined": 10,
+      "undefined_sessions": [
+        "2023-12-18",
+        "2023-12-19",
+        "2023-12-20",
+        "2023-12-21",
+        "2023-12-22",
+        "2023-12-25",
+        "2023-12-26",
+        "2023-12-27",
+        "2023-12-28",
+        "2023-12-29"
+      ],
+      "mean_from_saved_defined_daily": -0.013373849460275035,
+      "zero_in_mean": false
+    }
+  ],
+  "extra_status": "N0 tail/maturity labels; rank_ic/delta None; never zero included in mean",
+  "structures": {
+    "10": {
+      "trees": 64,
+      "leaves_min_max": [
+        6,
+        7
+      ],
+      "split_nodes": 379,
+      "prediction_groups": {
+        "LightGBM|10|EXPOSED_DIAGNOSTIC": {
+          "n": 15136,
+          "unique_scores": 502,
+          "std": 0.004083054198226675,
+          "min": -0.011401294544100575,
+          "max": 0.026391406128599658
+        },
+        "LightGBM|10|VALIDATION": {
+          "n": 15227,
+          "unique_scores": 537,
+          "std": 0.004256446068460311,
+          "min": -0.011401294544100575,
+          "max": 0.026391406128599658
+        }
+      }
+    },
+    "5": {
+      "trees": 64,
+      "leaves_min_max": [
+        5,
+        7
+      ],
+      "split_nodes": 351,
+      "prediction_groups": {
+        "LightGBM|5|EXPOSED_DIAGNOSTIC": {
+          "n": 15136,
+          "unique_scores": 256,
+          "std": 0.002519297969822474,
+          "min": -0.016570942074996917,
+          "max": 0.017757334616446775
+        },
+        "LightGBM|5|VALIDATION": {
+          "n": 15227,
+          "unique_scores": 274,
+          "std": 0.0024972787513369084,
+          "min": -0.01599597692334489,
+          "max": 0.017757334616446775
+        }
+      }
+    }
+  },
+  "new_fit_API_RankIC_recalculation": 0,
+  "arithmetic_only_saved_metrics": true
+}

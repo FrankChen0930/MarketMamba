@@ -1,0 +1,40 @@
+======================================================================
+FAIL: test_missing_or_corrupt_intent_not_restorable_no_retry_repair (V6.experimental.v7_vintage_dryrun_test.VintageDryrunTest.test_missing_or_corrupt_intent_not_restorable_no_retry_repair) (corrupt=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window15-dual-track/V6/experimental/v7_vintage_dryrun_test.py", line 70, in test_missing_or_corrupt_intent_not_restorable_no_retry_repair
+    self.assertEqual(self.verify(r)['status'],'NOT_RESTORABLE');self.assertEqual(self.publish()['status'],'FAILED')
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'BYTES_VERIFIED_SYNTHETIC' != 'NOT_RESTORABLE'
+- BYTES_VERIFIED_SYNTHETIC
++ NOT_RESTORABLE
+
+
+======================================================================
+FAIL: test_missing_or_corrupt_intent_not_restorable_no_retry_repair (V6.experimental.v7_vintage_dryrun_test.VintageDryrunTest.test_missing_or_corrupt_intent_not_restorable_no_retry_repair) (corrupt=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window15-dual-track/V6/experimental/v7_vintage_dryrun_test.py", line 70, in test_missing_or_corrupt_intent_not_restorable_no_retry_repair
+    self.assertEqual(self.verify(r)['status'],'NOT_RESTORABLE');self.assertEqual(self.publish()['status'],'FAILED')
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'BYTES_VERIFIED_SYNTHETIC' != 'NOT_RESTORABLE'
+- BYTES_VERIFIED_SYNTHETIC
++ NOT_RESTORABLE
+
+
+======================================================================
+FAIL: test_missing_binding_no_retry_reconstruction (V6.experimental.v7_vintage_dryrun_test.VintageDryrunTest.test_missing_binding_no_retry_reconstruction)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/frank/projects/MarketMamba/.worktrees/v7-window15-dual-track/V6/experimental/v7_vintage_dryrun_test.py", line 75, in test_missing_binding_no_retry_reconstruction
+    self.assertEqual(self.verify(r)['status'],'NOT_RESTORABLE');self.assertEqual(self.publish()['status'],'FAILED');self.assertFalse(p.exists())
+                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'ALREADY_PUBLISHED' != 'FAILED'
+- ALREADY_PUBLISHED
++ FAILED
+
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.437s
+
+FAILED (failures=3)

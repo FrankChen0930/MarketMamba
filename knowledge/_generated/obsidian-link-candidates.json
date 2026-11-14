@@ -1,0 +1,7 @@
+{
+  "candidates": [],
+  "reason": "No readable vault was explicitly supplied.",
+  "schema_version": 1,
+  "status": "SKIPPED",
+  "vault_modified": false
+}

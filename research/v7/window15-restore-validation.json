@@ -1,0 +1,46 @@
+{
+  "schema": "window15-post-rework-restore-v1",
+  "observed_at": "2026-10-24T09:39:24.622111+00:00",
+  "source_sha256": "cc83beb4795cb2d86fcc8d09577f9f68c065460c6c77a3e2126d13f47a5cfd3f",
+  "validation_source": "final strengthened intent/binding/request/snapshot verifier",
+  "initial_dryrun_source_retained": {
+    "path": "/home/frank/projects/MarketMamba/.worktrees/v7-window15-dual-track/.artifacts/window15-synthetic-vintage/source-observed.py",
+    "sha256": "8a0e0c335b0103352f46cb6057fd24f2ba5b8cd70a0a642a5e15519af45c0265"
+  },
+  "checks": [
+    {
+      "case": "first_forward_fixture",
+      "key": "46f29db88f512d544b47ba68ea3b37b01afde498a4a5bbba0ccd441711ff78c1/7c0ea562026efb41430aae9c393b3b034b6ee50ea7ab80e110887d3450d670ff",
+      "status": "BYTES_VERIFIED_SYNTHETIC",
+      "intent_present_verified": true
+    },
+    {
+      "case": "idempotent_same_content",
+      "key": "46f29db88f512d544b47ba68ea3b37b01afde498a4a5bbba0ccd441711ff78c1/7c0ea562026efb41430aae9c393b3b034b6ee50ea7ab80e110887d3450d670ff",
+      "status": "BYTES_VERIFIED_SYNTHETIC",
+      "intent_present_verified": true
+    },
+    {
+      "case": "recover_revision",
+      "key": "46f29db88f512d544b47ba68ea3b37b01afde498a4a5bbba0ccd441711ff78c1/957738d7bcef238618d193841be996e1f01330a15cf8e38ef29ceb69cf3fb0cf",
+      "status": "BYTES_VERIFIED_SYNTHETIC",
+      "intent_present_verified": true
+    },
+    {
+      "case": "late_duplicate",
+      "key": "46f29db88f512d544b47ba68ea3b37b01afde498a4a5bbba0ccd441711ff78c1/957738d7bcef238618d193841be996e1f01330a15cf8e38ef29ceb69cf3fb0cf",
+      "status": "BYTES_VERIFIED_SYNTHETIC",
+      "intent_present_verified": true
+    },
+    {
+      "case": "historical_backfill_preserves_missing_event",
+      "key": "46f29db88f512d544b47ba68ea3b37b01afde498a4a5bbba0ccd441711ff78c1/b35d31226a7309a8ddfe718a4ef8d3efb65499f5eaf5dd703b4ed2daf9a5ba5a",
+      "status": "BYTES_VERIFIED_SYNTHETIC",
+      "intent_present_verified": true
+    }
+  ],
+  "no_initial_report_or_bytes_rewritten": true,
+  "raw_market_data_used": false,
+  "research_admitted": false,
+  "full_reproduction_ready": false
+}

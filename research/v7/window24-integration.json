@@ -1,0 +1,14 @@
+{
+  "before": "7027f03ebdb7b7b3bd90bc2bf5ce97a4c267c470",
+  "fixed_source": "87af76b038fcbbda9e1e4b3a4349e693a3b1ba48",
+  "after": "87af76b038fcbbda9e1e4b3a4349e693a3b1ba48",
+  "method": "ff-only",
+  "review": "W23GO0CriticalRequired",
+  "focused_tests": 26,
+  "prior_local_files": 55,
+  "prior_deliverables": 25,
+  "raw_restore_reverified": true,
+  "main_source_clean": true,
+  "extra_main_closure_commit": false,
+  "W19operations": 0
+}

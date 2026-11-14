@@ -1,0 +1,102 @@
+{
+  "status": "W31_BOUNDED_INTEGRATION_CHECKS_PASS",
+  "before_main": "b64ac353833a9248121f12ebe61e1333decb2dbf",
+  "fixed_candidate": "67e2d25a710273646d41c0ad861b4a993593ba4d",
+  "restored_files": 72,
+  "per_copy_bytes": 91000410,
+  "review": "GO Critical0 Required0",
+  "role_views_verified": 24,
+  "models_identity_verified": 24,
+  "mature_refit_differences": [
+    {
+      "origin": "2023-01-03",
+      "horizon": "5",
+      "train": 14113,
+      "validation": 14816,
+      "refit": 29229,
+      "additional": 300,
+      "reason": "TRAIN boundary-excluded labels became mature before origin; earlier signals, not forward labels"
+    },
+    {
+      "origin": "2023-01-03",
+      "horizon": "10",
+      "train": 13711,
+      "validation": 14435,
+      "refit": 28743,
+      "additional": 597,
+      "reason": "TRAIN boundary-excluded labels became mature before origin; earlier signals, not forward labels"
+    },
+    {
+      "origin": "2023-04-06",
+      "horizon": "5",
+      "train": 17559,
+      "validation": 14710,
+      "refit": 32574,
+      "additional": 305,
+      "reason": "TRAIN boundary-excluded labels became mature before origin; earlier signals, not forward labels"
+    },
+    {
+      "origin": "2023-04-06",
+      "horizon": "10",
+      "train": 17143,
+      "validation": 14293,
+      "refit": 32046,
+      "additional": 610,
+      "reason": "TRAIN boundary-excluded labels became mature before origin; earlier signals, not forward labels"
+    },
+    {
+      "origin": "2023-07-03",
+      "horizon": "5",
+      "train": 21321,
+      "validation": 14645,
+      "refit": 36276,
+      "additional": 310,
+      "reason": "TRAIN boundary-excluded labels became mature before origin; earlier signals, not forward labels"
+    },
+    {
+      "origin": "2023-07-03",
+      "horizon": "10",
+      "train": 20890,
+      "validation": 14205,
+      "refit": 35715,
+      "additional": 620,
+      "reason": "TRAIN boundary-excluded labels became mature before origin; earlier signals, not forward labels"
+    }
+  ],
+  "replay_record_verified": {
+    "daily": 7264,
+    "fits": 0,
+    "no_Ridge_or_LGBM_refit": true,
+    "origins": [
+      {
+        "fits": {
+          "LightGBM": 4,
+          "Ridge": 4
+        },
+        "origin": "O1",
+        "status": "COMPLETE"
+      },
+      {
+        "fits": {
+          "LightGBM": 4,
+          "Ridge": 4
+        },
+        "origin": "O2",
+        "status": "COMPLETE"
+      },
+      {
+        "fits": {
+          "LightGBM": 4,
+          "Ridge": 4
+        },
+        "origin": "O3",
+        "status": "COMPLETE"
+      }
+    ],
+    "paired": 10896,
+    "prediction_rows": 453192,
+    "status": "INDEPENDENT_PROCESS_REPLAY_PASS"
+  },
+  "new_fit_API_RankIC": 0,
+  "W19_operations": 0
+}

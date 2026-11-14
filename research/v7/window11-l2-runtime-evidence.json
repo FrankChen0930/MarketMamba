@@ -1,0 +1,30 @@
+{
+  "schema": "v7-window11-runtime-bound-l2-v1",
+  "evidence_class": "SYNTHETIC",
+  "source_commit": "e28ac62ed95007e246185c5c2a134d17a5d0e08b",
+  "bundle_root": "research/v7/window11-l2-synthetic-bundle",
+  "run_key": "8c22c581b0831cbfff82cf5ce52b1f8be2c89b84e15a2306ee6f9c392d325d82",
+  "manifest_sha256": "399413af9ece833471a1a5d610cad2c808e79ec8bf145cd2921a1ee83fe50e57",
+  "run_id": "forward-L2-e28ac62ed950",
+  "fit_status": "FITTED_TINY_SYNTHETIC_CPU",
+  "actual_l2_version": "4.6.0",
+  "replay": {
+    "report": "research/v7/window11-l2-runtime-replay.json",
+    "exit_code": 0,
+    "command": [
+      "-m",
+      "V6.experimental.v7_research_replay",
+      "--root",
+      "research/v7/window11-l2-synthetic-bundle",
+      "--run-key",
+      "8c22c581b0831cbfff82cf5ce52b1f8be2c89b84e15a2306ee6f9c392d325d82",
+      "--manifest-sha256",
+      "399413af9ece833471a1a5d610cad2c808e79ec8bf145cd2921a1ee83fe50e57",
+      "--output",
+      "research/v7/window11-l2-runtime-replay.json"
+    ],
+    "sha256": "130b17cc49455053d4e843d2efa5b74a9965d7dcc5990cfae7bdec82f330fa57"
+  },
+  "supersedes_navigation_only": "research/v7/window11-l2-evidence.json: initial source snapshot retained unchanged, replay requires its exact code snapshot; no historical artifact overwritten",
+  "research_admitted": false
+}

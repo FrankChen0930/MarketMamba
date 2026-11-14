@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "classification": "GENERATED_DISCOVERY_NOT_CANONICAL",
+  "components": [
+    {"name":"temporal Mamba2","path":"V6/experimental/v7_corrected_e5_model.py","current_use":"corrected E5/E1","research_use":"per-stock temporal encoding","deprecated":false,"tests":["corrected E5 model/runner tests"]},
+    {"name":"cross-stock forward","path":"V6/experimental/v7_corrected_e5_model.py","current_use":"corrected E5/E1","research_use":"S-Mamba cross-sectional pass","deprecated":false,"tests":["shape/contract tests"]},
+    {"name":"cross-stock reverse","path":"V6/experimental/v7_corrected_e5_model.py","current_use":"corrected E5/E1","research_use":"bidirectional cross-stock pass","deprecated":false,"tests":["shape/contract tests"]},
+    {"name":"dual 5d/10d heads","path":"V6/experimental/v7_corrected_e5_model.py","current_use":"corrected E5/E1","research_use":"two horizon regression heads","deprecated":false,"tests":["training/evaluation tests"],"finding":"extended diagnostic found heads nearly redundant"},
+    {"name":"graph branch","path":"V6/marketmamba/models","current_use":"legacy V6","research_use":"legacy GAT fusion","deprecated":true,"tests":[],"finding":"explicitly absent from corrected V7"},
+    {"name":"corrected trainer","path":"V6/experimental/v7_corrected_e5_train.py","current_use":"E1 reused training loop","research_use":"train/evaluate/checkpoint emission","deprecated":false,"tests":["corrected E5 train tests"]},
+    {"name":"E1 runner","path":"V6/experimental/v7_e1_run.py","current_use":"current E1 authority","research_use":"contract validation, resume, seed execution","deprecated":false,"tests":["V6/experimental/v7_e1_*_test.py"]},
+    {"name":"E1 checkpoint store","path":"V6/experimental/v7_e1_checkpoint.py","current_use":"durable resume","research_use":"latest/previous validation and orphan recovery","deprecated":false,"tests":["checkpoint tests"]},
+    {"name":"original corrected replication resume","path":"V6/experimental/v7_corrected_e5_train.py","current_use":"superseded for new E1 packaging","research_use":"seed17/29 outputs and incomplete seed43","deprecated":true,"tests":[],"finding":"seed43 pointer/generation regression; orphan checkpoint was loadable but final result incomplete"}
+  ],
+  "architecture_conflict":{"draft":"research/v7/corrected-baseline-v1/architecture-config.json reports d_model=32,d_state=8","completed_authority":"incumbent contract resolves d_model=64,d_state=32","rule":"completed final result > final runner > remediation > draft","human_review":false}
+}

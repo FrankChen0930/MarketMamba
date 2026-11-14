@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "evidence_class": "OFFLINE_SYNTHETIC_ENGINEERING",
+  "artifact_class": "GENERATED",
+  "base_commit": "7eb9cd9027a312a06d526666e4ad31d2255ff4f2",
+  "branch": "development/v7-cpu-window-01",
+  "main": "83a6a2e6f4a56db318ee07e7e737cc01de3ce48e",
+  "contract": "docs/superpowers/specs/2026-09-16-v7-replayable-portfolio-engine-design.md",
+  "runtime": {
+    "python": "3.12.3",
+    "gpu": "not used",
+    "data": "synthetic temporary fixtures only",
+    "aggregate_usage": "not independently verified",
+    "goal_thread": "01a15a57-babe-79e2-9d27-018f19698e0e",
+    "goal_createdAt": 1792517093,
+    "continuation": "current V7 binding observed; future automatic continuation not exercised"
+  },
+  "units": {
+    "U1": {
+      "status": "COMPLETED_VERIFIED",
+      "commit": "735ae6f",
+      "initial_fix_rounds": 1,
+      "review_rework_rounds": 0,
+      "red": {
+        "tests": 4,
+        "failures": 25,
+        "seconds": 0.657
+      },
+      "green": {
+        "tests": 47,
+        "seconds": 1.913
+      },
+      "independent": {
+        "green_tests": 47,
+        "seconds": 2.158,
+        "old_source_failures": 25,
+        "review": "no Critical/Required/Optional",
+        "agent": "u1_review"
+      },
+      "governance": {
+        "tests": 23,
+        "seconds": 0.087
+      },
+      "knowledge_health": "WARNING, no structural FAIL",
+      "sha256": {
+        "V6/experimental/v7_portfolio_journal.py": "ee5fe1d3cc44cba785061f8112c0bdfec1995f43934d006c2515e8991eac1f64",
+        "V6/experimental/v7_portfolio_journal_test.py": "dde0d74b053c62f0fd3c0be52982664a96109ec80075db34f44c5527f0d85e98",
+        "research/v7/cpu-window-02-u1-governance.txt": "912abe5762888a3f26cf409f3f4c81b20c2abce2f662437b4f1e3538abddfce0",
+        "research/v7/cpu-window-02-u1-independent-red.txt": "01bd7fca115c2715728b16b9d12c6d6717d6c212c028d019fbdd7c5cb044fa0d",
+        "research/v7/cpu-window-02-u1-green.txt": "e323939beb39853eec3967fd3b25217369b0c1bf017386907b4cf8ec1a2e515b",
+        "research/v7/cpu-window-02-u1-independent-green.txt": "dc97602cf34c5f2d00f2d9e88b79427230da407cf9ea0acf730d54ade43107f5",
+        "research/v7/cpu-window-02-u1-red.txt": "bc08d1347ba3ffc594f6f1cfb7744be400d5738d24db288e8f233110a4cc8513"
+      }
+    },
+    "U2": {
+      "status": "COMPLETED_VERIFIED",
+      "base_commit": "735ae6f",
+      "commit": "cd5c83adb84a91f4baa2bba43340cc1401426983",
+      "initial_fix_rounds": 1,
+      "review_rework_rounds": 0,
+      "red": {
+        "tests": 3,
+        "failures": 45,
+        "seconds": 0.451
+      },
+      "green": {
+        "tests": 60,
+        "seconds": 2.304
+      },
+      "independent": {
+        "tests": 60,
+        "seconds": 2.253,
+        "old_source_failures": 45,
+        "red_seconds": 0.502,
+        "agent": "u1_review",
+        "review": "no Critical/Required/Optional"
+      },
+      "pit": {
+        "tests": 47,
+        "seconds": 1.053
+      },
+      "governance": {
+        "tests": 23,
+        "seconds": 0.195
+      },
+      "sha256": {
+        "V6/experimental/v7_portfolio_journal.py": "45d2fed51a4696db6897c71f98a8de44c1e0d3f7fdac4e00b741af8505c65f5a",
+        "V6/experimental/v7_portfolio_journal_test.py": "83e1dae9634e13bdfe3550ecffa3de38549d1462539681d89b377db12ccc4911",
+        "research/v7/cpu-window-02-u2-red.txt": "16bde4fc7e4368860a44dce08d308890a580838606183bbc89e5cd5dc0670ea7",
+        "research/v7/cpu-window-02-u2-independent-green.txt": "3745f63eddffaab511da8354b11510dbd3b837ea984933ee888cc49620ddf242",
+        "research/v7/cpu-window-02-u2-independent-red.txt": "669bbeb0ac4e3776578af3a09bcabc5b59ce2c6c6f840f5e26b335ed1af1caa6",
+        "research/v7/cpu-window-02-final-governance.txt": "a33af3f52a5794a838a6b549ee4dd56acca3bf5923857ddbd938ce6302b30dbb",
+        "research/v7/cpu-window-02-final-portfolio.txt": "a654a823cc9851b6ae4859b7f77d2b8d4ddb97c32f4f4ee6d42ee49a7f5cb63e",
+        "research/v7/cpu-window-02-final-pit.txt": "74954ae889c729ad2bfe1fe26634078b458dcb390fe00b2d49a9878a6cbc0c2f",
+        "research/v7/cpu-window-02-final-health.txt": "bf93f67ea1dfe58182f4c71dd1f609a034debb6e81c2599949e554cb6c78863c"
+      },
+      "knowledge_health": "WARNING: Governance, Authority Drift, Legacy Docs; no structural FAIL"
+    }
+  },
+  "human_decisions": 0,
+  "research_approval": false,
+  "production_approval": false,
+  "strict_phase0": "STOP",
+  "e1_matrix": "BLOCKED",
+  "model_identity": "N/A no model used",
+  "split_support": "N/A synthetic journal fixtures",
+  "limits": [
+    "No full training/repository suite",
+    "No power-loss/network filesystem certification",
+    "Normalized persisted collision already refused by previous reader; regression only"
+  ],
+  "status": "WINDOW_COMPLETE_UNMERGED_NOT_DEPLOYED",
+  "goal_intermediate_observation": {
+    "updatedAt": 1792517386,
+    "tokensUsed": 126706,
+    "timeUsedSeconds": 287,
+    "interpretation": "API-reported intermediate values, not verified aggregate across agents"
+  },
+  "closure_preparation_observed_at": "2026-10-20T17:30:37Z",
+  "wall_seconds_to_closure_preparation": 344,
+  "remaining_ready": [],
+  "protected_main_matches": {
+    "research/v7/v7_phase0_correctness_evidence.json": "ed45ac8e12cbbdc09333acd94c5bb4517a32111f8716b8cb81db1f6759c7d62e",
+    "reports/v7_phase0_correctness_audit.json": "21d48954a419c2a0868eda06645d9826c990d5d079e03e6a374dcb8f78282f3c",
+    "research/v7/e1-rolling-origin-refresh-v1/experiment-contract.json": "7a59d98744ac736e915ff5f6e0e8fead2f80f5ce7f8283b467ec0464bffe8d4c"
+  },
+  "preserved_legacy_audit": {
+    "status": "STOP",
+    "blockers": 6,
+    "interpretation": "historical gate regression, not replacement of corrected E5/E1 authority"
+  },
+  "verification_commands": {
+    "portfolio": "PYTHONDONTWRITEBYTECODE=1 CUDA_VISIBLE_DEVICES= python3 -B -W error::ResourceWarning -m unittest V6.experimental.v7_portfolio_contract_test V6.experimental.v7_portfolio_engine_test V6.experimental.v7_portfolio_journal_test V6.experimental.v7_portfolio_process_test V6.experimental.v7_health_summary_test V6.experimental.v7_correctness_audit_test -v",
+    "pit": "PYTHONDONTWRITEBYTECODE=1 CUDA_VISIBLE_DEVICES= /home/frank/projects/MarketMamba/.worktrees/v7-e1-colab-recovery/.venv/bin/python -B -W error::ResourceWarning -m unittest V6.experimental.v7_source_snapshot_test V6.experimental.v7_temporal_contract_test V6.experimental.v7_executable_labels_test V6.experimental.v7_ohlcv_provenance_test V6.experimental.v7_historical_security_master_test V6.experimental.v7_historical_label_materialize_test -v",
+    "governance": "python3 -B -m unittest tools.project_knowledge.test_knowledge_governance -v",
+    "health": "python3 -B tools/project_knowledge/knowledge_health.py --ci --as-of 2026-10-21"
+  },
+  "post_commit_verification": {
+    "committed_hashes_passed": 16,
+    "main_clean": true,
+    "candidate_clean_at": "cd5c83adb84a91f4baa2bba43340cc1401426983",
+    "full_range_diff_check": "2 raw unittest RED log trailing-whitespace warnings; preserved evidence",
+    "source_tests_knowledge_diff_check": "PASS excluding only the two raw RED log files",
+    "knowledge_health": "WARNING, no structural FAIL"
+  }
+}

@@ -1,0 +1,643 @@
+{
+  "schema_version": "marketmamba-current-state-v1",
+  "status": "CANONICAL_CURRENT_PROJECT_MAP",
+  "owner": "Human + project agents",
+  "cpu_development_window_01": {
+    "branch": "development/v7-cpu-window-01",
+    "base_commit": "11ae71d1a3ea7f68ed10d5623bc9d639689e4e8b",
+    "status": "WINDOW_COMPLETE_UNMERGED_NOT_DEPLOYED",
+    "plan": "tasks/v7-cpu-development-window-01.md",
+    "authority": "Current Human CPU-only bounded engineering request; no research approval",
+    "unit_limit": 3,
+    "units": {
+      "U1": "COMPLETE: 35 portfolio tests passed; independent 35 PASS, no Required/Critical findings",
+      "U2": "COMPLETE: independent 38 PASS; no Required/Critical findings",
+      "U3": "COMPLETE: five real-process cases; independent combined 43 PASS; no Required/Critical"
+    },
+    "evidence": "research/v7/cpu-window-01-evidence.json",
+    "final_tests": {
+      "portfolio_health_audit": 53,
+      "pit": 47,
+      "governance": 23
+    },
+    "next_ready": "Reproduced normalized quote collision silently overwrites input; not fixed. Journal should reject as existing engine does.",
+    "strict_phase0": "STOP",
+    "e1_matrix": "BLOCKED_IDENTITY_MATCHED_MATRIX_NOT_RECOVERED",
+    "aggregate_usage": "UNAVAILABLE_OLD_GOAL_API_BINDING",
+    "historical_window_record": true,
+    "local_integration_status": "LOCAL_DEVELOPMENT_INTEGRATED",
+    "integration_commit": "4a66928aa4c9bd8a1ddf99a5b42866e9b22efb74"
+  },
+  "bounded_engineering_recovery": {
+    "historical_checkpoints_note": "Earlier reader/task4 entries below retain their observation-time status; current approval and Task5 state are in operations.",
+    "reader_contract_continuation": {
+      "base_commit": "8309ee366aea4c002f9a79d0d97d214b29578fcf",
+      "scope": "Unit A v1 reader path/schema/identity fail-closed validation",
+      "repair_rounds": 2,
+      "snapshot_tests_passed": 17,
+      "pit_tests_passed": 47,
+      "governance_tests_passed": 15,
+      "independent_review": "PASS_ENGINEERING_ONLY",
+      "research_approval": false,
+      "commit": "0a7928061755855faf9aeb55c1702e26a5a62a34",
+      "next_authorized_unit": "Completed Unit B evidence recovery; stop pending next bounded authorization"
+    },
+    "task4_evidence_recovery": {
+      "branch": "fix/phase-a-task4-evidence",
+      "base_commit": "f5b0ff3df7645098cc01a9eeb36f5df22c4a3e41",
+      "commit": "46df7b3402f85877a5fc55600d53b15a6f3a7849",
+      "evidence_path": "research/production-system/phase-a/task4-evidence-recovery.json",
+      "status": "ENGINEERING_EVIDENCE_RECOVERED_UNMERGED",
+      "fix": "Artifact summary aggregates each identity once across stage references",
+      "repair_rounds": 2,
+      "ops_tests_passed": 70,
+      "fetch_only_mock_tests_passed": 3,
+      "independent_review": "NO_REQUIRED_FINDINGS; round1 independent 70+3, round2 read-only review",
+      "correctness_approval": "NOT_ESTABLISHED",
+      "remaining_evidence": [
+        "Human Task4 correctness/sanitizer review",
+        "Separate Task5 crash/replay/overhead/formal acceptance"
+      ],
+      "isolation_follow_up": {
+        "commit": "1e119ef855f8fd319f774162beca0bd729d4b921",
+        "status": "TWO_ISOLATION_GAPS_CLOSED_HUMAN_REVIEW_READY_NOT_APPROVED",
+        "real_process_tests": 5,
+        "scenarios_including_negative_control": 12,
+        "ops_tests_passed": 75,
+        "fetch_only_mock_tests_passed": 3,
+        "production_code_changed": false,
+        "production_bug_found": false,
+        "independent_review": "5 tests / 12 scenarios PASS; no Required/Critical findings",
+        "task5": "NOT_STARTED"
+      }
+    },
+    "observed_on": "2026-10-20",
+    "base_commit": "50c5b785e8c373913c3301a056497eb955f36681",
+    "branch": "fix/v7-snapshot-immutability",
+    "status": "UNMERGED_NOT_DEPLOYED",
+    "milestone": "Immutable source snapshot conflict rejection and process-crash recovery",
+    "evidence_class": "OFFLINE_SYNTHETIC_ENGINEERING_AND_FAULT_INJECTION",
+    "snapshot_tests_passed": 10,
+    "pit_regression_tests_passed": 40,
+    "research_or_correctness_promotion": false,
+    "checkpoint": "knowledge/00_Project_Map/Current_State.md",
+    "next_bounded_candidate": "Stop replay; Human locate original matrix/manifest or provide exact archive path. No new matrix generation or training."
+  },
+  "observed_at": "2026-09-22T13:25:21+08:00",
+  "human_review": {
+    "accepted_at": "2026-09-20",
+    "context": "Prior research/Phase A navigation accepted 2026-09-20; 2026-09-22 runtime observations are agent-observed and not separately human-reviewed."
+  },
+  "repository_context": {
+    "branch": "main",
+    "basis_commit": "3b0df0f",
+    "source_basis": [
+      "reports/marketmamba_k0_project_knowledge_discovery.md",
+      "research/project-knowledge/k0/authority-map.json",
+      "research/project-knowledge/k0/boundary-map.json",
+      "research/project-knowledge/k0/contradictions.json",
+      "research/project-knowledge/k0/runtime-map.json",
+      "research/project-knowledge/k0/research-lineage.json"
+    ],
+    "governance_source": "integration/project-knowledge-k1@18152d0 plus research/v7-e1-postrun-diagnostics@1d8e23f; consolidated without merging research/runtime changes",
+    "operational_checkout": "D:\\Desktop\\work\\ProjectForMe\\MarketMamba@8b82a681e43148ff5ee6389c8cb4f6394f5360e5",
+    "development_checkout_at_observation": "/home/frank/projects/MarketMamba@3b0df0fd0baa56ab4784f7c2371f722ca49116e2"
+  },
+  "freshness": {
+    "runtime_observation_ttl_days": 7,
+    "runtime_observed_at": "2026-09-22T13:21:35+08:00",
+    "runtime_expires_at": "2026-09-29T13:21:35+08:00",
+    "expired_status": "STALE_OBSERVATION",
+    "repository_contract_expiry": "NONE; supersession or commit identity only",
+    "previous_scheduler_observation": "knowledge/runtime-observations/scheduler.json"
+  },
+  "production": {
+    "scheduler_path": {
+      "status": "ACTIVE",
+      "value": "MarketMamba_DataFetch -> wscript.exe -> run_hidden.vbs -> D: v62_daily.bat --fetch-only -> wsl -d Ubuntu -> mamba_env -> D: V6/run_v62_daily.py",
+      "authority_topic": "Scheduler state",
+      "observation": "knowledge/runtime-observations/scheduler-20260922T132135+0800.json"
+    },
+    "fetch_only": "ACTIVE",
+    "full_v62_schedule": "DISABLED",
+    "publication": "DISABLED_AS_SCHEDULED",
+    "manual_publication_state": "UNKNOWN",
+    "api_deployment": "UNKNOWN",
+    "frontend_deployment": "UNKNOWN",
+    "scheduler_last_run": {
+      "at": "2026-09-21T22:30:00+08:00",
+      "task_result": 0,
+      "log_exit": 0,
+      "log_finished_at": "2026-09-21T22:39:52+08:00"
+    },
+    "full_v62_last_run": {
+      "at": "2026-08-25T22:15:00+08:00",
+      "task_result": 255
+    },
+    "daily_source_freshness": {
+      "reference_date": "2026-09-21",
+      "matching_sources": 10,
+      "expected_sources": 10,
+      "class": "DATE_COMPLETENESS_ONLY",
+      "quality_warning": "stock-universe day-over-day delta +97800.0% from Sunday two-row observation"
+    }
+  },
+  "correctness": {
+    "reusable_pit_source": "IN_MAIN_RESEARCH_ONLY; six byte-identical primitives plus tests and static policy from e3bce91; source-adoption-register-20260922.json",
+    "historical_simulation_readiness": "PASS",
+    "strict_phase0": "STOP",
+    "verified_executable_labels": {
+      "5d": 0,
+      "10d": 0
+    },
+    "feature_contract": {
+      "name": "E5-PIT-Clean-v1",
+      "count": 48,
+      "graph": "DISABLED",
+      "industry_neutralization": "DISABLED",
+      "current_industry_backfill": false
+    },
+    "historical_label_class": "HISTORICAL_SIMULATION_PROXY",
+    "proxy_policy": "P0",
+    "trading_evidence": false
+  },
+  "research": {
+    "e1_evidence_recovery": {
+      "status": "STOP_REPLAY_MATRIX_IDENTITY_UNAVAILABLE",
+      "branch": "recovery/e1-frozen-evidence",
+      "source_base": "83a6a2e6f4a56db318ee07e7e737cc01de3ce48e",
+      "inventory": "research/v7/e1-rolling-origin-refresh-v1/evidence-recovery-20261021.json",
+      "verified_checkpoint_files": 6,
+      "verified_predictions": 2,
+      "verified_diagnostic_files": 7,
+      "matrix": "NOT_FOUND_IN_EXPLICIT_LOCAL_SCOPE; REMOTE_NOT_INSPECTED",
+      "payload_identity": "UNKNOWN_NOT_DESERIALIZED",
+      "replay_executed": false,
+      "next_gate": "Locate original identity-matched matrix and certify safe checkpoint inspection; no regeneration or training"
+    },
+    "corrected_baseline": "E5-PIT-Clean-v1",
+    "corrected_e5": {
+      "status": "COMPLETED_PARTIAL_ENSEMBLE",
+      "formal_seeds": [
+        17,
+        29
+      ],
+      "architecture": {
+        "d_model": 64,
+        "d_state": 32
+      }
+    },
+    "seed43": {
+      "status": "INCOMPLETE_EXCLUDED_FROM_FORMAL_CONCLUSIONS",
+      "stale_pointer_metadata": {
+        "best_epoch": 8,
+        "best_present": false,
+        "latest_present": false,
+        "previous_present": false
+      },
+      "surviving_orphan": {
+        "epoch": 15,
+        "step": 39915,
+        "terminal": false,
+        "contract_match": true,
+        "matrix_match": true,
+        "authority": "convergence evidence only"
+      },
+      "promotion_allowed": false,
+      "direct_resume_allowed": false,
+      "note": "Pointer metadata referenced missing generations; surviving orphan checkpoint is epoch 15 and is convergence evidence only."
+    },
+    "extended_diagnostic": "STOP_FOR_TRADING_CONTINUE_RESEARCH",
+    "e1": {
+      "status": "COMPLETED_RESEARCH_EXPERIMENT",
+      "outcome": "PASS_REFRESH_HYPOTHESIS",
+      "research_evidence_only": true,
+      "result_authority": "eec63c5:research/v7/e1-rolling-origin-refresh-v1/results/result-manifest.json",
+      "formal_seeds": [
+        17,
+        29
+      ],
+      "postrun_diagnostic": "ef020e5:research/v7/e1-postrun-diagnostic-v1/diagnostic-summary.json"
+    }
+  },
+  "operations": {
+    "architecture_audit": "COMPLETE_CURRENT_REFERENCE",
+    "phase_a_branch": "main@89f9496b7898fa559f63742592c2e67225242161",
+    "phase_a_status": "IN_DEVELOPMENT_MAIN",
+    "integration_closure": "research/production-system/phase-a/integration-closure.json",
+    "deployed": false,
+    "tasks": {
+      "task1_contracts_schema_migrations": "COMPLETED_REVIEWED",
+      "task2_transactional_store_lease_fencing": "COMPLETED_REVIEWED",
+      "task3_fetch_only_shadow_adapter": "COMPLETED_REVIEWED",
+      "task4_atomic_projection_read_only_cli": "HUMAN_APPROVED_LIMITED_ENGINEERING",
+      "task5_replay_formal_acceptance_report": "HUMAN_APPROVED_LIMITED_OFFLINE_ENGINEERING"
+    },
+    "blocker": "NONE_FOR_LOCAL_PHASE_A_INTEGRATION; PRODUCTION_NOT_AUTHORIZED",
+    "task5_human_decision": "knowledge/02_History/Decisions/20261021-task5-human-approval.json",
+    "engineering_readiness": "LOCAL_INTEGRATION_VERIFIED; LIMITED_ENGINEERING_ONLY",
+    "final_engineering_review": "reports/production_phase_a_integration_review.md",
+    "task5_evidence_index": "research/production-system/phase-a/task5-evidence-index.json",
+    "task5_report": "reports/production_phase_a_shadow_ledger.md",
+    "task5_validation": {
+      "operations": 81,
+      "pit": 47,
+      "fetch_only": 3,
+      "governance": 19,
+      "non_training_portfolio": 38
+    },
+    "task4_human_decision": "knowledge/02_History/Decisions/20261021-task4-human-approval.json",
+    "integration_candidate": "integration/phase-a-task5",
+    "success_authority": "LEGACY_FETCH_RESULT"
+  },
+  "delivery": {
+    "legacy_api_ui": "PARTIALLY_ACTIVE_SOURCE_PRESENT",
+    "live_deployment": "UNKNOWN",
+    "v7_status_candidate": "COMMITTED_NOT_DEPLOYED_IN_WSL_DEVELOPMENT_MAIN"
+  },
+  "knowledge_governance": {
+    "status": "ACTIVE",
+    "domain_layer": "COMPLETE_CURRENT_SCOPE",
+    "unified_health": "AVAILABLE",
+    "runtime_observation_store": "ACTIVE_WITH_STALE_SEMANTICS",
+    "generated_navigation": "DETERMINISTIC",
+    "authority": "knowledge/GOVERNANCE.md"
+  },
+  "repository_governance_rationalization": {
+    "status": "COMPLETED",
+    "completed_on": "2026-09-22",
+    "scope": "Repository governance, source authority, Git working-tree rationalization, K worktree retirement, and storage retention audit",
+    "remaining_worktrees": [
+      "feature/v7-e1-rolling-origin-refresh",
+      "fix/v7-e1-colab-recovery",
+      "research/v7-e1-postrun-diagnostics",
+      "feature/production-phase-a-shadow-ledger"
+    ],
+    "exclusions": [
+      "V7 research and strict Phase 0",
+      "E1 postrun diagnostics",
+      "Phase A acceptance",
+      "DATA_QUALITY_DIAGNOSTIC",
+      "Windows operational promotion",
+      "backend/frontend deployment verification or promotion",
+      "large-storage cleanup"
+    ],
+    "publication_evidence": "External finalization audit records development-main push and remote-HEAD verification separately"
+  },
+  "blockers": [
+    {
+      "id": "strict-phase0",
+      "status": "STOP",
+      "description": "No verified executable 5d/10d labels."
+    },
+    {
+      "id": "phase-a-review",
+      "status": "LOCAL_INTEGRATION_COMPLETED_NOT_DEPLOYED",
+      "description": "Task4/5 scoped approvals retained. Human-authorized local ff-only integration to 89f9496 completed; no production or research correctness promotion.",
+      "local_integration_status": "COMPLETED"
+    },
+    {
+      "id": "e1-diagnostics",
+      "status": "UNKNOWN",
+      "description": "Recovery inventory verified surviving checkpoint/prediction bytes; identity-matched frozen matrix not found in searched local scope, remote not inspected, embedded checkpoint identity still unvalidated. Stop replay; Human source-location evidence needed."
+    },
+    {
+      "id": "deployment",
+      "status": "UNKNOWN",
+      "description": "Live API/frontend and manual publication state are unverified."
+    }
+  ],
+  "next_decisions": [
+    "Recover the identity-matched E1 matrix, establish safe checkpoint replay, and predeclare causal regime evidence before deciding a new training experiment.",
+    "Human locate original a590b280...947f62 frozen matrix/manifest or archive; replay stopped, no regenerated substitute.",
+    "Use consolidated K2 governance in main; retain K0/K1/K2 branch history without active checkouts; do not begin K3 automatically."
+  ],
+  "authorities": [
+    "knowledge/00_Project_Map/Authority_Map.md",
+    "knowledge/00_Project_Map/authority-map.json",
+    "research/project-knowledge/k0/authority-map.json"
+  ],
+  "knowledge_impact": {
+    "must_update": [
+      "semantic change",
+      "authority change",
+      "subsystem boundary change",
+      "active runtime state change",
+      "correctness gate change",
+      "new canonical artifact",
+      "deprecation",
+      "major blocker or next-decision change"
+    ],
+    "normally_no_update": [
+      "formatting",
+      "comments",
+      "pure refactor",
+      "tests-only",
+      "internal rename"
+    ]
+  },
+  "state_updated_at": "2026-10-21",
+  "active_objectives": [
+    "Portfolio History H0 LOCAL_DEVELOPMENT_INTEGRATED; current authorized work complete, STOP",
+    "Single backlog remains research/v7/research-program.md; no next Program authorized",
+    "Strict Phase0 STOP; E1 identity-matched Frozen Matrix BLOCKED; H2/research correctness unapproved"
+  ],
+  "runtime_contract": {
+    "development_checkout": "/home/frank/projects/MarketMamba",
+    "operational_windows_checkout": "D:\\Desktop\\work\\ProjectForMe\\MarketMamba",
+    "scheduler_live_reconciliation": "CONFIRMED_2026_09_22T132135+0800",
+    "data_root": "Windows checkout Data/processed_v6 physical on D:; development checkout Data/processed_v6 symlink to same path; no path equivalence for code checkouts",
+    "training": "Colab separate exact-lock and bundle identity",
+    "training_environment_identity": "environments/v7-colab-2026.04/requirements.lock.txt preserved in development main; byte-identical to E1 branch; dated local verification is not formal Colab GPU-run evidence",
+    "scheduler_distro": "Ubuntu",
+    "development_distro": "Ubuntu-24.04",
+    "operational_python": "/home/frank/miniconda3/envs/mamba_env/bin/python 3.11.15",
+    "operational_data_root": "/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6",
+    "scheduler_data_root_env": "UNKNOWN_NOT_CAPTURED"
+  },
+  "worktree_register": "knowledge/00_Project_Map/Worktree_Register.md",
+  "repository_rationalization": {
+    "phase": "3B-1",
+    "status": "SOURCE_CANONICALIZATION_COMPLETED_NO_ARTIFACT_CLEANUP",
+    "observed_at": "2026-09-22",
+    "report_manifest": "D:\\Desktop\\work\\project-audit\\market-mamba\\repository-rationalization\\MANIFEST.md",
+    "next_stage": "PHASE_3B2_SELECTIVE_BRANCH_INTEGRATION_REVIEW_NOT_STARTED",
+    "historical_source_register": "research/v7/historical-local-source-register-20260922.md",
+    "historical_notes_register": "research/v7/historical-notes-register-20260922.md",
+    "phase3b1_report_manifest": "D:\\Desktop\\work\\project-audit\\market-mamba\\phase3b-source-cleanup\\MANIFEST.md",
+    "authority_change": false
+  },
+  "development_source_integration": {
+    "phase": "3B-2",
+    "observed_at": "2026-09-22",
+    "status": "SELECTIVE_RESEARCH_SOURCE_IN_MAIN_NOT_DEPLOYED",
+    "source_register": "research/v7/source-adoption-register-20260922.json",
+    "adopted": [
+      "corrected PIT research primitives",
+      "corrected E5 research core and frozen contract copies",
+      "formal E1 research core and frozen contract copies",
+      "E1 checkpoint telemetry correction",
+      "Colab child logging wrapper"
+    ],
+    "branch_authority_retained": [
+      "corrected E5/E1 results and bundles",
+      "E1 postrun diagnostics",
+      "Phase A operations",
+      "recovery-specific Drive migration"
+    ],
+    "strict_phase0": "STOP",
+    "production_unchanged": true,
+    "windows_checkout_unchanged": true,
+    "pushed": false
+  },
+  "governance_worktree_retirement": {
+    "observed_at": "2026-09-22T14:59:55+08:00",
+    "checkout_state": "FOUR_K_CHECKOUTS_REMOVED_NORMAL_GIT_WORKTREE_REMOVE",
+    "historical_branches_preserved": [
+      "docs/project-knowledge-k0-discovery@c802f52",
+      "docs/project-knowledge-k1-bootstrap@31dd74a",
+      "docs/project-knowledge-k1-domains@2c6c6f3",
+      "integration/project-knowledge-k1@18152d0"
+    ],
+    "remaining_linked_worktrees": 4,
+    "research_and_operations_worktrees_untouched": true,
+    "pushed": false,
+    "observation_time_precision": "session interval; exact per-removal timestamps not captured"
+  },
+  "storage_audit": {
+    "phase": "3C",
+    "observed_at": "2026-09-22",
+    "status": "READ_ONLY_COMPLETED_NO_DELETION",
+    "report_manifest": "D:\\Desktop\\work\\project-audit\\market-mamba\\storage-audit\\MANIFEST.md",
+    "low_risk_future_candidate": "frontend node_modules and dist; 187062450 logical bytes; separate cleanup authorization required",
+    "protected": [
+      "D: operational processed_v6 raw parquet and cache_v6 ticker universe",
+      "baseline caches without exact historical rebuild",
+      "dated D: processed_v6 ZIPs without verified external backup",
+      "E1 formal bundle, predictions, checkpoints and results",
+      "V7 label/provenance snapshots and prepared cache",
+      "active recovery worktree .venv"
+    ],
+    "next_action": "No destructive action from this audit; review evidence-backed generated frontend cleanup in a separately authorized pass; resolve baseline/archive/venv evidence gaps before any large removal",
+    "pushed": false
+  },
+  "cpu_development_window_02": {
+    "branch": "development/v7-cpu-window-01",
+    "base_commit": "7eb9cd9027a312a06d526666e4ad31d2255ff4f2",
+    "status": "WINDOW_COMPLETE_UNMERGED_NOT_DEPLOYED",
+    "plan": "tasks/v7-cpu-development-window-02.md",
+    "unit_limit": 5,
+    "units": {
+      "U1": "COMPLETED_VERIFIED at 735ae6f; 47 tests, independent 47; one fix round",
+      "U2": "COMPLETED_VERIFIED in containing commit; 60 portfolio/health/audit, independent 60, 47 PIT, 23 governance; one fix round"
+    },
+    "strict_phase0": "STOP",
+    "e1_matrix": "BLOCKED",
+    "human_decisions": 0,
+    "goal_binding": "V7_CREATED_AFTER_NULL; automatic continuation unverified",
+    "aggregate_usage": "NOT_INDEPENDENTLY_VERIFIED",
+    "next_ready": [],
+    "evidence": "research/v7/cpu-window-02-evidence.json",
+    "historical_window_record": true,
+    "local_integration_status": "LOCAL_DEVELOPMENT_INTEGRATED",
+    "integration_commit": "4a66928aa4c9bd8a1ddf99a5b42866e9b22efb74"
+  },
+  "strategic_roadmap_recovery": {
+    "status": "PLANNING_COMPLETE_H1_SUBSEQUENTLY_APPROVED",
+    "branch": "integration/v7-cpu-roadmap",
+    "source_commit": "4c388ded57062194114ea3e221d00c177eb96892",
+    "main_unchanged": "83a6a2e6f4a56db318ee07e7e737cc01de3ce48e",
+    "candidate": "GO_AGENT_RECOMMENDATION_ONLY_UNMERGED_NOT_DEPLOYED",
+    "backlog_owner": "research/v7/research-program.md#current-development-program--2026-10-21",
+    "evidence": "research/v7/cpu-integration-candidate-20261021.json",
+    "report": "reports/v7_strategic_roadmap_recovery.md",
+    "ready_remaining": [],
+    "proposed_program": [
+      "PORT-01",
+      "PORT-02",
+      "PORT-03",
+      "PORT-04"
+    ],
+    "next_human_gate": "H0 complete; H2 and any next Program remain separate/unapproved",
+    "strict_phase0": "STOP",
+    "e1_matrix": "BLOCKED",
+    "mas_core_live": "NOT_CERTIFIED",
+    "goal_binding": "CURRENT_V7_OBJECTIVE; future unattended reliability unverified",
+    "historical_window_record": true,
+    "local_integration_status": "LOCAL_DEVELOPMENT_INTEGRATED",
+    "integration_commit": "4a66928aa4c9bd8a1ddf99a5b42866e9b22efb74"
+  },
+  "portfolio_history": {
+    "status": "LOCAL_DEVELOPMENT_INTEGRATED_NOT_DEPLOYED",
+    "branch": "development/v7-portfolio-history",
+    "base_commit": "bebf19ee937a2237641e09701d0564590ed30fc6",
+    "units": {
+      "PORT-01": "COMPLETED_VERIFIED",
+      "PORT-02": "COMPLETED_VERIFIED",
+      "PORT-03": "COMPLETED_VERIFIED",
+      "PORT-04": "COMPLETED_VERIFIED"
+    },
+    "authority": "knowledge/02_History/Decisions/20261021-portfolio-history-h1.json",
+    "evidence": "research/v7/portfolio-history-evidence.json",
+    "backlog": "research/v7/research-program.md",
+    "strict_phase0": "STOP",
+    "research_admission": false,
+    "checkpoint": "Containing PORT-04 commit; git log -1 on development/v7-portfolio-history",
+    "report": "reports/v7_portfolio_history_acceptance.md",
+    "next_action": "This slice is closed/in local main; no next Program authorized; H2 remains unapproved",
+    "human_interventions_after_h1": 0,
+    "historical_source_branch": "development/v7-portfolio-history",
+    "local_integration_status": "LOCAL_DEVELOPMENT_INTEGRATED",
+    "integration_commit": "4a66928aa4c9bd8a1ddf99a5b42866e9b22efb74",
+    "integration_authority": "knowledge/02_History/Decisions/20261021-portfolio-final-h0-approval.json"
+  },
+  "portfolio_ux": {
+    "state": "LOCAL_DEVELOPMENT_INTEGRATED_NOT_DEPLOYED",
+    "branch": "development/v7-portfolio-ux",
+    "base_commit": "5a2bc6fcee4c0bf78190a6ac74d11f53f8becbd4",
+    "units": {
+      "UX-01": "COMPLETED_VERIFIED",
+      "UX-02": "COMPLETED_VERIFIED",
+      "UX-03": "COMPLETED_VERIFIED",
+      "UX-04": "COMPLETED_VERIFIED"
+    },
+    "authority": "knowledge/02_History/Decisions/20261021-portfolio-ux-human-decision.json",
+    "report": "reports/v7_portfolio_ux_acceptance.md",
+    "backlog": "research/v7/research-program.md",
+    "evidence": "research/v7/portfolio-ux-evidence.json",
+    "implementation_commit": "764dfbf6800dc00d133af4775206da5cf9cfbf43",
+    "checkpoint": "Containing UX04 acceptance commit; git log -1 on development/v7-portfolio-ux",
+    "next_action": "This slice is closed/in local main; no next Program authorized; H2 remains unapproved",
+    "lint_limit": "Full repo58errors/3warnings identical to baseline; changed-source PASS",
+    "historical_source_branch": "development/v7-portfolio-ux",
+    "local_integration_status": "LOCAL_DEVELOPMENT_INTEGRATED",
+    "integration_commit": "4a66928aa4c9bd8a1ddf99a5b42866e9b22efb74",
+    "integration_authority": "knowledge/02_History/Decisions/20261021-portfolio-final-h0-approval.json"
+  },
+  "portfolio_ux_closure": {
+    "state": "LOCAL_DEVELOPMENT_INTEGRATED_NOT_DEPLOYED",
+    "branch": "development/v7-portfolio-ux",
+    "base_commit": "1553a59dcf7b9479702d586f4d80ad20b5bee9c0",
+    "checkpoint": "Containing final UX closure commit; git log -1 on development/v7-portfolio-ux",
+    "units": {
+      "UX-FINAL-01": "COMPLETED_VERIFIED",
+      "UX-FINAL-02": "COMPLETED_VERIFIED"
+    },
+    "authority": "knowledge/02_History/Decisions/20261021-portfolio-ux-closure-decision.json",
+    "report": "reports/v7_portfolio_ux_closure.md",
+    "evidence": "research/v7/portfolio-ux-closure-evidence.json",
+    "backlog": "research/v7/research-program.md",
+    "product_repairs": 1,
+    "additional_human_decisions": 0,
+    "next_action": "This slice is closed/in local main; no next Program authorized; H2 remains unapproved",
+    "historical_source_branch": "development/v7-portfolio-ux",
+    "local_integration_status": "LOCAL_DEVELOPMENT_INTEGRATED",
+    "integration_commit": "4a66928aa4c9bd8a1ddf99a5b42866e9b22efb74",
+    "integration_authority": "knowledge/02_History/Decisions/20261021-portfolio-final-h0-approval.json"
+  },
+  "portfolio_font_visibility": {
+    "status": "LOCAL_DEVELOPMENT_INTEGRATED_NOT_DEPLOYED",
+    "branch": "fix/v7-timeline-font-visibility",
+    "base_commit": "6c89479416ad9fa429db7818cc645f729367eac9",
+    "audit_evidence_commit": "7ecb92016557af135ffd28c80892aa6be9d727df",
+    "audit_is_ancestor": false,
+    "checkpoint": "Containing fix/evidence commit; final fixed SHA provided in handoff",
+    "authority": "knowledge/02_History/Decisions/20261021-portfolio-font-blocker-authorization.json",
+    "report": "reports/v7_portfolio_font_visibility.md",
+    "evidence": "research/v7/portfolio-font-visibility-evidence.json",
+    "backlog": "research/v7/research-program.md",
+    "h0": "APPROVED_AND_COMPLETED_EXACT_4a66928",
+    "product_ux": "HUMAN_ACCEPTED_LIMITED_SLICE",
+    "required_findings_remaining": 0,
+    "next_action": "This slice is closed/in local main; no next Program authorized; H2 remains unapproved",
+    "historical_source_branch": "fix/v7-timeline-font-visibility",
+    "local_integration_status": "LOCAL_DEVELOPMENT_INTEGRATED",
+    "integration_commit": "4a66928aa4c9bd8a1ddf99a5b42866e9b22efb74",
+    "integration_authority": "knowledge/02_History/Decisions/20261021-portfolio-final-h0-approval.json"
+  },
+  "portfolio_h0_integration": {
+    "status": "LOCAL_DEVELOPMENT_INTEGRATED",
+    "deployment": "NOT_DEPLOYED",
+    "main_before": "83a6a2e6f4a56db318ee07e7e737cc01de3ce48e",
+    "approved_candidate": "4a66928aa4c9bd8a1ddf99a5b42866e9b22efb74",
+    "immediate_main_after_ff": "4a66928aa4c9bd8a1ddf99a5b42866e9b22efb74",
+    "documentation_commit": "Containing H0 closure commit; source unchanged from approved candidate",
+    "authority": "knowledge/02_History/Decisions/20261021-portfolio-final-h0-approval.json",
+    "evidence": "research/v7/portfolio-h0-integration-closure.json",
+    "report": "reports/v7_portfolio_h0_integration_closure.md",
+    "product_acceptance": "HUMAN_ACCEPTED_LIMITED_FIXTURE_SLICE",
+    "required_findings_remaining": 0,
+    "h2": "NOT_APPROVED",
+    "strict_phase0": "STOP",
+    "e1_frozen_matrix": "BLOCKED",
+    "next_action": "STOP; use integrated main as baseline only for separately authorized next CPU work"
+  },
+  "window26_label_integrity": {
+    "branch": "research/v7-window26-label-contract",
+    "base": "27055f7ec34cd4aa6d47f67bd89e5b6616244bc8",
+    "status": "LOCAL_INTEGRATED_FIXED367005d_NOT_DEPLOYED",
+    "evidence": "research/v7/window26-evidence.json",
+    "proposal": "research/v7/window26-next-study-candidate.json",
+    "exposure": "research/v7/window26-exposure-ledger.json",
+    "authority": "Human Window26 bounded forensic and proposed study preparation; no formal admission",
+    "W25_integration": "27055f7ec34cd4aa6d47f67bd89e5b6616244bc8",
+    "known_action": "2321 68% loss-offset reduction; 3 raw labels cross share units",
+    "suspension_primary_notice": "UNKNOWN",
+    "next_action": "Human label/data/universe/fold/evaluation/compute decisions; no new window authorized"
+  },
+  "window27_label_safety": {
+    "status": "LOCAL_INTEGRATED_FIXED39e2fed_NOT_DEPLOYED",
+    "base": "367005dfaba0988fca5e294d9b3e281408bbfce8",
+    "branch": "research/v7-window27-label-safety",
+    "freeze_commit": "e77f32d",
+    "policy_id": "W27_RAW_PRICE_DIAGNOSTIC_DEVELOPMENT_ONLY_v1",
+    "authority": "Human Window27 development-only sensitivity; not formal Data/Research/Label admission",
+    "evidence": "research/v7/window27-evidence.json",
+    "next_action": "STOP; Human larger-study policy/data/CPU decisions required"
+  },
+  "window28_clean_refit": {
+    "status": "LOCAL_INTEGRATED_FIXED1d9a2a7_NOT_DEPLOYED",
+    "base": "39e2fedeb550a08d00f4abddc9a6caa7b1d570f8",
+    "branch": "research/v7-window28-clean-refit",
+    "prefit_code_commit": "ec0b0721763ead15cdb63caad400998ed92a0c83",
+    "authority": "Human Window28 limited development-only CPU clean refit/causality; no formal admission",
+    "evidence": "research/v7/window28-evidence.json",
+    "run": "research/v7/window28-run.json",
+    "fits": 2,
+    "next_action": "STOP; Human new qualified/exposure-aware study and resource authorization required"
+  },
+  "window29_expanded_development": {
+    "status": "LOCAL_INTEGRATED_FIXEDe83dfe6_NOT_DEPLOYED",
+    "base": "1d9a2a7a1ee57c455ba58250f63681efbbdd9050",
+    "branch": "research/v7-window29-expanded-development",
+    "cohort_freeze_commit": "746ca04",
+    "source_repair_commit": "eeb1016",
+    "prefit_panel_commit": "16ea18d",
+    "evidence": "research/v7/window29-evidence.json",
+    "authority": "Human Window29 DEVELOPMENT_ONLY bounded new-cohort study, not formal Data/Research Admission",
+    "fits": 2,
+    "GETs": 68,
+    "next_action": "STOP; Human new-universe/event/exposure-aware data/time study and exact resource decisions required"
+  },
+  "window30_fixed_lightgbm": {
+    "status": "COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+    "base": "e83dfe68e4bc73b59cb6390ec130ba967138e7f1",
+    "branch": "research/v7-window30-real-lightgbm",
+    "prefit_commit": "60e7ca7",
+    "evidence": "research/v7/window30-evidence.json",
+    "authority": "HumanWindow30 fixed real-data LightGBM Development-only, not formal admission/model selection",
+    "fits": 2,
+    "API_Ridge_GPU": 0,
+    "next_action": "STOP; Human expanding origin/maturity/refit/eval/data/CPU/storage decisions required"
+  },
+  "pre_ruflo_baseline": {
+    "status": "LOCAL_PRESERVATION_UNMERGED_NOT_DEPLOYED",
+    "branch": "pre-ruflo-2026-11-14",
+    "source_commit": "4bfaa7b3c7447ea54de67013b8cb3a9aab13003d",
+    "manifest": "reports/pre_ruflo_2026_11_14_manifest.json",
+    "push": "HUMAN_HOLD",
+    "new_credential_leak_proven": false,
+    "remote_backup": "PENDING",
+    "full_dr": "NOT_PASSED"
+  }
+}

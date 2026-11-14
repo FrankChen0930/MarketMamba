@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "authority": "Human Window16 Real Resource Coverage & Capture Proof",
+  "scope": "W15fixedff +2units, W15 exact licensedCSV only, <=1 realrequest/resource; preserve originals; independent restore; fallback design only",
+  "new_data_or_research_admission": false,
+  "collector_or_scheduler_authorized": false,
+  "fallback_or_backup_provider_access": false,
+  "review_limit": "one independent round + at mostone evidenced repair",
+  "no_full_audit_or_suite_repeat": true,
+  "not_authorized": [
+    "realfit/RankIC/GPU/Colab",
+    "Frozen change",
+    "Windows/production",
+    "otherpendingmerge",
+    "Window16mainmerge/push/deploy",
+    "hiddenhistory/extraAPI/collector/nextwindow"
+  ],
+  "gates": {
+    "strict_phase0": "STOP",
+    "e1_frozen_matrix": "BLOCKED",
+    "h2": "NOT_APPROVED",
+    "historical_exploratory_study": "PROPOSED",
+    "forward_collector_activation": "NOT_APPROVED",
+    "w12_gpu": "SAFETY_HALTED",
+    "fair_evaluation": "PROPOSED",
+    "pre_next_open": "PROPOSED",
+    "inference_recovery": "DEFERRED"
+  }
+}

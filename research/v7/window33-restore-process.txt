@@ -1,0 +1,1 @@
+{"status": "INDEPENDENT_PROCESS_RAW_DERIVED_RESTORE_PASS", "file_count": 264, "bytes_per_copy": 58910660, "restored_rows": 43437, "request_count": 64, "min_request_start_interval_seconds": 5.001249, "old_raw_pins_unchanged": 68, "backup": "BACKUP_PENDING_SAME_HOST_NOT_INDEPENDENT_BACKUP"}

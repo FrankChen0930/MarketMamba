@@ -1,0 +1,73 @@
+{
+  "status": "COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+  "authority": "Human Window27 Development-only frozen-prediction sensitivity; no formal admission",
+  "identity": {
+    "status": "COMPLETE_STOP_UNMERGED_NOT_DEPLOYED",
+    "base": "367005dfaba0988fca5e294d9b3e281408bbfce8",
+    "branch": "research/v7-window27-label-safety",
+    "freeze_commit": "e77f32d",
+    "policy_id": "W27_RAW_PRICE_DIAGNOSTIC_DEVELOPMENT_ONLY_v1",
+    "authority": "Human Window27 development-only sensitivity; not formal Data/Research/Label admission",
+    "evidence": "research/v7/window27-evidence.json",
+    "next_action": "STOP; Human larger-study policy/data/CPU decisions required"
+  },
+  "policy_semantic_sha256": "2894968af5f5fd3e7e0fcd1627a823919a9bd44973aa681f1fe209d934d76d1f",
+  "freeze_before_metrics": true,
+  "primary_exclusions": {
+    "CONFIRMED_UNIT_EVENT": 3,
+    "HOLDING_PATH_INVALID_OR_ZERO": 1082,
+    "HOLDING_PATH_MISSING": 33
+  },
+  "original_samples": 44266,
+  "eligible_samples": 43148,
+  "unknown_risk_samples": 44266,
+  "four_group_result": "window27-results.json",
+  "replay": "window27-replay.json",
+  "tests": {
+    "mask": 10,
+    "serialization_paired_support": 4
+  },
+  "original_private_files_verified": 218,
+  "original_W24_predictions_metrics_labels_masks": "UNCHANGED",
+  "new_private_root": "/home/frank/projects/MarketMamba/.artifacts/window27-label-safety",
+  "same_host_restore": "/home/frank/projects/MarketMamba/.artifacts/window27-restore",
+  "backup": "BACKUP_PENDING",
+  "development_repairs": [
+    "import _safe from its existing module before first metric",
+    "canonical JSON comparison for int-key replay; calculation AST unchanged; prior metrics preserved"
+  ],
+  "known_limitations": [
+    "Incomplete action/suspension/asof/vintage",
+    "Hindsight cohort/current capital/survivorship",
+    "Exposed2022/2023",
+    "Frozen Training contamination not undone"
+  ],
+  "zero_operations": [
+    "API",
+    "fit",
+    "refit",
+    "new_prediction",
+    "bootstrap",
+    "LOSO_analysis",
+    "GPU",
+    "Colab",
+    "V6_change",
+    "W19_operation",
+    "production",
+    "push",
+    "deploy"
+  ],
+  "observed_at": "2026-10-25T08:55:44.071505+00:00",
+  "review": "window27-review.json",
+  "review_verdict": "GO_CRITICAL0_REQUIRED0",
+  "review_rework_rounds": 0,
+  "knowledge_health": "WARNING existing Governance/AuthorityDrift/LegacyDocs; no FAIL",
+  "environment": {
+    "python": "3.12.3",
+    "interpreter": "/home/frank/projects/MarketMamba/.worktrees/v7-window11-l2-cpu-resume/.runtimes/window11-cpu/bin/python",
+    "CUDA_VISIBLE_DEVICES": "",
+    "MARKETMAMBA_DATA_ROOT": "UNSET",
+    "Data_realpath": "/home/frank/projects/MarketMamba/Data",
+    "actual_data": "explicit pinned private W24/W25/W26 paths only; Data not consumed"
+  }
+}

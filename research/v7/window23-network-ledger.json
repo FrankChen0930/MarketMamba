@@ -1,0 +1,95 @@
+{
+  "official_document_limit": 10,
+  "actual_document_loads": 10,
+  "direct_GETs": [
+    {
+      "url": "https://www.twse.com.tw/rwd/zh/holidaySchedule/holidaySchedule?date=20190101&response=json",
+      "http_status": 200,
+      "manifest": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/manifests/5488e85a7dae05aa742a5ccb7fadddccac46e11ea3fea403860449ee3740acaa-2026-10-25T051651.397206p0000.json",
+      "retrieved_at": "2026-10-25T05:16:51.397206+00:00",
+      "raw": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/raw/fc44a422f0b927abbab2f0decaba91c6d8f3edff323c25bae4ff592444bdd576.json",
+      "raw_sha256": "fc44a422f0b927abbab2f0decaba91c6d8f3edff323c25bae4ff592444bdd576",
+      "raw_bytes": 145
+    },
+    {
+      "url": "https://www.twse.com.tw/rwd/zh/holidaySchedule/holidaySchedule?date=20200101&response=json",
+      "http_status": 200,
+      "manifest": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/manifests/b900874e647f523cc6332be9a4982361862ba4a79a9aca79280d78e933e204c4-2026-10-25T051651.615365p0000.json",
+      "retrieved_at": "2026-10-25T05:16:51.615365+00:00",
+      "raw": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/raw/186aa3fd7eac14ae7ff4c774e75cba1d83d72d5b85fd134d450fae57dd94a094.json",
+      "raw_sha256": "186aa3fd7eac14ae7ff4c774e75cba1d83d72d5b85fd134d450fae57dd94a094",
+      "raw_bytes": 145
+    },
+    {
+      "url": "https://www.twse.com.tw/rwd/zh/holidaySchedule/holidaySchedule?date=20210101&response=json",
+      "http_status": 200,
+      "manifest": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/manifests/a6a833c207ca2a757d7119381e72c1f816636ee5db06a35dcc78d52ce57f2703-2026-10-25T051651.772051p0000.json",
+      "retrieved_at": "2026-10-25T05:16:51.772051+00:00",
+      "raw": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/raw/cc048d412679032846398c796975bbbb14339e1ad657efbb4c97c252495cc876.json",
+      "raw_sha256": "cc048d412679032846398c796975bbbb14339e1ad657efbb4c97c252495cc876",
+      "raw_bytes": 2709
+    },
+    {
+      "url": "https://www.twse.com.tw/rwd/zh/holidaySchedule/holidaySchedule?date=20220101&response=json",
+      "http_status": 200,
+      "manifest": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/manifests/d7a1ff5fc58a9247e7db27059cc340178fbe1d0b3b6496d9907f4087c3e858cf-2026-10-25T051651.957068p0000.json",
+      "retrieved_at": "2026-10-25T05:16:51.957068+00:00",
+      "raw": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/raw/c49edf8212319a24ce1a964e4997b86409971c79cc300bb3e614749ccf7bce8d.json",
+      "raw_sha256": "c49edf8212319a24ce1a964e4997b86409971c79cc300bb3e614749ccf7bce8d",
+      "raw_bytes": 1589
+    },
+    {
+      "url": "https://www.twse.com.tw/rwd/zh/holidaySchedule/holidaySchedule?date=20230101&response=json",
+      "http_status": 200,
+      "manifest": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/manifests/2347f80bb0cdd691429322091155aaf17f9f134baf1aab33367a997a575674c0-2026-10-25T051652.085514p0000.json",
+      "retrieved_at": "2026-10-25T05:16:52.085514+00:00",
+      "raw": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/raw/57ac0ea5fdb48cc8dccdc2c691cc3e331f62909d2f63424778aa7a391ca26740.json",
+      "raw_sha256": "57ac0ea5fdb48cc8dccdc2c691cc3e331f62909d2f63424778aa7a391ca26740",
+      "raw_bytes": 4311
+    },
+    {
+      "url": "https://investoredu.twse.com.tw/Mobile_pages/..%2FFileSystem%2FFileUpload%2Fbe0109d1-76a0-4412-a00d-58a88c6e1714.pdf",
+      "http_status": 200,
+      "manifest": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/manifests/c62207d15b48a3d80b75d9f8f1a942bb74cc26153f7c5285b44b6ac432960f31-2026-10-25T051917.323444p0000.json",
+      "retrieved_at": "2026-10-25T05:19:17.323444+00:00",
+      "raw": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/raw/13e991f1b4b97c7e9e1e6b39b5a20b0fa5134f82b3de8fd7393baa54f0c9f126.bin",
+      "raw_sha256": "13e991f1b4b97c7e9e1e6b39b5a20b0fa5134f82b3de8fd7393baa54f0c9f126",
+      "raw_bytes": 47135
+    },
+    {
+      "url": "https://www.tpex.org.tw/storage/eb_data/10811/10800656641.html",
+      "http_status": 200,
+      "manifest": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/manifests/037589bef829a87fa4bfe5e15f6328d60fbd918d230f3890997ca2a40917c67f-2026-10-25T051917.624008p0000.json",
+      "retrieved_at": "2026-10-25T05:19:17.624008+00:00",
+      "raw": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/raw/684fa93fd2db2b9dd00054172d7063014f5d5a1c77bedf12474c16778d5ff419.bin",
+      "raw_sha256": "684fa93fd2db2b9dd00054172d7063014f5d5a1c77bedf12474c16778d5ff419",
+      "raw_bytes": 14551
+    },
+    {
+      "url": "https://www.tpex.org.tw/storage/eb_data/11111/111007021911-1.pdf",
+      "http_status": 200,
+      "manifest": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/manifests/14d391efea783a536353d76314344fcfb2d06bed5245cc585d2a7061403185be-2026-10-25T051917.480803p0000.json",
+      "retrieved_at": "2026-10-25T05:19:17.480803+00:00",
+      "raw": "/home/frank/projects/MarketMamba/.artifacts/window23-calendar-smoke/official-docs/snapshots/raw/4cd9a4c9e6d1a6772bc68c20b045450164c60c3cca18b1a05a88fc92910b6ce3.bin",
+      "raw_sha256": "4cd9a4c9e6d1a6772bc68c20b045450164c60c3cca18b1a05a88fc92910b6ce3",
+      "raw_bytes": 103919
+    }
+  ],
+  "web_document_loads": [
+    {
+      "url": "https://www.twse.com.tw/zh/trading/holiday.html",
+      "purpose": "initialofficialdocumententry",
+      "status": 200
+    },
+    {
+      "url": "https://investoredu.twse.com.tw/Mobile_pages/..%2FFileSystem%2FFileUpload%2Fbe0109d1-76a0-4412-a00d-58a88c6e1714.pdf",
+      "purpose": "PDFtextinspectionofalreadyarchivedofficialclosure",
+      "status": 200,
+      "observed_content": "TWSEpressrelease2023-08-02;2023-08-03fulldayclosed"
+    }
+  ],
+  "metadata_searches": "bounded official-document index discovery; separate from these document GETs; no quotation API",
+  "FinMind_requests": 0,
+  "retry_redirect_fallback": false,
+  "status": "CLOSED_NO_FURTHER_REQUESTS"
+}

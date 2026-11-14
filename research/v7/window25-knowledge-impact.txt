@@ -1,0 +1,23 @@
+{
+  "acknowledgment": null,
+  "automatic_updates_performed": false,
+  "changed": [
+    "V6/experimental/v7_robustness_audit.py",
+    "research/v7/window25-classification.json",
+    "research/v7/window25-robustness.json"
+  ],
+  "matched_rules": {
+    "V6/experimental/v7_robustness_audit.py": [
+      "DEFAULT"
+    ],
+    "research/v7/window25-classification.json": [
+      "DEFAULT"
+    ],
+    "research/v7/window25-robustness.json": [
+      "DEFAULT"
+    ]
+  },
+  "potential_knowledge_impact": [],
+  "schema_version": 1,
+  "status": "PASS"
+}
