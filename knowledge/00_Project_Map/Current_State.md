@@ -14,6 +14,7 @@ B2b：v7 labels v2 的 1,974 檔最後出現日全在 2026（2005–2025 下市�
 第四輪：Colab 真實 B4（E5/E1×y5/y10，smoke＋完整）已核對身份與程式雜湊——LightGBM IC .090–.112 一致最高，E5 顯著優於 reversal／Ridge，E1（~160日）未達顯著。
 下市股覆蓋（TWSE官方＋TPEx官方〔API僅回每年前10筆，缺254〕＋FinMind）：2005後402個股票型事件中323(80%)完全缺席、76為TPEx→TWSE轉板（轉板前歷史缺）、0正常涵蓋；
 新增 `pit_universe.py`、`tools/research_env/pit_delisting.py`、`seq_models.py`（官方Mamba2/Samba定義，未訓練）。研究證據仍為 RESEARCH_ONLY。
+B7：官方 Mamba2／Samba 於 Colab T4（py3.13、torch 2.10.0+cu128、mamba-ssm 2.3.2.post1、causal-conv1d 1.7.0）forward/backward 煙霧測試通過（僅相容性，未訓練）；共用環境入口 `gpu_env.setup()`，wheel 尚待以 force 保存。
 Yahoo 預測配對檢定：僅 5 日 LightGBM 於 Holm 後顯著優於 reversal5，GRU／簡化 SSM 不顯著。
 
 ## pilot09-w4 research results surface — branch-local
