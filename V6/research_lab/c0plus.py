@@ -4,6 +4,8 @@ RESEARCH_ONLY. Dense (session x stock) panels make lags exact and gap-aware: a m
 """
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 
@@ -44,7 +46,7 @@ def rolling_mean(p, w, min_frac=.5):
     return out.astype(np.float32)
 
 
-def build_features(data, rows, names):
+def build_features(data, rows, names, ind_stock=None):
     """(len(rows), n_features) float32 and feature names. Base 48 columns + lags + rolling means + market aggregates."""
     col = {n: i for i, n in enumerate(names)}
     t, s = data.date_idx[rows], data.stock_idx[rows]
@@ -57,6 +59,11 @@ def build_features(data, rows, names):
         for w in ROLLS:
             r = rolling_mean(p, w)
             cols.append(r[t, s][:, None]); fn.append(f'{c}_mean{w}')
+    if ind_stock is not None:                       # industry-relative block (UNVERIFIED current-snapshot industry, see industry.py)
+        from .industry import REL, panel_relative
+        for c in REL:
+            rel, mean = panel_relative(dense_panel(data, col[c]), ind_stock)
+            cols += [rel[t, s][:, None], mean[t, s][:, None]]; fn += [f'{c}_vs_ind', f'{c}_ind_mean']
     for c in MARKET:
         p = dense_panel(data, col[c])
         with np.errstate(all='ignore'):
@@ -98,7 +105,7 @@ def tercile_ic(values, y, date_idx, dates, strata_value):
     return out
 
 
-def run(directory, label='y5', max_train_rows=500_000, seed=17, n_boot=1000, lgbm=None, log=print, row_mask=None, extra_daily=None):
+def run(directory, label='y5', max_train_rows=500_000, seed=17, n_boot=1000, lgbm=None, log=print, row_mask=None, extra_daily=None, industry_dir=None, ind_only_variant=False):
     """row_mask: evaluate only these eval rows (e.g. SeqData.eligible, so the comparison is on the rows a sequence model can score).
     extra_daily: {name: daily-IC Series} of other models on the SAME rows, added to the paired tests."""
     from lightgbm import LGBMRegressor
@@ -108,12 +115,18 @@ def run(directory, label='y5', max_train_rows=500_000, seed=17, n_boot=1000, lgb
     p = dict(n_estimators=200, num_leaves=31, learning_rate=.05, min_child_samples=200, subsample=.8, subsample_freq=1,
              colsample_bytree=.8, reg_lambda=10., random_state=seed, n_jobs=4, verbose=-1)
     p.update(lgbm or {})                                   # both models share these settings so the comparison isolates the features
-    xf, fn = build_features(data, ctx.fit_idx, names)
+    ind_stock = None
+    if industry_dir is not None:
+        from .industry import industry_codes, load_industry_map
+        uniq = np.unique(np.load(Path(directory)/'stock_ids.npy', mmap_mode='r'))
+        ind_stock = industry_codes(uniq, load_industry_map(industry_dir))
+        log(f'[c0plus] industry known for {(ind_stock >= 0).mean():.1%} of {len(uniq)} stock codes')
+    xf, fn = build_features(data, ctx.fit_idx, names, ind_stock)
     base_scores = mb.compute_scores(ctx, 'lightgbm', dict(lgbm_estimators=p['n_estimators'], lgbm_leaves=p['num_leaves'], lgbm_lr=p['learning_rate'],
                                                           lgbm_min_child=p['min_child_samples'], lgbm_reg_lambda=p['reg_lambda'], lgbm_threads=p['n_jobs']))
     plus = LGBMRegressor(**p).fit(xf, ctx.y_fit)
     ev = ctx.eval_idx
-    xe, _ = build_features(data, ev, names)
+    xe, _ = build_features(data, ev, names, ind_stock)
     plus_scores = plus.predict(xe)
     log(f'[c0plus] features {len(fn)}; fit {len(ctx.fit_idx)}; eval {len(ev)}')
     y, dix, dates = data.y[label][ev], data.date_idx[ev], data.dates
@@ -133,7 +146,7 @@ def run(directory, label='y5', max_train_rows=500_000, seed=17, n_boot=1000, lgb
     sig = compare_models({k: v.loc[common] for k, v in daily.items()}, 'lightgbm_day_t', int(label[1:]), n_boot=n_boot, seed=seed)
     imp = sorted(zip(fn, plus.feature_importances_), key=lambda x: -x[1])[:15]
     return dict(label=label, fit_rows=int(len(ctx.fit_idx)), eval_rows=int(len(ev)), n_features=len(fn), models=res,
-                vs_lightgbm_day_t=sig, top_features=[(a, int(b)) for a, b in imp],
+                vs_lightgbm_day_t=sig, daily_ic={k: {str(d.date()): float(v) for d, v in s_.items()} for k, s_ in daily.items()}, top_features=[(a, int(b)) for a, b in imp],
                 caveats=['same fit rows and eval rows as B4; evaluation window is research-used; labels are simulation proxy; survivorship-biased',
                          'size/volume strata use per-session scaled Market_Cap_Log (rank within session); raw volume and limit-up/down are not in the matrix',
                          'delayed-1d IC = score at t vs label of the same stock at t+1 (entry one session later)'])
