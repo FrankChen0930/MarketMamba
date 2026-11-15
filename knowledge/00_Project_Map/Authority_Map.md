@@ -1,5 +1,14 @@
 # MarketMamba Authority Map
 
+## pilot09-w1 isolated Yahoo research contract（無 authority supersession）
+
+Branch-local `w1-data` / UNMERGED / NOT_DEPLOYED；新增套件的本地規格及公式由
+[`research_lab` source/tests/README](../../V6/research_lab/README.md) 描述，版本
+`research-lab-dataset-v1`。未提交程式以產物 manifest 的逐檔 SHA-256 綁定，不能推定 HEAD 已含實作。
+`.local-data/research/dataset.manifest.json` 是此 generated research dataset 的本機 identity，
+不具 production、corrected V7、strict PIT、qualified calendar/universe 或 executable-label authority。
+原 V6/V7 machine contracts、historical artifacts 與所有既有 gate 不變；不作 supersession 或 repin。
+
 ## Pre-Ruflo 本機開發基線 — 2026-11-14
 
 本分支 `pre-ruflo-2026-11-14` 從 main `4bfaa7b3c7447ea54de67013b8cb3a9aab13003d`

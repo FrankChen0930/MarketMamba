@@ -1,5 +1,21 @@
 # MarketMamba Current State
 
+## pilot09-w1 Yahoo 資料工程 — branch-local / research-only
+
+`w1-data` worktree `/home/frank/projects/ruflo-evaluation/pilot09/wt/w1-data`，base
+`4be3084948a453224ab1dbbd30342c04902ea7d4`；UNMERGED / NOT_DEPLOYED，未提交（依本次要求）。
+新增 [research_lab 契約及驗證](../../V6/research_lab/README.md)，純離線 Yahoo OHLCV pipeline；
+不變更既有 production / corrected V7 authority。378571 rows、150 codes（含 ETF），
+2016-01-04～2026-11-13；33 features，完整304034列；5/10/20d研究代理labels
+366365/358070/343938，非 executable evidence。收盤訊號→次日開盤→t+h收盤；
+observed-union calendar proxy，缺漏／零量／outlier fail closed。31項 focused/regression tests PASS。
+Generated parquet/manifest 在 gitignored `.local-data/research/`，canonical dataset SHA
+`325093035cf9eac936d4e151da26583aa90cb02c83af3be35a019e0c45c962b1`。
+無 training/scheduler/GPU/production操作；後續使用固定 FEATURE_COLUMNS，不能以未來label篩Prediction。
+Knowledge-impact source-only PASS／完整diff WARNING已ACKNOWLEDGED（治理政策不變）；knowledge-health FAIL：基線既有 e3bce91 等 authority commit objects 缺失，
+保留 FAIL，不重設 gate；詳 package README／本機 health JSON。
+存活者偏差／Yahoo vintage／corporate actions／tradability UNKNOWN 保留；不解除既有STOP。
+
 ## Pre-Ruflo 本機開發基線 — 2026-11-14
 
 本分支 `pre-ruflo-2026-11-14` 從 main `4bfaa7b3c7447ea54de67013b8cb3a9aab13003d`
