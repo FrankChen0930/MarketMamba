@@ -103,3 +103,17 @@ def test_run_experiment_same_rows_for_baselines_and_resume(tmp_path):
     r2 = sr.run_experiment(d, tmp_path/'out', 'EX', kinds=('mamba2', 'samba'), seeds=(1,), cfg=CFG, device='cpu',
                            mixer_factory=CausalConvMixer, log=logs.append)
     assert r2 == r and any('[skip]' in x for x in logs)
+
+
+def test_adding_seeds_later_reuses_finished_training(tmp_path):
+    (tmp_path/'m').mkdir()
+    d, _, _ = build(tmp_path/'m')
+    logs = []
+    cfg = dict(CFG, val_max_rows=300)
+    r1 = sr.run_experiment(d, tmp_path/'out', 'EX', kinds=('mamba2',), seeds=(1,), cfg=cfg, device='cpu', mixer_factory=CausalConvMixer, log=logs.append)
+    n_epochs = sum('epoch' in x and 'val_ic5' in x for x in logs)
+    r2 = sr.run_experiment(d, tmp_path/'out', 'EX', kinds=('mamba2',), seeds=(1, 2), cfg=cfg, device='cpu', mixer_factory=CausalConvMixer, log=logs.append)
+    assert len(list((tmp_path/'out').iterdir())) == 1                          # same training config -> same directory
+    assert sum('epoch' in x and 'val_ic5' in x for x in logs) == n_epochs + 3  # only seed 2 trained (3 epochs)
+    assert any('scores exist' in x for x in logs)
+    assert r2['models']['mamba2_s1']['ic_mean'] == r1['models']['mamba2_s1']['ic_mean'] and 'mamba2_s2' in r2['models']

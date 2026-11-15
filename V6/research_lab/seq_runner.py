@@ -195,13 +195,18 @@ def run_experiment(directory, out_root, expect, kinds=('mamba2', 'samba'), seeds
     import hashlib
     import json
     cfg = {**DEFAULT_CFG, **(cfg or {})}
-    root = Path(out_root)/f'{expect}_seq_{hashlib.sha256(json.dumps([cfg, list(kinds), list(seeds), tag], sort_keys=True).encode()).hexdigest()[:10]}'
-    if (root/'result.json').exists():
-        log(f'[skip] complete: {root}')
-        return json.loads((root/'result.json').read_text())
+    # The directory depends only on the training config, so models/seeds added later reuse finished work;
+    # each (kinds, seeds) request gets its own result file.
+    root = Path(out_root)/f'{expect}_seq_{hashlib.sha256(json.dumps([cfg, tag], sort_keys=True).encode()).hexdigest()[:10]}'
+    result_file = root/f'result_{"-".join(kinds)}_s{"-".join(map(str, seeds))}.json'
+    if result_file.exists():
+        log(f'[skip] complete: {result_file}')
+        return json.loads(result_file.read_text())
     (root/'ckpt').mkdir(parents=True, exist_ok=True); (root/'scores').mkdir(exist_ok=True); (root/'daily_ic').mkdir(exist_ok=True)
     data = SeqData(directory, stock_idx)
     tr, va, ev = data.split_rows(cfg['val_dates'])
+    if cfg['val_max_rows'] and len(va) > cfg['val_max_rows']:     # early-stopping signal only; fixed subset so epochs are comparable
+        va = np.sort(np.random.default_rng(0).choice(va, cfg['val_max_rows'], replace=False))
     rowmask = np.zeros(len(data.splits), bool); rowmask[ev] = True
     ctx = mb.Context(directory, 'y5', cfg['baseline_rows'], 17, 'rank', row_mask=rowmask)
     daily = {m: mb.model_daily_ic(ctx, mb.compute_scores(ctx, m)) for m in ('reversal_ret5', 'ridge', 'lightgbm')}
@@ -230,10 +235,10 @@ def run_experiment(directory, out_root, expect, kinds=('mamba2', 'samba'), seeds
                caveats=['rows limited to complete 60-session windows; baselines re-scored on the same evaluation rows',
                         'evaluation window is research-used; labels are HISTORICAL_SIMULATION_PROXY; universe survivorship-biased',
                         'IC only; not portfolio performance', 'RESEARCH_ONLY'])
-    (root/'result.json').write_text(json.dumps(res, indent=2, allow_nan=False, default=float))
+    result_file.write_text(json.dumps(res, indent=2, allow_nan=False, default=float))
     return res
 
 
 DEFAULT_CFG = dict(d_model=64, n_layers=2, mixer_kw=dict(d_state=16, headdim=8, expand=2), attn_window=16, lr=3e-4,
                    weight_decay=.01, epochs=10, steps_per_epoch=400, patience=3, dates_per_batch=16, stocks_per_date=256,
-                   min_names=64, baseline_rows=500_000, n_boot=1000, val_dates=VAL_DATES)
+                   min_names=64, baseline_rows=500_000, n_boot=1000, val_dates=VAL_DATES, val_max_rows=80_000)

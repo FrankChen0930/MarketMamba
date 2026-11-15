@@ -158,7 +158,9 @@ def b8_notebook(bundle_name, bundle_sha):
              '前置：`' + bundle_name + '` 在 Drive `MarketMamba_V7_B4_baselines/`；wheel 在 `MarketMamba_GPU_Wheels/`（B7 已存）。', 'markdown'),
         cell(f'''
 EXPERIMENT = "E5"        # "E5" 或 "E1"
-SMOKE = True             # True：極小設定只驗證流程與耗時
+SMOKE = True             # True：極小設定只驗證流程與耗時；正式跑改 False
+SEEDS = (17,)            # 正式跑：先 (17,) 看耗時與結果，再改成 (17, 29, 43) 補跑——已完成的 seed 不會重訓
+EPOCHS, STEPS_PER_EPOCH = 10, 400   # 正式跑的上限（早停 patience=3）
 KINDS = ("mamba2", "samba")
 SEARCH_ROOTS = {{"E5": "{E5}",
                 "E1": "{E1}"}}   # 以 manifest 身份自動尋找矩陣，不依賴固定路徑
@@ -195,8 +197,8 @@ print("identity verified:", sorted(hashes)); print(cr.check_semantics(local, "y5
 t = time.time(); sr.stock_index(local); print("stock index ready", round(time.time() - t), "s")
 '''),
         cell('''
-cfg = dict(epochs=1, steps_per_epoch=20, dates_per_batch=8, stocks_per_date=128, baseline_rows=50_000, n_boot=200) if SMOKE else {}
-seeds = (17,) if SMOKE else (17, 29, 43)
+cfg = dict(epochs=1, steps_per_epoch=20, dates_per_batch=8, stocks_per_date=128, baseline_rows=50_000, n_boot=200) if SMOKE else dict(epochs=EPOCHS, steps_per_epoch=STEPS_PER_EPOCH)
+seeds = (17,) if SMOKE else SEEDS
 result = sr.run_experiment(local, os.path.join(RESULTS_ROOT, "b8"), EXPERIMENT, kinds=KINDS, seeds=seeds, cfg=cfg, device="cuda", tag="smoke" if SMOKE else "full")
 '''),
         cell('''
