@@ -136,3 +136,23 @@ def test_training_history_records_in_sample_probe_ic(tmp_path):
     tr, va, ev = data.split_rows(15)
     m, st = sr.train_one('mamba2', 1, data, tr, va, dict(CFG, train_probe_rows=500), 'cpu', CausalConvMixer, {}, None, lambda *_: None)
     assert all(h['train_probe_ic5'] is not None for h in st['history']) and st['history'][-1]['train_probe_ic5'] > .2
+
+
+def test_mlp_control_uses_only_last_session_and_learns_last_day_signal(tmp_path):
+    d, day, stock = build(tmp_path)
+    h = sr.control_mlp(d, dict(CFG, epochs=3, steps_per_epoch=30, d_model=16, val_max_rows=0), device='cpu', log=lambda *_: None)
+    assert len(h) == 3 and h[-1]['val_ic5'] > .2
+    from research_lab.seq_models import SeqRanker
+    m = SeqRanker('mlp', 12, 16, 1).eval()
+    x = torch.randn(4, 1, 12)
+    assert m(x)['score5'].shape == (4,)
+    x2 = torch.randn(4, 5, 12); x2[:, -1] = x[:, 0]
+    assert torch.allclose(m(x2)['score5'], m(x)['score5'], atol=1e-6)       # earlier sessions are ignored
+
+
+def test_feature_report_flags_day_constant_columns(tmp_path):
+    d, day, stock = build(tmp_path)
+    X = np.load(d/'X.npy'); X[:, 9] = day.astype(np.float32)/50.            # a macro-like column: same for every stock on a day
+    np.save(d/'X.npy', X)
+    r = sr.feature_report(d, sessions=40)
+    assert r['f9']['day_constant'] and not r['f0']['day_constant'] and r['f9']['session_mean_std'] > .5

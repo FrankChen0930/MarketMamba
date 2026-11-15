@@ -105,14 +105,17 @@ class SeqRanker(nn.Module):
     def __init__(self, kind, n_features=48, d_model=64, n_layers=1, mixer_kw=None, attn_heads=4, window=16,
                  mixer_factory=None):
         super().__init__()
-        if kind not in ('mamba2', 'samba'):
-            raise ValueError('kind must be mamba2 or samba')
+        if kind not in ('mamba2', 'samba', 'mlp'):
+            raise ValueError('kind must be mamba2, samba or mlp (mlp = last-session-only control, no sequence mixing)')
         self.kind = kind
         make = mixer_factory or official_mamba2_factory
         mkw = dict(mixer_kw or {})
         self.embed = nn.Linear(n_features, d_model)
         layers = []
         for i in range(n_layers):
+            if kind == 'mlp':
+                layers.append(Residual(d_model, MLP(d_model)))
+                continue
             mixer = make(d_model, **mkw) if mixer_factory is None else make(d_model)
             layers.append(Residual(d_model, mixer) if kind == 'mamba2' else SambaLayer(d_model, mixer, attn_heads, window))
         self.layers = nn.Sequential(*layers)

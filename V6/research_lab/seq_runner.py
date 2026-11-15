@@ -151,6 +151,40 @@ def diagnose_validation(directory, cfg=None, models=('reversal_ret5', 'momentum_
     return out
 
 
+def feature_report(directory, sessions=200, seed=0, stock_idx=None):
+    """Per-feature scale diagnostics on sampled eligible sessions: cross-sectional std within a session (0 => the column is
+    the same for every stock that day, e.g. macro series), spread of session means, zero fraction, tail size."""
+    data = SeqData(directory, stock_idx, window=1)
+    rng = np.random.default_rng(seed)
+    dts = np.unique(data.date_idx[(data.splits == mb.TRAIN)])
+    pick = np.sort(rng.choice(dts, min(sessions, len(dts)), replace=False))
+    starts = np.concatenate(([0], data.ends[:-1]))
+    rows = [np.arange(starts[d], data.ends[d]) for d in pick]
+    X = [np.asarray(data.X[r], dtype=np.float64) for r in rows]
+    within = np.mean([x.std(0) for x in X], axis=0)
+    means = np.stack([x.mean(0) for x in X])
+    allx = np.vstack(X)
+    out = {}
+    for i, n in enumerate(data.feature_names):
+        out[n] = dict(within_session_std=float(within[i]), session_mean_std=float(means[:, i].std()), zero_fraction=float((allx[:, i] == 0).mean()),
+                      p99_abs=float(np.quantile(np.abs(allx[:, i]), .99)), max_abs=float(np.abs(allx[:, i]).max()),
+                      day_constant=bool(within[i] < 1e-9))
+    return out
+
+
+def control_mlp(directory, cfg=None, seed=17, device='cuda', log=print, stock_idx=None):
+    """Same data, loss, optimiser and schedule as the sequence models but the network only sees the LAST session
+    (window=1, no sequence mixing). If this cannot reach roughly Ridge-level validation IC, the problem is the
+    input/loss/optimisation set-up, not sequence modelling."""
+    cfg = {**DEFAULT_CFG, 'epochs': 3, 'steps_per_epoch': 300, **(cfg or {})}
+    data = SeqData(directory, stock_idx, window=1)
+    tr, va, _ = data.split_rows(cfg['val_dates'])
+    if cfg['val_max_rows'] and len(va) > cfg['val_max_rows']:
+        va = np.sort(np.random.default_rng(0).choice(va, cfg['val_max_rows'], replace=False))
+    m, st = train_one('mlp', seed, data, tr, va, cfg, device, None, {}, None, log)
+    return st['history']
+
+
 def train_one(kind, seed, data, tr, va, cfg, device='cuda', mixer_factory=None, mixer_kw=None, ckpt=None, log=print):
     import torch
     torch.manual_seed(seed)

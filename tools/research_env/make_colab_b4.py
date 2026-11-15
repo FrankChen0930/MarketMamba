@@ -215,6 +215,20 @@ diag = sr.diagnose_validation(local, dict(baseline_rows=200_000))
 import pandas as pd
 print(diag["_validation"]); display(pd.DataFrame({k: v for k, v in diag.items() if k != "_validation"}).T[["ic_mean", "icir", "days"]])
 '''),
+        cell('''
+# （選用、不訓練）特徵尺度報告：找出「同一天所有股票都相同」的欄位（如總經序列）與重尾欄位。
+rep = sr.feature_report(local)
+import pandas as pd
+df = pd.DataFrame(rep).T
+display(df[df.day_constant]); print("同日常數欄位：", list(df[df.day_constant].index))
+display(df.sort_values("max_abs", ascending=False).head(10)[["within_session_std", "p99_abs", "max_abs", "zero_fraction"]])
+'''),
+        cell('''
+# （選用）對照實驗：同資料、同損失、同優化器，但網路只看「最後一天」特徵（MLP，無序列）。約數分鐘。
+# 判讀：若連它的驗證 IC 都遠低於 Ridge（診斷格中的 ridge ic_mean）→ 問題在輸入／損失／優化設定，不是序列建模本身。
+hist = sr.control_mlp(local, dict(baseline_rows=200_000))
+print(hist)
+'''),
     ]
     return {'cells': cells, 'metadata': {'kernelspec': {'name': 'python3', 'display_name': 'Python 3'},
             'colab': {'name': 'b8_seq_baselines.ipynb', 'gpuType': 'T4'}, 'accelerator': 'GPU'}, 'nbformat': 4, 'nbformat_minor': 5}
