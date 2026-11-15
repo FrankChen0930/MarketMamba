@@ -49,7 +49,7 @@ CFG = dict(sr.DEFAULT_CFG, d_model=16, n_layers=1, mixer_kw={}, attn_window=8, l
 
 def test_windows_gaps_and_alignment(tmp_path):
     d, day, stock = build(tmp_path, gap=(5, 100, 110))
-    data = sr.SeqData(d)
+    data = sr.SeqData(d, normalize=None)        # alignment is checked on raw values
     assert not data.eligible[(day < 59)].any()                                    # fewer than 60 sessions of history
     gap_covered = (stock == 5) & (day >= 110) & (day < 110+59)
     assert not data.eligible[gap_covered].any() and data.eligible[(stock == 5) & (day >= 110+59)].all()
@@ -156,3 +156,32 @@ def test_feature_report_flags_day_constant_columns(tmp_path):
     np.save(d/'X.npy', X)
     r = sr.feature_report(d, sessions=40)
     assert r['f9']['day_constant'] and not r['f0']['day_constant'] and r['f9']['session_mean_std'] > .5
+
+
+def test_rankgauss_is_point_in_time_standardised_and_zeroes_macro(tmp_path):
+    d, day, stock = build(tmp_path)
+    X = np.load(d/'X.npy'); X[:, 0] *= 1e7; X[:, 1] = np.exp(X[:, 1]*3); X[:, 9] = day/50.   # raw-scale, heavy-tailed, macro-like
+    np.save(d/'X.npy', X)
+    out = np.load(sr.ensure_rankgauss(d, log=lambda *_: None))
+    assert out.shape == X.shape and (out[:, 9] == 0).all()
+    per_day = pd.DataFrame(out[:, :2]).groupby(day).agg(['mean', 'std'])
+    assert np.allclose(per_day.iloc[:, [0, 2]], 0, atol=1e-6) and np.allclose(per_day.iloc[:, [1, 3]], 1, atol=.08)
+    assert np.array_equal(np.argsort(out[day == 7, 1]), np.argsort(X[day == 7, 1]))          # order within a session preserved
+    X2 = X.copy(); X2[day >= 100, 0] += 5e8                                                   # change the future: the past must not move
+    (tmp_path/'o').mkdir(); [np.save(tmp_path/'o'/f'{k}.npy', np.load(d/f'{k}.npy')) for k in ('end_indices',)]; np.save(tmp_path/'o'/'X.npy', X2)
+    out2 = np.load(sr.ensure_rankgauss(tmp_path/'o', log=lambda *_: None))
+    assert np.array_equal(out[day < 100], out2[day < 100])
+    assert sr.ensure_rankgauss(d) == d/'X_rankgauss.npy'                                      # cached
+
+
+def test_regression_raw_scale_features_were_destroyed_by_clipping_but_rankgauss_learns(tmp_path):
+    (tmp_path/'m').mkdir()
+    d, day, stock = build(tmp_path/'m')
+    X = np.load(d/'X.npy'); X[:, 7] *= 1e6                                                    # the informative feature has a huge raw scale
+    np.save(d/'X.npy', X)
+    cfg = dict(CFG, epochs=3, steps_per_epoch=30, d_model=16, val_max_rows=0)
+    bad = sr.control_mlp.__wrapped__ if hasattr(sr.control_mlp, '__wrapped__') else None
+    raw = sr.SeqData(d, window=1, normalize=None)
+    assert np.abs(raw.windows(np.arange(100, 200))[:, :, 7]).min() == 10.                     # every value saturated at the clip: no information left
+    good = sr.control_mlp(d, cfg, device='cpu', log=lambda *_: None)
+    assert good[-1]['val_ic5'] > .2

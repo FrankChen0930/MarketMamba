@@ -100,7 +100,7 @@ def tercile_ic(values, y, date_idx, dates, strata_value):
 
 def run(directory, label='y5', max_train_rows=500_000, seed=17, n_boot=1000, lgbm=None, log=print):
     from lightgbm import LGBMRegressor
-    data = SeqData(directory, window=1)
+    data = SeqData(directory, window=1, normalize=None)
     ctx = mb.Context(directory, label, max_train_rows, seed, 'rank')
     names = data.feature_names
     p = dict(n_estimators=200, num_leaves=31, learning_rate=.05, min_child_samples=200, subsample=.8, subsample_freq=1,

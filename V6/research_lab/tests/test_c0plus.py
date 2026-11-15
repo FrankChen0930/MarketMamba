@@ -30,7 +30,7 @@ def build(tmp, days=160, names=40, train_end=110, eval_start=120, lag=5, signal=
 
 def test_lags_rolling_and_gaps_are_exact(tmp_path):
     d, day, stock, X = build(tmp_path)
-    data = SeqData(d, window=1)
+    data = SeqData(d, window=1, normalize=None)
     rows = np.flatnonzero((stock == 3) & (day == 50))
     f, names = cp.build_features(data, rows, FEATURES)
     col = {n: i for i, n in enumerate(names)}
@@ -55,7 +55,7 @@ def test_c0plus_recovers_signal_that_day_t_model_cannot_see(tmp_path):
 
 def test_delayed_labels_and_terciles_hand_case(tmp_path):
     d, day, stock, X = build(tmp_path)
-    data = SeqData(d, window=1)
+    data = SeqData(d, window=1, normalize=None)
     rows = np.flatnonzero((day == 130) & (stock < 3))
     nxt = cp.delayed_labels(data, rows, 'y5', 1)
     assert np.allclose(nxt, data.y['y5'][np.flatnonzero((day == 131) & (stock < 3))])

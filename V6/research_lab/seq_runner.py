@@ -29,6 +29,48 @@ def centred_rank(values, seg):
     return (g.rank(pct=True)-(1+1/g.transform('count'))/2).to_numpy(np.float32)
 
 
+def macro_columns(X, ends, sessions=60, seed=0):
+    """Columns that are identical for every stock within a session (macro series): detected from sampled sessions."""
+    rng = np.random.default_rng(seed)
+    pick = rng.choice(len(ends), min(sessions, len(ends)), replace=False)
+    starts = np.concatenate(([0], ends[:-1]))
+    const = np.ones(X.shape[1], bool)
+    for d in pick:
+        blk = np.asarray(X[starts[d]:ends[d]], dtype=np.float64)
+        if len(blk) > 1:
+            const &= blk.std(0) < 1e-9
+    return np.flatnonzero(const)
+
+
+def ensure_rankgauss(directory, log=print):
+    """Per-session cross-sectional rank-gauss copy of X (cached as X_rankgauss.npy). Uses only same-session values, so it
+    is point-in-time. Macro (same-for-every-stock) columns are set to 0; non-finite values -> 0. Needed because X is NOT
+    standardised for most columns (Volume std ~8e6, flows up to 1e8, prices raw) although the manifest says it is."""
+    from scipy.stats import norm, rankdata
+    d = Path(directory)
+    out = d/'X_rankgauss.npy'
+    if out.exists():
+        return out
+    X = np.load(d/'X.npy', mmap_mode='r')
+    ends = np.asarray(np.load(d/'end_indices.npy'))
+    macro = macro_columns(X, ends)
+    log(f'[rankgauss] macro columns zeroed: {macro.tolist()}')
+    tmp = d/'X_rankgauss.tmp.npy'
+    Y = np.lib.format.open_memmap(tmp, mode='w+', dtype=np.float32, shape=X.shape)
+    start = 0
+    for e in ends:
+        blk = np.nan_to_num(np.asarray(X[start:e], dtype=np.float64), nan=0., posinf=0., neginf=0.)
+        n = len(blk)
+        r = rankdata(blk, axis=0, method='average') if n > 1 else np.full_like(blk, (n+1)/2)
+        z = norm.ppf((r-.5)/n)
+        z[:, macro] = 0.
+        Y[start:e] = z
+        start = e
+    Y.flush(); del Y
+    tmp.replace(out)
+    return out
+
+
 def stock_index(directory):
     """Integer id per matrix row from stock_ids.npy (U32 strings, ~1 GB): computed once, cached next to the matrix copy."""
     f = Path(directory)/'stock_idx.npy'
@@ -43,10 +85,11 @@ def stock_index(directory):
 
 
 class SeqData:
-    def __init__(self, directory, stock_idx=None, labels=('y5', 'y10'), window=WINDOW):
+    def __init__(self, directory, stock_idx=None, labels=('y5', 'y10'), window=WINDOW, normalize='rankgauss'):
         self.window = window
         self.manifest, a = mb.load_matrix(directory, labels=labels)
-        self.X = a['X']
+        self.X = a['X']                                   # raw (feature_report, LightGBM)
+        self.Xn = np.load(ensure_rankgauss(directory), mmap_mode='r') if normalize == 'rankgauss' else self.X   # network input
         self.y = {k: np.asarray(a[k], dtype=np.float32) for k in labels}
         self.splits, self.ends = np.asarray(a['splits']), np.asarray(a['end_indices'])
         n = len(self.splits)
@@ -69,8 +112,8 @@ class SeqData:
         t, s = self.date_idx[rows], self.stock_idx[rows]
         idx = self.row_of[t[:, None]+np.arange(-self.window+1, 1), s[:, None]]
         assert (idx >= 0).all(), 'incomplete window requested'
-        x = np.asarray(self.X[idx.reshape(-1)], dtype=np.float32).reshape(len(rows), self.window, -1)
-        return np.clip(np.nan_to_num(x, nan=0., posinf=0., neginf=0.), -10., 10.)
+        x = np.asarray(self.Xn[idx.reshape(-1)], dtype=np.float32).reshape(len(rows), self.window, -1)
+        return np.clip(np.nan_to_num(x, nan=0., posinf=0., neginf=0.), -10., 10.)   # clip is a no-op for rank-gauss inputs
 
     def split_rows(self, val_dates=VAL_DATES):
         train_dates = np.unique(self.date_idx[(self.splits == mb.TRAIN) & self.eligible])
@@ -154,7 +197,7 @@ def diagnose_validation(directory, cfg=None, models=('reversal_ret5', 'momentum_
 def feature_report(directory, sessions=200, seed=0, stock_idx=None):
     """Per-feature scale diagnostics on sampled eligible sessions: cross-sectional std within a session (0 => the column is
     the same for every stock that day, e.g. macro series), spread of session means, zero fraction, tail size."""
-    data = SeqData(directory, stock_idx, window=1)
+    data = SeqData(directory, stock_idx, window=1, normalize=None)
     rng = np.random.default_rng(seed)
     dts = np.unique(data.date_idx[(data.splits == mb.TRAIN)])
     pick = np.sort(rng.choice(dts, min(sessions, len(dts)), replace=False))
