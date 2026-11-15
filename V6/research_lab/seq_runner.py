@@ -126,8 +126,8 @@ class SeqData:
         return tr, va, ev
 
 
-def listnet(score, target):
-    return -(nn_softmax(target*LISTNET_T)*log_softmax(score)).sum(-1).mean()
+def listnet(score, target, temperature=LISTNET_T):
+    return -(nn_softmax(target*temperature)*log_softmax(score)).sum(-1).mean()
 
 
 def nn_softmax(x):
@@ -140,13 +140,15 @@ def log_softmax(x):
     return torch.log_softmax(x, -1)
 
 
-def session_loss(out, t5, t10, groups):
-    """groups: (D, S) index matrix of one session per row."""
+def session_loss(out, t5, t10, groups, listnet_w=0., listnet_t=LISTNET_T):
+    """groups: (D, S) index matrix of one session per row. Per-head loss = MSE on centred ranks (+ listnet_w * ListNet-top1).
+    ListNet is OFF by default. Real E5 MLP check (val IC, 3 epochs): temperature 10 -> -0.01..-0.03; T=3 0.080; T=1 0.093; MSE only 0.094-0.101.
+    """
     import torch
     total = 0.
     for w, key, tgt in ((1., 'score5', t5), (.5, 'score10', t10)):
         sc, tg = out[key][groups], tgt[groups]
-        total = total + w*(torch.mean((sc-tg)**2)+LISTNET_W*listnet(sc, tg))
+        total = total + w*(torch.mean((sc-tg)**2)+(listnet_w*listnet(sc, tg, listnet_t) if listnet_w else 0.))
     return total/1.5
 
 
@@ -246,7 +248,9 @@ def train_one(kind, seed, data, tr, va, cfg, device='cuda', mixer_factory=None, 
     tt5, tt10 = torch.from_numpy(t5).to(device), torch.from_numpy(t10).to(device)
     dates = sorted(by_date)
     state = dict(epoch=0, best=-9., bad=0, history=[])
-    tr_probe = np.sort(np.random.default_rng(1).choice(tr, min(len(tr), cfg.get('train_probe_rows', 20_000)), replace=False))
+    prng = np.random.default_rng(1)       # in-sample probe = whole sampled sessions (>=10 names/session), not scattered rows
+    pdays = prng.choice(sorted(by_date), min(len(by_date), cfg.get('train_probe_sessions', 40)), replace=False)
+    tr_probe = np.sort(np.concatenate([prng.choice(by_date[d], min(len(by_date[d]), 500), replace=False) for d in pdays]))
     if ckpt and Path(ckpt).exists():
         c = torch.load(ckpt, map_location=device)
         model.load_state_dict(c['model']); opt.load_state_dict(c['opt']); sched.load_state_dict(c['sched']); state = c['state']
@@ -261,7 +265,7 @@ def train_one(kind, seed, data, tr, va, cfg, device='cuda', mixer_factory=None, 
             idx = torch.from_numpy(np.searchsorted(tr, g.reshape(-1))).to(device)
             sc = model(x)
             local = torch.arange(flat.size, device=device).view(g.shape)
-            loss = session_loss(sc, tt5[idx], tt10[idx], local)
+            loss = session_loss(sc, tt5[idx], tt10[idx], local, cfg.get('listnet_w', 0.), cfg.get('listnet_t', LISTNET_T))
             opt.zero_grad(set_to_none=True); loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.); opt.step(); sched.step()
             losses.append(float(loss.detach()))
@@ -338,4 +342,4 @@ def run_experiment(directory, out_root, expect, kinds=('mamba2', 'samba'), seeds
 
 DEFAULT_CFG = dict(d_model=64, n_layers=2, mixer_kw=dict(d_state=16, headdim=8, expand=2), attn_window=16, lr=3e-4,
                    weight_decay=.01, epochs=10, steps_per_epoch=400, patience=3, dates_per_batch=16, stocks_per_date=256,
-                   min_names=64, baseline_rows=500_000, n_boot=1000, val_dates=VAL_DATES, val_max_rows=80_000)
+                   min_names=64, baseline_rows=500_000, n_boot=1000, val_dates=VAL_DATES, val_max_rows=80_000, listnet_w=0., listnet_t=LISTNET_T)

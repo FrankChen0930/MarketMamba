@@ -134,7 +134,7 @@ def test_training_history_records_in_sample_probe_ic(tmp_path):
     d, day, stock = build(tmp_path)
     data = sr.SeqData(d)
     tr, va, ev = data.split_rows(15)
-    m, st = sr.train_one('mamba2', 1, data, tr, va, dict(CFG, train_probe_rows=500), 'cpu', CausalConvMixer, {}, None, lambda *_: None)
+    m, st = sr.train_one('mamba2', 1, data, tr, va, dict(CFG, train_probe_sessions=10), 'cpu', CausalConvMixer, {}, None, lambda *_: None)
     assert all(h['train_probe_ic5'] is not None for h in st['history']) and st['history'][-1]['train_probe_ic5'] > .2
 
 
@@ -185,3 +185,14 @@ def test_regression_raw_scale_features_were_destroyed_by_clipping_but_rankgauss_
     assert np.abs(raw.windows(np.arange(100, 200))[:, :, 7]).min() == 10.                     # every value saturated at the clip: no information left
     good = sr.control_mlp(d, cfg, device='cpu', log=lambda *_: None)
     assert good[-1]['val_ic5'] > .2
+
+
+def test_listnet_is_off_by_default_and_loss_is_mse_only():
+    assert sr.DEFAULT_CFG['listnet_w'] == 0.
+    import torch
+    out = {'score5': torch.zeros(6), 'score10': torch.zeros(6)}
+    t = torch.tensor([-2., -1., 0., 1., 2., 3.])
+    g = torch.arange(6).reshape(1, 6)
+    off = sr.session_loss(out, t, t, g)
+    on = sr.session_loss(out, t, t, g, listnet_w=.5, listnet_t=10.)
+    assert float(off) == float(torch.mean(t**2)) and float(on) > float(off)
