@@ -191,3 +191,26 @@ def test_pip_cache_harvest_is_opt_in_and_marked_unverified(tmp_path, monkeypatch
     assert off['saved'] == []
     on = go(tmp_path, store='s2', run=run, verify=lambda: {}, importable=imp, harvest_cache=True)
     assert on['saved'] and on['saved'][0]['source'] == 'pip_cache_harvest_unverified_provenance'
+
+
+def test_purge_only_stale_modules_with_none_bindings():
+    import types
+    def mod(**kw):
+        m = types.ModuleType('x')
+        m.__dict__.update(kw)
+        return m
+    mods = {'mamba_ssm': mod(), 'mamba_ssm.ops.triton.ssd_combined': mod(causal_conv1d_fwd_function=None),
+            'mamba_ssm.modules.mamba2': mod(causal_conv1d_fn=None), 'causal_conv1d': mod(), 'torch': mod()}
+    stale = g.purge_stale_mamba_modules(mods)
+    assert len(stale) == 2 and set(mods) == {'torch'}                  # whole mamba/causal family dropped, others kept
+    healthy = {'mamba_ssm': mod(), 'mamba_ssm.ops.triton.ssd_combined': mod(causal_conv1d_fwd_function=lambda *a: 1)}
+    assert g.purge_stale_mamba_modules(healthy) == [] and len(healthy) == 2   # healthy modules never re-imported
+    assert g.purge_stale_mamba_modules({}) == []
+
+
+def test_setup_reports_traceback_and_purge(tmp_path):
+    st, imp, _, _ = make_env(tmp_path, mamba=True, causal=True)
+    def bad():
+        raise TypeError("'NoneType' object is not callable")
+    rep = go(tmp_path, run=lambda *a, **k: None, verify=bad, importable=imp)
+    assert rep['status'] == 'installed_but_verification_failed' and 'TypeError' in rep['verify_traceback'] and rep['purged_stale_modules'] == []

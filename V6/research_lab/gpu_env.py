@@ -125,6 +125,24 @@ def prebuilt_check(fp, versions=None, urlopen=None):
     return out
 
 
+STALE_CHECKS = (('mamba_ssm.ops.triton.ssd_combined', 'causal_conv1d_fwd_function'),
+                ('mamba_ssm.modules.mamba2', 'causal_conv1d_fn'))
+
+
+def purge_stale_mamba_modules(modules=None):
+    """If mamba_ssm was imported while causal_conv1d was broken, its module globals hold None forever, even after
+    causal_conv1d is reinstalled. Drop those modules so the next import binds the working functions. Healthy
+    modules are left alone (re-importing them would re-register torch custom ops)."""
+    modules = sys.modules if modules is None else modules
+    stale = [m for m, attr in STALE_CHECKS if m in modules and getattr(modules[m], attr, 'missing') is None]
+    if stale:
+        for k in [k for k in modules if k.split('.')[0] in ('mamba_ssm', 'causal_conv1d')]:
+            del modules[k]
+        import importlib
+        importlib.invalidate_caches()
+    return stale
+
+
 USABLE = {'mamba-ssm': 'mamba_ssm', 'causal-conv1d': 'causal_conv1d.cpp_functions'}   # modules that must import
 
 
@@ -234,6 +252,7 @@ def setup(store, allow_build=True, allow_compile=False, versions=None, with_caus
 
     for pkg in want:
         ensure(pkg)
+    rep['purged_stale_modules'] = purge_stale_mamba_modules()
     rep['diagnostics'] = diagnostics()
     if not ok('mamba-ssm'):
         rep['status'] = 'unavailable'
@@ -244,6 +263,7 @@ def setup(store, allow_build=True, allow_compile=False, versions=None, with_caus
         except Exception as e:  # noqa: BLE001
             rep['status'] = 'installed_but_verification_failed'
             rep['verify_error'] = f'{type(e).__name__}: {e}'
+            rep['verify_traceback'] = __import__('traceback').format_exc()[-2500:]
 
     if rep['status'] == 'verified':          # save only wheels from a working environment
         if not built and harvest_cache:   # pip's cache does not record which torch a wheel was built for: opt-in only
@@ -258,5 +278,5 @@ def setup(store, allow_build=True, allow_compile=False, versions=None, with_caus
     tag = (fp.get('gpu') or 'cpu').replace(' ', '_')
     out = Path(store)/f'env_report_{tag}_{fp["py_tag"]}_torch{fp["torch"]}_cu{fp["cuda"]}.json'
     out.write_text(json.dumps(rep, indent=2, default=str))
-    log(json.dumps({k: rep[k] for k in ('status', 'steps', 'saved', 'verify_error') if k in rep}, indent=1, default=str))
+    log(json.dumps({k: rep[k] for k in ('status', 'steps', 'purged_stale_modules', 'saved', 'verify_error', 'verify_traceback') if k in rep}, indent=1, default=str))
     return rep
