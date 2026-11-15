@@ -102,6 +102,29 @@ def pip_cache_wheels(fp, cache_dir=None, run=subprocess.run):
     return found
 
 
+REPOS = {'mamba-ssm': 'state-spaces/mamba', 'causal-conv1d': 'Dao-AILab/causal-conv1d'}
+
+
+def prebuilt_check(fp, versions=None, urlopen=None):
+    """Does an official prebuilt wheel exist for this exact (CUDA major, torch major.minor, C++ ABI, python)?
+    Looks only at GitHub release asset names; never downloads. Returns per-package availability."""
+    import urllib.request
+    urlopen = urlopen or (lambda u: json.load(urllib.request.urlopen(u, timeout=30)))
+    versions = {**DEFAULT_VERSIONS, **(versions or {})}
+    tag = 'cu%storch%s.%scxx11abi%s' % (str(fp['cuda']).split('.')[0], *fp['torch'].split('.')[:2], 'TRUE' if fp['cxx11abi'] else 'FALSE')
+    out = {'tag': tag, 'py_tag': fp['py_tag']}
+    for pkg, repo in REPOS.items():
+        try:
+            v = versions.get(pkg)
+            rel = urlopen(f'https://api.github.com/repos/{repo}/releases/' + (f'tags/v{v}' if v else 'latest'))
+            names = [a['name'] for a in rel['assets']]
+            hit = [n for n in names if f'+{tag}-{fp["py_tag"]}-' in n and n.endswith(f'{fp["machine"]}.whl')]
+            out[pkg] = dict(available=bool(hit), asset=hit[0] if hit else None, release=rel.get('tag_name'))
+        except Exception as e:  # noqa: BLE001
+            out[pkg] = dict(available=None, error=f'{type(e).__name__}: {e}')
+    return out
+
+
 def verify_official_mamba2(device='cuda'):
     """Real Mamba2 GPU forward+backward (official class, official kernels). Raises on any failure."""
     import torch
@@ -133,8 +156,8 @@ def _import_ok(pkg):
         return False
 
 
-def setup(store, allow_build=True, versions=None, with_causal_conv1d=True, work='/content/gpu_wheels_build',
-          run=subprocess.run, fp=None, verify=verify_official_mamba2, importable=_import_ok, log=print):
+def setup(store, allow_build=True, allow_compile=False, versions=None, with_causal_conv1d=True, work='/content/gpu_wheels_build',
+          run=subprocess.run, fp=None, verify=verify_official_mamba2, importable=_import_ok, log=print, prebuilt=prebuilt_check):
     fp = fp or fingerprint()
     versions = {**DEFAULT_VERSIONS, **(versions or {})}
     want = ['mamba-ssm'] + (['causal-conv1d'] if with_causal_conv1d else [])
@@ -153,7 +176,15 @@ def setup(store, allow_build=True, versions=None, with_causal_conv1d=True, work=
             rep['steps'].append(f'install_from_store rc={r.returncode} files={[Path(f).name for f in files]}')
         else:
             rep['steps'].append('no_compatible_wheel_in_store')
-        if not importable('mamba_ssm') and allow_build:
+        pb = prebuilt(fp, versions) if not importable('mamba_ssm') and allow_build else None
+        if pb is not None:
+            rep['prebuilt'] = pb
+            rep['steps'].append('prebuilt_check ' + pb['tag'] + ': ' + ', '.join(f'{k}={v.get("available")}' for k, v in pb.items() if isinstance(v, dict)))
+        has_prebuilt = bool(pb and pb.get('mamba-ssm', {}).get('available'))
+        if not importable('mamba_ssm') and allow_build and not has_prebuilt and not allow_compile:
+            rep['steps'].append(f'no_official_prebuilt_for_torch{fp["torch"]}_cu{fp["cuda"]}: not compiling (allow_compile=False). '
+                                'Pin torch to a version with an official wheel (see roadmap 8.6) or set allow_compile=True (~40 min).')
+        elif not importable('mamba_ssm') and allow_build:
             Path(work).mkdir(parents=True, exist_ok=True)
             for pkg in want:
                 spec = pkg+(f'=={versions[pkg]}' if versions.get(pkg) else '')
@@ -170,7 +201,7 @@ def setup(store, allow_build=True, versions=None, with_causal_conv1d=True, work=
                 built[pkg] = (w, w.name.split('-')[1], 'built' if sec > 180 else 'prebuilt_download_or_fast_build', sec)
             if built:
                 pip('install', '-q', '--no-deps', '--no-index', *[str(v[0]) for v in built.values()])
-        elif not importable('mamba_ssm'):
+        if not importable('mamba_ssm') and not allow_build:
             rep['steps'].append('build_not_allowed')
 
     if not importable('mamba_ssm'):

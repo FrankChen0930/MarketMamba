@@ -101,7 +101,7 @@ print("結果目錄：", RESULTS_ROOT, "（含 identity.json / config.json / dai
 def probe_notebook(bundle_name, bundle_sha):
     cells = [
         cell('# Market Mamba B7：官方 Mamba2／Samba 相容性探測\n`RESEARCH_ONLY`。只做環境探測與極小 forward/backward 煙霧測試，**不訓練**。'
-             '請選 **GPU 執行階段（T4 即可）**。官方 `mamba-ssm` 只能在 CUDA 上跑；若沒有預編譯 wheel，pip 會自行編譯，可能需數分鐘到十幾分鐘。\n'
+             '請選 **GPU 執行階段（T4 即可）**。官方 `mamba-ssm` 只能在 CUDA 上跑。環境入口會先找 Drive 內相容 wheel，再找官方預編譯版；**兩者都沒有時預設不編譯**（需 `allow_compile=True`，約 40 分鐘），並建議固定 torch。\n'
              '把本檔與 `' + bundle_name + '` 放同一個 Drive 資料夾 `MarketMamba_V7_B4_baselines/`。', 'markdown'),
         cell(f'''
 import os, sys, json, zipfile, hashlib, shutil, subprocess, time
@@ -114,10 +114,22 @@ shutil.rmtree("/content/b7_code", ignore_errors=True)
 zipfile.ZipFile(BUNDLE).extractall("/content/b7_code")
 sys.path.insert(0, "/content/b7_code")
 '''),
+        cell('''
+# （可選）固定 torch：官方 mamba-ssm／causal-conv1d 預編譯 wheel 目前只到 torch 2.10（cu12/cu13）。
+# Colab 預設 torch 若更新（如 2.14+cu130）就沒有現成 wheel，只能花約 40 分鐘編譯。
+# 把 PIN_TORCH 改 True、執行一次：它會安裝 torch 2.10.0+cu128 並自動重啟執行階段；重啟後從頭「全部執行」即可（此格會直接略過）。
+import torch
+PIN_TORCH = False
+if PIN_TORCH and not torch.__version__.startswith("2.10.0"):
+    r = subprocess.run([sys.executable, "-m", "pip", "install", "-q", "torch==2.10.0", "--index-url", "https://download.pytorch.org/whl/cu128"], capture_output=True, text=True)
+    print("pip rc", r.returncode, r.stderr[-600:])
+    if r.returncode == 0:
+        print("torch 2.10.0 installed; restarting runtime - then Run all again"); os.kill(os.getpid(), 9)
+'''),
         cell(f'''
 # GPU 環境入口（B7／B8 共用）：已安裝→Drive 相容 wheel→（必要時）建置；通過真實 Mamba2 forward/backward 後才保存 wheel
 from research_lab import gpu_env
-report = gpu_env.setup("{WHEELS}", allow_build=True)   # 只想重用、不想編譯：allow_build=False
+report = gpu_env.setup("{WHEELS}", allow_build=True, allow_compile=False)   # 無官方預編譯 wheel 時預設停止；要現場編譯才改 allow_compile=True
 '''),
         cell('''
 # 結果：status 必須是 "verified"；report["saved"] 為空代表本次沒有保存任何 wheel（不會假裝成功）
