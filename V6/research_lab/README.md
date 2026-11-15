@@ -132,3 +132,11 @@ train 內末最多64 sessions 作 validation，fit 再隔20 sessions，每 seed 
 [實驗報告](experiments/REPORT.md) 與 [校正後機器結果](experiments/results_evaluation.json)。
 
 初始 `results.json` 保留原 run；`evaluate_predictions` 只讀既有 predictions 並重新計算完整session-grid NW，輸出 no-clobber 的 `results_evaluation.json`／`REPORT.md`，不重訓。未知target日留在session grid，未知IC不會將時間間隔壓縮。
+
+
+## Pilot09 W3 投組研究 runner
+
+[投組設定、CLI、測試及真實動能樣本](experiments/PORTFOLIO_README.md)。
+`portfolio.run_backtest(prices, predictions, Config(...))` 與 `python -m research_lab.backtest`，
+重用既有V7 metrics/tier，全部RESEARCH_ONLY。close訊號→next-open entry→下一再平衡open退出，
+不等同上述t+h close-exit label；不更動dataset或production契約。w3-portfolio UNMERGED / NOT_DEPLOYED。

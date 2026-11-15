@@ -140,3 +140,14 @@ No real data/model admission, formal performance policy or research approval.
 Static UI UNMERGED badge is inherited candidate wording, not live Git status;
 canonical state records local integration. No UX changes made during integration.
 Strict Phase0 STOP/E1 BLOCKED/H2 unapproved. Stop; next Program needs separate scope.
+
+
+## Pilot09 W3 Yahoo ranking simulation — RESEARCH_ONLY
+
+新增 [research_lab 投組規格與證據](../../V6/research_lab/experiments/PORTFOLIO_README.md)，
+branch-local UNMERGED / NOT_DEPLOYED。Pure fractional-share研究engine轉SessionRecord，
+重用既有V7 metrics與tier。Close signal→next-open entry→每N sessions下一entry open退出，
+非dataset t+h close-exit labels。參數化成本、自籌資金、missing/frozen positions、daily NAV、
+同排程等權universe、yearly/paired bootstrap均限Yahoo偏差資料研究；不改V7 admission/journal/runtime。
+Main predictions用w3_前綴，current報告只採本worktreew3_pinned獨立artifact身份；
+先前generic共享路徑替換導致的provenance錯配不作current evidence。
