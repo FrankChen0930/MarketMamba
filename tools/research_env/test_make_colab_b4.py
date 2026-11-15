@@ -34,5 +34,5 @@ def test_probe_notebook_and_bundle_contains_seq_models(tmp_path):
     nb = json.loads((out/'b7_mamba_probe.ipynb').read_text())
     code = '\n'.join(''.join(c['source']) for c in nb['cells'] if c['cell_type'] == 'code')
     compile(code, 'nb7', 'exec')
-    assert info['sha256'] in code and 'probe()' in code and 'train' not in code.lower().replace('training', '')
-    assert 'research_lab/seq_models.py' in zipfile.ZipFile(out/'b4_research_lab_bundle.zip').namelist()
+    assert info['sha256'] in code and 'gpu_env.setup' in code and 'train' not in code.lower().replace('training', '')
+    assert {'research_lab/seq_models.py', 'research_lab/gpu_env.py'} <= set(zipfile.ZipFile(out/'b4_research_lab_bundle.zip').namelist())

@@ -7,10 +7,11 @@ import argparse, hashlib, json, zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-FILES = ['__init__.py', 'matrix_baselines.py', 'significance.py', 'colab_runner.py', 'seq_models.py']
+FILES = ['__init__.py', 'matrix_baselines.py', 'significance.py', 'colab_runner.py', 'seq_models.py', 'gpu_env.py']
 E5 = '/content/drive/MyDrive/MarketMamba_V7_Corrected_E5_Replication/matrix'
 E1 = '/content/drive/MyDrive/MarketMamba_V7_E1_Rolling_Origin_Refresh/matrix/v7_e1_rolling_origin_refresh_v1'
 RESULTS = '/content/drive/MyDrive/MarketMamba_V7_B4_baselines'
+WHEELS = '/content/drive/MyDrive/MarketMamba_GPU_Wheels'
 
 
 def build_bundle(path):
@@ -113,23 +114,14 @@ shutil.rmtree("/content/b7_code", ignore_errors=True)
 zipfile.ZipFile(BUNDLE).extractall("/content/b7_code")
 sys.path.insert(0, "/content/b7_code")
 '''),
-        cell('''
-import torch
-print("torch", torch.__version__, "cuda", torch.cuda.is_available(), torch.cuda.get_device_name(0) if torch.cuda.is_available() else None)
-try:
-    import mamba_ssm
-    print("mamba_ssm already installed", getattr(mamba_ssm, "__version__", ""))
-except ImportError:
-    t = time.time()
-    r = subprocess.run([sys.executable, "-m", "pip", "install", "-q", "mamba-ssm", "causal-conv1d", "--no-build-isolation"], capture_output=True, text=True)
-    print("pip exit", r.returncode, "seconds", round(time.time() - t)); print(r.stderr[-1500:])
+        cell(f'''
+# GPU 環境入口（B7／B8 共用）：已安裝→Drive 相容 wheel→（必要時）建置；通過真實 Mamba2 forward/backward 後才保存 wheel
+from research_lab import gpu_env
+report = gpu_env.setup("{WHEELS}", allow_build=True)   # 只想重用、不想編譯：allow_build=False
 '''),
         cell('''
-from research_lab.seq_models import probe
-info = probe()
-print(json.dumps(info, indent=2, default=str))
-out = os.path.join(RESULTS_ROOT, "b7_probe_" + (info["device"] or "cpu").replace(" ", "_") + ".json")
-open(out, "w").write(json.dumps(info, indent=2, default=str)); print("saved", out)
+# 結果：status 必須是 "verified"；report["saved"] 為空代表本次沒有保存任何 wheel（不會假裝成功）
+print("status:", report["status"]); print("saved:", report["saved"]); print("verify:", report.get("verify"), report.get("verify_error"))
 '''),
     ]
     return {'cells': cells, 'metadata': {'kernelspec': {'name': 'python3', 'display_name': 'Python 3'},
