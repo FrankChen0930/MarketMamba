@@ -36,3 +36,13 @@ def test_probe_notebook_and_bundle_contains_seq_models(tmp_path):
     compile(code, 'nb7', 'exec')
     assert info['sha256'] in code and 'gpu_env.setup' in code and 'train' not in code.lower().replace('training', '')
     assert {'research_lab/seq_models.py', 'research_lab/gpu_env.py'} <= set(zipfile.ZipFile(out/'b4_research_lab_bundle.zip').namelist())
+
+
+def test_b8_notebook_compiles_and_bundle_has_runner(tmp_path):
+    out = tmp_path/'o'
+    info = json.loads(subprocess.run([sys.executable, str(SCRIPT), '--out', str(out)], capture_output=True, text=True, check=True).stdout)
+    nb = json.loads((out/'b8_seq_baselines.ipynb').read_text())
+    code = '\n'.join(''.join(c['source']) for c in nb['cells'] if c['cell_type'] == 'code')
+    compile(code, 'nb8', 'exec')
+    assert info['sha256'] in code and 'sr.run_experiment' in code and 'gpu_env.setup' in code and 'PIN_TORCH' in code
+    assert 'research_lab/seq_runner.py' in zipfile.ZipFile(out/'b4_research_lab_bundle.zip').namelist()

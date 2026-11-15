@@ -116,5 +116,5 @@ def test_e5_and_e1_registry_distinct_where_expected():
     a, b = cr.REGISTRY['E5'], cr.REGISTRY['E1']
     assert a['logical_identity'] != b['logical_identity']
     same = {k for k in a['files'] if a['files'][k] == b['files'][k]}
-    assert same == {'X.npy', 'dates.npy', 'end_indices.npy'}
+    assert same == {'X.npy', 'dates.npy', 'end_indices.npy', 'stock_ids.npy'}
     assert all(len(h) == 64 for r in (a, b) for h in r['files'].values())

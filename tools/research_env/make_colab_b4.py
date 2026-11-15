@@ -7,7 +7,7 @@ import argparse, hashlib, json, zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-FILES = ['__init__.py', 'matrix_baselines.py', 'significance.py', 'colab_runner.py', 'seq_models.py', 'gpu_env.py']
+FILES = ['__init__.py', 'matrix_baselines.py', 'significance.py', 'colab_runner.py', 'seq_models.py', 'gpu_env.py', 'seq_runner.py']
 E5 = '/content/drive/MyDrive/MarketMamba_V7_Corrected_E5_Replication/matrix'
 E1 = '/content/drive/MyDrive/MarketMamba_V7_E1_Rolling_Origin_Refresh/matrix/v7_e1_rolling_origin_refresh_v1'
 RESULTS = '/content/drive/MyDrive/MarketMamba_V7_B4_baselines'
@@ -147,6 +147,70 @@ print("status:", report["status"]); print("saved:", report["saved"]); print("ver
             'colab': {'name': 'b7_mamba_probe.ipynb', 'gpuType': 'T4'}, 'accelerator': 'GPU'}, 'nbformat': 4, 'nbformat_minor': 5}
 
 
+def b8_notebook(bundle_name, bundle_sha):
+    pin = probe_notebook(bundle_name, bundle_sha)['cells']
+    cells = [
+        cell('# Market Mamba B8：Mamba2／Samba 與 LightGBM 在同一矩陣、同一切分上的公平比較\n`RESEARCH_ONLY`。IC only，不是投組績效；標籤為 HISTORICAL_SIMULATION_PROXY、股票池有存活者偏差、E5 評估窗為已被使用過的研究窗。\n\n'
+             '## 怎麼用（每次開新的 Colab 都一樣）\n'
+             '1. 執行階段選 **GPU（T4）**，先把第 2 格 `SMOKE=True`，按「**全部執行**」。第一次會換 torch 並**自動重啟**；重啟後再按一次「**全部執行**」。\n'
+             '2. SMOKE 約數分鐘：確認能訓練、能算 IC，並印出每步耗時。**把最後一格輸出貼回來**，我們再決定完整訓練的設定。\n'
+             '3. 之後改 `SMOKE=False` 跑完整版（會逐 epoch 存檢查點，斷線後重新執行會續跑）。\n\n'
+             '前置：`' + bundle_name + '` 在 Drive `MarketMamba_V7_B4_baselines/`；wheel 在 `MarketMamba_GPU_Wheels/`（B7 已存）。', 'markdown'),
+        cell(f'''
+EXPERIMENT = "E5"        # "E5" 或 "E1"
+SMOKE = True             # True：極小設定只驗證流程與耗時
+KINDS = ("mamba2", "samba")
+MATRIX_DIRS = {{"E5": "{E5}",
+               "E1": "{E1}"}}
+RESULTS_ROOT = "{RESULTS}"
+WHEELS = "{WHEELS}"
+BUNDLE_NAME = "{bundle_name}"
+BUNDLE_SHA256 = "{bundle_sha}"
+STAGE_DIR = "/content/b8_stage"
+'''),
+        cell(f'''
+import os, sys, json, zipfile, hashlib, shutil, subprocess, time, importlib
+from google.colab import drive
+drive.mount("/content/drive")
+BUNDLE = os.path.join(RESULTS_ROOT, BUNDLE_NAME)
+assert hashlib.sha256(open(BUNDLE, "rb").read()).hexdigest() == BUNDLE_SHA256, "bundle hash mismatch"
+shutil.rmtree("/content/b8_code", ignore_errors=True)
+zipfile.ZipFile(BUNDLE).extractall("/content/b8_code")
+sys.path.insert(0, "/content/b8_code")
+for _m in [k for k in sys.modules if k == "research_lab" or k.startswith("research_lab.")]:
+    del sys.modules[_m]
+importlib.invalidate_caches()
+'''),
+        pin[2],
+        cell('''
+from research_lab import gpu_env
+env = gpu_env.setup(WHEELS, allow_build=True, allow_compile=False)
+assert env["status"] == "verified", "GPU 環境未通過驗證：" + json.dumps({k: env.get(k) for k in ("status", "steps", "verify_error")}, ensure_ascii=False)
+'''),
+        cell('''
+from research_lab import colab_runner as cr, seq_runner as sr
+src = MATRIX_DIRS[EXPERIMENT]
+local, hashes = cr.stage_and_verify(src, os.path.join(STAGE_DIR, EXPERIMENT), "y5", EXPERIMENT, extra=("y10.npy", "stock_ids.npy"))
+print("identity verified:", sorted(hashes)); print(cr.check_semantics(local, "y5", EXPERIMENT))
+t = time.time(); sr.stock_index(local); print("stock index ready", round(time.time() - t), "s")
+'''),
+        cell('''
+cfg = dict(epochs=1, steps_per_epoch=20, dates_per_batch=8, stocks_per_date=128, baseline_rows=50_000, n_boot=200) if SMOKE else {}
+seeds = (17,) if SMOKE else (17, 29, 43)
+result = sr.run_experiment(local, os.path.join(RESULTS_ROOT, "b8"), EXPERIMENT, kinds=KINDS, seeds=seeds, cfg=cfg, device="cuda", tag="smoke" if SMOKE else "full")
+'''),
+        cell('''
+import pandas as pd
+print("train/val/eval rows:", result["train_rows"], result["val_rows"], result["eval_rows"], "| common sessions:", result["common_sessions"])
+display(pd.DataFrame(result["models"]).T[["ic_mean", "ic_std", "icir", "days"]])
+display(pd.DataFrame(result["vs_lightgbm"])[["model", "mean_diff", "t_hac", "p_hac", "p_hac_holm"]])
+print("每個 (模型, seed) 的 epoch 紀錄：", {k: v.get("history") for k, v in result["models"].items() if v.get("history")})
+'''),
+    ]
+    return {'cells': cells, 'metadata': {'kernelspec': {'name': 'python3', 'display_name': 'Python 3'},
+            'colab': {'name': 'b8_seq_baselines.ipynb', 'gpuType': 'T4'}, 'accelerator': 'GPU'}, 'nbformat': 4, 'nbformat_minor': 5}
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--out', required=True, type=Path)
@@ -161,6 +225,7 @@ def main():
     sha = build_bundle(bundle)
     nb.write_text(json.dumps(notebook(bundle.name, sha), ensure_ascii=False, indent=1))
     nb7.write_text(json.dumps(probe_notebook(bundle.name, sha), ensure_ascii=False, indent=1))
+    (a.out/'b8_seq_baselines.ipynb').write_text(json.dumps(b8_notebook(bundle.name, sha), ensure_ascii=False, indent=1))
     (a.out/(a.bundle_name+'.sha256')).write_text(f'{sha}  {bundle.name}\n')
     print(json.dumps(dict(bundle=str(bundle), sha256=sha, notebook=str(nb))))
 

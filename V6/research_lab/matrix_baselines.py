@@ -64,7 +64,7 @@ DEFAULT_PARAMS = dict(ridge_alpha=100., lgbm_estimators=200, lgbm_leaves=31, lgb
 class Context:
     """Prepared arrays for one (matrix, label). X stays memory-mapped; only fit/eval rows are copied."""
 
-    def __init__(self, directory, label='y5', max_train_rows=500_000, seed=17, fit_target='rank'):
+    def __init__(self, directory, label='y5', max_train_rows=500_000, seed=17, fit_target='rank', row_mask=None):
         if fit_target not in ('raw', 'demean', 'rank'):
             raise ValueError('fit_target must be raw, demean or rank')
         self.directory, self.label, self.seed = Path(directory), label, seed
@@ -81,6 +81,8 @@ class Context:
         self.fit_idx = _sample_train(train_idx, max_train_rows, seed)
         self.y_fit = self._fit_labels(train_idx)
         self.eval_mask = self.splits == EVAL
+        if row_mask is not None:      # evaluate on a common row subset (e.g. rows a sequence model can score)
+            self.eval_mask = self.eval_mask & np.asarray(row_mask, dtype=bool)
         self.eval_idx = np.flatnonzero(self.eval_mask)
         self.X_fit = np.asarray(a['X'][self.fit_idx], dtype=np.float32)
         self.X_eval = np.asarray(a['X'][self.eval_idx], dtype=np.float32)

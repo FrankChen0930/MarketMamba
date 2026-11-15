@@ -27,6 +27,7 @@ _COMMON = {
     'X.npy': '67358805f50b0dafaf70c29971def766191f537042cd1dc48518e2f45df18aed',
     'dates.npy': 'b0632562242f107855770742762f15fa1f82b6d8e012dce8e4cfd1d68c641016',
     'end_indices.npy': 'dd6c6e8e8e4c44ad28f42e9dd266f87c3baebbdc0f986e9aa6865789c9d3516f',
+    'stock_ids.npy': '8d5cc83037d2470f051d8ff40e5e7c8edb2d436e0db195dea78df5fca8567c21',   # identical in both manifests
 }
 REGISTRY = {
     'E5': dict(rows=7423927, logical_identity='f6f00cef79abf0c47b597c6c2bcef67a6ce44e483b83864629b967c145fc17d4',
@@ -68,8 +69,8 @@ def code_identity():
     return {n: sha256_file(here/n) for n in CODE_FILES}
 
 
-def needed_files(label):
-    return ('X.npy', f'{label}.npy', 'dates.npy', 'splits.npy', 'end_indices.npy')
+def needed_files(label, extra=()):
+    return tuple(dict.fromkeys(('X.npy', f'{label}.npy', 'dates.npy', 'splits.npy', 'end_indices.npy', *extra)))
 
 
 def check_manifest(manifest, expect, registry=REGISTRY):
@@ -91,7 +92,7 @@ def check_manifest(manifest, expect, registry=REGISTRY):
         raise IdentityError(f'manifest is not {expect}: ' + ', '.join(problems))
 
 
-def stage_and_verify(source, dest, label, expect, registry=REGISTRY, copy=True):
+def stage_and_verify(source, dest, label, expect, registry=REGISTRY, copy=True, extra=()):
     """Copy needed arrays to local disk while hashing the bytes read; fail on any mismatch."""
     source, dest = Path(source), Path(dest)
     manifest = json.loads((source/'manifest.json').read_text())
@@ -99,7 +100,7 @@ def stage_and_verify(source, dest, label, expect, registry=REGISTRY, copy=True):
     dest.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(source/'manifest.json', dest/'manifest.json')
     hashes = {}
-    for name in needed_files(label):
+    for name in needed_files(label, extra):
         want = registry[expect]['files'][name]
         src, dst = source/name, dest/name
         if copy and not (dst.exists() and dst.stat().st_size == src.stat().st_size and sha256_file(dst) == want):

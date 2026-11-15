@@ -1,0 +1,239 @@
+"""B8: train/evaluate official Mamba2 / Samba rankers on a V7 matrix with B4's X, label and split. RESEARCH_ONLY.
+
+Same contract as matrix_baselines: fit on split==1 (inner chronological validation = last VAL_DATES train sessions,
+purged from fitting), evaluate once on split==2. A sample needs a complete WINDOW-session history of the same stock
+(no gaps); baselines are re-scored on exactly the same evaluation rows so IC and paired tests are like-for-like.
+Loss: per-session centred-rank MSE + LISTNET_W * ListNet-top1, heads 5d:10d = 1:.5 (V7 style; ListNet temperature is
+this module's choice, not a V7 constant). Mixer is the official mamba_ssm.Mamba2 unless a test injects one.
+"""
+from __future__ import annotations
+
+import math
+import time
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+from . import matrix_baselines as mb
+from .seq_models import SeqRanker
+from .significance import compare_models
+
+WINDOW, VAL_DATES, LISTNET_W, LISTNET_T = 60, 126, 0.5, 10.
+
+
+def centred_rank(values, seg):
+    """Per-session centred percentile rank (mean exactly 0), computed on the full cross-section given."""
+    s = pd.Series(values)
+    g = s.groupby(seg)
+    return (g.rank(pct=True)-(1+1/g.transform('count'))/2).to_numpy(np.float32)
+
+
+def stock_index(directory):
+    """Integer id per matrix row from stock_ids.npy (U32 strings, ~1 GB): computed once, cached next to the matrix copy."""
+    f = Path(directory)/'stock_idx.npy'
+    if f.exists():
+        return np.load(f)
+    _, inv = np.unique(np.load(Path(directory)/'stock_ids.npy', mmap_mode='r'), return_inverse=True)
+    inv = inv.astype(np.int32)
+    tmp = Path(str(f)+'.tmp.npy')
+    np.save(tmp, inv)
+    tmp.replace(f)
+    return inv
+
+
+class SeqData:
+    def __init__(self, directory, stock_idx=None, labels=('y5', 'y10'), window=WINDOW):
+        self.window = window
+        self.manifest, a = mb.load_matrix(directory, labels=labels)
+        self.X = a['X']
+        self.y = {k: np.asarray(a[k], dtype=np.float32) for k in labels}
+        self.splits, self.ends = np.asarray(a['splits']), np.asarray(a['end_indices'])
+        n = len(self.splits)
+        self.date_idx = np.repeat(np.arange(len(self.ends), dtype=np.int32), np.diff(self.ends, prepend=0))
+        if stock_idx is None:
+            stock_idx = stock_index(directory)
+        self.stock_idx = np.asarray(stock_idx, dtype=np.int32)
+        self.n_stocks = int(self.stock_idx.max())+1
+        self.row_of = np.full((len(self.ends), self.n_stocks), -1, dtype=np.int32)
+        self.row_of[self.date_idx, self.stock_idx] = np.arange(n, dtype=np.int32)
+        present = (self.row_of >= 0).astype(np.int16).cumsum(axis=0)
+        lag = np.vstack([np.zeros((window, self.n_stocks), np.int16), present[:-window]])
+        full = (present-lag) == window                                # complete `window` sessions ending at t
+        full[:window-1] = False
+        self.eligible = full[self.date_idx, self.stock_idx]           # per matrix row
+        self.dates = pd.to_datetime(np.asarray(a['dates'])[self.ends-1])
+        self.feature_names = self.manifest['feature_order']
+
+    def windows(self, rows):
+        t, s = self.date_idx[rows], self.stock_idx[rows]
+        idx = self.row_of[t[:, None]+np.arange(-self.window+1, 1), s[:, None]]
+        assert (idx >= 0).all(), 'incomplete window requested'
+        x = np.asarray(self.X[idx.reshape(-1)], dtype=np.float32).reshape(len(rows), self.window, -1)
+        return np.clip(np.nan_to_num(x, nan=0., posinf=0., neginf=0.), -10., 10.)
+
+    def split_rows(self, val_dates=VAL_DATES):
+        train_dates = np.unique(self.date_idx[(self.splits == mb.TRAIN) & self.eligible])
+        val_first = train_dates[-val_dates]
+        fit_last = train_dates[-val_dates-20]           # 20-session embargo >= max label horizon
+        e = self.eligible & np.isfinite(self.y['y5']) & np.isfinite(self.y['y10'])
+        tr = np.flatnonzero((self.splits == mb.TRAIN) & e & (self.date_idx <= fit_last))
+        va = np.flatnonzero((self.splits == mb.TRAIN) & e & (self.date_idx >= val_first))
+        ev = np.flatnonzero((self.splits == mb.EVAL) & self.eligible)
+        return tr, va, ev
+
+
+def listnet(score, target):
+    return -(nn_softmax(target*LISTNET_T)*log_softmax(score)).sum(-1).mean()
+
+
+def nn_softmax(x):
+    import torch
+    return torch.softmax(x, -1)
+
+
+def log_softmax(x):
+    import torch
+    return torch.log_softmax(x, -1)
+
+
+def session_loss(out, t5, t10, groups):
+    """groups: (D, S) index matrix of one session per row."""
+    import torch
+    total = 0.
+    for w, key, tgt in ((1., 'score5', t5), (.5, 'score10', t10)):
+        sc, tg = out[key][groups], tgt[groups]
+        total = total + w*(torch.mean((sc-tg)**2)+LISTNET_W*listnet(sc, tg))
+    return total/1.5
+
+
+def sample_batch(rng, rows_by_date, dates, d, s):
+    chosen = rng.choice(len(dates), size=min(d, len(dates)), replace=False)
+    picks = [rng.choice(rows_by_date[dates[i]], size=s, replace=len(rows_by_date[dates[i]]) < s) for i in chosen]
+    return np.stack(picks)
+
+
+def predict(model, data, rows, device, chunk=2048):
+    import torch
+    model.eval()
+    out = np.zeros((len(rows), 2), np.float32)
+    with torch.no_grad():
+        for i in range(0, len(rows), chunk):
+            x = torch.from_numpy(data.windows(rows[i:i+chunk])).to(device)
+            o = model(x)
+            out[i:i+chunk] = torch.stack([o['score5'], o['score10']], 1).float().cpu().numpy()
+    return out
+
+
+def daily_ic_rows(data, rows, scores, label):
+    """Spearman IC per session over `rows` (scores aligned to rows)."""
+    df = pd.DataFrame(dict(d=data.date_idx[rows], s=scores, y=data.y[label][rows]))
+    df = df[np.isfinite(df.y) & np.isfinite(df.s)]
+    r = df.groupby('d').apply(lambda g: g.s.rank().corr(g.y.rank()) if len(g) >= 10 else np.nan, include_groups=False)
+    r.index = data.dates[r.index.to_numpy()]
+    return r.dropna()
+
+
+def train_one(kind, seed, data, tr, va, cfg, device='cuda', mixer_factory=None, mixer_kw=None, ckpt=None, log=print):
+    import torch
+    torch.manual_seed(seed)
+    rng = np.random.default_rng(seed)
+    model = SeqRanker(kind, n_features=len(data.feature_names), d_model=cfg['d_model'], n_layers=cfg['n_layers'],
+                      mixer_kw=mixer_kw if mixer_kw is not None else cfg['mixer_kw'], window=cfg.get('attn_window', 16),
+                      mixer_factory=mixer_factory).to(device)
+    opt = torch.optim.AdamW(model.parameters(), lr=cfg['lr'], weight_decay=cfg['weight_decay'])
+    steps = cfg['epochs']*cfg['steps_per_epoch']
+    warm = max(1, int(.15*steps))
+    sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda i: (i+1)/warm if i < warm else .5*(1+math.cos(math.pi*(i-warm)/max(1, steps-warm))))
+    t5, t10 = (centred_rank(data.y[k][tr], data.date_idx[tr]) for k in ('y5', 'y10'))
+    dtr = data.date_idx[tr]
+    cuts = np.flatnonzero(np.diff(dtr))+1                      # tr is sorted by row == sorted by date
+    by_date = {int(data.date_idx[g[0]]): g for g in np.split(tr, cuts) if len(g) >= cfg['min_names']}
+    tt5, tt10 = torch.from_numpy(t5).to(device), torch.from_numpy(t10).to(device)
+    dates = sorted(by_date)
+    state = dict(epoch=0, best=-9., bad=0, history=[])
+    if ckpt and Path(ckpt).exists():
+        c = torch.load(ckpt, map_location=device)
+        model.load_state_dict(c['model']); opt.load_state_dict(c['opt']); sched.load_state_dict(c['sched']); state = c['state']
+        rng = np.random.default_rng(seed+state['epoch']); log(f'[resume] {kind} s{seed} from epoch {state["epoch"]}')
+    best_sd = None
+    while state['epoch'] < cfg['epochs'] and state['bad'] < cfg['patience']:
+        model.train(); t0 = time.time(); losses = []
+        for _ in range(cfg['steps_per_epoch']):
+            g = sample_batch(rng, by_date, dates, cfg['dates_per_batch'], cfg['stocks_per_date'])
+            flat = g.reshape(-1)
+            x = torch.from_numpy(data.windows(flat)).to(device)
+            idx = torch.from_numpy(np.searchsorted(tr, g.reshape(-1))).to(device)
+            sc = model(x)
+            local = torch.arange(flat.size, device=device).view(g.shape)
+            loss = session_loss(sc, tt5[idx], tt10[idx], local)
+            opt.zero_grad(set_to_none=True); loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.); opt.step(); sched.step()
+            losses.append(float(loss.detach()))
+        ic = daily_ic_rows(data, va, predict(model, data, va, device)[:, 0], 'y5')
+        state['epoch'] += 1
+        score = float(ic.mean()) if len(ic) else -9.
+        state['history'].append(dict(epoch=state['epoch'], loss=float(np.mean(losses)), val_ic5=score, seconds=time.time()-t0))
+        if score > state['best']:
+            state['best'], state['bad'] = score, 0
+            best_sd = {k: v.detach().clone() for k, v in model.state_dict().items()}
+        else:
+            state['bad'] += 1
+        log(f'[{kind} s{seed}] epoch {state["epoch"]} loss {np.mean(losses):.4f} val_ic5 {score:+.4f} ({time.time()-t0:.0f}s)')
+        if ckpt:
+            tmp = str(ckpt)+'.tmp'
+            torch.save(dict(model=model.state_dict(), opt=opt.state_dict(), sched=sched.state_dict(), state=state), tmp)
+            Path(tmp).replace(ckpt)
+    if best_sd is not None:
+        model.load_state_dict(best_sd)
+    return model, state
+
+
+def run_experiment(directory, out_root, expect, kinds=('mamba2', 'samba'), seeds=(17,), cfg=None, device='cuda',
+                   mixer_factory=None, stock_idx=None, tag='', log=print):
+    """Train each (kind, seed) once on the inner split, score the evaluation rows, compare with baselines on identical rows."""
+    import hashlib
+    import json
+    cfg = {**DEFAULT_CFG, **(cfg or {})}
+    root = Path(out_root)/f'{expect}_seq_{hashlib.sha256(json.dumps([cfg, list(kinds), list(seeds), tag], sort_keys=True).encode()).hexdigest()[:10]}'
+    if (root/'result.json').exists():
+        log(f'[skip] complete: {root}')
+        return json.loads((root/'result.json').read_text())
+    (root/'ckpt').mkdir(parents=True, exist_ok=True); (root/'scores').mkdir(exist_ok=True); (root/'daily_ic').mkdir(exist_ok=True)
+    data = SeqData(directory, stock_idx)
+    tr, va, ev = data.split_rows(cfg['val_dates'])
+    rowmask = np.zeros(len(data.splits), bool); rowmask[ev] = True
+    ctx = mb.Context(directory, 'y5', cfg['baseline_rows'], 17, 'rank', row_mask=rowmask)
+    daily = {m: mb.model_daily_ic(ctx, mb.compute_scores(ctx, m)) for m in ('reversal_ret5', 'ridge', 'lightgbm')}
+    models = {}
+    for kind in kinds:
+        for seed in seeds:
+            key = f'{kind}_s{seed}'
+            sc_file = root/'scores'/f'{key}.npy'
+            if sc_file.exists():
+                sc = np.load(sc_file); log(f'[resume] {key} scores exist')
+            else:
+                m, st = train_one(kind, seed, data, tr, va, cfg, device, mixer_factory, None, root/'ckpt'/f'{key}.pt', log)
+                sc = predict(m, data, ev, device); np.save(sc_file, sc)
+                models[key] = dict(history=st['history'], best_val_ic5=st['best'])
+            ic = daily_ic_rows(data, ev, sc[:, 0], 'y5')
+            ic.rename('ic').rename_axis('date').reset_index().to_csv(root/'daily_ic'/f'{key}.csv', index=False)
+            daily[key] = ic
+            models.setdefault(key, {}).update(mb.summarize_daily(ic))
+    for k in ('reversal_ret5', 'ridge', 'lightgbm'):
+        models[k] = mb.summarize_daily(daily[k])
+    common = pd.concat(daily, axis=1).dropna().index
+    aligned = {k: v.loc[common] for k, v in daily.items()}
+    sig = compare_models(aligned, 'lightgbm', 5, n_boot=cfg['n_boot'], seed=17) if len(common) >= 20 else []
+    res = dict(experiment=expect, config=cfg, kinds=list(kinds), seeds=list(seeds), train_rows=int(len(tr)), val_rows=int(len(va)),
+               eval_rows=int(len(ev)), common_sessions=int(len(common)), models=models, vs_lightgbm=sig,
+               caveats=['rows limited to complete 60-session windows; baselines re-scored on the same evaluation rows',
+                        'evaluation window is research-used; labels are HISTORICAL_SIMULATION_PROXY; universe survivorship-biased',
+                        'IC only; not portfolio performance', 'RESEARCH_ONLY'])
+    (root/'result.json').write_text(json.dumps(res, indent=2, allow_nan=False, default=float))
+    return res
+
+
+DEFAULT_CFG = dict(d_model=64, n_layers=2, mixer_kw=dict(d_state=16, headdim=8, expand=2), attn_window=16, lr=3e-4,
+                   weight_decay=.01, epochs=10, steps_per_epoch=400, patience=3, dates_per_batch=16, stocks_per_date=256,
+                   min_names=64, baseline_rows=500_000, n_boot=1000, val_dates=VAL_DATES)
