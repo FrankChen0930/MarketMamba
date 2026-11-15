@@ -15,6 +15,7 @@ B2b：v7 labels v2 的 1,974 檔最後出現日全在 2026（2005–2025 下市�
 下市股覆蓋（TWSE官方＋TPEx官方〔API僅回每年前10筆，缺254〕＋FinMind）：2005後402個股票型事件中323(80%)完全缺席、76為TPEx→TWSE轉板（轉板前歷史缺）、0正常涵蓋；
 新增 `pit_universe.py`、`tools/research_env/pit_delisting.py`、`seq_models.py`（官方Mamba2/Samba定義，未訓練）。研究證據仍為 RESEARCH_ONLY。
 B7：官方 Mamba2／Samba 於 Colab T4（py3.13、torch 2.10.0+cu128、mamba-ssm 2.3.2.post1、causal-conv1d 1.7.0）forward/backward 煙霧測試通過（僅相容性，未訓練）；共用環境入口 `gpu_env.setup()`；mamba-ssm／causal-conv1d wheel 已存 Drive `MarketMamba_GPU_Wheels/`（py3.13、torch 2.10.0+cu128、T4 cc7.5；重用路徑尚待下一個全新 runtime 實測）。
+B3-P1 pilot（2012／2019 月底快照）：標籤樣本在任一時點缺約 11–15% 當時有報價的普通股；多數月底「消失」為暫時缺席，事件名單仍不完整。B8 `seq_runner.py`（官方 Mamba2/Samba 於 B4 同矩陣／切分，基線在相同評估列重算）已完成並測試，尚未真實訓練。
 Yahoo 預測配對檢定：僅 5 日 LightGBM 於 Holm 後顯著優於 reversal5，GRU／簡化 SSM 不顯著。
 
 ## pilot09-w4 research results surface — branch-local
