@@ -133,7 +133,7 @@ report = gpu_env.setup("{WHEELS}", allow_build=True, allow_compile=False)   # �
 '''),
         cell('''
 # 結果：status 必須是 "verified"；report["saved"] 為空代表本次沒有保存任何 wheel（不會假裝成功）
-print("status:", report["status"]); print("saved:", report["saved"]); print("verify:", report.get("verify"), report.get("verify_error"))
+print("status:", report["status"]); print("saved:", report["saved"]); print("verify:", report.get("verify"), report.get("verify_error"))\nprint("steps:", *report["steps"], sep="\\n  "); print("diagnostics:", json.dumps(report.get("diagnostics"), indent=1))
 '''),
     ]
     return {'cells': cells, 'metadata': {'kernelspec': {'name': 'python3', 'display_name': 'Python 3'},

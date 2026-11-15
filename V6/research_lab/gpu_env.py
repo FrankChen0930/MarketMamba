@@ -125,9 +125,38 @@ def prebuilt_check(fp, versions=None, urlopen=None):
     return out
 
 
-def verify_official_mamba2(device='cuda'):
-    """Real Mamba2 GPU forward+backward (official class, official kernels). Raises on any failure."""
+USABLE = {'mamba-ssm': 'mamba_ssm', 'causal-conv1d': 'causal_conv1d.cpp_functions'}   # modules that must import
+
+
+def diagnose(importable=None):
+    """Import results and installed versions of the pieces Mamba2's fused path needs (for the report)."""
+    import importlib
+    d = {'imports': {}, 'versions': {}}
+    for m in ('mamba_ssm', 'mamba_ssm.ops.triton.ssd_combined', 'causal_conv1d', 'causal_conv1d.cpp_functions'):
+        try:
+            importlib.import_module(m)
+            d['imports'][m] = 'ok'
+        except Exception as e:  # noqa: BLE001
+            d['imports'][m] = f'{type(e).__name__}: {str(e)[:200]}'
+    for p in ('mamba-ssm', 'causal-conv1d', 'torch', 'triton'):
+        try:
+            d['versions'][p] = metadata.version(p)
+        except metadata.PackageNotFoundError:
+            d['versions'][p] = None
+    return d
+
+
+def verify_official_mamba2(device='cuda', require_causal=True):
+    """Real Mamba2 GPU forward+backward (official class, official kernels). Raises on any failure.
+    mamba-ssm 2.3.2.post1's default fused path (use_mem_eff_path=True) calls causal_conv1d_fwd_function, which is
+    None when causal_conv1d fails to import -> an opaque "'NoneType' object is not callable"; check it first."""
     import torch
+    if require_causal:
+        try:
+            from causal_conv1d.cpp_functions import causal_conv1d_fwd_function  # noqa: F401
+        except Exception as e:  # noqa: BLE001
+            raise RuntimeError(f'causal_conv1d unusable ({type(e).__name__}: {str(e)[:200]}); '
+                               'the official Mamba2 fused path needs it (reinstall a wheel built for this torch)') from e
     from mamba_ssm import Mamba2
     from mamba_ssm.modules.mamba2 import Mamba2 as Official
     from .seq_models import SeqRanker, mamba2_dims
@@ -157,54 +186,55 @@ def _import_ok(pkg):
 
 
 def setup(store, allow_build=True, allow_compile=False, versions=None, with_causal_conv1d=True, work='/content/gpu_wheels_build',
-          run=subprocess.run, fp=None, verify=verify_official_mamba2, importable=_import_ok, log=print, prebuilt=prebuilt_check):
+          run=subprocess.run, fp=None, verify=verify_official_mamba2, importable=_import_ok, log=print, prebuilt=prebuilt_check,
+          diagnostics=diagnose):
     fp = fp or fingerprint()
     versions = {**DEFAULT_VERSIONS, **(versions or {})}
     want = ['mamba-ssm'] + (['causal-conv1d'] if with_causal_conv1d else [])
     rep = dict(fingerprint=fp, store=str(store), steps=[], saved=[], status=None)
     Path(store).mkdir(parents=True, exist_ok=True)
-    built = {}
+    built, cache = {}, {}
     pip = lambda *a: run([sys.executable, '-m', 'pip', *a], capture_output=True, text=True)
+    ok = lambda pkg: importable(USABLE[pkg])
+    step = rep['steps'].append
 
-    if importable('mamba_ssm'):
-        rep['steps'].append('already_installed')
-    else:
+    def ensure(pkg):
+        if ok(pkg):
+            return step(f'{pkg}: usable')
         found = find_wheels(store, fp)
-        if all(w in found for w in ['mamba-ssm']):
-            files = [str(found[w][0]) for w in want if w in found]
-            r = pip('install', '-q', '--no-deps', '--no-index', *files)
-            rep['steps'].append(f'install_from_store rc={r.returncode} files={[Path(f).name for f in files]}')
+        if pkg in found:
+            r = pip('install', '-q', '--no-deps', '--no-index', '--force-reinstall', str(found[pkg][0]))
+            step(f'{pkg}: install_from_store rc={r.returncode} {found[pkg][0].name}')
+            if ok(pkg):
+                return
         else:
-            rep['steps'].append('no_compatible_wheel_in_store')
-        pb = prebuilt(fp, versions) if not importable('mamba_ssm') and allow_build else None
-        if pb is not None:
-            rep['prebuilt'] = pb
-            rep['steps'].append('prebuilt_check ' + pb['tag'] + ': ' + ', '.join(f'{k}={v.get("available")}' for k, v in pb.items() if isinstance(v, dict)))
-        has_prebuilt = bool(pb and pb.get('mamba-ssm', {}).get('available'))
-        if not importable('mamba_ssm') and allow_build and not has_prebuilt and not allow_compile:
-            rep['steps'].append(f'no_official_prebuilt_for_torch{fp["torch"]}_cu{fp["cuda"]}: not compiling (allow_compile=False). '
-                                'Pin torch to a version with an official wheel (see roadmap 8.6) or set allow_compile=True (~40 min).')
-        elif not importable('mamba_ssm') and allow_build:
-            Path(work).mkdir(parents=True, exist_ok=True)
-            for pkg in want:
-                spec = pkg+(f'=={versions[pkg]}' if versions.get(pkg) else '')
-                t = time.time()
-                r = pip('wheel', '-q', '--no-deps', '--no-build-isolation', '-w', work, spec)
-                sec = time.time()-t
-                rep['steps'].append(f'pip_wheel {spec} rc={r.returncode} {sec:.0f}s')
-                if r.returncode:
-                    rep['steps'].append(r.stderr[-800:])
-                    if pkg == 'mamba-ssm':
-                        break
-                    continue
-                w = sorted(Path(work).glob(f'{pkg.replace("-", "_")}-*.whl'), key=lambda p: p.stat().st_mtime)[-1]
-                built[pkg] = (w, w.name.split('-')[1], 'built' if sec > 180 else 'prebuilt_download_or_fast_build', sec)
-            if built:
-                pip('install', '-q', '--no-deps', '--no-index', *[str(v[0]) for v in built.values()])
-        if not importable('mamba_ssm') and not allow_build:
-            rep['steps'].append('build_not_allowed')
+            step(f'{pkg}: no_compatible_wheel_in_store')
+        if not allow_build:
+            return step(f'{pkg}: build_not_allowed')
+        if 'pb' not in cache:
+            cache['pb'] = prebuilt(fp, versions)
+            rep['prebuilt'] = cache['pb']
+            step('prebuilt_check ' + cache['pb']['tag'] + ': ' + ', '.join(f'{k}={v.get("available")}' for k, v in cache['pb'].items() if isinstance(v, dict)))
+        if not cache['pb'].get(pkg, {}).get('available') and not allow_compile:
+            return step(f'{pkg}: no_official_prebuilt_for_torch{fp["torch"]}_cu{fp["cuda"]}: not compiling (allow_compile=False). '
+                        'Pin torch to a version with an official wheel (roadmap 8.6) or set allow_compile=True (~40 min).')
+        Path(work).mkdir(parents=True, exist_ok=True)
+        spec = pkg+(f'=={versions[pkg]}' if versions.get(pkg) else '')
+        t = time.time()
+        r = pip('wheel', '-q', '--no-deps', '--no-build-isolation', '-w', work, spec)
+        sec = time.time()-t
+        step(f'{pkg}: pip_wheel {spec} rc={r.returncode} {sec:.0f}s')
+        if r.returncode:
+            return step(r.stderr[-800:])
+        w = sorted(Path(work).glob(f'{pkg.replace("-", "_")}-*.whl'), key=lambda p: p.stat().st_mtime)[-1]
+        built[pkg] = (w, w.name.split('-')[1], 'built' if sec > 180 else 'prebuilt_download_or_fast_build', sec)
+        r = pip('install', '-q', '--no-deps', '--no-index', '--force-reinstall', str(w))
+        step(f'{pkg}: install_built rc={r.returncode}')
 
-    if not importable('mamba_ssm'):
+    for pkg in want:
+        ensure(pkg)
+    rep['diagnostics'] = diagnostics()
+    if not ok('mamba-ssm'):
         rep['status'] = 'unavailable'
     else:
         try:
@@ -218,12 +248,12 @@ def setup(store, allow_build=True, allow_compile=False, versions=None, with_caus
         if not built:
             for pkg, (w, ver) in pip_cache_wheels(fp, run=run).items():
                 built[pkg] = (w, ver, 'pip_cache_harvest', None)
-            rep['steps'].append('pip_cache_harvest found=' + str(sorted(built)) if built else 'pip_cache_harvest: no matching cached wheel (nothing saved)')
+            step('pip_cache_harvest found=' + str(sorted(built)) if built else 'pip_cache_harvest: no matching cached wheel (nothing saved)')
         for pkg, (w, ver, source, sec) in built.items():
             dst, how = save_wheel(w, store, fp, pkg, ver, source, sec)
             rep['saved'].append(dict(package=pkg, file=dst.name, how=how, sha256=sha256_file(dst), source=source))
     tag = (fp.get('gpu') or 'cpu').replace(' ', '_')
     out = Path(store)/f'env_report_{tag}_{fp["py_tag"]}_torch{fp["torch"]}_cu{fp["cuda"]}.json'
     out.write_text(json.dumps(rep, indent=2, default=str))
-    log(json.dumps({k: rep[k] for k in ('status', 'steps', 'saved')}, indent=1, default=str))
+    log(json.dumps({k: rep[k] for k in ('status', 'steps', 'saved', 'verify_error') if k in rep}, indent=1, default=str))
     return rep

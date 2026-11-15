@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 import pytest
 from research_lab import gpu_env as g
 
@@ -44,8 +45,8 @@ def test_pip_cache_harvest_matches_tag_and_installed_version(tmp_path, monkeypat
     assert list(got) == ['mamba-ssm'] and 'cp312' in got['mamba-ssm'][0].name   # causal wheel version differs -> excluded
 
 
-YES = lambda fp, v=None: {'tag': 't', 'mamba-ssm': {'available': True}}
-NO = lambda fp, v=None: {'tag': 't', 'mamba-ssm': {'available': False}}
+YES = lambda fp, v=None: {'tag': 't', 'mamba-ssm': {'available': True}, 'causal-conv1d': {'available': True}}
+NO = lambda fp, v=None: {'tag': 't', 'mamba-ssm': {'available': False}, 'causal-conv1d': {'available': False}}
 
 
 class Runner:
@@ -60,60 +61,57 @@ class Runner:
         return type('R', (), dict(returncode=0, stdout='', stderr=''))()
 
 
-def state(installed=False):
-    s = {'on': installed}
-    return s, (lambda pkg: s['on'])
+def make_env(work, mamba=False, causal=False, produce=True):
+    """Per-module install state; a `pip install <wheel>` flips the module its filename names."""
+    st = {'mamba_ssm': mamba, 'causal_conv1d.cpp_functions': causal}
+    runner = Runner(work, produce)
+    def run(cmd, **kw):
+        r = runner(cmd, **kw)
+        if cmd[3] == 'install':
+            for a in cmd:
+                n = Path(a).name
+                if n.startswith('mamba_ssm'):
+                    st['mamba_ssm'] = True
+                if n.startswith('causal_conv1d'):
+                    st['causal_conv1d.cpp_functions'] = True
+        return r
+    return st, (lambda m: st[m]), run, runner
+
+
+def go(tmp, store='store', work=None, **kw):
+    kw.setdefault('prebuilt', YES)
+    return g.setup(tmp/store, fp=FP, work=str(work or tmp/'work'), diagnostics=lambda: {}, log=lambda *_: None, **kw)
 
 
 def test_setup_build_then_save_only_after_verify(tmp_path):
     work = tmp_path/'work'; work.mkdir()
-    s, imp = state(False)
-    run = Runner(work)
-    def flip(cmd, **kw):
-        r = run(cmd, **kw)
-        if cmd[3] == 'install':
-            s['on'] = True
-        return r
-    rep = g.setup(tmp_path/'store', fp=FP, run=flip, work=str(work), verify=lambda: {'ok': 1}, importable=imp, log=lambda *_: None, prebuilt=YES)
+    st, imp, run, _ = make_env(work)
+    rep = go(tmp_path, run=run, verify=lambda: {'ok': 1}, importable=imp)
     assert rep['status'] == 'verified' and {x['package'] for x in rep['saved']} == {'mamba-ssm', 'causal-conv1d'}
     assert all((tmp_path/'store'/x['file']).exists() for x in rep['saved'])
-    # second environment: store hit, no build, nothing re-saved as new
-    s['on'] = False
-    run2 = Runner(work, produce=False)
-    def flip2(cmd, **kw):
-        r = run2(cmd, **kw)
-        if cmd[3] == 'install':
-            s['on'] = True
-        return r
-    rep2 = g.setup(tmp_path/'store', fp=FP, run=flip2, work=str(work), verify=lambda: {'ok': 1}, importable=imp, log=lambda *_: None, prebuilt=YES)
-    assert not any(c[0] == 'wheel' for c in run2.calls) and any('install_from_store' in x for x in rep2['steps'])
+    # fresh environment: Drive store hit, no build
+    st2, imp2, run2, runner2 = make_env(work)
+    rep2 = go(tmp_path, run=run2, verify=lambda: {'ok': 1}, importable=imp2)
+    assert not any(c[0] == 'wheel' for c in runner2.calls) and any('install_from_store' in x for x in rep2['steps']) and rep2['status'] == 'verified'
 
 
 def test_failed_verification_saves_nothing_and_no_build_when_disallowed(tmp_path):
     work = tmp_path/'work'; work.mkdir()
-    s, imp = state(False)
-    run = Runner(work)
-    def flip(cmd, **kw):
-        r = run(cmd, **kw)
-        if cmd[3] == 'install':
-            s['on'] = True
-        return r
     def bad():
         raise RuntimeError('kernel launch failed')
-    rep = g.setup(tmp_path/'store', fp=FP, run=flip, work=str(work), verify=bad, importable=imp, log=lambda *_: None, prebuilt=YES)
+    st, imp, run, _ = make_env(work)
+    rep = go(tmp_path, run=run, verify=bad, importable=imp)
     assert rep['status'] == 'installed_but_verification_failed' and rep['saved'] == [] and not list((tmp_path/'store').glob('*.whl'))
-    s['on'] = False
-    run3 = Runner(work)
-    rep3 = g.setup(tmp_path/'store3', allow_build=False, fp=FP, run=run3, verify=bad, importable=imp, log=lambda *_: None, prebuilt=YES)
-    assert rep3['status'] == 'unavailable' and 'build_not_allowed' in rep3['steps'] and not run3.calls
+    st3, imp3, run3, runner3 = make_env(work)
+    rep3 = go(tmp_path, store='s3', allow_build=False, run=run3, verify=bad, importable=imp3)
+    assert rep3['status'] == 'unavailable' and any('build_not_allowed' in x for x in rep3['steps']) and not runner3.calls
 
 
 def test_already_installed_without_cached_wheel_does_not_claim_saved(tmp_path):
-    s, imp = state(True)
+    st, imp, _, _ = make_env(tmp_path, mamba=True, causal=True)
     run = lambda cmd, **kw: type('R', (), dict(returncode=1, stdout='', stderr='no cache'))()
-    rep = g.setup(tmp_path/'store', fp=FP, run=run, verify=lambda: {'ok': 1}, importable=imp, log=lambda *_: None, prebuilt=YES)
-    assert rep['status'] == 'verified' and rep['saved'] == []
-    assert any('nothing saved' in x for x in rep['steps'])
+    rep = go(tmp_path, run=run, verify=lambda: {'ok': 1}, importable=imp)
+    assert rep['status'] == 'verified' and rep['saved'] == [] and any('nothing saved' in x for x in rep['steps'])
 
 
 def test_verify_requires_cuda_or_raises():
@@ -122,7 +120,7 @@ def test_verify_requires_cuda_or_raises():
         import mamba_ssm  # noqa: F401
         pytest.skip('mamba_ssm present')
     except ImportError:
-        with pytest.raises(ImportError):
+        with pytest.raises(RuntimeError, match='causal_conv1d unusable'):
             g.verify_official_mamba2()
 
 
@@ -143,15 +141,30 @@ def test_prebuilt_check_matches_tag_python_and_machine():
 
 def test_no_prebuilt_does_not_compile_unless_allowed(tmp_path):
     work = tmp_path/'work'; work.mkdir()
-    s, imp = state(False)
-    run = Runner(work)
-    rep = g.setup(tmp_path/'s', fp=FP, run=run, work=str(work), verify=lambda: {}, importable=imp, log=lambda *_: None, prebuilt=NO)
-    assert rep['status'] == 'unavailable' and not run.calls and any('not compiling' in x for x in rep['steps'])
-    run2 = Runner(work)
-    def flip(cmd, **kw):
-        r = run2(cmd, **kw)
-        if cmd[3] == 'install':
-            s['on'] = True
-        return r
-    rep2 = g.setup(tmp_path/'s2', allow_compile=True, fp=FP, run=flip, work=str(work), verify=lambda: {}, importable=imp, log=lambda *_: None, prebuilt=NO)
-    assert rep2['status'] == 'verified' and any(c[0] == 'wheel' for c in run2.calls)
+    st, imp, run, runner = make_env(work)
+    rep = go(tmp_path, run=run, verify=lambda: {}, importable=imp, prebuilt=NO)
+    assert rep['status'] == 'unavailable' and not runner.calls and any('not compiling' in x for x in rep['steps'])
+    st2, imp2, run2, runner2 = make_env(work)
+    rep2 = go(tmp_path, store='s2', allow_compile=True, run=run2, verify=lambda: {}, importable=imp2, prebuilt=NO)
+    assert rep2['status'] == 'verified' and any(c[0] == 'wheel' for c in runner2.calls)
+
+
+def test_stale_causal_conv1d_is_reinstalled_and_missing_one_is_reported(tmp_path):
+    """mamba_ssm usable but causal_conv1d unusable (e.g. built for another torch): rebuild only that package."""
+    work = tmp_path/'work'; work.mkdir()
+    st, imp, run, runner = make_env(work, mamba=True, causal=False)
+    rep = go(tmp_path, run=run, verify=lambda: {'ok': 1}, importable=imp)
+    wheels = [c for c in runner.calls if c[0] == 'wheel']
+    assert rep['status'] == 'verified' and len(wheels) == 1 and 'causal-conv1d' in wheels[0][-1]
+    assert any('--force-reinstall' in c for c in runner.calls if c[0] == 'install')
+    assert [x['package'] for x in rep['saved']] == ['causal-conv1d']
+
+
+def test_verify_names_causal_conv1d_instead_of_nonetype_error():
+    pytest.importorskip('torch')
+    try:
+        import causal_conv1d  # noqa: F401
+        pytest.skip('causal_conv1d present')
+    except ImportError:
+        with pytest.raises(RuntimeError, match='causal_conv1d unusable'):
+            g.verify_official_mamba2()
