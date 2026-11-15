@@ -113,6 +113,10 @@ assert hashlib.sha256(open(BUNDLE, "rb").read()).hexdigest() == "{bundle_sha}", 
 shutil.rmtree("/content/b7_code", ignore_errors=True)
 zipfile.ZipFile(BUNDLE).extractall("/content/b7_code")
 sys.path.insert(0, "/content/b7_code")
+import importlib
+for _m in [k for k in sys.modules if k == "research_lab" or k.startswith("research_lab.")]:
+    del sys.modules[_m]   # 同一執行階段重跑時，丟掉舊版模組快取，確保用的是剛解壓的版本
+importlib.invalidate_caches()
 '''),
         cell('''
 # （可選）固定 torch：官方 mamba-ssm／causal-conv1d 預編譯 wheel 目前只到 torch 2.10（cu12/cu13）。
