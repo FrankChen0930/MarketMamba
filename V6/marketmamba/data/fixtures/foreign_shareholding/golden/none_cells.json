@@ -1,0 +1,396 @@
+{
+ "twse": {
+  "result": {
+   "columns": [
+    "date",
+    "stock_id",
+    "stock_name",
+    "InternationalCode",
+    "ForeignInvestmentRemainingShares",
+    "ForeignInvestmentShares",
+    "ForeignInvestmentRemainRatio",
+    "ForeignInvestmentSharesRatio",
+    "ForeignInvestmentUpperLimitRatio",
+    "ChineseInvestmentUpperLimitRatio",
+    "NumberOfSharesIssued",
+    "RecentlyDeclareDate",
+    "note"
+   ],
+   "dtypes": {
+    "date": "datetime64[us]",
+    "stock_id": "str",
+    "stock_name": "str",
+    "InternationalCode": "str",
+    "ForeignInvestmentRemainingShares": "float64",
+    "ForeignInvestmentShares": "float64",
+    "ForeignInvestmentRemainRatio": "float64",
+    "ForeignInvestmentSharesRatio": "float64",
+    "ForeignInvestmentUpperLimitRatio": "float64",
+    "ChineseInvestmentUpperLimitRatio": "float64",
+    "NumberOfSharesIssued": "float64",
+    "RecentlyDeclareDate": "object",
+    "note": "str"
+   },
+   "records": [
+    {
+     "date": "2026-07-16T00:00:00",
+     "stock_id": "1101",
+     "stock_name": "台泥",
+     "InternationalCode": "TW0011010000",
+     "ForeignInvestmentRemainingShares": 900000000.0,
+     "ForeignInvestmentShares": 100000000.0,
+     "ForeignInvestmentRemainRatio": 90.0,
+     "ForeignInvestmentSharesRatio": 10.0,
+     "ForeignInvestmentUpperLimitRatio": 100.0,
+     "ChineseInvestmentUpperLimitRatio": 30.0,
+     "NumberOfSharesIssued": 1000000000.0,
+     "RecentlyDeclareDate": null,
+     "note": ""
+    },
+    {
+     "date": "2026-07-16T00:00:00",
+     "stock_id": "1102",
+     "stock_name": "None",
+     "InternationalCode": "TW0001102000",
+     "ForeignInvestmentRemainingShares": null,
+     "ForeignInvestmentShares": null,
+     "ForeignInvestmentRemainRatio": null,
+     "ForeignInvestmentSharesRatio": null,
+     "ForeignInvestmentUpperLimitRatio": null,
+     "ChineseInvestmentUpperLimitRatio": null,
+     "NumberOfSharesIssued": null,
+     "RecentlyDeclareDate": null,
+     "note": ""
+    },
+    {
+     "date": "2026-07-16T00:00:00",
+     "stock_id": "1103",
+     "stock_name": "空字串",
+     "InternationalCode": "TW0001103000",
+     "ForeignInvestmentRemainingShares": null,
+     "ForeignInvestmentShares": null,
+     "ForeignInvestmentRemainRatio": null,
+     "ForeignInvestmentSharesRatio": null,
+     "ForeignInvestmentUpperLimitRatio": null,
+     "ChineseInvestmentUpperLimitRatio": null,
+     "NumberOfSharesIssued": null,
+     "RecentlyDeclareDate": null,
+     "note": ""
+    },
+    {
+     "date": "2026-07-16T00:00:00",
+     "stock_id": "1104",
+     "stock_name": "NA字串",
+     "InternationalCode": "TW0001104000",
+     "ForeignInvestmentRemainingShares": null,
+     "ForeignInvestmentShares": null,
+     "ForeignInvestmentRemainRatio": 1000.0,
+     "ForeignInvestmentSharesRatio": 12.5,
+     "ForeignInvestmentUpperLimitRatio": null,
+     "ChineseInvestmentUpperLimitRatio": null,
+     "NumberOfSharesIssued": null,
+     "RecentlyDeclareDate": null,
+     "note": ""
+    },
+    {
+     "date": "2026-07-16T00:00:00",
+     "stock_id": "1105",
+     "stock_name": "數值型id",
+     "InternationalCode": "TW0001105000",
+     "ForeignInvestmentRemainingShares": 0.0,
+     "ForeignInvestmentShares": 500.0,
+     "ForeignInvestmentRemainRatio": 50.0,
+     "ForeignInvestmentSharesRatio": 50.0,
+     "ForeignInvestmentUpperLimitRatio": 100.0,
+     "ChineseInvestmentUpperLimitRatio": 30.0,
+     "NumberOfSharesIssued": 1000.0,
+     "RecentlyDeclareDate": null,
+     "note": ""
+    }
+   ]
+  },
+  "logs": [
+   "WARNING: foreign_shareholding TWSE 2026-07-16: 恆等式樣本不足"
+  ],
+  "calls": [
+   {
+    "url": "https://www.twse.com.tw/rwd/zh/fund/MI_QFIIS",
+    "params": {
+     "date": "20260716",
+     "selectType": "ALLBUT0999",
+     "response": "json"
+    }
+   }
+  ]
+ },
+ "tpex": {
+  "result": {
+   "columns": [
+    "date",
+    "stock_id",
+    "stock_name",
+    "InternationalCode",
+    "ForeignInvestmentRemainingShares",
+    "ForeignInvestmentShares",
+    "ForeignInvestmentRemainRatio",
+    "ForeignInvestmentSharesRatio",
+    "ForeignInvestmentUpperLimitRatio",
+    "ChineseInvestmentUpperLimitRatio",
+    "NumberOfSharesIssued",
+    "RecentlyDeclareDate",
+    "note"
+   ],
+   "dtypes": {
+    "date": "datetime64[us]",
+    "stock_id": "str",
+    "stock_name": "str",
+    "InternationalCode": "object",
+    "ForeignInvestmentRemainingShares": "float64",
+    "ForeignInvestmentShares": "float64",
+    "ForeignInvestmentRemainRatio": "float64",
+    "ForeignInvestmentSharesRatio": "float64",
+    "ForeignInvestmentUpperLimitRatio": "float64",
+    "ChineseInvestmentUpperLimitRatio": "object",
+    "NumberOfSharesIssued": "float64",
+    "RecentlyDeclareDate": "object",
+    "note": "str"
+   },
+   "records": [
+    {
+     "date": "2026-07-16T00:00:00",
+     "stock_id": "6101",
+     "stock_name": "櫃",
+     "InternationalCode": null,
+     "ForeignInvestmentRemainingShares": 95000000.0,
+     "ForeignInvestmentShares": 5000000.0,
+     "ForeignInvestmentRemainRatio": 95.0,
+     "ForeignInvestmentSharesRatio": 5.0,
+     "ForeignInvestmentUpperLimitRatio": 100.0,
+     "ChineseInvestmentUpperLimitRatio": null,
+     "NumberOfSharesIssued": 100000000.0,
+     "RecentlyDeclareDate": null,
+     "note": ""
+    },
+    {
+     "date": "2026-07-16T00:00:00",
+     "stock_id": "6102",
+     "stock_name": "None",
+     "InternationalCode": null,
+     "ForeignInvestmentRemainingShares": null,
+     "ForeignInvestmentShares": null,
+     "ForeignInvestmentRemainRatio": null,
+     "ForeignInvestmentSharesRatio": null,
+     "ForeignInvestmentUpperLimitRatio": null,
+     "ChineseInvestmentUpperLimitRatio": null,
+     "NumberOfSharesIssued": null,
+     "RecentlyDeclareDate": null,
+     "note": ""
+    },
+    {
+     "date": "2026-07-16T00:00:00",
+     "stock_id": "6103",
+     "stock_name": "負值",
+     "InternationalCode": null,
+     "ForeignInvestmentRemainingShares": -5.0,
+     "ForeignInvestmentShares": -1000.0,
+     "ForeignInvestmentRemainRatio": -0.5,
+     "ForeignInvestmentSharesRatio": -1.0,
+     "ForeignInvestmentUpperLimitRatio": 100.0,
+     "ChineseInvestmentUpperLimitRatio": null,
+     "NumberOfSharesIssued": 1000.0,
+     "RecentlyDeclareDate": null,
+     "note": ""
+    }
+   ]
+  },
+  "logs": [
+   "WARNING: foreign_shareholding TPEX 2026-07-16: 恆等式樣本不足"
+  ],
+  "calls": [
+   {
+    "url": "https://www.tpex.org.tw/www/zh-tw/insti/qfii",
+    "params": {
+     "date": "2026/07/16",
+     "response": "json"
+    }
+   }
+  ]
+ },
+ "direct": {
+  "result": {
+   "columns": [
+    "date",
+    "stock_id",
+    "stock_name",
+    "InternationalCode",
+    "ForeignInvestmentRemainingShares",
+    "ForeignInvestmentShares",
+    "ForeignInvestmentRemainRatio",
+    "ForeignInvestmentSharesRatio",
+    "ForeignInvestmentUpperLimitRatio",
+    "ChineseInvestmentUpperLimitRatio",
+    "NumberOfSharesIssued",
+    "RecentlyDeclareDate",
+    "note"
+   ],
+   "dtypes": {
+    "date": "datetime64[us]",
+    "stock_id": "str",
+    "stock_name": "str",
+    "InternationalCode": "object",
+    "ForeignInvestmentRemainingShares": "float64",
+    "ForeignInvestmentShares": "float64",
+    "ForeignInvestmentRemainRatio": "float64",
+    "ForeignInvestmentSharesRatio": "float64",
+    "ForeignInvestmentUpperLimitRatio": "float64",
+    "ChineseInvestmentUpperLimitRatio": "object",
+    "NumberOfSharesIssued": "float64",
+    "RecentlyDeclareDate": "object",
+    "note": "str"
+   },
+   "records": [
+    {
+     "date": "2026-07-16T00:00:00",
+     "stock_id": "1101",
+     "stock_name": "台泥",
+     "InternationalCode": "TW0011010000",
+     "ForeignInvestmentRemainingShares": 900000000.0,
+     "ForeignInvestmentShares": 100000000.0,
+     "ForeignInvestmentRemainRatio": 90.0,
+     "ForeignInvestmentSharesRatio": 10.0,
+     "ForeignInvestmentUpperLimitRatio": 100.0,
+     "ChineseInvestmentUpperLimitRatio": 30.0,
+     "NumberOfSharesIssued": 1000000000.0,
+     "RecentlyDeclareDate": null,
+     "note": ""
+    },
+    {
+     "date": "2026-07-16T00:00:00",
+     "stock_id": "1102",
+     "stock_name": "None",
+     "InternationalCode": "TW0001102000",
+     "ForeignInvestmentRemainingShares": null,
+     "ForeignInvestmentShares": null,
+     "ForeignInvestmentRemainRatio": null,
+     "ForeignInvestmentSharesRatio": null,
+     "ForeignInvestmentUpperLimitRatio": null,
+     "ChineseInvestmentUpperLimitRatio": null,
+     "NumberOfSharesIssued": null,
+     "RecentlyDeclareDate": null,
+     "note": ""
+    },
+    {
+     "date": "2026-07-16T00:00:00",
+     "stock_id": "1103",
+     "stock_name": "空字串",
+     "InternationalCode": "TW0001103000",
+     "ForeignInvestmentRemainingShares": null,
+     "ForeignInvestmentShares": null,
+     "ForeignInvestmentRemainRatio": null,
+     "ForeignInvestmentSharesRatio": null,
+     "ForeignInvestmentUpperLimitRatio": null,
+     "ChineseInvestmentUpperLimitRatio": null,
+     "NumberOfSharesIssued": null,
+     "RecentlyDeclareDate": null,
+     "note": ""
+    },
+    {
+     "date": "2026-07-16T00:00:00",
+     "stock_id": "1104",
+     "stock_name": "NA字串",
+     "InternationalCode": "TW0001104000",
+     "ForeignInvestmentRemainingShares": null,
+     "ForeignInvestmentShares": null,
+     "ForeignInvestmentRemainRatio": 1000.0,
+     "ForeignInvestmentSharesRatio": 12.5,
+     "ForeignInvestmentUpperLimitRatio": null,
+     "ChineseInvestmentUpperLimitRatio": null,
+     "NumberOfSharesIssued": null,
+     "RecentlyDeclareDate": null,
+     "note": ""
+    },
+    {
+     "date": "2026-07-16T00:00:00",
+     "stock_id": "1105",
+     "stock_name": "數值型id",
+     "InternationalCode": "TW0001105000",
+     "ForeignInvestmentRemainingShares": 0.0,
+     "ForeignInvestmentShares": 500.0,
+     "ForeignInvestmentRemainRatio": 50.0,
+     "ForeignInvestmentSharesRatio": 50.0,
+     "ForeignInvestmentUpperLimitRatio": 100.0,
+     "ChineseInvestmentUpperLimitRatio": 30.0,
+     "NumberOfSharesIssued": 1000.0,
+     "RecentlyDeclareDate": null,
+     "note": ""
+    },
+    {
+     "date": "2026-07-16T00:00:00",
+     "stock_id": "6101",
+     "stock_name": "櫃",
+     "InternationalCode": null,
+     "ForeignInvestmentRemainingShares": 95000000.0,
+     "ForeignInvestmentShares": 5000000.0,
+     "ForeignInvestmentRemainRatio": 95.0,
+     "ForeignInvestmentSharesRatio": 5.0,
+     "ForeignInvestmentUpperLimitRatio": 100.0,
+     "ChineseInvestmentUpperLimitRatio": null,
+     "NumberOfSharesIssued": 100000000.0,
+     "RecentlyDeclareDate": null,
+     "note": ""
+    },
+    {
+     "date": "2026-07-16T00:00:00",
+     "stock_id": "6102",
+     "stock_name": "None",
+     "InternationalCode": null,
+     "ForeignInvestmentRemainingShares": null,
+     "ForeignInvestmentShares": null,
+     "ForeignInvestmentRemainRatio": null,
+     "ForeignInvestmentSharesRatio": null,
+     "ForeignInvestmentUpperLimitRatio": null,
+     "ChineseInvestmentUpperLimitRatio": null,
+     "NumberOfSharesIssued": null,
+     "RecentlyDeclareDate": null,
+     "note": ""
+    },
+    {
+     "date": "2026-07-16T00:00:00",
+     "stock_id": "6103",
+     "stock_name": "負值",
+     "InternationalCode": null,
+     "ForeignInvestmentRemainingShares": -5.0,
+     "ForeignInvestmentShares": -1000.0,
+     "ForeignInvestmentRemainRatio": -0.5,
+     "ForeignInvestmentSharesRatio": -1.0,
+     "ForeignInvestmentUpperLimitRatio": 100.0,
+     "ChineseInvestmentUpperLimitRatio": null,
+     "NumberOfSharesIssued": 1000.0,
+     "RecentlyDeclareDate": null,
+     "note": ""
+    }
+   ]
+  },
+  "logs": [
+   "WARNING: foreign_shareholding TWSE 2026-07-16: 恆等式樣本不足",
+   "WARNING: foreign_shareholding TPEX 2026-07-16: 恆等式樣本不足"
+  ],
+  "calls": [
+   {
+    "url": "https://www.twse.com.tw/rwd/zh/fund/MI_QFIIS",
+    "params": {
+     "date": "20260716",
+     "selectType": "ALLBUT0999",
+     "response": "json"
+    }
+   },
+   {
+    "url": "https://www.tpex.org.tw/www/zh-tw/insti/qfii",
+    "params": {
+     "date": "2026/07/16",
+     "response": "json"
+    }
+   }
+  ]
+ }
+}

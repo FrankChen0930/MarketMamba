@@ -1,0 +1,109 @@
+{
+  "tasks": {
+    "task-1794703482897-zdff53": {
+      "taskId": "task-1794703482897-zdff53",
+      "type": "hive-mind",
+      "description": "Act as Ruflo coordinator for the Market Mamba V6 data-ingestion refactor defined in /home/frank/projects/ruflo-evaluation/pilot07/TASK.md. Read it fully first and follow every constraint (no ScheduleWakeup, no daemons, exit when done). Use native Claude Agent subagents with natural file ownership and Ruflo MCP task/memory tools. Save role reports under /home/frank/projects/ruflo-evaluation/pilot07/evidence/role-reports/.",
+      "priority": "normal",
+      "status": "failed",
+      "progress": 0,
+      "assignedTo": [
+        "hive-worker-1794703482316-o6su"
+      ],
+      "tags": [
+        "hive-mind",
+        "consensus:none",
+        "timeout:300s"
+      ],
+      "createdAt": "2026-11-15T00:44:42.897Z",
+      "startedAt": "2026-11-15T00:44:46.973Z",
+      "completedAt": "2026-11-15T00:49:47.288Z",
+      "result": {
+        "worker": "hive-worker-1794703482316-o6su",
+        "output": "Ignoring 3 permissions.allow entries from .claude/settings.json: this workspace has not been trusted. Run Claude Code interactively here once and accept the trust dialog, or set projects[\"/home/frank/projects/ruflo-evaluation/pilot07/marketmamba\"].hasTrustDialogAccepted: true in /home/frank/.claude.json.",
+        "exitCode": 143,
+        "durationMs": 300276
+      }
+    },
+    "task-1794703505050-hs1rjg": {
+      "taskId": "task-1794703505050-hs1rjg",
+      "type": "research",
+      "description": "T1 builder-golden: capture OLD fetcher foreign_shareholding (TWSE MI_QFIIS/TPEX qfii) golden fixtures+outputs before refactor",
+      "priority": "high",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "pilot07",
+        "golden"
+      ],
+      "createdAt": "2026-11-15T00:45:05.050Z",
+      "startedAt": "2026-11-15T00:45:14.824Z",
+      "completedAt": "2026-11-15T00:46:54.300Z",
+      "result": {
+        "golden": "13 fixtures + goldens, 12 tests pass on old code"
+      }
+    },
+    "task-1794703505103-o0zgig": {
+      "taskId": "task-1794703505103-o0zgig",
+      "type": "refactor",
+      "description": "T2 builder-refactor: extract pure parse/normalize into V6/marketmamba/data/parsers/foreign_shareholding.py; fetcher delegates; parity+integration tests (depends T1)",
+      "priority": "high",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "pilot07",
+        "refactor"
+      ],
+      "createdAt": "2026-11-15T00:45:05.103Z",
+      "startedAt": "2026-11-15T00:46:54.350Z",
+      "completedAt": "2026-11-15T00:50:41.380Z",
+      "result": {
+        "tests": "147 passed, 14 pre-existing failed"
+      }
+    },
+    "task-1794703505151-jxkik8": {
+      "taskId": "task-1794703505151-jxkik8",
+      "type": "research",
+      "description": "T3 verifier: independent code review + regression acceptance (depends T2)",
+      "priority": "high",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [],
+      "tags": [
+        "pilot07",
+        "verify"
+      ],
+      "createdAt": "2026-11-15T00:45:05.151Z",
+      "startedAt": null,
+      "completedAt": "2026-11-15T00:51:27.180Z",
+      "result": {
+        "verdict": "ACCEPT"
+      }
+    },
+    "task-1794703803566-m87jdx": {
+      "taskId": "task-1794703803566-m87jdx",
+      "type": "hive-mind",
+      "description": "CONTINUATION of the pilot07 task in /home/frank/projects/ruflo-evaluation/pilot07/TASK.md (read it fully; all constraints apply, esp. no ScheduleWakeup/daemons). The first attempt (task-1794703482897-zdff53) was killed by a 300s task timeout, NOT a design failure. Partial work exists: see evidence/role-reports/{plan,builder-golden,builder-refactor}.md and the working-tree diff (evidence/run1-partial.patch). INSPECT it first, do not redo or overwrite good work; verify it, then finish the remaining deliverables: confirm parity/integration tests pass, docs, an INDEPENDENT verifier/code-review agent, final.md and evidence/final.patch (git add -N; git diff 258ee09), before/after test results, agent roster with tools and Ruflo task/memory usage. Exit when done.",
+      "priority": "normal",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [
+        "hive-worker-1794703482316-o6su"
+      ],
+      "tags": [
+        "hive-mind",
+        "consensus:none",
+        "timeout:2700s"
+      ],
+      "createdAt": "2026-11-15T00:50:03.566Z",
+      "startedAt": "2026-11-15T00:50:07.218Z",
+      "completedAt": "2026-11-15T00:51:27.226Z",
+      "result": {
+        "final": "evidence/role-reports/final.md"
+      }
+    }
+  },
+  "version": "3.0.0"
+}

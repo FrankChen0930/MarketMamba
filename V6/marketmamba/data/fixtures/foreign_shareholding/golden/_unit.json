@@ -1,0 +1,165 @@
+{
+ "FS_COLS": [
+  "date",
+  "stock_id",
+  "stock_name",
+  "InternationalCode",
+  "ForeignInvestmentRemainingShares",
+  "ForeignInvestmentShares",
+  "ForeignInvestmentRemainRatio",
+  "ForeignInvestmentSharesRatio",
+  "ForeignInvestmentUpperLimitRatio",
+  "ChineseInvestmentUpperLimitRatio",
+  "NumberOfSharesIssued",
+  "RecentlyDeclareDate",
+  "note"
+ ],
+ "fs_num": [
+  {
+   "input": "'25,219,056'",
+   "output": 25219056.0,
+   "type": "float"
+  },
+  {
+   "input": "'87.86%'",
+   "output": 87.86,
+   "type": "float"
+  },
+  {
+   "input": "' 12.5 % '",
+   "output": 12.5,
+   "type": "float"
+  },
+  {
+   "input": "'--'",
+   "output": null,
+   "type": "NoneType"
+  },
+  {
+   "input": "''",
+   "output": null,
+   "type": "NoneType"
+  },
+  {
+   "input": "None",
+   "output": null,
+   "type": "NoneType"
+  },
+  {
+   "input": "'abc'",
+   "output": null,
+   "type": "NoneType"
+  },
+  {
+   "input": "'1e3'",
+   "output": 1000.0,
+   "type": "float"
+  },
+  {
+   "input": "'-5'",
+   "output": -5.0,
+   "type": "float"
+  },
+  {
+   "input": "'-'",
+   "output": null,
+   "type": "NoneType"
+  },
+  {
+   "input": "0",
+   "output": 0.0,
+   "type": "float"
+  },
+  {
+   "input": "5",
+   "output": 5.0,
+   "type": "float"
+  },
+  {
+   "input": "3.5",
+   "output": 3.5,
+   "type": "float"
+  },
+  {
+   "input": "nan",
+   "output": "NaN",
+   "type": "float"
+  },
+  {
+   "input": "'nan'",
+   "output": "NaN",
+   "type": "float"
+  },
+  {
+   "input": "'inf'",
+   "output": Infinity,
+   "type": "float"
+  },
+  {
+   "input": "'1,2,3'",
+   "output": 123.0,
+   "type": "float"
+  },
+  {
+   "input": "'NaN%'",
+   "output": "NaN",
+   "type": "float"
+  },
+  {
+   "input": "True",
+   "output": null,
+   "type": "NoneType"
+  },
+  {
+   "input": "'１２３'",
+   "output": 123.0,
+   "type": "float"
+  }
+ ],
+ "identity_check": {
+  "pass_12": {
+   "returns": null,
+   "logs": [
+    "INFO: foreign_shareholding TAG pass_12: 恆等式 持股比率≈持股數/發行股數 通過率 100.0%（n=12，median 差 0.0000）"
+   ]
+  },
+  "low_12": {
+   "returns": null,
+   "logs": [
+    "INFO: foreign_shareholding TAG low_12: 恆等式 持股比率≈持股數/發行股數 通過率 0.0%（n=12，median 差 80.0000）",
+    "WARNING: foreign_shareholding TAG low_12: 恆等式通過率偏低，欄位對映可能有誤"
+   ]
+  },
+  "too_few_3": {
+   "returns": null,
+   "logs": [
+    "WARNING: foreign_shareholding TAG too_few_3: 恆等式樣本不足"
+   ]
+  },
+  "zero_issued_12": {
+   "returns": null,
+   "logs": [
+    "WARNING: foreign_shareholding TAG zero_issued_12: 恆等式樣本不足"
+   ]
+  },
+  "none_cells_12": {
+   "returns": null,
+   "logs": [
+    "WARNING: foreign_shareholding TAG none_cells_12: 恆等式樣本不足"
+   ]
+  },
+  "boundary_0.05_12": {
+   "returns": null,
+   "logs": [
+    "INFO: foreign_shareholding TAG boundary_0.05_12: 恆等式 持股比率≈持股數/發行股數 通過率 0.0%（n=12，median 差 0.0500）",
+    "WARNING: foreign_shareholding TAG boundary_0.05_12: 恆等式通過率偏低，欄位對映可能有誤"
+   ]
+  },
+  "string_numeric_12": {
+   "returns": null,
+   "logs": [
+    "INFO: foreign_shareholding TAG string_numeric_12: 恆等式 持股比率≈持股數/發行股數 通過率 100.0%（n=12，median 差 0.0000）"
+   ]
+  }
+ }
+}

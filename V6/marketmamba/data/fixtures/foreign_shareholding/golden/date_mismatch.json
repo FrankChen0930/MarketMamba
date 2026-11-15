@@ -1,0 +1,57 @@
+{
+ "twse": {
+  "result": null,
+  "logs": [
+   "WARNING: TWSE QFIIS: 回傳日期 '20260715' != 請求 '20260716'"
+  ],
+  "calls": [
+   {
+    "url": "https://www.twse.com.tw/rwd/zh/fund/MI_QFIIS",
+    "params": {
+     "date": "20260716",
+     "selectType": "ALLBUT0999",
+     "response": "json"
+    }
+   }
+  ]
+ },
+ "tpex": {
+  "result": null,
+  "logs": [
+   "WARNING: TPEX qfii: 回傳日期 '20260715' != 請求 '2026-07-16'"
+  ],
+  "calls": [
+   {
+    "url": "https://www.tpex.org.tw/www/zh-tw/insti/qfii",
+    "params": {
+     "date": "2026/07/16",
+     "response": "json"
+    }
+   }
+  ]
+ },
+ "direct": {
+  "result": null,
+  "logs": [
+   "WARNING: TWSE QFIIS: 回傳日期 '20260715' != 請求 '20260716'",
+   "WARNING: TPEX qfii: 回傳日期 '20260715' != 請求 '2026-07-16'"
+  ],
+  "calls": [
+   {
+    "url": "https://www.twse.com.tw/rwd/zh/fund/MI_QFIIS",
+    "params": {
+     "date": "20260716",
+     "selectType": "ALLBUT0999",
+     "response": "json"
+    }
+   },
+   {
+    "url": "https://www.tpex.org.tw/www/zh-tw/insti/qfii",
+    "params": {
+     "date": "2026/07/16",
+     "response": "json"
+    }
+   }
+  ]
+ }
+}

@@ -1,0 +1,50 @@
+{
+ "twse": {
+  "result": null,
+  "logs": [],
+  "calls": [
+   {
+    "url": "https://www.twse.com.tw/rwd/zh/fund/MI_QFIIS",
+    "params": {
+     "date": "20260716",
+     "selectType": "ALLBUT0999",
+     "response": "json"
+    }
+   }
+  ]
+ },
+ "tpex": {
+  "result": null,
+  "logs": [],
+  "calls": [
+   {
+    "url": "https://www.tpex.org.tw/www/zh-tw/insti/qfii",
+    "params": {
+     "date": "2026/07/16",
+     "response": "json"
+    }
+   }
+  ]
+ },
+ "direct": {
+  "result": null,
+  "logs": [],
+  "calls": [
+   {
+    "url": "https://www.twse.com.tw/rwd/zh/fund/MI_QFIIS",
+    "params": {
+     "date": "20260716",
+     "selectType": "ALLBUT0999",
+     "response": "json"
+    }
+   },
+   {
+    "url": "https://www.tpex.org.tw/www/zh-tw/insti/qfii",
+    "params": {
+     "date": "2026/07/16",
+     "response": "json"
+    }
+   }
+  ]
+ }
+}
