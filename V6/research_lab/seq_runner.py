@@ -161,7 +161,7 @@ def log_softmax(x):
     return torch.log_softmax(x, -1)
 
 
-def session_loss(out, t5, t10, groups, listnet_w=0., listnet_t=LISTNET_T):
+def session_loss(out, t5, t10, groups, listnet_w=0., listnet_t=LISTNET_T, n_cross=1, dropout=.1):
     """groups: (D, S) index matrix of one session per row. Per-head loss = MSE on centred ranks (+ listnet_w * ListNet-top1).
     ListNet is OFF by default. Real E5 MLP check (val IC, 3 epochs): temperature 10 -> -0.01..-0.03; T=3 0.080; T=1 0.093; MSE only 0.094-0.101.
     """
@@ -274,7 +274,8 @@ def train_one(kind, seed, data, tr, va, cfg, device='cuda', mixer_factory=None, 
     t5, t10 = (centred_rank(data.y[k][tr], data.date_idx[tr]) for k in ('y5', 'y10'))
     dtr = data.date_idx[tr]
     cuts = np.flatnonzero(np.diff(dtr))+1                      # tr is sorted by row == sorted by date
-    by_date = {int(data.date_idx[g[0]]): g for g in np.split(tr, cuts) if len(g) >= cfg['min_names']}
+    need = cfg['stocks_per_date'] if kind == 'crossstock' else cfg['min_names']      # cross-stock tokens must be distinct stocks
+    by_date = {int(data.date_idx[g[0]]): g for g in np.split(tr, cuts) if len(g) >= need}
     tt5, tt10 = torch.from_numpy(t5).to(device), torch.from_numpy(t10).to(device)
     dates = sorted(by_date)
     state = dict(epoch=0, best=-9., bad=0, history=[])

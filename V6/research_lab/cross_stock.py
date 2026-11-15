@@ -13,8 +13,11 @@ layers/Mamba_EncDec.py, read 2026-11-16):
     4. token ORDER: stocks have no natural order, a Mamba scan is order-dependent. Training uses random order per batch; scoring
        averages `n_perm` random orders/chunkings. (V7 original used a fixed sorted-by-stock-code order and averaged the two
        directions instead of adding them; neither is claimed equivalent.)
-    5. sequence length: training tokens = `stocks_per_date` (256) sampled stocks; scoring chunks a session into pieces of about
-       that size so train/score token counts match.
+    5. sequence length: training tokens = exactly `stocks_per_date` (256) distinct stocks (sessions with fewer are skipped, never
+       sampled with replacement); scoring cuts a session into ceil(n/256) near-equal pieces (<=256, e.g. 300 -> 2x150), so scoring
+       lengths are at most the training length but can be shorter. Sensitivity to this is an open ablation (chunk 128/256/384).
+    6. no Dropout after the embedding (S-Mamba's DataEmbedding_inverted has one); cross blocks inherit mixer_kw (expand=2,
+       headdim=8, d_state=16; only d_conv is set to 2) whereas S-Mamba uses expand=1.
 """
 from __future__ import annotations
 
@@ -71,7 +74,7 @@ class CrossStockRanker(nn.Module):
 def chunk_session(n, target, rng):
     """Random order of n stocks cut into near-equal pieces of about `target` tokens (>=1 piece)."""
     perm = rng.permutation(n)
-    return np.array_split(perm, max(1, int(round(n/target))))
+    return np.array_split(perm, max(1, -(-n//target)))      # ceil: every piece <= target tokens (training always uses exactly `target`)
 
 
 def predict_cross(model, data, rows, device, target=256, n_perm=2, seed=0, max_batch_rows=2048):
@@ -99,6 +102,6 @@ def predict_cross(model, data, rows, device, target=256, n_perm=2, seed=0, max_b
             idx = np.concatenate(jobs[i:j])
             x = torch.from_numpy(data.windows(rows[idx])).to(device)
             o = model(x, (j-i, L))
-            out[idx] += torch.stack([o['score5'], o['score10']], 1).float().cpu().numpy()
+            np.add.at(out, idx, torch.stack([o['score5'], o['score10']], 1).double().cpu().numpy())   # idx may repeat across permutations
             i = j
     return (out/n_perm).astype(np.float32)

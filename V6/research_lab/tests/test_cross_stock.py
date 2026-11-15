@@ -66,3 +66,40 @@ def test_cross_model_trains_through_the_shared_runner(tmp_path):
     cfg = dict(CFG, epochs=2, steps_per_epoch=15, d_model=8, n_layers=1, n_cross=1, dates_per_batch=4, stocks_per_date=32, dropout=0.)
     m, st = sr.train_one('crossstock', 1, data, tr, va, cfg, 'cpu', fac, {}, None, lambda *_: None)
     assert len(st['history']) == 2 and np.isfinite(st['history'][-1]['val_ic5'])
+
+
+def reference_predict(model, data, rows, device, target, n_perm, seed):
+    """Per-job accumulation with no batching: the ground truth for predict_cross."""
+    rng = np.random.default_rng(seed)
+    out = np.zeros((len(rows), 2)); by = {}
+    for i, r in enumerate(rows):
+        by.setdefault(int(data.date_idx[r]), []).append(i)
+    model.eval()
+    with torch.no_grad():
+        for _ in range(n_perm):
+            for pos in by.values():
+                pos = np.asarray(pos)
+                for piece in cs.chunk_session(len(pos), target, rng):
+                    idx = pos[piece]
+                    o = model(torch.from_numpy(data.windows(rows[idx])), (1, len(idx)))
+                    out[idx] += torch.stack([o['score5'], o['score10']], 1).double().numpy()
+    return out/n_perm
+
+
+@pytest.mark.parametrize('n_perm', [1, 2, 3])
+def test_predict_cross_equals_unbatched_reference_even_when_chunks_share_a_batch(tmp_path, n_perm):
+    d, day, stock = build(tmp_path, names=60)            # 60 stocks/session, target 20 -> 3 equal chunks per permutation
+    data = sr.SeqData(d, window=1, normalize=None)
+    tr, va, ev = data.split_rows(15)
+    ev = ev[:120]                                         # 2 sessions -> all chunks of all permutations land in ONE batch (repeated indices)
+    torch.manual_seed(0)
+    m = cs.CrossStockRanker(data.X.shape[1], 8, 1, 1, mixer_factory=fac, dropout=0.)
+    got = cs.predict_cross(m, data, ev, 'cpu', target=20, n_perm=n_perm, seed=5)
+    ref = reference_predict(m, data, ev, 'cpu', 20, n_perm, 5)
+    assert np.abs(got-ref).max() < 1e-5
+
+
+def test_chunks_never_exceed_target():
+    rng = np.random.default_rng(0)
+    for n in (1, 130, 255, 256, 257, 300, 383, 384, 1800):
+        assert max(map(len, cs.chunk_session(n, 256, rng))) <= 256
