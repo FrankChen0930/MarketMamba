@@ -155,9 +155,9 @@ def test_stale_causal_conv1d_is_reinstalled_and_missing_one_is_reported(tmp_path
     st, imp, run, runner = make_env(work, mamba=True, causal=False)
     rep = go(tmp_path, run=run, verify=lambda: {'ok': 1}, importable=imp)
     wheels = [c for c in runner.calls if c[0] == 'wheel']
-    assert rep['status'] == 'verified' and len(wheels) == 1 and 'causal-conv1d' in wheels[0][-1]
+    assert rep['status'] == 'verified' and any('causal-conv1d' in c[-1] for c in wheels)
     assert any('--force-reinstall' in c for c in runner.calls if c[0] == 'install')
-    assert [x['package'] for x in rep['saved']] == ['causal-conv1d']
+    assert 'causal-conv1d' in {x['package'] for x in rep['saved']}
 
 
 def test_verify_names_causal_conv1d_instead_of_nonetype_error():
@@ -187,9 +187,9 @@ def test_pip_cache_harvest_is_opt_in_and_marked_unverified(tmp_path, monkeypatch
     monkeypatch.setattr(g.metadata, 'version', lambda n: '2.3.2.post1')
     def run(cmd, **kw):
         return type('R', (), dict(returncode=0, stdout=str(tmp_path/'cache'), stderr=''))()
-    off = go(tmp_path, run=run, verify=lambda: {}, importable=imp)
+    off = go(tmp_path, run=run, verify=lambda: {}, importable=imp, allow_build=False)
     assert off['saved'] == []
-    on = go(tmp_path, store='s2', run=run, verify=lambda: {}, importable=imp, harvest_cache=True)
+    on = go(tmp_path, store='s2', run=run, verify=lambda: {}, importable=imp, harvest_cache=True, allow_build=False)
     assert on['saved'] and on['saved'][0]['source'] == 'pip_cache_harvest_unverified_provenance'
 
 
@@ -212,5 +212,30 @@ def test_setup_reports_traceback_and_purge(tmp_path):
     st, imp, _, _ = make_env(tmp_path, mamba=True, causal=True)
     def bad():
         raise TypeError("'NoneType' object is not callable")
-    rep = go(tmp_path, run=lambda *a, **k: None, verify=bad, importable=imp)
+    rep = go(tmp_path, run=lambda *a, **k: None, verify=bad, importable=imp, allow_build=False)
     assert rep['status'] == 'installed_but_verification_failed' and 'TypeError' in rep['verify_traceback'] and rep['purged_stale_modules'] == []
+
+
+def test_missing_store_wheel_triggers_one_time_refetch_and_save_without_force(tmp_path):
+    work = tmp_path/'work'; work.mkdir()
+    st, imp, run, runner = make_env(work, mamba=True, causal=True)          # already installed, Drive store empty
+    rep = go(tmp_path, run=run, verify=lambda: {'ok': 1}, importable=imp)
+    assert {x['package'] for x in rep['saved']} == {'mamba-ssm', 'causal-conv1d'}
+    assert any('will re-fetch to save' in x for x in rep['steps'])
+    # second time the store is complete: nothing is rebuilt
+    st2, imp2, run2, runner2 = make_env(work, mamba=True, causal=True)
+    rep2 = go(tmp_path, run=run2, verify=lambda: {'ok': 1}, importable=imp2)
+    assert not [c for c in runner2.calls if c[0] == 'wheel'] and rep2['saved'] == [] and rep2['status'] == 'verified'
+
+
+def test_forced_package_is_not_imported_before_reinstall(tmp_path):
+    work = tmp_path/'work'; work.mkdir()
+    st, base, run0, _ = make_env(work, mamba=True, causal=True)
+    events = []
+    def run(cmd, **kw):
+        if cmd[3] == 'install':
+            events.append('install')
+        return run0(cmd, **kw)
+    imp = lambda m: (events.append('import'), base(m))[1]
+    go(tmp_path, run=run, verify=lambda: {}, importable=imp, force=('mamba-ssm', 'causal-conv1d'))
+    assert events.index('install') < events.index('import')     # fresh wheel is what gets imported/verified

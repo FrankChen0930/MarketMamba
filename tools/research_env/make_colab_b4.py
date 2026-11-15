@@ -100,9 +100,12 @@ print("結果目錄：", RESULTS_ROOT, "（含 identity.json / config.json / dai
 
 def probe_notebook(bundle_name, bundle_sha):
     cells = [
-        cell('# Market Mamba B7：官方 Mamba2／Samba 相容性探測\n`RESEARCH_ONLY`。只做環境探測與極小 forward/backward 煙霧測試，**不訓練**。'
-             '請選 **GPU 執行階段（T4 即可）**。官方 `mamba-ssm` 只能在 CUDA 上跑。環境入口會先找 Drive 內相容 wheel，再找官方預編譯版；**兩者都沒有時預設不編譯**（需 `allow_compile=True`，約 40 分鐘），並建議固定 torch。\n'
-             '把本檔與 `' + bundle_name + '` 放同一個 Drive 資料夾 `MarketMamba_V7_B4_baselines/`。', 'markdown'),
+        cell('# Market Mamba B7：官方 Mamba2／Samba 環境（一鍵）\n`RESEARCH_ONLY`，只做環境安裝與極小 forward/backward 驗證，**不訓練**。\n\n'
+             '## 怎麼用（只有兩步，每次開新的 Colab 都一樣）\n'
+             '1. 執行階段選 **GPU（T4）**，按「**全部執行**」。第一次會把 torch 換成 2.10 並**自動重啟**（畫面短暫顯示中斷／重新連線是正常的），這一輪到此為止。\n'
+             '2. 重啟後再按一次「**全部執行**」。這次會安裝 mamba-ssm 與 causal-conv1d（官方預編譯版，約半分鐘）、跑驗證，**通過後自動把 wheel 存到 Drive**。最後一格會印出結果。\n\n'
+             '把最後一格輸出中的 `status`、`saved`、`steps` 貼回來即可。`status` 要是 `verified`。\n\n'
+             '前置：把 `' + bundle_name + '` 放在 Drive 的 `MarketMamba_V7_B4_baselines/`。', 'markdown'),
         cell(f'''
 import os, sys, json, zipfile, hashlib, shutil, subprocess, time
 from google.colab import drive
@@ -121,9 +124,9 @@ importlib.invalidate_caches()
         cell('''
 # （可選）固定 torch：官方 mamba-ssm／causal-conv1d 預編譯 wheel 目前只到 torch 2.10（cu12/cu13）。
 # Colab 預設 torch 若更新（如 2.14+cu130）就沒有現成 wheel，只能花約 40 分鐘編譯。
-# 把 PIN_TORCH 改 True、執行一次：它會安裝 torch 2.10.0+cu128 並自動重啟執行階段；重啟後從頭「全部執行」即可（此格會直接略過）。
+# 預設 PIN_TORCH=True：torch 不是 2.10 時，這格會安裝 torch 2.10.0+cu128 並自動重啟執行階段（畫面短暫顯示重啟是正常的）；重啟後再按一次「全部執行」，此格就會略過。
 import torch
-PIN_TORCH = False
+PIN_TORCH = True
 if PIN_TORCH and not torch.__version__.startswith("2.10.0"):
     r = subprocess.run([sys.executable, "-m", "pip", "install", "-q", "torch==2.10.0", "--index-url", "https://download.pytorch.org/whl/cu128"], capture_output=True, text=True)
     print("pip rc", r.returncode, r.stderr[-600:])

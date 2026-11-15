@@ -217,7 +217,7 @@ def setup(store, allow_build=True, allow_compile=False, versions=None, with_caus
     step = rep['steps'].append
 
     def ensure(pkg):
-        if ok(pkg) and pkg not in force:
+        if pkg not in force and ok(pkg):   # forced packages are not imported first, so the fresh wheel is what gets verified
             return step(f'{pkg}: usable')
         found = find_wheels(store, fp)
         if pkg in found:
@@ -245,11 +245,20 @@ def setup(store, allow_build=True, allow_compile=False, versions=None, with_caus
         step(f'{pkg}: pip_wheel {spec} rc={r.returncode} {sec:.0f}s')
         if r.returncode:
             return step(r.stderr[-800:])
-        w = sorted(Path(work).glob(f'{pkg.replace("-", "_")}-*.whl'), key=lambda p: p.stat().st_mtime)[-1]
+        ws = sorted(Path(work).glob(f'{pkg.replace("-", "_")}-*.whl'), key=lambda p: p.stat().st_mtime)
+        if not ws:
+            return step(f'{pkg}: pip wheel returned 0 but produced no wheel file')
+        w = ws[-1]
         built[pkg] = (w, w.name.split('-')[1], 'built' if sec > 180 else 'prebuilt_download_or_fast_build', sec)
         r = pip('install', '-q', '--no-deps', '--no-index', '--force-reinstall', str(w))
         step(f'{pkg}: install_built rc={r.returncode}')
 
+    if allow_build:   # an installed package with no compatible wheel in the store is rebuilt once so a wheel can be saved
+        have = find_wheels(store, fp)
+        auto = [p for p in want if p not in have and p not in force]
+        if auto:
+            step(f'store has no compatible wheel for {auto}: will re-fetch to save')
+        force = tuple(force)+tuple(auto)
     for pkg in want:
         ensure(pkg)
     rep['purged_stale_modules'] = purge_stale_mamba_modules()
