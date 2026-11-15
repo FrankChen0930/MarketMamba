@@ -19,7 +19,7 @@ from . import matrix_baselines as mb
 from .seq_models import SeqRanker
 from .significance import compare_models
 
-WINDOW, VAL_DATES, LISTNET_W, LISTNET_T = 60, 126, 0.5, 10.
+WINDOW, VAL_DATES, LISTNET_W, LISTNET_T = 60, 126, 0.5, 1.
 
 
 def centred_rank(values, seg):
@@ -181,6 +181,9 @@ def sample_batch(rng, rows_by_date, dates, d, s):
 
 def predict(model, data, rows, device, chunk=2048):
     import torch
+    if getattr(model, 'cross_stock', False):
+        from .cross_stock import predict_cross
+        return predict_cross(model, data, rows, device)
     model.eval()
     out = np.zeros((len(rows), 2), np.float32)
     with torch.no_grad():
@@ -255,9 +258,15 @@ def train_one(kind, seed, data, tr, va, cfg, device='cuda', mixer_factory=None, 
     import torch
     torch.manual_seed(seed)
     rng = np.random.default_rng(seed)
-    model = SeqRanker(kind, n_features=len(data.feature_names), d_model=cfg['d_model'], n_layers=cfg['n_layers'],
-                      mixer_kw=mixer_kw if mixer_kw is not None else cfg['mixer_kw'], window=cfg.get('attn_window', 16),
-                      mixer_factory=mixer_factory).to(device)
+    if kind == 'crossstock':
+        from .cross_stock import CrossStockRanker
+        model = CrossStockRanker(len(data.feature_names), cfg['d_model'], cfg['n_layers'], cfg.get('n_cross', 1),
+                                 mixer_kw if mixer_kw is not None else cfg['mixer_kw'], dropout=cfg.get('dropout', .1),
+                                 mixer_factory=mixer_factory).to(device)
+    else:
+        model = SeqRanker(kind, n_features=len(data.feature_names), d_model=cfg['d_model'], n_layers=cfg['n_layers'],
+                          mixer_kw=mixer_kw if mixer_kw is not None else cfg['mixer_kw'], window=cfg.get('attn_window', 16),
+                          mixer_factory=mixer_factory).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=cfg['lr'], weight_decay=cfg['weight_decay'])
     steps = cfg['epochs']*cfg['steps_per_epoch']
     warm = max(1, int(.15*steps))
@@ -287,7 +296,7 @@ def train_one(kind, seed, data, tr, va, cfg, device='cuda', mixer_factory=None, 
             flat = g.reshape(-1)
             x = torch.from_numpy(data.windows(flat)).to(device)
             idx = torch.from_numpy(np.searchsorted(tr, g.reshape(-1))).to(device)
-            sc = model(x)
+            sc = model(x, g.shape) if getattr(model, 'cross_stock', False) else model(x)
             local = torch.arange(flat.size, device=device).view(g.shape)
             loss = session_loss(sc, tt5[idx], tt10[idx], local, cfg.get('listnet_w', 0.), cfg.get('listnet_t', LISTNET_T))
             opt.zero_grad(set_to_none=True); loss.backward()

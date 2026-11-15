@@ -98,10 +98,12 @@ def tercile_ic(values, y, date_idx, dates, strata_value):
     return out
 
 
-def run(directory, label='y5', max_train_rows=500_000, seed=17, n_boot=1000, lgbm=None, log=print):
+def run(directory, label='y5', max_train_rows=500_000, seed=17, n_boot=1000, lgbm=None, log=print, row_mask=None, extra_daily=None):
+    """row_mask: evaluate only these eval rows (e.g. SeqData.eligible, so the comparison is on the rows a sequence model can score).
+    extra_daily: {name: daily-IC Series} of other models on the SAME rows, added to the paired tests."""
     from lightgbm import LGBMRegressor
     data = SeqData(directory, window=1, normalize=None)
-    ctx = mb.Context(directory, label, max_train_rows, seed, 'rank')
+    ctx = mb.Context(directory, label, max_train_rows, seed, 'rank', row_mask=row_mask)
     names = data.feature_names
     p = dict(n_estimators=200, num_leaves=31, learning_rate=.05, min_child_samples=200, subsample=.8, subsample_freq=1,
              colsample_bytree=.8, reg_lambda=10., random_state=seed, n_jobs=4, verbose=-1)
@@ -126,6 +128,7 @@ def run(directory, label='y5', max_train_rows=500_000, seed=17, n_boot=1000, lgb
         res[name] = dict(ic=mb.summarize_daily(ic), ic_delayed_1d=mb.summarize_daily(ic1),
                          by_size={k: float(v.mean()) for k, v in terc.items()},
                          by_half_year={f'{y_}H{h}': float(g.mean()) for (y_, h), g in ic.groupby([ic.index.year, (ic.index.month > 6).astype(int)+1])})
+    daily.update(extra_daily or {})
     common = pd.concat(daily, axis=1).dropna().index
     sig = compare_models({k: v.loc[common] for k, v in daily.items()}, 'lightgbm_day_t', int(label[1:]), n_boot=n_boot, seed=seed)
     imp = sorted(zip(fn, plus.feature_importances_), key=lambda x: -x[1])[:15]
