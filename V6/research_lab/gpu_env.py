@@ -205,8 +205,11 @@ def _import_ok(pkg):
 
 def setup(store, allow_build=True, allow_compile=False, versions=None, with_causal_conv1d=True, work='/content/gpu_wheels_build',
           run=subprocess.run, fp=None, verify=verify_official_mamba2, importable=_import_ok, log=print, prebuilt=prebuilt_check,
-          diagnostics=diagnose, force=(), harvest_cache=False):
+          diagnostics=diagnose, force=(), harvest_cache=False, direct=None, download=None):
     fp = fp or fingerprint()
+    # direct: fetch the official release asset itself (no setup.py, never compiles). Default when there is no nvcc (e.g. the laptop).
+    direct = (shutil.which('nvcc') is None) if direct is None else direct
+    download = download or (lambda url, dst: __import__('urllib.request').request.urlretrieve(url, dst))
     versions = {**DEFAULT_VERSIONS, **(versions or {})}
     want = ['mamba-ssm'] + (['causal-conv1d'] if with_causal_conv1d else [])
     rep = dict(fingerprint=fp, store=str(store), steps=[], saved=[], status=None)
@@ -237,6 +240,16 @@ def setup(store, allow_build=True, allow_compile=False, versions=None, with_caus
             return step(f'{pkg}: no_official_prebuilt_for_torch{fp["torch"]}_cu{fp["cuda"]}: not compiling (allow_compile=False). '
                         'Pin torch to a version with an official wheel (roadmap 8.6) or set allow_compile=True (~40 min).')
         Path(work).mkdir(parents=True, exist_ok=True)
+        if direct and cache['pb'].get(pkg, {}).get('available'):
+            info = cache['pb'][pkg]
+            url = f'https://github.com/{REPOS[pkg]}/releases/download/{info["release"]}/{info["asset"].replace("+", "%2B")}'
+            dst = Path(work)/info['asset']
+            t = time.time()
+            download(url, str(dst))
+            step(f'{pkg}: downloaded official asset {info["asset"]} {time.time()-t:.0f}s')
+            built[pkg] = (dst, info['asset'].split('-')[1], 'official_release_asset', time.time()-t)
+            r = pip('install', '-q', '--no-deps', '--no-index', '--force-reinstall', str(dst))
+            return step(f'{pkg}: install_asset rc={r.returncode}')
         spec = pkg+(f'=={versions[pkg]}' if versions.get(pkg) else '')
         t = time.time()
         # --no-cache-dir: pip's wheel cache is keyed by sdist only, so it would silently reuse a wheel built for another torch

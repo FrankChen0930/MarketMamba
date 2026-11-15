@@ -80,6 +80,7 @@ def make_env(work, mamba=False, causal=False, produce=True):
 
 def go(tmp, store='store', work=None, **kw):
     kw.setdefault('prebuilt', YES)
+    kw.setdefault('direct', False)
     return g.setup(tmp/store, fp=FP, work=str(work or tmp/'work'), diagnostics=lambda: {}, log=lambda *_: None, **kw)
 
 
@@ -239,3 +240,18 @@ def test_forced_package_is_not_imported_before_reinstall(tmp_path):
     imp = lambda m: (events.append('import'), base(m))[1]
     go(tmp_path, run=run, verify=lambda: {}, importable=imp, force=('mamba-ssm', 'causal-conv1d'))
     assert events.index('install') < events.index('import')     # fresh wheel is what gets imported/verified
+
+
+def test_direct_asset_install_never_runs_pip_wheel(tmp_path):
+    work = tmp_path/'work'; work.mkdir()
+    pb = lambda fp, v=None: {'tag': 't', 'mamba-ssm': {'available': True, 'asset': 'mamba_ssm-2.3.2.post1+cu12torch2.10cxx11abiTRUE-cp312-cp312-linux_x86_64.whl', 'release': 'v2.3.2.post1'},
+                             'causal-conv1d': {'available': True, 'asset': 'causal_conv1d-1.7.0+cu12torch2.10cxx11abiTRUE-cp312-cp312-linux_x86_64.whl', 'release': 'v1.7.0'}}
+    urls = []
+    def dl(url, dst):
+        urls.append(url)
+        Path(dst).write_bytes(url.encode())
+    st, imp, run, runner = make_env(work)
+    rep = go(tmp_path, run=run, verify=lambda: {'ok': 1}, importable=imp, prebuilt=pb, direct=True, download=dl)
+    assert rep['status'] == 'verified' and not [c for c in runner.calls if c[0] == 'wheel']
+    assert urls[0] == 'https://github.com/state-spaces/mamba/releases/download/v2.3.2.post1/mamba_ssm-2.3.2.post1%2Bcu12torch2.10cxx11abiTRUE-cp312-cp312-linux_x86_64.whl'
+    assert {x['package'] for x in rep['saved']} == {'mamba-ssm', 'causal-conv1d'} and rep['saved'][0]['source'] == 'official_release_asset'

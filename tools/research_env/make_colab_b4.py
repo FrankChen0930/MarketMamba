@@ -7,7 +7,7 @@ import argparse, hashlib, json, zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-FILES = ['__init__.py', 'matrix_baselines.py', 'significance.py', 'colab_runner.py', 'seq_models.py', 'gpu_env.py', 'seq_runner.py']
+FILES = ['__init__.py', 'matrix_baselines.py', 'significance.py', 'colab_runner.py', 'seq_models.py', 'gpu_env.py', 'seq_runner.py', 'c0plus.py']
 E5 = '/content/drive/MyDrive/MarketMamba_V7_Corrected_E5_Replication'          # search root (matrix sits at output/<same name>/matrix)
 E1 = '/content/drive/MyDrive/MarketMamba_V7_E1_Rolling_Origin_Refresh'          # search root (matrix/v7_e1_rolling_origin_refresh_v1)
 RESULTS = '/content/drive/MyDrive/MarketMamba_V7_B4_baselines'
@@ -161,7 +161,8 @@ EXPERIMENT = "E5"        # "E5" 或 "E1"
 SMOKE = True             # True：極小設定只驗證流程與耗時；正式跑改 False
 SEEDS = (17,)            # 正式跑：先 (17,) 看耗時與結果，再改成 (17, 29, 43) 補跑——已完成的 seed 不會重訓
 EPOCHS, STEPS_PER_EPOCH = 10, 400   # 正式跑的上限（早停 patience=3）
-KINDS = ("mamba2", "samba")
+KINDS = ("mamba2",)      # "samba" 為我憑記憶實作的 Microsoft Samba 風格變體（未核對論文，且不是你設計中的 S-Mamba），預設不跑
+RUN_TRAINING = True      # False：只跑下方「診斷」格（不訓練）
 SEARCH_ROOTS = {{"E5": "{E5}",
                 "E1": "{E1}"}}   # 以 manifest 身份自動尋找矩陣，不依賴固定路徑
 RESULTS_ROOT = "{RESULTS}"
@@ -199,14 +200,18 @@ t = time.time(); sr.stock_index(local); print("stock index ready", round(time.ti
         cell('''
 cfg = dict(epochs=1, steps_per_epoch=20, dates_per_batch=8, stocks_per_date=128, baseline_rows=50_000, n_boot=200) if SMOKE else dict(epochs=EPOCHS, steps_per_epoch=STEPS_PER_EPOCH)
 seeds = (17,) if SMOKE else SEEDS
-result = sr.run_experiment(local, os.path.join(RESULTS_ROOT, "b8"), EXPERIMENT, kinds=KINDS, seeds=seeds, cfg=cfg, device="cuda", tag="smoke" if SMOKE else "full")
+if RUN_TRAINING:
+    result = sr.run_experiment(local, os.path.join(RESULTS_ROOT, "b8"), EXPERIMENT, kinds=KINDS, seeds=seeds, cfg=cfg, device="cuda", tag="smoke" if SMOKE else "full")
+else:
+    print("RUN_TRAINING=False：略過訓練，請往下執行診斷格")
 '''),
         cell('''
 import pandas as pd
-print("train/val/eval rows:", result["train_rows"], result["val_rows"], result["eval_rows"], "| common sessions:", result["common_sessions"])
-display(pd.DataFrame(result["models"]).T[["ic_mean", "ic_std", "icir", "days"]])
-display(pd.DataFrame(result["vs_lightgbm"])[["model", "mean_diff", "t_hac", "p_hac", "p_hac_holm"]])
-print("每個 (模型, seed) 的 epoch 紀錄：", {k: v.get("history") for k, v in result["models"].items() if v.get("history")})
+if RUN_TRAINING:
+    print("train/val/eval rows:", result["train_rows"], result["val_rows"], result["eval_rows"], "| common sessions:", result["common_sessions"])
+    display(pd.DataFrame(result["models"]).T[["ic_mean", "ic_std", "icir", "days"]])
+    display(pd.DataFrame(result["vs_lightgbm"])[["model", "mean_diff", "t_hac", "p_hac", "p_hac_holm"]])
+    print("每個 (模型, seed) 的 epoch 紀錄：", {k: v.get("history") for k, v in result["models"].items() if v.get("history")})
 '''),
         cell('''
 # （選用、不訓練）驗證期診斷：基線在「早停用驗證列」上的 IC。訓練進行中不要跑（會搶 CPU）；訓練完或中斷後再跑。
