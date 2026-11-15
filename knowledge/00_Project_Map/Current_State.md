@@ -1,5 +1,24 @@
 # MarketMamba Current State
 
+## pilot09-w2 CPU ranking — branch-local / RESEARCH_ONLY
+
+`w2-models` worktree `/home/frank/projects/ruflo-evaluation/pilot09/wt/w2-models`，
+base/HEAD `814002275d67e7d755b530fceb9285a227e3ba10`；UNMERGED / NOT_DEPLOYED，依要求不 commit。
+新增 [research_lab 排序流程](../../V6/research_lab/README.md) 的 baseline／ridge／LightGBM／GRU／
+純 PyTorch selective SSM，60-session共同支援、5/20d、7個expanding folds、purge20、neural seeds17/29/43。
+真實資料完整訓練一次233.49秒CPU；26個prediction parquet在指定main checkout
+`.local-data/research/predictions/`，未知label不篩預測。
+初始20d IC：LightGBM .02710、GRU集成 .01810、selective集成 .00681、reversal .01069；
+SSM未勝簡單reversal。5d IC：LightGBM .05015、GRU .03351、SSM .01706、reversal .02555。
+[報告](../../V6/research_lab/experiments/REPORT.md) 與
+[校正評估](../../V6/research_lab/experiments/results_evaluation.json) 保存完整session-grid NW、年度、seed與fold數字／hash；
+原始 results.json 保留，評估修正不重訓。模型權重未保存，identity限定config/seed/data/source/prediction。
+Yahoo存活者偏差150股含ETF、無fundamentals、非PIT／非可成交證據；低成本2epochs抽樣不代表充分收斂。
+44項focused/regression tests PASS；26檔SHA/schema/共同支援驗證PASS。Knowledge-impact PASS；knowledge-health仍FAIL（既有e3bce91等authority commit objects缺失），不放寬gate。
+原有production／corrected V7 authority、strict STOP與歷史實驗不變。下一步先檢查共同支援與label缺漏選樣，
+再由Human決定是否另授權較充分訓練；不自動擴大算力或上線。
+
+
 ## pilot09-w1 Yahoo 資料工程 — branch-local / research-only
 
 `w1-data` worktree `/home/frank/projects/ruflo-evaluation/pilot09/wt/w1-data`，base

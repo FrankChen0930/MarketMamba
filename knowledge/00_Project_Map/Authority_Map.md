@@ -1,5 +1,18 @@
 # MarketMamba Authority Map
 
+## pilot09-w2 isolated ranking experiment（無 authority supersession）
+
+Branch `w2-models` / `UNMERGED / NOT_DEPLOYED / RESEARCH_ONLY`；
+[research_lab README](../../V6/research_lab/README.md) 定義本次局部ranking recipe，
+[results.json](../../V6/research_lab/experiments/results.json) 是一次CPU訓練與初始評估記錄，
+[results_evaluation.json](../../V6/research_lab/experiments/results_evaluation.json) 是同一批不可覆寫predictions的
+完整session-grid NW校正評估，供[REPORT](../../V6/research_lab/experiments/REPORT.md)使用。
+各prediction bytes SHA、dataset／manifest SHA、source/config/seed/split identity由JSON限定；
+未提交程式不等於HEAD已含實作，沒有 fitted-weight artifact或resume authority。
+這些僅為Yahoo/survivorship-biased研究診斷，不具production、corrected V7、PIT、calendar、universe、execution
+或投資證據authority，不放寬任何既有gate，不supersede既有歷史artifacts。
+
+
 ## pilot09-w1 isolated Yahoo research contract（無 authority supersession）
 
 Branch-local `w1-data` / UNMERGED / NOT_DEPLOYED；新增套件的本地規格及公式由

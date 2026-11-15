@@ -1,0 +1,4072 @@
+{
+  "evidence_class": "RESEARCH_ONLY",
+  "status": "UNMERGED / NOT_DEPLOYED",
+  "git_head": "814002275d67e7d755b530fceb9285a227e3ba10",
+  "dataset": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/dataset.parquet",
+  "dataset_sha256": "64e6e1b4201643336817ebf72a31882b0e23ff0a3df047deb3c4ae34118c85f8",
+  "manifest_sha256": "99ff423678ae3e5dc138f945bc571bb6cd7642dd8eb521f9cce1f01b9fb491c1",
+  "environment": {
+    "python": "3.12.3",
+    "torch": "2.15.0+cpu",
+    "numpy": "2.5.4",
+    "pandas": "3.1.1",
+    "device": "cpu",
+    "torch_threads": 2,
+    "marketmamba_data_root": null,
+    "data_realpath": "/home/frank/projects/ruflo-evaluation/pilot09/wt/w2-models/Data"
+  },
+  "config": {
+    "features": [
+      "return_1d_cs_z",
+      "return_5d_cs_z",
+      "return_10d_cs_z",
+      "return_20d_cs_z",
+      "return_60d_cs_z",
+      "volatility_20d_cs_z",
+      "volume_z_20d_cs_z",
+      "volume_ratio_20d_cs_z",
+      "dollar_volume_cs_z",
+      "drawdown_60d_cs_z",
+      "rsi_14d_cs_z"
+    ],
+    "window": 60,
+    "seeds": [
+      17,
+      29,
+      43
+    ],
+    "min_train_sessions": 504,
+    "test_sessions": 252,
+    "purge": 20,
+    "epochs": 2,
+    "max_train_samples": 4096,
+    "width": 12,
+    "state": 4,
+    "lr": 0.003,
+    "ridge_alpha": 100,
+    "lightgbm_trees": 60,
+    "lightgbm_leaves": 15
+  },
+  "folds": [
+    {
+      "fold": 0,
+      "train_rows": 36636,
+      "test_rows": 33247,
+      "train_start": "2017-11-22 00:00:00",
+      "train_end": "2019-01-28 00:00:00",
+      "test_start": "2019-03-11 00:00:00",
+      "test_end": "2020-03-23 00:00:00",
+      "neural": [
+        {
+          "model": "gru",
+          "seed": 17,
+          "validation_mse": [
+            0.09528107941150665,
+            0.08735495060682297
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "gru",
+          "seed": 29,
+          "validation_mse": [
+            0.09249746799468994,
+            0.09611112624406815
+          ],
+          "best_epoch": 1,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "gru",
+          "seed": 43,
+          "validation_mse": [
+            0.0928819552063942,
+            0.09610334038734436
+          ],
+          "best_epoch": 1,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "selective",
+          "seed": 17,
+          "validation_mse": [
+            0.1615021824836731,
+            0.10831400007009506
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "selective",
+          "seed": 29,
+          "validation_mse": [
+            0.17628154158592224,
+            0.11955240368843079
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "selective",
+          "seed": 43,
+          "validation_mse": [
+            0.1466740369796753,
+            0.10802354663610458
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        }
+      ],
+      "seconds": 16.377940731996205
+    },
+    {
+      "fold": 1,
+      "train_rows": 69502,
+      "test_rows": 34130,
+      "train_start": "2017-11-22 00:00:00",
+      "train_end": "2020-02-21 00:00:00",
+      "test_start": "2020-03-24 00:00:00",
+      "test_end": "2021-04-07 00:00:00",
+      "neural": [
+        {
+          "model": "gru",
+          "seed": 17,
+          "validation_mse": [
+            0.08997896313667297,
+            0.08749981224536896
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "gru",
+          "seed": 29,
+          "validation_mse": [
+            0.08870333433151245,
+            0.08519429713487625
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "gru",
+          "seed": 43,
+          "validation_mse": [
+            0.0879724845290184,
+            0.0854235589504242
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "selective",
+          "seed": 17,
+          "validation_mse": [
+            0.14134736359119415,
+            0.09819053113460541
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "selective",
+          "seed": 29,
+          "validation_mse": [
+            0.16925184428691864,
+            0.10931606590747833
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "selective",
+          "seed": 43,
+          "validation_mse": [
+            0.14480996131896973,
+            0.10662125051021576
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        }
+      ],
+      "seconds": 18.589049455011263
+    },
+    {
+      "fold": 2,
+      "train_rows": 103412,
+      "test_rows": 21949,
+      "train_start": "2017-11-22 00:00:00",
+      "train_end": "2021-03-05 00:00:00",
+      "test_start": "2021-04-08 00:00:00",
+      "test_end": "2022-04-18 00:00:00",
+      "neural": [
+        {
+          "model": "gru",
+          "seed": 17,
+          "validation_mse": [
+            0.08622482419013977,
+            0.08241532742977142
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "gru",
+          "seed": 29,
+          "validation_mse": [
+            0.09199834614992142,
+            0.08316865563392639
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "gru",
+          "seed": 43,
+          "validation_mse": [
+            0.08121165633201599,
+            0.08034883439540863
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "selective",
+          "seed": 17,
+          "validation_mse": [
+            0.1437745839357376,
+            0.09432940930128098
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "selective",
+          "seed": 29,
+          "validation_mse": [
+            0.1686936765909195,
+            0.10700707137584686
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "selective",
+          "seed": 43,
+          "validation_mse": [
+            0.13111789524555206,
+            0.09424474090337753
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        }
+      ],
+      "seconds": 15.605537827999797
+    },
+    {
+      "fold": 3,
+      "train_rows": 123086,
+      "test_rows": 35083,
+      "train_start": "2017-11-22 00:00:00",
+      "train_end": "2022-03-17 00:00:00",
+      "test_start": "2022-04-19 00:00:00",
+      "test_end": "2023-05-02 00:00:00",
+      "neural": [
+        {
+          "model": "gru",
+          "seed": 17,
+          "validation_mse": [
+            0.08656042814254761,
+            0.08548857271671295
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "gru",
+          "seed": 29,
+          "validation_mse": [
+            0.09537800401449203,
+            0.08773382753133774
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "gru",
+          "seed": 43,
+          "validation_mse": [
+            0.09017198532819748,
+            0.0885789543390274
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "selective",
+          "seed": 17,
+          "validation_mse": [
+            0.13459864258766174,
+            0.09717875719070435
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "selective",
+          "seed": 29,
+          "validation_mse": [
+            0.1791294366121292,
+            0.11654137074947357
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "selective",
+          "seed": 43,
+          "validation_mse": [
+            0.14860861003398895,
+            0.10732054710388184
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        }
+      ],
+      "seconds": 19.801126945007127
+    },
+    {
+      "fold": 4,
+      "train_rows": 157936,
+      "test_rows": 35141,
+      "train_start": "2017-11-22 00:00:00",
+      "train_end": "2023-03-29 00:00:00",
+      "test_start": "2023-05-03 00:00:00",
+      "test_end": "2024-05-14 00:00:00",
+      "neural": [
+        {
+          "model": "gru",
+          "seed": 17,
+          "validation_mse": [
+            0.08282100409269333,
+            0.08140206336975098
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "gru",
+          "seed": 29,
+          "validation_mse": [
+            0.09088689088821411,
+            0.08723069727420807
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "gru",
+          "seed": 43,
+          "validation_mse": [
+            0.08228745311498642,
+            0.08202197402715683
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "selective",
+          "seed": 17,
+          "validation_mse": [
+            0.13049428164958954,
+            0.09102775901556015
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "selective",
+          "seed": 29,
+          "validation_mse": [
+            0.1662331372499466,
+            0.11201754212379456
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "selective",
+          "seed": 43,
+          "validation_mse": [
+            0.14181870222091675,
+            0.10138990730047226
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        }
+      ],
+      "seconds": 19.015559913998004
+    },
+    {
+      "fold": 5,
+      "train_rows": 192925,
+      "test_rows": 35834,
+      "train_start": "2017-11-22 00:00:00",
+      "train_end": "2024-04-15 00:00:00",
+      "test_start": "2024-05-15 00:00:00",
+      "test_end": "2025-05-29 00:00:00",
+      "neural": [
+        {
+          "model": "gru",
+          "seed": 17,
+          "validation_mse": [
+            0.08654393255710602,
+            0.08332383632659912
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "gru",
+          "seed": 29,
+          "validation_mse": [
+            0.08967363089323044,
+            0.0853656455874443
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "gru",
+          "seed": 43,
+          "validation_mse": [
+            0.08257316052913666,
+            0.08256468176841736
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "selective",
+          "seed": 17,
+          "validation_mse": [
+            0.14369598031044006,
+            0.09596922993659973
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "selective",
+          "seed": 29,
+          "validation_mse": [
+            0.1681526154279709,
+            0.11027467995882034
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "selective",
+          "seed": 43,
+          "validation_mse": [
+            0.14580443501472473,
+            0.10390622168779373
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        }
+      ],
+      "seconds": 20.210109298001043
+    },
+    {
+      "fold": 6,
+      "train_rows": 228411,
+      "test_rows": 19391,
+      "train_start": "2017-11-22 00:00:00",
+      "train_end": "2025-04-30 00:00:00",
+      "test_start": "2025-06-02 00:00:00",
+      "test_end": "2026-06-11 00:00:00",
+      "neural": [
+        {
+          "model": "gru",
+          "seed": 17,
+          "validation_mse": [
+            0.08962476998567581,
+            0.08516481518745422
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "gru",
+          "seed": 29,
+          "validation_mse": [
+            0.08968459069728851,
+            0.08634981513023376
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "gru",
+          "seed": 43,
+          "validation_mse": [
+            0.08792692422866821,
+            0.08724401891231537
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "selective",
+          "seed": 17,
+          "validation_mse": [
+            0.14208856225013733,
+            0.10055352747440338
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "selective",
+          "seed": 29,
+          "validation_mse": [
+            0.16510534286499023,
+            0.11092573404312134
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        },
+        {
+          "model": "selective",
+          "seed": 43,
+          "validation_mse": [
+            0.14162467420101166,
+            0.10585446655750275
+          ],
+          "best_epoch": 2,
+          "fit_samples": 4096,
+          "validation_samples": 1024
+        }
+      ],
+      "seconds": 19.498274060024414
+    }
+  ],
+  "models": {
+    "momentum20_h20": {
+      "summary": {
+        "days": 1624,
+        "ic_mean": -0.01026888002751193,
+        "icir": -0.05689483886648342,
+        "nw_lags": 19,
+        "nw_t": -0.708394177169852,
+        "ic_ci95": [
+          -0.03868103459142151,
+          0.01814327453639765
+        ],
+        "decile_spread": 0.019301858856816418,
+        "top_hit": 0.5279507028275501,
+        "stock_dates": 208545
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": -0.044799245934762304,
+          "icir": -0.2623641744242106,
+          "nw_lags": 19,
+          "nw_t": -1.1855994613733152,
+          "ic_ci95": [
+            -0.11886011125467835,
+            0.029261619385153752
+          ],
+          "decile_spread": -0.010086830965386677,
+          "top_hit": 0.5251967504442752,
+          "stock_dates": 26412
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": -0.0314682600241425,
+          "icir": -0.1870789193452429,
+          "nw_lags": 19,
+          "nw_t": -1.0875928424044745,
+          "ic_ci95": [
+            -0.08817862739927221,
+            0.025242107350987204
+          ],
+          "decile_spread": -0.002595624490263395,
+          "top_hit": 0.5381475667189953,
+          "stock_dates": 32782
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": -0.002695345044745548,
+          "icir": -0.01186882474457984,
+          "nw_lags": 19,
+          "nw_t": -0.055555876803736304,
+          "ic_ci95": [
+            -0.09778656836148356,
+            0.09239587827199247
+          ],
+          "decile_spread": 0.04507454251075101,
+          "top_hit": 0.5586683549646514,
+          "stock_dates": 21055
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": -0.0971411366507973,
+          "icir": -0.6427455636156756,
+          "nw_lags": 19,
+          "nw_t": -3.5491133329166096,
+          "ic_ci95": [
+            -0.15078738853847581,
+            -0.04349488476311877
+          ],
+          "decile_spread": -0.030106604709821717,
+          "top_hit": 0.38017808749516063,
+          "stock_dates": 31399
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": 0.03903299284858661,
+          "icir": 0.25999685544250817,
+          "nw_lags": 19,
+          "nw_t": 1.1846861742262482,
+          "ic_ci95": [
+            -0.025545009028743564,
+            0.10361099472591678
+          ],
+          "decile_spread": 0.03781006296948598,
+          "top_hit": 0.5977516207641729,
+          "stock_dates": 33522
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": 0.02838869639664137,
+          "icir": 0.2310219098368657,
+          "nw_lags": 19,
+          "nw_t": 1.412699546635979,
+          "ic_ci95": [
+            -0.010998195932952294,
+            0.06777558872623504
+          ],
+          "decile_spread": 0.022197813593133126,
+          "top_hit": 0.48063300336027603,
+          "stock_dates": 33280
+        },
+        "2025": {
+          "days": 119,
+          "ic_mean": 0.00800037336823234,
+          "icir": 0.03207785974156784,
+          "nw_lags": 19,
+          "nw_t": 0.11200152399280874,
+          "ic_ci95": [
+            -0.132004255521837,
+            0.14800500225830168
+          ],
+          "decile_spread": 0.024661500806267382,
+          "top_hit": 0.5690276110444177,
+          "stock_dates": 17270
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": 0.08503641400463367,
+          "icir": 0.6112002258582814,
+          "nw_lags": 19,
+          "nw_t": 1.9184528470771254,
+          "ic_ci95": [
+            -0.0018415990270733845,
+            0.17191442703634074
+          ],
+          "decile_spread": 0.14920003445346558,
+          "top_hit": 0.7191558441558441,
+          "stock_dates": 12825
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/momentum20_h20.parquet",
+      "prediction_sha256": "d4445ef6dddb9f8d1f2d52d5dbb88c9825c0044182fd816221e9fdab4cd5a46c",
+      "prediction_rows": 214775
+    },
+    "reversal5_h20": {
+      "summary": {
+        "days": 1624,
+        "ic_mean": 0.010689667283066582,
+        "icir": 0.06446390642218822,
+        "nw_lags": 19,
+        "nw_t": 1.282388924459937,
+        "ic_ci95": [
+          -0.005648393250038913,
+          0.027027727816172076
+        ],
+        "decile_spread": -0.008304107872261898,
+        "top_hit": 0.5361558084772371,
+        "stock_dates": 208545
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": 0.01816096967551963,
+          "icir": 0.12206552234059875,
+          "nw_lags": 19,
+          "nw_t": 1.0014567760771707,
+          "ic_ci95": [
+            -0.017382751645584633,
+            0.053704690996623894
+          ],
+          "decile_spread": 0.006579094964864715,
+          "top_hit": 0.5596280781924347,
+          "stock_dates": 26412
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": 0.034018895202251515,
+          "icir": 0.20170912298986005,
+          "nw_lags": 19,
+          "nw_t": 2.2464786714926936,
+          "ic_ci95": [
+            0.004338206290075558,
+            0.06369958411442747
+          ],
+          "decile_spread": 0.004176991307961271,
+          "top_hit": 0.5629513343799057,
+          "stock_dates": 32782
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": 0.00028432602354274,
+          "icir": 0.0014431134435743409,
+          "nw_lags": 19,
+          "nw_t": 0.010406050300086815,
+          "ic_ci95": [
+            -0.053269038612713274,
+            0.05383769065979875
+          ],
+          "decile_spread": -0.026478084662864363,
+          "top_hit": 0.5534979423868313,
+          "stock_dates": 21055
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": 0.03812798574397858,
+          "icir": 0.22287670234555743,
+          "nw_lags": 19,
+          "nw_t": 2.3567031289021836,
+          "ic_ci95": [
+            0.006418072373171595,
+            0.06983789911478558
+          ],
+          "decile_spread": 0.010135941719358301,
+          "top_hit": 0.46255099913636494,
+          "stock_dates": 31399
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": 0.013355439859489714,
+          "icir": 0.09298157163495645,
+          "nw_lags": 19,
+          "nw_t": 0.5436431954652253,
+          "ic_ci95": [
+            -0.03479500576909768,
+            0.0615058854880771
+          ],
+          "decile_spread": -0.011944023105317414,
+          "top_hit": 0.589705273805692,
+          "stock_dates": 33522
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": -0.010713625921348575,
+          "icir": -0.07312245335615435,
+          "nw_lags": 19,
+          "nw_t": -0.5600713909375206,
+          "ic_ci95": [
+            -0.048206536906665695,
+            0.02677928506396855
+          ],
+          "decile_spread": -0.01297885473789373,
+          "top_hit": 0.4741167922986104,
+          "stock_dates": 33280
+        },
+        "2025": {
+          "days": 119,
+          "ic_mean": -0.018153094017735474,
+          "icir": -0.09088881809717526,
+          "nw_lags": 19,
+          "nw_t": -0.42909219285581196,
+          "ic_ci95": [
+            -0.10107248725572317,
+            0.06476629922025222
+          ],
+          "decile_spread": -0.011316847566946854,
+          "top_hit": 0.4819927971188475,
+          "stock_dates": 17270
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": -0.028758360379400442,
+          "icir": -0.24699156132826636,
+          "nw_lags": 19,
+          "nw_t": -1.4632815068347889,
+          "ic_ci95": [
+            -0.06727889527329826,
+            0.009762174514497377
+          ],
+          "decile_spread": -0.05176442157482711,
+          "top_hit": 0.663961038961039,
+          "stock_dates": 12825
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/reversal5_h20.parquet",
+      "prediction_sha256": "e4601c31f744bde0c0fcdb3c4aab3827f5c269cb3e91c2e324f080627b5578dc",
+      "prediction_rows": 214775
+    },
+    "lowvol_h20": {
+      "summary": {
+        "days": 1624,
+        "ic_mean": -0.02246377662454506,
+        "icir": -0.09520186808290468,
+        "nw_lags": 19,
+        "nw_t": -1.1157545579758228,
+        "ic_ci95": [
+          -0.06192496624673648,
+          0.016997412997646365
+        ],
+        "decile_spread": -0.04532641198186596,
+        "top_hit": 0.5598762382937259,
+        "stock_dates": 208545
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": -0.05138120129842397,
+          "icir": -0.19698895180272513,
+          "nw_lags": 19,
+          "nw_t": -0.7676972710821371,
+          "ic_ci95": [
+            -0.18256201740703842,
+            0.07979961481019049
+          ],
+          "decile_spread": -0.024418049712944746,
+          "top_hit": 0.5601992891596852,
+          "stock_dates": 26412
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": -0.059864480013357486,
+          "icir": -0.26517450751173793,
+          "nw_lags": 19,
+          "nw_t": -1.2423122774953996,
+          "ic_ci95": [
+            -0.15431285901733555,
+            0.03458389899062058
+          ],
+          "decile_spread": -0.07008065389746558,
+          "top_hit": 0.5500784929356359,
+          "stock_dates": 32782
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": 0.01425474016734055,
+          "icir": 0.0504497724329971,
+          "nw_lags": 19,
+          "nw_t": 0.22266388788066224,
+          "ic_ci95": [
+            -0.11122268230074137,
+            0.13973216263542246
+          ],
+          "decile_spread": -0.09003243817027072,
+          "top_hit": 0.6265695895325525,
+          "stock_dates": 21055
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": 0.018673454462272907,
+          "icir": 0.07509635423244594,
+          "nw_lags": 19,
+          "nw_t": 0.3691932046824188,
+          "ic_ci95": [
+            -0.0804615520380182,
+            0.11780846096256402
+          ],
+          "decile_spread": -0.0035733479313243923,
+          "top_hit": 0.44750439262634384,
+          "stock_dates": 31399
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": -0.053752873285527115,
+          "icir": -0.3300183768026601,
+          "nw_lags": 19,
+          "nw_t": -2.0178082494724383,
+          "ic_ci95": [
+            -0.10596577888108044,
+            -0.0015399676899737827
+          ],
+          "decile_spread": -0.04389796215210382,
+          "top_hit": 0.5791300749459746,
+          "stock_dates": 33522
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": 0.024301255152538816,
+          "icir": 0.1301623377921477,
+          "nw_lags": 19,
+          "nw_t": 0.6439063816757795,
+          "ic_ci95": [
+            -0.049669839799209976,
+            0.09827235010428761
+          ],
+          "decile_spread": -0.02909400309713636,
+          "top_hit": 0.5267913904277541,
+          "stock_dates": 33280
+        },
+        "2025": {
+          "days": 119,
+          "ic_mean": -0.02504292677621168,
+          "icir": -0.09191597251195689,
+          "nw_lags": 19,
+          "nw_t": -0.2734641211024112,
+          "ic_ci95": [
+            -0.20453315124698632,
+            0.15444729769456297
+          ],
+          "decile_spread": -0.016500325549732308,
+          "top_hit": 0.5834333733493395,
+          "stock_dates": 17270
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": -0.10848640200447791,
+          "icir": -0.5304143184903702,
+          "nw_lags": 19,
+          "nw_t": -1.448370798761395,
+          "ic_ci95": [
+            -0.2552950425201626,
+            0.038322238511206766
+          ],
+          "decile_spread": -0.10517113978291902,
+          "top_hit": 0.7232142857142857,
+          "stock_dates": 12825
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/lowvol_h20.parquet",
+      "prediction_sha256": "d56d8bc91e146a3e9a94d464910f8ce94d6844d872a190ff0fb48614d19ef6e4",
+      "prediction_rows": 214775
+    },
+    "ridge_h20": {
+      "summary": {
+        "days": 1624,
+        "ic_mean": 0.011396210036493826,
+        "icir": 0.0653549607705572,
+        "nw_lags": 19,
+        "nw_t": 0.8440085871286884,
+        "ic_ci95": [
+          -0.015068653013675801,
+          0.03786107308666345
+        ],
+        "decile_spread": -0.003632830733353161,
+        "top_hit": 0.5339504502066078,
+        "stock_dates": 208545
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": -0.015652503608693503,
+          "icir": -0.06832998772802235,
+          "nw_lags": 19,
+          "nw_t": -0.26268296042165495,
+          "ic_ci95": [
+            -0.13244312841280687,
+            0.10113812119541987
+          ],
+          "decile_spread": -0.01169485603766664,
+          "top_hit": 0.5980578827113481,
+          "stock_dates": 26412
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": 0.02259854614282634,
+          "icir": 0.14318084952975252,
+          "nw_lags": 19,
+          "nw_t": 0.7252861361743381,
+          "ic_ci95": [
+            -0.038471351971554296,
+            0.08366844425720697
+          ],
+          "decile_spread": 0.00794419240073785,
+          "top_hit": 0.5742543171114599,
+          "stock_dates": 32782
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": -0.03532883997184171,
+          "icir": -0.1694612441510806,
+          "nw_lags": 19,
+          "nw_t": -0.9527833132918619,
+          "ic_ci95": [
+            -0.10800488853273668,
+            0.03734720858905325
+          ],
+          "decile_spread": -0.04187236558140408,
+          "top_hit": 0.5051704125778199,
+          "stock_dates": 21055
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": 0.08430468869631762,
+          "icir": 0.5262601909037704,
+          "nw_lags": 19,
+          "nw_t": 3.4847133715608023,
+          "ic_ci95": [
+            0.03688696097348547,
+            0.13172241641914978
+          ],
+          "decile_spread": 0.03441445839661841,
+          "top_hit": 0.4935897435897435,
+          "stock_dates": 31399
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": 0.03778997725463019,
+          "icir": 0.2846839747413519,
+          "nw_lags": 19,
+          "nw_t": 1.7706935526359198,
+          "ic_ci95": [
+            -0.00404016060791202,
+            0.0796201151171724
+          ],
+          "decile_spread": 0.00697833087511697,
+          "top_hit": 0.5541404202492068,
+          "stock_dates": 33522
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": 0.025038199949576685,
+          "icir": 0.2070978305199659,
+          "nw_lags": 19,
+          "nw_t": 1.2809423302270406,
+          "ic_ci95": [
+            -0.013273338941071126,
+            0.06334973884022449
+          ],
+          "decile_spread": 0.006771625009000639,
+          "top_hit": 0.4988874761602034,
+          "stock_dates": 33280
+        },
+        "2025": {
+          "days": 119,
+          "ic_mean": -0.07738516398572454,
+          "icir": -0.47598953165159574,
+          "nw_lags": 19,
+          "nw_t": -1.7649114611538366,
+          "ic_ci95": [
+            -0.16332427467225177,
+            0.0085539467008027
+          ],
+          "decile_spread": -0.022323741974147465,
+          "top_hit": 0.4585834333733494,
+          "stock_dates": 17270
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": -0.021632417275681222,
+          "icir": -0.14952584048209625,
+          "nw_lags": 19,
+          "nw_t": -0.5243544176903554,
+          "ic_ci95": [
+            -0.10249287430605031,
+            0.05922803975468787
+          ],
+          "decile_spread": -0.050280503354910695,
+          "top_hit": 0.6103896103896104,
+          "stock_dates": 12825
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/ridge_h20.parquet",
+      "prediction_sha256": "b15a2ec4213c0bb50ec140d82c5654bec138d80c5f8aeb8e84f786509d6f0045",
+      "prediction_rows": 214775
+    },
+    "lightgbm_h20": {
+      "summary": {
+        "days": 1624,
+        "ic_mean": 0.027096761407561076,
+        "icir": 0.1980366079925272,
+        "nw_lags": 19,
+        "nw_t": 2.6696533504535482,
+        "ic_ci95": [
+          0.007202922999740492,
+          0.04699059981538166
+        ],
+        "decile_spread": 0.0034297284935840768,
+        "top_hit": 0.5487259558996013,
+        "stock_dates": 208545
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": 0.034369438921666995,
+          "icir": 0.29013231009900853,
+          "nw_lags": 19,
+          "nw_t": 1.3484813077456852,
+          "ic_ci95": [
+            -0.015586092459841584,
+            0.08432497030317557
+          ],
+          "decile_spread": 0.004315336125951076,
+          "top_hit": 0.6324892104595076,
+          "stock_dates": 26412
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": 0.04675618962802554,
+          "icir": 0.4343594537084451,
+          "nw_lags": 19,
+          "nw_t": 2.6634853079870755,
+          "ic_ci95": [
+            0.01234934255583784,
+            0.08116303670021324
+          ],
+          "decile_spread": 0.011349619138451944,
+          "top_hit": 0.557613814756672,
+          "stock_dates": 32782
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": 0.015742477446752744,
+          "icir": 0.07234490447078881,
+          "nw_lags": 19,
+          "nw_t": 0.3305311513467262,
+          "ic_ci95": [
+            -0.07760804540084507,
+            0.10909300029435057
+          ],
+          "decile_spread": -0.028184287703066864,
+          "top_hit": 0.5495409939854384,
+          "stock_dates": 21055
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": 0.05399647690556815,
+          "icir": 0.46046684146697914,
+          "nw_lags": 19,
+          "nw_t": 3.163288649013612,
+          "ic_ci95": [
+            0.020539809975120678,
+            0.08745314383601563
+          ],
+          "decile_spread": 0.023394848840416992,
+          "top_hit": 0.47279549718574104,
+          "stock_dates": 31399
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": 0.027263739262050703,
+          "icir": 0.225274671938287,
+          "nw_lags": 19,
+          "nw_t": 1.3215143851805597,
+          "ic_ci95": [
+            -0.013172391856051534,
+            0.06769987038015293
+          ],
+          "decile_spread": 0.011102534368032843,
+          "top_hit": 0.5767851395466458,
+          "stock_dates": 33522
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": 0.028261066003400278,
+          "icir": 0.2766783860677372,
+          "nw_lags": 19,
+          "nw_t": 1.7629665801378553,
+          "ic_ci95": [
+            -0.003158525264366798,
+            0.05968065727116735
+          ],
+          "decile_spread": 0.007630990044695633,
+          "top_hit": 0.5081963491054401,
+          "stock_dates": 33280
+        },
+        "2025": {
+          "days": 119,
+          "ic_mean": -0.0266472819824606,
+          "icir": -0.1829950043360908,
+          "nw_lags": 19,
+          "nw_t": -0.8055707339283581,
+          "ic_ci95": [
+            -0.09148165404427835,
+            0.03818709007935716
+          ],
+          "decile_spread": 0.0008240540082726926,
+          "top_hit": 0.4909963985594238,
+          "stock_dates": 17270
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": -0.019153329932212047,
+          "icir": -0.2387802391891356,
+          "nw_lags": 19,
+          "nw_t": -1.2832365827702674,
+          "ic_ci95": [
+            -0.04840789387714935,
+            0.010101234012725249
+          ],
+          "decile_spread": -0.018035160766366812,
+          "top_hit": 0.6550324675324676,
+          "stock_dates": 12825
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/lightgbm_h20.parquet",
+      "prediction_sha256": "b7c7ae513aeaa5337c1729c5ac50267b4a4f17d53eb10aaaf51e4437f163fb40",
+      "prediction_rows": 214775
+    },
+    "momentum20_h5": {
+      "summary": {
+        "days": 1639,
+        "ic_mean": -0.017267468641237824,
+        "icir": -0.09336016298932069,
+        "nw_lags": 4,
+        "nw_t": -2.190030718791126,
+        "ic_ci95": [
+          -0.032721242073013156,
+          -0.0018136952094624913
+        ],
+        "decile_spread": 0.003367191507508011,
+        "top_hit": 0.4812223570612832,
+        "stock_dates": 213165
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": -0.026174376210677173,
+          "icir": -0.16078873256094145,
+          "nw_lags": 4,
+          "nw_t": -1.303313909002843,
+          "ic_ci95": [
+            -0.06553694037772263,
+            0.01318818795636829
+          ],
+          "decile_spread": -0.0010360939324865577,
+          "top_hit": 0.46877380045696876,
+          "stock_dates": 26562
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": -0.04616114750684682,
+          "icir": -0.2337822954710661,
+          "nw_lags": 4,
+          "nw_t": -2.143129326084166,
+          "ic_ci95": [
+            -0.08837784811013397,
+            -0.003944446903559683
+          ],
+          "decile_spread": -0.003806210885300584,
+          "top_hit": 0.4712715855572999,
+          "stock_dates": 32872
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": -0.006436563191570751,
+          "icir": -0.03185906773995445,
+          "nw_lags": 4,
+          "nw_t": -0.28180766471604596,
+          "ic_ci95": [
+            -0.051203492679419926,
+            0.03833036629627842
+          ],
+          "decile_spread": 0.007613367766476185,
+          "top_hit": 0.514870588944663,
+          "stock_dates": 22735
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": -0.019454929346612453,
+          "icir": -0.10195558988067838,
+          "nw_lags": 4,
+          "nw_t": -0.9551505995242687,
+          "ic_ci95": [
+            -0.05937707517194368,
+            0.02046721647871878
+          ],
+          "decile_spread": -0.0049933841011357664,
+          "top_hit": 0.42035200571785936,
+          "stock_dates": 31534
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": -0.036426356722982674,
+          "icir": -0.20861689399456604,
+          "nw_lags": 4,
+          "nw_t": -1.8735737009520594,
+          "ic_ci95": [
+            -0.07453302908968286,
+            0.0016803156437175115
+          ],
+          "decile_spread": 0.0020075947492858843,
+          "top_hit": 0.49043634190077706,
+          "stock_dates": 33718
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": 0.002473862324707677,
+          "icir": 0.015793827559896893,
+          "nw_lags": 4,
+          "nw_t": 0.1443961388167056,
+          "ic_ci95": [
+            -0.0311057762733992,
+            0.036053500922814556
+          ],
+          "decile_spread": 0.008159665495710263,
+          "top_hit": 0.4671464898737626,
+          "stock_dates": 33399
+        },
+        "2025": {
+          "days": 134,
+          "ic_mean": 0.014996001814864924,
+          "icir": 0.06796017305241513,
+          "nw_lags": 4,
+          "nw_t": 0.4703396078545324,
+          "ic_ci95": [
+            -0.04749536201309004,
+            0.0774873656428199
+          ],
+          "decile_spread": 0.00832083512473611,
+          "top_hit": 0.5170575692963753,
+          "stock_dates": 19490
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": 0.008444111779380953,
+          "icir": 0.05408383310847036,
+          "nw_lags": 4,
+          "nw_t": 0.3101394926990542,
+          "ic_ci95": [
+            -0.044920453125116735,
+            0.06180867668387864
+          ],
+          "decile_spread": 0.028062699340186282,
+          "top_hit": 0.5738636363636362,
+          "stock_dates": 12855
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/momentum20_h5.parquet",
+      "prediction_sha256": "cba59572935001807a7f6f70b28e2d7ae35ed9d07ccef33bedaad3c4136f46d6",
+      "prediction_rows": 214775
+    },
+    "reversal5_h5": {
+      "summary": {
+        "days": 1639,
+        "ic_mean": 0.025548338745282118,
+        "icir": 0.15041326912176478,
+        "nw_lags": 4,
+        "nw_t": 3.9461559955306167,
+        "ic_ci95": [
+          0.012858839395163373,
+          0.038237838095400864
+        ],
+        "decile_spread": -4.8685317956820804e-05,
+        "top_hit": 0.5059951234447879,
+        "stock_dates": 213165
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": 0.03257547787081677,
+          "icir": 0.21872873626085185,
+          "nw_lags": 4,
+          "nw_t": 1.9331366619633141,
+          "ic_ci95": [
+            -0.0004526767770580628,
+            0.06560363251869161
+          ],
+          "decile_spread": 0.0023931121982000655,
+          "top_hit": 0.5173902005585174,
+          "stock_dates": 26562
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": 0.02830912772197585,
+          "icir": 0.15535127569844415,
+          "nw_lags": 4,
+          "nw_t": 1.5659906063989446,
+          "ic_ci95": [
+            -0.007122687838313234,
+            0.06374094328226493
+          ],
+          "decile_spread": -0.004150030639687332,
+          "top_hit": 0.5023547880690737,
+          "stock_dates": 32872
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": 0.032102948629214534,
+          "icir": 0.1710048862764159,
+          "nw_lags": 4,
+          "nw_t": 1.8424722693450772,
+          "ic_ci95": [
+            -0.002047784795732248,
+            0.06625368205416132
+          ],
+          "decile_spread": -0.0012697147747385907,
+          "top_hit": 0.5425993759327092,
+          "stock_dates": 22735
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": 0.004553431860733399,
+          "icir": 0.024153574968553772,
+          "nw_lags": 4,
+          "nw_t": 0.24143214860363899,
+          "ic_ci95": [
+            -0.03241234299010991,
+            0.0415192067115767
+          ],
+          "decile_spread": 0.003200798326762122,
+          "top_hit": 0.45633431609041364,
+          "stock_dates": 31534
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": 0.04592506642345577,
+          "icir": 0.2858843823536509,
+          "nw_lags": 4,
+          "nw_t": 2.827008025776887,
+          "ic_ci95": [
+            0.014084643839145317,
+            0.07776548900776623
+          ],
+          "decile_spread": 0.0024022905439909942,
+          "top_hit": 0.5439100648305669,
+          "stock_dates": 33718
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": 0.019577203737516854,
+          "icir": 0.13729840616537,
+          "nw_lags": 4,
+          "nw_t": 1.440574413535672,
+          "ic_ci95": [
+            -0.007058920689652744,
+            0.04621332816468646
+          ],
+          "decile_spread": -0.003171284089520343,
+          "top_hit": 0.4736854055035873,
+          "stock_dates": 33399
+        },
+        "2025": {
+          "days": 134,
+          "ic_mean": 0.002262516039835164,
+          "icir": 0.012457431914264322,
+          "nw_lags": 4,
+          "nw_t": 0.09585195674731072,
+          "ic_ci95": [
+            -0.0440018648717349,
+            0.048526896951405225
+          ],
+          "decile_spread": -0.0015719878089513286,
+          "top_hit": 0.4669509594882729,
+          "stock_dates": 19490
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": 0.038859457932566545,
+          "icir": 0.2776050599432948,
+          "nw_lags": 4,
+          "nw_t": 1.6986311880185574,
+          "ic_ci95": [
+            -0.005979314653892252,
+            0.08369823051902534
+          ],
+          "decile_spread": 0.0043028134600375315,
+          "top_hit": 0.573051948051948,
+          "stock_dates": 12855
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/reversal5_h5.parquet",
+      "prediction_sha256": "63cdff394d40e670c16012318bc7d25c553712dc49f91d81019a9ee3abb09350",
+      "prediction_rows": 214775
+    },
+    "lowvol_h5": {
+      "summary": {
+        "days": 1639,
+        "ic_mean": 0.024790500461899796,
+        "icir": 0.09979101908093133,
+        "nw_lags": 4,
+        "nw_t": 2.3469217888406173,
+        "ic_ci95": [
+          0.004087049185269559,
+          0.045493951738530033
+        ],
+        "decile_spread": -0.007232257820947517,
+        "top_hit": 0.5229066235777645,
+        "stock_dates": 213165
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": 0.025548316741812654,
+          "icir": 0.1127025692526316,
+          "nw_lags": 4,
+          "nw_t": 0.9543507677233044,
+          "ic_ci95": [
+            -0.02692159527325369,
+            0.078018228756879
+          ],
+          "decile_spread": -0.0025549439901729424,
+          "top_hit": 0.5272911906575274,
+          "stock_dates": 26562
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": 0.011042405022834286,
+          "icir": 0.045392998333247725,
+          "nw_lags": 4,
+          "nw_t": 0.42693579583286295,
+          "ic_ci95": [
+            -0.03965166667601211,
+            0.061736476721680686
+          ],
+          "decile_spread": -0.01394400344474561,
+          "top_hit": 0.5158555729984301,
+          "stock_dates": 32872
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": 0.01957238615289834,
+          "icir": 0.07569872877055236,
+          "nw_lags": 4,
+          "nw_t": 0.675090800846338,
+          "ic_ci95": [
+            -0.03725237995499084,
+            0.07639715226078751
+          ],
+          "decile_spread": -0.010771359740143467,
+          "top_hit": 0.5501439575513649,
+          "stock_dates": 22735
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": 0.05051753004423821,
+          "icir": 0.17766158301671314,
+          "nw_lags": 4,
+          "nw_t": 1.598528070817657,
+          "ic_ci95": [
+            -0.011423427199046501,
+            0.11245848728752292
+          ],
+          "decile_spread": -0.00041253995015871317,
+          "top_hit": 0.4676583579022604,
+          "stock_dates": 31534
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": 0.021201880823823408,
+          "icir": 0.08792429440299018,
+          "nw_lags": 4,
+          "nw_t": 0.7992518948577718,
+          "ic_ci95": [
+            -0.030791347696565375,
+            0.0731951093442122
+          ],
+          "decile_spread": -0.007448257161524573,
+          "top_hit": 0.5573359694698606,
+          "stock_dates": 33718
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": 0.032020911288769834,
+          "icir": 0.14780370324168135,
+          "nw_lags": 4,
+          "nw_t": 1.3743655923582234,
+          "ic_ci95": [
+            -0.013644511707086464,
+            0.07768633428462612
+          ],
+          "decile_spread": -0.005603096429584577,
+          "top_hit": 0.5020661157024794,
+          "stock_dates": 33399
+        },
+        "2025": {
+          "days": 134,
+          "ic_mean": 0.03868583991532747,
+          "icir": 0.15165820279027323,
+          "nw_lags": 4,
+          "nw_t": 1.009845666883821,
+          "ic_ci95": [
+            -0.036399144573460905,
+            0.11377082440411584
+          ],
+          "decile_spread": -0.00033595469155455973,
+          "top_hit": 0.5378464818763327,
+          "stock_dates": 19490
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": -0.027478792941518917,
+          "icir": -0.10436705889066798,
+          "nw_lags": 4,
+          "nw_t": -0.5868163879712662,
+          "ic_ci95": [
+            -0.11925951902446923,
+            0.06430193314143139
+          ],
+          "decile_spread": -0.02296892122419677,
+          "top_hit": 0.5527597402597402,
+          "stock_dates": 12855
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/lowvol_h5.parquet",
+      "prediction_sha256": "8a601231ba972d00970e19008b539b4a6cdff69d64fd5c3ec4e6b5c3320cc688",
+      "prediction_rows": 214775
+    },
+    "ridge_h5": {
+      "summary": {
+        "days": 1639,
+        "ic_mean": 0.04435958232309255,
+        "icir": 0.25086718360016275,
+        "nw_lags": 4,
+        "nw_t": 6.326252792350629,
+        "ic_ci95": [
+          0.030616094004321845,
+          0.05810307064186325
+        ],
+        "decile_spread": -0.0014736748536868507,
+        "top_hit": 0.5171020254912873,
+        "stock_dates": 213165
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": 0.04726328313250835,
+          "icir": 0.26860086484356716,
+          "nw_lags": 4,
+          "nw_t": 2.3357781895439724,
+          "ic_ci95": [
+            0.007603680455165844,
+            0.08692288580985086
+          ],
+          "decile_spread": 0.0006432638578267738,
+          "top_hit": 0.5465536938309216,
+          "stock_dates": 26562
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": 0.05454086920277741,
+          "icir": 0.31600471366455785,
+          "nw_lags": 4,
+          "nw_t": 3.1985311997385333,
+          "ic_ci95": [
+            0.021119246288427734,
+            0.08796249211712709
+          ],
+          "decile_spread": -0.0014870228200061326,
+          "top_hit": 0.524646781789639,
+          "stock_dates": 32872
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": 0.03285312373372386,
+          "icir": 0.1610182927994901,
+          "nw_lags": 4,
+          "nw_t": 1.5698393137133204,
+          "ic_ci95": [
+            -0.008165165180053377,
+            0.07387141264750109
+          ],
+          "decile_spread": -0.00781908626675558,
+          "top_hit": 0.5264324153213041,
+          "stock_dates": 22735
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": 0.03581804844894112,
+          "icir": 0.17979720648186312,
+          "nw_lags": 4,
+          "nw_t": 1.679423866977097,
+          "ic_ci95": [
+            -0.005984010185778758,
+            0.07762010708366099
+          ],
+          "decile_spread": 0.0018798931611809652,
+          "top_hit": 0.44619404985258637,
+          "stock_dates": 31534
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": 0.06597181379536801,
+          "icir": 0.4164935927017048,
+          "nw_lags": 4,
+          "nw_t": 4.0769922821836335,
+          "ic_ci95": [
+            0.03425609149587281,
+            0.09768753609486322
+          ],
+          "decile_spread": 0.0018136118569595785,
+          "top_hit": 0.5447376890891535,
+          "stock_dates": 33718
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": 0.056518344028896605,
+          "icir": 0.3943821928642802,
+          "nw_lags": 4,
+          "nw_t": 4.085372187262485,
+          "ic_ci95": [
+            0.02940307785020707,
+            0.08363361020758614
+          ],
+          "decile_spread": 0.0008014966377152879,
+          "top_hit": 0.5141449459631278,
+          "stock_dates": 33399
+        },
+        "2025": {
+          "days": 134,
+          "ic_mean": 0.02160911345881145,
+          "icir": 0.1276805159754008,
+          "nw_lags": 4,
+          "nw_t": 0.9789117856162475,
+          "ic_ci95": [
+            -0.021657157314103715,
+            0.06487538423172662
+          ],
+          "decile_spread": -0.00460657737855579,
+          "top_hit": 0.5079957356076759,
+          "stock_dates": 19490
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": 0.007508935668187003,
+          "icir": 0.04199077244960427,
+          "nw_lags": 4,
+          "nw_t": 0.24696673729646465,
+          "ic_ci95": [
+            -0.05208416610235336,
+            0.06710203743872736
+          ],
+          "decile_spread": -0.00856274545244464,
+          "top_hit": 0.5478896103896104,
+          "stock_dates": 12855
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/ridge_h5.parquet",
+      "prediction_sha256": "6b523f40facee3a7c77724de71cd53198695887248d60b345dd3b51d9c7630f9",
+      "prediction_rows": 214775
+    },
+    "lightgbm_h5": {
+      "summary": {
+        "days": 1639,
+        "ic_mean": 0.050152823175391104,
+        "icir": 0.29802620655630513,
+        "nw_lags": 4,
+        "nw_t": 7.6298170566277665,
+        "ic_ci95": [
+          0.037269220240458735,
+          0.06303642611032348
+        ],
+        "decile_spread": 0.0006160020419780715,
+        "top_hit": 0.5279390631739626,
+        "stock_dates": 213165
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": 0.060037722879444116,
+          "icir": 0.36049969777304125,
+          "nw_lags": 4,
+          "nw_t": 3.1878088160832747,
+          "ic_ci95": [
+            0.02312398569106046,
+            0.09695146006782777
+          ],
+          "decile_spread": 0.002733142895201169,
+          "top_hit": 0.5491558771261742,
+          "stock_dates": 26562
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": 0.05509285045737367,
+          "icir": 0.3266189938081992,
+          "nw_lags": 4,
+          "nw_t": 3.3458917735387357,
+          "ic_ci95": [
+            0.022819843975084866,
+            0.08736585693966248
+          ],
+          "decile_spread": 0.0007946674280234798,
+          "top_hit": 0.5365777080062794,
+          "stock_dates": 32872
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": 0.04783400027553708,
+          "icir": 0.24665155704770522,
+          "nw_lags": 4,
+          "nw_t": 2.418329551455627,
+          "ic_ci95": [
+            0.009065652726039354,
+            0.08660234782503481
+          ],
+          "decile_spread": -0.0012794082200759925,
+          "top_hit": 0.5383710939266495,
+          "stock_dates": 22735
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": 0.050916395476588786,
+          "icir": 0.29821132796973887,
+          "nw_lags": 4,
+          "nw_t": 2.9774019319810865,
+          "ic_ci95": [
+            0.017398537486985,
+            0.08443425346619257
+          ],
+          "decile_spread": 0.006568574708248367,
+          "top_hit": 0.47659251317787904,
+          "stock_dates": 31534
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": 0.05366031475900068,
+          "icir": 0.3390078714334146,
+          "nw_lags": 4,
+          "nw_t": 3.5078993642673155,
+          "ic_ci95": [
+            0.023678206948559332,
+            0.08364242256944203
+          ],
+          "decile_spread": 0.00141527464810136,
+          "top_hit": 0.546094073290726,
+          "stock_dates": 33718
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": 0.05534891144164033,
+          "icir": 0.3761715352207697,
+          "nw_lags": 4,
+          "nw_t": 3.719507461498498,
+          "ic_ci95": [
+            0.026182720071262072,
+            0.08451510281201859
+          ],
+          "decile_spread": 0.0007012541422396687,
+          "top_hit": 0.5178457905730633,
+          "stock_dates": 33399
+        },
+        "2025": {
+          "days": 134,
+          "ic_mean": 0.03401942637804728,
+          "icir": 0.20999934094982137,
+          "nw_lags": 4,
+          "nw_t": 1.543948436598622,
+          "ic_ci95": [
+            -0.009167298074918936,
+            0.0772061508310135
+          ],
+          "decile_spread": -0.002538751405286183,
+          "top_hit": 0.5277185501066097,
+          "stock_dates": 19490
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": 0.018729074041237963,
+          "icir": 0.10446045857784313,
+          "nw_lags": 4,
+          "nw_t": 0.5857618665752333,
+          "ic_ci95": [
+            -0.043939712056860876,
+            0.08139786013933681
+          ],
+          "decile_spread": -0.013748814473350423,
+          "top_hit": 0.5487012987012986,
+          "stock_dates": 12855
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/lightgbm_h5.parquet",
+      "prediction_sha256": "dedf68820cbb3fd451aad2c7f372be784eb82b7a2b46feef0bf496c1b01864af",
+      "prediction_rows": 214775
+    },
+    "gru_s17_h20": {
+      "summary": {
+        "days": 1624,
+        "ic_mean": 0.0024490465081922507,
+        "icir": 0.01605930972407076,
+        "nw_lags": 19,
+        "nw_t": 0.23452203628910503,
+        "ic_ci95": [
+          -0.0180186725684897,
+          0.022916765584874203
+        ],
+        "decile_spread": 0.015557702916967798,
+        "top_hit": 0.5228915173496455,
+        "stock_dates": 208545
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": -0.037254500447155885,
+          "icir": -0.28566471944854344,
+          "nw_lags": 19,
+          "nw_t": -1.9826670099105104,
+          "ic_ci95": [
+            -0.07408308563641634,
+            -0.00042591525789542617
+          ],
+          "decile_spread": -0.011212900079404063,
+          "top_hit": 0.5070449352627571,
+          "stock_dates": 26412
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": 0.04437948809771715,
+          "icir": 0.3662278697008418,
+          "nw_lags": 19,
+          "nw_t": 2.672145903606075,
+          "ic_ci95": [
+            0.011827449470582112,
+            0.07693152672485218
+          ],
+          "decile_spread": 0.029618658749283523,
+          "top_hit": 0.5682888540031397,
+          "stock_dates": 32782
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": -0.008189534954447816,
+          "icir": -0.03671654440972317,
+          "nw_lags": 19,
+          "nw_t": -0.18976816908649596,
+          "ic_ci95": [
+            -0.09277426055930667,
+            0.07639519065041105
+          ],
+          "decile_spread": 0.05196195378087348,
+          "top_hit": 0.5405191516302628,
+          "stock_dates": 21055
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": 0.015502618657894273,
+          "icir": 0.08923786424050467,
+          "nw_lags": 19,
+          "nw_t": 0.5052375189306572,
+          "ic_ci95": [
+            -0.04463767463185064,
+            0.0756429119476392
+          ],
+          "decile_spread": 0.011448849456318841,
+          "top_hit": 0.4598409720360939,
+          "stock_dates": 31399
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": 0.029564545295419357,
+          "icir": 0.2802957471170477,
+          "nw_lags": 19,
+          "nw_t": 1.962541174975459,
+          "ic_ci95": [
+            3.828132811862714e-05,
+            0.05909080926272009
+          ],
+          "decile_spread": 0.013463913349966973,
+          "top_hit": 0.5513356935951078,
+          "stock_dates": 33522
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": 0.00408333454365745,
+          "icir": 0.03720225108882725,
+          "nw_lags": 19,
+          "nw_t": 0.2500778977510319,
+          "ic_ci95": [
+            -0.027920036316155274,
+            0.03608670540347017
+          ],
+          "decile_spread": 0.016891537115936585,
+          "top_hit": 0.4935064935064935,
+          "stock_dates": 33280
+        },
+        "2025": {
+          "days": 119,
+          "ic_mean": -0.05424011208241108,
+          "icir": -0.33834615206051943,
+          "nw_lags": 19,
+          "nw_t": -1.3221968071802126,
+          "ic_ci95": [
+            -0.1346446472500987,
+            0.02616442308527655
+          ],
+          "decile_spread": -0.003662028410905511,
+          "top_hit": 0.4939975990396159,
+          "stock_dates": 17270
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": -0.03174342167710888,
+          "icir": -0.265264844003938,
+          "nw_lags": 19,
+          "nw_t": -1.6539877527802538,
+          "ic_ci95": [
+            -0.06935984681843788,
+            0.005873003464220122
+          ],
+          "decile_spread": -0.023169018945304976,
+          "top_hit": 0.6030844155844156,
+          "stock_dates": 12825
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/gru_s17_h20.parquet",
+      "prediction_sha256": "0960ef448c5f1848195f0f76d8a85ef17ee5aa77e5497058152f5384e3d5ffaf",
+      "prediction_rows": 214775
+    },
+    "gru_s17_h5": {
+      "summary": {
+        "days": 1639,
+        "ic_mean": 0.028459419402673443,
+        "icir": 0.19881552096858823,
+        "nw_lags": 4,
+        "nw_t": 5.165110039100515,
+        "ic_ci95": [
+          0.017659947250681512,
+          0.03925889155466537
+        ],
+        "decile_spread": 0.0002738565906470394,
+        "top_hit": 0.509830773253592,
+        "stock_dates": 213165
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": 0.041864871279890734,
+          "icir": 0.26865559873337014,
+          "nw_lags": 4,
+          "nw_t": 2.3747912413530248,
+          "ic_ci95": [
+            0.007312298287480944,
+            0.07641744427230052
+          ],
+          "decile_spread": 0.002258303071520067,
+          "top_hit": 0.5527735465854278,
+          "stock_dates": 26562
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": 0.05163765665649185,
+          "icir": 0.35355908307998996,
+          "nw_lags": 4,
+          "nw_t": 3.4935062896562785,
+          "ic_ci95": [
+            0.022666818004679398,
+            0.0806084953083043
+          ],
+          "decile_spread": 0.003776559487112119,
+          "top_hit": 0.5277864992150707,
+          "stock_dates": 32872
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": 0.022189235513963165,
+          "icir": 0.13347712782305612,
+          "nw_lags": 4,
+          "nw_t": 1.4016684578063812,
+          "ic_ci95": [
+            -0.008838716470795985,
+            0.05321718749872231
+          ],
+          "decile_spread": -0.007670179443402069,
+          "top_hit": 0.5307812900405493,
+          "stock_dates": 22735
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": 0.028086583086410755,
+          "icir": 0.17618799231306215,
+          "nw_lags": 4,
+          "nw_t": 1.749652664463641,
+          "ic_ci95": [
+            -0.0033766347095857234,
+            0.05954980088240723
+          ],
+          "decile_spread": 0.004548089696888726,
+          "top_hit": 0.4467077637809345,
+          "stock_dates": 31534
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": 0.023717091327781485,
+          "icir": 0.21135698091642072,
+          "nw_lags": 4,
+          "nw_t": 2.0925005517913253,
+          "ic_ci95": [
+            0.0015018049506013674,
+            0.0459323777049616
+          ],
+          "decile_spread": 0.002981349246385531,
+          "top_hit": 0.5265529449629869,
+          "stock_dates": 33718
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": 0.010328216518534569,
+          "icir": 0.08769429410863006,
+          "nw_lags": 4,
+          "nw_t": 0.8998413367286162,
+          "ic_ci95": [
+            -0.012168309869020072,
+            0.03282474290608921
+          ],
+          "decile_spread": -0.0005396317342193662,
+          "top_hit": 0.4855371900826446,
+          "stock_dates": 33399
+        },
+        "2025": {
+          "days": 134,
+          "ic_mean": 0.03837188099941289,
+          "icir": 0.3035589092904941,
+          "nw_lags": 4,
+          "nw_t": 2.3579673633342746,
+          "ic_ci95": [
+            0.0064762373495786466,
+            0.07026752464924713
+          ],
+          "decile_spread": 0.0030387041283596113,
+          "top_hit": 0.49466950959488265,
+          "stock_dates": 19490
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": -0.0008394366624229085,
+          "icir": -0.0059225983095630525,
+          "nw_lags": 4,
+          "nw_t": -0.03953403290472537,
+          "ic_ci95": [
+            -0.04245663929676998,
+            0.04077776597192417
+          ],
+          "decile_spread": -0.013371565304684,
+          "top_hit": 0.5243506493506493,
+          "stock_dates": 12855
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/gru_s17_h5.parquet",
+      "prediction_sha256": "504bf72db7b9f2b3feee1712b8ef48d472ab0d65cf46e6399dfb209691714c10",
+      "prediction_rows": 214775
+    },
+    "gru_s29_h20": {
+      "summary": {
+        "days": 1624,
+        "ic_mean": 0.02263263906049031,
+        "icir": 0.14866721994568885,
+        "nw_lags": 19,
+        "nw_t": 2.260045172800577,
+        "ic_ci95": [
+          0.003004724940706801,
+          0.042260553180273816
+        ],
+        "decile_spread": -0.0004684261625224327,
+        "top_hit": 0.5454114338042909,
+        "stock_dates": 208545
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": 0.004935990859828268,
+          "icir": 0.029905032408983068,
+          "nw_lags": 19,
+          "nw_t": 0.1423476103146021,
+          "ic_ci95": [
+            -0.06302821355415328,
+            0.07290019527380981
+          ],
+          "decile_spread": -0.008056575963143034,
+          "top_hit": 0.5816514343742067,
+          "stock_dates": 26412
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": 0.012203251887910278,
+          "icir": 0.09530249600312253,
+          "nw_lags": 19,
+          "nw_t": 0.6643209171192063,
+          "ic_ci95": [
+            -0.023800994078067954,
+            0.04820749785388851
+          ],
+          "decile_spread": -0.0077976106092985135,
+          "top_hit": 0.5340659340659341,
+          "stock_dates": 32782
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": 0.036252937221900365,
+          "icir": 0.22565445005892376,
+          "nw_lags": 19,
+          "nw_t": 1.6976402482658703,
+          "ic_ci95": [
+            -0.00560266618259464,
+            0.07810854062639537
+          ],
+          "decile_spread": 0.006407638653095202,
+          "top_hit": 0.588846681439274,
+          "stock_dates": 21055
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": 0.02290102561991236,
+          "icir": 0.12933475484742826,
+          "nw_lags": 19,
+          "nw_t": 0.7680904178747795,
+          "ic_ci95": [
+            -0.03553742012873115,
+            0.08133947136855586
+          ],
+          "decile_spread": 0.008930930117120735,
+          "top_hit": 0.446015366747074,
+          "stock_dates": 31399
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": 0.04434812097918067,
+          "icir": 0.35536624668162264,
+          "nw_lags": 19,
+          "nw_t": 2.0996972726091605,
+          "ic_ci95": [
+            0.002950573697909374,
+            0.08574566826045196
+          ],
+          "decile_spread": 0.0026213306863550395,
+          "top_hit": 0.5967630695664168,
+          "stock_dates": 33522
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": 0.02313482318634658,
+          "icir": 0.17258704140181863,
+          "nw_lags": 19,
+          "nw_t": 1.0692859956803178,
+          "ic_ci95": [
+            -0.019271281100458063,
+            0.06554092747315123
+          ],
+          "decile_spread": 0.006703069844917681,
+          "top_hit": 0.5019525928616838,
+          "stock_dates": 33280
+        },
+        "2025": {
+          "days": 119,
+          "ic_mean": 0.006570068007313537,
+          "icir": 0.03342532169590432,
+          "nw_lags": 19,
+          "nw_t": 0.11085135297464721,
+          "ic_ci95": [
+            -0.10959751090604176,
+            0.12273764692066884
+          ],
+          "decile_spread": 0.008648500164061414,
+          "top_hit": 0.5168067226890756,
+          "stock_dates": 17270
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": 0.015292689802299414,
+          "icir": 0.12362627431276237,
+          "nw_lags": 19,
+          "nw_t": 0.5977153914398794,
+          "ic_ci95": [
+            -0.03485437423816495,
+            0.06543975384276378
+          ],
+          "decile_spread": -0.04834952956419863,
+          "top_hit": 0.6704545454545454,
+          "stock_dates": 12825
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/gru_s29_h20.parquet",
+      "prediction_sha256": "7aab8902d5ba629a75630efddf763f712d093776253eda7d7ab3549a549e815d",
+      "prediction_rows": 214775
+    },
+    "gru_s29_h5": {
+      "summary": {
+        "days": 1639,
+        "ic_mean": 0.01663247478787031,
+        "icir": 0.10555371832926903,
+        "nw_lags": 4,
+        "nw_t": 2.539499686991471,
+        "ic_ci95": [
+          0.003795438126193691,
+          0.029469511449546924
+        ],
+        "decile_spread": -0.0018525054063595558,
+        "top_hit": 0.49981170954325316,
+        "stock_dates": 213165
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": -0.011608600058934023,
+          "icir": -0.09252489124108138,
+          "nw_lags": 4,
+          "nw_t": -0.8625468046074832,
+          "ic_ci95": [
+            -0.03798729161975287,
+            0.014770091501884826
+          ],
+          "decile_spread": -0.0025087516214050026,
+          "top_hit": 0.4743272404163493,
+          "stock_dates": 26562
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": 0.002330459277629591,
+          "icir": 0.014964624558391914,
+          "nw_lags": 4,
+          "nw_t": 0.13399018597684548,
+          "ic_ci95": [
+            -0.031759352232471096,
+            0.03642027078773028
+          ],
+          "decile_spread": -0.008132713764303235,
+          "top_hit": 0.5092621664050235,
+          "stock_dates": 32872
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": 0.028688908251332502,
+          "icir": 0.1508871068957245,
+          "nw_lags": 4,
+          "nw_t": 1.485949472095851,
+          "ic_ci95": [
+            -0.00915239202740576,
+            0.06653020853007077
+          ],
+          "decile_spread": -0.001598435556287511,
+          "top_hit": 0.5315349944979575,
+          "stock_dates": 22735
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": 0.034588956320295745,
+          "icir": 0.17395660418700865,
+          "nw_lags": 4,
+          "nw_t": 1.5504275419570013,
+          "ic_ci95": [
+            -0.0091372756725953,
+            0.07831518831318679
+          ],
+          "decile_spread": 0.004477671196501499,
+          "top_hit": 0.45914857500223355,
+          "stock_dates": 31534
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": 0.02355233378646685,
+          "icir": 0.19270514929339744,
+          "nw_lags": 4,
+          "nw_t": 1.9794199536800834,
+          "ic_ci95": [
+            0.00023107033469107682,
+            0.04687359723824262
+          ],
+          "decile_spread": 0.0021463736942016988,
+          "top_hit": 0.5092188146581452,
+          "stock_dates": 33718
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": 0.019035880098696473,
+          "icir": 0.15359509367593027,
+          "nw_lags": 4,
+          "nw_t": 1.3891521746504585,
+          "ic_ci95": [
+            -0.007822462474775142,
+            0.045894222672168083
+          ],
+          "decile_spread": -0.004286017626521856,
+          "top_hit": 0.4902824448278994,
+          "stock_dates": 33399
+        },
+        "2025": {
+          "days": 134,
+          "ic_mean": 0.02418018627087903,
+          "icir": 0.1402742904746801,
+          "nw_lags": 4,
+          "nw_t": 0.941000161721535,
+          "ic_ci95": [
+            -0.026184486360226956,
+            0.07454485890198502
+          ],
+          "decile_spread": -0.0015568609476865163,
+          "top_hit": 0.5058635394456289,
+          "stock_dates": 19490
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": 0.0008917862180726551,
+          "icir": 0.006623612381898832,
+          "nw_lags": 4,
+          "nw_t": 0.04007851865315848,
+          "ic_ci95": [
+            -0.04272012974491059,
+            0.0445037021810559
+          ],
+          "decile_spread": -0.005877370633098133,
+          "top_hit": 0.549512987012987,
+          "stock_dates": 12855
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/gru_s29_h5.parquet",
+      "prediction_sha256": "c723d53fa545ca3bf62fc79dc83480d6c1600d6a805019f6ba46638cd24da721",
+      "prediction_rows": 214775
+    },
+    "gru_s43_h20": {
+      "summary": {
+        "days": 1624,
+        "ic_mean": 0.012328623235317382,
+        "icir": 0.07164528380580448,
+        "nw_lags": 19,
+        "nw_t": 0.9887982354557484,
+        "ic_ci95": [
+          -0.012109225331518458,
+          0.03676647180215322
+        ],
+        "decile_spread": 0.015387177798194268,
+        "top_hit": 0.5417270024720764,
+        "stock_dates": 208545
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": -0.03294866999585875,
+          "icir": -0.15081268022828115,
+          "nw_lags": 19,
+          "nw_t": -0.6018223356237499,
+          "ic_ci95": [
+            -0.14025507816522453,
+            0.07435773817350702
+          ],
+          "decile_spread": -0.016619042967439716,
+          "top_hit": 0.5768278750952018,
+          "stock_dates": 26412
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": 0.05451414027564453,
+          "icir": 0.36319785099628654,
+          "nw_lags": 19,
+          "nw_t": 2.723972167396202,
+          "ic_ci95": [
+            0.015289174536586646,
+            0.09373910601470242
+          ],
+          "decile_spread": 0.021067688209266192,
+          "top_hit": 0.5946624803767661,
+          "stock_dates": 32782
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": 0.002960984961661366,
+          "icir": 0.015315175497825835,
+          "nw_lags": 19,
+          "nw_t": 0.08907515044126209,
+          "ic_ci95": [
+            -0.06219220867434871,
+            0.06811417859767144
+          ],
+          "decile_spread": 0.033944220417444396,
+          "top_hit": 0.5331328479476628,
+          "stock_dates": 21055
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": -0.0033536509483958706,
+          "icir": -0.020742956804977696,
+          "nw_lags": 19,
+          "nw_t": -0.12975962957660744,
+          "ic_ci95": [
+            -0.05401005217505973,
+            0.047302750278267996
+          ],
+          "decile_spread": 0.0012494497535486518,
+          "top_hit": 0.45243306828672686,
+          "stock_dates": 31399
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": 0.05412303136985314,
+          "icir": 0.418703380102008,
+          "nw_lags": 19,
+          "nw_t": 2.7767653997745905,
+          "ic_ci95": [
+            0.01591989707067054,
+            0.09232616566903575
+          ],
+          "decile_spread": 0.03615702461859933,
+          "top_hit": 0.5788542001931124,
+          "stock_dates": 33522
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": 0.012253363850507258,
+          "icir": 0.08513218439329137,
+          "nw_lags": 19,
+          "nw_t": 0.4980637443625173,
+          "ic_ci95": [
+            -0.03596655462144173,
+            0.060473282322456245
+          ],
+          "decile_spread": 0.01762589071684903,
+          "top_hit": 0.5029515938606848,
+          "stock_dates": 33280
+        },
+        "2025": {
+          "days": 119,
+          "ic_mean": -0.027529720011252926,
+          "icir": -0.13429179651152495,
+          "nw_lags": 19,
+          "nw_t": -0.478286062297819,
+          "ic_ci95": [
+            -0.14034557536531722,
+            0.08528613534281138
+          ],
+          "decile_spread": 0.0017591653464042586,
+          "top_hit": 0.4903961584633853,
+          "stock_dates": 17270
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": 0.009115318471921562,
+          "icir": 0.05937884894788642,
+          "nw_lags": 19,
+          "nw_t": 0.17812320954451594,
+          "ic_ci95": [
+            -0.09118617649132321,
+            0.10941681343516635
+          ],
+          "decile_spread": 0.01718289202344694,
+          "top_hit": 0.6623376623376623,
+          "stock_dates": 12825
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/gru_s43_h20.parquet",
+      "prediction_sha256": "b72a99a5163fe819da32402a5ffac1eb99be7a455bacbba9b7c81a614db17ce7",
+      "prediction_rows": 214775
+    },
+    "gru_s43_h5": {
+      "summary": {
+        "days": 1639,
+        "ic_mean": 0.02708634460702475,
+        "icir": 0.1904981969570954,
+        "nw_lags": 4,
+        "nw_t": 4.851161491495129,
+        "ic_ci95": [
+          0.016142731304758372,
+          0.03802995790929113
+        ],
+        "decile_spread": 0.001061824187528385,
+        "top_hit": 0.5085915203364868,
+        "stock_dates": 213165
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": 0.013628147907820444,
+          "icir": 0.10842490509730805,
+          "nw_lags": 4,
+          "nw_t": 1.0723389496336149,
+          "ic_ci95": [
+            -0.011281112273817513,
+            0.0385374080894584
+          ],
+          "decile_spread": -0.0014647384510413624,
+          "top_hit": 0.49914318354912407,
+          "stock_dates": 26562
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": 0.04107595492188972,
+          "icir": 0.2816346325810128,
+          "nw_lags": 4,
+          "nw_t": 2.7078984198855878,
+          "ic_ci95": [
+            0.011344827987554623,
+            0.07080708185622482
+          ],
+          "decile_spread": 0.000602504530134245,
+          "top_hit": 0.521193092621664,
+          "stock_dates": 32872
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": 0.027439271477289976,
+          "icir": 0.1611820284674814,
+          "nw_lags": 4,
+          "nw_t": 1.5510817253874305,
+          "ic_ci95": [
+            -0.007233931884741061,
+            0.062112474839321016
+          ],
+          "decile_spread": -0.005660743841842866,
+          "top_hit": 0.5562188154780747,
+          "stock_dates": 22735
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": 0.031359064680484564,
+          "icir": 0.19117886447809682,
+          "nw_lags": 4,
+          "nw_t": 1.8608171777248559,
+          "ic_ci95": [
+            -0.001671459494329293,
+            0.06438958885529841
+          ],
+          "decile_spread": 0.005085631112372724,
+          "top_hit": 0.4513535245242563,
+          "stock_dates": 31534
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": 0.023718772833850293,
+          "icir": 0.18974399716586304,
+          "nw_lags": 4,
+          "nw_t": 1.9843240980413066,
+          "ic_ci95": [
+            0.0002907477444836458,
+            0.04714679792321694
+          ],
+          "decile_spread": 0.0021485068070368485,
+          "top_hit": 0.5259322267690468,
+          "stock_dates": 33718
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": 0.01748243087434874,
+          "icir": 0.1374340083508991,
+          "nw_lags": 4,
+          "nw_t": 1.4602435937431755,
+          "ic_ci95": [
+            -0.005983218734075486,
+            0.040948080482772965
+          ],
+          "decile_spread": 0.002055456361628981,
+          "top_hit": 0.48653619108164564,
+          "stock_dates": 33399
+        },
+        "2025": {
+          "days": 134,
+          "ic_mean": 0.034090366721818095,
+          "icir": 0.27870195397481523,
+          "nw_lags": 4,
+          "nw_t": 1.9137701578346749,
+          "ic_ci95": [
+            -0.0008235013313672157,
+            0.0690042347750034
+          ],
+          "decile_spread": 0.0009138360654117121,
+          "top_hit": 0.4973347547974413,
+          "stock_dates": 19490
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": 0.031003488382772216,
+          "icir": 0.2431999378758599,
+          "nw_lags": 4,
+          "nw_t": 1.3025917298276328,
+          "ic_ci95": [
+            -0.015647227907492112,
+            0.07765420467303655
+          ],
+          "decile_spread": 0.009996832969879828,
+          "top_hit": 0.5543831168831169,
+          "stock_dates": 12855
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/gru_s43_h5.parquet",
+      "prediction_sha256": "db68203d9ffa1f400da592f4cc9f0c9b6ef2abd4a8fac70f1091d700be26382f",
+      "prediction_rows": 214775
+    },
+    "gru_h20": {
+      "summary": {
+        "days": 1624,
+        "ic_mean": 0.01809866854614155,
+        "icir": 0.10498558566531194,
+        "nw_lags": 19,
+        "nw_t": 1.407178025311829,
+        "ic_ci95": [
+          -0.0071102174031515974,
+          0.0433075544954347
+        ],
+        "decile_spread": 0.01223295998152069,
+        "top_hit": 0.5331502959273895,
+        "stock_dates": 208545
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": -0.03351471834104435,
+          "icir": -0.1524151189269487,
+          "nw_lags": 19,
+          "nw_t": -0.6232341327130867,
+          "ic_ci95": [
+            -0.13891467078345587,
+            0.07188523410136716
+          ],
+          "decile_spread": -0.013590010203452296,
+          "top_hit": 0.5794935262757045,
+          "stock_dates": 26412
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": 0.055629751711015474,
+          "icir": 0.3983614584434198,
+          "nw_lags": 19,
+          "nw_t": 2.8595059693110985,
+          "ic_ci95": [
+            0.017499279341391963,
+            0.09376022408063898
+          ],
+          "decile_spread": 0.017018314932480814,
+          "top_hit": 0.5585557299843014,
+          "stock_dates": 32782
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": 0.014213288022169158,
+          "icir": 0.0697606042246655,
+          "nw_lags": 19,
+          "nw_t": 0.37499630598218653,
+          "ic_ci95": [
+            -0.06007556250526748,
+            0.0885021385496058
+          ],
+          "decile_spread": 0.032285302230408534,
+          "top_hit": 0.5338187190039042,
+          "stock_dates": 21055
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": 0.014963828415208432,
+          "icir": 0.07951233772106411,
+          "nw_lags": 19,
+          "nw_t": 0.42933414089729643,
+          "ic_ci95": [
+            -0.05334917281155521,
+            0.08327682964197208
+          ],
+          "decile_spread": 0.006959182060308242,
+          "top_hit": 0.445032609666756,
+          "stock_dates": 31399
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": 0.06256443446976713,
+          "icir": 0.5553872860714252,
+          "nw_lags": 19,
+          "nw_t": 4.1561437575001134,
+          "ic_ci95": [
+            0.033059610114388654,
+            0.0920692588251456
+          ],
+          "decile_spread": 0.020195700540389397,
+          "top_hit": 0.5851763299462044,
+          "stock_dates": 33522
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": 0.020060395193531182,
+          "icir": 0.161592657448713,
+          "nw_lags": 19,
+          "nw_t": 0.949477263976898,
+          "ic_ci95": [
+            -0.021350153611645665,
+            0.06147094399870803
+          ],
+          "decile_spread": 0.013777207049306196,
+          "top_hit": 0.47765870493143214,
+          "stock_dates": 33280
+        },
+        "2025": {
+          "days": 119,
+          "ic_mean": -0.034391127531384964,
+          "icir": -0.16280574498136238,
+          "nw_lags": 19,
+          "nw_t": -0.5481866112121271,
+          "ic_ci95": [
+            -0.15735401750870107,
+            0.08857176244593112
+          ],
+          "decile_spread": 0.0048131090017163895,
+          "top_hit": 0.5108043217286914,
+          "stock_dates": 17270
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": -0.0036020502701865254,
+          "icir": -0.029445021219806234,
+          "nw_lags": 19,
+          "nw_t": -0.14987066960271614,
+          "ic_ci95": [
+            -0.050709456597792864,
+            0.04350535605741981
+          ],
+          "decile_spread": 0.0017172520172119192,
+          "top_hit": 0.6420454545454546,
+          "stock_dates": 12825
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/gru_h20.parquet",
+      "prediction_sha256": "cd19124dcdd0e7fcbb18418d0d70ae24fdffb75e121b310f950de2839824c070",
+      "prediction_rows": 214775
+    },
+    "gru_h5": {
+      "summary": {
+        "days": 1639,
+        "ic_mean": 0.03350599733127063,
+        "icir": 0.22168160397220396,
+        "nw_lags": 4,
+        "nw_t": 5.49910476571141,
+        "ic_ci95": [
+          0.021563734441722902,
+          0.04544826022081836
+        ],
+        "decile_spread": 0.0012662411479733885,
+        "top_hit": 0.5117371442874799,
+        "stock_dates": 213165
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": 0.02277428821137699,
+          "icir": 0.17089564772928298,
+          "nw_lags": 4,
+          "nw_t": 1.6811623513511018,
+          "ic_ci95": [
+            -0.0037773442698196893,
+            0.04932592069257367
+          ],
+          "decile_spread": 0.0009562519876114742,
+          "top_hit": 0.5047283574511298,
+          "stock_dates": 26562
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": 0.04600712412305305,
+          "icir": 0.328732473018661,
+          "nw_lags": 4,
+          "nw_t": 3.2299803136868475,
+          "ic_ci95": [
+            0.018089318277897518,
+            0.07392492996820858
+          ],
+          "decile_spread": 0.0005404461698634852,
+          "top_hit": 0.5180533751962324,
+          "stock_dates": 32872
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": 0.03703297993349277,
+          "icir": 0.19651481048226635,
+          "nw_lags": 4,
+          "nw_t": 1.8589501212797268,
+          "ic_ci95": [
+            -0.002013059999885089,
+            0.07607901986687063
+          ],
+          "decile_spread": -0.000257575581283372,
+          "top_hit": 0.5486893079485672,
+          "stock_dates": 22735
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": 0.04114477960582843,
+          "icir": 0.223941062865388,
+          "nw_lags": 4,
+          "nw_t": 2.0388731242626363,
+          "ic_ci95": [
+            0.0015916720250961844,
+            0.08069788718656068
+          ],
+          "decile_spread": 0.006408635274491328,
+          "top_hit": 0.4511971768069329,
+          "stock_dates": 31534
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": 0.030300852409130816,
+          "icir": 0.257206849944691,
+          "nw_lags": 4,
+          "nw_t": 2.636949232028842,
+          "ic_ci95": [
+            0.00777873859649492,
+            0.052822966221766715
+          ],
+          "decile_spread": 0.0031552085508342463,
+          "top_hit": 0.5382086532714149,
+          "stock_dates": 33718
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": 0.022014584834672182,
+          "icir": 0.16899343833783,
+          "nw_lags": 4,
+          "nw_t": 1.6687955909946663,
+          "ic_ci95": [
+            -0.003841539491638662,
+            0.04787070916098303
+          ],
+          "decile_spread": -0.001987033433629785,
+          "top_hit": 0.4857188266279176,
+          "stock_dates": 33399
+        },
+        "2025": {
+          "days": 134,
+          "ic_mean": 0.04826764608555896,
+          "icir": 0.33759818635508715,
+          "nw_lags": 4,
+          "nw_t": 2.3661552139133564,
+          "ic_ci95": [
+            0.008285236744275663,
+            0.08825005542684225
+          ],
+          "decile_spread": -0.0008109514495927504,
+          "top_hit": 0.5197228144989339,
+          "stock_dates": 19490
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": 0.010071025670409692,
+          "icir": 0.06808040893483674,
+          "nw_lags": 4,
+          "nw_t": 0.39338427826727207,
+          "ic_ci95": [
+            -0.040106908234187874,
+            0.060248959575007255
+          ],
+          "decile_spread": 0.0008102086213154159,
+          "top_hit": 0.564935064935065,
+          "stock_dates": 12855
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/gru_h5.parquet",
+      "prediction_sha256": "1608de7826377c90db24fedcabfc6bcbdec4b4a5d717542db8764b8648258335",
+      "prediction_rows": 214775
+    },
+    "selective_s17_h20": {
+      "summary": {
+        "days": 1624,
+        "ic_mean": -0.006696561804758738,
+        "icir": -0.0528775043620348,
+        "nw_lags": 19,
+        "nw_t": -0.9021042701980633,
+        "ic_ci95": [
+          -0.021246167178476105,
+          0.00785304356895863
+        ],
+        "decile_spread": -0.002302848512921403,
+        "top_hit": 0.531435518504484,
+        "stock_dates": 208545
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": -0.02587053394274926,
+          "icir": -0.22237114753524131,
+          "nw_lags": 19,
+          "nw_t": -1.3334666771475894,
+          "ic_ci95": [
+            -0.06389641595148006,
+            0.012155348065981536
+          ],
+          "decile_spread": -0.006403672937477044,
+          "top_hit": 0.5572480324955573,
+          "stock_dates": 26412
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": -0.0008887209531445788,
+          "icir": -0.00646661269365493,
+          "nw_lags": 19,
+          "nw_t": -0.043632816295180864,
+          "ic_ci95": [
+            -0.04081034912353986,
+            0.0390329072172507
+          ],
+          "decile_spread": 0.0012439666495166048,
+          "top_hit": 0.5469387755102042,
+          "stock_dates": 32782
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": 0.007158978531250176,
+          "icir": 0.04133506931023392,
+          "nw_lags": 19,
+          "nw_t": 0.31920862344295253,
+          "ic_ci95": [
+            -0.03679847402722686,
+            0.0511164310897272
+          ],
+          "decile_spread": 0.0002457924655963224,
+          "top_hit": 0.5749182230663713,
+          "stock_dates": 21055
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": -0.050680310030182675,
+          "icir": -0.41390537484304213,
+          "nw_lags": 19,
+          "nw_t": -2.8333973828339407,
+          "ic_ci95": [
+            -0.08573836728009994,
+            -0.015622252780265411
+          ],
+          "decile_spread": -0.01491678025799197,
+          "top_hit": 0.4240001191220703,
+          "stock_dates": 31399
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": 0.014212939762690663,
+          "icir": 0.14875111819303302,
+          "nw_lags": 19,
+          "nw_t": 1.34827674895701,
+          "ic_ci95": [
+            -0.006448517135103795,
+            0.03487439666048512
+          ],
+          "decile_spread": 0.005291602396448722,
+          "top_hit": 0.5564163869603199,
+          "stock_dates": 33522
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": 0.004503643430742115,
+          "icir": 0.0468018311149155,
+          "nw_lags": 19,
+          "nw_t": 0.31396461568518846,
+          "ic_ci95": [
+            -0.023611439235469857,
+            0.032618726096954084
+          ],
+          "decile_spread": -0.000771134960752147,
+          "top_hit": 0.49082735446371806,
+          "stock_dates": 33280
+        },
+        "2025": {
+          "days": 119,
+          "ic_mean": 0.00984456723040555,
+          "icir": 0.08093818387907556,
+          "nw_lags": 19,
+          "nw_t": 0.3008327322978804,
+          "ic_ci95": [
+            -0.0542952343936042,
+            0.07398436885441531
+          ],
+          "decile_spread": -0.0034419318947054266,
+          "top_hit": 0.5180072028811525,
+          "stock_dates": 17270
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": -0.004115741029343092,
+          "icir": -0.04174113279615758,
+          "nw_lags": 19,
+          "nw_t": -0.21609545888932505,
+          "ic_ci95": [
+            -0.04144578238687093,
+            0.03321430032818475
+          ],
+          "decile_spread": 0.0021620008727417737,
+          "top_hit": 0.6712662337662337,
+          "stock_dates": 12825
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/selective_s17_h20.parquet",
+      "prediction_sha256": "6b1f44a7d8bae3a8b05720843f77e1c72bb253f45429ff0319121fc901af8458",
+      "prediction_rows": 214775
+    },
+    "selective_s17_h5": {
+      "summary": {
+        "days": 1639,
+        "ic_mean": 0.015920697194416838,
+        "icir": 0.12740101910560062,
+        "nw_lags": 4,
+        "nw_t": 3.52514063965563,
+        "ic_ci95": [
+          0.007068691078682016,
+          0.02477270331015166
+        ],
+        "decile_spread": -0.0009572990331999661,
+        "top_hit": 0.49571904605461653,
+        "stock_dates": 213165
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": 0.0006532557724006063,
+          "icir": 0.005283857185680888,
+          "nw_lags": 4,
+          "nw_t": 0.05058248673333244,
+          "ic_ci95": [
+            -0.024659483805929635,
+            0.02596599535073085
+          ],
+          "decile_spread": -0.0027766494421426267,
+          "top_hit": 0.49784209190149786,
+          "stock_dates": 26562
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": 0.01427731369732238,
+          "icir": 0.12295570975455496,
+          "nw_lags": 4,
+          "nw_t": 1.2548097461954426,
+          "ic_ci95": [
+            -0.008023704390556972,
+            0.03657833178520173
+          ],
+          "decile_spread": 0.0008754232881774687,
+          "top_hit": 0.500784929356358,
+          "stock_dates": 32872
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": 0.025225118338273886,
+          "icir": 0.14782930665960628,
+          "nw_lags": 4,
+          "nw_t": 1.580043240946501,
+          "ic_ci95": [
+            -0.0060659442489751775,
+            0.05651618092552295
+          ],
+          "decile_spread": -0.0014967205883977405,
+          "top_hit": 0.5272087309124346,
+          "stock_dates": 22735
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": 0.029390366360393272,
+          "icir": 0.2539379210013599,
+          "nw_lags": 4,
+          "nw_t": 2.94294748019246,
+          "ic_ci95": [
+            0.009816412542296728,
+            0.04896432017848981
+          ],
+          "decile_spread": 0.0018184058422642722,
+          "top_hit": 0.4631689448762619,
+          "stock_dates": 31534
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": 0.014996968887284468,
+          "icir": 0.12845189468943632,
+          "nw_lags": 4,
+          "nw_t": 1.4010055299339448,
+          "ic_ci95": [
+            -0.0059837184769284645,
+            0.0359776562514974
+          ],
+          "decile_spread": -0.00042277360946938933,
+          "top_hit": 0.5073796496390639,
+          "stock_dates": 33718
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": 0.009635455765318076,
+          "icir": 0.09862007558323486,
+          "nw_lags": 4,
+          "nw_t": 1.138503673640834,
+          "ic_ci95": [
+            -0.006952539282277416,
+            0.026223450812913565
+          ],
+          "decile_spread": -0.00107535264013985,
+          "top_hit": 0.4645127599673054,
+          "stock_dates": 33399
+        },
+        "2025": {
+          "days": 134,
+          "ic_mean": 0.025748411849745963,
+          "icir": 0.2342408547273607,
+          "nw_lags": 4,
+          "nw_t": 1.7832790798271974,
+          "ic_ci95": [
+            -0.002551638207697885,
+            0.054048461907189815
+          ],
+          "decile_spread": -0.0007994734964908084,
+          "top_hit": 0.4936034115138592,
+          "stock_dates": 19490
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": -0.0029767471387605587,
+          "icir": -0.02216011949665079,
+          "nw_lags": 4,
+          "nw_t": -0.13272911598908427,
+          "ic_ci95": [
+            -0.04693412867101248,
+            0.04098063439349136
+          ],
+          "decile_spread": -0.009520746452442929,
+          "top_hit": 0.5381493506493507,
+          "stock_dates": 12855
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/selective_s17_h5.parquet",
+      "prediction_sha256": "7ccd73f29a8e18c02b45f16e351d4c0e726a1274d314e84dcc959ea9e7aa9bc1",
+      "prediction_rows": 214775
+    },
+    "selective_s29_h20": {
+      "summary": {
+        "days": 1624,
+        "ic_mean": 0.006642562125331668,
+        "icir": 0.05650172693660269,
+        "nw_lags": 19,
+        "nw_t": 1.205500344964234,
+        "ic_ci95": [
+          -0.004157452839439116,
+          0.017442577090102454
+        ],
+        "decile_spread": 0.0030159522226828844,
+        "top_hit": 0.5355862835850521,
+        "stock_dates": 208545
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": -0.007520966190828826,
+          "icir": -0.06416911415111236,
+          "nw_lags": 19,
+          "nw_t": -0.4168084695645095,
+          "ic_ci95": [
+            -0.042887554949033076,
+            0.02784562256737542
+          ],
+          "decile_spread": -0.003116725249173888,
+          "top_hit": 0.550932977913176,
+          "stock_dates": 26412
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": 0.013604976715418127,
+          "icir": 0.12935092035562543,
+          "nw_lags": 19,
+          "nw_t": 1.2385122306247984,
+          "ic_ci95": [
+            -0.007925496462684702,
+            0.03513544989352096
+          ],
+          "decile_spread": 0.0035565013124036226,
+          "top_hit": 0.5497645211930928,
+          "stock_dates": 32782
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": 0.011637091726293671,
+          "icir": 0.07286148372768819,
+          "nw_lags": 19,
+          "nw_t": 0.6834605914702632,
+          "ic_ci95": [
+            -0.02173527833892023,
+            0.045009461791507575
+          ],
+          "decile_spread": 0.007997900833819328,
+          "top_hit": 0.5566635011079456,
+          "stock_dates": 21055
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": -0.0031715395290099306,
+          "icir": -0.027526916789163556,
+          "nw_lags": 19,
+          "nw_t": -0.3114990147395934,
+          "ic_ci95": [
+            -0.023127356988195444,
+            0.016784277930175583
+          ],
+          "decile_spread": -0.002494298056533322,
+          "top_hit": 0.4314005777420411,
+          "stock_dates": 31399
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": 0.007588722928977358,
+          "icir": 0.07817463983776339,
+          "nw_lags": 19,
+          "nw_t": 0.6754581704984036,
+          "ic_ci95": [
+            -0.014431733096923619,
+            0.029609178954878336
+          ],
+          "decile_spread": 0.004431216871782383,
+          "top_hit": 0.583245206676169,
+          "stock_dates": 33522
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": -0.00896931528741501,
+          "icir": -0.09460158272880617,
+          "nw_lags": 19,
+          "nw_t": -0.7381495718312013,
+          "ic_ci95": [
+            -0.032785434180123044,
+            0.014846803605293023
+          ],
+          "decile_spread": -0.0009803990953001008,
+          "top_hit": 0.4930069930069931,
+          "stock_dates": 33280
+        },
+        "2025": {
+          "days": 119,
+          "ic_mean": 0.05053718237378533,
+          "icir": 0.4142116195901257,
+          "nw_lags": 19,
+          "nw_t": 1.9848389573911427,
+          "ic_ci95": [
+            0.0006324396823109563,
+            0.1004419250652597
+          ],
+          "decile_spread": 0.013317636347031108,
+          "top_hit": 0.5372148859543818,
+          "stock_dates": 17270
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": 0.014418943392091798,
+          "icir": 0.13419934365178915,
+          "nw_lags": 19,
+          "nw_t": 0.5850265683281859,
+          "ic_ci95": [
+            -0.03388848498549619,
+            0.06272637176967978
+          ],
+          "decile_spread": 0.010450528762844032,
+          "top_hit": 0.6793831168831169,
+          "stock_dates": 12825
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/selective_s29_h20.parquet",
+      "prediction_sha256": "c89ca3ca90a50ae327573c538fa78aee62e9f7e469ed411f50dce547864d112e",
+      "prediction_rows": 214775
+    },
+    "selective_s29_h5": {
+      "summary": {
+        "days": 1639,
+        "ic_mean": 0.006135930087612628,
+        "icir": 0.05022897344795405,
+        "nw_lags": 4,
+        "nw_t": 1.4567639875486178,
+        "ic_ci95": [
+          -0.002119643961796925,
+          0.014391504137022181
+        ],
+        "decile_spread": 0.0004582198325670811,
+        "top_hit": 0.49471781015405175,
+        "stock_dates": 213165
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": 0.007438711151528732,
+          "icir": 0.06132613177456336,
+          "nw_lags": 4,
+          "nw_t": 0.5607224453395192,
+          "ic_ci95": [
+            -0.01856323326531757,
+            0.033440655568375034
+          ],
+          "decile_spread": -0.0008771079733579655,
+          "top_hit": 0.4941609545569942,
+          "stock_dates": 26562
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": 0.017102545858808712,
+          "icir": 0.1466270973504407,
+          "nw_lags": 4,
+          "nw_t": 1.647562526350571,
+          "ic_ci95": [
+            -0.0032432615670955726,
+            0.03744835328471299
+          ],
+          "decile_spread": 0.0012933536586190943,
+          "top_hit": 0.5249607535321822,
+          "stock_dates": 32872
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": -0.007546725701840271,
+          "icir": -0.050188073111813156,
+          "nw_lags": 4,
+          "nw_t": -0.590808314740911,
+          "ic_ci95": [
+            -0.0325829041146196,
+            0.017489452710939057
+          ],
+          "decile_spread": 0.00153806215804957,
+          "top_hit": 0.4935030675771417,
+          "stock_dates": 22735
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": -0.004305646865646909,
+          "icir": -0.034344021527235945,
+          "nw_lags": 4,
+          "nw_t": -0.3957577706831595,
+          "ic_ci95": [
+            -0.025629467853672917,
+            0.0170181741223791
+          ],
+          "decile_spread": -0.0024988808981931945,
+          "top_hit": 0.43539116709848413,
+          "stock_dates": 31534
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": 0.010896543647104033,
+          "icir": 0.1020442412374845,
+          "nw_lags": 4,
+          "nw_t": 1.209228646642691,
+          "ic_ci95": [
+            -0.006765315098651142,
+            0.028558402392859207
+          ],
+          "decile_spread": 0.002204295084252791,
+          "top_hit": 0.5165524851717321,
+          "stock_dates": 33718
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": 0.014725277859490979,
+          "icir": 0.13126830379433244,
+          "nw_lags": 4,
+          "nw_t": 1.4404404619425093,
+          "ic_ci95": [
+            -0.005311332723969735,
+            0.034761888442951694
+          ],
+          "decile_spread": 0.0018104015871728972,
+          "top_hit": 0.4881709199891018,
+          "stock_dates": 33399
+        },
+        "2025": {
+          "days": 134,
+          "ic_mean": 0.006870868631922708,
+          "icir": 0.057679618204066606,
+          "nw_lags": 4,
+          "nw_t": 0.5198166395861372,
+          "ic_ci95": [
+            -0.01903615606295905,
+            0.03277789332680447
+          ],
+          "decile_spread": 0.0014071102347029119,
+          "top_hit": 0.48880597014925375,
+          "stock_dates": 19490
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": 0.0019159310198200025,
+          "icir": 0.017168448112750152,
+          "nw_lags": 4,
+          "nw_t": 0.10269150020650605,
+          "ic_ci95": [
+            -0.03465208864388817,
+            0.038483950683528174
+          ],
+          "decile_spread": -0.003422663798851032,
+          "top_hit": 0.5487012987012986,
+          "stock_dates": 12855
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/selective_s29_h5.parquet",
+      "prediction_sha256": "e7a2eab84020eb78b1605bf53990459d6d7fd8a75812bfbef6b9fac1f159ae46",
+      "prediction_rows": 214775
+    },
+    "selective_s43_h20": {
+      "summary": {
+        "days": 1624,
+        "ic_mean": 0.014360945197268072,
+        "icir": 0.11206905674350644,
+        "nw_lags": 19,
+        "nw_t": 1.8528662421727837,
+        "ic_ci95": [
+          -0.0008303578477040271,
+          0.02955224824224017
+        ],
+        "decile_spread": 0.012264599172464792,
+        "top_hit": 0.5304402596582399,
+        "stock_dates": 208545
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": 0.0355460788870471,
+          "icir": 0.35267718228999,
+          "nw_lags": 19,
+          "nw_t": 3.1885456456702115,
+          "ic_ci95": [
+            0.01369589314069625,
+            0.05739626463339795
+          ],
+          "decile_spread": 0.010026034410849035,
+          "top_hit": 0.5581683168316832,
+          "stock_dates": 26412
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": 0.034144786137433256,
+          "icir": 0.2900782545420356,
+          "nw_lags": 19,
+          "nw_t": 1.9744719990304844,
+          "ic_ci95": [
+            0.0002502660519468833,
+            0.06803930622291962
+          ],
+          "decile_spread": 0.024999814895901713,
+          "top_hit": 0.5572998430141287,
+          "stock_dates": 32782
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": -0.017181057739697882,
+          "icir": -0.09503655602143224,
+          "nw_lags": 19,
+          "nw_t": -0.5794705109350595,
+          "ic_ci95": [
+            -0.07529423612295774,
+            0.04093212064356197
+          ],
+          "decile_spread": -0.0007194242900591608,
+          "top_hit": 0.5311279940909572,
+          "stock_dates": 21055
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": 0.02020473439146641,
+          "icir": 0.15836411616474072,
+          "nw_lags": 19,
+          "nw_t": 1.1486396536131802,
+          "ic_ci95": [
+            -0.014271943549003178,
+            0.054681412331936
+          ],
+          "decile_spread": 0.012029418005198038,
+          "top_hit": 0.4427544000714732,
+          "stock_dates": 31399
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": 0.014336094951096225,
+          "icir": 0.1625583945224833,
+          "nw_lags": 19,
+          "nw_t": 1.3604237088713835,
+          "ic_ci95": [
+            -0.0063183128785493665,
+            0.03499050278074182
+          ],
+          "decile_spread": 0.01200136697237531,
+          "top_hit": 0.5691296151547197,
+          "stock_dates": 33522
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": 0.013287875571597243,
+          "icir": 0.12067653534659561,
+          "nw_lags": 19,
+          "nw_t": 0.8762499574792563,
+          "ic_ci95": [
+            -0.0164345066071741,
+            0.04301025775036858
+          ],
+          "decile_spread": 0.010132068596863502,
+          "top_hit": 0.4955726092089728,
+          "stock_dates": 33280
+        },
+        "2025": {
+          "days": 119,
+          "ic_mean": -0.0351087065754976,
+          "icir": -0.2524223406712109,
+          "nw_lags": 19,
+          "nw_t": -1.0772550251941293,
+          "ic_ci95": [
+            -0.09898686288818193,
+            0.02876944973718673
+          ],
+          "decile_spread": -0.0019586647372416004,
+          "top_hit": 0.5006002400960383,
+          "stock_dates": 17270
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": 0.05132920832727525,
+          "icir": 0.40080491596276174,
+          "nw_lags": 19,
+          "nw_t": 1.3041931366967716,
+          "ic_ci95": [
+            -0.025810630467053938,
+            0.12846904712160445
+          ],
+          "decile_spread": 0.044271278701069776,
+          "top_hit": 0.6663961038961038,
+          "stock_dates": 12825
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/selective_s43_h20.parquet",
+      "prediction_sha256": "94ad90c7867865eef712d9e09187101ec479a406f01388887cd5cb1c54959725",
+      "prediction_rows": 214775
+    },
+    "selective_s43_h5": {
+      "summary": {
+        "days": 1639,
+        "ic_mean": 0.007928634426024142,
+        "icir": 0.05714366043062403,
+        "nw_lags": 4,
+        "nw_t": 1.5540749277552433,
+        "ic_ci95": [
+          -0.002070962889051252,
+          0.017928231741099535
+        ],
+        "decile_spread": 0.0003965618917936979,
+        "top_hit": 0.48998652354357053,
+        "stock_dates": 213165
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": 0.004177187023084183,
+          "icir": 0.03131255257076376,
+          "nw_lags": 4,
+          "nw_t": 0.2929254844110034,
+          "ic_ci95": [
+            -0.023772878781901992,
+            0.03212725282807036
+          ],
+          "decile_spread": 2.0845399465126628e-05,
+          "top_hit": 0.4848311754252348,
+          "stock_dates": 26562
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": 0.009866712212488436,
+          "icir": 0.08408137676747329,
+          "nw_lags": 4,
+          "nw_t": 0.8924078121692617,
+          "ic_ci95": [
+            -0.011803600029028988,
+            0.03153702445400586
+          ],
+          "decile_spread": 0.0003759948336693226,
+          "top_hit": 0.5010989010989011,
+          "stock_dates": 32872
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": 0.006966982551804482,
+          "icir": 0.041366822659652684,
+          "nw_lags": 4,
+          "nw_t": 0.48546368839824805,
+          "ic_ci95": [
+            -0.02116135356864029,
+            0.03509531867224926
+          ],
+          "decile_spread": 7.526801140045347e-05,
+          "top_hit": 0.5179080179080179,
+          "stock_dates": 22735
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": 0.019222876523658644,
+          "icir": 0.11163219717020637,
+          "nw_lags": 4,
+          "nw_t": 1.0916687107128675,
+          "ic_ci95": [
+            -0.015290192887085656,
+            0.053735945934402944
+          ],
+          "decile_spread": 0.0020793409748781416,
+          "top_hit": 0.45402632597754555,
+          "stock_dates": 31534
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": 0.0021376851127722844,
+          "icir": 0.016381380389618998,
+          "nw_lags": 4,
+          "nw_t": 0.17223699743091472,
+          "ic_ci95": [
+            -0.022188463644635403,
+            0.026463833870179972
+          ],
+          "decile_spread": -0.0013619452324545663,
+          "top_hit": 0.5037243091636396,
+          "stock_dates": 33718
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": -0.005639829532574737,
+          "icir": -0.05174873941723797,
+          "nw_lags": 4,
+          "nw_t": -0.5604476424348332,
+          "ic_ci95": [
+            -0.02536346658067207,
+            0.014083807515522597
+          ],
+          "decile_spread": -0.0034865419684999687,
+          "top_hit": 0.4572927072927074,
+          "stock_dates": 33399
+        },
+        "2025": {
+          "days": 134,
+          "ic_mean": 0.02450462862152148,
+          "icir": 0.18398361529914628,
+          "nw_lags": 4,
+          "nw_t": 1.441543672137928,
+          "ic_ci95": [
+            -0.008813177162989391,
+            0.05782243440603235
+          ],
+          "decile_spread": 0.0020125591446130114,
+          "top_hit": 0.4968017057569296,
+          "stock_dates": 19490
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": 0.010027306116693325,
+          "icir": 0.09051939255796192,
+          "nw_lags": 4,
+          "nw_t": 0.572934086142856,
+          "ic_ci95": [
+            -0.024275976693780763,
+            0.044330588927167416
+          ],
+          "decile_spread": 0.010493097394023735,
+          "top_hit": 0.5365259740259739,
+          "stock_dates": 12855
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/selective_s43_h5.parquet",
+      "prediction_sha256": "c634c434e70991a4ba3145886519ce38c8656ed82a829c6b0e035c1c8e1d9d50",
+      "prediction_rows": 214775
+    },
+    "selective_h20": {
+      "summary": {
+        "days": 1624,
+        "ic_mean": 0.006814511424733507,
+        "icir": 0.05536861787300546,
+        "nw_lags": 19,
+        "nw_t": 1.0262895065010835,
+        "ic_ci95": [
+          -0.006199791369819689,
+          0.019828814219286704
+        ],
+        "decile_spread": 0.009533569048617704,
+        "top_hit": 0.5279507028275501,
+        "stock_dates": 208545
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": 0.0012426690810792445,
+          "icir": 0.010256733650780782,
+          "nw_lags": 19,
+          "nw_t": 0.062470244312394486,
+          "ic_ci95": [
+            -0.03774599545391882,
+            0.0402313336160773
+          ],
+          "decile_spread": -0.0023514885054530445,
+          "top_hit": 0.5739400863163239,
+          "stock_dates": 26412
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": 0.028184861220759586,
+          "icir": 0.24302232905343815,
+          "nw_lags": 19,
+          "nw_t": 2.0384282058827314,
+          "ic_ci95": [
+            0.0010844081200498817,
+            0.05528531432146929
+          ],
+          "decile_spread": 0.01611771637588878,
+          "top_hit": 0.5362637362637364,
+          "stock_dates": 32782
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": 0.002937705607576157,
+          "icir": 0.017034278594182866,
+          "nw_lags": 19,
+          "nw_t": 0.12620610713394975,
+          "ic_ci95": [
+            -0.042685308378094734,
+            0.048560719593247044
+          ],
+          "decile_spread": 0.015852387941151447,
+          "top_hit": 0.5314973092750871,
+          "stock_dates": 21055
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": -0.023324739176921776,
+          "icir": -0.18840907025667444,
+          "nw_lags": 19,
+          "nw_t": -1.3995316809532754,
+          "ic_ci95": [
+            -0.0559903010994839,
+            0.00934082274564035
+          ],
+          "decile_spread": -0.0009966783824375029,
+          "top_hit": 0.4146788171178415,
+          "stock_dates": 31399
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": 0.018653499005042932,
+          "icir": 0.19175963767133575,
+          "nw_lags": 19,
+          "nw_t": 1.7323939123906005,
+          "ic_ci95": [
+            -0.00245074165777049,
+            0.039757739667856354
+          ],
+          "decile_spread": 0.0119687780048457,
+          "top_hit": 0.5700032185387833,
+          "stock_dates": 33522
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": 0.0013204509975915104,
+          "icir": 0.012958947028994725,
+          "nw_lags": 19,
+          "nw_t": 0.11158553944473021,
+          "ic_ci95": [
+            -0.021873270771000847,
+            0.024514172766183867
+          ],
+          "decile_spread": 0.003923075254449744,
+          "top_hit": 0.49482335845972214,
+          "stock_dates": 33280
+        },
+        "2025": {
+          "days": 119,
+          "ic_mean": 0.010455655399932035,
+          "icir": 0.09570471091871327,
+          "nw_lags": 19,
+          "nw_t": 0.3943466768076398,
+          "ic_ci95": [
+            -0.04151152421411909,
+            0.06242283501398316
+          ],
+          "decile_spread": 0.010833112372004756,
+          "top_hit": 0.5348139255702282,
+          "stock_dates": 17270
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": 0.03309683385193798,
+          "icir": 0.3476404335162199,
+          "nw_lags": 19,
+          "nw_t": 2.0163457013924826,
+          "ic_ci95": [
+            0.0009248733071764645,
+            0.0652687943966995
+          ],
+          "decile_spread": 0.037530299844775156,
+          "top_hit": 0.6737012987012987,
+          "stock_dates": 12825
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/selective_h20.parquet",
+      "prediction_sha256": "8eb86c7fdf85a7781b009167d64a685ce9d8520780500b8c269aa195cec11044",
+      "prediction_rows": 214775
+    },
+    "selective_h5": {
+      "summary": {
+        "days": 1639,
+        "ic_mean": 0.017059823979387982,
+        "icir": 0.1191119140317933,
+        "nw_lags": 4,
+        "nw_t": 3.218041234200369,
+        "ic_ci95": [
+          0.006669262589359969,
+          0.027450385369415995
+        ],
+        "decile_spread": -0.0002100086154466245,
+        "top_hit": 0.5074718346530427,
+        "stock_dates": 213165
+      },
+      "years": {
+        "2019": {
+          "days": 202,
+          "ic_mean": 0.009044722791586073,
+          "icir": 0.05885842548792646,
+          "nw_lags": 4,
+          "nw_t": 0.5341751260298241,
+          "ic_ci95": [
+            -0.02414225242994255,
+            0.042231698013114695
+          ],
+          "decile_spread": -0.0016947968049743963,
+          "top_hit": 0.5152005585173902,
+          "stock_dates": 26562
+        },
+        "2020": {
+          "days": 245,
+          "ic_mean": 0.02124159169808009,
+          "icir": 0.14940316043852975,
+          "nw_lags": 4,
+          "nw_t": 1.4858482699496007,
+          "ic_ci95": [
+            -0.006778442763210608,
+            0.04926162615937079
+          ],
+          "decile_spread": 0.0010561401607937608,
+          "top_hit": 0.5042386185243327,
+          "stock_dates": 32872
+        },
+        "2021": {
+          "days": 243,
+          "ic_mean": 0.011801239454724183,
+          "icir": 0.06556467647050208,
+          "nw_lags": 4,
+          "nw_t": 0.7016923305972456,
+          "ic_ci95": [
+            -0.021162537292802656,
+            0.044765016202251026
+          ],
+          "decile_spread": -0.0001614416284010369,
+          "top_hit": 0.5429536170276911,
+          "stock_dates": 22735
+        },
+        "2022": {
+          "days": 246,
+          "ic_mean": 0.025174728278761528,
+          "icir": 0.16351555129747478,
+          "nw_lags": 4,
+          "nw_t": 1.6881171817882612,
+          "ic_ci95": [
+            -0.0040545621749396715,
+            0.05440401873246273
+          ],
+          "decile_spread": 0.00028216427679416577,
+          "top_hit": 0.47121712975371516,
+          "stock_dates": 31534
+        },
+        "2023": {
+          "days": 239,
+          "ic_mean": 0.016635050897657374,
+          "icir": 0.13382767045507332,
+          "nw_lags": 4,
+          "nw_t": 1.5419175499385547,
+          "ic_ci95": [
+            -0.004510502417244416,
+            0.03778060421255916
+          ],
+          "decile_spread": -0.0007783873971818671,
+          "top_hit": 0.5162536208561314,
+          "stock_dates": 33718
+        },
+        "2024": {
+          "days": 242,
+          "ic_mean": 0.011886635294218004,
+          "icir": 0.10569966701368728,
+          "nw_lags": 4,
+          "nw_t": 1.1784554154191222,
+          "ic_ci95": [
+            -0.007883145447449964,
+            0.03165641603588597
+          ],
+          "decile_spread": -0.0004564231998935727,
+          "top_hit": 0.4744800653891563,
+          "stock_dates": 33399
+        },
+        "2025": {
+          "days": 134,
+          "ic_mean": 0.03363655440234909,
+          "icir": 0.2606036735778829,
+          "nw_lags": 4,
+          "nw_t": 2.008800401153205,
+          "ic_ci95": [
+            0.0008171430806683949,
+            0.06645596572402979
+          ],
+          "decile_spread": 0.00252293033678879,
+          "top_hit": 0.5223880597014925,
+          "stock_dates": 19490
+        },
+        "2026": {
+          "days": 88,
+          "ic_mean": 0.0057897953699765385,
+          "icir": 0.04851298126575265,
+          "nw_lags": 4,
+          "nw_t": 0.2859735500898836,
+          "ic_ci95": [
+            -0.033892192427801456,
+            0.04547178316775453
+          ],
+          "decile_spread": -0.0037769916446086485,
+          "top_hit": 0.5462662337662337,
+          "stock_dates": 12855
+        }
+      },
+      "prediction_path": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/predictions/selective_h5.parquet",
+      "prediction_sha256": "3bfc95c3c8ce0d3623984c2b3426371f79cc233cfc4d20a23ecd887d0c5509f5",
+      "prediction_rows": 214775
+    }
+  },
+  "compute_seconds": 233.49096004996682,
+  "source_hashes": {
+    "V6/research_lab/data.py": "16ed81a597cb2d5ece927986607c3116f7136259f01200b1b34dd2d6b2891991",
+    "V6/research_lab/metrics.py": "e9ede7c950c2ce578203a8a3ffca24dc462f77cd26721d2cfdb80a5af58e9ea8",
+    "V6/research_lab/features.py": "5c82aade95459e664a59afe2e60c5bcf6dc928972dc00e60032dbca019b0a581",
+    "V6/research_lab/labels.py": "5ef6fa6463242a0aa36050ff4b0a63c30722102dd7f8b0bee718a58397f32a98",
+    "V6/research_lab/splits.py": "4b9e36c64beaf5d6612c9e21aae2b8bdf8979a0d68fb136cd13fb8d4c1b7cec7",
+    "V6/research_lab/build_dataset.py": "87072688f80dd230739472a67930546810357b7beded4dc7a69d390836ef350a",
+    "V6/research_lab/__init__.py": "657a7fa419bebb22e04b6e786494e6a1650bc11245af6f7d6a468287f36934f3",
+    "V6/research_lab/run_experiment.py": "86593d08b0139e453e03bd4ef1d4ac460ac3a530bdb20fb2a050e3cac3e79e46",
+    "V6/research_lab/tests/test_pipeline.py": "bfeccb47513efa18eb63cf2a21c48003c4e59376526570d95a9665e10a256131",
+    "V6/research_lab/tests/test_models.py": "8f7cb803de8d255cadecf359e54ceda0bd578e506036df3b1c0920d461e6a6ef",
+    "V6/research_lab/models/__init__.py": "a879fdaf6fa26eb5bee850f88a428470def287a2f13e60b9b0811d7f7c1bbc3d"
+  }
+}

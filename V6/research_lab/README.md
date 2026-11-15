@@ -97,3 +97,38 @@ flags 不是完整公司行動偵測。不得升格為 corrected V7、paper/forw
 完整失敗輸出在 `.local-data/research/knowledge-health.json`。
 工作樹保留原有 `.claude-flow/`、`.swarm/` dirty/untracked 狀態；Ruflo memory CLI 亦產生本機 runtime 狀態。
 未 commit／push；後續先恢復既有 authority objects，再於整合前重跑治理。
+
+## pilot09-w2 排序實驗
+
+`models/`、`metrics.py`、`run_experiment.py` 為新增的 CPU-only 研究流程，
+`UNMERGED / NOT_DEPLOYED / RESEARCH_ONLY`。重用本 package 的固定 feature 與 expanding split；
+既有 `experimental/baseline_rnn.py` 綁定不同矩陣／舊 feature contract，
+`marketmamba/models/architecture.py` 需要 CUDA mamba_ssm／torch_geometric；
+既有 evaluation 將未知 IC 歸零，不能滿足此處未知值保留契約，因此另建小型模型與 metrics，
+不改既有 authority 或任何 `V6/models/` 權重。
+
+```bash
+PYTHONPATH=V6 OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m research_lab.run_experiment
+PYTHONPATH=V6 /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests -q
+```
+
+預設資料與 prediction 路徑指向本次指定 main checkout `.local-data/research/`；
+資料唯讀、驗 manifest bytes SHA-256；prediction 目錄已有 parquet 時拒絕覆寫。
+全部模型共同採 60-session 完整歷史支援，不以未來 label 篩預測；因此與只需 20 日的
+baseline 原生可預測範圍不同。日橫斷面 z 使用當日已知股票，不跨日 fit scaler。
+訓練標籤為 5/20d percentile rank 減 0.5，GRU／selective 為雙頭 MSE；LightGBM 為 rank-label regression。
+外層 min_train=504、test=252、purge=20，同一 coarse schedule 用於所有模型，未完成尾段略去。
+神經網路每 fold 從頭初始化、seeds 17/29/43、width12、selective state4，最多2 epochs，
+train 內末最多64 sessions 作 validation，fit 再隔20 sessions，每 seed 固定抽最多4096 fit／1024 validation rows；
+使用 validation MSE 最低 checkpoint，不使用 OOS 選模。
+此刻意低成本設定不構成充分收斂或模型家族優劣的證據。
+各 seed 與逐日 percentile 等權集成各存獨立 parquet；模型 score 越高表示預期排名越佳。
+輸出欄位 `code,date,fold,model,horizon,score`，code 保留字串前導零。
+結果含整體／年度日期等權 Spearman IC、非年化 ICIR、Newey-West t／95% normal CI
+（Bartlett lag=h-1，只處理指定長度的自相關）、前後各 floor(N/10) 股票的平均 h-session
+報酬差與 top decile 正報酬比例。同分按 code 字串遞增排序，top 取末端；未知 IC 保留未知。
+此為重疊 forward-return 診斷，非可執行多空策略、非年化 P&L，無成本／成交約束。
+完整逐 seed、逐 fold、年度數字、manifest hash、source hash、runtime/config 見
+[實驗報告](experiments/REPORT.md) 與 [校正後機器結果](experiments/results_evaluation.json)。
+
+初始 `results.json` 保留原 run；`evaluate_predictions` 只讀既有 predictions 並重新計算完整session-grid NW，輸出 no-clobber 的 `results_evaluation.json`／`REPORT.md`，不重訓。未知target日留在session grid，未知IC不會將時間間隔壓縮。
