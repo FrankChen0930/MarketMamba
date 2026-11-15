@@ -212,3 +212,42 @@ def test_cli_hashes_loaded_bytes_even_if_shared_path_changes(tmp_path, monkeypat
     cli.main()
     result = json.loads(out.read_text())
     assert result['provenance']['inputs']['predictions'][0]['sha256'] == original_hash
+
+
+def _exdiv_fixture():
+    p, s = fixture(12)
+    s = s[s.date <= pd.Timestamp('2024-01-11')]
+    p['adj_close'] = 10.
+    # Ex-dividend on 01-03: raw price drops 10%, but total return is flat.
+    p.loc[(p.code == 'A') & (p.date >= '2024-01-03'), ['open', 'close']] = 9.
+    return p, s
+
+
+def test_total_return_basis_neutralises_ex_dividend_drop():
+    p, s = _exdiv_fixture()
+    raw = run_backtest(p, s, cfg())
+    tr = run_backtest(p, s, cfg(price_basis='total_return'))
+    assert float(raw['metrics']['max_drawdown']['fraction']) == pytest.approx(.1)
+    assert float(tr['metrics']['max_drawdown']['fraction']) == pytest.approx(0.)
+    assert tr['config']['price_basis'] == 'total_return'
+    assert tr['config_sha256'] != raw['config_sha256']
+
+
+def test_total_return_requires_adj_close_and_valid_basis():
+    p, s = fixture()
+    with pytest.raises(ValueError):
+        run_backtest(p, s, cfg(price_basis='total_return'))
+    with pytest.raises(ValueError):
+        Config(price_basis='bogus')
+    p['adj_close'] = 0.
+    with pytest.raises(ValueError):
+        run_backtest(p, s, cfg(price_basis='total_return'))
+
+
+def test_regression_stats_beta_alpha():
+    p, s = fixture(12)
+    s = s[s.date <= pd.Timestamp('2024-01-11')]
+    p.loc[(p.code == 'A') & (p.date == '2024-01-03'), 'close'] = 8.
+    out = run_backtest(p, s, cfg())
+    st = out['statistics']
+    assert {'beta', 'alpha_annualized', 'vol_matched_excess'} <= set(st)

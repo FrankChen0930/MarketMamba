@@ -1,5 +1,18 @@
 # MarketMamba Current State
 
+## pilot09 hybrid restart 2026-11-15 — branch-local / RESEARCH_ONLY
+
+`rd/hybrid`（HEAD bb5dc92，bundle 備份 `ruflo-evaluation/backups/rd-hybrid-bb5dc92.bundle`）。
+[portfolio.py](../../V6/research_lab/portfolio.py) 新增 `price_basis=total_return`（以 adj_close/close 調整，修正除息／分割假虧損）
+與 beta／alpha／vol-matched 超額統計；research_lab 58項 PASS（需 `PYTHONPATH=V6:.`）。
+實測：修正後各組報酬上升但仍無模型勝過等權基準，5日LightGBM對20bp滑價極敏感；仍有存活者偏差。
+Drive 上 E5/E1 742萬列矩陣尚未經連接器找到（待使用者確認）。路線圖與 backlog：[roadmap-20261115](../../tasks/roadmap-20261115.md)。未 commit、未部署。
+第二輪：Drive E5／E1 矩陣（7,423,927×48）X 相同、僅標籤與切分不同；新增 `significance.py`（HAC＋block bootstrap＋Holm）、
+`significance_report.py`、`matrix_baselines.py`（同矩陣公平基線，待 Colab 執行）；research_lab 70項 PASS。
+第三輪：`colab_runner.py`＋`.local-data/colab_b4/` Notebook／bundle（SHA `526dfe00…b7cb`）；E5/E1 身份隔離、恢復、不覆寫；80項 PASS；合成全規模壓測35秒／2.3GB。
+B2b：v7 labels v2 的 1,974 檔最後出現日全在 2026（2005–2025 下市股缺席＝嚴重存活者偏差）；`Alpha_5d` 實為簡單報酬非 alpha。
+Yahoo 預測配對檢定：僅 5 日 LightGBM 於 Holm 後顯著優於 reversal5，GRU／簡化 SSM 不顯著。
+
 ## pilot09-w4 research results surface — branch-local
 
 `w4-ui`，base/HEAD `f189bdb720dfec8b340b0835c223689743cac5a4`，UNMERGED /

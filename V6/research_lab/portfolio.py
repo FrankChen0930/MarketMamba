@@ -32,6 +32,7 @@ class Config:
     bootstrap_block: int = 20
     seed: int = 17
     benchmark_code: str | None = None
+    price_basis: str = 'raw'  # 'total_return' scales open/close by adj_close/close (dividends, splits)
 
     def __post_init__(self):
         for name in ('top_k', 'rebalance_sessions', 'sessions_per_year', 'bootstrap_samples', 'bootstrap_block'):
@@ -49,6 +50,8 @@ class Config:
             raise ValueError('invalid seed')
         if self.weighting not in ('equal', 'score'):
             raise ValueError('invalid weighting')
+        if self.price_basis not in ('raw', 'total_return'):
+            raise ValueError('invalid price_basis')
 
 
 def transaction_cost(buy, sell, config):
@@ -136,7 +139,7 @@ def _simulate(panel, days, signals, predictions, config, benchmark=False, free=F
             if terminal:
                 weights = pd.Series(dtype=float)
             else:
-                liquid = prior_ok & (panel['close'].loc[signal]*panel['volume'].loc[signal]).ge(config.min_dollar_volume)
+                liquid = prior_ok & panel['dollar'].loc[signal].ge(config.min_dollar_volume)
                 if benchmark:
                     selected = codes[liquid]
                     if config.benchmark_code is not None:
@@ -211,7 +214,14 @@ def _statistics(values, benchmark, config):
     vol = float(np.std(r, ddof=1)*np.sqrt(config.sessions_per_year)) if len(r)>1 else None
     active = r-b
     tracking = float(np.std(active, ddof=1)*np.sqrt(config.sessions_per_year)) if len(r)>1 else None
-    return dict(total_return=float(values[-1]/values[0]-1), benchmark_return=float(benchmark[-1]/benchmark[0]-1),
+    bvar = float(np.var(b, ddof=1)) if len(b) > 1 else 0.
+    beta = float(np.cov(r, b, ddof=1)[0, 1]/bvar) if bvar > 0 else None
+    alpha = float((np.mean(r)-beta*np.mean(b))*config.sessions_per_year) if beta is not None else None
+    bvol = float(np.std(b, ddof=1)) if len(b) > 1 else 0.
+    # Benchmark levered/de-levered to portfolio volatility (rest in zero-yield cash).
+    vm = float(np.mean(r)-np.std(r, ddof=1)/bvol*np.mean(b))*config.sessions_per_year if bvol > 0 and len(r) > 1 else None
+    return dict(beta=beta, alpha_annualized=alpha, vol_matched_excess=vm,
+                total_return=float(values[-1]/values[0]-1), benchmark_return=float(benchmark[-1]/benchmark[0]-1),
                 annualized_return=float((values[-1]/values[0])**(config.sessions_per_year/len(r))-1),
                 annualized_volatility=vol, sharpe_like=float(np.mean(r)*config.sessions_per_year/vol) if vol else None,
                 hit_rate=float(np.mean(r>0)), tracking_error=tracking,
@@ -232,12 +242,21 @@ def run_backtest(prices, predictions, config=Config()):
         raise ValueError('invalid price dates')
     if set(pred.code)-set(p.code) or set(pred.date)-set(p.date):
         raise ValueError('predictions outside price keys/calendar')
+    p['dollar'] = p.close*p.volume  # liquidity always on raw traded value
+    if config.price_basis == 'total_return':
+        if 'adj_close' not in p:
+            raise ValueError('total_return basis requires adj_close')
+        factor = p.adj_close/p.close
+        if not (np.isfinite(factor) & factor.gt(0)).all():
+            raise ValueError('total_return basis requires finite positive adj_close')
+        p['open'] = p.open*factor
+        p['close'] = p.close*factor
     p['valid'] = np.isfinite(p.close) & p.close.gt(0) & np.isfinite(p.volume) & p.volume.gt(0)
     for flag in ('outlier_flag', 'split_or_outlier_flag'):
         if flag in p:
             p['valid'] &= ~p[flag].fillna(True)
     days = pd.DatetimeIndex(sorted(p.date.unique()))
-    panel = {name: p.pivot(index='date', columns='code', values=name).reindex(days) for name in ('open', 'close', 'volume', 'valid')}
+    panel = {name: p.pivot(index='date', columns='code', values=name).reindex(days) for name in ('open', 'close', 'volume', 'valid', 'dollar')}
     panel['valid'] = panel['valid'].fillna(False).astype(bool)
     first = days.get_loc(pred.date.min())
     last = days.get_loc(pred.date.max())
