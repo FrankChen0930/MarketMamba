@@ -134,6 +134,23 @@ def daily_ic_rows(data, rows, scores, label):
     return r.dropna()
 
 
+def diagnose_validation(directory, cfg=None, models=('reversal_ret5', 'momentum_ret20', 'lowvol_20d', 'ridge', 'lightgbm'), stock_idx=None):
+    """No training: how do the tabular baselines score on the *validation* rows used for early stopping (fit on the
+    purged training rows only)? Tells a hostile validation period apart from a model that fails to learn."""
+    cfg = {**DEFAULT_CFG, **(cfg or {})}
+    data = SeqData(directory, stock_idx)
+    tr, va, _ = data.split_rows(cfg['val_dates'])
+    if cfg['val_max_rows'] and len(va) > cfg['val_max_rows']:
+        va = np.sort(np.random.default_rng(0).choice(va, cfg['val_max_rows'], replace=False))
+    fit, val = np.zeros(len(data.splits), bool), np.zeros(len(data.splits), bool)
+    fit[tr], val[va] = True, True
+    ctx = mb.Context(directory, 'y5', cfg['baseline_rows'], 17, 'rank', row_mask=val, eval_split=mb.TRAIN, fit_mask=fit)
+    out = {m: mb.summarize_daily(mb.model_daily_ic(ctx, mb.compute_scores(ctx, m))) for m in models}
+    out['_validation'] = dict(first=str(data.dates[data.date_idx[va].min()].date()), last=str(data.dates[data.date_idx[va].max()].date()),
+                              rows=int(len(va)), fit_rows=int(len(ctx.fit_idx)), fit_last=str(data.dates[data.date_idx[tr].max()].date()))
+    return out
+
+
 def train_one(kind, seed, data, tr, va, cfg, device='cuda', mixer_factory=None, mixer_kw=None, ckpt=None, log=print):
     import torch
     torch.manual_seed(seed)
@@ -152,6 +169,7 @@ def train_one(kind, seed, data, tr, va, cfg, device='cuda', mixer_factory=None, 
     tt5, tt10 = torch.from_numpy(t5).to(device), torch.from_numpy(t10).to(device)
     dates = sorted(by_date)
     state = dict(epoch=0, best=-9., bad=0, history=[])
+    tr_probe = np.sort(np.random.default_rng(1).choice(tr, min(len(tr), cfg.get('train_probe_rows', 20_000)), replace=False))
     if ckpt and Path(ckpt).exists():
         c = torch.load(ckpt, map_location=device)
         model.load_state_dict(c['model']); opt.load_state_dict(c['opt']); sched.load_state_dict(c['sched']); state = c['state']
@@ -173,13 +191,15 @@ def train_one(kind, seed, data, tr, va, cfg, device='cuda', mixer_factory=None, 
         ic = daily_ic_rows(data, va, predict(model, data, va, device)[:, 0], 'y5')
         state['epoch'] += 1
         score = float(ic.mean()) if len(ic) else -9.
-        state['history'].append(dict(epoch=state['epoch'], loss=float(np.mean(losses)), val_ic5=score, seconds=time.time()-t0))
+        tic = daily_ic_rows(data, tr_probe, predict(model, data, tr_probe, device)[:, 0], 'y5')
+        state['history'].append(dict(epoch=state['epoch'], loss=float(np.mean(losses)), val_ic5=score,
+                                     train_probe_ic5=float(tic.mean()) if len(tic) else None, seconds=time.time()-t0))
         if score > state['best']:
             state['best'], state['bad'] = score, 0
             best_sd = {k: v.detach().clone() for k, v in model.state_dict().items()}
         else:
             state['bad'] += 1
-        log(f'[{kind} s{seed}] epoch {state["epoch"]} loss {np.mean(losses):.4f} val_ic5 {score:+.4f} ({time.time()-t0:.0f}s)')
+        log(f'[{kind} s{seed}] epoch {state["epoch"]} loss {np.mean(losses):.4f} val_ic5 {score:+.4f} train_probe_ic5 {state["history"][-1]["train_probe_ic5"] or 0:+.4f} ({time.time()-t0:.0f}s)')
         if ckpt:
             tmp = str(ckpt)+'.tmp'
             torch.save(dict(model=model.state_dict(), opt=opt.state_dict(), sched=sched.state_dict(), state=state), tmp)

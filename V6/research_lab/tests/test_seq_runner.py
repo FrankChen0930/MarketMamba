@@ -117,3 +117,22 @@ def test_adding_seeds_later_reuses_finished_training(tmp_path):
     assert sum('epoch' in x and 'val_ic5' in x for x in logs) == n_epochs + 3  # only seed 2 trained (3 epochs)
     assert any('scores exist' in x for x in logs)
     assert r2['models']['mamba2_s1']['ic_mean'] == r1['models']['mamba2_s1']['ic_mean'] and 'mamba2_s2' in r2['models']
+
+
+def test_diagnose_validation_fits_only_on_purged_training_rows(tmp_path):
+    d, day, stock = build(tmp_path)
+    r = sr.diagnose_validation(d, dict(CFG, val_max_rows=0), models=('reversal_ret5', 'ridge'))
+    v = r['_validation']
+    assert r['ridge']['ic_mean'] > .2                                   # planted signal, fit on training rows only
+    data = sr.SeqData(d)
+    tr, va, _ = data.split_rows(15)
+    assert v['rows'] == len(va) and v['first'] > v['fit_last']          # validation strictly after the last fit session
+    assert abs(r['reversal_ret5']['ic_mean']) < .15
+
+
+def test_training_history_records_in_sample_probe_ic(tmp_path):
+    d, day, stock = build(tmp_path)
+    data = sr.SeqData(d)
+    tr, va, ev = data.split_rows(15)
+    m, st = sr.train_one('mamba2', 1, data, tr, va, dict(CFG, train_probe_rows=500), 'cpu', CausalConvMixer, {}, None, lambda *_: None)
+    assert all(h['train_probe_ic5'] is not None for h in st['history']) and st['history'][-1]['train_probe_ic5'] > .2

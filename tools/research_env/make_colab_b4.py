@@ -208,6 +208,13 @@ display(pd.DataFrame(result["models"]).T[["ic_mean", "ic_std", "icir", "days"]])
 display(pd.DataFrame(result["vs_lightgbm"])[["model", "mean_diff", "t_hac", "p_hac", "p_hac_holm"]])
 print("每個 (模型, seed) 的 epoch 紀錄：", {k: v.get("history") for k, v in result["models"].items() if v.get("history")})
 '''),
+        cell('''
+# （選用、不訓練）驗證期診斷：基線在「早停用驗證列」上的 IC。訓練進行中不要跑（會搶 CPU）；訓練完或中斷後再跑。
+# 若 LightGBM 在驗證期也是負的 → 驗證期本身不友善；若它是正的而序列模型是負的 → 序列模型沒學好。
+diag = sr.diagnose_validation(local, dict(baseline_rows=200_000))
+import pandas as pd
+print(diag["_validation"]); display(pd.DataFrame({k: v for k, v in diag.items() if k != "_validation"}).T[["ic_mean", "icir", "days"]])
+'''),
     ]
     return {'cells': cells, 'metadata': {'kernelspec': {'name': 'python3', 'display_name': 'Python 3'},
             'colab': {'name': 'b8_seq_baselines.ipynb', 'gpuType': 'T4'}, 'accelerator': 'GPU'}, 'nbformat': 4, 'nbformat_minor': 5}
