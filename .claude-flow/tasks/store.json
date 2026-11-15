@@ -103,6 +103,46 @@
       "result": {
         "final": "evidence/role-reports/final.md"
       }
+    },
+    "task-1794704259958-sguse1": {
+      "taskId": "task-1794704259958-sguse1",
+      "type": "hive-mind",
+      "description": "Act as Ruflo coordinator for the Market Mamba long-horizon autonomous R&D mission defined in /home/frank/projects/ruflo-evaluation/pilot08/TASK.md. Read it fully first and follow every constraint (no ScheduleWakeup, no daemons, exit when done, write the handoff). Use native Claude Agent subagents with natural ownership and Ruflo MCP task/memory tools. Reports under /home/frank/projects/ruflo-evaluation/pilot08/evidence/role-reports/.",
+      "priority": "normal",
+      "status": "completed",
+      "progress": 100,
+      "assignedTo": [
+        "hive-worker-1794703482316-o6su"
+      ],
+      "tags": [
+        "hive-mind",
+        "consensus:none",
+        "timeout:3300s"
+      ],
+      "createdAt": "2026-11-15T00:57:39.958Z",
+      "startedAt": "2026-11-15T00:57:40.602Z",
+      "completedAt": "2026-11-15T01:01:55.719Z",
+      "result": {
+        "worker": "hive-worker-1794703482316-o6su",
+        "output": "I built and committed two pieces, but ran no experiments. The copy has no market data, model checkpoints or `torch`, so no model or portfolio result here counts as investment evidence. The commit is `8abca90` on `rd/long-horizon`. Nothing was pushed or deployed.\n\n- **Portfolio metrics layer:** `V6/experimental/v7_portfolio_metrics.py` adds max drawdown, turnover, cost drag and benchmark-relative return on top of the existing Decimal portfolio engine. Each result carries a hash so a rerun can be checked. It has 7 tests. Drawdown and total return start from the first recorded session, so the move from initial value to session 0 is excluded.\n- **Verified vs research-only status:** `V6/experimental/v7_evidence_tier.py` classifies a result as `VERIFIED`, `RESEARCH_ONLY` or `BLOCKED`, defaulting to `RESEARCH_ONLY`. It appears as a new `evidence_tier` field on `/api/v7/status` and as a badge on the `V7Status` page. No current publication carries evidence flags, so everything reports `RESEARCH_ONLY` today.\n- **Verifier fix:** The independent verifier found that any evidence class other than \"synthetic\" or \"fixture\" could reach `VERIFIED`. I replaced that with an allowlist (`real_pit_oos`, `forward_live_shadow`) and added a test. Those two names are placeholders you need to approve.\n\n**Tests:**\n- **Repo baseline:** 147 passed and 14 failed before and after, so no new failures. The 14 failures are the known baseline ones; I did not confirm that the four `test_v7.py` route failures are among them. The `test_v7.py` assertion edited for the new field never ran for the same reason.\n- **New and engine suites:** all 69 pass.\n- **Frontend node test:** `v7.test.mjs` passes 5 of 5.\n- **Not run:** I ran no test on the `V7Status.jsx` badge itself.\n- **Uncollectable tests:** 23 `V6/experimental` test files cannot be collected without `torch`.\n\nNext steps are a point-in-time regression suite for `merger.py` and `feature_engineer.py` and tests for `walk_forward.py` and `metrics.py`. Experiments need a data and `torch` environment from you.\n\nThe roadmap is appended to `tasks/plan.md` and the handoff to `tasks/next-conversation-handoff.md`. I did not create separate files for either.\n\nRole reports are in `evidence/role-reports/`:\n- `plan.md`\n- `agent-roster.md`\n- `verifier.md`\n- `final.md`\n\nThe test results and patch are `evidence/tests-before.txt`, `evidence/tests-after.txt` and `evidence/final.patch`.",
+        "exitCode": 0,
+        "durationMs": 255072,
+        "sessionId": "11e1a8a1-7a86-4d4b-b3b8-57ba51f738b1",
+        "costUsd": 1.7707649
+      }
+    },
+    "task-1794704353165-qd2y42": {
+      "taskId": "task-1794704353165-qd2y42",
+      "type": "feature",
+      "description": "pilot08 S1: portfolio metrics layer (A) + evidence-tier status surface (B)",
+      "priority": "high",
+      "status": "pending",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [],
+      "createdAt": "2026-11-15T00:59:13.165Z",
+      "startedAt": null,
+      "completedAt": null
     }
   },
   "version": "3.0.0"

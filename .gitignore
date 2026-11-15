@@ -96,3 +96,4 @@ V6/experimental/result/gru_5d*.pt
 .claude-flow/data/
 .claude-flow/logs/
 .claude-flow/sessions/
+.local-data/

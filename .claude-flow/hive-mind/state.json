@@ -2,22 +2,23 @@
   "initialized": true,
   "topology": "hierarchical-mesh",
   "workers": [
-    "hive-worker-1794703482316-o6su"
+    "hive-worker-1794703482316-o6su",
+    "hive-worker-1794704259378-crtr"
   ],
   "consensus": {
     "pending": [],
     "history": []
   },
   "sharedMemory": {},
-  "createdAt": "2026-11-15T00:44:41.733Z",
-  "updatedAt": "2026-11-15T00:44:42.317Z",
+  "createdAt": "2026-11-15T00:57:38.877Z",
+  "updatedAt": "2026-11-15T00:57:39.378Z",
   "consensusStrategy": "byzantine",
   "maxAgents": 15,
   "memoryBackend": "hybrid",
   "persist": true,
   "queen": {
-    "agentId": "queen-1794703481733",
-    "electedAt": "2026-11-15T00:44:41.733Z",
+    "agentId": "queen-1794704258877",
+    "electedAt": "2026-11-15T00:57:38.877Z",
     "term": 1
   },
   "hiveToken": "62fe0a7922fdfe504965aed083d29baada9adcbbe0aec70101130b4936ddce56"

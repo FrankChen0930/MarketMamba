@@ -1,0 +1,8 @@
+[swarm.automation]
+enabled = true
+max_concurrent = 1
+max_writers = 1
+worktree_isolation = false
+agent_timeout_seconds = 3000
+max_output_bytes = 2097152
+dependency_failure = "cancel"

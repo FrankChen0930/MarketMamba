@@ -5,7 +5,7 @@
       "agentType": "coder",
       "status": "idle",
       "health": 1,
-      "taskCount": 1,
+      "taskCount": 2,
       "config": {
         "role": "worker",
         "hiveRole": "worker"
@@ -13,6 +13,19 @@
       "createdAt": "2026-11-15T00:44:42.316Z",
       "domain": "hive-mind",
       "currentTask": null
+    },
+    "hive-worker-1794704259378-crtr": {
+      "agentId": "hive-worker-1794704259378-crtr",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "role": "worker",
+        "hiveRole": "worker"
+      },
+      "createdAt": "2026-11-15T00:57:39.378Z",
+      "domain": "hive-mind"
     }
   }
 }
