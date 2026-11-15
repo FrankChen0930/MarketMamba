@@ -11,6 +11,9 @@ Drive 上 E5/E1 742萬列矩陣尚未經連接器找到（待使用者確認）�
 `significance_report.py`、`matrix_baselines.py`（同矩陣公平基線，待 Colab 執行）；research_lab 70項 PASS。
 第三輪：`colab_runner.py`＋`.local-data/colab_b4/` Notebook／bundle（SHA `526dfe00…b7cb`）；E5/E1 身份隔離、恢復、不覆寫；80項 PASS；合成全規模壓測35秒／2.3GB。
 B2b：v7 labels v2 的 1,974 檔最後出現日全在 2026（2005–2025 下市股缺席＝嚴重存活者偏差）；`Alpha_5d` 實為簡單報酬非 alpha。
+第四輪：Colab 真實 B4（E5/E1×y5/y10，smoke＋完整）已核對身份與程式雜湊——LightGBM IC .090–.112 一致最高，E5 顯著優於 reversal／Ridge，E1（~160日）未達顯著。
+下市股覆蓋（TWSE官方＋TPEx官方〔API僅回每年前10筆，缺254〕＋FinMind）：2005後402個股票型事件中323(80%)完全缺席、76為TPEx→TWSE轉板（轉板前歷史缺）、0正常涵蓋；
+新增 `pit_universe.py`、`tools/research_env/pit_delisting.py`、`seq_models.py`（官方Mamba2/Samba定義，未訓練）。研究證據仍為 RESEARCH_ONLY。
 Yahoo 預測配對檢定：僅 5 日 LightGBM 於 Holm 後顯著優於 reversal5，GRU／簡化 SSM 不顯著。
 
 ## pilot09-w4 research results surface — branch-local

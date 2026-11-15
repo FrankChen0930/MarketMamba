@@ -7,7 +7,7 @@ import argparse, hashlib, json, zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-FILES = ['__init__.py', 'matrix_baselines.py', 'significance.py', 'colab_runner.py']
+FILES = ['__init__.py', 'matrix_baselines.py', 'significance.py', 'colab_runner.py', 'seq_models.py']
 E5 = '/content/drive/MyDrive/MarketMamba_V7_Corrected_E5_Replication/matrix'
 E1 = '/content/drive/MyDrive/MarketMamba_V7_E1_Rolling_Origin_Refresh/matrix/v7_e1_rolling_origin_refresh_v1'
 RESULTS = '/content/drive/MyDrive/MarketMamba_V7_B4_baselines'
@@ -97,18 +97,60 @@ print("結果目錄：", RESULTS_ROOT, "（含 identity.json / config.json / dai
             'colab': {'name': 'b4_matrix_baselines.ipynb'}}, 'nbformat': 4, 'nbformat_minor': 5}
 
 
+def probe_notebook(bundle_name, bundle_sha):
+    cells = [
+        cell('# Market Mamba B7：官方 Mamba2／Samba 相容性探測\n`RESEARCH_ONLY`。只做環境探測與極小 forward/backward 煙霧測試，**不訓練**。'
+             '請選 **GPU 執行階段（T4 即可）**。官方 `mamba-ssm` 只能在 CUDA 上跑；若沒有預編譯 wheel，pip 會自行編譯，可能需數分鐘到十幾分鐘。\n'
+             '把本檔與 `' + bundle_name + '` 放同一個 Drive 資料夾 `MarketMamba_V7_B4_baselines/`。', 'markdown'),
+        cell(f'''
+import os, sys, json, zipfile, hashlib, shutil, subprocess, time
+from google.colab import drive
+drive.mount("/content/drive")
+RESULTS_ROOT = "{RESULTS}"
+BUNDLE = os.path.join(RESULTS_ROOT, "{bundle_name}")
+assert hashlib.sha256(open(BUNDLE, "rb").read()).hexdigest() == "{bundle_sha}", "bundle hash mismatch"
+shutil.rmtree("/content/b7_code", ignore_errors=True)
+zipfile.ZipFile(BUNDLE).extractall("/content/b7_code")
+sys.path.insert(0, "/content/b7_code")
+'''),
+        cell('''
+import torch
+print("torch", torch.__version__, "cuda", torch.cuda.is_available(), torch.cuda.get_device_name(0) if torch.cuda.is_available() else None)
+try:
+    import mamba_ssm
+    print("mamba_ssm already installed", getattr(mamba_ssm, "__version__", ""))
+except ImportError:
+    t = time.time()
+    r = subprocess.run([sys.executable, "-m", "pip", "install", "-q", "mamba-ssm", "causal-conv1d", "--no-build-isolation"], capture_output=True, text=True)
+    print("pip exit", r.returncode, "seconds", round(time.time() - t)); print(r.stderr[-1500:])
+'''),
+        cell('''
+from research_lab.seq_models import probe
+info = probe()
+print(json.dumps(info, indent=2, default=str))
+out = os.path.join(RESULTS_ROOT, "b7_probe_" + (info["device"] or "cpu").replace(" ", "_") + ".json")
+open(out, "w").write(json.dumps(info, indent=2, default=str)); print("saved", out)
+'''),
+    ]
+    return {'cells': cells, 'metadata': {'kernelspec': {'name': 'python3', 'display_name': 'Python 3'},
+            'colab': {'name': 'b7_mamba_probe.ipynb', 'gpuType': 'T4'}, 'accelerator': 'GPU'}, 'nbformat': 4, 'nbformat_minor': 5}
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--out', required=True, type=Path)
+    p.add_argument('--bundle-name', default='b4_research_lab_bundle.zip')
     a = p.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
-    bundle = a.out/'b4_research_lab_bundle.zip'
+    bundle = a.out/a.bundle_name
     nb = a.out/'b4_matrix_baselines.ipynb'
-    if bundle.exists() or nb.exists():
+    nb7 = a.out/'b7_mamba_probe.ipynb'
+    if bundle.exists() or nb.exists() or nb7.exists():
         raise FileExistsError('refusing to overwrite')
     sha = build_bundle(bundle)
     nb.write_text(json.dumps(notebook(bundle.name, sha), ensure_ascii=False, indent=1))
-    (a.out/'b4_research_lab_bundle.zip.sha256').write_text(f'{sha}  {bundle.name}\n')
+    nb7.write_text(json.dumps(probe_notebook(bundle.name, sha), ensure_ascii=False, indent=1))
+    (a.out/(a.bundle_name+'.sha256')).write_text(f'{sha}  {bundle.name}\n')
     print(json.dumps(dict(bundle=str(bundle), sha256=sha, notebook=str(nb))))
 
 

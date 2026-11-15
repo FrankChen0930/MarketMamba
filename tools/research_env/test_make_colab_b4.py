@@ -26,3 +26,13 @@ def test_bundle_notebook_and_import_in_clean_dir(tmp_path):
     out2 = tmp_path/'o2'
     subprocess.run([sys.executable, str(SCRIPT), '--out', str(out2)], check=True, capture_output=True)
     assert (out/'b4_research_lab_bundle.zip.sha256').read_text() == (out2/'b4_research_lab_bundle.zip.sha256').read_text()  # deterministic
+
+
+def test_probe_notebook_and_bundle_contains_seq_models(tmp_path):
+    out = tmp_path/'o'
+    info = json.loads(subprocess.run([sys.executable, str(SCRIPT), '--out', str(out)], capture_output=True, text=True, check=True).stdout)
+    nb = json.loads((out/'b7_mamba_probe.ipynb').read_text())
+    code = '\n'.join(''.join(c['source']) for c in nb['cells'] if c['cell_type'] == 'code')
+    compile(code, 'nb7', 'exec')
+    assert info['sha256'] in code and 'probe()' in code and 'train' not in code.lower().replace('training', '')
+    assert 'research_lab/seq_models.py' in zipfile.ZipFile(out/'b4_research_lab_bundle.zip').namelist()
