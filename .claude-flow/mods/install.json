@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "installedAt": "2026-11-15T00:28:44.405Z",
+  "files": {
+    "/home/frank/projects/ruflo-evaluation/pilot06/marketmamba/.claude/settings.json": {
+      "plugins": [
+        "ruflo-mods@ruflo",
+        "ruflo-swarm@ruflo",
+        "ruflo-console@ruflo"
+      ],
+      "marketplace": true,
+      "env": true,
+      "claudeInstalled": []
+    }
+  }
+}

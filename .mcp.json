@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "claude-flow": {
+      "command": "/home/frank/.nvm/versions/node/v24.19.0/bin/node",
+      "args": [
+        "/home/frank/projects/ruflo-evaluation/tools/ruflo/node_modules/ruflo/bin/ruflo.js",
+        "mcp",
+        "start"
+      ],
+      "env": {
+        "DO_NOT_TRACK": "1",
+        "RUFLO_NO_SKILLS_SH": "1",
+        "RUFLO_HEADLESS_PLUGINS": "none"
+      }
+    }
+  }
+}
