@@ -252,9 +252,10 @@ function SubNav() {
   const tabs = [
     { to: '/research', label: '實驗總覽', end: true },
     { to: '/research/pipeline', label: '資料與模型管線' },
+    { to: '/research/results', label: '模型與投組比較' },
   ];
   return (
-    <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
       {tabs.map((t) => (
         <NavLink
           key={t.to} to={t.to} end={t.end}

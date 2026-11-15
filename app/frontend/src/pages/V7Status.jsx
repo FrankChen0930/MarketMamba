@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { getV7Status } from '../api/v7';
 import RunStatusSummary from '../components/RunStatusSummary';
+import EvidenceTierBadge from '../components/EvidenceTierBadge';
 
 const INITIAL = {
   state: 'not_ready',
@@ -11,12 +12,6 @@ const INITIAL = {
   evidenceTier: { tier: 'RESEARCH_ONLY', reasons: [] },
   message: '正在讀取 V7 資料健康摘要…',
   counts: { entries: null, affectedDates: null, affectedStocks: null },
-};
-
-const TIER_LABEL = {
-  VERIFIED: '已驗證 (VERIFIED)',
-  RESEARCH_ONLY: '僅供研究 (RESEARCH_ONLY)',
-  BLOCKED: '已阻擋 (BLOCKED)',
 };
 
 const display = (value) => value ?? '—';
@@ -94,7 +89,7 @@ export default function V7Status() {
           <h2 className="panel-title" id="v7-evidence-heading">證據等級</h2>
         </div>
         <div className="panel-body" data-evidence-tier={status.evidenceTier.tier}>
-          <strong>{TIER_LABEL[status.evidenceTier.tier] ?? TIER_LABEL.RESEARCH_ONLY}</strong>
+          <EvidenceTierBadge tier={status.evidenceTier.tier} />
           {status.evidenceTier.reasons.length > 0 && (
             <ul className="text-muted" style={{ marginTop: 'var(--space-2)' }}>
               {status.evidenceTier.reasons.map((reason) => (

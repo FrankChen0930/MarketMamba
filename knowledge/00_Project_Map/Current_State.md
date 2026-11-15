@@ -1,5 +1,31 @@
 # MarketMamba Current State
 
+## pilot09-w4 research results surface — branch-local
+
+`w4-ui`，base/HEAD `f189bdb720dfec8b340b0835c223689743cac5a4`，UNMERGED /
+NOT_DEPLOYED，依指示不 commit。新增 [offline exporter](../../V6/research_lab/export_summary.py)
+及 [derived summary](../../V6/research_lab/experiments/summary.json)：26組5/20-session ranking
+（含seed）與7組h20/Top20/rebalance20投組；摘要SHA-256
+`729885547de1ed0a3a6483c6ae43a037a70d0aba1aa63fb08617d98789fd2835`。
+Dataset `64e6e1b4201643336817ebf72a31882b0e23ff0a3df047deb3c4ae34118c85f8`／
+manifest `99ff423678ae3e5dc138f945bc571bb6cd7642dd8eb521f9cce1f01b9fb491c1`；
+每個portfolio與evaluation bytes hash保留於摘要，並核對prediction identity。
+[唯讀API](../../app/backend/routers/research.py) `/api/research/{summary,models,portfolios}`
+每次重驗schema/hash，缺少或錯誤503/not_ready，無舊值fallback／client path input；
+[比較頁](../../app/frontend/src/pages/ResearchResults.jsx) `/research/results` 沿用V7 evidence badge。
+全部強制 RESEARCH_ONLY；Yahoo、150-name存活者偏差、無fundamentals、等權benchmark偏高、
+負momentum IC與高portfolio收益的selection artifact、未校正multiple comparison、SSM未勝等caveats不可移除。
+Rank close-exit與portfolio open-to-open不是相同target，年度首尾不完整。
+24項新增Python focused及32項Node regression PASS；獨立review的重要問題已修正。
+research_lab完整55項PASS；完整API＋lab命令因既有portfolio API AnyIO等待於60秒timeout，
+另排除該檔的診斷run為70 PASS／既有V7 `.path`四項FAIL（沒有改弱測試）。
+治理tests為20 PASS／10既有FAIL／4 subtests PASS；knowledge-health保留缺e3bce91等
+authority objects的FAIL。無production／研究admission變更。
+Runtime為指定pilot09 CPU Python3.12.3；MARKETMAMBA_DATA_ROOT未設定，
+本worktree Data realpath為本目錄/Data（不存在），未讀寫Data或weights。
+下一步：整合者保留來源bytes並審查研究偏差，再於具備前端依賴的環境build與瀏覽器驗證；不自行上線。
+
+
 ## pilot09-w2 CPU ranking — branch-local / RESEARCH_ONLY
 
 `w2-models` worktree `/home/frank/projects/ruflo-evaluation/pilot09/wt/w2-models`，

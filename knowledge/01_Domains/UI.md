@@ -155,3 +155,16 @@ and `runStatusSummary.test.mjs`; four Node test files pass 28/28 via
 `node --test --test-isolation=none`. This is presentation-only engineering evidence.
 Backend schemas, source counts, publication decisions and runtime authority are unchanged.
 See [adoption state](../00_Project_Map/Current_State.md#run-status-count-patch-adoption--2026-11-13).
+
+
+## pilot09-w4 offline research comparisons
+
+`w4-ui` / UNMERGED / NOT_DEPLOYED：新增固定摘要唯讀
+`/api/research/{summary,models,portfolios}` 與 `/research/results`。
+[Exporter](../../V6/research_lab/export_summary.py) 與tests控制schema/hash驗證，
+缺少／畸形／hash mismatch為503/not_ready；query/path input拒絕，無舊值快取。
+[比較頁](../../app/frontend/src/pages/ResearchResults.jsx) 僅顯示 RESEARCH_ONLY，
+與V7狀態共用EvidenceTierBadge；未知數字為—，未驗證交易／部署。
+沿用現有research navigation，不改原實驗紀錄或production endpoint。
+[Current State](../00_Project_Map/Current_State.md#pilot09-w4-research-results-surface--branch-local)
+列摘要身份、偏差與驗證限制。需整合者另作build／瀏覽器驗收。

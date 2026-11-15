@@ -1,5 +1,17 @@
 # MarketMamba Authority Map
 
+## pilot09-w4 derived research publication（無 authority supersession）
+
+`w4-ui` / UNMERGED / NOT_DEPLOYED。新增
+[exporter與schema驗證](../../V6/research_lab/export_summary.py)、
+[executable tests](../../V6/research_lab/tests/test_export_summary.py) 定義
+`research-summary-v1` derived publication；[摘要](../../V6/research_lab/experiments/summary.json)
+僅固定離線evaluation與七個portfolio輸入的hash／身份／研究數字，不取代原始run evidence。
+API只驗本摘要完整性，不代表現在上游檔案未改或已驗證PIT／可成交。
+API／UI能力僅為本工作樹未提交source，不能由code presence推定已部署或已merge。
+原production、corrected V7、strict STOP、historical artifact與admission authority均不變。
+
+
 ## pilot09-w2 isolated ranking experiment（無 authority supersession）
 
 Branch `w2-models` / `UNMERGED / NOT_DEPLOYED / RESEARCH_ONLY`；

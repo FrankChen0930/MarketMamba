@@ -9,7 +9,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import signals, performance, market, portfolio, reports, fin_news, sim, quant, dual, v62, v7
+from routers import signals, performance, market, portfolio, reports, fin_news, sim, quant, dual, v62, v7, research
 
 
 app = FastAPI(
@@ -53,6 +53,7 @@ app.include_router(quant.router,       prefix="/api")
 app.include_router(dual.router,        prefix="/api")
 app.include_router(v62.router,         prefix="/api")   # V6.2 組合層（附加，不動既有）
 app.include_router(v7.router,          prefix="/api")
+app.include_router(research.router,    prefix="/api")
 
 if os.getenv("V7_PORTFOLIO_HISTORY_ENABLED") == "1":
     from routers import v7_portfolio

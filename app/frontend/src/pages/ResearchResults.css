@@ -1,0 +1,15 @@
+.research-results { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
+.research-results h2 { margin-bottom: var(--space-3); }
+.research-results p { margin-block: var(--space-3); }
+.research-caution { border-left: 4px solid var(--warning, #fbbf24); }
+.research-caution li { margin-block: var(--space-2); }
+.research-table { overflow-x: auto; max-width: 100%; margin-top: var(--space-4); }
+.research-table table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+.research-table caption { text-align: left; padding-block: var(--space-3); }
+.research-table th, .research-table td { text-align: right; padding: 12px; border-bottom: 1px solid var(--border-color, #475569); white-space: nowrap; }
+.research-table th:first-child { text-align: left; }
+.research-results select { margin-inline: 12px; padding: 10px; font: inherit; color: inherit; background: var(--bg-secondary, #1e293b); }
+.research-results :focus-visible { outline: 2px solid var(--accent, #38bdf8); outline-offset: 3px; }
+.research-results summary { cursor: pointer; padding: 16px; }
+.research-identity { overflow-wrap: anywhere; }
+.research-identity dd { margin: 4px 0 16px; font-family: monospace; }

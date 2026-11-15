@@ -7,6 +7,7 @@ import QuantAnalysis from './pages/QuantAnalysis';
 import MarketView   from './pages/MarketView';
 import Pipeline      from './pages/Pipeline';
 import Research      from './pages/Research';
+import ResearchResults from './pages/ResearchResults';
 import V7Status       from './pages/V7Status';
 import V7PortfolioHistory from './pages/V7PortfolioHistory';
 
@@ -78,6 +79,7 @@ function App() {
           {/* 研究紀錄（作品集頁）。/pipeline 併入 /research/pipeline */}
           <Route path="research" element={<Research />}>
             <Route path="pipeline" element={<Pipeline />} />
+            <Route path="results" element={<ResearchResults />} />
           </Route>
 
           {/* 舊路徑重導向（2026-07-30 頁面樹重整） */}

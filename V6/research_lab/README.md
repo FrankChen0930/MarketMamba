@@ -140,3 +140,38 @@ train 內末最多64 sessions 作 validation，fit 再隔20 sessions，每 seed 
 `portfolio.run_backtest(prices, predictions, Config(...))` 與 `python -m research_lab.backtest`，
 重用既有V7 metrics/tier，全部RESEARCH_ONLY。close訊號→next-open entry→下一再平衡open退出，
 不等同上述t+h close-exit label；不更動dataset或production契約。w3-portfolio UNMERGED / NOT_DEPLOYED。
+
+## W4 offline results surface
+
+`UNMERGED / NOT_DEPLOYED / RESEARCH_ONLY`. Existing V7 health publication cannot
+represent ranking and portfolio comparisons; additive `export_summary.py` publishes
+one compact `experiments/summary.json`, without reading or changing Data/weights.
+The exporter and its executable tests define `research-summary-v1`: canonical ASCII
+JSON with sorted keys and compact separators, SHA-256 excluding only top-level
+`sha256`. Input file byte hashes pin the evaluation and each portfolio; portfolio
+canonical hashes, dataset/manifest and prediction identities must agree. All seven
+base strategies and both ranking horizons are required; individual seed rows remain
+visible. Null metrics remain unknown. Hash integrity does not certify research validity.
+
+Reproduce from repo root (offline, designated Python, no training):
+
+```bash
+PYTHONPATH=V6 /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m research_lab.export_summary \
+  --evaluation /home/frank/projects/ruflo-evaluation/pilot09/marketmamba/V6/research_lab/experiments/results_evaluation.json \
+  --portfolios /home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/research/portfolio/real
+```
+
+`GET /api/research/{summary,models,portfolios}` reads only that fixed snapshot,
+validates schema/content/hash on every request and returns HTTP 503 `not_ready`
+with tier/caveats if invalid or missing. No cache/stale fallback; query parameters
+are rejected (400). API does not inspect current offline inputs or claim freshness.
+React `/research/results`, linked from existing research navigation, shows ranks,
+portfolio metrics and partial-year returns; V7 status and this page share the same
+`EvidenceTierBadge`. Live deployment and trading verification are not established.
+Cost drag is cumulative cost divided by initial NAV, not gross-minus-net return;
+rank close-exit labels and portfolio open-to-open returns have different targets.
+
+Validation: `PYTHONPATH=V6 python -m pytest -q app/backend V6/research_lab` and
+`node --test --test-isolation=none app/frontend/src/api/*.test.mjs app/frontend/src/components/*.test.mjs`.
+Original evidence remains read-only; checked-in summary is a derived research snapshot,
+not a supersession of frozen V7 authority or historical run artifacts.

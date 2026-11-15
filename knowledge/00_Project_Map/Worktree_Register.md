@@ -1,5 +1,20 @@
 # Worktree Register
 
+## pilot09-w4 research results surface — 2026-11-15
+
+- Purpose: offline research exporter/API/UI；owner Human/W4-UI Codex；branch `w4-ui`；
+  path `/home/frank/projects/ruflo-evaluation/pilot09/wt/w4-ui`；base/HEAD
+  `f189bdb720dfec8b340b0835c223689743cac5a4`；created UNKNOWN（既有checkout，本輪未建立）；
+  retired N/A；UNMERGED / NOT_DEPLOYED，Human要求不commit。
+- Reuse existing assigned worktree、research_lab/experiments、API/UI與V7 tier，
+  既有health summary不承載ranking/portfolio schema，故新增additive research publication。
+- Authority: derived RESEARCH_ONLY snapshot/source/tests only；merge dependency整合者review，無push/deploy授權；
+  artifact dependency指定main checkout evaluation JSON與`.local-data/research/portfolio/real/`七檔，
+  bytes hash已固定於summary，原輸入唯讀。Runtime為pilot09指定CPU venv，Data未動。
+- Safe removal: 先保存本次未提交source/summary/tests、既有dirty Ruflo檔與branch history，
+  clean checkout且解決引用後由Human明確retire；本輪不移除任何worktree。
+
+
 ## Pre-Ruflo preservation — 2026-11-14
 
 - Purpose baseline/archive, owner Human/Codex; path `.worktrees/pre-ruflo-2026-11-14`; branch `pre-ruflo-2026-11-14`; base `4bfaa7b3c7447ea54de67013b8cb3a9aab13003d`; created2026-11-14; retiredN/A; UNMERGED / NOT_DEPLOYED.
