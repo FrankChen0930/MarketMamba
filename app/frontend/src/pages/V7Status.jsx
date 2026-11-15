@@ -8,8 +8,15 @@ const INITIAL = {
   publishAllowed: null,
   dataId: null,
   generatedAt: null,
+  evidenceTier: { tier: 'RESEARCH_ONLY', reasons: [] },
   message: '正在讀取 V7 資料健康摘要…',
   counts: { entries: null, affectedDates: null, affectedStocks: null },
+};
+
+const TIER_LABEL = {
+  VERIFIED: '已驗證 (VERIFIED)',
+  RESEARCH_ONLY: '僅供研究 (RESEARCH_ONLY)',
+  BLOCKED: '已阻擋 (BLOCKED)',
 };
 
 const display = (value) => value ?? '—';
@@ -81,6 +88,25 @@ export default function V7Status() {
         message={status.message}
         counts={status.counts}
       />
+
+      <section className="panel" aria-labelledby="v7-evidence-heading">
+        <div className="panel-header">
+          <h2 className="panel-title" id="v7-evidence-heading">證據等級</h2>
+        </div>
+        <div className="panel-body" data-evidence-tier={status.evidenceTier.tier}>
+          <strong>{TIER_LABEL[status.evidenceTier.tier] ?? TIER_LABEL.RESEARCH_ONLY}</strong>
+          {status.evidenceTier.reasons.length > 0 && (
+            <ul className="text-muted" style={{ marginTop: 'var(--space-2)' }}>
+              {status.evidenceTier.reasons.map((reason) => (
+                <li key={reason} className="mono">{reason}</li>
+              ))}
+            </ul>
+          )}
+          <p className="text-muted" style={{ marginTop: 'var(--space-2)' }}>
+            Research-only results are not investment advice
+          </p>
+        </div>
+      </section>
 
       <section className="panel" aria-labelledby="v7-publication-heading">
         <div className="panel-header">

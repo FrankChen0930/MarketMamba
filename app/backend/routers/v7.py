@@ -10,6 +10,8 @@ from typing import Any
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
+from V6.experimental.v7_evidence_tier import classify_from_publication
+
 router = APIRouter(prefix="/v7", tags=["v7"])
 SCHEMA = "v7-health-summary-v1"
 VALID_STATES = {"healthy", "degraded", "blocked"}
@@ -66,6 +68,9 @@ def _validate(document: Any) -> dict[str, Any]:
         "data_id": data_id,
         "generated_at": generated_at,
         "counts": {key: counts[key] for key in allowed_counts},
+        # Additive and fail-closed: defaults to RESEARCH_ONLY unless the
+        # publication carries explicit evidence flags.
+        "evidence_tier": classify_from_publication(document),
     }
 
 

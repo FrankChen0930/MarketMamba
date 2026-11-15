@@ -116,3 +116,13 @@ MAS錯誤送routing指定維護對話；產品錯誤由本對話解決；同路�
 每階段完工附結果、測試與限制；不承諾固定完工時刻或整體研究成功。
 保持原有成果、未提交工作與私人筆記；不git add -A、不擅自push／覆蓋舊ZIP／權重。
 用量reset不可重複消耗：本產品對話不執行reset，統一交MAS維護對話依共享協議與記錄處理。
+
+## Pilot08 Roadmap (rd/long-horizon, 2026-11-15) — UNMERGED / NOT_DEPLOYED
+
+Evidence class of everything below: engineering on sanitized copy; no real data/checkpoints/torch present, so no model or portfolio result here is investment evidence.
+- R-A (done S1): `V6/experimental/v7_portfolio_metrics.py` — drawdown, turnover, cost drag, benchmark-relative, sha-verifiable, on top of `v7_portfolio_engine`.
+- R-B (done S1): `V6/experimental/v7_evidence_tier.py` + `/api/v7/status.evidence_tier` + V7Status badge; fail-closed, allowlisted evidence classes.
+- R-C: PIT regression suite for `merger.py`/`feature_engineer.py` (synthetic known-lag panel; perturb-future invariance).
+- R-D: tests for `evaluation/walk_forward.py` (embargo/purge, no overlap) and `metrics.py` (IC, top-N return).
+- R-E: wire metrics layer into a ranking->portfolio runner and expose via API/UI with tier (needs real scores; blocked on data).
+- R-F: experiment harness for H0 frozen baseline vs H1..; all hypotheses UNTESTED (research/v7/experiment-hypotheses.md); needs data + torch.

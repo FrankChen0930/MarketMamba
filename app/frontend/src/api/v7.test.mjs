@@ -54,3 +54,15 @@ test('wrong schema and blocked publication fail closed', () => {
     schema: 'v7-health-summary-v1', state: 'blocked', publish_allowed: true,
   }).publishAllowed, false);
 });
+
+test('evidence tier defaults to research-only and never upgrades on its own', () => {
+  const base = { schema: 'v7-health-summary-v1', state: 'healthy', publish_allowed: true };
+  assert.equal(normalizeV7Status(base).evidenceTier.tier, 'RESEARCH_ONLY');
+  assert.equal(normalizeV7Status({ ...base, evidence_tier: { tier: 'bogus' } }).evidenceTier.tier, 'RESEARCH_ONLY');
+  const verified = normalizeV7Status({ ...base, evidence_tier: { tier: 'VERIFIED', reasons: [] } });
+  assert.equal(verified.evidenceTier.tier, 'VERIFIED');
+  const degraded = normalizeV7Status({ ...base, state: 'degraded', evidence_tier: { tier: 'VERIFIED' } });
+  assert.equal(degraded.evidenceTier.tier, 'RESEARCH_ONLY');
+  const blocked = normalizeV7Status({ ...base, state: 'blocked', publish_allowed: false, evidence_tier: { tier: 'VERIFIED' } });
+  assert.equal(blocked.evidenceTier.tier, 'BLOCKED');
+});

@@ -123,3 +123,12 @@ V6/experimental/（所有v7_*）、V6/models/、V6/marketmamba/models/、Data/�
 讀plan/todo，確認實際目錄和未提交檔案，從P0與P1建立stability Colab包。
 先交付A/B匯出診斷與已準備好的三窗C程式；A/B結果檢查點保留。不要重啟已完成的容量/confirmation/depth222訓練。
 把MAS註冊路由接好即可，MAS初試如被精確批准或環境阻擋，不讓它拖住Codex直接實作Colab交付。
+
+## Pilot08 Session 1 handoff (2026-11-15)
+
+**Understanding:** V6/V7 are substantial but data-less here: Data/, V6/Data, V6/results, checkpoints absent; torch missing, so 23 `V6/experimental/*_test.py` files fail at collection (run others with `PYTHONPATH=.`). Mature, tested: Decimal portfolio engine/contract/journal, source snapshot/temporal contracts, foreign-shareholding parser. Untested core: `data/fetcher|merger|feature_engineer|hygiene`, `models/*`, `evaluation/*`, `training_status.py`, `portfolio_lab.py`, legacy `backtest/sim_engine*`. `mock_data.py` and frontend `mockData.js` are mock. All hypotheses H0–H12 UNTESTED.
+**Done:** R-A metrics layer (7 tests), R-B evidence tier (6 py + node tests, API field, UI badge). Verifier found tier accepted any non-"synthetic" class; fixed with allowlist + test. Baseline unchanged 147 pass/14 fail (4 test_v7 route crashes `_IncludedRouter has no path` are pre-existing; the edited test_v7 assertion never ran).
+**Failed/limits:** no experiments or training (no data/torch). Metrics window starts at first session (initial->session0 move excluded).
+**Open questions:** which evidence classes count as real (current allowlist `real_pit_oos`, `forward_live_shadow` is a placeholder); who attests the self-asserted flags.
+**Next:** R-C, R-D, then R-E/R-F once data exists (see tasks/plan.md Pilot08 Roadmap).
+**Decisions needing user:** (1) provide a data+torch env (e.g. Colab artifacts) -> unlocks experiments; or continue CPU-only test-hardening of untested core. (2) fix the FastAPI/starlette route-test incompatibility by pinning vs adapting tests. (3) approve evidence-class allowlist names.

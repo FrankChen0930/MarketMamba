@@ -52,6 +52,7 @@ class V7StatusApiTest(unittest.TestCase):
             with patch.dict(os.environ, {"V7_RESULTS_DIR": directory}):
                 status, body = self.response()
         self.assertEqual(status, 200)
+        self.assertEqual(body.pop("evidence_tier")["tier"], "RESEARCH_ONLY")
         self.assertEqual(body, {key: publication[key] for key in (
             "schema", "state", "publish_allowed", "data_id", "generated_at", "counts"
         )})
