@@ -8,8 +8,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 FILES = ['__init__.py', 'matrix_baselines.py', 'significance.py', 'colab_runner.py', 'seq_models.py', 'gpu_env.py', 'seq_runner.py']
-E5 = '/content/drive/MyDrive/MarketMamba_V7_Corrected_E5_Replication/matrix'
-E1 = '/content/drive/MyDrive/MarketMamba_V7_E1_Rolling_Origin_Refresh/matrix/v7_e1_rolling_origin_refresh_v1'
+E5 = '/content/drive/MyDrive/MarketMamba_V7_Corrected_E5_Replication'          # search root (matrix sits at output/<same name>/matrix)
+E1 = '/content/drive/MyDrive/MarketMamba_V7_E1_Rolling_Origin_Refresh'          # search root (matrix/v7_e1_rolling_origin_refresh_v1)
 RESULTS = '/content/drive/MyDrive/MarketMamba_V7_B4_baselines'
 WHEELS = '/content/drive/MyDrive/MarketMamba_GPU_Wheels'
 
@@ -42,8 +42,8 @@ EXPERIMENT = "E5"     # "E5" 或 "E1"，兩者結果各自獨立
 LABEL = "y5"          # "y5" 或 "y10"
 SMOKE = True          # True: 5 萬列 / 50 棵樹 / 200 次 bootstrap；完整跑請改 False
 SEED = 17
-MATRIX_DIRS = {{"E5": "{E5}",
-               "E1": "{E1}"}}
+SEARCH_ROOTS = {{"E5": "{E5}",
+                "E1": "{E1}"}}   # 以 manifest 身份自動尋找矩陣，不依賴固定路徑
 RESULTS_ROOT = "{RESULTS}"
 BUNDLE_NAME = "{bundle_name}"
 BUNDLE_SHA256 = "{bundle_sha}"
@@ -80,7 +80,7 @@ print("code identity:", cr.code_identity())
 '''),
         cell('''
 # 5. 執行（身份驗證 → 本地暫存 → 記憶體評估 → 基線 → 顯著性 → 存檔）
-src = MATRIX_DIRS[EXPERIMENT]
+src = cr.find_matrix(EXPERIMENT, [SEARCH_ROOTS[EXPERIMENT]]); print("matrix found at:", src)
 result = cr.run_experiment(src, RESULTS_ROOT, EXPERIMENT, label=LABEL, smoke=SMOKE, seed=SEED,
                            stage_dir=os.path.join(STAGE_DIR, EXPERIMENT))
 '''),
@@ -160,8 +160,8 @@ def b8_notebook(bundle_name, bundle_sha):
 EXPERIMENT = "E5"        # "E5" 或 "E1"
 SMOKE = True             # True：極小設定只驗證流程與耗時
 KINDS = ("mamba2", "samba")
-MATRIX_DIRS = {{"E5": "{E5}",
-               "E1": "{E1}"}}
+SEARCH_ROOTS = {{"E5": "{E5}",
+                "E1": "{E1}"}}   # 以 manifest 身份自動尋找矩陣，不依賴固定路徑
 RESULTS_ROOT = "{RESULTS}"
 WHEELS = "{WHEELS}"
 BUNDLE_NAME = "{bundle_name}"
@@ -189,7 +189,7 @@ assert env["status"] == "verified", "GPU 環境未通過驗證：" + json.dumps(
 '''),
         cell('''
 from research_lab import colab_runner as cr, seq_runner as sr
-src = MATRIX_DIRS[EXPERIMENT]
+src = cr.find_matrix(EXPERIMENT, [SEARCH_ROOTS[EXPERIMENT]]); print("matrix found at:", src)
 local, hashes = cr.stage_and_verify(src, os.path.join(STAGE_DIR, EXPERIMENT), "y5", EXPERIMENT, extra=("y10.npy", "stock_ids.npy"))
 print("identity verified:", sorted(hashes)); print(cr.check_semantics(local, "y5", EXPERIMENT))
 t = time.time(); sr.stock_index(local); print("stock index ready", round(time.time() - t), "s")

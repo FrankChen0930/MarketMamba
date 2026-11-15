@@ -118,3 +118,13 @@ def test_e5_and_e1_registry_distinct_where_expected():
     same = {k for k in a['files'] if a['files'][k] == b['files'][k]}
     assert same == {'X.npy', 'dates.npy', 'end_indices.npy', 'stock_ids.npy'}
     assert all(len(h) == 64 for r in (a, b) for h in r['files'].values())
+
+
+def test_find_matrix_by_identity_not_path(tmp_path):
+    a, reg_a = build(tmp_path/'drive/E5root/output/E5root', name='mat')
+    b, reg_b = build(tmp_path/'drive/E1root/matrix/v1', name='other', seed=1)
+    reg = {'E5': reg_a, 'E1': reg_b}
+    roots = [tmp_path/'drive/E5root', tmp_path/'drive/E1root', tmp_path/'missing']
+    assert cr.find_matrix('E5', roots, reg) == a and cr.find_matrix('E1', roots, reg) == b
+    with pytest.raises(FileNotFoundError, match='no E5 matrix'):
+        cr.find_matrix('E5', [tmp_path/'drive/E1root'], reg)                      # E1's matrix is never accepted as E5

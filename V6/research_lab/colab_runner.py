@@ -73,6 +73,26 @@ def needed_files(label, extra=()):
     return tuple(dict.fromkeys(('X.npy', f'{label}.npy', 'dates.npy', 'splits.npy', 'end_indices.npy', *extra)))
 
 
+def find_matrix(expect, roots, registry=REGISTRY, max_depth=6, log=print):
+    """Locate the matrix directory for `expect` under `roots` by manifest identity, not by guessed path.
+    Candidates are any directory holding manifest.json + X.npy; the first whose manifest passes check_manifest wins."""
+    seen = []
+    for root in map(Path, roots):
+        if not root.exists():
+            continue
+        base = len(root.parts)
+        for cur, dirs, files in os.walk(root):
+            if len(Path(cur).parts)-base >= max_depth:
+                dirs[:] = []
+            if 'manifest.json' in files and 'X.npy' in files:
+                try:
+                    check_manifest(json.loads((Path(cur)/'manifest.json').read_text()), expect, registry)
+                    return Path(cur)
+                except (IdentityError, ValueError, OSError) as e:
+                    seen.append(f'{cur}: {e}')
+    raise FileNotFoundError(f'no {expect} matrix found under {[str(r) for r in roots]}; candidates rejected: {seen[:5]}')
+
+
 def check_manifest(manifest, expect, registry=REGISTRY):
     """Cheap pre-copy check: the manifest must be exactly the expected experiment's manifest."""
     if expect not in registry:
