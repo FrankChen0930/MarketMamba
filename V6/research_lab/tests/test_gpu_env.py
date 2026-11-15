@@ -168,3 +168,26 @@ def test_verify_names_causal_conv1d_instead_of_nonetype_error():
     except ImportError:
         with pytest.raises(RuntimeError, match='causal_conv1d unusable'):
             g.verify_official_mamba2()
+
+
+def test_wheel_build_bypasses_pip_cache_and_force_rebuilds_usable_package(tmp_path):
+    """Regression: a stale cached wheel (built for another torch) must never be reused: --no-cache-dir always."""
+    work = tmp_path/'work'; work.mkdir()
+    st, imp, run, runner = make_env(work, mamba=True, causal=True)
+    rep = go(tmp_path, run=run, verify=lambda: {'ok': 1}, importable=imp, force=('mamba-ssm', 'causal-conv1d'))
+    wheels = [c for c in runner.calls if c[0] == 'wheel']
+    assert len(wheels) == 2 and all('--no-cache-dir' in c for c in wheels)
+    assert {x['package'] for x in rep['saved']} == {'mamba-ssm', 'causal-conv1d'}
+
+
+def test_pip_cache_harvest_is_opt_in_and_marked_unverified(tmp_path, monkeypatch):
+    st, imp, _, _ = make_env(tmp_path, mamba=True, causal=True)
+    c = tmp_path/'cache/wheels/a'; c.mkdir(parents=True)
+    fake_wheel(c)
+    monkeypatch.setattr(g.metadata, 'version', lambda n: '2.3.2.post1')
+    def run(cmd, **kw):
+        return type('R', (), dict(returncode=0, stdout=str(tmp_path/'cache'), stderr=''))()
+    off = go(tmp_path, run=run, verify=lambda: {}, importable=imp)
+    assert off['saved'] == []
+    on = go(tmp_path, store='s2', run=run, verify=lambda: {}, importable=imp, harvest_cache=True)
+    assert on['saved'] and on['saved'][0]['source'] == 'pip_cache_harvest_unverified_provenance'

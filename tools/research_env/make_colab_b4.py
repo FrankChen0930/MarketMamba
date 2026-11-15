@@ -133,7 +133,7 @@ if PIN_TORCH and not torch.__version__.startswith("2.10.0"):
         cell(f'''
 # GPU 環境入口（B7／B8 共用）：已安裝→Drive 相容 wheel→（必要時）建置；通過真實 Mamba2 forward/backward 後才保存 wheel
 from research_lab import gpu_env
-report = gpu_env.setup("{WHEELS}", allow_build=True, allow_compile=False)   # 無官方預編譯 wheel 時預設停止；要現場編譯才改 allow_compile=True
+report = gpu_env.setup("{WHEELS}", allow_build=True, allow_compile=False)   # 無官方預編譯 wheel 時預設停止；要現場編譯才改 allow_compile=True\n# 已安裝但想重新取得並保存 wheel：force=("mamba-ssm", "causal-conv1d")（用 --no-cache-dir 重新取得官方預編譯版）
 '''),
         cell('''
 # 結果：status 必須是 "verified"；report["saved"] 為空代表本次沒有保存任何 wheel（不會假裝成功）

@@ -187,7 +187,7 @@ def _import_ok(pkg):
 
 def setup(store, allow_build=True, allow_compile=False, versions=None, with_causal_conv1d=True, work='/content/gpu_wheels_build',
           run=subprocess.run, fp=None, verify=verify_official_mamba2, importable=_import_ok, log=print, prebuilt=prebuilt_check,
-          diagnostics=diagnose):
+          diagnostics=diagnose, force=(), harvest_cache=False):
     fp = fp or fingerprint()
     versions = {**DEFAULT_VERSIONS, **(versions or {})}
     want = ['mamba-ssm'] + (['causal-conv1d'] if with_causal_conv1d else [])
@@ -199,7 +199,7 @@ def setup(store, allow_build=True, allow_compile=False, versions=None, with_caus
     step = rep['steps'].append
 
     def ensure(pkg):
-        if ok(pkg):
+        if ok(pkg) and pkg not in force:
             return step(f'{pkg}: usable')
         found = find_wheels(store, fp)
         if pkg in found:
@@ -221,7 +221,8 @@ def setup(store, allow_build=True, allow_compile=False, versions=None, with_caus
         Path(work).mkdir(parents=True, exist_ok=True)
         spec = pkg+(f'=={versions[pkg]}' if versions.get(pkg) else '')
         t = time.time()
-        r = pip('wheel', '-q', '--no-deps', '--no-build-isolation', '-w', work, spec)
+        # --no-cache-dir: pip's wheel cache is keyed by sdist only, so it would silently reuse a wheel built for another torch
+        r = pip('wheel', '-q', '--no-cache-dir', '--no-deps', '--no-build-isolation', '-w', work, spec)
         sec = time.time()-t
         step(f'{pkg}: pip_wheel {spec} rc={r.returncode} {sec:.0f}s')
         if r.returncode:
@@ -245,10 +246,12 @@ def setup(store, allow_build=True, allow_compile=False, versions=None, with_caus
             rep['verify_error'] = f'{type(e).__name__}: {e}'
 
     if rep['status'] == 'verified':          # save only wheels from a working environment
-        if not built:
+        if not built and harvest_cache:   # pip's cache does not record which torch a wheel was built for: opt-in only
             for pkg, (w, ver) in pip_cache_wheels(fp, run=run).items():
-                built[pkg] = (w, ver, 'pip_cache_harvest', None)
-            step('pip_cache_harvest found=' + str(sorted(built)) if built else 'pip_cache_harvest: no matching cached wheel (nothing saved)')
+                built[pkg] = (w, ver, 'pip_cache_harvest_unverified_provenance', None)
+            step('pip_cache_harvest found=' + str(sorted(built)))
+        elif not built:
+            step('no wheel was produced in this run: nothing saved (use force=(...) to rebuild and save)')
         for pkg, (w, ver, source, sec) in built.items():
             dst, how = save_wheel(w, store, fp, pkg, ver, source, sec)
             rep['saved'].append(dict(package=pkg, file=dst.name, how=how, sha256=sha256_file(dst), source=source))
