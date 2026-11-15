@@ -1,5 +1,18 @@
 # MarketMamba Authority Map
 
+## pilot09-w3 offline portfolio boundary（無 authority supersession）
+
+`research-portfolio-v1` 的 branch-local source/tests 與
+[PORTFOLIO_README](../../V6/research_lab/experiments/PORTFOLIO_README.md) 定義此新增研究runner；
+`w3-portfolio` base8140022、UNMERGED / NOT_DEPLOYED，實作未提交，需用報告逐檔source hashes。
+V7 `v7_portfolio_metrics.py`／`v7_evidence_tier.py`直接重用，未更動原contract或admission。
+本worktree `.local-data/research/portfolio/w3_pinned/*.json` 是 generated RESEARCH_ONLY evidence，
+main predictions `w3_*_h5.parquet` 是獨立model identity，不覆蓋其他worker輸出。
+Signal-close→next-open、open-to-open再平衡只適用此runner，不能取代dataset close-exit labels。
+缺價保留股數與stale mark不是verified tradability；Yahoo/current150 universe不是qualified PIT。
+原production、corrected V7、strict STOP、historical artifact authority均保留；無supersession/repin。
+
+
 ## pilot09-w1 isolated Yahoo research contract（無 authority supersession）
 
 Branch-local `w1-data` / UNMERGED / NOT_DEPLOYED；新增套件的本地規格及公式由

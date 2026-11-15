@@ -1,5 +1,25 @@
 # MarketMamba Current State
 
+## pilot09-w3 portfolio simulation — branch-local / RESEARCH_ONLY
+
+`w3-portfolio`，worktree `/home/frank/projects/ruflo-evaluation/pilot09/wt/w3-portfolio`，
+base `814002275d67e7d755b530fceb9285a227e3ba10`；UNMERGED / NOT_DEPLOYED，依要求未提交。
+新增 [研究投組引擎與報告](../../V6/research_lab/experiments/PORTFOLIO_README.md)：
+close signal→next open→每N sessions下一entry open退出；與dataset的t+h close label不同。
+重用V7 hash-stamped metrics/evidence tier，沒有更動 production/executable authority或既有STOP。
+指定CPU Python，唯讀dataset；main checkout predictions用 `w3_` model前綴隔離，
+report只採本worktree `.local-data/research/portfolio/w3_pinned/`。2020-01-02～2026-10-30，
+Top20/5sessions/等權/commission .001425/tax .003；動能淨報酬1409.8169%、benchmark535.8942%、
+MDD46.6637%，excess95%CI[-33.3649%,6927.3669%]跨零。存活者/選樣/Yahoo vintage/公司行動偏差，
+不構成投資、strict PIT或forward evidence；oracle刻意污染，random只作診斷。
+61tests＋8subtests PASS；動能獨立replay hash完全相同；採用三run62.5528CPU秒。
+Knowledge-health FAIL：基線缺e3bce91等authority objects，HEAD既有引用已確認；保留gate，整合前需恢復。
+Source/inputs/result hashes在JSON；
+早期generic共享路徑遭其他worker替換，舊報告INVALID_PROVENANCE，不採用；CLI已固定讀入bytes身份。
+下一步：其他worker依單一model/horizon CLI讀prediction shards，檢查上游walk-forward/purge契約；
+不可從本次高回測報酬升格交易證據。無GPU/production/scheduler/commit/push。
+
+
 ## pilot09-w1 Yahoo 資料工程 — branch-local / research-only
 
 `w1-data` worktree `/home/frank/projects/ruflo-evaluation/pilot09/wt/w1-data`，base

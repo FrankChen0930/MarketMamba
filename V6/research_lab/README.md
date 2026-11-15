@@ -97,3 +97,11 @@ flags 不是完整公司行動偵測。不得升格為 corrected V7、paper/forw
 完整失敗輸出在 `.local-data/research/knowledge-health.json`。
 工作樹保留原有 `.claude-flow/`、`.swarm/` dirty/untracked 狀態；Ruflo memory CLI 亦產生本機 runtime 狀態。
 未 commit／push；後續先恢復既有 authority objects，再於整合前重跑治理。
+
+
+## Pilot09 W3 投組研究 runner
+
+[投組設定、CLI、測試及真實動能樣本](experiments/PORTFOLIO_README.md)。
+`portfolio.run_backtest(prices, predictions, Config(...))` 與 `python -m research_lab.backtest`，
+重用既有V7 metrics/tier，全部RESEARCH_ONLY。close訊號→next-open entry→下一再平衡open退出，
+不等同上述t+h close-exit label；不更動dataset或production契約。w3-portfolio UNMERGED / NOT_DEPLOYED。
