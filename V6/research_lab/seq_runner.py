@@ -42,6 +42,23 @@ def macro_columns(X, ends, sessions=60, seed=0):
     return np.flatnonzero(const)
 
 
+def check_input_scale(x, max_sat=.01):
+    """Hard guard against the 'raw-scale features clipped to constants' failure: network inputs must already be O(1).
+    Fails if >1% of values are at/over the clip bound or any non-zero-variance column has std outside [0.3, 3]."""
+    x = np.asarray(x, dtype=np.float64)
+    if (np.abs(x) >= 10).mean() > max_sat:
+        raise ValueError('network input is not standardised: >1% of values reach the clip bound (use normalize="rankgauss")')
+    sd = x.std(0)
+    bad = np.flatnonzero((sd > 1e-9) & ((sd < .3) | (sd > 3.)))
+    if len(bad) > len(sd)//4:
+        raise ValueError(f'network input scale suspicious: {len(bad)} columns with std outside [0.3, 3]')
+
+
+def _x_tag(d):
+    st = (d/'X.npy').stat()
+    return f'{st.st_size}-{st.st_mtime_ns}'
+
+
 def ensure_rankgauss(directory, log=print):
     """Per-session cross-sectional rank-gauss copy of X (cached as X_rankgauss.npy). Uses only same-session values, so it
     is point-in-time. Macro (same-for-every-stock) columns are set to 0; non-finite values -> 0. Needed because X is NOT
@@ -49,7 +66,8 @@ def ensure_rankgauss(directory, log=print):
     from scipy.stats import norm, rankdata
     d = Path(directory)
     out = d/'X_rankgauss.npy'
-    if out.exists():
+    tag = d/'X_rankgauss.tag'
+    if out.exists() and tag.exists() and tag.read_text() == _x_tag(d):
         return out
     X = np.load(d/'X.npy', mmap_mode='r')
     ends = np.asarray(np.load(d/'end_indices.npy'))
@@ -67,7 +85,7 @@ def ensure_rankgauss(directory, log=print):
         Y[start:e] = z
         start = e
     Y.flush(); del Y
-    tmp.replace(out)
+    tmp.replace(out); tag.write_text(_x_tag(d))
     return out
 
 
@@ -107,12 +125,15 @@ class SeqData:
         self.eligible = full[self.date_idx, self.stock_idx]           # per matrix row
         self.dates = pd.to_datetime(np.asarray(a['dates'])[self.ends-1])
         self.feature_names = self.manifest['feature_order']
+        self._scale_ok = False
 
     def windows(self, rows):
         t, s = self.date_idx[rows], self.stock_idx[rows]
         idx = self.row_of[t[:, None]+np.arange(-self.window+1, 1), s[:, None]]
         assert (idx >= 0).all(), 'incomplete window requested'
         x = np.asarray(self.Xn[idx.reshape(-1)], dtype=np.float32).reshape(len(rows), self.window, -1)
+        if not self._scale_ok:
+            check_input_scale(x.reshape(-1, x.shape[-1])); self._scale_ok = True
         return np.clip(np.nan_to_num(x, nan=0., posinf=0., neginf=0.), -10., 10.)   # clip is a no-op for rank-gauss inputs
 
     def split_rows(self, val_dates=VAL_DATES):
@@ -248,14 +269,17 @@ def train_one(kind, seed, data, tr, va, cfg, device='cuda', mixer_factory=None, 
     tt5, tt10 = torch.from_numpy(t5).to(device), torch.from_numpy(t10).to(device)
     dates = sorted(by_date)
     state = dict(epoch=0, best=-9., bad=0, history=[])
+    best_sd = None
     prng = np.random.default_rng(1)       # in-sample probe = whole sampled sessions (>=10 names/session), not scattered rows
     pdays = prng.choice(sorted(by_date), min(len(by_date), cfg.get('train_probe_sessions', 40)), replace=False)
     tr_probe = np.sort(np.concatenate([prng.choice(by_date[d], min(len(by_date[d]), 500), replace=False) for d in pdays]))
     if ckpt and Path(ckpt).exists():
         c = torch.load(ckpt, map_location=device)
         model.load_state_dict(c['model']); opt.load_state_dict(c['opt']); sched.load_state_dict(c['sched']); state = c['state']
+        best_sd = c.get('best_sd')
+        if best_sd is None and state['best'] > -9:
+            raise RuntimeError(f'checkpoint {ckpt} has no best weights (written by an older version); delete it and retrain')
         rng = np.random.default_rng(seed+state['epoch']); log(f'[resume] {kind} s{seed} from epoch {state["epoch"]}')
-    best_sd = None
     while state['epoch'] < cfg['epochs'] and state['bad'] < cfg['patience']:
         model.train(); t0 = time.time(); losses = []
         for _ in range(cfg['steps_per_epoch']):
@@ -283,7 +307,7 @@ def train_one(kind, seed, data, tr, va, cfg, device='cuda', mixer_factory=None, 
         log(f'[{kind} s{seed}] epoch {state["epoch"]} loss {np.mean(losses):.4f} val_ic5 {score:+.4f} train_probe_ic5 {state["history"][-1]["train_probe_ic5"] or 0:+.4f} ({time.time()-t0:.0f}s)')
         if ckpt:
             tmp = str(ckpt)+'.tmp'
-            torch.save(dict(model=model.state_dict(), opt=opt.state_dict(), sched=sched.state_dict(), state=state), tmp)
+            torch.save(dict(model=model.state_dict(), opt=opt.state_dict(), sched=sched.state_dict(), state=state, best_sd=best_sd), tmp)
             Path(tmp).replace(ckpt)
     if best_sd is not None:
         model.load_state_dict(best_sd)

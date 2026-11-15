@@ -182,7 +182,8 @@ def test_regression_raw_scale_features_were_destroyed_by_clipping_but_rankgauss_
     cfg = dict(CFG, epochs=3, steps_per_epoch=30, d_model=16, val_max_rows=0)
     bad = sr.control_mlp.__wrapped__ if hasattr(sr.control_mlp, '__wrapped__') else None
     raw = sr.SeqData(d, window=1, normalize=None)
-    assert np.abs(raw.windows(np.arange(100, 200))[:, :, 7]).min() == 10.                     # every value saturated at the clip: no information left
+    with pytest.raises(ValueError, match='not standardised'):                                 # hard guard: no more silent saturation
+        raw.windows(np.arange(100, 200))
     good = sr.control_mlp(d, cfg, device='cpu', log=lambda *_: None)
     assert good[-1]['val_ic5'] > .2
 
@@ -196,3 +197,33 @@ def test_listnet_is_off_by_default_and_loss_is_mse_only():
     off = sr.session_loss(out, t, t, g)
     on = sr.session_loss(out, t, t, g, listnet_w=.5, listnet_t=10.)
     assert float(off) == float(torch.mean(t**2)) and float(on) > float(off)
+
+
+def test_resume_after_finish_returns_best_not_last_weights(tmp_path):
+    import torch
+    d, day, stock = build(tmp_path)
+    data = sr.SeqData(d, window=1, normalize=None)
+    tr, va, ev = data.split_rows(15)
+    ck = tmp_path/'c.pt'
+    cfg = dict(CFG, epochs=4, steps_per_epoch=20, d_model=16, patience=10)
+    m1, st1 = sr.train_one('mlp', 3, data, tr, va, cfg, 'cpu', None, {}, ck, lambda *_: None)
+    m2, st2 = sr.train_one('mlp', 3, data, tr, va, cfg, 'cpu', None, {}, ck, lambda *_: None)     # finished -> loop skipped
+    assert all(torch.equal(a, b) for a, b in zip(m1.state_dict().values(), m2.state_dict().values()))
+    c = torch.load(ck); del c['best_sd']; torch.save(c, ck)
+    with pytest.raises(RuntimeError, match='no best weights'):
+        sr.train_one('mlp', 3, data, tr, va, cfg, 'cpu', None, {}, ck, lambda *_: None)
+
+
+def test_rankgauss_cache_is_invalidated_when_x_changes(tmp_path):
+    d, day, stock = build(tmp_path)
+    a = np.load(sr.ensure_rankgauss(d, log=lambda *_: None))
+    X = np.load(d/'X.npy'); X[:, 0] = -X[:, 0]; np.save(d/'X.npy', X)
+    b = np.load(sr.ensure_rankgauss(d, log=lambda *_: None))
+    assert not np.array_equal(a[:, 0], b[:, 0])
+
+
+def test_check_input_scale_accepts_rankgauss_rejects_raw():
+    rng = np.random.default_rng(0)
+    sr.check_input_scale(rng.normal(size=(5000, 20)))
+    with pytest.raises(ValueError):
+        sr.check_input_scale(rng.normal(size=(5000, 20))*1e6)
