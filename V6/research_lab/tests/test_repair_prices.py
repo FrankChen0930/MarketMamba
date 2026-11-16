@@ -41,10 +41,16 @@ def test_invalid_exchange_rows_are_dropped():
 
 
 def test_non_trading_day_rows_are_reported_but_never_touched():
-    p = pd.concat([prod(), rows(pd.Timestamp('2026-09-26'), IDS[:2])], ignore_index=True)
-    add, rep = rp.plan(p, fill(), pd.DatetimeIndex(DAYS))
-    assert rep['rows_on_non_trading_days_NOT_TOUCHED'] == {'2026-09-26': 2}
-    assert (add.Date != '2026-09-26').all()
+    cal = pd.DatetimeIndex([d for d in DAYS if d != pd.Timestamp('2026-09-22')])       # 9/22 is a holiday that still has 40 rows
+    add, rep = rp.plan(prod(), fill(), cal)
+    assert rep['rows_on_non_trading_days_NOT_TOUCHED'] == {'2026-09-22': 40}
+    assert (add.Date != '2026-09-22').all()
+
+
+def test_dates_beyond_the_calendar_are_not_reported_as_non_trading():             # calendar lag (macro not yet updated) is not a holiday
+    p = pd.concat([prod(), rows(pd.Timestamp('2026-09-28'), IDS)], ignore_index=True)
+    _, rep = rp.plan(p, fill(), pd.DatetimeIndex(DAYS))
+    assert rep['rows_on_non_trading_days_NOT_TOUCHED'] == {}
 
 
 def test_apply_adds_rows_keeps_existing_values_and_dtypes(tmp_path):
