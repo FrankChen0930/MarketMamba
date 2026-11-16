@@ -46,7 +46,7 @@ def rolling_mean(p, w, min_frac=.5):
     return out.astype(np.float32)
 
 
-def build_features(data, rows, names, ind_stock=None, market=True):
+def build_features(data, rows, names, ind_stock=None, market=True, extra=None):
     """(len(rows), n_features) float32 and feature names. Base 48 columns + lags + rolling means + market aggregates."""
     col = {n: i for i, n in enumerate(names)}
     t, s = data.date_idx[rows], data.stock_idx[rows]
@@ -70,6 +70,8 @@ def build_features(data, rows, names, ind_stock=None, market=True):
             agg = {'mean': np.nanmean(p, axis=1), 'std': np.nanstd(p, axis=1), 'pos': np.nanmean(np.where(np.isnan(p), np.nan, p > 0), axis=1)}
         for k, v in agg.items():
             cols.append(v[t][:, None].astype(np.float32)); fn.append(f'mkt_{c}_{k}')
+    if extra is not None:                              # extra(data, rows) -> (array, names): e.g. revenue.make_extra
+        a, n = extra(data, rows); cols.append(a); fn += list(n)
     return np.hstack(cols), fn
 
 
@@ -105,7 +107,7 @@ def tercile_ic(values, y, date_idx, dates, strata_value):
     return out
 
 
-def run(directory, label='y5', max_train_rows=500_000, seed=17, n_boot=1000, lgbm=None, log=print, row_mask=None, extra_daily=None, industry_dir=None, ind_only_variant=False, market=True, exclude=None):
+def run(directory, label='y5', max_train_rows=500_000, seed=17, n_boot=1000, lgbm=None, log=print, row_mask=None, extra_daily=None, industry_dir=None, ind_only_variant=False, market=True, exclude=None, extra=None):
     """row_mask: evaluate only these eval rows (e.g. SeqData.eligible, so the comparison is on the rows a sequence model can score).
     extra_daily: {name: daily-IC Series} of other models on the SAME rows, added to the paired tests."""
     from lightgbm import LGBMRegressor
@@ -121,14 +123,14 @@ def run(directory, label='y5', max_train_rows=500_000, seed=17, n_boot=1000, lgb
         uniq = np.unique(np.load(Path(directory)/'stock_ids.npy', mmap_mode='r'))
         ind_stock = industry_codes(uniq, load_industry_map(industry_dir))
         log(f'[c0plus] industry known for {(ind_stock >= 0).mean():.1%} of {len(uniq)} stock codes')
-    xf, fn = build_features(data, ctx.fit_idx, names, ind_stock, market)
+    xf, fn = build_features(data, ctx.fit_idx, names, ind_stock, market, extra)
     keep = np.array([not (exclude and exclude(n)) for n in fn])      # exclude: name -> bool, drops those columns from fit AND eval
     xf, fn = xf[:, keep], [n for n, k in zip(fn, keep) if k]
     base_scores = mb.compute_scores(ctx, 'lightgbm', dict(lgbm_estimators=p['n_estimators'], lgbm_leaves=p['num_leaves'], lgbm_lr=p['learning_rate'],
                                                           lgbm_min_child=p['min_child_samples'], lgbm_reg_lambda=p['reg_lambda'], lgbm_threads=p['n_jobs']))
     plus = LGBMRegressor(**p).fit(xf, ctx.y_fit)
     ev = ctx.eval_idx
-    xe = build_features(data, ev, names, ind_stock, market)[0][:, keep]
+    xe = build_features(data, ev, names, ind_stock, market, extra)[0][:, keep]
     plus_scores = plus.predict(xe)
     log(f'[c0plus] features {len(fn)}; fit {len(ctx.fit_idx)}; eval {len(ev)}')
     y, dix, dates = data.y[label][ev], data.date_idx[ev], data.dates
