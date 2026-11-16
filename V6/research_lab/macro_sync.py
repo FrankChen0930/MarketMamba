@@ -1,4 +1,4 @@
-"""Incremental, classified macro-data sync (replacement design for fetcher._sync_macro_data). Public yfinance data only.
+"""Incremental, classified macro-data sync (used by fetcher._sync_macro_data, called from run_daily_update). Public yfinance data only.
 
 Defects of the production version this fixes (see tasks/roadmap-20261115.md 12.21):
   * `if cache.exists(): return` -> the file was never refreshed after its first build;
@@ -112,7 +112,7 @@ def sync_macro(path, today, tickers=TICKERS, download=yf_download, overlap_days=
         new.index.name = 'Date'
         out = new.reset_index()
         if any(rep[c].get('filled', 0) for c in got):
-            tmp = path.with_suffix('.tmp')
+            tmp = path.with_suffix(f'.{os.getpid()}.tmp')                                   # per-process name: two jobs never share a temp file
             try:
                 out.to_parquet(tmp); os.replace(tmp, path)                                # atomic
             finally:
@@ -120,5 +120,6 @@ def sync_macro(path, today, tickers=TICKERS, download=yf_download, overlap_days=
             rep['_written'] = True
     cur = pd.read_parquet(path) if path.exists() else pd.DataFrame({'Date': pd.to_datetime([])})
     rep['_freshness'] = freshness(cur, today, max_lag_days, expected=list(tickers.values()))
-    rep['_stale'] = sorted(c for c, f in rep['_freshness'].items() if f['stale'] and c != 'Date')
+    exp = set(tickers.values())
+    rep['_stale'] = sorted(c for c, f in rep['_freshness'].items() if f['stale'] and c in exp)   # legacy columns in the file are not our concern
     return rep

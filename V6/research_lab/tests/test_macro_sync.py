@@ -142,3 +142,20 @@ def test_no_new_data_does_not_rewrite_file(tmp_path):
     p = base(tmp_path); before = p.read_bytes()
     r, _, _ = run(p, '2026-07-24', {'^VIX': frame(['2026-07-22', '2026-07-23'], [15., 16.]), '^TWII': frame(['2026-07-22', '2026-07-23'], [100., 101.])})
     assert '_written' not in r and p.read_bytes() == before
+
+
+def test_legacy_columns_in_file_do_not_create_stale_noise(tmp_path):
+    p = tmp_path/'macro.parquet'
+    pd.DataFrame({'Date': pd.to_datetime(['2026-07-23']), 'VIX': [16.], 'TWII_Close': [101.], 'US_SOX': [1.]}).to_parquet(p)
+    r, _, _ = run(p, '2026-07-25', {'^VIX': frame(['2026-07-24'], [17.]), '^TWII': frame(['2026-07-24'], [102.])})
+    assert r['_stale'] == [] and 'US_SOX' in pd.read_parquet(p).columns            # unknown columns are preserved untouched
+
+
+def test_no_temp_file_left_after_write_or_failure(tmp_path, monkeypatch):
+    p = base(tmp_path)
+    run(p, '2026-07-25', {'^VIX': frame(['2026-07-24'], [17.]), '^TWII': frame(['2026-07-24'], [102.])})
+    assert list(tmp_path.glob('*.tmp')) == []
+    monkeypatch.setattr(pd.DataFrame, 'to_parquet', lambda self, path, *a, **k: (_ for _ in ()).throw(OSError('disk full')))
+    with pytest.raises(OSError):
+        run(p, '2026-07-28', {'^VIX': frame(['2026-07-27'], [18.]), '^TWII': frame(['2026-07-27'], [103.])})
+    assert list(tmp_path.glob('*.tmp')) == []
