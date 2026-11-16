@@ -40,7 +40,7 @@ def classify(resp_status, body, expect_keys=(), date_check=None):
     if body is None:
         return TRANSIENT, 'unparseable body'                       # truncated / HTML error page: retry
     stat = str(body.get('stat', 'OK')) if isinstance(body, dict) else 'OK'
-    if stat != 'OK':
+    if stat.strip().upper() not in ('OK', 'SUCCESS'):          # TWSE says 'OK', TPEx says 'ok'
         return (NO_DATA, f'stat={stat}') if ('沒有' in stat or 'No' in stat or '很抱歉' in stat) else (SCHEMA, f'stat={stat}')
     missing = [k for k in expect_keys if not (isinstance(body, dict) and k in body)]
     if missing:
