@@ -148,7 +148,7 @@ def run(directory, label='y5', max_train_rows=500_000, seed=17, n_boot=1000, lgb
     sig = compare_models({k: v.loc[common] for k, v in daily.items()}, 'lightgbm_day_t', int(label[1:]), n_boot=n_boot, seed=seed)
     imp = sorted(zip(fn, plus.feature_importances_), key=lambda x: -x[1])[:15]
     return dict(label=label, fit_rows=int(len(ctx.fit_idx)), eval_rows=int(len(ev)), n_features=len(fn), models=res,
-                vs_lightgbm_day_t=sig, daily_ic={k: {str(d.date()): float(v) for d, v in s_.items()} for k, s_ in daily.items()}, top_features=[(a, int(b)) for a, b in imp],
+                vs_lightgbm_day_t=sig, daily_ic={k: {str(d.date()): float(v) for d, v in s_.items()} for k, s_ in daily.items()}, top_features=[(a, int(b)) for a, b in imp], eval_idx=ev, scores=dict(c0plus=plus_scores, lightgbm_day_t=base_scores),
                 caveats=['same fit rows and eval rows as B4; evaluation window is research-used; labels are simulation proxy; survivorship-biased',
                          'size/volume strata use per-session scaled Market_Cap_Log (rank within session); raw volume and limit-up/down are not in the matrix',
                          'delayed-1d IC = score at t vs label of the same stock at t+1 (entry one session later)'])
