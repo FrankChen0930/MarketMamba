@@ -63,3 +63,15 @@ def test_delayed_labels_and_terciles_hand_case(tmp_path):
     v = np.arange(30, dtype=float); y = v.copy()
     t = cp.tercile_ic(v, y, np.zeros(30, int), pd.DatetimeIndex(['2020-01-01']), v)
     assert set(t) == {'small', 'mid', 'large'} and all(len(x) == 1 for x in t.values())
+
+
+def test_market_off_and_exclude_drop_exactly_those_columns(tmp_path):
+    d, *_ = build(tmp_path)
+    data = SeqData(d, window=1, normalize=None)
+    rows = np.arange(50)
+    on = cp.build_features(data, rows, FEATURES)[1]
+    off = cp.build_features(data, rows, FEATURES, market=False)[1]
+    assert [n for n in on if not n.startswith('mkt_')] == off and any(n.startswith('mkt_') for n in on)
+    kw = dict(max_train_rows=3000, n_boot=20, lgbm=dict(n_estimators=20, min_child_samples=20), log=lambda *_: None)
+    r = cp.run(d, market=False, exclude=lambda n: n == 'Return_5d_lag5', **kw)
+    assert r['n_features'] == len(off)-1

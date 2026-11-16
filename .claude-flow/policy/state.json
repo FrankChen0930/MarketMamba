@@ -1328,10 +1328,67 @@
         "policyHash": "sha256:00b63b2f746eb8b9095bbd5e1dbae4ddd74fd92a6740b72f59f4069fbfda4737"
       },
       "hash": "sha256:2f3825775f739be23e683b8d5bab2c162d029c8c6957b1b7e3fec2b35d08e8f6"
+    },
+    {
+      "payload": {
+        "receiptId": "sha256:8b48fc2f95a9bb71210d240026e7ebafc17b11a704b04766808dabde33e4f160",
+        "previousReceiptHash": "sha256:2f3825775f739be23e683b8d5bab2c162d029c8c6957b1b7e3fec2b35d08e8f6",
+        "sequence": 33,
+        "issuedAt": 1794707266094,
+        "request": {
+          "identity": {
+            "id": "agent:reviewer",
+            "type": "agent",
+            "roles": [
+              "reviewer"
+            ]
+          },
+          "action": {
+            "type": "swarm.worker.spawn",
+            "resource": "/home/frank/projects/ruflo-evaluation/pilot09/marketmamba",
+            "tool": "claude",
+            "concurrency": 1,
+            "network": false,
+            "destructive": false
+          },
+          "context": {
+            "metadata": {
+              "childCapabilityEnvelope": {
+                "actions": [
+                  "*"
+                ],
+                "resources": [
+                  "*"
+                ],
+                "tools": [
+                  "*"
+                ],
+                "network": false,
+                "destructive": false,
+                "delegationDepth": 0,
+                "expiresAt": 1794708665553
+              }
+            },
+            "now": 1794707266094
+          },
+          "requestId": "f418dd94-e369-4c6d-a81a-42f82f73df07"
+        },
+        "decision": {
+          "requestId": "f418dd94-e369-4c6d-a81a-42f82f73df07",
+          "outcome": "allowed",
+          "enforcedOutcome": "allowed",
+          "mode": "legacy",
+          "reason": "legacy-default-allow",
+          "matchedRules": [],
+          "obligations": []
+        },
+        "policyHash": "sha256:00b63b2f746eb8b9095bbd5e1dbae4ddd74fd92a6740b72f59f4069fbfda4737"
+      },
+      "hash": "sha256:26d1396a65053fffe37443e5f2cf8f7e9a3cc631caad816d087ef2966165fe19"
     }
   ],
   "migratedAt": 1794703481461,
   "migratedFrom": "pre-ADR-324; capabilities=.swarm/memory.db",
-  "ledgerLength": 33,
-  "ledgerHead": "sha256:2f3825775f739be23e683b8d5bab2c162d029c8c6957b1b7e3fec2b35d08e8f6"
+  "ledgerLength": 34,
+  "ledgerHead": "sha256:26d1396a65053fffe37443e5f2cf8f7e9a3cc631caad816d087ef2966165fe19"
 }
