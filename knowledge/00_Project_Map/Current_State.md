@@ -1,5 +1,20 @@
 # MarketMamba Current State
 
+## A-2 處置股可成交宇宙診斷 — branch-local / RESEARCH_ONLY
+
+`rd/hybrid` / UNMERGED / NOT_DEPLOYED。新增 [disposal.py](../../V6/research_lab/disposal.py)
+與 [測試](../../V6/research_lab/tests/test_disposal.py)，唯讀 E5_roll_base、2021–2026 fold splits
+及外部 trading_status_raw；輸出為 `.local-data/disposal_audit.json`（GENERATED，含輸入／source hashes）。
+只以 disposal 每日鍵及公告日 lower_bound + 1 個矩陣觀測交易日判斷「已知處置」，
+不以起日回填；非交易日公告先向後取交易日再延一日。False 不代表可成交。
+本次 eval 排除比例：2021 0.9122%、2022 0.3829%、2023 0.5628%、2024 0.8376%、2025 0.6678%、2026 2.0195%。
+報告本身保存逐年精確計數／有限 y5 均值及 Volume 原值代理；Alpha 名稱不證明超額報酬，
+Volume 不等於真正換手率。處置列 36,218、公告日不在觀測交易序列 445、重複每日鍵 0。
+沒有新增模型特徵、訓練、修改資料／標籤／切分或更動既有 authority；僅 historical diagnostic。
+新增測試 10 項通過；完整 research_lab 289 PASS／1 既有 SKIP。兩種 mutation（+1→0／用起日）各 7 FAIL，均攔下。
+Knowledge-impact PASS；knowledge-health 維持既有缺 e3bce91 等 authority objects 的 FAIL，未放寬 gate。
+下一步為人工檢視時間規則與排除影響；不因此升格 PIT／strict executable readiness。
+
 ## pilot09 hybrid restart 2026-11-15 — branch-local / RESEARCH_ONLY
 
 `rd/hybrid`（HEAD bb5dc92，bundle 備份 `ruflo-evaluation/backups/rd-hybrid-bb5dc92.bundle`）。

@@ -1,5 +1,15 @@
 # MarketMamba Authority Map
 
+## A-2 announcement-lagged disposal diagnostic（無 authority supersession）
+
+`rd/hybrid` / UNMERGED / NOT_DEPLOYED / RESEARCH_ONLY。
+[disposal.py](../../V6/research_lab/disposal.py) 與 [tests](../../V6/research_lab/tests/test_disposal.py)
+定義新增的唯讀診斷規則：disposal 精確每日鍵、公告日 lower_bound(matrix sessions) + 1、
+重複鍵 OR；attention 不使用。既有 universe 實作未涵蓋此公告延遲診斷，故新增獨立模組。
+`.local-data/disposal_audit.json` 為 GENERATED，source commit／逐檔 hash 與輸入 hash 限定其身份；
+不是正式排除政策、PIT calendar／execution authority，也不更動標籤、splits、模型或 production。
+已知處置為研究條件；False 不推定可成交；Volume 僅原值代理。無 supersession。
+
 ## pilot09-w4 derived research publication（無 authority supersession）
 
 `w4-ui` / UNMERGED / NOT_DEPLOYED。新增
