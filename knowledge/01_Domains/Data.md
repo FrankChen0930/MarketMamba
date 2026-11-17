@@ -8,16 +8,24 @@ wrong-session and conflicting date/title metadata for BWIBBU_ALL, TWT96U and
 TWSE/TPEx daily institutional responses, including ROC title dates.
 Daily margin/daytrade/generic/market-value catch-up reuses the existing
 `_trading_calendar()` from `prices_raw` distinct sessions and the pure
-`missing_trading_days` set difference. Scan begins at each source's first stored
-date, ends at today, and fills at most the latest 10 missing sessions by default.
-No calendar evidence means no inferred trading days; complete sessions are not
-rewritten. Missing individual stocks, previously mislabeled values and historical
+`missing_trading_days` set difference. Following `721eb84`, scan starts at the
+later of the first stored date and today minus 30 calendar days (positive
+`lookback_days` override), ends at today, and selects at most the latest 10 missing
+sessions by default. A missing weekday today is a candidate even if prices failed;
+None/empty responses cannot write rows. Existing sessions are not rewritten.
+Market value skips candidate dates older than 10 calendar days and warns to use
+`V6/scripts/backfill_stale_202607.py` with its current-share/non-PIT limitation.
+Missing price rows cannot produce market value; returned dates reflect actual writes.
+Missing individual stocks, previously mislabeled values and historical
 price/institutional catch-up remain outside this change.
 [Mock-network tests and mutation runner](../../V6/scripts/test_fetcher_date_gaps.py)
-use temporary parquet and isolated config only. This is offline engineering
-evidence, not formal-data repair or source/PIT acceptance. Market value still
-uses current MOPS share counts: a request cap does not bound historical age or
-remove capital-change bias. No formal data, scheduler, .bat or model change.
+use temporary parquet and isolated config only: 30 tests pass (23 existing + 7
+new, two existing expectations adapted); 13/13 assertion-killed mutants, 0 runtime
+errors. New tests against `721eb84` yielded 17 assertion failures, 0 runtime errors.
+This is offline engineering evidence, not formal-data repair or source/PIT acceptance.
+The 10-calendar-day market-value age guard bounds exposure but does not remove
+current-share capital-change bias or establish PIT. No formal data, scheduler,
+.bat or model change. UNMERGED / NOT_DEPLOYED.
 
 ## Metadata
 

@@ -7,26 +7,34 @@ UNMERGED / NOT_DEPLOYED. [Fetcher](../../V6/marketmamba/data/fetcher.py) now
 rejects absent, invalid, mismatched or conflicting response date/title evidence
 for BWIBBU_ALL, TWT96U and TWSE/TPEx daily institutional endpoints.
 Margin/daytrade/generic/market-value catch-up reuses `_trading_calendar()`
-(prices_raw distinct dates), repairs interior holes from each source's first
-stored date through today, and caps each source at the latest 10 missing sessions
-by default. Missing price-calendar evidence causes no fetch; an empty/missing
-margin/daytrade source bootstraps only today if observed in the calendar.
-Generic/market-value missing-file behavior remains unchanged. This detects whole
-missing sessions, not incomplete stock coverage or contaminated existing values.
-Price/institutional historical catch-up is outside this patch.
+(prices_raw distinct dates). The follow-up to `721eb84` bounds the scan start to
+`max(first stored date, today - lookback_days)` (default 30 calendar days;
+non-positive lookback rejected), retaining the latest-10 missing-session cap.
+A missing weekday today is always a candidate even without today's price calendar;
+None/empty responses write no rows. Empty margin/daytrade sources bootstrap only
+today; generic/market-value missing-file behavior remains unchanged.
+Market value skips candidate gaps older than 10 calendar days with a warning
+pointing to `V6/scripts/backfill_stale_202607.py` and its non-PIT share limitation.
+It reports only dates actually written; missing prices cannot create market value.
+This supersedes `721eb84`'s unbounded historical scan and calendar-only today
+selection, not its response-date gates. Whole missing sessions only: incomplete
+stock coverage, contaminated existing values and price/institutional historical
+catch-up remain outside this patch.
 
 [Offline regressions and in-memory mutation runner](../../V6/scripts/test_fetcher_date_gaps.py):
-9 new tests + 8 official parsers + 3 raw append + 3 fetch-only regressions pass;
-5/5 mutants killed by assertion failures (no import/runtime errors).
-Pre-fix: 39 assertion failures and 1 missing-helper error across 9 test methods.
+16 gap/date tests + 8 official parsers + 3 raw append + 3 fetch-only = 30 pass
+(original 23 retained, two expectations updated for the requested new semantics).
+New regressions against `721eb84`: 17 assertion failures, 0 runtime errors across
+16 methods. 13/13 in-memory mutants killed by assertions, 0 runtime errors.
+Fetcher SHA-256: `0074a54c31b031accf9d4f3542d9ccebe6ef487ec45d7659ad6d3b7204c0b0ec`.
 Evidence class: SYNTHETIC_OFFLINE_ENGINEERING, not actual source validation or PIT
-admission. Tests use temporary parquet/minimal config and mock all HTTP; no
-formal data or .env/credentials accessed. Python 3.12 environment:
+admission. All data writes are temporary and HTTP mocked; no formal data or
+.env/credentials accessed. Python 3.12.3 environment:
 `/home/frank/.venvs/marketmamba-fetch`, pandas 3.0.2, pyarrow 24.0.0;
 MARKETMAMBA_DATA_ROOT unset; formal symlink resolves to
 `/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6` (not written).
-Market-value derivation still uses current MOPS share counts, so historical
-values are not PIT evidence even when session dates are correct.
+Current MOPS shares remain non-PIT even within the 10-calendar-day limit; capital
+changes can bias recent historical values. No existing historical rows repaired.
 Next: review branch; any formal-data remediation/deployment needs separate Human
 authorization. No production authority, scheduler, model, push or merge change.
 

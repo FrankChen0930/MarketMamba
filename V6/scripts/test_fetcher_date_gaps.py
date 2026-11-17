@@ -143,8 +143,14 @@ class FetcherDateGapTest(unittest.TestCase):
                     kwargs = {} if limit is None else {'max_days': limit}
                     n, days = self.catch_up(name, calendar[-1], fetch, **kwargs)
                     count = 10 if limit is None else limit
+                    eligible = calendar[1:]
+                    if name == 'market_value_raw':
+                        eligible = [d for d in eligible if
+                                    (pd.Timestamp(calendar[-1]) - pd.Timestamp(d)).days <= 10]
+                    expected = eligible[-count:] if count else []
+                    count = len(expected)
                     self.assertEqual(n, count)
-                    self.assertEqual(days, calendar[-count:] if count else [])
+                    self.assertEqual(days, expected)
                     self.assertEqual(len(pd.read_parquet(path)), 1 + count)
 
     def test_no_gap_does_not_write_or_fetch(self):
@@ -158,13 +164,86 @@ class FetcherDateGapTest(unittest.TestCase):
                 self.assertEqual(self.catch_up(name, '2026-10-12', fail), (0, []))
                 self.assertEqual(path.read_bytes(), before)
 
-    def test_no_calendar_or_future_days_do_not_trigger_fetch(self):
+    def test_future_days_excluded_and_missing_calendar_attempts_today(self):
         for name in ('margin_raw', 'daytrade_raw', 'per_raw', 'market_value_raw'):
             with self.subTest(source=name):
                 _, fetch = self.prepare(name, ['2026-10-12'], ['2026-10-12', '2026-10-14'])
                 self.assertEqual(self.catch_up(name, '2026-10-12', fetch), (0, []))
                 (self.root / 'prices_raw.parquet').unlink()
-                self.assertEqual(self.catch_up(name, '2026-10-14', fetch), (0, []))
+                expected = (0, []) if name == 'market_value_raw' else (1, ['2026-10-14'])
+                self.assertEqual(self.catch_up(name, '2026-10-14', fetch), expected)
+
+    def test_pre_2026_holes_are_not_selected(self):
+        calendar = ['2025-12-29', '2025-12-30', '2026-11-17', '2026-11-18']
+        self.prepare('per_raw', [calendar[0], calendar[-1]], calendar)
+        self.assertEqual(self.f._daily_gap_days({calendar[0], calendar[-1]},
+                                              calendar[-1], 10), ['2026-11-17'])
+
+    def test_lookback_inclusive_boundary_and_override(self):
+        calendar = ['2026-10-18', '2026-10-19', '2026-11-11', '2026-11-18']
+        self.prepare('per_raw', ['2026-10-01', calendar[-1]], calendar)
+        existing = {'2026-10-01', calendar[-1]}
+        self.assertEqual(self.f._daily_gap_days(existing, calendar[-1], 10),
+                         ['2026-10-19', '2026-11-11'])
+        self.assertEqual(self.f._daily_gap_days(existing, calendar[-1], 10, lookback_days=7),
+                         ['2026-11-11'])
+        self.assertEqual(self.f._daily_gap_days(existing, calendar[-1], 1), ['2026-11-11'])
+        for lookback in (0, -1):
+            for cap in (0, 10):
+                with self.subTest(lookback=lookback, cap=cap), self.assertRaises(ValueError):
+                    self.f._daily_gap_days(existing, calendar[-1], cap, lookback_days=lookback)
+        with self.assertRaises(ValueError):
+            self.f._daily_gap_days(existing, calendar[-1], -1)
+
+    def test_today_missing_from_calendar_is_attempted_without_fabricating_rows(self):
+        for name in ('margin_raw', 'daytrade_raw', 'per_raw', 'market_value_raw'):
+            for response in (None, pd.DataFrame()):
+                with self.subTest(source=name, empty=response is None):
+                    path, _ = self.prepare(name, ['2026-11-17'], ['2026-11-17'])
+                    before = path.read_bytes()
+                    fetch = Mock(return_value=response)
+                    self.f.fetch_margin_direct = self.f.fetch_daytrade_direct = fetch
+                    if name == 'market_value_raw':
+                        fetch = self.f.fetch_shares_outstanding_mops
+                    self.assertEqual(self.catch_up(name, '2026-11-18', fetch), (0, []))
+                    fetch.assert_called_once_with(*(() if name == 'market_value_raw'
+                                                    else ('2026-11-18',)))
+                    self.assertEqual(path.read_bytes(), before)
+
+    def test_weekend_and_existing_today_are_not_added(self):
+        with patch.object(self.f, '_trading_calendar', return_value=pd.DatetimeIndex([])):
+            for today in ('2026-11-21', '2026-11-22'):
+                self.assertEqual(self.f._daily_gap_days(set(), today, 10), [])
+            self.assertEqual(self.f._daily_gap_days(set(), '2026-11-18', 10), ['2026-11-18'])
+            self.assertEqual(self.f._daily_gap_days({'2026-11-18'}, '2026-11-18', 10), [])
+            self.assertEqual(self.f._daily_gap_days(set(), '2026-11-18', 0), [])
+
+    def test_market_value_calendar_age_guard_and_boundary(self):
+        path, fetch = self.prepare('market_value_raw', ['2026-10-01', '2026-11-18'],
+                                   ['2026-11-06', '2026-11-08', '2026-11-09', '2026-11-18'])
+        with self.assertLogs(self.f.logger, 'WARNING') as logs:
+            self.assertEqual(self.catch_up('market_value_raw', '2026-11-18', fetch),
+                             (2, ['2026-11-08', '2026-11-09']))
+        self.assertIn('2026-11-06', ' '.join(logs.output))
+        self.assertIn('backfill_stale_202607.py', ' '.join(logs.output))
+        self.assertEqual(pd.read_parquet(path).Date.dt.strftime('%Y-%m-%d').tolist(),
+                         ['2026-10-01', '2026-11-08', '2026-11-09', '2026-11-18'])
+
+    def test_market_value_only_old_holes_no_snapshot_or_write(self):
+        path, fetch = self.prepare('market_value_raw', ['2026-10-01', '2026-11-18'],
+                                   ['2026-11-06', '2026-11-18'])
+        before = path.read_bytes()
+        with self.assertLogs(self.f.logger, 'WARNING'):
+            self.assertEqual(self.catch_up('market_value_raw', '2026-11-18', fetch), (0, []))
+        self.f.fetch_shares_outstanding_mops.assert_not_called()
+        self.assertEqual(path.read_bytes(), before)
+
+    def test_market_value_reports_only_dates_actually_written(self):
+        path, fetch = self.prepare('market_value_raw', ['2026-11-16'],
+                                   ['2026-11-16', '2026-11-17'])
+        self.assertEqual(self.catch_up('market_value_raw', '2026-11-18', fetch),
+                         (1, ['2026-11-17']))
+        self.assertEqual(len(pd.read_parquet(path)), 2)
 
 
 def run_mutations():
@@ -179,11 +258,36 @@ def run_mutations():
          'if dates and any(d != requested for d in dates):',
          'test_missing_or_invalid_response_date_rejected'),
         ('B_latest_plus_one',
-         'start = min(existing) if existing else today',
-         'start = (pd.Timestamp(max(existing)) + pd.Timedelta(days=1)).isoformat() if existing else today',
+         'first = min(pd.Timestamp(d).normalize() for d in existing) if existing else today_ts',
+         'first = max(pd.Timestamp(d).normalize() for d in existing) + pd.Timedelta(days=1) if existing else today_ts',
          'test_middle_gap_filled_and_existing_rows_preserved'),
         ('B_remove_cap', 'return days[-max_days:]', 'return days',
          'test_limit_and_default_ten'),
+        ('C_remove_lookback',
+         'start = max(first, today_ts - pd.Timedelta(days=lookback_days))',
+         'start = first', 'test_pre_2026_holes_are_not_selected'),
+        ('C_exclude_lookback_boundary',
+         'calendar >= start', 'calendar > start',
+         'test_lookback_inclusive_boundary_and_override'),
+        ('C_accept_zero_lookback',
+         'if lookback_days <= 0:', 'if lookback_days < 0:',
+         'test_lookback_inclusive_boundary_and_override'),
+        ('C_remove_today_fallback',
+         'if today_ts.weekday() < 5:', 'if False:',
+         'test_today_missing_from_calendar_is_attempted_without_fabricating_rows'),
+        ('C_allow_weekend_fallback',
+         'if today_ts.weekday() < 5:', 'if True:',
+         'test_weekend_and_existing_today_are_not_added'),
+        ('C_remove_market_value_age_guard',
+         'days = [d for d in days if d not in stale_days]', 'days = days',
+         'test_market_value_calendar_age_guard_and_boundary'),
+        ('C_exclude_market_value_ten_day_boundary',
+         '(pd.Timestamp(today) - pd.Timestamp(d)).days > 10',
+         '(pd.Timestamp(today) - pd.Timestamp(d)).days >= 10',
+         'test_market_value_calendar_age_guard_and_boundary'),
+        ('C_report_unwritten_dates',
+         'return len(mv), sorted(mv["Date"].dt.strftime("%Y-%m-%d").unique())',
+         'return len(mv), days', 'test_market_value_reports_only_dates_actually_written'),
         ('B_refetch_existing',
          'return sorted(normalized(calendar_days) - normalized(existing_dates))',
          'return sorted(normalized(calendar_days))',

@@ -2420,19 +2420,26 @@ def missing_trading_days(existing_dates, calendar_days) -> list[str]:
     return sorted(normalized(calendar_days) - normalized(existing_dates))
 
 
-def _daily_gap_days(existing, today: str, max_days: int) -> list[str]:
-    """Reuse observed price sessions; bootstrap only today, never infer holidays.
+def _daily_gap_days(existing, today: str, max_days: int, lookback_days: int = 30) -> list[str]:
+    """Bound historical repair by calendar age, then cap latest missing sessions.
 
-    Start at the first stored session to repair internal holes without silently
-    extending a source's history. A missing calendar supplies no trading proof.
+    Observed price sessions supply past candidates. Always attempt a missing
+    weekday today even when price acquisition failed; empty responses add no rows.
+    Empty sources bootstrap only today, without extending their history.
     """
+    if lookback_days <= 0:
+        raise ValueError("lookback_days must be positive")
     if max_days < 0:
         raise ValueError("max_days must be non-negative")
     if max_days == 0:
         return []
-    start = min(existing) if existing else today
+    today_ts = pd.Timestamp(today).normalize()
+    first = min(pd.Timestamp(d).normalize() for d in existing) if existing else today_ts
+    start = max(first, today_ts - pd.Timedelta(days=lookback_days))
     calendar = _trading_calendar()
-    calendar = calendar[(calendar >= pd.Timestamp(start)) & (calendar <= pd.Timestamp(today))]
+    calendar = calendar[(calendar >= start) & (calendar <= today_ts)]
+    if today_ts.weekday() < 5:
+        calendar = calendar.union(pd.DatetimeIndex([today_ts]))
     days = missing_trading_days(existing, calendar)
     if len(days) > max_days:
         logger.warning(f"Daily gap is {len(days)} sessions; only filling most recent {max_days}.")
@@ -2448,7 +2455,8 @@ def _catch_up_margin(today: str, max_days: int = 10) -> tuple[int, list[str]]:
     更新只抓當天、抓不到就算了，那一天就永遠是洞——這正是 margin_raw 停更三個月
     沒被發現的模式。改成每次執行都把缺口補齊，對公布延遲自我修復。
 
-    max_days 是保險絲：依 prices_raw 交易日補中間缺口，預設最多最近 10 日。
+    近 30 個日曆日依 prices_raw 補中間缺口，平日今天不依賴價格日曆。
+    max_days 只限制請求量：預設最多最近 10 個缺日。
     大缺口請用 V6/scripts/backfill_margin_direct.py；缺日不等於個股完整性。
     """
     path = PROCESSED_DIR / "margin_raw.parquet"
@@ -3847,7 +3855,7 @@ def _catch_up_market_value(today: str, max_days: int = 10) -> tuple[int, list[st
 
     ⚠️ 股本用的是 MOPS 的**當前快照**（非 point-in-time）。對「今天」而言正確，
        但若用來回補較久以前的日期，遇到期間內辦過增減資的公司會有偏差。
-       10 日上限只限制請求量，不限制缺口距今年代；歷史結果仍非 PIT 股本證據。
+       每日補缺只容許距今天 <=10 個日曆日；此限制仍不使歷史股本成為 PIT 證據。
     """
     path = PROCESSED_DIR / "market_value_raw.parquet"
     price_path = PROCESSED_DIR / "prices_raw.parquet"
@@ -3857,6 +3865,13 @@ def _catch_up_market_value(today: str, max_days: int = 10) -> tuple[int, list[st
     prod["Date"] = pd.to_datetime(prod["Date"])
     existing = set(prod["Date"].dt.strftime("%Y-%m-%d"))
     days = _daily_gap_days(existing, today, max_days)
+    stale_days = [d for d in days if (pd.Timestamp(today) - pd.Timestamp(d)).days > 10]
+    if stale_days:
+        logger.warning(
+            f"market_value: 跳過 >10 個日曆日缺口 {stale_days}；當前 MOPS 股本非 PIT。"
+            "歷史缺口請用 V6/scripts/backfill_stale_202607.py 並註明股本快照限制。"
+        )
+    days = [d for d in days if d not in stale_days]
     if not days:
         return 0, []
     pr = pd.read_parquet(price_path, columns=["Date", "stock_id", "Close"])
@@ -3879,7 +3894,7 @@ def _catch_up_market_value(today: str, max_days: int = 10) -> tuple[int, list[st
     out = pd.concat([prod, mv[prod.columns]], ignore_index=True)
     out = out.drop_duplicates(subset=["Date", "stock_id"], keep="last")
     out.sort_values(["stock_id", "Date"]).reset_index(drop=True).to_parquet(path, index=False)
-    return len(mv), days
+    return len(mv), sorted(mv["Date"].dt.strftime("%Y-%m-%d").unique())
 
 
 def run_daily_update(

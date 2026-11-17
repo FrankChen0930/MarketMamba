@@ -6,7 +6,13 @@
 is UNMERGED / NOT_DEPLOYED. [Fetcher](../../V6/marketmamba/data/fetcher.py)
 and [offline tests](../../V6/scripts/test_fetcher_date_gaps.py) define candidate
 single-session date/title binding and observed-price-calendar internal-gap
-repair (latest 10 missing sessions per source by default). `_trading_calendar()`
+repair. Follow-up to `721eb84`: default 30-calendar-day lookback (positive override),
+latest 10 missing sessions per source by default, missing-weekday-today candidate
+independent of price-calendar presence, and market-value candidate age <=10 calendar
+days with explicit non-PIT warnings for older skipped gaps. Market value requires
+actual price rows and reports only written dates. These candidate semantics
+supersede the unbounded scan/calendar-only today behavior in `721eb84`.
+`_trading_calendar()`
 remains the existing V6 availability convention, not a qualified PIT calendar.
 No formal dataset, historical artifact, production or research authority is
 superseded. Current MOPS shares remain non-PIT for historical market value;
