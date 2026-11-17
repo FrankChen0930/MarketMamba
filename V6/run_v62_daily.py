@@ -82,8 +82,9 @@ DAILY_SOURCES = [
     "per_raw", "market_value_raw", "securities_raw", "foreign_shareholding_raw",
     "futures_institutional_raw", "options_institutional_raw",
 ]
-# 已知停更且**已決定不修**的源（Group D 已證實為負貢獻）→ 不檢查、不告警
-KNOWN_STALE = {"macro_raw", "fear_greed", "business_indicator"}
+# 已知停更的源 → 不檢查、不告警。2026-11-16：macro_raw 已修復為每日增量更新（macro_sync.py），
+# 移出此名單，其新鮮度由 fetcher._sync_macro_data 的 [macro] 日誌檢查；fear_greed / business_indicator 仍停更，待 P2 補來源。
+KNOWN_STALE = {"fear_greed", "business_indicator"}
 
 
 # ============================================================

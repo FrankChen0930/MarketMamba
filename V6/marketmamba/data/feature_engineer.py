@@ -1329,6 +1329,10 @@ def _add_free_cash_flow(df: pd.DataFrame, df_cashflow: pd.DataFrame | None,
 
 
 
+# 最近一次 _merge_macro 的資料品質紀錄：{欄位: {defaulted_rows, last_date_defaulted}}，供健檢／報告讀取
+MACRO_QUALITY: dict = {}
+
+
 def _merge_macro(
     df: pd.DataFrame,
     df_macro: pd.DataFrame | None,
@@ -1406,13 +1410,24 @@ def _merge_macro(
             "TWII_Return_5d", "TWII_Return_20d", "TWII_Return_60d",
         ] if c in m.columns]
         df = df.merge(m[["Date"] + want], on="Date", how="left", suffixes=("", "_m"))
+        MACRO_QUALITY.clear()                      # 每次呼叫重建，避免殘留上一次的條目
+        _last = df["Date"].max()
         for col in want:
             dup = col + "_m"
             if dup in df.columns:
+                # 2026-11-16：記錄「原始來源沒有值、將被預設值頂替」的列數，不再靜默（行為不變，只增加告警與紀錄）
+                MACRO_QUALITY[col] = dict(defaulted_rows=int(df[dup].isna().sum()),
+                                          last_date_defaulted=bool(df.loc[df["Date"] == _last, dup].isna().all()))
                 df[col] = df[dup].combine_first(df[col])
                 df.drop(columns=[dup], inplace=True)
             df[col] = df[col].fillna(DEFAULTS.get(col, 0.0))
 
+        _bad = [c for c, q in MACRO_QUALITY.items() if q["last_date_defaulted"]]
+        _absent = [c for c in DEFAULTS if c not in want and c not in ("Futures_OI_Foreign", "Options_PC_Ratio")]
+        if _bad:
+            logger.warning(f"[macro 品質] 最新交易日以下欄位沒有真實值，以預設值頂替：{_bad}")
+        if _absent:
+            logger.warning(f"[macro 品質] macro_raw 不含以下欄位，全程使用常數預設值：{_absent}")
         # Log which V6.1 macro fields were sourced from macro_raw
         sourced = [c for c in ["FED_Rate", "Fear_Greed", "Business_Signal"] if c in want]
         if sourced:

@@ -4102,6 +4102,20 @@ def run_daily_update(
         except Exception as _e:                               # noqa: BLE001
             logger.warning(f"{_nm} 更新失敗（不影響推論）：{_e}")
 
+    # ── 總經（2026-11-16 接線）──────────────────────────────────────────────────
+    # 【為什麼要加】_sync_macro_data 原本只被 run_full_data_sync（手動全量）與回補腳本呼叫，
+    # 每日流程從未更新 macro_raw；加上舊版「檔案存在就 return」，總經欄位自 2026-07-24 起全是預設值。
+    # 非致命：失敗只告警，不中斷；過舊欄位會進入 warnings_，不再靜默。
+    try:
+        _macro_rep = _sync_macro_data(today, today)
+        if _macro_rep is None:
+            warnings_.append("macro_raw 更新失敗（見 [macro] 日誌）")
+        elif _macro_rep.get("_stale"):
+            warnings_.append(f"macro_raw 欄位過舊：{_macro_rep['_stale']}")
+    except Exception as _e:                                   # noqa: BLE001
+        logger.warning(f"macro_raw 更新失敗（不影響推論）：{_e}")
+        warnings_.append("macro_raw 更新失敗")
+
     # ── 覆蓋率閘門（只告警不阻擋，見函式 docstring）────────────────────────────
     cov = _check_universe_coverage(today)
     if cov:
@@ -4121,55 +4135,34 @@ def run_daily_update(
 # Macro Data (VIX, SPX, Gold, Oil, USD/TWD)
 # ============================================================
 
-def _sync_macro_data(start: str, end: str, force: bool = False) -> None:
+def _sync_macro_data(start: str, end: str, force: bool = False) -> dict | None:
+    """增量更新 macro_raw.parquet（2026-11-16 重寫）。
+
+    舊版在「檔案已存在」時直接 return，所以第一次建檔之後從未更新；抓取失敗只 `continue`，
+    下游再以預設值（VIX=20 …）靜默補上，07-24 之後的總經欄位因此全是假的卻沒有任何訊號。
+    新版（macro_sync.py）：增量更新、失敗分類與重試、不收未收盤的 bar、不覆蓋既有值但回報衝突、
+    不產生預設值，並回報各欄新鮮度。`start`/`end`/`force` 保留簽名相容；更新是冪等的，force 不再需要。
+    非致命：整個更新失敗只記 error，不中斷每日流程（與健檢原則一致）。
+    """
+    from marketmamba.data.macro_sync import sync_macro
     macro_cache = PROCESSED_DIR / "macro_raw.parquet"
-    if not force and macro_cache.exists():
-        logger.info("Macro loaded from cache")
-        return
-
-    # 2026-07-24 補上 TWII：_merge_macro() 把 TWII_Close 重新命名成 TWII 餵模型
-    # （對 V6.1 因 Group D 橫斷面 z-score bug 而被歸零、對 V6.2 有默認值 0.0 兜底，
-    # 兩者都不緊急），但 signal_conditions.py 的 regime 閘門（TWII vs MA60）是直接
-    # 讀 macro_raw 的 TWII_Close 判斷保守模式，不經過模型特徵管線、不受歸零 bug
-    # 影響，需要真的新鮮資料。US_SOX/CNN_FearGreed/TW_Biz_Signal/FED_Rate 確認
-    # 對現有模型無實質影響（Fear_Greed 見決策紀錄；其餘同屬 Group D 同一個 bug），
-    # 暫不在此補齊，避免陷入用不到的資料源。
-    macro_tickers = {
-        "^VIX":    "VIX",
-        "^GSPC":   "SPX",
-        "^TWII":   "TWII_Close",
-        "GC=F":    "Gold",
-        "CL=F":    "Oil",
-        "^TNX":    "TNX",
-        "TWD=X":   "USD_TWD",
-    }
-    frames = []
-    for ticker, col in macro_tickers.items():
-        df_t = yf.download(ticker, start=start, end=end, auto_adjust=True, progress=False)
-        if df_t.empty:
+    try:
+        rep = sync_macro(macro_cache, None)
+    except Exception as e:                                    # noqa: BLE001
+        logger.error(f"[macro] 更新失敗（macro_raw 維持原樣）：{type(e).__name__}: {e}")
+        return None
+    for col, r in rep.items():
+        if col.startswith("_"):
             continue
-        # --- FIX: flatten MultiIndex from new yfinance API ---
-        # New yfinance (>= 0.2.18) returns MultiIndex (Price, Ticker) for all downloads
-        if isinstance(df_t.columns, pd.MultiIndex):
-            df_t.columns = df_t.columns.get_level_values(0)
-            df_t = df_t.loc[:, ~df_t.columns.duplicated()]  # drop duplicate col names
-        # ---
-        df_t = df_t[["Close"]].rename(columns={"Close": col}).reset_index()
-        if "Date" not in df_t.columns and "index" in df_t.columns:
-            df_t.rename(columns={"index": "Date"}, inplace=True)
-        df_t["Date"] = pd.to_datetime(df_t["Date"])
-        frames.append(df_t)
-
-    if not frames:
-        logger.warning("No macro data fetched")
-        return
-
-    df_macro = frames[0]
-    for df_t in frames[1:]:
-        df_macro = df_macro.merge(df_t, on="Date", how="outer")
-    df_macro.sort_values("Date", inplace=True)
-    df_macro.to_parquet(macro_cache)
-    logger.info(f"Macro saved: {df_macro.shape}")
+        msg = f"[macro] {col:<11} {r['status']:<16} 新增 {r.get('filled', 0)} 筆（嘗試 {r['attempts']} 次）{r['reason']}"
+        (logger.info if r["status"] == "OK" else logger.warning)(msg)
+        if r.get("conflicts", {}).get("n"):
+            logger.warning(f"[macro] {col} 與既有值不一致 {r['conflicts']['n']} 筆（未覆蓋）：{r['conflicts']['dates']} 最大相對差 {r['conflicts']['max_rel']:.3f}")
+    if rep.get("_stale"):
+        logger.warning(f"[macro] 以下欄位過舊（超過門檻未更新），下游將以預設值頂替，請處理來源：{rep['_stale']}")
+    else:
+        logger.info("[macro] 所有欄位新鮮")
+    return rep
 
 
 def _sync_monthly_data(force: bool = False) -> None:
