@@ -1,5 +1,18 @@
 # MarketMamba Authority Map
 
+## V6 fetch hardening candidate — 2026-11-18
+
+`fix/macro-sync-fetch-hardening` from `bc88a181a15ad20e41daf29ec68a623d99ccf5d8`
+is UNMERGED / NOT_DEPLOYED. [Fetcher](../../V6/marketmamba/data/fetcher.py)
+and [offline tests](../../V6/scripts/test_fetcher_date_gaps.py) define candidate
+single-session date/title binding and observed-price-calendar internal-gap
+repair (latest 10 missing sessions per source by default). `_trading_calendar()`
+remains the existing V6 availability convention, not a qualified PIT calendar.
+No formal dataset, historical artifact, production or research authority is
+superseded. Current MOPS shares remain non-PIT for historical market value;
+correct date binding does not prove historical publication time or full universe.
+See [Current State](Current_State.md#v6-fetch-date-binding-and-internal-gaps--2026-11-18).
+
 ## Run status count adoption boundary — 2026-11-13
 
 `feat/run-status-count-validation` carries the independently adopted MAS count

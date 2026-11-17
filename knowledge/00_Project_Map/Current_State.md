@@ -1,5 +1,35 @@
 # MarketMamba Current State
 
+## V6 fetch date binding and internal gaps — 2026-11-18
+
+`fix/macro-sync-fetch-hardening`, WSL primary checkout, base `bc88a181a15ad20e41daf29ec68a623d99ccf5d8`:
+UNMERGED / NOT_DEPLOYED. [Fetcher](../../V6/marketmamba/data/fetcher.py) now
+rejects absent, invalid, mismatched or conflicting response date/title evidence
+for BWIBBU_ALL, TWT96U and TWSE/TPEx daily institutional endpoints.
+Margin/daytrade/generic/market-value catch-up reuses `_trading_calendar()`
+(prices_raw distinct dates), repairs interior holes from each source's first
+stored date through today, and caps each source at the latest 10 missing sessions
+by default. Missing price-calendar evidence causes no fetch; an empty/missing
+margin/daytrade source bootstraps only today if observed in the calendar.
+Generic/market-value missing-file behavior remains unchanged. This detects whole
+missing sessions, not incomplete stock coverage or contaminated existing values.
+Price/institutional historical catch-up is outside this patch.
+
+[Offline regressions and in-memory mutation runner](../../V6/scripts/test_fetcher_date_gaps.py):
+9 new tests + 8 official parsers + 3 raw append + 3 fetch-only regressions pass;
+5/5 mutants killed by assertion failures (no import/runtime errors).
+Pre-fix: 39 assertion failures and 1 missing-helper error across 9 test methods.
+Evidence class: SYNTHETIC_OFFLINE_ENGINEERING, not actual source validation or PIT
+admission. Tests use temporary parquet/minimal config and mock all HTTP; no
+formal data or .env/credentials accessed. Python 3.12 environment:
+`/home/frank/.venvs/marketmamba-fetch`, pandas 3.0.2, pyarrow 24.0.0;
+MARKETMAMBA_DATA_ROOT unset; formal symlink resolves to
+`/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6` (not written).
+Market-value derivation still uses current MOPS share counts, so historical
+values are not PIT evidence even when session dates are correct.
+Next: review branch; any formal-data remediation/deployment needs separate Human
+authorization. No production authority, scheduler, model, push or merge change.
+
 ## Run status count patch adoption — 2026-11-13
 
 Human-authorized independent adoption on `feat/run-status-count-validation`,

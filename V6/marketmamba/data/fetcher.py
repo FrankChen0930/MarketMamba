@@ -262,6 +262,50 @@ def fetch_prices_yfinance(
 # Layer 2: TWSE / TPEX Direct — Prices + Institutional Investors
 # ============================================================
 
+def _response_matches_date(data: dict, requested: str, source: str) -> bool:
+    """Bind single-session responses to their date/title, including ROC dates.
+
+    Every parseable metadata date must agree. Missing, invalid or conflicting
+    evidence cannot justify stamping rows with the requested date.
+    """
+    def parse(value):
+        text = str(value).strip()
+        match = re.fullmatch(r"(\d{4})(\d{2})(\d{2})", text)
+        if match is None:
+            match = re.search(
+                r"(?<!\d)(\d{3,4})[年/\-](\d{1,2})[月/\-](\d{1,2})(?:日|(?=\D|$))",
+                text,
+            )
+        if match is None:
+            return None
+        year, month, day = map(int, match.groups())
+        if year < 1911:
+            year += 1911
+        try:
+            return date(year, month, day).isoformat()
+        except ValueError:
+            return None
+
+    dates = []
+    # Include table metadata used by the newer TPEx API.
+    metadata = [data] + [t for t in data.get("tables", []) if isinstance(t, dict)]
+    invalid_date = False
+    for item in metadata:
+        for key in ("date", "title"):
+            value = item.get(key)
+            if not value:
+                continue
+            parsed = parse(value)
+            if key == "date" and (parsed is None or "~" in str(value)):
+                invalid_date = True
+            if parsed is not None:
+                dates.append(parsed)
+    if invalid_date or not dates or any(d != requested for d in dates):
+        logger.warning(f"{source}: response dates {dates or None} != requested {requested}; discarded")
+        return False
+    return True
+
+
 def fetch_prices_twse_direct(date_str: str) -> Optional[pd.DataFrame]:
     """
     Fetch all TWSE stocks' daily OHLCV from TWSE MI_INDEX.
@@ -490,6 +534,9 @@ def fetch_institutional_twse(date_str: str) -> Optional[pd.DataFrame]:
         logger.info(f"TWSE institutional: data not ready for {date_str} (stat={data.get('stat')})")
         return None
 
+    if not _response_matches_date(data, date_str, "TWSE institutional"):
+        return None
+
     rows = data.get("data", [])
     if not rows:
         return None
@@ -560,6 +607,9 @@ def fetch_institutional_tpex(date_str: str) -> Optional[pd.DataFrame]:
         logger.warning(f"TPEX institutional fetch failed: {e}")
         return None
 
+    if not _response_matches_date(data, date_str, "TPEX institutional"):
+        return None
+
     tables = data.get("tables", [])
     rows = tables[0].get("data", []) if tables else []
     if not rows:
@@ -624,6 +674,9 @@ def fetch_per_twse_direct(date_str: str) -> Optional[pd.DataFrame]:
         logger.warning(f"TWSE PER fetch failed: {e}")
         return None
 
+    if not _response_matches_date(data, date_str, "TWSE PER"):
+        return None
+
     rows = data.get("data", [])
     if not rows:
         return None
@@ -672,6 +725,9 @@ def fetch_securities_lending_twse_direct(date_str: str) -> Optional[pd.DataFrame
         data = resp.json()
     except Exception as e:
         logger.warning(f"TWSE securities lending fetch failed: {e}")
+        return None
+
+    if not _response_matches_date(data, date_str, "TWSE securities lending"):
         return None
 
     rows = data.get("data", [])
@@ -2356,7 +2412,34 @@ def run_full_data_sync(
 # Daily Update — Inference Mode (Fast Path)
 # ============================================================
 
-def _catch_up_margin(today: str, max_days: int = 15) -> tuple[int, list[str]]:
+def missing_trading_days(existing_dates, calendar_days) -> list[str]:
+    """Pure, sorted session-set difference; input iterables are never mutated."""
+    def normalized(values):
+        return {pd.Timestamp(d).normalize().strftime("%Y-%m-%d")
+                for d in values if not pd.isna(d)}
+    return sorted(normalized(calendar_days) - normalized(existing_dates))
+
+
+def _daily_gap_days(existing, today: str, max_days: int) -> list[str]:
+    """Reuse observed price sessions; bootstrap only today, never infer holidays.
+
+    Start at the first stored session to repair internal holes without silently
+    extending a source's history. A missing calendar supplies no trading proof.
+    """
+    if max_days < 0:
+        raise ValueError("max_days must be non-negative")
+    if max_days == 0:
+        return []
+    start = min(existing) if existing else today
+    calendar = _trading_calendar()
+    calendar = calendar[(calendar >= pd.Timestamp(start)) & (calendar <= pd.Timestamp(today))]
+    days = missing_trading_days(existing, calendar)
+    if len(days) > max_days:
+        logger.warning(f"Daily gap is {len(days)} sessions; only filling most recent {max_days}.")
+    return days[-max_days:]
+
+
+def _catch_up_margin(today: str, max_days: int = 10) -> tuple[int, list[str]]:
     """
     把 margin_raw.parquet 補齊到 today（含），回傳 (寫入列數, 實際補到的日期清單)。
 
@@ -2365,8 +2448,8 @@ def _catch_up_margin(today: str, max_days: int = 15) -> tuple[int, list[str]]:
     更新只抓當天、抓不到就算了，那一天就永遠是洞——這正是 margin_raw 停更三個月
     沒被發現的模式。改成每次執行都把缺口補齊，對公布延遲自我修復。
 
-    max_days 是保險絲：缺口大於此值時只補最近 max_days 天並告警，避免每日排程
-    意外變成長時間任務（大缺口請用 V6/scripts/backfill_margin_direct.py）。
+    max_days 是保險絲：依 prices_raw 交易日補中間缺口，預設最多最近 10 日。
+    大缺口請用 V6/scripts/backfill_margin_direct.py；缺日不等於個股完整性。
     """
     path = PROCESSED_DIR / "margin_raw.parquet"
     if path.exists():
@@ -2374,19 +2457,9 @@ def _catch_up_margin(today: str, max_days: int = 15) -> tuple[int, list[str]]:
             pd.to_datetime(pd.read_parquet(path, columns=["Date"])["Date"])
             .dt.strftime("%Y-%m-%d")
         )
-        start = pd.to_datetime(max(existing)) + pd.Timedelta(days=1)
     else:
-        existing, start = set(), pd.to_datetime(today)
-
-    days = [d.strftime("%Y-%m-%d")
-            for d in pd.date_range(start, pd.to_datetime(today))
-            if d.dayofweek < 5 and d.strftime("%Y-%m-%d") not in existing]
-    if len(days) > max_days:
-        logger.warning(
-            f"Margin gap is {len(days)} weekdays — only filling the most recent "
-            f"{max_days}. Use V6/scripts/backfill_margin_direct.py for the rest."
-        )
-        days = days[-max_days:]
+        existing = set()
+    days = _daily_gap_days(existing, today, max_days)
 
     frames, done = [], []
     for d in days:
@@ -2491,7 +2564,7 @@ def _check_universe_coverage(today: str) -> str:
     return ""
 
 
-def _catch_up_daytrade(today: str, max_days: int = 15) -> tuple[int, list[str]]:
+def _catch_up_daytrade(today: str, max_days: int = 10) -> tuple[int, list[str]]:
     """
     把 daytrade_raw.parquet 補齊到 today（含）。設計與 `_catch_up_margin` 相同：
     補缺口而非只抓今天，對交易所公布延遲自我修復。
@@ -2507,19 +2580,9 @@ def _catch_up_daytrade(today: str, max_days: int = 15) -> tuple[int, list[str]]:
             pd.to_datetime(pd.read_parquet(path, columns=["Date"])["Date"])
             .dt.strftime("%Y-%m-%d")
         )
-        start = pd.to_datetime(max(existing)) + pd.Timedelta(days=1)
     else:
-        existing, start = set(), pd.to_datetime(today)
-
-    days = [d.strftime("%Y-%m-%d")
-            for d in pd.date_range(start, pd.to_datetime(today))
-            if d.dayofweek < 5 and d.strftime("%Y-%m-%d") not in existing]
-    if len(days) > max_days:
-        logger.warning(
-            f"Daytrade gap is {len(days)} weekdays — only filling the most recent "
-            f"{max_days}. Use V6/scripts/backfill_daytrade_direct.py for the rest."
-        )
-        days = days[-max_days:]
+        existing = set()
+    days = _daily_gap_days(existing, today, max_days)
 
     frames, done = [], []
     for d in days:
@@ -2557,7 +2620,7 @@ def _catch_up_daytrade(today: str, max_days: int = 15) -> tuple[int, list[str]]:
 
 def _catch_up_generic(name: str, fetcher, today: str,
                       rename: dict | None = None,
-                      max_days: int = 15,
+                      max_days: int = 10,
                       date_col: str = "Date") -> tuple[int, list[str]]:
     """
     通用「補缺口」寫入器，供只需要單一逐日 fetcher 的資料源使用
@@ -2579,15 +2642,7 @@ def _catch_up_generic(name: str, fetcher, today: str,
     prod = pd.read_parquet(path)
     prod[date_col] = pd.to_datetime(prod[date_col])
     existing = set(prod[date_col].dt.strftime("%Y-%m-%d"))
-    start = pd.to_datetime(max(existing)) + pd.Timedelta(days=1)
-
-    days = [d.strftime("%Y-%m-%d")
-            for d in pd.date_range(start, pd.to_datetime(today))
-            if d.dayofweek < 5 and d.strftime("%Y-%m-%d") not in existing]
-    if len(days) > max_days:
-        logger.warning(f"{name} gap is {len(days)} weekdays — only filling the most "
-                       f"recent {max_days}.")
-        days = days[-max_days:]
+    days = _daily_gap_days(existing, today, max_days)
     if not days:
         return 0, []
 
@@ -3784,7 +3839,7 @@ def _catch_up_monthly(name: str, dataset: str, today: str,
     return added
 
 
-def _catch_up_market_value(today: str, max_days: int = 15) -> tuple[int, list[str]]:
+def _catch_up_market_value(today: str, max_days: int = 10) -> tuple[int, list[str]]:
     """
     market_value = 當日收盤價 × 已發行普通股數（MOPS 股本快照）。
     沒有逐日的市值端點，所以用價格 × 股本自行計算——與
@@ -3792,7 +3847,7 @@ def _catch_up_market_value(today: str, max_days: int = 15) -> tuple[int, list[st
 
     ⚠️ 股本用的是 MOPS 的**當前快照**（非 point-in-time）。對「今天」而言正確，
        但若用來回補較久以前的日期，遇到期間內辦過增減資的公司會有偏差。
-       此函式只補最近數日，影響可忽略；大範圍回補請用 backfill 腳本並註明此限制。
+       10 日上限只限制請求量，不限制缺口距今年代；歷史結果仍非 PIT 股本證據。
     """
     path = PROCESSED_DIR / "market_value_raw.parquet"
     price_path = PROCESSED_DIR / "prices_raw.parquet"
@@ -3801,18 +3856,12 @@ def _catch_up_market_value(today: str, max_days: int = 15) -> tuple[int, list[st
     prod = pd.read_parquet(path)
     prod["Date"] = pd.to_datetime(prod["Date"])
     existing = set(prod["Date"].dt.strftime("%Y-%m-%d"))
-    start = pd.to_datetime(max(existing)) + pd.Timedelta(days=1)
-
+    days = _daily_gap_days(existing, today, max_days)
+    if not days:
+        return 0, []
     pr = pd.read_parquet(price_path, columns=["Date", "stock_id", "Close"])
     pr["Date"] = pd.to_datetime(pr["Date"])
-    pr = pr[(pr["Date"] >= start) & (pr["Date"] <= pd.to_datetime(today))]
-    pr = pr[pr["Date"].dt.strftime("%Y-%m-%d").map(lambda d: d not in existing)]
-    if pr.empty:
-        return 0, []
-    days = sorted(pr["Date"].dt.strftime("%Y-%m-%d").unique())
-    if len(days) > max_days:
-        days = days[-max_days:]
-        pr = pr[pr["Date"].dt.strftime("%Y-%m-%d").isin(days)]
+    pr = pr[pr["Date"].dt.strftime("%Y-%m-%d").isin(days)]
 
     shares = fetch_shares_outstanding_mops()
     if shares is None or shares.empty or "shares_outstanding" not in shares.columns:

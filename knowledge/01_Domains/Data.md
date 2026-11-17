@@ -1,5 +1,24 @@
 # Data
 
+## V6 fetch hardening candidate — 2026-11-18
+
+Branch `fix/macro-sync-fetch-hardening`, UNMERGED / NOT_DEPLOYED:
+[fetcher](../../V6/marketmamba/data/fetcher.py) rejects missing, invalid,
+wrong-session and conflicting date/title metadata for BWIBBU_ALL, TWT96U and
+TWSE/TPEx daily institutional responses, including ROC title dates.
+Daily margin/daytrade/generic/market-value catch-up reuses the existing
+`_trading_calendar()` from `prices_raw` distinct sessions and the pure
+`missing_trading_days` set difference. Scan begins at each source's first stored
+date, ends at today, and fills at most the latest 10 missing sessions by default.
+No calendar evidence means no inferred trading days; complete sessions are not
+rewritten. Missing individual stocks, previously mislabeled values and historical
+price/institutional catch-up remain outside this change.
+[Mock-network tests and mutation runner](../../V6/scripts/test_fetcher_date_gaps.py)
+use temporary parquet and isolated config only. This is offline engineering
+evidence, not formal-data repair or source/PIT acceptance. Market value still
+uses current MOPS share counts: a request cap does not bound historical age or
+remove capital-change bias. No formal data, scheduler, .bat or model change.
+
 ## Metadata
 
 - Status: `CANONICAL_DOMAIN_NOTE_WITH_UNKNOWN`
