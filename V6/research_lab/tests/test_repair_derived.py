@@ -15,6 +15,8 @@ def frames():
     prices = pd.DataFrame({'Date': DAY, 'stock_id': IDS, 'Close': 5., 'Volume': 100.})
     old = pd.DataFrame({'Date': pd.to_datetime([DAY]), 'stock_id': IDS[:1], 'Day_Trade_Volume': [.1]})
     fill = pd.DataFrame({'Date': pd.to_datetime([DAY]*20), 'stock_id': IDS, 'Day_Trade_Volume': .5})
+    history = fill.assign(Date=pd.Timestamp('2026-09-23'))
+    old = pd.concat([history, old], ignore_index=True)
     return old, prices, fill
 
 
@@ -32,7 +34,7 @@ def test_boundary_90_percent_and_conflicts_only_reported():
     assert len(add) == 17
     assert report[DAY]['conflicts'] == 1
     assert IDS[0] not in set(add.stock_id)
-    assert old.Day_Trade_Volume.tolist() == [.1]
+    assert old.loc[old.Date == pd.Timestamp(DAY), 'Day_Trade_Volume'].tolist() == [.1]
 
 
 @pytest.mark.parametrize('instant', ['2026-11-17 22:20+08:00', '2026-11-17 22:50+08:00', '2026-11-17 14:35Z'])
@@ -50,8 +52,8 @@ def test_apply_preserves_existing_rows_schema_and_backups(tmp_path):
     before = target.read_bytes()
     rd.apply(target, prices, fill, [DAY], 'daytrade', tmp_path/'backup', now='2026-11-17 10:00+08:00')
     out = pd.read_parquet(target)
-    assert len(out) == 20
-    pd.testing.assert_frame_equal(out[out.stock_id == IDS[0]].reset_index(drop=True), old)
+    assert len(out) == 40
+    pd.testing.assert_frame_equal(out.iloc[:len(old)].reset_index(drop=True), old)
     assert out.dtypes.to_dict() == old.dtypes.to_dict()
     assert next((tmp_path/'backup').glob('*.parquet')).read_bytes() == before
     assert not list(tmp_path.glob('*.tmp'))
@@ -153,6 +155,7 @@ def test_cli_reads_bounded_rows_and_defaults_to_dry_run(tmp_path, monkeypatch):
     assert len(seen) == 2 and target.read_bytes() == before
     report = json.loads(next((tmp_path/'.local-data/public_fill').glob('*/report.json')).read_text())
     assert report['total_to_add'] == 19 and report['inputs_unchanged']
+    assert report['days'][DAY]['expected'] == 20  # Includes history outside incident dates.
 
 
 def test_market_value_rejects_negative_inputs_even_when_product_positive():
@@ -170,3 +173,58 @@ def test_entering_update_window_during_serialization_aborts(tmp_path):
         rd.apply(target, prices, fill, [DAY], 'daytrade', tmp_path/'backup', clock=lambda: next(moments))
     assert target.read_bytes() == before
     assert not list(tmp_path.glob('*.tmp'))
+
+
+@pytest.mark.parametrize('source_count,status', [(99, 'READY'), (80, 'REFUSED_COVERAGE')])
+def test_daytrade_uses_own_normal_history(source_count, status):
+    ids = [str(1000+i) for i in range(120)]
+    dates = pd.bdate_range('2026-01-01', periods=125)
+    history = pd.DataFrame([
+        (date, sid, .1) for i, date in enumerate(dates)
+        for sid in ids[:120 if i < 65 else 100]
+    ], columns=rd.COLUMNS['daytrade'])
+    # 61 recent damaged days must be excluded BEFORE taking the last 60.
+    bad = pd.DataFrame([
+        (date, sid, .1) for date in pd.bdate_range('2026-06-25', periods=61)
+        for sid in ids[:3]
+    ], columns=history.columns)
+    before = pd.concat([history, bad], ignore_index=True).sample(frac=1, random_state=7)
+    prices = pd.DataFrame({'Date': DAY, 'stock_id': ids, 'Volume': 100., 'Close': 5.})
+    fill = pd.DataFrame({'Date': pd.Timestamp(DAY), 'stock_id': ids[:source_count], 'Day_Trade_Volume': .5})
+    add, report = rd.plan(before, prices, fill, [DAY], 'daytrade')
+    assert report[DAY]['status'] == status
+    assert report[DAY]['expected'] == 100
+    assert len(add) == (source_count if status == 'READY' else 0)
+
+
+@pytest.mark.parametrize('dataset', ['institutional', 'market_value'])
+@pytest.mark.parametrize('count,status', [(17, 'REFUSED_COVERAGE'), (18, 'READY')])
+def test_other_datasets_keep_price_universe_coverage(dataset, count, status):
+    _, prices, _ = frames()
+    before = pd.DataFrame({'Date': pd.to_datetime(['2026-09-23']), 'stock_id': IDS[:1]})
+    fill = pd.DataFrame({'Date': pd.to_datetime([DAY]*count), 'stock_id': IDS[:count]})
+    for col in rd.COLUMNS[dataset][2:]:
+        before[col] = 1.
+        fill[col] = 1.
+    add, report = rd.plan(before, prices, fill, [DAY], dataset)
+    assert report[DAY]['expected'] == 20
+    assert report[DAY]['status'] == status
+    assert len(add) == (count if status == 'READY' else 0)
+
+
+def test_daytrade_still_refuses_broken_price_denominator():
+    before, prices, fill = frames()
+    prices = pd.concat([prices.iloc[:18], prices.assign(Date='2026-09-23')])
+    # 18 passes target coverage, but a 100-name typical price day is missing.
+    history = pd.DataFrame({'Date': '2026-09-22', 'stock_id': [str(1000+i) for i in range(100)], 'Close': 5., 'Volume': 100.})
+    prices = pd.concat([prices, history, history.assign(Date='2026-09-21')])
+    add, report = rd.plan(before, prices, fill, [DAY], 'daytrade')
+    assert add.empty
+    assert report[DAY]['status'] == 'REFUSED_PRICE_COVERAGE'
+
+
+def test_daytrade_missing_history_fails_closed():
+    before, prices, fill = frames()
+    add, report = rd.plan(before.iloc[:0], prices, fill, [DAY], 'daytrade')
+    assert add.empty
+    assert report[DAY]['status'] == 'REFUSED_COVERAGE'

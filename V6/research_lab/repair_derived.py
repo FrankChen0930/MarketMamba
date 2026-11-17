@@ -187,15 +187,32 @@ def typed(fill, before, dataset):
     return f
 
 
-def plan(before, prices, fill, calendar, dataset):
+def daytrade_baseline(counts):
+    """Latest 60 normal target days; filter against the full-period median first."""
+    normal = counts[counts >= .5 * counts.median()].sort_index().tail(60)
+    return float(normal.median()) if not normal.empty else float('nan')
+
+
+def target_daily_counts(path):
+    """Scan only Date in bounded batches, retaining one count per target day."""
+    counts = pd.Series(dtype='int64')
+    for batch in pq.ParquetFile(path).iter_batches(columns=['Date']):
+        dates = pd.to_datetime(batch.column(0).to_pandas()).dt.strftime('%Y-%m-%d')
+        counts = counts.add(dates.value_counts(), fill_value=0)
+    return counts
+
+
+def plan(before, prices, fill, calendar, dataset, *, daily_counts=None):
     b, p = normalize(before), normalize(prices)
     f = normalize(typed(fill, before, dataset))
     cal = {pd.Timestamp(d).strftime('%Y-%m-%d') for d in calendar if pd.Timestamp(d).day_of_week < 5}
     report, additions = {}, []
+    target_expected = (daytrade_baseline(b.groupby('Date').size() if daily_counts is None else daily_counts)
+                       if dataset == 'daytrade' else None)
     # Only the explicitly requested incident sessions, never a historical sweep.
     for day in DAYS:
         bd, pd_, fd = (x[x.Date == day] for x in (b, p, f))
-        expected = len(pd_)
+        expected = target_expected if dataset == 'daytrade' else len(pd_)
         fd = fd[fd.stock_id.isin(pd_.stock_id)]
         overlap = bd.merge(fd, on=KEY, suffixes=('_old', '_source'))
         conflict = pd.Series(False, index=overlap.index)
@@ -208,10 +225,10 @@ def plan(before, prices, fill, calendar, dataset):
         status = 'READY'
         if day not in cal:
             status = 'SKIP_NONTRADING'
-        elif expected == 0 or len(fd) < .9 * expected:
+        elif len(pd_) == 0 or not np.isfinite(expected) or expected <= 0 or len(fd) < .9 * expected:
             status = 'REFUSED_COVERAGE'
         # Reject a broken denominator day as well as incomplete exchange data.
-        elif expected < .9 * p.groupby('Date').size().tail(60).median():
+        elif len(pd_) < .9 * p.groupby('Date').size().tail(60).median():
             status = 'REFUSED_PRICE_COVERAGE'
         report[day] = dict(existing=len(bd), expected=expected, source_rows=len(fd),
                            to_add=len(new) if status == 'READY' else 0,
@@ -337,6 +354,7 @@ def main(argv=None):
         date_type = pq.read_schema(args.target).field('Date').type
         dates = [pd.Timestamp(d) for d in DAYS] if pa.types.is_timestamp(date_type) else list(DAYS)
         before = pd.read_parquet(args.target, filters=[('Date', 'in', dates)])
+        daily_counts = target_daily_counts(args.target) if args.dataset == 'daytrade' else None
         price_type = pq.read_schema(args.prices).field('Date').type
         start, end = '2026-07-01', max(DAYS)
         if pa.types.is_timestamp(price_type):
@@ -355,7 +373,7 @@ def main(argv=None):
         fill = derive(args.dataset, raw, selected)
         buffer = io.BytesIO(); fill.to_parquet(buffer, index=False)
         archive(root, buffer.getvalue(), 'parsed', dict(dataset=args.dataset, format='parquet'))
-        add, report['days'] = plan(before, prices, fill, calendar, args.dataset)
+        add, report['days'] = plan(before, prices, fill, calendar, args.dataset, daily_counts=daily_counts)
         report['schema'] = {c: str(t) for c,t in before.dtypes.items()}
         report['schema_match'] = add.dtypes.to_dict() == before.dtypes.to_dict()
         report['total_to_add'] = len(add)
