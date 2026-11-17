@@ -71,12 +71,11 @@ def test_low_coverage_and_unknown_calendar_refused():
     assert result['report']['days']['2026-10-27']['status'] == 'REFUSED'
 
 
-@pytest.mark.parametrize('overwrite,remove', [(False,False),(False,True),(True,False)])
-def test_apply_requires_independent_flags(tmp_path, overwrite, remove):
+def test_apply_requires_independent_flags(tmp_path):
     t = tmp_path/'per.parquet'; production().to_parquet(t, index=False)
     before = t.read_bytes(); plan = rp.plan(production(), CAL, {d:body(d) for d in rp.DAYS if d in CAL})
     with pytest.raises(ValueError):
-        rp.apply(t, plan, tmp_path/'backup', allow_overwrite=overwrite, allow_remove=remove, now='2026-11-18T10:00+08:00')
+        rp.apply(t, plan, tmp_path/'backup', now='2026-11-18T10:00+08:00')
     assert t.read_bytes() == before and not (tmp_path/'backup').exists()
 
 
@@ -155,3 +154,78 @@ def test_apply_addition_only_does_not_require_existing_row_flags(tmp_path):
     result=rp.apply(t,rp.plan(p,CAL,{DAY:body()}),tmp_path/'bk',now='2026-11-18T10:00+08:00')
     assert result['added'] == 1 and result['overwritten'] == result['removed'] == 0
     assert len(pd.read_parquet(t)) == len(p)+1
+
+
+@pytest.mark.parametrize('add_missing', [False, True])
+def test_overwrite_only_preserves_all_removable_rows_and_hashes(tmp_path, add_missing):
+    p = production()
+    # Two removable dates, with nulls and distinctive values, must survive exactly.
+    p = pd.concat([p, frame('2026-09-25', n=3)], ignore_index=True)
+    p.loc[p.Date == '2026-09-25', 'PER'] = np.nan
+    if add_missing:
+        p = p[~((p.Date == DAY) & (p.stock_id == '1109'))].reset_index(drop=True)
+    t = tmp_path/'per.parquet'; p.to_parquet(t, index=False)
+    original = t.read_bytes()
+    candidate = rp.plan(p, CAL, {DAY: body()})
+    result = rp.apply(t, candidate, tmp_path/'bk', allow_overwrite=True,
+                      now='2026-11-18T10:00+08:00')
+    out = pd.read_parquet(t)
+    untouched = p[p.Date != DAY].sort_values(rp.KEY).reset_index(drop=True)
+    actual = out[out.Date != DAY].sort_values(rp.KEY).reset_index(drop=True)
+    pd.testing.assert_frame_equal(actual, untouched)
+    # Compare every untouched row's hash, including both removable dates.
+    np.testing.assert_array_equal(pd.util.hash_pandas_object(actual, index=False).to_numpy(),
+                                  pd.util.hash_pandas_object(untouched, index=False).to_numpy())
+    assert result['untouched_sha256'] == rp.digest(untouched)
+    assert result['removable_left_untouched'] == {'2026-09-25': 3, '2026-10-09': 10}
+    assert result['overwritten'] == 10-int(add_missing)
+    assert result['removed'] == 0 and result['added'] == int(add_missing)
+    assert len(out) == len(p)+int(add_missing)  # unchanged when no additions
+    assert not out.duplicated(rp.KEY).any()
+    assert list(out) == list(p) and out.dtypes.equals(p.dtypes)
+    pd.testing.assert_frame_equal(out[out.Date == DAY].reset_index(drop=True),
+                                  rp.parse_source(body(), DAY, p))
+    assert (tmp_path/'bk'/'before.parquet').read_bytes() == original
+    assert json.loads((tmp_path/'bk'/'diff.json').read_text()) == result
+    assert result['after_sha256'] == rp.sha256(t)
+
+
+def test_remove_only_leaves_overwrites_and_additions_untouched(tmp_path):
+    p = production()
+    p = p[~((p.Date == DAY) & (p.stock_id == '1109'))].reset_index(drop=True)
+    t = tmp_path/'per.parquet'; p.to_parquet(t, index=False)
+    original = t.read_bytes()
+    candidate = rp.plan(p, CAL, {DAY: body()})
+    assert len(candidate['overwrite']) == 9 and len(candidate['add']) == 1
+    result = rp.apply(t, candidate, tmp_path/'bk', allow_remove=True,
+                      now='2026-11-18T10:00+08:00')
+    expected = p[p.Date != '2026-10-09'].sort_values(rp.KEY).reset_index(drop=True)
+    out = pd.read_parquet(t)
+    pd.testing.assert_frame_equal(out, expected)
+    assert result['removed'] == 10 and result['overwritten'] == result['added'] == 0
+    assert result['removable_left_untouched'] == {}
+    assert result['untouched_sha256'] == rp.digest(expected)
+    assert (tmp_path/'bk'/'before.parquet').read_bytes() == original
+
+
+@pytest.mark.parametrize('corruption', ['value', 'drop', 'duplicate', 'dtype', 'columns'])
+def test_overwrite_only_rejects_corrupt_removable_temp(tmp_path, monkeypatch, corruption):
+    p = production(); t = tmp_path/'per.parquet'; p.to_parquet(t, index=False)
+    original = t.read_bytes(); candidate = rp.plan(p, CAL, {DAY: body()})
+    original_write = pd.DataFrame.to_parquet
+    def corrupt(self, path, **kwargs):
+        f = self.copy()
+        row = f.index[f.Date == '2026-10-09'][0]
+        if corruption == 'value': f.loc[row, 'PER'] = 999.
+        if corruption == 'drop': f = f.drop(row)
+        if corruption == 'duplicate': f = pd.concat([f, f.loc[[row]]], ignore_index=True)
+        if corruption == 'dtype': f['PER'] = f.PER.astype('float32')
+        if corruption == 'columns': f = f[list(reversed(f.columns))]
+        return original_write(f, path, **kwargs)
+    monkeypatch.setattr(pd.DataFrame, 'to_parquet', corrupt)
+    with pytest.raises(ValueError):
+        rp.apply(t, candidate, tmp_path/'bk', allow_overwrite=True,
+                 now='2026-11-18T10:00+08:00')
+    assert t.read_bytes() == original
+    assert (tmp_path/'bk'/'before.parquet').read_bytes() == original
+    assert not list(tmp_path.glob('.repair_per-*.tmp'))

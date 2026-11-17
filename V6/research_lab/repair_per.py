@@ -192,15 +192,19 @@ def check_window(now=None):
 
 
 def apply(target, candidate, backup_dir, *, allow_overwrite=False, allow_remove=False, now=None):
-    """Opt-in writer. Caller must serialize with other writers; detects input drift."""
+    """Apply independently opted-in changes; additions accompany overwrites.
+
+    Addition-only plans retain their flag-free behavior. With remove alone, both
+    overwrites and additions are skipped. Caller must serialize other writers.
+    """
     check_window(now)
     target = Path(target).resolve()
     if target.name == '.env': raise ValueError('protected target')
     before_hash = sha256(target); before = pd.read_parquet(target); validate(before)
     if digest(before) != candidate['report']['before_digest']: raise ValueError('stale repair plan')
     ow, ad, rm = (candidate[k] for k in ('overwrite','add','remove'))
-    if len(ow) and not allow_overwrite: raise ValueError('--allow-overwrite required')
-    if len(rm) and not allow_remove: raise ValueError('--allow-remove required')
+    if (len(ow) or len(rm)) and not (allow_overwrite or allow_remove):
+        raise ValueError('--allow-overwrite or --allow-remove required')
     for f in (ow, ad, rm):
         validate(f)
         if not f.Date.isin(pd.to_datetime(DAYS)).all(): raise ValueError('out-of-scope mutation')
@@ -208,6 +212,15 @@ def apply(target, candidate, backup_dir, *, allow_overwrite=False, allow_remove=
     ow_keys, ad_keys, rm_keys = [pd.MultiIndex.from_frame(f[KEY]) for f in (ow,ad,rm)]
     if not ow_keys.isin(old_keys).all() or not rm_keys.isin(old_keys).all() or ad_keys.isin(old_keys).any() or ow_keys.isin(rm_keys).any():
         raise ValueError('invalid change keys')
+    removable_left_untouched = {
+        str(day.date()): int(count) for day, count in rm.groupby('Date').size().items()
+    } if not allow_remove else {}
+    # Validate the complete plan above, then select only authorized operations.
+    if not allow_overwrite:
+        ow = ow.iloc[:0]
+        if allow_remove: ad = ad.iloc[:0]
+    if not allow_remove: rm = rm.iloc[:0]
+    ow_keys, ad_keys, rm_keys = [pd.MultiIndex.from_frame(f[KEY]) for f in (ow,ad,rm)]
     touched = old_keys.isin(ow_keys.union(rm_keys))
     untouched = before.loc[~touched]
     out = pd.concat([untouched,ow,ad], ignore_index=True).astype(before.dtypes.to_dict())
@@ -229,7 +242,8 @@ def apply(target, candidate, backup_dir, *, allow_overwrite=False, allow_remove=
         if digest(chk) != digest(out): raise ValueError('temporary content mismatch')
         result = dict(candidate['report'], before_sha256=before_hash, after_sha256=sha256(tmp),
                       rows_after=len(chk), overwritten=len(ow), added=len(ad), removed=len(rm),
-                      untouched_sha256=digest(untouched))
+                      untouched_sha256=digest(untouched),
+                      removable_left_untouched=removable_left_untouched)
         write_json(backup/'diff.json',result)
         check_window(now)
         if sha256(target) != before_hash: raise ValueError('target changed during repair')
