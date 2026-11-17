@@ -32,7 +32,7 @@ def _common(series):
     return frame
 
 
-def load_results(out_dir):
+def load_results(out_dir, systems=SYSTEMS):
     """Return {year: {seed: record}}; reject duplicate identities/seed mismatch.
 
     Every present fold is validated, including unselected folds. Systems may
@@ -60,10 +60,10 @@ def load_results(out_dir):
         if record.get('label', 'y5') != 'y5':
             raise ValueError('H1 requires y5 labels')
         daily = record.get('daily_ic')
-        if not isinstance(daily, dict) or set(daily) != set(SYSTEMS):
+        if not isinstance(daily, dict) or (set(daily) != set(SYSTEMS) if systems == SYSTEMS else not set(systems).issubset(daily)):
             raise ValueError(f'system seed sets mismatch: {path.name}')
         parsed = {}
-        for system in SYSTEMS:
+        for system in systems:
             if not isinstance(daily[system], dict) or not daily[system]:
                 raise ValueError(f'missing system seed data: {path.name}/{system}')
             s = pd.Series(daily[system], dtype=float)
@@ -84,10 +84,10 @@ def system_daily(results, system, year):
     return _common({s: r['daily_ic'][system] for s, r in results[year].items()}).mean(axis=1)
 
 
-def paired_diff(results, year):
+def paired_diff(results, year, candidate='c0plus', baseline='lightgbm_day_t'):
     """C0+ minus baseline, aligned after each system's seed average."""
-    both = _common({s: system_daily(results, s, year) for s in SYSTEMS})
-    return (both['c0plus'] - both['lightgbm_day_t']).rename('diff')
+    both = _common({s: system_daily(results, s, year) for s in (baseline, candidate)})
+    return (both[candidate] - both[baseline]).rename('diff')
 
 
 def _values(diff):
@@ -128,10 +128,10 @@ def hac_t(diff, lag=None):
     return dict(mean=mean, se=se, t=t, p=p, lag=int(lag), n=n)
 
 
-def _seed_diffs(results, year):
+def _seed_diffs(results, year, candidate='c0plus', baseline='lightgbm_day_t'):
     # Freeze common support before seed resampling: no changing missing-day mask.
-    dates = paired_diff(results, year).index
-    return {seed: (r['daily_ic']['c0plus'] - r['daily_ic']['lightgbm_day_t']).loc[dates]
+    dates = paired_diff(results, year, candidate, baseline).index
+    return {seed: (r['daily_ic'][candidate] - r['daily_ic'][baseline]).loc[dates]
             for seed, r in results[year].items()}
 
 
@@ -221,8 +221,8 @@ def noninferiority(ci_low, delta0=-.01, *, point=None, se=None):
     return '通過' if ci_low > delta0 else '最近期無法證實'
 
 
-def _fixed_hac(results, years):
-    rows = {str(y): hac_t(paired_diff(results, y)) for y in years}
+def _fixed_hac(results, years, candidate='c0plus', baseline='lightgbm_day_t'):
+    rows = {str(y): hac_t(paired_diff(results, y, candidate, baseline)) for y in years}
     n = sum(r['n'] for r in rows.values())
     mean = sum(r['mean'] * r['n'] for r in rows.values()) / n
     se = math.sqrt(sum((r['n'] * r['se'])**2 for r in rows.values())) / n
@@ -247,7 +247,8 @@ def _json_safe(value):
 
 def report(out_dir, clean_years=(2021, 2022, 2023),
            descriptive_years=(2024, 2025, 2026), sesoi=.005, delta0=-.01,
-           n_boot=2000, seed=0):
+           n_boot=2000, seed=0, candidate='c0plus', baseline='lightgbm_day_t',
+           candidate_dir=None, baseline_dir=None):
     """Return strict JSON-compatible H1 statistics, with no adoption decision.
 
     Missing selected folds fail closed. Per-fold t tests are descriptive only.
@@ -257,7 +258,19 @@ def report(out_dir, clean_years=(2021, 2022, 2023),
     one seed has unknown SD (null). Descriptive CI is fixed-effect HAC, with
     the additional requested point−1.96*SE precision gate.
     """
-    results = load_results(out_dir)
+    if candidate_dir is None and baseline_dir is None and (baseline, candidate) == SYSTEMS:
+        results = load_results(out_dir)
+    else:
+        candidate_results = load_results(candidate_dir or out_dir, (candidate,))
+        results = load_results(baseline_dir or out_dir, (baseline,))
+        identities = lambda records: {(y, s) for y, fold in records.items() for s in fold}
+        if identities(results) != identities(candidate_results):
+            raise ValueError('candidate/baseline fold/seed mismatch')
+        for y, fold in results.items():
+            for s, record in fold.items():
+                other = candidate_results[y][s]
+                record['daily_ic'][candidate] = other['daily_ic'][candidate]
+                record['candidate_input'] = {k: other[k] for k in ('path', 'sha256', 'wall_seconds')}
     clean_years, descriptive_years = tuple(clean_years), tuple(descriptive_years)
     selected = clean_years + descriptive_years
     if not clean_years or not descriptive_years or len(set(selected)) != len(selected):
@@ -265,13 +278,13 @@ def report(out_dir, clean_years=(2021, 2022, 2023),
     missing = set(selected) - results.keys()
     if missing:
         raise ValueError(f'missing selected folds: {sorted(missing)}')
-    clean, clean_rows = _fixed_hac(results, clean_years)
-    desc, desc_rows = _fixed_hac(results, descriptive_years)
-    boot = block_bootstrap_ci({y: _seed_diffs(results, y) for y in clean_years},
+    clean, clean_rows = _fixed_hac(results, clean_years, candidate, baseline)
+    desc, desc_rows = _fixed_hac(results, descriptive_years, candidate, baseline)
+    boot = block_bootstrap_ci({y: _seed_diffs(results, y, candidate, baseline) for y in clean_years},
                               n_boot=n_boot, seed=seed)
     seed_sd = {}
     for year in selected:
-        means = [float(s.mean()) for s in _seed_diffs(results, year).values()]
+        means = [float(s.mean()) for s in _seed_diffs(results, year, candidate, baseline).values()]
         seed_sd[str(year)] = float(np.std(means, ddof=1)) if len(means) > 1 else None
     return _json_safe(dict(
         evidence='E2', status='RESEARCH_ONLY', preregistration='roadmap 12.32 H1',
@@ -284,7 +297,8 @@ def report(out_dir, clean_years=(2021, 2022, 2023),
         per_fold={y: dict(r, descriptive_only=True) for y, r in (clean_rows | desc_rows).items()},
         seed_sd=seed_sd, sesoi=sesoi, delta0=delta0,
         inputs=[dict(year=y, seed=s, path=r['path'], sha256=r['sha256'],
-                     wall_seconds=r['wall_seconds'])
+                     wall_seconds=r['wall_seconds'],
+                     **({'candidate_input': r['candidate_input']} if 'candidate_input' in r else {}))
                 for y in sorted(results) for s, r in sorted(results[y].items())],
         limitations=['Clean classification separated from descriptive noninferiority per task; '
                      'roadmap combined adoption gate is not evaluated.',
