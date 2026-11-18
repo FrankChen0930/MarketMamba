@@ -1,5 +1,9 @@
 # MarketMamba Authority Map
 
+## Imported research code boundary — 2026-11-19
+
+`V6/research_lab/` and the `tasks/roadmap-20261115.md` research log are imported from pilot09 `rd/hybrid` `65d0b68` as RESEARCH_ONLY candidate code; they carry no production, PIT-admission or deployment authority. The roadmap is a historical research log whose numbers must not be compared across different data/label/validation protocols. See [Current State](Current_State.md#research-code-import-from-pilot09--2026-11-19).
+
 ## Version-control and executor policy — 2026-11-19
 
 [AGENTS.md](../../AGENTS.md) now records Human authorization to commit and push branches/`main` to `origin` (no force-push, history rewrite, or remote-branch deletion), the Codex-first executor policy, local-first compute rule, and the pilot09 research repo as read-only reference. Deploy, scheduler/`v62_daily.bat` edits, Colab spend and production authority are unchanged and still require explicit approval. See [Current State](Current_State.md#human-policy-update-v7-direction-version-control-model-split--2026-11-19).
