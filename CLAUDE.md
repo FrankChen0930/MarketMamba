@@ -13,6 +13,8 @@ Before creating any new directory, implementation, workflow, experiment/report t
 
 ## Claude-specific Notes
 
+- Claude 額度少於 Codex：實作與實驗優先派給 Codex worker（見 `AGENTS.md`「模型分工與算力」），Claude 專注規劃、獨立審查與交叉檢驗。
+
 - Optional Claude role definitions live in `.claude/agents/{builder,verifier,archivist}.md`.
 - The optional main-session coordination protocol lives in `.claude/skills/advisor/SKILL.md`; it is not a fourth agent role.
 - Use these assets only when the active Claude environment supports them. They never override `AGENTS.md`, the canonical project map, user instructions, or machine evidence.

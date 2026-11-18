@@ -1,5 +1,10 @@
 # MarketMamba Authority Map
 
+## Version-control and executor policy — 2026-11-19
+
+[AGENTS.md](../../AGENTS.md) now records Human authorization to commit and push branches/`main` to `origin` (no force-push, history rewrite, or remote-branch deletion), the Codex-first executor policy, local-first compute rule, and the pilot09 research repo as read-only reference. Deploy, scheduler/`v62_daily.bat` edits, Colab spend and production authority are unchanged and still require explicit approval. See [Current State](Current_State.md#human-policy-update-v7-direction-version-control-model-split--2026-11-19).
+
+
 ## Ruflo development collaboration boundary — 2026-11-19
 
 `development/ruflo-integration` (base f501a7e), UNMERGED / NOT_DEPLOYED: [versioned integration contract](../../tools/project_agents/integration-contract.json), [adapter/tests](../../tools/project_agents/runtime.mjs) and [operator guide](../../docs/operations/ruflo.md) own only the development collaboration capability. Official DualModeOrchestrator schedules workers; project adapter pins runtime and validates processes/results. Runtime observations remain timestamped local evidence. Ruflo memory, agent registration, worker completion and session summaries never supersede project map, contracts, accepted research artifacts or production authority. No new scheduler, data, GPU, merge/push/deploy authority. [Bounded acceptance](../../reports/ruflo_integration_acceptance.json) is local engineering evidence only; primary checkout branch development/ruflo-primary does not promote this to main or production. SQLite backend uses official disable-bridge policy after actual cross-process validation.

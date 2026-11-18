@@ -28,7 +28,18 @@ Project map 是 current-state／navigation authority。實作語義仍以 versio
 - 結果異常地好時，主動檢查 leakage、PIT、universe、label timing、source provenance、selection bias 與 evaluation window。
 - 誠實呈現 `STOP`、限制、未知與 evidence class；不得為了繼續流程放寬 gate。
 - 長任務提供簡短進度；最終回覆必須自包含，列出變更、驗證、未處理範圍與風險。
-- 除非明確授權，不 push、merge、deploy、啟用排程、啟動 GPU、購買資料、消耗 usage reset、增加通知對象或改變 production authority。
+- 除非明確授權，不 deploy、啟用或修改排程（含 `v62_daily.bat`）、啟動 Colab／付費 GPU、購買資料、消耗 usage reset、增加通知對象或改變 production authority。
+- 版本控制（Human 2026-11-19 授權）：可 commit，並將分支與 `main` push 到 `origin`；可在驗證通過後將分支 merge／fast-forward 進 `main`。仍禁止 force-push、改寫已 push 的歷史、刪除遠端分支。每次 push 前確認未含憑證、`.env`、大型資料或模型權重。
+
+## 模型分工與算力（Human 2026-11-19 決定）
+
+- 使用者訂閱 Claude Pro 與 Codex Pro，Codex 額度遠多於 Claude。日常實作、實驗、重複性與大量讀寫工作預設派給 Codex worker；Claude 用於規劃、獨立審查、交叉檢驗與關鍵決策，避免讓 Claude 承擔大量機械工作。
+- 算力順序：本機 CPU／RTX 3060 優先處理小型實驗；只有本機實際跑不動的完整資料大型訓練才上 Colab，且 Colab 花費需 Human 同意。不得因方便而把本機可完成的工作搬去 Colab。
+- 設計方向：V6 視為舊版，不再維持 V6／V7 兩套並行系統；上線的新系統稱 V7。V6 每日 fetch 排程目前仍是資料供應來源，在 V7 資料管線取代前不得停用或改動。
+
+## 研究 repo 參考
+
+先前研究主要在 `/home/frank/projects/ruflo-evaluation/pilot09/marketmamba`（分支 `rd/hybrid`，與本 repo 為不相關歷史）。需要查歷史實驗、roadmap 或交接時唯讀參考；交接索引為其 `tasks/handoff-20261119.md`，實驗細節為 `tasks/roadmap-20261115.md`。不得把它的結果與本 repo 的 evidence class 混用。
 
 ## Authority 與狀態語言
 
