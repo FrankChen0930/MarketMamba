@@ -14,7 +14,9 @@ up to 60 most recent normal observed sessions per source, ending at that anchor.
 All checks are scoped to the resulting calendar interval (including extras).
 Missing days/invalid inputs/duplicate keys/unexplained nontrading rows FAIL;
 low row counts, >90% unchanged triplets, and any macro NaN WARN. No paired
-finite triplets WARN with null ratio. Macro keys are Date only. This report
+finite triplets WARN with null ratio. Global macro data is exempt from the
+Taiwan nontrading-row check; missing days, duplicates and NaN checks remain.
+Macro keys are Date only. This report
 cannot certify PIT, tradability, publication timing or source correctness.
 
 Only --output is written; no repair, config imports, network or .env reads.
@@ -48,6 +50,9 @@ KNOWN_ANOMALIES = [
     {'dataset': 'market_value_raw', 'check': 'nontrading_rows', 'date': '2026-09-20', 'rows': 2},
     *[{'dataset': 'per_raw', 'check': 'nontrading_rows', 'date': d}
       for d in ('2026-09-25', '2026-09-28', '2026-10-09', '2026-10-23', '2026-10-26')],
+    *[{'dataset': 'securities_raw', 'check': 'nontrading_rows', 'date': d, 'rows': rows}
+      for d, rows in (('2026-09-25', 1744), ('2026-09-28', 1744), ('2026-10-09', 1742),
+                      ('2026-10-23', 1746), ('2026-10-26', 1746))],
 ]
 RANK = {'OK': 0, 'KNOWN': 1, 'WARN': 2, 'FAIL': 3}
 
@@ -141,6 +146,8 @@ def analyze(frames, lookback_days=45, known_anomalies=None):
         excess = int(f.duplicated(keys).sum())
         add(name, 'duplicates', 'FAIL' if excess else 'OK', keys=len(f.loc[dup, keys].drop_duplicates()),
             excess_rows=excess, member_rows=int(dup.sum()), threshold=0, key_columns=keys)
+        if name == 'macro_raw':
+            continue  # Global markets can have data while Taiwan is closed.
         extras = counts[~counts.index.isin(calendar)]
         if extras.empty:
             add(name, 'nontrading_rows', 'OK', rows=0, threshold=0)

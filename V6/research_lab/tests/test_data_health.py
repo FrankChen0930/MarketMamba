@@ -112,6 +112,68 @@ def test_macro_latest_five_nan_and_missing_day(frames):
     assert row['ratio'] is None and row['status'] == 'FAIL'
 
 
+def test_macro_global_row_on_tw_nontrading_day_does_not_fail(frames):
+    macro = frames['macro_raw'].assign(TWII=100.)
+    frames['macro_raw'] = pd.concat([
+        macro, pd.DataFrame([{'Date': pd.Timestamp('2026-09-20'),
+                              'VIX': 1., 'Oil': 2., 'TWII': float('nan')}])])
+    report = check(frames)
+    assert report['status'] == 'OK' and report['exit_code'] == 0
+    assert not any(x['dataset'] == 'macro_raw' and x['check'] == 'nontrading_rows'
+                   for x in report['checks'])
+
+
+def test_macro_duplicate_dates_still_fail(frames):
+    f = frames['macro_raw']
+    frames['macro_raw'] = pd.concat([f, f.iloc[[-1]]])
+    report = check(frames)
+    assert item(report, 'macro_raw', 'duplicates')['status'] == 'FAIL'
+    assert report['exit_code'] == 1
+
+
+@pytest.mark.parametrize('date,expected_rows', [
+    ('2026-09-25', 1744), ('2026-09-28', 1744), ('2026-10-09', 1742),
+    ('2026-10-23', 1746), ('2026-10-26', 1746),
+])
+@pytest.mark.parametrize('delta', [-1, 0, 1])
+def test_known_securities_nontrading_requires_exact_date_and_rows(frames, date, expected_rows, delta):
+    # Move the common synthetic history to cover all five observed holidays.
+    old_days = sorted(frames['prices_raw'].Date.unique())
+    mapping = dict(zip(old_days, pd.bdate_range(end='2026-11-17', periods=len(old_days))))
+    holidays = pd.to_datetime(['2026-09-25', '2026-09-28', '2026-10-09',
+                               '2026-10-23', '2026-10-26'])
+    for name, f in frames.items():
+        f = f.assign(Date=f.Date.map(mapping))
+        frames[name] = f[~f.Date.isin(holidays)]
+    extra = pd.DataFrame({'Date': pd.Timestamp(date),
+                          'stock_id': [str(i) for i in range(expected_rows + delta)]})
+    frames['securities_raw'] = pd.concat([frames['securities_raw'], extra])
+    report = health.analyze(frames, 45)
+    row = item(report, 'securities_raw', 'nontrading_rows', date)
+    assert row['rows'] == expected_rows + delta
+    assert row['status'] == ('KNOWN' if delta == 0 else 'FAIL')
+    assert report['exit_code'] == (0 if delta == 0 else 1)
+    # An unlisted date with the exact known row count must still fail.
+    frames['securities_raw'] = pd.concat([
+        frames['securities_raw'], extra.iloc[:expected_rows].assign(Date=pd.Timestamp('2026-11-15'))])
+    report = health.analyze(frames, 45)
+    assert item(report, 'securities_raw', 'nontrading_rows', '2026-11-15')['status'] == 'FAIL'
+    assert report['exit_code'] == 1
+
+
+def test_market_value_sparse_day_remains_row_ratio_warn(frames):
+    days = frames['prices_raw'].Date.unique()
+    frames['market_value_raw'] = pd.DataFrame(
+        [(d, str(i)) for d in days
+         for i in range(22 if d == pd.Timestamp('2026-09-01') else 100)],
+        columns=['Date', 'stock_id'])
+    report = check(frames)
+    row = item(report, 'market_value_raw', 'row_ratio', '2026-09-01')
+    assert row['rows'] == 22 and row['baseline_median'] == 100
+    assert row['ratio'] == .22 and row['status'] == 'WARN'
+    assert report['status'] == 'WARN' and report['exit_code'] == 0
+
+
 def test_known_nontrading_per_excluded_and_missing_known(frames):
     f = frames['per_raw']
     frames['per_raw'] = pd.concat([f, f.iloc[-10:].assign(Date=pd.Timestamp('2026-09-20'))])
