@@ -1,5 +1,12 @@
 # Worktree Register
 
+## P1 review repair worker — 2026-11-19
+
+- Existing path `.worktrees/ruflo-workers/run-mwmgdq5i-f34fa7/fixer`; detached HEAD/base `abf0368d709b83bc916144292da8b5930cc0ff26`; owner Human/Codex builder, task R1–R3/M1–M4/M6; created 2026-11-19; retired N/A. UNMERGED / NOT_DEPLOYED, retained with uncommitted bounded repair per explicit no-commit instruction.
+- Reuses existing P1 implementation, tests and `.artifacts/p1/` container; separate `review-2023-s17-r500` smoke namespace preserves previous runs. Authority: candidate source/tests only. Merge dependency: independent review/Human acceptance; no merge/push authorized. Artifact dependencies: local smoke parts/logs/manifests, read-only pilot09 fold_2023 matrix and canonical prices/market-value parquet paths and hashes.
+- Safe removal requires preserved source patch/history, resolved artifact/path references and explicit retirement review; current dirty worktree is not safe to remove.
+
+
 ## Ruflo integration — 2026-11-19
 
 - Primary checkout: `development/ruflo-primary`, same completed integration history; prior `fix/macro-sync-fetch-hardening` retained at f501a7e. Local source activation only, no merge/push/production deployment.

@@ -1,5 +1,10 @@
 # Research
 
+## P1 review-repair candidate — 2026-11-19
+
+[Evaluation](../../V6/research_lab/portfolio_eval.py) now checkpoints each fold×system under `.artifacts/p1/<run>/part-*.json`; a file is atomically published without replacement after serialization/fsync. Source/input/config identity plus payload hash control resume; corrupt/mismatched parts stop rather than being overwritten. Individual cell exceptions and nonfinite output are ERROR with type/message; valid cells still finish and aggregate. No power-loss or network-filesystem guarantee is inferred from the process-kill smoke. Early-price-termination reports count held session marks and blocked scheduled-open marks in initial-NAV units; the sums are exposure diagnostics, not liquidation proceeds. Every computed cell reports actual start/end and return count. Candidate confirmation, separated clean/descriptive paired inference, tail truncation, net benchmark costs and cross-fold block caveats are explicit. Actual raw Volume magnitude for 2330 corroborates shares; both liquidity and capacity use shares after conversion, with UNKNOWN rejected. Full study, delisted coverage, PIT and trading readiness remain unverified. See [current state](../00_Project_Map/Current_State.md#p1-review-repairs--2026-11-19) for this bounded repair.
+
+
 ## P1 portfolio study candidate — 2026-11-19
 
 [Registered P1](../../tasks/spec-portfolio-eval-20261119.md) now has uncommitted [score-export](../../V6/research_lab/rolling_scores.py) and [evaluation](../../V6/research_lab/portfolio_eval.py) candidates with [causal/accounting regressions](../../V6/research_lab/tests/test_p1.py), UNMERGED / NOT_DEPLOYED. Reuses existing rolling/C0+/portfolio semantics; full study is not executed by the bounded worker smoke. Previous-day market-cap strata remain NON_PIT due to snapshot shares. Read-only raw prices lack confirmed delisted coverage and adjustment data; primary-only smoke is E2 RESEARCH_ONLY engineering evidence, never H-P1 confirmation. Current navigation/boundaries are in the project map.

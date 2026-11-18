@@ -11,6 +11,8 @@ from io import BytesIO
 import hashlib
 import itertools
 import json
+import os
+import tempfile
 from pathlib import Path
 import time
 
@@ -19,6 +21,74 @@ import pandas as pd
 
 from .portfolio import Config, run_backtest
 from .rolling_scores import identity, output_path, provenance, write_json
+
+CAVEATS = [
+    'Backtest ends at last scheduled entry (terminal liquidation); tail truncated; different rebalance cells cover different periods.',
+    'Benchmark also pays transaction costs; excess returns are net-to-net.',
+    'Circular block bootstrap on concatenated within-fold returns may cross fold boundaries; no cross-fold NAV return is invented.',
+    'survivorship bias: early price termination is observable, delisting cause and full delisted coverage UNVERIFIED',
+    'market value uses current shares snapshot, NON_PIT even after lag',
+    'missing positions stay marked; no delisting cash recovery invented',
+    'zero-volume/missing prior close blocks fills; exchange limit flags unavailable',
+    'observed-session calendar, not verified exchange calendar; historical gaps may bridge sessions',
+    'simulation labels and historical prices; no executable/trading readiness',
+    'costs are research assumptions, not actual broker fees; 2024-2026 descriptive only',
+    'gross minus net includes cost-induced allocation differences; capacity uses raw close times volume converted to shares',
+]
+
+
+def volume_evidence(prices):
+    sample = prices[prices.code.astype(str).eq('2330') & prices.volume.gt(0)].sort_values('date')
+    median = float(sample.volume.median()) if len(sample) else None
+    # Broad magnitude check, corroborated by fetcher shares contract. This is
+    # engineering unit evidence, not row-level source verification for all stocks.
+    unit = 'shares' if median is not None and 1e6 <= median <= 1e9 else 'lots' if median is not None and 1e3 <= median <= 1e5 else 'UNKNOWN'
+    return dict(unit=unit, shares_per_volume_unit={'shares':1, 'lots':1000}.get(unit),
+                code='2330', rows=len(sample), median_raw_volume=median,
+                samples=sample[['date','close','volume']].tail(5).assign(date=lambda x:x.date.astype(str)).to_dict('records'),
+                method='2330 median magnitude: shares [1e6,1e9], lots [1e3,1e5]; otherwise UNKNOWN',
+                corroboration='V6/marketmamba/data/fetcher.py: TWSE 成交股數; yfinance/TWSE Volume in shares',
+                limitation='Magnitude inference, not independent exchange verification or proof of homogeneous units across all rows',
+                dollar_volume_unit='TWD = raw Close * raw Volume * shares_per_volume_unit')
+
+
+def normalize_volume(prices, evidence):
+    factor = evidence['shares_per_volume_unit']
+    if factor is None:
+        raise ValueError('UNKNOWN Volume unit; refuse liquidity/capacity evaluation')
+    return prices.assign(volume=prices.volume*factor)
+
+
+def content_hash(payload):
+    return hashlib.sha256(json.dumps(payload, sort_keys=True, allow_nan=False, separators=(',',':')).encode()).hexdigest()
+
+
+def publish_part(path, payload):
+    """Serialize before publication; fsync then atomic no-clobber hard link."""
+    raw = json.dumps(payload, indent=2, allow_nan=False).encode()+b'\n'
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, temporary = tempfile.mkstemp(prefix='.partial-', dir=path.parent)
+    try:
+        with os.fdopen(fd, 'wb') as stream:
+            stream.write(raw); stream.flush(); os.fsync(stream.fileno())
+        os.link(temporary, path)
+    finally:
+        os.unlink(temporary)
+
+
+def checked_cell(prices, predictions, config):
+    try:
+        result = summary(evaluate_cell(prices, predictions, config))
+        # Validate before writing any durable JSON. Nonfinite metrics invalidate
+        # the cell rather than silently becoming zero/null and entering inference.
+        try:
+            json.dumps(result, allow_nan=False)
+        except ValueError as error:
+            return dict(config=asdict(config), status='ERROR', error=dict(type='NonFiniteResult', message=str(error)))
+        return dict(status='COMPUTED', **result)
+    except Exception as error:
+        return dict(config=asdict(config), status='ERROR', error=dict(type=type(error).__name__, message=str(error)))
+
 
 DATA_ROOT = Path('/home/frank/projects/MarketMamba/Data/processed_v6')
 
@@ -75,6 +145,19 @@ def capacity(result, prices):
 def evaluate_cell(prices, predictions, config):
     result = run_backtest(prices, predictions, config)
     result['capacity'] = capacity(result, prices)
+    valid = prices[np.isfinite(prices.close) & prices.close.gt(0) & np.isfinite(prices.volume) & prices.volume.gt(0)]
+    last = valid.groupby('code').date.max()
+    end = pd.Timestamp(predictions.date.max())
+    codes = []
+    for code in sorted(prices.code.unique()):
+        day = last.get(code, pd.NaT)
+        if pd.isna(day) or day < end:
+            codes.append(dict(code=code, last_price_date=None if pd.isna(day) else day.strftime('%Y-%m-%d'),
+                **result['position_exposure'].get(code, dict(held_sessions=0, held_value_session_sum=0., blocked_orders=0, blocked_value_sum=0.))))
+    result['price_termination'] = dict(fold_end=end.strftime('%Y-%m-%d'), count=len(codes), codes=codes,
+        value_unit='initial NAV = 1; held_value_session_sum sums end-of-session marks; blocked_value_sum sums frozen marks at scheduled opens',
+        cause='UNKNOWN: termination/missing valid prices is not proof of delisting')
+    result['selected_buy_codes'] = sorted({t['code'] for t in result['trades'] if t['notional'] > 0})
     q, counts = {}, []
     trades = {}
     for t in result['trades']:
@@ -95,6 +178,7 @@ def evaluate_cell(prices, predictions, config):
 def summary(result):
     return {k:v for k,v in result.items() if k not in ('daily','benchmark_daily','trades','metrics','years')} | {
         'max_drawdown': result['metrics']['max_drawdown'],
+        'return_days': len(result['daily'])-1,
         'daily_returns': [dict(date=x['date'], net=float(x['nav']/a['nav']-1),
                               benchmark=float(y['nav']/b['nav']-1))
                           for a,x,b,y in zip(result['daily'],result['daily'][1:],result['benchmark_daily'],result['benchmark_daily'][1:])]}
@@ -136,6 +220,8 @@ def load_inputs(scores_dir, data_root):
     caps = caps.rename(columns=dict(stock_id='code',Date='date'))
     for frame in (scores,prices,caps):
         frame['date'] = pd.to_datetime(frame.date)
+    units = volume_evidence(prices)
+    prices = normalize_volume(prices, units)
     # Retain the preceding session and next available session for lagging/exit.
     dates = sorted(prices.date.unique())
     before = [d for d in dates if d < scores.date.min()]
@@ -149,7 +235,7 @@ def load_inputs(scores_dir, data_root):
     # Missing predictions must never be silently dropped to improve results.
     keys = pd.MultiIndex.from_frame(prices[['date','code']])
     missing = ~pd.MultiIndex.from_frame(scores[['date','code']]).isin(keys)
-    diagnostics = dict(missing_prediction_price_keys=int(missing.sum()),
+    diagnostics = dict(volume_units=units, missing_prediction_price_keys=int(missing.sum()),
         missing_prediction_price_examples=scores.loc[missing,['code','date']].head(10).astype(str).to_dict('records'),
         nonpositive_or_missing_close=int((~np.isfinite(prices.close) | prices.close.le(0)).sum()),
         zero_or_missing_volume=int((~np.isfinite(prices.volume) | prices.volume.le(0)).sum()),
@@ -161,14 +247,36 @@ def load_inputs(scores_dir, data_root):
     return scores, prices, caps, manifest, inputs, diagnostics
 
 
-def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_samples=1000):
+def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_samples=1000, part_dir=None, input_identity=None):
     strata = lagged_strata(caps, sorted(prices.date.unique()))
     merged = prices.merge(strata.reset_index()[['date','code','stratum']], on=['date','code'],how='left')
     has_adj = ('adj_close' in prices and (np.isfinite(prices.adj_close/prices.close) & (prices.adj_close/prices.close).gt(0)).all())
     primary = replace(primary_config(), price_basis='total_return' if has_adj else 'raw', bootstrap_samples=bootstrap_samples)
     results, primaries = [], {}
     cells = [primary] if primary_only else [replace(c,bootstrap_samples=bootstrap_samples) for c in configurations()]
+    # Content identity covers inputs, manifest, parameters and all implementation
+    # files; a stale/corrupt/mismatched part fails closed, never overwritten.
+    contract = dict(inputs=input_identity, manifest=manifest, primary_only=primary_only, bootstrap_samples=bootstrap_samples,
+                    implementation=provenance()['implementation'],
+                    frames=[hashlib.sha256(f.to_parquet(index=False)).hexdigest() for f in (scores,prices,caps)])
+    run_hash = content_hash(contract)
+    if part_dir is None:
+        from .rolling_scores import ARTIFACT_ROOT
+        part_dir = ARTIFACT_ROOT / ('evaluate-'+run_hash)
+    part_dir = Path(part_dir)
     for (fold,system), group in scores.groupby(['fold','system']):
+        part_path = part_dir / f'part-{int(fold)}-{hashlib.sha256(str(system).encode()).hexdigest()[:16]}.json'
+        if part_path.exists():
+            saved = json.loads(part_path.read_text())
+            if saved['run_hash'] != run_hash or saved['payload_sha256'] != content_hash(saved['payload']):
+                raise ValueError(f'part identity/hash mismatch: {part_path}')
+            payload = saved['payload']
+            results.extend(payload['results'])
+            if payload['primary'] is not None:
+                primaries[(int(fold),system)] = payload['primary']
+            print(json.dumps(dict(fold=int(fold),system=system,part=str(part_path),action='SKIP_HASH_MATCH')),flush=True)
+            continue
+        offset = len(results)
         pred = group.assign(model=system,horizon=5)
         if pred.duplicated(['date','code']).any():
             raise ValueError('overlapping score rows')
@@ -182,19 +290,19 @@ def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_sampl
         scored_keys = pd.MultiIndex.from_frame(pred[['date','code']])
         p['universe_eligible'] = pd.MultiIndex.from_frame(p[['date','code']]).isin(scored_keys)
         for config in cells:
-            header = dict(fold=int(fold),system=system,role='confirmatory' if config==primary and fold<=2023 else 'descriptive',stratum='all')
+            header = dict(fold=int(fold),system=system,role='candidate_confirmatory' if config==primary and fold in (2021,2022,2023) else 'descriptive',stratum='all')
             if config.price_basis=='total_return' and not has_adj:
                 results.append(dict(**header,config=asdict(config),status='UNAVAILABLE_NO_ADJ_CLOSE'))
                 continue
-            result = summary(evaluate_cell(p,pred,config))
-            results.append(dict(**header,status='COMPUTED',**result))
-            if config==primary:
+            result = checked_cell(p,pred,config)
+            results.append(dict(**header,**result))
+            if config==primary and result['status']=='COMPUTED':
                 primaries[(int(fold),system)] = result
         for stratum in ('small','mid','large'):
             pp = p.assign(universe_eligible=p.universe_eligible & p.stratum.eq(stratum))
             # Keep full predictions/calendar; engine masks candidates, preserving
             # real tradability and avoiding invented frozen stratum exits.
-            result = summary(evaluate_cell(pp,pred,primary))
+            result = checked_cell(pp,pred,primary)
             labels = pred.merge(strata.reset_index()[['date','code','stratum']], on=['date','code'],how='left')
             selected = labels[labels.stratum.eq(stratum)]
             ics = []
@@ -205,18 +313,24 @@ def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_sampl
                         val = g.loc[ok,'score'].rank().corr(g.loc[ok,'label_y5'].rank())
                         if np.isfinite(val):
                             ics.append(float(val))
-            results.append(dict(fold=int(fold),system=system,stratum=stratum,status='COMPUTED',role='descriptive',
+            results.append(dict(fold=int(fold),system=system,stratum=stratum,role='descriptive',
                 ic=dict(mean=float(np.mean(ics)) if ics else None, sessions=len(ics),label='simulation y5'),**result))
-        print(json.dumps(dict(fold=int(fold),system=system,primary=primaries[(int(fold),system)]['statistics'])), flush=True)
+        payload = dict(results=results[offset:], primary=primaries.get((int(fold),system)))
+        publish_part(part_path, dict(run_hash=run_hash,payload_sha256=content_hash(payload),payload=payload))
+        print(json.dumps(dict(fold=int(fold),system=system,part=str(part_path),action='WROTE',
+                             errors=sum(x['status']=='ERROR' for x in payload['results']))), flush=True)
     clean = {}
     for system in sorted(scores.system.unique()):
         rows = [primaries[(year,system)] for year in (2021,2022,2023) if (year,system) in primaries]
         complete = (len(rows)==3 and sorted(manifest['seeds'])==[17,29,43]
-                    and manifest['parameters']['max_train_rows']==500_000 and not primary_only)
-        clean[system] = dict(status='CONFIRMATORY' if complete else 'INCOMPLETE_ENGINEERING_ONLY',
-                             **pooled_test(rows,bootstrap_samples))
+                    and manifest['parameters']['max_train_rows']==500_000 and not primary_only
+                    and all(x['status'] in ('COMPUTED','UNAVAILABLE_NO_ADJ_CLOSE') for x in results if x['system']==system and x['fold'] in (2021,2022,2023)))
+        clean[system] = dict(pooled_test(rows,bootstrap_samples), status='CONFIRMATORY' if complete else 'INCOMPLETE_ENGINEERING_ONLY')
         if not complete:
             clean[system]['decision'] = '未證實（未完成預登記範圍）'
+    for row in results:
+        if row['role']=='candidate_confirmatory' and clean[row['system']]['status']=='CONFIRMATORY':
+            row['role']='confirmatory'
     # Secondary paired descriptive difference at exactly matched dates/folds.
     paired = []
     for fold in sorted(scores.fold.unique()):
@@ -226,7 +340,7 @@ def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_sampl
                 raise ValueError('unpaired primary return dates')
             paired.extend(dict(fold=int(fold),date=d,net=float(v),benchmark=0.) for d,v in (a.net-b.net).items())
     return dict(primary_config=asdict(primary), grid_complete=not primary_only, results=results,
-                clean_fold_hypothesis=clean, paired_system_difference_descriptive=pooled_test([dict(daily_returns=paired)],bootstrap_samples),
+                clean_fold_hypothesis=clean, paired_system_difference_descriptive={era:pooled_test([dict(daily_returns=[x for x in paired if lo<=x['fold']<=hi])],bootstrap_samples) for era,lo,hi in [('2021_2023',2021,2023),('2024_2026',2024,2026)]},
                 missing_lagged_market_value_rows=int(merged.stratum.isna().sum()), price_basis_fallback=None if has_adj else 'raw: adj_close unavailable/invalid')
 
 
@@ -250,17 +364,13 @@ def main(argv=None):
         result = dict(status='STOP_MISSING_PRICE_KEYS', diagnostics=diagnostics)
     else:
         result = dict(status='COMPLETED_RESEARCH_ONLY',diagnostics=diagnostics,
-                      **evaluate(scores,prices,caps,manifest,a.primary_only,a.bootstrap_samples))
+                      **evaluate(scores,prices,caps,manifest,a.primary_only,a.bootstrap_samples,part_dir=out.parent/out.stem,input_identity=inputs))
+        if any(x['status']=='ERROR' for x in result['results']):
+            result['status']='COMPLETED_WITH_ERRORS_RESEARCH_ONLY'
     result.update(version='p1-portfolio-v1',artifact_class='GENERATED',evidence_class='E2 RESEARCH_ONLY',
         provenance=prov,inputs=inputs,seeds=manifest['seeds'],folds=manifest['years'],
         parameters=dict(primary_only=a.primary_only,bootstrap_samples=a.bootstrap_samples),
-        caveats=['survivorship bias: delisted coverage unverified', 'market value uses current shares snapshot, NON_PIT even after lag',
-                 'missing positions stay marked; no delisting cash recovery invented',
-                 'zero-volume/missing prior close blocks fills; exchange limit-up/down flags unavailable in prices_raw',
-                 'observed-session calendar, not verified exchange calendar; historical gaps may bridge sessions',
-                 'simulation labels and historical prices; no executable/trading readiness',
-                 'costs are research assumptions, not actual broker fees; 2024-2026 descriptive only',
-                 'gross minus net includes cost-induced allocation differences; capacity is normalized trade notional / prior raw traded value'],
+        caveats=CAVEATS,
         wall_seconds=time.perf_counter()-started)
     # Verify unchanged pinned inputs and implementation before publication.
     for name in ('prices','market_value','scores'):

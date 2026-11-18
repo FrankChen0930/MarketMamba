@@ -8,6 +8,11 @@ from research_lab import portfolio as pf
 from test_portfolio import fixture, cfg
 
 
+@pytest.fixture(autouse=True)
+def isolated_p1_artifacts(tmp_path, monkeypatch):
+    monkeypatch.setattr(rs, 'ARTIFACT_ROOT', tmp_path/'p1')
+
+
 def test_cost_removal_control():
     p, s = fixture()
     out = pe.evaluate_cell(p, s, pf.Config(top_k=1, rebalance_sessions=2, commission=.01,
@@ -169,6 +174,9 @@ def test_evaluator_cli_pinned_inputs_raw_fallback_no_clobber(tmp_path,monkeypatc
     data=tmp_path/'data'
     scores_dir.mkdir();data.mkdir()
     prices,pred=fixture(31)
+    prices['volume']=3e7
+    prices['code']=prices.code.replace({'A':'2330'})
+    pred['code']=pred.code.replace({'A':'2330'})
     scores=pred.rename(columns={'model':'system'}).assign(system='c0plus',fold=2023,label_y5=.1)
     scores.to_parquet(scores_dir/'rank_average.parquet',index=False)
     rs.write_json(scores_dir/'manifest.json',dict(outputs={'rank_average.parquet':rs.identity(scores_dir/'rank_average.parquet')},
@@ -225,3 +233,116 @@ def test_evaluation_benchmark_excludes_unscored_names():
     result=next(x for x in r['results'] if x['stratum']=='all')
     # B cannot be ranked by either strategy and must not lift the benchmark.
     assert result['statistics']['benchmark_return'] < 0.
+
+
+def review_inputs():
+    p,s=fixture(31)
+    p['volume']=1e8
+    # Six codes, two per stratum; highest scores belong to large names.
+    p=pd.concat([p.assign(code=c) for c in 'ABCDEF']).drop_duplicates(['date','code'])
+    s=p[['date','code']].assign(score=lambda x:x.code.map(dict(zip('ABCDEF',range(6)))),system='c0plus',fold=2023)
+    caps=p[['date','code']].assign(market_value=lambda x:x.code.map(dict(zip('ABCDEF',range(1,7)))))
+    return s,p,caps,dict(seeds=[17],parameters={'max_train_rows':2000})
+
+
+def test_review_r1_parts_resume_integrity(tmp_path,monkeypatch):
+    import json
+    args=review_inputs()
+    first=pe.evaluate(*args,primary_only=True,bootstrap_samples=2,part_dir=tmp_path/'run')
+    parts=list((tmp_path/'run').glob('part-*.json'))
+    assert len(parts)==1
+    original=parts[0].read_bytes()
+    monkeypatch.setattr(pe,'evaluate_cell',lambda *a:pytest.fail('completed part recomputed'))
+    assert pe.evaluate(*args,primary_only=True,bootstrap_samples=2,part_dir=tmp_path/'run')==first
+    assert parts[0].read_bytes()==original
+    payload=json.loads(original);payload['payload']['results'][0]['status']='tampered'
+    parts[0].write_text(json.dumps(payload))
+    with pytest.raises(ValueError,match='part.*hash'):
+        pe.evaluate(*args,primary_only=True,bootstrap_samples=2,part_dir=tmp_path/'run')
+
+
+@pytest.mark.parametrize('nonfinite',[False,True])
+def test_review_r1_cell_error_and_nan(tmp_path,monkeypatch,nonfinite):
+    real=pe.evaluate_cell
+    calls=[]
+    def cell(*a):
+        calls.append(1)
+        if len(calls)==1:
+            if not nonfinite:
+                raise RuntimeError('injected cell fault')
+            r=real(*a);r['statistics']['beta']=float('nan');return r
+        return real(*a)
+    monkeypatch.setattr(pe,'evaluate_cell',cell)
+    r=pe.evaluate(*review_inputs(),primary_only=True,bootstrap_samples=2,part_dir=tmp_path/'run')
+    assert r['results'][0]['status']=='ERROR'
+    assert r['results'][0]['error']['type']==('NonFiniteResult' if nonfinite else 'RuntimeError')
+    assert r['results'][0]['error']['message']
+    assert sum(x['status']=='COMPUTED' for x in r['results'])==3
+    import json
+    json.dumps(r,allow_nan=False)
+
+
+def test_review_r2_terminated_price_exposure():
+    p,s=fixture(31)
+    s=s[s.code.eq('A')]
+    p=p[~(p.code.eq('A') & p.date.gt(p.date.unique()[3]))]
+    r=pe.evaluate_cell(p,s,cfg(bootstrap_samples=2))
+    d=r['price_termination']
+    assert d['count']==1
+    a=d['codes'][0]
+    assert a['code']=='A' and a['last_price_date']=='2024-01-04'
+    assert a['held_sessions']>0 and a['held_value_session_sum']>0
+    assert a['blocked_orders']>0 and a['blocked_value_sum']>0
+
+
+def test_review_r3_m3_caveats_and_window():
+    r=pe.summary(pe.evaluate_cell(*fixture(31),cfg(bootstrap_samples=2)))
+    assert r['return_days']==len(r['daily_returns'])
+    assert r['start']=='2024-01-01' and r['end']==r['schedule'][-1]['entry']
+    text=' '.join(pe.CAVEATS)
+    assert 'last scheduled entry' in text and 'net-to-net' in text
+    assert 'cross fold boundaries' in text and 'rebalance' in text
+
+
+def test_review_m1_candidate_role(tmp_path):
+    r=pe.evaluate(*review_inputs(),primary_only=True,bootstrap_samples=2)
+    assert r['results'][0]['role']=='candidate_confirmatory'
+    assert r['clean_fold_hypothesis']['c0plus']['status']!='CONFIRMATORY'
+
+
+def test_review_m2_separate_paired_eras(tmp_path,monkeypatch):
+    s,p,c,m=review_inputs()
+    s=pd.concat([s.assign(fold=y,system=sys) for y in (2023,2024) for sys in ('c0plus','lightgbm_day_t')])
+    r=pe.evaluate(s,p,c,m,primary_only=True,bootstrap_samples=2)
+    paired=r['paired_system_difference_descriptive']
+    assert paired['2021_2023']['days']==21
+    assert paired['2024_2026']['days']==21
+
+
+def test_review_m4_volume_units():
+    p=pd.DataFrame(dict(code=['2330']*3,date=pd.date_range('2023-01-01',periods=3),volume=[3e7,4e7,5e7],close=[500.]*3))
+    shares=pe.volume_evidence(p)
+    lots=pe.volume_evidence(p.assign(volume=p.volume/1000))
+    assert shares['unit']=='shares' and shares['shares_per_volume_unit']==1
+    assert lots['unit']=='lots' and lots['shares_per_volume_unit']==1000
+    assert (pe.normalize_volume(p.assign(volume=p.volume/1000),lots).volume==p.volume).all()
+    with pytest.raises(ValueError,match='UNKNOWN'):
+        pe.normalize_volume(p.assign(code='A'),pe.volume_evidence(p.assign(code='A')))
+
+
+def test_review_m6_evaluate_strata_selection(tmp_path):
+    r=pe.evaluate(*review_inputs(),primary_only=True,bootstrap_samples=2)
+    for stratum,allowed in [('small',set('AB')),('mid',set('CD')),('large',set('EF'))]:
+        cell=next(x for x in r['results'] if x['stratum']==stratum)
+        assert set(cell['selected_buy_codes'])==allowed
+
+
+def test_review_m4_lots_liquidity_and_capacity():
+    p,s=fixture(31)
+    p['code']=p.code.replace({'A':'2330'})
+    s['code']=s.code.replace({'A':'2330'})
+    p['volume']=30000.  # lots: 30 million shares, TWD 300 million
+    normalized=pe.normalize_volume(p,pe.volume_evidence(p))
+    r=pe.evaluate_cell(normalized,s,cfg(bootstrap_samples=2,min_dollar_volume=2e7))
+    assert r['selected_buy_codes']==['2330']
+    assert r['capacity']['1000000']['median']==pytest.approx(1e6/3e8)

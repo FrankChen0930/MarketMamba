@@ -117,6 +117,7 @@ def _simulate(panel, days, signals, predictions, config, benchmark=False, free=F
     cash, cost = 1., 0.
     rows, trades, records = [], [], []
     blocked = stale = 0
+    exposure = {}
     schedule = {entry: signal for signal, entry in signals}
     start, end = signals[0][0], signals[-1][1]
     groups = {d: x.set_index('code').score for d, x in predictions.groupby('date')}
@@ -136,6 +137,10 @@ def _simulate(panel, days, signals, predictions, config, benchmark=False, free=F
             nav = cash + (q*marks.fillna(0)).sum()
             frozen = held & ~can_trade
             blocked_today = int(frozen.sum())
+            for code in codes[frozen]:
+                e = exposure.setdefault(code, dict(held_sessions=0, held_value_session_sum=0., blocked_orders=0, blocked_value_sum=0.))
+                e['blocked_orders'] += 1
+                e['blocked_value_sum'] += float(q[code]*marks[code])
             if terminal:
                 weights = pd.Series(dtype=float)
             else:
@@ -198,6 +203,10 @@ def _simulate(panel, days, signals, predictions, config, benchmark=False, free=F
             good = panel['valid'].loc[day]
             marks.loc[good] = close[good]
             stale += int((q.gt(0) & ~good).sum())
+        for code in codes[q.gt(1e-12)]:
+            e = exposure.setdefault(code, dict(held_sessions=0, held_value_session_sum=0., blocked_orders=0, blocked_value_sum=0.))
+            e['held_sessions'] += 1
+            e['held_value_session_sum'] += float(q[code]*marks[code])
         nav = float(cash + (q*marks.fillna(0)).sum())
         if not np.isfinite(nav) or not np.isfinite(cash) or nav <= 0 or cash < -1e-9:
             raise ValueError(f'insolvent simulation: date={day}, nav={nav}, cash={cash}')
@@ -207,7 +216,7 @@ def _simulate(panel, days, signals, predictions, config, benchmark=False, free=F
                                      (('FILLED', filled), ('PARTIAL', 0), ('BLOCKED', blocked_today))))
         rows.append(dict(date=day.strftime('%Y-%m-%d'), nav=nav, cash=float(cash), cumulative_cost=float(cost)))
     return records, rows, trades, dict(blocked_orders=blocked, stale_position_sessions=stale,
-                                      unresolved_positions=int(q.gt(1e-12).sum()))
+                                      unresolved_positions=int(q.gt(1e-12).sum()), position_exposure=exposure)
 
 
 def _statistics(values, benchmark, config):

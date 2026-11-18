@@ -1,5 +1,10 @@
 # MarketMamba Authority Map
 
+## P1 review-repair boundary — 2026-11-19
+
+The [registered P1 assumptions](../../tasks/spec-portfolio-eval-20261119.md) remain frozen. Repair candidate at detached `abf0368` in `.worktrees/ruflo-workers/run-mwmgdq5i-f34fa7/fixer` changes [evaluation durability/reporting](../../V6/research_lab/portfolio_eval.py) and additive [position diagnostics](../../V6/research_lab/portfolio.py), governed by [regression tests](../../V6/research_lab/tests/test_p1.py). UNMERGED / NOT_DEPLOYED; no production/data/PIT admission or historical-artifact supersession. A part is reusable only when its run identity and payload SHA-256 match; ERROR parts are durable evidence, not successful inference. A fresh namespace is required for a new attempt/configuration. Final clean-fold completeness owns confirmatory promotion; partial cells stay candidate_confirmatory. Unit magnitude evidence is explicitly weaker than per-row exchange provenance.
+
+
 ## P1 candidate implementation boundary — 2026-11-19
 
 The [registered P1 spec](../../tasks/spec-portfolio-eval-20261119.md) owns the frozen research assumptions. [rolling_scores](../../V6/research_lab/rolling_scores.py), [portfolio_eval](../../V6/research_lab/portfolio_eval.py), optional universe masking in [portfolio](../../V6/research_lab/portfolio.py), and [P1 tests](../../V6/research_lab/tests/test_p1.py) are uncommitted builder candidates at detached base `a0e1f00`, UNMERGED / NOT_DEPLOYED. Existing rolling splits, C0+ fitting and portfolio execution/cost semantics remain their implementation authorities; no historical result or production authority is superseded. Ignored `.artifacts/p1/` hashes/manifests identify local GENERATED E2 RESEARCH_ONLY evidence, not accepted results. Smoke completion is not H-P1 confirmation or Human acceptance. Full clean-fold/seeds training, grid execution and independent acceptance remain outstanding; missing PIT/delisted/adjusted-price evidence cannot be inferred from code or positive returns.
