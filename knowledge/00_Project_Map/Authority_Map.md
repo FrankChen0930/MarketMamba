@@ -1,5 +1,9 @@
 # MarketMamba Authority Map
 
+## P1 candidate implementation boundary — 2026-11-19
+
+The [registered P1 spec](../../tasks/spec-portfolio-eval-20261119.md) owns the frozen research assumptions. [rolling_scores](../../V6/research_lab/rolling_scores.py), [portfolio_eval](../../V6/research_lab/portfolio_eval.py), optional universe masking in [portfolio](../../V6/research_lab/portfolio.py), and [P1 tests](../../V6/research_lab/tests/test_p1.py) are uncommitted builder candidates at detached base `a0e1f00`, UNMERGED / NOT_DEPLOYED. Existing rolling splits, C0+ fitting and portfolio execution/cost semantics remain their implementation authorities; no historical result or production authority is superseded. Ignored `.artifacts/p1/` hashes/manifests identify local GENERATED E2 RESEARCH_ONLY evidence, not accepted results. Smoke completion is not H-P1 confirmation or Human acceptance. Full clean-fold/seeds training, grid execution and independent acceptance remain outstanding; missing PIT/delisted/adjusted-price evidence cannot be inferred from code or positive returns.
+
 ## Imported research code boundary — 2026-11-19
 
 `V6/research_lab/` and the `tasks/roadmap-20261115.md` research log are imported from pilot09 `rd/hybrid` `65d0b68` as RESEARCH_ONLY candidate code; they carry no production, PIT-admission or deployment authority. The roadmap is a historical research log whose numbers must not be compared across different data/label/validation protocols. See [Current State](Current_State.md#research-code-import-from-pilot09--2026-11-19).

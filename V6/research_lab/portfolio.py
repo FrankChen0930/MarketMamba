@@ -140,6 +140,8 @@ def _simulate(panel, days, signals, predictions, config, benchmark=False, free=F
                 weights = pd.Series(dtype=float)
             else:
                 liquid = prior_ok & panel['dollar'].loc[signal].ge(config.min_dollar_volume)
+                if 'universe_eligible' in panel:
+                    liquid &= panel['universe_eligible'].loc[signal]
                 if benchmark:
                     selected = codes[liquid]
                     if config.benchmark_code is not None:
@@ -258,6 +260,10 @@ def run_backtest(prices, predictions, config=Config()):
     days = pd.DatetimeIndex(sorted(p.date.unique()))
     panel = {name: p.pivot(index='date', columns='code', values=name).reindex(days) for name in ('open', 'close', 'volume', 'valid', 'dollar')}
     panel['valid'] = panel['valid'].fillna(False).astype(bool)
+    if 'universe_eligible' in p:
+        if not p.universe_eligible.dropna().map(lambda x: isinstance(x, (bool, np.bool_))).all():
+            raise ValueError('universe_eligible must be boolean')
+        panel['universe_eligible'] = p.pivot(index='date', columns='code', values='universe_eligible').reindex(days).fillna(False).astype(bool)
     first = days.get_loc(pred.date.min())
     last = days.get_loc(pred.date.max())
     indices = list(range(first, min(last+1, len(days)-1), config.rebalance_sessions))

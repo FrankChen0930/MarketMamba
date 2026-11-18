@@ -1,5 +1,9 @@
 # Research
 
+## P1 portfolio study candidate — 2026-11-19
+
+[Registered P1](../../tasks/spec-portfolio-eval-20261119.md) now has uncommitted [score-export](../../V6/research_lab/rolling_scores.py) and [evaluation](../../V6/research_lab/portfolio_eval.py) candidates with [causal/accounting regressions](../../V6/research_lab/tests/test_p1.py), UNMERGED / NOT_DEPLOYED. Reuses existing rolling/C0+/portfolio semantics; full study is not executed by the bounded worker smoke. Previous-day market-cap strata remain NON_PIT due to snapshot shares. Read-only raw prices lack confirmed delisted coverage and adjustment data; primary-only smoke is E2 RESEARCH_ONLY engineering evidence, never H-P1 confirmation. Current navigation/boundaries are in the project map.
+
 ## Metadata
 
 - Status: `CANONICAL_DOMAIN_NOTE`
