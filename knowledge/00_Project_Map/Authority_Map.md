@@ -1,5 +1,12 @@
 # MarketMamba Authority Map
 
+## P1 bounded diagnostic/retry follow-up — 2026-11-19
+
+`job-run-mwmgvttf-837c02` 的 detached `d2390b5` fixer 為 UNMERGED / NOT_DEPLOYED、uncommitted candidate；[evaluator](../../V6/research_lab/portfolio_eval.py) 與 [P1 executable tests](../../V6/research_lab/tests/test_p1.py) 決定本輪缺價分類、volume magnitude diagnostics、part fold/system binding 與 explicit ERROR retry 語義。[Frozen P1 spec](../../tasks/spec-portfolio-eval-20261119.md) 的 fitting／主要假設與引擎 accounting 不變。只有 fold 內末端連續至少 10 個 observed sessions 無有效 close 的類別對應 termination exposure；pre-fold／transient 分列，未知下市原因不升格。容量只是 NAV=1、未調 NAV drift 的 approximation。
+
+ERROR 預設持久保留；`--retry-errors` 的連續 immutable attempt／previous-payload-hash 鏈只可恢復最新通過驗證的狀態，成功 cells 不重新計算，原始 parts／報告不覆寫。所有部分均綁 run identity 與 fold/system；舊實作 parts 不得混用。缺 paired primary 的 fold/system 必須明列，部分支援不稱完整。此處更新的是上一節 P1 review-repair 的 candidate durability/reporting 邊界；未 supersede 歷史 artifacts、資料來源 authority 或 production。Volume 的 2330／8069／1236 及全宇宙年度／每日量級一致性只是可重現工程證據，UNKNOWN／不一致 fail closed，不等於每列 source verification。範圍與驗證見 [Current State](Current_State.md#p1-bounded-evaluator-follow-up--2026-11-19)；Human acceptance 另行決定。
+
+
 ## P1 review-repair boundary — 2026-11-19
 
 The [registered P1 assumptions](../../tasks/spec-portfolio-eval-20261119.md) remain frozen. Repair candidate at detached `abf0368` in `.worktrees/ruflo-workers/run-mwmgdq5i-f34fa7/fixer` changes [evaluation durability/reporting](../../V6/research_lab/portfolio_eval.py) and additive [position diagnostics](../../V6/research_lab/portfolio.py), governed by [regression tests](../../V6/research_lab/tests/test_p1.py). UNMERGED / NOT_DEPLOYED; no production/data/PIT admission or historical-artifact supersession. A part is reusable only when its run identity and payload SHA-256 match; ERROR parts are durable evidence, not successful inference. A fresh namespace is required for a new attempt/configuration. Final clean-fold completeness owns confirmatory promotion; partial cells stay candidate_confirmatory. Unit magnitude evidence is explicitly weaker than per-row exchange provenance.

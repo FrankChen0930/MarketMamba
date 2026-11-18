@@ -1,5 +1,24 @@
 # MarketMamba Current State
 
+## P1 bounded evaluator follow-up — 2026-11-19
+
+本輪 `job-run-mwmgvttf-837c02`，detached base `d2390b56d633627d942e6f4969771b1382744ba9`，既有 worktree `.worktrees/ruflo-workers/run-mwmgvttf-837c02/fixer`；UNMERGED / NOT_DEPLOYED，Human 明確禁止 commit/push/merge。只修改 [evaluator](../../V6/research_lab/portfolio_eval.py)、既有 [P1 tests](../../V6/research_lab/tests/test_p1.py) 與本節／Authority Map；根目錄 `tests/test_p1.py` 不存在，未建立重複測試樹。重用 frozen [P1 spec](../../tasks/spec-portfolio-eval-20261119.md)，不改 fitting、成本或容量算式。
+
+缺價診斷以 finite positive close 為有效價，零量不等於缺價。依 fold 範圍分列 `pre_fold_terminated`、`in_fold_terminated`（末次有效價在 fold 內，之後連續至少 10 個觀測 session 無價）、`transient_gap`（恢復／不足 10 日／無已知歷史有效價，後者仍 UNKNOWN）。穩定無缺價代碼不進異常清單；只對 in-fold 類別附持有／封鎖次數與價值，舊 `count/codes` alias 也只代表 in-fold。保留 window 前最後有效價 metadata，包括 fold 中已完全無列的舊代碼；這不是補價或正式下市證明。Calendar 仍為 observed union，非合格 exchange calendar。容量欄位與 caveats 明示 `approximation`、NAV=1 名目金額未隨 NAV drift 調整。
+
+`volume_units` 保存 2330、OTC 大型參考股 8069、小型參考股 1236 的實際樣本／年度量級檢查，以及 2,490 股全宇宙 5,378 個觀測日的 raw close×volume 分位數。三參考股有效 rows 為 5,377／5,308／5,370；原始量中位數 37,103,997／7,978,000／45,000。全宇宙每日成交值 p05/p50/p95 為 46,786,720,736.51552／102,778,450,957.32242／622,192,728,217.9954 TWD（shares 假設）；實測 checks 一致支持 shares×1。缺探針、UNKNOWN 或跨參考／年度量級不一致都 fail closed。探索時 6488 的 2014–2016 初期量級使大型股成交值探針出現 lots/UNKNOWN，不能據此斷言單位混雜；最終固定使用較長歷史的 8069 與相同 volume 門檻，未放寬 gate。量級支持不是每列來源、全資料同質性或 PIT 證明，固定參考股也屬 hindsight 診斷選取。
+
+Part 同時驗 run identity、payload SHA-256、fold/system envelope 與每列 fold/system；改檔名搬移其他 fold/system 會拒絕。預設仍保留 ERROR，caveats 說明其可能暫時性。明確 `--retry-errors` 只重算 ERROR parts 中的 ERROR cells，保留成功 cell、原始 part 與原報告，追加 hash-linked `-retry-000001.json` attempts／報告。完整驗證的連續 attempt 鏈擁有最新恢復狀態，缺 base、缺中間 attempt 或 hash 損毀都停止；不升格正式結果。成對描述性差異分 era 列出 paired folds、requested folds 與 missing primary folds/systems，缺任一主格即 `INCOMPLETE_PAIRED_SUPPORT`。
+
+最終指定全套測試 **446 passed／1 skipped／4 warnings（146.57s）**；warnings 均為既有 stale-audit mutation 的 pandas API deprecation。逐項 RED→GREEN：缺價 6 failed→7 passed、容量 1→2、多檔 volume 7→10、part fold/system 2→2、missing paired fold 1→2、ERROR retry 1→1。另 7 個 contract/seed/matrix mismatch、retry chain corruption/missing/orphan、publish 後實際 SIGKILL/restart 測試通過。metadata 隔離新增 RED 1 failed，與缺價／retry 回歸 GREEN 13 passed；歷史 map 僅進診斷，不傳播至 engine pandas 操作。
+
+CPU 2023/seed17/train500 冒煙只訓練一次：每系統 390,606 eval rows、合計 781,212 rank rows，export 111.36s。初次 evaluator 過慢，exit 130 中止，未發布 part／report；隔離診斷 attrs 後，重用原 immutable scores，不重訓，evaluation 145.54s 完成 2 parts／8 COMPUTED cells／0 ERROR。兩系統主格 2023-01-03～2023-12-20，共 231 returns；pre-fold 301／in-fold 16／transient 345，16 個 in-fold 代碼持有／封鎖次數與價值皆 0。清單包含全 raw universe／歷史代碼，不限 scored candidates，不代表正式下市宇宙。2021–2023 paired 只有 2023，明列 2021／2022 缺兩系統，仍 `INCOMPLETE_PAIRED_SUPPORT`，20 bootstrap samples 僅工程 smoke。
+
+Ignored `.artifacts/p1/job-run-mwmgvttf-837c02-2023-s17-r500/portfolio.json` SHA-256 `03b9269d2e9fd0677baf3c1a4bf900b0d14f348ef892f151c6653af01580c8b1`；同 namespace `verification.json` 保存 source/input/output identity、實際 RED/GREEN/full-suite logs 與 interrupted attempt。2 part payload hashes、fold/system、score manifest outputs、輸入未變與當前 implementation hashes 已重新核對。Python 3.12.3 pilot09 venv、CPU（smoke CUDA_VISIBLE_DEVICES 為空）；MARKETMAMBA_DATA_ROOT unset；本 worktree Data 為普通目錄，實際唯讀價格仍從 `/home/frank/projects/MarketMamba/Data/processed_v6` 解析至 `/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6`，價格 SHA-256 `5df865ee9d57acf4d77de4e716ec3e2dd94dc8afae1869ec8adfdcb0bd10fc14`。無 GPU、資料 acquisition／修改、正式權重、production／scheduler 變動；未 commit/push/merge。
+
+Knowledge-impact 檢查因 canonical map 變更提示 REVIEW_REQUIRED／WARNING；已檢查 GOVERNANCE，artifact 分類／流程不變，毋須修改治理規則。Current State／Authority Map 已更新；knowledge health 為 WARNING、無 structural FAIL（既有 authority repin candidates／legacy drift 保留）。工作樹只留上述 4 個核准檔案的未提交修改，起始無其他 dirty/untracked/staged 狀態。Blockers：本輪工程工作無；Remaining／Next recommended action：獨立檢查此 diff 與 verification evidence，再由 Human 決定 acceptance；完整 registered study 尚未執行。E2 RESEARCH_ONLY，不是 Human acceptance。
+
+
 ## P1 review repairs — 2026-11-19
 
 Bounded builder repair at detached `abf0368d709b83bc916144292da8b5930cc0ff26`, existing `.worktrees/ruflo-workers/run-mwmgdq5i-f34fa7/fixer`; UNMERGED / NOT_DEPLOYED, no commit authorized. [Evaluator](../../V6/research_lab/portfolio_eval.py), [engine diagnostics](../../V6/research_lab/portfolio.py) and [tests](../../V6/research_lab/tests/test_p1.py) now persist immutable fold×system parts with input/implementation/parameter identity and payload hash; resume skips matching parts, refuses mismatch, and preserves cell ERROR type/message including nonfinite results. Final aggregation alone can promote candidate_confirmatory cells after the full clean-fold gate. Paired C0+ minus LightGBM inference separates 2021–2023 and 2024–2026.

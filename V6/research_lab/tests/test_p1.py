@@ -181,6 +181,9 @@ def test_evaluator_cli_pinned_inputs_raw_fallback_no_clobber(tmp_path,monkeypatc
     scores.to_parquet(scores_dir/'rank_average.parquet',index=False)
     rs.write_json(scores_dir/'manifest.json',dict(outputs={'rank_average.parquet':rs.identity(scores_dir/'rank_average.parquet')},
                   seeds=[17],years=[2023],parameters={'max_train_rows':2000}))
+    probes=unit_prices()
+    probes=pd.concat([probes.iloc[:3].assign(date=d) for d in prices.date.unique()],ignore_index=True)
+    prices=pd.concat([prices[~prices.code.eq('2330')],probes],ignore_index=True)
     prices.rename(columns=dict(code='stock_id',date='Date',open='Open',close='Close',volume='Volume')).to_parquet(data/'prices_raw.parquet',index=False)
     caps=prices[['code','date']].assign(market_value=np.where(prices.code.eq('A'),1.,2.))
     caps.rename(columns=dict(code='stock_id',date='Date')).to_parquet(data/'market_value_raw.parquet',index=False)
@@ -199,6 +202,10 @@ def test_evaluator_cli_pinned_inputs_raw_fallback_no_clobber(tmp_path,monkeypatc
     assert result['clean_fold_hypothesis']['c0plus']['status']=='INCOMPLETE_ENGINEERING_ONLY'
     with pytest.raises(FileExistsError):
         pe.main(args+['--run'])
+    original=out.read_bytes()
+    pe.main(args+['--run','--retry-errors'])
+    assert out.read_bytes()==original
+    assert (out.parent/'test-retry-000001.json').exists()
     scores.assign(score=0.).to_parquet(scores_dir/'rank_average.parquet',index=False)
     with pytest.raises(ValueError,match='identity mismatch'):
         pe.load_inputs(scores_dir,data)
@@ -320,7 +327,7 @@ def test_review_m2_separate_paired_eras(tmp_path,monkeypatch):
 
 
 def test_review_m4_volume_units():
-    p=pd.DataFrame(dict(code=['2330']*3,date=pd.date_range('2023-01-01',periods=3),volume=[3e7,4e7,5e7],close=[500.]*3))
+    p=unit_prices()
     shares=pe.volume_evidence(p)
     lots=pe.volume_evidence(p.assign(volume=p.volume/1000))
     assert shares['unit']=='shares' and shares['shares_per_volume_unit']==1
@@ -342,7 +349,266 @@ def test_review_m4_lots_liquidity_and_capacity():
     p['code']=p.code.replace({'A':'2330'})
     s['code']=s.code.replace({'A':'2330'})
     p['volume']=30000.  # lots: 30 million shares, TWD 300 million
-    normalized=pe.normalize_volume(p,pe.volume_evidence(p))
+    normalized=pe.normalize_volume(p,pe.volume_evidence(unit_prices(.001)))
     r=pe.evaluate_cell(normalized,s,cfg(bootstrap_samples=2,min_dollar_volume=2e7))
     assert r['selected_buy_codes']==['2330']
     assert r['capacity']['1000000']['median']==pytest.approx(1e6/3e8)
+
+
+@pytest.mark.parametrize('gap', ['single_day', 'zero_volume', 'short_tail', 'recovered'])
+def test_required1_transient_or_zero_volume_is_not_termination(gap):
+    p,s=fixture(31)
+    dates=sorted(p.date.unique())
+    if gap=='zero_volume':
+        p.loc[p.code.eq('A') & p.date.eq(dates[-1]), 'volume']=0.
+    else:
+        missing=dates[5:6] if gap=='single_day' else dates[-9:] if gap=='short_tail' else dates[3:17]
+        p=p[~(p.code.eq('A') & p.date.isin(missing))]
+    d=pe.evaluate_cell(p,s,cfg(bootstrap_samples=2))['price_termination']
+    assert d['in_fold_terminated']['count']==0
+    assert d['pre_fold_terminated']['count']==0
+    assert d['transient_gap']['count']==(0 if gap=='zero_volume' else 1)
+    if gap!='zero_volume':
+        assert 'held_sessions' not in d['transient_gap']['codes'][0]
+
+
+def test_required1_pre_fold_terminated_has_no_fold_exposure():
+    p,s=fixture(31)
+    s=s[s.date.ge('2024-01-15')]
+    last=pd.Timestamp('2024-01-04')
+    p=p[~(p.code.eq('A') & p.date.gt(last))]
+    d=pe.evaluate_cell(p,s,cfg(bootstrap_samples=2))['price_termination']
+    assert d['in_fold_terminated']['count']==0
+    assert d['pre_fold_terminated']['count']==1
+    assert d['pre_fold_terminated']['codes']==[dict(code='A',last_price_date='2024-01-04', trailing_invalid_sessions=21)]
+
+
+def test_required1_ten_session_boundary():
+    p,s=fixture(31)
+    dates=sorted(p.date.unique())
+    p=p[~(p.code.eq('A') & p.date.isin(dates[-10:]))]
+    d=pe.evaluate_cell(p,s,cfg(bootstrap_samples=2))['price_termination']
+    assert d['in_fold_terminated']['count']==1
+    assert d['in_fold_terminated']['codes'][0]['trailing_invalid_sessions']==10
+
+
+def test_required2_capacity_approximation_is_explicit():
+    p,s=fixture(31)
+    r=pe.evaluate_cell(p,s,cfg(bootstrap_samples=2))
+    for row in r['capacity'].values():
+        assert row['approximation'] is True
+        assert 'NAV=1' in row['basis'] and 'drift' in row['basis']
+    assert any('NAV=1' in x and 'drift' in x for x in pe.CAVEATS)
+
+
+def unit_prices(factor=1.):
+    return pd.DataFrame([dict(code=c,date=d,close=close,open=close,volume=v*factor)
+        for d in pd.bdate_range('2023-01-02',periods=5)
+        for c,close,v in [('2330',500.,4e7),('8069',1000.,2e6),('1236',20.,45000.)]])
+
+
+@pytest.mark.parametrize('factor,unit',[(1.,'shares'),(.001,'lots')])
+def test_required3_measured_multistock_and_daily_evidence(factor,unit):
+    p=unit_prices(factor)
+    e=pe.volume_evidence(p)
+    assert e['unit']==unit
+    assert {x['code'] for x in e['checks']}=={'2330','8069','1236'}
+    assert all(x['unit']==unit and x['rows']==5 for x in e['checks'])
+    assert e['universe_daily']['raw_close_times_volume_quantiles']['p50']==pytest.approx(22000900000.*factor)
+    assert e['universe_daily']['unit']==unit
+    changed=pe.volume_evidence(p.assign(volume=p.volume*1.1))
+    assert changed['checks']!=e['checks']
+    assert changed['universe_daily']!=e['universe_daily']
+    assert isinstance(e['corroboration'],dict)
+
+
+@pytest.mark.parametrize('mixed', ['8069','1236','universe','time_segment'])
+def test_required3_inconsistent_units_fail_closed(mixed):
+    p=unit_prices()
+    if mixed=='universe':
+        p=pd.concat([p,p[p.code.eq('2330')].assign(code='OTHER',volume=1e13)])
+    elif mixed=='time_segment':
+        q=p.assign(date=p.date+pd.DateOffset(years=1),volume=p.volume/1000)
+        p=pd.concat([p,q])
+    else:
+        p.loc[p.code.eq(mixed),'volume']/=1000
+    with pytest.raises(ValueError,match='inconsistent|UNKNOWN'):
+        pe.normalize_volume(p,pe.volume_evidence(p))
+
+
+def test_required3_missing_reference_fails_closed():
+    p=unit_prices().query("code != '8069'")
+    with pytest.raises(ValueError,match='UNKNOWN'):
+        pe.normalize_volume(p,pe.volume_evidence(p))
+
+
+@pytest.mark.parametrize('dimension',['fold','system'])
+def test_minor1_part_payload_bound_to_fold_and_system(tmp_path,dimension):
+    s,p,c,m=review_inputs()
+    extra=s.assign(fold=2022) if dimension=='fold' else s.assign(system='lightgbm_day_t')
+    s=pd.concat([extra,s])
+    root=tmp_path/'parts'
+    pe.evaluate(s,p,c,m,primary_only=True,bootstrap_samples=2,part_dir=root)
+    parts=sorted(root.glob('part-*.json'))
+    parts[1].write_bytes(parts[0].read_bytes())
+    with pytest.raises(ValueError,match='part.*identity|part.*fold|part.*system'):
+        pe.evaluate(s,p,c,m,primary_only=True,bootstrap_samples=2,part_dir=root)
+
+
+def test_minor3_missing_paired_primary_folds_reported(tmp_path,monkeypatch):
+    s,p,c,m=review_inputs()
+    s=pd.concat([s.assign(fold=y,system=sys) for y in (2022,2023) for sys in ('c0plus','lightgbm_day_t')])
+    real=pe.checked_cell
+    def cell(prices,predictions,config):
+        if predictions.fold.iloc[0]==2022 and predictions.system.iloc[0]=='lightgbm_day_t':
+            return dict(status='ERROR',config=vars(config),error=dict(type='RuntimeError',message='temporary'))
+        return real(prices,predictions,config)
+    monkeypatch.setattr(pe,'checked_cell',cell)
+    r=pe.evaluate(s,p,c,m,primary_only=True,bootstrap_samples=2,part_dir=tmp_path/'parts')
+    era=r['paired_system_difference_descriptive']['2021_2023']
+    assert era['paired_folds']==[2023]
+    assert dict(fold=2022,missing_systems=['lightgbm_day_t']) in era['missing_primary_folds']
+    assert dict(fold=2021,missing_systems=['c0plus','lightgbm_day_t']) in era['missing_primary_folds']
+    assert era['status']=='INCOMPLETE_PAIRED_SUPPORT'
+
+
+def test_minor2_retry_errors_only_and_preserve_original_parts(tmp_path,monkeypatch):
+    real=pe.checked_cell
+    calls=[]
+    def fail(*args):
+        calls.append(1)
+        if len(calls)==1:
+            return dict(status='ERROR',config=vars(args[2]),error=dict(type='RuntimeError',message='temporary'))
+        return real(*args)
+    monkeypatch.setattr(pe,'checked_cell',fail)
+    root=tmp_path/'parts'
+    first=pe.evaluate(*review_inputs(),primary_only=True,bootstrap_samples=2,part_dir=root)
+    part=next(root.glob('part-*.json'))
+    original=part.read_bytes()
+    assert first['results'][0]['status']=='ERROR'
+    calls.clear()
+    def count(*args):
+        calls.append(1)
+        return real(*args)
+    monkeypatch.setattr(pe,'checked_cell',count)
+    same=pe.evaluate(*review_inputs(),primary_only=True,bootstrap_samples=2,part_dir=root)
+    assert same==first and not calls
+    retried=pe.evaluate(*review_inputs(),primary_only=True,bootstrap_samples=2,part_dir=root,retry_errors=True)
+    assert len(calls)==1
+    assert all(x['status']=='COMPUTED' for x in retried['results'])
+    assert part.read_bytes()==original
+    assert len(list(root.glob('part-*.json')))==2
+    calls.clear()
+    assert pe.evaluate(*review_inputs(),primary_only=True,bootstrap_samples=2,part_dir=root,retry_errors=True)==retried
+    assert not calls
+    assert any('ERROR' in x and 'transient' in x for x in pe.CAVEATS)
+
+
+
+def test_required1_fold_slice_preserves_old_terminated_code(tmp_path):
+    s,p,c,m=review_inputs()
+    end=pd.Timestamp('2024-01-04')
+    p=p[~(p.code.eq('A') & p.date.gt(end))]
+    s=s[s.date.ge('2024-01-15') & ~s.code.eq('A')]
+    r=pe.evaluate(s,p,c,m,primary_only=True,bootstrap_samples=2,part_dir=tmp_path/'parts')
+    d=r['results'][0]['price_termination']
+    assert any(x['code']=='A' and x['last_price_date']=='2024-01-04' for x in d['pre_fold_terminated']['codes'])
+
+
+@pytest.mark.parametrize('mismatch',['parameters','seeds','matrix'])
+def test_minor1_resume_rejects_changed_run_identity(tmp_path,mismatch):
+    s,p,c,m=review_inputs()
+    root=tmp_path/'parts'
+    pe.evaluate(s,p,c,m,primary_only=True,bootstrap_samples=2,part_dir=root)
+    samples=2
+    if mismatch=='parameters':
+        samples=3
+    elif mismatch=='seeds':
+        m=dict(m,seeds=[29])
+    else:
+        p=p.assign(close=p.close*1.01)
+    with pytest.raises(ValueError,match='part identity/hash mismatch'):
+        pe.evaluate(s,p,c,m,primary_only=True,bootstrap_samples=samples,part_dir=root)
+
+
+@pytest.mark.parametrize('damage',['corrupt_retry','missing_base','missing_retry'])
+def test_minor2_retry_chain_fails_closed(tmp_path,monkeypatch,damage):
+    import json
+    root=tmp_path/'parts'
+    def fail(*args):
+        return dict(status='ERROR',config=vars(args[2]),error=dict(type='RuntimeError',message='transient'))
+    monkeypatch.setattr(pe,'checked_cell',fail)
+    pe.evaluate(*review_inputs(),primary_only=True,bootstrap_samples=2,part_dir=root)
+    pe.evaluate(*review_inputs(),primary_only=True,bootstrap_samples=2,part_dir=root,retry_errors=True)
+    pe.evaluate(*review_inputs(),primary_only=True,bootstrap_samples=2,part_dir=root,retry_errors=True)
+    retry=next(root.glob('*-retry-000001.json'))
+    if damage=='corrupt_retry':
+        saved=json.loads(retry.read_text())
+        saved['previous_payload_sha256']='bad'
+        retry.write_text(json.dumps(saved))
+    elif damage=='missing_base':
+        next(x for x in root.glob('part-*.json') if '-retry-' not in x.name).unlink()
+    else:
+        retry.unlink()
+    with pytest.raises(ValueError,match='part identity'):
+        pe.evaluate(*review_inputs(),primary_only=True,bootstrap_samples=2,part_dir=root,retry_errors=True)
+
+
+def test_minor2_retry_survives_kill_after_durable_publish(tmp_path,monkeypatch):
+    import os
+    import signal
+    import subprocess
+    import sys
+    root=tmp_path/'parts'
+    real=pe.checked_cell
+    count=0
+    def fail_once(*args):
+        nonlocal count
+        count+=1
+        if count==1:
+            return dict(status='ERROR',config=vars(args[2]),error=dict(type='RuntimeError',message='transient'))
+        return real(*args)
+    monkeypatch.setattr(pe,'checked_cell',fail_once)
+    pe.evaluate(*review_inputs(),primary_only=True,bootstrap_samples=2,part_dir=root)
+    base=next(root.glob('part-*.json'))
+    original=base.read_bytes()
+    script='''
+import os, signal, sys
+from pathlib import Path
+from test_p1 import review_inputs
+from research_lab import portfolio_eval as pe
+if sys.argv[2]=='kill':
+    publish=pe.publish_part
+    def durable_then_kill(*args):
+        publish(*args)
+        os.kill(os.getpid(),signal.SIGKILL)
+    pe.publish_part=durable_then_kill
+else:
+    def refuse_recomputation(*args):
+        raise AssertionError('durable successful retry must be reused')
+    pe.checked_cell=refuse_recomputation
+r=pe.evaluate(*review_inputs(),primary_only=True,bootstrap_samples=2,part_dir=Path(sys.argv[1]),retry_errors=True)
+assert all(x['status']=='COMPUTED' for x in r['results'])
+'''
+    env=dict(os.environ, PYTHONPATH='V6:V6/research_lab/tests:.')
+    killed=subprocess.run([sys.executable,'-c',script,str(root),'kill'],env=env,capture_output=True,text=True,timeout=60)
+    assert killed.returncode==-signal.SIGKILL, killed.stderr
+    assert len(list(root.glob('part-*.json')))==2
+    restarted=subprocess.run([sys.executable,'-c',script,str(root),'restart'],env=env,capture_output=True,text=True,timeout=60)
+    assert restarted.returncode==0, restarted.stderr
+    assert 'SKIP_HASH_MATCH' in restarted.stdout
+    assert base.read_bytes()==original
+
+
+def test_required1_history_metadata_isolated_from_execution(monkeypatch):
+    p,s=fixture(31)
+    history={'OLD':'2020-01-02T00:00:00'}
+    p.attrs['prior_valid_price_dates']=history
+    real=pe.run_backtest
+    def engine(prices,*args):
+        assert not prices.attrs, 'diagnostic history must not propagate through engine operations'
+        return real(prices,*args)
+    monkeypatch.setattr(pe,'run_backtest',engine)
+    r=pe.evaluate_cell(p,s,cfg(bootstrap_samples=2))
+    assert r['price_termination']['pre_fold_terminated']['codes'][0]['code']=='OLD'
+    assert p.attrs['prior_valid_price_dates']==history

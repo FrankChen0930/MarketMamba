@@ -24,6 +24,8 @@ from .rolling_scores import identity, output_path, provenance, write_json
 
 CAVEATS = [
     'Backtest ends at last scheduled entry (terminal liquidation); tail truncated; different rebalance cells cover different periods.',
+    'Capacity approximation uses NAV=1 nominal notionals, without adjustment for NAV drift.',
+    'ERROR cells may reflect transient failures; default resume preserves them. --retry-errors retries only ERROR cells in ERROR parts and retains immutable attempt history.',
     'Benchmark also pays transaction costs; excess returns are net-to-net.',
     'Circular block bootstrap on concatenated within-fold returns may cross fold boundaries; no cross-fold NAV return is invented.',
     'survivorship bias: early price termination is observable, delisting cause and full delisted coverage UNVERIFIED',
@@ -38,17 +40,55 @@ CAVEATS = [
 
 
 def volume_evidence(prices):
-    sample = prices[prices.code.astype(str).eq('2330') & prices.volume.gt(0)].sort_values('date')
-    median = float(sample.volume.median()) if len(sample) else None
-    # Broad magnitude check, corroborated by fetcher shares contract. This is
-    # engineering unit evidence, not row-level source verification for all stocks.
-    unit = 'shares' if median is not None and 1e6 <= median <= 1e9 else 'lots' if median is not None and 1e3 <= median <= 1e5 else 'UNKNOWN'
-    return dict(unit=unit, shares_per_volume_unit={'shares':1, 'lots':1000}.get(unit),
-                code='2330', rows=len(sample), median_raw_volume=median,
-                samples=sample[['date','close','volume']].tail(5).assign(date=lambda x:x.date.astype(str)).to_dict('records'),
-                method='2330 median magnitude: shares [1e6,1e9], lots [1e3,1e5]; otherwise UNKNOWN',
-                corroboration='V6/marketmamba/data/fetcher.py: TWSE 成交股數; yfinance/TWSE Volume in shares',
-                limitation='Magnitude inference, not independent exchange verification or proof of homogeneous units across all rows',
+    """Measured, conservative magnitude cross-checks, not source certification.
+
+    Fixed reference names are hindsight diagnostic probes, not a PIT universe.
+    Ambiguous magnitude or disagreement refuses liquidity/capacity evaluation.
+    """
+    def infer(value, shares_range, lots_range):
+        if value is None:
+            return 'UNKNOWN'
+        return ('shares' if shares_range[0] <= value <= shares_range[1] else
+                'lots' if lots_range[0] <= value <= lots_range[1] else 'UNKNOWN')
+
+    def measurement(frame, field, shares_range, lots_range):
+        value = float(frame[field].median()) if len(frame) else None
+        segments = []
+        for year, group in frame.groupby(frame.date.dt.year):
+            median = float(group[field].median())
+            segments.append(dict(year=int(year), rows=len(group), median=median,
+                                 unit=infer(median, shares_range, lots_range)))
+        units = {x['unit'] for x in segments}
+        unit = next(iter(units)) if len(units) == 1 else 'UNKNOWN'
+        return dict(rows=len(frame), median=value, unit=unit, annual_checks=segments,
+                    shares_range=list(shares_range), lots_range=list(lots_range))
+
+    p = prices.assign(code=prices.code.astype(str), date=pd.to_datetime(prices.date))
+    valid = p[np.isfinite(p.close) & p.close.gt(0) & np.isfinite(p.volume) & p.volume.gt(0)].copy()
+    valid['raw_value'] = valid.close * valid.volume
+    checks = []
+    references = [('2330', 'TWSE large', 'volume', (1e6,1e9), (1e3,1e5)),
+                  ('8069', 'OTC large', 'volume', (1e6,1e9), (1e3,1e5)),
+                  ('1236', 'TWSE small/mid', 'raw_value', (1e5,1e9), (1e2,1e4))]
+    for code, role, field, shares_range, lots_range in references:
+        sample = valid[valid.code.eq(code)].sort_values('date')
+        checks.append(dict(code=code, role=role, field=field,
+                           **measurement(sample, field, shares_range, lots_range),
+                           samples=sample[['date','close','volume']].tail(5).assign(date=lambda x:x.date.astype(str)).to_dict('records')))
+    daily = valid.groupby('date', as_index=False).raw_value.sum()
+    universe = measurement(daily, 'raw_value', (1e10,5e12), (1e7,5e9))
+    universe.update(codes=int(valid.code.nunique()),
+                    raw_close_times_volume_quantiles={f'p{int(q*100):02}':float(daily.raw_value.quantile(q)) if len(daily) else None
+                                                     for q in (.05,.25,.5,.75,.95)},
+                    rationale='Whole-universe daily TWD median below 1e10 is too small for this Taiwan-wide panel in shares; lots imply x1000.')
+    units = [x['unit'] for x in checks] + [universe['unit']]
+    unit = units[0] if len(set(units)) == 1 else 'UNKNOWN'
+    return dict(unit=unit, shares_per_volume_unit={'shares':1,'lots':1000}.get(unit),
+                checks=checks, universe_daily=universe,
+                corroboration=dict(reference_units={x['code']:x['unit'] for x in checks}, universe_unit=universe['unit'],
+                                   consistent=unit != 'UNKNOWN'),
+                method='Fixed multi-stock and whole-universe magnitude checks, including annual segments; ambiguity fails closed',
+                limitation='Magnitude inference only; missing probes or incomplete universe can stop a valid dataset. Not per-row exchange provenance, homogeneity proof, or PIT admission.',
                 dollar_volume_unit='TWD = raw Close * raw Volume * shares_per_volume_unit')
 
 
@@ -138,25 +178,56 @@ def capacity(result, prices):
             unknown += 1
     return {str(asset): dict(median=float(np.median(ratios)*asset) if ratios else None,
                              p95=float(np.quantile(ratios,.95)*asset) if ratios else None,
-                             trades=len(ratios), unknown=unknown)
+                             trades=len(ratios), unknown=unknown, approximation=True,
+                             basis='NAV=1 nominal notionals; no adjustment for NAV drift')
             for asset in (1_000_000,10_000_000,100_000_000)}
 
 
+def price_termination(prices, predictions, exposure, minimum_sessions=10):
+    """Observed close gaps, not verified delistings; zero volume is not no price."""
+    history = prices.attrs.get('prior_valid_price_dates', {})
+    prices = prices.copy(deep=False)
+    prices.attrs = {}  # Do not deepcopy the history map on every group/Series operation.
+    start, end = pd.Timestamp(predictions.date.min()), pd.Timestamp(predictions.date.max())
+    calendar = pd.DatetimeIndex(sorted(set(prices.date) | set(predictions.date)))
+    calendar = calendar[(calendar >= start) & (calendar <= end)]
+    groups = {name: dict(count=0, codes=[]) for name in
+              ('pre_fold_terminated', 'in_fold_terminated', 'transient_gap')}
+    frames = {code:frame for code,frame in prices.groupby('code', sort=True)}
+    for code in sorted(set(frames) | set(history)):
+        frame = frames.get(code, prices.iloc[:0])
+        valid = frame.loc[np.isfinite(frame.close) & frame.close.gt(0) & frame.date.le(end), 'date']
+        last = valid.max()
+        prior = pd.Timestamp(history[code]) if code in history else pd.NaT
+        if pd.notna(prior) and (pd.isna(last) or prior > last):
+            last = prior
+        missing = calendar.difference(pd.DatetimeIndex(valid))
+        if not len(missing):
+            continue
+        trailing = int((calendar > last).sum()) if pd.notna(last) else len(calendar)
+        name = ('pre_fold_terminated' if pd.notna(last) and last < start else
+                'in_fold_terminated' if pd.notna(last) and trailing >= minimum_sessions else 'transient_gap')
+        row = dict(code=code, last_price_date=None if pd.isna(last) else last.strftime('%Y-%m-%d'),
+                   trailing_invalid_sessions=trailing)
+        if name == 'in_fold_terminated':
+            row.update(exposure.get(code, dict(held_sessions=0, held_value_session_sum=0.,
+                                               blocked_orders=0, blocked_value_sum=0.)))
+        groups[name]['codes'].append(row)
+        groups[name]['count'] += 1
+    return dict(fold_start=start.strftime('%Y-%m-%d'), fold_end=end.strftime('%Y-%m-%d'),
+                minimum_invalid_sessions=minimum_sessions, **groups,
+                **groups['in_fold_terminated'],
+                value_unit='initial NAV = 1; held_value_session_sum sums end-of-session marks; blocked_value_sum sums frozen marks at scheduled opens',
+                cause='UNKNOWN: missing valid close is not proof of delisting; no prior valid price remains transient_gap/UNKNOWN',
+                calendar='union of observed prices and prediction sessions within fold; not verified exchange calendar')
+
+
 def evaluate_cell(prices, predictions, config):
-    result = run_backtest(prices, predictions, config)
-    result['capacity'] = capacity(result, prices)
-    valid = prices[np.isfinite(prices.close) & prices.close.gt(0) & np.isfinite(prices.volume) & prices.volume.gt(0)]
-    last = valid.groupby('code').date.max()
-    end = pd.Timestamp(predictions.date.max())
-    codes = []
-    for code in sorted(prices.code.unique()):
-        day = last.get(code, pd.NaT)
-        if pd.isna(day) or day < end:
-            codes.append(dict(code=code, last_price_date=None if pd.isna(day) else day.strftime('%Y-%m-%d'),
-                **result['position_exposure'].get(code, dict(held_sessions=0, held_value_session_sum=0., blocked_orders=0, blocked_value_sum=0.))))
-    result['price_termination'] = dict(fold_end=end.strftime('%Y-%m-%d'), count=len(codes), codes=codes,
-        value_unit='initial NAV = 1; held_value_session_sum sums end-of-session marks; blocked_value_sum sums frozen marks at scheduled opens',
-        cause='UNKNOWN: termination/missing valid prices is not proof of delisting')
+    execution_prices = prices.copy(deep=False)
+    execution_prices.attrs = {}  # History is diagnostic-only, never an execution input.
+    result = run_backtest(execution_prices, predictions, config)
+    result['capacity'] = capacity(result, execution_prices)
+    result['price_termination'] = price_termination(prices, predictions, result['position_exposure'])
     result['selected_buy_codes'] = sorted({t['code'] for t in result['trades'] if t['notional'] > 0})
     q, counts = {}, []
     trades = {}
@@ -228,7 +299,9 @@ def load_inputs(scores_dir, data_root):
     after = [d for d in dates if d > scores.date.max()]
     lo = before[-1] if before else scores.date.min()
     hi = after[0] if after else scores.date.max()
+    prior = prices.loc[prices.date.lt(lo) & np.isfinite(prices.close) & prices.close.gt(0)].groupby('code').date.max()
     prices = prices[prices.date.between(lo,hi)].copy()
+    prices.attrs['prior_valid_price_dates'] = {str(code):day.isoformat() for code,day in prior.items()}
     caps = caps[caps.date.between(lo,hi)].copy()
     if prices.duplicated(['date','code']).any():
         raise ValueError('duplicate price keys; no silent repair')
@@ -247,9 +320,11 @@ def load_inputs(scores_dir, data_root):
     return scores, prices, caps, manifest, inputs, diagnostics
 
 
-def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_samples=1000, part_dir=None, input_identity=None):
+def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_samples=1000, part_dir=None, input_identity=None, retry_errors=False):
     strata = lagged_strata(caps, sorted(prices.date.unique()))
     merged = prices.merge(strata.reset_index()[['date','code','stratum']], on=['date','code'],how='left')
+    input_history = dict(prices.attrs.get('prior_valid_price_dates', {}))
+    merged.attrs = {}
     has_adj = ('adj_close' in prices and (np.isfinite(prices.adj_close/prices.close) & (prices.adj_close/prices.close).gt(0)).all())
     primary = replace(primary_config(), price_basis='total_return' if has_adj else 'raw', bootstrap_samples=bootstrap_samples)
     results, primaries = [], {}
@@ -266,16 +341,37 @@ def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_sampl
     part_dir = Path(part_dir)
     for (fold,system), group in scores.groupby(['fold','system']):
         part_path = part_dir / f'part-{int(fold)}-{hashlib.sha256(str(system).encode()).hexdigest()[:16]}.json'
-        if part_path.exists():
-            saved = json.loads(part_path.read_text())
-            if saved['run_hash'] != run_hash or saved['payload_sha256'] != content_hash(saved['payload']):
-                raise ValueError(f'part identity/hash mismatch: {part_path}')
+        retry_paths = sorted(part_dir.glob(part_path.stem + '-retry-*.json'))
+        if retry_paths and not part_path.exists():
+            raise ValueError(f'part identity missing base: {part_path}')
+        cached, previous_hash = {}, None
+        for attempt, path in enumerate(([part_path] if part_path.exists() else []) + retry_paths):
+            if attempt and path.name != f'{part_path.stem}-retry-{attempt:06d}.json':
+                raise ValueError(f'part identity retry sequence mismatch: {path}')
+            saved = json.loads(path.read_text())
+            if (saved['run_hash'] != run_hash or saved['payload_sha256'] != content_hash(saved['payload'])
+                    or saved.get('part_key') != dict(fold=int(fold), system=str(system))
+                    or saved.get('previous_payload_sha256') != previous_hash
+                    or any(row.get('fold') != int(fold) or row.get('system') != system for row in saved['payload']['results'])):
+                raise ValueError(f'part identity/hash mismatch: {path}')
+            previous_hash = saved['payload_sha256']
+        if previous_hash is not None:
             payload = saved['payload']
-            results.extend(payload['results'])
-            if payload['primary'] is not None:
-                primaries[(int(fold),system)] = payload['primary']
-            print(json.dumps(dict(fold=int(fold),system=system,part=str(part_path),action='SKIP_HASH_MATCH')),flush=True)
-            continue
+            if not retry_errors or not any(row['status']=='ERROR' for row in payload['results']):
+                results.extend(payload['results'])
+                if payload['primary'] is not None:
+                    primaries[(int(fold),system)] = payload['primary']
+                print(json.dumps(dict(fold=int(fold),system=system,part=str(path),action='SKIP_HASH_MATCH')),flush=True)
+                continue
+            cached = {(row['stratum'], content_hash(row['config'])):row for row in payload['results']}
+            part_path = part_path.with_name(f'{part_path.stem}-retry-{len(retry_paths)+1:06d}.json')
+
+        def compute_cell(frame, pred, config, stratum):
+            row = cached.get((stratum, content_hash(asdict(config))))
+            if row is not None and row['status'] != 'ERROR':
+                return {key:value for key,value in row.items() if key not in ('fold','system','role','stratum','ic')}
+            return checked_cell(frame, pred, config)
+
         offset = len(results)
         pred = group.assign(model=system,horizon=5)
         if pred.duplicated(['date','code']).any():
@@ -286,7 +382,11 @@ def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_sampl
         previous = [d for d in calendar if d < pred.date.min()]
         following = [d for d in calendar if d > pred.date.max()]
         lo,hi = previous[-1] if previous else pred.date.min(), following[0] if following else pred.date.max()
+        prior = merged.loc[merged.date.lt(lo) & np.isfinite(merged.close) & merged.close.gt(0)].groupby('code').date.max()
         p = merged[merged.date.between(lo,hi)].copy()
+        history = dict(input_history)
+        history.update({str(code):day.isoformat() for code,day in prior.items()})
+        p.attrs['prior_valid_price_dates'] = history
         scored_keys = pd.MultiIndex.from_frame(pred[['date','code']])
         p['universe_eligible'] = pd.MultiIndex.from_frame(p[['date','code']]).isin(scored_keys)
         for config in cells:
@@ -294,7 +394,7 @@ def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_sampl
             if config.price_basis=='total_return' and not has_adj:
                 results.append(dict(**header,config=asdict(config),status='UNAVAILABLE_NO_ADJ_CLOSE'))
                 continue
-            result = checked_cell(p,pred,config)
+            result = compute_cell(p,pred,config,'all')
             results.append(dict(**header,**result))
             if config==primary and result['status']=='COMPUTED':
                 primaries[(int(fold),system)] = result
@@ -302,7 +402,7 @@ def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_sampl
             pp = p.assign(universe_eligible=p.universe_eligible & p.stratum.eq(stratum))
             # Keep full predictions/calendar; engine masks candidates, preserving
             # real tradability and avoiding invented frozen stratum exits.
-            result = checked_cell(pp,pred,primary)
+            result = compute_cell(pp,pred,primary,stratum)
             labels = pred.merge(strata.reset_index()[['date','code','stratum']], on=['date','code'],how='left')
             selected = labels[labels.stratum.eq(stratum)]
             ics = []
@@ -316,7 +416,7 @@ def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_sampl
             results.append(dict(fold=int(fold),system=system,stratum=stratum,role='descriptive',
                 ic=dict(mean=float(np.mean(ics)) if ics else None, sessions=len(ics),label='simulation y5'),**result))
         payload = dict(results=results[offset:], primary=primaries.get((int(fold),system)))
-        publish_part(part_path, dict(run_hash=run_hash,payload_sha256=content_hash(payload),payload=payload))
+        publish_part(part_path, dict(run_hash=run_hash,part_key=dict(fold=int(fold),system=str(system)),payload_sha256=content_hash(payload),previous_payload_sha256=previous_hash,payload=payload))
         print(json.dumps(dict(fold=int(fold),system=system,part=str(part_path),action='WROTE',
                              errors=sum(x['status']=='ERROR' for x in payload['results']))), flush=True)
     clean = {}
@@ -339,8 +439,20 @@ def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_sampl
             if not a.index.equals(b.index):
                 raise ValueError('unpaired primary return dates')
             paired.extend(dict(fold=int(fold),date=d,net=float(v),benchmark=0.) for d,v in (a.net-b.net).items())
+    paired_report = {}
+    for era, lo, hi in [('2021_2023',2021,2023), ('2024_2026',2024,2026)]:
+        missing = [dict(fold=year, missing_systems=[system for system in ('c0plus','lightgbm_day_t')
+                                                   if (year,system) not in primaries])
+                   for year in range(lo,hi+1)]
+        missing = [row for row in missing if row['missing_systems']]
+        rows = [x for x in paired if lo <= x['fold'] <= hi]
+        inference = pooled_test([dict(daily_returns=rows)], bootstrap_samples)
+        paired_report[era] = dict(inference,
+            status='INCOMPLETE_PAIRED_SUPPORT' if missing else 'COMPLETE_PAIRED_SUPPORT',
+            paired_folds=sorted({x['fold'] for x in rows}), missing_primary_folds=missing,
+            requested_folds=sorted(int(y) for y in manifest.get('years',scores.fold.unique()) if lo<=y<=hi))
     return dict(primary_config=asdict(primary), grid_complete=not primary_only, results=results,
-                clean_fold_hypothesis=clean, paired_system_difference_descriptive={era:pooled_test([dict(daily_returns=[x for x in paired if lo<=x['fold']<=hi])],bootstrap_samples) for era,lo,hi in [('2021_2023',2021,2023),('2024_2026',2024,2026)]},
+                clean_fold_hypothesis=clean, paired_system_difference_descriptive=paired_report,
                 missing_lagged_market_value_rows=int(merged.stratum.isna().sum()), price_basis_fallback=None if has_adj else 'raw: adj_close unavailable/invalid')
 
 
@@ -351,9 +463,16 @@ def main(argv=None):
     p.add_argument('--out', type=Path, required=True)
     p.add_argument('--primary-only', action='store_true')
     p.add_argument('--bootstrap-samples', type=int, default=1000)
+    p.add_argument('--retry-errors', action='store_true', help='Retry ERROR cells in ERROR parts only; preserve original parts and append immutable attempts')
     p.add_argument('--run', action='store_true')
     a = p.parse_args(argv)
-    out = output_path(a.out)
+    report_path = a.out
+    if a.retry_errors and report_path.exists():
+        attempt = 1
+        while report_path.exists():
+            report_path = a.out.with_name(f'{a.out.stem}-retry-{attempt:06d}{a.out.suffix}')
+            attempt += 1
+    out = output_path(report_path)
     if not a.run:
         print(json.dumps(dict(dry_run=True,output=str(out),primary_only=a.primary_only,grid_cells=1 if a.primary_only else 432)))
         return
@@ -364,12 +483,12 @@ def main(argv=None):
         result = dict(status='STOP_MISSING_PRICE_KEYS', diagnostics=diagnostics)
     else:
         result = dict(status='COMPLETED_RESEARCH_ONLY',diagnostics=diagnostics,
-                      **evaluate(scores,prices,caps,manifest,a.primary_only,a.bootstrap_samples,part_dir=out.parent/out.stem,input_identity=inputs))
+                      **evaluate(scores,prices,caps,manifest,a.primary_only,a.bootstrap_samples,part_dir=a.out.parent/a.out.stem,input_identity=inputs,retry_errors=a.retry_errors))
         if any(x['status']=='ERROR' for x in result['results']):
             result['status']='COMPLETED_WITH_ERRORS_RESEARCH_ONLY'
     result.update(version='p1-portfolio-v1',artifact_class='GENERATED',evidence_class='E2 RESEARCH_ONLY',
         provenance=prov,inputs=inputs,seeds=manifest['seeds'],folds=manifest['years'],
-        parameters=dict(primary_only=a.primary_only,bootstrap_samples=a.bootstrap_samples),
+        parameters=dict(primary_only=a.primary_only,bootstrap_samples=a.bootstrap_samples,retry_errors=a.retry_errors),
         caveats=CAVEATS,
         wall_seconds=time.perf_counter()-started)
     # Verify unchanged pinned inputs and implementation before publication.
