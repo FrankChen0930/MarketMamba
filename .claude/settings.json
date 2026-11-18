@@ -1,0 +1,7 @@
+{
+  "hooks": {
+    "SessionStart": [{"hooks": [{"type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/tools/project_agents/runtime.mjs\" hook start", "timeout": 60}]}],
+    "PreCompact": [{"hooks": [{"type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/tools/project_agents/runtime.mjs\" hook checkpoint", "timeout": 60}]}],
+    "SessionEnd": [{"hooks": [{"type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/tools/project_agents/runtime.mjs\" hook end", "timeout": 60}]}]
+  }
+}

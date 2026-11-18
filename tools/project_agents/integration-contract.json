@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "versions": {
+    "ruflo": "3.77.1",
+    "cli": "3.77.1",
+    "codexAdapter": "3.0.8"
+  },
+  "execution": "OFFICIAL_DUAL_ORCHESTRATOR_WITH_PROJECT_PROCESS_ADAPTER",
+  "maxConcurrent": 3,
+  "maxWriters": 1,
+  "maxWorkersPerJob": 8,
+  "maxTimeoutSeconds": 1800,
+  "maxOutputBytesPerWorker": 2097152,
+  "periodicSchedules": false,
+  "automaticRetry": false,
+  "evidenceClass": "DEVELOPMENT_ENGINEERING_ONLY",
+  "authority": "AGENTS.md and canonical project map; memory is non-authoritative",
+  "scope": "Explicitly submitted development jobs only; no production, formal-data, GPU, push, merge or deployment authority",
+  "memoryBackend": "RUFLO_SQLITE_WITH_CLAUDE_FLOW_DISABLE_BRIDGE_1"
+}

@@ -173,3 +173,7 @@ research contracts, formal data, production and StrictSTOP boundaries are unchan
 ## Window35 finite collector closure / offline recovery
 
 [W35 evidence](../../research/v7/window35-evidence.json) verifies the protected W19 five-session10GET record without modifying its task or data. Existing main snapshot/QC/restore suffice for reading; no diverged runtime is merged. New offline recovery decisions/append-only claims separate normal/content/network budgets and single-child retry chains; [R1 closure](../../research/v7/window35-review-closure.json) closes the retained NO_GO finding. Actual live normal/recovery dispatcher and new limited Task activation remain unimplemented/unapproved, UNMERGED/NOT_DEPLOYED. BACKUP_PENDING; task expiry language is tied to observed_at, never assumed elapsed.
+
+## Ruflo development collaboration — 2026-11-19
+
+Human-approved development-only integration reuses official Claude/Codex CLI workers and DualModeOrchestrator. The [project adapter](../../tools/project_agents/runtime.mjs), [contract](../../tools/project_agents/integration-contract.json) and [operator guide](../../docs/operations/ruflo.md) cover bounded explicit background jobs, process-group cancellation, retained isolated worktrees and durable non-authoritative memory. This is separate from Phase A operational ledger and production schedulers; no trading/research readiness or source authority changes. UNMERGED / NOT_DEPLOYED; no automatic retry or periodic tasks.

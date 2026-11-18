@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "claude-flow": {
+      "command": "/home/frank/.nvm/versions/node/v24.19.0/bin/node",
+      "args": ["tools/project_agents/runtime.mjs", "mcp"]
+    }
+  }
+}

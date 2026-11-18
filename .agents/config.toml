@@ -1,0 +1,14 @@
+# The project adapter owns bounded execution. Avoid upstream CLI @latest / implicit worktrees.
+[swarm.automation]
+enabled = false
+max_concurrent = 3
+max_writers = 1
+worktree_isolation = true
+agent_timeout_seconds = 900
+dependency_failure = "cancel"
+
+[project_runtime]
+enabled = true
+entrypoint = "tools/project_agents/runtime.mjs"
+contract = "tools/project_agents/integration-contract.json"
+periodic_schedules = false

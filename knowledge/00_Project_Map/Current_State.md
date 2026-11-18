@@ -1,5 +1,10 @@
 # MarketMamba Current State
 
+## Ruflo development integration — 2026-11-19
+
+Human approved Claude-primary background work, persistent memory and Claude/Codex workers. Branch `development/ruflo-integration`, base `f501a7eb28fab26c86f1bc776ad80a0ff13cfe81`: UNMERGED / NOT_DEPLOYED. [Project contract](../../tools/project_agents/integration-contract.json) and [operator guide](../../docs/operations/ruflo.md) define explicit submitted development jobs, pinned Ruflo/CLI 3.77.1 and official Codex adapter 3.0.8. Reuses official DualModeOrchestrator; project adapter owns process/exit/artifact verification, not a second MAS. One active job, at most3 workers/1writer; no periodic schedule or automatic retry. Memory is non-authoritative, explicitly shared at Git common root `.artifacts/ruflo/memory.db`; formal data/models/research/production boundaries unchanged. Local evidence is DEVELOPMENT_ENGINEERING_ONLY. Acceptance results are recorded in the operator guide after actual verification.
+
+
 ## V6 fetch date binding and internal gaps — 2026-11-18
 
 `fix/macro-sync-fetch-hardening`, WSL primary checkout, base `bc88a181a15ad20e41daf29ec68a623d99ccf5d8`:

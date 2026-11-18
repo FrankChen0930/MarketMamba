@@ -1,5 +1,10 @@
 # MarketMamba Authority Map
 
+## Ruflo development collaboration boundary — 2026-11-19
+
+`development/ruflo-integration` (base f501a7e), UNMERGED / NOT_DEPLOYED: [versioned integration contract](../../tools/project_agents/integration-contract.json), [adapter/tests](../../tools/project_agents/runtime.mjs) and [operator guide](../../docs/operations/ruflo.md) own only the development collaboration capability. Official DualModeOrchestrator schedules workers; project adapter pins runtime and validates processes/results. Runtime observations remain timestamped local evidence. Ruflo memory, agent registration, worker completion and session summaries never supersede project map, contracts, accepted research artifacts or production authority. No new scheduler, data, GPU, merge/push/deploy authority.
+
+
 ## V6 fetch hardening candidate — 2026-11-18
 
 `fix/macro-sync-fetch-hardening` from `bc88a181a15ad20e41daf29ec68a623d99ccf5d8`

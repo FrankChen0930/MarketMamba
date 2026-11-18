@@ -19,3 +19,7 @@ Before creating any new directory, implementation, workflow, experiment/report t
 - Keep builder and verifier roles independent when using that workflow; share repository evidence, not persuasive cross-agent discussion.
 
 The former long Claude guide is preserved at [`docs/archive/legacy-claude-project-guide.md`](docs/archive/legacy-claude-project-guide.md) as `HISTORICAL_ONLY / NON_AUTHORITATIVE`.
+
+## Ruflo development collaboration
+
+For approved background or multi-agent work, use [the project Ruflo skill](.claude/skills/ruflo-project/SKILL.md) and [operator guide](docs/operations/ruflo.md). Claude coordinates; official Claude/Codex CLIs execute in isolated worktrees. This never changes project authority or grants production access.

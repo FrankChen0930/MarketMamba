@@ -89,3 +89,9 @@ research/literature/papers/
 V6/experimental/result/ridge_5d*.npz
 V6/experimental/result/gbdt_5d__*.txt
 V6/experimental/result/gru_5d*.pt
+
+# Versioned project agent integration; local generated memory remains ignored.
+!.claude/settings.json
+!.claude/skills/ruflo-project/
+/.claude-flow/
+/.swarm/
