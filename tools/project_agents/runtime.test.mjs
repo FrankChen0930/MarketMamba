@@ -121,3 +121,6 @@ test('completed result binds worker manifest, raw logs, patch and snapshot integ
  atomicJson(prefix+'.result.json',manifest);atomicJson(path.join(d,'result.json'),{workers:[{status:'completed'}],evidence:{worker:{path:prefix+'.result.json',sha256:sha(prefix+'.result.json')}}});const record={resultSha256:sha(path.join(d,'result.json'))};verifyCompletedArtifacts(record,d);
  fs.writeFileSync(prefix+'.snapshot','corrupt');assert.throws(()=>verifyCompletedArtifacts(record,d),/snapshot/);fs.writeFileSync(prefix+'.snapshot','.snapshot');fs.unlinkSync(prefix+'.patch');assert.throws(()=>verifyCompletedArtifacts(record,d));
 });
+test('active process timeout handles exited leader whose descendant retains stdout',async()=>{
+ const d=temp();const r=await runProcess(process.execPath,['-e',"require('child_process').spawn(process.execPath,['-e','setInterval(()=>{},1000)'],{stdio:['ignore',1,2]});setTimeout(()=>process.exit(0),40)"],{cwd:d,log:path.join(d,'run'),timeoutMs:150,maxOutputBytes:1024});assert.equal(r.reason,'timeout');
+});

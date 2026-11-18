@@ -36,7 +36,9 @@ export async function runProcess(command,args,{cwd,env=process.env,log,timeoutMs
  let bytes=0,reason=null,killTimer,timer,identity;
  const stop=why=>{
   if(reason)return;reason=why;
-  if(identity)stopProcessGroup(identity);
+  // This live ChildProcess owns the freshly created detached group.
+  // Recovery's PID-reuse/UNKNOWN rule is for a different supervisor lifetime.
+  try{process.kill(-child.pid,'SIGTERM');}catch(e){if(e.code!=='ESRCH')reason='cleanup_failed';}
   // Even if the leader exits, kill its original group before returning.
   killTimer=setTimeout(()=>{try{process.kill(-child.pid,'SIGKILL');}catch{}},200);
  };

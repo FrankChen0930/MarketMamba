@@ -23,3 +23,11 @@ Base f501a7eb28fab26c86f1bc776ad80a0ff13cfe81；隔離工作樹 `.worktrees/rufl
 - 不以記憶文字代替 artifacts／獨立驗證；跨 worktree DB identity 明確。
 - 預設啟動不下載 @latest、不安裝全域 plugin、不觸發週期任務。
 - 來源版本／hash 不符 STOP，工作樹 dirty 或未知來源 STOP；歷史證據與資料不修改。
+
+## 執行紀錄
+
+- Source/config/governance checkpoint bfc6e3a；其真實Claude→Codex→Claude reviewer smoke完成。
+- 21離線agent tests/23治理tests，MCP/CLI雙向SQLite真實讀回；完整evidence見 reports/ruflo_integration_acceptance.json。
+- Ruling: AgentDB native binding缺失、MCP bridge寫入不持久，使用官方disable-bridge SQLite backend。這保留持久記憶gate，不宣稱未驗的controllers/neural/HNSW能力。
+- Ruling: leader退出後的未知descendants保留鎖並STOP；本次不增加高權限常駐服務來猜測清理。成本是極端中斷需人工檢查。
+- 程式review所有Important已修正；沒有deferred minor。

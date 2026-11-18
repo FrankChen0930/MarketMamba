@@ -79,3 +79,9 @@ node tools/project_agents/runtime.mjs memory search --namespace project-handoff 
 status 對 completed result 驗 hash；記錄腐損／缺失 STOP。cancel 驗證 supervisor PID/start identity 後送 SIGTERM；程序群在逾時／取消／完成後清理。parent 遺失時 recover 停止 identity 相符的已知子程序並標 interrupted，不自動重跑。若 leader 已退出而同 group 尚有無法驗證的 descendants，回報 UNKNOWN 並保留鎖，需人工檢查，不放行新 job。重新開一個 job 是新的執行決策。
 
 限制：官方 CLI sandbox、工具限制與 project policy 共同約束 workers；此 adapter 不是防惡意程式的容器。沒有新的正式資料掛載，但現有系統可讀路徑並未全面隱藏。禁止將 credentials、正式資料或 protected models 當作測試輸入。kill/restart 保證只限已記錄程序 identity；不是機器斷電或跨機備援認證。
+
+## 本次驗收 — 2026-11-19
+
+[驗收 manifest](../../reports/ruflo_integration_acceptance.json)：21 project-agent離線 tests、23 knowledge-governance tests，5份JSON/TOML設定解析；knowledge health WARNING、無FAIL。真實官方 Claude 主入口於 source bfc6e3aaed60cc266db3c8db8564e88bccdacc7e 提交 run-mwmdmets-74c208；Codex worker 與獨立 Claude reviewer 均 completed。27-byte fixture snapshot 由主控再驗 bytes/hash，result SHA-256 `4454a2ead7a669a11fac5bec651855f328c30300d5643804a758a6da6393b319`。觀測於 `2026-11-18T17:10:27.399Z`（台灣11/19）。MCP↔CLI 共同SQLite雙向跨程序讀回與非memory工具拒絕均PASS。
+
+後續程序清理邊界由新增離線regression驗證；未重複消耗模型回合。獨立程式review無剩餘blocking findings。主控工作樹切換到 `development/ruflo-primary` 供本地開發使用；整合工作樹與worker證據保留。這不是merge到main或production部署，UNMERGED / NOT_DEPLOYED語意仍適用。重新開啟Claude/Codex會話以載入本地MCP/hooks。

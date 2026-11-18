@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-11-18T17:10:27.399Z",
+  "evidence_class": "LOCAL_DEVELOPMENT_ENGINEERING_ONLY",
+  "status": "PASS_BOUNDED_INTEGRATION",
+  "source_commit": "bfc6e3aaed60cc266db3c8db8564e88bccdacc7e",
+  "runtime_contract_sha256": "872f1dd16d552f2b5bb31c282bc4f559ecd4c47ed6d15d28d17f5f170183f9c9",
+  "job_id": "run-mwmdmets-74c208",
+  "root": "/home/frank/projects/MarketMamba",
+  "versions": {
+    "ruflo": "3.77.1",
+    "cli": "3.77.1",
+    "codex_adapter": "3.0.8"
+  },
+  "models": "Existing official CLI defaults; no hardcoded model override",
+  "model_acceptance": {
+    "claude_entry": "official Claude CLI submitted job; success, 2 turns",
+    "codex_worker": "completed model turn, process exit=0, exact file assertion",
+    "independent_claude_reviewer": "read actual retained snapshot; completed, process exit=0",
+    "fixture_size": 27
+  },
+  "artifacts": {
+    "/home/frank/projects/MarketMamba/.artifacts/ruflo/claude-entry-smoke.json": {
+      "size": 1796,
+      "sha256": "4de6ca59af9c7ac14a3885ea18fa4998868ffc2e52c238e4b951d1ea04b9d6b4"
+    },
+    "/home/frank/projects/MarketMamba/.artifacts/ruflo/jobs/run-mwmdmets-74c208/submission.json": {
+      "size": 193,
+      "sha256": "24eaa3977aa01346aaa6f5dda6f6fc1679240fca8b8f382ba0b06983d81cc8d9"
+    },
+    "/home/frank/projects/MarketMamba/.artifacts/ruflo/jobs/run-mwmdmets-74c208/state.json": {
+      "size": 2381,
+      "sha256": "ea03d4a49ee97aca446b2466765f34666d92a93f084dbf8b72cb518d7a2800de"
+    },
+    "/home/frank/projects/MarketMamba/.artifacts/ruflo/jobs/run-mwmdmets-74c208/result.json": {
+      "size": 4093,
+      "sha256": "4454a2ead7a669a11fac5bec651855f328c30300d5643804a758a6da6393b319"
+    },
+    "/home/frank/projects/MarketMamba/.artifacts/ruflo/jobs/run-mwmdmets-74c208/codex-smoke.result.json": {
+      "size": 1956,
+      "sha256": "4d595fe5eb0375d5adce9b9278b7207b38a13f68f8535f77659f1211d6b0a496"
+    },
+    "/home/frank/projects/MarketMamba/.artifacts/ruflo/jobs/run-mwmdmets-74c208/claude-review.result.json": {
+      "size": 2878,
+      "sha256": "8b38a50ff153d8f95ed20c9d38f54f77e83fae6d49d5f2f42c47c076e52cf295"
+    },
+    "/home/frank/projects/MarketMamba/.artifacts/ruflo/jobs/run-mwmdmets-74c208/codex-smoke.files/ruflo-smoke.txt": {
+      "size": 27,
+      "sha256": "91642d10aadd20b05bcc877afe213c49dd4ba121847ed01ad810f8eb972bbc51"
+    }
+  },
+  "offline_tests": {
+    "project_agent_tests": 21,
+    "knowledge_governance_tests": 23,
+    "schema_configs": 5
+  },
+  "memory": {
+    "backend": "Ruflo SQLite with CLAUDE_FLOW_DISABLE_BRIDGE=1",
+    "db": "/home/frank/projects/MarketMamba/.artifacts/ruflo/memory.db",
+    "cli_to_mcp": "PASS",
+    "mcp_to_cli": "PASS",
+    "blocked_direct_non_memory_call": "PASS",
+    "failed_bridge_trials": "Preserved under .artifacts/ruflo/verification; missing native binding produced non-durable MCP write; not accepted"
+  },
+  "review": "Independent agent review: no remaining blocking findings after process/artifact/MCP fixes; reviewer did not run model tests",
+  "limits": [
+    "No power-loss/cross-machine durability certification",
+    "No HNSW performance, semantic recall or neural-learning validation",
+    "No production/data/model/GPU/scheduler changes",
+    "No billing/invoice or quota verification",
+    "Dead-leader unverifiable descendant group returns UNKNOWN and retains lock",
+    "Final process-cancellation hardening after source_commit verified by focused offline regression; model smoke was not repeated"
+  ],
+  "knowledge_health": "WARNING, no structural FAIL; governance/authority drift/legacy warnings retained",
+  "push": false,
+  "merge": false,
+  "production_deploy": false
+}

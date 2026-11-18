@@ -2,6 +2,7 @@
 
 ## Ruflo integration — 2026-11-19
 
+- Primary checkout: `development/ruflo-primary`, same completed integration history; prior `fix/macro-sync-fetch-hardening` retained at f501a7e. Local source activation only, no merge/push/production deployment.
 - Purpose: complete Claude-primary Ruflo development integration; owner Human/Codex; branch `development/ruflo-integration`; base `f501a7eb28fab26c86f1bc776ad80a0ff13cfe81`; created 2026-11-19; retired N/A; UNMERGED / NOT_DEPLOYED.
 - Native worktree created at `/home/frank/.codex/worktrees/2377/MarketMamba`, relocated to `.worktrees/ruflo-integration` for writable-root compliance. Existing pre-ruflo checkout is historical preservation, not this feature workspace; no existing checkout serves this integration.
 - Authority: versioned development contract/tests only. Dependencies: pinned external npm installations; local ignored `.artifacts/ruflo` installation/memory/evidence. No production dependency or authorization.
