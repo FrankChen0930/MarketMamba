@@ -29,3 +29,13 @@
 - 新程式放 `V6/research_lab/`（例如 `rolling_seq_scores.py`，重用 `seq_runner.train_one`／`predict` 與 `cross_stock.py`），輸出與 `rolling_scores.py` 相同的 parquet schema 與 manifest 形式（含來源 commit、環境、輸入 SHA-256、種子、折、參數、GPU 型號與溫度紀錄），並讓 `portfolio_eval.py` 以最小擴充支援 P3 模式（三系統：c0plus 取自 P1 分數目錄，其餘取自 P3 分數目錄；P2 主要格固定；配對檢定與 Holm）。不得改變 P1／P2 預設行為與既有結果。
 - 回歸與 mutation 測試：評估列集合與 P1 不一致應報錯、種子間 rank 平均 PIT 安全、訓練列不得含評估期或標籤未成熟列（purge 與 rolling_runner 一致）、配對檢定只用共同交易日；每個測試在壞行為下必須失敗。
 - 分數生成期間不得修改 `V6/research_lab/*.py`（會使 manifest 被拒）。
+
+## 修訂 1（2026-11-20，於任何 P3 神經網路分數與結果出現之前；追加，不改動上文）
+兩位獨立審查（皆 NO_GO，CPU 工程驗證通過）指出本規格有矛盾與缺口，修訂如下：
+1. **模型契約（取代上文「no-conv」）**：上文「no-conv」與「沿用先前已定設定」互相矛盾——先前實驗（roadmap 11.7／12.20）實際使用官方 `mamba_ssm.Mamba2`，單股 mamba2 為官方預設卷積，跨股混合層 `d_conv=2`（見 `cross_stock.py`），mixer_kw 為 d_state=16、headdim=8、expand=2。P3 一律使用**先前實際用的配方**以保持可比，不含「no-conv」消融。
+2. **有效設定凍結**：完整有效設定（含 `DEFAULT_CFG` 繼承的 weight_decay=.01、patience=3、val_max_rows=80,000、val_dates=126、attn_window 等，以及 epoch=8、dates_per_batch=8、stocks_per_date=256、steps 400）必須寫成明確的凍結字典、寫入 manifest，並由測試與執行前閘門確認與其逐項相等；`DEFAULT_CFG` 日後變動不得悄悄改變 P3。
+3. **判定規則（操作化）**：「優於 C0+」＝95% CI 下界 > 0 且 Holm p < .05；「劣於 C0+」＝上界 < 0 且 Holm p < .05；其餘「未證實」。
+4. **GPU 環境**：WSL 內原無 GPU 版 torch／mamba-ssm 環境。新建 `~/.venvs/marketmamba-gpu`（Python 3.12.3、torch 2.10.0+cu128、causal-conv1d 1.7.0、mamba-ssm 2.3.2.post1 官方預編譯 wheel，其餘套件與 pilot09 環境相同版本），鎖檔 `~/.venvs/marketmamba-gpu.requirements.lock.txt`；正式執行前須有官方 Mamba2 GPU 前向／反向冒煙證據。
+5. **預算與安全**：14 小時預算須以持久帳本記錄每次嘗試（含失敗或被中止的 fit）的實際耗時，跨程序累計；啟動時若存在 STOP 檔必須拒絕續跑，需人工移除；溫度紀錄保存。
+6. **purge 檢查**：`checked_splits` 的訓練列 purge 與標籤成熟規則須以真實折的 metadata 對照 `rolling_runner` 的實際切分（測試使用真實折目錄的 `splits.npy` 或其雜湊），而非只用合成切分。
+7. 確認性路徑的解鎖程序（contract_status 由 UNRESOLVED 變為 RESOLVED 的條件）須寫入工程報告，並有端到端測試涵蓋 `p3_main`（含神經分數目錄載入與 `confirmatory_ready` 閘門）。

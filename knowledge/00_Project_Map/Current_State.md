@@ -1,5 +1,14 @@
 # MarketMamba Current State
 
+## P3 序列分數／組合工程候選 — 2026-11-20
+
+`job-run-mwnteeta-4dea80` builder，detached `06bc0c73a44d6bb725b36f136c7c953d4d199e14`，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；本輪禁止 commit/push/merge/GPU/額外 agents。[P3 frozen spec](../../tasks/spec-mamba-portfolio-p3-20261120.md) 下新增 [sequence adapter](../../V6/research_lab/rolling_seq_scores.py)、[P3 tests](../../V6/research_lab/tests/test_p3.py)，並 additive 擴充 [portfolio evaluator](../../V6/research_lab/portfolio_eval.py) 的 `--mode p3`。既有 P1/P2 預設路徑不改。adapter 具逐fit不可覆寫parquet/hash sidecar、P1 keys/labels比對、outer/inner purge/finite labels檢查、work-only rankgauss cache、batch溫控與完成fit續跑；P3 evaluator 固定P2主要格、三系統、common-date H-P3a/b與Holm、逐折淨報酬／描述性IC。
+
+**STOP_MODEL_CONTRACT_AMBIGUITY / GPU_SMOKE_NOT_RUN**：spec「官方Mamba2、no-conv」與pilot09實際official default conv／cross d_conv2互相矛盾；不得靜默換用另一no-conv實作。CLI與無注入mixer的library entry均先拒絕訓練。使用者「No GPU」與要求GPU冒煙並存，採No GPU；pilot09 Python3.12.3 venv的mamba-ssm亦MISSING，未安裝依賴。正式2023冒煙、24fits與GPU實測估時未完成。14h計時目前只累計完成fits與當次wall time，未完成fit跨程序用量不是可靠會計；正式解鎖前須補齊。
+
+驗證：指定全套 **493 passed、1 skipped／108.28s**；P3 focused18 passed；五項in-memory反證各exit1／1failed。合格CPU injected-mixer工程冒煙：兩adapter各984fit/240val/240eval rows，mamba2 2.1513s／crossstock0.0966s；三系統合成portfolio1.7584s、各61return days，p_holm1且INCOMPLETE_ENGINEERING_ONLY。假溫度60°C，實際GPU型號／顯存／溫度N/A，不外推CPU至GPU。GENERATED證據`.artifacts/p3/builder-verification/complete-validation/`；早期validation cap120導致best=-9的輸出保留並判不合格，新adapter拒絕LAST fallback。詳細變更、偵察、限制與命令見[工程報告](../../reports/v7_p3_portfolio_engineering.md)。Next：釐清並正式凍結no-conv語義與GPU授權衝突、可靠跨重啟預算會計，再另做官方GPU冒煙；既有P1/P2結論與production authority不變。
+
+
 ## P2 low-turnover result — 2026-11-20
 
 Pre-registered P2 ([spec](../../tasks/spec-lowturnover-p2-20261119.md) with amendment 1, [report](../../reports/v7_p2_portfolio_evaluation.md)), source commit `fcfc0e6`, E2 RESEARCH_ONLY / NOT_DEPLOYED. Hold buffer plus 20-session rebalance cut annual turnover from about 15x to about 5x and cost drag from about 13% to about 4.5% for both C0+ and LightGBM (descriptive, six folds). Confirmatory tests on clean folds 2021-2023 remain unconfirmed: H-P2a (net excess vs proportional-cost benchmark) and H-P2b (vs P1 primary) have 95% CIs that cross zero. The P2 primary design was informed by P1 descriptive results on the same folds, so it is not an independent test. Minimum fee (20 TWD per order) costs about 0.6 points a year at 1M TWD capital and vanishes at 10M. Next: an unexposed-forward confirmatory test of the fixed P2 primary cell, adj_close/delisting evidence, and Mamba2/S-Mamba under the same portfolio protocol.

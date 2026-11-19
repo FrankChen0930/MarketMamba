@@ -264,3 +264,7 @@ Human明確批准一組小型real-data recipe，60e7ca7在Fit前固定；W11環�
 60726 feature-only predictions /same W29support與獨立Replay通過；5d正、10d負，4組Mean均低於舊Ridge，但不宣告winner/研究准入。
 Expanding各Origin仍需另凍結model-ready/maturity/purge/refit/selection與資源；本次不自動批准。
 [Evidence](../../research/v7/window30-evidence.json)、[Report](../../reports/v7_window30_fixed_lightgbm.md)。
+
+## P3 bounded engineering candidate — 2026-11-20
+
+[P3 spec](../../tasks/spec-mamba-portfolio-p3-20261120.md) 對官方Mamba2/no-conv有未解語義矛盾；[adapter](../../V6/research_lab/rolling_seq_scores.py) 與 [P3 portfolio mode](../../V6/research_lab/portfolio_eval.py) 為UNMERGED / NOT_DEPLOYED工程候選，正式訓練fail closed。只驗證injected CPU與synthetic三系統流程、P1相同列集合、maturity/purge、種子rank PIT、common dates、Holm及溫控；不升格IC／portfolio／GPU或trading evidence。不得用既有pilot09歷史結果取代此次研究。493passed/1skipped、五反證及完整限制見[工程報告](../../reports/v7_p3_portfolio_engineering.md)。未完成fit跨程序GPU預算尚非可靠會計；需先解決才能正式解鎖。

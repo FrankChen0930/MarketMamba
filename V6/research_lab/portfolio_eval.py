@@ -575,12 +575,157 @@ def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_sampl
                 missing_lagged_market_value_rows=int(merged.stratum.isna().sum()), price_basis_fallback=None if has_adj else 'raw: adj_close unavailable/invalid')
 
 
+def p3_pair(model, baseline):
+    """Pair within-fold common return dates; expose excluded tails."""
+    aa={r['date']:r for r in model['daily_returns']}
+    bb={r['date']:r for r in baseline['daily_returns']}
+    if len(aa)!=len(model['daily_returns']) or len(bb)!=len(baseline['daily_returns']):
+        raise ValueError('duplicate paired return dates')
+    common=sorted(aa.keys() & bb.keys())
+    return dict(daily_returns=[dict(date=d,net=aa[d]['net']-bb[d]['net'],benchmark=0.) for d in common]),dict(
+        days=len(common),excluded_model_dates=sorted(aa.keys()-bb.keys()),excluded_c0plus_dates=sorted(bb.keys()-aa.keys()))
+
+
+def p3_hypotheses(primaries, complete, samples):
+    from .significance import paired_ic_test
+    tests,support={},[]
+    for name,model in [('H-P3a','mamba2'),('H-P3b','crossstock')]:
+        pairs=[]
+        for year in (2021,2022,2023):
+            if (year,model) not in primaries or (year,'c0plus') not in primaries:
+                support.append(dict(fold=year,system=model,status='MISSING'))
+                continue
+            pair,info=p3_pair(primaries[year,model],primaries[year,'c0plus'])
+            pairs.append(pair)
+            support.append(dict(fold=year,system=model,status='PAIRED',**info))
+        values=[r['net'] for row in pairs for r in row['daily_returns']]
+        result=pooled_test(pairs,samples)
+        if len(values)>=20:
+            stat=paired_ic_test(pd.Series(values),pd.Series(np.zeros(len(values))),5,n_boot=samples,block=20)
+            result.update(p_boot=stat['p_boot'],ci95=stat['ci95_boot'])
+        else: result['p_boot']=1.
+        tests[name]=result
+    family_complete=complete and samples==1000 and all(x['status']=='PAIRED' and x['days']>=20 for x in support)
+    for name,pval in zip(tests,holm_adjust([r['p_boot'] for r in tests.values()])):
+        r=tests[name]; r['p_holm']=pval
+        r['status']='CONFIRMATORY' if family_complete else 'INCOMPLETE_ENGINEERING_ONLY'
+        lo,hi=r.get('ci95',[0.,0.])
+        r['decision']=('優於 C0+' if lo>0 else '劣於 C0+') if family_complete and pval<.05 and (lo>0 or hi<0) else '未證實'
+    return dict(tests=tests,pairing=support,correction='Holm family=2; two-sided centered block bootstrap; block=20')
+
+
+def p3_ic_description(scores, samples):
+    from .significance import paired_ic_test
+    daily={}
+    for (fold,system),group in scores.groupby(['fold','system']):
+        values={}
+        for date,g in group.groupby('date'):
+            ok=np.isfinite(g.score)&np.isfinite(g.label_y5)
+            if ok.sum()>=10:
+                value=g.loc[ok,'score'].rank().corr(g.loc[ok,'label_y5'].rank())
+                if np.isfinite(value): values[date]=float(value)
+        daily[int(fold),system]=pd.Series(values,dtype=float)
+    rows=[]
+    for year in sorted(scores.fold.unique()):
+        for model in ('mamba2','crossstock'):
+            a=daily.get((year,model),pd.Series(dtype=float)); b=daily.get((year,'c0plus'),pd.Series(dtype=float))
+            row=dict(fold=int(year),system=model,role='descriptive',model_mean=float(a.mean()) if len(a) else None,
+                     c0plus_mean=float(b.mean()) if len(b) else None)
+            if len(a.index.intersection(b.index))>=20:
+                r=paired_ic_test(a,b,5,n_boot=samples,block=20)
+                row['paired']={k:(None if isinstance(v,float) and not np.isfinite(v) else v) for k,v in r.items()}
+            else: row['status']='INSUFFICIENT_COMMON_SESSIONS'
+            rows.append(row)
+    return rows
+
+
+def evaluate_p3(scores, prices, caps, manifest, bootstrap_samples=1000, part_dir=None, input_identity=None):
+    """Fixed P2 primary cell, three systems; P1/P2 execution is unchanged."""
+    from .rolling_seq_scores import require_same_rows
+    systems={'c0plus','mamba2','crossstock'}
+    if set(scores.system)!=systems: raise ValueError('P3 requires exactly three systems')
+    for year,g in scores.groupby('fold'):
+        if set(g.system)!=systems: raise ValueError('P3 incomplete fold system support')
+        for model in ('mamba2','crossstock'):
+            require_same_rows(g[g.system.eq(model)],g[g.system.eq('c0plus')])
+    config=replace(p2_primary_config(),bootstrap_samples=bootstrap_samples)
+    contract=dict(mode='p3',manifest=manifest,inputs=input_identity,config=asdict(config),
+                  implementation=provenance()['implementation'],
+                  spec=identity(Path(__file__).parents[2]/'tasks/spec-mamba-portfolio-p3-20261120.md'),
+                  frames=[hashlib.sha256(f.to_parquet(index=False)).hexdigest() for f in (scores,prices,caps)])
+    run_hash=content_hash(contract)
+    if part_dir is None: part_dir=Path(__file__).parents[2]/'.artifacts/p3'/('portfolio-'+run_hash)
+    part_dir=Path(part_dir)
+    primaries,rows={},[]
+    for (year,system),group in scores.groupby(['fold','system']):
+        path=part_dir/f'part-{year}-{system}.json'
+        if path.exists():
+            saved=json.loads(path.read_text())
+            if saved['run_hash']!=run_hash or saved['payload_sha256']!=content_hash(saved['payload']):
+                raise ValueError('P3 part identity/hash mismatch')
+            row=saved['payload']
+            if row['fold']!=int(year) or row['system']!=system: raise ValueError('P3 part key mismatch')
+        else:
+            pred=group.assign(model=system,horizon=5)
+            calendar=sorted(prices.date.unique())
+            before=[d for d in calendar if d<pred.date.min()]; after=[d for d in calendar if d>pred.date.max()]
+            lo=before[-1] if before else pred.date.min(); hi=after[0] if after else pred.date.max()
+            p=prices[prices.date.between(lo,hi)].copy()
+            p['universe_eligible']=pd.MultiIndex.from_frame(p[['date','code']]).isin(pd.MultiIndex.from_frame(pred[['date','code']]))
+            result=summary(evaluate_cell(p,pred,config))
+            row=dict(result,fold=int(year),system=system,status='COMPUTED',role='descriptive')
+            publish_part(path,dict(run_hash=run_hash,payload_sha256=content_hash(row),payload=row))
+        primaries[int(year),system]=row; rows.append(row)
+    complete=(set(scores.fold)>={2021,2022,2023} and manifest.get('confirmatory_ready') is True)
+    return dict(results=rows,primary_config=asdict(config),grid_complete=set(scores.fold)==set(range(2021,2027)),
+                hypotheses=p3_hypotheses(primaries,complete,bootstrap_samples),
+                ic_paired_descriptive=p3_ic_description(scores,bootstrap_samples),
+                net_excess_descriptive={f'{y}-{m}':pooled_test([r],bootstrap_samples) for (y,m),r in primaries.items()})
+
+
+def p3_main(a):
+    from .rolling_seq_scores import pinned_reference, require_same_rows
+    root=(Path(__file__).parents[2]/'.artifacts/p3').resolve(); out=a.out.resolve()
+    if out==root or not out.is_relative_to(root): raise ValueError('output must be below .artifacts/p3/')
+    if out.exists(): raise FileExistsError(out)
+    if a.system or a.retry_errors: raise ValueError('P3 requires all systems; use new namespace after failure')
+    if not a.run:
+        print(json.dumps(dict(dry_run=True,mode='p3',grid_cells=1,output=str(out)))); return
+    scores,prices,caps,manifest,inputs,diagnostics=load_inputs(a.scores_dir,a.data_root)
+    reference,p1_manifest,p1_inputs=pinned_reference(a.p1_scores_dir)
+    if set(scores.system)!={'mamba2','crossstock'}: raise ValueError('P3 neural score systems mismatch')
+    years=sorted(a.fold or scores.fold.unique()); scores=scores[scores.fold.isin(years)]; reference=reference[reference.fold.isin(years)]
+    for year in years:
+        for model in ('mamba2','crossstock'):
+            require_same_rows(scores[(scores.fold==year)&(scores.system==model)],reference[reference.fold==year])
+    scores=pd.concat([scores,reference],ignore_index=True)
+    prov=provenance()
+    combined=dict(neural=manifest,c0plus=p1_manifest,confirmatory_ready=(
+        manifest.get('version')=='p3-scores-v1' and manifest.get('parameters',{}).get('smoke') is False
+        and sorted(manifest.get('seeds',[]))==[17,29] and manifest.get('contract_status')=='RESOLVED'
+        and sorted(p1_manifest.get('seeds',[]))==[17,29,43]
+        and p1_manifest.get('parameters',{}).get('max_train_rows')==500_000))
+    if diagnostics['missing_prediction_price_keys']: raise ValueError('STOP missing prediction price keys')
+    result=evaluate_p3(scores,prices,caps,combined,a.bootstrap_samples,a.out.parent/a.out.stem,dict(**inputs,p1=p1_inputs))
+    for value in list(inputs.values())+list(p1_inputs.values()):
+        if isinstance(value,dict) and 'path' in value and identity(value['path'])['sha256']!=value['sha256']:
+            raise RuntimeError('P3 input changed during run')
+    if prov['implementation']!=provenance()['implementation']: raise RuntimeError('P3 source changed during run')
+    out.parent.mkdir(parents=True,exist_ok=True)
+    write_json(out,dict(version='p3-portfolio-v1',artifact_class='GENERATED',evidence_class='E2 RESEARCH_ONLY',
+                        provenance=prov,inputs=dict(**inputs,p1=p1_inputs),caveats=CAVEATS+P2_CAVEATS,
+                        diagnostics=diagnostics,**result))
+    print(json.dumps(dict(output=str(out),sha256=identity(out)['sha256'],cells=len(result['results']))))
+
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--mode', choices=('p1','p2'), default='p1')
+    p.add_argument('--mode', choices=('p1','p2','p3'), default='p1')
     p.add_argument('--fold', type=int, action='append', help='Explicit partial engineering subset')
     p.add_argument('--system', action='append', help='Explicit partial engineering subset')
     p.add_argument('--scores-dir', type=Path, required=True)
+    p.add_argument('--p1-scores-dir', type=Path, default=Path(__file__).parents[2]/'.artifacts/p1/full-scores-ace2eef')
     p.add_argument('--data-root', type=Path, default=DATA_ROOT)
     p.add_argument('--out', type=Path, required=True)
     p.add_argument('--primary-only', action='store_true')
@@ -588,6 +733,8 @@ def main(argv=None):
     p.add_argument('--retry-errors', action='store_true', help='Retry ERROR cells in ERROR parts only; preserve original parts and append immutable attempts')
     p.add_argument('--run', action='store_true')
     a = p.parse_args(argv)
+    if a.mode=='p3':
+        return p3_main(a)
     report_path = a.out
     if a.retry_errors and report_path.exists():
         attempt = 1

@@ -1,5 +1,12 @@
 # MarketMamba Authority Map
 
+## P3 bounded builder candidate authority — 2026-11-20
+
+[P3 frozen registration](../../tasks/spec-mamba-portfolio-p3-20261120.md) owns research assumptions；[rolling sequence adapter](../../V6/research_lab/rolling_seq_scores.py)、[P3 evaluator mode](../../V6/research_lab/portfolio_eval.py) 與 [executable P3 tests](../../V6/research_lab/tests/test_p3.py) 是 `job-run-mwnteeta-4dea80` detached base `06bc0c7` 的未提交工程候選，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。P1/P2 defaults、正式Data、模型權重、production/scheduler均不變，無artifact或production authority supersession。
+
+Canonical ambiguity：官方Mamba2/no-conv同時出現在spec，但pilot09 local_b8實際config未指定d_conv，而現有cross_stock明定跨股d_conv2。不能用歷史結果、notebook名或另一SSD模型消除此矛盾；正式CLI與無注入mixer的library entry均fail closed。GPU冒煙與完整GPU估時NOT_RUN（No GPU限制、mamba-ssm缺失），僅有injected CPU／synthetic engineering evidence；完整493測試通過不等於正式訓練ready或Human acceptance。完成fit hash續跑不代表mid-fit recovery；目前14h guard未可靠持久化未完成fit跨重啟耗時。詳見[工程報告](../../reports/v7_p3_portfolio_engineering.md)與[Current State](Current_State.md#p3-序列分數組合工程候選--2026-11-20)。解除模型歧義與預算缺口前不得產生或宣稱正式P3結果。
+
+
 ## P2 amendment 1 candidate boundary — 2026-11-19
 
 [Frozen P2 registration including amendment 1](../../tasks/spec-lowturnover-p2-20261119.md) owns research assumptions; [portfolio](../../V6/research_lab/portfolio.py)、[evaluator](../../V6/research_lab/portfolio_eval.py) 與 [P2 tests](../../V6/research_lab/tests/test_p2.py) 是 detached `1920fde` bounded repair candidate，UNMERGED / NOT_DEPLOYED。修訂 1 supersede 原 P2 全因子網格及主要基準最低費用假設；不 supersede P1／歷史 artifacts。主要基準只收比例成本，最低費用基準敏感度 descriptive／confirmation_eligible=false，不進 H-P2a/b。OFAT＋三指定組合去重為14格／fold×system、168 P2格＋12 P1 references。P2全格（含buffer=top_k）明確啟用preserve_frozen_overflow，P1預設關閉；凍結overflow保留全部既有股數，不新增／不強制賣出可成交持股，terminal不變。預設P1算式不改；位元一致僅預設逐日策略／基準報酬，以pre-P2引擎golden及舊P1 part比對驗證；schema與run_hash不同、舊P1 parts無法續跑。--fold／--system子集必grid_complete=false，各自run_hash不得拼成確認性結果。
