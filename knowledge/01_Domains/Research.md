@@ -2,7 +2,7 @@
 
 ## P2 evaluator candidate — 2026-11-19
 
-[Registered P2](../../tasks/spec-lowturnover-p2-20261119.md) 由現有 [evaluator](../../V6/research_lab/portfolio_eval.py) 的 `--mode p2` 執行；P1 為預設。重用唯讀 P1 rank-average scores，972 descriptive cells／fold×system、六折兩系統共 11,664；主要格與同分數 P1 reference 用共同日期比較，tail exclusions 明列。H-P2a/b 為 20-session／1000-sample circular bootstrap、one-sided centered-bootstrap p values、Holm family=2；缺 2021–2023 完整主要支援、非正式 seeds/train support 或 primary-only smoke 不作確認性判定。原子不覆寫 parts、input/spec/implementation SHA-256 與 source commit 控制續跑，ERROR 重試沿用 P1 immutable chain。最低費用為未驗證常見假設，比例另拆 full floor-binding commission 與 uplift。UNMERGED / NOT_DEPLOYED，E2 RESEARCH_ONLY；[工程報告](../../reports/v7_p2_portfolio_engineering.md) 不代表完整研究或 Human acceptance。
+[Registered P2](../../tasks/spec-lowturnover-p2-20261119.md) 由現有 [evaluator](../../V6/research_lab/portfolio_eval.py) 的 `--mode p2` 執行；P1 為預設。重用唯讀 P1 rank-average scores，修訂 1 的 OFAT＋三指定組合（去重）14 descriptive cells／fold×system、六折兩系統共 168，另 12 個 P1 references；主要格與同分數 P1 reference 用共同日期比較，tail exclusions 明列。H-P2a/b 為 20-session／1000-sample circular bootstrap、one-sided centered-bootstrap p values、Holm family=2；缺 2021–2023 完整主要支援、非正式 seeds/train support 或 primary-only smoke 不作確認性判定。--fold／--system 子集的 grid_complete 必為 false，確認性維持 incomplete。P2 schema／run_hash 與 P1 不同，舊 P1 parts 不能續跑；位元一致只指預設路徑逐日策略與基準報酬。原子不覆寫 parts、input/spec/implementation SHA-256 與 source commit 控制續跑，ERROR 重試沿用 P1 immutable chain。最低費用為未驗證常見假設，比例另拆 full floor-binding commission 與 uplift。UNMERGED / NOT_DEPLOYED，E2 RESEARCH_ONLY；[工程報告](../../reports/v7_p2_portfolio_engineering.md) 不代表完整研究或 Human acceptance。
 
 ## P1 review-repair candidate — 2026-11-19
 

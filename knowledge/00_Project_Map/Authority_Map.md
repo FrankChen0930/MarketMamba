@@ -1,8 +1,10 @@
 # MarketMamba Authority Map
 
-## P2 candidate boundary — 2026-11-19
+## P2 amendment 1 candidate boundary — 2026-11-19
 
-[Frozen P2 registration](../../tasks/spec-lowturnover-p2-20261119.md) owns research assumptions; [portfolio](../../V6/research_lab/portfolio.py)、[evaluator](../../V6/research_lab/portfolio_eval.py) 與 [P2 tests](../../V6/research_lab/tests/test_p2.py) 是 detached `fec03f7` builder 的 uncommitted candidate，UNMERGED / NOT_DEPLOYED。P1 預設保留原成本運算路徑；P2 僅 `--mode p2` 啟用，使用 `.artifacts/p2/`，hash-bound fold×system parts 與 immutable retry chain 沿用 P1。P2 parts 額外保存 source commit、spec/input/implementation identity。排名只讀 signal close；最低費用以單筆 normalized notional 乘 initial_capital 換成 TWD，NAV 漂移已在 notional 中。最低費用比例為 floor-binding 委託的完整佣金／總成本，另列增額。H-P2b 僅配對同折同分數的共同報酬日，排除日期明列；H-P2a/b 共同 Holm 校正，LightGBM 描述性。既有 P1 artifacts 不修改、不 supersede；engineering smoke 不升格 E2 以外證據或 production authority。詳見 [Current State](Current_State.md#p2-bounded-implementation-candidate--2026-11-19)。
+[Frozen P2 registration including amendment 1](../../tasks/spec-lowturnover-p2-20261119.md) owns research assumptions; [portfolio](../../V6/research_lab/portfolio.py)、[evaluator](../../V6/research_lab/portfolio_eval.py) 與 [P2 tests](../../V6/research_lab/tests/test_p2.py) 是 detached `1920fde` bounded repair candidate，UNMERGED / NOT_DEPLOYED。修訂 1 supersede 原 P2 全因子網格及主要基準最低費用假設；不 supersede P1／歷史 artifacts。主要基準只收比例成本，最低費用基準敏感度 descriptive／confirmation_eligible=false，不進 H-P2a/b。OFAT＋三指定組合去重為14格／fold×system、168 P2格＋12 P1 references。P2全格（含buffer=top_k）明確啟用preserve_frozen_overflow，P1預設關閉；凍結overflow保留全部既有股數，不新增／不強制賣出可成交持股，terminal不變。預設P1算式不改；位元一致僅預設逐日策略／基準報酬，以pre-P2引擎golden及舊P1 part比對驗證；schema與run_hash不同、舊P1 parts無法續跑。--fold／--system子集必grid_complete=false，各自run_hash不得拼成確認性結果。
+
+P2僅--mode p2啟用，使用`.artifacts/p2/`、input/spec/implementation hashes、source commit、hash-bound immutable parts/retry chain；signal-close排名與initial-NAV notional×initial_capital換TWD語義不變。H-P2b只配對共同日期，尾端明列；H-P2a/b共同Holm family2，LightGBM描述性。2023單折與完整估時是工程 evidence，不升格研究確認／production authority或Human acceptance。詳見 [Current State](Current_State.md#p2-amendment-1-bounded-repair-candidate--2026-11-19) 與 [工程報告](../../reports/v7_p2_portfolio_engineering.md)。
 
 ## P1 bounded diagnostic/retry follow-up — 2026-11-19
 

@@ -2,7 +2,7 @@
 
 ## P2 research accounting candidate — 2026-11-19
 
-[Research engine](../../V6/research_lab/portfolio.py) 依 [P2 spec](../../tasks/spec-lowturnover-p2-20261119.md) 新增 hold_buffer_rank、min_fee、initial_capital。NAV、cash、order notional 都以初始 NAV=1 表示；notional × initial_capital 才是 TWD，不能再重複乘 NAV。緩衝只讀 signal-day eligible ranks，ties 以 code 排序；保留既有持股後按排名補缺。最低佣金逐委託收取，blocked／零委託不收；預設仍走原始比例成本路徑。無整股／零股、券商或實際 execution 證據。UNMERGED / NOT_DEPLOYED；[tests](../../V6/research_lab/tests/test_p2.py) 與 [工程報告](../../reports/v7_p2_portfolio_engineering.md) 是 bounded 工程證據。
+[Research engine](../../V6/research_lab/portfolio.py) 依 [P2 spec](../../tasks/spec-lowturnover-p2-20261119.md) 新增 hold_buffer_rank、min_fee、initial_capital。NAV、cash、order notional 都以初始 NAV=1 表示；notional × initial_capital 才是 TWD，不能再重複乘 NAV。緩衝只讀 signal-day eligible ranks，ties 以 code 排序；保留既有持股後按排名補缺。最低佣金逐策略委託收取，blocked／零委託不收；修訂 1 的 P2 基準只收比例成本，另列也收最低費用的 descriptive sensitivity，不能進確認性。P2全格明確啟用 preserve_frozen_overflow（含 buffer=top_k），P1預設關閉。凍結加選股數超過 top_k 時保留所有既有股數，不新增、不強制賣出可成交持股；terminal liquidation 不變。預設仍走原始比例成本路徑，另以 pre-P2 ace2eef 引擎的固定合成逐日報酬 hash 回歸。無整股／零股、券商或實際 execution 證據。UNMERGED / NOT_DEPLOYED；[tests](../../V6/research_lab/tests/test_p2.py) 與 [工程報告](../../reports/v7_p2_portfolio_engineering.md) 是 bounded 工程證據。
 
 ## Metadata
 

@@ -20,6 +20,7 @@ import numpy as np
 import pandas as pd
 
 from .portfolio import Config, run_backtest
+from .significance import holm_adjust
 from .rolling_scores import identity, output_path, provenance, write_json
 
 CAVEATS = [
@@ -36,6 +37,18 @@ CAVEATS = [
     'simulation labels and historical prices; no executable/trading readiness',
     'costs are research assumptions, not actual broker fees; 2024-2026 descriptive only',
     'gross minus net includes cost-induced allocation differences; capacity uses raw close times volume converted to shares',
+]
+
+
+P2_CAVEATS = [
+    'P2 result schema and run_hash differ from P1; old P1 parts cannot resume P2.',
+    'Bitwise consistency refers only to default-path daily strategy and benchmark returns.',
+    'P2 primary benchmark pays proportional costs only (no min_fee); benchmark with min_fee is descriptive sensitivity, excluded from confirmation.',
+    'Frozen holdings causing selected plus frozen count above top_k preserve all incumbent quantities: no additions or forced tradable sales at that rebalance; terminal liquidation unchanged.',
+    'Minimum fee=20 TWD is an unverified common assumption; fractional shares, no board/odd-lot modeling.',
+    'Capital sizes are descriptive research assumptions, not user assets.',
+    'minimum_fee_cost_fraction: full commission on floor-binding orders / total fees+tax+slippage; uplift reported separately.',
+    'H-P2b pairs common dates only; different terminal tails explicitly excluded.',
 ]
 
 
@@ -150,15 +163,36 @@ def configurations():
 
 def p2_primary_config():
     return replace(primary_config(), rebalance_sessions=20, hold_buffer_rank=100,
-                   commission_discount=.6, min_fee=20., initial_capital=1e6)
+                   commission_discount=.6, min_fee=20., initial_capital=1e6, benchmark_proportional_only=True, preserve_frozen_overflow=True)
 
 
 def p2_configurations():
-    for k, reb, multiplier, discount, minimum, slip, capital in itertools.product(
-            (30,50,100), (10,20,40), (1.,1.5,2.), (1.,.6,.28), (0.,20.), (10.,25.), (1e6,1e7,1e8)):
-        yield replace(p2_primary_config(), top_k=k, rebalance_sessions=reb,
-                      hold_buffer_rank=int(k*multiplier), commission_discount=discount,
-                      min_fee=minimum, slippage_bps=slip, initial_capital=capital)
+    """Amendment 1: one factor at a time plus three registered combinations.
+
+    Buffer is a multiple of top_k; varying top_k preserves the primary 2x
+    multiplier. Combinations (a) and (c) duplicate OFAT cells: 16 entries,
+    14 unique cells, each evaluated once and reported in deterministic order.
+    """
+    primary = p2_primary_config()
+    candidates = [primary]
+    for field, values in (
+            ('rebalance_sessions', (10,20,40)),
+            ('hold_buffer_rank', (50,75,100)),
+            ('top_k', (30,50,100)),
+            ('commission_discount', (1.,.6,.28)),
+            ('min_fee', (0.,20.)), ('slippage_bps', (10.,25.)),
+            ('initial_capital', (1e6,1e7,1e8))):
+        for value in values:
+            changes = {field:value}
+            if field == 'top_k':
+                changes['hold_buffer_rank'] = 2*value
+            candidates.append(replace(primary, **changes))
+    candidates.extend([
+        replace(primary, initial_capital=1e7),
+        replace(primary, commission_discount=.28, initial_capital=1e7),
+        replace(primary, rebalance_sessions=40),
+    ])
+    yield from dict.fromkeys(candidates)
 
 
 def p2_hypotheses(primaries, references, manifest, primary_only, samples):
@@ -198,14 +232,12 @@ def p2_hypotheses(primaries, references, manifest, primary_only, samples):
                 estimates.append(float(centered[idx].mean()))
             result['p_one_sided'] = float((1+sum(v>=values.mean() for v in estimates))/(samples+1))
         tests[name] = result
-    ordered = sorted(tests, key=lambda n:tests[n].get('p_one_sided',1.))
-    previous = 0.
-    for i,name in enumerate(ordered):
+    names = list(tests)
+    for name, adjusted in zip(names, holm_adjust([tests[n].get('p_one_sided',1.) for n in names])):
         r = tests[name]
-        previous = max(previous,min(1.,(2-i)*r.get('p_one_sided',1.)))
-        r['p_holm'] = previous
+        r['p_holm'] = adjusted
         r['status'] = 'CONFIRMATORY' if complete else 'INCOMPLETE_ENGINEERING_ONLY'
-        passed = complete and r.get('ci95',[0])[0]>0 and previous<.05
+        passed = complete and r.get('ci95',[0])[0]>0 and adjusted<.05
         r['decision'] = ('淨有益' if name=='H-P2a' else '低換手設計有改善') if passed else '未證實'
     return dict(tests=tests, pairing=support, correction='Holm, family=2, alpha=.05',
                 p_value_method='one-sided centered circular block bootstrap, plus-one correction')
@@ -383,7 +415,7 @@ def load_inputs(scores_dir, data_root):
     return scores, prices, caps, manifest, inputs, diagnostics
 
 
-def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_samples=1000, part_dir=None, input_identity=None, retry_errors=False, mode='p1'):
+def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_samples=1000, part_dir=None, input_identity=None, retry_errors=False, mode='p1', selection_partial=False):
     if mode not in ('p1','p2'):
         raise ValueError('invalid evaluation mode')
     strata = lagged_strata(caps, sorted(prices.date.unique()))
@@ -403,6 +435,7 @@ def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_sampl
                     frames=[hashlib.sha256(f.to_parquet(index=False)).hexdigest() for f in (scores,prices,caps)])
     if mode == 'p2':
         contract.update(mode=mode, source_commit=provenance()['source_commit'],
+                        selection_partial=selection_partial,
                         spec_sha256=identity(Path(__file__).parents[2]/'tasks/spec-lowturnover-p2-20261119.md')['sha256'])
     run_hash = content_hash(contract)
     if part_dir is None:
@@ -500,10 +533,11 @@ def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_sampl
         print(json.dumps(dict(fold=int(fold),system=system,part=str(part_path),action='WROTE',
                              errors=sum(x['status']=='ERROR' for x in payload['results']))), flush=True)
     if mode=='p2':
-        return dict(primary_config=asdict(primary), grid_complete=not primary_only, results=results,
-                    hypotheses=p2_hypotheses(primaries,references,manifest,primary_only,bootstrap_samples),
+        return dict(primary_config=asdict(primary), grid_complete=not primary_only and not selection_partial and {(int(f),str(y)) for f,y in zip(scores.fold,scores.system)}=={(f,y) for f in range(2021,2027) for y in ('c0plus','lightgbm_day_t')} and {(int(x['fold']),str(x['system'])) for x in results}=={(f,y) for f in range(2021,2027) for y in ('c0plus','lightgbm_day_t')}, results=results,
+                    hypotheses=p2_hypotheses(primaries,references,manifest,primary_only or selection_partial,bootstrap_samples),
                     actual_folds=sorted(int(f) for f in scores.fold.unique()), actual_systems=sorted(scores.system.unique()),
-                    expected_grid_cells_per_fold_system=972, price_basis_fallback='raw registered by P2')
+                    expected_grid_cells_per_fold_system=len(list(p2_configurations())),
+                    expected_full_grid_cells=12*len(list(p2_configurations())), expected_p1_reference_cells=12, price_basis_fallback='raw registered by P2')
     clean = {}
     for system in sorted(scores.system.unique()):
         rows = [primaries[(year,system)] for year in (2021,2022,2023) if (year,system) in primaries]
@@ -572,7 +606,7 @@ def main(argv=None):
             p.error('--fold/--system require --mode p2')
         out = output_path(report_path)
     if not a.run:
-        print(json.dumps(dict(dry_run=True,output=str(out),primary_only=a.primary_only,grid_cells=1 if a.primary_only else (972 if a.mode=='p2' else 432))))
+        print(json.dumps(dict(dry_run=True,output=str(out),primary_only=a.primary_only,grid_cells=1 if a.primary_only else (len(list(p2_configurations())) if a.mode=='p2' else 432))))
         return
     started = time.perf_counter()
     prov = provenance()
@@ -589,16 +623,13 @@ def main(argv=None):
         result = dict(status='STOP_MISSING_PRICE_KEYS', diagnostics=diagnostics)
     else:
         result = dict(status='COMPLETED_RESEARCH_ONLY',diagnostics=diagnostics,
-                      **evaluate(scores,prices,caps,manifest,a.primary_only,a.bootstrap_samples,part_dir=a.out.parent/a.out.stem,input_identity=inputs,retry_errors=a.retry_errors,mode=a.mode))
+                      **evaluate(scores,prices,caps,manifest,a.primary_only,a.bootstrap_samples,part_dir=a.out.parent/a.out.stem,input_identity=inputs,retry_errors=a.retry_errors,mode=a.mode,selection_partial=bool(a.fold or a.system)))
         if any(x['status']=='ERROR' for x in result['results']):
             result['status']='COMPLETED_WITH_ERRORS_RESEARCH_ONLY'
     result.update(version=a.mode+'-portfolio-v1',artifact_class='GENERATED',evidence_class='E2 RESEARCH_ONLY',
         provenance=prov,inputs=inputs,seeds=manifest['seeds'],folds=manifest['years'],
         parameters=dict(mode=a.mode,fold=a.fold,system=a.system,primary_only=a.primary_only,bootstrap_samples=a.bootstrap_samples,retry_errors=a.retry_errors),
-        caveats=CAVEATS + (['Minimum fee=20 TWD is an unverified common assumption; fractional shares, no board/odd-lot modeling.',
-                            'Capital sizes are descriptive research assumptions, not user assets.',
-                            'minimum_fee_cost_fraction: full commission on floor-binding orders / total fees+tax+slippage; uplift reported separately.',
-                            'H-P2b pairs common dates only; different terminal tails explicitly excluded.'] if a.mode=='p2' else []),
+        caveats=CAVEATS + (P2_CAVEATS if a.mode=='p2' else []),
         wall_seconds=time.perf_counter()-started)
     # Verify unchanged pinned inputs and implementation before publication.
     for name in ('prices','market_value','scores'):

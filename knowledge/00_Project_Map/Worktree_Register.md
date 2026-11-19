@@ -1,5 +1,12 @@
 # Worktree Register
 
+## P2 amendment 1 bounded repair worker — 2026-11-19
+
+- Existing path `.worktrees/ruflo-workers/run-mwnpp2vy-e42792/fixer`; detached HEAD/base `1920fde0abfead53e84a2a9354a695e59a03764c`; owner Human/Codex builder, task approved seven amendment-1 repairs; created 2026-11-19; retired N/A. UNMERGED / NOT_DEPLOYED; explicit no commit/push/merge/agents.
+- Reuses existing portfolio engine/evaluator, tests/report and `.artifacts/p2/` container; `job-run-mwnpp2vy-e42792` namespace isolates generated smoke/logs and avoids overwriting earlier evidence. No new worktree, training or formal data changes. Authority: candidate source/tests under frozen P2 registration amendment 1; no research or production promotion.
+- Merge dependency: independent review and Human acceptance. Artifact dependency: local generated verification and read-only canonical full P1 scores/prices/caps, identities in smoke report. Safe removal requires preserved source patch, retained artifacts/resolved references and explicit retirement review; dirty worktree is not safe to remove.
+
+
 ## P1 review repair worker — 2026-11-19
 
 - Existing path `.worktrees/ruflo-workers/run-mwmgdq5i-f34fa7/fixer`; detached HEAD/base `abf0368d709b83bc916144292da8b5930cc0ff26`; owner Human/Codex builder, task R1–R3/M1–M4/M6; created 2026-11-19; retired N/A. UNMERGED / NOT_DEPLOYED, retained with uncommitted bounded repair per explicit no-commit instruction.

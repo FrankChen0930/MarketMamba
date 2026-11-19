@@ -6,7 +6,7 @@ No claim of executable fills, PIT prices, or label-equivalent close exits.
 """
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from decimal import Decimal
 
 import numpy as np
@@ -36,6 +36,8 @@ class Config:
     hold_buffer_rank: int | None = None
     min_fee: float = 0.
     initial_capital: float = 1.
+    benchmark_proportional_only: bool = False
+    preserve_frozen_overflow: bool = False
 
     def __post_init__(self):
         for name in ('top_k', 'rebalance_sessions', 'sessions_per_year', 'bootstrap_samples', 'bootstrap_block'):
@@ -45,6 +47,10 @@ class Config:
         if self.hold_buffer_rank is not None and (isinstance(self.hold_buffer_rank, bool) or
                 not isinstance(self.hold_buffer_rank, int) or self.hold_buffer_rank < self.top_k):
             raise ValueError('invalid hold_buffer_rank')
+        if not isinstance(self.preserve_frozen_overflow, bool):
+            raise ValueError('invalid preserve_frozen_overflow')
+        if not isinstance(self.benchmark_proportional_only, bool):
+            raise ValueError('invalid benchmark_proportional_only')
         # Research currency guard: at least TWD 10,000, not a normalized NAV.
         if not np.isfinite(self.initial_capital) or self.initial_capital <= 0:
             raise ValueError('invalid initial_capital')
@@ -161,6 +167,7 @@ def _simulate(panel, days, signals, predictions, config, benchmark=False, free=F
                 e = exposure.setdefault(code, dict(held_sessions=0, held_value_session_sum=0., blocked_orders=0, blocked_value_sum=0.))
                 e['blocked_orders'] += 1
                 e['blocked_value_sum'] += float(q[code]*marks[code])
+            preserve_holdings = False
             if terminal:
                 weights = pd.Series(dtype=float)
             else:
@@ -182,6 +189,12 @@ def _simulate(panel, days, signals, predictions, config, benchmark=False, free=F
                         scores = scores.loc[scores.index.isin(retained.union(additions))]
                     else:
                         scores = scores.iloc[:config.top_k]
+                if not benchmark and (config.preserve_frozen_overflow or
+                        config.hold_buffer_rank is not None and config.hold_buffer_rank > config.top_k):
+                    # Frozen names count in addition to selected names. Overflow
+                    # preserves quantities, including tradable incumbents; terminal
+                    # liquidation retains its original semantics.
+                    preserve_holdings = len(scores.index.union(codes[frozen])) > config.top_k
                 # No replacement by lower-ranked names when next open is missing.
                 weights = _weights(scores, config, benchmark).reindex(codes, fill_value=0.)
                 weights = weights.where(can_trade, 0.)
@@ -194,13 +207,15 @@ def _simulate(panel, days, signals, predictions, config, benchmark=False, free=F
             weight_array = weights.reindex(codes, fill_value=0.).to_numpy()
 
             def orders(net):
+                if preserve_holdings:
+                    return old_array.copy(), np.zeros(len(codes)), 0., 0.
                 target = np.where(frozen_array, old_array, 0.)
                 target += max(0., net-frozen_value)*weight_array
                 delta = np.where(trade_array, target-old_array, 0.)
                 return target, delta, np.maximum(delta, 0).sum(), -np.minimum(delta, 0).sum()
 
             lo, hi = frozen_value, nav
-            no_orders = config.min_fee > 0 and not (np.abs(orders(nav)[1]) > 1e-13).any()
+            no_orders = preserve_holdings or config.min_fee > 0 and not (np.abs(orders(nav)[1]) > 1e-13).any()
             if no_orders:
                 lo = nav
             for _ in range(0 if no_orders else 60):
@@ -323,7 +338,8 @@ def run_backtest(prices, predictions, config=Config()):
     if config.benchmark_code is not None and config.benchmark_code not in p.code.unique():
         raise ValueError('unknown benchmark code')
     rec, daily, trades, diagnostics = _simulate(panel, days, signals, pred, config)
-    bench, bdaily, _, bdiag = _simulate(panel, days, signals, pred, config, benchmark=True)
+    benchmark_config = replace(config, min_fee=0.) if config.benchmark_proportional_only else config
+    bench, bdaily, _, bdiag = _simulate(panel, days, signals, pred, benchmark_config, benchmark=True)
     _, gdaily, _, _ = _simulate(panel, days, signals, pred, config, free=True)
     metrics = compute_performance(rec, {x.occurred_at: x.net_value for x in bench}, evidence_class='RESEARCH_ONLY')
     values = np.array([x['nav'] for x in daily])
@@ -353,5 +369,15 @@ def run_backtest(prices, predictions, config=Config()):
                   gross_minus_net_return=float(gdaily[-1]['nav']-daily[-1]['nav']),
                   daily=daily, benchmark_daily=bdaily, trades=trades,
                   benchmark_diagnostics=bdiag, **diagnostics)
+    if config.benchmark_proportional_only:
+        # This alternative benchmark never enters main statistics or inference.
+        _, floor_daily, _, floor_diag = _simulate(panel, days, signals, pred, config, benchmark=True)
+        fv = np.array([x['nav'] for x in floor_daily])
+        result['benchmark_min_fee_sensitivity'] = dict(
+            role='descriptive', confirmation_eligible=False,
+            statistics=_statistics(values, fv, config), diagnostics=floor_diag,
+            daily_returns=[dict(date=x['date'], net=float(x['nav']/a['nav']-1),
+                                benchmark=float(y['nav']/b['nav']-1))
+                           for a,x,b,y in zip(daily,daily[1:],floor_daily,floor_daily[1:])])
     result['canonical_sha256'] = canonical_sha256(result)
     return result

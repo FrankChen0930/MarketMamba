@@ -1,3 +1,93 @@
+# P2 低換手引擎：修訂 1 bounded 修正
+
+2026-11-19；`job-run-mwnpp2vy-e42792`，builder，detached base `1920fde0abfead53e84a2a9354a695e59a03764c`。UNMERGED / NOT_DEPLOYED；E2 RESEARCH_ONLY；完成不等於 Human acceptance。依 [P2 登記修訂 1](../tasks/spec-lowturnover-p2-20261119.md)；本節 supersede 下方「修訂前歷史工程紀錄」的現行網格、基準成本與耗時估計，不修改原始歷史 artifacts。
+
+## Changed / Decisions
+
+重用既有 [engine](../V6/research_lab/portfolio.py)、[evaluator](../V6/research_lab/portfolio_eval.py)、[tests](../V6/research_lab/tests/test_p2.py) 與 `.artifacts/p2/`。獨立 namespace `.artifacts/p2/job-run-mwnpp2vy-e42792/` 是 GENERATED 工程產物，避免覆寫舊 evidence；未另建實作或 worktree。
+
+- P2 的 `benchmark_proportional_only=True`：策略照收最低費用，主要基準只收佣金×折扣、賣出稅與滑價。`benchmark_min_fee_sensitivity` 另存基準也收最低費用的 statistics、diagnostics 與 daily_returns，標示 descriptive／confirmation_eligible=false；H-P2a／b 只讀主要報酬，不讀敏感度。P1 預設 False，保留原成本算式。
+- OFAT 將 buffer 視為 top_k 的倍數；單獨改 top_k 時維持主要 2× 倍數，即 (30,60)、(100,200)。13 個 OFAT unique cells（含主要格）加三指定組合：(a) 資金 1e7、(b) 折扣 .28＋資金 1e7、(c) rebalance40。其中 (a)/(c) 與 OFAT 重複，去重後 **14 格／fold×system，六折兩系統 168 格，另 12 個 P1 reference，共 180 cells**。三組合都有 executable membership tests；最低費用基準敏感度內嵌於各 P2 格，不另計網格或假設。
+- P2 所有格明確啟用 `preserve_frozen_overflow=True`，包括 buffer_rank=top_k；P1 預設 False。啟用緩衝帶時，若選股與凍結持股聯集超過 top_k，該次再平衡保留全部既有股數，不新增，也不強制賣出可成交持股；不收無委託費用。測試涵蓋 frozen A 與可成交 B、其他較高排名股；中間委託為空。terminal liquidation 保留原語義。預設 None／top_k 路徑保留 P1 行為。
+- Holm 重用既有 canonical `significance.holm_adjust`。測試涵蓋不等 p 值、反序、一個過關一個不過及 cumulative max：(.03,.04)→(.06,.06)。整合案例 p=(1/1001,522/1001)→(2/1001,522/1001)，只有 H-P2a 過關。這是合成測試，不是本次研究結果。
+- `--fold`／`--system` 任一子集必使 `grid_complete=false`；CLI 與 evaluator 均有測試。分割輸出具有各自 run_hash，不能直接拼成完整確認性報告或跨 namespace 續跑。
+- **相對 P1，結果 schema 與 run_hash 已改變，舊 P1 parts 無法續跑；位元一致僅指預設路徑的逐日策略與基準報酬。** JSON `caveats` 也逐項明載，不聲稱新舊整份 JSON/config/hash 相同。
+
+## Evidence：RED → GREEN
+
+原始輸出保存在上述 namespace 的 `red.log`、`green-final.log`、`mutations-final.log`、`full-suite-final.log`。初始 **8 failed, 16 passed / 3.76s**；補強相等緩衝案例 RED **1 failed, 27 deselected / 1.47s**；最終 P2 focused **28 passed / 6.97s**。
+
+| 項目 | RED 實際輸出／原因 | GREEN |
+|---|---|---|
+| 1 基準成本 | benchmark 設定缺失；另 mutation 恢復基準最低費用，逐日 NAV 比較 AssertionError | 主要基準逐日等於 min_fee0 對照，策略等於原最低費用策略；敏感度完整比對 |
+| 2 網格 | frozen_grid：972 != 14 | 14 unique、主要格、指定三組合與 top_k 倍數測試通過 |
+| 3 凍結持股 | 中間委託非空 | 中間委託為 []；只持有 A/B；terminal unresolved=1；相等 buffer 也通過，停用保護 mutation 被拒絕 |
+| 4 Holm | 新測試原缺 helper；實際 mutation 缺 max 得 (.06,.04)、未校正得 1/1001，均 AssertionError | 3 組手算＋不等 p 的確認判定整合通過 |
+| 5 子集 | evaluate 不接受 selection_partial | 實際 full-cell 合成子集及兩 CLI flags 通過，grid_complete=false |
+| 6 caveats | P2_CAVEATS 缺失 AttributeError | schema/run_hash/P1 parts/位元一致範圍測試及兩 CLI JSON 通過 |
+| 7 舊引擎對照 | 改比例成本算式的 mutation 使固定期望 hash AssertionError | 還原後 golden、既有預設一致測試及實際 P1 part 比對通過 |
+
+固定合成面板來自 `fixture(31)`，29 日×策略與基準，費用／價格漂移／換股非零；期望由 **pre-P2 `ace2eef:V6/research_lab/portfolio.py` 原始引擎**產生，而非兩個新分支互比。舊程式 SHA-256 `dd53da1f4ced12cd7031afa9fd0112e742277eeba85d78168156d0401d93ea19`，little-endian interleaved IEEE754 returns SHA-256 `67d4f183fcc8124611be78fc508ed5a4db2d7b515468e7e574223260e479ee98`；重現來源 `legacy_hash.py`／`legacy_portfolio.py`。
+
+另對 2023 P1 正式既有 part 唯讀比對：231 日、3,696 bytes，日期與兩種報酬逐位元相同。interleaved returns SHA-256 `0201d17d0f80f00179f0f4e6bf10d48ce39321bb670f430848cec15811be6d63`。下方歷史紀錄的 hash 採不同 bytes 排列；兩者不混用。`bitwise-final.json` 保存來源 part 路徑與 container SHA-256。
+
+指定全套命令：
+
+```bash
+PYTHONPATH=V6:V6/research_lab/tests:. /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests tests -q
+```
+
+實際 **474 passed、1 skipped、4 warnings／90.94s**。skip 為既有案例；warnings 為既有 stale-audit mutation 的 pandas API deprecation。
+
+## 2023 折 C0+ 實際冒煙
+
+```bash
+CUDA_VISIBLE_DEVICES= OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+PYTHONPATH=V6:V6/research_lab/tests:. /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python \
+  .artifacts/p2/job-run-mwnpp2vy-e42792/smoke-final-timed.py
+```
+
+wrapper 呼叫既有 CLI：`--mode p2 --scores-dir /home/frank/projects/MarketMamba/.artifacts/p1/full-scores-ace2eef --out .artifacts/p2/job-run-mwnpp2vy-e42792/smoke-final.json --primary-only --fold 2023 --system c0plus --run`。不重訓；第一次量測與先前全套保留為歷史 logs；本節數值與 hashes 全部對應最終程式。wrapper 只量測 `checked_cell` 耗時與 Linux ru_maxrss，不修改實作。
+
+**109.417992s CLI／110.895806s 含啟動；1 part、2 COMPUTED cells、0 ERROR、grid_complete=false**。主要格 2023-01-03～2023-12-06、221 returns；P1 reference 到 12-20／231 returns，多出的 10 日列為未配對尾端。策略與前次一致，改變的是主要基準。
+
+| 指標 | 實際值 |
+|---|---:|
+| 策略區間／年化淨報酬 | 25.522813%／29.589746% |
+| 比例成本基準區間報酬（主要） | 33.948999% |
+| 主要日均淨超額 | -0.000326306791 |
+| 基準也收最低費用區間報酬（僅敏感度） | 13.862428% |
+| 敏感度日均淨超額（不進確認性） | +0.000404358990 |
+| 策略 Sharpe-like／最大回撤 | 3.169065／5.064570% |
+| 年換手／gross-minus-net drag | 4.727433×／0.043674813 初始 NAV |
+| 最低費用完整佣金／增額佔總成本 | 27.046362%／17.927639% |
+| 平均／最大／終端持股數 | 49.549550／50／0 |
+
+主要基準最低費用=0，blocked=4、stale=56、unresolved=1；不捏造可成交性。H-P2a CI [-0.000923187411,0.000379585805]、p_holm=.851148851；H-P2b CI [.000265073302,.000820580200]、p_holm=.001998002。**兩者都缺 2021／2022 且 primary-only/subset，均 INCOMPLETE_ENGINEERING_ONLY／未證實**。敏感度呈現的正超額不升格；已確認基準最低費用的評估影響、相同分數、signal/entry timing、universe 與尾端差異，既有 PIT/provenance 限制仍在。
+
+## 完整執行估時與記憶體
+
+`smoke-timing-final.json` 實測 P2 cell（含基準敏感度）9.182894s、P1 reference 11.158765s，其餘載入／hash／strata／出版／啟動合計 90.554148s。以下只是以 **2023/C0+ 單格實測外推**，未啟動完整網格或多程序研究。
+
+- 單程序完整 180 cells：90.554 + 12×(14×9.182894+11.158765) = **1,767.186s，約 29.45 分鐘**。一次共用輸入開銷。
+- 以 `--fold YEAR --system SYSTEM` 拆成 12 個獨立 job、不同 `--out` namespace，**最多 3 個程序同時、每程序單執行緒**，含每 job 重複載入成本：(12×90.554+12×(14×9.182894+11.158765))/3 = **921.094s，約 15.35 分鐘**的理想排程估計。可依 6 cores 分工，但此機記憶體先限制並行數。
+- 每程序峰值 RSS **2,757,720 KiB＝2.629967 GiB**。加 20% 裕度是 **3.155960 GiB／程序**，三程序約 9.47 GiB，另保留 2 GiB 給系統，共約 11.47 GiB。六程序光實測峰值已 15.78 GiB，超過約 12GB 預算；不以六核推定可六程序。
+- 此為第一個小型實測的線性估計；其他年份／系統、top_k、再平衡、費用與 I/O contention、完整 results 累積 RSS 都尚未實測。不是完成時間或記憶體上界；完整執行前仍需主控監測。分割 job 各自永久 grid_complete=false；沒有實作跨 run_hash 確認性彙整器，不能把子集冒煙當完整研究。
+
+## Artifact／runtime 與 handoff
+
+`smoke-final.json` SHA-256 `77acb7d28f6337345c0552d1ef08a8cec261e3db2d5aead1d711212679ee6394`；part、輸入與所有 implementation hashes 在 report/part；`verification-final.json` 彙整本輪 artifact identities、驗證與限制。價格 hash `bef2cd29bad60448cb6ea029788190deabb9286804c35d5128ac081d97a392de`；scores `9ea91f369ea8105dd5652cb18bd270c0a81e259a9ce1587fc8aa45822a51ea21`；market value `665431f4aa31131bdfc70f08d54469f1e47d929afc9c35f592419bd39e8acb09`。價格 container identity 與更早 P1 原始 run 不同；本輪只聲稱指定 2023 逐日報酬比較一致。
+
+Python 3.12.3 pilot09 venv、CPU、單執行緒，MARKETMAMBA_DATA_ROOT unset；本 worktree Data 普通目錄，實際唯讀資料 realpath `/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6`。未讀 .env、未碰 protected V6/models／formal Data、未 GPU／acquisition／production／scheduler／wakeups／recurring jobs／新增 agents。
+
+Completed：七項 bounded 修正。Changed：engine/evaluator/P2 tests、本報告、Current State／Authority Map／Worktree Register 與 Portfolio／Research domain notes。Decisions：以修訂 1 為 authority，既有 P1／歷史 artifacts 不 supersede。Evidence：上述 RED/GREEN／指定全套／實際冒煙與 hashes。Remaining：完整 168 格＋12 references、跨折確認性研究、獨立審查與 Human acceptance。Blockers：本輪工程 N/A；完整證據尚未執行。Next recommended action：主控獨立檢查 diff/artifacts 後決定完整執行。Project memory updated：是。Authority map updated：是。Git status：起始 clean，目前僅核准範圍 unstaged 修改；依禁止 commit 指示保留 dirty，不能宣稱 clean。Commit／Push：均無。Worktree：沿用上述 detached worker，保留未提交成果。Runtime/environment：如上。knowledge_update: required（基準成本、網格與 frozen gate 語義變更），治理結果見 verification。
+
+治理實測：`check_knowledge_impact.py` 已執行並依語義變更更新 maps/domain notes；`knowledge_health.py --ci` exit 0、Overall WARNING，Project Map／Agent Guides／Domains／Runtime Freshness／Generated Index PASS，Governance／Authority Drift／Legacy Docs WARNING，無 structural FAIL。syntax compileall、link/reference 與 `git diff --check` 通過。依 code-review-and-quality 五軸自行檢查，未呼叫額外代理；獨立審查留主控。
+
+---
+
+# 修訂前歷史工程紀錄（以下不是現行網格／成本 authority）
+
 # P2 低換手引擎：bounded 工程驗證
 
 2026-11-19；job `job-run-mwnp15vx-b42d8c`，builder，base `fec03f7f19fa71fa5a4876bd02cfc59f23955cff`。
