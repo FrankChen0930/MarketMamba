@@ -1,5 +1,9 @@
 # MarketMamba Current State
 
+## P2 low-turnover result — 2026-11-20
+
+Pre-registered P2 ([spec](../../tasks/spec-lowturnover-p2-20261119.md) with amendment 1, [report](../../reports/v7_p2_portfolio_evaluation.md)), source commit `fcfc0e6`, E2 RESEARCH_ONLY / NOT_DEPLOYED. Hold buffer plus 20-session rebalance cut annual turnover from about 15x to about 5x and cost drag from about 13% to about 4.5% for both C0+ and LightGBM (descriptive, six folds). Confirmatory tests on clean folds 2021-2023 remain unconfirmed: H-P2a (net excess vs proportional-cost benchmark) and H-P2b (vs P1 primary) have 95% CIs that cross zero. The P2 primary design was informed by P1 descriptive results on the same folds, so it is not an independent test. Minimum fee (20 TWD per order) costs about 0.6 points a year at 1M TWD capital and vanishes at 10M. Next: an unexposed-forward confirmatory test of the fixed P2 primary cell, adj_close/delisting evidence, and Mamba2/S-Mamba under the same portfolio protocol.
+
 ## P2 amendment 1 bounded repair candidate — 2026-11-19
 
 本輪 `job-run-mwnpp2vy-e42792` builder，沿用 detached base `1920fde0abfead53e84a2a9354a695e59a03764c` worker；UNMERGED / NOT_DEPLOYED，Human 禁止 commit/push/merge/新增 agents。依 [P2 登記修訂 1](../../tasks/spec-lowturnover-p2-20261119.md) 修正既有 [engine](../../V6/research_lab/portfolio.py)、[evaluator](../../V6/research_lab/portfolio_eval.py) 與 [P2 tests](../../V6/research_lab/tests/test_p2.py)：P2 主要基準不收 min_fee，只收比例成本，另存也收最低費用的 descriptive sensitivity；策略成本不變。OFAT＋三指定組合去重為 14 格／fold×system（a/c 與 OFAT 重複），六折兩系統 168 格，另 12 個同分數 P1 references，共 180 cells。改 top_k 維持 buffer=2×top_k。凍結加選股數超過 top_k 時該次不新增／不強制賣出可成交持股、保留原股數；terminal liquidation 不變。P2 所有格明確啟用 preserve_frozen_overflow（含buffer=top_k），P1預設關閉，保留原浮點算式。子集 --fold／--system 的 grid_complete 必為 false，不進完整確認性。P2 schema／run_hash 與 P1 不同，舊 P1 parts 無法續跑；位元一致僅指預設路徑逐日策略與基準報酬。
