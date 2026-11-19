@@ -610,7 +610,10 @@ def p3_hypotheses(primaries, complete, samples):
         r=tests[name]; r['p_holm']=pval
         r['status']='CONFIRMATORY' if family_complete else 'INCOMPLETE_ENGINEERING_ONLY'
         lo,hi=r.get('ci95',[0.,0.])
-        r['decision']=('優於 C0+' if lo>0 else '劣於 C0+') if family_complete and pval<.05 and (lo>0 or hi<0) else '未證實'
+        r['decision']='未證實'
+        if family_complete and pval<.05:
+            if lo>0: r['decision']='優於 C0+'
+            elif hi<0: r['decision']='劣於 C0+'
     return dict(tests=tests,pairing=support,correction='Holm family=2; two-sided centered block bootstrap; block=20')
 
 
@@ -684,10 +687,15 @@ def evaluate_p3(scores, prices, caps, manifest, bootstrap_samples=1000, part_dir
 
 
 def p3_main(a):
-    from .rolling_seq_scores import pinned_reference, require_same_rows
+    from .rolling_seq_scores import pinned_reference, require_same_rows, effective_config, FROZEN_CFG
     root=(Path(__file__).parents[2]/'.artifacts/p3').resolve(); out=a.out.resolve()
     if out==root or not out.is_relative_to(root): raise ValueError('output must be below .artifacts/p3/')
     if out.exists(): raise FileExistsError(out)
+    part_dir=(getattr(a,'part_dir',None) or out.with_name(out.name+'.parts')).resolve()
+    if (part_dir==root or not part_dir.is_relative_to(root) or part_dir==out or
+        out.is_relative_to(part_dir) or part_dir.is_relative_to(out) or
+        part_dir==a.scores_dir.resolve() or part_dir==a.p1_scores_dir.resolve()):
+        raise ValueError('P3 part_dir/output collision or outside artifact root')
     if a.system or a.retry_errors: raise ValueError('P3 requires all systems; use new namespace after failure')
     if not a.run:
         print(json.dumps(dict(dry_run=True,mode='p3',grid_cells=1,output=str(out)))); return
@@ -700,13 +708,17 @@ def p3_main(a):
             require_same_rows(scores[(scores.fold==year)&(scores.system==model)],reference[reference.fold==year])
     scores=pd.concat([scores,reference],ignore_index=True)
     prov=provenance()
+    frozen=effective_config()
     combined=dict(neural=manifest,c0plus=p1_manifest,confirmatory_ready=(
+        manifest.get('frozen_effective_config')==FROZEN_CFG
+        and all(manifest.get('parameters',{}).get(k)==v for k,v in frozen.items())
+        and manifest.get('admission',{}).get('status')=='RESOLVED' and
         manifest.get('version')=='p3-scores-v1' and manifest.get('parameters',{}).get('smoke') is False
         and sorted(manifest.get('seeds',[]))==[17,29] and manifest.get('contract_status')=='RESOLVED'
         and sorted(p1_manifest.get('seeds',[]))==[17,29,43]
         and p1_manifest.get('parameters',{}).get('max_train_rows')==500_000))
     if diagnostics['missing_prediction_price_keys']: raise ValueError('STOP missing prediction price keys')
-    result=evaluate_p3(scores,prices,caps,combined,a.bootstrap_samples,a.out.parent/a.out.stem,dict(**inputs,p1=p1_inputs))
+    result=evaluate_p3(scores,prices,caps,combined,a.bootstrap_samples,part_dir,dict(**inputs,p1=p1_inputs))
     for value in list(inputs.values())+list(p1_inputs.values()):
         if isinstance(value,dict) and 'path' in value and identity(value['path'])['sha256']!=value['sha256']:
             raise RuntimeError('P3 input changed during run')
@@ -726,6 +738,7 @@ def main(argv=None):
     p.add_argument('--system', action='append', help='Explicit partial engineering subset')
     p.add_argument('--scores-dir', type=Path, required=True)
     p.add_argument('--p1-scores-dir', type=Path, default=Path(__file__).parents[2]/'.artifacts/p1/full-scores-ace2eef')
+    p.add_argument('--part-dir', type=Path, help='P3 part directory below .artifacts/p3/')
     p.add_argument('--data-root', type=Path, default=DATA_ROOT)
     p.add_argument('--out', type=Path, required=True)
     p.add_argument('--primary-only', action='store_true')

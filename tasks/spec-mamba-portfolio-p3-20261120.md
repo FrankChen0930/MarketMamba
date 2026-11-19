@@ -39,3 +39,10 @@
 5. **預算與安全**：14 小時預算須以持久帳本記錄每次嘗試（含失敗或被中止的 fit）的實際耗時，跨程序累計；啟動時若存在 STOP 檔必須拒絕續跑，需人工移除；溫度紀錄保存。
 6. **purge 檢查**：`checked_splits` 的訓練列 purge 與標籤成熟規則須以真實折的 metadata 對照 `rolling_runner` 的實際切分（測試使用真實折目錄的 `splits.npy` 或其雜湊），而非只用合成切分。
 7. 確認性路徑的解鎖程序（contract_status 由 UNRESOLVED 變為 RESOLVED 的條件）須寫入工程報告，並有端到端測試涵蓋 `p3_main`（含神經分數目錄載入與 `confirmatory_ready` 閘門）。
+
+## 修訂 2（2026-11-20，於任何 P3 神經網路分數與結果出現之前；追加，不改動上文）
+第二輪審查（Claude NO_GO 含一項 CRITICAL；Codex GO）後追加：
+1. **准入證據不可偽造（取代「human_reviewed: true」布林）**：官方 GPU 冒煙證據 JSON 必須由執行器自己在指定環境產生，內含實際量測值（前向／反向的有限性檢查結果、參數量、梯度張量數、峰值顯存、GPU 型號與溫度、耗時）與程式／環境逐檔雜湊，不得手寫。「Human 審核」改為記錄結構化審核者資訊：`reviewed_by = {kind, job_id, verdict, evidence_sha256}`，其中 `kind` 為 `independent_worker`（另一個獨立 worker 的審查作業，記錄 Ruflo job id 與判定）或 `human`；並載明 `standing_authorization`：Human 在 2026-11-19／20 的對話中授權主控自行接續本機（RTX 3060）實驗、不得上 Colab。此授權可由 Human 日後稽核；主控不得在證據內聲稱 Human 已逐項審核。
+2. **`p3_main` 必須重新驗證准入證據**：不得只讀 manifest 的 `admission.status`。必須重新核對證據檔路徑與 SHA-256、證據內容與目前程式／環境逐項相符、預算帳本雜湊與 `spent_seconds <= 14h`、24 個 fit 的 run_hash 與 sidecar 完整；任一不符即不得標為 CONFIRMATORY。
+3. **預算帳本**：單一全域帳本 `.artifacts/p3/budget-global.jsonl`（含雜湊鏈與單一寫入鎖），不依賴 `--out-dir`；同 namespace 已有 fit 或 run_identity 但帳本缺失或鏈不符即拒絕；帳本 SHA 寫入 manifest。STOP 須先寫入並 fsync，再寫 END；清除 STOP 須以明確 CLI 子命令在帳本留下 CLEARED 事件（含原因與時間），僅刪檔不算清除。`collect()` 公開入口同樣受帳本與 STOP 約束，或在文件明示僅供內部使用。
+4. **凍結字典補齊**：`dropout`、`window`（60）、`normalize`（rankgauss）、`train_probe_sessions`，以及寫死常數（grad clip 1.0、warmup 與 cosine 排程、AdamW betas、cross 層 d_ff 與 FFN dropout）須列入凍結字典或由 source hash 於 `p3_main` 重驗；Mamba2 官方其餘預設（ngroups、chunk_size、dt_min／dt_max、A_init_range、rmsnorm 等）須讀出並寫入 `mixer_parameters`。

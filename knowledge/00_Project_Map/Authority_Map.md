@@ -2,9 +2,9 @@
 
 ## P3 bounded builder candidate authority — 2026-11-20
 
-[P3 frozen registration](../../tasks/spec-mamba-portfolio-p3-20261120.md) owns research assumptions；[rolling sequence adapter](../../V6/research_lab/rolling_seq_scores.py)、[P3 evaluator mode](../../V6/research_lab/portfolio_eval.py) 與 [executable P3 tests](../../V6/research_lab/tests/test_p3.py) 是 `job-run-mwnteeta-4dea80` detached base `06bc0c7` 的未提交工程候選，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。P1/P2 defaults、正式Data、模型權重、production/scheduler均不變，無artifact或production authority supersession。
+[P3 frozen registration 修訂1](../../tasks/spec-mamba-portfolio-p3-20261120.md) owns research assumptions，明確取代初版no-conv，採官方Mamba2預設temporal卷積／cross d_conv2；不是以歷史prose消除歧義。[adapter](../../V6/research_lab/rolling_seq_scores.py) 的FROZEN_CFG／FROZEN_DEFAULT_CFG與執行前相等閘門、[evaluator](../../V6/research_lab/portfolio_eval.py) 的CI＋Holm及確認性cfg/admission gate、[P3 tests](../../V6/research_lab/tests/test_p3.py) 為 `job-run-mwnu9iri-e7a54a` detached `69dc5ba` 未提交工程候選，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；不supersede P1/P2／historical artifacts／production authority。
 
-Canonical ambiguity：官方Mamba2/no-conv同時出現在spec，但pilot09 local_b8實際config未指定d_conv，而現有cross_stock明定跨股d_conv2。不能用歷史結果、notebook名或另一SSD模型消除此矛盾；正式CLI與無注入mixer的library entry均fail closed。GPU冒煙與完整GPU估時NOT_RUN（No GPU限制、mamba-ssm缺失），僅有injected CPU／synthetic engineering evidence；完整493測試通過不等於正式訓練ready或Human acceptance。完成fit hash續跑不代表mid-fit recovery；目前14h guard未可靠持久化未完成fit跨重啟耗時。詳見[工程報告](../../reports/v7_p3_portfolio_engineering.md)與[Current State](Current_State.md#p3-序列分數組合工程候選--2026-11-20)。解除模型歧義與預算缺口前不得產生或宣稱正式P3結果。
+持久預算與STOP恢復規則由adapter執行：同namespace追加實際嘗試耗時，硬中斷保守計入至重啟、鎖STOP、人工清除不重置budget；14h耗盡拒絕啟動。真實六折metadata與rolling_runner／SeqData一致，未放寬purge。GPU_SMOKE_NOT_RUN；正式模型准入仍UNRESOLVED，只有獨立授權／人工審核且source、environment、frozen cfg、mixer相符的官方GPU smoke可產生RESOLVED新manifest。CPU替身可達性測試不等於GPU執行證據；不手改舊manifest升格。完整解鎖條件、人工STOP移除程序、Windows/WSL manifest欄位與限制見[工程報告](../../reports/v7_p3_portfolio_engineering.md)／[Current State](Current_State.md#p3-序列分數組合工程候選--2026-11-20)。
 
 
 ## P2 amendment 1 candidate boundary — 2026-11-19

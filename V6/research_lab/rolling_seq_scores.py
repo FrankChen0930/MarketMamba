@@ -2,11 +2,17 @@
 
 Dry-run by default. External matrix files are only opened for reading; derived
 rank-gauss caches live in .artifacts/p3/work. No environment installation occurs.
-The registered official-Mamba2/no-conv contradiction fails closed before CUDA.
+Amendment 1 uses official default temporal convolution and cross d_conv=2.
 """
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
+from copy import deepcopy
+import os
+import platform
+import sys
+import uuid
 from datetime import datetime, timezone
 import json
 import math
@@ -27,9 +33,150 @@ SYSTEMS = ('mamba2','crossstock')
 RECIPE = dict(d_model=64, n_layers=2, mixer_kw=dict(d_state=16, headdim=8, expand=2),
               lr=3e-4, epochs=8, steps_per_epoch=400, dates_per_batch=8,
               stocks_per_date=256, listnet_w=0., n_cross=1)
-MODEL_CONTRACT_STOP = ('P3 requests official mamba_ssm.Mamba2 AND no-conv, but historical '
-    'seq_runner uses the official default convolution and cross_stock forces d_conv=2. '
-    'No registered no-conv factory exists for this recipe; resolve frozen contract before training.')
+# Explicit snapshots: DEFAULT_CFG drift is rejected even for overridden keys.
+FROZEN_DEFAULT_CFG = dict(d_model=64, n_layers=2,
+    mixer_kw=dict(d_state=16, headdim=8, expand=2), attn_window=16, lr=.0003,
+    weight_decay=.01, epochs=10, steps_per_epoch=400, patience=3,
+    dates_per_batch=16, stocks_per_date=256, min_names=64, baseline_rows=500000,
+    n_boot=1000, val_dates=126, val_max_rows=80000, listnet_w=0., listnet_t=1.)
+FROZEN_CFG = dict(d_model=64, n_layers=2,
+    mixer_kw=dict(d_state=16, headdim=8, expand=2), attn_window=16, lr=.0003,
+    weight_decay=.01, epochs=8, steps_per_epoch=400, patience=3,
+    dates_per_batch=8, stocks_per_date=256, min_names=64, baseline_rows=500000,
+    n_boot=1000, val_dates=126, val_max_rows=80000, listnet_w=0., listnet_t=1., n_cross=1)
+
+
+def effective_config(smoke=False):
+    from .seq_runner import DEFAULT_CFG
+    if DEFAULT_CFG != FROZEN_DEFAULT_CFG or {**DEFAULT_CFG, **RECIPE} != FROZEN_CFG:
+        raise ValueError('P3 frozen effective configuration drift')
+    cfg=deepcopy(FROZEN_CFG)
+    if smoke: cfg.update(epochs=1,steps_per_epoch=20)
+    return cfg
+
+
+def runtime_environment(device):
+    import importlib.metadata
+    import torch
+    packages={'torch':torch.__version__}
+    for name,dist in [('mamba_ssm','mamba-ssm'),('causal_conv1d','causal-conv1d')]:
+        try: packages[name]=importlib.metadata.version(dist)
+        except importlib.metadata.PackageNotFoundError: packages[name]='MISSING'
+    return dict(platform=platform.platform(),system=platform.system(),release=platform.release(),
+                python=sys.version,executable=sys.executable,packages=packages,device=device,
+                gpu_model=torch.cuda.get_device_name(0) if str(device).startswith('cuda') else None)
+
+
+def mixer_parameters(cfg):
+    # Read the installed official signature rather than assume its default.
+    import inspect
+    from mamba_ssm import Mamba2
+    default=inspect.signature(Mamba2).parameters['d_conv'].default
+    if not isinstance(default,int) or default!=4:
+        raise ValueError('official temporal d_conv default differs from frozen amendment 1')
+    return dict(factory='mamba_ssm.Mamba2',temporal=dict(d_model=cfg['d_model'],d_conv=default,**cfg['mixer_kw']),
+                cross=dict(d_model=cfg['d_model'],**cfg['mixer_kw'],d_conv=2))
+
+
+def official_admission(evidence,environment,cfg):
+    """Validate a separately reviewed GPU smoke, never run one implicitly."""
+    if evidence is None:
+        raise RuntimeError('STOP official GPU smoke evidence required; contract_status UNRESOLVED')
+    evidence=Path(evidence)
+    payload=json.loads(evidence.read_text())
+    expected=dict(torch='2.10.0+cu128',mamba_ssm='2.3.2.post1',causal_conv1d='1.7.0')
+    if (environment['packages']!=expected or not environment['gpu_model'] or
+        not str(environment['device']).startswith('cuda') or
+        payload.get('version')!='p3-official-gpu-smoke-v1' or
+        payload.get('human_reviewed') is not True or
+        payload.get('forward_finite') is not True or payload.get('backward_finite') is not True or
+        payload.get('parameters')!=FROZEN_CFG or payload.get('mixer_parameters')!=mixer_parameters(cfg) or
+        payload.get('implementation')!=provenance()['implementation'] or
+        payload.get('environment')!=environment):
+        raise RuntimeError('STOP official GPU smoke evidence mismatch; contract_status UNRESOLVED')
+    return dict(status='RESOLVED',evidence=identity(evidence))
+
+
+class BudgetLedger:
+    """Single-writer, fsynced append-only attempts. Crash recovery overcharges
+    the interval to restart (including downtime), never undercounts lost time.
+    STOP clearance only removes STOP files; it never resets this ledger.
+    """
+    def __init__(self,directory,limit_seconds=14*3600):
+        self.directory=Path(directory); self.limit=limit_seconds; self.active=None
+
+    def __enter__(self):
+        self.directory.mkdir(parents=True,exist_ok=True)
+        self.lock=(self.directory/'budget.lock').open('a+b')
+        try:
+            if os.name=='nt':
+                import msvcrt
+                self.lock.seek(0); self.lock.write(b'0'); self.lock.flush(); self.lock.seek(0)
+                msvcrt.locking(self.lock.fileno(),msvcrt.LK_NBLCK,1)
+            else:
+                import fcntl
+                fcntl.flock(self.lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+            self.path=self.directory/'budget.jsonl'
+            events=[json.loads(line) for line in self.path.read_text().splitlines()] if self.path.exists() else []
+            self.spent=0.; pending=None
+            for event in events:
+                if event['event']=='START' and pending is None: pending=event
+                elif event['event']=='END' and pending and event['attempt']==pending['attempt']:
+                    seconds=float(event['seconds'])
+                    if not math.isfinite(seconds) or seconds<0: raise ValueError('invalid budget debit')
+                    self.spent+=seconds; pending=None
+                else: raise ValueError('corrupt budget ledger event order')
+            if pending:
+                elapsed=max(time.time()-pending['wall_start'],time.monotonic()-pending['monotonic_start'])
+                if elapsed<0 or not math.isfinite(elapsed): raise ValueError('budget recovery clock invalid')
+                self._append(dict(event='END',attempt=pending['attempt'],seconds=elapsed,
+                                  status='INTERRUPTED',accounting='conservative elapsed through restart'))
+                self.spent+=elapsed
+                self.stop('interrupted attempt recovered; inspect before manual clearance')
+            if list(self.directory.glob('STOP-*.json')):
+                raise ThermalStop('STOP latched; Human must inspect and manually remove STOP-*.json; preserve budget.jsonl')
+            if self.spent>=self.limit:
+                self.stop('14 hour cumulative runtime budget exhausted')
+                raise ThermalStop('STOP 14 hour cumulative runtime budget exhausted')
+            return self
+        except BaseException:
+            self.lock.close(); raise
+
+    def _append(self,event):
+        event=dict(event,observed_at=utc_now())
+        with self.path.open('a',encoding='utf-8') as stream:
+            stream.write(json.dumps(event,allow_nan=False)+'\n'); stream.flush(); os.fsync(stream.fileno())
+
+    def stop(self,reason):
+        write_json(self.directory/f'STOP-{uuid.uuid4().hex}.json',dict(reason=reason,observed_at=utc_now()))
+
+    def start(self,binding):
+        if self.active is not None: raise ValueError('budget attempt already active')
+        if list(self.directory.glob('STOP-*.json')): raise ThermalStop('STOP latched')
+        if self.spent>=self.limit:
+            self.stop('14 hour cumulative runtime budget exhausted')
+            raise ThermalStop('STOP 14 hour cumulative runtime budget exhausted')
+        self.active=dict(event='START',attempt=uuid.uuid4().hex,wall_start=time.time(),monotonic_start=time.monotonic(),binding=binding)
+        self.tick=time.monotonic()
+        self._append(self.active)
+        return self.tick+self.limit-self.spent
+
+    @contextmanager
+    def attempt(self,binding):
+        deadline=self.start(binding)
+        status='COMPLETED'
+        try:
+            yield deadline
+            if time.monotonic()>=deadline: raise ThermalStop('STOP 14 hour cumulative runtime budget exhausted')
+        except BaseException as exc:
+            status=type(exc).__name__; self.stop(f'{status}: {exc}'); raise
+        finally:
+            seconds=time.monotonic()-self.tick
+            self._append(dict(event='END',attempt=self.active['attempt'],seconds=seconds,status=status))
+            self.spent+=seconds; self.active=None
+
+    def __exit__(self,*exc):
+        self.lock.close()
 
 
 def utc_now():
@@ -157,12 +304,16 @@ def save_fit(path, frame, contract, job):
                                            output=identity(path),job=job))
 
 
-def collect(directory, year, model, seed, cfg, reference, guard, device='cuda', mixer_factory=None):
+def collect(directory, year, model, seed, cfg, reference, guard, device='cuda', mixer_factory=None, gpu_smoke_evidence=None):
     """Reusable train_one/predict adapter; CPU injected mixers are engineering only."""
     import torch
     from .seq_runner import SeqData, train_one, predict
+    effective_config()  # Always check inherited-default drift, including injected engineering.
     if mixer_factory is None:
-        raise RuntimeError(MODEL_CONTRACT_STOP)
+        if cfg not in (effective_config(),effective_config(True)):
+            raise ValueError('P3 frozen configuration mismatch')
+        if gpu_smoke_evidence is None: official_admission(None,{},cfg)
+        official_admission(gpu_smoke_evidence,runtime_environment(device),cfg)
     started=time.perf_counter()
     data=SeqData(directory)
     tr,va,ev=checked_splits(data,cfg['val_dates'])
@@ -204,17 +355,23 @@ def pinned_reference(directory):
 
 
 def run_jobs(folds_root, years, models, seeds, out, p1_dir, cfg, smoke=False,
-             device='cuda', mixer_factory=None, guard_factory=TemperatureGuard):
+             device='cuda', mixer_factory=None, guard_factory=TemperatureGuard, gpu_smoke_evidence=None):
     """Fit-level durable resume. Caller owns model-contract admission.
 
     Injected CPU mixers are deliberately excluded from confirmatory evidence.
     Only a complete fold/model/seed is reusable; partial fits restart in a fresh
     namespace. This does not claim mid-epoch checkpoint recovery.
     """
-    import importlib.metadata
-    import torch
-    if mixer_factory is None:
-        raise RuntimeError(MODEL_CONTRACT_STOP)
+    effective=effective_config(smoke)
+    if mixer_factory is None and cfg!=effective:
+        raise ValueError('P3 frozen configuration mismatch')
+    if list(Path(out).glob('STOP-*.json')):
+        raise ThermalStop('STOP latched; Human clearance required; preserve budget.jsonl')
+    if mixer_factory is None and gpu_smoke_evidence is None:
+        official_admission(None,{},cfg)
+    environment=runtime_environment(device)
+    admission_status=official_admission(gpu_smoke_evidence,environment,cfg) if mixer_factory is None else dict(status='CPU_ENGINEERING_ONLY')
+    actual_mixer=mixer_parameters(cfg) if mixer_factory is None else dict(factory='INJECTED_CPU_ENGINEERING_ONLY',actual_parameters='caller-defined; not official')
     started=time.monotonic()
     out=Path(out).resolve()
     if out==ARTIFACT_ROOT.resolve() or not out.is_relative_to(ARTIFACT_ROOT.resolve()):
@@ -223,81 +380,75 @@ def run_jobs(folds_root, years, models, seeds, out, p1_dir, cfg, smoke=False,
     reference,_,ref_identity=pinned_reference(p1_dir)
     prov=provenance()
     prov['p3_spec']=identity(ROOT/'tasks/spec-mamba-portfolio-p3-20261120.md')
-    prov['environment']['device']=device
-    prov['environment']['packages']['torch']=torch.__version__
-    try: prov['environment']['packages']['mamba-ssm']=importlib.metadata.version('mamba-ssm')
-    except importlib.metadata.PackageNotFoundError: prov['environment']['packages']['mamba-ssm']='MISSING'
+    prov['environment'].update(environment)
     inputs={str(Path(folds_root)/f'fold_{year}'/n):identity(Path(folds_root)/f'fold_{year}'/n)
             for year in years for n in MATRIX_FILES}
     contract=dict(parameters=cfg,smoke=smoke,years=sorted(years),systems=list(models),seeds=list(seeds),
                   inputs=inputs,reference=ref_identity,provenance=prov,
-                  mixer='official' if mixer_factory is None else 'INJECTED_CPU_ENGINEERING_ONLY')
+                  mixer=actual_mixer,admission=admission_status,frozen_effective_config=deepcopy(FROZEN_CFG))
     out.mkdir(parents=True,exist_ok=True)
-    admission=out/'run_identity.json'
-    if admission.exists():
-        if json.loads(admission.read_text())!=contract: raise ValueError('run identity mismatch')
-    else: write_json(admission,contract)
     frames,jobs=[],[]
-    # Count prior completed fit wall time against the same namespace's budget.
-    spent=0.
-    for path in out.glob('fold_*_seed_*.json'):
-        spent+=float(json.loads(path.read_text())['job']['wall_seconds'])
-    deadline=started+max(0.,14*3600-spent)
-    for year in sorted(years):
-        for model in models:
-            for seed in seeds:
-                path=out/f'fold_{year}_{model}_seed_{seed}.parquet'
-                binding=dict(run_hash=content_hash(contract),fold=year,model=model,seed=seed)
-                cached=resume_fit(path,binding)
-                if cached is not None:
-                    frame,job=cached
-                else:
-                    if time.monotonic()>=deadline: raise ThermalStop('STOP 14 hour cumulative runtime budget')
-                    directory=prepare_work(Path(folds_root)/f'fold_{year}',year)
-                    # Bind derived cache to hashes of all matrix inputs, not mtime alone.
-                    cache_meta=directory/'rankgauss_identity.json'
-                    cache=directory/'X_rankgauss.npy'
-                    cache_contract=dict(inputs={n:identity(directory/n) for n in MATRIX_FILES},
-                                        implementation=prov['implementation'])
-                    if cache.exists():
-                        if not cache_meta.exists(): raise ValueError('unverified rankgauss cache orphan')
-                        saved=json.loads(cache_meta.read_text())
-                        if saved['contract']!=cache_contract or saved['output']!=identity(cache):
-                            raise ValueError('rankgauss cache hash/identity mismatch')
-                    guard=guard_factory(deadline=deadline)
-                    try:
-                        frame,job=collect(directory,year,model,seed,cfg,reference[reference.fold==year],guard,device,mixer_factory)
-                    except Exception as exc:
-                        # Immutable failure evidence; never resume it as successful scores.
-                        import uuid
-                        write_json(out/f'STOP-{year}-{model}-{seed}-{uuid.uuid4().hex}.json',dict(
-                            contract=binding,error=type(exc).__name__,reason=str(exc),observed_at=utc_now(),temperatures=guard.records))
-                        raise
-                    if not cache_meta.exists(): write_json(cache_meta,dict(contract=cache_contract,output=identity(cache)))
-                    for value in inputs.values():
-                        if identity(value['path'])!=value: raise RuntimeError('input changed during fit')
-                    if prov['implementation']!=provenance()['implementation']: raise RuntimeError('source changed during fit')
-                    save_fit(path,frame,binding,job)
-                require_same_rows(frame,reference[reference.fold==year])
-                frames.append(frame); jobs.append(job)
-                print(json.dumps(dict(fold=year,system=model,seed=seed,wall_seconds=job['wall_seconds'],action='RESUMED' if cached else 'WROTE')),flush=True)
-    ranks=rank_average(pd.concat(frames,ignore_index=True))
-    average=out/'rank_average.parquet'
-    if not average.exists():
-        with average.open('xb') as stream: ranks.to_parquet(stream,index=False)
-    else:
-        pd.testing.assert_frame_equal(read_pinned(average)[0],ranks)
-    manifest=dict(version='p3-scores-v1',artifact_class='GENERATED',evidence_class='E2 RESEARCH_ONLY',
-                  contract_status='UNRESOLVED' if mixer_factory is None else 'CPU_ENGINEERING_ONLY',
-                  provenance=prov,inputs=inputs,reference=ref_identity,years=sorted(years),seeds=list(seeds),systems=list(models),
-                  parameters=dict(**cfg,smoke=smoke,eligibility_window=60,rank_method='average percentile per date then mean across seeds'),
-                  jobs=jobs,outputs={p.name:identity(p) for p in sorted(out.glob('*.parquet'))},
-                  wall_seconds=time.monotonic()-started)
-    if not (out/'manifest.json').exists(): write_json(out/'manifest.json',manifest)
-    else:
-        saved=json.loads((out/'manifest.json').read_text())
-        if saved['outputs']!=manifest['outputs']: raise ValueError('completion manifest hash mismatch')
-    return manifest
+    with BudgetLedger(out) as ledger:
+        admission=out/'run_identity.json'
+        if admission.exists():
+            if json.loads(admission.read_text())!=contract: raise ValueError('run identity mismatch')
+        else: write_json(admission,contract)
+        for year in sorted(years):
+            for model in models:
+                for seed in seeds:
+                    path=out/f'fold_{year}_{model}_seed_{seed}.parquet'
+                    binding=dict(run_hash=content_hash(contract),fold=year,model=model,seed=seed)
+                    cached=resume_fit(path,binding)
+                    if cached is not None:
+                        frame,job=cached
+                    else:
+                        with ledger.attempt(binding) as deadline:
+                            directory=prepare_work(Path(folds_root)/f'fold_{year}',year)
+                            # Bind derived cache to hashes of all matrix inputs, not mtime alone.
+                            cache_meta=directory/'rankgauss_identity.json'
+                            cache=directory/'X_rankgauss.npy'
+                            cache_contract=dict(inputs={n:identity(directory/n) for n in MATRIX_FILES},
+                                                implementation=prov['implementation'])
+                            if cache.exists():
+                                if not cache_meta.exists(): raise ValueError('unverified rankgauss cache orphan')
+                                saved=json.loads(cache_meta.read_text())
+                                if saved['contract']!=cache_contract or saved['output']!=identity(cache):
+                                    raise ValueError('rankgauss cache hash/identity mismatch')
+                            guard=guard_factory(deadline=deadline)
+                            try:
+                                frame,job=collect(directory,year,model,seed,cfg,reference[reference.fold==year],guard,device,mixer_factory,gpu_smoke_evidence=gpu_smoke_evidence)
+                            except BaseException as exc:
+                                # Immutable failure evidence; never resume it as successful scores.
+                                write_json(out/f'STOP-{year}-{model}-{seed}-{uuid.uuid4().hex}.json',dict(
+                                    contract=binding,error=type(exc).__name__,reason=str(exc),observed_at=utc_now(),temperatures=guard.records))
+                                raise
+                            if not cache_meta.exists(): write_json(cache_meta,dict(contract=cache_contract,output=identity(cache)))
+                            for value in inputs.values():
+                                if identity(value['path'])!=value: raise RuntimeError('input changed during fit')
+                            if prov['implementation']!=provenance()['implementation']: raise RuntimeError('source changed during fit')
+                            save_fit(path,frame,binding,job)
+                    require_same_rows(frame,reference[reference.fold==year])
+                    frames.append(frame); jobs.append(job)
+                    print(json.dumps(dict(fold=year,system=model,seed=seed,wall_seconds=job['wall_seconds'],action='RESUMED' if cached else 'WROTE')),flush=True)
+        ranks=rank_average(pd.concat(frames,ignore_index=True))
+        average=out/'rank_average.parquet'
+        if not average.exists():
+            with average.open('xb') as stream: ranks.to_parquet(stream,index=False)
+        else:
+            pd.testing.assert_frame_equal(read_pinned(average)[0],ranks)
+        manifest=dict(version='p3-scores-v1',artifact_class='GENERATED',evidence_class='E2 RESEARCH_ONLY',
+                      contract_status=admission_status['status'],admission=admission_status,
+                      frozen_effective_config=deepcopy(FROZEN_CFG),mixer_parameters=actual_mixer,
+                      provenance=prov,environment_observed_at=utc_now(),inputs=inputs,reference=ref_identity,years=sorted(years),seeds=list(seeds),systems=list(models),
+                      parameters=dict(**cfg,smoke=smoke,eligibility_window=60,rank_method='average percentile per date then mean across seeds'),
+                      jobs=jobs,budget=dict(spent_seconds=ledger.spent,ledger=identity(ledger.path),limit_seconds=ledger.limit),outputs={p.name:identity(p) for p in sorted(out.glob('*.parquet'))},
+                      wall_seconds=time.monotonic()-started)
+        if not (out/'manifest.json').exists(): write_json(out/'manifest.json',manifest)
+        else:
+            saved=json.loads((out/'manifest.json').read_text())
+            if saved['outputs']!=manifest['outputs']: raise ValueError('completion manifest hash mismatch')
+            return saved
+        return manifest
 
 
 def main(argv=None):
@@ -309,6 +460,7 @@ def main(argv=None):
     p.add_argument('--seeds',type=int,nargs='+',default=[17,29])
     p.add_argument('--out-dir',type=Path,required=True)
     p.add_argument('--smoke',action='store_true',help='1 epoch x 20 steps; never confirmatory')
+    p.add_argument('--gpu-smoke-evidence',type=Path)
     p.add_argument('--run',action='store_true')
     a=p.parse_args(argv)
     out=a.out_dir.resolve(); root=ARTIFACT_ROOT.resolve()
@@ -317,17 +469,14 @@ def main(argv=None):
     if (any(len(v)!=len(set(v)) for v in (a.years,a.models,a.seeds)) or
         not set(a.years)<=set(range(2021,2027)) or not set(a.seeds)<={17,29}):
         p.error('unique registered folds/models/seeds required')
-    from .seq_runner import DEFAULT_CFG
-    cfg={**DEFAULT_CFG,**RECIPE}
-    if a.smoke:
-        cfg.update(epochs=1,steps_per_epoch=20)
+    cfg=effective_config(a.smoke)
     plan=dict(dry_run=not a.run,years=sorted(a.years),models=a.models,seeds=a.seeds,
               fits=len(a.years)*len(a.models)*len(a.seeds),parameters=cfg,output=str(out),
-              training_contract_status='STOP_MODEL_CONTRACT_AMBIGUITY',reason=MODEL_CONTRACT_STOP)
+              training_contract_status='UNRESOLVED',reason='official GPU smoke admission required')
     if not a.run:
         print(json.dumps(plan)); return
-    # No workaround or fallback silently changes the frozen architecture.
-    raise RuntimeError(MODEL_CONTRACT_STOP)
+    return run_jobs(a.folds_root,a.years,a.models,a.seeds,out,a.p1_scores_dir,cfg,
+                    smoke=a.smoke,gpu_smoke_evidence=a.gpu_smoke_evidence)
 
 
 if __name__=='__main__':
