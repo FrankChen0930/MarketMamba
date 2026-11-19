@@ -1,5 +1,9 @@
 # MarketMamba Current State
 
+## P1 portfolio-level evaluation result — 2026-11-19
+
+Pre-registered P1 ([spec](../../tasks/spec-portfolio-eval-20261119.md), [report](../../reports/v7_p1_portfolio_evaluation.md)), source commit `ace2eef`, E2 RESEARCH_ONLY / NOT_DEPLOYED. Clean folds 2021-2023, primary cell (top 50, 10-session rebalance, 10bp slippage, raw prices): C0+ and LightGBM net excess over the same-universe equal-weight benchmark are both unconfirmed (95% CI crosses 0); C0+ minus LightGBM is also unconfirmed. Net cost drag (about 8-18 points a year at 14-18x annual turnover) is the main go-live risk; slower rebalancing lowered C0+ drag descriptively (needs new pre-registration). No adj_close, unverified delisting coverage, non-PIT market value. Next: pre-register a low-turnover study (20-session rebalance, hold buffer) and compare Mamba2/S-Mamba under the same portfolio protocol. Output 1.35 GB stays under `.artifacts/p1/` (not in Git).
+
 ## P1 bounded evaluator follow-up — 2026-11-19
 
 本輪 `job-run-mwmgvttf-837c02`，detached base `d2390b56d633627d942e6f4969771b1382744ba9`，既有 worktree `.worktrees/ruflo-workers/run-mwmgvttf-837c02/fixer`；UNMERGED / NOT_DEPLOYED，Human 明確禁止 commit/push/merge。只修改 [evaluator](../../V6/research_lab/portfolio_eval.py)、既有 [P1 tests](../../V6/research_lab/tests/test_p1.py) 與本節／Authority Map；根目錄 `tests/test_p1.py` 不存在，未建立重複測試樹。重用 frozen [P1 spec](../../tasks/spec-portfolio-eval-20261119.md)，不改 fitting、成本或容量算式。
