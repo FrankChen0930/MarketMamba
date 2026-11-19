@@ -1,5 +1,9 @@
 # Portfolio
 
+## P2 research accounting candidate — 2026-11-19
+
+[Research engine](../../V6/research_lab/portfolio.py) 依 [P2 spec](../../tasks/spec-lowturnover-p2-20261119.md) 新增 hold_buffer_rank、min_fee、initial_capital。NAV、cash、order notional 都以初始 NAV=1 表示；notional × initial_capital 才是 TWD，不能再重複乘 NAV。緩衝只讀 signal-day eligible ranks，ties 以 code 排序；保留既有持股後按排名補缺。最低佣金逐委託收取，blocked／零委託不收；預設仍走原始比例成本路徑。無整股／零股、券商或實際 execution 證據。UNMERGED / NOT_DEPLOYED；[tests](../../V6/research_lab/tests/test_p2.py) 與 [工程報告](../../reports/v7_p2_portfolio_engineering.md) 是 bounded 工程證據。
+
 ## Metadata
 
 - Status: `CANONICAL_DOMAIN_NOTE`

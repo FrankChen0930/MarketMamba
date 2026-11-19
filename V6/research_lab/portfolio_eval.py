@@ -147,6 +147,69 @@ def configurations():
                       commission_discount=discount, price_basis=basis)
 
 
+
+def p2_primary_config():
+    return replace(primary_config(), rebalance_sessions=20, hold_buffer_rank=100,
+                   commission_discount=.6, min_fee=20., initial_capital=1e6)
+
+
+def p2_configurations():
+    for k, reb, multiplier, discount, minimum, slip, capital in itertools.product(
+            (30,50,100), (10,20,40), (1.,1.5,2.), (1.,.6,.28), (0.,20.), (10.,25.), (1e6,1e7,1e8)):
+        yield replace(p2_primary_config(), top_k=k, rebalance_sessions=reb,
+                      hold_buffer_rank=int(k*multiplier), commission_discount=discount,
+                      min_fee=minimum, slippage_bps=slip, initial_capital=capital)
+
+
+def p2_hypotheses(primaries, references, manifest, primary_only, samples):
+    """Two registered one-sided tests; Holm controls their familywise error.
+
+    P1 and P2 have different terminal dates. Pair only identical within-fold
+    return dates, disclose excluded tails, never impute zero or cross-fold NAV.
+    """
+    rows, paired, support = [], [], []
+    for year in (2021,2022,2023):
+        key = (year,'c0plus')
+        if key not in primaries or key not in references:
+            support.append(dict(fold=year, status='MISSING_PRIMARY_OR_REFERENCE'))
+            continue
+        a, b = primaries[key], references[key]
+        rows.append(a)
+        aa = {r['date']:r for r in a['daily_returns']}
+        bb = {r['date']:r for r in b['daily_returns']}
+        common = sorted(aa.keys() & bb.keys())
+        paired.append(dict(daily_returns=[dict(date=d,net=aa[d]['net']-bb[d]['net'],benchmark=0.) for d in common]))
+        support.append(dict(fold=year, status='PAIRED', days=len(common),
+                            excluded_p2_dates=sorted(aa.keys()-bb.keys()), excluded_p1_dates=sorted(bb.keys()-aa.keys())))
+    complete = (len(rows)==3 and all(x['days']>0 for x in support if x['status']=='PAIRED')
+                and sorted(manifest['seeds'])==[17,29,43]
+                and manifest['parameters']['max_train_rows']==500_000 and samples==1000 and not primary_only)
+    tests = {}
+    for name, data in [('H-P2a',rows),('H-P2b',paired)]:
+        result = pooled_test(data,samples)
+        values = np.asarray([r['net']-r['benchmark'] for row in data for r in row['daily_returns']])
+        if len(values):
+            rng = np.random.default_rng(17)
+            centered = values-values.mean()
+            estimates = []
+            for _ in range(samples):
+                starts = rng.integers(0,len(values),size=(len(values)+19)//20)
+                idx = ((starts[:,None]+np.arange(20)) % len(values)).ravel()[:len(values)]
+                estimates.append(float(centered[idx].mean()))
+            result['p_one_sided'] = float((1+sum(v>=values.mean() for v in estimates))/(samples+1))
+        tests[name] = result
+    ordered = sorted(tests, key=lambda n:tests[n].get('p_one_sided',1.))
+    previous = 0.
+    for i,name in enumerate(ordered):
+        r = tests[name]
+        previous = max(previous,min(1.,(2-i)*r.get('p_one_sided',1.)))
+        r['p_holm'] = previous
+        r['status'] = 'CONFIRMATORY' if complete else 'INCOMPLETE_ENGINEERING_ONLY'
+        passed = complete and r.get('ci95',[0])[0]>0 and previous<.05
+        r['decision'] = ('淨有益' if name=='H-P2a' else '低換手設計有改善') if passed else '未證實'
+    return dict(tests=tests, pairing=support, correction='Holm, family=2, alpha=.05',
+                p_value_method='one-sided centered circular block bootstrap, plus-one correction')
+
 def lagged_strata(caps, calendar):
     """Previous global observed session, no forward-fill over missing stock rows.
 
@@ -320,24 +383,31 @@ def load_inputs(scores_dir, data_root):
     return scores, prices, caps, manifest, inputs, diagnostics
 
 
-def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_samples=1000, part_dir=None, input_identity=None, retry_errors=False):
+def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_samples=1000, part_dir=None, input_identity=None, retry_errors=False, mode='p1'):
+    if mode not in ('p1','p2'):
+        raise ValueError('invalid evaluation mode')
     strata = lagged_strata(caps, sorted(prices.date.unique()))
     merged = prices.merge(strata.reset_index()[['date','code','stratum']], on=['date','code'],how='left')
     input_history = dict(prices.attrs.get('prior_valid_price_dates', {}))
     merged.attrs = {}
     has_adj = ('adj_close' in prices and (np.isfinite(prices.adj_close/prices.close) & (prices.adj_close/prices.close).gt(0)).all())
     primary = replace(primary_config(), price_basis='total_return' if has_adj else 'raw', bootstrap_samples=bootstrap_samples)
-    results, primaries = [], {}
-    cells = [primary] if primary_only else [replace(c,bootstrap_samples=bootstrap_samples) for c in configurations()]
+    if mode == 'p2':
+        primary = replace(p2_primary_config(), bootstrap_samples=bootstrap_samples)
+    results, primaries, references = [], {}, {}
+    cells = [primary] if primary_only else [replace(c,bootstrap_samples=bootstrap_samples) for c in (p2_configurations() if mode=='p2' else configurations())]
     # Content identity covers inputs, manifest, parameters and all implementation
     # files; a stale/corrupt/mismatched part fails closed, never overwritten.
     contract = dict(inputs=input_identity, manifest=manifest, primary_only=primary_only, bootstrap_samples=bootstrap_samples,
                     implementation=provenance()['implementation'],
                     frames=[hashlib.sha256(f.to_parquet(index=False)).hexdigest() for f in (scores,prices,caps)])
+    if mode == 'p2':
+        contract.update(mode=mode, source_commit=provenance()['source_commit'],
+                        spec_sha256=identity(Path(__file__).parents[2]/'tasks/spec-lowturnover-p2-20261119.md')['sha256'])
     run_hash = content_hash(contract)
     if part_dir is None:
         from .rolling_scores import ARTIFACT_ROOT
-        part_dir = ARTIFACT_ROOT / ('evaluate-'+run_hash)
+        part_dir = (ARTIFACT_ROOT.parent/'p2' if mode=='p2' else ARTIFACT_ROOT) / ('evaluate-'+run_hash)
     part_dir = Path(part_dir)
     for (fold,system), group in scores.groupby(['fold','system']):
         part_path = part_dir / f'part-{int(fold)}-{hashlib.sha256(str(system).encode()).hexdigest()[:16]}.json'
@@ -349,7 +419,7 @@ def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_sampl
             if attempt and path.name != f'{part_path.stem}-retry-{attempt:06d}.json':
                 raise ValueError(f'part identity retry sequence mismatch: {path}')
             saved = json.loads(path.read_text())
-            if (saved['run_hash'] != run_hash or saved['payload_sha256'] != content_hash(saved['payload'])
+            if ((mode=='p2' and content_hash(saved.get('contract')) != run_hash) or saved['run_hash'] != run_hash or saved['payload_sha256'] != content_hash(saved['payload'])
                     or saved.get('part_key') != dict(fold=int(fold), system=str(system))
                     or saved.get('previous_payload_sha256') != previous_hash
                     or any(row.get('fold') != int(fold) or row.get('system') != system for row in saved['payload']['results'])):
@@ -359,6 +429,8 @@ def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_sampl
             payload = saved['payload']
             if not retry_errors or not any(row['status']=='ERROR' for row in payload['results']):
                 results.extend(payload['results'])
+                if mode=='p2' and payload.get('p1_reference') is not None:
+                    references[(int(fold),system)] = payload['p1_reference']
                 if payload['primary'] is not None:
                     primaries[(int(fold),system)] = payload['primary']
                 print(json.dumps(dict(fold=int(fold),system=system,part=str(path),action='SKIP_HASH_MATCH')),flush=True)
@@ -390,7 +462,7 @@ def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_sampl
         scored_keys = pd.MultiIndex.from_frame(pred[['date','code']])
         p['universe_eligible'] = pd.MultiIndex.from_frame(p[['date','code']]).isin(scored_keys)
         for config in cells:
-            header = dict(fold=int(fold),system=system,role='candidate_confirmatory' if config==primary and fold in (2021,2022,2023) else 'descriptive',stratum='all')
+            header = dict(fold=int(fold),system=system,role='candidate_confirmatory' if config==primary and fold in (2021,2022,2023) and (mode=='p1' or system=='c0plus') else 'descriptive',stratum='all')
             if config.price_basis=='total_return' and not has_adj:
                 results.append(dict(**header,config=asdict(config),status='UNAVAILABLE_NO_ADJ_CLOSE'))
                 continue
@@ -398,7 +470,7 @@ def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_sampl
             results.append(dict(**header,**result))
             if config==primary and result['status']=='COMPUTED':
                 primaries[(int(fold),system)] = result
-        for stratum in ('small','mid','large'):
+        for stratum in (() if mode=='p2' else ('small','mid','large')):
             pp = p.assign(universe_eligible=p.universe_eligible & p.stratum.eq(stratum))
             # Keep full predictions/calendar; engine masks candidates, preserving
             # real tradability and avoiding invented frozen stratum exits.
@@ -415,10 +487,23 @@ def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_sampl
                             ics.append(float(val))
             results.append(dict(fold=int(fold),system=system,stratum=stratum,role='descriptive',
                 ic=dict(mean=float(np.mean(ics)) if ics else None, sessions=len(ics),label='simulation y5'),**result))
+        if mode=='p2':
+            reference = compute_cell(p,pred,replace(primary_config(),bootstrap_samples=bootstrap_samples),'p1_reference')
+            results.append(dict(fold=int(fold),system=system,stratum='p1_reference',role='descriptive',**reference))
+            if reference['status']=='COMPUTED':
+                references[(int(fold),system)] = reference
         payload = dict(results=results[offset:], primary=primaries.get((int(fold),system)))
-        publish_part(part_path, dict(run_hash=run_hash,part_key=dict(fold=int(fold),system=str(system)),payload_sha256=content_hash(payload),previous_payload_sha256=previous_hash,payload=payload))
+        if mode=='p2':
+            payload['p1_reference'] = references.get((int(fold),system))
+        publish_part(part_path, dict(run_hash=run_hash,part_key=dict(fold=int(fold),system=str(system)),payload_sha256=content_hash(payload),previous_payload_sha256=previous_hash,payload=payload,
+                                     **(dict(contract=contract) if mode=='p2' else {})))
         print(json.dumps(dict(fold=int(fold),system=system,part=str(part_path),action='WROTE',
                              errors=sum(x['status']=='ERROR' for x in payload['results']))), flush=True)
+    if mode=='p2':
+        return dict(primary_config=asdict(primary), grid_complete=not primary_only, results=results,
+                    hypotheses=p2_hypotheses(primaries,references,manifest,primary_only,bootstrap_samples),
+                    actual_folds=sorted(int(f) for f in scores.fold.unique()), actual_systems=sorted(scores.system.unique()),
+                    expected_grid_cells_per_fold_system=972, price_basis_fallback='raw registered by P2')
     clean = {}
     for system in sorted(scores.system.unique()):
         rows = [primaries[(year,system)] for year in (2021,2022,2023) if (year,system) in primaries]
@@ -458,6 +543,9 @@ def evaluate(scores, prices, caps, manifest, primary_only=False, bootstrap_sampl
 
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--mode', choices=('p1','p2'), default='p1')
+    p.add_argument('--fold', type=int, action='append', help='Explicit partial engineering subset')
+    p.add_argument('--system', action='append', help='Explicit partial engineering subset')
     p.add_argument('--scores-dir', type=Path, required=True)
     p.add_argument('--data-root', type=Path, default=DATA_ROOT)
     p.add_argument('--out', type=Path, required=True)
@@ -472,24 +560,45 @@ def main(argv=None):
         while report_path.exists():
             report_path = a.out.with_name(f'{a.out.stem}-retry-{attempt:06d}{a.out.suffix}')
             attempt += 1
-    out = output_path(report_path)
+    if a.mode=='p2':
+        root = Path(__file__).parents[2]/'.artifacts'/'p2'
+        out = report_path.resolve()
+        if out==root.resolve() or not out.is_relative_to(root.resolve()):
+            raise ValueError('output must be below .artifacts/p2/')
+        if out.exists() or out.is_symlink():
+            raise FileExistsError(f'refusing overwrite: {out}')
+    else:
+        if a.fold or a.system:
+            p.error('--fold/--system require --mode p2')
+        out = output_path(report_path)
     if not a.run:
-        print(json.dumps(dict(dry_run=True,output=str(out),primary_only=a.primary_only,grid_cells=1 if a.primary_only else 432)))
+        print(json.dumps(dict(dry_run=True,output=str(out),primary_only=a.primary_only,grid_cells=1 if a.primary_only else (972 if a.mode=='p2' else 432))))
         return
     started = time.perf_counter()
     prov = provenance()
     scores,prices,caps,manifest,inputs,diagnostics = load_inputs(a.scores_dir,a.data_root)
+    if a.mode=='p2':
+        if a.fold:
+            scores = scores[scores.fold.isin(a.fold)]
+        if a.system:
+            scores = scores[scores.system.isin(a.system)]
+        if scores.empty:
+            raise ValueError('empty P2 score selection')
+        prov['p2_spec'] = identity(Path(__file__).parents[2]/'tasks/spec-lowturnover-p2-20261119.md')
     if diagnostics['missing_prediction_price_keys']:
         result = dict(status='STOP_MISSING_PRICE_KEYS', diagnostics=diagnostics)
     else:
         result = dict(status='COMPLETED_RESEARCH_ONLY',diagnostics=diagnostics,
-                      **evaluate(scores,prices,caps,manifest,a.primary_only,a.bootstrap_samples,part_dir=a.out.parent/a.out.stem,input_identity=inputs,retry_errors=a.retry_errors))
+                      **evaluate(scores,prices,caps,manifest,a.primary_only,a.bootstrap_samples,part_dir=a.out.parent/a.out.stem,input_identity=inputs,retry_errors=a.retry_errors,mode=a.mode))
         if any(x['status']=='ERROR' for x in result['results']):
             result['status']='COMPLETED_WITH_ERRORS_RESEARCH_ONLY'
-    result.update(version='p1-portfolio-v1',artifact_class='GENERATED',evidence_class='E2 RESEARCH_ONLY',
+    result.update(version=a.mode+'-portfolio-v1',artifact_class='GENERATED',evidence_class='E2 RESEARCH_ONLY',
         provenance=prov,inputs=inputs,seeds=manifest['seeds'],folds=manifest['years'],
-        parameters=dict(primary_only=a.primary_only,bootstrap_samples=a.bootstrap_samples,retry_errors=a.retry_errors),
-        caveats=CAVEATS,
+        parameters=dict(mode=a.mode,fold=a.fold,system=a.system,primary_only=a.primary_only,bootstrap_samples=a.bootstrap_samples,retry_errors=a.retry_errors),
+        caveats=CAVEATS + (['Minimum fee=20 TWD is an unverified common assumption; fractional shares, no board/odd-lot modeling.',
+                            'Capital sizes are descriptive research assumptions, not user assets.',
+                            'minimum_fee_cost_fraction: full commission on floor-binding orders / total fees+tax+slippage; uplift reported separately.',
+                            'H-P2b pairs common dates only; different terminal tails explicitly excluded.'] if a.mode=='p2' else []),
         wall_seconds=time.perf_counter()-started)
     # Verify unchanged pinned inputs and implementation before publication.
     for name in ('prices','market_value','scores'):

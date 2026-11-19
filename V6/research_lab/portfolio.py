@@ -33,13 +33,24 @@ class Config:
     seed: int = 17
     benchmark_code: str | None = None
     price_basis: str = 'raw'  # 'total_return' scales open/close by adj_close/close (dividends, splits)
+    hold_buffer_rank: int | None = None
+    min_fee: float = 0.
+    initial_capital: float = 1.
 
     def __post_init__(self):
         for name in ('top_k', 'rebalance_sessions', 'sessions_per_year', 'bootstrap_samples', 'bootstrap_block'):
             value = getattr(self, name)
             if isinstance(value, bool) or not isinstance(value, int) or value < 1:
                 raise ValueError(f'invalid {name}')
-        for name in ('min_dollar_volume', 'commission', 'commission_discount', 'sell_tax', 'slippage_bps', 'weight_cap'):
+        if self.hold_buffer_rank is not None and (isinstance(self.hold_buffer_rank, bool) or
+                not isinstance(self.hold_buffer_rank, int) or self.hold_buffer_rank < self.top_k):
+            raise ValueError('invalid hold_buffer_rank')
+        # Research currency guard: at least TWD 10,000, not a normalized NAV.
+        if not np.isfinite(self.initial_capital) or self.initial_capital <= 0:
+            raise ValueError('invalid initial_capital')
+        if self.min_fee > 0 and self.initial_capital < 10_000:
+            raise ValueError('min_fee requires TWD initial_capital >= 10000')
+        for name in ('min_fee', 'min_dollar_volume', 'commission', 'commission_discount', 'sell_tax', 'slippage_bps', 'weight_cap'):
             if not np.isfinite(getattr(self, name)) or getattr(self, name) < 0:
                 raise ValueError(f'invalid {name}')
         if not 0 < self.weight_cap <= 1 or not 0 <= self.commission_discount <= 1:
@@ -54,10 +65,18 @@ class Config:
             raise ValueError('invalid price_basis')
 
 
-def transaction_cost(buy, sell, config):
+def transaction_cost(buy, sell, config, order_deltas=None):
     fee = config.commission * config.commission_discount
     slip = config.slippage_bps / 10000
-    return buy*(fee+slip) + sell*(fee+config.sell_tax+slip)
+    # Keep the original arithmetic path bit-for-bit when the floor is disabled.
+    if config.min_fee == 0:
+        return buy*(fee+slip) + sell*(fee+config.sell_tax+slip)
+    if order_deltas is None:
+        raise ValueError('minimum fee requires individual order deltas')
+    values = np.abs(np.asarray(order_deltas, dtype=float))
+    values = values[values > 1e-13]  # same executed-order threshold as trade log
+    commissions = np.maximum(config.min_fee / config.initial_capital, fee*values).sum()
+    return float(commissions + buy*slip + sell*(config.sell_tax+slip))
 
 
 def validate_predictions(frame):
@@ -115,6 +134,7 @@ def _simulate(panel, days, signals, predictions, config, benchmark=False, free=F
     q = pd.Series(0., index=codes)
     marks = pd.Series(np.nan, index=codes)
     cash, cost = 1., 0.
+    minimum_fee_cost = minimum_fee_uplift = 0.
     rows, trades, records = [], [], []
     blocked = stale = 0
     exposure = {}
@@ -154,7 +174,14 @@ def _simulate(panel, days, signals, predictions, config, benchmark=False, free=F
                     scores = pd.Series(1., index=selected)
                 else:
                     scores = groups.get(signal, pd.Series(dtype=float))
-                    scores = scores.reindex(codes[liquid]).dropna().sort_index().sort_values(ascending=False, kind='stable').iloc[:config.top_k]
+                    scores = scores.reindex(codes[liquid]).dropna().sort_index().sort_values(ascending=False, kind='stable')
+                    if config.hold_buffer_rank is not None and config.hold_buffer_rank > config.top_k:
+                        # Only signal-close ranks; entry/future scores are never consulted.
+                        retained = scores.iloc[:config.hold_buffer_rank].index.intersection(codes[held], sort=False)
+                        additions = scores.index[~scores.index.isin(retained)][:max(0, config.top_k-len(retained))]
+                        scores = scores.loc[scores.index.isin(retained.union(additions))]
+                    else:
+                        scores = scores.iloc[:config.top_k]
                 # No replacement by lower-ranked names when next open is missing.
                 weights = _weights(scores, config, benchmark).reindex(codes, fill_value=0.)
                 weights = weights.where(can_trade, 0.)
@@ -173,10 +200,13 @@ def _simulate(panel, days, signals, predictions, config, benchmark=False, free=F
                 return target, delta, np.maximum(delta, 0).sum(), -np.minimum(delta, 0).sum()
 
             lo, hi = frozen_value, nav
-            for _ in range(60):
+            no_orders = config.min_fee > 0 and not (np.abs(orders(nav)[1]) > 1e-13).any()
+            if no_orders:
+                lo = nav
+            for _ in range(0 if no_orders else 60):
                 mid = (lo+hi)/2
-                _, _, b, s = orders(mid)
-                fees = 0. if free else transaction_cost(b, s, config)
+                _, trial_delta, b, s = orders(mid)
+                fees = 0. if free else transaction_cost(b, s, config, trial_delta)
                 if mid+fees > nav:
                     hi = mid
                 else:
@@ -187,7 +217,14 @@ def _simulate(panel, days, signals, predictions, config, benchmark=False, free=F
             target, delta, buy, sell = orders(principal)
             target = pd.Series(target, index=codes)
             delta = pd.Series(delta, index=codes)
-            fees = 0. if free else transaction_cost(buy, sell, config)
+            fees = 0. if free else transaction_cost(buy, sell, config, delta.to_numpy())
+            if not free and config.min_fee > 0:
+                amounts = delta.abs().to_numpy()
+                amounts = amounts[amounts > 1e-13]
+                proportional = amounts*config.commission*config.commission_discount
+                floor = config.min_fee/config.initial_capital
+                minimum_fee_cost += float(np.where(proportional < floor, floor, 0.).sum())
+                minimum_fee_uplift += float(np.maximum(floor-proportional, 0.).sum())
             cost += fees
             q.loc[can_trade] = target[can_trade]/op[can_trade]
             cash = float(nav - (q*marks.fillna(0.)).sum() - fees)
@@ -215,7 +252,11 @@ def _simulate(panel, days, signals, predictions, config, benchmark=False, free=F
                                      Decimal(str(buy)), Decimal(str(sell)),
                                      (('FILLED', filled), ('PARTIAL', 0), ('BLOCKED', blocked_today))))
         rows.append(dict(date=day.strftime('%Y-%m-%d'), nav=nav, cash=float(cash), cumulative_cost=float(cost)))
-    return records, rows, trades, dict(blocked_orders=blocked, stale_position_sessions=stale,
+    return records, rows, trades, dict(minimum_fee_cost=float(minimum_fee_cost),
+                                      minimum_fee_uplift=float(minimum_fee_uplift),
+                                      minimum_fee_cost_fraction=float(minimum_fee_cost/cost) if cost else None,
+                                      minimum_fee_uplift_fraction=float(minimum_fee_uplift/cost) if cost else None,
+                                      blocked_orders=blocked, stale_position_sessions=stale,
                                       unresolved_positions=int(q.gt(1e-12).sum()), position_exposure=exposure)
 
 

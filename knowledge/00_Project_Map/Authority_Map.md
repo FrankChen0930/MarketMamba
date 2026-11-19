@@ -1,5 +1,9 @@
 # MarketMamba Authority Map
 
+## P2 candidate boundary — 2026-11-19
+
+[Frozen P2 registration](../../tasks/spec-lowturnover-p2-20261119.md) owns research assumptions; [portfolio](../../V6/research_lab/portfolio.py)、[evaluator](../../V6/research_lab/portfolio_eval.py) 與 [P2 tests](../../V6/research_lab/tests/test_p2.py) 是 detached `fec03f7` builder 的 uncommitted candidate，UNMERGED / NOT_DEPLOYED。P1 預設保留原成本運算路徑；P2 僅 `--mode p2` 啟用，使用 `.artifacts/p2/`，hash-bound fold×system parts 與 immutable retry chain 沿用 P1。P2 parts 額外保存 source commit、spec/input/implementation identity。排名只讀 signal close；最低費用以單筆 normalized notional 乘 initial_capital 換成 TWD，NAV 漂移已在 notional 中。最低費用比例為 floor-binding 委託的完整佣金／總成本，另列增額。H-P2b 僅配對同折同分數的共同報酬日，排除日期明列；H-P2a/b 共同 Holm 校正，LightGBM 描述性。既有 P1 artifacts 不修改、不 supersede；engineering smoke 不升格 E2 以外證據或 production authority。詳見 [Current State](Current_State.md#p2-bounded-implementation-candidate--2026-11-19)。
+
 ## P1 bounded diagnostic/retry follow-up — 2026-11-19
 
 `job-run-mwmgvttf-837c02` 的 detached `d2390b5` fixer 為 UNMERGED / NOT_DEPLOYED、uncommitted candidate；[evaluator](../../V6/research_lab/portfolio_eval.py) 與 [P1 executable tests](../../V6/research_lab/tests/test_p1.py) 決定本輪缺價分類、volume magnitude diagnostics、part fold/system binding 與 explicit ERROR retry 語義。[Frozen P1 spec](../../tasks/spec-portfolio-eval-20261119.md) 的 fitting／主要假設與引擎 accounting 不變。只有 fold 內末端連續至少 10 個 observed sessions 無有效 close 的類別對應 termination exposure；pre-fold／transient 分列，未知下市原因不升格。容量只是 NAV=1、未調 NAV drift 的 approximation。
