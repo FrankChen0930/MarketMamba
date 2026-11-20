@@ -315,21 +315,7 @@ class BudgetLedger:
         return budget_snapshot(self.events)
 
     def _validate_anchor(self):
-        anchor=json.loads(self.anchor_path.read_text())
-        snapshot={k:anchor[k] for k in ('sequence','head_sha256','spent_seconds')}
-        validate_snapshot(snapshot,self.events)
-        if snapshot!=self.snapshot() or not anchor.get('observed_at'):
-            raise ValueError('budget anchor head mismatch; use --rebuild-budget --reason TEXT')
-        # Sidecars survive accidental loss of both ledger and anchor. Never accept
-        # a prefix that contradicts a surviving fit's recorded debit/head.
-        for path in ARTIFACT_ROOT.rglob('fold_*.json'):
-            saved=json.loads(path.read_text())
-            if not isinstance(saved.get('budget'),dict):
-                raise ValueError('sidecar missing budget snapshot; manual inventory required')
-            # Old chain snapshots remain historical after an explicit rebuild.
-            rebuilds=[e for e in self.events if e['event']=='REBUILT']
-            covered=any(identity(path) in e['sidecars'] for e in rebuilds)
-            if not covered: validate_snapshot(saved['budget'],self.events)
+        validate_ledger_state(self.events,self.anchor_path,self.snapshot())
 
     def _append(self,event):
         event=dict(event,observed_at=utc_now(),previous_sha256=self.events[-1]['sha256'] if self.events else '0'*64)
@@ -393,6 +379,24 @@ def read_budget(path):
     return events
 
 
+
+def validate_ledger_state(events,anchor_path,snapshot=None):
+    """Raise unless ledger, anchor and surviving sidecars are mutually consistent."""
+    snapshot_now=snapshot if snapshot is not None else budget_snapshot(events)
+    anchor=json.loads(Path(anchor_path).read_text())
+    saved_snapshot={k:anchor[k] for k in ('sequence','head_sha256','spent_seconds')}
+    validate_snapshot(saved_snapshot,events)
+    if saved_snapshot!=snapshot_now or not anchor.get('observed_at'):
+        raise ValueError('budget anchor head mismatch; use --rebuild-budget --reason TEXT')
+    for path in ARTIFACT_ROOT.rglob('fold_*.json'):
+        saved=json.loads(path.read_text())
+        if not isinstance(saved.get('budget'),dict):
+            raise ValueError('sidecar missing budget snapshot; manual inventory required')
+        rebuilds=[e for e in events if e['event']=='REBUILT']
+        covered=any(identity(path) in e['sidecars'] for e in rebuilds)
+        if not covered: validate_snapshot(saved['budget'],events)
+
+
 def budget_state(events):
     spent=0.; stops=set(); pending=None
     for index,row in enumerate(events):
@@ -404,6 +408,11 @@ def budget_state(events):
                 value<row['sidecar_spent_lower_bound']):
                 raise ValueError('invalid rebuilt budget debit')
             spent=value
+            names=[row.get('stop_name'),*row.get('inherited_stops',[])]
+            if (not isinstance(row.get('stop_name'),str) or not isinstance(row.get('inherited_stops',[]),list)
+                    or any(not isinstance(n,str) or not n or Path(n).name!=n for n in names)):
+                raise ValueError('invalid REBUILT STOP latch')
+            stops.update(names)
         elif event=='START' and pending is None: pending=row
         elif event=='END' and pending and row['attempt']==pending['attempt']:
             seconds=row['seconds']
@@ -444,11 +453,23 @@ def rebuild_budget(reason):
         for fit in ARTIFACT_ROOT.rglob('fold_*.parquet'):
             if not fit.with_suffix('.json').exists():
                 raise ValueError('fit without sidecar; unknown spent; manual inventory required')
+        inherited=set(p.name for p in ARTIFACT_ROOT.rglob('STOP-*.json'))
+        if path.exists() and anchor.exists():
+            try:
+                healthy_events=read_budget(path)
+                validate_ledger_state(healthy_events,anchor)
+                budget_state(healthy_events)
+                healthy=True
+            except (ValueError,KeyError,TypeError,OSError,json.JSONDecodeError):
+                healthy=False
+            if healthy:
+                raise ValueError('ledger, anchor and sidecars are consistent; rebuild refused (use --clear-stop for a latched STOP)')
         if anchor.exists():
             known=max(known,debit(json.loads(anchor.read_text())['spent_seconds']))
         try:
             events=read_budget(path)
-            spent,_,pending=budget_state(events)
+            spent,old_stops,pending=budget_state(events)
+            inherited|=set(old_stops)
             if pending:
                 elapsed=max(time.time()-pending['wall_start'],time.monotonic()-pending['monotonic_start'])
                 spent+=debit(elapsed)
@@ -464,7 +485,9 @@ def rebuild_budget(reason):
                 with copy.open('xb') as stream:
                     stream.write(source.read_bytes()); stream.flush(); os.fsync(stream.fileno())
                 preserved.append(identity(copy))
+        stop_name='STOP-'+uuid.uuid4().hex+'.json'
         row=dict(event='REBUILT',reason=reason,sidecar_spent_lower_bound=lower,
+                 stop_name=stop_name,inherited_stops=sorted(inherited),
                  spent_seconds=max(known,lower),sidecars=sidecars,preserved=preserved,
                  observed_at=utc_now(),previous_sha256='0'*64)
         row['sha256']=content_hash(row)
@@ -473,12 +496,11 @@ def rebuild_budget(reason):
             stream.write(json.dumps(row,allow_nan=False)+'\n'); stream.flush(); os.fsync(stream.fileno())
         os.replace(temporary,path); os.fsync(lock)
         atomic_json(anchor,dict(budget_snapshot([row]),observed_at=utc_now()))
-        ledger=BudgetLedger(ARTIFACT_ROOT,allow_stopped=True)
-        ledger.path=path; ledger.anchor_path=anchor; ledger.events=[row]; ledger.lock=lock
-        ledger.spent=row["spent_seconds"]; ledger.stops=set()
-        ledger.stop('budget REBUILT; inspect preserved history and unknown interrupted costs before clearance')
-        print(json.dumps(dict(rebuilt=True,**ledger.snapshot(),sidecar_spent_lower_bound=lower)))
-        return ledger.snapshot()
+        # The REBUILT row itself latches stop_name; the file is supplementary evidence.
+        write_json(ARTIFACT_ROOT/stop_name,dict(reason='budget REBUILT; inspect preserved history and unknown interrupted costs before clearance',observed_at=utc_now()))
+        snapshot=budget_snapshot([row])
+        print(json.dumps(dict(rebuilt=True,**snapshot,sidecar_spent_lower_bound=lower,stop_name=stop_name)))
+        return snapshot
     finally: os.close(lock)
 
 

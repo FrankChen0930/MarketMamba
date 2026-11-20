@@ -306,3 +306,6 @@ thermal  test_p3_temperature_hysteresis_stop    1 failed in 0.03s
 沒有合格的本機 GPU 冒煙，**不能提供基於本輪實測的24 fits GPU估時**。規格既有10–25分／fit 僅推出4–10 GPU小時的預算先驗，非新測量；14小時上限不變。歷史local_b8 seed17（不同矩陣／非本次GPU確認）mamba2八epoch合計約21.21分、crossstock約20.52分，不能據此替代本輪外推。若日後合格smoke各20步取得完整job耗時 Tm/Tc 秒，粗略保守估計為 `12 × 160 × (Tm + Tc) / 3600` 小時；它把一次性的rank-gauss／評分／啟動也放大160倍，只可作保守包絡。較合理需獨立記錄每步訓練、每epoch驗證與一次性前處理，再用 `12 × [3200(t_m+t_c) + 8(v_m+v_c) + p_m+p_c+q_m+q_c]` 秒估算；其中 t是訓練每步、v是每epoch驗證、p/q是前處理／最終推論。
 
 限制保留 P1/P2：模擬標籤、survivorship、無 adj_close、未驗證下市及PIT市值、觀測日曆；兩種子對C0+三種子，不升格成交易或production evidence。溫控單步輪詢不是NVIDIA長期訓練認證。未執行真實2023分數生成、完整24 fits、正式P3組合評估、GPU性能／估時或Human acceptance。
+
+## 修訂 3 補丁（2026-11-20，主控依兩位審查共同發現修正）
+兩位審查員獨立指出：重建預算時，REBUILT 事件與 STOP 檔之間崩潰會讓重啟直接放行。修正：REBUILT 事件本身記錄 `stop_name` 並在 `budget_state` 中視為 STOP 鎖（STOP 檔僅為輔助證據）；重建時把舊鏈與現存 STOP 檔的未解 STOP 寫入 `inherited_stops` 帶入新鏈（清除 REBUILT 的 STOP 不會清除繼承來的 STOP）；`--rebuild-budget` 在帳本、錨點與 sidecar 彼此一致（健康）時拒絕執行。三個回歸測試在修正前皆失敗（3 failed），修正後 102 passed（test_p3.py）。未修的 MINOR（審查 Claude）：損壞帳本的可驗前綴未納入下界、fresh 判定未計入 STOP／重建備份檔、orphan payload 需人工盤點；預算不會被少扣到低於 sidecar 與錨點的最大值。

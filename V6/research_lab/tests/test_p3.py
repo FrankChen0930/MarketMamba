@@ -972,7 +972,7 @@ def test_revision3_rebuild_preserves_history_and_exhaustion(tmp_path,monkeypatch
         with seq.BudgetLedger(root/'new'): pass
     # Deleting the stop file cannot erase the recovery latch.
     for stop in root.glob('STOP-*.json'): stop.unlink()
-    seq.main(['--clear-stop',rows[-1]['name'],'--reason','synthetic inspection complete'])
+    seq.main(['--clear-stop',rebuilt['stop_name'],'--reason','synthetic inspection complete'])
     with pytest.raises(seq.ThermalStop,match='budget'):
         with seq.BudgetLedger(root/'new'): pass
 
@@ -984,3 +984,46 @@ def test_revision3_rebuild_requires_reason_and_refuses_unknown_sidecar(tmp_path)
     with pytest.raises(ValueError,match='missing spent'):
         seq.main(['--rebuild-budget','--reason','synthetic inventory'])
     assert not (root/'budget-global.jsonl').exists()
+
+
+def test_revision3_REBUILT_row_is_itself_the_stop_latch_after_crash(tmp_path,monkeypatch):
+    # Both reviewers: crashing after REBUILT/anchor but before the STOP file must still fail closed.
+    root,json=revision3_history(tmp_path,monkeypatch)
+    (root/'budget-anchor.json').unlink()
+    real=seq.write_json
+    def crash_before_stop_file(path,payload):
+        if Path(path).name.startswith('STOP-'): raise RuntimeError('simulated SIGKILL before STOP file')
+        return real(path,payload)
+    from pathlib import Path
+    monkeypatch.setattr(seq,'write_json',crash_before_stop_file)
+    with pytest.raises(RuntimeError,match='SIGKILL'):
+        seq.main(['--rebuild-budget','--reason','synthetic crash window'])
+    monkeypatch.setattr(seq,'write_json',real)
+    rows=seq.read_budget(root/'budget-global.jsonl')
+    assert rows[0]['event']=='REBUILT' and not list(root.glob('STOP-*.json'))
+    with pytest.raises(seq.ThermalStop,match='STOP'):
+        with seq.BudgetLedger(root/'new'): pass
+    seq.main(['--clear-stop',rows[0]['stop_name'],'--reason','synthetic inspection complete'])
+
+
+def test_revision3_rebuild_refused_when_state_is_healthy(tmp_path,monkeypatch):
+    # Claude review: a healthy ledger must not be launderable through --rebuild-budget.
+    root,json=revision3_history(tmp_path,monkeypatch)
+    before=(root/'budget-global.jsonl').read_bytes()
+    with pytest.raises(ValueError,match='rebuild refused'):
+        seq.main(['--rebuild-budget','--reason','trying to reset a healthy ledger'])
+    assert (root/'budget-global.jsonl').read_bytes()==before
+
+
+def test_revision3_rebuild_inherits_unresolved_stops(tmp_path,monkeypatch):
+    root,json=revision3_history(tmp_path,monkeypatch)
+    with seq.BudgetLedger(root/'old',allow_stopped=True) as ledger:
+        old_stop=ledger.stop('synthetic thermal STOP')
+    (root/'budget-anchor.json').unlink()
+    seq.main(['--rebuild-budget','--reason','synthetic anchor loss with latched STOP'])
+    rebuilt=seq.read_budget(root/'budget-global.jsonl')[0]
+    assert old_stop in rebuilt['inherited_stops'] and rebuilt['stop_name'] not in rebuilt['inherited_stops']
+    # Clearing only the REBUILT latch must not clear the inherited thermal STOP.
+    seq.main(['--clear-stop',rebuilt['stop_name'],'--reason','synthetic inspection of rebuild'])
+    with pytest.raises(seq.ThermalStop,match='STOP'):
+        with seq.BudgetLedger(root/'new'): pass
