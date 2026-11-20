@@ -61,6 +61,37 @@ def write_json(path, payload):
     finally: os.close(directory)
 
 
+def atomic_json(path, payload):
+    """Durable replace: temporary file on the same filesystem, fsync, rename, fsync."""
+    path=Path(path)
+    temporary=path.with_name(path.name+'.tmp-'+uuid.uuid4().hex)
+    write_json(temporary,payload)
+    os.replace(temporary,path)
+    directory=os.open(path.parent,os.O_RDONLY|os.O_DIRECTORY)
+    try: os.fsync(directory)
+    finally: os.close(directory)
+
+
+def namespace_evidence():
+    return sorted({p for pattern in ('run_identity.json','fold_*.parquet','fold_*.json')
+                   for p in ARTIFACT_ROOT.rglob(pattern)})
+
+
+def budget_snapshot(events):
+    return dict(sequence=len(events),head_sha256=events[-1]['sha256'] if events else '0'*64,
+                spent_seconds=budget_state(events)[0])
+
+
+def validate_snapshot(snapshot,events):
+    """A sidecar may pin an older head; the global anchor must pin the exact head."""
+    sequence=snapshot['sequence']; spent=snapshot['spent_seconds']
+    if (type(sequence) is not int or not 0<=sequence<=len(events) or
+        isinstance(spent,bool) or not isinstance(spent,(int,float)) or
+        not math.isfinite(spent) or spent<0 or
+        snapshot!=budget_snapshot(events[:sequence])):
+        raise ValueError('budget anchor/snapshot mismatch; use --rebuild-budget --reason TEXT')
+
+
 def effective_config(smoke=False):
     from .seq_runner import DEFAULT_CFG
     if DEFAULT_CFG != FROZEN_DEFAULT_CFG or {**DEFAULT_CFG, **RECIPE} != FROZEN_CFG:
@@ -253,9 +284,16 @@ class BudgetLedger:
         try:
             fcntl.flock(self.lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
             self.path=ARTIFACT_ROOT/'budget-global.jsonl'
-            if not self.path.exists() and (list(ARTIFACT_ROOT.rglob('run_identity.json')) or list(ARTIFACT_ROOT.rglob('fold_*.parquet'))):
-                raise ValueError('missing global budget with existing fit/run identity')
+            self.anchor_path=ARTIFACT_ROOT/'budget-anchor.json'
+            evidence=namespace_evidence()
+            if not self.path.exists() or not self.anchor_path.exists():
+                if evidence or self.path.exists() or self.anchor_path.exists():
+                    raise ValueError('missing budget ledger/anchor; use --rebuild-budget --reason TEXT')
+                with self.path.open('x') as stream:
+                    stream.flush(); os.fsync(stream.fileno())
+                atomic_json(self.anchor_path,dict(budget_snapshot([]),observed_at=utc_now()))
             self.events=read_budget(self.path)
+            self._validate_anchor()
             self.spent,self.stops,pending=budget_state(self.events)
             if pending:
                 elapsed=max(time.time()-pending['wall_start'],time.monotonic()-pending['monotonic_start'])
@@ -273,6 +311,26 @@ class BudgetLedger:
         except BaseException:
             os.close(self.lock); self.lock=None; raise
 
+    def snapshot(self):
+        return budget_snapshot(self.events)
+
+    def _validate_anchor(self):
+        anchor=json.loads(self.anchor_path.read_text())
+        snapshot={k:anchor[k] for k in ('sequence','head_sha256','spent_seconds')}
+        validate_snapshot(snapshot,self.events)
+        if snapshot!=self.snapshot() or not anchor.get('observed_at'):
+            raise ValueError('budget anchor head mismatch; use --rebuild-budget --reason TEXT')
+        # Sidecars survive accidental loss of both ledger and anchor. Never accept
+        # a prefix that contradicts a surviving fit's recorded debit/head.
+        for path in ARTIFACT_ROOT.rglob('fold_*.json'):
+            saved=json.loads(path.read_text())
+            if not isinstance(saved.get('budget'),dict):
+                raise ValueError('sidecar missing budget snapshot; manual inventory required')
+            # Old chain snapshots remain historical after an explicit rebuild.
+            rebuilds=[e for e in self.events if e['event']=='REBUILT']
+            covered=any(identity(path) in e['sidecars'] for e in rebuilds)
+            if not covered: validate_snapshot(saved['budget'],self.events)
+
     def _append(self,event):
         event=dict(event,observed_at=utc_now(),previous_sha256=self.events[-1]['sha256'] if self.events else '0'*64)
         event['sha256']=content_hash(event)
@@ -280,6 +338,7 @@ class BudgetLedger:
             stream.write(json.dumps(event,allow_nan=False)+'\n'); stream.flush(); os.fsync(stream.fileno())
         os.fsync(self.lock)
         self.events.append(event)
+        atomic_json(self.anchor_path,dict(self.snapshot(),observed_at=utc_now()))
 
     def stop(self,reason):
         name='STOP-'+uuid.uuid4().hex+'.json'
@@ -336,9 +395,16 @@ def read_budget(path):
 
 def budget_state(events):
     spent=0.; stops=set(); pending=None
-    for row in events:
+    for index,row in enumerate(events):
         event=row['event']
-        if event=='START' and pending is None: pending=row
+        if event=='REBUILT' and index==0:
+            value=row['spent_seconds']
+            if (isinstance(value,bool) or not isinstance(value,(int,float)) or
+                not math.isfinite(value) or value<0 or not row.get('reason','').strip() or
+                value<row['sidecar_spent_lower_bound']):
+                raise ValueError('invalid rebuilt budget debit')
+            spent=value
+        elif event=='START' and pending is None: pending=row
         elif event=='END' and pending and row['attempt']==pending['attempt']:
             seconds=row['seconds']
             if isinstance(seconds,bool) or not isinstance(seconds,(int,float)) or not math.isfinite(seconds) or seconds<0:
@@ -348,6 +414,72 @@ def budget_state(events):
         elif event=='CLEARED' and row['name'] in stops and row.get('reason','').strip(): stops.remove(row['name'])
         else: raise ValueError('corrupt budget ledger event order')
     return spent,stops,pending
+
+
+def rebuild_budget(reason):
+    """Explicit recovery only. Preserve damaged bytes; never silently reset spent.
+
+    Existing outputs are historical and cannot acquire new completed START/END
+    evidence through recovery. A STOP requires separate inspection/clearance.
+    """
+    import fcntl
+    if not reason or not reason.strip(): raise ValueError('rebuild reason required')
+    ARTIFACT_ROOT.mkdir(parents=True,exist_ok=True)
+    lock=os.open(ARTIFACT_ROOT,os.O_RDONLY|os.O_DIRECTORY)
+    try:
+        fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        path=ARTIFACT_ROOT/'budget-global.jsonl'; anchor=ARTIFACT_ROOT/'budget-anchor.json'
+        sidecars=[]; lower=0.; known=0.; preserved=[]
+        def debit(value):
+            if isinstance(value,bool) or not isinstance(value,(int,float)) or not math.isfinite(value) or value<0:
+                raise ValueError('unknown/invalid spent; manual inventory required')
+            return value
+        for sidecar in sorted(ARTIFACT_ROOT.rglob('fold_*.json')):
+            saved=json.loads(sidecar.read_text())
+            if not isinstance(saved.get('budget'),dict) or 'spent_seconds' not in saved['budget']:
+                raise ValueError('sidecar missing spent; manual inventory required')
+            lower=max(lower,debit(saved['budget']['spent_seconds']))
+            sidecars.append(identity(sidecar))
+        # A payload without its sidecar has unknown cost; recovery cannot invent it.
+        for fit in ARTIFACT_ROOT.rglob('fold_*.parquet'):
+            if not fit.with_suffix('.json').exists():
+                raise ValueError('fit without sidecar; unknown spent; manual inventory required')
+        if anchor.exists():
+            known=max(known,debit(json.loads(anchor.read_text())['spent_seconds']))
+        try:
+            events=read_budget(path)
+            spent,_,pending=budget_state(events)
+            if pending:
+                elapsed=max(time.time()-pending['wall_start'],time.monotonic()-pending['monotonic_start'])
+                spent+=debit(elapsed)
+            known=max(known,spent)
+        except (ValueError,KeyError,TypeError):
+            # Damaged chain is preserved below; surviving anchor/sidecars own the
+            # known lower bound, not unvalidated debits from corrupt events.
+            pass
+        recovery=uuid.uuid4().hex
+        for source in (path,anchor):
+            if source.exists():
+                copy=source.with_name('budget-rebuild-'+recovery+'-'+source.name)
+                with copy.open('xb') as stream:
+                    stream.write(source.read_bytes()); stream.flush(); os.fsync(stream.fileno())
+                preserved.append(identity(copy))
+        row=dict(event='REBUILT',reason=reason,sidecar_spent_lower_bound=lower,
+                 spent_seconds=max(known,lower),sidecars=sidecars,preserved=preserved,
+                 observed_at=utc_now(),previous_sha256='0'*64)
+        row['sha256']=content_hash(row)
+        temporary=path.with_name(path.name+'.tmp-'+recovery)
+        with temporary.open('x') as stream:
+            stream.write(json.dumps(row,allow_nan=False)+'\n'); stream.flush(); os.fsync(stream.fileno())
+        os.replace(temporary,path); os.fsync(lock)
+        atomic_json(anchor,dict(budget_snapshot([row]),observed_at=utc_now()))
+        ledger=BudgetLedger(ARTIFACT_ROOT,allow_stopped=True)
+        ledger.path=path; ledger.anchor_path=anchor; ledger.events=[row]; ledger.lock=lock
+        ledger.spent=row["spent_seconds"]; ledger.stops=set()
+        ledger.stop('budget REBUILT; inspect preserved history and unknown interrupted costs before clearance')
+        print(json.dumps(dict(rebuilt=True,**ledger.snapshot(),sidecar_spent_lower_bound=lower)))
+        return ledger.snapshot()
+    finally: os.close(lock)
 
 
 def utc_now():
@@ -462,7 +594,7 @@ def resume_fit(path, contract):
     return read_pinned(path)[0],saved['job']
 
 
-def save_fit(path, frame, contract, job):
+def write_fit_payload(path, frame):
     path=Path(path)
     if path.exists() or path.with_suffix('.json').exists():
         raise FileExistsError('refusing overwrite of completed/orphan fit')
@@ -471,8 +603,17 @@ def save_fit(path, frame, contract, job):
         stream.flush()
         import os
         os.fsync(stream.fileno())
+
+def publish_fit_sidecar(path, contract, job, budget):
+    path=Path(path)
     write_json(path.with_suffix('.json'),dict(contract=contract,contract_hash=content_hash(contract),
-                                           output=identity(path),job=job))
+                                           output=identity(path),job=job,budget=budget))
+
+
+def save_fit(path, frame, contract, job, budget):
+    write_fit_payload(path,frame)
+    publish_fit_sidecar(path,contract,job,budget)
+
 
 
 def collect(directory, year, model, seed, cfg, reference, guard, device='cuda', mixer_factory=None, gpu_smoke_evidence=None, _ledger=None):
@@ -598,7 +739,8 @@ def run_jobs(folds_root, years, models, seeds, out, p1_dir, cfg, smoke=False,
                             for value in inputs.values():
                                 if identity(value['path'])!=value: raise RuntimeError('input changed during fit')
                             if prov['implementation']!=provenance()['implementation']: raise RuntimeError('source changed during fit')
-                            save_fit(path,frame,binding,job)
+                            write_fit_payload(path,frame)
+                        publish_fit_sidecar(path,binding,job,budget=ledger.snapshot())
                     require_same_rows(frame,reference[reference.fold==year])
                     frames.append(frame); jobs.append(job)
                     print(json.dumps(dict(fold=year,system=model,seed=seed,wall_seconds=job['wall_seconds'],action='RESUMED' if cached else 'WROTE')),flush=True)
@@ -613,7 +755,7 @@ def run_jobs(folds_root, years, models, seeds, out, p1_dir, cfg, smoke=False,
                       frozen_effective_config=deepcopy(FROZEN_CFG),mixer_parameters=actual_mixer,
                       provenance=prov,environment_observed_at=utc_now(),inputs=inputs,reference=ref_identity,years=sorted(years),seeds=list(seeds),systems=list(models),
                       parameters=dict(**cfg,smoke=smoke,eligibility_window=60,rank_method='average percentile per date then mean across seeds'),
-                      jobs=jobs,budget=dict(spent_seconds=ledger.spent,ledger=identity(ledger.path),limit_seconds=ledger.limit),outputs={p.name:identity(p) for p in sorted(out.glob('*.parquet'))},
+                      jobs=jobs,budget=dict(**ledger.snapshot(),ledger=identity(ledger.path),limit_seconds=ledger.limit),outputs={p.name:identity(p) for p in sorted(out.glob('*.parquet'))},
                       wall_seconds=time.monotonic()-started)
         if not (out/'manifest.json').exists(): write_json(out/'manifest.json',manifest)
         else:
@@ -649,6 +791,7 @@ def revalidate_manifest(manifest,directory):
         # Read while holding the same fixed-directory lock as every writer.
         with BudgetLedger(directory) as ledger:
             budget=manifest['budget']
+            validate_snapshot({k:budget[k] for k in ('sequence','head_sha256','spent_seconds')},ledger.events)
             if (budget['ledger']!=identity(ledger.path) or budget['limit_seconds']!=14*3600 or
                 budget['spent_seconds']!=ledger.spent or not 0<=ledger.spent<=14*3600): return False
             completed=set()
@@ -693,11 +836,15 @@ def main(argv=None):
     p.add_argument('--review-kind',choices=('independent_worker','human'))
     p.add_argument('--job-id')
     p.add_argument('--verdict',choices=('GO','NO_GO'))
+    p.add_argument('--rebuild-budget',action='store_true',help='explicit ledger recovery from surviving sidecars; requires --reason')
     p.add_argument('--clear-stop')
     p.add_argument('--reason')
     a=p.parse_args(argv)
-    if sum((a.gpu_smoke,bool(a.record_review),bool(a.clear_stop),a.run))>1:
+    if sum((a.gpu_smoke,bool(a.record_review),bool(a.clear_stop),a.rebuild_budget,a.run))>1:
         p.error('choose one execution command')
+    if a.rebuild_budget:
+        if not a.reason or not a.reason.strip(): p.error('--reason required')
+        return rebuild_budget(a.reason)
     if a.clear_stop:
         if not a.reason: p.error('--reason required')
         with BudgetLedger(ARTIFACT_ROOT,allow_stopped=True) as ledger: ledger.clear_stop(a.clear_stop,a.reason)

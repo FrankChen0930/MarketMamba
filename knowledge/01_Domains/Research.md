@@ -1,5 +1,9 @@
 # Research
 
+## P3 修訂3 預算完整性 — 2026-11-20
+
+[凍結修訂3](../../tasks/spec-mamba-portfolio-p3-20261120.md) 的[候選 adapter](../../V6/research_lab/rolling_seq_scores.py) 使用獨立 durable anchor 偵測全域 ledger 清空／合法前綴回退，與所有 sidecar snapshots 交叉核對，不依 out-dir。sidecar 在 END 後記錄 sequence／head／spent，manifest 與 evaluator 重驗。缺 state 時僅明確 `--rebuild-budget --reason` 能恢復，以全 namespace sidecar spent 最大值及存活可驗 state 保守扣帳，保留原檔與 REBUILT，STOP 待檢查。缺 spent／orphan 不推定0；重建不提供舊研究結果的新准入。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，CPU synthetic evidence only；同時刻意刪除 ledger／anchor／全部 sidecar 不在防護範圍。[報告與限制](../../reports/v7_p3_portfolio_engineering.md)。
+
 ## P3 修訂2工程候選 — 2026-11-20
 
 [P3 修訂2](../../tasks/spec-mamba-portfolio-p3-20261120.md) 採 executor CUDA-only smoke v2 → 獨立審查 job → record-review → 正式24fits；審查 metadata 與 standing authorization 不代表逐項 Human acceptance。evaluator 重驗 evidence/source/environment/frozen cfg/mixer defaults、全域帳本 SHA/14h/STOP 與24fit sidecars，不信任 RESOLVED 字串。全域帳本含 hash chain、目錄 inode flock；STOP 先 fsync 再 END，必須帶 reason 的 CLI 留 CLEARED，刪檔不清除 latch。硬中斷仍保守扣帳，舊 per-namespace 證據不自動遷移。凍結隱含設定與 source constants hash gate 不改研究超參數。UNRESOLVED／GPU_SMOKE_NOT_RUN／UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED；CPU替身及metadata工程驗證不升格研究結論。程序、實際數字與限制見[工程報告](../../reports/v7_p3_portfolio_engineering.md)。

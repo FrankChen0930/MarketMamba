@@ -97,7 +97,7 @@ def test_p3_temperature_unknown_fails(bad):
 def test_p3_resume_hash(tmp_path):
     frame = scores()
     p = tmp_path/'fit.parquet'
-    seq.save_fit(p, frame, {'seed':17}, {'seconds':1})
+    seq.save_fit(p, frame, {'seed':17}, {'seconds':1},budget=seq.budget_snapshot([]))
     pd.testing.assert_frame_equal(seq.resume_fit(p, {'seed':17})[0], frame)
     with pytest.raises(ValueError, match='identity'):
         seq.resume_fit(p, {'seed':29})
@@ -210,6 +210,12 @@ def test_p3_run_jobs_resume_and_input_binding(tmp_path,monkeypatch):
     first=seq.run_jobs(**kwargs)
     assert first['parameters']['smoke'] and len(first['jobs'])==2
     assert first['frozen_effective_config']==seq.FROZEN_CFG
+    with seq.BudgetLedger(root/'scores') as ledger:
+        seq.validate_snapshot({k:first['budget'][k] for k in ('sequence','head_sha256','spent_seconds')},ledger.events)
+        for path in (root/'scores').glob('fold_*.json'):
+            snapshot=__import__('json').loads(path.read_text())['budget']
+            seq.validate_snapshot(snapshot,ledger.events)
+            assert ledger.events[snapshot['sequence']-1]['event']=='END'
     assert first['parameters']==dict(**cfg,smoke=True,eligibility_window=60,rank_method='average percentile per date then mean across seeds')
     assert {'torch','mamba_ssm','causal_conv1d'}<=first['provenance']['environment']['packages'].keys()
     assert first['mixer_parameters']['factory']=='INJECTED_CPU_ENGINEERING_ONLY'
@@ -665,13 +671,13 @@ def full_synthetic_manifest(tmp_path,monkeypatch):
                     job=dict(fold=y,system=m,seed=seed)
                     with ledger.attempt(binding):
                         seq.save_fit(directory/f'fold_{y}_{m}_seed_{seed}.parquet',
-                            scores().query('seed==@seed').assign(fold=y,system=m),binding,job)
+                            scores().query('seed==@seed').assign(fold=y,system=m),binding,job,budget=ledger.snapshot())
                     jobs.append(job)
         scores().to_parquet(directory/'rank_average.parquet',index=False)
         manifest=dict(frozen_effective_config=cfg,parameters=dict(cfg,smoke=False),admission=admission,
             mixer_parameters=payload['mixer_parameters'],provenance=prov,inputs={},reference={},jobs=jobs,
             outputs={p.name:seq.identity(p) for p in directory.glob('*.parquet')},
-            budget=dict(ledger=seq.identity(ledger.path),spent_seconds=ledger.spent,limit_seconds=14*3600))
+            budget=dict(**ledger.snapshot(),ledger=seq.identity(ledger.path),limit_seconds=14*3600))
     return directory,manifest
 
 
@@ -835,3 +841,146 @@ def test_revision2_environment_hashes_transitive_distributions(tmp_path,monkeypa
     before=hashes[str(tmp_path/'nvidia_cuda_runtime.so')]['sha256']
     (tmp_path/'nvidia_cuda_runtime.so').write_bytes(b'changed binary')
     assert seq.environment_files()[str(tmp_path/'nvidia_cuda_runtime.so')]['sha256']!=before
+
+
+def revision3_history(tmp_path, monkeypatch, final_seconds=14*3600.):
+    """Two completed debits; damage must never reset their budget."""
+    import json
+    tick=[0.]
+    monkeypatch.setattr(seq.time,'monotonic',lambda:tick[0])
+    root=seq.ARTIFACT_ROOT
+    with seq.BudgetLedger(root/'old') as ledger:
+        for seconds in (100., final_seconds):
+            # start second before exhaustion; END itself need not enforce the cap.
+            ledger.start({'run_hash':'synthetic'})
+            tick[0]+=seconds
+            ledger._append(dict(event='END',attempt=ledger.active['attempt'],seconds=seconds,status='COMPLETED'))
+            ledger.spent+=seconds; ledger.active=None
+    namespace=root/'old'; namespace.mkdir()
+    (namespace/'run_identity.json').write_text('{}')
+    return root, json
+
+
+@pytest.mark.parametrize('damage',['empty','valid_prefix'])
+def test_revision3_damage_rejected(tmp_path,monkeypatch,damage):
+    root,_=revision3_history(tmp_path,monkeypatch)
+    path=root/'budget-global.jsonl'; rows=path.read_text().splitlines()
+    path.write_text('' if damage=='empty' else '\n'.join(rows[:2])+'\n')
+    with pytest.raises(ValueError,match='anchor|錨點'):
+        with seq.BudgetLedger(root/'old'): pass
+
+
+def test_revision3_BUDGET_BYPASS_new_out_dir(tmp_path,monkeypatch):
+    root,_=revision3_history(tmp_path,monkeypatch)
+    (root/'budget-global.jsonl').write_text('')
+    with pytest.raises(ValueError,match='anchor|錨點'):
+        with seq.BudgetLedger(root/'brand-new-out'): pass
+
+
+@pytest.mark.parametrize('missing',['budget-anchor.json','budget-global.jsonl'])
+def test_revision3_missing_state_rejected(tmp_path,monkeypatch,missing):
+    root,_=revision3_history(tmp_path,monkeypatch,final_seconds=200.)
+    (root/missing).unlink(missing_ok=True)
+    with pytest.raises(ValueError,match='rebuild-budget'):
+        with seq.BudgetLedger(root/'other'): pass
+
+
+@pytest.mark.parametrize('field,value',[('sequence',99),('head_sha256','f'*64),('spent_seconds',999999.)])
+def test_revision3_anchor_mismatch(tmp_path,monkeypatch,field,value):
+    root,json=revision3_history(tmp_path,monkeypatch,final_seconds=200.)
+    path=root/'budget-anchor.json'
+    anchor=json.loads(path.read_text()); anchor[field]=value; path.write_text(json.dumps(anchor))
+    with pytest.raises(ValueError,match='anchor'):
+        with seq.BudgetLedger(root/'other'): pass
+
+
+def test_revision3_REBUILT_cli(tmp_path,monkeypatch):
+    import json
+    root=seq.ARTIFACT_ROOT
+    root.mkdir(); namespace=root/'old'; namespace.mkdir()
+    for seed,spent in [(17,123.),(29,456.)]:
+        (namespace/f'fold_2023_mamba2_seed_{seed}.json').write_text(json.dumps(
+            dict(budget=dict(sequence=seed,head_sha256='a'*64,spent_seconds=spent))))
+    with pytest.raises(ValueError,match='rebuild-budget'):
+        with seq.BudgetLedger(root/'other'): pass
+    seq.main(['--rebuild-budget','--reason','reviewed synthetic sidecar inventory'])
+    rows=seq.read_budget(root/'budget-global.jsonl')
+    rebuilt=rows[0]
+    assert rebuilt['event']=='REBUILT'
+    assert rebuilt['reason']=='reviewed synthetic sidecar inventory'
+    assert rebuilt['sidecar_spent_lower_bound']==456.
+    assert rebuilt['spent_seconds']>=456.
+    assert len(rebuilt['sidecars'])==2
+    with seq.BudgetLedger(root/'new',allow_stopped=True) as ledger:
+        assert ledger.spent>=456.
+        assert ledger.limit-ledger.spent<=14*3600-456.
+        assert ledger.snapshot()=={k:json.loads((root/'budget-anchor.json').read_text())[k]
+            for k in ('sequence','head_sha256','spent_seconds')}
+
+
+def test_revision3_atomic_anchor_every_append(tmp_path,monkeypatch):
+    import json,os
+    calls=[]; replace=os.replace; fsync=os.fsync
+    def record_sync(fd):
+        calls.append(('fsync',os.readlink(f'/proc/self/fd/{fd}')))
+        return fsync(fd)
+    def record_replace(src,dst):
+        assert any(kind=='fsync' and path==str(src) for kind,path in calls)
+        result=replace(src,dst); calls.append(('replace',str(dst))); return result
+    monkeypatch.setattr(os,'fsync',record_sync); monkeypatch.setattr(os,'replace',record_replace)
+    with seq.BudgetLedger(tmp_path) as ledger:
+        with ledger.attempt({'test':'anchor'}):
+            anchor=json.loads((seq.ARTIFACT_ROOT/'budget-anchor.json').read_text())
+            assert anchor['sequence']==1 and anchor['head_sha256']==ledger.events[-1]['sha256']
+        anchor=json.loads((seq.ARTIFACT_ROOT/'budget-anchor.json').read_text())
+        assert anchor['sequence']==2 and anchor['spent_seconds']==ledger.spent
+        assert anchor['observed_at']
+    assert calls[-1]==('fsync',str(seq.ARTIFACT_ROOT))
+    assert sum(kind=='replace' for kind,_ in calls)==3
+    for i,(kind,_) in enumerate(calls):
+        if kind=='replace': assert calls[i+1]==('fsync',str(seq.ARTIFACT_ROOT))
+
+
+@pytest.mark.parametrize('evidence',['run_identity.json','fold_2023_mamba2_seed_17.json','fold_2023_mamba2_seed_17.parquet'])
+def test_revision3_both_missing_with_surviving_evidence(tmp_path,evidence):
+    root=seq.ARTIFACT_ROOT; namespace=root/'old'; namespace.mkdir(parents=True)
+    (namespace/evidence).write_text('{}')
+    with pytest.raises(ValueError,match='rebuild-budget'):
+        with seq.BudgetLedger(root/'new'): pass
+
+
+def test_revision3_sidecar_prevents_joint_prefix_rollback(tmp_path,monkeypatch):
+    root,json=revision3_history(tmp_path,monkeypatch)
+    events=seq.read_budget(root/'budget-global.jsonl')
+    (root/'old'/'fold_2023_mamba2_seed_17.json').write_text(json.dumps(dict(budget=seq.budget_snapshot(events))))
+    (root/'budget-global.jsonl').write_text('\n'.join(json.dumps(e) for e in events[:2])+'\n')
+    seq.atomic_json(root/'budget-anchor.json',dict(seq.budget_snapshot(events[:2]),observed_at=seq.utc_now()))
+    with pytest.raises(ValueError,match='snapshot'):
+        with seq.BudgetLedger(root/'new'): pass
+
+
+def test_revision3_rebuild_preserves_history_and_exhaustion(tmp_path,monkeypatch):
+    root,json=revision3_history(tmp_path,monkeypatch)
+    original=(root/'budget-global.jsonl').read_bytes()
+    (root/'budget-anchor.json').unlink()
+    seq.main(['--rebuild-budget','--reason','synthetic missing anchor inspection'])
+    rows=seq.read_budget(root/'budget-global.jsonl'); rebuilt=rows[0]
+    assert rebuilt['spent_seconds']==50500.
+    assert any(__import__('pathlib').Path(p['path']).read_bytes()==original for p in rebuilt['preserved'])
+    assert all(seq.identity(p['path'])==p for p in rebuilt['preserved'])
+    with pytest.raises(seq.ThermalStop,match='STOP'):
+        with seq.BudgetLedger(root/'new'): pass
+    # Deleting the stop file cannot erase the recovery latch.
+    for stop in root.glob('STOP-*.json'): stop.unlink()
+    seq.main(['--clear-stop',rows[-1]['name'],'--reason','synthetic inspection complete'])
+    with pytest.raises(seq.ThermalStop,match='budget'):
+        with seq.BudgetLedger(root/'new'): pass
+
+
+def test_revision3_rebuild_requires_reason_and_refuses_unknown_sidecar(tmp_path):
+    with pytest.raises(SystemExit): seq.main(['--rebuild-budget'])
+    root=seq.ARTIFACT_ROOT; root.mkdir()
+    (root/'fold_2023_mamba2_seed_17.json').write_text('{}')
+    with pytest.raises(ValueError,match='missing spent'):
+        seq.main(['--rebuild-budget','--reason','synthetic inventory'])
+    assert not (root/'budget-global.jsonl').exists()

@@ -1,3 +1,84 @@
+# P3 修訂 3 預算錨點工程候選 — 2026-11-20
+
+依[凍結修訂 3](../tasks/spec-mamba-portfolio-p3-20261120.md)，job `job-run-mwoibr4r-44988a`，detached base `39320a04512c446fb75aa993690a7496e434e57b`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。本節更新修訂 2 的預算完整性及恢復程序，其他准入／研究假設保留。沿用既有 adapter、test_p3、report、project map 與 `.artifacts/p3/`；`revision3-verification/` 為此 source/task 專用 GENERATED / SYNTHETIC_CPU_ENGINEERING_ONLY logs，避免覆寫先前證據；不是新的研究實驗或結果 authority。
+
+## 錨點與發布順序
+
+現有 hash chain 只能驗內容，無法辨識合法前綴截斷／清空。本輪新增全域 `.artifacts/p3/budget-anchor.json`，與 ledger 共用原有固定目錄 inode flock，不依賴 out-dir。每次事件先 append／flush／fsync ledger 及其目錄，再用同目錄 exclusive 暫存檔寫出 `sequence`（事件數）、`head_sha256`、`spent_seconds`、`observed_at`，fsync 檔案後 `os.replace` 原子替換，最後 fsync 目錄。spent 從包含該次新事件的完整有效帳本計算，不依賴尚未更新的 instance counter。fresh namespace 唯一可自動建立零事件錨點／空帳本；有任一舊 state 或 fit／sidecar／run_identity 時不可視為 fresh。
+
+啟動在 recovery／STOP 清除／任何新 START 前驗證：事件數、頭 hash、spent 必須與錨點完全一致，任一不符即拒絕。這比僅檢查 spent 不回退更嚴格；ledger 已 fsync 但 anchor 尚未替換時中斷，也會 fail closed，須顯式恢復。再驗所有存活 sidecar 的 snapshot 是否是有效帳本前綴，以拒絕帳本與錨點共同回退卻留下新 fit 的狀況。sidecar 存的是發布時的三元組；payload 在 fit 計時範圍內落盤並 fsync，END 扣帳及錨點完成後才 exclusive 發布 sidecar，包含該 fit 的全部已記帳耗時。manifest 同樣記三元組與完整 ledger identity；evaluator 沿既有 revalidate_manifest 再驗 snapshot、帳本、准入與24個 completed bindings。
+
+## 顯式重建（本輪只於合成 tmp fixtures 執行）
+
+先停止寫入並盤點所有 namespace；不要刪 sidecar 或改寫歷史輸出。確認原因後，在 repository root 執行：
+
+```bash
+PYTHONPATH=V6 /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python \
+  -m research_lab.rolling_seq_scores --rebuild-budget \
+  --reason '<已核對的損壞原因、sidecar inventory 與未知耗時限制>'
+```
+
+命令使用同一目錄鎖，逐一讀取所有 namespace 的 `fold_*.json`，取 sidecar `budget.spent_seconds` **最大值**作 `sidecar_spent_lower_bound`，不是相加，也不是只讀指定 out-dir。新帳本首事件為 REBUILT，包含非空 reason、時間、sidecar identities、下界及實際 debit；實際 debit 取 sidecar 下界、存活 anchor spent、可驗證帳本 spent／pending 中斷保守扣帳的最大值。每個仍存在的舊帳本／錨點以 `budget-rebuild-<uuid>-<原檔名>` 保留原始 bytes，REBUILT 記錄其 path／size／SHA；不是新研究結果。重建後仍扣除該 debit，可用預算為14h減debit；50500秒的合成案例即使清除 STOP 也不能再啟動。
+
+重建會另加持久 STOP；必須檢查保留歷史、未知中斷成本後，沿既有 `--clear-stop STOP-<id>.json --reason '<檢查結果>'` 留 CLEARED。刪 STOP 檔無效。重建不替舊 fit 補造 START／COMPLETED，不授予舊輸出新的確認性／續跑 authority；需新 namespace。已盤點的 sidecar 僅按 REBUILT 綁定的 exact identity 視為舊鏈證據，其他 sidecar 仍須通過有效前綴驗證。缺 spent 的舊 sidecar、無 sidecar 的 orphan payload／無法解析的 sidecar 不會被估成0，命令拒絕，需另外人工盤點。無法解析的 anchor 也會拒絕，不能以壞值扣帳。
+
+## 實際 RED→GREEN 與反證
+
+命令前綴均為 `PYTHONPATH=V6:V6/research_lab/tests:. /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python`。初始 `-m pytest V6/research_lab/tests/test_p3.py -k revision3 -q`：
+
+```text
+10 failed, 83 deselected in 2.28s
+```
+
+逐項 RED 包含 empty、valid_prefix、BUDGET_BYPASS 換 out-dir、缺 anchor／ledger、sequence／head／spent mismatch、REBUILT 及原子 fsync。初版修復捕捉到恢復物件缺 stops 初始化，保留 `green-initial.log`（1 failed / 9 passed），修正後加強存活 evidence、共同回退與重建耗盡／未知 sidecar 檢查。原 P3 全項實跑 `93 passed in 80.09s`；補強後最終 focused `16 passed, 83 deselected in 3.25s`（`green-final.log`）。最終 sidecar helper 必須顯式傳入 budget，不再允許省略後產生缺 snapshot 的 sidecar。
+
+in-memory 反證將當前 source 讀入記憶體後變異並交 pytest 執行，不改 repository implementation；可重跑 `revision3-verification/mutation_runner.py`。以下是實際輸出，每個子程序 exit1，預期失敗不算正常套件通過：
+
+```text
+empty           1  1 failed in 0.18s
+valid_prefix    1  1 failed in 0.18s
+BUDGET_BYPASS   1  1 failed in 0.21s
+anchor_mismatch 1  3 failed in 0.47s
+missing_state   1  2 failed in 0.37s
+REBUILT         1  1 failed in 0.13s
+atomic          1  1 failed in 0.11s
+```
+
+移除錨點驗證會讓清空／合法前綴／換 out-dir 直接進入 `DID NOT RAISE ValueError`；遺失 state 自動補零同樣被拒絕測試抓到；REBUILT 使用最小值會出現 `assert 0.0 == 456.0`；直接覆寫錨點而不 replace／fsync 會出現 `assert 0 == 3`。錨點三種 mismatch 均使用未耗盡預算，移除驗證即 `DID NOT RAISE ValueError`，避免只靠後續耗盡 gate 偶然拒絕。完整 traceback、命令、來源及 artifact hashes 見忽略目錄 `.artifacts/p3/revision3-verification/`。
+
+逐項 GREEN（`category_checks.py` 以實際 pytest node 重跑，exit0）：
+
+```text
+empty            0  1 passed in 1.81s
+valid_prefix     0  1 passed in 2.04s
+BUDGET_BYPASS    0  1 passed in 1.98s
+missing_state    0  2 passed in 2.03s
+anchor_mismatch  0  3 passed in 2.15s
+REBUILT          0  1 passed in 1.80s
+```
+
+指定完整命令最終實際輸出：
+
+```bash
+PYTHONPATH=V6:V6/research_lab/tests:. /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests tests -q
+```
+
+```text
+574 passed, 1 skipped, 4 warnings in 177.00s (0:02:56)
+```
+
+語法 AST／py_compile、artifact SHA-256 round-trip、同 change 新增 Markdown links、`git diff --check` 通過；`check_knowledge_impact.py` exit0／PASS，人工判定 budget correctness gate／恢復語義改變，已更新 Current State、Authority Map、Research domain、Worktree Register。`knowledge_health.py --ci` 的最終實際結果及所有檔案 identities 見 `revision3-verification/verification.json`，WARNING 不作通過研究 gate 的依據。
+
+Completed：修訂3錨點／恢復／六類破壞回歸／反證。Changed：adapter、test_p3、工程報告及上述4份knowledge。Decisions：缺 state拒絕／顯式重建／最大下界扣帳／重建STOP；防疏失不防刻意清除全部證據。Evidence：上述CPU logs及verification manifest。Remaining：獨立審查、GPU smoke、24fits及Human acceptance。Blockers：GPU_SMOKE_NOT_RUN，無正式P3研究結果；本task無未完成實作項。Next recommended action：主控獨立審查diff、logs與重建邊界。Project memory updated：YES；Authority map updated：YES，僅candidate boundary。Git status：起始clean，最終7個指定tracked檔案unstaged modified，no-commit依指示不宣稱clean。Commit／Push：N/A（禁止），無merge／deploy。Worktree：既有run-mwoibr4r fixer，dirty不可安全移除。Runtime/environment：WSL／Python3.12.3 pilot09 venv／CPU，詳見範圍聲明。
+
+## 範圍與風險
+
+此機制**防疏失與誤操作，不防刻意同時刪除帳本、錨點與全部 sidecar**；也不是外部不可變儲存、防竄改硬體或安全審計簽章。目錄及其父路徑仍須可信且穩定；不宣稱非合作寫入者／檔案系統故障下仍可自動恢復。ledger 與 anchor 是兩次 durable publication，跨檔中斷採拒絕與顯式重建，不稱跨檔交易。遺失證據可能隱藏 sidecar 前／未完成 attempt 的成本；REBUILT 下界不代表精確 GPU 時數，STOP 檢查不能省略。無 spent 的 legacy sidecar 不能透過本命令靜默遷移。
+
+Runtime/environment：現有 WSL-native fixer，Python3.12.3 pilot09 venv，CPU，MARKETMAMBA_DATA_ROOT unset，Data realpath 為本 checkout 的普通目錄，未當成外部 formal matrix；沒有改 Data、V6/models、正式歷史 artifacts，也沒有 GPU、acquisition、production、scheduler、wakeups、recurring jobs、additional agents、commit、push、merge、deployment。GPU_SMOKE_NOT_RUN／完整24 fits未跑／正式P3研究結果未產生；本輪工程完成不是 Human acceptance。
+
+---
+
 # P3 修訂 2 工程候選 — 2026-11-20
 
 本節取代下方歷史工程紀錄中的准入、同 namespace 預算及刪除 STOP 程序。依[登記修訂 2](../tasks/spec-mamba-portfolio-p3-20261120.md)實作；job `job-run-mwnv3018-83e5c9`，detached base `a91f38e86dab0d332fc63c6dc8a6ab7361a19b99`，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。沿用既有 adapter、evaluator、tests、report 與 `.artifacts/p3/`；`revision2-verification/` 只隔離本輪 GENERATED CPU logs，避免覆寫 revision1 證據，不是新研究 experiment 或正式市場結果。
