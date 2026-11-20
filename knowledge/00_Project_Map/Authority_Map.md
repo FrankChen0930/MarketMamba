@@ -2,10 +2,9 @@
 
 ## P3 bounded builder candidate authority — 2026-11-20
 
-[P3 frozen registration 修訂1](../../tasks/spec-mamba-portfolio-p3-20261120.md) owns research assumptions，明確取代初版no-conv，採官方Mamba2預設temporal卷積／cross d_conv2；不是以歷史prose消除歧義。[adapter](../../V6/research_lab/rolling_seq_scores.py) 的FROZEN_CFG／FROZEN_DEFAULT_CFG與執行前相等閘門、[evaluator](../../V6/research_lab/portfolio_eval.py) 的CI＋Holm及確認性cfg/admission gate、[P3 tests](../../V6/research_lab/tests/test_p3.py) 為 `job-run-mwnu9iri-e7a54a` detached `69dc5ba` 未提交工程候選，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；不supersede P1/P2／historical artifacts／production authority。
+[P3 frozen registration 修訂2](../../tasks/spec-mamba-portfolio-p3-20261120.md) owns research assumptions；修訂1的官方 temporal 預設卷積／cross d_conv2 仍有效。`job-run-mwnv3018-83e5c9` detached base `a91f38e` 的[adapter](../../V6/research_lab/rolling_seq_scores.py)、[evaluator](../../V6/research_lab/portfolio_eval.py)、[tests](../../V6/research_lab/tests/test_p3.py) 為未提交工程候選，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，不 supersede P1/P2、歷史 artifacts 或 production authority。
 
-持久預算與STOP恢復規則由adapter執行：同namespace追加實際嘗試耗時，硬中斷保守計入至重啟、鎖STOP、人工清除不重置budget；14h耗盡拒絕啟動。真實六折metadata與rolling_runner／SeqData一致，未放寬purge。GPU_SMOKE_NOT_RUN；正式模型准入仍UNRESOLVED，只有獨立授權／人工審核且source、environment、frozen cfg、mixer相符的官方GPU smoke可產生RESOLVED新manifest。CPU替身可達性測試不等於GPU執行證據；不手改舊manifest升格。完整解鎖條件、人工STOP移除程序、Windows/WSL manifest欄位與限制見[工程報告](../../reports/v7_p3_portfolio_engineering.md)／[Current State](Current_State.md#p3-序列分數組合工程候選--2026-11-20)。
-
+只有 executor 產生的 p3-official-gpu-smoke-v2、獨立 review job 的結構化 reviewed_by 與可稽核 standing_authorization，且所有 source/spec/environment hashes／frozen cfg／官方 defaults 符合，才可准入。`p3_main` 重新驗 evidence、全域帳本 SHA/spent/STOP、run_identity 與24fit run_hash/sidecars；手寫 RESOLVED 不具 authority。全域 `.artifacts/p3/budget-global.jsonl` 是本候選唯一預算 authority，不依 out-dir；固定目錄 inode flock、hash chain、STOP/CLEARED 事件由 adapter 管理，直接刪 STOP 不授予續跑權。缺歷史帳本不自動遷移或當0。詳見[工程報告](../../reports/v7_p3_portfolio_engineering.md)／[Current State](Current_State.md#p3-序列分數組合工程候選--2026-11-20)。GPU_SMOKE_NOT_RUN；CPU boundary doubles／測試通過均非官方 GPU evidence、Human acceptance 或交易准入。
 
 ## P2 amendment 1 candidate boundary — 2026-11-19
 

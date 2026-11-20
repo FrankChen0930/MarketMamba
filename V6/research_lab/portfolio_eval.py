@@ -687,7 +687,7 @@ def evaluate_p3(scores, prices, caps, manifest, bootstrap_samples=1000, part_dir
 
 
 def p3_main(a):
-    from .rolling_seq_scores import pinned_reference, require_same_rows, effective_config, FROZEN_CFG
+    from .rolling_seq_scores import pinned_reference, require_same_rows, effective_config, FROZEN_CFG, revalidate_manifest
     root=(Path(__file__).parents[2]/'.artifacts/p3').resolve(); out=a.out.resolve()
     if out==root or not out.is_relative_to(root): raise ValueError('output must be below .artifacts/p3/')
     if out.exists(): raise FileExistsError(out)
@@ -710,7 +710,8 @@ def p3_main(a):
     prov=provenance()
     frozen=effective_config()
     combined=dict(neural=manifest,c0plus=p1_manifest,confirmatory_ready=(
-        manifest.get('frozen_effective_config')==FROZEN_CFG
+        revalidate_manifest(manifest,a.scores_dir)
+        and manifest.get('frozen_effective_config')==FROZEN_CFG
         and all(manifest.get('parameters',{}).get(k)==v for k,v in frozen.items())
         and manifest.get('admission',{}).get('status')=='RESOLVED' and
         manifest.get('version')=='p3-scores-v1' and manifest.get('parameters',{}).get('smoke') is False
@@ -719,6 +720,8 @@ def p3_main(a):
         and p1_manifest.get('parameters',{}).get('max_train_rows')==500_000))
     if diagnostics['missing_prediction_price_keys']: raise ValueError('STOP missing prediction price keys')
     result=evaluate_p3(scores,prices,caps,combined,a.bootstrap_samples,part_dir,dict(**inputs,p1=p1_inputs))
+    if combined['confirmatory_ready'] and not revalidate_manifest(manifest,a.scores_dir):
+        raise RuntimeError('STOP P3 admission changed during evaluation')
     for value in list(inputs.values())+list(p1_inputs.values()):
         if isinstance(value,dict) and 'path' in value and identity(value['path'])['sha256']!=value['sha256']:
             raise RuntimeError('P3 input changed during run')

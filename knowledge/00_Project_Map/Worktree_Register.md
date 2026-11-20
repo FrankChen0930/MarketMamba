@@ -1,5 +1,11 @@
 # Worktree Register
 
+## P3 修訂2 fixer — 2026-11-20
+
+- Existing path `.worktrees/ruflo-workers/run-mwnv3018-83e5c9/fixer`；detached HEAD/base `a91f38e86dab0d332fc63c6dc8a6ab7361a19b99`；owner Human/Codex builder；task 修訂2准入／全域帳本／凍結與報告；created2026-11-20，retired N/A。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；no commit/push/merge/GPU/agents。
+- 沿用既有 adapter/evaluator/tests/report 與 `.artifacts/p3/`；revision2-verification 隔離 GENERATED CPU logs，避免覆寫舊證據。Authority：P3 frozen 修訂2及candidate executable tests；正式GPU准入仍未解鎖，沒有新增worktree或runtime observation。
+- Merge dependency：獨立審查與Human acceptance；artifact dependency：本輪CPU logs、合成fixtures與既有唯讀六折metadata。Safe removal：先保存未提交patch與必要證據、處理引用、明確retirement review；目前dirty不得移除。
+
 ## P3 修訂1 fixer — 2026-11-20
 
 - Existing path `.worktrees/ruflo-workers/run-mwnu9iri-e7a54a/fixer`；branch detached HEAD，base `69dc5baaee2d8e5c35d36458335c29fb4f26b619`；owner Human/Codex builder；task 修訂1項2/3/5/6/7/8；created2026-11-20，retired N/A。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；no commit/push/merge/GPU/agents。

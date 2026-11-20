@@ -2,12 +2,11 @@
 
 ## P3 序列分數／組合工程候選 — 2026-11-20
 
-`job-run-mwnu9iri-e7a54a` fixer，detached `69dc5baaee2d8e5c35d36458335c29fb4f26b619`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依指示不 commit/push/merge/GPU/新增 agents。[P3 修訂1](../../tasks/spec-mamba-portfolio-p3-20261120.md) 明確取代初版 no-conv：官方 Mamba2 temporal 預設卷積、cross d_conv2。[adapter](../../V6/research_lab/rolling_seq_scores.py) 明列完整有效設定與 default baseline，逐項 drift gate、manifest 實際 mixer／Windows-WSL 環境欄位、fsynced 持久 budget.jsonl 含失敗／中止／熱STOP與跨程序保守恢復、STOP人工清除、14h啟動拒絕。[evaluator](../../V6/research_lab/portfolio_eval.py) 明列 CI＋Holm 判定、確認性完整cfg/admission gate及獨立parts目錄；P1/P2 default不變。
+`job-run-mwnv3018-83e5c9` fixer，detached base `a91f38e86dab0d332fc63c6dc8a6ab7361a19b99`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依指示不 commit/push/merge/GPU/新增 agents。[P3 修訂2](../../tasks/spec-mamba-portfolio-p3-20261120.md) 的[adapter](../../V6/research_lab/rolling_seq_scores.py) 新增 CUDA-only `--gpu-smoke`，由執行器量測官方 temporal／cross mixer 前反向與逐檔環境／source hashes；smoke 不自行審查。獨立 review job 完成後才用 `--record-review` 產生另一份 exclusive artifact，記錄 reviewed_by／standing_authorization，不接受 v1／human_reviewed 布林。[evaluator](../../V6/research_lab/portfolio_eval.py) 現在重新驗 evidence path/SHA、review、source/spec/environment、cfg/mixer、全域帳本與完整24fit sidecar/run_hash，不再信任手寫 RESOLVED。
 
-真實2021–2026 splits hash／逐列 split_rows／rolling_runner eligibility 比對一致，outer gap21、inner gap20，未放寬 purge。CPU／合成E2E涵蓋神經分數讀取、P1 pinned_reference、readiness與parts/out，官方collect分支由訓練邊界替身證明可達；in-memory七類反證均exit1。指定全套 **525 passed、1 skipped、4 warnings／137.80s**。詳細實際數值、RED→GREEN與解鎖程序見[工程報告](../../reports/v7_p3_portfolio_engineering.md)。SIGKILL無法得知精確終止時刻，恢復保守扣入至重啟時間並鎖STOP；不宣稱精確GPU時數。僅同namespace累計，不得改namespace規避同研究14h上限。
+全域 `.artifacts/p3/budget-global.jsonl` 含 hash chain，flock 鎖定 artifact 目錄 inode，所有 namespace／smoke 共用14h；fit/run_identity 與帳本不符即拒絕。STOP 事件及檔案先 fsync 再 END；刪檔不能清除 latch，必須 `--clear-stop <name> --reason <text>` 留 CLEARED，不重置 spent。硬中斷仍保守扣帳至重啟。`collect()` 是需 active ledger attempt 的內部入口。凍結補 dropout/window/normalize/train_probe_sessions，官方其餘預設從 signature 讀出；寫死常數由 source hash 重驗。P1/P2 default、purge、CI/Holm 與研究門檻不改。
 
-**UNRESOLVED / GPU_SMOKE_NOT_RUN**：模型文字矛盾已由修訂解除；正式GPU環境／forward-backward smoke仍未由本輪驗證。只有source／environment／frozen cfg／mixer相符且人工審核的官方GPU smoke evidence才能讓新manifest RESOLVED；CPU注入永遠CPU_ENGINEERING_ONLY。Next：獨立審查diff／logs，另取得GPU授權後依報告程序產生smoke；不產生正式P3結果或交易ready宣稱。舊builder493測試與CPU冒煙保留為歷史工程證據，不重標成新結果。正式Data、V6/models、production/scheduler與P1/P2研究結論不變。
-
+**UNRESOLVED / GPU_SMOKE_NOT_RUN**：本輪只有 CPU／合成 E2E、反證與唯讀六折 metadata 測試，無官方 CUDA 量測／24 fits／研究結論；真實 GPU 環境未由本輪驗證。完整 RED→GREEN、實際全套數字、解鎖與 STOP 程序見[工程報告](../../reports/v7_p3_portfolio_engineering.md)。既有 per-namespace 歷史不得當成新全域帳本或重置預算；需要另行盤點遷移。Next：獨立審查本 diff／logs；本 builder 的 No GPU 範圍不執行後續 GPU 工作。正式 Data、V6/models、production/scheduler、研究 evidence class 與 Human acceptance 不變。
 
 ## P2 low-turnover result — 2026-11-20
 

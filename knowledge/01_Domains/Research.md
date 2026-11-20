@@ -1,8 +1,8 @@
 # Research
 
-## P3 修訂1工程候選 — 2026-11-20
+## P3 修訂2工程候選 — 2026-11-20
 
-[P3 修訂1](../../tasks/spec-mamba-portfolio-p3-20261120.md) 採官方 temporal 預設卷積／cross d_conv2，完整有效cfg凍結、持久嘗試預算／STOP人工清除、真實六折purge比對與p3_main E2E；H-P3a/b優劣均須相應CI界線與Holm p<.05。模型文字歧義已解除，但正式GPU smoke未執行，UNRESOLVED／UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED。硬中斷以含downtime的保守扣帳恢復，不宣稱精確GPU用量；CPU替身與metadata evidence不升格研究結果。正式解鎖程序及實際驗證見[工程報告](../../reports/v7_p3_portfolio_engineering.md)。
+[P3 修訂2](../../tasks/spec-mamba-portfolio-p3-20261120.md) 採 executor CUDA-only smoke v2 → 獨立審查 job → record-review → 正式24fits；審查 metadata 與 standing authorization 不代表逐項 Human acceptance。evaluator 重驗 evidence/source/environment/frozen cfg/mixer defaults、全域帳本 SHA/14h/STOP 與24fit sidecars，不信任 RESOLVED 字串。全域帳本含 hash chain、目錄 inode flock；STOP 先 fsync 再 END，必須帶 reason 的 CLI 留 CLEARED，刪檔不清除 latch。硬中斷仍保守扣帳，舊 per-namespace 證據不自動遷移。凍結隱含設定與 source constants hash gate 不改研究超參數。UNRESOLVED／GPU_SMOKE_NOT_RUN／UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED；CPU替身及metadata工程驗證不升格研究結論。程序、實際數字與限制見[工程報告](../../reports/v7_p3_portfolio_engineering.md)。
 
 ## P2 evaluator candidate — 2026-11-19
 

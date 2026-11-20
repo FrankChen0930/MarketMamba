@@ -13,6 +13,7 @@ import os
 import platform
 import sys
 import uuid
+import inspect
 from datetime import datetime, timezone
 import json
 import math
@@ -23,7 +24,7 @@ import time
 import numpy as np
 import pandas as pd
 
-from .rolling_scores import MATRIX_FILES, identity, provenance, rank_average, write_json
+from .rolling_scores import MATRIX_FILES, identity, provenance, rank_average
 from .portfolio_eval import content_hash, read_pinned
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -32,7 +33,8 @@ WORK_ROOT = ARTIFACT_ROOT/'work'
 SYSTEMS = ('mamba2','crossstock')
 RECIPE = dict(d_model=64, n_layers=2, mixer_kw=dict(d_state=16, headdim=8, expand=2),
               lr=3e-4, epochs=8, steps_per_epoch=400, dates_per_batch=8,
-              stocks_per_date=256, listnet_w=0., n_cross=1)
+              stocks_per_date=256, listnet_w=0., n_cross=1, dropout=.1, window=60,
+              normalize="rankgauss", train_probe_sessions=40)
 # Explicit snapshots: DEFAULT_CFG drift is rejected even for overridden keys.
 FROZEN_DEFAULT_CFG = dict(d_model=64, n_layers=2,
     mixer_kw=dict(d_state=16, headdim=8, expand=2), attn_window=16, lr=.0003,
@@ -43,7 +45,20 @@ FROZEN_CFG = dict(d_model=64, n_layers=2,
     mixer_kw=dict(d_state=16, headdim=8, expand=2), attn_window=16, lr=.0003,
     weight_decay=.01, epochs=8, steps_per_epoch=400, patience=3,
     dates_per_batch=8, stocks_per_date=256, min_names=64, baseline_rows=500000,
-    n_boot=1000, val_dates=126, val_max_rows=80000, listnet_w=0., listnet_t=1., n_cross=1)
+    n_boot=1000, val_dates=126, val_max_rows=80000, listnet_w=0., listnet_t=1., n_cross=1,
+    dropout=.1, window=60, normalize="rankgauss", train_probe_sessions=40)
+
+
+def write_json(path, payload):
+    """Exclusive artifact publication, fsync contents then containing directory."""
+    path=Path(path)
+    path.parent.mkdir(parents=True,exist_ok=True)
+    with path.open('x',encoding='utf-8') as stream:
+        json.dump(payload,stream,indent=2,allow_nan=False)
+        stream.write('\n'); stream.flush(); os.fsync(stream.fileno())
+    directory=os.open(path.parent,os.O_RDONLY|os.O_DIRECTORY)
+    try: os.fsync(directory)
+    finally: os.close(directory)
 
 
 def effective_config(smoke=False):
@@ -67,104 +82,233 @@ def runtime_environment(device):
                 gpu_model=torch.cuda.get_device_name(0) if str(device).startswith('cuda') else None)
 
 
+def validate_frozen(cfg):
+    if cfg != effective_config():
+        raise ValueError('P3 frozen configuration mismatch')
+
+
 def mixer_parameters(cfg):
-    # Read the installed official signature rather than assume its default.
-    import inspect
     from mamba_ssm import Mamba2
-    default=inspect.signature(Mamba2).parameters['d_conv'].default
-    if not isinstance(default,int) or default!=4:
+    signature=inspect.signature(Mamba2)
+    defaults={k:v.default for k,v in signature.parameters.items()
+              if v.default is not inspect.Parameter.empty and
+              v.kind not in (inspect.Parameter.VAR_KEYWORD,inspect.Parameter.VAR_POSITIONAL)}
+    # Canonical JSON makes tuple defaults (e.g. A_init_range) stable on disk.
+    def canonical(value):
+        if isinstance(value,float) and math.isinf(value): return 'Infinity' if value>0 else '-Infinity'
+        if isinstance(value,(tuple,list)): return [canonical(v) for v in value]
+        return value
+    defaults={k:canonical(v) for k,v in defaults.items()}
+    if defaults.get('d_conv') != 4:
         raise ValueError('official temporal d_conv default differs from frozen amendment 1')
-    return dict(factory='mamba_ssm.Mamba2',temporal=dict(d_model=cfg['d_model'],d_conv=default,**cfg['mixer_kw']),
-                cross=dict(d_model=cfg['d_model'],**cfg['mixer_kw'],d_conv=2))
+    temporal=dict(defaults,d_model=cfg['d_model'],**cfg['mixer_kw'])
+    return dict(factory='mamba_ssm.Mamba2',temporal=temporal,cross=dict(temporal,d_conv=2))
+
+
+STANDING_AUTHORIZATION = ('Human 在 2026-11-19／20 的對話中授權主控自行接續本機（RTX 3060）實驗、不得上 Colab。'
+                         '此授權可由 Human 日後稽核；不表示 Human 已逐項審核。')
+EXPECTED_PACKAGES=dict(torch='2.10.0+cu128',mamba_ssm='2.3.2.post1',causal_conv1d='1.7.0')
+
+
+def environment_files():
+    """Hash installed code/binaries and metadata, plus interpreter and exact lock."""
+    import importlib.metadata
+    paths={Path(sys.executable).resolve(), Path.home()/'.venvs/marketmamba-gpu.requirements.lock.txt'}
+    for dist in importlib.metadata.distributions():
+        if not dist.files: raise RuntimeError('installed environment file inventory missing')
+        paths.update(Path(dist.locate_file(f)).resolve() for f in dist.files
+                     if not str(f).endswith(('.pyc','.pyo')))
+    return {str(p):identity(p) for p in sorted(paths)} | {
+        'required_lock':identity(Path.home()/'.venvs/marketmamba-gpu.requirements.lock.txt')}
+
+
+def smoke_digest(payload):
+    return content_hash({k:v for k,v in payload.items() if k not in ('reviewed_by','review_source','payload_sha256')})
+
+
+def validate_smoke(payload,environment,cfg,review=True):
+    if (environment['packages']!=EXPECTED_PACKAGES or not environment.get('gpu_model') or
+        not str(environment['device']).startswith('cuda') or
+        payload.get('version')!='p3-official-gpu-smoke-v2' or
+        payload.get('parameters')!=effective_config() or cfg not in (effective_config(),effective_config(True)) or
+        payload.get('mixer_parameters')!=mixer_parameters(cfg) or
+        payload.get('implementation')!=provenance()['implementation'] or
+        payload.get('p3_spec')!=identity(ROOT/'tasks/spec-mamba-portfolio-p3-20261120.md') or
+        payload.get('environment')!=environment or payload.get('environment_files')!=environment_files() or
+        payload.get('payload_sha256')!=smoke_digest(payload) or 'human_reviewed' in payload or
+        payload.get('standing_authorization')!=STANDING_AUTHORIZATION):
+        raise RuntimeError('STOP official GPU smoke evidence mismatch; contract_status UNRESOLVED')
+    measurements=payload.get('measurements',{})
+    if set(measurements)!={'temporal','cross'}: raise RuntimeError('STOP smoke measurements missing')
+    for row in measurements.values():
+        if row.get('forward_finite') is not True or row.get('backward_finite') is not True:
+            raise RuntimeError('STOP smoke nonfinite')
+        for key in ('parameters','gradient_tensors','peak_memory_bytes','elapsed_seconds','temperature_start_c','temperature_end_c','output_abs_max','gradient_abs_max'):
+            value=row.get(key)
+            if isinstance(value,bool) or not isinstance(value,(float,int)) or not math.isfinite(value) or value<=0:
+                raise RuntimeError('STOP smoke invalid measurement: '+key)
+        if max(row['temperature_start_c'],row['temperature_end_c'])>=85:
+            raise RuntimeError('STOP smoke thermal limit')
+    if review:
+        r=payload.get('reviewed_by',{})
+        if (set(r)!={'kind','job_id','verdict','evidence_sha256'} or
+            r.get('kind') not in ('independent_worker','human') or not r.get('job_id') or
+            r.get('job_id')==payload.get('producer_job_id') or r.get('verdict')!='GO' or
+            r.get('evidence_sha256')!=payload.get('review_source',{}).get('sha256')):
+            raise RuntimeError('STOP independent review required')
+        source=payload['review_source']
+        if identity(source['path'])!=source:
+            raise RuntimeError('STOP reviewed raw evidence hash mismatch')
+        raw=json.loads(Path(source['path']).read_text())
+        if ('reviewed_by' in raw or 'review_source' in raw or
+            raw.get('payload_sha256')!=payload['payload_sha256'] or smoke_digest(raw)!=payload['payload_sha256']):
+            raise RuntimeError('STOP reviewed raw evidence content mismatch')
 
 
 def official_admission(evidence,environment,cfg):
-    """Validate a separately reviewed GPU smoke, never run one implicitly."""
     if evidence is None:
         raise RuntimeError('STOP official GPU smoke evidence required; contract_status UNRESOLVED')
-    evidence=Path(evidence)
-    payload=json.loads(evidence.read_text())
-    expected=dict(torch='2.10.0+cu128',mamba_ssm='2.3.2.post1',causal_conv1d='1.7.0')
-    if (environment['packages']!=expected or not environment['gpu_model'] or
-        not str(environment['device']).startswith('cuda') or
-        payload.get('version')!='p3-official-gpu-smoke-v1' or
-        payload.get('human_reviewed') is not True or
-        payload.get('forward_finite') is not True or payload.get('backward_finite') is not True or
-        payload.get('parameters')!=FROZEN_CFG or payload.get('mixer_parameters')!=mixer_parameters(cfg) or
-        payload.get('implementation')!=provenance()['implementation'] or
-        payload.get('environment')!=environment):
-        raise RuntimeError('STOP official GPU smoke evidence mismatch; contract_status UNRESOLVED')
+    payload=json.loads(Path(evidence).read_text())
+    validate_smoke(payload,environment,cfg)
     return dict(status='RESOLVED',evidence=identity(evidence))
 
 
+def gpu_smoke(output,job_id=None):
+    """Executor-owned CUDA measurements; never records its own review."""
+    import torch
+    if not torch.cuda.is_available(): raise RuntimeError('STOP CUDA required for GPU smoke')
+    if not job_id: raise ValueError('producer job_id required')
+    if Path(output).exists(): raise FileExistsError(output)
+    env=runtime_environment('cuda')
+    if env['packages']!=EXPECTED_PACKAGES: raise RuntimeError('STOP specified GPU environment required')
+    cfg=effective_config(); mixers=mixer_parameters(cfg)
+    files=environment_files(); implementation=provenance()['implementation']
+    measurements={}
+    from mamba_ssm import Mamba2
+    with BudgetLedger(Path(output).parent) as ledger:
+        with ledger.attempt(dict(kind='gpu-smoke',job_id=job_id)) as deadline:
+            guard=TemperatureGuard(deadline=deadline)
+            for name,length in (('temporal',60),('cross',256)):
+                guard.check(); start_temp=guard.records[-1]['temperature_c']
+                torch.cuda.synchronize(); torch.cuda.reset_peak_memory_stats(); started=time.perf_counter()
+                kwargs=deepcopy(mixers[name])
+                if 'dt_limit' in kwargs:
+                    kwargs['dt_limit']=tuple(float(v) for v in kwargs['dt_limit'])
+                model=Mamba2(**kwargs).cuda()
+                x=torch.randn(2,length,cfg['d_model'],device='cuda',requires_grad=True)
+                y=model(x); finite=bool(torch.isfinite(y).all().item())
+                loss=y.square().mean(); loss.backward(); torch.cuda.synchronize()
+                grads=[p.grad for p in model.parameters() if p.grad is not None]
+                backward=bool(grads) and all(bool(torch.isfinite(g).all().item()) for g in grads)
+                backward=backward and x.grad is not None and bool(torch.isfinite(x.grad).all().item())
+                guard.check()
+                measurements[name]=dict(forward_finite=finite,backward_finite=backward,
+                    parameters=sum(p.numel() for p in model.parameters()),gradient_tensors=len(grads),
+                    peak_memory_bytes=torch.cuda.max_memory_allocated(),gpu_model=env['gpu_model'],
+                    temperature_start_c=start_temp,temperature_end_c=guard.records[-1]['temperature_c'],
+                    elapsed_seconds=time.perf_counter()-started,output_abs_max=float(y.detach().abs().max()),
+                    gradient_abs_max=max(float(g.abs().max()) for g in grads))
+                if not finite or not backward: raise RuntimeError('STOP GPU smoke nonfinite')
+                del model,x,y,loss,grads
+            if files!=environment_files() or implementation!=provenance()['implementation']:
+                raise RuntimeError('STOP smoke source/environment changed')
+            payload=dict(version='p3-official-gpu-smoke-v2',producer_job_id=job_id,observed_at=utc_now(),
+                parameters=cfg,mixer_parameters=mixers,implementation=implementation,environment=env,
+                p3_spec=identity(ROOT/'tasks/spec-mamba-portfolio-p3-20261120.md'),
+                environment_files=files,measurements=measurements,standing_authorization=STANDING_AUTHORIZATION)
+            payload['payload_sha256']=smoke_digest(payload)
+            validate_smoke(payload,env,cfg,review=False)
+            write_json(Path(output),payload)
+    return identity(output)
+
+
+def record_review(evidence,output,kind,job_id,verdict):
+    payload=json.loads(Path(evidence).read_text())
+    validate_smoke(payload,runtime_environment('cuda'),effective_config(),review=False)
+    if kind not in ('independent_worker','human') or not job_id or job_id==payload['producer_job_id']:
+        raise ValueError('independent reviewer job required')
+    if 'reviewed_by' in payload or 'review_source' in payload:
+        raise ValueError('record-review requires raw unreviewed executor evidence')
+    payload['review_source']=identity(evidence)
+    payload['reviewed_by']=dict(kind=kind,job_id=job_id,verdict=verdict,evidence_sha256=payload['review_source']['sha256'])
+    payload['payload_sha256']=smoke_digest(payload)
+    write_json(Path(output),payload)  # exclusive new artifact; preserve raw smoke
+    return identity(output)
+
+
 class BudgetLedger:
-    """Single-writer, fsynced append-only attempts. Crash recovery overcharges
-    the interval to restart (including downtime), never undercounts lost time.
-    STOP clearance only removes STOP files; it never resets this ledger.
+    """Global hash-chain budget. Lock the trusted artifact directory inode.
+
+    Deleting/replacing budget.lock or the ledger cannot bypass the held lock.
+    ARTIFACT_ROOT and its ancestors must remain trusted, stable directories.
     """
-    def __init__(self,directory,limit_seconds=14*3600):
+    def __init__(self,directory,limit_seconds=14*3600,allow_stopped=False):
         self.directory=Path(directory); self.limit=limit_seconds; self.active=None
+        self.allow_stopped=allow_stopped
 
     def __enter__(self):
-        self.directory.mkdir(parents=True,exist_ok=True)
-        self.lock=(self.directory/'budget.lock').open('a+b')
+        import fcntl
+        ARTIFACT_ROOT.mkdir(parents=True,exist_ok=True)
+        self.lock=os.open(ARTIFACT_ROOT,os.O_RDONLY|os.O_DIRECTORY)
         try:
-            if os.name=='nt':
-                import msvcrt
-                self.lock.seek(0); self.lock.write(b'0'); self.lock.flush(); self.lock.seek(0)
-                msvcrt.locking(self.lock.fileno(),msvcrt.LK_NBLCK,1)
-            else:
-                import fcntl
-                fcntl.flock(self.lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
-            self.path=self.directory/'budget.jsonl'
-            events=[json.loads(line) for line in self.path.read_text().splitlines()] if self.path.exists() else []
-            self.spent=0.; pending=None
-            for event in events:
-                if event['event']=='START' and pending is None: pending=event
-                elif event['event']=='END' and pending and event['attempt']==pending['attempt']:
-                    seconds=float(event['seconds'])
-                    if not math.isfinite(seconds) or seconds<0: raise ValueError('invalid budget debit')
-                    self.spent+=seconds; pending=None
-                else: raise ValueError('corrupt budget ledger event order')
+            fcntl.flock(self.lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+            self.path=ARTIFACT_ROOT/'budget-global.jsonl'
+            if not self.path.exists() and (list(ARTIFACT_ROOT.rglob('run_identity.json')) or list(ARTIFACT_ROOT.rglob('fold_*.parquet'))):
+                raise ValueError('missing global budget with existing fit/run identity')
+            self.events=read_budget(self.path)
+            self.spent,self.stops,pending=budget_state(self.events)
             if pending:
                 elapsed=max(time.time()-pending['wall_start'],time.monotonic()-pending['monotonic_start'])
                 if elapsed<0 or not math.isfinite(elapsed): raise ValueError('budget recovery clock invalid')
-                self._append(dict(event='END',attempt=pending['attempt'],seconds=elapsed,
-                                  status='INTERRUPTED',accounting='conservative elapsed through restart'))
+                self.stop('interrupted attempt recovered; inspect before clearance')
+                self._append(dict(event='END',attempt=pending['attempt'],seconds=elapsed,status='INTERRUPTED'))
                 self.spent+=elapsed
-                self.stop('interrupted attempt recovered; inspect before manual clearance')
-            if list(self.directory.glob('STOP-*.json')):
-                raise ThermalStop('STOP latched; Human must inspect and manually remove STOP-*.json; preserve budget.jsonl')
-            if self.spent>=self.limit:
+            # Files are supplementary evidence; ledger is the persistent latch.
+            if (self.stops or list(ARTIFACT_ROOT.rglob('STOP-*.json'))) and not self.allow_stopped:
+                raise ThermalStop('STOP latched; use --clear-stop with reason; preserve budget')
+            if self.spent>=self.limit and not self.allow_stopped:
                 self.stop('14 hour cumulative runtime budget exhausted')
                 raise ThermalStop('STOP 14 hour cumulative runtime budget exhausted')
             return self
         except BaseException:
-            self.lock.close(); raise
+            os.close(self.lock); self.lock=None; raise
 
     def _append(self,event):
-        event=dict(event,observed_at=utc_now())
+        event=dict(event,observed_at=utc_now(),previous_sha256=self.events[-1]['sha256'] if self.events else '0'*64)
+        event['sha256']=content_hash(event)
         with self.path.open('a',encoding='utf-8') as stream:
             stream.write(json.dumps(event,allow_nan=False)+'\n'); stream.flush(); os.fsync(stream.fileno())
+        os.fsync(self.lock)
+        self.events.append(event)
 
     def stop(self,reason):
-        write_json(self.directory/f'STOP-{uuid.uuid4().hex}.json',dict(reason=reason,observed_at=utc_now()))
+        name='STOP-'+uuid.uuid4().hex+'.json'
+        self._append(dict(event='STOP',name=name,reason=reason))
+        self.stops.add(name)
+        write_json(ARTIFACT_ROOT/name,dict(reason=reason,observed_at=utc_now()))
+        return name
+
+    def clear_stop(self,name,reason):
+        if not reason.strip() or Path(name).name!=name: raise ValueError('STOP name and reason required')
+        file=ARTIFACT_ROOT/name
+        if name not in self.stops and not file.exists(): raise ValueError('unknown STOP')
+        if name not in self.stops:
+            self._append(dict(event='STOP',name=name,reason='external STOP file adopted before explicit clearance'))
+        self._append(dict(event='CLEARED',name=name,reason=reason))
+        self.stops.discard(name)
+        file.unlink(missing_ok=True); os.fsync(self.lock)
 
     def start(self,binding):
         if self.active is not None: raise ValueError('budget attempt already active')
-        if list(self.directory.glob('STOP-*.json')): raise ThermalStop('STOP latched')
-        if self.spent>=self.limit:
-            self.stop('14 hour cumulative runtime budget exhausted')
-            raise ThermalStop('STOP 14 hour cumulative runtime budget exhausted')
+        if self.stops or list(ARTIFACT_ROOT.rglob('STOP-*.json')): raise ThermalStop('STOP latched')
+        if self.spent>=self.limit: raise ThermalStop('STOP 14 hour cumulative runtime budget exhausted')
         self.active=dict(event='START',attempt=uuid.uuid4().hex,wall_start=time.time(),monotonic_start=time.monotonic(),binding=binding)
-        self.tick=time.monotonic()
-        self._append(self.active)
+        self.tick=time.monotonic(); self._append(self.active)
         return self.tick+self.limit-self.spent
 
     @contextmanager
     def attempt(self,binding):
-        deadline=self.start(binding)
-        status='COMPLETED'
+        deadline=self.start(binding); status='COMPLETED'
         try:
             yield deadline
             if time.monotonic()>=deadline: raise ThermalStop('STOP 14 hour cumulative runtime budget exhausted')
@@ -176,7 +320,34 @@ class BudgetLedger:
             self.spent+=seconds; self.active=None
 
     def __exit__(self,*exc):
-        self.lock.close()
+        os.close(self.lock); self.lock=None
+
+
+def read_budget(path):
+    events=[]
+    for line in Path(path).read_text().splitlines() if Path(path).exists() else []:
+        row=json.loads(line); digest=row.get('sha256')
+        if (digest!=content_hash({k:v for k,v in row.items() if k!='sha256'}) or
+            row.get('previous_sha256')!=(events[-1]['sha256'] if events else '0'*64)):
+            raise ValueError('budget hash chain mismatch')
+        events.append(row)
+    return events
+
+
+def budget_state(events):
+    spent=0.; stops=set(); pending=None
+    for row in events:
+        event=row['event']
+        if event=='START' and pending is None: pending=row
+        elif event=='END' and pending and row['attempt']==pending['attempt']:
+            seconds=row['seconds']
+            if isinstance(seconds,bool) or not isinstance(seconds,(int,float)) or not math.isfinite(seconds) or seconds<0:
+                raise ValueError('invalid budget debit')
+            spent+=seconds; pending=None
+        elif event=='STOP': stops.add(row['name'])
+        elif event=='CLEARED' and row['name'] in stops and row.get('reason','').strip(): stops.remove(row['name'])
+        else: raise ValueError('corrupt budget ledger event order')
+    return spent,stops,pending
 
 
 def utc_now():
@@ -304,8 +475,10 @@ def save_fit(path, frame, contract, job):
                                            output=identity(path),job=job))
 
 
-def collect(directory, year, model, seed, cfg, reference, guard, device='cuda', mixer_factory=None, gpu_smoke_evidence=None):
-    """Reusable train_one/predict adapter; CPU injected mixers are engineering only."""
+def collect(directory, year, model, seed, cfg, reference, guard, device='cuda', mixer_factory=None, gpu_smoke_evidence=None, _ledger=None):
+    """Internal adapter: caller must hold an active global-budget attempt."""
+    if _ledger is None or _ledger.active is None or _ledger.lock is None or _ledger.stops:
+        raise RuntimeError('collect is internal; active global budget attempt required')
     import torch
     from .seq_runner import SeqData, train_one, predict
     effective_config()  # Always check inherited-default drift, including injected engineering.
@@ -315,7 +488,7 @@ def collect(directory, year, model, seed, cfg, reference, guard, device='cuda', 
         if gpu_smoke_evidence is None: official_admission(None,{},cfg)
         official_admission(gpu_smoke_evidence,runtime_environment(device),cfg)
     started=time.perf_counter()
-    data=SeqData(directory)
+    data=SeqData(directory,window=cfg.get("window",60),normalize=cfg.get("normalize","rankgauss"))
     tr,va,ev=checked_splits(data,cfg['val_dates'])
     dates=np.load(Path(directory)/'dates.npy',mmap_mode='r',allow_pickle=False)
     codes=np.load(Path(directory)/'stock_ids.npy',mmap_mode='r',allow_pickle=False)
@@ -366,7 +539,7 @@ def run_jobs(folds_root, years, models, seeds, out, p1_dir, cfg, smoke=False,
     if mixer_factory is None and cfg!=effective:
         raise ValueError('P3 frozen configuration mismatch')
     if list(Path(out).glob('STOP-*.json')):
-        raise ThermalStop('STOP latched; Human clearance required; preserve budget.jsonl')
+        raise ThermalStop('STOP latched; inspect legacy STOP; preserve global budget; use explicit recorded clearance')
     if mixer_factory is None and gpu_smoke_evidence is None:
         official_admission(None,{},cfg)
     environment=runtime_environment(device)
@@ -392,6 +565,8 @@ def run_jobs(folds_root, years, models, seeds, out, p1_dir, cfg, smoke=False,
         admission=out/'run_identity.json'
         if admission.exists():
             if json.loads(admission.read_text())!=contract: raise ValueError('run identity mismatch')
+            if not any(e['event']=='START' and e['binding'].get('run_hash')==content_hash(contract) for e in ledger.events):
+                raise ValueError('run identity missing from global budget chain')
         else: write_json(admission,contract)
         for year in sorted(years):
             for model in models:
@@ -400,6 +575,9 @@ def run_jobs(folds_root, years, models, seeds, out, p1_dir, cfg, smoke=False,
                     binding=dict(run_hash=content_hash(contract),fold=year,model=model,seed=seed)
                     cached=resume_fit(path,binding)
                     if cached is not None:
+                        starts={e['attempt']:e for e in ledger.events if e['event']=='START' and e['binding']==binding}
+                        if not any(e['event']=='END' and e['status']=='COMPLETED' and e['attempt'] in starts for e in ledger.events):
+                            raise ValueError('fit missing from global budget chain')
                         frame,job=cached
                     else:
                         with ledger.attempt(binding) as deadline:
@@ -415,13 +593,7 @@ def run_jobs(folds_root, years, models, seeds, out, p1_dir, cfg, smoke=False,
                                 if saved['contract']!=cache_contract or saved['output']!=identity(cache):
                                     raise ValueError('rankgauss cache hash/identity mismatch')
                             guard=guard_factory(deadline=deadline)
-                            try:
-                                frame,job=collect(directory,year,model,seed,cfg,reference[reference.fold==year],guard,device,mixer_factory,gpu_smoke_evidence=gpu_smoke_evidence)
-                            except BaseException as exc:
-                                # Immutable failure evidence; never resume it as successful scores.
-                                write_json(out/f'STOP-{year}-{model}-{seed}-{uuid.uuid4().hex}.json',dict(
-                                    contract=binding,error=type(exc).__name__,reason=str(exc),observed_at=utc_now(),temperatures=guard.records))
-                                raise
+                            frame,job=collect(directory,year,model,seed,cfg,reference[reference.fold==year],guard,device,mixer_factory,gpu_smoke_evidence=gpu_smoke_evidence,_ledger=ledger)
                             if not cache_meta.exists(): write_json(cache_meta,dict(contract=cache_contract,output=identity(cache)))
                             for value in inputs.values():
                                 if identity(value['path'])!=value: raise RuntimeError('input changed during fit')
@@ -451,18 +623,91 @@ def run_jobs(folds_root, years, models, seeds, out, p1_dir, cfg, smoke=False,
         return manifest
 
 
+def revalidate_manifest(manifest,directory):
+    """Fail closed for confirmation; engineering evaluation can still report incomplete."""
+    try:
+        cfg=effective_config()
+        if manifest['frozen_effective_config']!=cfg: return False
+        if any(manifest['parameters'].get(k)!=v for k,v in cfg.items()): return False
+        evidence=manifest['admission']['evidence']
+        if identity(evidence['path'])!=evidence: return False
+        env=runtime_environment('cuda')
+        if official_admission(evidence['path'],env,cfg)!=manifest['admission']: return False
+        if manifest['mixer_parameters']!=mixer_parameters(cfg): return False
+        if manifest['provenance']['implementation']!=provenance()['implementation']: return False
+        if manifest['provenance']['p3_spec']!=identity(ROOT/'tasks/spec-mamba-portfolio-p3-20261120.md'): return False
+        if any(manifest['provenance']['environment'].get(k)!=v for k,v in env.items()): return False
+        directory=Path(directory)
+        contract=json.loads((directory/'run_identity.json').read_text())
+        if (contract['parameters']!=cfg or contract['smoke'] is not False or
+            contract['admission']!=manifest['admission'] or contract['mixer']!=manifest['mixer_parameters'] or
+            contract['provenance']!=manifest['provenance'] or contract['inputs']!=manifest['inputs'] or
+            contract['reference']!=manifest['reference'] or contract['frozen_effective_config']!=cfg or
+            contract['years']!=list(range(2021,2027)) or sorted(contract['systems'])!=sorted(SYSTEMS) or
+            sorted(contract['seeds'])!=[17,29]): return False
+        run_hash=content_hash(contract)
+        # Read while holding the same fixed-directory lock as every writer.
+        with BudgetLedger(directory) as ledger:
+            budget=manifest['budget']
+            if (budget['ledger']!=identity(ledger.path) or budget['limit_seconds']!=14*3600 or
+                budget['spent_seconds']!=ledger.spent or not 0<=ledger.spent<=14*3600): return False
+            completed=set()
+            pending=None
+            for row in ledger.events:
+                if row['event']=='START': pending=row
+                elif row['event']=='END':
+                    if row['status']=='COMPLETED' and pending:
+                        binding=pending['binding']
+                        if binding.get('run_hash')==run_hash:
+                            completed.add((binding['fold'],binding['model'],binding['seed']))
+                    pending=None
+            expected={(y,m,s) for y in range(2021,2027) for m in SYSTEMS for s in (17,29)}
+            if not expected<=completed or len(manifest['jobs'])!=24: return False
+            for year,model,seed in sorted(expected):
+                path=directory/f'fold_{year}_{model}_seed_{seed}.parquet'
+                binding=dict(run_hash=run_hash,fold=year,model=model,seed=seed)
+                cached=resume_fit(path,binding)
+                if cached is None or manifest['outputs'][path.name]!=identity(path): return False
+                frame,job=cached
+                if job not in manifest['jobs'] or (job['fold'],job['system'],job['seed'])!=(year,model,seed): return False
+                if set(frame.fold)!={year} or set(frame.system)!={model} or set(frame.seed)!={seed}: return False
+            if manifest['outputs']['rank_average.parquet']!=identity(directory/'rank_average.parquet'): return False
+        return True
+    except (KeyError,TypeError,ValueError,RuntimeError,OSError,ImportError):
+        return False
+
+
 def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--folds-root',type=Path,required=True)
+    p.add_argument('--folds-root',type=Path)
     p.add_argument('--p1-scores-dir',type=Path,default=ROOT/'.artifacts/p1/full-scores-ace2eef')
     p.add_argument('--years',type=int,nargs='+',default=list(range(2021,2027)))
     p.add_argument('--models',choices=SYSTEMS,nargs='+',default=list(SYSTEMS))
     p.add_argument('--seeds',type=int,nargs='+',default=[17,29])
-    p.add_argument('--out-dir',type=Path,required=True)
+    p.add_argument('--out-dir',type=Path)
     p.add_argument('--smoke',action='store_true',help='1 epoch x 20 steps; never confirmatory')
     p.add_argument('--gpu-smoke-evidence',type=Path)
     p.add_argument('--run',action='store_true')
+    p.add_argument('--gpu-smoke',action='store_true')
+    p.add_argument('--record-review',type=Path)
+    p.add_argument('--review-kind',choices=('independent_worker','human'))
+    p.add_argument('--job-id')
+    p.add_argument('--verdict',choices=('GO','NO_GO'))
+    p.add_argument('--clear-stop')
+    p.add_argument('--reason')
     a=p.parse_args(argv)
+    if sum((a.gpu_smoke,bool(a.record_review),bool(a.clear_stop),a.run))>1:
+        p.error('choose one execution command')
+    if a.clear_stop:
+        if not a.reason: p.error('--reason required')
+        with BudgetLedger(ARTIFACT_ROOT,allow_stopped=True) as ledger: ledger.clear_stop(a.clear_stop,a.reason)
+        return
+    if not a.out_dir: p.error('--out-dir required')
+    if a.gpu_smoke: return gpu_smoke(a.out_dir,a.job_id)
+    if a.record_review:
+        if not all((a.review_kind,a.job_id,a.verdict)): p.error('review-kind, job-id, verdict required')
+        return record_review(a.record_review,a.out_dir,a.review_kind,a.job_id,a.verdict)
+    if not a.folds_root: p.error('--folds-root required')
     out=a.out_dir.resolve(); root=ARTIFACT_ROOT.resolve()
     if out==root or not out.is_relative_to(root) or out.is_relative_to(WORK_ROOT.resolve()):
         p.error('output must be below .artifacts/p3/ outside work/')

@@ -7,6 +7,17 @@ from research_lab import rolling_seq_scores as seq
 from research_lab import portfolio_eval as pe
 
 
+@pytest.fixture(autouse=True)
+def isolated_global_budget(tmp_path,monkeypatch):
+    monkeypatch.setattr(seq,'ARTIFACT_ROOT',tmp_path/'p3-global')
+
+
+def internal_collect(*args,**kwargs):
+    with seq.BudgetLedger(seq.ARTIFACT_ROOT) as ledger:
+        with ledger.attempt({'test':'internal adapter'}):
+            return seq.collect(*args,**kwargs,_ledger=ledger)
+
+
 def scores():
     return pd.DataFrame([dict(fold=2023, system='mamba2', seed=s, date=pd.Timestamp(d), code=c,
                               score=v+s, label_y5=v)
@@ -156,7 +167,7 @@ def test_p3_collect_cpu_injected(tmp_path,model):
                                  code=np.load(source/'stock_ids.npy')[ev],label_y5=data.y['y5'][ev]))
     cfg=dict(CFG,epochs=1,steps_per_epoch=1,dates_per_batch=2,stocks_per_date=12,min_names=10,val_dates=20,val_max_rows=240)
     guard=seq.TemperatureGuard(lambda:60)
-    frame,job=seq.collect(source,2023,model,17,cfg,reference,guard,device='cpu',mixer_factory=lambda d:nn.Linear(d,d))
+    frame,job=internal_collect(source,2023,model,17,cfg,reference,guard,device='cpu',mixer_factory=lambda d:nn.Linear(d,d))
     assert len(frame)==240 and np.isfinite(frame.score).all()
     assert job['history'][0]['epoch']==1 and len(job['temperatures'])>=3
     assert job['gpu_model']=='CPU injected mixer'
@@ -224,7 +235,7 @@ def test_p3_no_best_checkpoint_rejected(tmp_path,monkeypatch):
         code=np.load(source/'stock_ids.npy')[ev],label_y5=data.y['y5'][ev]))
     monkeypatch.setattr(sr,'train_one',lambda *a,**kw:(None,{'best':-9.}))
     with pytest.raises(ValueError,match='best validation'):
-        seq.collect(source,2023,'mamba2',17,dict(CFG,val_dates=20),reference,
+        internal_collect(source,2023,'mamba2',17,dict(CFG,val_dates=20),reference,
                     seq.TemperatureGuard(lambda:60),device='cpu',mixer_factory=lambda d:nn.Linear(d,d))
 
 
@@ -256,13 +267,17 @@ def test_p3_amendment_decision(ci,p,expected,monkeypatch):
     assert all(t['decision']==expected for t in r['tests'].values())
 
 
-def test_p3_budget_subprocess_crash_restart(tmp_path):
+def test_p3_budget_subprocess_crash_restart(tmp_path,monkeypatch):
+    monkeypatch.setattr(seq,"ARTIFACT_ROOT",tmp_path)
     import subprocess,sys,json,os
     # A hard process exit bypasses finally; recovery must append an interrupted
     # debit and latch STOP, never silently reset the namespace's budget.
     code='''
 import os,sys
 from research_lab.rolling_seq_scores import BudgetLedger
+from research_lab import rolling_seq_scores as seq
+from pathlib import Path
+seq.ARTIFACT_ROOT=Path(sys.argv[1])
 with BudgetLedger(sys.argv[1]) as ledger:
     ledger.start({'fold':2023})
     os._exit(19)
@@ -271,16 +286,20 @@ with BudgetLedger(sys.argv[1]) as ledger:
     assert r.returncode==19
     with pytest.raises(seq.ThermalStop,match='STOP'):
         with seq.BudgetLedger(tmp_path): pass
-    events=[json.loads(x) for x in (tmp_path/'budget.jsonl').read_text().splitlines()]
-    assert [x['event'] for x in events]==['START','END']
+    events=[json.loads(x) for x in (seq.ARTIFACT_ROOT/'budget-global.jsonl').read_text().splitlines()]
+    assert [x['event'] for x in events]==['START','STOP','END']
     assert events[-1]['status']=='INTERRUPTED' and events[-1]['seconds']>0
-    stop=next(tmp_path.glob('STOP-*.json'))
+    stop=next(seq.ARTIFACT_ROOT.glob('STOP-*.json'))
     with pytest.raises(seq.ThermalStop,match='STOP'):
         with seq.BudgetLedger(tmp_path): pass
-    stop.unlink()  # simulated explicit Human clearance; ledger stays intact
+    with seq.BudgetLedger(tmp_path,allow_stopped=True) as ledger:
+        ledger.clear_stop(stop.name,'CPU recovery inspection')
     code='''
 import sys
 from research_lab.rolling_seq_scores import BudgetLedger, ThermalStop
+from research_lab import rolling_seq_scores as seq
+from pathlib import Path
+seq.ARTIFACT_ROOT=Path(sys.argv[1])
 with BudgetLedger(sys.argv[1],limit_seconds=0.000000001) as ledger:
     print('spent_seconds=',ledger.spent,flush=True)
     ledger.start({'fold':2023})
@@ -296,9 +315,9 @@ def test_p3_budget_failed_attempts(tmp_path,error):
         with seq.BudgetLedger(tmp_path) as ledger:
             with ledger.attempt({'seed':17}):
                 raise error
-    events=[json.loads(x) for x in (tmp_path/'budget.jsonl').read_text().splitlines()]
+    events=[json.loads(x) for x in (seq.ARTIFACT_ROOT/'budget-global.jsonl').read_text().splitlines()]
     assert events[-1]['event']=='END' and events[-1]['seconds']>0
-    assert list(tmp_path.glob('STOP-*.json'))
+    assert list(seq.ARTIFACT_ROOT.glob('STOP-*.json'))
     with pytest.raises(seq.ThermalStop,match='STOP'):
         with seq.BudgetLedger(tmp_path): pass
 
@@ -391,7 +410,7 @@ def p3_cli_fixture(tmp_path,monkeypatch):
     return work,p1,neural,data,neural_mf
 
 
-@pytest.mark.parametrize('mutation,ready',[(None,True),('smoke',False),('unresolved',False),('seeds',False),('config',False),('admission',False)])
+@pytest.mark.parametrize('mutation,ready',[(None,False),('smoke',False),('unresolved',False),('seeds',False),('config',False),('admission',False)])
 def test_p3_main_end_to_end(tmp_path,monkeypatch,mutation,ready):
     import json,shutil
     work,p1,neural,data,mf=p3_cli_fixture(tmp_path,monkeypatch)
@@ -458,9 +477,18 @@ def test_p3_official_admission_and_collect_reachable(tmp_path,monkeypatch):
     monkeypatch.setattr(seq,'runtime_environment',lambda device:env)
     monkeypatch.setattr(seq,'mixer_parameters',lambda cfg:mixer)
     evidence=tmp_path/'synthetic-smoke.json'
-    payload=dict(version='p3-official-gpu-smoke-v1',human_reviewed=True,forward_finite=True,backward_finite=True,
-                 parameters=cfg,mixer_parameters=mixer,implementation=seq.provenance()['implementation'],environment=env)
-    evidence.write_text(json.dumps(payload))
+    monkeypatch.setattr(seq,'environment_files',lambda:{'synthetic':'CPU_TEST_ONLY'})
+    payload=dict(version='p3-official-gpu-smoke-v2',producer_job_id='producer-test',
+                 parameters=cfg,mixer_parameters=mixer,implementation=seq.provenance()['implementation'],environment=env,
+                 environment_files=seq.environment_files(),standing_authorization=seq.STANDING_AUTHORIZATION,
+        p3_spec=seq.identity(seq.ROOT/'tasks/spec-mamba-portfolio-p3-20261120.md'),
+                 measurements={k:dict(forward_finite=True,backward_finite=True,parameters=10,gradient_tensors=2,
+                     peak_memory_bytes=100,elapsed_seconds=.1,temperature_start_c=60,temperature_end_c=61,
+                     output_abs_max=1.,gradient_abs_max=1.) for k in ('temporal','cross')})
+    payload['payload_sha256']=seq.smoke_digest(payload)
+    raw=tmp_path/'raw-smoke.json'; raw.write_text(json.dumps(payload))
+    seq.record_review(raw,evidence,'independent_worker','review-test','GO')
+    payload=json.loads(evidence.read_text())
     assert seq.official_admission(evidence,env,cfg)['status']=='RESOLVED'
     monkeypatch.setattr(sr,'SeqData',lambda *a,**k:data)
     reached=[]
@@ -472,10 +500,10 @@ def test_p3_official_admission_and_collect_reachable(tmp_path,monkeypatch):
     monkeypatch.setattr(sr,'predict',lambda model,data,rows,device:np.zeros((len(rows),2)))
     # Exercise official adapter branch entirely on CPU with training boundary
     # stubbed. This synthetic document is never accepted as GPU evidence.
-    frame,job=seq.collect(source,2023,'mamba2',17,cfg,ref,seq.TemperatureGuard(lambda:60),
+    frame,job=internal_collect(source,2023,'mamba2',17,cfg,ref,seq.TemperatureGuard(lambda:60),
                           device='cpu',gpu_smoke_evidence=evidence)
     assert reached==[None] and len(frame)==len(ev)
-    payload['backward_finite']=False; evidence.write_text(json.dumps(payload))
+    payload['measurements']['cross']['backward_finite']=False; evidence.write_text(json.dumps(payload))
     with pytest.raises(RuntimeError,match='mismatch'): seq.official_admission(evidence,env,cfg)
 
 
@@ -489,7 +517,7 @@ def test_p3_budget_lock_corrupt_and_completed(tmp_path):
         assert spent>0
     with seq.BudgetLedger(tmp_path) as ledger:
         assert ledger.spent==spent
-    with (tmp_path/'budget.jsonl').open('a') as f: f.write('{truncated')
+    with (seq.ARTIFACT_ROOT/'budget-global.jsonl').open('a') as f: f.write('{truncated')
     with pytest.raises(json.JSONDecodeError):
         with seq.BudgetLedger(tmp_path): pass
 
@@ -509,7 +537,7 @@ def test_p3_budget_exhausted_refuses_even_after_stop_clearance(tmp_path,monkeypa
     with pytest.raises(seq.ThermalStop,match='budget'):
         with seq.BudgetLedger(tmp_path) as ledger:
             with ledger.attempt({'seed':17}): tick[0]+=14*3600+1
-    for stop in tmp_path.glob('STOP-*.json'): stop.unlink()  # simulated Human action
+    for stop in seq.ARTIFACT_ROOT.glob('STOP-*.json'): stop.unlink()  # simulated Human action
     with pytest.raises(seq.ThermalStop,match='budget'):
         with seq.BudgetLedger(tmp_path): pass
 
@@ -521,3 +549,289 @@ def test_p3_stop_checked_before_environment_or_inputs(tmp_path,monkeypatch):
     monkeypatch.setattr(seq,'pinned_reference',unexpected)
     with pytest.raises(seq.ThermalStop,match='STOP'):
         seq.run_jobs(tmp_path,[2023],['mamba2'],[17],tmp_path,tmp_path,seq.effective_config())
+
+# Amendment 2 regressions: these fail against the pre-amendment executor.
+def test_revision2_smoke_requires_cuda(tmp_path, monkeypatch):
+    import torch
+    monkeypatch.setattr(torch.cuda, 'is_available', lambda: False)
+    with pytest.raises(RuntimeError, match='CUDA'):
+        seq.gpu_smoke(tmp_path/'smoke.json')
+    assert not (tmp_path/'smoke.json').exists()
+
+
+def test_revision2_global_ledger_and_deleted_stop(tmp_path, monkeypatch):
+    monkeypatch.setattr(seq, 'ARTIFACT_ROOT', tmp_path)
+    with seq.BudgetLedger(tmp_path/'one') as ledger:
+        with ledger.attempt({'seed':17}): pass
+        ledger.stop('hot')
+    assert (tmp_path/'budget-global.jsonl').exists()
+    for p in tmp_path.rglob('STOP-*.json'): p.unlink()
+    with pytest.raises(seq.ThermalStop):
+        with seq.BudgetLedger(tmp_path/'two'): pass
+
+
+def test_revision2_lock_file_replacement_cannot_bypass(tmp_path, monkeypatch):
+    monkeypatch.setattr(seq, 'ARTIFACT_ROOT', tmp_path)
+    with seq.BudgetLedger(tmp_path/'one'):
+        lock=tmp_path/'one'/'budget.lock'
+        if lock.exists(): lock.unlink()
+        with pytest.raises(OSError):
+            with seq.BudgetLedger(tmp_path/'two'): pass
+
+
+def test_revision2_missing_ledger_with_existing_identity(tmp_path, monkeypatch):
+    monkeypatch.setattr(seq, 'ARTIFACT_ROOT', tmp_path)
+    ns=tmp_path/'scores'; ns.mkdir(); (ns/'run_identity.json').write_text('{}')
+    with pytest.raises(ValueError, match='missing'):
+        with seq.BudgetLedger(ns): pass
+
+
+@pytest.mark.parametrize('key,value', [('dropout',.2),('window',20),('normalize',None),('train_probe_sessions',1)])
+def test_revision2_frozen_implicit_defaults(key,value):
+    cfg=seq.effective_config()
+    assert {'dropout','window','normalize','train_probe_sessions'} <= cfg.keys()
+    cfg[key]=value
+    with pytest.raises(ValueError,match='frozen'):
+        seq.validate_frozen(cfg)
+
+
+def test_revision2_handwritten_resolved_rejected(tmp_path,monkeypatch):
+    import json,shutil
+    work,p1,neural,data,mf=p3_cli_fixture(tmp_path,monkeypatch)
+    try:
+        out=work/'forged.json'
+        pe.main(['--mode','p3','--scores-dir',str(neural),'--p1-scores-dir',str(p1),
+                 '--data-root',str(data),'--out',str(out),'--run'])
+        result=json.loads(out.read_text())
+        assert all(t['status']!='CONFIRMATORY' for t in result['hypotheses']['tests'].values())
+    finally: shutil.rmtree(work)
+
+
+def synthetic_v2_smoke(monkeypatch):
+    env=dict(packages=seq.EXPECTED_PACKAGES,gpu_model='SYNTHETIC_CPU_ONLY',device='cuda')
+    mixers=dict(factory='mamba_ssm.Mamba2',temporal=dict(d_conv=4),cross=dict(d_conv=2))
+    monkeypatch.setattr(seq,'runtime_environment',lambda device:env)
+    monkeypatch.setattr(seq,'mixer_parameters',lambda cfg:mixers)
+    monkeypatch.setattr(seq,'environment_files',lambda:{'synthetic':'CPU_TEST_ONLY'})
+    payload=dict(version='p3-official-gpu-smoke-v2',producer_job_id='producer',parameters=seq.effective_config(),
+        mixer_parameters=mixers,implementation=seq.provenance()['implementation'],environment=env,
+        environment_files=seq.environment_files(),standing_authorization=seq.STANDING_AUTHORIZATION,
+        p3_spec=seq.identity(seq.ROOT/'tasks/spec-mamba-portfolio-p3-20261120.md'),
+        measurements={k:dict(forward_finite=True,backward_finite=True,parameters=10,gradient_tensors=2,
+            peak_memory_bytes=100,elapsed_seconds=.1,temperature_start_c=60,temperature_end_c=61,
+            output_abs_max=1.,gradient_abs_max=1.) for k in ('temporal','cross')})
+    payload['payload_sha256']=seq.smoke_digest(payload)
+    return payload
+
+
+def test_revision2_review_separate_command(tmp_path,monkeypatch):
+    import json
+    payload=synthetic_v2_smoke(monkeypatch)
+    raw=tmp_path/'raw.json'; raw.write_text(json.dumps(payload)); before=raw.read_bytes()
+    with pytest.raises(RuntimeError,match='review'):
+        seq.official_admission(raw,payload['environment'],seq.effective_config())
+    with pytest.raises(ValueError,match='independent'):
+        seq.record_review(raw,tmp_path/'bad.json','independent_worker','producer','GO')
+    reviewed=tmp_path/'reviewed.json'
+    seq.main(['--record-review',str(raw),'--out-dir',str(reviewed),'--review-kind','independent_worker',
+              '--job-id','independent-review','--verdict','GO'])
+    assert raw.read_bytes()==before
+    assert seq.official_admission(reviewed,payload['environment'],seq.effective_config())['status']=='RESOLVED'
+    result=json.loads(reviewed.read_text())
+    assert result['reviewed_by']['evidence_sha256']==seq.identity(raw)['sha256']
+    assert seq.identity(raw)['sha256']!=seq.identity(reviewed)['sha256']
+    with pytest.raises(FileExistsError):
+        seq.record_review(raw,reviewed,'human','human-review','GO')
+
+
+def full_synthetic_manifest(tmp_path,monkeypatch):
+    import json
+    payload=synthetic_v2_smoke(monkeypatch)
+    raw=tmp_path/'raw.json'; raw.write_text(json.dumps(payload))
+    evidence=tmp_path/'reviewed.json'; seq.record_review(raw,evidence,'independent_worker','review','GO')
+    cfg=seq.effective_config(); directory=seq.ARTIFACT_ROOT/'scores'; directory.mkdir(parents=True)
+    prov=seq.provenance(); prov['environment'].update(payload['environment']); prov['p3_spec']=payload['p3_spec']
+    admission=seq.official_admission(evidence,payload['environment'],cfg)
+    contract=dict(parameters=cfg,smoke=False,admission=admission,mixer=payload['mixer_parameters'],
+        provenance=prov,inputs={},reference={},frozen_effective_config=cfg,years=list(range(2021,2027)),
+        systems=list(seq.SYSTEMS),seeds=[17,29])
+    jobs=[]
+    with seq.BudgetLedger(directory) as ledger:
+        (directory/'run_identity.json').write_text(json.dumps(contract))
+        for y in range(2021,2027):
+            for m in seq.SYSTEMS:
+                for seed in (17,29):
+                    binding=dict(run_hash=seq.content_hash(contract),fold=y,model=m,seed=seed)
+                    job=dict(fold=y,system=m,seed=seed)
+                    with ledger.attempt(binding):
+                        seq.save_fit(directory/f'fold_{y}_{m}_seed_{seed}.parquet',
+                            scores().query('seed==@seed').assign(fold=y,system=m),binding,job)
+                    jobs.append(job)
+        scores().to_parquet(directory/'rank_average.parquet',index=False)
+        manifest=dict(frozen_effective_config=cfg,parameters=dict(cfg,smoke=False),admission=admission,
+            mixer_parameters=payload['mixer_parameters'],provenance=prov,inputs={},reference={},jobs=jobs,
+            outputs={p.name:seq.identity(p) for p in directory.glob('*.parquet')},
+            budget=dict(ledger=seq.identity(ledger.path),spent_seconds=ledger.spent,limit_seconds=14*3600))
+    return directory,manifest
+
+
+@pytest.mark.parametrize('mutation',[None,'evidence_path','evidence_sha','implementation','environment','environment_files',
+                                    'budget_sha','budget_spent','budget_chain','run_hash','sidecar','fit','jobs','stop'])
+def test_revision2_revalidate_all_24_fits(tmp_path,monkeypatch,mutation):
+    import json
+    directory,mf=full_synthetic_manifest(tmp_path,monkeypatch)
+    assert seq.revalidate_manifest(mf,directory)
+    if mutation=='evidence_path': mf['admission']['evidence']['path']=str(tmp_path/'absent')
+    if mutation=='evidence_sha': mf['admission']['evidence']['sha256']='0'*64
+    if mutation=='implementation': mf['provenance']['implementation']['seq_runner.py']='bad'
+    if mutation=='environment': mf['provenance']['environment']['gpu_model']='other'
+    if mutation=='environment_files': monkeypatch.setattr(seq,'environment_files',lambda:{'changed':'bad'})
+    if mutation=='budget_sha': mf['budget']['ledger']['sha256']='0'*64
+    if mutation=='budget_spent': mf['budget']['spent_seconds']=14*3600+1
+    if mutation=='budget_chain':
+        p=seq.ARTIFACT_ROOT/'budget-global.jsonl'; rows=p.read_text().splitlines(); row=json.loads(rows[0]); row['observed_at']='tampered timestamp'; rows[0]=json.dumps(row); p.write_text('\n'.join(rows)+'\n'); mf['budget']['ledger']=seq.identity(p)
+    if mutation=='run_hash':
+        p=directory/'fold_2021_mamba2_seed_17.json'; row=json.loads(p.read_text()); row['contract']['run_hash']='bad'; p.write_text(json.dumps(row))
+    if mutation=='sidecar': (directory/'fold_2021_mamba2_seed_17.json').unlink()
+    if mutation=='fit': (directory/'fold_2021_mamba2_seed_17.parquet').write_bytes(b'corrupt')
+    if mutation=='jobs': mf['jobs'].pop()
+    if mutation=='stop':
+        with seq.BudgetLedger(directory) as ledger: name=ledger.stop('test')
+        (seq.ARTIFACT_ROOT/name).unlink()
+    assert seq.revalidate_manifest(mf,directory)==(mutation is None)
+
+
+def test_revision2_clear_stop_cli_preserves_spent(tmp_path):
+    import json
+    with seq.BudgetLedger(tmp_path) as ledger:
+        with ledger.attempt({'test':True}): pass
+        spent=ledger.spent; name=ledger.stop('CPU test')
+    (seq.ARTIFACT_ROOT/name).unlink()
+    seq.main(['--clear-stop',name,'--reason','inspection completed in synthetic test'])
+    with seq.BudgetLedger(tmp_path) as ledger:
+        assert ledger.spent==spent
+        assert ledger.events[-1]['event']=='CLEARED' and ledger.events[-1]['reason']
+
+
+def test_revision2_collect_requires_active_attempt():
+    with pytest.raises(RuntimeError,match='internal'):
+        seq.collect(None,None,None,None,None,None,None)
+
+
+def test_revision2_replaced_ledger_still_locked(tmp_path):
+    with seq.BudgetLedger(tmp_path) as ledger:
+        with ledger.attempt({'test':1}): pass
+        ledger.path.unlink(); ledger.path.touch()
+        with pytest.raises(OSError):
+            with seq.BudgetLedger(tmp_path): pass
+
+
+def test_revision2_official_defaults_are_finite_json(monkeypatch):
+    import sys,types
+    class Official:
+        def __init__(self,d_model,d_conv=4,ngroups=1,chunk_size=256,dt_min=.001,dt_max=.1,
+                     A_init_range=(1,16),rmsnorm=True,dt_limit=(0.,float('inf'))): pass
+    monkeypatch.setitem(sys.modules,'mamba_ssm',types.SimpleNamespace(Mamba2=Official))
+    params=seq.mixer_parameters(seq.effective_config())
+    seq.content_hash(params)
+    assert params['temporal']['ngroups']==1 and params['temporal']['chunk_size']==256
+    assert params['temporal']['A_init_range']==[1,16] and params['temporal']['rmsnorm'] is True
+    assert params['temporal']['dt_limit']==[0.,'Infinity']
+
+
+def test_revision2_smoke_producer_cpu_boundary_double(tmp_path,monkeypatch):
+    """Execute producer with CUDA boundary doubles; never real GPU evidence."""
+    import sys,types,json,torch
+    payload=synthetic_v2_smoke(monkeypatch)
+    class Official(torch.nn.Module):
+        def __init__(self,**kw):
+            super().__init__(); self.proj=torch.nn.Linear(64,64)
+        def cuda(self): return self
+        def forward(self,x): return self.proj(x)
+    monkeypatch.setitem(sys.modules,'mamba_ssm',types.SimpleNamespace(Mamba2=Official))
+    monkeypatch.setattr(torch.cuda,'is_available',lambda:True)
+    monkeypatch.setattr(torch.cuda,'synchronize',lambda:None)
+    monkeypatch.setattr(torch.cuda,'reset_peak_memory_stats',lambda:None)
+    monkeypatch.setattr(torch.cuda,'max_memory_allocated',lambda:123456)
+    randn=torch.randn
+    monkeypatch.setattr(torch,'randn',lambda *a,**kw:randn(*a,**dict(kw,device='cpu')))
+    monkeypatch.setattr(seq,'TemperatureGuard',lambda **kw:seq_guard(lambda:60,**kw))
+    raw=tmp_path/'admission'/'producer.json'
+    seq.gpu_smoke(raw,'CPU-BOUNDARY-DOUBLE')
+    result=json.loads(raw.read_text())
+    assert 'reviewed_by' not in result and 'human_reviewed' not in result
+    assert result['payload_sha256']==seq.smoke_digest(result)
+    for row in result['measurements'].values():
+        assert row['parameters']==4160 and row['gradient_tensors']==2
+        assert row['forward_finite'] and row['backward_finite']
+        assert row['peak_memory_bytes']==123456 and row['elapsed_seconds']>0
+    assert result['measurements']['cross']['gradient_abs_max']>0
+
+
+seq_guard=seq.TemperatureGuard
+
+
+@pytest.mark.parametrize('late_tamper',[False,True])
+def test_revision2_p3_main_complete_revalidated_cpu_fixture(tmp_path,monkeypatch,late_tamper):
+    import json,shutil
+    work,p1,neural,data,_=p3_cli_fixture(tmp_path,monkeypatch)
+    try:
+        directory,mf=full_synthetic_manifest(tmp_path,monkeypatch)
+        (directory/'rank_average.parquet').write_bytes((neural/'rank_average.parquet').read_bytes())
+        mf['outputs']['rank_average.parquet']=seq.identity(directory/'rank_average.parquet')
+        mf.update(version='p3-scores-v1',seeds=[17,29],contract_status='RESOLVED')
+        (directory/'manifest.json').write_text(json.dumps(mf))
+        out=work/'complete.json'
+        args=['--mode','p3','--scores-dir',str(directory),'--p1-scores-dir',str(p1),
+              '--data-root',str(data),'--out',str(out),'--run']
+        if late_tamper:
+            evaluate=pe.evaluate_p3
+            def tamper(*a,**kw):
+                result=evaluate(*a,**kw)
+                from pathlib import Path
+                Path(mf['admission']['evidence']['path']).write_text('{}')
+                return result
+            monkeypatch.setattr(pe,'evaluate_p3',tamper)
+            with pytest.raises(RuntimeError,match='admission changed'):
+                pe.main(args)
+            assert not out.exists()
+        else:
+            pe.main(args)
+            result=json.loads(out.read_text())
+            assert all(t['status']=='CONFIRMATORY' for t in result['hypotheses']['tests'].values())
+    finally: shutil.rmtree(work)
+
+
+def test_revision2_stop_file_fsynced_before_end(tmp_path,monkeypatch):
+    import os,json
+    observed=[]; fsync=os.fsync
+    def record(fd):
+        path=os.readlink(f'/proc/self/fd/{fd}')
+        if '/STOP-' in path:
+            events=seq.read_budget(seq.ARTIFACT_ROOT/'budget-global.jsonl')
+            observed.append([r['event'] for r in events])
+        return fsync(fd)
+    monkeypatch.setattr(os,'fsync',record)
+    with pytest.raises(RuntimeError):
+        with seq.BudgetLedger(tmp_path) as ledger:
+            with ledger.attempt({'test':'fsync'}): raise RuntimeError('synthetic failure')
+    assert observed==[['START','STOP']]
+    assert seq.read_budget(seq.ARTIFACT_ROOT/'budget-global.jsonl')[-1]['event']=='END'
+
+
+def test_revision2_environment_hashes_transitive_distributions(tmp_path,monkeypatch):
+    import importlib.metadata
+    lock=tmp_path/'.venvs'/'marketmamba-gpu.requirements.lock.txt'; lock.parent.mkdir(); lock.write_text('synthetic lock')
+    monkeypatch.setattr(seq.Path,'home',lambda:tmp_path)
+    class Distribution:
+        def __init__(self,name):
+            self.files=[name+'.so']; (tmp_path/self.files[0]).write_bytes(name.encode())
+        def locate_file(self,file): return tmp_path/file
+    direct=Distribution('torch'); cuda=Distribution('nvidia_cuda_runtime')
+    monkeypatch.setattr(importlib.metadata,'distribution',lambda name:direct)
+    monkeypatch.setattr(importlib.metadata,'distributions',lambda:[direct,cuda])
+    hashes=seq.environment_files()
+    assert str(tmp_path/'nvidia_cuda_runtime.so') in hashes
+    before=hashes[str(tmp_path/'nvidia_cuda_runtime.so')]['sha256']
+    (tmp_path/'nvidia_cuda_runtime.so').write_bytes(b'changed binary')
+    assert seq.environment_files()[str(tmp_path/'nvidia_cuda_runtime.so')]['sha256']!=before

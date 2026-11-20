@@ -46,3 +46,10 @@
 2. **`p3_main` 必須重新驗證准入證據**：不得只讀 manifest 的 `admission.status`。必須重新核對證據檔路徑與 SHA-256、證據內容與目前程式／環境逐項相符、預算帳本雜湊與 `spent_seconds <= 14h`、24 個 fit 的 run_hash 與 sidecar 完整；任一不符即不得標為 CONFIRMATORY。
 3. **預算帳本**：單一全域帳本 `.artifacts/p3/budget-global.jsonl`（含雜湊鏈與單一寫入鎖），不依賴 `--out-dir`；同 namespace 已有 fit 或 run_identity 但帳本缺失或鏈不符即拒絕；帳本 SHA 寫入 manifest。STOP 須先寫入並 fsync，再寫 END；清除 STOP 須以明確 CLI 子命令在帳本留下 CLEARED 事件（含原因與時間），僅刪檔不算清除。`collect()` 公開入口同樣受帳本與 STOP 約束，或在文件明示僅供內部使用。
 4. **凍結字典補齊**：`dropout`、`window`（60）、`normalize`（rankgauss）、`train_probe_sessions`，以及寫死常數（grad clip 1.0、warmup 與 cosine 排程、AdamW betas、cross 層 d_ff 與 FFN dropout）須列入凍結字典或由 source hash 於 `p3_main` 重驗；Mamba2 官方其餘預設（ngroups、chunk_size、dt_min／dt_max、A_init_range、rmsnorm 等）須讀出並寫入 `mixer_parameters`。
+
+## 修訂 3（2026-11-20，於任何 P3 神經網路分數與結果出現之前；追加，不改動上文）
+第三輪審查（Codex NO_GO：CRITICAL）指出，預算帳本的雜湊鏈只能偵測事件被修改，**無法偵測合法前綴的截斷或清空**；截斷會抹除已耗時間與 STOP，已耗盡 14 小時後換 out-dir 仍可重新啟動。修訂如下：
+1. **帶外錨點**：每次帳本追加事件後，原子性寫入獨立錨點檔 `.artifacts/p3/budget-anchor.json`（欄位：事件序號、帳本頭 hash、累計 spent_seconds、時間戳；寫入使用暫存檔加 fsync 加原子替換）；每個 fit sidecar 與 manifest 亦記錄當時的（序號、帳本頭 hash、spent）。啟動時若帳本事件數少於錨點序號、帳本頭 hash 與錨點不符、或 spent 小於錨點，一律拒絕（含帳本被清空或截斷到較短的合法前綴）。
+2. **錨點缺失的處理**：同 namespace 已有 fit、sidecar 或 run_identity，但全域帳本或錨點任一缺失，即拒絕，需人工以明確 CLI 子命令重建並在新帳本留下 REBUILT 事件（含原因與已知 sidecar 的 spent 下界），重建後的可用預算須扣除所有 sidecar 記錄的 spent 最大值。
+3. **範圍聲明**：此保護針對疏失與誤操作，不防禦同時刪除帳本、錨點與全部 sidecar 的刻意破壞；報告須如實寫明。
+4. 其餘修訂 1、2 不變。測試須涵蓋：清空帳本、截斷為合法前綴、換 out-dir、錨點缺失、錨點與帳本不符、REBUILT 路徑；每項在壞行為下必須失敗。

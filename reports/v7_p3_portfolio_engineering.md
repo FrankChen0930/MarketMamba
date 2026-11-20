@@ -1,3 +1,93 @@
+# P3 修訂 2 工程候選 — 2026-11-20
+
+本節取代下方歷史工程紀錄中的准入、同 namespace 預算及刪除 STOP 程序。依[登記修訂 2](../tasks/spec-mamba-portfolio-p3-20261120.md)實作；job `job-run-mwnv3018-83e5c9`，detached base `a91f38e86dab0d332fc63c6dc8a6ab7361a19b99`，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。沿用既有 adapter、evaluator、tests、report 與 `.artifacts/p3/`；`revision2-verification/` 只隔離本輪 GENERATED CPU logs，避免覆寫 revision1 證據，不是新研究 experiment 或正式市場結果。
+
+`rolling_seq_scores.py` 新增 `--gpu-smoke`，只有 CUDA 與指定套件環境符合時才執行官方 Mamba2 的 temporal（60 tokens）與 cross（256 tokens、d_conv=2）前向／反向；量測 finite、parameter count、gradient tensor count、peak allocated memory、GPU model、起訖溫度、elapsed seconds、output／gradient abs max。輸出 `p3-official-gpu-smoke-v2`，帶凍結設定、官方 signature 的所有預設、source／spec／interpreter／lock／installed distribution 逐檔 SHA-256。官方 `dt_limit` 中 Infinity 在 JSON 明確記為字串，建構 mixer 時還原；不改官方預設。smoke 執行器不寫 reviewed_by。raw smoke 與 reviewed artifact 均 exclusive、fsync，不接受舊版 v1 或 human_reviewed 布林。
+
+凍結字典補 `dropout=.1`、`window=60`、`normalize=rankgauss`、`train_probe_sessions=40`；SeqData 明傳 window／normalize。gradient clip=1、15% warmup／cosine、AdamW 預設 betas、cross d_ff=4*d_model 及 FFN dropout 的 owner source（seq_runner／seq_models／cross_stock）逐檔 SHA 包含在 smoke 與 evaluator 現況重驗中。mixer_parameters 從安裝的 Mamba2 signature 讀出其餘預設，包含 ngroups、chunk_size、dt_min/max、A_init_range、rmsnorm、dt_limit 等，不以手抄子集合代替。
+
+## 解鎖程序（本輪沒有執行 GPU 或獨立審查作業）
+
+在指定 `~/.venvs/marketmamba-gpu` 環境，保留 `~/.venvs/marketmamba-gpu.requirements.lock.txt`，先凍結 source；套件為 torch2.10.0+cu128／mamba-ssm2.3.2.post1／causal-conv1d1.7.0。以下是後續執行程序，不是本輪 CUDA 成功證據：
+
+```bash
+PYTHONPATH=V6 ~/.venvs/marketmamba-gpu/bin/python -m research_lab.rolling_seq_scores \
+  --gpu-smoke --job-id <producer-job-id> --out-dir .artifacts/p3/admission/raw-smoke.json
+```
+
+接著由另一個獨立 worker／Human 執行審查作業：核對 raw JSON、實際 logs／量測、source diff、環境 lock、逐檔 hashes 與溫控。審查者保留實際 job id 與 GO／NO_GO 結論。`--record-review` 只記錄已完成的審查，不會啟動 worker，也不會自行作出獨立判斷。在同一指定環境另執行：
+
+```bash
+PYTHONPATH=V6 ~/.venvs/marketmamba-gpu/bin/python -m research_lab.rolling_seq_scores \
+  --record-review .artifacts/p3/admission/raw-smoke.json \
+  --out-dir .artifacts/p3/admission/reviewed-smoke.json \
+  --review-kind independent_worker --job-id <independent-review-job-id> --verdict GO
+```
+
+Human 審查改用 `--review-kind human` 與可稽核的 review id；producer 與 reviewer job id 不得相同。raw evidence 保持原樣，新的 reviewed artifact 寫入 `reviewed_by={kind,job_id,verdict,evidence_sha256}`；evidence_sha256 綁定原始 raw 檔案的實際 SHA-256，review_source 保留其 path／bytes／SHA 並於准入時重讀；另有 canonical body hash 排除 review metadata 與自身 hash，final artifact SHA 由 admission.identity 記錄。verdict 非 GO 不得准入。standing_authorization 固定為「Human 在 2026-11-19／20 的對話中授權主控自行接續本機（RTX 3060）實驗、不得上 Colab。此授權可由 Human 日後稽核；不表示 Human 已逐項審核。」這是既有授權紀錄，不是逐項 Human acceptance；本輪 No GPU 指令仍優先。
+
+之後才以正式、不含 `--smoke` 的命令完成 24 fits：
+
+```bash
+PYTHONPATH=V6 ~/.venvs/marketmamba-gpu/bin/python -m research_lab.rolling_seq_scores \
+  --folds-root <已核對的唯讀rolling矩陣根> --p1-scores-dir <已核對的P1分數目錄> \
+  --out-dir .artifacts/p3/registered-scores --years 2021 2022 2023 2024 2025 2026 \
+  --models mamba2 crossstock --seeds 17 29 \
+  --gpu-smoke-evidence .artifacts/p3/admission/reviewed-smoke.json --run
+```
+
+`p3_main` 不信任 RESOLVED 字串：重新讀 evidence 路徑及 SHA、body/review hash、source/spec、environment/files、frozen cfg、mixer defaults；重新比對 run_identity、24 個 run_hash／sidecar／payload SHA／job keys 與帳本完成事件。評估完成發布前再次重驗准入，避免評估期間變動。全域帳本 path/SHA、spent、14h limit 任一不符，或 STOP／pending attempt 存在，皆不得 CONFIRMATORY。P1 三種子、支援列／配對日期、CI／Holm 舊閘門保留。被拒的合成／partial manifest 只能得到 INCOMPLETE_ENGINEERING_ONLY，無法提升為研究結論。
+
+## 全域帳本與 STOP
+
+唯一帳本為 `.artifacts/p3/budget-global.jsonl`，所有 out-dir 共用；GPU smoke 亦扣帳。每事件帶 previous_sha256／sha256。Linux／WSL 以 flock 鎖住 `.artifacts/p3` 目錄固定 inode；刪換 budget.lock 或 budget-global.jsonl 不會解除其他程序持有的鎖。目錄及其父目錄須可信且穩定；原生 Windows 不支援此 flock 路徑，會拒絕而非退回較弱鎖。
+
+有 fit／run_identity 卻無全域帳本，或 hash chain／namespace 的 run binding／completed fit binding 不相符，即拒絕。舊版 per-namespace 帳本不會自動推算為新全域帳本；已有正式 attempts 卻缺全域歷史時須另行盤點、核對與授權遷移，禁止刪掉舊檔再把 spent 當 0。全域帳本一旦有後續事件，舊 manifest SHA 即 stale，不允許手改 SHA 升格。
+
+錯誤／中止／溫控 STOP 先 append＋fsync STOP 事件，STOP 檔也 fsync，再 append＋fsync END。硬中斷到重啟間仍保守扣帳，先鎖 STOP 再補 INTERRUPTED END；不宣稱精確 GPU 時數。刪除 STOP 檔不清除帳本 latch。檢查根因後，只能用以下明確命令保留原因與時間：
+
+```bash
+PYTHONPATH=V6 ~/.venvs/marketmamba-gpu/bin/python -m research_lab.rolling_seq_scores \
+  --clear-stop STOP-<事件名稱>.json --reason '<檢查結果與清除原因>'
+```
+
+CLEARED 事件不重置 spent，不可解除已用盡 14h 的預算限制。`collect()` 為 internal adapter，必須持有 active global-ledger attempt；直接呼叫被測試鎖住。所有正式入口在缺合格 evidence 時 fail closed。
+
+## 驗證與限制
+
+指定完整命令與最終實際輸出（exit 0）：
+
+```text
+PYTHONPATH=V6:V6/research_lab/tests:. /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests tests -q
+558 passed, 1 skipped, 4 warnings in 191.92s (0:03:11)
+```
+
+初輪反證：`9 failed, 50 deselected in 3.95s`；修正後同選取：`9 passed, 50 deselected in 7.67s`。按任務逐項的最終 GREEN（實際 stdout，均 exit0）：
+
+| 項目 | RED 實際失敗 | 最終 GREEN 實際輸出 |
+|---|---|---|
+| 1 executor smoke／獨立 review | smoke 入口不存在；raw review SHA 回歸另為 `1 failed, 82 deselected in 1.58s` | `3 passed, 80 deselected in 2.51s` |
+| 2 confirmation 重驗 | 手寫 RESOLVED 被舊閘門放行；發布前竄改另為 audit RED 的一項 | `17 passed, 66 deselected in 57.16s` |
+| 3 全域帳本／鎖／STOP | 初輪3項失敗；STOP檔 fsync 另為 `1 failed, 80 deselected in 1.61s` | `7 passed, 76 deselected in 2.28s` |
+| 4 frozen／官方 defaults／環境 | 初輪4項失敗；Infinity 為 `1 failed, 77 deselected in 1.49s`；傳遞套件為 audit RED 的另一項 | `6 passed, 77 deselected in 1.80s` |
+| 5 工程報告 | 舊手寫 JSON／刪STOP解鎖程序已明確 supersede | 新程序、local links／artifact hashes／治理檢查已核對 |
+
+額外 audit RED：`2 failed, 1 passed, 80 deselected in 8.71s`；GREEN：`3 passed, 80 deselected in 8.82s`。最後 admission 相關回歸：`20 passed, 63 deselected in 26.00s`。完整 source 固定前曾跑第一輪全套：`556 passed, 1 skipped, 4 warnings in 159.50s`，不是最終數字。所有 raw stdout／選取命令／source hashes 保存在 `.artifacts/p3/revision2-verification/verification.json` 與同目錄 logs。
+
+四項 in-memory mutation（未改磁碟 source）均 exit1：停用 frozen validator → `4 failed, 76 deselected in 0.15s`；停用 confirmation revalidator → `1 failed, 79 deselected in 3.15s`；停用 review validator → `1 failed, 79 deselected in 0.14s`；略過 hash-chain check（同時更新 manifest ledger SHA，排除只靠檔案 hash 擋下）→ `1 failed, 79 deselected in 1.02s`。
+
+CPU 真實 CLI `--gpu-smoke` 拒絕為 `RuntimeError: STOP CUDA required for GPU smoke`，不產生 evidence。CPU producer boundary double 的量測為每 mixer 4160 parameters／2 gradient tensors、forward/backward finite；123456 peak bytes／60°C 為明確注入值，絕非 GPU 實測。正式 GPU 型號／顯存／溫度／耗時 N/A。
+
+Knowledge-impact：語義、candidate correctness gate、內部入口 boundary、deprecated v1／刪檔清STOP及 next procedure 有變；Current State／Authority Map／Research／Worktree Register 同 change 更新，無 production/runtime/正式研究 authority 變更。checker exit0／WARNING，人工已檢查 Operations／GOVERNANCE，沒有該兩檔語義變更，不修改。knowledge_health.py --ci exit0／Overall WARNING：Project Map／Agent Guides／Domains／Runtime Freshness／Generated Index PASS；Governance／Authority Drift／Legacy Docs WARNING，無 structural FAIL。AST syntax、added local references、artifact SHA、git diff --check 通過。
+
+Completed／Changed：3個source/test檔、工程報告與4個knowledge檔。Decisions：准入／預算／STOP fail closed，raw SHA 與 final reviewed SHA 分開保留；不自稱獨立審查或 Human acceptance。Remaining／Blockers：官方 CUDA smoke、真實獨立審查、正式24fits／市場結果未執行。Next recommended action：審查本 diff 與 logs，依後續任務授權執行解鎖程序。Project memory updated／Authority map updated：YES。Git status：起始clean，結束8個指定檔案 modified/unstaged，無 staged／tracked外變更。Commit／Push：N/A，依指示未執行。Worktree：既有 fixer、detached a91f38e，未保留patch前不得移除。Runtime/environment：WSL-native worker、pilot09 Python3.12.3、torch2.15.0+cpu，MARKETMAMBA_DATA_ROOT unset，Data realpath 為本 checkout 的 Data 目錄；未觀察Windows scheduler或GPU runtime。
+
+所有新增 positive GPU-producer／24-fit fixtures 均為 CPU boundary doubles，不能作為官方 CUDA evidence；測試僅證明程式控制路徑與拒絕條件。hash chain／review metadata 提供完整性與追溯，無法取代 OS 權限、獨立審查的真實執行或 Human 稽核。沒有新 GPU 量測或正式 P3 結果；PIT／下市覆蓋／adjusted prices／兩種子規模限制保留。
+
+---
+
+以下修訂 1／初版紀錄是 HISTORICAL_ENGINEERING_ONLY；其中手寫 GPU JSON、human_reviewed、同 namespace budget、直接刪 STOP 指令已由上方取代。
+
 # P3 修訂 1 bounded repair — 2026-11-20
 
 UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。`job-run-mwnu9iri-e7a54a`，既有 fixer worktree，detached HEAD `69dc5baaee2d8e5c35d36458335c29fb4f26b619`。本節是修訂 1 的工程狀態；下方初版紀錄的模型歧義與預算缺口已由本節取代，舊數值不重新標成新 evidence。沒有 commit、push、merge、GPU 訓練、安裝、資料 acquisition、正式 Data／V6/models／production／scheduler 變更或額外 agents。
