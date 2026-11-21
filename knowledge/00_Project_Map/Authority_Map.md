@@ -2,7 +2,7 @@
 
 ## P4a Colab 候選邊界 — 2026-11-21
 
-[P4機器契約](../../tasks/p4a-colab-contract-20261121.json)、[規格草案](../../tasks/spec-p4a-colab-20261121.md)目前DRAFT / NOT_FROZEN；[bundle](../../V6/research_lab/p4_bundle.py)、[executor](../../V6/research_lab/p4_colab.py)及[測試](../../V6/research_lab/tests/test_p4.py)只屬 `job-run-mwqd0vuy-7d9826` detached base `e4f21c3` 的 UNMERGED_IMPLEMENTATION / NOT_DEPLOYED / NOT_ACCEPTED，原候選與第一輪修補已分別提交於 `8cb61c4`、`05cb840`；本輪第二次修補基於 `05cb840`，依 no-commit 指示保留 patch，後續獨立 commit 尚無 hash，不能授予研究／production authority。Human既有核准涵蓋這次離線bounded實作；正式P4仍需凍結草案與現場GPU／環境驗證。沒有P4結果可supersede。
+[P4機器契約](../../tasks/p4a-colab-contract-20261121.json)、[規格草案](../../tasks/spec-p4a-colab-20261121.md)目前DRAFT / NOT_FROZEN；[bundle](../../V6/research_lab/p4_bundle.py)、[executor](../../V6/research_lab/p4_colab.py)及[測試](../../V6/research_lab/tests/test_p4.py)只屬 `job-run-mwqd0vuy-7d9826` detached base `e4f21c3` 的 UNMERGED_IMPLEMENTATION / NOT_DEPLOYED / NOT_ACCEPTED，原候選與第一輪修補已分別提交於 `8cb61c4`、`05cb840`；第二次修補已提交為 `a76e98d`（此後提交狀態以 git log 為準）；正式P4仍需凍結草案與現場GPU／環境驗證。沒有P4結果可supersede。
 
 P4沿用`train_one`、P3 purge／row semantics，但獨立Drive預算根目錄／bundle identity；不得重用或重置P3 `.artifacts/p3`帳本、放寬P3 admission，或重標21/24結果。P4的exact lock原樣保存在[獨立檔](../../environments/p4a-colab.requirements.lock.txt)（SHA `2c39a3fb9567d1f9fc8ee83369c7b6c90cd19a8e679e32e4c8a6c1d75c5782c9`），不取代舊E1環境authority。Colab wheel安裝、kernel／Drive durable semantics尚未驗證；CU為Human提供費率估計，不是provider實扣evidence。CPU fixtures只能證明工程邊界。詳見[工程報告](../../reports/v7_p4a_colab_engineering.md)。
 

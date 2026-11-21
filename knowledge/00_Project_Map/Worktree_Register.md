@@ -4,7 +4,7 @@
 
 - Existing path `.worktrees/ruflo-workers/run-mwqd0vuy-7d9826/builder_p4a`；detached HEAD/base `e4f21c3747124f4c6cc46a873eae891697910067`；owner Human/Codex builder；task P4 bundle／Colab executor／GRU／CPU tests／DRAFT規格；created2026-11-21，retired N/A。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；原候選已提交於 `8cb61c4`；本輪不 commit/push/merge/GPU/Colab/network/agents。
 - Reuse既有research_lab、tasks、docs/operations、environments與knowledge結構；新增P4模組原因在[草案](../../tasks/spec-p4a-colab-20261121.md)。沒有新增worktree／top-level artifact tree；驗證logs及合成bundle在`/tmp`，不修改P3既有結果。Authority：DRAFT候選machine contract／CPU tests，無研究結果。
-- Merge/artifact dependency：獨立審查、Human／Claude凍結與GPU／wheel／Drive現場驗證；safe removal須先保存未提交patch及必要證據、處理引用並明確retirement review，候選 `8cb61c4` 與第一輪修補 `05cb840` 已保存；第二輪修補依 no-commit 指示保留 patch，後續獨立 commit 尚無 hash，須保存 patch，仍不可直接移除。
+- Merge/artifact dependency：獨立審查、Human／Claude凍結與GPU／wheel／Drive現場驗證；safe removal須先保存未提交patch及必要證據、處理引用並明確retirement review，候選 `8cb61c4` 與第一輪修補 `05cb840` 已保存；第二輪修補已提交為 `a76e98d`，仍不可直接移除。
 
 
 - Review fixer：既有 `.worktrees/ruflo-workers/run-mwqe7o12-d33ef8/fixer_p4a`，created2026-11-21，detached base/HEAD `8cb61c48b2b302338600a91b3ad59dc350d09a6c`，owner Human/Codex，task 審查 REQUIRED／MINOR 修補。起始 clean，第一輪 patch 已保存為 `05cb840`；retired N/A；authority 仍 DRAFT / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。Merge/artifact dependency 為獨立審查、CPU RED/GREEN／mutation logs 及後續 Human 決策；safe removal 需保存 patch／證據、確認引用與 retirement review。沒有新建 worktree。

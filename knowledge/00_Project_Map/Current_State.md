@@ -2,7 +2,7 @@
 
 ## P4a Colab 工程候選 — 2026-11-21
 
-`job-run-mwqd0vuy-7d9826` builder，既有 detached worktree base `e4f21c3747124f4c6cc46a873eae891697910067`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依限定授權僅離線程式／CPU合成測試，原候選與第一輪修補已分別提交於 `8cb61c4`、`05cb840`；本輪第二次修補基於 `05cb840`，依 no-commit 指示保留 patch，後續獨立 commit 尚無 hash；未push/merge、無GPU／Colab／網路／正式資料或排程變更。[P4草案](../../tasks/spec-p4a-colab-20261121.md) 與 [機器候選契約](../../tasks/p4a-colab-contract-20261121.json) 均DRAFT；正式入口拒絕DRAFT，沒有研究結果。Human提供筆電熱降頻與Colab授權背景，不是本輪runtime observation。
+`job-run-mwqd0vuy-7d9826` builder，既有 detached worktree base `e4f21c3747124f4c6cc46a873eae891697910067`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依限定授權僅離線程式／CPU合成測試，原候選與第一輪修補已分別提交於 `8cb61c4`、`05cb840`；第二次修補已提交為 `a76e98d`（此後提交狀態以 git log 為準，不在此逐次更新）；未push/merge、無GPU／Colab／網路／正式資料或排程變更。[P4草案](../../tasks/spec-p4a-colab-20261121.md) 與 [機器候選契約](../../tasks/p4a-colab-contract-20261121.json) 均DRAFT；正式入口拒絕DRAFT，沒有研究結果。Human提供筆電熱降頻與Colab授權背景，不是本輪runtime observation。
 
 沿用research_lab訓練器、P3 split／row checks，新增 [bundle](../../V6/research_lab/p4_bundle.py)、[Colab executor](../../V6/research_lab/p4_colab.py)、兩層width64 GRU及可選checkpoint observer。[操作指南](../../docs/operations/colab-p4.md)說明safe-extract、逐檔SHA、exact lock預編譯wheel、rankgauss重建與tag驗證、三臂2epoch×100步speed-test、Drive fit-level續跑／BEST權重及至少25%餘裕雙上限帳本。CU依Human保守費率估算；85°C直接STOP、不等待，未知中斷區間保守扣帳並鎖STOP。partial checkpoints不自動resume或升格best。P3凍結契約、帳本、歷史結果不修改；新增source會改變現checkout的provenance，既有P3 evidence仍須使用原pinned source，不能重標。
 
