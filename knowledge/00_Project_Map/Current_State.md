@@ -1,3 +1,7 @@
+## P3 神經模型組合評估結果（探索性）— 2026-11-21
+
+E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED。24 次官方 Mamba2／S-Mamba 風格擬合完成 21 次（14 小時預算用盡，帳本 STOP；缺 2026 折 mamba2 s29、crossstock s17／s29）。確認性 2021–2023 三折神經分數完整，但契約要求 24 次與完整 manifest，故只能做探索性評估：H-P3a（Mamba2 vs C0+）日均 −0.0154% CI [−0.0414%, +0.0084%]、H-P3b（S-Mamba 風格）−0.0240% CI [−0.0595%, +0.0046%]，Holm p .298，兩者「未證實」且方向偏負；十組 IC 配對差神經全部低於 C0+。結果與後續計畫：[reports/v7_p3_portfolio_evaluation.md](../../reports/v7_p3_portfolio_evaluation.md)。評估輸出與腳本在 ignored `.artifacts/p3/explore-21of24/`（SHA-256 `c607522c…4860`）。P3 正式記為未證實／21 of 24。未決：是否核准 P4a（同配方 GRU 對照＋對等調參＋保存檢查點）與 P4b（神經／C0+ 混合，描述性）。教訓：預算須含餘裕、訓練中不得提交 Git（source_commit 在 run identity）、停機監看須用 Python 本體 PID。
+
 # MarketMamba Current State
 
 ## P3 修訂3 預算錨點候選 — 2026-11-20
