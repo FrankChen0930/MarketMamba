@@ -1,5 +1,13 @@
 # Training
 
+## P4a 兩檔 Colab 交付候選 — 2026-11-22
+
+`job-run-mwqr9yiu-8c464e` builder，既有 detached HEAD/base `74795a4a56f25585000d26d281e305381de6230a`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，明確 no-commit 授權保留 patch。[產生器](../../V6/research_lab/p4_bundle.py) 的 `deliver` 一次輸出 `p4a-bundle.zip` 與 `p4a-colab.ipynb`，沿用既有 pack／executor／研究契約，沒有平行流程或新 worktree。ZIP 以內容 identity 去重跨 fold 的 X.npy，manifest 完整邏輯檔案清單加 aliases；安全解壓還原各 fold 的一般檔案並逐份驗 size/SHA。fold 輸入 symlink 只在打包端解析，解壓仍禁止 links，tar 相容與白名單／資源／cache gate 維持。
+
+Notebook第0格集中預算與路徑，預設SPEED_TEST；找 /content 再找Drive、標準庫取內含bootstrap後完整驗證，不需手貼SHA或另傳bootstrap。先自檢環境，已符合契約則略過安裝；cp313 Drive wheel路徑 `MyDrive/Mamba_Wheels_T4_new`，cp312不符仍STOP。兩wheel均缺才使用官方sdist編譯備援（mamba C++20、MAX_JOBS=4）及Mamba2小型前後向冒煙。CUDA gate、DRAFT正式拒絕、既有resume／預算帳本與speed輸出隔離不變。
+
+[Colab runtime契約](../../environments/p4a-colab-runtime.json)已是Human提供的OBSERVED Python3.13.16／torch2.14.1+cu130／CUDA13.0／T4／mamba2.3.2.post1／causal1.7.0；本節取代舊候選「等待填TBD版本」的next action，但不修改原觀測時間，不把Human smoke升格為專案正式GPU證據。本輪只有CPU合成測試／nbformat解析／三項in-memory反證，無網路、GPU、資料取得、正式Data、模型、production、scheduler或研究結果。Colab現場ZIP解壓、編譯儲存格、Drive掛載／持久寫入／下載仍 **UNVERIFIED**。Next：獨立審查patch；另行授權真實bundle打包及Colab現場驗證；FORMAL仍需凍結研究契約。細節與限制見[指南](../../docs/operations/colab-p4.md)、[工程報告](../../reports/v7_p4a_colab_engineering.md)。
+
 ## P4a Colab 工程候選 — 2026-11-21
 
 新增[P4 bundle](../../V6/research_lab/p4_bundle.py)與[executor](../../V6/research_lab/p4_colab.py)，沿用既有`train_one`，新增可選observer與GRU；default P3配方／gate不變。P4 [機器契約](../../tasks/p4a-colab-contract-20261121.json)／[規格](../../tasks/spec-p4a-colab-20261121.md)均DRAFT，正式入口拒絕。Bundle包含source commit及dirty source逐檔identity、原始fold／P1分數manifest／原樣exact lock；排除rankgauss，Colab以既有ensure_rankgauss重建並驗tag／input-output hashes。SAFE extract只允許regular files，拒絕絕對／穿越／符號與hard links。保留fit BEST與epoch latest/previous/best、optimizer/scheduler/RNG；只支援completed-fit resume，partial保留forensic evidence，未知中斷扣至重啟並STOP，不自動升格orphan。

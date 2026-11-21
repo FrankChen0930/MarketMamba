@@ -649,3 +649,167 @@ def test_drive_install_requires_cuda(tmp_path,monkeypatch):
     monkeypatch.setattr(torch.cuda,'is_available',lambda:False)
     with pytest.raises(RuntimeError,match='CUDA'):
         bundle.installation_commands(tmp_path,wheel_dir=drive_wheels(tmp_path))
+
+
+def test_zip_dedup_symlink_roundtrip(tmp_path):
+    import zipfile
+    source=tmp_path/'X.npy';source.write_bytes(b'shared raw matrix\0'*100)
+    link=tmp_path/'link.npy';link.symlink_to(source)
+    names={f'folds/fold_{y}/X.npy':link for y in (2021,2022)}
+    archive=tmp_path/'bundle.zip'
+    mf=bundle.write_archive(archive,names,{})
+    assert zipfile.is_zipfile(archive)
+    with zipfile.ZipFile(archive) as z:
+        assert sum(n.endswith('/X.npy') for n in z.namelist())==1
+    assert mf['aliases']=={'folds/fold_2022/X.npy':'folds/fold_2021/X.npy'}
+    bundle.extract(archive,tmp_path/'out')
+    for n in names:
+        assert (tmp_path/'out'/n).read_bytes()==source.read_bytes()
+        assert not (tmp_path/'out'/n).is_symlink()
+
+
+@pytest.mark.parametrize('name,mode',[('../escape',0o100600),('/absolute',0o100600),
+    ('source/V6/research_lab/a.py',0o120777),('source/V6/research_lab/a.pyc',0o100600),
+    ('unlisted',0o100600)])
+def test_zip_rejects_hostile_before_destination(tmp_path,name,mode):
+    import zipfile
+    archive=tmp_path/'bad.zip'
+    with zipfile.ZipFile(archive,'w') as z:
+        info=zipfile.ZipInfo(name);info.external_attr=mode<<16
+        z.writestr(info,b'bad')
+    with pytest.raises(ValueError):bundle.extract(archive,tmp_path/'out')
+    assert not (tmp_path/'out').exists()
+
+
+def test_delivery_notebook_cpu(tmp_path):
+    notebook=json.loads(json.dumps(bundle.colab_notebook()))
+    assert notebook['nbformat']==4 and notebook['nbformat_minor']==5
+    assert len({c['id'] for c in notebook['cells']})==len(notebook['cells'])
+    assert notebook['cells'][0]['cell_type']=='code'
+    settings={};exec(notebook['cells'][0]['source'],settings)
+    p4.validate_budget_plan(settings['MAX_HOURS'],settings['MAX_UNITS'],settings['UNITS_PER_HOUR'],settings['PLANNED_HOURS_PER_FIT'],.25)
+    assert settings['MODE']=='SPEED_TEST'
+    import ast
+    options=set()
+    for cell in notebook['cells']:
+        if cell['cell_type']=='code':
+            compile(cell['source'],'notebook','exec')
+            for node in ast.walk(ast.parse(cell['source'])):
+                if isinstance(node,ast.Constant) and isinstance(node.value,str) and node.value.startswith('--'):
+                    options.add(node.value)
+    assert options >= {'--bundle','--drive-root','--speed-test','--max-hours','--max-units','--units-per-hour','--planned-hours-per-fit','--reserve'}
+    # Actual CLI parsing, with runner isolated from GPU/filesystem.
+    from unittest.mock import patch
+    with patch.object(p4,'run',return_value={'version':'test','jobs':[],'evidence_class':'ENGINEERING_SPEED_ONLY','binding':{'environment':{}}}):
+        p4.main(['--bundle','x','--drive-root','y','--speed-test','--max-hours','6','--max-units','100','--units-per-hour','10','--planned-hours-per-fit','.5','--reserve','.25'])
+
+
+def test_cp313_drive_wheel_positive_and_cp312_stop(tmp_path,monkeypatch):
+    from packaging.tags import Tag
+    import packaging.tags
+    monkeypatch.setattr(bundle,'verify',lambda _:None)
+    monkeypatch.setattr(torch.cuda,'is_available',lambda:True)
+    monkeypatch.setattr(packaging.tags,'sys_tags',lambda:iter([Tag('cp313','cp313','linux_x86_64')]))
+    directory=drive_wheels(tmp_path)
+    with pytest.raises(RuntimeError,match='mismatch'):bundle.installation_commands(tmp_path,directory)
+    for path in list(directory.iterdir()):path.rename(directory/path.name.replace('cp312','cp313'))
+    assert '--no-index' in bundle.installation_commands(tmp_path,directory)[0]
+
+
+def test_delivery_nbformat_parser():
+    nbformat=pytest.importorskip('nbformat',reason='offline CPU runtime has no nbformat; schema/compile checks run separately')
+    nbformat.validate(nbformat.from_dict(bundle.colab_notebook()))
+
+
+@pytest.mark.parametrize('change',['alias_hash','alias_chain','missing','duplicate','oversize','count','hash'])
+def test_zip_inventory_and_payload_gates(tmp_path,monkeypatch,change):
+    import zipfile
+    source=tmp_path/'X';source.write_bytes(b'original')
+    archive=tmp_path/'good.zip'
+    mf=bundle.write_archive(archive,{f'folds/fold_{y}/X.npy':source for y in (2021,2022)},{})
+    if change=='alias_hash':mf['files']['folds/fold_2022/X.npy']['sha256']='0'*64
+    if change=='alias_chain':mf['aliases']['folds/fold_2021/X.npy']='folds/fold_2022/X.npy'
+    if change=='oversize':monkeypatch.setattr(bundle,'MAX_FILE_BYTES',4)
+    if change=='count':monkeypatch.setattr(bundle,'MAX_MEMBERS',1)
+    bad=tmp_path/'bad.zip'
+    with zipfile.ZipFile(archive) as old,zipfile.ZipFile(bad,'w') as new:
+        for member in old.infolist():
+            data=old.read(member)
+            if member.filename=='bundle-manifest.json': data=json.dumps(mf).encode()
+            elif change=='missing':continue
+            elif change=='hash':data=b'mutation'
+            new.writestr(member,data)
+            if change=='duplicate' and member.filename!='bundle-manifest.json':new.writestr(member,data)
+    with pytest.raises(ValueError):bundle.extract(bad,tmp_path/'out')
+    if change!='hash':assert not (tmp_path/'out').exists()
+
+
+def test_deliver_cli_synthetic_two_files(tmp_path):
+    import zipfile
+    folds=tmp_path/'folds'
+    shared=tmp_path/'shared.npy';shared.write_bytes(b'synthetic shared raw X')
+    for year in (2021,2022):
+        fold=folds/f'fold_{year}';fold.mkdir(parents=True)
+        for name in bundle.MATRIX_FILES:
+            if name=='X.npy':(fold/name).symlink_to(shared)
+            else:(fold/name).write_bytes(b'{}' if name.endswith('.json') else str(year).encode())
+    ref=tmp_path/'p1';ref.mkdir();(ref/'rank_average.parquet').write_bytes(b'synthetic P1 identity only')
+    (ref/'manifest.json').write_text(json.dumps({'outputs':{'rank_average.parquet':bundle.digest(ref/'rank_average.parquet')}}))
+    output=tmp_path/'delivery'
+    args=['deliver','--folds-root',str(folds),'--years','2021','2022','--p1',str(ref),'--output-dir',str(output)]
+    bundle.main(args)
+    assert {p.name for p in output.iterdir()}=={'p4a-bundle.zip','p4a-colab.ipynb'}
+    with pytest.raises(FileExistsError):bundle.main(args)
+    with zipfile.ZipFile(output/'p4a-bundle.zip') as z:
+        assert len([n for n in z.namelist() if n.endswith('/X.npy')])==1
+        assert not any(n.endswith('.pyc') for n in z.namelist())
+    bundle.extract(output/'p4a-bundle.zip',tmp_path/'out')
+    for fold in folds.iterdir():
+        for name in bundle.MATRIX_FILES:
+            assert (tmp_path/'out/folds'/fold.name/name).read_bytes()==(fold/name).read_bytes()
+    notebook=json.loads((output/'p4a-colab.ipynb').read_text())
+    # Execute only the stdlib bootstrap/extract cell with a local fake Colab mount.
+    import sys,types
+    fake=types.ModuleType('google.colab');fake.drive=types.SimpleNamespace(mount=lambda _:None)
+    from unittest.mock import patch
+    with patch.dict(sys.modules,{'google.colab':fake}), patch.object(sys,'path',list(sys.path)):
+        namespace=dict(DRIVE_BASE=str(tmp_path),BUNDLE_NAME=str(output/'p4a-bundle.zip'),LOCAL_ROOT=str(tmp_path/'from-notebook'))
+        exec(notebook['cells'][2]['source'],namespace)
+        exec(notebook['cells'][2]['source'],namespace)  # same-root reconnect identity
+    assert bundle.verify(tmp_path/'from-notebook')['metadata']['years']==[2021,2022]
+
+
+def test_zip_symlink_with_valid_manifest_rejected(tmp_path):
+    import zipfile
+    data=b'/etc/passwd'
+    name='source/V6/research_lab/a.py'
+    import hashlib
+    mf={'version':'p4-bundle-v1','files':{name:{'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()}}}
+    archive=tmp_path/'linked.zip'
+    with zipfile.ZipFile(archive,'w') as z:
+        info=zipfile.ZipInfo(name);info.create_system=3;info.external_attr=0o120777<<16
+        z.writestr(info,data);z.writestr('bundle-manifest.json',json.dumps(mf))
+    with pytest.raises(ValueError,match='regular'):bundle.extract(archive,tmp_path/'out')
+    assert not (tmp_path/'out').exists()
+
+
+@pytest.mark.parametrize('scenario',['installed','missing_both','no_cuda'])
+def test_notebook_environment_cpu_boundaries(tmp_path,monkeypatch,scenario):
+    import importlib.metadata,platform,subprocess
+    contract=json.loads((bundle.ROOT/'environments/p4a-colab-runtime.json').read_text())
+    root=tmp_path/'bundle';path=root/'source/environments/p4a-colab-runtime.json';path.parent.mkdir(parents=True);path.write_text(json.dumps(contract))
+    monkeypatch.setattr(torch.cuda,'is_available',lambda:scenario!='no_cuda')
+    monkeypatch.setattr(torch.cuda,'get_device_name',lambda _: 'CPU_TEST_DOUBLE')
+    monkeypatch.setattr(torch.version,'cuda',contract['runtime']['cuda'])
+    monkeypatch.setattr(platform,'python_version',lambda:contract['runtime']['python'])
+    monkeypatch.setattr(importlib.metadata,'version',lambda name: contract['packages'][name] if scenario=='installed' else 'missing')
+    calls=[];monkeypatch.setattr(subprocess,'run',lambda args,**kwargs:calls.append(args))
+    namespace=dict(Path=Path,root=root,json=json,subprocess=subprocess,p4=bundle,WHEEL_DIR=str(tmp_path/'missing'))
+    cell=bundle.colab_notebook()['cells'][3]['source']
+    if scenario=='no_cuda':
+        with pytest.raises(RuntimeError,match='CUDA'):exec(cell,namespace)
+        assert calls==[]
+    else:
+        exec(cell,namespace)
+        assert namespace['needs_compile']==(scenario=='missing_both')
+        assert calls==[['nvidia-smi']]  # matching installed runtime never invokes pip

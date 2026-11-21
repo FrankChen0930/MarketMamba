@@ -2,6 +2,34 @@
 
 UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。研究規格仍為 [DRAFT](../../tasks/spec-p4a-colab-20261121.md)，正式入口在契約凍結前會拒絕；speed-test 只量測速度，不能產生研究結論。本文件的 Colab／pip 儲存格供 Human 之後手動執行，本 worker 未啟動或驗證任何 GPU、網路或 Drive。
 
+## 主流程：一個 ZIP ＋一個 notebook
+
+Human 2026-11-22 核准的交付介面是 `p4a-bundle.zip` ＋ `p4a-colab.ipynb`。沿用既有 `p4_bundle`／`p4_colab`，不另建流程樹。在可信任 checkout 用同一條 CLI 產生兩檔（獨立輸出 namespace，拒絕覆寫）：
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=V6:. /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m research_lab.p4_bundle deliver \
+  --folds-root /ABSOLUTE/EXISTING/FOLDS --years 2021 2022 2023 2024 2025 \
+  --p1 /ABSOLUTE/P1/FULL/SCORES \
+  --lock environments/p4a-colab.requirements.lock.txt \
+  --output-dir /ABSOLUTE/NEW/DELIVERY
+```
+
+只需在 Colab 開啟產生的 notebook，選 GPU runtime，將 ZIP 上傳 Files 的 `/content/`，或 Drive `MyDrive/MarketMambaP4/inputs/`，從上到下執行。所有預算與路徑集中於第0格；預設 SPEED_TEST、6小時／100 CU、10 CU/hour、每 fit 0.5小時、25%餘裕，均為保守操作預設而非現場計費觀測。Drive掛載仍需 Google 登入授權。無須手貼 SHA、另傳 bootstrap 或手查版本。
+
+ZIP 是真正 ZIP64 格式；fold 的 `X.npy` 以 `(bytes,SHA-256)` 內容去重，manifest `files` 保存完整邏輯清單，`aliases` 記錄重複 fold → 實體成員。解壓重讀該成員並還原每個 fold 的一般檔案，逐份驗證，不建立 symlink。只在打包端允許 fold 輸入 symlink，先解析一般檔案；解壓端仍拒絕所有 links。既有 tar.gz 保留相容，不做 alias 去重。ZIP 邏輯還原大小（不是壓縮大小）仍受256 GiB上限；單檔64 GiB、10,000成員、4 MiB manifest、白名單、逐檔 size/SHA、拒絕 executable cache 與 descriptor 安全寫入維持強制。
+
+Notebook先用標準庫 `zipfile` 只取固定 bootstrap／manifest，驗兩者大小／類型、重複成員及 bootstrap 內部 hash，再由 bootstrap 完整安全解壓與驗證。SHA僅印供記錄；兩檔必須來自可信任的交付來源，內部hash不能自證來源。重連驗原ZIP與現有root manifest bytes一致，完整驗證後才重用，partial不自動覆寫。
+
+環境先印Python／torch／CUDA／GPU／套件與 nvidia-smi。已安裝套件及runtime符合環境契約即跳過wheel安裝；否則檢查指定Drive目錄，僅以 `--no-deps --no-index --find-links` 安裝兩個wheel。Human提供的OBSERVED環境是Python3.13.16／torch2.14.1+cu130／CUDA13.0／Tesla T4，使用 `MyDrive/Mamba_Wheels_T4_new/` 的 `mamba_ssm-2.3.2.post1-cp313-cp313-linux_x86_64.whl`（349592341 bytes）與 `causal_conv1d-1.7.0-cp313-cp313-linux_x86_64.whl`（207063960 bytes）。cp313正向／cp312不符STOP有CPU標籤測試；此處沒有讀取或驗證Drive實際wheel bytes。缺其中一個、多版本或標籤不符STOP；CUDA不可用一律STOP。
+
+只有兩個wheel均不存在才執行編譯備援格：官方PyPI sdist SHA核對，mamba setup.py全部 `-std=c++17` → `-std=c++20`、`MAMBA_FORCE_BUILD=TRUE`、`MAX_JOBS=4`、T4 sm75，wheel輸出Drive。需GPU，估30–90分鐘或更久；時間／CU不在runner帳本，須額外預留。安裝或略過後均跑 Mamba2 `[8,60,64]` 前向／反向有限值冒煙與 pip check。這不等於專案正式GPU smoke。FORMAL仍由既有DRAFT gate拒絕；SPEED_TEST只產生計時與telemetry，結果格摘要秒／epoch、GPU、溫度與時脈，不產生IC／績效。
+
+Runner直接將speed JSON、run manifest與持久budget帳本寫Drive；下載格匯出JSON到 `p4a-results.zip`，不包含正式權重。重連沿用相同Drive根目錄、ZIP與設定，completed-fit驗後略過，未知中斷保守扣帳並STOP；不得換root／刪帳本重置。Colab現場ZIP解壓、編譯儲存格、Drive掛載／寫入／下載均 **UNVERIFIED**；本輪只有CPU合成測試，沒有真實大型bundle、GPU／研究結果或Human acceptance。
+
+## 備援：舊手動逐格流程（歷史操作範例）
+
+以下 tar.gz／另傳bootstrap／舊cp312步驟只作備援，主流程以上方兩檔介面與目前OBSERVED環境契約為準。舊段落的TBD／需Human填版本描述已被目前 `environments/p4a-colab-runtime.json` 的Human觀測取代；不代表本worker執行過Colab。
+
 1. 本機確認 checkout、source commit、dirty diff（未提交 source 也逐檔 hash）、原始 fold 及 P1 manifest 身分，使用足夠空間的獨立輸出路徑。不要在訓練中改 source／commit。於 repository root 執行：
 
 ```bash

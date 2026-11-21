@@ -1,5 +1,11 @@
 # Worktree Register
 
+## P4a 兩檔交付 builder — 2026-11-22
+
+- Purpose/task：擴充既有bundle產生器為ZIP＋notebook、X.npy去重、安全bootstrap／cp313自檢與CPU反證；owner Human/Codex builder。沿用 `.worktrees/ruflo-workers/run-mwqr9yiu-8c464e/builder_p4a_delivery`，detached HEAD/base `74795a4a56f25585000d26d281e305381de6230a`；created2026-11-22，retired N/A，起始clean，依明確no-commit指示保留dirty patch。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。
+- Authority：DRAFT P4研究machine contract、既有Human OBSERVED Colab runtime契約與本輪CPU合成tests；無新GPU／Colab／production authority。沿用research_lab、docs、reports與knowledge容器，既有pack可擴充，未建立平行implementation／artifact tree／worktree；沒有改動protected source、V6/models或formal Data。
+- Merge/artifact dependency：獨立審查、Human研究凍結及另行授權Colab ZIP／編譯／Drive現場驗證；本輪TEMPORARY logs、synthetic ZIP／notebook在 `/tmp/p4-delivery-*` 與pytest隔離目錄。nbformat及相依套件從本機既有Anaconda／pip cache複製到 `/tmp/p4-notebook-deps`，無網路／未改任何venv。Safe-removal preconditions：先保存未提交patch與必要證據、處理引用並完成retirement review，目前dirty不可移除。不commit/push/merge/deploy。
+
 ## P4a Colab 操作修訂 builder — 2026-11-21
 
 - Purpose/task：可選外部 SHA、Drive wheel-dir、獨立 TBD Colab runtime 契約與 speed mismatch 記錄；owner Human/Codex builder。沿用既有 `.worktrees/ruflo-workers/run-mwqi30jf-aa0d7f/builder_p4a_colab_fix`，detached HEAD/base `36aa27da6e26c1877332c9cdea927e6409c3d105`；created2026-11-21，retired N/A，起始 clean，現在依明確 no-commit 指示保留 dirty patch。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。

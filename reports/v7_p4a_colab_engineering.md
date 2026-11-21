@@ -582,3 +582,116 @@ knowledge/00_Project_Map/Authority_Map.md
 knowledge/00_Project_Map/Worktree_Register.md
 knowledge/01_Domains/Training.md
 ```
+
+## P4a 兩檔交付工程候選 — 2026-11-22
+
+本節是 `job-run-mwqr9yiu-8c464e` builder 的未提交 patch，base/HEAD `74795a4a56f25585000d26d281e305381de6230a`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，工程完成不代表 Human acceptance。以下取代舊手動 bootstrap 上傳主流程，不改寫歷史結果／歷史驗證紀錄。使用者本輪明確限定不 commit/push/merge/GPU/network/Colab/agents，全部遵守。
+
+### 變更與決策
+
+- 沿用既有 `V6/research_lab/p4_bundle.py`；新增 `deliver --folds-root ... --years ... --p1 ... --lock ... --output-dir ...` 一次發布 `p4a-bundle.zip`、`p4a-colab.ipynb`，拒絕既有輸出。既有 `pack` 依 `.zip` 副檔名使用真正 ZIP／ZIP64，其餘 tar.gz 保留。既有 source／matrix／P1／lock／runtime contract／manifest 內容邊界不變，不另造平行implementation／頂層artifact tree；僅在pytest隔離目錄產生合成兩檔。
+- ZIP 中相同 `(bytes,SHA-256)` 的跨fold `X.npy` 只存第一份；manifest `files` 是完整邏輯檔案identity，`aliases` 指向實體成員，不允許鏈結、缺target、非X或identity不同。解壓重新串流讀取target，還原每fold的一般檔案，逐份核對大小／SHA。打包端只對fold input解析symlink，其餘輸入沿用regular要求；解壓端ZIP與tar均拒絕links／危險路徑／非白名單／cache，沿用descriptor安全輸出。
+- ZIP inventory、manifest大小、單檔64GiB、邏輯還原總量256GiB、10,000成員上限在建立destination前核對；payload以1MiB串流分塊讀寫並核hash，partial失敗保留盤點，不自動重試。格式偵測曾移動檔案游標導致tar回歸失敗，已定位並補seek(0)，既有tar測試恢復通過。
+- Notebook第0格集中所有Human預算／路徑選擇，預設SPEED_TEST、6小時、100CU、10CU/hour、每fit0.5小時、25%餘裕。先找/content再找Drive inputs，無檔明確STOP；標準庫只讀固定bootstrap及manifest並限制大小／類型、驗bootstrap內部hash，再完整安全解壓。無手貼SHA／另傳bootstrap。內部hash只能證bytes一致，不能自證來源；兩檔都必須可信。
+- 環境先自檢Python／torch／CUDA／GPU／套件；符合契約略過wheel安裝，否則沿用既有no-deps／no-index／find-links計畫。補cp313正向與cp312不符STOP；CUDA不可用一律STOP。兩wheel均缺才執行官方PyPI sdist編譯格，核sdist SHA、mamba所有C++17旗標改C++20、MAMBA_FORCE_BUILD=TRUE、MAX_JOBS=4、T4 sm75，輸出Drive；安裝／略過後皆執行Mamba2小型前後向有限值冒煙及pip check。
+- SPEED_TEST沿用既有三臂速度輸出隔離，不產IC／績效；FORMAL沿用validate_contract拒絕DRAFT，未改研究threshold。JSON／run manifest直接寫Drive，摘要秒/epoch、GPU、溫度／時脈，下載格匯出JSON與ledger。重連比對同一zip manifest，沿用既有completed-fit resume及budget root，不重置帳本；未知中斷仍扣帳STOP。
+- `docs/operations/colab-p4.md` 主流程改為兩檔，舊tar／逐格／cp312段落明列備援歷史範例；目前版本以既有OBSERVED runtime契約為準。Current_State、Authority_Map、Training與Worktree_Register同步更新；沒有改runtime observed_at／machine契約／本機P3 lock或production authority。
+
+### CPU驗證與實際輸出
+
+初始RED（實作前，原輸出保留於 `/tmp/p4-delivery-red.log`）：`7 failed, 1 passed, 86 deselected in 1.99s`，包括缺ZIP支援／fold symlink拒絕，以及當時CPU環境缺nbformat。補離線nbformat後，另以HEAD原始p4_bundle source在記憶體重跑三個新行為測試確認baseline RED（不改工作樹source）。
+
+測試Python為 `/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python`，Python3.12.3、torch2.15.0+cpu、CUDA=False，`MARKETMAMBA_DATA_ROOT` unset；Data是本worktree普通目錄，realpath `/home/frank/projects/MarketMamba/.worktrees/ruflo-workers/run-mwqr9yiu-8c464e/builder_p4a_delivery/Data`，未讀寫formal data作本輪實驗。nbformat5.9.2／traitlets／jupyter_core／fastjsonschema從既有Windows Anaconda純Python套件唯讀複製到 `/tmp/p4-notebook-deps`；jsonschema等從本機pip cache解壓，沿用venv的platformdirs，未連網、未變更既有環境。此暫存namespace可重建，不是新增canonical environment。
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/p4-notebook-deps:V6:V6/research_lab/tests:. /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests/test_p4.py -q -p no:cacheprovider
+```
+
+```text
+107 passed, 1 warning in 19.55s
+nbformat 5.9.2 valid; code cells 7
+syntax_files=2 nbformat_version=5.9.2 code_cells=7
+IN_MEMORY zip pytest_exit=1 KILLED=True
+IN_MEMORY dedup pytest_exit=1 KILLED=True
+IN_MEMORY draft pytest_exit=1 KILLED=True
+```
+
+三項變異均只在獨立Python程序的記憶體替換函式：ZIP停用regular/link檢查，由具有合法manifest的symlink regression捕捉；清空dedup aliases，由ZIP只存一份及正確對應測試捕捉；停用DRAFT狀態拒絕，由既有正式契約測試捕捉。source檔從未寫入mutant。Logs為 `/tmp/p4-delivery-mut-{zip,dedup,draft}.log`，runner `/tmp/p4-delivery-mutate.py`。
+
+測試涵蓋真正ZIP、兩fold共用symlink X、去重實體成員數與alias、解壓九檔逐位元等於原始輸入、兩檔CLI、重複輸出拒絕、標準庫bootstrap與同root重連、每cell compile／nbformat JSON、預算設定合法、實際CLI parser、已裝環境跳過pip、雙缺wheel備援分支與no-CUDA無動作。ZIP惡意路徑／symlink／cache／非白名單／duplicate／missing／超限／偽造alias／corrupt payload均有CPU回歸；既有tar惡意成員及完整runner隔離測試保留。
+
+第一輪完整測試（最終三個環境分支測試加入前、尚未載入離線nbformat）：`680 passed, 2 skipped, 5 warnings in 248.97s (0:04:08)`。兩skip為既有GPU smoke與當輪缺nbformat；其後P4 focused已包含nbformat並全過。
+
+補充baseline RED：`3 failed, 104 deselected in 4.73s`、`BASELINE_RED source=74795a4 pytest_exit=1`，分別因fold symlink不支援、缺colab_notebook、CLI不認deliver；log `/tmp/p4-delivery-baseline-red.log`。
+
+### Artifact identity 與限制
+
+合成fixture（不是可訓練真實資料、不可作研究）例：`/tmp/pytest-of-frank/pytest-69/test_deliver_cli_synthetic_two0/delivery/` 的ZIP為860688 bytes，SHA-256 `ac3749b9c36f3394162893ed8b2bbc61a2f7d9f2c3833fcb079cb2015eef519f`；notebook為11783 bytes，SHA-256 `052f99d9b4db918f79633d960b146f1b48053105ba0ed0dcd2ec30d4f55e8703`。Input只有合成原始fold／P1 identity，contract/lock/runtime identity為本checkout；ZIP metadata記錄source commit、未提交狀態、輸入realpath、環境與ENGINEERING_ONLY。沒有真實大型fold打包、矩陣訓練或模型結果；正式兩檔應在審查後以真實已核准輸入重新deliver，不能拿合成ZIP訓練。
+
+本輪source identities：
+
+| Path | bytes | SHA-256 |
+|---|---:|---|
+| V6/research_lab/p4_bundle.py | 38021 | ec103a139c4c2383ed52687957f40c3954dfd87d540b217be162bf1c06b386c0 |
+| V6/research_lab/tests/test_p4.py | 44537 | 08992fc4ba17272e624dfd28f4b2a313b787299a8d9fbcd15408f1dc4128b87a |
+| docs/operations/colab-p4.md | 18751 | 13f87a965b569cf3b8ad4db79aadbffc4b3071c2cf8d2a69c4cd50a7f4d22137 |
+| environments/p4a-colab-runtime.json（未改） | 2350 | b45380920c48c5548ef8880f63f4a351a3de7ff5d6b9f2abef50ebf87e763194 |
+| environments/p4a-colab.requirements.lock.txt（未改） | 2659 | 2c39a3fb9567d1f9fc8ee83369c7b6c90cd19a8e679e32e4c8a6c1d75c5782c9 |
+| tasks/p4a-colab-contract-20261121.json（未改） | 3291 | d779adf0c876465777a8afec5c500c52d278fe95cdc9a76dd79724270854ef6f |
+
+Colab現場的ZIP解壓／大型資料磁碟與I/O／編譯儲存格／sdist現場內容／Drive掛載、fsync、atomic rename、斷線持久性與download皆 **UNVERIFIED**。Human既有T4輪子與小型Mamba2成功是OBSERVED_BY_HUMAN_PASTE，不是本worker執行、不是專案official GPU smoke。編譯時間估計30–90分鐘可能超過，需另預留CU；runner ledger不含上傳、安裝／編譯、閒置，不是Google billing API。不提供partial optimizer自動resume或清除STOP介面。JSON下載不含正式權重，不能聲稱完整formal run備份。
+
+Knowledge-impact人工逐項：semantics=YES（交付／ZIP／啟動UX）；authority=NO（沒有研究或production提升）；subsystem boundary=NO；active runtime state=NO；correctness gate=YES（新增ZIP gate，不降低舊門檻）；new/superseded canonical artifact=NO（generated ZIP與notebook）；deprecation=NO（tar保留備援）；major blocker/next decision=YES（Human OBSERVED環境已存在，下一步改為審查與現場ZIP／編譯／Drive驗證）。已同change更新Current_State／Authority_Map／Training／Worktree_Register。`check_knowledge_impact.py` PASS；`knowledge_health.py --ci` exit0，Overall WARNING（Governance、Authority Drift、Legacy Docs），Project Map／Agent Guides／Domains／Runtime Freshness／Generated Index PASS，沒有structural FAIL。未自行消除既有歷史／authority warnings或放寬gate。
+
+### 最終完整回歸（含離線nbformat與全部新增測試）
+
+```bash
+OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/tmp/p4-notebook-deps:V6:V6/research_lab/tests:. /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests tests -q -p no:cacheprovider
+```
+
+實際stdout（`/tmp/p4-delivery-full-final.log`；exit0）：
+
+```text
+........................................................................ [ 10%]
+........................................................................ [ 21%]
+........................................................................ [ 31%]
+........................................................................ [ 42%]
+........................................................................ [ 52%]
+........................................................................ [ 63%]
+........................................................................ [ 73%]
+........................................................................ [ 84%]
+...............................................s........................ [ 94%]
+.....................................                                    [100%]
+=============================== warnings summary ===============================
+research_lab/tests/test_p4.py::test_zip_inventory_and_payload_gates[duplicate]
+  /usr/lib/python3.12/zipfile/__init__.py:1620: UserWarning: Duplicate name: 'folds/fold_2021/X.npy'
+    return self._open_to_write(zinfo, force_zip64=force_zip64)
+
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+  /tmp/pytest-of-frank/pytest-70/test_mutation_controls_session0/mutant.py:93: Pandas4Warning: Timestamp.dayofweek is deprecated and will be removed in a future version. Use Timestamp.day_of_week instead.
+    sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+684 passed, 1 skipped, 5 warnings in 230.28s (0:03:50)
+```
+
+唯一skip為既有需CUDA測試；本輪新增nbformat測試實際執行。Warnings為既有Pandas4與刻意建立duplicate ZIP成員的fixture警告，沒有刪測試或降低門檻。
+
+### 固定交接欄位
+
+- Completed：兩檔交付產生器、ZIP內容去重／安全解壓、notebook及cp313／備援指南／CPU驗證完成；不等於Human acceptance。
+- Changed：`V6/research_lab/p4_bundle.py`、`V6/research_lab/tests/test_p4.py`、`docs/operations/colab-p4.md`、本報告、`knowledge/00_Project_Map/{Current_State,Authority_Map,Worktree_Register}.md`、`knowledge/01_Domains/Training.md`，共8個modified tracked paths；無新增untracked／staged。
+- Decisions：沿用既有p4_bundle／p4_colab；tar保留備援；不改rolling_seq_scores.py／portfolio_eval.py／研究契約／environment lock／runtime observation；FORMAL DRAFT仍STOP。
+- Evidence：初始RED 7fail、離線依賴補齊後baseline RED 3fail；P4 GREEN107pass；完整684pass/1skip/5warning；三個in-memory mutants全killed；nbformat5.9.2解析7code cells；syntax／逐檔size-SHA／知識links／git diff --check已驗。
+- Remaining：真實大型bundle打包、Colab現場ZIP／編譯／Drive／download UNVERIFIED，無研究或GPU結果；正式研究需freeze。
+- Blockers：本輪CPU工程無阻擋；現場驗證與Human acceptance不在本輪執行範圍。
+- Next recommended action：獨立審查本patch，核准真實輸入後deliver兩檔，再另行授權現場GPU／Drive驗證；不能將合成ZIP拿去訓練。
+- Project memory updated：YES，Current_State／Training／Worktree_Register。
+- Authority map updated：YES，候選交付邊界；未提升研究／production authority。
+- Git status：起始clean detached HEAD；結束8個modified tracked paths、0 staged／untracked；依no-commit授權刻意保留dirty，未宣稱clean。
+- Commit：N/A（明確禁止）；Push：未執行；Merge：未執行。
+- Worktree：既有 `.worktrees/ruflo-workers/run-mwqr9yiu-8c464e/builder_p4a_delivery`，HEAD74795a4；未新建／刪除worktree。
+- Runtime/environment：WSL本機Python3.12.3／torch2.15.0+cpu，CUDA=False；Data realpath與offline nbformat namespace見上；無GPU／網路／Colab／新增agents／scheduler／production／data acquisition／protected models變更。

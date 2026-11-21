@@ -12,6 +12,9 @@ import subprocess
 import sys
 import shutil
 import tarfile
+import zipfile
+import stat
+import textwrap
 
 ROOT = Path(__file__).resolve().parents[2]
 MAX_FILE_BYTES = 64 * 1024**3
@@ -188,7 +191,7 @@ def digest(path):
 
 def safe_name(name):
     p=PurePosixPath(name)
-    if not name or '\\' in name or p.is_absolute() or any(x in ('..','.') for x in name.split('/')) or ':' in name:
+    if not name or '\0' in name or '' in name.split('/') or '\\' in name or p.is_absolute() or any(x in ('..','.') for x in name.split('/')) or ':' in name:
         raise ValueError(f'unsafe archive path: {name}')
     return p
 
@@ -196,12 +199,16 @@ def safe_name(name):
 def write_archive(output, files, metadata):
     """Allowlisted files only; hash both before and during archive publication."""
     files={str(k):Path(v) for k,v in files.items() if not executable_cache(str(k))}
+    # Only trusted fold inputs may resolve symlinks; archive members remain regular.
+    files={n:(p.resolve(strict=True) if n.startswith('folds/') else p) for n,p in files.items()}
     for name,path in files.items():
         allowed_path(name)
         if not path.is_file() or path.is_symlink(): raise ValueError(f'not regular input: {path}')
     manifest=dict(version='p4-bundle-v1',artifact_class='GENERATED',evidence_class='ENGINEERING_ONLY',
                   metadata=metadata,files={n:digest(p) for n,p in sorted(files.items())})
     if 'bundle-manifest.json' in files: raise ValueError('reserved manifest name')
+    if Path(output).suffix == '.zip':
+        return _write_zip(output, files, manifest)
     with Path(output).open('xb') as stream:
         with tarfile.open(fileobj=stream,mode='w:gz') as tf:
             for name,path in sorted(files.items()):
@@ -214,8 +221,92 @@ def write_archive(output, files, metadata):
     return manifest
 
 
+def _write_zip(output, files, manifest):
+    aliases={}; seen={}
+    for name, ident in manifest['files'].items():
+        if name.startswith('folds/') and name.endswith('/X.npy'):
+            key=(ident['bytes'],ident['sha256'])
+            if key in seen: aliases[name]=seen[key]
+            else: seen[key]=name
+    manifest['aliases']=aliases
+    _declared_bytes(manifest)
+    payload=json.dumps(manifest,sort_keys=True,indent=2).encode()
+    if len(payload)>MAX_MANIFEST_BYTES or len(files)+1>MAX_MEMBERS or _declared_bytes(manifest)+len(payload)>MAX_TOTAL_BYTES:
+        raise ValueError('bundle manifest/member limit')
+    with Path(output).open('xb') as stream:
+        with zipfile.ZipFile(stream,'w',compression=zipfile.ZIP_DEFLATED,allowZip64=True) as z:
+            for name,path in sorted(files.items()):
+                if name not in aliases: z.write(path,name)
+                if digest(path)!=manifest['files'][name]: raise ValueError('input changed during packing')
+            z.writestr('bundle-manifest.json',payload)
+        stream.flush();os.fsync(stream.fileno())
+    return manifest
+
+
+def _zip_inventory(z):
+    members=z.infolist()
+    if len(members)>MAX_MEMBERS: raise ValueError('archive member limit')
+    names=[];total=0
+    for member in members:
+        allowed_path(member.filename)
+        mode=stat.S_IFMT(member.external_attr >> 16)
+        if member.is_dir() or mode not in (0,stat.S_IFREG):
+            raise ValueError('only regular zip files allowed (no links)')
+        if member.flag_bits & 1: raise ValueError('encrypted member forbidden')
+        if member.file_size<0 or member.file_size>MAX_FILE_BYTES: raise ValueError('archive file size limit')
+        total+=member.file_size
+        if total>MAX_TOTAL_BYTES: raise ValueError('archive total size limit')
+        names.append(member.filename)
+    if len(names)!=len(set(names)) or 'bundle-manifest.json' not in names:
+        raise ValueError('duplicate/missing manifest')
+    info=z.getinfo('bundle-manifest.json')
+    if info.file_size>MAX_MANIFEST_BYTES: raise ValueError('manifest size limit')
+    mf=json.loads(z.read(info))
+    if mf.get('version')!='p4-bundle-v1': raise ValueError('bundle version')
+    declared=_declared_bytes(mf)
+    if declared+info.file_size>MAX_TOTAL_BYTES or len(mf['files'])+1>MAX_MEMBERS:
+        raise ValueError('expanded bundle limit')
+    aliases=mf.get('aliases',{})
+    for name,ident in mf['files'].items(): allowed_path(name)
+    for alias,target in aliases.items():
+        if (alias not in mf['files'] or target not in mf['files'] or target in aliases
+            or alias==target or not alias.startswith('folds/') or not alias.endswith('/X.npy')
+            or not target.startswith('folds/') or not target.endswith('/X.npy')
+            or mf['files'][alias]!=mf['files'][target]):
+            raise ValueError('invalid dedup alias')
+    if set(names)!=(set(mf['files'])-set(aliases))|{'bundle-manifest.json'}:
+        raise ValueError('archive inventory mismatch')
+    for member in members:
+        if member.filename!='bundle-manifest.json' and member.file_size!=mf['files'][member.filename]['bytes']:
+            raise ValueError('archive size mismatch')
+    return mf
+
+
+def _extract_zip(archive, destination):
+    with zipfile.ZipFile(archive) as z:
+        mf=_zip_inventory(z)  # All names, limits and aliases before destination creation.
+        with _destination_fd(destination) as root_fd:
+            for name,ident in mf['files'].items():
+                target=mf.get('aliases',{}).get(name,name)
+                h=hashlib.sha256();size=0
+                with z.open(target) as src, _output_at(root_fd,name) as dst:
+                    while True:
+                        block=src.read(MAX_READ_BYTES)
+                        if not block: break
+                        size+=len(block)
+                        if size>ident['bytes']: raise ValueError('zip payload size limit')
+                        h.update(block);dst.write(block)
+                    dst.flush();os.fsync(dst.fileno())
+                if dict(bytes=size,sha256=h.hexdigest())!=ident: raise ValueError('bundle hash mismatch')
+            with _output_at(root_fd,'bundle-manifest.json') as dst:
+                dst.write(z.read('bundle-manifest.json'));dst.flush();os.fsync(dst.fileno())
+    verify(destination)
+    return mf
+
+
 def verify(directory, allow_derived=False):
     root=Path(directory)
+    if root.is_symlink(): raise ValueError('bundle root links forbidden')
     mf=json.loads((root/'bundle-manifest.json').read_text())
     if mf['version']!='p4-bundle-v1': raise ValueError('bundle version')
     expected=set(mf['files'])|{'bundle-manifest.json'}
@@ -244,6 +335,10 @@ def extract(archive,destination,expected_sha256=None):
     # Hold the same archive inode across all passes. Physical preflight happens before
     # tarfile.open, then streaming inventory validation, then bounded streaming writes.
     with Path(archive).open('rb') as archive_file:
+        if zipfile.is_zipfile(archive_file):
+            archive_file.seek(0)
+            return _extract_zip(archive_file, destination)
+        archive_file.seek(0)
         raw_size, budget = _raw_preflight(archive_file)
         with _tar_stream(archive_file, budget) as tf:
             members=[]; names=[]; total=0
@@ -352,14 +447,205 @@ def installation_commands(root, wheel_dir=None):
             f'{py} -m pip check']
 
 
+def colab_notebook():
+    """Generated launch UX; research/environment contracts remain authoritative."""
+    cells=[]
+    def code(source):
+        cells.append(dict(cell_type='code',execution_count=None,metadata={},outputs=[],source=textwrap.dedent(source).strip()+'\n'))
+    def markdown(source):
+        cells.append(dict(cell_type='markdown',metadata={},source=source))
+    code('''
+        # 設定：所有操作預算集中於此；CU 是保守估算，不是 Google 實扣。
+        MODE = 'SPEED_TEST'  # 或 FORMAL；DRAFT 契約會拒絕 FORMAL
+        MAX_HOURS = 6.0  # runner 最大時數，另預留上傳／編譯／閒置
+        MAX_UNITS = 100.0  # runner CU 上限；請依帳戶剩餘額度調整
+        UNITS_PER_HOUR = 10.0  # 每小時 CU 保守估計，請對照現場 GPU 費率
+        PLANNED_HOURS_PER_FIT = 0.5  # 每 fit／前處理 stage 的保守時數
+        RESERVE = 0.25  # 至少保留 25%；不可降低
+        DRIVE_BASE = '/content/drive/MyDrive/MarketMambaP4'
+        WHEEL_DIR = '/content/drive/MyDrive/Mamba_Wheels_T4_new'
+        BUNDLE_NAME = 'p4a-bundle.zip'
+        LOCAL_ROOT = '/content/p4a'
+    ''')
+    markdown('兩檔交付：只需開啟本 notebook 並上傳同批 p4a-bundle.zip 至 /content（Files）或 Drive 的 inputs 目錄，再從上到下執行。需 GPU runtime。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；Colab ZIP／編譯／Drive 行為 UNVERIFIED。只執行自己信任來源的這兩個檔案；內部 hash 不證明來源。')
+    code('''
+        from pathlib import Path
+        import os, sys, json, subprocess, hashlib, zipfile, tempfile, importlib.util, stat
+        from google.colab import drive
+        drive.mount('/content/drive')
+        base = Path(DRIVE_BASE)
+        archive = Path('/content')/BUNDLE_NAME
+        if not archive.is_file(): archive = base/'inputs'/BUNDLE_NAME
+        if not archive.is_file(): raise FileNotFoundError('STOP: 請將 '+BUNDLE_NAME+' 上傳到 /content 或 '+str(base/'inputs'))
+        print('archive SHA-256（僅供記錄）', end=' ')
+        with archive.open('rb') as stream:
+            print(hashlib.file_digest(stream,'sha256').hexdigest())
+        # 僅用標準庫取出固定 bootstrap，先限制 inventory、類型及兩個小檔大小。
+        bootstrap_name = 'source/V6/research_lab/p4_bundle.py'
+        with zipfile.ZipFile(archive) as z:
+            members=z.infolist()
+            if len(members)>10000: raise ValueError('STOP: member limit')
+            if len({m.filename for m in members})!=len(members): raise ValueError('STOP: duplicate member')
+            for name in ('bundle-manifest.json',bootstrap_name):
+                member=z.getinfo(name)
+                if member.file_size>4*1024**2 or member.is_dir() or stat.S_IFMT(member.external_attr>>16) not in (0,stat.S_IFREG):
+                    raise ValueError('STOP: invalid bootstrap/manifest')
+            manifest=json.loads(z.read('bundle-manifest.json'))
+            payload=z.read(bootstrap_name)
+            if dict(bytes=len(payload),sha256=hashlib.sha256(payload).hexdigest())!=manifest['files'][bootstrap_name]:
+                raise ValueError('STOP: bootstrap hash mismatch')
+        sys.dont_write_bytecode=True
+        bootstrap_dir=tempfile.TemporaryDirectory(prefix='p4-bootstrap-')
+        bootstrap=Path(bootstrap_dir.name)/'p4_bundle.py'
+        bootstrap.write_bytes(payload)
+        spec=importlib.util.spec_from_file_location('p4_bootstrap',bootstrap)
+        p4=importlib.util.module_from_spec(spec);spec.loader.exec_module(p4)
+        root=Path(LOCAL_ROOT)
+        if root.exists():
+            # 重連沿用目錄前比對同一 bundle identity，不覆寫 partial。
+            with zipfile.ZipFile(archive) as z:
+                if (root/'bundle-manifest.json').read_bytes()!=z.read('bundle-manifest.json'):
+                    raise ValueError('STOP: existing bundle identity mismatch')
+        else: p4.extract(archive,root)
+        p4.prepare_source(root)
+        p4.verify(root,allow_derived=True)
+        sys.path[:0]=[str(root/'source/V6'),str(root/'source')]
+    ''')
+    code('''
+        import torch, importlib.metadata, platform
+        if not torch.cuda.is_available(): raise RuntimeError('STOP: CUDA 不可用；請選 GPU runtime')
+        contract=json.loads((root/'source/environments/p4a-colab-runtime.json').read_text())
+        def installed_version(name):
+            try: return importlib.metadata.version(name)
+            except importlib.metadata.PackageNotFoundError: return None
+        actual_packages={n:installed_version(n) for n in contract['packages']}
+        print(json.dumps(dict(python=platform.python_version(),torch=torch.__version__,cuda=torch.version.cuda,
+                              gpu=torch.cuda.get_device_name(0),packages=actual_packages),ensure_ascii=False,indent=2))
+        subprocess.run(['nvidia-smi'],check=True)
+        matches=(platform.python_version()==contract['runtime']['python'] and
+                 torch.version.cuda==contract['runtime']['cuda'] and
+                 bool(torch._C._GLIBCXX_USE_CXX11_ABI)==contract['runtime']['cxx11abi'] and
+                 all(actual_packages[n]==v for n,v in contract['packages'].items()))
+        needs_compile=False
+        if matches:
+            print('已符合環境契約，跳過 wheel 安裝')
+        else:
+            wheels=Path(WHEEL_DIR)
+            both_absent=not list(wheels.glob('mamba_ssm-*.whl')) and not list(wheels.glob('causal_conv1d-*.whl'))
+            if both_absent:
+                needs_compile=True
+                print('兩個 wheel 均未找到，下一格將編譯（需 GPU，可能 30–90 分鐘或更久；不包含在 runner 預算帳本）')
+            else:
+                for command in p4.installation_commands(root,wheel_dir=wheels):
+                    subprocess.run(command,shell=True,check=True)
+    ''')
+    markdown('編譯備援格：只有兩個 wheel 均不存在才執行；部分缺失、標籤不符或多版本皆 STOP。使用官方 PyPI sdist 並核對其 SHA；mamba setup.py 的所有 -std=c++17 改為 -std=c++20。這是未在本輪 Colab 現場驗證的流程。已裝套件符合契約時整格略過。')
+    code('''
+        if needs_compile:
+            import urllib.request, tarfile
+            if not torch.cuda.is_available(): raise RuntimeError('STOP: CUDA required for compilation')
+            wheels=Path(WHEEL_DIR);wheels.mkdir(parents=True,exist_ok=True)
+            build_env=dict(os.environ,MAMBA_FORCE_BUILD='TRUE',CAUSAL_CONV1D_FORCE_BUILD='TRUE',MAX_JOBS='4',TORCH_CUDA_ARCH_LIST='7.5')
+            if torch.cuda.get_device_capability(0)!=(7,5): raise RuntimeError('STOP: 此編譯配方僅供 T4 sm75')
+            with tempfile.TemporaryDirectory(prefix='p4-build-') as build_dir:
+                for package,version in (('causal-conv1d','1.7.0'),('mamba-ssm','2.3.2.post1')):
+                    with urllib.request.urlopen(f'https://pypi.org/pypi/{package}/{version}/json') as response:
+                        release=json.load(response)
+                    artifact=next(a for a in release['urls'] if a['packagetype']=='sdist')
+                    sdist=Path(build_dir)/(package+'.tar.gz')
+                    urllib.request.urlretrieve(artifact['url'],sdist)
+                    if p4.digest(sdist)['sha256']!=artifact['digests']['sha256']: raise ValueError('STOP: sdist hash mismatch')
+                    unpack=Path(build_dir)/package;unpack.mkdir()
+                    with tarfile.open(sdist) as tf:
+                        for member in tf:
+                            p4.safe_name(member.name)
+                            if not (member.isfile() or member.isdir()): raise ValueError('STOP: sdist links forbidden')
+                        tf.extractall(unpack,filter='data')
+                    setup=next(unpack.glob('*/setup.py'))
+                    if package=='mamba-ssm':
+                        text=setup.read_text()
+                        if '-std=c++17' not in text: raise ValueError('STOP: sdist recipe drift')
+                        setup.write_text(text.replace('-std=c++17','-std=c++20'))
+                    subprocess.run([sys.executable,'-m','pip','wheel','--no-deps','--no-build-isolation',
+                                    '--wheel-dir',str(wheels),str(setup.parent)],env=build_env,check=True)
+            for command in p4.installation_commands(root,wheel_dir=wheels):
+                subprocess.run(command,shell=True,check=True)
+        # 所有環境路徑均測 import + forward/backward；不能只信 metadata。
+        from mamba_ssm import Mamba2
+        model=Mamba2(d_model=64,d_state=16,headdim=8,expand=2).cuda()
+        x=torch.randn(8,60,64,device='cuda',requires_grad=True)
+        y=model(x);y.square().mean().backward();torch.cuda.synchronize()
+        smoke=dict(output_finite=bool(torch.isfinite(y).all()),input_grad_finite=bool(torch.isfinite(x.grad).all()))
+        print('Mamba2 smoke',smoke)
+        if not all(smoke.values()): raise RuntimeError('STOP: Mamba2 smoke failed')
+        del model,x,y
+        torch.cuda.empty_cache()
+        subprocess.run([sys.executable,'-m','pip','check'],check=True)
+    ''')
+    code('''
+        if MODE not in ('SPEED_TEST','FORMAL'): raise ValueError('STOP: MODE must be SPEED_TEST or FORMAL')
+        p4.prepare_source(root);p4.verify(root,allow_derived=True)
+        training_env=dict(os.environ,PYTHONPATH=f'{root}/source/V6:{root}/source',PYTHONDONTWRITEBYTECODE='1')
+        common=[sys.executable,'-m','research_lab.p4_colab','--bundle',str(root),'--drive-root',str(base/'budget'),
+                '--max-hours',str(MAX_HOURS),'--max-units',str(MAX_UNITS),'--units-per-hour',str(UNITS_PER_HOUR),
+                '--planned-hours-per-fit',str(PLANNED_HOURS_PER_FIT),'--reserve',str(RESERVE)]
+        # FORMAL 沿用既有 validate_contract；DRAFT 拒絕，不繞過。
+        subprocess.run(common+(['--speed-test'] if MODE=='SPEED_TEST' else []),env=training_env,check=True)
+    ''')
+    code('''
+        # runner 已直接持久寫入 Drive：speed JSON、run manifest 與預算帳本。
+        if MODE=='SPEED_TEST':
+            for path in sorted((base/'budget').glob('run-*/**/speed.json')):
+                report=json.loads(path.read_text())
+                print(path)
+                print(json.dumps({k:report[k] for k in ('arm','epoch_seconds','gpu_model') if k in report},ensure_ascii=False))
+                records=report['telemetry']
+                print(dict(temperature_c_max=max(r['temperature_c'] for r in records),
+                           clock_mhz_min=min(r['clock_mhz'] for r in records),clock_mhz_max=max(r['clock_mhz'] for r in records)))
+        print('run manifests',*[str(p) for p in (base/'budget').glob('run-*/manifest.json')],sep='\\n')
+    ''')
+    markdown('中斷／重連：重新執行同一 notebook，沿用同一 zip、Drive_BASE、budget 與預算設定。已完成 fit 會驗證後略過；partial fit 不自動續 optimizer。未知中斷會保守扣帳並鎖 STOP，須盤點修復；不要刪帳本、換 budget 路徑或重置預算。新 runtime 重新解壓原 zip，既有 root 先驗 identity。下載格只匯出 JSON／帳本，正式權重仍須另核對 Drive 完整性。')
+    code('''
+        from google.colab import files
+        download=Path('/content/p4a-results.zip')
+        # 只打包現有 JSON；保留相對路徑與原 bytes，不覆寫 Drive evidence。
+        with zipfile.ZipFile(download,'w',compression=zipfile.ZIP_DEFLATED) as z:
+            for path in sorted((base/'budget').rglob('*.json')):
+                z.write(path,path.relative_to(base/'budget'))
+        files.download(str(download))
+    ''')
+    for i,cell in enumerate(cells): cell['id']=f'p4a-{i:02d}'
+    return dict(nbformat=4,nbformat_minor=5,metadata=dict(kernelspec=dict(display_name='Python 3',language='python',name='python3'),language_info=dict(name='python')),cells=cells)
+
+
+def delivery(folds_root, years, p1, lock, output_dir):
+    """Publish the approved two-file interface; never overwrite shared outputs."""
+    output_dir=Path(output_dir)
+    archive=output_dir/'p4a-bundle.zip';notebook=output_dir/'p4a-colab.ipynb'
+    if archive.exists() or notebook.exists(): raise FileExistsError('delivery outputs already exist')
+    output_dir.mkdir(parents=True,exist_ok=True)
+    mf=pack(folds_root,years,p1,lock,archive)
+    with notebook.open('x') as stream:
+        json.dump(colab_notebook(),stream,ensure_ascii=False,indent=2)
+        stream.flush();os.fsync(stream.fileno())
+    return mf
+
+
 def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__);sub=p.add_subparsers(dest='cmd',required=True)
     pk=sub.add_parser('pack');pk.add_argument('--folds-root',type=Path,required=True);pk.add_argument('--years',type=int,nargs='+',default=[2021,2022,2023,2024,2025]);pk.add_argument('--p1',type=Path,required=True);pk.add_argument('--lock',type=Path,default=Path.home()/'.venvs/marketmamba-gpu.requirements.lock.txt');pk.add_argument('--output',type=Path,required=True)
+    dl=sub.add_parser('deliver')
+    dl.add_argument('--folds-root',type=Path,required=True);dl.add_argument('--years',type=int,nargs='+',default=[2021,2022,2023,2024,2025])
+    dl.add_argument('--p1',type=Path,required=True);dl.add_argument('--lock',type=Path,default=ROOT/'environments/p4a-colab.requirements.lock.txt')
+    dl.add_argument('--output-dir',type=Path,required=True)
     ex=sub.add_parser('extract');ex.add_argument('archive',type=Path);ex.add_argument('destination',type=Path);ex.add_argument('--sha256')
     ve=sub.add_parser('verify');ve.add_argument('directory',type=Path)
     ins=sub.add_parser('install-plan');ins.add_argument('directory',type=Path);ins.add_argument('--wheel-dir',type=Path)
     a=p.parse_args(argv)
     if a.cmd=='pack': pack(a.folds_root,a.years,a.p1,a.lock,a.output);print(json.dumps(digest(a.output)))
+    elif a.cmd=='deliver':
+        delivery(a.folds_root,a.years,a.p1,a.lock,a.output_dir)
+        print(json.dumps({p.name:digest(p) for p in sorted(a.output_dir.iterdir()) if p.name in {'p4a-bundle.zip','p4a-colab.ipynb'}}))
     elif a.cmd=='extract': extract(a.archive,a.destination,a.sha256)
     elif a.cmd=='verify': print(json.dumps(verify(a.directory),indent=2))
     else: print('\n'.join(installation_commands(a.directory,a.wheel_dir)))
