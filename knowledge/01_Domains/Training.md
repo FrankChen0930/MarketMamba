@@ -1,5 +1,12 @@
 # Training
 
+## P4a Colab 工程候選 — 2026-11-21
+
+新增[P4 bundle](../../V6/research_lab/p4_bundle.py)與[executor](../../V6/research_lab/p4_colab.py)，沿用既有`train_one`，新增可選observer與GRU；default P3配方／gate不變。P4 [機器契約](../../tasks/p4a-colab-contract-20261121.json)／[規格](../../tasks/spec-p4a-colab-20261121.md)均DRAFT，正式入口拒絕。Bundle包含source commit及dirty source逐檔identity、原始fold／P1分數manifest／原樣exact lock；排除rankgauss，Colab以既有ensure_rankgauss重建並驗tag／input-output hashes。SAFE extract只允許regular files，拒絕絕對／穿越／符號與hard links。保留fit BEST與epoch latest/previous/best、optimizer/scheduler/RNG；只支援completed-fit resume，partial保留forensic evidence，未知中斷扣至重啟並STOP，不自動升格orphan。
+
+Drive ledger以wall-hours與Human保守費率估計CU雙上限，剩餘完整grid加至少25%餘裕；guard wait不扣active訓練帳，Colab85°C直接STOP而不等待（wait=0）。未知／缺帳本／cache tag／identity不符fail closed，尚無人工clear/rebuild介面。[指南](../../docs/operations/colab-p4.md)與[報告](../../reports/v7_p4a_colab_engineering.md)記錄CPU證據及尚未驗證的wheel／GPU／Drive限制。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，不取代E1或P3歷史authority。
+
+
 ## Metadata
 
 - Status: `CANONICAL_DOMAIN_NOTE_WITH_UNKNOWN`

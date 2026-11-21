@@ -1,0 +1,100 @@
+{
+  "version": "p4a-colab-v1",
+  "status": "DRAFT",
+  "evidence_class": "ENGINEERING_ONLY / NOT_ACCEPTED",
+  "arms": [
+    "mamba2",
+    "crossstock",
+    "gru"
+  ],
+  "seeds": [
+    17,
+    29
+  ],
+  "confirmatory_years": [
+    2021,
+    2022,
+    2023
+  ],
+  "descriptive_years": [
+    2024,
+    2025
+  ],
+  "optional_years": [
+    2026
+  ],
+  "recipe_source": "V6/research_lab/rolling_seq_scores.py:FROZEN_CFG (P3 unchanged)",
+  "selection": "BEST validation IC5; never LAST",
+  "speed_test": {
+    "years": "first bundled fold only",
+    "seeds": [
+      17
+    ],
+    "epochs": 2,
+    "steps_per_epoch": 100,
+    "evidence_class": "ENGINEERING_SPEED_ONLY"
+  },
+  "budget": {
+    "units": [
+      "wall_clock_hours",
+      "colab_compute_units"
+    ],
+    "minimum_reserve": 0.25,
+    "rate": "Human-confirmed conservative CU/hour; recorded estimate, not provider metering",
+    "guard_wait_charged": false,
+    "thermal_stop_c": 85,
+    "thermal_pause": false,
+    "interruption": "charge unknown interval to restart; latch STOP",
+    "coverage": "runner bundle/runtime validation, rankgauss and fits; upload/pip/operator idle require separate Human billing reconciliation",
+    "stage_estimate": "positive planned-hours-per-fit also bounds each validation/rankgauss stage"
+  },
+  "checkpoints": {
+    "policy": "local serialize/fsync/hash -> durable exclusive copy/fsync/reverify -> atomic pointer",
+    "retain": [
+      "latest",
+      "previous",
+      "best"
+    ],
+    "resume": "completed fits only; partial attempts preserved, no automatic orphan promotion"
+  },
+  "acceptance": {
+    "rule": "CI lower bound > 0 AND Holm p < .05",
+    "portfolio": "P2 primary cell",
+    "provenance": "P3/P2 frozen contracts govern existing results; P4 never supersedes"
+  },
+  "freeze_required": "Human/Claude approval and frozen recipe/config/budget plan before formal execution",
+  "recipe": {
+    "d_model": 64,
+    "n_layers": 2,
+    "mixer_kw": {
+      "d_state": 16,
+      "headdim": 8,
+      "expand": 2
+    },
+    "attn_window": 16,
+    "lr": 0.0003,
+    "weight_decay": 0.01,
+    "epochs": 8,
+    "steps_per_epoch": 400,
+    "patience": 3,
+    "dates_per_batch": 8,
+    "stocks_per_date": 256,
+    "min_names": 64,
+    "baseline_rows": 500000,
+    "n_boot": 1000,
+    "val_dates": 126,
+    "val_max_rows": 80000,
+    "listnet_w": 0.0,
+    "listnet_t": 1.0,
+    "n_cross": 1,
+    "dropout": 0.1,
+    "window": 60,
+    "normalize": "rankgauss",
+    "train_probe_sessions": 40
+  },
+  "environment_lock": {
+    "path": "environments/p4a-colab.requirements.lock.txt",
+    "sha256": "2c39a3fb9567d1f9fc8ee83369c7b6c90cd19a8e679e32e4c8a6c1d75c5782c9",
+    "source": "/home/frank/.venvs/marketmamba-gpu.requirements.lock.txt"
+  }
+}

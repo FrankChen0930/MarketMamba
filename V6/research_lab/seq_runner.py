@@ -254,7 +254,7 @@ def control_mlp(directory, cfg=None, seed=17, device='cuda', log=print, stock_id
     return st['history']
 
 
-def train_one(kind, seed, data, tr, va, cfg, device='cuda', mixer_factory=None, mixer_kw=None, ckpt=None, log=print):
+def train_one(kind, seed, data, tr, va, cfg, device='cuda', mixer_factory=None, mixer_kw=None, ckpt=None, log=print, observer=None):
     import torch
     torch.manual_seed(seed)
     rng = np.random.default_rng(seed)
@@ -293,6 +293,7 @@ def train_one(kind, seed, data, tr, va, cfg, device='cuda', mixer_factory=None, 
     while state['epoch'] < cfg['epochs'] and state['bad'] < cfg['patience']:
         model.train(); t0 = time.time(); losses = []
         for _ in range(cfg['steps_per_epoch']):
+            if observer: observer('step_start', None)
             g = sample_batch(rng, by_date, dates, cfg['dates_per_batch'], cfg['stocks_per_date'])
             flat = g.reshape(-1)
             x = torch.from_numpy(data.windows(flat)).to(device)
@@ -303,6 +304,7 @@ def train_one(kind, seed, data, tr, va, cfg, device='cuda', mixer_factory=None, 
             opt.zero_grad(set_to_none=True); loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.); opt.step(); sched.step()
             losses.append(float(loss.detach()))
+            if observer: observer('step_end', None)
         ic = daily_ic_rows(data, va, predict(model, data, va, device)[:, 0], 'y5')
         state['epoch'] += 1
         score = float(ic.mean()) if len(ic) else -9.
@@ -315,6 +317,10 @@ def train_one(kind, seed, data, tr, va, cfg, device='cuda', mixer_factory=None, 
         else:
             state['bad'] += 1
         log(f'[{kind} s{seed}] epoch {state["epoch"]} loss {np.mean(losses):.4f} val_ic5 {score:+.4f} train_probe_ic5 {state["history"][-1]["train_probe_ic5"] or 0:+.4f} ({time.time()-t0:.0f}s)')
+        if observer:
+            observer('epoch', dict(model=model.state_dict(), opt=opt.state_dict(), sched=sched.state_dict(),
+                                   state=state, best_sd=best_sd, rng_state=rng.bit_generator.state,
+                                   torch_rng=torch.get_rng_state()))
         if ckpt:
             tmp = str(ckpt)+'.tmp'
             torch.save(dict(model=model.state_dict(), opt=opt.state_dict(), sched=sched.state_dict(), state=state, best_sd=best_sd), tmp)

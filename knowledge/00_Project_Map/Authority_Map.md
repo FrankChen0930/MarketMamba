@@ -1,5 +1,12 @@
 # MarketMamba Authority Map
 
+## P4a Colab 候選邊界 — 2026-11-21
+
+[P4機器契約](../../tasks/p4a-colab-contract-20261121.json)、[規格草案](../../tasks/spec-p4a-colab-20261121.md)目前DRAFT / NOT_FROZEN；[bundle](../../V6/research_lab/p4_bundle.py)、[executor](../../V6/research_lab/p4_colab.py)及[測試](../../V6/research_lab/tests/test_p4.py)只屬 `job-run-mwqd0vuy-7d9826` detached base `e4f21c3` 的 UNMERGED_IMPLEMENTATION / NOT_DEPLOYED / NOT_ACCEPTED，未提交，不能授予研究／production authority。Human既有核准涵蓋這次離線bounded實作；正式P4仍需凍結草案與現場GPU／環境驗證。沒有P4結果可supersede。
+
+P4沿用`train_one`、P3 purge／row semantics，但獨立Drive預算根目錄／bundle identity；不得重用或重置P3 `.artifacts/p3`帳本、放寬P3 admission，或重標21/24結果。P4的exact lock原樣保存在[獨立檔](../../environments/p4a-colab.requirements.lock.txt)（SHA `2c39a3fb9567d1f9fc8ee83369c7b6c90cd19a8e679e32e4c8a6c1d75c5782c9`），不取代舊E1環境authority。Colab wheel安裝、kernel／Drive durable semantics尚未驗證；CU為Human提供費率估計，不是provider實扣evidence。CPU fixtures只能證明工程邊界。詳見[工程報告](../../reports/v7_p4a_colab_engineering.md)。
+
+
 ## P3 修訂3 預算完整性候選 — 2026-11-20
 
 [凍結修訂3](../../tasks/spec-mamba-portfolio-p3-20261120.md) 與[adapter／帳本](../../V6/research_lab/rolling_seq_scores.py)、[回歸測試](../../V6/research_lab/tests/test_p3.py) 決定本 bounded candidate 的預算語義。`job-run-mwoibr4r-44988a`，detached `39320a0`，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，未提交；更新下節修訂2之完整性／重建邊界，不 supersede 歷史 artifacts 或研究／production authority。全域 budget-global.jsonl 與 budget-anchor.json 必須完全一致，fit sidecar／manifest 記錄當時 sequence／head_sha256／spent；合法前綴或清空並非有效恢復。缺 state 必須顯式 REBUILT，以所有 sidecar 最大 spent 及存活 anchor／可驗帳本保守扣帳，保留舊 bytes／hashes，重建鎖 STOP；REBUILT 不提供舊 fit 的 completed binding／確認性 authority。此機制防疏失，不防刻意刪除全部 ledger／anchor／sidecar。詳見[工程報告](../../reports/v7_p3_portfolio_engineering.md)。GPU_SMOKE_NOT_RUN，工程完成不代表Human acceptance。

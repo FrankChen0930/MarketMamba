@@ -1,5 +1,12 @@
 # Worktree Register
 
+## P4a Colab builder — 2026-11-21
+
+- Existing path `.worktrees/ruflo-workers/run-mwqd0vuy-7d9826/builder_p4a`；detached HEAD/base `e4f21c3747124f4c6cc46a873eae891697910067`；owner Human/Codex builder；task P4 bundle／Colab executor／GRU／CPU tests／DRAFT規格；created2026-11-21，retired N/A。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；no commit/push/merge/GPU/Colab/network/agents。
+- Reuse既有research_lab、tasks、docs/operations、environments與knowledge結構；新增P4模組原因在[草案](../../tasks/spec-p4a-colab-20261121.md)。沒有新增worktree／top-level artifact tree；驗證logs及合成bundle在`/tmp`，不修改P3既有結果。Authority：DRAFT候選machine contract／CPU tests，無研究結果。
+- Merge/artifact dependency：獨立審查、Human／Claude凍結與GPU／wheel／Drive現場驗證；safe removal須先保存未提交patch及必要證據、處理引用並明確retirement review，目前dirty不可移除。
+
+
 ## P3 修訂3 fixer — 2026-11-20
 
 - Existing path `.worktrees/ruflo-workers/run-mwoibr4r-44988a/fixer`；detached HEAD/base `39320a04512c446fb75aa993690a7496e434e57b`；owner Human/Codex builder；task 修訂3預算錨點、顯式重建與回歸／反證；created2026-11-20，retired N/A。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；no commit/push/merge/GPU/agents。
