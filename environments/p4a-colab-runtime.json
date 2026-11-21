@@ -1,18 +1,45 @@
 {
   "version": "p4-colab-runtime-v1",
-  "status": "TBD",
+  "status": "OBSERVED",
   "artifact_class": "CANONICAL",
-  "evidence_class": "UNOBSERVED / NOT_ACCEPTED",
-  "observed_at": null,
-  "observation_source": "TBD: Human Colab pip list plus Python/torch/CUDA/ABI/platform self-check",
-  "runtime": {"python": "TBD", "cuda": "TBD", "cxx11abi": "TBD", "platform": "TBD"},
+  "evidence_class": "OBSERVED_BY_HUMAN_PASTE / NOT_ACCEPTED",
+  "observed_at": "2026-11-21 (Human Colab Pro T4 session; pasted self-check)",
+  "observation_source": "Human-pasted Colab self-check: python/torch/cuda/abi/pip metadata/nvidia-smi on Tesla T4",
+  "runtime": {
+    "python": "3.13.16",
+    "cuda": "13.0",
+    "cxx11abi": true,
+    "platform": "linux_x86_64"
+  },
   "packages": {
-    "torch": "TBD", "mamba-ssm": "TBD", "causal-conv1d": "TBD",
-    "numpy": "TBD", "pandas": "TBD", "pyarrow": "TBD", "scipy": "TBD",
-    "scikit-learn": "TBD", "einops": "TBD", "packaging": "TBD"
+    "torch": "2.14.1+cu130",
+    "mamba-ssm": "2.3.2.post1",
+    "causal-conv1d": "1.7.0",
+    "numpy": "2.4.6",
+    "pandas": "2.2.3",
+    "pyarrow": "23.0.1",
+    "scipy": "1.16.3",
+    "scikit-learn": "1.6.1",
+    "einops": "0.8.2",
+    "packaging": "26.3"
   },
   "scope": "All P4a arms (mamba2, crossstock, gru) share this Colab environment; formal runs require OBSERVED and exact agreement.",
   "comparison": "P4a arms are comparable only under the same environment identity. Cross-environment comparison with local P3 (mamba-ssm 2.3.2.post1) must disclose differences; speed mismatches cannot be compared with formal results.",
   "local_reference_lock": "environments/p4a-colab.requirements.lock.txt",
-  "wheel_history": "Human reports Drive cp312 linux_x86_64 mamba_ssm 2.3.0 / causal_conv1d 1.6.0 created 2026-03-04; not an observation of installed Colab packages."
+  "wheel_history": "Earlier Drive Mamba_Wheels_T4 (cp312, mamba_ssm 2.3.0 / causal_conv1d 1.6.0, created 2026-03-04) is NOT used on this cp313 runtime.",
+  "observed_extra": {
+    "gpu": "Tesla T4",
+    "compute_capability": "7.5",
+    "driver": "580.82.07",
+    "memory_mib": 15360,
+    "glibc_platform": "Linux-6.6.159+-x86_64-with-glibc2.39",
+    "triton": "3.8.0",
+    "nvcc": "13.0.88 (Cuda compilation tools release 13.0)"
+  },
+  "wheel_build": {
+    "note": "Human compiled both wheels on this Colab T4 runtime and stored them in Drive MyDrive/Mamba_Wheels_T4_new; GPU-architecture specific (sm75), cp313.",
+    "mamba_ssm": "mamba_ssm-2.3.2.post1-cp313-cp313-linux_x86_64.whl (349592341 bytes); built from the PyPI sdist after replacing every -std=c++17 with -std=c++20 in setup.py (torch 2.14 headers require C++20); MAMBA_FORCE_BUILD=TRUE, MAX_JOBS=4",
+    "causal_conv1d": "causal_conv1d-1.7.0-cp313-cp313-linux_x86_64.whl (207063960 bytes); unmodified sdist",
+    "smoke": "Human ran a Mamba2(d_model=64,d_state=16,headdim=8,expand=2) forward/backward on [8,60,64]: output and input-grad finite True. Not the project official gpu-smoke."
+  }
 }
