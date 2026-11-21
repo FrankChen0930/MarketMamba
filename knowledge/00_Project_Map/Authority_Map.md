@@ -2,10 +2,12 @@
 
 ## P4a Colab 候選邊界 — 2026-11-21
 
-[P4機器契約](../../tasks/p4a-colab-contract-20261121.json)、[規格草案](../../tasks/spec-p4a-colab-20261121.md)目前DRAFT / NOT_FROZEN；[bundle](../../V6/research_lab/p4_bundle.py)、[executor](../../V6/research_lab/p4_colab.py)及[測試](../../V6/research_lab/tests/test_p4.py)只屬 `job-run-mwqd0vuy-7d9826` detached base `e4f21c3` 的 UNMERGED_IMPLEMENTATION / NOT_DEPLOYED / NOT_ACCEPTED，未提交，不能授予研究／production authority。Human既有核准涵蓋這次離線bounded實作；正式P4仍需凍結草案與現場GPU／環境驗證。沒有P4結果可supersede。
+[P4機器契約](../../tasks/p4a-colab-contract-20261121.json)、[規格草案](../../tasks/spec-p4a-colab-20261121.md)目前DRAFT / NOT_FROZEN；[bundle](../../V6/research_lab/p4_bundle.py)、[executor](../../V6/research_lab/p4_colab.py)及[測試](../../V6/research_lab/tests/test_p4.py)只屬 `job-run-mwqd0vuy-7d9826` detached base `e4f21c3` 的 UNMERGED_IMPLEMENTATION / NOT_DEPLOYED / NOT_ACCEPTED，原候選已提交於 `8cb61c4`，本輪修補尚未提交，不能授予研究／production authority。Human既有核准涵蓋這次離線bounded實作；正式P4仍需凍結草案與現場GPU／環境驗證。沒有P4結果可supersede。
 
 P4沿用`train_one`、P3 purge／row semantics，但獨立Drive預算根目錄／bundle identity；不得重用或重置P3 `.artifacts/p3`帳本、放寬P3 admission，或重標21/24結果。P4的exact lock原樣保存在[獨立檔](../../environments/p4a-colab.requirements.lock.txt)（SHA `2c39a3fb9567d1f9fc8ee83369c7b6c90cd19a8e679e32e4c8a6c1d75c5782c9`），不取代舊E1環境authority。Colab wheel安裝、kernel／Drive durable semantics尚未驗證；CU為Human提供費率估計，不是provider實扣evidence。CPU fixtures只能證明工程邊界。詳見[工程報告](../../reports/v7_p4a_colab_engineering.md)。
 
+
+本次 `job-run-mwqe7o12-d33ef8` fixer 在既有 detached HEAD `8cb61c4` 工作樹進行審查修補，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；依指示不 commit。修補 speed 全輸出隔離、解壓資源 gate、executable-cache 排除與 pre-import 清理、completed-fit 必要 schema。規格保留 OPEN 研究決策，已曝光 2021–2025 只作描述性；GPU／ABI／Drive 持久性仍 UNVERIFIED，CPU 工程完成不授予 Colab 或研究接受。
 
 ## P3 修訂3 預算完整性候選 — 2026-11-20
 

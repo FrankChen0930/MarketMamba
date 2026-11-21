@@ -144,3 +144,158 @@ syntax `py_compile`、JSON parse／executable contract檢查、25個P4相關link
 | `tasks/spec-p4a-colab-20261121.md` | 3915 | `1d78b63a403576764bf848db489c805edde4a9177869131e2e0716b63853d987` |
 | `docs/operations/colab-p4.md` | 8193 | `9a1862bce999bdb83aa4106a4b5a07fe2cc18587baff36b1850e47c8876dc3c8` |
 | `environments/p4a-colab.requirements.lock.txt` | 2659 | `2c39a3fb9567d1f9fc8ee83369c7b6c90cd19a8e679e32e4c8a6c1d75c5782c9` |
+
+
+## 審查修補 — job-run-mwqe7o12-d33ef8（2026-11-21）
+
+本節追加本次修補事實；上文屬原候選歷史，不以其未提交／cache 例外敘述代表現況。起始 detached HEAD `8cb61c48b2b302338600a91b3ad59dc350d09a6c`、clean；原工程候選已提交，本次依 Human 指令不 commit／push／merge。既有 worktree `fixer_p4a`，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，仍無正式 P4 結果。
+
+Changed：`p4_bundle.py`、`p4_colab.py`、`tests/test_p4.py`、P4 DRAFT spec、Colab operations guide、Current State／Authority Map／Worktree Register／Training 與本報告。`seq_runner.py` 不需修改：沿用既有 log callback，在 P4 speed 呼叫時注入靜默 logger；P3 預設行為與兩個凍結檔維持原 bytes。
+
+Decisions：speed 只發布 timing／telemetry JSON、完成標記與總 manifest，完整研究契約改記 hash，epoch state 不持久化，不做 eval predictions，不保存 IC／scores／metrics／research_conclusion。訓練器內部 validation／probe 計算仍包含於 epoch 耗時，但其值不進輸出或 stdout。正式 fit schema 要求 BEST tensor 與 best pointer 一致、latest／previous／best checkpoint 的 hash／contract／epoch／必要 state keys／順序、metrics，以及 scores 的 finite／行數／reference rows／labels；沿用 P3 require_same_rows。原候選不合格完成檔不能自動升格或遷移。
+
+Bundle 先逐一掃描 header，sparse／bytecode caches 直接拒絕；64 GiB 單檔、256 GiB 總量、10,000 成員與4 MiB manifest上限；header size 逐檔等於 manifest，總量等於宣告和加 manifest 大小，目的地在預檢後才建立。pack 排除 .pyc／.pyo／__pycache__，verify 不再有 executable-cache derived 例外。可信 bootstrap 在匯入 source 前清理 caches，設定 PYTHONDONTWRITEBYTECODE=1 與 sys.dont_write_bytecode；命令指南包含同一步驟。rankgauss 三個 derived 檔仍依既有 input／output／tag 驗證重用。
+
+DRAFT 加入 GRU 53,250／Mamba2 60,706 的審查 CPU 建構數字及初始化／residual pre-norm／gated norm／dropout差異，並保留 OPEN 的搜尋、family（m=3 或階層式選項）、完整性、預算、確認性期間決策。P3 結果已知、2021–2025 已曝光，只作描述性；可確認路徑須事前規則及新資料／前瞻期間。沒有替 Human 凍結決策，沒有修改 machine contract status 或門檻。指南增加版本／ABI mismatch STOP／回報樹，禁止自行升降級。
+
+Evidence — 首次新增實作案例 RED（未修程式時）：
+
+```text
+8 failed, 30 passed in 10.72s
+FAILED test_cpu_orchestration_charges_setup_and_resumes_completed_fits
+FAILED test_bundle_runtime_bytecode_cache_refused
+FAILED test_empty_completed_fit_rejected
+FAILED test_archive_resource_preflight_before_destination[huge]
+FAILED test_archive_resource_preflight_before_destination[total]
+FAILED test_archive_resource_preflight_before_destination[count]
+FAILED test_forged_timestamp_pyc_removed_before_import
+FAILED test_bundle_excludes_and_extract_rejects_executable_cache
+```
+
+初次 sparse 測試使用的舊式 header 未正確重現審查案例；改為真正 PAX sparse member 後，對 base `8cb61c4` 做純記憶體 replay RED，確認 huge／sparse／file／total／count 五項均進入被攔截的 copy。1 TiB 案例壓縮檔為 **291 bytes**，logical header／manifest宣告 **1,099,511,627,776 bytes**，沒有真的寫入巨大檔案：
+
+```text
+RuntimeError: TEST_ABORT: extract reached payload copy
+9 failed, 44 deselected in 3.59s
+IN_MEMORY baseline pytest_exit=1
+```
+
+完成 checkpoint 必要 state／pointer 順序補強的先行 RED：
+
+```text
+FAILED test_completed_fit_required_schema[checkpoint]
+FAILED test_completed_fit_required_schema[order]
+2 failed, 51 deselected in 1.52s
+```
+
+文件內容檢查以 git show 的 base 原文進行記憶體 replay（文件更新後補作原文 RED，不宣稱先於文件撰寫）：
+
+```text
+FAILED test_draft_documents_disclose_open_decisions_and_exposure
+FAILED test_operations_require_abi_stop_and_preimport_cleanup
+FAILED test_p4_knowledge_records_committed_candidate_and_uncommitted_repair
+3 failed, 50 deselected in 0.06s
+```
+
+最終 focused GREEN：
+
+```text
+.....................................................                    [100%]
+53 passed in 10.24s
+```
+
+四項變異均只在 Python 記憶體替換 source／函式，沒有改磁碟 source 或 P3 gate；每個 pytest exit=1，外層 harness 確認預期失敗才 exit0：
+
+```text
+IN_MEMORY sparse pytest_exit=1  # RuntimeError TEST_ABORT，1 failed／52 deselected
+IN_MEMORY schema pytest_exit=1  # DID NOT RAISE ValueError，1 failed／52 deselected
+IN_MEMORY pyc pytest_exit=1     # imported value=999，1 failed／52 deselected
+IN_MEMORY logger pytest_exit=1  # stdout val_ic5 0.987654321，1 failed／52 deselected
+```
+
+可核對的 TEMPORARY evidence：`/tmp/p4a-red.log`、`/tmp/p4a-baseline-red.log`、`/tmp/p4a-schema-red.log`、`/tmp/p4a-docs-red.log`、`/tmp/p4a-focused-final.log`、`/tmp/p4a-mut-{sparse,schema,pyc,logger}.log`。純記憶體 harness 為 `/tmp/p4a-inmemory-check.py`；pytest 合成資料在其隔離 tmp namespace，可重建，沒有讀取正式 matrix／權重。
+
+Knowledge-impact：semantics YES（P4速度輸出／schema／cache）；authority NO；subsystem boundary NO；active runtime NO；correctness gate YES（P4安全檢查補強，不改P3）；canonical artifact NO；deprecation NO；next decision YES（獨立審查後才決定現場測試及研究凍結）。同 change 更新 Current State、Authority Map、Worktree Register 與 Training。已檢查 Operations／GOVERNANCE：production operation、scheduler 與治理規則本身沒有變更，不需改寫。沒有新增／刷新 runtime observation。
+
+Remaining／Blockers：官方 CUDA forward/backward／分數位元一致性、安裝與 ABI、GPU速度／熱、Drive FUSE fsync／rename／斷線持久性、大型真實 bundle／formal matrix、provider實扣CU仍 UNVERIFIED。完成 schema 只載入來源可信且hash驗過的 checkpoint；不宣稱任意不可信 pickle 安全。研究搜尋／family／完整性／預算與新確認性期間仍 OPEN，正式 P4 仍 NO_GO；本次工程完成不等於 Human acceptance。沒有 GPU／網路／資料 acquisition／Colab／正式 Data／V6/models／production／scheduler 變更，也沒有新增 agents。
+
+Next recommended action：由獨立審查者核對本 patch 與 RED／GREEN／mutation 證據，Human 決定是否授權 Colab 環境／GPU／Drive驗證；正式研究須另外凍結 OPEN 選項。本輪不執行上述現場工作。
+
+Runtime/environment：WSL，Python3.12.3，pilot09 venv `/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python`，torch2.15.0+cpu，CPU synthetic tests；MARKETMAMBA_DATA_ROOT unset，本工作樹 Data 為普通目錄，其 realpath 為工作樹/Data。未移動 runtime／資料。Project memory updated：YES；Authority map updated：YES；Commit：N/A（禁止）；Push：未執行；Worktree：沿用，修補未提交。
+
+
+### 本輪最終完整回歸（固定 source）
+
+指定命令 exit0：
+
+```bash
+PYTHONPATH=V6:V6/research_lab/tests:. /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests tests -q
+```
+
+實際完整 stdout／stderr（原始 log `/tmp/p4a-full-final.log`）：
+
+```text
+........................................................................ [ 11%]
+........................................................................ [ 22%]
+........................................................................ [ 34%]
+........................................................................ [ 45%]
+........................................................................ [ 57%]
+........................................................................ [ 68%]
+........................................................................ [ 79%]
+.................................................................s...... [ 91%]
+.......................................................                  [100%]
+=============================== warnings summary ===============================
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+  /tmp/pytest-of-frank/pytest-26/test_mutation_controls_session0/mutant.py:93: Pandas4Warning: Timestamp.dayofweek is deprecated and will be removed in a future version. Use Timestamp.day_of_week instead.
+    sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+630 passed, 1 skipped, 4 warnings in 161.97s (0:02:41)
+```
+
+630 = 原候選608 + 新增22個通過案例；原P4 bytecode允許案例依修訂安全語義改為拒絕，原publication fixture改用合格speed schema，沒有刪測試或放寬gate。既有skip及4個Pandas warnings保留。AST syntax 3 files、JSON DRAFT schema/lock identity、490個本地Markdown references、兩個P3凍結檔diff 0 bytes及git diff --check通過。本輪沒有獨立代理審查；僅作者自查與可執行驗證，不把它稱為independent review。
+
+最終knowledge-impact：WARNING，10 changed paths，已同change處理相關知識語義；health `--ci --as-of 2026-11-21` exit0，沒有structural FAIL：
+
+```text
+KNOWLEDGE HEALTH
+
+Project Map        PASS
+Agent Guides       PASS
+Domains            PASS
+Governance         WARNING
+Authority Drift    WARNING
+Runtime Freshness  PASS
+Generated Index    PASS
+Legacy Docs        WARNING
+
+Overall: WARNING
+```
+
+受驗source與完整回歸log identity：
+
+```json
+{
+  "V6/research_lab/p4_bundle.py": {
+    "bytes": 10886,
+    "sha256": "34f1088017f530d5db3309dbfbf74990e697f5a25adf28975999dd7097161541"
+  },
+  "V6/research_lab/p4_colab.py": {
+    "bytes": 27352,
+    "sha256": "1e7414dd3c58c5099a925b9a0c7010cd98610d93c3640aa4eab5a5b3d60ef2cd"
+  },
+  "V6/research_lab/tests/test_p4.py": {
+    "bytes": 23538,
+    "sha256": "4daec415d569c0b5fcacd0777e6d0195af113ab6c8883370a162ea7e5072c5d1"
+  },
+  "/tmp/p4a-full-final.log": {
+    "bytes": 1963,
+    "sha256": "f8f6cb94c12bbbf1096b1f4fa4f4c4949fb0a81fba66ad14ab0768fbd8023145"
+  }
+}
+```
+
+最終 Git status：detached HEAD `8cb61c4`；10 tracked modified、0 staged、0 untracked。依 no-commit 指示保留 dirty patch，沒有宣稱 clean。Commit／Push／Merge／Deploy：均未執行。TEMPORARY inventory `/tmp/p4a-repair-identities.json` 保存本次changed paths與logs SHA，可由本節的source／command重建；不是formal研究artifact。

@@ -15,10 +15,13 @@ from pathlib import Path
 import subprocess
 import time
 import uuid
+import sys
+os.environ['PYTHONDONTWRITEBYTECODE'] = '1'
+sys.dont_write_bytecode = True
 
 import numpy as np
 import pandas as pd
-from .p4_bundle import digest, verify, MATRIX_FILES
+from .p4_bundle import digest, verify, MATRIX_FILES, prepare_source
 from .rolling_seq_scores import checked_splits, require_same_rows, FROZEN_CFG, write_json, atomic_json
 
 ARMS=('mamba2','crossstock','gru')
@@ -97,10 +100,72 @@ def publish_bytes(path,payload):
     return expected
 
 
+def validate_fit_outputs(directory, contract, outputs):
+    """Required schema plus bytes and semantic checks, before publish and resume."""
+    from .p4_bundle import safe_name
+    directory=Path(directory)
+    for name,ident in outputs.items():
+        safe_name(name)
+        if any(p.is_symlink() for p in (directory/name, *(directory/name).parents)):
+            raise ValueError('fit output links forbidden')
+        if digest(directory/name)!=ident: raise ValueError('fit output hash mismatch')
+    parents={str(Path(n).parent) for n in outputs}
+    if len(parents)!=1: raise ValueError('fit requires one complete attempt')
+    attempt_name=next(iter(parents))
+    attempt=directory/attempt_name
+    names={Path(n).name for n in outputs}
+    if contract.get('speed_test'):
+        if names!={'speed.json'}: raise ValueError('speed outputs must contain timing only')
+        report=json.loads((attempt/'speed.json').read_text())
+        allowed={'version','evidence_class','arm','epochs','steps','epoch_seconds','step_seconds',
+                 'step_seconds_mean','gpu_model','telemetry','total_seconds','guard_wait_seconds'}
+        if set(report)!=allowed or report['evidence_class']!='ENGINEERING_SPEED_ONLY':
+            raise ValueError('speed schema mismatch')
+        return
+    required={'best.pt','scores.parquet','reference.parquet','metrics.json','checkpoint-pointer.json'}
+    if not required<=names: raise ValueError('completed fit missing required artifacts')
+    metrics=json.loads((attempt/'metrics.json').read_text())
+    if not metrics.get('history') or not np.isfinite(metrics.get('best_val_ic5',np.nan)):
+        raise ValueError('invalid metrics')
+    frame=pd.read_parquet(attempt/'scores.parquet')
+    reference=pd.read_parquet(attempt/'reference.parquet')
+    require_same_rows(frame,reference)
+    if len(frame)!=metrics['eval_rows'] or not np.isfinite(frame['score']).all():
+        raise ValueError('invalid predictions')
+    pointer=json.loads((attempt/'checkpoint-pointer.json').read_text())
+    import torch
+    checkpoints={}
+    for role in ('latest','previous','best'):
+        entry=pointer.get(role)
+        if not entry: raise ValueError('required checkpoint pointer missing')
+        safe_name(entry['file'])
+        if Path(entry['file']).name!=entry['file']: raise ValueError('checkpoint filename must be local')
+        name=(Path(attempt_name)/entry['file']).as_posix()
+        if name not in outputs or outputs[name]!=entry['identity']:
+            raise ValueError('checkpoint pointer identity mismatch')
+        payload=torch.load(directory/name,map_location='cpu',weights_only=False)
+        if not {'contract','model','opt','sched','state','best_sd','rng_state','torch_rng'}<=payload.keys():
+            raise ValueError('checkpoint schema incomplete')
+        if payload['contract']!=contract or payload['state']['epoch']!=entry['epoch']:
+            raise ValueError('checkpoint contract/epoch mismatch')
+        checkpoints[role]=payload
+    if not (pointer['previous']['epoch']<pointer['latest']['epoch'] and
+            pointer['best']['epoch']<=pointer['latest']['epoch']):
+        raise ValueError('checkpoint pointer order mismatch')
+    best=torch.load(attempt/'best.pt',map_location='cpu',weights_only=False)
+    selected=checkpoints['best']['best_sd']
+    if (best['contract']!=contract or best['best_val_ic5']!=metrics['best_val_ic5'] or
+        best['best_val_ic5']!=checkpoints['best']['state']['best'] or set(best['model'])!=set(selected) or
+        any(not torch.equal(v,selected[k]) for k,v in best['model'].items())):
+        raise ValueError('BEST weights/pointer mismatch')
+
+
 def complete_fit(directory,contract,job,files):
     directory=Path(directory)
+    outputs={n:digest(directory/n) for n in files}
+    validate_fit_outputs(directory,contract,outputs)
     write_json(directory/'complete.json',dict(version='p4-fit-v1',contract=contract,contract_hash=hashed(contract),
-        job=job,outputs={n:digest(directory/n) for n in files},evidence_class='E2 RESEARCH_ONLY / NOT_ACCEPTED'))
+        job=job,outputs=outputs,evidence_class='ENGINEERING_SPEED_ONLY' if contract.get('speed_test') else 'E2 RESEARCH_ONLY / NOT_ACCEPTED'))
 
 
 def resume_fit(directory,contract):
@@ -108,10 +173,7 @@ def resume_fit(directory,contract):
     if not path.exists(): return None
     mf=json.loads(path.read_text())
     if mf['contract']!=contract or mf['contract_hash']!=hashed(contract): raise ValueError('resume identity mismatch')
-    for name,ident in mf['outputs'].items():
-        from .p4_bundle import safe_name
-        safe_name(name)
-        if digest(Path(directory)/name)!=ident: raise ValueError('fit output hash mismatch')
+    validate_fit_outputs(directory,contract,mf['outputs'])
     return mf
 
 
@@ -197,8 +259,9 @@ def speed_report(arm,history,records,total,steps):
 
 
 class Observer:
-    def __init__(self,root,contract,ledger,device='cuda'):
+    def __init__(self,root,contract,ledger,device='cuda',speed=False):
         self.root=Path(root);self.contract=contract;self.ledger=ledger;self.device=device
+        self.speed=speed
         self.steps=[];self.records=[];self.pointer=dict(latest=None,previous=None,best=None)
         self.best=-9.;self.step_start=None
 
@@ -214,6 +277,7 @@ class Observer:
         elif event=='step_end':
             torch.cuda.synchronize();self.steps.append(time.perf_counter()-self.step_start)
         elif event=='epoch':
+            if self.speed: return  # Never serialize state/history/weights in timing mode.
             epoch=payload['state']['epoch'];name=f'epoch-{epoch:03d}.pt'
             stream=io.BytesIO();torch.save(dict(contract=self.contract,**payload,
                 cuda_rng=torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None),stream)
@@ -278,7 +342,10 @@ def train_fit(directory,year,arm,seed,cfg,reference,observer):
     def guarded(rows):
         observer.check();return windows(rows)
     data.windows=guarded
-    model,state=train_one(arm,seed,data,tr,va,cfg,'cuda',observer=observer)
+    model,state=train_one(arm,seed,data,tr,va,cfg,'cuda',observer=observer,
+                          log=(lambda *_: None) if observer.speed else print)
+    if observer.speed:
+        return None,dict(history=[dict(seconds=h['seconds']) for h in state['history']])
     if not np.isfinite(state['best']) or state['best']<=-9: raise ValueError('BEST unavailable; LAST prohibited')
     frame['score']=predict(model,data,ev,'cuda')[:,0];frame['seed']=seed;frame['system']=arm
     if not np.isfinite(frame.score).all(): raise ValueError('nonfinite predictions')
@@ -304,6 +371,7 @@ def run(bundle,drive_root,speed,max_hours,max_units,rate,planned_hours,reserve=.
         ledger.start(setup_binding,planned_hours)
         try:
             mf=verify(bundle,allow_derived=True)
+            prepare_source(bundle)
             # Running imported code must be exactly the source included in this bundle.
             source_root=Path(__file__).resolve().parents[2]
             for name,ident in mf['files'].items():
@@ -322,7 +390,7 @@ def run(bundle,drive_root,speed,max_hours,max_units,rate,planned_hours,reserve=.
             ref=pd.read_parquet(bundle/'reference/rank_average.parquet');ref=ref[ref.system.eq('c0plus')]
             if any(digest(bundle/'reference/rank_average.parquet')[k]!=json.loads((bundle/'reference/manifest.json').read_text())['outputs']['rank_average.parquet'][k] for k in ('bytes','sha256')):
                 raise ValueError('P1 reference manifest mismatch')
-            binding=dict(bundle=digest(bundle/'bundle-manifest.json'),environment=env,contract=contract,cfg=cfg,
+            binding=dict(bundle=digest(bundle/'bundle-manifest.json'),environment=env,contract=hashed(contract) if speed else contract,cfg=cfg,
                          years=years,seeds=seeds,arms=list(ARMS),speed_test=speed)
             run_hash=hashed(binding)
             ledger.check()
@@ -358,7 +426,7 @@ def run(bundle,drive_root,speed,max_hours,max_units,rate,planned_hours,reserve=.
                 raise
             for arm in ARMS:
                 for seed in seeds:
-                    fit_contract=dict(run_hash=run_hash,year=year,arm=arm,seed=seed,rankgauss=cache_id)
+                    fit_contract=dict(run_hash=run_hash,year=year,arm=arm,seed=seed,rankgauss=cache_id,speed_test=speed)
                     fit=out/f'{year}-{arm}-{seed}'
                     cached=resume_fit(fit,fit_contract)
                     if cached:
@@ -366,15 +434,19 @@ def run(bundle,drive_root,speed,max_hours,max_units,rate,planned_hours,reserve=.
                         reports.append(cached);continue
                     ledger.start(fit_contract,planned_hours)
                     attempt=fit/('attempt-'+uuid.uuid4().hex);attempt.mkdir(parents=True)
-                    observer=Observer(attempt,fit_contract,ledger);started=time.perf_counter()
+                    observer=Observer(attempt,fit_contract,ledger,speed=speed);started=time.perf_counter()
                     try:
                         frame,job=train_fit(directory,year,arm,seed,cfg,ref[ref.fold.eq(year)],observer)
-                        buffer=io.BytesIO();frame.to_parquet(buffer,index=False);publish_bytes(attempt/'scores.parquet',buffer.getvalue())
                         if speed:
                             report=speed_report(arm,job['history'],observer.records,time.perf_counter()-started,observer.steps)
                             write_json(attempt/'speed.json',report)
-                        job.update(wall_seconds=time.perf_counter()-started,guard_wait_seconds=0)
-                        write_json(attempt/'metrics.json',job)
+                            job=report
+                        else:
+                            for name,table in (('scores.parquet',frame),('reference.parquet',ref[ref.fold.eq(year)])):
+                                buffer=io.BytesIO();table.to_parquet(buffer,index=False)
+                                publish_bytes(attempt/name,buffer.getvalue())
+                            job.update(wall_seconds=time.perf_counter()-started,guard_wait_seconds=0)
+                            write_json(attempt/'metrics.json',job)
                         # Record all logs/checkpoints/predictions before ending the charged attempt.
                         files=[p.relative_to(fit).as_posix() for p in attempt.iterdir() if p.is_file()]
                         ledger.end(fit_contract,True)
@@ -387,7 +459,8 @@ def run(bundle,drive_root,speed,max_hours,max_units,rate,planned_hours,reserve=.
         payload=dict(version='p4-run-v1',binding=binding,jobs=reports,budget=ledger.state,
                      wall_seconds=time.perf_counter()-run_started,guard_wait_seconds=0,
                      billing_coverage='runner verification/preprocessing/fits; excludes upload/pip/operator idle',
-                     evidence_class='ENGINEERING_SPEED_ONLY' if speed else 'E2 RESEARCH_ONLY / NOT_ACCEPTED',research_conclusion=None)
+                     evidence_class='ENGINEERING_SPEED_ONLY' if speed else 'E2 RESEARCH_ONLY / NOT_ACCEPTED')
+        if not speed: payload['research_conclusion']=None
         if not summary.exists():write_json(summary,payload)
         return payload
 

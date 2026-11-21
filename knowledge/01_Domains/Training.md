@@ -7,6 +7,8 @@
 Drive ledger以wall-hours與Human保守費率估計CU雙上限，剩餘完整grid加至少25%餘裕；guard wait不扣active訓練帳，Colab85°C直接STOP而不等待（wait=0）。未知／缺帳本／cache tag／identity不符fail closed，尚無人工clear/rebuild介面。[指南](../../docs/operations/colab-p4.md)與[報告](../../reports/v7_p4a_colab_engineering.md)記錄CPU證據及尚未驗證的wheel／GPU／Drive限制。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，不取代E1或P3歷史authority。
 
 
+P4a 審查修補（base `8cb61c4`，未提交／NOT_ACCEPTED）：speed 只保存計時與 telemetry，不保存 epoch state、IC、scores 或結論；正式 completed-fit 需 BEST／latest／previous pointer、weights/hash、scores/reference rows 與 metrics schema。Bundle 在寫入前限制成員及單檔／總量，拒絕 sparse／executable caches；trusted bootstrap 匯入 source 前清除 caches 並停寫 bytecode。規格全部待決選項仍 OPEN；2021–2025 已曝光，無新確認性 authority；ABI／GPU／Drive 仍 UNVERIFIED。
+
 ## Metadata
 
 - Status: `CANONICAL_DOMAIN_NOTE_WITH_UNKNOWN`

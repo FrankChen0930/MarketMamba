@@ -8,9 +8,35 @@ import os
 from pathlib import Path, PurePosixPath
 import subprocess
 import sys
+import shutil
 import tarfile
 
 ROOT = Path(__file__).resolve().parents[2]
+MAX_FILE_BYTES = 64 * 1024**3
+MAX_TOTAL_BYTES = 256 * 1024**3
+MAX_MEMBERS = 10000
+MAX_MANIFEST_BYTES = 4 * 1024**2
+
+
+def executable_cache(name):
+    return '__pycache__' in PurePosixPath(name).parts or name.endswith(('.pyc', '.pyo'))
+
+
+def prepare_source(directory):
+    """Trusted bootstrap must call before importing any bundled source."""
+    source = Path(directory)/'source'
+    caches = list(source.rglob('__pycache__'))
+    bytecode = list(source.rglob('*.pyc')) + list(source.rglob('*.pyo'))
+    # Inventory before deletion; never follow cache symlinks.
+    for path in caches:
+        if path.is_symlink(): path.unlink()
+        elif path.is_dir(): shutil.rmtree(path)
+    for path in bytecode:
+        if path.exists() or path.is_symlink(): path.unlink()
+    os.environ['PYTHONDONTWRITEBYTECODE'] = '1'
+    sys.dont_write_bytecode = True
+
+
 MATRIX_FILES = ('X.npy','dates.npy','end_indices.npy','splits.npy','stock_ids.npy','stock_idx.npy','y5.npy','y10.npy','manifest.json')
 
 
@@ -30,7 +56,7 @@ def safe_name(name):
 
 def write_archive(output, files, metadata):
     """Allowlisted files only; hash both before and during archive publication."""
-    files={str(k):Path(v) for k,v in files.items()}
+    files={str(k):Path(v) for k,v in files.items() if not executable_cache(str(k))}
     for name,path in files.items():
         safe_name(name)
         if not path.is_file() or path.is_symlink(): raise ValueError(f'not regular input: {path}')
@@ -56,13 +82,10 @@ def verify(directory, allow_derived=False):
     expected=set(mf['files'])|{'bundle-manifest.json'}
     paths=list(root.rglob('*'))
     if any(p.is_symlink() for p in paths): raise ValueError('bundle links forbidden')
+    if any(executable_cache(p.relative_to(root).as_posix()) for p in paths):
+        raise ValueError('executable cache forbidden')
     actual={p.relative_to(root).as_posix() for p in paths if p.is_file()}
     if allow_derived:
-        # Python can create bytecode on first CLI import. Only caches with a
-        # corresponding hashed source are runtime extras, never archive inputs.
-        actual={n for n in actual if not (n.startswith('source/') and
-            PurePosixPath(n).parent.name=='__pycache__' and n.endswith('.pyc') and
-            str(PurePosixPath(n).parent.parent/(PurePosixPath(n).name.split('.')[0]+'.py')) in expected)}
         derived={'X_rankgauss.npy','X_rankgauss.tag','p4-rankgauss.json'}
         actual={n for n in actual if not (len(PurePosixPath(n).parts)==3 and n.startswith('folds/fold_') and PurePosixPath(n).name in derived)}
     if expected!=actual: raise ValueError('bundle inventory mismatch')
@@ -79,8 +102,16 @@ def extract(archive,destination,expected_sha256=None):
     if destination.exists() or destination.is_symlink(): raise FileExistsError(destination)
     # Validate every header and exact inventory before writing any payload.
     with tarfile.open(archive,'r:gz') as tf:
-        members=tf.getmembers(); names=[]
-        for member in members:
+        members=[]; names=[]; total=0
+        for member in tf:
+            if len(members)>=MAX_MEMBERS: raise ValueError('archive member limit')
+            if member.issparse() or member.type==tarfile.GNUTYPE_SPARSE: raise ValueError('sparse member forbidden')
+            if executable_cache(member.name): raise ValueError('executable cache forbidden')
+            if member.size<0 or member.size>MAX_FILE_BYTES: raise ValueError('archive single file size limit')
+            total+=member.size
+            if total>MAX_TOTAL_BYTES: raise ValueError('archive total size limit')
+            if member.name=='bundle-manifest.json' and member.size>MAX_MANIFEST_BYTES: raise ValueError('manifest size limit')
+            members.append(member)
             safe_name(member.name)
             if not member.isfile(): raise ValueError('only regular files allowed (no links/directories/devices)')
             names.append(member.name)
@@ -90,6 +121,10 @@ def extract(archive,destination,expected_sha256=None):
         for member in members:
             if member.name!='bundle-manifest.json' and member.size!=mf['files'][member.name]['bytes']:
                 raise ValueError('archive size mismatch')
+        declared=sum(v['bytes'] for v in mf['files'].values())
+        manifest_size=next(m.size for m in members if m.name=='bundle-manifest.json')
+        if total!=declared+manifest_size or declared>MAX_TOTAL_BYTES-manifest_size:
+            raise ValueError('declared total size mismatch/limit')
         destination.mkdir(parents=True)
         for member in members:
             target=destination/member.name;target.parent.mkdir(parents=True,exist_ok=True)

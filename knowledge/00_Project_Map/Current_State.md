@@ -2,9 +2,11 @@
 
 ## P4a Colab 工程候選 — 2026-11-21
 
-`job-run-mwqd0vuy-7d9826` builder，既有 detached worktree base `e4f21c3747124f4c6cc46a873eae891697910067`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依限定授權僅離線程式／CPU合成測試，未commit/push/merge、無GPU／Colab／網路／正式資料或排程變更。[P4草案](../../tasks/spec-p4a-colab-20261121.md) 與 [機器候選契約](../../tasks/p4a-colab-contract-20261121.json) 均DRAFT；正式入口拒絕DRAFT，沒有研究結果。Human提供筆電熱降頻與Colab授權背景，不是本輪runtime observation。
+`job-run-mwqd0vuy-7d9826` builder，既有 detached worktree base `e4f21c3747124f4c6cc46a873eae891697910067`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依限定授權僅離線程式／CPU合成測試，原候選已提交於 `8cb61c4`，本輪修補尚未提交；未push/merge、無GPU／Colab／網路／正式資料或排程變更。[P4草案](../../tasks/spec-p4a-colab-20261121.md) 與 [機器候選契約](../../tasks/p4a-colab-contract-20261121.json) 均DRAFT；正式入口拒絕DRAFT，沒有研究結果。Human提供筆電熱降頻與Colab授權背景，不是本輪runtime observation。
 
 沿用research_lab訓練器、P3 split／row checks，新增 [bundle](../../V6/research_lab/p4_bundle.py)、[Colab executor](../../V6/research_lab/p4_colab.py)、兩層width64 GRU及可選checkpoint observer。[操作指南](../../docs/operations/colab-p4.md)說明safe-extract、逐檔SHA、exact lock預編譯wheel、rankgauss重建與tag驗證、三臂2epoch×100步speed-test、Drive fit-level續跑／BEST權重及至少25%餘裕雙上限帳本。CU依Human保守費率估算；85°C直接STOP、不等待，未知中斷區間保守扣帳並鎖STOP。partial checkpoints不自動resume或升格best。P3凍結契約、帳本、歷史結果不修改；新增source會改變現checkout的provenance，既有P3 evidence仍須使用原pinned source，不能重標。
+
+本次 `job-run-mwqe7o12-d33ef8` fixer 在既有 detached HEAD `8cb61c4` 工作樹進行審查修補，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；依指示不 commit。修補 speed 全輸出隔離、解壓資源 gate、executable-cache 排除與 pre-import 清理、completed-fit 必要 schema。規格保留 OPEN 研究決策，已曝光 2021–2025 只作描述性；GPU／ABI／Drive 持久性仍 UNVERIFIED，CPU 工程完成不授予 Colab 或研究接受。 完整 CPU 回歸實際為630 passed／1 skipped／4 warnings（161.97s）；53個P4案例及四項純記憶體變異驗證，詳見工程報告追加節。
 
 最終指定全套CPU驗證 **608 passed／1 skipped／4 warnings（164.16s）**，包含既有577個通過案例及31個P4案例；另6項合成checkpoint／identity反證通過。這些不構成GPU／Colab驗證。Next：獨立審查工程候選、Human／Claude決定研究凍結／GPU費率與預算、現場驗證wheel/kernel／Drive後才執行正式P4。CPU測試不證明Colab安裝或研究准入。工程檢查與限制見[報告](../../reports/v7_p4a_colab_engineering.md)。
 
@@ -12,6 +14,7 @@
 E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED。24 次官方 Mamba2／S-Mamba 風格擬合完成 21 次（14 小時預算用盡，帳本 STOP；缺 2026 折 mamba2 s29、crossstock s17／s29）。確認性 2021–2023 三折神經分數完整，但契約要求 24 次與完整 manifest，故只能做探索性評估：H-P3a（Mamba2 vs C0+）日均 −0.0154% CI [−0.0414%, +0.0084%]、H-P3b（S-Mamba 風格）−0.0240% CI [−0.0595%, +0.0046%]，Holm p .298，兩者「未證實」且方向偏負；十組 IC 配對差神經全部低於 C0+。結果與後續計畫：[reports/v7_p3_portfolio_evaluation.md](../../reports/v7_p3_portfolio_evaluation.md)。評估輸出與腳本在 ignored `.artifacts/p3/explore-21of24/`（SHA-256 `c607522c…4860`）。P3 正式記為未證實／21 of 24。未決：是否核准 P4a（同配方 GRU 對照＋對等調參＋保存檢查點）與 P4b（神經／C0+ 混合，描述性）。教訓：預算須含餘裕、訓練中不得提交 Git（source_commit 在 run identity）、停機監看須用 Python 本體 PID。
 
 # MarketMamba Current State
+
 
 ## P3 修訂3 預算錨點候選 — 2026-11-20
 
