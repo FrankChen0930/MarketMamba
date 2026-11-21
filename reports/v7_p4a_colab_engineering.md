@@ -695,3 +695,13 @@ test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime
 - Commit：N/A（明確禁止）；Push：未執行；Merge：未執行。
 - Worktree：既有 `.worktrees/ruflo-workers/run-mwqr9yiu-8c464e/builder_p4a_delivery`，HEAD74795a4；未新建／刪除worktree。
 - Runtime/environment：WSL本機Python3.12.3／torch2.15.0+cpu，CUDA=False；Data realpath與offline nbformat namespace見上；無GPU／網路／Colab／新增agents／scheduler／production／data acquisition／protected models變更。
+
+
+## 兩檔交付複審結果與已知限制（2026-11-22，第五輪複審）
+
+複審（HEAD `684b97d`）判定：CRITICAL 0、REQUIRED 2；全套 683 passed／2 skipped（nbformat 缺失的 1 項以離線依賴補跑 2 passed）；真實產物 `p4a-bundle.zip`（840862631 bytes，SHA-256 `263beacb2e3c3b8d5e4477f0d68ff375d464204484d9b665e513caffd840d776`）與 `p4a-colab.ipynb`（11783 bytes，SHA-256 `052f99d9b4db918f79633d960b146f1b48053105ba0ed0dcd2ec30d4f55e8703`）經 notebook 同一 bootstrap／解壓路徑驗證 PASS（240 檔、2021 fold 九檔與來源一致）。
+
+兩項 REQUIRED 的處置（主控決定，Human 的威脅模型為『自己打包、自己上傳、自己的 Colab』，且明確要求降低儀式感）：
+1. 打包端對 `folds/` 輸入 `resolve(strict=True)` 後未限制解析後來源範圍（可將誤置符號連結指向的其他檔案包入）：**暫時接受為已知限制**，輸入為 Human 自己的 fold 目錄；正式 5 折打包前須補『解析結果必須落在指定 matrices 根目錄內』的檢查。
+2. ZIP 缺壓縮比上限（真實檔最高約 1014，不能任意設低值）：**暫時接受為已知限制**，zip 為 Human 自己產生；正式打包前須補以邏輯大小與矩陣預期大小為基準的上限與回歸測試。
+兩項皆記為 OPEN，不得在『正式 P4a』准入時省略；speed-test 交付不依賴它們被修正。複審的 GO／NO_GO 為 NO_GO，本節是主控對該結論的明示偏離，非複審通過。
