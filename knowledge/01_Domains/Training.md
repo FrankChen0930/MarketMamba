@@ -7,7 +7,9 @@
 Drive ledger以wall-hours與Human保守費率估計CU雙上限，剩餘完整grid加至少25%餘裕；guard wait不扣active訓練帳，Colab85°C直接STOP而不等待（wait=0）。未知／缺帳本／cache tag／identity不符fail closed，尚無人工clear/rebuild介面。[指南](../../docs/operations/colab-p4.md)與[報告](../../reports/v7_p4a_colab_engineering.md)記錄CPU證據及尚未驗證的wheel／GPU／Drive限制。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，不取代E1或P3歷史authority。
 
 
-P4a 審查修補（base `8cb61c4`，未提交／NOT_ACCEPTED）：speed 只保存計時與 telemetry，不保存 epoch state、IC、scores 或結論；正式 completed-fit 需 BEST／latest／previous pointer、weights/hash、scores/reference rows 與 metrics schema。Bundle 在寫入前限制成員及單檔／總量，拒絕 sparse／executable caches；trusted bootstrap 匯入 source 前清除 caches 並停寫 bytecode。規格全部待決選項仍 OPEN；2021–2025 已曝光，無新確認性 authority；ABI／GPU／Drive 仍 UNVERIFIED。
+P4a 審查修補（base `8cb61c4`，修補已保存於 `05cb840`／NOT_ACCEPTED）：speed 只保存計時與 telemetry，不保存 epoch state、IC、scores 或結論；正式 completed-fit 需 BEST／latest／previous pointer、weights/hash、scores/reference rows 與 metrics schema。Bundle 在寫入前限制成員及單檔／總量，拒絕 sparse／executable caches；trusted bootstrap 匯入 source 前清除 caches 並停寫 bytecode。規格全部待決選項仍 OPEN；2021–2025 已曝光，無新確認性 authority；ABI／GPU／Drive 仍 UNVERIFIED。
+
+第二輪 bundle gate（base `05cb840`，no-commit patch，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED）：tarfile 之前逐一讀 physical header，PAX／GNU extended payload 上限64 KiB、拒絕連續 extended headers；gzip 單次請求最多1 MiB，各掃描總量同時受256 GiB＋32 MiB與 manifest 宣告總和＋4 MiB＋32 MiB限制（manifest 出現後立即收緊，末尾宣告則回溯核驗）。三次串流掃描不將 archive 全量放入 RAM 或暫存解壓檔，增加 CPU／I/O 成本，真實大型 bundle 未量測。Linux 每層 ancestor 使用 dir_fd、O_DIRECTORY／O_NOFOLLOW；輸出以 O_NOFOLLOW／O_EXCL 開啟。Source 只接受兩個既有 Python 子樹與指定文件；其他內容依明確 matrix／reference／lock／manifest 清單，拒絕 startup hooks／native libraries／非白名單路徑。外部 archive SHA 由 Human 在可信環境記錄並於 Colab 重新核對；SHA 失守則整個 bundle 不可信。白名單不能替代可信 source 審查，且不是任意惡意本機程序的 sandbox；Colab bootstrap 與目的地 parent 的本機權限仍需可信。
 
 ## Metadata
 

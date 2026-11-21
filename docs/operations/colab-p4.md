@@ -118,3 +118,14 @@ python -m pip check
 4. Driver／GPU 架構相容性、Drive FUSE 的 fsync／atomic rename／斷線持久性沒有在本輪驗證。失敗保存 artifact／帳本，不換 root、不刪 STOP、不自動重試；由 Human 決定相容 runtime 或重新審查 lock。新的 lock／recipe 必須有新 identity 與重新審查，不沿用舊 run 的完成證據。
 
 Bundle 資源限制：單檔最多64 GiB、解壓總量（含 manifest）最多256 GiB、成員最多10,000、manifest最多4 MiB；實際 tar header 大小須逐檔等於 manifest 宣告，且總量等於宣告總和加 manifest 大小。所有檢查在建立目的目錄前完成；sparse member、.pyc／.pyo／__pycache__ 均拒絕。這些是工程安全上限，不是已驗證大型 bundle 能放入現場 RAM／磁碟的承諾。
+
+
+## Bundle 信任與解壓邊界
+
+外部 archive SHA 由 Human 在可信環境記錄並於 Colab 重新核對；SHA 失守則整個 bundle 不可信。SHA 必須來自 bundle 外的可信紀錄，不可採用 archive 內自報的 SHA；bootstrap 同樣必須獨立核對。合法 source 本身會執行 Python，白名單不能證明惡意 source 安全，也不取代程式審查。
+
+白名單只允許 `source/V6/research_lab/**/*.py`、`source/V6/experimental/**/*.py`（排除 tests／cache）、指定 P4 contract／spec／操作指南、`folds/fold_2021` 至 `fold_2026` 的九個 MATRIX_FILES、P1 reference 的兩個指定檔、`requirements.lock.txt` 與 `bundle-manifest.json`。任何位置的 sitecustomize.py、usercustomize.py、conftest.py、setup.py、*.pth、*.so、*.pyd 均拒絕，非白名單檔也拒絕；manifest 一致不授予額外路徑權限。
+
+在 tarfile 開啟之前，以最多1 MiB的單次讀取逐一預檢 physical header；extended payload 最多64 KiB、拒絕連續 extended headers以避免遞迴解析。每次掃描累計受256 GiB＋32 MiB硬上限與 manifest 宣告總和＋4 MiB＋32 MiB限制。Manifest 一出現立即收緊；若在末尾則事後核對此前用量，仍先受全域硬上限與32 MiB metadata overhead限制。共三次 gzip 串流掃描（physical preflight、解析 inventory、寫入），沒有全量 RAM／暫存解壓副本；真實大型 bundle 的 CPU／I/O 時間未量測。
+
+Linux 寫入從 `/` 開始以目錄描述符逐層 openat 方式開啟，目錄使用 O_DIRECTORY|O_NOFOLLOW，檔案使用 O_NOFOLLOW|O_EXCL。Symlink 替換會拒絕，已開啟的 descriptor 不會跟隨替換後的連結。Colab bootstrap、本機帳號與 parent 目錄權限必須可信；這不是可防任意同權限惡意程序搬移已開啟目錄、修改 archive inode 或改寫 Python 程序的 sandbox。失敗時保留 partial destination 供盤點，不會自動刪除／重試。

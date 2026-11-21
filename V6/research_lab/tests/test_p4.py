@@ -38,10 +38,10 @@ def test_extract_rejects_hostile(tmp_path, name, kind):
 def test_archive_hash_and_roundtrip(tmp_path):
     source=tmp_path/'a'; source.write_bytes(b'original')
     archive=tmp_path/'bundle.tar.gz'
-    bundle.write_archive(archive, {'source/a':source}, {'source_commit':'abc'})
+    bundle.write_archive(archive, {'source/V6/research_lab/a.py':source}, {'source_commit':'abc'})
     bundle.extract(archive,tmp_path/'out')
-    assert (tmp_path/'out/source/a').read_bytes()==b'original'
-    (tmp_path/'out/source/a').write_bytes(b'mutated!')
+    assert (tmp_path/'out/source/V6/research_lab/a.py').read_bytes()==b'original'
+    (tmp_path/'out/source/V6/research_lab/a.py').write_bytes(b'mutated!')
     with pytest.raises(ValueError,match='hash'): bundle.verify(tmp_path/'out')
     with pytest.raises(FileExistsError): bundle.extract(archive,tmp_path/'out')
 
@@ -200,10 +200,10 @@ def test_thermal_stop_without_wait(tmp_path,monkeypatch):
 def test_sha_validator_mutation_detected(tmp_path,monkeypatch):
     # A disabled digest guard must make our corruption regression fail to raise.
     original=tmp_path/'original';original.write_bytes(b'good')
-    bundle.write_archive(tmp_path/'bundle.tar.gz',{'source/a':original},{})
+    bundle.write_archive(tmp_path/'bundle.tar.gz',{'source/V6/research_lab/a.py':original},{})
     bundle.extract(tmp_path/'bundle.tar.gz',tmp_path/'out')
-    expected=bundle.digest(tmp_path/'out/source/a')
-    (tmp_path/'out/source/a').write_bytes(b'evil')
+    expected=bundle.digest(tmp_path/'out/source/V6/research_lab/a.py')
+    (tmp_path/'out/source/V6/research_lab/a.py').write_bytes(b'evil')
     with pytest.raises(ValueError):bundle.verify(tmp_path/'out')
     monkeypatch.setattr(bundle,'digest',lambda p:expected)
     with pytest.raises(pytest.fail.Exception):
@@ -337,11 +337,11 @@ def test_forged_timestamp_pyc_removed_before_import(tmp_path):
 
 def test_bundle_excludes_and_extract_rejects_executable_cache(tmp_path):
     source=tmp_path/'payload';source.write_bytes(b'evil')
-    mf=bundle.write_archive(tmp_path/'a.tar.gz',{'source/__pycache__/a.pyc':source,'source/a.py':source},{})
-    assert set(mf['files'])=={'source/a.py'}
+    mf=bundle.write_archive(tmp_path/'a.tar.gz',{'source/__pycache__/a.pyc':source,'source/V6/research_lab/a.py':source},{})
+    assert set(mf['files'])=={'source/V6/research_lab/a.py'}
     archive=tmp_path/'evil.tar.gz'
     with tarfile.open(archive,'w:gz') as tf:
-        m=tarfile.TarInfo('source/a.pyc');m.size=4;tf.addfile(m,io.BytesIO(b'evil'))
+        m=tarfile.TarInfo('source/V6/research_lab/a.pyc');m.size=4;tf.addfile(m,io.BytesIO(b'evil'))
     with pytest.raises(ValueError):bundle.extract(archive,tmp_path/'out')
     assert not (tmp_path/'out').exists()
 
@@ -432,8 +432,91 @@ def test_operations_require_abi_stop_and_preimport_cleanup():
         assert term in text,term
 
 
-def test_p4_knowledge_records_committed_candidate_and_uncommitted_repair():
+def test_p4_knowledge_preserves_candidate_authority_status():
     for name in ('Current_State.md','Authority_Map.md','Worktree_Register.md'):
         text=(bundle.ROOT/'knowledge/00_Project_Map'/name).read_text().split('## P4a',1)[1].split('\n## ',1)[0]
-        assert '8cb61c4' in text and '尚未提交' in text
+        assert 'UNMERGED' in text and 'NOT_ACCEPTED' in text
         assert 'NOT_ACCEPTED' in text and 'NOT_DEPLOYED' in text
+
+
+def _review_archive(tmp_path, files):
+    import hashlib
+    mf = {'version': 'p4-bundle-v1', 'files': {
+        n: {'bytes': len(b), 'sha256': hashlib.sha256(b).hexdigest()} for n, b in files.items()}}
+    archive = tmp_path/'review.tar.gz'
+    with tarfile.open(archive, 'w:gz') as tf:
+        for name, data in {**files, 'bundle-manifest.json': json.dumps(mf).encode()}.items():
+            member = tarfile.TarInfo(name); member.size = len(data)
+            tf.addfile(member, io.BytesIO(data))
+    return archive
+
+
+def test_review_pax_payload_bounded_before_parser(tmp_path, monkeypatch):
+    import gzip
+    header = tarfile.TarInfo('pax'); header.type = tarfile.XHDTYPE; header.size = 2**40
+    archive = tmp_path/'pax.tar.gz'
+    compressed = gzip.compress(header.tobuf(format=tarfile.GNU_FORMAT), mtime=0)
+    archive.write_bytes(compressed + b'\0' * (81 - len(compressed)))
+    assert archive.stat().st_size == 81
+    requests = []
+    original = gzip.GzipFile.read
+    def guarded(stream, size=-1):
+        requests.append(size)
+        if size > 1024*1024 or size < 0:
+            raise RuntimeError('REVIEW_SENTINEL oversized decompression read')
+        return original(stream, size)
+    monkeypatch.setattr(gzip.GzipFile, 'read', guarded)
+    with pytest.raises(ValueError): bundle.extract(archive, tmp_path/'out')
+    assert max(requests) <= 1024*1024 and not (tmp_path/'out').exists()
+    print(f'PAX archive_bytes={archive.stat().st_size} requested_sizes={requests} destination_exists=False')
+
+
+@pytest.mark.parametrize('relative', ['', 'source', 'source/V6/research_lab'])
+def test_review_directory_swap_writes_no_outside_bytes(tmp_path, monkeypatch, relative):
+    import os
+    archive = _review_archive(tmp_path, {'source/V6/research_lab/a.py': b'payload'})
+    outside = tmp_path/'outside'; outside.mkdir()
+    victim = tmp_path/'out'/relative
+    mkdir = os.mkdir
+    swapped = []
+    def swap(path, mode=0o777, *, dir_fd=None):
+        result = mkdir(path, mode, dir_fd=dir_fd)
+        if not swapped and victim.is_dir():
+            victim.rmdir(); victim.symlink_to(outside, target_is_directory=True); swapped.append(True)
+        return result
+    monkeypatch.setattr(os, 'mkdir', swap)
+    with pytest.raises((ValueError, OSError)): bundle.extract(archive, tmp_path/'out')
+    assert swapped and not list(outside.rglob('*'))
+    print('RACE outside_written=False')
+
+
+@pytest.mark.parametrize('name', ['source/sitecustomize.py', 'source/V6/sitecustomize.py',
+    'source/V6/research_lab/usercustomize.py', 'source/V6/research_lab/conftest.py',
+    'source/V6/research_lab/setup.py', 'source/V6/research_lab/evil.so',
+    'source/V6/research_lab/evil.pyd', 'source/V6/research_lab/evil.pth',
+    'source/other/a.py', 'reference/sitecustomize.py', 'folds/fold_2021/evil.npy'])
+def test_review_rejects_matching_manifest_startup_paths(tmp_path, name):
+    archive = _review_archive(tmp_path, {name: b'raise RuntimeError("startup")'})
+    with pytest.raises(ValueError): bundle.extract(archive, tmp_path/'out')
+    assert not (tmp_path/'out').exists()
+
+
+def test_review_manifest_budget_applies_during_raw_preflight(tmp_path, monkeypatch):
+    import gzip
+    # Manifest first: a following physical payload cannot consume bytes beyond its
+    # declared sum plus fixed metadata allowance, even before tarfile is invoked.
+    manifest = json.dumps({'version': 'p4-bundle-v1', 'files': {}}).encode()
+    m = tarfile.TarInfo('bundle-manifest.json'); m.size = len(manifest)
+    extra = tarfile.TarInfo('source/V6/research_lab/a.py'); extra.size = 8192
+    archive = tmp_path/'budget.tar.gz'
+    archive.write_bytes(gzip.compress(m.tobuf()+manifest+b'\0'*((-len(manifest))%512)+extra.tobuf()+b'x'*8192+b'\0'*1024))
+    monkeypatch.setattr(bundle, 'MAX_ARCHIVE_OVERHEAD', 2048)
+    monkeypatch.setattr(bundle, 'MAX_MANIFEST_BYTES', 512)
+    reads = []
+    original = gzip.GzipFile.read
+    def capture(stream, size=-1):
+        data = original(stream, size); reads.append(len(data)); return data
+    monkeypatch.setattr(gzip.GzipFile, 'read', capture)
+    with pytest.raises(ValueError): bundle.extract(archive, tmp_path/'out')
+    assert sum(reads) <= 2560
+    assert not (tmp_path/'out').exists()

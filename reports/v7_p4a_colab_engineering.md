@@ -299,3 +299,156 @@ Overall: WARNING
 ```
 
 最終 Git status：detached HEAD `8cb61c4`；10 tracked modified、0 staged、0 untracked。依 no-commit 指示保留 dirty patch，沒有宣稱 clean。Commit／Push／Merge／Deploy：均未執行。TEMPORARY inventory `/tmp/p4a-repair-identities.json` 保存本次changed paths與logs SHA，可由本節的source／command重建；不是formal研究artifact。
+
+## 第二輪獨立複審 findings 修補 — base 05cb840／2026-11-21
+
+本節為本輪最新工程狀態，前節測試／hash／提交描述屬其各輪歷史證據，不代表本輪 source。候選與第一輪修補已分別保存為 `8cb61c4`、`05cb840`。本輪 `job-run-mwqew35j-886363` builder 沿用既有 `fixer2_p4a` detached HEAD `05cb840b5f4309844794d30bd4762abbcde49a13`，起始 clean。依 Human EXECUTE_APPROVED 限制，不 commit／push／merge／新增代理，不做 GPU／網路／Colab／data acquisition／production／scheduler／deployment／wakeups。第二輪 patch 尚待後續獨立 commit（hash 未產生），始終 UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。
+
+Changed：`V6/research_lab/p4_bundle.py`、`V6/research_lab/tests/test_p4.py`、`docs/operations/colab-p4.md`、本工程報告、`knowledge/00_Project_Map/{Current_State,Authority_Map,Worktree_Register}.md`、`knowledge/01_Domains/Training.md`。沿用現有實作與測試／文件樹，不新增 implementation tree、artifact tree 或 worktree。禁止修改的 `rolling_seq_scores.py`／`portfolio_eval.py` 保持原位元。
+
+Decisions：
+
+- 先於 tarfile.open，以 gzip bounded reader／TarInfo.frombuf 檢查 physical header，不觸發 PAX／GNU 自動展開。單次解壓請求最多1 MiB、extended payload最多64 KiB、physical headers最多20,000、metadata overhead最多32 MiB；連續 extended headers 拒絕，避免遞迴解析。各次掃描全域上限256 GiB＋32 MiB，manifest 出現後立即收緊為宣告總和＋4 MiB＋32 MiB；manifest 在末尾時回溯核對此前讀取，仍先受全域上限與metadata上限約束。先physical掃描，再tarfile串流 inventory，最後串流寫入；同一開啟archive inode，無全量RAM或暫存解壓副本，但增加三次gzip掃描成本。真實大型bundle效能未知。
+- Linux 目錄描述符從 `/` 逐層 O_DIRECTORY|O_NOFOLLOW 開啟 ancestors／destination／payload directories，mkdir 使用 dir_fd；輸出使用 O_NOFOLLOW|O_EXCL。中途 symlink 替換會拒絕且不跟隨；失敗保留partial destination供盤點，不自動刪除／重試。
+- pack／extract／verify 共用 bundle 路徑白名單：兩個既有 source Python 子樹（無tests/cache）、三個指定文件、指定fold年份／九個檔名、兩個reference、lock、manifest。任何位置的 sitecustomize.py／usercustomize.py／conftest.py／setup.py／*.pth／*.so／*.pyd 均拒絕，manifest 一致也不授權。原泛用 `source/a` 測試fixture改為合法 `source/V6/research_lab/a.py`，保留其round-trip／hash反證目的。
+- 外部 archive SHA 由 Human 在可信環境記錄並於 Colab 重新核對；SHA 失守則整個 bundle 不可信。Archive內自報manifest不能證明來源，bootstrap需獨立核對；白名單不能證明惡意但受信SHA的Python source安全。可信本機帳號／parent權限仍屬前提；descriptor不是防任意同權限程序搬移已開啟目錄、改寫archive inode／Python程序的sandbox。
+- 三份project map如實區分 `8cb61c4`／`05cb840` 與本輪no-commit patch；測試只要求UNMERGED／NOT_ACCEPTED／NOT_DEPLOYED，不鎖提交狀態。Current State 的P4區段只保留本輪一組最終全套數字。沒有替Human凍結五項OPEN研究決策或授予Colab acceptance。
+
+Evidence — 先新增測試再修實作，實際 RED（原實作）：
+
+```text
+RuntimeError: REVIEW_SENTINEL oversized decompression read
+AssertionError: outside/V6/research_lab/a.py exists
+Failed: DID NOT RAISE ValueError  # matching manifest startup/non-allowlisted paths
+13 failed, 53 deselected in 1.89s
+```
+
+初版修補再新增「manifest-first立即收緊」回歸，先RED後修正：
+
+```text
+assert 20480 <= 2560
+1 failed, 68 deselected in 1.43s
+```
+
+最初巨大PAX案例使用同一GNU base-256 header／1 TiB宣告，之後補齊gzip合法零尾端，固定為審查指定的81 bytes。Directory swap由一處擴充為目的根／source中間層／research_lab末層三處；GREEN實際：
+
+```text
+PAX archive_bytes=81 requested_sizes=[512] destination_exists=False
+RACE outside_written=False
+RACE outside_written=False
+RACE outside_written=False
+15 passed, 53 deselected in 1.41s
+```
+
+補上manifest累計回歸後focused：`69 passed in 10.45s`。四項純記憶體變異，不修改磁碟source；實際執行新測試，各自pytest exit1，外層harness僅在預期失敗時exit0：
+
+```text
+IN_MEMORY pax pytest_exit=1 KILLED=True       # 恢復HEAD舊extract，巨大讀取sentinel
+IN_MEMORY race pytest_exit=1 KILLED=True      # 恢復字串路徑寫入，outside出現檔案
+IN_MEMORY allowlist pytest_exit=1 KILLED=True # 停用白名單，DID NOT RAISE
+IN_MEMORY budget pytest_exit=1 KILLED=True    # 移除manifest收緊，20480 > 2560
+```
+
+TEMPORARY／可重建證據：`/tmp/p4a-round2-{red,budget-red,focused,full}.log`、`/tmp/p4a-round2-mut-{pax,race,allowlist,budget}.log` 與 `/tmp/p4a-round2-mutate.py`。Inputs全部為pytest隔離合成bundle／matrix，不讀寫formal Data或V6/models。測試用Python3.12.3：`/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python`；CPU torch2.15.0+cpu，MARKETMAMBA_DATA_ROOT unset，Data為普通目錄，realpath為本worktree/Data。
+
+Remaining／Blockers：真實Colab wheel／kernel／GPU、Drive FUSE fsync／斷線／持久性、provider CU、大型bundle速度與實際研究grid均未驗證。五項研究決策仍OPEN／契約DRAFT；正式P4依然NO_GO。CPU回歸不是Human acceptance。依禁止新增agents，本輪只有作者五軸自查及executable evidence，未執行獨立複審。Next recommended action：主控獨立複審patch與證據，再由Human決定現場環境驗證／研究凍結。
+
+Knowledge-impact：semantics YES（bundle接收／資源與路徑gate）、authority NO、subsystem boundary NO、active runtime NO、correctness gate YES、canonical artifact NO、deprecation NO、major blocker／next decision NO。Project memory updated YES；Authority map updated YES（僅候選事實／安全與信任邊界，不升格authority）；Training domain與Worktree Register同change更新。Git status：起始clean，結束依no-commit保留八個指定檔案unstaged dirty、無既有dirty/untracked；Commit N/A，Push未執行，Worktree沿用既有fixer2_p4a，Runtime/environment上述CPU環境。
+
+本輪最終完整測試命令（固定 source，停寫 bytecode／pytest cache）：
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=V6:V6/research_lab/tests:. /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests tests -q -p no:cacheprovider
+```
+
+實際完整 stdout／stderr（exit 0）：
+
+```text
+........................................................................ [ 11%]
+........................................................................ [ 22%]
+........................................................................ [ 33%]
+........................................................................ [ 44%]
+........................................................................ [ 55%]
+........................................................................ [ 66%]
+........................................................................ [ 77%]
+........................................................................ [ 89%]
+.........s.............................................................  [100%]
+=============================== warnings summary ===============================
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+  /tmp/pytest-of-frank/pytest-38/test_mutation_controls_session0/mutant.py:93: Pandas4Warning: Timestamp.dayofweek is deprecated and will be removed in a future version. Use Timestamp.day_of_week instead.
+    sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+646 passed, 1 skipped, 4 warnings in 161.32s (0:02:41)
+```
+
+646 = 原630 + 本輪16個新案例；P4共69個。既有1 skip與4個Timestamp.dayofweek棄用warning保留，未刪測試或放寬研究gate。
+
+Knowledge-impact checker exit0／WARNING，8 changed paths；已覆核Operations與GOVERNANCE，既有operation／scheduler／治理政策不變，不需改寫。語義已在Current State、Authority Map、Training、Worktree Register同change更新。AST syntax 2 files、DRAFT JSON／lock SHA、487個變更Markdown本地references（missing=[]）、git diff --check通過。對 `e4f21c3` 基準，rolling_seq_scores.py 50,048 bytes與portfolio_eval.py 50,314 bytes均diff 0 bytes。
+
+Knowledge health `--ci --as-of 2026-11-21` exit0，沒有structural FAIL，實際輸出：
+
+```text
+KNOWLEDGE HEALTH
+
+Project Map        PASS
+Agent Guides       PASS
+Domains            PASS
+Governance         WARNING
+Authority Drift    WARNING
+Runtime Freshness  PASS
+Generated Index    PASS
+Legacy Docs        WARNING
+
+Overall: WARNING
+```
+
+本輪受驗source／TEMPORARY驗證log／變異harness identities（不是formal artifacts）：
+
+```json
+{
+  "V6/research_lab/p4_bundle.py": {
+    "bytes": 18220,
+    "sha256": "a9405454986e3b285d391da8abee5d3225b997d5d3dfa85e04c383de2841b97a"
+  },
+  "V6/research_lab/tests/test_p4.py": {
+    "bytes": 27904,
+    "sha256": "5496f4ff08944c70bcd31facb994e25071c3ea2883614c3164390aa80bfadf9f"
+  },
+  "/tmp/p4a-round2-full.log": {
+    "bytes": 1963,
+    "sha256": "085a6c59c0b263281f4509a7f971fd00bbbe54ddbf251ba8c1fd1ebaeeca91b8"
+  },
+  "/tmp/p4a-round2-red.log": {
+    "bytes": 17468,
+    "sha256": "ca1f7ea1047c07d83002764af3fb5162adc35a43c9193a4a38cd5db93654af6d"
+  },
+  "/tmp/p4a-round2-budget-red.log": {
+    "bytes": 1933,
+    "sha256": "ad103f109a06c140e6ce2963c38942a28a377772dddc9f4a46fbdecc426bf6c8"
+  },
+  "/tmp/p4a-round2-mutate.py": {
+    "bytes": 1765,
+    "sha256": "2474a0803a410a3e497ab6f2009a966576c3f1c24c95532f978620c5ba0e6b6c"
+  },
+  "/tmp/p4a-round2-mut-pax.log": {
+    "bytes": 3482,
+    "sha256": "2224650552f31d22b4b73f4ed3ded3dd90b87d127e5cb87eb8d80ec174a05573"
+  },
+  "/tmp/p4a-round2-mut-race.log": {
+    "bytes": 2428,
+    "sha256": "a736a1f29cdad64c0e5624b50e9fbbdc9caafdb602a3c4bf6aecc7cdb7bf8c24"
+  },
+  "/tmp/p4a-round2-mut-allowlist.log": {
+    "bytes": 1384,
+    "sha256": "3c6bcb088383fee78e2ea70c5c2f0a9e8a3a6fbf8eb54693b0f9cc7a7c1187eb"
+  },
+  "/tmp/p4a-round2-mut-budget.log": {
+    "bytes": 1961,
+    "sha256": "62635e4cae5fb36c705d18d1a36411ca0ce78529e87d08ed0fd4325732583b29"
+  }
+}
+```
