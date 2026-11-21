@@ -16,54 +16,59 @@ sha256sum /ABSOLUTE/NEW/p4a.tar.gz
 
 輸出為單一 tar.gz，內含 research source、P4契約／指南、9個原始fold檔、P1分數及manifest、原樣 exact lock、逐檔 size/SHA manifest。不含 `X_rankgauss.npy`。不要用 P3 bundle、cache、result 充當 P4 identity。真實大型 bundle 未由本 worker 打包；須由 Human 核對磁碟／上傳時間及 manifest。此處 self-contained 指 source/data/lock；套件 wheel 仍需取得，並非離線 wheelhouse。
 
-2. 上傳 `p4a.tar.gz` 到 Drive 的 `MyDrive/MarketMambaP4/inputs/`。另將受信任 checkout 中的 `V6/research_lab/p4_bundle.py` 上傳同處作標準庫 bootstrap；在執行它前，以本機 SHA 核對。這是 bundle 內相同 source 的副本，避免先對未驗證 tar 做一般解壓。建立 Colab，選 GPU runtime（高 RAM 視供應）；不可直接假定有70–80GB RAM。先掛載 Drive：
+2. 上傳 `p4a.tar.gz` 到 Drive 的 `MyDrive/MarketMambaP4/inputs/`。另將受信任 checkout 中的 `V6/research_lab/p4_bundle.py` 上傳同處作標準庫 bootstrap；不需手動貼 bootstrap SHA。這是 bundle 內相同 source 的副本，避免先對未驗證 tar 做一般解壓。建立 Colab，選 GPU runtime（高 RAM 視供應）；不可直接假定有70–80GB RAM。先掛載 Drive：
 
 ```python
 from google.colab import drive
 from pathlib import Path
-import hashlib, importlib.util, subprocess, sys
+import importlib.util, subprocess, sys
 
 drive.mount('/content/drive')
 base = Path('/content/drive/MyDrive/MarketMambaP4')
 bootstrap = base/'inputs/p4_bundle.py'
-assert hashlib.sha256(bootstrap.read_bytes()).hexdigest() == '貼上本機p4_bundle.py完整SHA256'
 spec = importlib.util.spec_from_file_location('p4_bootstrap', bootstrap)
 p4 = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(p4)
 archive = base/'inputs/p4a.tar.gz'
 root = Path('/content/p4a')  # 首次必須不存在，拒絕覆寫；重連見下方
-p4.extract(archive, root, expected_sha256='貼上本機tar.gz完整SHA256')
+p4.extract(archive, root)  # 自動印出 archive SHA；內部逐檔 size/SHA 仍自動核驗
 # extract 已完整 verify；在匯入任何 source 模組前，清除 executable cache。
 p4.prepare_source(root)
 p4.verify(root)
 ```
 
-3. 檢查 runtime GPU／Python／RAM，產生安裝指令。舊 `archive/notebooks/V5_5_Training.py` Cell1 使用先 causal-conv1d 再 mamba-ssm 預編譯 wheel；`archive/MarketMamba_V3.ipynb` Cell1 使用 Drive wheel。沿用 wheel 策略，實際版本／URL／wheel SHA 以 bundle exact lock 為準（torch2.10.0+cu128／mamba2.3.2.post1／causal1.7.0），不用舊 notebook 的1.6.0／2.3.0。此處沒有重新 clone、資料抓取、production 或 scheduler 步驟。
+3. 切換 Colab runtime 版本＋Drive wheel 路徑：Human 可在 Colab 的 runtime 版本選項選擇與 wheel 相容的歷史版本（例如 2026 年 3 月；實際選項依現場為準），然後選 GPU runtime。這是手動選擇 runtime，不是在儲存格自行升降級 Python／torch。Human 提供 Drive `MyDrive/Mamba_Wheels_T4/` 內兩個 2026-03-04 建立的檔名：`mamba_ssm-2.3.0-cp312-cp312-linux_x86_64.whl`、`causal_conv1d-1.6.0-cp312-cp312-linux_x86_64.whl`。這些資訊不是目前已安裝環境的觀測；實際 Python／torch／CUDA／ABI／套件版本仍待自檢與 pip list。
 
 ```python
 import torch
 assert torch.cuda.is_available(), 'STOP: no CUDA'
-assert sys.version_info[:2] == (3, 12), 'STOP: cp312 wheel requires Python3.12'
 subprocess.run(['nvidia-smi'], check=True)
 print(Path('/proc/meminfo').read_text().splitlines()[:3])
-commands = p4.installation_commands(root)
+commands = p4.installation_commands(
+    root, wheel_dir='/content/drive/MyDrive/Mamba_Wheels_T4')
 print('\n'.join(commands))
 ```
 
-Human 核對列出的 exact lock 安裝程序後，另一儲存格執行；這會使用網路／套件安裝，僅由 Human 在獲授權的 Colab 執行：
+這個模式列出找到的兩個 wheel 檔名、版本、cp／ABI／平台標籤及 SHA（只記錄），並與目前 Python 的支援標籤核對；不符、缺檔或有多個版本皆 STOP 並說明。只有每個套件恰好一個相容 wheel 才產生 `pip install --no-deps --no-index --find-links <dir> <兩個wheel路徑>`；不重裝其餘套件、不升降級 torch，也不編譯。標籤匹配不能證明 torch/CUDA ABI 或 kernel 相容，仍須現場測試。
+
+Human 核對指令後，在已獲授權的 Colab 儲存格執行：
 
 ```python
 for command in commands:
     subprocess.run(command, shell=True, check=True)
 ```
 
-安裝使用 `--only-binary=:all:`，無相符 wheel 即 STOP，不臨時編譯或猜測 ABI。若需要 restart runtime，先重連 Drive，再匯入 bootstrap；不要重複解壓至已有 root。若 pip check 失敗或 exact lock 任一套件無可用 wheel，需 Human 決定相容 runtime／重新審查 lock，不能放寬版本。cp312/linux_x86_64/cu12/torch2.10/cxx11abiTRUE 必須相容；A100、L4、T4 等實際 kernel 支援與 forward/backward smoke 仍須現場確認，CPU 測試不能證明。
+最後會執行 `pip check`；依賴不滿足就 STOP，不自動安裝其他套件。若缺必要套件，由 Human 決定後續相容環境。若要使用原本本機 P3 exact lock 的完整 only-binary 安裝路徑，可改用 `p4.installation_commands(root)`，該路徑會重裝 lock 套件、可能改動 torch，與 Drive 模式不同；需另行核對相容性。原 lock 保持不變。
+
+安裝後保存 `python -m pip list --format=json`、下方 runtime 自檢、driver／GPU 資訊。Human 提供輸出後，由實作者填入獨立 [Colab 環境契約](../../environments/p4a-colab-runtime.json) 的實際版本、`observed_at` 與 observation source，確認完整後設 `status=OBSERVED`，重新 pack 以綁定新的 identity。初始 TBD 不代表已知相容組合，正式模式會 STOP。
+
+P4a 三臂 mamba2／crossstock／GRU 在同一個 Colab 環境 identity 跑才可作臂間比較。與本機 P3（mamba-ssm 2.3.2.post1）的跨環境比較必須揭露套件／runtime 差異，不宣稱等價。speed-test 允許 lock／契約版本不符，會在 stdout、run binding 與每個 speed JSON 保存 `environment_mismatch` 的每項 expected／actual 及「結果不可與正式環境比較」。這不放寬正式模式或 CUDA gate。
 
 4. 在新 Python 程序先跑 speed-test。同一個持久 budget root 跨 speed／正式共用，不能換資料夾重置帳本。以下預算數字是佔位符，須先由 Human 核定總小時、CU上限、該GPU保守CU/hour及每fit預估；至少25%餘裕由程式強制。費率及預估必須為正數；`planned-hours-per-fit` 也作每個驗證／rankgauss stage的保守預估，應取足以涵蓋最慢stage的值。Bundle／runtime驗證和rankgauss前處理同樣入帳。上傳、pip安裝、人工閒置不在runner計時範圍，須另外對照Colab UI核計並預留總額，不能把runner ledger稱為完整Google帳單。CU 是估算帳本，另須記錄 Colab UI 實際扣點／費率，不能稱已串接 Google billing API。
 
 ```python
 import os
-# 由已核對 SHA 的標準庫 bootstrap 執行；此時不可先 import bundled research_lab。
+# 由受信任 checkout 上傳的標準庫 bootstrap 執行；此時不可先 import bundled research_lab。
 p4.prepare_source(root)  # 重連時也先清除所有 source __pycache__ / .pyc / .pyo
 p4.verify(root, allow_derived=True)
 training_env = dict(os.environ, PYTHONPATH=f'{root}/source/V6:{root}/source', PYTHONDONTWRITEBYTECODE='1')
@@ -108,23 +113,24 @@ for marker in Path('/ABSOLUTE/DOWNLOADED/budget').glob('run-*/*/complete.json'):
 在安裝以及 speed-test 前各執行環境自檢；下列是供 Human 在 Colab 執行的指令，本輪沒有執行 Colab、下載或安裝：
 
 ```bash
-python -c 'import sys, torch, subprocess; print("python", sys.version); print("torch", torch.__version__); print("cuda", torch.version.cuda); print("cxx11abi", torch._C._GLIBCXX_USE_CXX11_ABI); print("available", torch.cuda.is_available()); print("gpu", torch.cuda.get_device_name(0) if torch.cuda.is_available() else "NONE"); subprocess.run(["nvidia-smi"], check=True)'
+python -c 'import sys, torch, subprocess; print("python", sys.version); print("torch", torch.__version__); print("cuda", torch.version.cuda); print("cxx11abi", torch._C._GLIBCXX_USE_CXX11_ABI); import sysconfig; print("platform", sysconfig.get_platform().replace("-", "_")); print("available", torch.cuda.is_available()); print("gpu", torch.cuda.get_device_name(0) if torch.cuda.is_available() else "NONE"); subprocess.run(["nvidia-smi"], check=True)'
 python -m pip check
+python -m pip list --format=json
 ```
 
-1. Python 不是 3.12、torch 不是 2.10.0+cu128、torch CUDA 不是 12.8、cxx11abi 不是 TRUE 或無可用 GPU：STOP，保存自檢 stdout／stderr、driver、GPU 型號與 lock SHA，回報 Human。不得自行升降級 Python／torch／CUDA、重寫 lock、改 ABI 或現場編譯。
-2. 基礎 runtime 符合：Human 才可依已核定 exact lock 執行指南中的 only-binary 安裝。wheel 不存在／下載失敗／pip check 衝突：STOP 並保存原始錯誤；歷史 notebook 成功不能證明此版本組合相容。
-3. 安裝後重跑自檢與 p4_colab.environment 的 exact package 驗證；任何不符仍 STOP。版本符合僅證明 identity，尚須獨立授權的官方 GPU forward/backward、kernel 與 speed-test，不能由 CPU 合成測試替代。
-4. Driver／GPU 架構相容性、Drive FUSE 的 fsync／atomic rename／斷線持久性沒有在本輪驗證。失敗保存 artifact／帳本，不換 root、不刪 STOP、不自動重試；由 Human 決定相容 runtime 或重新審查 lock。新的 lock／recipe 必須有新 identity 與重新審查，不沿用舊 run 的完成證據。
+1. CUDA 不可用：speed／正式模式一律 STOP。不得自行升降級 Python／torch／CUDA、改 ABI 或現場編譯來繞過；Human 可先手動切換相容 runtime 版本，再核對 Drive wheel 標籤。
+2. Drive wheel 的 Python／ABI／平台標籤不符、缺失／多版本或 pip check 失敗：STOP 並保存原始輸出。cp312 wheel 需要相容的 Python 3.12；檔名不含 torch/CUDA ABI 資訊不能推定相容。預設完整 lock 路徑保留 Python3.12 gate。
+3. 安裝後保存完整自檢與 pip list。speed-test 遇版本不符會繼續並完整記錄 `environment_mismatch`，標記「結果不可與正式環境比較」；正式模式要求 Colab runtime 契約為 OBSERVED、所有列出的套件與 runtime 完全一致，TBD／缺套件／版本差異均 STOP。舊本機 lock 差異另存 `local_lock_mismatch`，不拿本機 P3 lock 取代 Colab 正式契約。
+4. Driver／GPU 架構相容性、Drive FUSE 的 fsync／atomic rename／斷線持久性仍 UNVERIFIED。保存 artifact／帳本，不換 root、不刪 STOP、不自動重試；新的契約／bundle 必須有新 identity，不沿用舊 run 完成證據。CPU 合成測試不證明 GPU 可執行。
 
 Bundle 資源限制：單檔最多64 GiB、解壓總量（含 manifest）最多256 GiB、成員最多10,000、manifest最多4 MiB；實際 tar header 大小須逐檔等於 manifest 宣告，且總量等於宣告總和加 manifest 大小。所有檢查在建立目的目錄前完成；sparse member、.pyc／.pyo／__pycache__ 均拒絕。這些是工程安全上限，不是已驗證大型 bundle 能放入現場 RAM／磁碟的承諾。
 
 
 ## Bundle 信任與解壓邊界
 
-外部 archive SHA 由 Human 在可信環境記錄並於 Colab 重新核對；SHA 失守則整個 bundle 不可信。SHA 必須來自 bundle 外的可信紀錄，不可採用 archive 內自報的 SHA；bootstrap 同樣必須獨立核對。合法 source 本身會執行 Python，白名單不能證明惡意 source 安全，也不取代程式審查。
+Archive SHA 與 bootstrap SHA 不需 Human 手動貼入。`extract`／CLI 省略 `--sha256` 時只計算並印出 archive SHA 供記錄，仍自動逐檔核對 manifest 的 size/SHA；提供 `--sha256` 時必須嚴格相符，否則在寫入前 STOP。內部 manifest 驗證確認 bytes 一致性，不能自證來源；bootstrap 仍從受信任 checkout 上傳，合法 source 的安全性仍需程式審查。此段依本輪 Human 明確決策 supersede 舊版指南的外部 SHA 必填要求，資源上限、symlink 防護與白名單不變。
 
-白名單只允許 `source/V6/research_lab/**/*.py`、`source/V6/experimental/**/*.py`（排除 tests／cache）、指定 P4 contract／spec／操作指南、`folds/fold_2021` 至 `fold_2026` 的九個 MATRIX_FILES、P1 reference 的兩個指定檔、`requirements.lock.txt` 與 `bundle-manifest.json`。任何位置的 sitecustomize.py、usercustomize.py、conftest.py、setup.py、*.pth、*.so、*.pyd 均拒絕，非白名單檔也拒絕；manifest 一致不授予額外路徑權限。
+白名單只允許 `source/V6/research_lab/**/*.py`、`source/V6/experimental/**/*.py`（排除 tests／cache）、指定 P4 contract／spec／操作指南／`source/environments/p4a-colab-runtime.json`、`folds/fold_2021` 至 `fold_2026` 的九個 MATRIX_FILES、P1 reference 的兩個指定檔、`requirements.lock.txt` 與 `bundle-manifest.json`。任何位置的 sitecustomize.py、usercustomize.py、conftest.py、setup.py、*.pth、*.so、*.pyd 均拒絕，非白名單檔也拒絕；manifest 一致不授予額外路徑權限。
 
 在 tarfile 開啟之前，以最多1 MiB的單次讀取逐一預檢 physical header；extended payload 最多64 KiB、拒絕連續 extended headers以避免遞迴解析。每次掃描累計受256 GiB＋32 MiB硬上限與 manifest 宣告總和＋4 MiB＋32 MiB限制。Manifest 一出現立即收緊；若在末尾則事後核對此前用量，仍先受全域硬上限與32 MiB metadata overhead限制。共三次 gzip 串流掃描（physical preflight、解析 inventory、寫入），沒有全量 RAM／暫存解壓副本；真實大型 bundle 的 CPU／I/O 時間未量測。
 

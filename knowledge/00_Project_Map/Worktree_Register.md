@@ -1,5 +1,11 @@
 # Worktree Register
 
+## P4a Colab 操作修訂 builder — 2026-11-21
+
+- Purpose/task：可選外部 SHA、Drive wheel-dir、獨立 TBD Colab runtime 契約與 speed mismatch 記錄；owner Human/Codex builder。沿用既有 `.worktrees/ruflo-workers/run-mwqi30jf-aa0d7f/builder_p4a_colab_fix`，detached HEAD/base `36aa27da6e26c1877332c9cdea927e6409c3d105`；created2026-11-21，retired N/A，起始 clean，現在依明確 no-commit 指示保留 dirty patch。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。
+- Authority：DRAFT P4 machine contract／candidate runtime contract（TBD）／CPU tests；沒有 GPU／Colab／production authority。未新建 worktree、未修改 P3 gate、正式 Data 或 V6/models。
+- Merge/artifact dependency：獨立審查、Human pip list／runtime 自檢、研究凍結與另行授權現場驗證；本輪 TEMPORARY logs／合成 artifacts 在 `/tmp/p4-colab-fix-*`。Safe-removal preconditions：先保存未提交 patch／必要證據、處理引用並完成 retirement review，目前 dirty 不可移除。不 commit/push/merge/deploy。
+
 ## P4a Colab builder — 2026-11-21
 
 - Existing path `.worktrees/ruflo-workers/run-mwqd0vuy-7d9826/builder_p4a`；detached HEAD/base `e4f21c3747124f4c6cc46a873eae891697910067`；owner Human/Codex builder；task P4 bundle／Colab executor／GRU／CPU tests／DRAFT規格；created2026-11-21，retired N/A。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；原候選已提交於 `8cb61c4`；本輪不 commit/push/merge/GPU/Colab/network/agents。

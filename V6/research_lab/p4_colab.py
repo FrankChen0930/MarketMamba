@@ -118,7 +118,8 @@ def validate_fit_outputs(directory, contract, outputs):
         if names!={'speed.json'}: raise ValueError('speed outputs must contain timing only')
         report=json.loads((attempt/'speed.json').read_text())
         allowed={'version','evidence_class','arm','epochs','steps','epoch_seconds','step_seconds',
-                 'step_seconds_mean','gpu_model','telemetry','total_seconds','guard_wait_seconds'}
+                 'step_seconds_mean','gpu_model','telemetry','total_seconds','guard_wait_seconds',
+                 'environment_mismatch','comparability'}
         if set(report)!=allowed or report['evidence_class']!='ENGINEERING_SPEED_ONLY':
             raise ValueError('speed schema mismatch')
         return
@@ -250,12 +251,14 @@ def telemetry():
     return dict(gpu=name,temperature_c=values[0],clock_mhz=values[1],power_w=values[2],observed_at=time.time())
 
 
-def speed_report(arm,history,records,total,steps):
+def speed_report(arm,history,records,total,steps,environment=None):
     if len(history)!=2 or len(steps)!=200 or not records: raise ValueError('speed test requires exactly 2 epochs x 100 steps')
     finite_nonnegative(total,*steps,*[v['seconds'] for v in history])
     return dict(version='p4-speed-v1',evidence_class='ENGINEERING_SPEED_ONLY',arm=arm,epochs=2,steps=200,
                 epoch_seconds=[v['seconds'] for v in history],step_seconds=steps,step_seconds_mean=float(np.mean(steps)),
-                gpu_model=records[0]['gpu'],telemetry=records,total_seconds=total,guard_wait_seconds=0)
+                gpu_model=records[0]['gpu'],telemetry=records,total_seconds=total,guard_wait_seconds=0,
+                environment_mismatch=(environment or {}).get('environment_mismatch',[]),
+                comparability=(environment or {}).get('comparability','UNVERIFIED'))
 
 
 class Observer:
@@ -309,24 +312,66 @@ def rankgauss(directory):
     return digest(cache)
 
 
-def environment(lock):
+def environment_snapshot(package_names):
     import importlib.metadata
     import platform
+    import sysconfig
     import torch
-    from packaging.requirements import Requirement
     packages={}
-    for line in Path(lock).read_text().splitlines():
-        if not line.strip() or line.startswith('#'): continue
-        req=Requirement(line);actual=importlib.metadata.version(req.name);packages[req.name]=actual
-        expected={'mamba-ssm':'2.3.2.post1','causal-conv1d':'1.7.0'}.get(req.name)
-        # Direct wheel versions may carry the CUDA/torch ABI local suffix.
-        if (expected and actual.split('+')[0]!=expected) or (not req.url and actual not in req.specifier):
-            raise ValueError(f'exact environment mismatch: {req.name}={actual}')
-    if (torch.__version__!='2.10.0+cu128' or platform.python_version_tuple()[:2]!=('3','12') or
-        not torch._C._GLIBCXX_USE_CXX11_ABI):
-        raise ValueError('exact Python/torch runtime mismatch')
+    for name in sorted(package_names):
+        try: packages[name]=importlib.metadata.version(name)
+        except importlib.metadata.PackageNotFoundError: packages[name]=None
     return dict(packages=packages,python=platform.python_version(),cuda=torch.version.cuda,
-                gpu=torch.cuda.get_device_name(0),lock=digest(lock))
+                cxx11abi=bool(torch._C._GLIBCXX_USE_CXX11_ABI),
+                platform=sysconfig.get_platform().replace('-','_'),gpu=torch.cuda.get_device_name(0))
+
+
+def environment(lock, runtime_contract=None, speed=False):
+    """Colab contract governs formal runs; local P3 lock differences remain explicit."""
+    require_cuda()  # Never waived for engineering speed tests.
+    from packaging.requirements import Requirement
+    from packaging.utils import canonicalize_name, parse_wheel_filename
+    from urllib.parse import unquote, urlsplit
+    requirements=[]
+    for line in Path(lock).read_text().splitlines():
+        if line.strip() and not line.startswith('#'): requirements.append(Requirement(line))
+    if runtime_contract is None:
+        runtime_contract=Path(__file__).resolve().parents[2]/'environments/p4a-colab-runtime.json'
+    contract=json.loads(Path(runtime_contract).read_text())
+    expected_packages={canonicalize_name(k):v for k,v in contract['packages'].items()}
+    actual=environment_snapshot({canonicalize_name(r.name) for r in requirements}|set(expected_packages))
+    local=[];mismatch=[]
+    def difference(target,item,expected,observed):
+        target.append(dict(item=item,expected=expected,actual=observed))
+    for req in requirements:
+        name=canonicalize_name(req.name);value=actual['packages'].get(name)
+        if req.url:
+            expected=str(parse_wheel_filename(Path(unquote(urlsplit(req.url).path)).name)[1])
+            matches=value==expected
+        else:
+            expected=str(req.specifier);matches=value is not None and value in req.specifier
+        if not matches: difference(local,'lock:'+name,expected,value)
+    if contract.get('version')!='p4-colab-runtime-v1':
+        difference(mismatch,'contract:version','p4-colab-runtime-v1',contract.get('version'))
+    if contract.get('status')!='OBSERVED' or not contract.get('observed_at'):
+        difference(mismatch,'contract:status','OBSERVED with observed_at',contract.get('status'))
+    for key in ('python','cuda','cxx11abi','platform'):
+        expected=contract['runtime'].get(key)
+        if expected in (None,'TBD') or type(expected)!=type(actual.get(key)) or expected!=actual.get(key):
+            difference(mismatch,'contract:'+key,expected,actual.get(key))
+    # Empty/incomplete contracts cannot authorize a formal run.
+    for name in sorted(set(expected_packages)|{'torch','mamba-ssm','causal-conv1d','numpy','pandas','pyarrow','scipy','scikit-learn','einops','packaging'}):
+        expected=expected_packages.get(name);value=actual['packages'].get(name)
+        if expected in (None,'TBD') or expected!=value:
+            difference(mismatch,'contract:'+name,expected,value)
+    if speed: mismatch=local+mismatch
+    if mismatch and not speed:
+        raise ValueError('exact Colab environment mismatch: '+json.dumps(mismatch,sort_keys=True))
+    actual.update(lock=digest(lock),runtime_contract=digest(runtime_contract),
+                  environment_mismatch=mismatch,local_lock_mismatch=local,
+                  comparability='結果不可與正式環境比較' if mismatch else 'Colab contract matched; P3 cross-environment differences must be disclosed')
+    print(json.dumps(dict(environment_mismatch=mismatch,local_lock_mismatch=local,comparability=actual['comparability'])))
+    return actual
 
 
 def train_fit(directory,year,arm,seed,cfg,reference,observer):
@@ -377,7 +422,8 @@ def run(bundle,drive_root,speed,max_hours,max_units,rate,planned_hours,reserve=.
             for name,ident in mf['files'].items():
                 if name.startswith('source/') and digest(source_root/name.removeprefix('source/'))!=ident:
                     raise ValueError('executed source differs from bundle')
-            env=environment(bundle/'requirements.lock.txt')
+            env=environment(bundle/'requirements.lock.txt',
+                            runtime_contract=bundle/'source/environments/p4a-colab-runtime.json',speed=speed)
             contract=json.loads((bundle/'source/tasks/p4a-colab-contract-20261121.json').read_text())
             validate_contract(contract,mf['metadata']['years'],speed)
             if digest(bundle/'requirements.lock.txt')['sha256']!=contract['environment_lock']['sha256']:
@@ -438,7 +484,7 @@ def run(bundle,drive_root,speed,max_hours,max_units,rate,planned_hours,reserve=.
                     try:
                         frame,job=train_fit(directory,year,arm,seed,cfg,ref[ref.fold.eq(year)],observer)
                         if speed:
-                            report=speed_report(arm,job['history'],observer.records,time.perf_counter()-started,observer.steps)
+                            report=speed_report(arm,job['history'],observer.records,time.perf_counter()-started,observer.steps,environment=env)
                             write_json(attempt/'speed.json',report)
                             job=report
                         else:
@@ -473,6 +519,8 @@ def main(argv=None):
     p.add_argument('--planned-hours-per-fit',type=float,required=True);p.add_argument('--reserve',type=float,default=.25)
     a=p.parse_args(argv)
     result=run(a.bundle,a.drive_root,a.speed_test,a.max_hours,a.max_units,a.units_per_hour,a.planned_hours_per_fit,a.reserve)
-    print(json.dumps(dict(version=result['version'],jobs=len(result['jobs']),evidence_class=result['evidence_class'])))
+    print(json.dumps(dict(version=result['version'],jobs=len(result['jobs']),evidence_class=result['evidence_class'],
+                          environment_mismatch=result['binding']['environment'].get('environment_mismatch',[]),
+                          comparability=result['binding']['environment'].get('comparability'))))
 
 if __name__=='__main__':main()

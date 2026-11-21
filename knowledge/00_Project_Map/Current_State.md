@@ -1,3 +1,11 @@
+## P4a Colab 操作修訂候選 — 2026-11-21
+
+`job-run-mwqi30jf-aa0d7f` builder，既有 detached HEAD/base `36aa27da6e26c1877332c9cdea927e6409c3d105`，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依本輪明確 no-commit 授權留 patch。無 GPU／網路／Colab／正式 Data／模型／production／scheduler 變更，未 commit/push/merge。
+
+Human 已核准 archive／bootstrap 外部 SHA 不再必填：extract 自動印出 archive SHA，提供時嚴格核對；bundle 內逐檔 size/SHA、資源上限、symlink 防護與白名單仍強制。這取代本頁舊輪次「外部 SHA 必填」操作描述，不重標歷史證據。Drive `--wheel-dir` 模式只裝兩個 wheel（no-deps／no-index／find-links），記錄檔名／cp與平台標籤／SHA，標籤不相容或缺失／多版本 STOP；不改 torch 或其他套件。
+
+新增獨立 [Colab runtime 契約](../../environments/p4a-colab-runtime.json)，初始 TBD／UNOBSERVED，待 Human pip list 與 runtime 自檢填實際觀測版本，不猜 torch／CUDA 組合。本機 [P3 參考 lock](../../environments/p4a-colab.requirements.lock.txt) bytes 不改。speed-test 保存逐項 environment_mismatch 與「結果不可與正式環境比較」，正式模式要求 OBSERVED 契約完全相符，CUDA 不可用仍一律 STOP；DRAFT 研究 gate 不變。P4a 三臂須在同一 Colab 環境 identity；與本機 P3 的比較需揭露環境差異。程式／測試／[指南](../../docs/operations/colab-p4.md)／[報告](../../reports/v7_p4a_colab_engineering.md)是工程候選，沒有新研究結果或 Colab acceptance。Next：獨立審查 patch；Human 提供 pip list／runtime 自檢，完成契約觀測後重新 pack，仍須研究凍結與現場 GPU／Drive 驗證。
+
 ## P3 神經模型組合評估結果（探索性）— 2026-11-21
 
 ## P4a Colab 工程候選 — 2026-11-21

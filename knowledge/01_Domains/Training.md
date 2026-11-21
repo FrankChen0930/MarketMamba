@@ -9,7 +9,13 @@ Drive ledger以wall-hours與Human保守費率估計CU雙上限，剩餘完整gri
 
 P4a 審查修補（base `8cb61c4`，修補已保存於 `05cb840`／NOT_ACCEPTED）：speed 只保存計時與 telemetry，不保存 epoch state、IC、scores 或結論；正式 completed-fit 需 BEST／latest／previous pointer、weights/hash、scores/reference rows 與 metrics schema。Bundle 在寫入前限制成員及單檔／總量，拒絕 sparse／executable caches；trusted bootstrap 匯入 source 前清除 caches 並停寫 bytecode。規格全部待決選項仍 OPEN；2021–2025 已曝光，無新確認性 authority；ABI／GPU／Drive 仍 UNVERIFIED。
 
-第二輪 bundle gate（base `05cb840`，no-commit patch，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED）：tarfile 之前逐一讀 physical header，PAX／GNU extended payload 上限64 KiB、拒絕連續 extended headers；gzip 單次請求最多1 MiB，各掃描總量同時受256 GiB＋32 MiB與 manifest 宣告總和＋4 MiB＋32 MiB限制（manifest 出現後立即收緊，末尾宣告則回溯核驗）。三次串流掃描不將 archive 全量放入 RAM 或暫存解壓檔，增加 CPU／I/O 成本，真實大型 bundle 未量測。Linux 每層 ancestor 使用 dir_fd、O_DIRECTORY／O_NOFOLLOW；輸出以 O_NOFOLLOW／O_EXCL 開啟。Source 只接受兩個既有 Python 子樹與指定文件；其他內容依明確 matrix／reference／lock／manifest 清單，拒絕 startup hooks／native libraries／非白名單路徑。外部 archive SHA 由 Human 在可信環境記錄並於 Colab 重新核對；SHA 失守則整個 bundle 不可信。白名單不能替代可信 source 審查，且不是任意惡意本機程序的 sandbox；Colab bootstrap 與目的地 parent 的本機權限仍需可信。
+第二輪 bundle gate（base `05cb840`，no-commit patch，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED）：tarfile 之前逐一讀 physical header，PAX／GNU extended payload 上限64 KiB、拒絕連續 extended headers；gzip 單次請求最多1 MiB，各掃描總量同時受256 GiB＋32 MiB與 manifest 宣告總和＋4 MiB＋32 MiB限制（manifest 出現後立即收緊，末尾宣告則回溯核驗）。三次串流掃描不將 archive 全量放入 RAM 或暫存解壓檔，增加 CPU／I/O 成本，真實大型 bundle 未量測。Linux 每層 ancestor 使用 dir_fd、O_DIRECTORY／O_NOFOLLOW；輸出以 O_NOFOLLOW／O_EXCL 開啟。Source 只接受兩個既有 Python 子樹與指定文件；其他內容依明確 matrix／reference／lock／manifest 清單，拒絕 startup hooks／native libraries／非白名單路徑。當輪外部 SHA 必填策略已由下段 Human 操作修訂取代；內部 manifest 仍不能自證來源。白名單不能替代可信 source 審查，且不是任意惡意本機程序的 sandbox；Colab bootstrap 與目的地 parent 的本機權限仍需可信。
+
+### Colab 操作修訂（job-run-mwqi30jf-aa0d7f）
+
+UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。外部 archive／bootstrap SHA 不再必填，extract 自動記錄 archive SHA，提供時嚴格核對；內部逐檔 size/SHA 與安全解壓 gate 全保留。Drive wheel-dir 模式只以 no-deps／no-index 安裝 mamba_ssm、causal_conv1d，列檔名／標籤／SHA並核對 Python／平台；不碰 torch／其餘套件。白名單僅增指定 `source/environments/p4a-colab-runtime.json`，沒有放寬路徑規則。
+
+[Colab 環境契約](../../environments/p4a-colab-runtime.json) 是新的獨立 candidate artifact，由 bundle manifest 綁定逐檔 identity；原樣本機 P3 lock 無法承載不同且尚未知的 Colab runtime，因此沿用 environments 容器新增此檔，未另造環境 tree。初始 TBD，未觀測版本不能填成已知；正式模式要求 OBSERVED 且 runtime／列出套件完全相符。speed-test 允許 mismatch 並逐項記錄與標記結果不可與正式環境比較，CUDA 一律必須可用。P4a 三臂共用同一 Colab identity；P3 跨環境比較須揭露差異。依賴 Human pip list／runtime 自檢及後續現場驗證，沒有本輪 Colab／研究結果。
 
 ## Metadata
 

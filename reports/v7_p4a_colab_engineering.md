@@ -457,3 +457,128 @@ Overall: WARNING
 ## 提交狀態更新（第三輪複審後）
 
 第二輪修補已提交為 `a76e98d`；前文中「未提交／尚無 hash」的敘述為各輪歷史紀錄。第三輪（防禦性程式碼）複審：speed-test GO、正式 P4a NO_GO；剩餘 REQUIRED：`tests/test_p4.py` 的 PAX 測試無法單獨隔離 extended-header 大小上限（停用 `p4_bundle.py:85` 檢查後仍通過，被累計上限掩蓋），須在正式凍結前補上隔離測試。複審 worker 因 Codex 資安分類器拒絕『自行構造新攻擊載荷』的版本，改為不撰寫攻擊載荷的防禦性審查；gzip 炸彈、別名覆寫等新攻擊未經獨立嘗試。
+
+## Colab 操作修訂：外部 SHA 可選／Drive wheels／獨立環境契約（2026-11-21）
+
+本節為 `job-run-mwqi30jf-aa0d7f` builder 的未提交候選，base/HEAD `36aa27da6e26c1877332c9cdea927e6409c3d105`，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。Human 明確核准本 bounded task，並禁止 commit/push/merge／GPU／網路／Colab／新增 agents；本節不構成 Human acceptance，也沒有研究結果。
+
+Human 背景：第一次 Colab 因 Python 非3.12被原 gate STOP；過去曾手動切換 runtime 版本，再從 `MyDrive/Mamba_Wheels_T4` 安裝 2026-03-04 建立的 cp312/linux_x86_64 mamba_ssm2.3.0／causal_conv1d1.6.0。這些是 Human 提供的歷史檔案資訊，不是本輪觀察到的已安裝版本；實際 Colab torch／CUDA／套件組合 UNKNOWN。Human pip list 尚待提供，沒有以猜測版本填契約。
+
+### Completed／Changed／Decisions
+
+- `p4_bundle.py`：CLI `--sha256` 可省略，API／CLI 都計算並印 archive SHA；提供時仍在寫入前嚴格核對。內部 manifest 逐檔 size/SHA 不變；原資源限制、dir_fd／O_NOFOLLOW／O_EXCL 及白名單全保留，白名單只增指定 Colab runtime JSON。指南不再要求貼 archive 或 bootstrap SHA。本節依 Human 決策 supersede 舊輪次「外部 SHA 必填」策略，不重標歷史證據；AGENTS.md 不改。
+- `installation_commands(root, wheel_dir=...)` 與 CLI `install-plan --wheel-dir`：列出實際 wheel 檔名、版本、cp／ABI／平台標籤及 SHA，與目前 Python 支援標籤核對；缺少、多版本或不相容 STOP。只產生 `pip install --no-deps --no-index --find-links <dir> <兩個wheel路徑>` 及 `pip check`，不執行安裝、不升降級 torch 或其餘套件。保留原完整 lock 安裝路徑。
+- 新 `environments/p4a-colab-runtime.json`：TBD／UNOBSERVED，observed_at=null，與原樣本機 P3 lock 分開。新增檔案原因：現有 P3 lock 不能記錄不同且未知的 Colab runtime；沿用既有 environments，不新增目錄。Bundle 逐檔 size/SHA 自動包含其 identity。正式模式要求 OBSERVED、非空 observed_at、runtime 及列出套件完全相符，必要核心套件不能省略；TBD／缺套件／版本不符 STOP。原研究 DRAFT gate 不變。
+- `p4_colab.py`：speed-test 對環境版本差異繼續，stdout／run binding／各 speed JSON 保存 `environment_mismatch` 每項 expected／actual 與「結果不可與正式環境比較」；CUDA 缺失仍一律 STOP。正式模式以獨立 Colab 契約為準，本機 lock 差異另記 `local_lock_mismatch`，不拿 P3 版本取代 Colab authority。P4a 三臂同一環境 identity 才可互比，與 P3 跨環境比較須明列環境差異。
+- 同步 DRAFT machine contract／spec、操作指南、Current State／Authority Map／Training domain／Worktree Register；`rolling_seq_scores.py`、`portfolio_eval.py` 與原 lock bytes 不變。V6/models、formal Data、production／scheduler 未變。
+
+### Evidence
+
+CPU 合成資料；Python3.12.3，`/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python`，torch2.15.0+cpu／CUDA=False；MARKETMAMBA_DATA_ROOT unset，`Data/` 為本 worktree 普通目錄，非 canonical formal Data realpath。本輪測試 artifacts 在 pytest 隔離暫存 namespace，未使用真實 folds、Drive wheel bytes 或 GPU kernel。
+
+RED：新增八項行為案例 **8 failed／69 deselected（3.31s）**，原因為 CLI 強制 SHA、wheel-dir API 缺失、環境 snapshot／差異記錄 API 缺失。Speed JSON 欄位補測另 **1 failed／77 deselected（1.27s）**。第一次 focused 為76pass／1fail，定位新fixture共享 packages 字典，修改預期時也改了模擬觀測；分離字典後通過，未放寬生產 gate。補足內部 hash／runtime／缺套件／CUDA 回歸後 focused：**86 passed（11.12s）**。
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=V6:V6/research_lab/tests:. /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests/test_p4.py -q -p no:cacheprovider
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=V6:V6/research_lab/tests:. /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests tests -q -p no:cacheprovider
+```
+
+三項純記憶體變異，未改磁碟 source，各以 DID NOT RAISE 的預期斷言失敗證明被測試殺死：
+
+```text
+IN_MEMORY wheel pytest_exit=1 KILLED=True     # 停用 wheel tag gate
+IN_MEMORY formal pytest_exit=1 KILLED=True    # 停用正式環境 mismatch STOP
+IN_MEMORY manifest pytest_exit=1 KILLED=True  # 停用 extract 後逐檔驗證
+```
+
+TEMPORARY／可重建 logs：`/tmp/p4-colab-fix-{red,report-red,focused,full,impact,health}.log`、`/tmp/p4-colab-fix-mut-{wheel,formal,manifest}.log`，harness `/tmp/p4-colab-fix-mutate.py`。語法：3個Python source AST、2份JSON解析、5個指南Python儲存格解析通過；CLI help 確認 `--wheel-dir`。禁改兩支腳本與原lock逐位元比對HEAD一致。
+
+Knowledge-impact：semantics YES、candidate authority YES（Colab獨立契約）、subsystem boundary NO、active runtime NO、correctness gate YES（speed mismatch與正式契約分離）、new canonical candidate artifact YES、deprecate NO、blocker/next decision YES（待pip list／自檢）。工具影響分析 PASS，但規則未涵蓋部分新模組；人工判斷仍更新四份knowledge。knowledge_health.py --ci exit0／Overall WARNING；Project Map／Agent Guides／Domains／Runtime Freshness／Generated Index均PASS，Project Map broken_links=0；既有治理及authority repin／legacy docs warnings沒有被繞過或改成PASS。
+
+### Remaining／Blockers／Next recommended action
+
+Human pip list、完整 runtime 自檢與observed_at尚未收到，故正式 Colab 契約仍TBD，正式模式仍STOP；研究契約仍DRAFT。獨立審查、真實 wheel 安裝、torch/CUDA ABI／GPU kernel、Drive durability、完整大型 bundle 成本均未驗證。先前報告的PAX isolated gate測試審查待辦不在本任務範圍，本輪沒有宣稱解決。下一步為獨立審查此patch；Human提供現場輸出後填實際契約、重新pack；無訓練或研究結論。
+
+Project memory updated：Current_State.md／Training.md／Worktree_Register.md；Authority map updated：YES。Git status：起始clean，依no-commit保留本task dirty patch，未stage。Commit：N/A（禁止）；Push：未執行；Worktree：沿用builder_p4a_colab_fix，未建立或移除；Runtime/environment：WSL CPU synthetic only；GPU／網路／Colab／部署／排程／agents：0。
+
+本輪完整 CPU suite 最終實際輸出：**663 passed／1 skipped／4 warnings in 162.43s（0:02:42）**，exit0；比原646增加17個P4案例（69→86），既有skip與Timestamp.dayofweek棄用warnings保留。未刪除／停用測試或放寬門檻。`git diff --check` exit0。Knowledge health結構檢查exit0／WARNING，沒有structural FAIL。
+
+本輪受驗 source／契約與 TEMPORARY logs identities（不是研究 artifacts）：
+
+```json
+{
+  "V6/research_lab/p4_bundle.py": {
+    "bytes": 19883,
+    "sha256": "1c8fb328ded61ec80b3f83e7d9986e0ea4d7fe211632f47ad6ef812767e4c18e"
+  },
+  "V6/research_lab/p4_colab.py": {
+    "bytes": 30599,
+    "sha256": "3f2df59f98f23631f1a0740a2a2d9366c2add695b3f73064e880ddc13d3eb235"
+  },
+  "V6/research_lab/tests/test_p4.py": {
+    "bytes": 35154,
+    "sha256": "fdde4ff6326034797265ee6d7d7d3ee7e8451a9ad2fe698e8ca9b5cee758b0ee"
+  },
+  "environments/p4a-colab-runtime.json": {
+    "bytes": 1177,
+    "sha256": "97997abe162040372cac33afd8ac85ff71abcb27b3a406ef98461b0656223f36"
+  },
+  "tasks/p4a-colab-contract-20261121.json": {
+    "bytes": 3291,
+    "sha256": "d779adf0c876465777a8afec5c500c52d278fe95cdc9a76dd79724270854ef6f"
+  },
+  "docs/operations/colab-p4.md": {
+    "bytes": 14567,
+    "sha256": "f4409292cbe6d85cec8a2c88b12303787566e594a10e2eb60f234785473c881a"
+  },
+  "/tmp/p4-colab-fix-red.log": {
+    "bytes": 13273,
+    "sha256": "fd1dcf59af356196fc6dde0fa71bcf39ec4ab71d12d74c6e8c9f35b883da762e"
+  },
+  "/tmp/p4-colab-fix-report-red.log": {
+    "bytes": 996,
+    "sha256": "dd18ecf7b3156966b3644e5e8a140694e689cc732fb98ed35c56e19c69693679"
+  },
+  "/tmp/p4-colab-fix-focused.log": {
+    "bytes": 180,
+    "sha256": "8384929b8fdcba56f376addc5effdc48056bbb5992b86a04bc7590eac9e9cbd3"
+  },
+  "/tmp/p4-colab-fix-full.log": {
+    "bytes": 2043,
+    "sha256": "f2fe1e67530534312594e1ac429bd2afb6aebc173cb4a325d375f89ebb34b22f"
+  },
+  "/tmp/p4-colab-fix-mutate.py": {
+    "bytes": 1013,
+    "sha256": "bf9accc60330318277e0956ea8811d538451b1eb31640f1e3a6a1c3d1628abc3"
+  },
+  "/tmp/p4-colab-fix-mut-wheel.log": {
+    "bytes": 2180,
+    "sha256": "d28816f90d7d1b915ad70498597bc93cdd0fbd874c6ae253b757503ddd63df6f"
+  },
+  "/tmp/p4-colab-fix-mut-formal.log": {
+    "bytes": 2665,
+    "sha256": "128bd264a20d157cd41bd2b3fa25b0c29162dfc331d19e8231d1d3a444bac41d"
+  },
+  "/tmp/p4-colab-fix-mut-manifest.log": {
+    "bytes": 1490,
+    "sha256": "ff5a8ca4793fa616942736d22d112dc9a692c943c88b41ce377b2ee9f2ad5fe3"
+  }
+}
+```
+
+本輪 changed paths 精確清單（11 modified＋1 untracked，全部未stage）：
+
+```text
+V6/research_lab/p4_bundle.py
+V6/research_lab/p4_colab.py
+V6/research_lab/tests/test_p4.py
+docs/operations/colab-p4.md
+environments/p4a-colab-runtime.json
+tasks/p4a-colab-contract-20261121.json
+tasks/spec-p4a-colab-20261121.md
+reports/v7_p4a_colab_engineering.md
+knowledge/00_Project_Map/Current_State.md
+knowledge/00_Project_Map/Authority_Map.md
+knowledge/00_Project_Map/Worktree_Register.md
+knowledge/01_Domains/Training.md
+```

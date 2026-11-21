@@ -52,3 +52,10 @@ P3 結果已知，P4a 在 2021–2025 折上不是未曝光資料。舊機器契
 可確認的路徑：Human 事前核定搜尋／選擇與比較規則，凍結模型及資料／統計契約，再使用未參與設計的新資料或前瞻期間，待 label 成熟且完整性／provenance 全通過後進行預先登記的確認性檢驗。目前這條路徑的所有選項仍 OPEN。
 
 只能描述性的路徑：在已曝光 2021–2025 折上比較 GRU／Mamba2／crossstock、事後調參與混合權重、展示 CI／Holm 或補齊歷史支持。即使數字通過原門檻，也只能報告歷史描述性／探索性結果，不能稱為新的未曝光確認性證據。2026 的曝光與准入尚未核定，optional 不代表自動取得確認性地位。
+
+
+## 本輪 Human 核准的 Colab 操作修訂（2026-11-21）
+
+Archive／bootstrap 外部 SHA 改為可選；extract 自動印 archive SHA，提供時嚴格核對，manifest 內逐檔 size/SHA、資源上限、symlink 防護與白名單全部保留。Drive wheel-dir 模式只以 no-deps／no-index 安裝兩個本地 wheel，核對 Python／平台標籤，SHA 只記錄；不重裝其餘套件或 torch。
+
+既有 exact lock 是本機 P3 參考，不代表已觀察的 Colab 環境。新增 `environments/p4a-colab-runtime.json`，因本機 lock 無法承載尚未知且不同版本的 Colab runtime；artifact identity 由 bundle 逐檔 SHA 綁定，初始 TBD／UNOBSERVED，待 Human pip list 與 runtime 自檢後填實際版本。P4a 三臂共用相同 Colab 環境 identity；與 P3 跨環境比較需揭露差異。speed-test 記錄每項 environment_mismatch 並標記結果不可與正式環境比較，正式入口仍要求 OBSERVED 完全相符；CUDA 不可用一律 STOP。研究問題與其他 OPEN 決策未凍結，沒有新研究結果。

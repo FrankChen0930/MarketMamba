@@ -255,7 +255,7 @@ def test_cpu_orchestration_charges_setup_and_resumes_completed_fits(tmp_path,mon
     monkeypatch.setattr(p4,'Path',lambda x:tmp_path if x=='/content/drive/MyDrive' else original_path(x))
     monkeypatch.setattr(p4.os.path,'ismount',lambda _:True)
     monkeypatch.setattr(p4,'require_cuda',lambda:None)
-    monkeypatch.setattr(p4,'environment',lambda _:dict(device='CPU_BOUNDARY_DOUBLE'))
+    monkeypatch.setattr(p4,'environment',lambda _,**kwargs:dict(device='CPU_BOUNDARY_DOUBLE'))
     calls=[]
     def fake_train(directory,year,arm,seed,cfg,reference,observer):
         calls.append((year,arm,seed));observer.steps=[.001]*200
@@ -520,3 +520,132 @@ def test_review_manifest_budget_applies_during_raw_preflight(tmp_path, monkeypat
     with pytest.raises(ValueError): bundle.extract(archive, tmp_path/'out')
     assert sum(reads) <= 2560
     assert not (tmp_path/'out').exists()
+
+
+def test_extract_cli_optional_sha_records_and_checks(tmp_path, capsys):
+    source=tmp_path/'a';source.write_bytes(b'original')
+    archive=tmp_path/'a.tar.gz'
+    bundle.write_archive(archive,{'source/V6/research_lab/a.py':source},{})
+    bundle.main(['extract',str(archive),str(tmp_path/'out')])
+    assert bundle.digest(archive)['sha256'] in capsys.readouterr().out
+    with pytest.raises(ValueError,match='archive hash'):
+        bundle.main(['extract',str(archive),str(tmp_path/'bad'),'--sha256','0'*64])
+    (tmp_path/'out/source/V6/research_lab/a.py').write_bytes(b'changed!')
+    with pytest.raises(ValueError,match='hash'):bundle.verify(tmp_path/'out')
+
+
+def drive_wheels(tmp_path):
+    d=tmp_path/'wheels';d.mkdir()
+    for name in ('mamba_ssm-2.3.0-cp312-cp312-linux_x86_64.whl',
+                 'causal_conv1d-1.6.0-cp312-cp312-linux_x86_64.whl'):
+        (d/name).write_bytes(b'synthetic wheel identity only')
+    return d
+
+
+def test_drive_wheel_plan(tmp_path,monkeypatch,capsys):
+    from packaging.tags import Tag
+    import packaging.tags
+    monkeypatch.setattr(bundle,'verify',lambda _:None)
+    monkeypatch.setattr(torch.cuda,'is_available',lambda:True)
+    monkeypatch.setattr(packaging.tags,'sys_tags',lambda:iter([Tag('cp312','cp312','linux_x86_64')]))
+    d=drive_wheels(tmp_path)
+    commands=bundle.installation_commands(tmp_path,wheel_dir=d)
+    assert len(commands)==2 and commands[-1].endswith('-m pip check')
+    assert all(s in commands[0] for s in ('--no-deps','--no-index','--find-links',str(d)))
+    assert 'torch' not in commands[0] and '-r ' not in commands[0]
+    out=capsys.readouterr().out
+    for wheel in d.iterdir():
+        assert wheel.name in out and bundle.digest(wheel)['sha256'] in out
+    assert 'cp312-cp312-linux_x86_64' in out
+
+
+@pytest.mark.parametrize('failure',['python','platform','missing','ambiguous'])
+def test_drive_wheel_plan_rejects(tmp_path,monkeypatch,failure):
+    from packaging.tags import Tag
+    import packaging.tags
+    monkeypatch.setattr(bundle,'verify',lambda _:None)
+    monkeypatch.setattr(torch.cuda,'is_available',lambda:True)
+    tag=Tag('cp311','cp311','linux_x86_64') if failure=='python' else Tag('cp312','cp312','win_amd64')
+    if failure in ('missing','ambiguous'):tag=Tag('cp312','cp312','linux_x86_64')
+    monkeypatch.setattr(packaging.tags,'sys_tags',lambda:iter([tag]))
+    d=drive_wheels(tmp_path)
+    if failure=='missing':next(d.glob('mamba*')).unlink()
+    if failure=='ambiguous':(d/'mamba_ssm-2.3.1-cp312-cp312-linux_x86_64.whl').write_bytes(b'other')
+    with pytest.raises((RuntimeError,ValueError),match='wheel|Python|platform'):
+        bundle.installation_commands(tmp_path,wheel_dir=d)
+
+
+def runtime_fixture(tmp_path,monkeypatch):
+    lock=tmp_path/'requirements.lock.txt';lock.write_text('torch==2.10.0+cu128\nmamba-ssm==2.3.2.post1\n')
+    actual=dict(python='3.12.9',cuda='12.6',cxx11abi=True,platform='linux_x86_64',gpu='FAKE',
+                packages={'torch':'2.6.0+cu126','mamba-ssm':'2.3.0',**{n:'1.0' for n in ('causal-conv1d','numpy','pandas','pyarrow','scipy','scikit-learn','einops','packaging')}})
+    monkeypatch.setattr(p4,'require_cuda',lambda:None)
+    monkeypatch.setattr(p4,'environment_snapshot',lambda names:actual.copy())
+    contract=dict(version='p4-colab-runtime-v1',status='OBSERVED',observed_at='2026-11-21T00:00:00Z',
+                  runtime={k:actual[k] for k in ('python','cuda','cxx11abi','platform')},packages=dict(actual['packages']))
+    path=tmp_path/'runtime.json';path.write_text(json.dumps(contract))
+    return lock,path,contract
+
+
+def test_speed_environment_mismatch_and_formal_colab_identity(tmp_path,monkeypatch):
+    lock,path,contract=runtime_fixture(tmp_path,monkeypatch)
+    env=p4.environment(lock,runtime_contract=path,speed=True)
+    assert {d['item'] for d in env['environment_mismatch']} >= {'lock:torch','lock:mamba-ssm'}
+    assert '不可與正式環境比較' in env['comparability']
+    formal=p4.environment(lock,runtime_contract=path)
+    assert formal['environment_mismatch']==[] and len(formal['local_lock_mismatch'])==2
+    contract['packages']['mamba-ssm']='9.9';path.write_text(json.dumps(contract))
+    with pytest.raises(ValueError,match='environment mismatch'):p4.environment(lock,runtime_contract=path)
+    env=p4.environment(lock,runtime_contract=path,speed=True)
+    assert 'contract:mamba-ssm' in {d['item'] for d in env['environment_mismatch']}
+
+
+def test_tbd_contract_formal_stop_speed_records(tmp_path,monkeypatch):
+    lock,path,contract=runtime_fixture(tmp_path,monkeypatch)
+    contract.update(status='TBD',observed_at=None);path.write_text(json.dumps(contract))
+    with pytest.raises(ValueError,match='environment mismatch'):p4.environment(lock,runtime_contract=path)
+    env=p4.environment(lock,runtime_contract=path,speed=True)
+    assert 'contract:status' in {d['item'] for d in env['environment_mismatch']}
+    monkeypatch.setattr(p4,'require_cuda',lambda:(_ for _ in ()).throw(RuntimeError('CUDA required')))
+    with pytest.raises(RuntimeError,match='CUDA'):p4.environment(lock,runtime_contract=path,speed=True)
+
+
+def test_speed_report_discloses_environment():
+    env={'environment_mismatch':[{'item':'lock:mamba-ssm','expected':'2.3.2.post1','actual':'2.3.0'}],
+         'comparability':'結果不可與正式環境比較'}
+    report=p4.speed_report('gru',[{'seconds':1}]*2,[{'gpu':'fake'}],2,[.01]*200,environment=env)
+    assert report['environment_mismatch']==env['environment_mismatch']
+    assert report['comparability']==env['comparability']
+
+
+def test_extract_without_external_sha_still_checks_internal_hash(tmp_path):
+    source=tmp_path/'a';source.write_bytes(b'original')
+    archive=tmp_path/'good.tar.gz'
+    bundle.write_archive(archive,{'source/V6/research_lab/a.py':source},{})
+    damaged=tmp_path/'damaged.tar.gz'
+    with tarfile.open(archive,'r:gz') as old,tarfile.open(damaged,'w:gz') as new:
+        for member in old:
+            data=old.extractfile(member).read()
+            if member.name.endswith('/a.py'):data=b'mutation'
+            new.addfile(member,io.BytesIO(data))
+    with pytest.raises(ValueError,match='bundle hash mismatch'):
+        bundle.extract(damaged,tmp_path/'out')
+
+
+@pytest.mark.parametrize('change',['python','cuda','cxx11abi','platform','missing_package','incomplete_contract'])
+def test_formal_environment_rejects_runtime_and_package_drift(tmp_path,monkeypatch,change):
+    lock,path,contract=runtime_fixture(tmp_path,monkeypatch)
+    if change=='missing_package':contract['packages']['not-installed']='1.0'
+    elif change=='incomplete_contract':contract['packages'].pop('causal-conv1d')
+    else:contract['runtime'][change]='different'
+    path.write_text(json.dumps(contract))
+    with pytest.raises(ValueError,match='environment mismatch'):
+        p4.environment(lock,runtime_contract=path)
+    assert p4.environment(lock,runtime_contract=path,speed=True)['environment_mismatch']
+
+
+def test_drive_install_requires_cuda(tmp_path,monkeypatch):
+    monkeypatch.setattr(bundle,'verify',lambda _:None)
+    monkeypatch.setattr(torch.cuda,'is_available',lambda:False)
+    with pytest.raises(RuntimeError,match='CUDA'):
+        bundle.installation_commands(tmp_path,wheel_dir=drive_wheels(tmp_path))

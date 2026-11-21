@@ -33,7 +33,8 @@ def allowed_path(name):
               and parts[2] in {'research_lab', 'experimental'} and p.suffix == '.py'
               and 'tests' not in parts)
     documents = {'source/tasks/p4a-colab-contract-20261121.json',
-                 'source/tasks/spec-p4a-colab-20261121.md', 'source/docs/operations/colab-p4.md'}
+                 'source/tasks/spec-p4a-colab-20261121.md', 'source/docs/operations/colab-p4.md',
+                 'source/environments/p4a-colab-runtime.json'}
     matrix = (len(parts) == 3 and parts[0] == 'folds' and parts[1] in
               {f'fold_{y}' for y in range(2021, 2027)} and parts[2] in MATRIX_FILES)
     if not (source or matrix or name in documents or name in {
@@ -234,7 +235,9 @@ def verify(directory, allow_derived=False):
 
 
 def extract(archive,destination,expected_sha256=None):
-    if expected_sha256 is not None and digest(archive)['sha256']!=expected_sha256:
+    archive_sha256 = digest(archive)['sha256']
+    print(json.dumps(dict(archive_sha256=archive_sha256)))
+    if expected_sha256 is not None and archive_sha256!=expected_sha256:
         raise ValueError('archive hash mismatch')
     destination=Path(destination)
     if destination.exists() or destination.is_symlink(): raise FileExistsError(destination)
@@ -289,7 +292,7 @@ def pack(folds_root, years, p1, lock, output):
     for subtree in ('V6/research_lab','V6/experimental'):
         for path in (ROOT/subtree).rglob('*.py'):
             if 'tests' not in path.parts: files['source/'+path.relative_to(ROOT).as_posix()]=path
-    for name in ('tasks/p4a-colab-contract-20261121.json','tasks/spec-p4a-colab-20261121.md','docs/operations/colab-p4.md'):
+    for name in ('tasks/p4a-colab-contract-20261121.json','tasks/spec-p4a-colab-20261121.md','docs/operations/colab-p4.md','environments/p4a-colab-runtime.json'):
         files['source/'+name]=ROOT/name
     for year in years:
         for name in MATRIX_FILES: files[f'folds/fold_{year}/{name}']=Path(folds_root)/f'fold_{year}'/name
@@ -313,15 +316,38 @@ def pack(folds_root, years, p1, lock, output):
     return write_archive(output,files,metadata)
 
 
-def installation_commands(root):
-    """Archive V3/V5.5 wheel strategy, exact current lock URLs; no guessed compilation."""
+def installation_commands(root, wheel_dir=None):
+    """Plan only: Drive mode installs exactly two local wheels without dependencies."""
     root=Path(root);verify(root)
-    if sys.version_info[:2]!=(3,12): raise RuntimeError('wheel requires Python 3.12; Human must confirm compatible runtime')
     import torch
     if not torch.cuda.is_available(): raise RuntimeError('CUDA required before Colab installation')
     import shlex
-    lock=shlex.quote(str(root/'requirements.lock.txt'))
     py=shlex.quote(sys.executable)
+    if wheel_dir is not None:
+        from packaging.tags import sys_tags
+        from packaging.utils import parse_wheel_filename, canonicalize_name
+        directory=Path(wheel_dir)
+        compatible=set(sys_tags())
+        found={'causal-conv1d':[], 'mamba-ssm':[]}
+        incompatible=[]
+        for path in sorted(directory.glob('*.whl')):
+            name,version,build,tags=parse_wheel_filename(path.name)
+            name=canonicalize_name(name)
+            if name not in found: continue
+            print(json.dumps(dict(wheel=path.name,version=str(version),tags=sorted(map(str,tags)),
+                                  identity=digest(path))))
+            found[name].append(path)
+            if not tags & compatible: incompatible.append(path.name)
+        if incompatible:
+            raise RuntimeError('wheel Python/ABI/platform mismatch: '+', '.join(incompatible)+
+                               '; switch Colab runtime version to match the wheel tags')
+        if any(len(paths)!=1 for paths in found.values()):
+            raise ValueError('wheel directory requires exactly one causal_conv1d and one mamba_ssm wheel; missing/ambiguous wheel')
+        wheels=' '.join(shlex.quote(str(paths[0].resolve())) for paths in found.values())
+        return [f'{py} -m pip install --no-deps --no-index --find-links {shlex.quote(str(directory.resolve()))} {wheels}',
+                f'{py} -m pip check']
+    if sys.version_info[:2]!=(3,12): raise RuntimeError('wheel requires Python 3.12; Human must confirm compatible runtime')
+    lock=shlex.quote(str(root/'requirements.lock.txt'))
     return [f'{py} -m pip install --only-binary=:all: --extra-index-url https://download.pytorch.org/whl/cu128 -r {lock}',
             f'{py} -m pip check']
 
@@ -329,13 +355,13 @@ def installation_commands(root):
 def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__);sub=p.add_subparsers(dest='cmd',required=True)
     pk=sub.add_parser('pack');pk.add_argument('--folds-root',type=Path,required=True);pk.add_argument('--years',type=int,nargs='+',default=[2021,2022,2023,2024,2025]);pk.add_argument('--p1',type=Path,required=True);pk.add_argument('--lock',type=Path,default=Path.home()/'.venvs/marketmamba-gpu.requirements.lock.txt');pk.add_argument('--output',type=Path,required=True)
-    ex=sub.add_parser('extract');ex.add_argument('archive',type=Path);ex.add_argument('destination',type=Path);ex.add_argument('--sha256',required=True)
+    ex=sub.add_parser('extract');ex.add_argument('archive',type=Path);ex.add_argument('destination',type=Path);ex.add_argument('--sha256')
     ve=sub.add_parser('verify');ve.add_argument('directory',type=Path)
-    ins=sub.add_parser('install-plan');ins.add_argument('directory',type=Path)
+    ins=sub.add_parser('install-plan');ins.add_argument('directory',type=Path);ins.add_argument('--wheel-dir',type=Path)
     a=p.parse_args(argv)
     if a.cmd=='pack': pack(a.folds_root,a.years,a.p1,a.lock,a.output);print(json.dumps(digest(a.output)))
     elif a.cmd=='extract': extract(a.archive,a.destination,a.sha256)
     elif a.cmd=='verify': print(json.dumps(verify(a.directory),indent=2))
-    else: print('\n'.join(installation_commands(a.directory)))
+    else: print('\n'.join(installation_commands(a.directory,a.wheel_dir)))
 
 if __name__=='__main__': main()

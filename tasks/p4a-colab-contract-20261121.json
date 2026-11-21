@@ -95,6 +95,14 @@
   "environment_lock": {
     "path": "environments/p4a-colab.requirements.lock.txt",
     "sha256": "2c39a3fb9567d1f9fc8ee83369c7b6c90cd19a8e679e32e4c8a6c1d75c5782c9",
-    "source": "/home/frank/.venvs/marketmamba-gpu.requirements.lock.txt"
+    "source": "/home/frank/.venvs/marketmamba-gpu.requirements.lock.txt",
+    "role": "Unchanged local P3 reference; differences disclosed, not the formal Colab environment authority"
+  },
+  "colab_runtime_contract": {
+    "path": "environments/p4a-colab-runtime.json",
+    "formal": "OBSERVED with exact runtime/package agreement; TBD stops",
+    "speed_test": "Record every environment_mismatch; results incomparable with formal environment; CUDA always required",
+    "arms": "All three arms share the same observed Colab environment identity",
+    "cross_environment": "Disclose differences from local P3; no equivalence claim"
   }
 }
