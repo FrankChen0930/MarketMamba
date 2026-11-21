@@ -1,4 +1,22 @@
+## P3 神經模型組合評估結果（探索性）— 2026-11-21
+
+E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED。24 次官方 Mamba2／S-Mamba 風格擬合完成 21 次（14 小時預算用盡，帳本 STOP；缺 2026 折 mamba2 s29、crossstock s17／s29）。確認性 2021–2023 三折神經分數完整，但契約要求 24 次與完整 manifest，故只能做探索性評估：H-P3a（Mamba2 vs C0+）日均 −0.0154% CI [−0.0414%, +0.0084%]、H-P3b（S-Mamba 風格）−0.0240% CI [−0.0595%, +0.0046%]，Holm p .298，兩者「未證實」且方向偏負；十組 IC 配對差神經全部低於 C0+。結果與後續計畫：[reports/v7_p3_portfolio_evaluation.md](../../reports/v7_p3_portfolio_evaluation.md)。評估輸出與腳本在 ignored `.artifacts/p3/explore-21of24/`（SHA-256 `c607522c…4860`）。P3 正式記為未證實／21 of 24。未決：是否核准 P4a（同配方 GRU 對照＋對等調參＋保存檢查點）與 P4b（神經／C0+ 混合，描述性）。教訓：預算須含餘裕、訓練中不得提交 Git（source_commit 在 run identity）、停機監看須用 Python 本體 PID。
+
 # MarketMamba Current State
+
+## P3 修訂3 預算錨點候選 — 2026-11-20
+
+`job-run-mwoibr4r-44988a` fixer，detached base `39320a04512c446fb75aa993690a7496e434e57b`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。依[P3 修訂3](../../tasks/spec-mamba-portfolio-p3-20261120.md)，[adapter](../../V6/research_lab/rolling_seq_scores.py) 的全域 ledger 每次事件追加後原子寫入獨立 `budget-anchor.json`（sequence／head_sha256／spent／observed_at）；啟動完全核對錨點與 sidecar 前綴，拒絕 empty／valid_prefix／換 out-dir 的預算重置。fit sidecar 在 END 扣帳後發布，manifest 同記三元組。缺 ledger 或 anchor 而存在 fit／sidecar／run_identity 時拒絕，須 `--rebuild-budget --reason TEXT`；REBUILT 保留原始 state identities，以所有 sidecar 最大 spent 及存活可驗帳本／anchor 的最大值扣帳，再鎖 STOP 待顯式檢查／clear-stop。未知 legacy spent 不自動當0，舊 fit 不因重建升格。詳見[工程報告](../../reports/v7_p3_portfolio_engineering.md)。
+
+本輪只有合成 CPU／破壞性回歸與 in-memory 反證；防疏失，不防刻意同時刪 ledger、anchor、全部 sidecar；UNRESOLVED / GPU_SMOKE_NOT_RUN，無正式研究結果。GPU、正式資料、模型、production authority／scheduler 不變。依 no-commit 指示保留 dirty candidate；Next：獨立審查 diff 與實際 logs，Human acceptance 仍未完成。
+
+## P3 序列分數／組合工程候選 — 2026-11-20
+
+`job-run-mwnv3018-83e5c9` fixer，detached base `a91f38e86dab0d332fc63c6dc8a6ab7361a19b99`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依指示不 commit/push/merge/GPU/新增 agents。[P3 修訂2](../../tasks/spec-mamba-portfolio-p3-20261120.md) 的[adapter](../../V6/research_lab/rolling_seq_scores.py) 新增 CUDA-only `--gpu-smoke`，由執行器量測官方 temporal／cross mixer 前反向與逐檔環境／source hashes；smoke 不自行審查。獨立 review job 完成後才用 `--record-review` 產生另一份 exclusive artifact，記錄 reviewed_by／standing_authorization，不接受 v1／human_reviewed 布林。[evaluator](../../V6/research_lab/portfolio_eval.py) 現在重新驗 evidence path/SHA、review、source/spec/environment、cfg/mixer、全域帳本與完整24fit sidecar/run_hash，不再信任手寫 RESOLVED。
+
+全域 `.artifacts/p3/budget-global.jsonl` 含 hash chain，flock 鎖定 artifact 目錄 inode，所有 namespace／smoke 共用14h；fit/run_identity 與帳本不符即拒絕。STOP 事件及檔案先 fsync 再 END；刪檔不能清除 latch，必須 `--clear-stop <name> --reason <text>` 留 CLEARED，不重置 spent。硬中斷仍保守扣帳至重啟。`collect()` 是需 active ledger attempt 的內部入口。凍結補 dropout/window/normalize/train_probe_sessions，官方其餘預設從 signature 讀出；寫死常數由 source hash 重驗。P1/P2 default、purge、CI/Holm 與研究門檻不改。
+
+**UNRESOLVED / GPU_SMOKE_NOT_RUN**：本輪只有 CPU／合成 E2E、反證與唯讀六折 metadata 測試，無官方 CUDA 量測／24 fits／研究結論；真實 GPU 環境未由本輪驗證。完整 RED→GREEN、實際全套數字、解鎖與 STOP 程序見[工程報告](../../reports/v7_p3_portfolio_engineering.md)。既有 per-namespace 歷史不得當成新全域帳本或重置預算；需要另行盤點遷移。Next：獨立審查本 diff／logs；本 builder 的 No GPU 範圍不執行後續 GPU 工作。正式 Data、V6/models、production/scheduler、研究 evidence class 與 Human acceptance 不變。
 
 ## P2 low-turnover result — 2026-11-20
 

@@ -1,5 +1,23 @@
 # Worktree Register
 
+## P3 修訂3 fixer — 2026-11-20
+
+- Existing path `.worktrees/ruflo-workers/run-mwoibr4r-44988a/fixer`；detached HEAD/base `39320a04512c446fb75aa993690a7496e434e57b`；owner Human/Codex builder；task 修訂3預算錨點、顯式重建與回歸／反證；created2026-11-20，retired N/A。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；no commit/push/merge/GPU/agents。
+- 沿用既有 adapter/tests/report 與 `.artifacts/p3/`；revision3-verification 為本輪 GENERATED CPU logs／hash inventory，避免覆寫先前 artifacts；無新 worktree／top-level tree。Authority：frozen P3修訂3與candidate executable tests；GPU_SMOKE_NOT_RUN。
+- Merge dependency：獨立審查與Human acceptance；artifact dependency：本輪合成CPU tests／in-memory mutation logs。Safe removal：先保存未提交patch與必要證據、處理引用與明確retirement review；目前dirty不得移除。
+
+## P3 修訂2 fixer — 2026-11-20
+
+- Existing path `.worktrees/ruflo-workers/run-mwnv3018-83e5c9/fixer`；detached HEAD/base `a91f38e86dab0d332fc63c6dc8a6ab7361a19b99`；owner Human/Codex builder；task 修訂2准入／全域帳本／凍結與報告；created2026-11-20，retired N/A。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；no commit/push/merge/GPU/agents。
+- 沿用既有 adapter/evaluator/tests/report 與 `.artifacts/p3/`；revision2-verification 隔離 GENERATED CPU logs，避免覆寫舊證據。Authority：P3 frozen 修訂2及candidate executable tests；正式GPU准入仍未解鎖，沒有新增worktree或runtime observation。
+- Merge dependency：獨立審查與Human acceptance；artifact dependency：本輪CPU logs、合成fixtures與既有唯讀六折metadata。Safe removal：先保存未提交patch與必要證據、處理引用、明確retirement review；目前dirty不得移除。
+
+## P3 修訂1 fixer — 2026-11-20
+
+- Existing path `.worktrees/ruflo-workers/run-mwnu9iri-e7a54a/fixer`；branch detached HEAD，base `69dc5baaee2d8e5c35d36458335c29fb4f26b619`；owner Human/Codex builder；task 修訂1項2/3/5/6/7/8；created2026-11-20，retired N/A。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；no commit/push/merge/GPU/agents。
+- 沿用既有adapter/evaluator/tests/report與`.artifacts/p3/`，`revision1-verification`隔離本輪GENERATED CPU反證／pytest logs，不新增worktree或top-level流程。Authority：P3 frozen spec修訂1與candidate executable tests；正式GPU准入未解鎖。
+- Merge dependency：獨立審查與Human acceptance；artifact dependency：唯讀pilot09六折splits hashes、合成CPU fixtures與本輪logs。Safe removal：先保存未提交patch及必要證據、處理引用與明確retirement review；目前dirty不得移除。
+
 ## P2 amendment 1 bounded repair worker — 2026-11-19
 
 - Existing path `.worktrees/ruflo-workers/run-mwnpp2vy-e42792/fixer`; detached HEAD/base `1920fde0abfead53e84a2a9354a695e59a03764c`; owner Human/Codex builder, task approved seven amendment-1 repairs; created 2026-11-19; retired N/A. UNMERGED / NOT_DEPLOYED; explicit no commit/push/merge/agents.

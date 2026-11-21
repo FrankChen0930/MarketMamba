@@ -1,5 +1,15 @@
 # MarketMamba Authority Map
 
+## P3 修訂3 預算完整性候選 — 2026-11-20
+
+[凍結修訂3](../../tasks/spec-mamba-portfolio-p3-20261120.md) 與[adapter／帳本](../../V6/research_lab/rolling_seq_scores.py)、[回歸測試](../../V6/research_lab/tests/test_p3.py) 決定本 bounded candidate 的預算語義。`job-run-mwoibr4r-44988a`，detached `39320a0`，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，未提交；更新下節修訂2之完整性／重建邊界，不 supersede 歷史 artifacts 或研究／production authority。全域 budget-global.jsonl 與 budget-anchor.json 必須完全一致，fit sidecar／manifest 記錄當時 sequence／head_sha256／spent；合法前綴或清空並非有效恢復。缺 state 必須顯式 REBUILT，以所有 sidecar 最大 spent 及存活 anchor／可驗帳本保守扣帳，保留舊 bytes／hashes，重建鎖 STOP；REBUILT 不提供舊 fit 的 completed binding／確認性 authority。此機制防疏失，不防刻意刪除全部 ledger／anchor／sidecar。詳見[工程報告](../../reports/v7_p3_portfolio_engineering.md)。GPU_SMOKE_NOT_RUN，工程完成不代表Human acceptance。
+
+## P3 bounded builder candidate authority — 2026-11-20
+
+[P3 frozen registration 修訂2](../../tasks/spec-mamba-portfolio-p3-20261120.md) owns research assumptions；修訂1的官方 temporal 預設卷積／cross d_conv2 仍有效。`job-run-mwnv3018-83e5c9` detached base `a91f38e` 的[adapter](../../V6/research_lab/rolling_seq_scores.py)、[evaluator](../../V6/research_lab/portfolio_eval.py)、[tests](../../V6/research_lab/tests/test_p3.py) 為未提交工程候選，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，不 supersede P1/P2、歷史 artifacts 或 production authority。
+
+只有 executor 產生的 p3-official-gpu-smoke-v2、獨立 review job 的結構化 reviewed_by 與可稽核 standing_authorization，且所有 source/spec/environment hashes／frozen cfg／官方 defaults 符合，才可准入。`p3_main` 重新驗 evidence、全域帳本 SHA/spent/STOP、run_identity 與24fit run_hash/sidecars；手寫 RESOLVED 不具 authority。全域 `.artifacts/p3/budget-global.jsonl` 是本候選唯一預算 authority，不依 out-dir；固定目錄 inode flock、hash chain、STOP/CLEARED 事件由 adapter 管理，直接刪 STOP 不授予續跑權。缺歷史帳本不自動遷移或當0。詳見[工程報告](../../reports/v7_p3_portfolio_engineering.md)／[Current State](Current_State.md#p3-序列分數組合工程候選--2026-11-20)。GPU_SMOKE_NOT_RUN；CPU boundary doubles／測試通過均非官方 GPU evidence、Human acceptance 或交易准入。
+
 ## P2 amendment 1 candidate boundary — 2026-11-19
 
 [Frozen P2 registration including amendment 1](../../tasks/spec-lowturnover-p2-20261119.md) owns research assumptions; [portfolio](../../V6/research_lab/portfolio.py)、[evaluator](../../V6/research_lab/portfolio_eval.py) 與 [P2 tests](../../V6/research_lab/tests/test_p2.py) 是 detached `1920fde` bounded repair candidate，UNMERGED / NOT_DEPLOYED。修訂 1 supersede 原 P2 全因子網格及主要基準最低費用假設；不 supersede P1／歷史 artifacts。主要基準只收比例成本，最低費用基準敏感度 descriptive／confirmation_eligible=false，不進 H-P2a/b。OFAT＋三指定組合去重為14格／fold×system、168 P2格＋12 P1 references。P2全格（含buffer=top_k）明確啟用preserve_frozen_overflow，P1預設關閉；凍結overflow保留全部既有股數，不新增／不強制賣出可成交持股，terminal不變。預設P1算式不改；位元一致僅預設逐日策略／基準報酬，以pre-P2引擎golden及舊P1 part比對驗證；schema與run_hash不同、舊P1 parts無法續跑。--fold／--system子集必grid_complete=false，各自run_hash不得拼成確認性結果。

@@ -1,5 +1,13 @@
 # Research
 
+## P3 修訂3 預算完整性 — 2026-11-20
+
+[凍結修訂3](../../tasks/spec-mamba-portfolio-p3-20261120.md) 的[候選 adapter](../../V6/research_lab/rolling_seq_scores.py) 使用獨立 durable anchor 偵測全域 ledger 清空／合法前綴回退，與所有 sidecar snapshots 交叉核對，不依 out-dir。sidecar 在 END 後記錄 sequence／head／spent，manifest 與 evaluator 重驗。缺 state 時僅明確 `--rebuild-budget --reason` 能恢復，以全 namespace sidecar spent 最大值及存活可驗 state 保守扣帳，保留原檔與 REBUILT，STOP 待檢查。缺 spent／orphan 不推定0；重建不提供舊研究結果的新准入。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，CPU synthetic evidence only；同時刻意刪除 ledger／anchor／全部 sidecar 不在防護範圍。[報告與限制](../../reports/v7_p3_portfolio_engineering.md)。
+
+## P3 修訂2工程候選 — 2026-11-20
+
+[P3 修訂2](../../tasks/spec-mamba-portfolio-p3-20261120.md) 採 executor CUDA-only smoke v2 → 獨立審查 job → record-review → 正式24fits；審查 metadata 與 standing authorization 不代表逐項 Human acceptance。evaluator 重驗 evidence/source/environment/frozen cfg/mixer defaults、全域帳本 SHA/14h/STOP 與24fit sidecars，不信任 RESOLVED 字串。全域帳本含 hash chain、目錄 inode flock；STOP 先 fsync 再 END，必須帶 reason 的 CLI 留 CLEARED，刪檔不清除 latch。硬中斷仍保守扣帳，舊 per-namespace 證據不自動遷移。凍結隱含設定與 source constants hash gate 不改研究超參數。UNRESOLVED／GPU_SMOKE_NOT_RUN／UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED；CPU替身及metadata工程驗證不升格研究結論。程序、實際數字與限制見[工程報告](../../reports/v7_p3_portfolio_engineering.md)。
+
 ## P2 evaluator candidate — 2026-11-19
 
 [Registered P2](../../tasks/spec-lowturnover-p2-20261119.md) 由現有 [evaluator](../../V6/research_lab/portfolio_eval.py) 的 `--mode p2` 執行；P1 為預設。重用唯讀 P1 rank-average scores，修訂 1 的 OFAT＋三指定組合（去重）14 descriptive cells／fold×system、六折兩系統共 168，另 12 個 P1 references；主要格與同分數 P1 reference 用共同日期比較，tail exclusions 明列。H-P2a/b 為 20-session／1000-sample circular bootstrap、one-sided centered-bootstrap p values、Holm family=2；缺 2021–2023 完整主要支援、非正式 seeds/train support 或 primary-only smoke 不作確認性判定。--fold／--system 子集的 grid_complete 必為 false，確認性維持 incomplete。P2 schema／run_hash 與 P1 不同，舊 P1 parts 不能續跑；位元一致只指預設路徑逐日策略與基準報酬。原子不覆寫 parts、input/spec/implementation SHA-256 與 source commit 控制續跑，ERROR 重試沿用 P1 immutable chain。最低費用為未驗證常見假設，比例另拆 full floor-binding commission 與 uplift。UNMERGED / NOT_DEPLOYED，E2 RESEARCH_ONLY；[工程報告](../../reports/v7_p2_portfolio_engineering.md) 不代表完整研究或 Human acceptance。
@@ -264,3 +272,7 @@ Human明確批准一組小型real-data recipe，60e7ca7在Fit前固定；W11環�
 60726 feature-only predictions /same W29support與獨立Replay通過；5d正、10d負，4組Mean均低於舊Ridge，但不宣告winner/研究准入。
 Expanding各Origin仍需另凍結model-ready/maturity/purge/refit/selection與資源；本次不自動批准。
 [Evidence](../../research/v7/window30-evidence.json)、[Report](../../reports/v7_window30_fixed_lightgbm.md)。
+
+## P3 bounded engineering candidate — 2026-11-20
+
+[P3 spec](../../tasks/spec-mamba-portfolio-p3-20261120.md) 對官方Mamba2/no-conv有未解語義矛盾；[adapter](../../V6/research_lab/rolling_seq_scores.py) 與 [P3 portfolio mode](../../V6/research_lab/portfolio_eval.py) 為UNMERGED / NOT_DEPLOYED工程候選，正式訓練fail closed。只驗證injected CPU與synthetic三系統流程、P1相同列集合、maturity/purge、種子rank PIT、common dates、Holm及溫控；不升格IC／portfolio／GPU或trading evidence。不得用既有pilot09歷史結果取代此次研究。493passed/1skipped、五反證及完整限制見[工程報告](../../reports/v7_p3_portfolio_engineering.md)。未完成fit跨程序GPU預算尚非可靠會計；需先解決才能正式解鎖。
