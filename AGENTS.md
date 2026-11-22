@@ -97,6 +97,8 @@ Project map 是 current-state／navigation authority。實作語義仍以 versio
 
 ## 訓練與 Colab 穩定契約
 
+- Human 的 Colab 交付操作偏好與驗收條件（一個 zip＋一個 ipynb、Drive 結構、不貼 hash、斷點接續、不設時間上限、即時進度顯示等）集中於 [docs/operations/colab-human-requirements.md](docs/operations/colab-human-requirements.md)；任何 Colab 交付只需參考該檔。
+
 - Bundle 必須 self-contained、safe-extract、逐檔 size/SHA-256 驗證，並保留 source commit、environment、contract 與 matrix identity。
 - Matrix 採 build-once/reuse：identity 不變時持久化重用；partial 不得視為 complete。
 - Checkpoint 先 local serialize/fsync/hash，再 durable copy/reverify，最後 atomic pointer；保留 latest、previous、best。

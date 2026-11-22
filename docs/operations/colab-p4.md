@@ -1,5 +1,7 @@
 # P4a：上傳資料夾一次＋每次兩檔
 
+> Human 的持續有效需求（交付形式、Drive 結構、進度顯示等）見 [colab-human-requirements.md](colab-human-requirements.md)；本檔為 P4a 的逐步操作細節。
+
 **UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；Colab 現場行為 UNVERIFIED。** 凍結內容、完整網格與外推耗時見[規格](../../tasks/spec-p4a-colab-20261121.md)。無研究結果，不是交易就緒。操作只對自己的可信交付；內部 hash 不能證明來源。
 
 ## 一次準備資料
