@@ -1,5 +1,13 @@
 # Training
 
+## P4a 進度兩項 REQUIRED 修補候選 — 2026-11-22
+
+`job-run-mwrpdfba-d4ad9d` builder，既有 detached worktree `fixer_p4a_progress`，base/HEAD `5156087da0e2aaba5d0cf703db3cdd67200cfbe9`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依 no-commit 授權保留 patch。本節補正前節進度語義，沿用 [runner](../../V6/research_lab/p4_colab.py) 與 [進度測試](../../V6/research_lab/tests/test_p4_progress.py)：驗證 checkpoint 後設定本次 step 起點，至少 10 新 steps／1 秒才估 fit ETA；3900 → 4000／5000、10 秒的接續案例為 100 秒。佇列目前 fit 優先用本次 step ETA，後續 fit 用本次完成 fit 固定實測耗時均值（至少 1 秒），cached skips 不作樣本；無可靠量測即 null／預估中，Q5 仍額外未知。
+
+略過已驗證 fit 也更新編號、Q、arm／year／seed／window／lr，清除前筆訓練欄位，進度行與 TXT／JSON 標示「已完成（略過）」並保留至正常退出；全部快取與 mixed skip/train 均逐 fit 驗證。中途接續恢復已提交 epoch／step，最後 fit 完成時兩個 ETA=0；不更改 checkpoint／完成 gate、64-fit 順序、模型／RNG、凍結研究與環境契約、帳本或 production authority。
+
+CPU 合成完整測試 **745 passed／1 skipped／5 warnings（273.22s）**，四項 in-memory 變異皆被新測試攔截；notebook nbformat 與 8 個程式格 compile 通過。工具 knowledge-impact=PASS／DEFAULT，人工 gate 判定進度語義與 next decision 有影響，因此同步更新本節與 Training note。沒有 runtime observed_at 更新；Colab／T4／Drive FUSE 仍 UNVERIFIED。獨立複審仍待進行，不以 builder 完成取代原 NO_GO 或 Human acceptance。Next：獨立複審此 patch；接受後另案重新產生綁定新 source identity 的交付，現場驗證另行授權。實際輸出、artifact hashes 與限制見[工程報告](../../reports/v7_p4a_colab_engineering.md)。
+
 ## P4a 進度與 speed-test 帳本候選 — 2026-11-22
 
 `job-run-mwrof3ay-8d0c43` builder，既有 detached HEAD/base `f6a173eab03332bc3c50d78885a1d865366d2518`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依 no-commit 授權保留 patch。依[Human 持續需求](../../docs/operations/colab-human-requirements.md)沿用 [notebook 產生器](../../V6/research_lab/p4_bundle.py)、[P4 runner](../../V6/research_lab/p4_colab.py)與 `seq_runner.train_one`：串流／flush、每 50 steps／epoch、60 秒時間心跳，Drive `progress/formal/` 與 `progress/speedtest/` 的 TXT／JSON、可行動錯誤及離線摘要格。快照是觀測，不是 checkpoint／完成／研究 authority；FORMAL 才顯示驗證 IC。ETA 未知即預估中，佇列以本次完成 fit 的實測耗時外推，不假設 Q5 耗時。

@@ -50,7 +50,7 @@ class Progress:
     def __init__(self, root, speed=False, interval=60., clock=time.monotonic):
         self.root=Path(root);self.speed=speed;self.interval=interval;self.clock=clock
         self.lock=threading.RLock();self.stop=threading.Event();self.durations=[]
-        self.fit_started=None;self.completed=0;self.last_fit_elapsed=0.
+        self.fit_started=None;self.completed=0;self.last_fit_elapsed=0.;self.step_origin=0
         self.data=dict(status='準備中',queue=None,fit_index=0,total_fits=0,epoch=0,step=0,
                        loss=None,temperature_c=None,clock_mhz=None,last_checkpoint_at=None)
 
@@ -64,7 +64,8 @@ class Progress:
 
     def __exit__(self,kind,error,tb):
         self.stop.set();self.thread.join()
-        self.update(status='已中斷／失敗' if kind else '已完成')
+        self.update(status='已中斷／失敗' if kind else
+                    ('已完成（略過）' if self.data['status']=='已完成（略過）' else '已完成'))
         self.write()
 
     def update(self, **values):
@@ -75,35 +76,60 @@ class Progress:
         if not self.speed:allowed.add('val_ic5')
         with self.lock:self.data.update({k:v for k,v in values.items() if k in allowed})
 
-    def start_fit(self,job,index,total,cfg):
+    def start_fit(self,job,index,total,cfg,skipped=False):
         with self.lock:
-            self.fit_started=self.clock();self.last_fit_elapsed=0.
+            self.fit_started=None if skipped else self.clock();self.last_fit_elapsed=0.;self.step_origin=0
             self.data.pop('val_ic5',None)
             self.update(**job,fit_index=index,total_fits=total,epoch=0,step=0,loss=None,
                         epochs=cfg['epochs'],steps_per_epoch=cfg['steps_per_epoch'],
-                        last_checkpoint_at=None,status='訓練中')
+                        last_checkpoint_at=None,status='已完成（略過）' if skipped else '訓練中')
+        self.emit();self.write()
+
+    def resume_from(self,epoch,step):
+        """Rebase observation after checkpoint validation; historical steps earn no throughput."""
+        with self.lock:
+            self.step_origin=step
+            self.update(epoch=epoch,step=step)
         self.emit();self.write()
 
     def finish_fit(self, skipped=False):
         with self.lock:
             if not skipped and self.fit_started is not None:
                 self.last_fit_elapsed=max(0.,self.clock()-self.fit_started)
-                self.durations.append(self.last_fit_elapsed)
+                if self.last_fit_elapsed>=1.:
+                    self.durations.append(self.last_fit_elapsed)
             self.completed+=1;self.fit_started=None
-        self.update(status='fit 已驗證完成');self.write()
+            self.update(status='已完成（略過）' if skipped else
+                        ('已完成' if self.completed==self.data['total_fits'] else 'fit 已驗證完成'))
+        self.emit();self.write()
 
     def snapshot(self):
         with self.lock:
             result=dict(self.data)
             elapsed=max(0.,self.clock()-self.fit_started) if self.fit_started is not None else self.last_fit_elapsed
             step=result.get('step',0);total=result.get('epochs',0)*result.get('steps_per_epoch',0)
+            measured_steps=step-self.step_origin
+            fit_eta=None
+            if self.fit_started is None and self.completed:
+                fit_eta=0.
+            elif measured_steps>=10 and elapsed>=1. and total>=step:
+                fit_eta=elapsed*(total-step)/measured_steps
+            remaining=max(0,result['total_fits']-self.completed)
+            active=self.fit_started is not None
+            queue_eta=None
+            if result['total_fits'] and remaining==0:
+                queue_eta=0.
+            elif self.durations:
+                mean=sum(self.durations)/len(self.durations)
+                # Completed durations are frozen at finish, never recomputed using
+                # the next fit's clock. Cached skips contribute no timing samples.
+                current=(fit_eta if fit_eta is not None else max(0.,mean-elapsed)) if active else 0.
+                queue_eta=current+mean*max(0,remaining-int(active))
+            elif active and remaining==1:
+                queue_eta=fit_eta
             result.update(observed_at=datetime.now(timezone.utc).isoformat(),
                           mode='SPEED_TEST' if self.speed else 'FORMAL',completed_fits=self.completed,
-                          fit_elapsed_seconds=elapsed,
-                          fit_eta_seconds=(0. if self.fit_started is None and self.completed else
-                              elapsed*(total-step)/step if step and total>=step else None),
-                          queue_eta_seconds=(max(0.,sum(self.durations)/len(self.durations)*
-                              (result['total_fits']-self.completed)-(elapsed if self.fit_started is not None else 0.)) if self.durations else None))
+                          fit_elapsed_seconds=elapsed,fit_eta_seconds=fit_eta,queue_eta_seconds=queue_eta)
             if result.get('queue')=='Q5':result['fit_eta_seconds']=result['queue_eta_seconds']=None
             return result
 
@@ -478,7 +504,10 @@ class Observer:
         if saved['best']['epoch']>saved['latest']['epoch'] or (saved['previous'] and saved['previous']['epoch']>=saved['latest']['epoch']):
             raise ValueError('checkpoint pointer order')
         self.pointer=saved;self.best=payloads['latest']['state']['best']
-        if self.progress:self.progress.update(last_checkpoint_at=datetime.fromtimestamp(pointer.stat().st_mtime,timezone.utc).isoformat())
+        if self.progress:
+            epoch=payloads['latest']['state']['epoch']
+            self.progress.update(last_checkpoint_at=datetime.fromtimestamp(pointer.stat().st_mtime,timezone.utc).isoformat())
+            self.progress.resume_from(epoch,epoch*self.progress.data['steps_per_epoch'])
         return payloads['latest']
 
 
@@ -722,6 +751,7 @@ def run(bundle,drive_root,speed=False,max_hours=None,max_units=None,rate=None,pl
             fit_paths[(year,arm,seed,job['window'],job['lr'])]=fit
             cached=resume_fit(fit,fit_contract)
             if cached:
+                progress.start_fit(job,fit_index,len(queue),cfg,skipped=True)
                 reports.append(cached);progress.finish_fit(skipped=True);continue
             ledger.start(fit_contract,0)
             # Stable directory permits retry from the last pointer. Orphan epoch files remain forensic.

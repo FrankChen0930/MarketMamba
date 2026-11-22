@@ -1,3 +1,90 @@
+## P4a 進度兩項 REQUIRED 修補 — 2026-11-22（job-run-mwrpdfba-d4ad9d）
+
+本輪 base/HEAD `5156087da0e2aaba5d0cf703db3cdd67200cfbe9`，既有 detached worktree `fixer_p4a_progress`。範圍只處理複審的接續 ETA 與 cached-fit 身分；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依 Human 指示不 commit／push／merge。沿用既有 runner、tests、工程報告與 knowledge 結構，沒有新 implementation／artifact tree。所有產物僅 CPU 合成 ENGINEERING_OBSERVATION；完成不等於 Human acceptance。
+
+### 修正與決策
+
+- `Progress` 在 identity／hash／pointer 驗證完成後，以 checkpoint 的 epoch × steps_per_epoch 設定本次起點並立即輸出／寫快照。累計 step 仍顯示原訓練進度；吞吐量分母只用本次新完成的 steps。至少 10 steps 且啟動耗時至少 1 秒才外推，否則 JSON null、TXT「預估中」。複審案例 3900 → 4000／5000、10 秒，修正後 ETA = 10 × (5000−4000) ÷ (4000−3900) = **100 秒**。
+- 佇列目前 fit 優先使用上述 ETA，後續 fit 用本次已完成 fit 的固定實測秒數均值；目前 fit 尚無可靠 step 樣本時，才用該實測均值減本 fit elapsed 作粗估。沒有完成樣本時，除唯一剩餘的目前 fit 可用自身可靠 ETA，佇列維持 null。完成 fit 實測至少 1 秒才納入均值；不以後一個 fit 的 elapsed 重算前一個，也不使用歷史帳本時間。cached skips 不納入樣本。Q5 仍為額外未知，期間兩個 ETA 均 null；沒有對完整 Q5 完成時間作保證。
+- cached 分支先更新目前 fit 編號、Q、arm／year／seed／window／lr，清除前一個 fit 的 loss／IC／checkpoint／step；不啟動訓練計時，finish 後進度行與 JSON／TXT 都是「已完成（略過）」。正常 context exit 保留此標記。全部快取與 mixed skip/train 都逐 fit 驗證；最後 fit 完成時 fit／queue ETA = 0，訓練完成顯示「已完成」。
+- 只改觀測：不改 fit 內容／順序、配方、checkpoint authority、完成 gate、帳本、訓練模型、RNG 或研究規則。不需要新增依賴；requirements lock bytes 保持原樣。Human requirements 第 7 節同步描述新候選行為；第 5 節的需求未放寬。
+
+### RED → GREEN 與失敗診斷
+
+新增回歸 RED：`8 failed, 10 passed in 50.25s`（`/tmp/p4-required-red.log`）；實際數值為 `assert 2.5 == 100.0`，全快取 `fit_index=0`，resume 初始 epoch=0，均命中複審問題。另補正常退出保留略過狀態的 RED：`1 failed in 1.69s`（`/tmp/p4-final-skip-red.log`）。
+
+首次 GREEN `2 failed, 16 passed in 51.19s`：既有變異 fixture 搜尋已移除的 ETA 算式；混合案例將仍有 complete.json 的 fit 強制當作缺失，觸發正確的 FileExistsError。修正 fixture 的變異注入點，並將一個本機合成 fit 移出 run、保留於測試暫存目錄，再實際重建；沒有放寬 immutable completed-fit gate。focused 結果 `19 passed in 57.29s`（`/tmp/p4-required-green2.log`）。之後再強化 skip 模擬耗時 5 秒仍不得進入樣本的斷言，納入最終全套。
+
+相鄰測試實際在 epoch 2 的第 5 步中斷 CPU GRU：重啟恢復已提交 epoch 1／step 12，捨棄未提交 5 steps；fit 編號／身分保持相同，續跑 step 24 → 36，第一個可靠 ETA = 1.2 秒。最後訓練及略過 fit 均驗 ETA=0 與完成狀態；64-fit 全快取驗每筆 snapshot 及最終持久 JSON，mixed 案例驗第 2 fit 訓練、其餘略過，均無前筆身分殘留。
+
+### 記憶體變異反證
+
+只在子程序記憶體 compile 變異，不修改 repo source；以 pytest 實際執行新增測試，四項均因預期 assertion 失敗而 exit 1：
+
+```text
+historical_steps exit=1; 1 failed in 0.14s
+insufficient_sample exit=1; 1 failed in 0.18s
+recomputed_duration exit=1; 1 failed in 0.19s
+skip_identity exit=1; 1 failed in 40.38s
+```
+
+對應變異：將 `/measured_steps` 改回 `/step`；10 steps 門檻改為 1；完成 fit 均值改成目前 elapsed；移除 cached 分支的 start_fit 身分更新。第四項重現 completed_fits=64、fit_index=0 與識別欄位未知。首次從 `/tmp` 啟動工具缺 repo import path，得到 ModuleNotFoundError，不算 mutation 證據；補正 `PYTHONPATH=.:V6` 才取得以上結果。暫存腳本 `/tmp/p4_required_mutants.py`、logs `/tmp/p4-mutant-*.log` 皆 TEMPORARY，非完成／研究 authority。
+
+### 最終驗證
+
+完整 CPU 指令（未使用網路／GPU／Colab，未執行 pip check）：
+
+```bash
+PYTHONPATH=V6:/tmp/p4-notebook-deps OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES='' /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests tests -q -p no:cacheprovider
+```
+
+實際輸出（`/tmp/p4-required-full.log`）：
+
+```text
+745 passed, 1 skipped, 5 warnings in 273.22s (0:04:33)
+```
+
+唯一 skip 是既有 CUDA 測試；warnings 為刻意 duplicate ZIP fixture 及既有 Pandas4 deprecation。沒有停用測試或降低門檻。使用既存 `/tmp/p4-notebook-deps`，無安裝套件；nbformat 解析／驗證 PASS，8 個 notebook code cells 均 compile PASS，未重新產生真實資料 bundle 或上傳交付。既有權重／預測／RNG 回歸納入全套；本輪不宣稱另有獨立 GPU 比較。
+
+與 HEAD 比對：64-fit 內容與順序相同。SHA-256(`json.dumps(queue,sort_keys=True,separators=(',',':'))`) = `4dc90ec0ada6c6d34b43c429d359424c502634e502c6856c6774bf138de7ba23`，與複審相同。下列逐檔 SHA-256 綁定本輪 source／測試（syntax compile 通過），以及未改的保護／契約 bytes：
+
+| 路徑 | SHA-256 | 與 HEAD |
+|---|---|---|
+| V6/research_lab/p4_colab.py | 63c6a9e123102f3e1b5dc36b3eefa4751d76ec2c929f078851d8fc21cb60ab32 | 已修補 |
+| V6/research_lab/tests/test_p4_progress.py | 3c432e901ad1f89fb492e39b30827cb1228b3d38708e197f4036fddc04d2f1fc | 已擴充 |
+| V6/research_lab/tests/test_p4_full.py | 43c82977e09eea59e4464e03d39c31f8816f77d4114d670b39bbf529e0cd9857 | 已擴充 |
+| V6/research_lab/rolling_seq_scores.py | 5d10d52b1d423c73fa518535f01e80b2760a0d3087036b9b778491d13942aefd | 相同 |
+| V6/research_lab/portfolio_eval.py | 3e46e07277c5d13fe6b24608b7e7dc20648e9558be322ad414d2f82a60c4a30c | 相同 |
+| tasks/p4a-colab-contract-20261121.json | 7d5813bc21644817ccc991c97049f2c65efe88a9f4c18903b42038337b328c41 | 相同 |
+| environments/p4a-colab-runtime.json | b45380920c48c5548ef8880f63f4a351a3de7ff5d6b9f2abef50ebf87e763194 | 相同 |
+| environments/p4a-colab.requirements.lock.txt | 2c39a3fb9567d1f9fc8ee83369c7b6c90cd19a8e679e32e4c8a6c1d75c5782c9 | 相同 |
+
+### Knowledge gate、限制與交接
+
+人工 knowledge-impact：Semantics=YES（進度觀測）、Major blocker/next decision=YES（修補候選待獨立複審）；Authority／Subsystem boundary／Active runtime state／Correctness gate／新增或 supersede canonical artifact／Deprecate=NO。正常測試後執行 check_knowledge_impact.py，工具回報 PASS、三個程式／測試皆 DEFAULT，無自動更新；人工仍更新 Current State／Authority Map／Training／Human requirements。沒有 primary authority supersession，沒有重標歷史 artifacts，也沒有更新外部 runtime observed_at。
+
+文件更新後再次執行 impact checker：WARNING，`canonical-knowledge` 規則要求 REVIEW_REQUIRED `knowledge/GOVERNANCE.md`；已核對 completion／severity／supersession 規則，這次不改治理政策，無需修改該檔。這是人工已完成的 review，不是假稱工具自動清除 warning。
+
+`knowledge_health.py --ci` exit 0，實際輸出：
+
+```text
+Project Map        PASS
+Agent Guides       PASS
+Domains            PASS
+Governance         WARNING
+Authority Drift    WARNING
+Runtime Freshness  PASS
+Generated Index    PASS
+Legacy Docs        WARNING
+Overall: WARNING
+```
+
+無 structural FAIL；Governance 檢查 18 authority refs／807 Markdown links／53 JSON／3 runtime observations，warnings 為 8 個 AUTHORITY_REPIN_CANDIDATE；Authority Drift 亦含 repin 提醒，Legacy Docs 為 README／OVERVIEW／PROJECT 的舊架構／特徵／排程敘述漂移。本輪不自動 repin 或修改這些範圍外文件。`git diff --check` 通過，無 staged／untracked 檔案，8 個已追蹤檔案修改皆屬核准範圍；工作樹非 clean 是明確 no-commit 要求。依 code-review-and-quality 自查 correctness／邊界／可讀性／安全／成本，沒有引入額外依賴或放寬 gate；這不是獨立複審。
+
+Runtime：WSL-native 既有任務 worktree，Python 3.12.3；沿用 `/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python` 的 torch 2.15.0+cpu／numpy 2.5.4／pytest 9.2.0，只借用環境，不引用該研究 repo 結果。`MARKETMAMBA_DATA_ROOT` 未設定；本 checkout `Data/` realpath 為 `/home/frank/projects/MarketMamba/.worktrees/ruflo-workers/run-mwrpdfba-d4ad9d/fixer_p4a_progress/Data`，測試只用 `/tmp/pytest-of-frank/` 的合成資料；未寫正式 Data／V6/models。環境不同於 Colab OBSERVED cp313／T4，CPU 通過不能推定 CUDA 及 Drive FUSE 行為。ETA 為最大 epochs／實測均值粗估，早停、不同臂／窗與 I/O 可造成誤差，Q5 額外未知。
+
+Remaining／Next：獨立複審本 patch；通過後另案重新 deliver，需重新綁定 source identity。Colab／T4／Drive 現場仍 UNVERIFIED，不解除原 NO_GO、不等於 Human acceptance；本輪沒有 GPU、網路、Colab、資料取得、production、scheduler、通知或 wakeup。無額外 agents。Commit／Push／Merge／Deploy 均未執行；保留未 staged 的核准 patch，依 no-commit 指示工作樹預期非 clean，非遺漏提交。
+
 # P4a Colab 工程交接 — 2026-11-21
 
 ## 2026-11-22：後續交付進度與 speed-test 獨立帳本（本輪候選）

@@ -252,8 +252,34 @@ def test_cpu_full_queue_and_validated_skip(tmp_path,monkeypatch):
     calls.clear()
     first=p.run(tmp_path/'bundle',drive,data_dir=tmp_path/'ssd')
     assert len(calls)==64 and permutations==[2021,2022,2023] and len(first['jobs'])==64
+    snapshots=[]
+    original_finish=p.Progress.finish_fit
+    def finish(progress,*args,**kwargs):
+        original_finish(progress,*args,**kwargs)
+        snapshots.append(progress.snapshot())
+    monkeypatch.setattr(p.Progress,'finish_fit',finish)
     second=p.run(tmp_path/'bundle',drive,data_dir=tmp_path/'ssd')
     assert len(calls)==64 and len(second['jobs'])==64 and len(permutations)==3
+    queue=p.fit_queue(json.loads((b.ROOT/'tasks/p4a-colab-contract-20261121.json').read_text()))
+    assert len(snapshots)==64
+    for index,(snapshot,job) in enumerate(zip(snapshots,queue),1):
+        assert snapshot['fit_index']==snapshot['completed_fits']==index
+        assert snapshot['status']=='已完成（略過）'
+        assert all(snapshot[k]==v for k,v in job.items())
+    assert snapshots[-1]['queue_eta_seconds']==0.
+    final=json.loads((drive.parent/'progress/formal/progress.json').read_text())
+    assert final['status']=='已完成（略過）' and final['fit_index']==64
+    assert all(final[k]==v for k,v in queue[-1].items())
+    # Keep the synthetic second fit outside the run, yielding a real cache miss.
+    snapshots.clear();job=queue[1]
+    fit=next(drive.glob('run-*'))/f"{job['queue']}-{job['year']}-{job['arm']}-{job['seed']}-w{job['window']}-lr{job['lr']}"
+    fit.rename(tmp_path/'held-synthetic-fit')
+    p.run(tmp_path/'bundle',drive,data_dir=tmp_path/'ssd')
+    assert len(calls)==65 and len(snapshots)==64
+    for index,(snapshot,job) in enumerate(zip(snapshots,queue),1):
+        assert snapshot['fit_index']==snapshot['completed_fits']==index
+        assert all(snapshot[k]==v for k,v in job.items())
+        assert snapshot['status']==('fit 已驗證完成' if index==2 else '已完成（略過）')
     from research_lab.p4_eval import load_run
     scores,binding=load_run(next(drive.glob('run-*')))
     assert len(scores)==104 and len(binding['queue'])==64
