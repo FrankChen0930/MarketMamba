@@ -100,6 +100,33 @@ def publish_bytes(path,payload):
     return expected
 
 
+def effective_recipe(contract):
+    """Bind each formal fit to its frozen queue entry and effective recipe."""
+    frozen=json.loads((Path(__file__).resolve().parents[2]/'tasks/p4a-colab-contract-20261121.json').read_text())
+    keys=('queue','year','arm','seed','window','lr')
+    job={k:contract.get(k) for k in keys}
+    if job not in fit_queue(frozen):raise ValueError('fit description not in frozen queue')
+    recipe=dict(frozen['recipe'],window=job['window'],lr=job['lr'])
+    if contract.get('recipe')!=recipe:raise ValueError('fit frozen recipe mismatch')
+    return recipe
+
+
+def validate_training_state(state,recipe):
+    history=state.get('history',[]);epoch=state.get('epoch')
+    if not history or type(epoch)!=int or epoch!=len(history) or epoch>recipe['epochs']:
+        raise ValueError('invalid training history length')
+    best=-9.;bad=0;best_epoch=None
+    for i,row in enumerate(history,1):
+        score=row.get('val_ic5',np.nan)
+        if row.get('epoch')!=i or not np.isfinite(score):raise ValueError('invalid training history epoch/IC')
+        if bad>=recipe['patience']:raise ValueError('training history continues after early stop')
+        if score>best:best=score;bad=0;best_epoch=i
+        else:bad+=1
+    if state.get('best')!=best or state.get('bad')!=bad or best_epoch is None:
+        raise ValueError('training BEST/bad history mismatch')
+    return best_epoch
+
+
 def validate_fit_outputs(directory, contract, outputs):
     """Required schema plus bytes and semantic checks, before publish and resume."""
     from .p4_bundle import safe_name
@@ -125,6 +152,7 @@ def validate_fit_outputs(directory, contract, outputs):
         return
     required={'best.pt','scores.parquet','reference.parquet','metrics.json','checkpoint-pointer.json'}
     if not required<=names: raise ValueError('completed fit missing required artifacts')
+    recipe=effective_recipe(contract)
     metrics=json.loads((attempt/'metrics.json').read_text())
     if not metrics.get('history') or not np.isfinite(metrics.get('best_val_ic5',np.nan)):
         raise ValueError('invalid metrics')
@@ -155,6 +183,22 @@ def validate_fit_outputs(directory, contract, outputs):
     if not ((pointer['previous'] is None and pointer['latest']['epoch']==1 or pointer['previous'] is not None and pointer['previous']['epoch']<pointer['latest']['epoch']) and
             pointer['best']['epoch']<=pointer['latest']['epoch']):
         raise ValueError('checkpoint pointer order mismatch')
+    latest=checkpoints['latest']['state']
+    best_epoch=validate_training_state(latest,recipe)
+    if latest['epoch']!=recipe['epochs'] and latest['bad']<recipe['patience']:
+        raise ValueError('training termination not reached')
+    if latest['history']!=metrics['history'] or latest['best']!=metrics['best_val_ic5']:
+        raise ValueError('metrics history/BEST mismatch')
+    if pointer['best']['epoch']!=best_epoch:
+        raise ValueError('BEST epoch does not match history')
+    for payload in checkpoints.values():
+        state=payload['state'];validate_training_state(state,recipe)
+        if state['history']!=latest['history'][:state['epoch']]:
+            raise ValueError('checkpoint history prefix mismatch')
+    for column,value in dict(fold=contract['year'],system=contract['arm'],seed=contract['seed'],
+                             window=recipe['window'],lr=recipe['lr']).items():
+        if column not in frame or not frame[column].eq(value).all():
+            raise ValueError('prediction fit setting mismatch: '+column)
     best=torch.load(attempt/'best.pt',map_location='cpu',weights_only=False)
     selected=checkpoints['best']['best_sd']
     if (best['contract']!=contract or best['best_val_ic5']!=metrics['best_val_ic5'] or
@@ -558,7 +602,7 @@ def run(bundle,drive_root,speed=False,max_hours=None,max_units=None,rate=None,pl
                     raise
             cfg=deepcopy(contract['recipe']);cfg.update(window=job['window'],lr=job['lr'])
             if speed:cfg.update(epochs=2,steps_per_epoch=100,patience=3)
-            fit_contract=dict(run_hash=run_hash,**job,rankgauss=caches[year],speed_test=speed)
+            fit_contract=dict(run_hash=run_hash,**job,recipe=cfg,rankgauss=caches[year],speed_test=speed)
             fit=out/f"{job['queue']}-{year}-{arm}-{seed}-w{job['window']}-lr{job['lr']}"
             fit_paths[(year,arm,seed,job['window'],job['lr'])]=fit
             cached=resume_fit(fit,fit_contract)

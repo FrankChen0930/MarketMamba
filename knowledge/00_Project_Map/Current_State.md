@@ -1,3 +1,9 @@
+## P4a 三項 REQUIRED 修補候選 — 2026-11-22
+
+`job-run-mwric0jj-32d745`，既有 detached HEAD/base `d82d0209cba6686c10fc1a01c78172446a6796fa`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依 no-commit 授權保留 patch。修補範圍限獨立複審的三項 REQUIRED：[evaluator](../../V6/research_lab/p4_eval.py) 對 Family A/B 列集合不一致明確拒絕並報差異，只有 C 取共同交集且先限制每個 seed 再重算 percentile rank／平均；保留交集與排除比例。[completed-fit validator](../../V6/research_lab/p4_colab.py) 綁定 frozen queue／每 fit 的 window、lr 有效配方，驗證連續 history、重算 BEST／bad、8 epochs 或有效早停、metrics／pointer／預測 fit 設定。發布與續跑共用驗證；舊缺 recipe／history 證據的完成標記 fail closed，不遷移或重標歷史 artifacts。
+
+機器研究契約與 OBSERVED runtime bytes 不變，未更新 observed_at；P3 adapter／portfolio engine 原樣，無 production／scheduler／正式 Data／模型／GPU／網路／Colab變更。只有 CPU 合成工程證據；Colab／T4／Drive FUSE 現場仍 UNVERIFIED，工程完成不等於 Human acceptance。實際驗證與限制見[工程報告](../../reports/v7_p4a_colab_engineering.md)。Next：獨立複審本 patch，再決定接受與重新產生綁定新 source identity 的交付；本輪不執行現場作業。
+
 ## P4a 完整固定佇列與 Drive 資料候選 — 2026-11-22
 
 `job-run-mwrgy396-cf1213` builder，既有 detached HEAD/base `f333421fafdcb02f716b16376ff65717021edfa4`，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；依 Human no-commit 指示保留 patch。此次核准的 [FROZEN 規格](../../tasks/spec-p4a-colab-20261121.md)／[機器契約](../../tasks/p4a-colab-contract-20261121.json) 取代下列舊 P4a DRAFT、25% reserve、wall/CU caps、completed-fit-only、矩陣隨 ZIP 交付的目前操作描述；歷史紀錄保留，P3 source/artifacts/14h 契約完全不重標。

@@ -346,21 +346,29 @@ def test_bundle_excludes_and_extract_rejects_executable_cache(tmp_path):
     assert not (tmp_path/'out').exists()
 
 
-def formal_fixture(root):
+def formal_fixture(root, values=(.3,.2,.1,0.), job=None):
     import pandas as pd
-    c={'matrix':'synthetic','seed':17}
-    table=pd.DataFrame(dict(fold=[2021],date=pd.to_datetime(['2021-01-04']),code=['A'],label_y5=[.1],score=[.2]))
+    frozen=json.loads((bundle.ROOT/'tasks/p4a-colab-contract-20261121.json').read_text())
+    job=job or p4.fit_queue(frozen)[0]
+    cfg=dict(frozen['recipe'],window=job['window'],lr=job['lr'])
+    c=dict(run_hash='synthetic',rankgauss='synthetic',speed_test=False,recipe=cfg,**job)
+    table=pd.DataFrame(dict(fold=[job['year']],date=pd.to_datetime([f"{job['year']}-01-04"]),code=['A'],label_y5=[.1],score=[.2],
+                            seed=[job['seed']],system=[job['arm']],window=[job['window']],lr=[job['lr']]))
     for name in ('scores','reference'):table.to_parquet(root/f'{name}.parquet',index=False)
-    (root/'metrics.json').write_text(json.dumps(dict(history=[{'epoch':1},{'epoch':2}],best_val_ic5=.3,eval_rows=1)))
-    pointer={}
-    for epoch in (1,2):
+    history=[dict(epoch=i,val_ic5=v) for i,v in enumerate(values,1)]
+    (root/'metrics.json').write_text(json.dumps(dict(history=history,best_val_ic5=max(values),eval_rows=1)))
+    entries=[];best=-9.;bad=0;best_entry=None
+    for epoch,value in enumerate(values,1):
+        improved=value>best
+        if improved:best=value;bad=0
+        else:bad+=1
         name=f'epoch-{epoch:03d}.pt'
-        torch.save(dict(contract=c,state=dict(epoch=epoch,best=.3),best_sd={'weight':torch.tensor([1.])},model={'weight':torch.tensor([1.])},opt={},sched={},rng_state={},torch_rng=torch.get_rng_state()),root/name)
-        entry=dict(file=name,identity=bundle.digest(root/name),epoch=epoch)
-        if epoch==1:pointer.update(previous=entry,best=entry)
-        else:pointer['latest']=entry
+        torch.save(dict(contract=c,state=dict(epoch=epoch,best=best,bad=bad,history=history[:epoch]),best_sd={'weight':torch.tensor([1.])},model={'weight':torch.tensor([1.])},opt={},sched={},rng_state={},torch_rng=torch.get_rng_state()),root/name)
+        entry=dict(file=name,identity=bundle.digest(root/name),epoch=epoch);entries.append(entry)
+        if improved:best_entry=entry
+    pointer=dict(previous=entries[-2] if len(entries)>1 else None,best=best_entry,latest=entries[-1])
     (root/'checkpoint-pointer.json').write_text(json.dumps(pointer))
-    torch.save(dict(contract=c,model={'weight':torch.tensor([1.])},best_val_ic5=.3),root/'best.pt')
+    torch.save(dict(contract=c,model={'weight':torch.tensor([1.])},best_val_ic5=max(values)),root/'best.pt')
     return c,[p.name for p in root.iterdir()]
 
 
@@ -378,7 +386,7 @@ def test_completed_fit_required_schema(tmp_path,damage):
         frame.to_parquet(tmp_path/'scores.parquet',index=False)
     if damage=='best':torch.save(dict(contract=c,model={'weight':torch.tensor([99.])},best_val_ic5=.3),tmp_path/'best.pt')
     if damage=='checkpoint':
-        path=tmp_path/'epoch-002.pt';payload=torch.load(path,weights_only=False);del payload['opt'];torch.save(payload,path)
+        path=tmp_path/'epoch-004.pt';payload=torch.load(path,weights_only=False);del payload['opt'];torch.save(payload,path)
         pointer=tmp_path/'checkpoint-pointer.json';data=json.loads(pointer.read_text());data['latest']['identity']=bundle.digest(path);pointer.write_text(json.dumps(data))
     if damage=='order':
         pointer=tmp_path/'checkpoint-pointer.json';data=json.loads(pointer.read_text());data['previous'],data['latest']=data['latest'],data['previous'];pointer.write_text(json.dumps(data))

@@ -1,5 +1,78 @@
 # P4a Colab 工程交接 — 2026-11-21
 
+## 2026-11-22：d82d020 複審三項 REQUIRED 修補
+
+`job-run-mwric0jj-32d745`，builder，detached HEAD/base `d82d0209cba6686c10fc1a01c78172446a6796fa`。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；只沿用既有worktree、P4 implementation／tests／knowledge結構，不新增流程、artifact tree或agents。本輪工程完成不構成獨立複審GO、Colab現場驗證或Human acceptance。
+
+### Changed／Decisions
+
+1. `p4_eval.py`：Family A/B 對所有比較系統與 C0+ 要求完整相同列集合；不一致拋 ValueError，JSON錯誤包含 common_rows、input_rows、excluded_rows與比例，不能裁列後判完整。Family C 保留共同交集，取出 raw seed scores 在該交集重新逐fold/date percentile rank，再平均seed後送原P2引擎；C0+、W60也限制同一交集，保留排除報告。原始 seed鍵／label完整性檢查仍先執行，不容忍缺seed。
+2. `p4_colab.py`：fit_contract 新增有效 recipe；正式發布與續跑共用驗證，先核對 frozen queue 的queue/year/arm/seed/window/lr，recipe等於凍結配方加該fit自身window/lr。重算連續history的BEST與bad，要求8epochs或bad>=patience；拒絕早停後仍繼續的history、BEST pointer非首個最佳epoch、metrics／checkpoint history prefix不一致、預測fold/system/seed/window/lr不符。BEST權重／hash既有檢查保留。
+3. 既有formal fixtures與64-fit CPU boundary doubles改為有效4epoch早停history；沒有刪測試、降低threshold或改成特例。新增滿8epoch、主格／長窗／LR各自有效配方與重算hash後仍拒絕語義損壞案例。
+
+相容性限制：舊缺recipe或完整history證據的完成標記不再可skip；fail closed，不修改、升格或遷移歷史artifacts。研究／環境機器契約 bytes未改。後續交付須另行重建source綁定，本輪不產出真實訓練ZIP、不接觸正式Data。
+
+### Evidence：RED → GREEN／完整回歸／反證
+
+RED（`/tmp/p4-required-red.log`）：`5 failed, 18 deselected in 1.92s`，A/B缺列各一、Family C排名、epoch1/bad0及epoch7仍未終止各一。P4 focused最終（`/tmp/p4-required-focused-final.log`）：`150 passed, 1 warning in 62.95s`。最初focused為136passed，之後新增14個配方／語義損壞案例再跑最終150；沒有掩蓋失敗。
+
+排名反轉合成案例實際輸出：
+
+```text
+full_support_W60=[0.8,0.6000000000000001,0.5,0.55,0.55]
+common_W60=[0.6,0.7,0.5,0.6000000000000001,0.6]
+code0>code1 before=True after=False
+C common_rows=5; W60/C0+ input_rows=10 excluded_rows=5 excluded_fraction=0.5
+A/B missing one C0+: REJECTED; neural input_rows=10 excluded_rows=1; C0+ input_rows=9
+```
+
+三項mutants只在獨立CPU程序的記憶體compile／exec module，不改repo source。Runner `/tmp/p4-required-mutate.py`；logs `/tmp/p4-required-mut-{rows,ranks,termination}.log`：
+
+```text
+IN_MEMORY rows pytest_exit=1 KILLED=True
+IN_MEMORY ranks pytest_exit=1 KILLED=True
+IN_MEMORY termination pytest_exit=1 KILLED=True
+```
+
+分別移除A/B列一致gate、回退至全支援seed排名、移除訓練終止gate，對應新測試因實際assertion失敗被殺死（不是collection/import錯誤）。所有logs／pytest合成artifacts屬TEMPORARY／ENGINEERING_ONLY；合成輸入由版本化test fixture決定，不提供研究或交易evidence。
+
+完整指定回歸（受測source期間固定；`/tmp/p4-required-full.log`，exit0）：
+
+```bash
+OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES='' PYTHONDONTWRITEBYTECODE=1 \
+PYTHONPATH=/tmp/p4-notebook-deps:V6:V6/research_lab/tests:. \
+/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests tests -q -p no:cacheprovider
+```
+
+```text
+727 passed, 1 skipped, 5 warnings in 248.41s (0:04:08)
+```
+
+唯一skip為既有CUDA測試；nbformat透過既有離線 `/tmp/p4-notebook-deps` 實際執行。Warnings為duplicate ZIP fixture及既有Pandas Timestamp.dayofweek棄用警告。Python3.12.3／torch2.15.0+cpu，GPU隱藏，無網路或套件安裝。MARKETMAMBA_DATA_ROOT unset；Data存在且realpath為本worktree `/home/frank/projects/MarketMamba/.worktrees/ruflo-workers/run-mwric0jj-32d745/fixer_p4a_full/Data`，未用正式資料訓練、未寫formal Data。
+
+受驗source identity（syntax AST parse PASS）：
+
+| Path | bytes | SHA-256 |
+|---|---:|---|
+| `V6/research_lab/p4_eval.py` | 12099 | `c8e787f17e7818eec939ed0740285482af02f28435cee22a3d96b3a3f727c164` |
+| `V6/research_lab/p4_colab.py` | 42230 | `8c5833ece2ecfd720c593479ee81cf99b392d3ca15aa786753c6715ffc4c8526` |
+| `V6/research_lab/tests/test_p4.py` | 50512 | `8080e0c1ea0401bf053d6b2587c945212b041082d13ed8aafeb100e2a2fe1bac` |
+| `V6/research_lab/tests/test_p4_full.py` | 23477 | `6184edb172b610241735a0fd624a76f7b28c0964c52368407a404386fddae6d5` |
+
+逐bytes確認 `rolling_seq_scores.py` SHA `5d10d52b1d423c73fa518535f01e80b2760a0d3087036b9b778491d13942aefd`、`portfolio_eval.py` SHA `3e46e07277c5d13fe6b24608b7e7dc20648e9558be322ad414d2f82a60c4a30c`、FROZEN契約SHA `7d5813bc21644817ccc991c97049f2c65efe88a9f4c18903b42038337b328c41`、runtime契約SHA `b45380920c48c5548ef8880f63f4a351a3de7ff5d6b9f2abef50ebf87e763194` 均與HEAD相同。無V6/models／formal Data／scheduler／production diff。
+
+### Knowledge-impact／限制與交接
+
+逐項gate：semantics=YES、correctness gate=YES（補強契約執行，不降標）、next decision=YES（修補後待獨立複審）；authority／subsystem boundary／active runtime／new or superseded canonical artifact／deprecation=NO。正常tests後執行check_knowledge_impact.py初次PASS，工具未匹配research_lab專屬規則，仍由人工更新Current_State、Authority_Map、Training及Worktree_Register。保留舊歷史evidence；未改runtime observed_at、authority pins、generated indexes或治理規則。
+
+最終 `check_knowledge_impact.py` exit0／WARNING（canonical knowledge與worktree責任需人工review）；已讀GOVERNANCE與Operations，治理規則及營運子系統邊界未變，不需改該兩檔。`knowledge_health.py --ci` exit0／Overall WARNING，Governance／Authority Drift／Legacy Docs為WARNING；Project Map／Agent Guides／Domains／Runtime Freshness／Generated Index均PASS、無FAIL。`git diff --check` PASS；新增Markdown連結／reference已核對，受保護路徑無diff。依no-commit指示保留dirty patch，不宣稱clean。
+
+Code-review-and-quality五軸自查：正確性由RED/GREEN與mutation證明；沿用P4邊界與P2引擎，新增兩個小validator而非重寫引擎；未新增外部I/O／依賴／服務；seed排名額外重算限Family C，checkpoint history最多8epochs。沒有獨立審查者，不將自查當Human acceptance。
+
+Remaining／Blockers：本輪本機工程無阻擋；Colab／T4／Drive FUSE／真正SIGKILL現場行為仍UNVERIFIED，無GPU或研究結果、無真實交付重打包／上傳。Next recommended action：獨立複審patch與實際logs，接受後另行重建綁定新source的交付與現場驗證。
+
+Completed：三項REQUIRED工程修補與CPU驗證。Changed：2實作、2測試、本報告、Current_State／Authority_Map／Training／Worktree_Register，共9 tracked paths。Decisions／Evidence如上。Project memory updated：YES；Authority map updated：YES（候選工程邊界，研究／production authority未變）。Git status：起始clean，結束依no-commit保留9 modified、0 staged／untracked。Commit：N/A（明確禁止）；Push／Merge：未執行。Worktree：沿用上述既有worktree、HEAD d82d020；未新增或移除。Runtime/environment如上；無GPU／網路／Colab／data acquisition／additional agents／wakeup／recurring jobs／production／scheduler／protected models變更。
+
 ## 2026-11-22：完整固定佇列 builder（本輪候選）
 
 `job-run-mwrgy396-cf1213`，base/HEAD `f333421fafdcb02f716b16376ff65717021edfa4`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。本節取代下文舊P4a的DRAFT、時間/CU caps、25%reserve、completed-fit-only與每次內含矩陣交付的目前操作說明；保留歷史evidence，不修改P3結果或runtime observed_at。凍結日期2026-11-22，在任何P4a結果出現前；沒有研究結果。

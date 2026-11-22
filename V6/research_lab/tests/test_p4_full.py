@@ -230,13 +230,14 @@ def test_cpu_full_queue_and_validated_skip(tmp_path,monkeypatch):
     def fake_train(directory,year,arm,seed,cfg,reference,observer):
         calls.append((year,arm,seed,cfg['window'],cfg['lr']));observer.device='cpu'
         weights={'weight':torch.tensor([1.])}
-        for epoch in (1,2):
-            observer('epoch',dict(model=weights,opt={},sched={},state=dict(epoch=epoch,best=.2,bad=0,history=[{}]*epoch),best_sd=weights,rng_state={},numpy_rng=np.random.get_state(),torch_rng=torch.get_rng_state()))
+        history=[dict(epoch=i,val_ic5=.2 if i==1 else .1) for i in range(1,5)]
+        for epoch in range(1,5):
+            observer('epoch',dict(model=weights,opt={},sched={},state=dict(epoch=epoch,best=.2,bad=epoch-1,history=history[:epoch]),best_sd=weights,rng_state={},numpy_rng=np.random.get_state(),torch_rng=torch.get_rng_state()))
         stream=io.BytesIO();torch.save(dict(contract=observer.contract,model=weights,best_val_ic5=.2),stream);p.publish_bytes(observer.root/'best.pt',stream.getvalue())
         f=reference.copy()
         if cfg['window']>60:f=f.iloc[1:]
         f=f.assign(score=1.,seed=seed,system=arm,window=cfg['window'],lr=cfg['lr'])
-        return f,dict(history=[{},{}],best_val_ic5=.2,eval_rows=len(f))
+        return f,dict(history=history,best_val_ic5=.2,eval_rows=len(f))
     monkeypatch.setattr(p,'train_fit',fake_train)
     def fake_permutation(directory,year,*args):permutations.append(year);return {'CPU_BOUNDARY_DOUBLE':True}
     monkeypatch.setattr(p,'permutation_fit',fake_permutation)
@@ -316,3 +317,97 @@ def test_thermal_stop_survives_process_loss_before_end(tmp_path):
         # Simulate process loss before end(); record-only recovery must not clear thermal protection.
     with pytest.raises(p.BudgetStop,match='STOP'):
         with p.Ledger(tmp_path,c):pass
+
+
+@pytest.mark.parametrize('family',['A','B'])
+def test_main_family_rejects_missing_c0_row(monkeypatch,family):
+    from research_lab import p4_eval as e
+    scores,c0=_comparison_scores()
+    contract=dict(families={family:dict(m=1,pairs=[['gru','c0plus']])},known_limitations=[])
+    monkeypatch.setattr(e,'portfolio_rows',lambda *args:{})
+    with pytest.raises(ValueError,match=rf'Family {family}.*excluded_rows.*1'):
+        e.evaluate(scores,c0.iloc[1:],pd.DataFrame(),contract)
+
+
+def _comparison_scores():
+    rows=[]
+    # Common five names have opposing per-seed orders; outside names distort ranks.
+    values=[[5,4,3,2,1,4.1,4.2,4.3,4.4,4.5],[1,3,2,4,5,0,-1,-2,-3,-4]]
+    for window in (60,120):
+        for seed,vs in zip((17,29),values):
+            for i,v in enumerate(vs[:10 if window==60 else 5]):
+                rows.append(dict(fold=2021,date=pd.Timestamp('2021-01-04'),code=str(i),label_y5=float(i),
+                                 system='gru',seed=seed,window=window,lr=3e-4,score=v))
+    scores=pd.DataFrame(rows)
+    c0=scores[(scores.window==60)&(scores.seed==17)].assign(system='c0plus')
+    return scores,c0
+
+
+def test_family_c_ranks_seeds_after_intersection(monkeypatch):
+    from research_lab import p4_eval as e
+    scores,c0=_comparison_scores();captured=[]
+    full=e.averaged_scores(scores)['gru'].sort_values('code').score.to_numpy()
+    assert full[0]>full[1]  # Reproduction: outside names reverse code0/code1.
+    monkeypatch.setattr(e,'portfolio_rows',lambda frames,*args:captured.append(frames) or {})
+    contract=dict(families={'C':dict(m=1,pairs=[['gru_w120','gru']])},known_limitations=[])
+    result=e.evaluate(scores,c0,pd.DataFrame(),contract)
+    actual=captured[0]['gru'].sort_values('code').score.to_numpy()
+    expected=e.averaged_scores(scores[scores.code.isin(list('01234'))])['gru'].sort_values('code').score.to_numpy()
+    assert actual==pytest.approx(expected)
+    assert actual[0]<actual[1]  # Full-support ensemble ties/reverses this ordering.
+    assert len(captured[0]['c0plus'])==5
+    assert result['intersections']['C']['common_rows']==5
+    assert result['intersections']['C']['systems']['gru']['excluded_fraction']==.5
+
+
+@pytest.mark.parametrize('values',[(.3,),(.1,.2,.3,.4,.5,.6,.7)])
+def test_unfinished_fit_rejected_before_publish_and_resume(tmp_path,values):
+    from test_p4 import formal_fixture
+    c,files=formal_fixture(tmp_path,values)
+    with pytest.raises(ValueError,match='termination'):
+        p.complete_fit(tmp_path,c,{},files)
+    assert not (tmp_path/'complete.json').exists()
+    marker=dict(version='p4-fit-v1',contract=c,contract_hash=p.hashed(c),outputs={n:b.digest(tmp_path/n) for n in files})
+    (tmp_path/'complete.json').write_text(json.dumps(marker))
+    with pytest.raises(ValueError,match='termination'):p.resume_fit(tmp_path,c)
+
+
+@pytest.mark.parametrize('job_index,values',[(0,tuple(i/10 for i in range(8))),(36,(.3,.2,.1,0.)),(60,(.3,.2,.1,0.))])
+def test_completed_fit_uses_own_frozen_recipe(tmp_path,job_index,values):
+    from test_p4 import formal_fixture
+    frozen=json.loads((b.ROOT/'tasks/p4a-colab-contract-20261121.json').read_text())
+    c,files=formal_fixture(tmp_path,values,p.fit_queue(frozen)[job_index])
+    p.complete_fit(tmp_path,c,{},files)
+    assert p.resume_fit(tmp_path,c)
+
+
+@pytest.mark.parametrize('damage',['epoch_gap','best_score','bad','metrics_history','best_epoch',
+                                         'recipe','window','lr','arm','seed','fold'])
+def test_completed_fit_rejects_semantic_corruption_even_rehashed(tmp_path,damage):
+    from test_p4 import formal_fixture
+    c,files=formal_fixture(tmp_path)
+    p.complete_fit(tmp_path,c,{},files)
+    if damage in ('epoch_gap','best_score','bad'):
+        path=tmp_path/'epoch-004.pt';payload=torch.load(path,weights_only=False)
+        if damage=='epoch_gap':payload['state']['history'][1]['epoch']=3
+        elif damage=='best_score':payload['state']['best']=.9
+        else:payload['state']['bad']=0
+        torch.save(payload,path)
+        pointer_path=tmp_path/'checkpoint-pointer.json';pointer=json.loads(pointer_path.read_text())
+        pointer['latest']['identity']=b.digest(path);pointer_path.write_text(json.dumps(pointer))
+    elif damage=='metrics_history':
+        path=tmp_path/'metrics.json';metrics=json.loads(path.read_text());metrics['history'][0]['val_ic5']=.8;path.write_text(json.dumps(metrics))
+    elif damage=='best_epoch':
+        path=tmp_path/'checkpoint-pointer.json';pointer=json.loads(path.read_text());pointer['best']=pointer['previous'];path.write_text(json.dumps(pointer))
+    elif damage=='recipe':c['recipe']['epochs']=1
+    else:
+        path=tmp_path/'scores.parquet';frame=pd.read_parquet(path)
+        key={'arm':'system','fold':'fold'}.get(damage,damage)
+        frame[key]='wrong' if damage=='arm' else 999
+        frame.to_parquet(path,index=False)
+    marker=tmp_path/'complete.json';mf=json.loads(marker.read_text())
+    mf.update(contract=c,contract_hash=p.hashed(c),outputs={n:b.digest(tmp_path/n) for n in files})
+    marker.write_text(json.dumps(mf))
+    with pytest.raises(ValueError):p.resume_fit(tmp_path,c)
+    marker.unlink()
+    with pytest.raises(ValueError):p.complete_fit(tmp_path,c,{},files)

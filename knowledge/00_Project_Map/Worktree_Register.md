@@ -1,5 +1,11 @@
 # Worktree Register
 
+## P4a 三項 REQUIRED fixer — 2026-11-22
+
+- Purpose/task：獨立複審三項 REQUIRED：A/B 列支援、C 交集後排名、completed-fit 終止／配方／history驗證；owner Human/Codex builder，job-run-mwric0jj-32d745。沿用 `.worktrees/ruflo-workers/run-mwric0jj-32d745/fixer_p4a_full`，detached HEAD/base `d82d0209cba6686c10fc1a01c78172446a6796fa`；created2026-11-22、retired N/A，起始clean，依 no-commit 保留dirty patch。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。
+- Authority：既有 FROZEN P4a contract、OBSERVED runtime與CPU合成tests；研究契約、P3 adapter、portfolio engine、正式Data、V6/models、production、scheduler不改。無GPU／網路／Colab／additional agents／commit／push／merge／deploy。
+- Merge/artifact dependency：獨立複審與Human acceptance，後續交付須重新綁定source identity；TEMPORARY證據在 `/tmp/p4-required-*` 與pytest隔離目錄，不是研究artifact。Runtime與實際輸出見[工程報告](../../reports/v7_p4a_colab_engineering.md)。Safe-removal preconditions：保存未提交patch及必要證據、處理引用並完成retirement review；目前dirty不可移除。
+
 ## P4a 完整固定佇列 builder — 2026-11-22
 
 - Purpose/task：Human核准一次完成Drive資料外置、epoch接續、固定64fits/Q5、P4 evaluator與兩檔交付；owner Human/Codex builder，job-run-mwrgy396-cf1213。沿用 `.worktrees/ruflo-workers/run-mwrgy396-cf1213/builder_p4a_full`；detached branch/HEAD/base `f333421fafdcb02f716b16376ff65717021edfa4`，created2026-11-22、retired N/A。起始clean，依no-commit指示保留dirty patch，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。

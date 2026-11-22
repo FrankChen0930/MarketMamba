@@ -116,7 +116,17 @@ def evaluate(scores,c0plus,prices,contract,samples=1000):
         if set(present)!=set(names):
             tests[family]=dict(status='INCOMPLETE_ENGINEERING_ONLY',missing=sorted(set(names)-set(present)));continue
         # Family C uses one support across all lookback/60/C0+ systems.
-        aligned,report=common_rows(present);intersections[family]=report
+        aligned,report=common_rows(present)
+        if family in ('A','B') and any(r['excluded_rows'] for r in report['systems'].values()):
+            raise ValueError(f'Family {family} requires identical rows: '+json.dumps(report,sort_keys=True))
+        if family=='C':
+            # Restrict raw seed scores before percentile ranking, not the ensemble.
+            support=pd.MultiIndex.from_frame(aligned['c0plus'][KEYS])
+            raw=scores.copy();raw['date']=pd.to_datetime(raw.date);raw['code']=raw.code.astype(str)
+            restricted=raw[pd.MultiIndex.from_frame(raw[KEYS]).isin(support)]
+            reranked=averaged_scores(restricted)
+            aligned={name:aligned[name] if name=='c0plus' else reranked[name] for name in names}
+        intersections[family]=report
         rows=portfolio_rows(aligned,prices,samples);hypotheses={}
         for i,(a,b) in enumerate(definition['pairs'],1):
             paired=[];support=[];complete=True

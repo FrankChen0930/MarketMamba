@@ -1,5 +1,11 @@
 # Training
 
+## P4a completed-fit 與列支援修補 — 2026-11-22
+
+本節依 [FROZEN contract](../../tasks/p4a-colab-contract-20261121.json)／[規格](../../tasks/spec-p4a-colab-20261121.md) 更新舊候選操作描述：固定64 fits＋Q5、record-only帳本，85°C STOP 保留；partial 可按驗證 pointer 接續。正式 completed-fit 新增每 fit 的有效 frozen recipe identity（長窗／LR 消融使用自身值）、連續 history、重算 BEST／bad、8 epochs 或有效早停，以及 pointer／metrics／預測設定一致性檢查；發布與續跑共用，舊不足證據的標記 fail closed。Family A/B 不得裁列；Family C 先取全比較系統／W60／C0+交集，再逐 seed 重算排名及平均，明報支援與排除比例。研究／環境契約 bytes 未變，本節不重標歷史 artifacts。
+
+`job-run-mwric0jj-32d745`，detached base d82d020，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；CPU 合成 RED/GREEN與三項 in-memory mutation，無 GPU／網路／Colab／production 操作。Colab／Drive FUSE 現場仍 UNVERIFIED，不是 Human acceptance。[工程報告](../../reports/v7_p4a_colab_engineering.md)記錄實際測試與限制。
+
 ## P4a Drive 分次交付路徑候選 — 2026-11-22
 
 `job-run-mwqscvk1-a3db0f` builder，base/HEAD `df78d6cb3bb706f6f4d58b94310c3d352aab8385`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依本輪 no-commit 授權保留 patch。沿用 [p4_bundle](../../V6/research_lab/p4_bundle.py) 的 deliver／notebook；新增 `--run-name`（01_speedtest）／`--drive-root`（MyDrive/MarketMamba）與兩行 README.txt，不建立平行流程或新 worktree。
