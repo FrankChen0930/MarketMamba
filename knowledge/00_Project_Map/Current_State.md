@@ -1,3 +1,13 @@
+## P4a 完整固定佇列與 Drive 資料候選 — 2026-11-22
+
+`job-run-mwrgy396-cf1213` builder，既有 detached HEAD/base `f333421fafdcb02f716b16376ff65717021edfa4`，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；依 Human no-commit 指示保留 patch。此次核准的 [FROZEN 規格](../../tasks/spec-p4a-colab-20261121.md)／[機器契約](../../tasks/p4a-colab-contract-20261121.json) 取代下列舊 P4a DRAFT、25% reserve、wall/CU caps、completed-fit-only、矩陣隨 ZIP 交付的目前操作描述；歷史紀錄保留，P3 source/artifacts/14h 契約完全不重標。
+
+沿用 [bundle](../../V6/research_lab/p4_bundle.py)／[executor](../../V6/research_lab/p4_colab.py)／`seq_runner.train_one`；資料 manifest 綁定 matrix_v1 的指定 X identity，Drive 只上傳一次，複製到SSD後才mmap，rank-gauss共享快取回存Drive；ZIP只帶source/契約/環境/manifest/C0+鍵檔。Q1/Q2主格36、Q3長窗24、Q4學習率4，共64 fits，再Q5排列診斷。epoch檢查點恢復model/optimizer/scheduler/BEST/history/RNG；latest/previous/best先持久驗hash再pointer，orphan不自動升格。已完成fit驗證後跳過；P4只記錄耗時與GPU telemetry，>=85°C STOP仍鎖定，P3預算不變。
+
+新增 [P4 evaluator](../../V6/research_lab/p4_eval.py) 因P3 evaluator不可改，重用P2公開函式。Family A/B/C Holm m=3/2/4；長窗採全比較系統/W60/C0+顯式交集並報排除比例。P3已曝光，mamba2/crossstock是新環境replication；GRU與長窗為新假設但資料仍曝光。CI/Holm門檻通過只屬歷史比較，唯一獨立確認仍是未曝光P2前瞻資料；C0+曾調整、神經臂未調參偏向C0+，P4d本機CPU等預算調參另案OPEN。
+
+本機只有CPU合成證據：epoch中斷/接續（含dropout）權重及預測位元一致、64fit/Q5替身佇列與重跑skip、安全交付/manifest/共同列/統計測試。完整驗證數字與限制見 [工程報告](../../reports/v7_p4a_colab_engineering.md)。無正式Data／V6/models／GPU／網路／Colab／scheduler／production改動，沒有P4結果；現場Drive FUSE持久性、T4長窗/OOM、wheel/編譯、Python3.13整批與下載均UNVERIFIED。Next：獨立審查候選，Human完成一次資料上傳與真實交付後另行現場驗證；工程完成不等於Human acceptance。現場操作見[指南](../../docs/operations/colab-p4.md)。
+
 ## P4a Drive 分次交付路徑候選 — 2026-11-22
 
 `job-run-mwqscvk1-a3db0f` builder，base/HEAD `df78d6cb3bb706f6f4d58b94310c3d352aab8385`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依本輪 no-commit 授權保留 patch。沿用 [p4_bundle](../../V6/research_lab/p4_bundle.py) 的 deliver／notebook；新增 `--run-name`（01_speedtest）／`--drive-root`（MyDrive/MarketMamba）與兩行 README.txt，不建立平行流程或新 worktree。

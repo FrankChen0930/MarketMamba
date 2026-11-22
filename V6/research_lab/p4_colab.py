@@ -1,7 +1,7 @@
 """P4 Colab engineering runner, isolated from the frozen P3 ledger/admission.
 
-Completed-fit resume only. Interrupted epochs remain forensic checkpoints;
-restart uses a fresh attempt with the same seed/recipe, never LAST weights.
+Epoch-boundary resume with identity-bound RNG/optimizer/scheduler state.
+P4 record-only accounting is independent of the frozen P3 ledger.
 """
 from __future__ import annotations
 import argparse
@@ -79,7 +79,7 @@ def validate_contract(contract,years,speed):
     if not years or len(set(years))!=len(years) or not set(years)<=set(allowed):
         raise ValueError('P4 fold mismatch')
     if not speed:
-        if contract['status']!='FROZEN': raise RuntimeError('P4 contract DRAFT: formal execution requires Human/Claude freeze')
+        if contract['status']!='FROZEN' or contract.get('contract_status')!='FROZEN': raise RuntimeError('P4 contract DRAFT: formal execution requires Human/Claude freeze')
         if not set(required)<=set(years): raise ValueError('formal P4 requires all primary/descriptive folds')
 
 
@@ -138,7 +138,9 @@ def validate_fit_outputs(directory, contract, outputs):
     checkpoints={}
     for role in ('latest','previous','best'):
         entry=pointer.get(role)
-        if not entry: raise ValueError('required checkpoint pointer missing')
+        if not entry:
+            if role=='previous' and pointer['latest']['epoch']==1:continue
+            raise ValueError('required checkpoint pointer missing')
         safe_name(entry['file'])
         if Path(entry['file']).name!=entry['file']: raise ValueError('checkpoint filename must be local')
         name=(Path(attempt_name)/entry['file']).as_posix()
@@ -150,7 +152,7 @@ def validate_fit_outputs(directory, contract, outputs):
         if payload['contract']!=contract or payload['state']['epoch']!=entry['epoch']:
             raise ValueError('checkpoint contract/epoch mismatch')
         checkpoints[role]=payload
-    if not (pointer['previous']['epoch']<pointer['latest']['epoch'] and
+    if not ((pointer['previous'] is None and pointer['latest']['epoch']==1 or pointer['previous'] is not None and pointer['previous']['epoch']<pointer['latest']['epoch']) and
             pointer['best']['epoch']<=pointer['latest']['epoch']):
         raise ValueError('checkpoint pointer order mismatch')
     best=torch.load(attempt/'best.pt',map_location='cpu',weights_only=False)
@@ -165,7 +167,8 @@ def complete_fit(directory,contract,job,files):
     directory=Path(directory)
     outputs={n:digest(directory/n) for n in files}
     validate_fit_outputs(directory,contract,outputs)
-    write_json(directory/'complete.json',dict(version='p4-fit-v1',contract=contract,contract_hash=hashed(contract),
+    if (directory/'complete.json').exists():raise FileExistsError(directory/'complete.json')
+    atomic_json(directory/'complete.json',dict(version='p4-fit-v1',contract=contract,contract_hash=hashed(contract),
         job=job,outputs=outputs,evidence_class='ENGINEERING_SPEED_ONLY' if contract.get('speed_test') else 'E2 RESEARCH_ONLY / NOT_ACCEPTED'))
 
 
@@ -206,7 +209,10 @@ class Ledger:
                 # Unknown crash interval conservatively charged through restart, no invented guard wait.
                 elapsed=max(0,time.time()-self.state['active']['started'])/3600
                 self.state['spent_hours']+=elapsed;self.state['spent_units']+=elapsed*self.contract['units_per_hour']
-                self.state['active']=None;self.state['stopped']=True;self.append('INTERRUPTED_STOP')
+                self.state['last_attempt']=dict(self.state['active'],wall_seconds=elapsed*3600,ok=False,interval='UNKNOWN_THROUGH_RESTART')
+                self.state['active']=None
+                self.state['stopped']=self.state['stopped'] or self.contract.get('policy')!='record_only'
+                self.append('INTERRUPTED' if not self.state['stopped'] else 'INTERRUPTED_STOP')
             if self.state['stopped']: raise BudgetStop('STOP latched: inspect ledger; no automatic reset/clear')
             return self
         except BaseException:
@@ -222,22 +228,44 @@ class Ledger:
         atomic_json(self.root/'head.json',dict(sequence=self.count,identity=self.previous))
 
     def start(self,binding,planned_hours):
+        if self.contract.get('policy')=='record_only':
+            self.state['active']=dict(binding=binding,started=time.time());self.append('START');return
         check_budget(self.contract['max_hours'],self.contract['max_units'],self.state['spent_hours'],self.state['spent_units'],
                      planned_hours,planned_hours*self.contract['units_per_hour'],self.contract['reserve'])
         self.state['active']=dict(binding=binding,started=time.time());self.append('START')
 
     def check(self):
+        if self.contract.get('policy')=='record_only': return
         elapsed=(time.time()-self.state['active']['started'])/3600
         check_budget(self.contract['max_hours'],self.contract['max_units'],self.state['spent_hours'],self.state['spent_units'],
                      elapsed,elapsed*self.contract['units_per_hour'],self.contract['reserve'])
 
+    def observe(self,record):
+        active=self.state['active']
+        if active is None:raise ValueError('telemetry outside active attempt')
+        first='telemetry' not in active
+        stats=active.setdefault('telemetry',dict(gpu=record['gpu'],samples=0,
+            temperature_c_min=record['temperature_c'],temperature_c_max=record['temperature_c'],
+            clock_mhz_min=record['clock_mhz'],clock_mhz_max=record['clock_mhz']))
+        if stats['gpu']!=record['gpu']:raise ValueError('GPU identity changed during attempt')
+        stats['samples']+=1;stats['last']=record
+        for key in ('temperature_c','clock_mhz'):
+            stats[key+'_min']=min(stats[key+'_min'],record[key])
+            stats[key+'_max']=max(stats[key+'_max'],record[key])
+        if record['temperature_c']>=85:
+            self.state['stopped']=True;self.append('THERMAL_STOP')
+        elif first:self.append('TELEMETRY_START')
+
+
     def end(self,binding,ok):
         elapsed=time.time()-self.state['active']['started']
-        charge=budget_charge(elapsed,0,self.contract['units_per_hour'])
+        charge=(dict(wall_hours=elapsed/3600,active_hours=elapsed/3600,compute_units=0.,guard_wait_seconds=0.)
+                if self.contract.get('policy')=='record_only' else budget_charge(elapsed,0,self.contract['units_per_hour']))
         self.state['spent_hours']+=charge['active_hours'];self.state['spent_units']+=charge['compute_units']
+        self.state['last_attempt']=dict(self.state['active'],wall_seconds=elapsed,ok=ok)
         self.state['active']=None;self.state['last_charge']=charge
         if ok:self.state['completed'].append(binding)
-        else:self.state['stopped']=True
+        elif self.contract.get('policy')!='record_only':self.state['stopped']=True
         self.append('END' if ok else 'STOP')
 
 
@@ -268,28 +296,65 @@ class Observer:
         self.steps=[];self.records=[];self.pointer=dict(latest=None,previous=None,best=None)
         self.best=-9.;self.step_start=None
 
+    def load_resume(self):
+        """Pointer is the commit record. Orphans are preserved and never promoted."""
+        import torch
+        pointer=self.root/'checkpoint-pointer.json'
+        if not pointer.exists():
+            if any(self.root.glob('epoch-*.pt')):
+                raise ValueError('missing checkpoint pointer; orphan recovery requires explicit review')
+            return None
+        saved=json.loads(pointer.read_text());payloads={}
+        for role in ('latest','previous','best'):
+            entry=saved.get(role)
+            if entry is None:
+                if role=='previous':continue
+                raise ValueError('checkpoint pointer incomplete')
+            from .p4_bundle import safe_name
+            safe_name(entry['file'])
+            if Path(entry['file']).name!=entry['file']:raise ValueError('checkpoint path')
+            path=self.root/entry['file']
+            if path.is_symlink() or not path.is_file() or digest(path)!=entry['identity']:
+                raise ValueError('checkpoint hash mismatch')
+            c=torch.load(path,map_location='cpu',weights_only=False)
+            if c.get('contract')!=self.contract:raise ValueError('checkpoint identity mismatch')
+            required={'model','opt','sched','state','best_sd','rng_state','numpy_rng','torch_rng','cuda_rng'}
+            if not required<=c.keys() or c['state']['epoch']!=entry['epoch'] or c['best_sd'] is None:
+                raise ValueError('checkpoint schema/epoch mismatch')
+            payloads[role]=c
+        if saved['best']['epoch']>saved['latest']['epoch'] or (saved['previous'] and saved['previous']['epoch']>=saved['latest']['epoch']):
+            raise ValueError('checkpoint pointer order')
+        self.pointer=saved;self.best=payloads['latest']['state']['best']
+        return payloads['latest']
+
+
     def check(self):
         self.ledger.check()
         r=telemetry();self.records.append(r)
+        if hasattr(self.ledger,'observe'):self.ledger.observe(r)
         if r['temperature_c']>=85: raise RuntimeError('STOP: Colab GPU temperature >=85C (no pause/retry)')
 
     def __call__(self,event,payload):
         import torch
         if event=='step_start':
-            self.check();torch.cuda.synchronize();self.step_start=time.perf_counter()
+            self.check()
+            if str(self.device).startswith('cuda'):torch.cuda.synchronize()
+            self.step_start=time.perf_counter()
         elif event=='step_end':
-            torch.cuda.synchronize();self.steps.append(time.perf_counter()-self.step_start)
+            if str(self.device).startswith('cuda'):torch.cuda.synchronize()
+            self.steps.append(time.perf_counter()-self.step_start)
         elif event=='epoch':
             if self.speed: return  # Never serialize state/history/weights in timing mode.
-            epoch=payload['state']['epoch'];name=f'epoch-{epoch:03d}.pt'
+            epoch=payload['state']['epoch'];name=f'epoch-{epoch:03d}-{uuid.uuid4().hex}.pt'
             stream=io.BytesIO();torch.save(dict(contract=self.contract,**payload,
-                cuda_rng=torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None),stream)
+                cuda_rng=torch.cuda.get_rng_state_all() if str(self.device).startswith('cuda') else None),stream)
             ident=publish_bytes(self.root/name,stream.getvalue())
             entry=dict(file=name,identity=ident,epoch=epoch)
             self.pointer['previous']=self.pointer['latest'];self.pointer['latest']=entry
             if payload['state']['best']>self.best:
                 self.best=payload['state']['best'];self.pointer['best']=entry
             atomic_json(self.root/'checkpoint-pointer.json',self.pointer)
+            if hasattr(self.ledger,'append'):self.ledger.append('EPOCH_COMMITTED')
 
 
 def rankgauss(directory):
@@ -377,148 +442,236 @@ def environment(lock, runtime_contract=None, speed=False):
 def train_fit(directory,year,arm,seed,cfg,reference,observer):
     """Reuse P3 checked_splits/row admission and existing train_one; P3 collect owns a different ledger."""
     from .seq_runner import SeqData,train_one,predict
-    data=SeqData(directory,window=60,normalize='rankgauss');tr,va,ev=checked_splits(data,cfg['val_dates'])
+    data=SeqData(directory,window=cfg.get('window',60),normalize='rankgauss');tr,va,ev=checked_splits(data,cfg['val_dates'])
     frame=pd.DataFrame(dict(fold=year,date=pd.to_datetime(np.load(directory/'dates.npy',mmap_mode='r')[ev]),
         code=np.asarray(np.load(directory/'stock_ids.npy',mmap_mode='r')[ev]),label_y5=data.y['y5'][ev]))
-    require_same_rows(frame,reference)
+    if cfg.get('window',60)==60:require_same_rows(frame,reference)
+    else:
+        from .p4_eval import common_rows
+        aligned,support=common_rows({'model':frame,'c0plus':reference})
+        if len(aligned['model'])!=len(frame):raise ValueError('long-window rows outside C0+ reference')
     if cfg['val_max_rows'] and len(va)>cfg['val_max_rows']:
         va=np.sort(np.random.default_rng(0).choice(va,cfg['val_max_rows'],replace=False))
     windows=data.windows
     def guarded(rows):
         observer.check();return windows(rows)
     data.windows=guarded
-    model,state=train_one(arm,seed,data,tr,va,cfg,'cuda',observer=observer,
+    restored=observer.load_resume() if not observer.speed else None
+    model,state=train_one(arm,seed,data,tr,va,cfg,'cuda',observer=observer,resume_state=restored,
                           log=(lambda *_: None) if observer.speed else print)
     if observer.speed:
         return None,dict(history=[dict(seconds=h['seconds']) for h in state['history']])
     if not np.isfinite(state['best']) or state['best']<=-9: raise ValueError('BEST unavailable; LAST prohibited')
     frame['score']=predict(model,data,ev,'cuda')[:,0];frame['seed']=seed;frame['system']=arm
+    frame['window']=cfg.get('window',60);frame['lr']=cfg['lr']
     if not np.isfinite(frame.score).all(): raise ValueError('nonfinite predictions')
     best=io.BytesIO();import torch
     torch.save(dict(contract=observer.contract,model=model.state_dict(),best_val_ic5=state['best']),best)
-    publish_bytes(observer.root/'best.pt',best.getvalue())
+    publish_or_validate(observer.root/'best.pt',best.getvalue())
     return frame,dict(history=state['history'],best_val_ic5=state['best'],fit_rows=len(tr),val_rows=len(va),eval_rows=len(ev),
         parameters=sum(p.numel() for p in model.parameters()),telemetry=observer.records)
 
 
-def run(bundle,drive_root,speed,max_hours,max_units,rate,planned_hours,reserve=.25):
-    require_cuda()  # Before any directory/output creation.
-    validate_budget_plan(max_hours,max_units,rate,planned_hours,reserve)
+
+def fit_queue(contract, speed=False, years=None):
+    years=years or contract['confirmatory_years']+contract['descriptive_years']
+    if speed:
+        return [dict(queue='SPEED',year=years[0],arm=a,seed=17,window=60,lr=3e-4) for a in ARMS]
+    jobs=[]
+    for queue,folds in (('Q1',contract['confirmatory_years']),('Q2',contract['descriptive_years'])):
+        jobs += [dict(queue=queue,year=y,arm=a,seed=seed,window=60,lr=3e-4)
+                 for y in folds for a in ARMS for seed in contract['seeds']]
+    jobs += [dict(queue='Q3',year=y,arm=a,seed=seed,window=w,lr=3e-4)
+             for w in (120,250) for y in (2021,2022,2023) for a in ('mamba2','gru') for seed in (17,29)]
+    jobs += [dict(queue='Q4',year=2022,arm=a,seed=17,window=60,lr=lr)
+             for lr in (1e-4,1e-3) for a in ('mamba2','gru')]
+    return jobs
+
+
+def run(bundle,drive_root,speed=False,max_hours=None,max_units=None,rate=None,planned_hours=0,reserve=None,data_dir=None):
+    """P4-only record accounting; old cap arguments are accepted but never constrain runs."""
+    require_cuda()
     bundle=Path(bundle);drive_root=Path(drive_root)
     if (not os.path.ismount('/content/drive') or
         not drive_root.resolve().is_relative_to(Path('/content/drive/MyDrive'))):
         raise ValueError('durable output requires mounted /content/drive/MyDrive')
     run_started=time.perf_counter()
-    budget_contract=dict(max_hours=max_hours,max_units=max_units,units_per_hour=rate,reserve=reserve,
-                         billing='operator-confirmed conservative CU/hour estimate; not provider measured CU')
+    budget_contract=dict(policy='record_only',units_per_hour=0,thermal_stop_c=85)
     with Ledger(drive_root,budget_contract) as ledger:
         setup_binding=dict(stage='verify_bundle_and_runtime',bundle_manifest=digest(bundle/'bundle-manifest.json'))
-        ledger.start(setup_binding,planned_hours)
+        ledger.start(setup_binding,0)
         try:
-            mf=verify(bundle,allow_derived=True)
-            prepare_source(bundle)
-            # Running imported code must be exactly the source included in this bundle.
+            mf=verify(bundle,allow_derived=True);prepare_source(bundle)
             source_root=Path(__file__).resolve().parents[2]
             for name,ident in mf['files'].items():
                 if name.startswith('source/') and digest(source_root/name.removeprefix('source/'))!=ident:
                     raise ValueError('executed source differs from bundle')
             env=environment(bundle/'requirements.lock.txt',
-                            runtime_contract=bundle/'source/environments/p4a-colab-runtime.json',speed=speed)
+                runtime_contract=bundle/'source/environments/p4a-colab-runtime.json',speed=speed)
             contract=json.loads((bundle/'source/tasks/p4a-colab-contract-20261121.json').read_text())
             validate_contract(contract,mf['metadata']['years'],speed)
+            if digest(bundle/'source/environments/p4a-colab-runtime.json')['sha256']!=contract['colab_runtime_contract']['sha256']:
+                raise ValueError('frozen runtime contract identity mismatch')
             if digest(bundle/'requirements.lock.txt')['sha256']!=contract['environment_lock']['sha256']:
                 raise ValueError('P4 exact lock hash mismatch')
-            cfg=deepcopy(FROZEN_CFG)
-            if speed:cfg.update(epochs=2,steps_per_epoch=100,patience=3)
-            years=mf['metadata']['years'][:1] if speed else mf['metadata']['years']
-            # Speed only seed17; full grid seed17/29. Every arm uses same selected fold.
-            seeds=[17] if speed else [17,29]
-            ref=pd.read_parquet(bundle/'reference/rank_average.parquet');ref=ref[ref.system.eq('c0plus')]
-            if any(digest(bundle/'reference/rank_average.parquet')[k]!=json.loads((bundle/'reference/manifest.json').read_text())['outputs']['rank_average.parquet'][k] for k in ('bytes','sha256')):
+            external=mf['metadata'].get('external_dataset')
+            if external:
+                if data_dir is None:raise ValueError('SSD data-dir required')
+                prepared=json.loads((Path(data_dir)/'prepared.json').read_text())
+                if prepared['matrix_identity']!=external:raise ValueError('matrix identity mismatch')
+                dataset=json.loads((bundle/'DATASET_MANIFEST.json').read_text())
+                for name,ident in dataset['files'].items():
+                    path=Path(data_dir)/name
+                    if path.is_symlink() or digest(path)!=ident:raise ValueError('SSD matrix hash mismatch')
+                cache_id=digest(Path(data_dir)/'shared/X_rankgauss.npy')
+                if cache_id!=prepared['rankgauss']:raise ValueError('rankgauss hash mismatch')
+            ref_name='keys.parquet' if external else 'rank_average.parquet'
+            ref=pd.read_parquet(bundle/'reference'/ref_name)
+            if 'system' in ref:ref=ref[ref.system.eq('c0plus')]
+            expected=json.loads((bundle/'reference/manifest.json').read_text())['outputs'][ref_name]
+            if digest(bundle/'reference'/ref_name)!= {k:expected[k] for k in ('bytes','sha256')}:
                 raise ValueError('P1 reference manifest mismatch')
-            binding=dict(bundle=digest(bundle/'bundle-manifest.json'),environment=env,contract=hashed(contract) if speed else contract,cfg=cfg,
-                         years=years,seeds=seeds,arms=list(ARMS),speed_test=speed)
-            run_hash=hashed(binding)
-            ledger.check()
-            ledger.end(setup_binding,True)
+            queue=fit_queue(contract,speed,mf['metadata']['years'])
+            binding=dict(bundle=digest(bundle/'bundle-manifest.json'),matrix=external,
+                         environment=env,contract=hashed(contract) if speed else contract,
+                         queue=queue,speed_test=speed)
+            run_hash=hashed(binding);ledger.end(setup_binding,True)
         except BaseException:
-            if ledger.state['active']: ledger.end(setup_binding,False)
+            if ledger.state['active']:ledger.end(setup_binding,False)
             raise
         out=drive_root/f'run-{run_hash}'
         if out.exists():
             if json.loads((out/'run_identity.json').read_text())!=binding:raise ValueError('run identity mismatch')
-        else:
-            out.mkdir();write_json(out/'run_identity.json',binding)
-        reports=[]
-        # Check the complete remaining grid plus reserve before starting another fit.
-        completed_here=set()
-        for b in ledger.state['completed']:
-            if b.get('run_hash')==run_hash and 'arm' in b:
-                completed_fit=out/f"{b['year']}-{b['arm']}-{b['seed']}"
-                if resume_fit(completed_fit,b) is not None: completed_here.add(hashed(b))
-        remaining=len(years)*len(ARMS)*len(seeds)-len(completed_here)
-        check_plan_budget(budget_contract,ledger.state['spent_hours'],ledger.state['spent_units'],remaining+len(years),planned_hours)
-        for year in years:
-            directory=bundle/f'folds/fold_{year}'
-            # verify() refuses derived outputs; all original bytes were verified before cache construction.
-            prep_binding=dict(run_hash=run_hash,stage='rankgauss_verify_or_build',year=year)
-            ledger.start(prep_binding,planned_hours)
+        else:out.mkdir();write_json(out/'run_identity.json',binding)
+        reports=[];caches={};fit_paths={}
+        for job in queue:
+            year,arm,seed=job['year'],job['arm'],job['seed']
+            directory=(Path(data_dir) if external else bundle)/f'folds/fold_{year}'
+            if year not in caches:
+                prep_binding=dict(run_hash=run_hash,stage='rankgauss_verify_or_build',year=year)
+                ledger.start(prep_binding,0)
+                try:
+                    caches[year]=cache_id if external else rankgauss(directory)
+                    ledger.end(prep_binding,True)
+                except BaseException:
+                    if ledger.state['active']:ledger.end(prep_binding,False)
+                    raise
+            cfg=deepcopy(contract['recipe']);cfg.update(window=job['window'],lr=job['lr'])
+            if speed:cfg.update(epochs=2,steps_per_epoch=100,patience=3)
+            fit_contract=dict(run_hash=run_hash,**job,rankgauss=caches[year],speed_test=speed)
+            fit=out/f"{job['queue']}-{year}-{arm}-{seed}-w{job['window']}-lr{job['lr']}"
+            fit_paths[(year,arm,seed,job['window'],job['lr'])]=fit
+            cached=resume_fit(fit,fit_contract)
+            if cached:reports.append(cached);continue
+            ledger.start(fit_contract,0)
+            # Stable directory permits retry from the last pointer. Orphan epoch files remain forensic.
+            attempt=fit/'attempt-active';attempt.mkdir(parents=True,exist_ok=True)
+            observer=Observer(attempt,fit_contract,ledger,speed=speed);started=time.perf_counter()
             try:
-                cache_id=rankgauss(directory)
-                ledger.check()
-                ledger.end(prep_binding,True)
-            except BaseException:
-                if ledger.state['active']: ledger.end(prep_binding,False)
+                frame,metrics=train_fit(directory,year,arm,seed,cfg,ref[ref.fold.eq(year)],observer)
+                if speed:
+                    report=speed_report(arm,metrics['history'],observer.records,time.perf_counter()-started,observer.steps,environment=env)
+                    atomic_json(attempt/'speed.json',report);metrics=report
+                else:
+                    # A prior crash after prediction publication must validate identical bytes.
+                    reference=ref[ref.fold.eq(year)]
+                    if job['window']!=60:
+                        from .p4_eval import common_rows
+                        aligned,_=common_rows({'model':frame,'reference':reference});reference=aligned['reference']
+                    for name,table in (('scores.parquet',frame),('reference.parquet',reference)):
+                        buffer=io.BytesIO();table.to_parquet(buffer,index=False)
+                        publish_or_validate(attempt/name,buffer.getvalue())
+                    metrics.update(wall_seconds=time.perf_counter()-started,guard_wait_seconds=0)
+                    atomic_json(attempt/'metrics.json',metrics)
+                files=[p.relative_to(fit).as_posix() for p in attempt.iterdir() if p.is_file()]
+                complete_fit(fit,fit_contract,metrics,files)
+                ledger.end(fit_contract,True);reports.append(resume_fit(fit,fit_contract))
+            except BaseException as error:
+                if 'temperature >=85C' in str(error):ledger.state['stopped']=True
+                if ledger.state['active']:ledger.end(fit_contract,False)
                 raise
-            for arm in ARMS:
-                for seed in seeds:
-                    fit_contract=dict(run_hash=run_hash,year=year,arm=arm,seed=seed,rankgauss=cache_id,speed_test=speed)
-                    fit=out/f'{year}-{arm}-{seed}'
-                    cached=resume_fit(fit,fit_contract)
-                    if cached:
-                        if fit_contract not in ledger.state['completed']:raise ValueError('fit missing from ledger')
-                        reports.append(cached);continue
-                    ledger.start(fit_contract,planned_hours)
-                    attempt=fit/('attempt-'+uuid.uuid4().hex);attempt.mkdir(parents=True)
-                    observer=Observer(attempt,fit_contract,ledger,speed=speed);started=time.perf_counter()
-                    try:
-                        frame,job=train_fit(directory,year,arm,seed,cfg,ref[ref.fold.eq(year)],observer)
-                        if speed:
-                            report=speed_report(arm,job['history'],observer.records,time.perf_counter()-started,observer.steps,environment=env)
-                            write_json(attempt/'speed.json',report)
-                            job=report
-                        else:
-                            for name,table in (('scores.parquet',frame),('reference.parquet',ref[ref.fold.eq(year)])):
-                                buffer=io.BytesIO();table.to_parquet(buffer,index=False)
-                                publish_bytes(attempt/name,buffer.getvalue())
-                            job.update(wall_seconds=time.perf_counter()-started,guard_wait_seconds=0)
-                            write_json(attempt/'metrics.json',job)
-                        # Record all logs/checkpoints/predictions before ending the charged attempt.
-                        files=[p.relative_to(fit).as_posix() for p in attempt.iterdir() if p.is_file()]
-                        ledger.end(fit_contract,True)
-                        complete_fit(fit,fit_contract,job,files)
-                        reports.append(resume_fit(fit,fit_contract))
-                    except BaseException:
-                        if ledger.state['active']:ledger.end(fit_contract,False)
-                        raise
-        summary=out/'manifest.json'
-        payload=dict(version='p4-run-v1',binding=binding,jobs=reports,budget=ledger.state,
+        if not speed:
+            for year in (2021,2022,2023):
+                diagnostic=out/f'permutation-{year}.json'
+                identity=dict(run_hash=run_hash,year=year,R=10)
+                if diagnostic.exists():
+                    saved=json.loads(diagnostic.read_text())
+                    if saved['identity']!=identity or saved['sha256']!=hashed(saved['result']):
+                        raise ValueError('permutation identity/hash mismatch')
+                    continue
+                ledger.start(dict(stage='Q5',**identity),0)
+                try:
+                    directory=(Path(data_dir) if external else bundle)/f'folds/fold_{year}'
+                    result=permutation_fit(directory,year,contract['recipe'],fit_paths,ledger)
+                    write_json(diagnostic,dict(identity=identity,result=result,sha256=hashed(result)))
+                    ledger.end(dict(stage='Q5',**identity),True)
+                except BaseException as error:
+                    if 'temperature >=85C' in str(error):ledger.state['stopped']=True
+                    if ledger.state['active']:ledger.end(dict(stage='Q5',**identity),False)
+                    raise
+        payload=dict(version='p4-run-v2',binding=binding,jobs=reports,budget=ledger.state,
                      wall_seconds=time.perf_counter()-run_started,guard_wait_seconds=0,
-                     billing_coverage='runner verification/preprocessing/fits; excludes upload/pip/operator idle',
-                     evidence_class='ENGINEERING_SPEED_ONLY' if speed else 'E2 RESEARCH_ONLY / NOT_ACCEPTED')
-        if not speed: payload['research_conclusion']=None
-        if not summary.exists():write_json(summary,payload)
+                     evidence_class='ENGINEERING_SPEED_ONLY' if speed else 'EXPOSED_HISTORICAL_RESEARCH / NOT_ACCEPTED')
+        if not speed:payload['research_conclusion']=None
+        atomic_json(out/'manifest.json',payload)
         return payload
+
+
+def publish_or_validate(path,payload):
+    expected=dict(bytes=len(payload),sha256=hashlib.sha256(payload).hexdigest())
+    if Path(path).exists():
+        if digest(path)!=expected:raise ValueError('existing artifact hash mismatch')
+        return expected
+    temporary=Path(path).with_name(Path(path).name+'.partial-'+uuid.uuid4().hex)
+    result=publish_bytes(temporary,payload)
+    os.replace(temporary,path)
+    fd=os.open(Path(path).parent,os.O_RDONLY|os.O_DIRECTORY)
+    try:os.fsync(fd)
+    finally:os.close(fd)
+    return result
+
+
+def permutation_fit(directory,year,cfg,fit_paths,ledger):
+    import torch
+    from .seq_runner import SeqData,predict
+    from .seq_models import SeqRanker
+    from .cross_stock import CrossStockRanker,predict_cross
+    from .p4_eval import permutation_summary
+    data=SeqData(directory,window=60);_,va,ev=checked_splits(data,cfg['val_dates'])
+    cross=CrossStockRanker(n_features=data.X.shape[1],d_model=cfg['d_model'],n_layers=cfg['n_layers'],
+                          n_cross=cfg['n_cross'],mixer_kw=cfg['mixer_kw'],dropout=cfg['dropout']).cuda()
+    mamba=SeqRanker('mamba2',data.X.shape[1],cfg['d_model'],cfg['n_layers'],mixer_kw=cfg['mixer_kw']).cuda()
+    for arm,model in [('crossstock',cross),('mamba2',mamba)]:
+        fit=fit_paths[(year,arm,17,60,3e-4)]
+        complete=json.loads((fit/'complete.json').read_text())
+        resume_fit(fit,complete['contract'])
+        model.load_state_dict(torch.load(fit/'attempt-active/best.pt',map_location='cuda',weights_only=False)['model'])
+    original=data.windows
+    def guarded(rows):
+        ledger.check();r=telemetry();ledger.observe(r)
+        if r['temperature_c']>=85:raise RuntimeError('STOP: Colab GPU temperature >=85C (no pause/retry)')
+        return original(rows)
+    data.windows=guarded
+    result={}
+    for split,rows in [('validation',va),('evaluation',ev)]:
+        base=predict_cross(cross,data,rows,'cuda',n_perm=2,seed=0)[:,0]
+        temporal=predict(mamba,data,rows,'cuda')[:,0]
+        permutations=[predict_cross(cross,data,rows,'cuda',n_perm=1,seed=100+r)[:,0] for r in range(10)]
+        result[split]=permutation_summary(data.date_idx[rows],np.asarray(np.load(directory/'stock_ids.npy',mmap_mode='r')[rows]),
+                                          data.y['y5'][rows],base,temporal,permutations)
+    return result
 
 
 def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--bundle',type=Path,required=True);p.add_argument('--drive-root',type=Path,required=True)
-    p.add_argument('--speed-test',action='store_true');p.add_argument('--max-hours',type=float,required=True)
-    p.add_argument('--max-units',type=float,required=True);p.add_argument('--units-per-hour',type=float,required=True)
-    p.add_argument('--planned-hours-per-fit',type=float,required=True);p.add_argument('--reserve',type=float,default=.25)
+    p.add_argument('--speed-test',action='store_true');p.add_argument('--data-dir',type=Path)
+    # Legacy flags are optional and ignored: P4 has no wall/CU caps.
+    p.add_argument('--max-hours',type=float);p.add_argument('--max-units',type=float)
+    p.add_argument('--units-per-hour',type=float);p.add_argument('--planned-hours-per-fit',type=float,default=0)
+    p.add_argument('--reserve',type=float)
     a=p.parse_args(argv)
-    result=run(a.bundle,a.drive_root,a.speed_test,a.max_hours,a.max_units,a.units_per_hour,a.planned_hours_per_fit,a.reserve)
+    result=run(a.bundle,a.drive_root,speed=a.speed_test,data_dir=a.data_dir)
     print(json.dumps(dict(version=result['version'],jobs=len(result['jobs']),evidence_class=result['evidence_class'],
                           environment_mismatch=result['binding']['environment'].get('environment_mismatch',[]),
                           comparability=result['binding']['environment'].get('comparability'))))

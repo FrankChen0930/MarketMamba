@@ -1,3 +1,7 @@
+## P4a 固定佇列候選 — 2026-11-22
+
+[規格](../../tasks/spec-p4a-colab-20261121.md)／[機器契約](../../tasks/p4a-colab-contract-20261121.json)依Human核准在任何P4a結果前FROZEN：36主格＋24回看＋4學習率，再做排列診斷；環境使用既有OBSERVED cp313契約。工程候選 UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，只完成CPU合成驗證，現場Colab仍UNVERIFIED。歷史mamba2/crossstock是P3已曝光replication，A/B/C Holm3/2/4與共同列限制不提供獨立確認；唯一獨立路徑仍是未曝光P2前瞻資料。C0+調參不對稱保留，本機CPU P4d另案OPEN。現況與authority見project map，無新研究結論。
+
 # Research
 
 ## P3 修訂3 預算完整性 — 2026-11-20

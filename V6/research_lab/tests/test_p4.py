@@ -220,9 +220,9 @@ def test_run_entry_no_cuda_refuses_without_outputs(tmp_path,monkeypatch):
 def test_p4_contract_rejects_draft_formal_and_recipe_drift():
     c=json.loads((bundle.ROOT/'tasks/p4a-colab-contract-20261121.json').read_text())
     p4.validate_contract(c,[2021],True)
-    with pytest.raises(RuntimeError,match='DRAFT'):p4.validate_contract(c,[2021,2022,2023,2024,2025],False)
+    with pytest.raises(RuntimeError,match='DRAFT'):p4.validate_contract(dict(c,status='DRAFT'),list(range(2021,2027)),False)
     frozen=dict(c,status='FROZEN')
-    p4.validate_contract(frozen,[2021,2022,2023,2024,2025],False)
+    p4.validate_contract(frozen,list(range(2021,2027)),False)
     with pytest.raises(ValueError,match='fold'):p4.validate_contract(frozen,[2021],False)
     with pytest.raises(ValueError,match='recipe'):p4.validate_contract(dict(frozen,recipe=dict(c['recipe'],window=59)),[2021],True)
 
@@ -423,7 +423,7 @@ def test_draft_documents_disclose_open_decisions_and_exposure():
     text=(bundle.ROOT/'tasks/spec-p4a-colab-20261121.md').read_text()
     for term in ('53,250','60,706','pre-norm','gated','dropout','Holm m=3','階層式','P3 結果已知','可確認的路徑','只能描述性的路徑'):
         assert term in text,term
-    assert text.count('| OPEN |')>=5 and 'DRAFT / 未凍結' in text
+    assert text.count('| OPEN |')==1 and 'FROZEN — 2026-11-22' in text
 
 
 def test_operations_require_abi_stop_and_preimport_cleanup():
@@ -550,7 +550,7 @@ def test_drive_wheel_plan(tmp_path,monkeypatch,capsys):
     monkeypatch.setattr(packaging.tags,'sys_tags',lambda:iter([Tag('cp312','cp312','linux_x86_64')]))
     d=drive_wheels(tmp_path)
     commands=bundle.installation_commands(tmp_path,wheel_dir=d)
-    assert len(commands)==2 and commands[-1].endswith('-m pip check')
+    assert len(commands)==1 and all('pip check' not in command for command in commands)
     assert all(s in commands[0] for s in ('--no-deps','--no-index','--find-links',str(d)))
     assert 'torch' not in commands[0] and '-r ' not in commands[0]
     out=capsys.readouterr().out
@@ -687,8 +687,8 @@ def test_delivery_notebook_cpu(tmp_path):
     assert len({c['id'] for c in notebook['cells']})==len(notebook['cells'])
     assert notebook['cells'][0]['cell_type']=='code'
     settings={};exec(notebook['cells'][0]['source'],settings)
-    p4.validate_budget_plan(settings['MAX_HOURS'],settings['MAX_UNITS'],settings['UNITS_PER_HOUR'],settings['PLANNED_HOURS_PER_FIT'],.25)
-    assert settings['MODE']=='SPEED_TEST'
+    assert not {'MAX_HOURS','MAX_UNITS','RESERVE'} & settings.keys()
+    assert settings['MODE']=='FORMAL'
     import ast
     options=set()
     for cell in notebook['cells']:
@@ -697,7 +697,7 @@ def test_delivery_notebook_cpu(tmp_path):
             for node in ast.walk(ast.parse(cell['source'])):
                 if isinstance(node,ast.Constant) and isinstance(node.value,str) and node.value.startswith('--'):
                     options.add(node.value)
-    assert options >= {'--bundle','--drive-root','--speed-test','--max-hours','--max-units','--units-per-hour','--planned-hours-per-fit','--reserve'}
+    assert options >= {'--bundle','--drive-root','--speed-test','--data-dir'}
     # Actual CLI parsing, with runner isolated from GPU/filesystem.
     from unittest.mock import patch
     with patch.object(p4,'run',return_value={'version':'test','jobs':[],'evidence_class':'ENGINEERING_SPEED_ONLY','binding':{'environment':{}}}):
@@ -747,7 +747,8 @@ def test_zip_inventory_and_payload_gates(tmp_path,monkeypatch,change):
 def test_deliver_cli_synthetic_two_files(tmp_path):
     import zipfile
     folds=tmp_path/'folds'
-    shared=tmp_path/'shared.npy';shared.write_bytes(b'synthetic shared raw X')
+    folds.mkdir()
+    shared=folds/'shared.npy';shared.write_bytes(b'synthetic shared raw X')
     for year in (2021,2022):
         fold=folds/f'fold_{year}';fold.mkdir(parents=True)
         for name in bundle.MATRIX_FILES:
@@ -764,7 +765,7 @@ def test_deliver_cli_synthetic_two_files(tmp_path):
         assert len([n for n in z.namelist() if n.endswith('/X.npy')])==1
         assert not any(n.endswith('.pyc') for n in z.namelist())
     bundle.extract(output/'p4a-bundle.zip',tmp_path/'out')
-    for fold in folds.iterdir():
+    for fold in folds.glob('fold_*'):
         for name in bundle.MATRIX_FILES:
             assert (tmp_path/'out/folds'/fold.name/name).read_bytes()==(fold/name).read_bytes()
     notebook=json.loads((output/'p4a-colab.ipynb').read_text())
@@ -805,6 +806,7 @@ def test_notebook_environment_cpu_boundaries(tmp_path,monkeypatch,scenario):
     import importlib.metadata,platform,subprocess
     contract=json.loads((bundle.ROOT/'environments/p4a-colab-runtime.json').read_text())
     root=tmp_path/'bundle';path=root/'source/environments/p4a-colab-runtime.json';path.parent.mkdir(parents=True);path.write_text(json.dumps(contract))
+    (root/'bundle-manifest.json').write_text(json.dumps({'metadata':{}}))
     monkeypatch.setattr(torch.cuda,'is_available',lambda:scenario!='no_cuda')
     monkeypatch.setattr(torch.cuda,'get_device_name',lambda _: 'CPU_TEST_DOUBLE')
     monkeypatch.setattr(torch.version,'cuda',contract['runtime']['cuda'])
@@ -835,12 +837,13 @@ def notebook_helpers():
 def test_drive_settings_shared_budget_and_formal_stop():
     nb=bundle.colab_notebook()
     settings={};exec(nb['cells'][0]['source'],settings)
-    assert settings['MAX_HOURS']==1.0 and settings['MAX_UNITS']==15.0
-    assert Path(settings['RUN_DIR'])==Path('/content/drive/MyDrive/MarketMamba/p4a/01_speedtest')
+    assert settings['MODE']=='FORMAL' and not {'MAX_HOURS','MAX_UNITS','RESERVE'} & settings.keys()
+    assert Path(settings['RUN_DIR'])==Path('/content/drive/MyDrive/MarketMamba/p4a/02_formal')
     assert Path(settings['EXPERIMENT_DIR'])==Path(settings['RUN_DIR']).parent
     assert settings['WHEEL_DIR']=='/content/drive/MyDrive/MarketMamba/wheels'
-    formal=nb['cells'][0]['source'].replace("MODE = 'SPEED_TEST'","MODE = 'FORMAL'")
-    with pytest.raises(ValueError,match='STOP.*MAX_HOURS.*MAX_UNITS'):exec(formal,{})
+    formal=nb['cells'][0]['source']
+    exec(formal,{})
+    with pytest.raises(ValueError,match='STOP'):exec(formal.replace("MODE = 'FORMAL'","MODE = 'INVALID'"),{})
     commands=[]
     for run in ('01_speedtest','02_formal'):
         namespace=dict(settings,MODE='SPEED_TEST' if run=='01_speedtest' else 'FORMAL',

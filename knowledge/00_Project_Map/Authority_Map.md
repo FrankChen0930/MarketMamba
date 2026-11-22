@@ -1,3 +1,11 @@
+## P4a FROZEN 研究契約與工程候選 — 2026-11-22
+
+[機器契約](../../tasks/p4a-colab-contract-20261121.json) 與 [凍結規格](../../tasks/spec-p4a-colab-20261121.md) 於2026-11-22、任何P4a結果出現前依Human本次核准凍結；同時綁定既有 [OBSERVED cp313 runtime契約](../../environments/p4a-colab-runtime.json)，不改其 observed_at。這取代下列歷史P4a的DRAFT研究狀態、時間/CU/25%reserve、partial不接續與內含矩陣交付描述，不取代P3的准入、14h預算、21/24結果或production authority。
+
+`job-run-mwrgy396-cf1213`，detached base `f333421fafdcb02f716b16376ff65717021edfa4`，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED、no-commit patch。[bundle](../../V6/research_lab/p4_bundle.py)／[executor](../../V6/research_lab/p4_colab.py)／[P4 evaluator](../../V6/research_lab/p4_eval.py)／[合成測試](../../V6/research_lab/tests/test_p4_full.py)決定此候選工程邊界；新增P4 evaluator以重用不可修改的P3/P2公開函式。matrix_v1逐檔SHA與X指定identity、bundle/source/environment identity共同決定run身份，code presence不代表Colab accepted。原`rolling_seq_scores.py`及`portfolio_eval.py`bytes保持不變；`seq_runner`僅新增opt-in精確resume與等值schedule helper。
+
+固定64fits＋Q5，P4記錄帳本無caps，85°C硬體STOP保留；CPU位元一致不推定CUDA可重現或Drive FUSE原子持久性。歷史A/B/C各自Holm3/2/4不給獨立確認權；P3曝光、replication與C0+調參不對稱必須揭露。只有未曝光P2前瞻資料可循獨立確認路徑。無P4結果、無runtime observation更新、無deploy/scheduler/data/model authority變更。驗證與未驗項見[工程報告](../../reports/v7_p4a_colab_engineering.md)。
+
 # MarketMamba Authority Map
 
 ## P4a Drive 分次交付路徑候選 — 2026-11-22

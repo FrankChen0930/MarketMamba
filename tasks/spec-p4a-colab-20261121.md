@@ -1,61 +1,82 @@
-# P4a Colab 實驗草案 — 2026-11-21
+# P4a Colab 實驗規格
 
-**DRAFT / 未凍結 / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。Human／Claude 批准後才凍結，不得用工程測試宣稱結果。機器候選契約：[p4a-colab-contract-20261121.json](p4a-colab-contract-20261121.json)。本輪僅離線程式、CPU 合成測試及文件，不啟動 Colab。
+**FROZEN — 2026-11-22，在任何 P4a 結果出現前凍結。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。** Human 已核准本批固定網格與工程實作；凍結不是 Colab 現場驗證或 Human acceptance。機器權威：[p4a-colab-contract-20261121.json](p4a-colab-contract-20261121.json)，環境權威：[OBSERVED Python 3.13／cp313 契約](../environments/p4a-colab-runtime.json)。本工作僅 CPU 合成工程證據，無 P4a 研究結果。
 
-目的為檢驗同配方神經模型是否增加 P2 主要格的組合價值。臂為官方 Mamba2、既有 S-Mamba 風格 `crossstock`、同配方 GRU，參考為 P1 凍結 C0+ 分數及 manifest。三臂使用相同資料窗 60、rank-gauss、d_model=64、2 層、split/purge、損失、AdamW 與現有 `FROZEN_CFG`；GRU 為兩層 nn.GRU，共同 embedding、末端 RMSNorm 與雙頭；不宣稱整個模型具有相同 normalization。參數數量由執行器記錄，近似不表示精確等量。歷史分析折 2021–2023（承襲 P3 的舊確認性折名稱，不代表 P4a 未曝光確認性），描述性 2024–2025，2026 是否納入為 OPEN；種子 17、29。歷史資料已曝光限制保留，不稱新的獨立未曝光檢驗。
+## 研究身分與不對稱
 
-沿用 [P2 主要格](spec-lowturnover-p2-20261119.md) 與 [P3 判定規則](spec-mamba-portfolio-p3-20261120.md)：優於必須 CI 下界 > 0 且 Holm p < .05；缺主格、種子或 identity 不作確認性結論。P3 21/24 擬合及既有未證實結果不修改、不補標為完整，也不與 P4 擬合混合。
+P3 結果已知；P4a 的 mamba2／crossstock 主格是新環境的已曝光 replication，仍納入指定 Holm family，不能稱未曝光確認。GRU 與回看窗是新假設，但資料仍已曝光。可確認的路徑：唯一獨立確認性路徑仍是未曝光的前瞻資料（P2 主格），不因本批而改變。只能描述性的路徑：本批歷史分析、2024–2026、學習率、排列診斷及 P4b rank-average 混合；歷史門檻通過也不升格為獨立確認。2026 是部分年度。
 
-保存每個 fit 的 BEST 權重供 P4c 排列穩健性診斷；epoch generation 保存 model/optimizer/scheduler/RNG/best_sd，latest、previous、best 指標只在 durable copy hash 驗證後發布。恢復只跳過完全驗證的 completed fit。中斷 fit 保留 forensic checkpoints；目前不承諾 mid-epoch／optimizer 精確續跑，不自動升格 orphan 為 best 或正式結果。
+本批神經臂不調參，C0+ 曾調整，這個不對稱偏向 C0+，結果必須註明。另案 P4d 在本機 CPU 做 C0+ 調參預算對等比較；這是唯一保留 OPEN 的研究決策，不阻擋本批固定配方。P3 21/24 與其研究結論保持原身分，不合併 P4 fits、不補標完整。沿用 P1/P2 的 raw 價格、模擬標籤、未驗證下市覆蓋／PIT 市值等限制；historical simulation 不等於可交易。
 
-Colab 預算使用牆鐘小時及運算單位雙上限；Human 提供保守 CU/hour 估計，非冒充供應商實際扣點。每次開跑要求剩餘容量涵蓋預估耗時／單位與至少 25% 餘裕，執行中持續檢查。記錄實際 wall、guard wait、active hours、估計 CU；溫度守衛等待不計入訓練扣帳。Colab 不做等待／降頻暫停，溫度 >=85°C 即 STOP，所以 guard wait=0。中斷未知時間保守扣到重啟並 STOP，不能刪帳本重置。預算根目錄跨 speed/formal 共用，不能用新 out-dir 規避。
+## 凍結配方與執行順序
 
-Human 已在本任務交付中陳述核准 Colab 的原因：筆電熱降頻，乾淨環境每 epoch 約110–130秒、GPU80–100%、84–87°C，正式訓練因守衛暫停慢2–3倍；這是 Human 提供的背景，非本 worker 新 runtime observation。Colab RAM 70–80GB 是可用性背景，仍須在實際 runtime 檢查。
+共用 d_model=64、2 層、rank-gauss、60 日窗、5d:10d 損失 1:0.5、AdamW lr=3e-4、weight_decay=.01、預設 betas=(.9,.999)、grad clip=1.0、15% 線性 warmup 後 cosine、8 epoch×400 步、dates_per_batch=8、stocks_per_date=256、patience=3。只用驗證 IC5 選 BEST，禁止 LAST。完整設定在機器契約 recipe；重用 `seq_runner.train_one`，不修改 P3 凍結 adapter 或 portfolio_eval。
 
-尚需 Human 決定：
+| 佇列 | 固定內容 | fits |
+|---|---|---:|
+| Q1 | mamba2／crossstock／gru × 2021–2023 × seeds 17、29 | 18 |
+| Q2 | 三臂 × 2024–2026 × seeds 17、29；描述性 | 18 |
+| Q3 | windows 120、250 × mamba2／gru × 2021–2023 × seeds 17、29 | 24 |
+| Q4 | lr 1e-4、1e-3 × mamba2／gru × 2022 × seed 17；描述性 | 4 |
+| Q5 | crossstock BEST，2021–2023、seed17，驗證／評估各 R=10 隨機排列 | 0（前向推論） |
 
-- 等預算調參的範圍、總 CU／小時上限、GPU 費率與每 fit 預估，是否將 speed-test 和調參計入同一總額（本工程預設共用）。
-- 是否加入神經＋C0+ 混合的描述性臂，以及預先固定的混合權重。
-- 是否獨立補跑 P3 缺的2026三次；若做須符合原 P3 身分／預算／准入，不能由 P4 程式繞過。
-- 凍結完整 P4 config／多重比較 family、確認性完整性規則、run-ready GPU wheel smoke 與獨立審查程序。現階段正式入口遇 DRAFT 即拒絕。
+較長窗要求同股票完整歷史；新上市／缺歷史列不合格。Family C 在所有比較系統、W60 與 C0+ 共同可用列交集上重算分數排名與組合，輸出交集列數、各系統輸入列數、排除列數與比例。seed 缺列、標籤不一致、重複鍵一律拒絕；不得以靜默 dropna 變更支持。主格仍 require_same_rows。
 
-Reconnaissance：沿用 `V6/research_lab/{seq_runner,seq_models,cross_stock,rolling_seq_scores,rolling_scores}.py`、既有 tests、tasks、docs/operations。新增 `p4_bundle.py` 是因現有 P3 adapter 無 self-contained safe-extract/lock 封裝；新增 `p4_colab.py` 是因 P3 collect 綁定凍結14h全域帳本及官方准入，不宜拿 P4 CU 預算削弱它。共用 `train_one`、purge 與 row checks，沒有另造模型訓練系統。`environments/p4a-colab.requirements.lock.txt` 原樣保存本機GPU lock，因既有2026.04 Colab lock屬舊E1環境、不能承載P4指定版本；SHA-256為 `2c39a3fb9567d1f9fc8ee83369c7b6c90cd19a8e679e32e4c8a6c1d75c5782c9`。新增測試／契約／操作文件分別承載 P4 隔離邊界與尚未凍結的研究問題；未新增 top-level tree。
+Q5 每次排列後還原股票身分，輸出每日分數 Spearman、IC 變化、top50 持股重疊（同分以 code 決勝）。固定 R=10；各 split 的排列間平均 IC 標準差（ddof=1）≥ abs(crossstock 與同折 seed17 mamba2 的平均 IC 差距)，即記「順序敏感」。這是描述性診斷，記錄後保留結果，不作優勢宣稱；零差距亦照原規則判斷。各模型對驗證／評估完整 eligible rows 推論，沒有重新訓練。
 
+## 多重比較（組合層）
 
-## 凍結前模型差異揭露（DRAFT）
+P2 主格：top50、20 日再平衡、buffer100、等權、成交值2e7、佣金折扣.6、最低費20、滑價10bp、資金1e6、raw，基準只收比例成本。折 2021–2023，配對逐日淨報酬差，circular block bootstrap block20／1000，CI 下界>0 且 Holm p<.05 才通過登記的「優於」門檻；本批只標歷史門檻通過，不聲稱獨立確認。缺完整 fold／seed 或不足20配對日為工程未完成，不能通過。
 
-以下為審查提供的官方模型 CPU 建構數字（48 features、width64、2 層），不是 CUDA 驗證；凍結時必須以固定版本與配置重新記錄。
-
-| 項目 | GRU | 官方 Mamba2 |
+| Family | 假設 | 校正 |
 |---|---|---|
-| 參數量 | 53,250 | 60,706（約多 14%） |
-| 初始化 | PyTorch nn.GRU 預設初始化 | 官方 Mamba2 專屬初始化；不能視為等同 GRU |
-| residual／pre-norm | GRU recurrent layers；沒有 Mamba residual pre-norm block | residual pre-norm blocks |
-| 內部 gated normalization | 無 Mamba gated norm | 官方 mixer 內部 gated normalization |
-| 共同末端 | embedding、末端 RMSNorm、雙 head | embedding、末端 RMSNorm、雙 head |
-| dropout | 此路徑無 dropout | 此 temporal 路徑無 dropout |
+| A | H-A1 gru vs C0+；H-A2 mamba2 vs C0+（P3 已曝光 replication）；H-A3 crossstock vs C0+（同） | Holm m=3 |
+| B | H-B1 mamba2 vs gru；H-B2 crossstock vs mamba2 | Holm m=2 |
+| C | H-C1 mamba2 W120 vs W60；H-C2 mamba2 W250 vs W60；H-C3 gru W120 vs W60；H-C4 gru W250 vs W60 | Holm m=4，各用顯式共同交集 |
 
-共同的是 60-session、rank-gauss、split/purge、損失、AdamW、排程及雙 head；「近似寬度與參數量」不構成架構公平性或同 normalization 的證明。crossstock 的 dropout 與專屬 cross mixer 也須在凍結配置另列；FROZEN_CFG 的 dropout 值不是 GRU／temporal Mamba2 實際啟用 dropout 的證據。
+三個 family 分別校正，非階層式 gatekeeping。其餘一律描述性，不擴增確認性 family。組合統計使用不變的 `portfolio_eval` 公開函式；P4 evaluator 是新增 adapter，因 P3 身分禁止修改，沒有另造交易引擎。
 
-## 研究決策清單 — 全部 OPEN
+## 架構差異揭露
 
-| 決策 | 待 Human 決定的選項與必要記錄 | 狀態 |
-|---|---|---|
-| 搜尋／選擇規則 | 固定單配方，或等預算搜尋；後者須列有限搜尋空間、每臂 trials／seeds、validation-only selection metric、tie-break、停止規則與候選失敗處理，禁止用外折結果選模型 | OPEN |
-| 多重比較 family | 選項 A：H-P4a 三個神經臂各對 C0+，Holm m=3；選項 B：事前固定階層式 family／gatekeeping，須定義各層假設、alpha 分配及未通過時行為；新增混合臂或其他比較須重新計 family。不得直接沿用 P3 m=2 | OPEN |
-| 完整性門檻 | 固定臂×折×seed 全部完成才准入，或事前限定可接受缺失及處置；需列 paired support、缺 seed／fold、失敗 trial、optional 2026 的角色。工程不能自行放寬 gate | OPEN |
-| 預算 | 先定 GPU 保守費率、總 wall／CU、每 fit／stage 估時、搜尋及 speed-test 分配與至少25% reserve；數字尚未核定，工程預設所有 stage 共用同一帳本 | OPEN |
-| 確認性期間與統計規則 | 新資料／前瞻期間、成熟 label、選擇截止、假設與 family、CI／bootstrap、門檻、資料／模型凍結 identity，均須事前登記 | OPEN |
+以下既有 CPU 建構數字以48 features為例；正式 runner 逐 fit 記錄參數數量，不能當同容量證明。
 
-P3 結果已知，P4a 在 2021–2025 折上不是未曝光資料。舊機器契約的 confirmatory_years 是歷史沿用名稱，不能單靠改 status 為 FROZEN 授予新確認性解讀；研究凍結必須同步審查機器契約。
+| 項目 | GRU | Mamba2 | crossstock |
+|---|---|---|---|
+| 參數量 | 53,250 | 60,706 | runner 實際記錄（額外 cross layers） |
+| 初始化 | PyTorch GRU 預設 | 官方 mixer 專屬初始化 | temporal 與雙向 cross mixer |
+| residual／pre-norm | recurrent layers | residual pre-norm | temporal residual、cross LayerNorm／FFN |
+| 內部 gated normalization | 無 Mamba gated norm | 官方 mixer 有 | 官方 mixer 有 |
+| dropout | temporal 路徑未啟用 | temporal 路徑未啟用 | cross FFN .1，與 P3 一致 |
 
-可確認的路徑：Human 事前核定搜尋／選擇與比較規則，凍結模型及資料／統計契約，再使用未參與設計的新資料或前瞻期間，待 label 成熟且完整性／provenance 全通過後進行預先登記的確認性檢驗。目前這條路徑的所有選項仍 OPEN。
+共同末端 embedding／RMSNorm／雙頭不代表全部 normalization 相同。Mamba2 使用官方 temporal 預設卷積；cross d_conv=2、d_ff=4*d_model、n_cross=1，沿用 P3，不做 no-conv。crossstock 推論通常2個排列平均；Q5 每個隨機排列 n_perm=1，與通常結果比較。
 
-只能描述性的路徑：在已曝光 2021–2025 折上比較 GRU／Mamba2／crossstock、事後調參與混合權重、展示 CI／Holm 或補齊歷史支持。即使數字通過原門檻，也只能報告歷史描述性／探索性結果，不能稱為新的未曝光確認性證據。2026 的曝光與准入尚未核定，optional 不代表自動取得確認性地位。
+## 資料與接續契約
 
+Drive 一次上傳 `MarketMamba/data/matrix_v1/{shared,folds}` 與 CLI 產生的 DATASET_MANIFEST.json。shared 八檔、folds2021–2026各 splits.npy，共14檔逐檔 size/SHA，禁止符號連結。X 固定1425394112 bytes／9778392d4c337d1f9cb5768002340a0d1aec13f7689b2f601b77bd2329b55363。SSD `/content/data` 先驗後複製，不從 Drive FUSE mmap 訓練；只有 Colab 本機 fold 可建立 links。rank-gauss 與 tag 在 shared 計算一次，Drive rankgauss_cache 以 X／end_indices／實作 identity 與輸出 hash 驗證後重用，不符重建。
 
-## 本輪 Human 核准的 Colab 操作修訂（2026-11-21）
+每次 ZIP 只交付 source、研究／環境契約、參考 lock、dataset manifest、C0+ fold/date/code/label_y5 鍵檔與 provenance。完整 C0+ 分數留本機評估使用，不傳209MB全分數。矩陣 manifest identity 與 bundle/source/environment identity 納入 run_hash。
 
-Archive／bootstrap 外部 SHA 改為可選；extract 自動印 archive SHA，提供時嚴格核對，manifest 內逐檔 size/SHA、資源上限、symlink 防護與白名單全部保留。Drive wheel-dir 模式只以 no-deps／no-index 安裝兩個本地 wheel，核對 Python／平台標籤，SHA 只記錄；不重裝其餘套件或 torch。
+每個完整 epoch validation 後保存 model／optimizer／scheduler／epoch／BEST／bad／history／numpy global RNG／batch generator RNG／torch CPU與CUDA RNG：先本機 serialize/fsync/hash，再 Drive exclusive copy/fsync/re-read hash，最後 atomic pointer；latest／previous／best 全保留。只從 pointer 指向且契約／矩陣／原始碼／seed 相同的完整 epoch 恢復；重放中斷的未完成 epoch。缺 pointer 有 orphan、corrupt/missing checkpoint 或 identity mismatch 一律 fail closed；orphan 不自動升格 best。已完成 fit 必須逐檔與 schema 驗證後跳過，未完成 fit 在同一 attempt 接續。
 
-既有 exact lock 是本機 P3 參考，不代表已觀察的 Colab 環境。新增 `environments/p4a-colab-runtime.json`，因本機 lock 無法承載尚未知且不同版本的 Colab runtime；artifact identity 由 bundle 逐檔 SHA 綁定，初始 TBD／UNOBSERVED，待 Human pip list 與 runtime 自檢後填實際版本。P4a 三臂共用相同 Colab 環境 identity；與 P3 跨環境比較需揭露差異。speed-test 記錄每項 environment_mismatch 並標記結果不可與正式環境比較，正式入口仍要求 OBSERVED 完全相符；CUDA 不可用一律 STOP。研究問題與其他 OPEN 決策未凍結，沒有新研究結果。
+P4 僅記錄每次嘗試 wall 秒數、GPU、溫度、時脈，不設時間／CU上限、不設25% reserve；廢除舊 P4 預算上限，P3規則不變。中斷未知間隔保守記錄到重啟（含離線時間，不冒稱訓練時間）。>=85°C 硬體 STOP 仍鎖定，需人工處理，不自動等待或清除。移除 pip check，正式環境仍 exact OBSERVED 契約核對；speed 不符只記錄，但 CUDA 必須可用。
+
+## T4 耗時外推（不是實際完整批量測）
+
+Human speed-test 熱機步速：mamba2 .456s、crossstock .462s、GRU .129s；Mamba2 首步含 Triton 一次編譯約285s。
+
+| 範圍 | 訓練步耗時外推 |
+|---|---:|
+| 主格36 fits，各臂12×3200步 | 11.17小時（4.864＋4.928＋1.376） |
+| 回看24 fits，假設步速隨窗長線性增加 | 19.24小時（120/60、250/60） |
+| LR四 fits | 1.04小時 |
+| 合計64 fits | 約31.45小時，另加validation／evaluation／I/O／編譯／Q5 |
+
+長窗線性是假設，非T4長窗量測；crossstock不同形狀可能額外編譯，Q5無完整推論步速、無可靠估時。early stopping可能縮短。沒有時間限制，做完驗證並下載後由 Human 自行關 runtime。
+
+## 唯一 OPEN
+
+| 決策 | 狀態 |
+|---|---|
+| P4d 本機 CPU C0+ 調參預算對等比較；本批固定神經配方不調參，明列偏向 C0+ 的限制 | OPEN |
+
+Reconnaissance：擴充既有 p4_bundle、p4_colab、seq_runner；沿用 tests、tasks、docs/operations、reports、canonical knowledge。新增 p4_eval 因 P3 portfolio_eval 身分不可修改，以公開函式重用。沒有新 top-level tree、runtime、資料來源或 production authority。

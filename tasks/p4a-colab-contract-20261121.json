@@ -1,6 +1,6 @@
 {
   "version": "p4a-colab-v1",
-  "status": "DRAFT",
+  "status": "FROZEN",
   "evidence_class": "ENGINEERING_ONLY / NOT_ACCEPTED",
   "arms": [
     "mamba2",
@@ -18,11 +18,10 @@
   ],
   "descriptive_years": [
     2024,
-    2025
-  ],
-  "optional_years": [
+    2025,
     2026
   ],
+  "optional_years": [],
   "recipe_source": "V6/research_lab/rolling_seq_scores.py:FROZEN_CFG (P3 unchanged)",
   "selection": "BEST validation IC5; never LAST",
   "speed_test": {
@@ -35,18 +34,17 @@
     "evidence_class": "ENGINEERING_SPEED_ONLY"
   },
   "budget": {
-    "units": [
-      "wall_clock_hours",
-      "colab_compute_units"
-    ],
-    "minimum_reserve": 0.25,
-    "rate": "Human-confirmed conservative CU/hour; recorded estimate, not provider metering",
-    "guard_wait_charged": false,
+    "policy": "record_only",
+    "limits": null,
+    "reserve": null,
     "thermal_stop_c": 85,
-    "thermal_pause": false,
-    "interruption": "charge unknown interval to restart; latch STOP",
-    "coverage": "runner bundle/runtime validation, rankgauss and fits; upload/pip/operator idle require separate Human billing reconciliation",
-    "stage_estimate": "positive planned-hours-per-fit also bounds each validation/rankgauss stage"
+    "telemetry": [
+      "wall_seconds",
+      "gpu_model",
+      "temperature_c",
+      "clock_mhz"
+    ],
+    "interruption": "record unknown interval through restart; resume complete epoch; thermal STOP remains latched"
   },
   "checkpoints": {
     "policy": "local serialize/fsync/hash -> durable exclusive copy/fsync/reverify -> atomic pointer",
@@ -55,14 +53,14 @@
       "previous",
       "best"
     ],
-    "resume": "completed fits only; partial attempts preserved, no automatic orphan promotion"
+    "resume": "validated last complete epoch; completed fits validated and skipped; orphan never automatically promoted"
   },
   "acceptance": {
     "rule": "CI lower bound > 0 AND Holm p < .05",
     "portfolio": "P2 primary cell",
     "provenance": "P3/P2 frozen contracts govern existing results; P4 never supersedes"
   },
-  "freeze_required": "Human/Claude approval and frozen recipe/config/budget plan before formal execution",
+  "freeze_required": "FROZEN research contract plus OBSERVED cp313 runtime contract; runtime exact match for FORMAL",
   "recipe": {
     "d_model": 64,
     "n_layers": 2,
@@ -103,6 +101,135 @@
     "formal": "OBSERVED with exact runtime/package agreement; TBD stops",
     "speed_test": "Record every environment_mismatch; results incomparable with formal environment; CUDA always required",
     "arms": "All three arms share the same observed Colab environment identity",
-    "cross_environment": "Disclose differences from local P3; no equivalence claim"
-  }
+    "cross_environment": "Disclose differences from local P3; no equivalence claim",
+    "sha256": "b45380920c48c5548ef8880f63f4a351a3de7ff5d6b9f2abef50ebf87e763194"
+  },
+  "contract_status": "FROZEN",
+  "frozen_at": "2026-11-22",
+  "freeze_timing": "Before any P4a results; Human approved bounded implementation",
+  "grid": {
+    "main_fits": 36,
+    "lookback_fits": 24,
+    "learning_rate_fits": 4,
+    "total_fits": 64,
+    "windows": [
+      60,
+      120,
+      250
+    ],
+    "lookback_arms": [
+      "mamba2",
+      "gru"
+    ],
+    "lookback_years": [
+      2021,
+      2022,
+      2023
+    ],
+    "learning_rates": [
+      0.0001,
+      0.001
+    ],
+    "lr_year": 2022,
+    "lr_seed": 17,
+    "queue": [
+      "Q1",
+      "Q2",
+      "Q3",
+      "Q4",
+      "Q5"
+    ]
+  },
+  "families": {
+    "A": {
+      "m": 3,
+      "pairs": [
+        [
+          "gru",
+          "c0plus"
+        ],
+        [
+          "mamba2",
+          "c0plus"
+        ],
+        [
+          "crossstock",
+          "c0plus"
+        ]
+      ]
+    },
+    "B": {
+      "m": 2,
+      "pairs": [
+        [
+          "mamba2",
+          "gru"
+        ],
+        [
+          "crossstock",
+          "mamba2"
+        ]
+      ]
+    },
+    "C": {
+      "m": 4,
+      "pairs": [
+        [
+          "mamba2_w120",
+          "mamba2"
+        ],
+        [
+          "mamba2_w250",
+          "mamba2"
+        ],
+        [
+          "gru_w120",
+          "gru"
+        ],
+        [
+          "gru_w250",
+          "gru"
+        ]
+      ]
+    }
+  },
+  "inference": {
+    "years": [
+      2021,
+      2022,
+      2023
+    ],
+    "block": 20,
+    "n_boot": 1000,
+    "alpha": 0.05,
+    "superiority": "CI lower > 0 and Holm p < .05",
+    "evidence": "EXPOSED_HISTORICAL_REPLICATION; only unexposed P2 forward data is independent confirmation",
+    "intersection": "all compared systems, C0+ and W60 restricted to identical common rows; report rows and excluded fractions"
+  },
+  "permutation": {
+    "queue": "Q5",
+    "arm": "crossstock",
+    "years": [
+      2021,
+      2022,
+      2023
+    ],
+    "seed": 17,
+    "R": 10,
+    "splits": [
+      "validation",
+      "evaluation"
+    ],
+    "stop_rule": "IC std across permutations >= absolute crossstock minus mamba2 IC gap => order-sensitive",
+    "metrics": [
+      "daily_score_spearman",
+      "IC_change",
+      "top50_overlap"
+    ]
+  },
+  "known_limitations": [
+    "Neural arms untuned; C0+ previously adjusted, favoring C0+; P4d CPU equal tuning budget separate",
+    "P3 exposed; mamba2/crossstock are replication in new environment; GRU and lookbacks are new hypotheses",
+    "2026 partial year descriptive; P4b rank-average mixtures descriptive only"
+  ]
 }

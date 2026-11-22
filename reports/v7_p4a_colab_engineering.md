@@ -1,5 +1,111 @@
 # P4a Colab 工程交接 — 2026-11-21
 
+## 2026-11-22：完整固定佇列 builder（本輪候選）
+
+`job-run-mwrgy396-cf1213`，base/HEAD `f333421fafdcb02f716b16376ff65717021edfa4`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。本節取代下文舊P4a的DRAFT、時間/CU caps、25%reserve、completed-fit-only與每次內含矩陣交付的目前操作說明；保留歷史evidence，不修改P3結果或runtime observed_at。凍結日期2026-11-22，在任何P4a結果出現前；沒有研究結果。
+
+### 變更與決策
+
+- 擴充既有 `p4_bundle.py`：`dataset-manifest` CLI（14檔逐檔size/SHA、無links、指定X identity）；Drive→SSD準備與fold links；共享rank-gauss及tag/hash/implementation identity回存Drive；matrix_v1交付ZIP只有source/契約/環境/資料manifest/C0+鍵檔。保留舊`pack`格式的回歸相容測試，新操作使用matrix_v1。
+- 打包來源解析後限制於指定fold根目錄；ZIP實際邏輯大小先對manifest逐檔比對，再限制2000倍壓縮比（可容納合法零矩陣）；隔離PAX-specific64KiB邊界測試。Notebook自動綁ZIP size/SHA、預設FORMAL、設定RUN_DIR/DATA_DIR、Drive wheel優先與舊目錄回退、無pip check、無時數/CU設定；末尾下載scores/metrics/checkpoints/ledger。
+- `seq_runner.py` 新增opt-in `resume_state`，P3未提供時保持原訓練行為。15% warmup/cosine抽成等值可測函式，AdamW/clip1.0/patience/BEST不改；保存/恢復numpy全域、batch generator、torch CPU/CUDA RNG與optimizer/scheduler/history。
+- `p4_colab.py`：完整epoch validation後本機serialize/fsync/hash→Drive copy/fsync/re-read hash→atomic pointer；保留latest/previous/best與未選orphan。缺pointer但有orphan或corrupt/mismatch均fail closed，不自動升格；中斷epoch重做，完成fit逐檔/schema/BEST驗證後skip。完成manifest、scores與BEST發布使用原子commit記錄／temporary rename。
+- P4專用record-only帳本，無時間/CU閘門與25%reserve；舊cap helper僅保留相容測試，不在新runner路徑呼叫。逐次嘗試記wall秒與GPU/溫度/時脈摘要，首筆telemetry與完整epoch事件持久化。未知中斷區間到重啟保守記錄，不冒稱活躍訓練時間。85°C硬體STOP先持久寫入，process loss也不會由record-only恢復清除。
+- 凍結機器契約、OBSERVED cp313環境hash與規格：Q1/Q2主格36、Q3回看24、Q4 LR4，共64fits，再Q5三折crossstock seed17、R10驗證/評估排列推論。Q5比較固定BEST與mamba2，輸出每日Spearman/IC變化/top50訊號名單重疊（不等同有交易限制的實際成交持股）、IC標準差與順序敏感判定。
+- 新增 `p4_eval.py`，原因是P3 evaluator不可修改；重用原P2公開函式、volume provenance與portfolio引擎。A/B/C分別Holm3/2/4、block20/1000；Family C使用所有比較系統/W60/C0+同一交集，明報排除比例；完整下載run要求64fit且驗證完整manifest與輸出，缺seed/列/label不符拒絕。歷史門檻通過不宣稱獨立確認，P3已曝光replication與C0+調參不對稱明列；P4d另案OPEN。
+- 規格外推T4：主格11.17h、長窗19.24h（線性窗長假設）、LR1.04h，共約31.45h純訓練步；另加validation/inference/I/O/編譯/Q5。不是完整批現場量測，無時間限制。
+
+### RED／GREEN與反證
+
+初始新測試 `6 failed in 9.38s`：manifest/preparation、frozen queue、warmup、精確resume、record-only ledger、fold root escape；修正後 `6 passed in 6.16s`。評估／排列測試RED為 `2 failed, 7 passed`；ZIP ratio RED為 `1 failed, 11 passed`。之後CPU完整佇列/驗證skip與dropout resume等focused `129 passed`；telemetry漏記先RED `1 failed` 再補實作。硬體STOP在END前process-loss情境亦先RED，修正後兩項focused `2 passed in 1.48s`。
+
+測試以CPU合成matrix、GRU與注入causal mixer的crossstock完成：epoch2中斷/接續與一次跑完的模型權重逐tensor `torch.equal`、預測 `np.array_equal`；額外dropout=.4的crossstock亦位元一致。完整64fit/Q5採CPU boundary doubles，重跑沒有再次fit或Q5；不是64次真實模型訓練。另有真實P2引擎小型合成比較，P4與未改P3公開路徑的逐日報酬完全相同。來源/矩陣/seed不符、壞pointer、缺pointer/orphan、partial copy均拒絕。
+
+5項in-memory mutation（不改repo檔）全部killed，輸出：
+
+```text
+IN_MEMORY_MUTATION warmup pytest_exit=1 KILLED=True
+IN_MEMORY_MUTATION rng pytest_exit=1 KILLED=True
+IN_MEMORY_MUTATION dataset pytest_exit=1 KILLED=True
+IN_MEMORY_MUTATION identity pytest_exit=1 KILLED=True
+IN_MEMORY_MUTATION labels pytest_exit=1 KILLED=True
+```
+
+第一次mutation harness因`/tmp`腳本缺repo root sys.path，為collector/import錯誤（exit4），沒有算killed；修正harness路徑後才得到上列有效exit1。腳本與輸出是TEMPORARY `/tmp/p4_mutations.py`、`/tmp/p4-mut-*.log`。
+
+首次全套 `1 failed, 705 passed, 1 skipped, 5 warnings in 288.36s`；失敗在P3 `test_revision2_revalidate_all_24_fits[environment]` 的初始source/environment重驗，單獨重跑 `1 passed in 3.08s`。當時全套期間仍改動被P3 provenance hash涵蓋的source，可能觸發身分保護；未修改P3 gate或停用測試。其後停止改source，再完整重跑，以最終輸出為準。
+
+最終完整輸出（`/tmp/p4-full-final.log`，exit0）：
+
+```text
+708 passed, 1 skipped, 5 warnings in 212.59s (0:03:32)
+```
+
+唯一skip為既有CUDA測試；warnings為刻意duplicate ZIP fixture及既有Pandas4棄用警告，沒有停用測試或放寬門檻。最終全套期間source/契約凍結不改。
+
+驗證命令：
+
+```bash
+PYTHONPATH=V6:/tmp/p4-notebook-deps OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES=''  /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests tests -q -p no:cacheprovider
+python3 tools/project_knowledge/check_knowledge_impact.py
+python3 tools/project_knowledge/generate_indexes.py
+python3 tools/project_knowledge/knowledge_health.py --ci
+git diff --check
+```
+
+實際CPU runtime：Python3.12.3、numpy2.5.4、pandas3.1.1、torch2.15.0+cpu；nbformat從既有離線 `/tmp/p4-notebook-deps` 載入，未安裝套件或連網。這不是Colab環境。初始部分focused使用既有marketmamba-gpu venv的torch2.10.0+cu128，但全部CPU，未有可用GPU。`MARKETMAMBA_DATA_ROOT`未設定，此worktree的Data不存在；沒有寫正式資料。
+
+已驗syntax6Python檔、nbformat及10格notebook（含全部code cells compile）、FROZEN schema與runtime SHA綁定、synthetic archive逐檔hash及metadata；逐bytes確認以下與HEAD相同：
+
+```text
+rolling_seq_scores.py 50048 bytes SHA256 5d10d52b1d423c73fa518535f01e80b2760a0d3087036b9b778491d13942aefd
+portfolio_eval.py 50314 bytes SHA256 3e46e07277c5d13fe6b24608b7e7dc20648e9558be322ad414d2f82a60c4a30c
+environments/p4a-colab-runtime.json 2350 bytes SHA256 b45380920c48c5548ef8880f63f4a351a3de7ff5d6b9f2abef50ebf87e763194
+```
+
+Knowledge-impact：semantics/correctness gate/canonical contract/next decision/worktree responsibility YES，active external runtime/production authority NO。已同步Current State、Authority Map、Worktree Register、Research domain；generated-index核對PASS。knowledge health無FAIL，Governance/Authority Drift為8項AUTHORITY_REPIN_CANDIDATE，Legacy Docs為README/OVERVIEW/PROJECT舊敘述WARNING；不在本任務擅自repin歷史authority或改production。
+
+### Changed paths（完整）
+
+```text
+V6/research_lab/p4_bundle.py
+V6/research_lab/p4_colab.py
+V6/research_lab/p4_eval.py
+V6/research_lab/seq_runner.py
+V6/research_lab/tests/test_p4.py
+V6/research_lab/tests/test_p4_full.py
+tasks/p4a-colab-contract-20261121.json
+tasks/spec-p4a-colab-20261121.md
+docs/operations/colab-p4.md
+reports/v7_p4a_colab_engineering.md
+knowledge/00_Project_Map/Current_State.md
+knowledge/00_Project_Map/Authority_Map.md
+knowledge/00_Project_Map/Worktree_Register.md
+knowledge/01_Domains/Research.md
+```
+
+### 限制與交接
+
+Colab現場的Python3.13整批、T4長窗OOM與效能、額外Triton編譯、wheel安裝/備援編譯、Drive FUSE的fsync/rename/斷線持久性、真正hard-kill/新runtime、真實矩陣14檔與上傳、Q5 GPU推論與瀏覽器自動下載全部 **UNVERIFIED**。本輪未對Human的Windows upload資料夾實際產生manifest，也未製作可訓練的真實兩檔，只測合成fixtures；可依操作指南執行CLI。CPU中斷測試是epoch-boundary KeyboardInterrupt／重新建構物件；publication故障用注入失敗，不冒稱OS SIGKILL或FUSE斷線現場證據。遺失/損壞pointer、未完整ledger提交仍fail closed而需人工診斷；不承諾任意損毀後全自動恢復。
+
+Q5 top50是訊號排名名單，未引入未交付的OHLCV或假造tradability；完整交易持股重疊需另以P2引擎與價格評估。rank-gauss cache tag/identity不符重建，cache可重建；歷史checkpoint/orphan不刪。telemetry在首筆/epoch/end持久化，硬kill可能遺失該epoch尚未commit的後續樣本，但保留首筆與上次完整epoch，未知不補零。一次性cache與指標的Drive現場耐久性仍待驗。
+
+- Completed：本輪離線工程候選、凍結規格與測試；不是Human acceptance。
+- Changed：p4_bundle/p4_colab/seq_runner、新p4_eval、test_p4與新test_p4_full、研究契約/規格、操作指南、本報告與四份knowledge；無protected路徑變更。
+- Decisions：固定64fit/Q5、record-only、epoch resume、共享dataset、獨立P4 evaluator；保留歷史/前瞻evidence界線。
+- Evidence：上述RED/GREEN、位元一致、5個mutation、syntax/hash/schema/knowledge與完整輸出。
+- Remaining：真實manifest/交付與Colab現場驗證、P4d、獨立審查及Human acceptance。
+- Blockers：本機無正式Data/Colab現場；任何corrupt/mismatch仍STOP，不放寬gate。
+- Next recommended action：獨立review patch，Human一次上傳matrix_v1，產生新兩檔後做現場驗證。
+- Project memory updated：YES；Authority map updated：YES（不改production）。
+- Git status：起始clean detached，結束保留本輪dirty/untracked patch；不能同時遵守no-commit與clean-worktree，不stage、不丟棄patch。
+- Commit：NONE（明確禁止）；Push：NONE；Worktree：既有builder_p4a_full，未新增/移除worktree。
+- Runtime/environment：上述CPU、Data未掛載；無GPU/網路/Colab/production/scheduler/付費成本，無additional agents、無wakeups/recurring jobs。
+
+---
+
+以下為歷史工程紀錄（由上節更新本輪目前狀態，不重標歷史evidence）。
+
 UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；DRAFT研究契約；本報告不是Human acceptance，沒有研究結果。Source base `e4f21c3747124f4c6cc46a873eae891697910067`，既有detached工作樹 `.worktrees/ruflo-workers/run-mwqd0vuy-7d9826/builder_p4a`，起始clean，依明確指示不commit／push／merge／新增agents。
 
 ## Changed / Decisions

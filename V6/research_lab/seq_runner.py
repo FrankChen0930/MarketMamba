@@ -254,7 +254,14 @@ def control_mlp(directory, cfg=None, seed=17, device='cuda', log=print, stock_id
     return st['history']
 
 
-def train_one(kind, seed, data, tr, va, cfg, device='cuda', mixer_factory=None, mixer_kw=None, ckpt=None, log=print, observer=None):
+
+def warmup_cosine(i, steps):
+    """Existing 15% linear warmup then cosine, including LambdaLR step-zero semantics."""
+    warm=max(1,int(.15*steps))
+    return (i+1)/warm if i<warm else .5*(1+math.cos(math.pi*(i-warm)/max(1,steps-warm)))
+
+
+def train_one(kind, seed, data, tr, va, cfg, device='cuda', mixer_factory=None, mixer_kw=None, ckpt=None, log=print, observer=None, resume_state=None):
     import torch
     torch.manual_seed(seed)
     rng = np.random.default_rng(seed)
@@ -269,8 +276,7 @@ def train_one(kind, seed, data, tr, va, cfg, device='cuda', mixer_factory=None, 
                           mixer_factory=mixer_factory).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=cfg['lr'], weight_decay=cfg['weight_decay'])
     steps = cfg['epochs']*cfg['steps_per_epoch']
-    warm = max(1, int(.15*steps))
-    sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda i: (i+1)/warm if i < warm else .5*(1+math.cos(math.pi*(i-warm)/max(1, steps-warm))))
+    sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda i: warmup_cosine(i, steps))
     t5, t10 = (centred_rank(data.y[k][tr], data.date_idx[tr]) for k in ('y5', 'y10'))
     dtr = data.date_idx[tr]
     cuts = np.flatnonzero(np.diff(dtr))+1                      # tr is sorted by row == sorted by date
@@ -290,6 +296,16 @@ def train_one(kind, seed, data, tr, va, cfg, device='cuda', mixer_factory=None, 
         if best_sd is None and state['best'] > -9:
             raise RuntimeError(f'checkpoint {ckpt} has no best weights (written by an older version); delete it and retrain')
         rng = np.random.default_rng(seed+state['epoch']); log(f'[resume] {kind} s{seed} from epoch {state["epoch"]}')
+    if resume_state is not None:
+        from copy import deepcopy
+        c=deepcopy(resume_state)
+        model.load_state_dict(c['model']);opt.load_state_dict(c['opt']);sched.load_state_dict(c['sched'])
+        state=c['state'];best_sd=c['best_sd']
+        rng.bit_generator.state=c['rng_state']
+        np.random.set_state(c['numpy_rng'])
+        torch.set_rng_state(c['torch_rng'].cpu())
+        if str(device).startswith('cuda') and c.get('cuda_rng') is not None:
+            torch.cuda.set_rng_state_all([r.cpu() for r in c['cuda_rng']])
     while state['epoch'] < cfg['epochs'] and state['bad'] < cfg['patience']:
         model.train(); t0 = time.time(); losses = []
         for _ in range(cfg['steps_per_epoch']):
@@ -320,7 +336,7 @@ def train_one(kind, seed, data, tr, va, cfg, device='cuda', mixer_factory=None, 
         if observer:
             observer('epoch', dict(model=model.state_dict(), opt=opt.state_dict(), sched=sched.state_dict(),
                                    state=state, best_sd=best_sd, rng_state=rng.bit_generator.state,
-                                   torch_rng=torch.get_rng_state()))
+                                   torch_rng=torch.get_rng_state(), numpy_rng=np.random.get_state()))
         if ckpt:
             tmp = str(ckpt)+'.tmp'
             torch.save(dict(model=model.state_dict(), opt=opt.state_dict(), sched=sched.state_dict(), state=state, best_sd=best_sd), tmp)

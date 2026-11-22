@@ -24,6 +24,7 @@ MAX_MANIFEST_BYTES = 4 * 1024**2
 MAX_READ_BYTES = 1024**2
 MAX_EXTENDED_BYTES = 64 * 1024
 MAX_ARCHIVE_OVERHEAD = 32 * 1024**2
+MAX_ZIP_COMPRESSION_RATIO = 2000
 
 
 def allowed_path(name):
@@ -41,7 +42,7 @@ def allowed_path(name):
     matrix = (len(parts) == 3 and parts[0] == 'folds' and parts[1] in
               {f'fold_{y}' for y in range(2021, 2027)} and parts[2] in MATRIX_FILES)
     if not (source or matrix or name in documents or name in {
-            'reference/rank_average.parquet', 'reference/manifest.json',
+            'reference/rank_average.parquet', 'reference/keys.parquet', 'reference/manifest.json', 'DATASET_MANIFEST.json',
             'requirements.lock.txt', 'bundle-manifest.json'}):
         raise ValueError(f'bundle path not allowlisted: {name}')
 
@@ -200,7 +201,12 @@ def write_archive(output, files, metadata):
     """Allowlisted files only; hash both before and during archive publication."""
     files={str(k):Path(v) for k,v in files.items() if not executable_cache(str(k))}
     # Only trusted fold inputs may resolve symlinks; archive members remain regular.
-    files={n:(p.resolve(strict=True) if n.startswith('folds/') else p) for n,p in files.items()}
+    for n,p in list(files.items()):
+        if n.startswith('folds/'):
+            root=Path(metadata.get('folds_realpath',p.parent)).resolve()
+            resolved=p.resolve(strict=True)
+            if not resolved.is_relative_to(root): raise ValueError('fold source escapes designated root')
+            files[n]=resolved
     for name,path in files.items():
         allowed_path(name)
         if not path.is_file() or path.is_symlink(): raise ValueError(f'not regular input: {path}')
@@ -277,6 +283,9 @@ def _zip_inventory(z):
     if set(names)!=(set(mf['files'])-set(aliases))|{'bundle-manifest.json'}:
         raise ValueError('archive inventory mismatch')
     for member in members:
+        # Check logical expected size first; 2000x accommodates even zero-filled npy.
+        if member.file_size > max(1,member.compress_size)*MAX_ZIP_COMPRESSION_RATIO:
+            raise ValueError('archive compression ratio limit')
         if member.filename!='bundle-manifest.json' and member.file_size!=mf['files'][member.filename]['bytes']:
             raise ValueError('archive size mismatch')
     return mf
@@ -389,9 +398,16 @@ def pack(folds_root, years, p1, lock, output):
             if 'tests' not in path.parts: files['source/'+path.relative_to(ROOT).as_posix()]=path
     for name in ('tasks/p4a-colab-contract-20261121.json','tasks/spec-p4a-colab-20261121.md','docs/operations/colab-p4.md','environments/p4a-colab-runtime.json'):
         files['source/'+name]=ROOT/name
-    for year in years:
-        for name in MATRIX_FILES: files[f'folds/fold_{year}/{name}']=Path(folds_root)/f'fold_{year}'/name
-    for name in ('rank_average.parquet','manifest.json'): files['reference/'+name]=Path(p1)/name
+    external=(Path(folds_root)/'shared').is_dir()
+    if not external:
+        for year in years:
+            for name in MATRIX_FILES:files[f'folds/fold_{year}/{name}']=Path(folds_root)/f'fold_{year}'/name
+        for name in ('rank_average.parquet','manifest.json'):files['reference/'+name]=Path(p1)/name
+    else:
+        validate_dataset(folds_root)
+        if json.loads((Path(folds_root)/'DATASET_MANIFEST.json').read_text())['files']['shared/X.npy']!=DATASET_X:
+            raise ValueError('formal dataset X identity mismatch')
+        files['DATASET_MANIFEST.json']=Path(folds_root)/'DATASET_MANIFEST.json'
     contract=json.loads((ROOT/'tasks/p4a-colab-contract-20261121.json').read_text())
     if digest(lock)['sha256']!=contract['environment_lock']['sha256']:
         raise ValueError('P4 exact lock hash mismatch')
@@ -408,8 +424,111 @@ def pack(folds_root, years, p1, lock, output):
                   MARKETMAMBA_DATA_ROOT=os.environ.get('MARKETMAMBA_DATA_ROOT'),
                   folds_realpath=str(Path(folds_root).resolve()),p1_realpath=str(Path(p1).resolve()),
                   python=sys.version,rankgauss='EXCLUDED; rebuild with ensure_rankgauss and verify tag + input/output hashes')
+    if external:
+        import tempfile
+        import pandas as pd
+        metadata['external_dataset']=digest(Path(folds_root)/'DATASET_MANIFEST.json')
+        with tempfile.TemporaryDirectory(prefix='p4-reference-keys-') as scratch:
+            frame=pd.read_parquet(Path(p1)/'rank_average.parquet')
+            keys=frame.loc[frame.system.eq('c0plus'),['fold','date','code','label_y5']]
+            if keys.duplicated(['fold','date','code']).any() or keys.empty:raise ValueError('reference key duplicates/empty')
+            target=Path(scratch)/'keys.parquet';keys.to_parquet(target,index=False)
+            files['reference/keys.parquet']=target
+            provenance=Path(scratch)/'manifest.json'
+            provenance.write_text(json.dumps(dict(source=ref,outputs={'keys.parquet':digest(target)})))
+            files['reference/manifest.json']=provenance
+            return write_archive(output,files,metadata)
     return write_archive(output,files,metadata)
 
+
+SHARED_FILES = tuple(n for n in MATRIX_FILES if n != 'splits.npy')
+DATASET_X = dict(bytes=1425394112, sha256='9778392d4c337d1f9cb5768002340a0d1aec13f7689b2f601b77bd2329b55363')
+
+
+def dataset_names():
+    return {f'shared/{n}' for n in SHARED_FILES} | {f'folds/fold_{y}/splits.npy' for y in range(2021,2027)}
+
+
+def dataset_inventory(root):
+    root=Path(root)
+    paths=[p for subtree in ('shared','folds') for p in (root/subtree).rglob('*')]
+    if root.is_symlink() or any(p.is_symlink() for p in paths): raise ValueError('dataset links forbidden')
+    names={p.relative_to(root).as_posix() for p in paths if p.is_file()}
+    if names!=dataset_names(): raise ValueError('dataset inventory mismatch')
+    return names
+
+
+def dataset_manifest(root, enforce_x=True):
+    """Offline one-time inventory; no links, no formal matrix writes."""
+    root=Path(root);names=dataset_inventory(root)
+    files={n:digest(root/n) for n in sorted(names)}
+    if enforce_x and files['shared/X.npy']!=DATASET_X: raise ValueError('matrix_v1 X identity mismatch')
+    mf=dict(version='p4-dataset-v1',artifact_class='GENERATED',files=files,
+            evidence_class='HISTORICAL_SIMULATION_PROXY / RESEARCH_ONLY')
+    from .rolling_seq_scores import atomic_json
+    atomic_json(root/'DATASET_MANIFEST.json',mf)
+    return mf
+
+
+def validate_dataset(root):
+    root=Path(root)
+    if (root/'DATASET_MANIFEST.json').is_symlink(): raise ValueError('dataset manifest links forbidden')
+    mf=json.loads((root/'DATASET_MANIFEST.json').read_text())
+    if mf.get('version')!='p4-dataset-v1' or set(mf['files'])!=dataset_inventory(root):
+        raise ValueError('dataset inventory/version mismatch')
+    for n,ident in mf['files'].items():
+        if digest(root/n)!=ident: raise ValueError('dataset hash mismatch: '+n)
+    return mf
+
+
+def prepare_dataset(drive, local):
+    """Verify Drive bytes, copy to SSD, build/reuse hash-bound shared rankgauss once."""
+    from .seq_runner import ensure_rankgauss, _x_tag
+    from .rolling_seq_scores import atomic_json
+    drive,local=Path(drive),Path(local)
+    if local.resolve()==drive.resolve() or local.resolve().is_relative_to(drive.resolve()):
+        raise ValueError('local dataset must be separate from Drive')
+    mf=validate_dataset(drive);matrix_identity=digest(drive/'DATASET_MANIFEST.json')
+    for n,ident in mf['files'].items():
+        dst=local/n;dst.parent.mkdir(parents=True,exist_ok=True)
+        if dst.is_symlink(): raise ValueError('local dataset original links forbidden')
+        if not dst.exists() or digest(dst)!=ident:
+            tmp=dst.with_name(dst.name+'.partial');shutil.copy2(drive/n,tmp)
+            if digest(tmp)!=ident: raise ValueError('SSD copy hash mismatch')
+            os.replace(tmp,dst)
+    shared=local/'shared';cache=drive/'rankgauss_cache';cache.mkdir(exist_ok=True)
+    cache_contract=dict(X=mf['files']['shared/X.npy'],ends=mf['files']['shared/end_indices.npy'],
+                        implementation=digest(Path(__file__).with_name('seq_runner.py')))
+    meta=cache/'manifest.json';cached=cache/'X_rankgauss.npy'
+    valid=False
+    if meta.is_file() and cached.is_file() and not meta.is_symlink() and not cached.is_symlink():
+        saved=json.loads(meta.read_text())
+        valid=(saved.get('contract')==cache_contract and saved.get('output')==digest(cached)
+               and (cache/'X_rankgauss.tag').is_file() and not (cache/'X_rankgauss.tag').is_symlink()
+               and (cache/'X_rankgauss.tag').read_text()==saved.get('tag'))
+    if valid:
+        if not (shared/'X_rankgauss.npy').exists() or digest(shared/'X_rankgauss.npy')!=saved['output']:
+            shutil.copy2(cached,shared/'X_rankgauss.npy')
+        (shared/'X_rankgauss.tag').write_text(_x_tag(shared))
+    else:
+        # Tag alone cannot admit an old cache after X or implementation changes.
+        (shared/'X_rankgauss.tag').unlink(missing_ok=True)
+        ensure_rankgauss(shared)
+        tmp=cache/'X_rankgauss.partial.npy';shutil.copy2(shared/'X_rankgauss.npy',tmp)
+        if digest(tmp)!=digest(shared/'X_rankgauss.npy'): raise ValueError('Drive rankgauss copy mismatch')
+        os.replace(tmp,cached)
+        (cache/'X_rankgauss.tag').write_text(_x_tag(shared))
+        atomic_json(meta,dict(contract=cache_contract,output=digest(cached),tag=_x_tag(shared)))
+    for year in range(2021,2027):
+        fold=local/f'folds/fold_{year}'
+        for name in (*SHARED_FILES,'X_rankgauss.npy','X_rankgauss.tag'):
+            dst=fold/name;target=shared/name
+            if dst.is_symlink():
+                if dst.resolve()!=target.resolve(): raise ValueError('unexpected local fold link')
+            elif dst.exists(): raise ValueError('local fold shared collision')
+            else:dst.symlink_to(target.resolve())
+    atomic_json(local/'prepared.json',dict(matrix_identity=matrix_identity,rankgauss=digest(cached)))
+    return dict(matrix_identity=matrix_identity,rankgauss=digest(cached))
 
 def installation_commands(root, wheel_dir=None):
     """Plan only: Drive mode installs exactly two local wheels without dependencies."""
@@ -439,15 +558,13 @@ def installation_commands(root, wheel_dir=None):
         if any(len(paths)!=1 for paths in found.values()):
             raise ValueError('wheel directory requires exactly one causal_conv1d and one mamba_ssm wheel; missing/ambiguous wheel')
         wheels=' '.join(shlex.quote(str(paths[0].resolve())) for paths in found.values())
-        return [f'{py} -m pip install --no-deps --no-index --find-links {shlex.quote(str(directory.resolve()))} {wheels}',
-                f'{py} -m pip check']
+        return [f'{py} -m pip install --no-deps --no-index --find-links {shlex.quote(str(directory.resolve()))} {wheels}']
     if sys.version_info[:2]!=(3,12): raise RuntimeError('wheel requires Python 3.12; Human must confirm compatible runtime')
     lock=shlex.quote(str(root/'requirements.lock.txt'))
-    return [f'{py} -m pip install --only-binary=:all: --extra-index-url https://download.pytorch.org/whl/cu128 -r {lock}',
-            f'{py} -m pip check']
+    return [f'{py} -m pip install --only-binary=:all: --extra-index-url https://download.pytorch.org/whl/cu128 -r {lock}']
 
 
-def colab_notebook(run_name='01_speedtest', drive_root='/content/drive/MyDrive/MarketMamba', expected_archive=None):
+def colab_notebook(run_name='02_formal', drive_root='/content/drive/MyDrive/MarketMamba', expected_archive=None):
     """Generated launch UX; research/environment contracts remain authoritative."""
     if not run_name or run_name in {'.','..'} or '/' in run_name or '\\' in run_name or any(c in run_name for c in '\r\n'):
         raise ValueError('run-name must be a single folder name')
@@ -460,18 +577,12 @@ def colab_notebook(run_name='01_speedtest', drive_root='/content/drive/MyDrive/M
     def markdown(source):
         cells.append(dict(cell_type='markdown',metadata={},source=source))
     code('''
-        # 設定：所有操作預算集中於此；CU 是保守估算，不是 Google 實扣。
-        MODE = 'SPEED_TEST'  # 或 FORMAL；DRAFT 契約會拒絕 FORMAL
-        MAX_HOURS = 1.0 if MODE == 'SPEED_TEST' else None  # FORMAL 須由 Human 明確填入
-        MAX_UNITS = 15.0 if MODE == 'SPEED_TEST' else None
+        # 設定：P4 僅記錄耗時，不設時數／CU 上限；>=85°C 仍停止。
+        MODE = 'FORMAL'  # 可選 SPEED_TEST；兩者輸出隔離
         if MODE not in ('SPEED_TEST','FORMAL'): raise ValueError('STOP: invalid MODE')
-        if MAX_HOURS is None or MAX_UNITS is None:
-            raise ValueError('STOP: FORMAL 請由 Human 明確填寫 MAX_HOURS 與 MAX_UNITS')
-        UNITS_PER_HOUR = 10.0  # 每小時 CU 保守估計，請對照現場 GPU 費率
-        PLANNED_HOURS_PER_FIT = 0.1 if MODE == 'SPEED_TEST' else 0.5  # 每 fit／前處理 stage 的保守時數（speed-test 只有 2 epoch×100 步）
-        RESERVE = 0.25  # 至少保留 25%；不可降低
         from pathlib import Path
         RUN_DIR = __RUN_DIR__
+        DATA_DIR = __DATA_DIR__
         EXPERIMENT_DIR = str(Path(RUN_DIR).parent)  # 整個 P4a 共用，不隨交付子目錄重置
         WHEEL_DIR = __WHEEL_DIR__
         LEGACY_WHEEL_DIR = '/content/drive/MyDrive/Mamba_Wheels_T4_new'
@@ -479,7 +590,7 @@ def colab_notebook(run_name='01_speedtest', drive_root='/content/drive/MyDrive/M
         BUNDLE_NAME = 'p4a-bundle.zip'
         LOCAL_ROOT = '/content/p4a'
     ''')
-    cells[0]['source']=cells[0]['source'].replace('__RUN_DIR__',repr(str(drive_root/'p4a'/run_name))).replace('__WHEEL_DIR__',repr(str(drive_root/'wheels'))).replace('__EXPECTED_ARCHIVE__',repr(expected_archive))
+    cells[0]['source']=cells[0]['source'].replace('__RUN_DIR__',repr(str(drive_root/'p4a'/run_name))).replace('__DATA_DIR__',repr(str(drive_root/'data/matrix_v1'))).replace('__WHEEL_DIR__',repr(str(drive_root/'wheels'))).replace('__EXPECTED_ARCHIVE__',repr(expected_archive))
     markdown('兩檔交付：將同批 p4a-bundle.zip 與 notebook 上傳 RUN_DIR，再開啟 notebook 從上到下執行。需 GPU runtime。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；Colab ZIP／編譯／Drive 行為 UNVERIFIED。只執行自己信任來源的這兩個檔案；內部 hash 不證明來源。')
     code('''
         from pathlib import Path
@@ -564,6 +675,13 @@ def colab_notebook(run_name='01_speedtest', drive_root='/content/drive/MyDrive/M
         sys.path[:0]=[str(root/'source/V6'),str(root/'source')]
     ''')
     code('''
+        # 資料準備：Drive -> 本機 SSD；只在 /content 建立 fold links。
+        from research_lab.p4_bundle import prepare_dataset, digest
+        manifest=json.loads((root/'bundle-manifest.json').read_text())
+        if manifest['metadata'].get('external_dataset'):
+            if digest(Path(DATA_DIR)/'DATASET_MANIFEST.json')!=manifest['metadata']['external_dataset']:
+                raise ValueError('STOP: dataset manifest differs from bundle identity')
+            prepare_dataset(DATA_DIR,'/content/data')
         import torch, importlib.metadata, platform
         if not torch.cuda.is_available(): raise RuntimeError('STOP: CUDA 不可用；請選 GPU runtime')
         contract=json.loads((root/'source/environments/p4a-colab-runtime.json').read_text())
@@ -632,16 +750,15 @@ def colab_notebook(run_name='01_speedtest', drive_root='/content/drive/MyDrive/M
         if not all(smoke.values()): raise RuntimeError('STOP: Mamba2 smoke failed')
         del model,x,y
         torch.cuda.empty_cache()
-        subprocess.run([sys.executable,'-m','pip','check'],check=True)
+        # Environment contract is the gate; no pip check.
     ''')
     code('''
         if MODE not in ('SPEED_TEST','FORMAL'): raise ValueError('STOP: MODE must be SPEED_TEST or FORMAL')
         p4.prepare_source(root);p4.verify(root,allow_derived=True)
         training_env=dict(os.environ,PYTHONPATH=f'{root}/source/V6:{root}/source',PYTHONDONTWRITEBYTECODE='1')
         common=[sys.executable,'-m','research_lab.p4_colab','--bundle',str(root),'--drive-root',str(Path(EXPERIMENT_DIR)/'budget'),
-                '--max-hours',str(MAX_HOURS),'--max-units',str(MAX_UNITS),'--units-per-hour',str(UNITS_PER_HOUR),
-                '--planned-hours-per-fit',str(PLANNED_HOURS_PER_FIT),'--reserve',str(RESERVE)]
-        # FORMAL 沿用既有 validate_contract；DRAFT 拒絕，不繞過。
+                '--data-dir','/content/data']
+        # FROZEN + OBSERVED 環境完整核對；DRAFT 仍拒絕。
         subprocess.run(common+(['--speed-test'] if MODE=='SPEED_TEST' else []),env=training_env,check=True)
     ''')
     code('''
@@ -656,21 +773,22 @@ def colab_notebook(run_name='01_speedtest', drive_root='/content/drive/MyDrive/M
                            clock_mhz_min=min(r['clock_mhz'] for r in records),clock_mhz_max=max(r['clock_mhz'] for r in records)))
         print('run manifests',*[str(p) for p in (Path(EXPERIMENT_DIR)/'budget').glob('run-*/manifest.json')],sep='\\n')
     ''')
-    markdown('中斷／重連：重新執行同一 notebook，沿用同一 zip、EXPERIMENT_DIR、budget 與預算設定。已完成 fit 會驗證後略過；partial fit 不自動續 optimizer。未知中斷會保守扣帳並鎖 STOP，須盤點修復；不要刪帳本、換 budget 路徑或重置預算。新 runtime 重新解壓原 zip，既有 root 先驗 identity。下載格只匯出 JSON／帳本，正式權重仍須另核對 Drive 完整性。')
+    markdown('中斷後重跑同一本 notebook：相同 source／契約／矩陣 identity 才可從完整 epoch 接續；已完成 fit 逐檔驗證後跳過。orphan 保留但不自動升格；85°C 硬體 STOP 需人工查明，不自動清除。所有結果屬研究 evidence，Colab 現場仍 UNVERIFIED。')
     code('''
         from google.colab import files
         download=Path('/content/p4a-results.zip')
-        # 只打包現有 JSON；保留相對路徑與原 bytes，不覆寫 Drive evidence。
+        # 評估前打包全部 durable scores／metrics／checkpoints／ledger，保留相對路徑。
         with zipfile.ZipFile(download,'w',compression=zipfile.ZIP_DEFLATED) as z:
-            for path in sorted((Path(EXPERIMENT_DIR)/'budget').rglob('*.json')):
-                z.write(path,path.relative_to(Path(EXPERIMENT_DIR)/'budget'))
+            for path in sorted((Path(EXPERIMENT_DIR)/'budget').rglob('*')):
+                if path.is_file() and not path.is_symlink() and path.suffix in {'.json','.parquet','.pt','.jsonl'}:
+                    z.write(path,path.relative_to(Path(EXPERIMENT_DIR)/'budget'))
         files.download(str(download))
     ''')
     for i,cell in enumerate(cells): cell['id']=f'p4a-{i:02d}'
     return dict(nbformat=4,nbformat_minor=5,metadata=dict(kernelspec=dict(display_name='Python 3',language='python',name='python3'),language_info=dict(name='python')),cells=cells)
 
 
-def delivery(folds_root, years, p1, lock, output_dir, run_name='01_speedtest', drive_root='/content/drive/MyDrive/MarketMamba'):
+def delivery(folds_root, years, p1, lock, output_dir, run_name='02_formal', drive_root='/content/drive/MyDrive/MarketMamba'):
     """Publish the approved two-file interface; never overwrite shared outputs."""
     colab_notebook(run_name,drive_root)  # validate paths before publishing outputs
     output_dir=Path(output_dir)
@@ -690,18 +808,20 @@ def delivery(folds_root, years, p1, lock, output_dir, run_name='01_speedtest', d
 
 def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__);sub=p.add_subparsers(dest='cmd',required=True)
-    pk=sub.add_parser('pack');pk.add_argument('--folds-root',type=Path,required=True);pk.add_argument('--years',type=int,nargs='+',default=[2021,2022,2023,2024,2025]);pk.add_argument('--p1',type=Path,required=True);pk.add_argument('--lock',type=Path,default=Path.home()/'.venvs/marketmamba-gpu.requirements.lock.txt');pk.add_argument('--output',type=Path,required=True)
+    pk=sub.add_parser('pack');pk.add_argument('--folds-root',type=Path,required=True);pk.add_argument('--years',type=int,nargs='+',default=[2021,2022,2023,2024,2025,2026]);pk.add_argument('--p1',type=Path,required=True);pk.add_argument('--lock',type=Path,default=Path.home()/'.venvs/marketmamba-gpu.requirements.lock.txt');pk.add_argument('--output',type=Path,required=True)
     dl=sub.add_parser('deliver')
-    dl.add_argument('--folds-root',type=Path,required=True);dl.add_argument('--years',type=int,nargs='+',default=[2021,2022,2023,2024,2025])
+    dl.add_argument('--folds-root',type=Path,required=True);dl.add_argument('--years',type=int,nargs='+',default=[2021,2022,2023,2024,2025,2026])
     dl.add_argument('--p1',type=Path,required=True);dl.add_argument('--lock',type=Path,default=ROOT/'environments/p4a-colab.requirements.lock.txt')
     dl.add_argument('--output-dir',type=Path,required=True)
-    dl.add_argument('--run-name',default='01_speedtest')
+    dl.add_argument('--run-name',default='02_formal')
     dl.add_argument('--drive-root',default='/content/drive/MyDrive/MarketMamba')
+    ds=sub.add_parser('dataset-manifest');ds.add_argument('directory',type=Path)
     ex=sub.add_parser('extract');ex.add_argument('archive',type=Path);ex.add_argument('destination',type=Path);ex.add_argument('--sha256')
     ve=sub.add_parser('verify');ve.add_argument('directory',type=Path)
     ins=sub.add_parser('install-plan');ins.add_argument('directory',type=Path);ins.add_argument('--wheel-dir',type=Path)
     a=p.parse_args(argv)
-    if a.cmd=='pack': pack(a.folds_root,a.years,a.p1,a.lock,a.output);print(json.dumps(digest(a.output)))
+    if a.cmd=='dataset-manifest':print(json.dumps(dataset_manifest(a.directory),indent=2))
+    elif a.cmd=='pack': pack(a.folds_root,a.years,a.p1,a.lock,a.output);print(json.dumps(digest(a.output)))
     elif a.cmd=='deliver':
         delivery(a.folds_root,a.years,a.p1,a.lock,a.output_dir,a.run_name,a.drive_root)
         print(json.dumps({p.name:digest(p) for p in sorted(a.output_dir.iterdir()) if p.name in {'p4a-bundle.zip','p4a-colab.ipynb','README.txt'}}))
