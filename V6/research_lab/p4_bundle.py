@@ -468,7 +468,7 @@ def colab_notebook(run_name='01_speedtest', drive_root='/content/drive/MyDrive/M
         if MAX_HOURS is None or MAX_UNITS is None:
             raise ValueError('STOP: FORMAL 請由 Human 明確填寫 MAX_HOURS 與 MAX_UNITS')
         UNITS_PER_HOUR = 10.0  # 每小時 CU 保守估計，請對照現場 GPU 費率
-        PLANNED_HOURS_PER_FIT = 0.5  # 每 fit／前處理 stage 的保守時數
+        PLANNED_HOURS_PER_FIT = 0.1 if MODE == 'SPEED_TEST' else 0.5  # 每 fit／前處理 stage 的保守時數（speed-test 只有 2 epoch×100 步）
         RESERVE = 0.25  # 至少保留 25%；不可降低
         from pathlib import Path
         RUN_DIR = __RUN_DIR__
