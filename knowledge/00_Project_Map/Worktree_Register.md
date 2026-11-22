@@ -1,5 +1,11 @@
 # Worktree Register
 
+## P4a 來源相容升級 builder — 2026-11-22
+
+- Purpose/task：4e56e9d → HEAD 來源相容宣告、舊 lineage 接續與 CPU RED/GREEN；owner Human/Codex builder，job-run-mwrxutx3-d28fa4。沿用 `.worktrees/ruflo-workers/run-mwrxutx3-d28fa4/builder_p4a_upgrade`，detached HEAD/base `20e6b5408d9f9b13d56290a72a2dc313c35d1b94`，created 2026-11-22、retired N/A。起始 clean，依 no-commit 保留 dirty patch；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。
+- Authority：Human 明確核准本次 bounded task；FROZEN P4a／OBSERVED runtime bytes 與原 ledger／checkpoint／completed-fit gate 不變。既有容器新增來源證據 helper 與 GENERATED 宣告，訓練與評估不複製；無 GPU／網路／Colab／additional agents／資料取得／正式 Data／V6/models／production／scheduler 操作；不 commit／push／merge／deploy。
+- Merge/artifact dependency：獨立審查及 Human acceptance；原 02_formal ZIP 與 budget 供 runtime lineage 驗證，實際 Drive 現況 UNVERIFIED。`tasks/p4a-source-compat-20e6b54.json` 為本輪產生的候選來源證據；TEMPORARY logs／合成 bundles 在 `/tmp/p4-upgrade-*` 與 pytest 暫存目錄，實際輸出見 [工程報告](../../reports/v7_p4a_colab_engineering.md)。Safe-removal preconditions：保存未提交 patch／必要證據、處理引用並完成 retirement review；目前 dirty 不可移除。
+
 ## P4a 進度 builder — 2026-11-22
 
 - Purpose/task：後續 Colab 交付串流／時間進度快照／speed-test 獨立帳本及 CPU RED/GREEN；owner Human/Codex builder，job-run-mwrof3ay-8d0c43。沿用 `.worktrees/ruflo-workers/run-mwrof3ay-8d0c43/builder_p4a_progress`，detached HEAD/base `f6a173eab03332bc3c50d78885a1d865366d2518`；created2026-11-22、retired N/A，起始clean，依 no-commit 保留dirty patch。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。

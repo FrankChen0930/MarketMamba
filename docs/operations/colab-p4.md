@@ -65,3 +65,19 @@ PYTHONPATH=V6 python -m research_lab.p4_eval \
 ## 未驗證
 
 T4長窗效能／OOM、Triton額外編譯、Python3.13整批、Drive FUSE的fsync／rename／斷線持久性、wheel編譯、實際資料完整性／上傳、Q5現場推論、瀏覽器自動下載皆UNVERIFIED。本機合成CPU證據不替代Colab acceptance。
+
+## 跨版本接續：4e56e9d → 來源相容交付候選
+
+狀態：UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；CPU 工程證據，Colab 現場 UNVERIFIED。原 02_formal notebook 仍可原地接續；不要在執行中的 kernel 換碼。斷線後改用新版時，交付者沿用前述 deliver 指令，額外指定：
+
+```text
+--resume-from-commit 4e56e9d --run-name 03_formal_resume
+```
+
+`--resume-from-commit` 省略 `--run-name` 時也預設 `03_formal_resume`。工具從本機 git objects 重算舊版所有來源（含文件）身分，檢查固定數值／完成驗證／帳本函式，產生 `source/tasks/p4a-source-compat-<HEAD短碼>.json` 並放入 ZIP manifest；未 commit 的程式以逐檔 bytes 為準，宣告明標 UNMERGED。模型／配方／環境／資料／佇列／預算有差異時禁止宣告；目前只認證 4e56e9d，其他基準需先新增跨版測試及審查。每個差異檔包含完整 unified diff、舊新 SHA 與允許的理由分類。
+
+Human 斷線後：開新 notebook，將同批 zip＋ipynb 上傳 `MarketMamba/p4a/03_formal_resume/`，從上到下執行。第 0 格 `EXPERIMENT_DIR=RUN_DIR.parent` 維持 `MarketMamba/p4a`；保留舊 `02_formal/p4a-bundle.zip`、`budget/` 及一次上傳的資料。新版 ZIP 使用自身 hash 隔離本機解壓路徑，避免殘留舊 bundle 衝突。rank-gauss 仍遵守原 implementation／input hash gate；來源改變可能觸發快取重建，不放寬驗證。
+
+Runner 掃描 `budget/run-*/run_identity.json`。舊身分只存 manifest 的 size／SHA，新版讀取實驗下既有交付 ZIP 的有界 manifest，先匹配舊 run 的 manifest identity，再逐檔核對宣告 from／to／完整差異集合及所有非來源輸入（含參考鍵）。契約／64-fit 佇列／DATASET_MANIFEST／環境／record_only 預算全相同且只有一個可採用 lineage 才繼續；沿用舊 run_hash，所以舊 complete.json 及 attempt-active 的 epoch pointer 可直接驗證。歷史 artifacts 不遷移、不改寫。run 目錄新增 `source-upgrade-*.json`，ledger 追加 `SOURCE_UPGRADE`，記錄來源清單／雜湊、宣告身分、時間、執行環境與原／新 binding。
+
+缺檔、雜湊或身分不合會 STOP 並說明預期／實際及下一步。保留帳本與舊 ZIP，修正交付或回原 notebook；不要刪 `budget/`。找不到舊 run 才建立全新 run；明確要新批次時才設第 0 格 `ALLOW_NEW_RUN=True`（runner `--allow-new-run`），此操作不自動清除 STOP／帳本。多個不同 lineage 保守拒絕，需另案盤點，不自選其中一個。升級宣告不是任意跨版許可，每次需 CPU GRU／crossstock 位元比較、舊 checkpoint 及完成 fit 接續測試與獨立審查。規則以 [Human 持續需求第 8 節](colab-human-requirements.md) 為準。

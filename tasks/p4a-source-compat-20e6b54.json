@@ -1,0 +1,1972 @@
+{
+  "artifact_class": "GENERATED",
+  "budget": {
+    "policy": "record_only",
+    "thermal_stop_c": 85,
+    "units_per_hour": 0
+  },
+  "differences": [
+    {
+      "after": {
+        "bytes": 54401,
+        "sha256": "918dec775adbfe1973a6b40ddfd558eafad0c27a4fd606c4eb0dd6f9e32e34f5"
+      },
+      "before": {
+        "bytes": 49335,
+        "sha256": "60d79c20b2ae72da2910d559364cc8224faaf835af74977ba46aa61af26feba7"
+      },
+      "categories": [
+        "進度顯示",
+        "日誌",
+        "文件"
+      ],
+      "diff": "--- 4e56e9db65a453a186511368788deb732a10eb1b/V6/research_lab/p4_bundle.py\n+++ working/V6/research_lab/p4_bundle.py\n@@ -41,7 +41,8 @@\n                  'source/environments/p4a-colab-runtime.json'}\n     matrix = (len(parts) == 3 and parts[0] == 'folds' and parts[1] in\n               {f'fold_{y}' for y in range(2021, 2027)} and parts[2] in MATRIX_FILES)\n-    if not (source or matrix or name in documents or name in {\n+    compat = (len(parts)==3 and parts[:2]==('source','tasks') and p.name.startswith('p4a-source-compat-') and p.suffix=='.json')\n+    if not (source or matrix or compat or name in documents or name in {\n             'reference/rank_average.parquet', 'reference/keys.parquet', 'reference/manifest.json', 'DATASET_MANIFEST.json',\n             'requirements.lock.txt', 'bundle-manifest.json'}):\n         raise ValueError(f'bundle path not allowlisted: {name}')\n@@ -388,7 +389,7 @@\n     return mf\n \n \n-def pack(folds_root, years, p1, lock, output):\n+def pack(folds_root, years, p1, lock, output, resume_from_commit=None):\n     if not years or len(years)!=len(set(years)) or not set(years)<=set(range(2021,2027)):\n         raise ValueError('unique P4 fold years required')\n     files={}\n@@ -415,6 +416,23 @@\n     if not all(v in text for v in ('torch==2.10.0+cu128','mamba_ssm-2.3.2.post1','causal_conv1d-1.7.0','#sha256=')):\n         raise ValueError('P4 exact lock mismatch')\n     files['requirements.lock.txt']=Path(lock)\n+    if resume_from_commit:\n+        if not external:raise ValueError('source-compatible upgrade requires DATASET_MANIFEST')\n+        from .p4_source_compat import declaration\n+        import tempfile\n+        # Temporary GENERATED declaration lives only for this immutable ZIP build.\n+        with tempfile.TemporaryDirectory(prefix='p4-source-compat-') as scratch:\n+            target=Path(scratch)/'declaration.json'\n+            target.write_text(json.dumps(declaration(resume_from_commit,\n+                {n:digest(p) for n,p in files.items() if n.startswith('source/')},\n+                digest(Path(folds_root)/'DATASET_MANIFEST.json')),sort_keys=True,indent=2))\n+            tag=subprocess.check_output(['git','rev-parse','--short','HEAD'],cwd=ROOT,text=True).strip()\n+            files[f'source/tasks/p4a-source-compat-{tag}.json']=target\n+            return _pack_reference(files,external,folds_root,years,p1,output,lock)\n+    return _pack_reference(files,external,folds_root,years,p1,output,lock)\n+\n+\n+def _pack_reference(files,external,folds_root,years,p1,output,lock):\n     # P1 output identities contain original absolute paths; verify bytes, not runtime paths.\n     ref=json.loads((Path(p1)/'manifest.json').read_text())['outputs']['rank_average.parquet']\n     if any(digest(Path(p1)/'rank_average.parquet')[k]!=ref[k] for k in ('bytes','sha256')): raise ValueError('P1 reference hash mismatch')\n@@ -588,9 +606,10 @@\n         LEGACY_WHEEL_DIR = '/content/drive/MyDrive/Mamba_Wheels_T4_new'\n         EXPECTED_ARCHIVE = __EXPECTED_ARCHIVE__  # deliver 自動綁定 ZIP bytes/SHA\n         BUNDLE_NAME = 'p4a-bundle.zip'\n-        LOCAL_ROOT = '/content/p4a'\n+        LOCAL_ROOT = __LOCAL_ROOT__\n+        ALLOW_NEW_RUN = False  # 只有明確要重跑新批次時才設 True；不相容預設 STOP\n     ''')\n-    cells[0]['source']=cells[0]['source'].replace('__RUN_DIR__',repr(str(drive_root/'p4a'/run_name))).replace('__DATA_DIR__',repr(str(drive_root/'data/matrix_v1'))).replace('__WHEEL_DIR__',repr(str(drive_root/'wheels'))).replace('__EXPECTED_ARCHIVE__',repr(expected_archive))\n+    cells[0]['source']=cells[0]['source'].replace('__RUN_DIR__',repr(str(drive_root/'p4a'/run_name))).replace('__DATA_DIR__',repr(str(drive_root/'data/matrix_v1'))).replace('__WHEEL_DIR__',repr(str(drive_root/'wheels'))).replace('__EXPECTED_ARCHIVE__',repr(expected_archive)).replace('__LOCAL_ROOT__',repr('/content/p4a-'+expected_archive['sha256'][:16] if expected_archive else '/content/p4a'))\n     markdown('兩檔交付：將同批 p4a-bundle.zip 與 notebook 上傳 RUN_DIR，再開啟 notebook 從上到下執行。需 GPU runtime。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；Colab ZIP／編譯／Drive 行為 UNVERIFIED。只執行自己信任來源的這兩個檔案；內部 hash 不證明來源。')\n     code('''\n         from pathlib import Path\n@@ -755,40 +774,83 @@\n     code('''\n         if MODE not in ('SPEED_TEST','FORMAL'): raise ValueError('STOP: MODE must be SPEED_TEST or FORMAL')\n         p4.prepare_source(root);p4.verify(root,allow_derived=True)\n-        training_env=dict(os.environ,PYTHONPATH=f'{root}/source/V6:{root}/source',PYTHONDONTWRITEBYTECODE='1')\n-        common=[sys.executable,'-m','research_lab.p4_colab','--bundle',str(root),'--drive-root',str(Path(EXPERIMENT_DIR)/'budget'),\n+        training_env=dict(os.environ,PYTHONPATH=f'{root}/source/V6:{root}/source',PYTHONDONTWRITEBYTECODE='1',PYTHONUNBUFFERED='1')\n+        BUDGET_DIR=Path(EXPERIMENT_DIR)/('budget_speedtest' if MODE=='SPEED_TEST' else 'budget')\n+        PROGRESS_DIR=Path(EXPERIMENT_DIR)/'progress'/('speedtest' if MODE=='SPEED_TEST' else 'formal')\n+        common=[sys.executable,'-u','-m','research_lab.p4_colab','--bundle',str(root),'--drive-root',str(Path(EXPERIMENT_DIR)/'budget'),\n                 '--data-dir','/content/data']\n+        if ALLOW_NEW_RUN: common.append('--allow-new-run')\n         # FROZEN + OBSERVED 環境完整核對；DRAFT 仍拒絕。\n-        subprocess.run(common+(['--speed-test'] if MODE=='SPEED_TEST' else []),env=training_env,check=True)\n+        def stream_training(command,env):\n+            # 合併 stderr 並持續排空 PIPE，避免大量輸出造成死鎖。\n+            with subprocess.Popen(command,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,\n+                                  text=True,bufsize=1,env=env) as process:\n+                try:\n+                    for line in process.stdout:\n+                        print(line,end='',flush=True)\n+                    actual=process.wait()\n+                except BaseException:\n+                    process.terminate()\n+                    try: process.wait(timeout=10)\n+                    except subprocess.TimeoutExpired: process.kill();process.wait()\n+                    print('訓練步驟中斷；期望=正常完成；實際=kernel 中斷；下一步=查看 Drive 進度與檢查點，使用原交付重新執行',flush=True)\n+                    raise\n+            if actual!=0:\n+                print(f'訓練步驟失敗；期望=回傳碼 0；實際=回傳碼 {actual}；下一步=查看上方最後錯誤及 Drive 進度，檢查環境／空間／identity；保留帳本與原交付，修復原因後重跑',flush=True)\n+                raise subprocess.CalledProcessError(actual,command)\n+        try:\n+            stream_training(common+(['--speed-test'] if MODE=='SPEED_TEST' else []),training_env)\n+        finally:\n+            print('結果資料夾：',BUDGET_DIR,'進度檔：',PROGRESS_DIR/'PROGRESS.txt',flush=True)\n+            print('run manifests',*[str(p) for p in BUDGET_DIR.glob('run-*/manifest.json')],sep='\\\\n',flush=True)\n     ''')\n     code('''\n         # runner 已直接持久寫入 Drive：speed JSON、run manifest 與預算帳本。\n         if MODE=='SPEED_TEST':\n-            for path in sorted((Path(EXPERIMENT_DIR)/'budget').glob('run-*/**/speed.json')):\n+            for path in sorted(BUDGET_DIR.glob('run-*/**/speed.json')):\n                 report=json.loads(path.read_text())\n                 print(path)\n                 print(json.dumps({k:report[k] for k in ('arm','epoch_seconds','gpu_model') if k in report},ensure_ascii=False))\n                 records=report['telemetry']\n                 print(dict(temperature_c_max=max(r['temperature_c'] for r in records),\n                            clock_mhz_min=min(r['clock_mhz'] for r in records),clock_mhz_max=max(r['clock_mhz'] for r in records)))\n-        print('run manifests',*[str(p) for p in (Path(EXPERIMENT_DIR)/'budget').glob('run-*/manifest.json')],sep='\\\\n')\n+        print('run manifests',*[str(p) for p in BUDGET_DIR.glob('run-*/manifest.json')],sep='\\\\n')\n     ''')\n-    markdown('中斷後重跑同一本 notebook：相同 source／契約／矩陣 identity 才可從完整 epoch 接續；已完成 fit 逐檔驗證後跳過。orphan 保留但不自動升格；85°C 硬體 STOP 需人工查明，不自動清除。所有結果屬研究 evidence，Colab 現場仍 UNVERIFIED。')\n+    markdown('目前進度摘要：Colab 單一 kernel 訓練執行中無法再執行其他格，主要請用手機或 Drive 網頁開啟 EXPERIMENT_DIR/progress/formal/PROGRESS.txt（speed-test 在 progress/speedtest/）。以下儲存格可在完成或中斷後讀取快照；快照不是完成或交易證據。')\n+    code('''\n+        # 目前進度摘要：不依賴訓練格已成功執行。\n+        import json\n+        from pathlib import Path\n+        progress_dir=Path(EXPERIMENT_DIR)/'progress'/('speedtest' if MODE=='SPEED_TEST' else 'formal')\n+        snapshot=progress_dir/'progress.json'\n+        if snapshot.exists():\n+            summary=json.loads(snapshot.read_text())\n+            # SPEED_TEST 僅顯示工程欄位，不轉印未知／歷史績效欄位。\n+            keys=('observed_at','status','mode','queue','fit_index','total_fits','completed_fits',\n+                  'arm','year','seed','window','lr','epoch','step','loss','fit_elapsed_seconds',\n+                  'fit_eta_seconds','queue_eta_seconds','temperature_c','clock_mhz','last_checkpoint_at')\n+            print('目前進度摘要（請確認更新時間；斷線後可能是舊快照）')\n+            for key in keys+(() if MODE=='SPEED_TEST' else ('val_ic5',)):\n+                print(key,summary.get(key) if summary.get(key) is not None else ('預估中' if 'eta' in key else '未知／尚無'))\n+        else:\n+            print('尚無進度快照；下一步：確認訓練已啟動、模式與 Drive 掛載，查看',snapshot)\n+    ''')\n+    markdown('跨版本接續：斷線後開新 notebook，將新版 zip＋ipynb 上傳 03_formal_resume，從上到下執行；保留 02_formal 原 ZIP 與 budget。來源相容宣告與所有身分驗證後才沿用舊 run；不符 STOP，勿刪帳本。相同版本中斷後重跑同一本 notebook：相同 source／契約／矩陣 identity 才可從完整 epoch 接續；已完成 fit 逐檔驗證後跳過。orphan 保留但不自動升格；85°C 硬體 STOP 需人工查明，不自動清除。所有結果屬研究 evidence，Colab 現場仍 UNVERIFIED。')\n     code('''\n         from google.colab import files\n         download=Path('/content/p4a-results.zip')\n         # 評估前打包全部 durable scores／metrics／checkpoints／ledger，保留相對路徑。\n         with zipfile.ZipFile(download,'w',compression=zipfile.ZIP_DEFLATED) as z:\n-            for path in sorted((Path(EXPERIMENT_DIR)/'budget').rglob('*')):\n+            for path in sorted(BUDGET_DIR.rglob('*')):\n                 if path.is_file() and not path.is_symlink() and path.suffix in {'.json','.parquet','.pt','.jsonl'}:\n-                    z.write(path,path.relative_to(Path(EXPERIMENT_DIR)/'budget'))\n+                    z.write(path,path.relative_to(BUDGET_DIR))\n         files.download(str(download))\n     ''')\n     for i,cell in enumerate(cells): cell['id']=f'p4a-{i:02d}'\n     return dict(nbformat=4,nbformat_minor=5,metadata=dict(kernelspec=dict(display_name='Python 3',language='python',name='python3'),language_info=dict(name='python')),cells=cells)\n \n \n-def delivery(folds_root, years, p1, lock, output_dir, run_name='02_formal', drive_root='/content/drive/MyDrive/MarketMamba'):\n+def delivery(folds_root, years, p1, lock, output_dir, run_name='02_formal', drive_root='/content/drive/MyDrive/MarketMamba', resume_from_commit=None):\n     \"\"\"Publish the approved two-file interface; never overwrite shared outputs.\"\"\"\n     colab_notebook(run_name,drive_root)  # validate paths before publishing outputs\n     output_dir=Path(output_dir)\n@@ -796,7 +858,7 @@\n     readme=output_dir/'README.txt'\n     if archive.exists() or notebook.exists() or readme.exists(): raise FileExistsError('delivery outputs already exist')\n     output_dir.mkdir(parents=True,exist_ok=True)\n-    mf=pack(folds_root,years,p1,lock,archive)\n+    mf=pack(folds_root,years,p1,lock,archive,resume_from_commit=resume_from_commit)\n     with notebook.open('x') as stream:\n         json.dump(colab_notebook(run_name,drive_root,digest(archive)),stream,ensure_ascii=False,indent=2)\n         stream.flush();os.fsync(stream.fileno())\n@@ -813,7 +875,8 @@\n     dl.add_argument('--folds-root',type=Path,required=True);dl.add_argument('--years',type=int,nargs='+',default=[2021,2022,2023,2024,2025,2026])\n     dl.add_argument('--p1',type=Path,required=True);dl.add_argument('--lock',type=Path,default=ROOT/'environments/p4a-colab.requirements.lock.txt')\n     dl.add_argument('--output-dir',type=Path,required=True)\n-    dl.add_argument('--run-name',default='02_formal')\n+    dl.add_argument('--run-name',default=None)\n+    dl.add_argument('--resume-from-commit')\n     dl.add_argument('--drive-root',default='/content/drive/MyDrive/MarketMamba')\n     ds=sub.add_parser('dataset-manifest');ds.add_argument('directory',type=Path)\n     ex=sub.add_parser('extract');ex.add_argument('archive',type=Path);ex.add_argument('destination',type=Path);ex.add_argument('--sha256')\n@@ -823,7 +886,7 @@\n     if a.cmd=='dataset-manifest':print(json.dumps(dataset_manifest(a.directory),indent=2))\n     elif a.cmd=='pack': pack(a.folds_root,a.years,a.p1,a.lock,a.output);print(json.dumps(digest(a.output)))\n     elif a.cmd=='deliver':\n-        delivery(a.folds_root,a.years,a.p1,a.lock,a.output_dir,a.run_name,a.drive_root)\n+        delivery(a.folds_root,a.years,a.p1,a.lock,a.output_dir,a.run_name or ('03_formal_resume' if a.resume_from_commit else '02_formal'),a.drive_root,a.resume_from_commit)\n         print(json.dumps({p.name:digest(p) for p in sorted(a.output_dir.iterdir()) if p.name in {'p4a-bundle.zip','p4a-colab.ipynb','README.txt'}}))\n     elif a.cmd=='extract': extract(a.archive,a.destination,a.sha256)\n     elif a.cmd=='verify': print(json.dumps(verify(a.directory),indent=2))\n",
+      "path": "source/V6/research_lab/p4_bundle.py",
+      "reason": "streaming notebook, source-upgrade declaration packaging and instructions"
+    },
+    {
+      "after": {
+        "bytes": 51971,
+        "sha256": "59c9532732b52328594245d5258c13f87f26173e67cfb79912065eee2afadceb"
+      },
+      "before": {
+        "bytes": 42230,
+        "sha256": "8c5833ece2ecfd720c593479ee81cf99b392d3ca15aa786753c6715ffc4c8526"
+      },
+      "categories": [
+        "進度顯示",
+        "日誌",
+        "speed-test 帳本分離"
+      ],
+      "diff": "--- 4e56e9db65a453a186511368788deb732a10eb1b/V6/research_lab/p4_colab.py\n+++ working/V6/research_lab/p4_colab.py\n@@ -16,6 +16,9 @@\n import time\n import uuid\n import sys\n+import threading\n+import tempfile\n+from datetime import datetime, timezone\n os.environ['PYTHONDONTWRITEBYTECODE'] = '1'\n sys.dont_write_bytecode = True\n \n@@ -29,6 +32,138 @@\n \n def hashed(value):\n     return hashlib.sha256(json.dumps(value,sort_keys=True,allow_nan=False).encode()).hexdigest()\n+\n+\n+def budget_root(root, speed=False):\n+    \"\"\"CLI takes the formal ledger root; timing owns a sibling, across deliveries.\"\"\"\n+    root=Path(root)\n+    return root.with_name(root.name+'_speedtest') if speed else root\n+\n+\n+class Progress:\n+    \"\"\"Best-effort observation only. No model, RNG, checkpoint or ledger authority.\n+\n+    A wall-clock heartbeat keeps Drive visible even during validation/slow steps.\n+    Each file is atomically replaced; the pair is not a transaction. JSON is the\n+    summary authority and both carry the same observed_at generation.\n+    \"\"\"\n+    def __init__(self, root, speed=False, interval=60., clock=time.monotonic):\n+        self.root=Path(root);self.speed=speed;self.interval=interval;self.clock=clock\n+        self.lock=threading.RLock();self.stop=threading.Event();self.durations=[]\n+        self.fit_started=None;self.completed=0;self.last_fit_elapsed=0.;self.step_origin=0\n+        self.data=dict(status='準備中',queue=None,fit_index=0,total_fits=0,epoch=0,step=0,\n+                       loss=None,temperature_c=None,clock_mhz=None,last_checkpoint_at=None)\n+\n+    def __enter__(self):\n+        self.write()\n+        self.thread=threading.Thread(target=self._heartbeat,name='p4-progress',daemon=True)\n+        self.thread.start();return self\n+\n+    def _heartbeat(self):\n+        while not self.stop.wait(self.interval):self.write()\n+\n+    def __exit__(self,kind,error,tb):\n+        self.stop.set();self.thread.join()\n+        self.update(status='已中斷／失敗' if kind else\n+                    ('已完成（略過）' if self.data['status']=='已完成（略過）' else '已完成'))\n+        self.write()\n+\n+    def update(self, **values):\n+        # Whitelist prevents history/weights/performance leaking through payloads.\n+        allowed={'status','queue','fit_index','total_fits','arm','year','seed','window','lr',\n+                 'epoch','step','epochs','steps_per_epoch','loss','temperature_c','clock_mhz','last_checkpoint_at',\n+                 'run_hash','bundle_identity','source_commit'}\n+        if not self.speed:allowed.add('val_ic5')\n+        with self.lock:self.data.update({k:v for k,v in values.items() if k in allowed})\n+\n+    def start_fit(self,job,index,total,cfg,skipped=False):\n+        with self.lock:\n+            self.fit_started=None if skipped else self.clock();self.last_fit_elapsed=0.;self.step_origin=0\n+            self.data.pop('val_ic5',None)\n+            self.update(**job,fit_index=index,total_fits=total,epoch=0,step=0,loss=None,\n+                        epochs=cfg['epochs'],steps_per_epoch=cfg['steps_per_epoch'],\n+                        last_checkpoint_at=None,status='已完成（略過）' if skipped else '訓練中')\n+        self.emit();self.write()\n+\n+    def resume_from(self,epoch,step):\n+        \"\"\"Rebase observation after checkpoint validation; historical steps earn no throughput.\"\"\"\n+        with self.lock:\n+            self.step_origin=step\n+            self.update(epoch=epoch,step=step)\n+        self.emit();self.write()\n+\n+    def finish_fit(self, skipped=False):\n+        with self.lock:\n+            if not skipped and self.fit_started is not None:\n+                self.last_fit_elapsed=max(0.,self.clock()-self.fit_started)\n+                if self.last_fit_elapsed>=1.:\n+                    self.durations.append(self.last_fit_elapsed)\n+            self.completed+=1;self.fit_started=None\n+            self.update(status='已完成（略過）' if skipped else\n+                        ('已完成' if self.completed==self.data['total_fits'] else 'fit 已驗證完成'))\n+        self.emit();self.write()\n+\n+    def snapshot(self):\n+        with self.lock:\n+            result=dict(self.data)\n+            elapsed=max(0.,self.clock()-self.fit_started) if self.fit_started is not None else self.last_fit_elapsed\n+            step=result.get('step',0);total=result.get('epochs',0)*result.get('steps_per_epoch',0)\n+            measured_steps=step-self.step_origin\n+            fit_eta=None\n+            if self.fit_started is None and self.completed:\n+                fit_eta=0.\n+            elif measured_steps>=10 and elapsed>=1. and total>=step:\n+                fit_eta=elapsed*(total-step)/measured_steps\n+            remaining=max(0,result['total_fits']-self.completed)\n+            active=self.fit_started is not None\n+            queue_eta=None\n+            if result['total_fits'] and remaining==0:\n+                queue_eta=0.\n+            elif self.durations:\n+                mean=sum(self.durations)/len(self.durations)\n+                # Completed durations are frozen at finish, never recomputed using\n+                # the next fit's clock. Cached skips contribute no timing samples.\n+                current=(fit_eta if fit_eta is not None else max(0.,mean-elapsed)) if active else 0.\n+                queue_eta=current+mean*max(0,remaining-int(active))\n+            elif active and remaining==1:\n+                queue_eta=fit_eta\n+            result.update(observed_at=datetime.now(timezone.utc).isoformat(),\n+                          mode='SPEED_TEST' if self.speed else 'FORMAL',completed_fits=self.completed,\n+                          fit_elapsed_seconds=elapsed,fit_eta_seconds=fit_eta,queue_eta_seconds=queue_eta)\n+            if result.get('queue')=='Q5':result['fit_eta_seconds']=result['queue_eta_seconds']=None\n+            return result\n+\n+    @staticmethod\n+    def render(data):\n+        def value(key):\n+            v=data.get(key)\n+            return '預估中' if v is None and 'eta' in key else ('未知／尚無' if v is None else str(v))\n+        labels=[('observed_at','更新時間'),('status','狀態'),('mode','模式'),('queue','佇列階段'),\n+                ('fit_index','目前 fit'),('total_fits','總 fits'),('completed_fits','已完成 fits'),\n+                ('arm','臂'),('year','折'),('seed','種子'),('window','窗'),('lr','學習率'),\n+                ('epoch','epoch'),('step','累計 step'),('loss','loss'),\n+                ('fit_elapsed_seconds','本 fit 已用秒數'),('fit_eta_seconds','本 fit 預估剩餘秒數（最大 epochs 外推）'),\n+                ('queue_eta_seconds','佇列預估剩餘秒數（完成 fit 均值；不含 Q5）'),\n+                ('temperature_c','GPU 溫度 °C'),('clock_mhz','GPU 時脈 MHz'),('last_checkpoint_at','最近檢查點時間')]\n+        if data.get('mode')=='FORMAL':labels.insert(15,('val_ic5','驗證 IC5'))\n+        return ' | '.join(label+': '+value(key) for key,label in labels)\n+\n+    def emit(self):print(self.render(self.snapshot()),flush=True)\n+\n+    def write(self):\n+        try:\n+            data=self.snapshot();self.root.mkdir(parents=True,exist_ok=True)\n+            for name,content in [('progress.json',json.dumps(data,ensure_ascii=False,allow_nan=False,indent=2)),\n+                                 ('PROGRESS.txt',self.render(data)+'\\n')]:\n+                temporary=None\n+                try:\n+                    with tempfile.NamedTemporaryFile(mode='w',encoding='utf-8',dir=self.root,suffix='.tmp',delete=False) as f:\n+                        temporary=Path(f.name);f.write(content);f.flush();os.fsync(f.fileno())\n+                    os.replace(temporary,self.root/name)\n+                finally:\n+                    if temporary is not None:temporary.unlink(missing_ok=True)\n+        except Exception as error:\n+            print(f'進度寫入失敗：步驟=Drive 進度快照；期望=原子更新；實際={error}；下一步=檢查 Drive 掛載與空間，訓練繼續',flush=True)\n \n \n def require_cuda():\n@@ -334,9 +469,9 @@\n \n \n class Observer:\n-    def __init__(self,root,contract,ledger,device='cuda',speed=False):\n+    def __init__(self,root,contract,ledger,device='cuda',speed=False,progress=None):\n         self.root=Path(root);self.contract=contract;self.ledger=ledger;self.device=device\n-        self.speed=speed\n+        self.speed=speed;self.progress=progress\n         self.steps=[];self.records=[];self.pointer=dict(latest=None,previous=None,best=None)\n         self.best=-9.;self.step_start=None\n \n@@ -369,12 +504,17 @@\n         if saved['best']['epoch']>saved['latest']['epoch'] or (saved['previous'] and saved['previous']['epoch']>=saved['latest']['epoch']):\n             raise ValueError('checkpoint pointer order')\n         self.pointer=saved;self.best=payloads['latest']['state']['best']\n+        if self.progress:\n+            epoch=payloads['latest']['state']['epoch']\n+            self.progress.update(last_checkpoint_at=datetime.fromtimestamp(pointer.stat().st_mtime,timezone.utc).isoformat())\n+            self.progress.resume_from(epoch,epoch*self.progress.data['steps_per_epoch'])\n         return payloads['latest']\n \n \n     def check(self):\n         self.ledger.check()\n         r=telemetry();self.records.append(r)\n+        if self.progress:self.progress.update(temperature_c=r['temperature_c'],clock_mhz=r['clock_mhz'])\n         if hasattr(self.ledger,'observe'):self.ledger.observe(r)\n         if r['temperature_c']>=85: raise RuntimeError('STOP: Colab GPU temperature >=85C (no pause/retry)')\n \n@@ -387,6 +527,8 @@\n         elif event=='step_end':\n             if str(self.device).startswith('cuda'):torch.cuda.synchronize()\n             self.steps.append(time.perf_counter()-self.step_start)\n+        elif event=='progress':\n+            if self.progress:self.progress.update(**payload);self.progress.emit()\n         elif event=='epoch':\n             if self.speed: return  # Never serialize state/history/weights in timing mode.\n             epoch=payload['state']['epoch'];name=f'epoch-{epoch:03d}-{uuid.uuid4().hex}.pt'\n@@ -399,6 +541,7 @@\n                 self.best=payload['state']['best'];self.pointer['best']=entry\n             atomic_json(self.root/'checkpoint-pointer.json',self.pointer)\n             if hasattr(self.ledger,'append'):self.ledger.append('EPOCH_COMMITTED')\n+            if self.progress:self.progress.update(last_checkpoint_at=datetime.now(timezone.utc).isoformat())\n \n \n def rankgauss(directory):\n@@ -502,7 +645,7 @@\n     data.windows=guarded\n     restored=observer.load_resume() if not observer.speed else None\n     model,state=train_one(arm,seed,data,tr,va,cfg,'cuda',observer=observer,resume_state=restored,\n-                          log=(lambda *_: None) if observer.speed else print)\n+                          log=lambda *_: None)\n     if observer.speed:\n         return None,dict(history=[dict(seconds=h['seconds']) for h in state['history']])\n     if not np.isfinite(state['best']) or state['best']<=-9: raise ValueError('BEST unavailable; LAST prohibited')\n@@ -532,16 +675,16 @@\n     return jobs\n \n \n-def run(bundle,drive_root,speed=False,max_hours=None,max_units=None,rate=None,planned_hours=0,reserve=None,data_dir=None):\n+def run(bundle,drive_root,speed=False,max_hours=None,max_units=None,rate=None,planned_hours=0,reserve=None,data_dir=None,allow_new_run=False):\n     \"\"\"P4-only record accounting; old cap arguments are accepted but never constrain runs.\"\"\"\n     require_cuda()\n-    bundle=Path(bundle);drive_root=Path(drive_root)\n+    bundle=Path(bundle);drive_root=budget_root(drive_root,speed)\n     if (not os.path.ismount('/content/drive') or\n         not drive_root.resolve().is_relative_to(Path('/content/drive/MyDrive'))):\n         raise ValueError('durable output requires mounted /content/drive/MyDrive')\n     run_started=time.perf_counter()\n     budget_contract=dict(policy='record_only',units_per_hour=0,thermal_stop_c=85)\n-    with Ledger(drive_root,budget_contract) as ledger:\n+    with Ledger(drive_root,budget_contract) as ledger, Progress(drive_root.parent/'progress'/('speedtest' if speed else 'formal'),speed=speed) as progress:\n         setup_binding=dict(stage='verify_bundle_and_runtime',bundle_manifest=digest(bundle/'bundle-manifest.json'))\n         ledger.start(setup_binding,0)\n         try:\n@@ -583,12 +726,23 @@\n         except BaseException:\n             if ledger.state['active']:ledger.end(setup_binding,False)\n             raise\n+        from .p4_source_compat import resolve\n+        binding,upgrade=resolve(bundle,mf,binding,drive_root,budget_contract,allow_new=allow_new_run)\n+        run_hash=hashed(binding)\n         out=drive_root/f'run-{run_hash}'\n         if out.exists():\n             if json.loads((out/'run_identity.json').read_text())!=binding:raise ValueError('run identity mismatch')\n         else:out.mkdir();write_json(out/'run_identity.json',binding)\n+        if upgrade:\n+            # Preserve run_identity and all historical fit/checkpoint bytes.\n+            audit=out/f'source-upgrade-{uuid.uuid4().hex}.json'\n+            write_json(audit,upgrade)\n+            ledger.state['source_upgrade']=dict(audit=str(audit),identity=digest(audit),\n+                **{k:upgrade[k] for k in ('from_sources_hash','to_sources_hash','declaration','observed_at','environment')})\n+            ledger.append('SOURCE_UPGRADE')\n+        progress.update(run_hash=run_hash,bundle_identity=binding['bundle'],source_commit=mf['metadata'].get('source_commit'),total_fits=len(queue))\n         reports=[];caches={};fit_paths={}\n-        for job in queue:\n+        for fit_index,job in enumerate(queue,1):\n             year,arm,seed=job['year'],job['arm'],job['seed']\n             directory=(Path(data_dir) if external else bundle)/f'folds/fold_{year}'\n             if year not in caches:\n@@ -606,11 +760,14 @@\n             fit=out/f\"{job['queue']}-{year}-{arm}-{seed}-w{job['window']}-lr{job['lr']}\"\n             fit_paths[(year,arm,seed,job['window'],job['lr'])]=fit\n             cached=resume_fit(fit,fit_contract)\n-            if cached:reports.append(cached);continue\n+            if cached:\n+                progress.start_fit(job,fit_index,len(queue),cfg,skipped=True)\n+                reports.append(cached);progress.finish_fit(skipped=True);continue\n             ledger.start(fit_contract,0)\n             # Stable directory permits retry from the last pointer. Orphan epoch files remain forensic.\n             attempt=fit/'attempt-active';attempt.mkdir(parents=True,exist_ok=True)\n-            observer=Observer(attempt,fit_contract,ledger,speed=speed);started=time.perf_counter()\n+            progress.start_fit(job,fit_index,len(queue),cfg)\n+            observer=Observer(attempt,fit_contract,ledger,speed=speed,progress=progress);started=time.perf_counter()\n             try:\n                 frame,metrics=train_fit(directory,year,arm,seed,cfg,ref[ref.fold.eq(year)],observer)\n                 if speed:\n@@ -629,7 +786,7 @@\n                     atomic_json(attempt/'metrics.json',metrics)\n                 files=[p.relative_to(fit).as_posix() for p in attempt.iterdir() if p.is_file()]\n                 complete_fit(fit,fit_contract,metrics,files)\n-                ledger.end(fit_contract,True);reports.append(resume_fit(fit,fit_contract))\n+                ledger.end(fit_contract,True);reports.append(resume_fit(fit,fit_contract));progress.finish_fit()\n             except BaseException as error:\n                 if 'temperature >=85C' in str(error):ledger.state['stopped']=True\n                 if ledger.state['active']:ledger.end(fit_contract,False)\n@@ -643,10 +800,11 @@\n                     if saved['identity']!=identity or saved['sha256']!=hashed(saved['result']):\n                         raise ValueError('permutation identity/hash mismatch')\n                     continue\n+                progress.update(queue='Q5',status='排列診斷中',year=year,epoch=0,step=0,loss=None,arm='crossstock');progress.emit();progress.write()\n                 ledger.start(dict(stage='Q5',**identity),0)\n                 try:\n                     directory=(Path(data_dir) if external else bundle)/f'folds/fold_{year}'\n-                    result=permutation_fit(directory,year,contract['recipe'],fit_paths,ledger)\n+                    result=permutation_fit(directory,year,contract['recipe'],fit_paths,ledger,progress)\n                     write_json(diagnostic,dict(identity=identity,result=result,sha256=hashed(result)))\n                     ledger.end(dict(stage='Q5',**identity),True)\n                 except BaseException as error:\n@@ -675,7 +833,7 @@\n     return result\n \n \n-def permutation_fit(directory,year,cfg,fit_paths,ledger):\n+def permutation_fit(directory,year,cfg,fit_paths,ledger,progress=None):\n     import torch\n     from .seq_runner import SeqData,predict\n     from .seq_models import SeqRanker\n@@ -693,11 +851,13 @@\n     original=data.windows\n     def guarded(rows):\n         ledger.check();r=telemetry();ledger.observe(r)\n+        if progress:progress.update(temperature_c=r['temperature_c'],clock_mhz=r['clock_mhz'])\n         if r['temperature_c']>=85:raise RuntimeError('STOP: Colab GPU temperature >=85C (no pause/retry)')\n         return original(rows)\n     data.windows=guarded\n     result={}\n     for split,rows in [('validation',va),('evaluation',ev)]:\n+        if progress:progress.update(status=f'Q5 {year} {split} 推論中');progress.emit()\n         base=predict_cross(cross,data,rows,'cuda',n_perm=2,seed=0)[:,0]\n         temporal=predict(mamba,data,rows,'cuda')[:,0]\n         permutations=[predict_cross(cross,data,rows,'cuda',n_perm=1,seed=100+r)[:,0] for r in range(10)]\n@@ -709,13 +869,13 @@\n def main(argv=None):\n     p=argparse.ArgumentParser(description=__doc__)\n     p.add_argument('--bundle',type=Path,required=True);p.add_argument('--drive-root',type=Path,required=True)\n-    p.add_argument('--speed-test',action='store_true');p.add_argument('--data-dir',type=Path)\n+    p.add_argument('--allow-new-run',action='store_true');p.add_argument('--speed-test',action='store_true');p.add_argument('--data-dir',type=Path)\n     # Legacy flags are optional and ignored: P4 has no wall/CU caps.\n     p.add_argument('--max-hours',type=float);p.add_argument('--max-units',type=float)\n     p.add_argument('--units-per-hour',type=float);p.add_argument('--planned-hours-per-fit',type=float,default=0)\n     p.add_argument('--reserve',type=float)\n     a=p.parse_args(argv)\n-    result=run(a.bundle,a.drive_root,speed=a.speed_test,data_dir=a.data_dir)\n+    result=run(a.bundle,a.drive_root,speed=a.speed_test,data_dir=a.data_dir,allow_new_run=a.allow_new_run)\n     print(json.dumps(dict(version=result['version'],jobs=len(result['jobs']),evidence_class=result['evidence_class'],\n                           environment_mismatch=result['binding']['environment'].get('environment_mismatch',[]),\n                           comparability=result['binding']['environment'].get('comparability'))))\n",
+      "path": "source/V6/research_lab/p4_colab.py",
+      "reason": "progress, isolated timing ledger and audited lineage selection; frozen training/fit validation unchanged"
+    },
+    {
+      "after": {
+        "bytes": 13269,
+        "sha256": "c98f41d805d51fac01f48d700e42e2f439100383c2d10cd0942e6c3fd51761bd"
+      },
+      "before": null,
+      "categories": [
+        "日誌"
+      ],
+      "diff": "--- 4e56e9db65a453a186511368788deb732a10eb1b/V6/research_lab/p4_source_compat.py\n+++ working/V6/research_lab/p4_source_compat.py\n@@ -0,0 +1,215 @@\n+\"\"\"Auditable, fail-closed source lineage adoption; no training or artifact migration.\n+\n+The old run stores only a manifest digest. Its original delivery ZIP supplies the\n+missing manifest bytes, never a guessed reconstruction of historical metadata.\n+\"\"\"\n+from __future__ import annotations\n+import difflib\n+import hashlib\n+import json\n+from pathlib import Path\n+import subprocess\n+import zipfile\n+from .p4_bundle import ROOT, digest, MAX_MANIFEST_BYTES\n+\n+CONTRACT='tasks/p4a-colab-contract-20261121.json'\n+RUNTIME='environments/p4a-colab-runtime.json'\n+LOCK='environments/p4a-colab.requirements.lock.txt'\n+QUEUE_SHA='4dc90ec0ada6c6d34b43c429d359424c502634e502c6856c6774bf138de7ba23'\n+BUDGET=dict(policy='record_only',units_per_hour=0,thermal_stop_c=85)\n+# Bounded reviewed surface. Any other changed source requires a new review;\n+# a category is an explanation, not a numerical-equivalence proof.\n+REASONS={\n+    'V6/research_lab/seq_runner.py':(['進度顯示'],'observer progress callbacks only; CPU bitwise regression required'),\n+    'V6/research_lab/p4_colab.py':(['進度顯示','日誌','speed-test 帳本分離'],'progress, isolated timing ledger and audited lineage selection; frozen training/fit validation unchanged'),\n+    'V6/research_lab/p4_bundle.py':(['進度顯示','日誌','文件'],'streaming notebook, source-upgrade declaration packaging and instructions'),\n+    'V6/research_lab/p4_source_compat.py':(['日誌'],'source lineage evidence validation and SOURCE_UPGRADE audit; no numerical operations'),\n+    'docs/operations/colab-p4.md':(['文件'],'operator instructions'),\n+}\n+\n+\n+def identity(payload):\n+    return dict(bytes=len(payload),sha256=hashlib.sha256(payload).hexdigest())\n+\n+\n+def source_name(name):\n+    return name.startswith('source/') and not name.startswith('source/tasks/p4a-source-compat-')\n+\n+\n+def current_sources():\n+    paths=[p for subtree in ('V6/research_lab','V6/experimental') for p in (ROOT/subtree).rglob('*.py') if 'tests' not in p.parts]\n+    paths += [ROOT/n for n in (CONTRACT,'tasks/spec-p4a-colab-20261121.md','docs/operations/colab-p4.md',RUNTIME)]\n+    return {'source/'+p.relative_to(ROOT).as_posix():digest(p) for p in sorted(paths)}\n+\n+\n+def git_bytes(commit,path):\n+    return subprocess.check_output(['git','show',f'{commit}:{path}'],cwd=ROOT)\n+\n+\n+def neutral_surface(commit):\n+    \"\"\"Do not automatically classify changed training/validation as mere logging.\"\"\"\n+    import ast\n+    old=ast.parse(git_bytes(commit,'V6/research_lab/p4_colab.py'))\n+    new=ast.parse((ROOT/'V6/research_lab/p4_colab.py').read_text())\n+    protected={'Ledger','fit_queue','resume_fit','complete_fit',\n+               'validate_fit_outputs','validate_training_state','effective_recipe'}\n+    def definitions(tree):\n+        return {node.name:ast.dump(node,include_attributes=False) for node in tree.body if isinstance(node,(ast.ClassDef,ast.FunctionDef)) and node.name in protected}\n+    if definitions(old)!=definitions(new):\n+        raise ValueError('training/fit/ledger semantics changed; source-compatible declaration forbidden')\n+    # These observer-bearing functions already differ only in reviewed progress\n+    # callbacks at this task's base. Refuse further edits without new review.\n+    baseline=ast.parse(git_bytes('20e6b5408d9f9b13d56290a72a2dc313c35d1b94','V6/research_lab/p4_colab.py'))\n+    for name in ('train_fit','permutation_fit','Observer'):\n+        left=next(n for n in baseline.body if getattr(n,'name',None)==name)\n+        right=next(n for n in new.body if getattr(n,'name',None)==name)\n+        if ast.dump(left)!=ast.dump(right):raise ValueError('unreviewed observer-bearing function: '+name)\n+    path='V6/research_lab/seq_runner.py'\n+    left=ast.parse(git_bytes('20e6b5408d9f9b13d56290a72a2dc313c35d1b94',path))\n+    right=ast.parse((ROOT/path).read_text())\n+    if ast.dump(left)!=ast.dump(right):\n+        raise ValueError('seq_runner differs from the numerically tested progress baseline; declaration forbidden')\n+\n+\n+def declaration(commit,to_sources,matrix):\n+    \"\"\"Generate from git object bytes, never from memory or handwritten hashes.\"\"\"\n+    from .p4_colab import fit_queue\n+    full=subprocess.check_output(['git','rev-parse',commit+'^{commit}'],cwd=ROOT,text=True).strip()\n+    if full!='4e56e9db65a453a186511368788deb732a10eb1b':\n+        raise ValueError('uncertified from commit: this upgrade has bitwise evidence only for 4e56e9d; add reviewed cross-version tests first')\n+    neutral_surface(full)\n+    paths=subprocess.check_output(['git','ls-tree','-r','--name-only',full],cwd=ROOT,text=True).splitlines()\n+    paths=[n for n in paths if (n.startswith(('V6/research_lab/','V6/experimental/')) and n.endswith('.py') and 'tests' not in Path(n).parts)\n+           or n in (CONTRACT,'tasks/spec-p4a-colab-20261121.md','docs/operations/colab-p4.md',RUNTIME)]\n+    before={'source/'+n:identity(git_bytes(full,n)) for n in paths}\n+    changes=[]\n+    for name in sorted(before.keys()|to_sources.keys()):\n+        if before.get(name)==to_sources.get(name):continue\n+        path=name.removeprefix('source/')\n+        if path not in REASONS:raise ValueError(f'unreviewed source difference: {path}; independent numerical-neutrality review required')\n+        categories,reason=REASONS[path]\n+        old=git_bytes(full,path).decode() if name in before else ''\n+        new=(ROOT/path).read_text() if name in to_sources else ''\n+        changes.append(dict(path=name,before=before.get(name),after=to_sources.get(name),categories=categories,reason=reason,\n+                            diff=''.join(difflib.unified_diff(old.splitlines(True),new.splitlines(True),fromfile=full+'/'+path,tofile='working/'+path))))\n+    invariants={}\n+    for path in (CONTRACT,RUNTIME,LOCK):\n+        old=identity(git_bytes(full,path));actual=digest(ROOT/path)\n+        if old!=actual:raise ValueError(f'invariant bytes differ: {path}: expected {old}, actual {actual}')\n+        invariants[path]=old\n+    contract=json.loads(git_bytes(full,CONTRACT))\n+    queue=fit_queue(contract)\n+    queue_sha=hashlib.sha256(json.dumps(queue,sort_keys=True,separators=(',',':')).encode()).hexdigest()\n+    if queue_sha!=QUEUE_SHA:raise ValueError('frozen queue SHA mismatch')\n+    return dict(version='p4-source-compat-v1',artifact_class='GENERATED',evidence_class='CPU_ENGINEERING_ONLY / COLAB_UNVERIFIED',\n+                **{'from':dict(commit=full,sources=before),'to':dict(commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),\n+                status='UNMERGED / NOT_DEPLOYED; hashes bind working bytes',sources=to_sources)},\n+                differences=changes,invariants=invariants,queue_sha256=queue_sha,matrix=matrix,budget=dict(BUDGET),research_budget=contract['budget'])\n+\n+\n+def same(label,expected,actual):\n+    if type(expected) is not type(actual) or json.dumps(expected,sort_keys=True,allow_nan=False)!=json.dumps(actual,sort_keys=True,allow_nan=False):\n+        raise ValueError(f'STOP: {label}; 預期={expected!r}; 實際={actual!r}; 下一步=保留舊帳本／02_formal ZIP，核對交付與宣告；使用原 notebook 接續或重新審查相容性，勿重置結果')\n+\n+\n+def original_manifest(root,binding):\n+    \"\"\"Read only bounded manifest bytes; no extraction/import of historical code.\"\"\"\n+    candidates=sorted(root.parent.glob('*/p4a-bundle.zip'))\n+    for archive in candidates:\n+        with zipfile.ZipFile(archive) as z:\n+            infos=[i for i in z.infolist() if i.filename=='bundle-manifest.json']\n+            if len(infos)!=1 or infos[0].file_size>MAX_MANIFEST_BYTES:continue\n+            payload=z.read(infos[0])\n+        if identity(payload)==binding['bundle']:return json.loads(payload)\n+    same('舊 bundle manifest 缺失（搜尋 '+str(candidates)+'）',binding['bundle'],'not found')\n+\n+\n+def resolve(bundle,mf,binding,root,budget,allow_new=False):\n+    try:\n+        return _resolve(bundle,mf,binding,root,budget,allow_new)\n+    except (OSError,KeyError,TypeError,ValueError,zipfile.BadZipFile) as error:\n+        if isinstance(error,ValueError) and str(error).startswith('STOP:'):raise\n+        raise ValueError(f'STOP: 升級證據無法讀取／schema 不符；預期=完整宣告與原 ZIP；實際={error}; 下一步=保留 budget 與 02_formal，修復交付或使用原 notebook 接續') from error\n+\n+\n+def _resolve(bundle,mf,binding,root,budget,allow_new=False):\n+    \"\"\"Return original binding plus audit event; never silently restart a lineage.\"\"\"\n+    from .p4_colab import hashed\n+    from datetime import datetime,timezone\n+    root=Path(root);bundle=Path(bundle)\n+    if allow_new:return binding,None\n+    directories=sorted(root.glob('run-*'))\n+    for directory in directories:\n+        same('run identity present '+str(directory),True,not directory.is_symlink() and (directory/'run_identity.json').is_file())\n+    runs=[directory/'run_identity.json' for directory in directories]\n+    if not runs:return binding,None\n+    current_hash=hashed(binding)\n+    exact=root/f'run-{current_hash}'/'run_identity.json'\n+    if exact.exists():\n+        same('existing run identity',binding,json.loads(exact.read_text()))\n+        return binding,None\n+    names=[n for n in mf['files'] if n.startswith('source/tasks/p4a-source-compat-') and n.endswith('.json')]\n+    same('來源相容宣告檔數量',1,len(names))\n+    name=names[0];path=bundle/name\n+    same('宣告檔 hash',mf['files'][name],digest(path))\n+    d=json.loads(path.read_text())\n+    same('declaration schema','p4-source-compat-v1',d.get('version'))\n+    sources={n:i for n,i in mf['files'].items() if source_name(n)}\n+    # Report paths individually so a mismatching file is directly actionable.\n+    same('to source path set',sorted(d['to']['sources']),sorted(sources))\n+    for n,i in sources.items():same('to '+n,d['to']['sources'][n],i)\n+    differences={n for n in d['from']['sources'].keys()|sources.keys() if d['from']['sources'].get(n)!=sources.get(n)}\n+    same('difference path set',sorted(differences),sorted(x['path'] for x in d['differences']))\n+    for item in d['differences']:\n+        n=item['path'];same('diff before '+n,d['from']['sources'].get(n),item['before']);same('diff after '+n,sources.get(n),item['after'])\n+        same('difference reason '+n,True,bool(item.get('reason')) and bool(item.get('diff')) and bool(item['categories']) and set(item['categories'])<={'進度顯示','日誌','speed-test 帳本分離','文件'})\n+    for n,i in d['invariants'].items():\n+        target='requirements.lock.txt' if n==LOCK else 'source/'+n\n+        same('invariant '+n,i,mf['files'].get(target))\n+    same('invariant path set',sorted((CONTRACT,RUNTIME,LOCK)),sorted(d['invariants']))\n+    same('budget',d['budget'],budget)\n+    same('research budget',d['research_budget'],binding['contract'].get('budget'))\n+    same('contract SHA',d['invariants'][CONTRACT]['sha256'],hashlib.sha256((bundle/('source/'+CONTRACT)).read_bytes()).hexdigest())\n+    same('matrix DATASET_MANIFEST',d['matrix'],binding['matrix'])\n+    queue_sha=hashlib.sha256(json.dumps(binding['queue'],sort_keys=True,separators=(',',':')).encode()).hexdigest()\n+    same('declaration queue',QUEUE_SHA,d['queue_sha256']);same('runtime queue',QUEUE_SHA,queue_sha)\n+    same('formal mode',False,binding['speed_test'])\n+    matches=[]\n+    for run in runs:\n+        old=json.loads(run.read_text())\n+        same('run directory hash '+str(run),run.parent.name,'run-'+hashed(old))\n+        historical=original_manifest(root,old)\n+        old_sources={n:i for n,i in historical['files'].items() if source_name(n)}\n+        same('from source path set',sorted(d['from']['sources']),sorted(old_sources))\n+        for n,i in d['from']['sources'].items():same('from '+n,i,old_sources[n])\n+        for k in ('contract','queue','matrix','environment','speed_test'):same('lineage '+k,old[k],binding[k])\n+        # No reference/data/non-source inputs may drift while adopting a run.\n+        old_inputs={n:i for n,i in historical['files'].items() if not source_name(n)}\n+        new_inputs={n:i for n,i in mf['files'].items() if not n.startswith('source/')}\n+        same('non-source inputs',old_inputs,new_inputs)\n+        matches.append(old)\n+    same('unique matching old lineage',1,len(matches))\n+    event=dict(event='SOURCE_UPGRADE',from_sources_hash=hashed(d['from']['sources']),to_sources_hash=hashed(sources),\n+               from_sources=d['from']['sources'],to_sources=sources,declaration=digest(path),declaration_path=name,\n+               observed_at=datetime.now(timezone.utc).isoformat(),environment=binding['environment'],budget=budget,\n+               from_binding=matches[0],to_binding=binding)\n+    return matches[0],event\n+\n+\n+def main(argv=None):\n+    import argparse\n+    parser=argparse.ArgumentParser(description=__doc__)\n+    parser.add_argument('--from-commit',required=True)\n+    parser.add_argument('--dataset-manifest',type=Path,required=True)\n+    parser.add_argument('--output',type=Path,required=True)\n+    args=parser.parse_args(argv)\n+    result=declaration(args.from_commit,current_sources(),digest(args.dataset_manifest))\n+    with args.output.open('x') as stream:\n+        json.dump(result,stream,sort_keys=True,indent=2,ensure_ascii=False)\n+        stream.flush()\n+        import os\n+        os.fsync(stream.fileno())\n+    print(json.dumps(dict(path=str(args.output),identity=digest(args.output),matrix=result['matrix'])))\n+\n+\n+if __name__=='__main__':main()\n",
+      "path": "source/V6/research_lab/p4_source_compat.py",
+      "reason": "source lineage evidence validation and SOURCE_UPGRADE audit; no numerical operations"
+    },
+    {
+      "after": {
+        "bytes": 23135,
+        "sha256": "1f4ba6fa9d97a93a5f59413e26b68252c926f071e51dc5465098438af69b088e"
+      },
+      "before": {
+        "bytes": 22732,
+        "sha256": "1e1ff434439582f1c312202df7cc0b4756dbe2a58ebd470715fcc6ca94ade56e"
+      },
+      "categories": [
+        "進度顯示"
+      ],
+      "diff": "--- 4e56e9db65a453a186511368788deb732a10eb1b/V6/research_lab/seq_runner.py\n+++ working/V6/research_lab/seq_runner.py\n@@ -320,7 +320,10 @@\n             opt.zero_grad(set_to_none=True); loss.backward()\n             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.); opt.step(); sched.step()\n             losses.append(float(loss.detach()))\n-            if observer: observer('step_end', None)\n+            if observer:\n+                observer('step_end', None)\n+                if (_+1)%50==0:\n+                    observer('progress',dict(epoch=state['epoch']+1,step=state['epoch']*cfg['steps_per_epoch']+_+1,loss=float(np.mean(losses))))\n         ic = daily_ic_rows(data, va, predict(model, data, va, device)[:, 0], 'y5')\n         state['epoch'] += 1\n         score = float(ic.mean()) if len(ic) else -9.\n@@ -337,6 +340,9 @@\n             observer('epoch', dict(model=model.state_dict(), opt=opt.state_dict(), sched=sched.state_dict(),\n                                    state=state, best_sd=best_sd, rng_state=rng.bit_generator.state,\n                                    torch_rng=torch.get_rng_state(), numpy_rng=np.random.get_state()))\n+        if observer:\n+            observer('progress',dict(epoch=state['epoch'],step=state['epoch']*cfg['steps_per_epoch'],\n+                                     loss=state['history'][-1]['loss'],val_ic5=score))\n         if ckpt:\n             tmp = str(ckpt)+'.tmp'\n             torch.save(dict(model=model.state_dict(), opt=opt.state_dict(), sched=sched.state_dict(), state=state, best_sd=best_sd), tmp)\n",
+      "path": "source/V6/research_lab/seq_runner.py",
+      "reason": "observer progress callbacks only; CPU bitwise regression required"
+    },
+    {
+      "after": {
+        "bytes": 9424,
+        "sha256": "541cba2207959e498aabdbce9802c6f5c30578259fedd7250a2a796aa5abe2b9"
+      },
+      "before": {
+        "bytes": 4670,
+        "sha256": "0eb538f91417316ccbff82c30013975000bd03c529567c436bc661190c8cde60"
+      },
+      "categories": [
+        "文件"
+      ],
+      "diff": "--- 4e56e9db65a453a186511368788deb732a10eb1b/docs/operations/colab-p4.md\n+++ working/docs/operations/colab-p4.md\n@@ -1,4 +1,6 @@\n # P4a：上傳資料夾一次＋每次兩檔\n+\n+> Human 的持續有效需求（交付形式、Drive 結構、進度顯示等）見 [colab-human-requirements.md](colab-human-requirements.md)；本檔為 P4a 的逐步操作細節。\n \n **UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；Colab 現場行為 UNVERIFIED。** 凍結內容、完整網格與外推耗時見[規格](../../tasks/spec-p4a-colab-20261121.md)。無研究結果，不是交易就緒。操作只對自己的可信交付；內部 hash 不能證明來源。\n \n@@ -29,6 +31,16 @@\n \n wheel 優先 `MyDrive/MarketMamba/wheels`，回退 `MyDrive/Mamba_Wheels_T4_new`；兩個 wheel 都不存在才執行官方sdist編譯備援格。部分缺失、多版本、cp313／ABI不符即 STOP。編譯格是交付程式碼，本次未執行網路、GPU或Colab。\n \n+## 進度與模式帳本（後續交付）\n+\n+訓練 cell 使用 `Popen` 合併 stderr、逐行轉印並 flush，子程序 `python -u`；每 50 steps／每 epoch 顯示 fit 編號、Q 階段／臂／折／種子／窗／LR、loss、FORMAL 驗證 IC、耗時／ETA、GPU 溫度／時脈與檢查點時間。無完成 fit 計時時 ETA 為「預估中」；本 fit 按最大 epochs 外推（早停可能縮短），佇列按本次已完成 fit 的實際耗時均值外推，Q5 額外耗時未知，不承諾完成時間。\n+\n+每約 60 秒按時間心跳原子替換 `EXPERIMENT_DIR/progress/formal/{PROGRESS.txt,progress.json}`；speed-test 使用 `progress/speedtest/`，不含 IC／績效。寫入失敗會提示檢查 Drive／空間並繼續訓練。兩檔各自原子替換，不保證成對交易一致；以 JSON 與 `observed_at` 判讀新鮮度，強制中止可能留下舊快照。Colab 單一 kernel 正在訓練時無法再執行其他格，請主要用手機／Drive 網頁查看 TXT；完成或中斷後再執行「目前進度摘要」。\n+\n+FORMAL 結果與帳本在 `EXPERIMENT_DIR/budget/`，speed-test 在 `EXPERIMENT_DIR/budget_speedtest/`，跨交付延續各自帳本；CLI `--drive-root` 仍填正式帳本根目錄，runner 在 speed 模式自動選 sibling。不要把參數先填成 speed 路徑而重複加後綴。既有 chain／identity／缺帳保護不變，不自動搬移、清除或重置歷史帳本。訓練格結束（含失敗）列出結果目錄、manifest 與進度位置；失敗摘要含步驟／期望／實際回傳碼／下一步。\n+\n+以上只有 CPU 合成工程驗證，Colab／Drive 現場 **UNVERIFIED**。正在執行的舊 02_formal 保持原交付，新版須另行重建 source identity；不要中途替換 ZIP。\n+\n ## 中斷與結果\n \n 每個 validation 完成的 epoch 先本機fsync、Drive複製重讀hash，再原子更新 latest／previous／best pointer。重跑同 notebook、同 source／contract／matrix identity，恢復完整epoch的optimizer、scheduler與RNG；未完整epoch重做。已完成fit逐檔驗證後跳過。每fit即寫Drive。遺失／損壞pointer、identity不符、只有orphan均STOP，保留證據，不自動升格orphan。\n@@ -53,3 +65,19 @@\n ## 未驗證\n \n T4長窗效能／OOM、Triton額外編譯、Python3.13整批、Drive FUSE的fsync／rename／斷線持久性、wheel編譯、實際資料完整性／上傳、Q5現場推論、瀏覽器自動下載皆UNVERIFIED。本機合成CPU證據不替代Colab acceptance。\n+\n+## 跨版本接續：4e56e9d → 來源相容交付候選\n+\n+狀態：UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；CPU 工程證據，Colab 現場 UNVERIFIED。原 02_formal notebook 仍可原地接續；不要在執行中的 kernel 換碼。斷線後改用新版時，交付者沿用前述 deliver 指令，額外指定：\n+\n+```text\n+--resume-from-commit 4e56e9d --run-name 03_formal_resume\n+```\n+\n+`--resume-from-commit` 省略 `--run-name` 時也預設 `03_formal_resume`。工具從本機 git objects 重算舊版所有來源（含文件）身分，檢查固定數值／完成驗證／帳本函式，產生 `source/tasks/p4a-source-compat-<HEAD短碼>.json` 並放入 ZIP manifest；未 commit 的程式以逐檔 bytes 為準，宣告明標 UNMERGED。模型／配方／環境／資料／佇列／預算有差異時禁止宣告；目前只認證 4e56e9d，其他基準需先新增跨版測試及審查。每個差異檔包含完整 unified diff、舊新 SHA 與允許的理由分類。\n+\n+Human 斷線後：開新 notebook，將同批 zip＋ipynb 上傳 `MarketMamba/p4a/03_formal_resume/`，從上到下執行。第 0 格 `EXPERIMENT_DIR=RUN_DIR.parent` 維持 `MarketMamba/p4a`；保留舊 `02_formal/p4a-bundle.zip`、`budget/` 及一次上傳的資料。新版 ZIP 使用自身 hash 隔離本機解壓路徑，避免殘留舊 bundle 衝突。rank-gauss 仍遵守原 implementation／input hash gate；來源改變可能觸發快取重建，不放寬驗證。\n+\n+Runner 掃描 `budget/run-*/run_identity.json`。舊身分只存 manifest 的 size／SHA，新版讀取實驗下既有交付 ZIP 的有界 manifest，先匹配舊 run 的 manifest identity，再逐檔核對宣告 from／to／完整差異集合及所有非來源輸入（含參考鍵）。契約／64-fit 佇列／DATASET_MANIFEST／環境／record_only 預算全相同且只有一個可採用 lineage 才繼續；沿用舊 run_hash，所以舊 complete.json 及 attempt-active 的 epoch pointer 可直接驗證。歷史 artifacts 不遷移、不改寫。run 目錄新增 `source-upgrade-*.json`，ledger 追加 `SOURCE_UPGRADE`，記錄來源清單／雜湊、宣告身分、時間、執行環境與原／新 binding。\n+\n+缺檔、雜湊或身分不合會 STOP 並說明預期／實際及下一步。保留帳本與舊 ZIP，修正交付或回原 notebook；不要刪 `budget/`。找不到舊 run 才建立全新 run；明確要新批次時才設第 0 格 `ALLOW_NEW_RUN=True`（runner `--allow-new-run`），此操作不自動清除 STOP／帳本。多個不同 lineage 保守拒絕，需另案盤點，不自選其中一個。升級宣告不是任意跨版許可，每次需 CPU GRU／crossstock 位元比較、舊 checkpoint 及完成 fit 接續測試與獨立審查。規則以 [Human 持續需求第 8 節](colab-human-requirements.md) 為準。\n",
+      "path": "source/docs/operations/colab-p4.md",
+      "reason": "operator instructions"
+    }
+  ],
+  "evidence_class": "CPU_ENGINEERING_ONLY / COLAB_UNVERIFIED",
+  "from": {
+    "commit": "4e56e9db65a453a186511368788deb732a10eb1b",
+    "sources": {
+      "source/V6/experimental/__init__.py": {
+        "bytes": 86,
+        "sha256": "4ee7acde4eaca62ef4edabe038d8a87e1f7d11cd8720c1502bf6c02a06624626"
+      },
+      "source/V6/experimental/backfill_prices.py": {
+        "bytes": 11921,
+        "sha256": "ee5da38b0d725489b66905103178da761a9d73ed2c8ca8c9f625774f10438dcb"
+      },
+      "source/V6/experimental/baseline_common.py": {
+        "bytes": 54857,
+        "sha256": "c434b1c7daac5d026c78013e8f43f6e609109e237cc244b844edac76b3d40932"
+      },
+      "source/V6/experimental/baseline_gbdt.py": {
+        "bytes": 19677,
+        "sha256": "e3a520fecbfe6409cf81bb460b04b4e8ff755b281c685f506213f33dbd1f02ff"
+      },
+      "source/V6/experimental/baseline_ic_diagnosis.py": {
+        "bytes": 22876,
+        "sha256": "31b2f693d5d8efc1f690d22208ed16a3c80f63caa64db04c06badb5941af0ff3"
+      },
+      "source/V6/experimental/baseline_ridge_lasso.py": {
+        "bytes": 22090,
+        "sha256": "fb3baf436b51e9d467c0f3c7cbc6dda29fb98d9fa4b0db3501891cdb9a7a4b00"
+      },
+      "source/V6/experimental/baseline_rnn.py": {
+        "bytes": 22775,
+        "sha256": "39c289801388c37216b0bc2ef1c79d7fd59786f5bf1fdf52d72686e443fd4066"
+      },
+      "source/V6/experimental/compare_panel_ic.py": {
+        "bytes": 6310,
+        "sha256": "32a8ac878e98b48169692b6d877cc41af1928f988df8c4c8553661e05d60dee5"
+      },
+      "source/V6/experimental/compare_scores.py": {
+        "bytes": 3776,
+        "sha256": "23fb6857979b807ec53dea25fcc7944b53cfe1605c94ef4e4a5b75f727e00f42"
+      },
+      "source/V6/experimental/conviction_c_analysis.py": {
+        "bytes": 18416,
+        "sha256": "5a639faf61133119dac0a2a917add63a709ac9bb0654d0ac84cd9a2b8eefc990"
+      },
+      "source/V6/experimental/deep_supervision.py": {
+        "bytes": 15331,
+        "sha256": "acef920e66c74bb1c2b495b12ca90bedc0ffcbd764606fb55c61a480022d2ece"
+      },
+      "source/V6/experimental/diag_window_panel.py": {
+        "bytes": 9855,
+        "sha256": "cf7b6f9274a557526ea06831a19bab12d4e2129565cdfaaeb8d288d70af37c24"
+      },
+      "source/V6/experimental/diagnostics/groupd_gat_2x2_analysis.py": {
+        "bytes": 5158,
+        "sha256": "c3fa55323b12344256d362d5d7c9c798845b45fbb17a3242b787a14a27b3c23d"
+      },
+      "source/V6/experimental/diagnostics/gru_decile_01_panel.py": {
+        "bytes": 5912,
+        "sha256": "5b1bd05c68e27419227e808c6ced38a1c32718088e71cc5d71fc75fa86ad30da"
+      },
+      "source/V6/experimental/diagnostics/gru_decile_02_nature.py": {
+        "bytes": 7757,
+        "sha256": "b2a8b7fcb7c623d7948741b76784a96cfeb0ff8a8d1e3cf5bda3791f1e08e5ab"
+      },
+      "source/V6/experimental/diagnostics/gru_decile_03_common_ruler.py": {
+        "bytes": 3991,
+        "sha256": "1f37003a58177067a9ee11768694f7cf3b7d407b45c57aa96bb91fb99959407c"
+      },
+      "source/V6/experimental/diagnostics/gru_decile_04_robustness.py": {
+        "bytes": 3720,
+        "sha256": "17d20ecfffc096c5005c38440303c4c69bf87cc75d70bb500ba98e6f0c89d5ad"
+      },
+      "source/V6/experimental/dim47_ablation.py": {
+        "bytes": 13741,
+        "sha256": "e8ac9d7d2550747f5cbf5be0e784c90f483edffa9fdabada5867fbce11293a5e"
+      },
+      "source/V6/experimental/f5_r_series.py": {
+        "bytes": 40756,
+        "sha256": "cfb5291dc57e225fec48c4055e1a45118314254b0cf4266804a761a0e5a184e3"
+      },
+      "source/V6/experimental/fetch_trading_status.py": {
+        "bytes": 6256,
+        "sha256": "0a14471e56ab2b49a891a38fe6907ac54bda3cba810885ab71c6ad25c449dbdc"
+      },
+      "source/V6/experimental/fix_prices_index_column.py": {
+        "bytes": 9712,
+        "sha256": "bf50b332d0bab2e9aef83d0b89362364ec49f02a161658f5bf4efcdcd070306f"
+      },
+      "source/V6/experimental/groupd_ablation.py": {
+        "bytes": 27224,
+        "sha256": "fac258438caafe5c6553660d0bbe63b2cab6a1f2f2652c599b1eb7342361525e"
+      },
+      "source/V6/experimental/head20d_ablation.py": {
+        "bytes": 10646,
+        "sha256": "cae1b537d6c6fae7decab82ea71b88bd97376180bddb5da38e8a008909bf8ae7"
+      },
+      "source/V6/experimental/kg_ablation.py": {
+        "bytes": 25452,
+        "sha256": "e8561a456d263b0d6ab05d222120a636ad610a79a81c8e648a200d4ced524aaa"
+      },
+      "source/V6/experimental/kg_builder_v2.py": {
+        "bytes": 19250,
+        "sha256": "82592c15de494a92547bd73263d2416d92b9c801d3c60baf4e003a1f5ca271b3"
+      },
+      "source/V6/experimental/kg_builder_v3.py": {
+        "bytes": 12938,
+        "sha256": "62b776eb344cecea30625489ac357e5ea16b623cb06b9945eafae77d1df29e3c"
+      },
+      "source/V6/experimental/label_10d.py": {
+        "bytes": 18511,
+        "sha256": "edf7dc7119a53609d76a273e21d7b0ef31484bc6c56a36138cdf8b648bd7ecb1"
+      },
+      "source/V6/experimental/label_horizon_report.py": {
+        "bytes": 9559,
+        "sha256": "229f0621d306898e7059ac240f24a42a513eff0f2bce7044b6bc56b1135d8daa"
+      },
+      "source/V6/experimental/phase3_a_dropout_sweep.py": {
+        "bytes": 9889,
+        "sha256": "33afcaaedf9ce8d4f1fd18485e725fd3af6bd2ee9e617d069b56e641b980707d"
+      },
+      "source/V6/experimental/phase3_b_listnet_sweep.py": {
+        "bytes": 10148,
+        "sha256": "3d8bcf61c5147b30fdd1db9fc2a84a0f57612e9e42142c3f5770c66a398f0e71"
+      },
+      "source/V6/experimental/phase3_c_trend_single_scale.py": {
+        "bytes": 12398,
+        "sha256": "041fa30b1bf487918949f5bb3e1400d96cf31d35f9c7ee95f42475a8b0d9ea96"
+      },
+      "source/V6/experimental/phase3_d_window_sweep.py": {
+        "bytes": 8984,
+        "sha256": "e557a2fed2792afa4152ef1e66df9a3ed49d75786a121bde47a4530e16093452"
+      },
+      "source/V6/experimental/portfolio_lab.py": {
+        "bytes": 52417,
+        "sha256": "1993faf6b6d6257f92cdc201f305a99bcc6afb598aac8d99b7320290d6973667"
+      },
+      "source/V6/experimental/score_mamba_local.py": {
+        "bytes": 24617,
+        "sha256": "46aa2f7674825b1b9699f2b45750cd006cb3126f3af44d308586900331be0763"
+      },
+      "source/V6/experimental/short_model.py": {
+        "bytes": 18108,
+        "sha256": "56b1543f0c2e177be28137eeebf34d4e11d3fa21efd4fefd9324f5648179febd"
+      },
+      "source/V6/experimental/splitters.py": {
+        "bytes": 12743,
+        "sha256": "8470e4c92239c9e00ceb2cd76b2cd0506893d0991948231b0ac1a3806bed36e9"
+      },
+      "source/V6/experimental/trend_model.py": {
+        "bytes": 10586,
+        "sha256": "7f3a12f0b130a05a5485ff2caab67dc5415763f7064d9a8210cb1e712f3577e5"
+      },
+      "source/V6/experimental/v7_capture_readiness.py": {
+        "bytes": 5348,
+        "sha256": "90f3523556ddd7c5ec0ff372c0c8ce42f2b0e9b163a9352e067903fa83f63a9d"
+      },
+      "source/V6/experimental/v7_capture_readiness_test.py": {
+        "bytes": 4907,
+        "sha256": "ac6a843f315d22e6d7440d0d6d7fbd1aba877cec3f1fc6736b0beb0826024240"
+      },
+      "source/V6/experimental/v7_classical_baseline.py": {
+        "bytes": 11611,
+        "sha256": "115ee84194417e87f6ba885dee5e4a26594cccd6a223e26c863a288bedeefb1e"
+      },
+      "source/V6/experimental/v7_classical_baseline_test.py": {
+        "bytes": 8668,
+        "sha256": "1d7016f3a256dafc1fc3959bc2f72e0938d0f2e2748d37881c62931ea96d9fd5"
+      },
+      "source/V6/experimental/v7_classical_study.py": {
+        "bytes": 16638,
+        "sha256": "26610f860858d420de2f4d94221d6d84a88bc573c84b1282aabc8cd000e7d68f"
+      },
+      "source/V6/experimental/v7_classical_study_test.py": {
+        "bytes": 8571,
+        "sha256": "b311501c1ae6a98203e0039469359d7776328b1caf1b006ea5f67c66f3ea85a7"
+      },
+      "source/V6/experimental/v7_confirmation_benchmark.py": {
+        "bytes": 5000,
+        "sha256": "85d127bb44cb1e478031feca543d94536f31ffacb54c52136a4243b9cc858e04"
+      },
+      "source/V6/experimental/v7_confirmation_design.py": {
+        "bytes": 4407,
+        "sha256": "a1fbe3827a14ad69f66a5cc4e294c4ee8a26b1c9cf42e6e1421af55e47536aaa"
+      },
+      "source/V6/experimental/v7_confirmation_suite.py": {
+        "bytes": 12879,
+        "sha256": "33d34fdfaeb3fd23e7b0978b7fe60625eba61f6b3381445eb2724a539dca5638"
+      },
+      "source/V6/experimental/v7_confirmation_test.py": {
+        "bytes": 5617,
+        "sha256": "a952d7375e18fd03d105fa1a5a357afc2053ef037c504e490b811a9a9fe8cc86"
+      },
+      "source/V6/experimental/v7_corrected_e5_lifecycle.py": {
+        "bytes": 7274,
+        "sha256": "360b72fe6dcec864e1c07c901d4ad74dcf081dc5a153d928b8a6e24ee265755d"
+      },
+      "source/V6/experimental/v7_corrected_e5_lifecycle_test.py": {
+        "bytes": 7659,
+        "sha256": "7df578925a59a8688bb22f60ff4a0ccd419b976cf09767d98abb3d486e02d850"
+      },
+      "source/V6/experimental/v7_corrected_e5_matrix.py": {
+        "bytes": 17857,
+        "sha256": "b3735a7d8c01dd09bfdcd4e3a920ebd7ef0976a75195bbd3b8892310e639f671"
+      },
+      "source/V6/experimental/v7_corrected_e5_matrix_test.py": {
+        "bytes": 5071,
+        "sha256": "6ec29af2568d055cf559acbf851d98ae05f2eea50d7d657bf0715d8c1159995e"
+      },
+      "source/V6/experimental/v7_corrected_e5_model.py": {
+        "bytes": 8084,
+        "sha256": "67b60ba87b983087e205b3dd5dbd6c5fd3ae759feeb18cb72d846ea3c47def28"
+      },
+      "source/V6/experimental/v7_corrected_e5_replication.py": {
+        "bytes": 15448,
+        "sha256": "8c3a2b37950c5a24028cf9a2081fa6a3ea1cd89ce4be8e05b29ba1811c5d3af8"
+      },
+      "source/V6/experimental/v7_corrected_e5_replication_test.py": {
+        "bytes": 6874,
+        "sha256": "d18130971dca6fb0e662eaa625f05bf052d9f109d03826270848f97912fcb0a5"
+      },
+      "source/V6/experimental/v7_corrected_e5_tiny_pipeline_test.py": {
+        "bytes": 2661,
+        "sha256": "c4e90ba667ab8c1a5a9fe4ed6d526dc7277ef59a3b4390c2bc6a153d510f5d05"
+      },
+      "source/V6/experimental/v7_corrected_e5_train.py": {
+        "bytes": 23835,
+        "sha256": "054e01a487a16447cd41f3182b6c309224cd0b42b3072e25086028c2dac03250"
+      },
+      "source/V6/experimental/v7_corrected_e5_train_test.py": {
+        "bytes": 4995,
+        "sha256": "0679aaf6d6bbd2c8f4989b84c1791e705969b0a8431fa3f8c57f3241919831dc"
+      },
+      "source/V6/experimental/v7_correctness_audit.py": {
+        "bytes": 8136,
+        "sha256": "68f274683d0fe87db8a2cc9a88be790205cca17388a83574091ea3289b47155c"
+      },
+      "source/V6/experimental/v7_correctness_audit_test.py": {
+        "bytes": 5545,
+        "sha256": "a70d0c6b3e28c3fea6c4d5db06db2253d1772e4c336f87dfdd4e3a8d4fd4f42a"
+      },
+      "source/V6/experimental/v7_cpu_resume.py": {
+        "bytes": 16134,
+        "sha256": "0fef16b0cfd6393fd4c771cd02846d8bb110b027e5919d256e6cec043d3cb0e2"
+      },
+      "source/V6/experimental/v7_cpu_resume_test.py": {
+        "bytes": 8286,
+        "sha256": "9b8162e3f279578f0c8b1f021baf851037bb9f3712077e73d58cfe0a39bf9e73"
+      },
+      "source/V6/experimental/v7_csv_capture_qc.py": {
+        "bytes": 3846,
+        "sha256": "3a590f7f336bff394db23c55a6afcde1a1c7d3eb1c1bdacf78fdb06e0bf4ddd9"
+      },
+      "source/V6/experimental/v7_data_recovery.py": {
+        "bytes": 11985,
+        "sha256": "6aaec335e8a6ef8584e109f89c34c484e2bb77e8487fd568fd73200c5881cc66"
+      },
+      "source/V6/experimental/v7_depth222_suite.py": {
+        "bytes": 10585,
+        "sha256": "73609d9ede0a81c70fe752543849ff74ff0621301a08acdc38d8692c8d0a2213"
+      },
+      "source/V6/experimental/v7_depth222_test.py": {
+        "bytes": 2907,
+        "sha256": "029d7035ee7f7cb84c9425452ed12696bba5442b91979de6839a39eb58ab09d7"
+      },
+      "source/V6/experimental/v7_e1_checkpoint.py": {
+        "bytes": 11602,
+        "sha256": "55ad07f376ad8c824338a3c24ad7d3d3fed72436418ceaf6a4ae6297dc88d35a"
+      },
+      "source/V6/experimental/v7_e1_checkpoint_test.py": {
+        "bytes": 7580,
+        "sha256": "cc81eb67b2647828edd1c8b5782b5d56f485b2809e8d6ae66f5af1eef726b888"
+      },
+      "source/V6/experimental/v7_e1_colab_runtime.py": {
+        "bytes": 2586,
+        "sha256": "352b16c7762342d7120b88a985688a94e963e719bee0286ad7edb9323609abc6"
+      },
+      "source/V6/experimental/v7_e1_colab_runtime_test.py": {
+        "bytes": 4176,
+        "sha256": "7a898dbbcd3454cdbf733831af7d4188db30ef14ea7ae7a04e7c6bba01c95531"
+      },
+      "source/V6/experimental/v7_e1_contract.py": {
+        "bytes": 7165,
+        "sha256": "96f22b9cd3a5bd412aa43dbbea4ea3cd3f6c85d076cd914e88ec6c0ec0efe547"
+      },
+      "source/V6/experimental/v7_e1_contract_test.py": {
+        "bytes": 4561,
+        "sha256": "446c4076a26bb4223fbfd10f9e24618b91d6e5243bb80e305ca728a62d815add"
+      },
+      "source/V6/experimental/v7_e1_evaluate.py": {
+        "bytes": 9202,
+        "sha256": "0a3c4e053ca5bd98a3c134761070f07be56802984e519709b60a018c3980ff18"
+      },
+      "source/V6/experimental/v7_e1_evaluate_test.py": {
+        "bytes": 2797,
+        "sha256": "810cb89944dbcbbfc2853792950a0c297bd9dbfaf7e446ca013c515896b869a4"
+      },
+      "source/V6/experimental/v7_e1_matrix.py": {
+        "bytes": 7611,
+        "sha256": "ee759fada9586291e7bf931e7f8cb1187e52527deef9c733aaa6dd603e160efc"
+      },
+      "source/V6/experimental/v7_e1_matrix_test.py": {
+        "bytes": 3747,
+        "sha256": "375a890d7f8c87d1d5e5c77b092282a6f5d2b327d78a54f043dde490a51dfdcb"
+      },
+      "source/V6/experimental/v7_e1_readiness.py": {
+        "bytes": 5260,
+        "sha256": "822f77f526f9eb765868443e84721995c0710f9208582f69eb57beaab6039a2f"
+      },
+      "source/V6/experimental/v7_e1_readiness_test.py": {
+        "bytes": 2351,
+        "sha256": "2845f2d97ffcaa5445971c34ab210937d40b26d5434b5cbba6e9e956e1892ff3"
+      },
+      "source/V6/experimental/v7_e1_run.py": {
+        "bytes": 4696,
+        "sha256": "0990aa8f1dcce900213a6d6986bcb9762fd2f29d0c04e4e7d824a911e151e2c3"
+      },
+      "source/V6/experimental/v7_e1_run_test.py": {
+        "bytes": 3029,
+        "sha256": "0ac5bde9390ba888fb4ff3265e1e87642e24665cd5d1d74ba6463522d29d9748"
+      },
+      "source/V6/experimental/v7_evidence_tier.py": {
+        "bytes": 2660,
+        "sha256": "d797d2609f1a77d5a86ac3eaf98a238e1f34f8252302df74d78a57878734be5a"
+      },
+      "source/V6/experimental/v7_evidence_tier_test.py": {
+        "bytes": 2796,
+        "sha256": "6db261b14764c1481f74bf254f3975eef1517db3c50f98ce572290709382e6d7"
+      },
+      "source/V6/experimental/v7_executable_labels.py": {
+        "bytes": 5460,
+        "sha256": "81d8857bd7f2e9175c018ad6a11c74e01ec401e619ea5b5a8ce5124960d23219"
+      },
+      "source/V6/experimental/v7_executable_labels_test.py": {
+        "bytes": 4185,
+        "sha256": "852c877e631f939ef64350f880db18582ae558cbda07c0dcbeb3288b96b07bcd"
+      },
+      "source/V6/experimental/v7_expanded_pilot.py": {
+        "bytes": 1679,
+        "sha256": "def603dd573089fa7785d4804a08304aa1434ee6773f44733ecf51b7be6ed334"
+      },
+      "source/V6/experimental/v7_expanded_pilot_test.py": {
+        "bytes": 3256,
+        "sha256": "9cc17dc720dce115838e56ce652f8c099cb4f09f4dff1d2abad274213307c36b"
+      },
+      "source/V6/experimental/v7_experiment_data.py": {
+        "bytes": 4671,
+        "sha256": "0dc1da2a67976f1a932a548239bbb21a94d646533d5502935d2888b67ca6db94"
+      },
+      "source/V6/experimental/v7_experiment_model.py": {
+        "bytes": 2283,
+        "sha256": "7337478f2b15ed0eff5592c3a62afb6f71b57dbe8e592daa59f7949126e0476e"
+      },
+      "source/V6/experimental/v7_experiment_storage.py": {
+        "bytes": 4678,
+        "sha256": "25e4535b77293d92ca358c404a5f2658c484ff95a009a153cacd6444097a6676"
+      },
+      "source/V6/experimental/v7_experiment_suite.py": {
+        "bytes": 11684,
+        "sha256": "2b14cae8ee386a2970e6d9cb1aecbb24256e37a504504825a751e04427467d20"
+      },
+      "source/V6/experimental/v7_experiment_test.py": {
+        "bytes": 7085,
+        "sha256": "fa075127ae21c1eacb791f39f2aa0e45123c95fa5ca72fc44c72704afb9d0624"
+      },
+      "source/V6/experimental/v7_experiment_train.py": {
+        "bytes": 14143,
+        "sha256": "ce5b323ff44bf5b1325d9185c3317aa5aa79403b085fda96f8f2dec31c2cdf8e"
+      },
+      "source/V6/experimental/v7_exploratory_proposal.py": {
+        "bytes": 2505,
+        "sha256": "263820390f937e506a9f3c8b5eb13996dd088c9c18a07271b049a75426fb2f7e"
+      },
+      "source/V6/experimental/v7_exploratory_proposal_test.py": {
+        "bytes": 2369,
+        "sha256": "02595d8e5522a98460f08e574fee032bc2894c9f23b5dcaf14bc8713edb7ebb6"
+      },
+      "source/V6/experimental/v7_finmind_proof.py": {
+        "bytes": 12962,
+        "sha256": "43a6757bf6b5091aff3d48eb78b847090dd6663198eed8c1037efba1f707a5e5"
+      },
+      "source/V6/experimental/v7_finmind_proof_test.py": {
+        "bytes": 8575,
+        "sha256": "62525c89d3e860d9ef8bd4ed7d5d8f17c15d828200383f36e9dab31611cbcfc6"
+      },
+      "source/V6/experimental/v7_forward_vintage.py": {
+        "bytes": 5568,
+        "sha256": "ea3bec9bbd302fa714449ddee3538e45b18b4bace4f8f54fa3d9876ab56c71fe"
+      },
+      "source/V6/experimental/v7_forward_vintage_test.py": {
+        "bytes": 5394,
+        "sha256": "b4d88f19a8e997f0d4d1f9de2f9f5b11a4d425ae6e52eff6839aec16b8225254"
+      },
+      "source/V6/experimental/v7_h1_config.py": {
+        "bytes": 4077,
+        "sha256": "8d374311d1716f0d63e917c7bd79219a98d3c56dc5ac64811c0fb87b1a9a497c"
+      },
+      "source/V6/experimental/v7_h1_mamba2_adapter.py": {
+        "bytes": 8668,
+        "sha256": "75f9e152431dce4f57bd79b1ff616deea0ae2bdb8b589aa8060e44c805914d2d"
+      },
+      "source/V6/experimental/v7_h1_probe.py": {
+        "bytes": 5612,
+        "sha256": "6141daf7be3cbf41a4f2ad08adff8387a062554ea99d9ee9216ad4d9d6d6249b"
+      },
+      "source/V6/experimental/v7_h1_test.py": {
+        "bytes": 6265,
+        "sha256": "c7792d7111dc73ea55e440dcbd33994f9f1dee9997f567d90b0ec420a641599d"
+      },
+      "source/V6/experimental/v7_health_summary.py": {
+        "bytes": 4959,
+        "sha256": "571c5475bc6c238278503f316a24d3dbe6e4d8df0d6b24db79a618219ed47ef5"
+      },
+      "source/V6/experimental/v7_health_summary_test.py": {
+        "bytes": 3488,
+        "sha256": "fdd63442a54f531010760bc73d0304ad2eb2dd448eaae222a482c3f7977d0c73"
+      },
+      "source/V6/experimental/v7_historical_label_materialize.py": {
+        "bytes": 9484,
+        "sha256": "5376b59831719efcaf27ff5674cd768f77b7bf34d07cb26635b24bb41704f4d2"
+      },
+      "source/V6/experimental/v7_historical_label_materialize_test.py": {
+        "bytes": 2463,
+        "sha256": "a641ce5363b39d5aa8f6cc187bc485c0d3ad754e63509b263ca1898ed3b72c46"
+      },
+      "source/V6/experimental/v7_historical_panel.py": {
+        "bytes": 3028,
+        "sha256": "28ec10e08678ee6cf64835f8e00e601c18f81d7c20c389e038d2f4f081264ee1"
+      },
+      "source/V6/experimental/v7_historical_panel_test.py": {
+        "bytes": 2465,
+        "sha256": "393d55f591948b013c28ee37deb30c0b7f8be6e0aa895b85f782b4240b71d276"
+      },
+      "source/V6/experimental/v7_historical_security_master.py": {
+        "bytes": 7007,
+        "sha256": "3c3535c44a50def04835ea5bb6b132c3700d02a88498ba0415d31096f9316a95"
+      },
+      "source/V6/experimental/v7_historical_security_master_test.py": {
+        "bytes": 3817,
+        "sha256": "5237db985ad6b7a5d5a748f8863acc7359b12e2ab5bd1fa67de87b547cfeac71"
+      },
+      "source/V6/experimental/v7_integrated_config.py": {
+        "bytes": 5241,
+        "sha256": "6e0a0370fd45fe9e9aabf523a62699dc32173e9b90d23bf4154cfb1fdadc6fcd"
+      },
+      "source/V6/experimental/v7_integrated_data_quality.py": {
+        "bytes": 12053,
+        "sha256": "3e3249ada163f74e41fa79499586925f55bf3c223754d9d1320b943ac3371086"
+      },
+      "source/V6/experimental/v7_integrated_industry.py": {
+        "bytes": 6670,
+        "sha256": "211f82f46cad0476361b53b29c406b71e4ebda77244fe67c77ee4b349eec3352"
+      },
+      "source/V6/experimental/v7_integrated_industry_test.py": {
+        "bytes": 4212,
+        "sha256": "1051b168f57f63a6144e111d6e56cb3d3159dfd8b91584ecf3851142948522c2"
+      },
+      "source/V6/experimental/v7_integrated_model.py": {
+        "bytes": 12187,
+        "sha256": "a3a5bbad05672af343c00e1ba1775be64437e3130487daa421fa8fd422573f97"
+      },
+      "source/V6/experimental/v7_integrated_point_in_time.py": {
+        "bytes": 5597,
+        "sha256": "b3ea9203932eaf8d3cd183d72eb32c03602f5e2025f05b82e36402bd3cd5a204"
+      },
+      "source/V6/experimental/v7_integrated_point_in_time_test.py": {
+        "bytes": 3255,
+        "sha256": "dccce4704f188f3cce1eeb76fb047426c0e9f94cca24847fc77d70f6eda52456"
+      },
+      "source/V6/experimental/v7_integrated_prepare_cache.py": {
+        "bytes": 3221,
+        "sha256": "c16c3d1ce1a5ebe3c1a80ce592f332acaae28d3c6664e5d0254f33a9d73d133e"
+      },
+      "source/V6/experimental/v7_integrated_prepare_cache_test.py": {
+        "bytes": 1671,
+        "sha256": "68ee4e10e650c711ab1808ac927986eb81f3db0e4eac4854365d47111e94247a"
+      },
+      "source/V6/experimental/v7_integrated_probe.py": {
+        "bytes": 13731,
+        "sha256": "4577b4f6523408ec2076504103c5e835ce017ffe82386baf00c1de60935a4a32"
+      },
+      "source/V6/experimental/v7_integrated_test.py": {
+        "bytes": 71683,
+        "sha256": "0965384344dae6ce9f13010c37d8072269d1218559236c1733d551b180a1a523"
+      },
+      "source/V6/experimental/v7_integrated_train.py": {
+        "bytes": 92448,
+        "sha256": "4ce1d8b495c6b28d2a6f3749c10a8537f1d84aefa05ff929e93b31ee0421d132"
+      },
+      "source/V6/experimental/v7_manual_collector.py": {
+        "bytes": 14703,
+        "sha256": "75f0aedf701a765b2a448c312b606f362db6a0460bf200188c90e1b909a73bf8"
+      },
+      "source/V6/experimental/v7_manual_collector_test.py": {
+        "bytes": 8230,
+        "sha256": "4baca4771600288d134b72cfa329d6f0f3ed6250b57a3b6e3f6a7db9fd6a2f30"
+      },
+      "source/V6/experimental/v7_ohlcv_provenance.py": {
+        "bytes": 3562,
+        "sha256": "9730730188586eeb56354c2d612696a4d6337401386804743eb53ca34acf3084"
+      },
+      "source/V6/experimental/v7_ohlcv_provenance_test.py": {
+        "bytes": 4686,
+        "sha256": "dc97309ee70c0ec649caa05efce45986b0a79afbeadf06c081f29de50115cff9"
+      },
+      "source/V6/experimental/v7_portfolio_contract.py": {
+        "bytes": 11110,
+        "sha256": "7b5a887adf88b45999fa830d54148ed3f137ca05937a4109a61df517b7f6c854"
+      },
+      "source/V6/experimental/v7_portfolio_contract_test.py": {
+        "bytes": 4888,
+        "sha256": "b0cc3df0336a4bc13f9e23daddae237acba37af7f9a592510d43890dbbf1b7da"
+      },
+      "source/V6/experimental/v7_portfolio_engine.py": {
+        "bytes": 19427,
+        "sha256": "0ec986ac4eda4ddaa4310bd8b8ae1c746eb62af59d3e8fd371b4729f7bc4a39c"
+      },
+      "source/V6/experimental/v7_portfolio_engine_test.py": {
+        "bytes": 19451,
+        "sha256": "8347ac6236b4dbe0990efe8603e4e59179f356e51738b202dea8e941d2beb943"
+      },
+      "source/V6/experimental/v7_portfolio_fixture.py": {
+        "bytes": 2903,
+        "sha256": "3fd3043aa662ca01dd3340230349557c7b8a50a746fb9ea6721114d510fceb66"
+      },
+      "source/V6/experimental/v7_portfolio_history.py": {
+        "bytes": 9721,
+        "sha256": "5c9fb03219e4c12d2ed1e05068b8ffb7be783b335c59771e86e44bb657c17541"
+      },
+      "source/V6/experimental/v7_portfolio_history_e2e_test.py": {
+        "bytes": 5202,
+        "sha256": "d32fbe4312132f4ca9b502b83d567ae4b269f08fc51873695051afb89fb14326"
+      },
+      "source/V6/experimental/v7_portfolio_history_test.py": {
+        "bytes": 6861,
+        "sha256": "ce73aaf1aceea472f586a6c1f37eea564adb6d2110bb90af86b2fe581b4d0e3d"
+      },
+      "source/V6/experimental/v7_portfolio_journal.py": {
+        "bytes": 15834,
+        "sha256": "d06ff693b44f9f658cc71ea34daedfbe013a42e293e677fadf162b053df5310b"
+      },
+      "source/V6/experimental/v7_portfolio_journal_test.py": {
+        "bytes": 21493,
+        "sha256": "83e1dae9634e13bdfe3550ecffa3de38549d1462539681d89b377db12ccc4911"
+      },
+      "source/V6/experimental/v7_portfolio_metrics.py": {
+        "bytes": 9426,
+        "sha256": "a46225cc7a83483c47b97e0a38887641bfdb88a85640723948374d8ca6905e62"
+      },
+      "source/V6/experimental/v7_portfolio_metrics_test.py": {
+        "bytes": 6370,
+        "sha256": "58c8ef85a9ea3a9976946b1129ab16a56d162ad65901540f9d189ee5bd6f60ce"
+      },
+      "source/V6/experimental/v7_portfolio_process_test.py": {
+        "bytes": 9309,
+        "sha256": "ab3d6d6abca893b70cb77740265ecd93546751e0f14a887b02376a0e7aa374c7"
+      },
+      "source/V6/experimental/v7_research_artifacts.py": {
+        "bytes": 13470,
+        "sha256": "63782997bec3220cf9fdb38d2b6c5eb92aa025525e351edd23c20b79f13b53ec"
+      },
+      "source/V6/experimental/v7_research_artifacts_test.py": {
+        "bytes": 10095,
+        "sha256": "5ae3fb1ac820943f535fdddd62e56bfcca01f471d292a9581e6028e49f20399e"
+      },
+      "source/V6/experimental/v7_research_comparison.py": {
+        "bytes": 7505,
+        "sha256": "529e8d94e39b99dd18cd6ad1992be075e0f56f27124ef60191fae0a98acd9155"
+      },
+      "source/V6/experimental/v7_research_comparison_test.py": {
+        "bytes": 7589,
+        "sha256": "883f69e4bff8cbab2c7280e9c8eb184386f12d4cd850b14ab3b77fc70f8b22fc"
+      },
+      "source/V6/experimental/v7_research_evaluation.py": {
+        "bytes": 14418,
+        "sha256": "9ad8f4b1f6f6d3d6e18051c3c71c2f042a2f05ed64c4791d12ae59b862a301f3"
+      },
+      "source/V6/experimental/v7_research_evaluation_test.py": {
+        "bytes": 9724,
+        "sha256": "ef5e4345ff57233f89e6747ff62e9aba434709a9d7dde30cbead1064064a389e"
+      },
+      "source/V6/experimental/v7_research_isolation.py": {
+        "bytes": 9688,
+        "sha256": "024f1474448d4e06e6f48cf1ef9c2bbd6bd6c3902f57f09e6a25dd48e34e9cbc"
+      },
+      "source/V6/experimental/v7_research_isolation_test.py": {
+        "bytes": 9501,
+        "sha256": "35b5a83be797398cc6e45992997ae72b43dfa7b54cf92fc2107863b6491fb26a"
+      },
+      "source/V6/experimental/v7_research_replay.py": {
+        "bytes": 23584,
+        "sha256": "906fdbfa9eb2ab2b1b848d048f8be8a3cea31b70adae7942845eb4bedb54388c"
+      },
+      "source/V6/experimental/v7_research_replay_test.py": {
+        "bytes": 16781,
+        "sha256": "f979a20e6a3ee54812e5e594267b8a768d76d19e472b9fa76f11611e6ee095fa"
+      },
+      "source/V6/experimental/v7_research_temporal.py": {
+        "bytes": 11772,
+        "sha256": "1e2a776099b063470dda673d1c717678d13aba35d7194f582d2e30c437fba119"
+      },
+      "source/V6/experimental/v7_research_temporal_test.py": {
+        "bytes": 8006,
+        "sha256": "bc00ea4395aead4c710a0304ad8068cccc8836964fc9ac03c5621c3df017f3f6"
+      },
+      "source/V6/experimental/v7_retrospective_smoke.py": {
+        "bytes": 2606,
+        "sha256": "7f1d5496c0e041b839a619ce1a9daa4b5f91bb2448b347664386082fed48d7a9"
+      },
+      "source/V6/experimental/v7_retrospective_smoke_test.py": {
+        "bytes": 4241,
+        "sha256": "51ea2efde3296ac03ae81d74f3fb306c6fdb3ed493b58f65a6498a9657fed4d1"
+      },
+      "source/V6/experimental/v7_robustness_audit.py": {
+        "bytes": 2549,
+        "sha256": "2e857a9d7fa1fda8602872ac2c930d608dc278f181f7ed3c427baa2f24e81681"
+      },
+      "source/V6/experimental/v7_robustness_audit_test.py": {
+        "bytes": 1900,
+        "sha256": "92870b328fe05bf2904f8200042be39e46214ab6be5db42fef46fec1b3ecc5a1"
+      },
+      "source/V6/experimental/v7_shadow_models.py": {
+        "bytes": 3382,
+        "sha256": "0e9faa75e77d62f9ce53b52d74bff35a5f988df0442f3a966f3937158a7d13d9"
+      },
+      "source/V6/experimental/v7_source_snapshot.py": {
+        "bytes": 11360,
+        "sha256": "b8c114a86ba7a5fede2459e3afe6121fa2737d54fb5f5dcb44ad9474e1e66462"
+      },
+      "source/V6/experimental/v7_source_snapshot_test.py": {
+        "bytes": 19794,
+        "sha256": "15f7542757cd057219d3fafc32ee8b79a7ef29d99cdd0b3bbb89a2a1e08ce85e"
+      },
+      "source/V6/experimental/v7_stability_contract.py": {
+        "bytes": 4684,
+        "sha256": "8a7056f5b83e7bb7731d545dac4ee5494b5d455fa0b0303fa2375f99aa3d8e7d"
+      },
+      "source/V6/experimental/v7_stability_delivery_test.py": {
+        "bytes": 1030,
+        "sha256": "102704c89e2b9b596eb3bfac6cca11595d620656b8a2bd96e8b4c649e8ab0096"
+      },
+      "source/V6/experimental/v7_stability_diagnostics.py": {
+        "bytes": 6613,
+        "sha256": "8e753599f4368b2f15743cf258a4fccaa374a8cde7183703a01e9f0a9112d4e9"
+      },
+      "source/V6/experimental/v7_stability_diagnostics_test.py": {
+        "bytes": 3606,
+        "sha256": "760c3bff70de757647049a34d350eb1d7466093356ba87253fa7c84e64f4d731"
+      },
+      "source/V6/experimental/v7_stability_export.py": {
+        "bytes": 5659,
+        "sha256": "6a2c1f5a711c926a2a0695e81c2a387e3231d020a9c46f8480e7b07a576fa1df"
+      },
+      "source/V6/experimental/v7_stability_export_test.py": {
+        "bytes": 4363,
+        "sha256": "3df57cea079dcba55243fe40801a70b33807289dfe477549114d834920201d7c"
+      },
+      "source/V6/experimental/v7_stability_suite.py": {
+        "bytes": 12849,
+        "sha256": "54c3ed7d6844564264244b6c9954a472a067920f9f811a759d6d3adf89ac87b3"
+      },
+      "source/V6/experimental/v7_stability_suite_test.py": {
+        "bytes": 2927,
+        "sha256": "5fa9c6dff818e7b0dafca36ce1749c157b38503a5b287c4276af1b1010ee9c2b"
+      },
+      "source/V6/experimental/v7_stability_test.py": {
+        "bytes": 3560,
+        "sha256": "e37a2bc01387ec29a96e1ec5cc667c7d09b4b8d797b354649fb672d7e215d2ca"
+      },
+      "source/V6/experimental/v7_stability_windows.py": {
+        "bytes": 2275,
+        "sha256": "dd2780891f4974290163f075d5ba7c9369cc1b6fd447a3e0721287e9e291f827"
+      },
+      "source/V6/experimental/v7_temporal_contract.py": {
+        "bytes": 5757,
+        "sha256": "867f8404f81f5b97f6b42a4e5db1d0af1e8e68b2ec4a1a0e38b6277e7ebfdcc8"
+      },
+      "source/V6/experimental/v7_temporal_contract_test.py": {
+        "bytes": 3569,
+        "sha256": "d3d01b5e98c037cc442e841e085b33a3d571a691ec5b0a466192e0135303d2d8"
+      },
+      "source/V6/experimental/v7_vintage_dryrun.py": {
+        "bytes": 11128,
+        "sha256": "cc83beb4795cb2d86fcc8d09577f9f68c065460c6c77a3e2126d13f47a5cfd3f"
+      },
+      "source/V6/experimental/v7_vintage_dryrun_test.py": {
+        "bytes": 7525,
+        "sha256": "42dd4f6309028de750ec96bc74169670b6fc0177cc1beda5e342b3c8b99313b7"
+      },
+      "source/V6/experimental/v7_window05_audit.py": {
+        "bytes": 10019,
+        "sha256": "5a90a7c8787b5a58521d34fa154bccabaf2e74e5a6ee20b7ca11defe5ecb33b2"
+      },
+      "source/V6/experimental/v7_window05_audit_test.py": {
+        "bytes": 1949,
+        "sha256": "9531752b0601d9f663d067402bd0864d5d559f055b1ef13eecec520a656a9d56"
+      },
+      "source/V6/experimental/v7_window05_signals.py": {
+        "bytes": 3266,
+        "sha256": "d23902f1c7e504eeb95b9cad70999b2f9710e9d2d0c52dfbdd32be8002acbe4c"
+      },
+      "source/V6/experimental/v7_window05_signals_test.py": {
+        "bytes": 3064,
+        "sha256": "a043c03e3786bc3355698d0e69bd59b40202ffc78c849f400a8e005672d5d18b"
+      },
+      "source/V6/experimental/v7_window11_l2_test.py": {
+        "bytes": 3523,
+        "sha256": "601656762b1cf49e01b8771df488907a650b0eff98de772c0102ded858dff403"
+      },
+      "source/V6/experimental/wf_scores.py": {
+        "bytes": 11010,
+        "sha256": "011617125541e069f9f660ec130a0a36f97c88fd0b8504a3f2feb3eeed864a4f"
+      },
+      "source/V6/research_lab/__init__.py": {
+        "bytes": 130,
+        "sha256": "657a7fa419bebb22e04b6e786494e6a1650bc11245af6f7d6a468287f36934f3"
+      },
+      "source/V6/research_lab/backtest.py": {
+        "bytes": 6608,
+        "sha256": "339e9069d8099982389e4d9b826d612dba94428d7ee11c95bf9a8e8cdd5039ef"
+      },
+      "source/V6/research_lab/build_dataset.py": {
+        "bytes": 4875,
+        "sha256": "87072688f80dd230739472a67930546810357b7beded4dc7a69d390836ef350a"
+      },
+      "source/V6/research_lab/c0plus.py": {
+        "bytes": 9070,
+        "sha256": "9b4b20b5dbc838f9e4c610b52ea3f4db03e05d277393c4205f29260c01c1201f"
+      },
+      "source/V6/research_lab/colab_runner.py": {
+        "bytes": 15565,
+        "sha256": "7e3c1dcfe0cef85cb8a259d595a9752f7f89275b51e4a49982c327680c896899"
+      },
+      "source/V6/research_lab/cross_stock.py": {
+        "bytes": 6140,
+        "sha256": "628ec6f80ffa4c25fc17684e10c1b0585b7648c8a202550d2a5000d2b9877502"
+      },
+      "source/V6/research_lab/data.py": {
+        "bytes": 5831,
+        "sha256": "16ed81a597cb2d5ece927986607c3116f7136259f01200b1b34dd2d6b2891991"
+      },
+      "source/V6/research_lab/data_health.py": {
+        "bytes": 16191,
+        "sha256": "bbcb8305cfb958e6e134a31d2cab16067528c726692502711c7f48f2547bdafb"
+      },
+      "source/V6/research_lab/disposal.py": {
+        "bytes": 9568,
+        "sha256": "536572151b583bf3989ecadb60651229a2c0376033dfb7b17a8eefffeb09c464"
+      },
+      "source/V6/research_lab/evaluate_predictions.py": {
+        "bytes": 8288,
+        "sha256": "1025f46c7779bc2b3471fd2156982ab5cf13cd005f4df3fd79356c0ddc3b8ec7"
+      },
+      "source/V6/research_lab/export_summary.py": {
+        "bytes": 10294,
+        "sha256": "36e6733d254c5bf9396d6eec2150d18f5df2e95f048bd50620d17b055e5e160b"
+      },
+      "source/V6/research_lab/features.py": {
+        "bytes": 2644,
+        "sha256": "5c82aade95459e664a59afe2e60c5bcf6dc928972dc00e60032dbca019b0a581"
+      },
+      "source/V6/research_lab/fetch_core.py": {
+        "bytes": 4350,
+        "sha256": "afab15584acbbeced404604bab8a3154b3257ff79219a650d30e532440cb73da"
+      },
+      "source/V6/research_lab/fill_prices.py": {
+        "bytes": 4667,
+        "sha256": "46d2eda672435a6c3017f3c97c37c34119fb83c86052b533a1392c107ee57c33"
+      },
+      "source/V6/research_lab/fin_audit.py": {
+        "bytes": 13734,
+        "sha256": "c6c5445204f9a694951f6b6ff220f54c28d6c27bb729475fc2e8fd41030df7be"
+      },
+      "source/V6/research_lab/fundamentals.py": {
+        "bytes": 4650,
+        "sha256": "45ba400bb043c78c0645b08371e496c733a2e11077388818ade037381dd819c0"
+      },
+      "source/V6/research_lab/gpu_env.py": {
+        "bytes": 15548,
+        "sha256": "ce6ad16c647c1b10292acdbb3ebbe28459a319b2dc980a39bcb1c2b5ff08e1d0"
+      },
+      "source/V6/research_lab/industry.py": {
+        "bytes": 3757,
+        "sha256": "681b8e085846a98c0c4589fa170a1238ae87efe6581ef6a3d26ab7f72fd4f4c5"
+      },
+      "source/V6/research_lab/labels.py": {
+        "bytes": 3412,
+        "sha256": "5ef6fa6463242a0aa36050ff4b0a63c30722102dd7f8b0bee718a58397f32a98"
+      },
+      "source/V6/research_lab/macro_sync.py": {
+        "bytes": 7284,
+        "sha256": "f8a5ceebc96e298b8b7acaf5ce30baeda7234b67ba8abcd3d5daa3b527a663c3"
+      },
+      "source/V6/research_lab/matrix_baselines.py": {
+        "bytes": 9212,
+        "sha256": "708801fc2e8e37607c8130f9174dece02ea625399b09855f609d5fbaf2cdee01"
+      },
+      "source/V6/research_lab/metrics.py": {
+        "bytes": 2504,
+        "sha256": "2f46cd381e37cde1218da666a48bb27c5fbd5c2a7973996d3e400fdaaf715f4e"
+      },
+      "source/V6/research_lab/models/__init__.py": {
+        "bytes": 2200,
+        "sha256": "a879fdaf6fa26eb5bee850f88a428470def287a2f13e60b9b0811d7f7c1bbc3d"
+      },
+      "source/V6/research_lab/p4_bundle.py": {
+        "bytes": 49335,
+        "sha256": "60d79c20b2ae72da2910d559364cc8224faaf835af74977ba46aa61af26feba7"
+      },
+      "source/V6/research_lab/p4_colab.py": {
+        "bytes": 42230,
+        "sha256": "8c5833ece2ecfd720c593479ee81cf99b392d3ca15aa786753c6715ffc4c8526"
+      },
+      "source/V6/research_lab/p4_eval.py": {
+        "bytes": 12099,
+        "sha256": "c8e787f17e7818eec939ed0740285482af02f28435cee22a3d96b3a3f727c164"
+      },
+      "source/V6/research_lab/pit_snapshots.py": {
+        "bytes": 5706,
+        "sha256": "87fb50b3f48edd186338bd357a85ec05431145581273a4d3afe559ae7b9c4cfb"
+      },
+      "source/V6/research_lab/pit_universe.py": {
+        "bytes": 5279,
+        "sha256": "22ac831949e8c04adb38fc84c0b38bf0fa4702104fb5324efca71f346b805024"
+      },
+      "source/V6/research_lab/portfolio.py": {
+        "bytes": 22072,
+        "sha256": "15768f9c32475cca47d4c8c074de55e8cadd459b85945ae62072c073c73b4385"
+      },
+      "source/V6/research_lab/portfolio_eval.py": {
+        "bytes": 50314,
+        "sha256": "3e46e07277c5d13fe6b24608b7e7dc20648e9558be322ad414d2f82a60c4a30c"
+      },
+      "source/V6/research_lab/repair_derived.py": {
+        "bytes": 20013,
+        "sha256": "5453703a96dad44bf22f8969bd053f908bea59b59aeaa56b10757a56e9e8f099"
+      },
+      "source/V6/research_lab/repair_per.py": {
+        "bytes": 16612,
+        "sha256": "94c0e8b3ed7c9305bc692418818886047e26d3ae9c44ec5301e5ebbac642df93"
+      },
+      "source/V6/research_lab/repair_prices.py": {
+        "bytes": 6431,
+        "sha256": "10144bd5a926ff2890eff56ed7139ad370f735a11ca6a98a4b6fdf47d2ac5b48"
+      },
+      "source/V6/research_lab/revenue.py": {
+        "bytes": 2988,
+        "sha256": "92f848bb3cc068c002656b838e8979956e4af7155d18a55e9bd47b02eae82439"
+      },
+      "source/V6/research_lab/rolling_analysis.py": {
+        "bytes": 15475,
+        "sha256": "bb9b9580bd6d6faafb7b1db4616a10a7909a76f8865209f24095da29108a3922"
+      },
+      "source/V6/research_lab/rolling_folds.py": {
+        "bytes": 7924,
+        "sha256": "f2df5b32163d8b9225a3a9fd8dad65902b154590f955b6bc47f2f21c2adebb1e"
+      },
+      "source/V6/research_lab/rolling_h2.py": {
+        "bytes": 7134,
+        "sha256": "07fcc7b8cc3d1cad81b849c65b37527917c4e4c984c5f90c79ad548ddc821104"
+      },
+      "source/V6/research_lab/rolling_h3.py": {
+        "bytes": 7108,
+        "sha256": "8e602f27048f848bfe7d592557da90f86e9272f4572f24445a69cd8452b6248d"
+      },
+      "source/V6/research_lab/rolling_runner.py": {
+        "bytes": 5197,
+        "sha256": "d8e3e2636e7ac120ae623107ee95b9a7712560dc71d7cfc4eb481f2a7a00f821"
+      },
+      "source/V6/research_lab/rolling_scores.py": {
+        "bytes": 7611,
+        "sha256": "ed25a4d5f1c07747bcc40eb56200f3035126969854d4a7119601e2c206858bb3"
+      },
+      "source/V6/research_lab/rolling_seq_scores.py": {
+        "bytes": 50048,
+        "sha256": "5d10d52b1d423c73fa518535f01e80b2760a0d3087036b9b778491d13942aefd"
+      },
+      "source/V6/research_lab/run_experiment.py": {
+        "bytes": 10180,
+        "sha256": "c50deb075e45f78153e4f91460e3f493fa2b2502047d6513a1ff30d04339fe82"
+      },
+      "source/V6/research_lab/seq_models.py": {
+        "bytes": 7341,
+        "sha256": "54361cd3fb5bceafdba8d3945bc6ae4f8d2684c42b3b70f99211a39a001eea74"
+      },
+      "source/V6/research_lab/seq_runner.py": {
+        "bytes": 22732,
+        "sha256": "1e1ff434439582f1c312202df7cc0b4756dbe2a58ebd470715fcc6ca94ade56e"
+      },
+      "source/V6/research_lab/significance.py": {
+        "bytes": 3409,
+        "sha256": "84d279cf8862b78e73d3a1757a967f3c0dd4445710458291c67a6e3f008ad0fb"
+      },
+      "source/V6/research_lab/significance_report.py": {
+        "bytes": 2499,
+        "sha256": "816dab7638ac766026a1d535e1bf5c71e691c6043ac15f61f48a3bb52bdc8df4"
+      },
+      "source/V6/research_lab/splits.py": {
+        "bytes": 2284,
+        "sha256": "4b9e36c64beaf5d6612c9e21aae2b8bdf8979a0d68fb136cd13fb8d4c1b7cec7"
+      },
+      "source/V6/research_lab/stale_audit.py": {
+        "bytes": 19462,
+        "sha256": "9a46be4dc3df308bbda856af0713e75ebf759f79cd573e8ae16cd36df93ae9fb"
+      },
+      "source/docs/operations/colab-p4.md": {
+        "bytes": 4670,
+        "sha256": "0eb538f91417316ccbff82c30013975000bd03c529567c436bc661190c8cde60"
+      },
+      "source/environments/p4a-colab-runtime.json": {
+        "bytes": 2350,
+        "sha256": "b45380920c48c5548ef8880f63f4a351a3de7ff5d6b9f2abef50ebf87e763194"
+      },
+      "source/tasks/p4a-colab-contract-20261121.json": {
+        "bytes": 5649,
+        "sha256": "7d5813bc21644817ccc991c97049f2c65efe88a9f4c18903b42038337b328c41"
+      },
+      "source/tasks/spec-p4a-colab-20261121.md": {
+        "bytes": 8473,
+        "sha256": "4bad42af922c49d5fbd1bfe8fb181f5bfd48bbeff58d3c86f6e00171cec1e75e"
+      }
+    }
+  },
+  "invariants": {
+    "environments/p4a-colab-runtime.json": {
+      "bytes": 2350,
+      "sha256": "b45380920c48c5548ef8880f63f4a351a3de7ff5d6b9f2abef50ebf87e763194"
+    },
+    "environments/p4a-colab.requirements.lock.txt": {
+      "bytes": 2659,
+      "sha256": "2c39a3fb9567d1f9fc8ee83369c7b6c90cd19a8e679e32e4c8a6c1d75c5782c9"
+    },
+    "tasks/p4a-colab-contract-20261121.json": {
+      "bytes": 5649,
+      "sha256": "7d5813bc21644817ccc991c97049f2c65efe88a9f4c18903b42038337b328c41"
+    }
+  },
+  "matrix": {
+    "bytes": 2183,
+    "sha256": "bc6401095260e7d4153060e3106fff8dbae88cfb6df3f349b808b7dd762c7d9f"
+  },
+  "queue_sha256": "4dc90ec0ada6c6d34b43c429d359424c502634e502c6856c6774bf138de7ba23",
+  "research_budget": {
+    "interruption": "record unknown interval through restart; resume complete epoch; thermal STOP remains latched",
+    "limits": null,
+    "policy": "record_only",
+    "reserve": null,
+    "telemetry": [
+      "wall_seconds",
+      "gpu_model",
+      "temperature_c",
+      "clock_mhz"
+    ],
+    "thermal_stop_c": 85
+  },
+  "to": {
+    "commit": "20e6b5408d9f9b13d56290a72a2dc313c35d1b94",
+    "sources": {
+      "source/V6/experimental/__init__.py": {
+        "bytes": 86,
+        "sha256": "4ee7acde4eaca62ef4edabe038d8a87e1f7d11cd8720c1502bf6c02a06624626"
+      },
+      "source/V6/experimental/backfill_prices.py": {
+        "bytes": 11921,
+        "sha256": "ee5da38b0d725489b66905103178da761a9d73ed2c8ca8c9f625774f10438dcb"
+      },
+      "source/V6/experimental/baseline_common.py": {
+        "bytes": 54857,
+        "sha256": "c434b1c7daac5d026c78013e8f43f6e609109e237cc244b844edac76b3d40932"
+      },
+      "source/V6/experimental/baseline_gbdt.py": {
+        "bytes": 19677,
+        "sha256": "e3a520fecbfe6409cf81bb460b04b4e8ff755b281c685f506213f33dbd1f02ff"
+      },
+      "source/V6/experimental/baseline_ic_diagnosis.py": {
+        "bytes": 22876,
+        "sha256": "31b2f693d5d8efc1f690d22208ed16a3c80f63caa64db04c06badb5941af0ff3"
+      },
+      "source/V6/experimental/baseline_ridge_lasso.py": {
+        "bytes": 22090,
+        "sha256": "fb3baf436b51e9d467c0f3c7cbc6dda29fb98d9fa4b0db3501891cdb9a7a4b00"
+      },
+      "source/V6/experimental/baseline_rnn.py": {
+        "bytes": 22775,
+        "sha256": "39c289801388c37216b0bc2ef1c79d7fd59786f5bf1fdf52d72686e443fd4066"
+      },
+      "source/V6/experimental/compare_panel_ic.py": {
+        "bytes": 6310,
+        "sha256": "32a8ac878e98b48169692b6d877cc41af1928f988df8c4c8553661e05d60dee5"
+      },
+      "source/V6/experimental/compare_scores.py": {
+        "bytes": 3776,
+        "sha256": "23fb6857979b807ec53dea25fcc7944b53cfe1605c94ef4e4a5b75f727e00f42"
+      },
+      "source/V6/experimental/conviction_c_analysis.py": {
+        "bytes": 18416,
+        "sha256": "5a639faf61133119dac0a2a917add63a709ac9bb0654d0ac84cd9a2b8eefc990"
+      },
+      "source/V6/experimental/deep_supervision.py": {
+        "bytes": 15331,
+        "sha256": "acef920e66c74bb1c2b495b12ca90bedc0ffcbd764606fb55c61a480022d2ece"
+      },
+      "source/V6/experimental/diag_window_panel.py": {
+        "bytes": 9855,
+        "sha256": "cf7b6f9274a557526ea06831a19bab12d4e2129565cdfaaeb8d288d70af37c24"
+      },
+      "source/V6/experimental/diagnostics/groupd_gat_2x2_analysis.py": {
+        "bytes": 5158,
+        "sha256": "c3fa55323b12344256d362d5d7c9c798845b45fbb17a3242b787a14a27b3c23d"
+      },
+      "source/V6/experimental/diagnostics/gru_decile_01_panel.py": {
+        "bytes": 5912,
+        "sha256": "5b1bd05c68e27419227e808c6ced38a1c32718088e71cc5d71fc75fa86ad30da"
+      },
+      "source/V6/experimental/diagnostics/gru_decile_02_nature.py": {
+        "bytes": 7757,
+        "sha256": "b2a8b7fcb7c623d7948741b76784a96cfeb0ff8a8d1e3cf5bda3791f1e08e5ab"
+      },
+      "source/V6/experimental/diagnostics/gru_decile_03_common_ruler.py": {
+        "bytes": 3991,
+        "sha256": "1f37003a58177067a9ee11768694f7cf3b7d407b45c57aa96bb91fb99959407c"
+      },
+      "source/V6/experimental/diagnostics/gru_decile_04_robustness.py": {
+        "bytes": 3720,
+        "sha256": "17d20ecfffc096c5005c38440303c4c69bf87cc75d70bb500ba98e6f0c89d5ad"
+      },
+      "source/V6/experimental/dim47_ablation.py": {
+        "bytes": 13741,
+        "sha256": "e8ac9d7d2550747f5cbf5be0e784c90f483edffa9fdabada5867fbce11293a5e"
+      },
+      "source/V6/experimental/f5_r_series.py": {
+        "bytes": 40756,
+        "sha256": "cfb5291dc57e225fec48c4055e1a45118314254b0cf4266804a761a0e5a184e3"
+      },
+      "source/V6/experimental/fetch_trading_status.py": {
+        "bytes": 6256,
+        "sha256": "0a14471e56ab2b49a891a38fe6907ac54bda3cba810885ab71c6ad25c449dbdc"
+      },
+      "source/V6/experimental/fix_prices_index_column.py": {
+        "bytes": 9712,
+        "sha256": "bf50b332d0bab2e9aef83d0b89362364ec49f02a161658f5bf4efcdcd070306f"
+      },
+      "source/V6/experimental/groupd_ablation.py": {
+        "bytes": 27224,
+        "sha256": "fac258438caafe5c6553660d0bbe63b2cab6a1f2f2652c599b1eb7342361525e"
+      },
+      "source/V6/experimental/head20d_ablation.py": {
+        "bytes": 10646,
+        "sha256": "cae1b537d6c6fae7decab82ea71b88bd97376180bddb5da38e8a008909bf8ae7"
+      },
+      "source/V6/experimental/kg_ablation.py": {
+        "bytes": 25452,
+        "sha256": "e8561a456d263b0d6ab05d222120a636ad610a79a81c8e648a200d4ced524aaa"
+      },
+      "source/V6/experimental/kg_builder_v2.py": {
+        "bytes": 19250,
+        "sha256": "82592c15de494a92547bd73263d2416d92b9c801d3c60baf4e003a1f5ca271b3"
+      },
+      "source/V6/experimental/kg_builder_v3.py": {
+        "bytes": 12938,
+        "sha256": "62b776eb344cecea30625489ac357e5ea16b623cb06b9945eafae77d1df29e3c"
+      },
+      "source/V6/experimental/label_10d.py": {
+        "bytes": 18511,
+        "sha256": "edf7dc7119a53609d76a273e21d7b0ef31484bc6c56a36138cdf8b648bd7ecb1"
+      },
+      "source/V6/experimental/label_horizon_report.py": {
+        "bytes": 9559,
+        "sha256": "229f0621d306898e7059ac240f24a42a513eff0f2bce7044b6bc56b1135d8daa"
+      },
+      "source/V6/experimental/phase3_a_dropout_sweep.py": {
+        "bytes": 9889,
+        "sha256": "33afcaaedf9ce8d4f1fd18485e725fd3af6bd2ee9e617d069b56e641b980707d"
+      },
+      "source/V6/experimental/phase3_b_listnet_sweep.py": {
+        "bytes": 10148,
+        "sha256": "3d8bcf61c5147b30fdd1db9fc2a84a0f57612e9e42142c3f5770c66a398f0e71"
+      },
+      "source/V6/experimental/phase3_c_trend_single_scale.py": {
+        "bytes": 12398,
+        "sha256": "041fa30b1bf487918949f5bb3e1400d96cf31d35f9c7ee95f42475a8b0d9ea96"
+      },
+      "source/V6/experimental/phase3_d_window_sweep.py": {
+        "bytes": 8984,
+        "sha256": "e557a2fed2792afa4152ef1e66df9a3ed49d75786a121bde47a4530e16093452"
+      },
+      "source/V6/experimental/portfolio_lab.py": {
+        "bytes": 52417,
+        "sha256": "1993faf6b6d6257f92cdc201f305a99bcc6afb598aac8d99b7320290d6973667"
+      },
+      "source/V6/experimental/score_mamba_local.py": {
+        "bytes": 24617,
+        "sha256": "46aa2f7674825b1b9699f2b45750cd006cb3126f3af44d308586900331be0763"
+      },
+      "source/V6/experimental/short_model.py": {
+        "bytes": 18108,
+        "sha256": "56b1543f0c2e177be28137eeebf34d4e11d3fa21efd4fefd9324f5648179febd"
+      },
+      "source/V6/experimental/splitters.py": {
+        "bytes": 12743,
+        "sha256": "8470e4c92239c9e00ceb2cd76b2cd0506893d0991948231b0ac1a3806bed36e9"
+      },
+      "source/V6/experimental/trend_model.py": {
+        "bytes": 10586,
+        "sha256": "7f3a12f0b130a05a5485ff2caab67dc5415763f7064d9a8210cb1e712f3577e5"
+      },
+      "source/V6/experimental/v7_capture_readiness.py": {
+        "bytes": 5348,
+        "sha256": "90f3523556ddd7c5ec0ff372c0c8ce42f2b0e9b163a9352e067903fa83f63a9d"
+      },
+      "source/V6/experimental/v7_capture_readiness_test.py": {
+        "bytes": 4907,
+        "sha256": "ac6a843f315d22e6d7440d0d6d7fbd1aba877cec3f1fc6736b0beb0826024240"
+      },
+      "source/V6/experimental/v7_classical_baseline.py": {
+        "bytes": 11611,
+        "sha256": "115ee84194417e87f6ba885dee5e4a26594cccd6a223e26c863a288bedeefb1e"
+      },
+      "source/V6/experimental/v7_classical_baseline_test.py": {
+        "bytes": 8668,
+        "sha256": "1d7016f3a256dafc1fc3959bc2f72e0938d0f2e2748d37881c62931ea96d9fd5"
+      },
+      "source/V6/experimental/v7_classical_study.py": {
+        "bytes": 16638,
+        "sha256": "26610f860858d420de2f4d94221d6d84a88bc573c84b1282aabc8cd000e7d68f"
+      },
+      "source/V6/experimental/v7_classical_study_test.py": {
+        "bytes": 8571,
+        "sha256": "b311501c1ae6a98203e0039469359d7776328b1caf1b006ea5f67c66f3ea85a7"
+      },
+      "source/V6/experimental/v7_confirmation_benchmark.py": {
+        "bytes": 5000,
+        "sha256": "85d127bb44cb1e478031feca543d94536f31ffacb54c52136a4243b9cc858e04"
+      },
+      "source/V6/experimental/v7_confirmation_design.py": {
+        "bytes": 4407,
+        "sha256": "a1fbe3827a14ad69f66a5cc4e294c4ee8a26b1c9cf42e6e1421af55e47536aaa"
+      },
+      "source/V6/experimental/v7_confirmation_suite.py": {
+        "bytes": 12879,
+        "sha256": "33d34fdfaeb3fd23e7b0978b7fe60625eba61f6b3381445eb2724a539dca5638"
+      },
+      "source/V6/experimental/v7_confirmation_test.py": {
+        "bytes": 5617,
+        "sha256": "a952d7375e18fd03d105fa1a5a357afc2053ef037c504e490b811a9a9fe8cc86"
+      },
+      "source/V6/experimental/v7_corrected_e5_lifecycle.py": {
+        "bytes": 7274,
+        "sha256": "360b72fe6dcec864e1c07c901d4ad74dcf081dc5a153d928b8a6e24ee265755d"
+      },
+      "source/V6/experimental/v7_corrected_e5_lifecycle_test.py": {
+        "bytes": 7659,
+        "sha256": "7df578925a59a8688bb22f60ff4a0ccd419b976cf09767d98abb3d486e02d850"
+      },
+      "source/V6/experimental/v7_corrected_e5_matrix.py": {
+        "bytes": 17857,
+        "sha256": "b3735a7d8c01dd09bfdcd4e3a920ebd7ef0976a75195bbd3b8892310e639f671"
+      },
+      "source/V6/experimental/v7_corrected_e5_matrix_test.py": {
+        "bytes": 5071,
+        "sha256": "6ec29af2568d055cf559acbf851d98ae05f2eea50d7d657bf0715d8c1159995e"
+      },
+      "source/V6/experimental/v7_corrected_e5_model.py": {
+        "bytes": 8084,
+        "sha256": "67b60ba87b983087e205b3dd5dbd6c5fd3ae759feeb18cb72d846ea3c47def28"
+      },
+      "source/V6/experimental/v7_corrected_e5_replication.py": {
+        "bytes": 15448,
+        "sha256": "8c3a2b37950c5a24028cf9a2081fa6a3ea1cd89ce4be8e05b29ba1811c5d3af8"
+      },
+      "source/V6/experimental/v7_corrected_e5_replication_test.py": {
+        "bytes": 6874,
+        "sha256": "d18130971dca6fb0e662eaa625f05bf052d9f109d03826270848f97912fcb0a5"
+      },
+      "source/V6/experimental/v7_corrected_e5_tiny_pipeline_test.py": {
+        "bytes": 2661,
+        "sha256": "c4e90ba667ab8c1a5a9fe4ed6d526dc7277ef59a3b4390c2bc6a153d510f5d05"
+      },
+      "source/V6/experimental/v7_corrected_e5_train.py": {
+        "bytes": 23835,
+        "sha256": "054e01a487a16447cd41f3182b6c309224cd0b42b3072e25086028c2dac03250"
+      },
+      "source/V6/experimental/v7_corrected_e5_train_test.py": {
+        "bytes": 4995,
+        "sha256": "0679aaf6d6bbd2c8f4989b84c1791e705969b0a8431fa3f8c57f3241919831dc"
+      },
+      "source/V6/experimental/v7_correctness_audit.py": {
+        "bytes": 8136,
+        "sha256": "68f274683d0fe87db8a2cc9a88be790205cca17388a83574091ea3289b47155c"
+      },
+      "source/V6/experimental/v7_correctness_audit_test.py": {
+        "bytes": 5545,
+        "sha256": "a70d0c6b3e28c3fea6c4d5db06db2253d1772e4c336f87dfdd4e3a8d4fd4f42a"
+      },
+      "source/V6/experimental/v7_cpu_resume.py": {
+        "bytes": 16134,
+        "sha256": "0fef16b0cfd6393fd4c771cd02846d8bb110b027e5919d256e6cec043d3cb0e2"
+      },
+      "source/V6/experimental/v7_cpu_resume_test.py": {
+        "bytes": 8286,
+        "sha256": "9b8162e3f279578f0c8b1f021baf851037bb9f3712077e73d58cfe0a39bf9e73"
+      },
+      "source/V6/experimental/v7_csv_capture_qc.py": {
+        "bytes": 3846,
+        "sha256": "3a590f7f336bff394db23c55a6afcde1a1c7d3eb1c1bdacf78fdb06e0bf4ddd9"
+      },
+      "source/V6/experimental/v7_data_recovery.py": {
+        "bytes": 11985,
+        "sha256": "6aaec335e8a6ef8584e109f89c34c484e2bb77e8487fd568fd73200c5881cc66"
+      },
+      "source/V6/experimental/v7_depth222_suite.py": {
+        "bytes": 10585,
+        "sha256": "73609d9ede0a81c70fe752543849ff74ff0621301a08acdc38d8692c8d0a2213"
+      },
+      "source/V6/experimental/v7_depth222_test.py": {
+        "bytes": 2907,
+        "sha256": "029d7035ee7f7cb84c9425452ed12696bba5442b91979de6839a39eb58ab09d7"
+      },
+      "source/V6/experimental/v7_e1_checkpoint.py": {
+        "bytes": 11602,
+        "sha256": "55ad07f376ad8c824338a3c24ad7d3d3fed72436418ceaf6a4ae6297dc88d35a"
+      },
+      "source/V6/experimental/v7_e1_checkpoint_test.py": {
+        "bytes": 7580,
+        "sha256": "cc81eb67b2647828edd1c8b5782b5d56f485b2809e8d6ae66f5af1eef726b888"
+      },
+      "source/V6/experimental/v7_e1_colab_runtime.py": {
+        "bytes": 2586,
+        "sha256": "352b16c7762342d7120b88a985688a94e963e719bee0286ad7edb9323609abc6"
+      },
+      "source/V6/experimental/v7_e1_colab_runtime_test.py": {
+        "bytes": 4176,
+        "sha256": "7a898dbbcd3454cdbf733831af7d4188db30ef14ea7ae7a04e7c6bba01c95531"
+      },
+      "source/V6/experimental/v7_e1_contract.py": {
+        "bytes": 7165,
+        "sha256": "96f22b9cd3a5bd412aa43dbbea4ea3cd3f6c85d076cd914e88ec6c0ec0efe547"
+      },
+      "source/V6/experimental/v7_e1_contract_test.py": {
+        "bytes": 4561,
+        "sha256": "446c4076a26bb4223fbfd10f9e24618b91d6e5243bb80e305ca728a62d815add"
+      },
+      "source/V6/experimental/v7_e1_evaluate.py": {
+        "bytes": 9202,
+        "sha256": "0a3c4e053ca5bd98a3c134761070f07be56802984e519709b60a018c3980ff18"
+      },
+      "source/V6/experimental/v7_e1_evaluate_test.py": {
+        "bytes": 2797,
+        "sha256": "810cb89944dbcbbfc2853792950a0c297bd9dbfaf7e446ca013c515896b869a4"
+      },
+      "source/V6/experimental/v7_e1_matrix.py": {
+        "bytes": 7611,
+        "sha256": "ee759fada9586291e7bf931e7f8cb1187e52527deef9c733aaa6dd603e160efc"
+      },
+      "source/V6/experimental/v7_e1_matrix_test.py": {
+        "bytes": 3747,
+        "sha256": "375a890d7f8c87d1d5e5c77b092282a6f5d2b327d78a54f043dde490a51dfdcb"
+      },
+      "source/V6/experimental/v7_e1_readiness.py": {
+        "bytes": 5260,
+        "sha256": "822f77f526f9eb765868443e84721995c0710f9208582f69eb57beaab6039a2f"
+      },
+      "source/V6/experimental/v7_e1_readiness_test.py": {
+        "bytes": 2351,
+        "sha256": "2845f2d97ffcaa5445971c34ab210937d40b26d5434b5cbba6e9e956e1892ff3"
+      },
+      "source/V6/experimental/v7_e1_run.py": {
+        "bytes": 4696,
+        "sha256": "0990aa8f1dcce900213a6d6986bcb9762fd2f29d0c04e4e7d824a911e151e2c3"
+      },
+      "source/V6/experimental/v7_e1_run_test.py": {
+        "bytes": 3029,
+        "sha256": "0ac5bde9390ba888fb4ff3265e1e87642e24665cd5d1d74ba6463522d29d9748"
+      },
+      "source/V6/experimental/v7_evidence_tier.py": {
+        "bytes": 2660,
+        "sha256": "d797d2609f1a77d5a86ac3eaf98a238e1f34f8252302df74d78a57878734be5a"
+      },
+      "source/V6/experimental/v7_evidence_tier_test.py": {
+        "bytes": 2796,
+        "sha256": "6db261b14764c1481f74bf254f3975eef1517db3c50f98ce572290709382e6d7"
+      },
+      "source/V6/experimental/v7_executable_labels.py": {
+        "bytes": 5460,
+        "sha256": "81d8857bd7f2e9175c018ad6a11c74e01ec401e619ea5b5a8ce5124960d23219"
+      },
+      "source/V6/experimental/v7_executable_labels_test.py": {
+        "bytes": 4185,
+        "sha256": "852c877e631f939ef64350f880db18582ae558cbda07c0dcbeb3288b96b07bcd"
+      },
+      "source/V6/experimental/v7_expanded_pilot.py": {
+        "bytes": 1679,
+        "sha256": "def603dd573089fa7785d4804a08304aa1434ee6773f44733ecf51b7be6ed334"
+      },
+      "source/V6/experimental/v7_expanded_pilot_test.py": {
+        "bytes": 3256,
+        "sha256": "9cc17dc720dce115838e56ce652f8c099cb4f09f4dff1d2abad274213307c36b"
+      },
+      "source/V6/experimental/v7_experiment_data.py": {
+        "bytes": 4671,
+        "sha256": "0dc1da2a67976f1a932a548239bbb21a94d646533d5502935d2888b67ca6db94"
+      },
+      "source/V6/experimental/v7_experiment_model.py": {
+        "bytes": 2283,
+        "sha256": "7337478f2b15ed0eff5592c3a62afb6f71b57dbe8e592daa59f7949126e0476e"
+      },
+      "source/V6/experimental/v7_experiment_storage.py": {
+        "bytes": 4678,
+        "sha256": "25e4535b77293d92ca358c404a5f2658c484ff95a009a153cacd6444097a6676"
+      },
+      "source/V6/experimental/v7_experiment_suite.py": {
+        "bytes": 11684,
+        "sha256": "2b14cae8ee386a2970e6d9cb1aecbb24256e37a504504825a751e04427467d20"
+      },
+      "source/V6/experimental/v7_experiment_test.py": {
+        "bytes": 7085,
+        "sha256": "fa075127ae21c1eacb791f39f2aa0e45123c95fa5ca72fc44c72704afb9d0624"
+      },
+      "source/V6/experimental/v7_experiment_train.py": {
+        "bytes": 14143,
+        "sha256": "ce5b323ff44bf5b1325d9185c3317aa5aa79403b085fda96f8f2dec31c2cdf8e"
+      },
+      "source/V6/experimental/v7_exploratory_proposal.py": {
+        "bytes": 2505,
+        "sha256": "263820390f937e506a9f3c8b5eb13996dd088c9c18a07271b049a75426fb2f7e"
+      },
+      "source/V6/experimental/v7_exploratory_proposal_test.py": {
+        "bytes": 2369,
+        "sha256": "02595d8e5522a98460f08e574fee032bc2894c9f23b5dcaf14bc8713edb7ebb6"
+      },
+      "source/V6/experimental/v7_finmind_proof.py": {
+        "bytes": 12962,
+        "sha256": "43a6757bf6b5091aff3d48eb78b847090dd6663198eed8c1037efba1f707a5e5"
+      },
+      "source/V6/experimental/v7_finmind_proof_test.py": {
+        "bytes": 8575,
+        "sha256": "62525c89d3e860d9ef8bd4ed7d5d8f17c15d828200383f36e9dab31611cbcfc6"
+      },
+      "source/V6/experimental/v7_forward_vintage.py": {
+        "bytes": 5568,
+        "sha256": "ea3bec9bbd302fa714449ddee3538e45b18b4bace4f8f54fa3d9876ab56c71fe"
+      },
+      "source/V6/experimental/v7_forward_vintage_test.py": {
+        "bytes": 5394,
+        "sha256": "b4d88f19a8e997f0d4d1f9de2f9f5b11a4d425ae6e52eff6839aec16b8225254"
+      },
+      "source/V6/experimental/v7_h1_config.py": {
+        "bytes": 4077,
+        "sha256": "8d374311d1716f0d63e917c7bd79219a98d3c56dc5ac64811c0fb87b1a9a497c"
+      },
+      "source/V6/experimental/v7_h1_mamba2_adapter.py": {
+        "bytes": 8668,
+        "sha256": "75f9e152431dce4f57bd79b1ff616deea0ae2bdb8b589aa8060e44c805914d2d"
+      },
+      "source/V6/experimental/v7_h1_probe.py": {
+        "bytes": 5612,
+        "sha256": "6141daf7be3cbf41a4f2ad08adff8387a062554ea99d9ee9216ad4d9d6d6249b"
+      },
+      "source/V6/experimental/v7_h1_test.py": {
+        "bytes": 6265,
+        "sha256": "c7792d7111dc73ea55e440dcbd33994f9f1dee9997f567d90b0ec420a641599d"
+      },
+      "source/V6/experimental/v7_health_summary.py": {
+        "bytes": 4959,
+        "sha256": "571c5475bc6c238278503f316a24d3dbe6e4d8df0d6b24db79a618219ed47ef5"
+      },
+      "source/V6/experimental/v7_health_summary_test.py": {
+        "bytes": 3488,
+        "sha256": "fdd63442a54f531010760bc73d0304ad2eb2dd448eaae222a482c3f7977d0c73"
+      },
+      "source/V6/experimental/v7_historical_label_materialize.py": {
+        "bytes": 9484,
+        "sha256": "5376b59831719efcaf27ff5674cd768f77b7bf34d07cb26635b24bb41704f4d2"
+      },
+      "source/V6/experimental/v7_historical_label_materialize_test.py": {
+        "bytes": 2463,
+        "sha256": "a641ce5363b39d5aa8f6cc187bc485c0d3ad754e63509b263ca1898ed3b72c46"
+      },
+      "source/V6/experimental/v7_historical_panel.py": {
+        "bytes": 3028,
+        "sha256": "28ec10e08678ee6cf64835f8e00e601c18f81d7c20c389e038d2f4f081264ee1"
+      },
+      "source/V6/experimental/v7_historical_panel_test.py": {
+        "bytes": 2465,
+        "sha256": "393d55f591948b013c28ee37deb30c0b7f8be6e0aa895b85f782b4240b71d276"
+      },
+      "source/V6/experimental/v7_historical_security_master.py": {
+        "bytes": 7007,
+        "sha256": "3c3535c44a50def04835ea5bb6b132c3700d02a88498ba0415d31096f9316a95"
+      },
+      "source/V6/experimental/v7_historical_security_master_test.py": {
+        "bytes": 3817,
+        "sha256": "5237db985ad6b7a5d5a748f8863acc7359b12e2ab5bd1fa67de87b547cfeac71"
+      },
+      "source/V6/experimental/v7_integrated_config.py": {
+        "bytes": 5241,
+        "sha256": "6e0a0370fd45fe9e9aabf523a62699dc32173e9b90d23bf4154cfb1fdadc6fcd"
+      },
+      "source/V6/experimental/v7_integrated_data_quality.py": {
+        "bytes": 12053,
+        "sha256": "3e3249ada163f74e41fa79499586925f55bf3c223754d9d1320b943ac3371086"
+      },
+      "source/V6/experimental/v7_integrated_industry.py": {
+        "bytes": 6670,
+        "sha256": "211f82f46cad0476361b53b29c406b71e4ebda77244fe67c77ee4b349eec3352"
+      },
+      "source/V6/experimental/v7_integrated_industry_test.py": {
+        "bytes": 4212,
+        "sha256": "1051b168f57f63a6144e111d6e56cb3d3159dfd8b91584ecf3851142948522c2"
+      },
+      "source/V6/experimental/v7_integrated_model.py": {
+        "bytes": 12187,
+        "sha256": "a3a5bbad05672af343c00e1ba1775be64437e3130487daa421fa8fd422573f97"
+      },
+      "source/V6/experimental/v7_integrated_point_in_time.py": {
+        "bytes": 5597,
+        "sha256": "b3ea9203932eaf8d3cd183d72eb32c03602f5e2025f05b82e36402bd3cd5a204"
+      },
+      "source/V6/experimental/v7_integrated_point_in_time_test.py": {
+        "bytes": 3255,
+        "sha256": "dccce4704f188f3cce1eeb76fb047426c0e9f94cca24847fc77d70f6eda52456"
+      },
+      "source/V6/experimental/v7_integrated_prepare_cache.py": {
+        "bytes": 3221,
+        "sha256": "c16c3d1ce1a5ebe3c1a80ce592f332acaae28d3c6664e5d0254f33a9d73d133e"
+      },
+      "source/V6/experimental/v7_integrated_prepare_cache_test.py": {
+        "bytes": 1671,
+        "sha256": "68ee4e10e650c711ab1808ac927986eb81f3db0e4eac4854365d47111e94247a"
+      },
+      "source/V6/experimental/v7_integrated_probe.py": {
+        "bytes": 13731,
+        "sha256": "4577b4f6523408ec2076504103c5e835ce017ffe82386baf00c1de60935a4a32"
+      },
+      "source/V6/experimental/v7_integrated_test.py": {
+        "bytes": 71683,
+        "sha256": "0965384344dae6ce9f13010c37d8072269d1218559236c1733d551b180a1a523"
+      },
+      "source/V6/experimental/v7_integrated_train.py": {
+        "bytes": 92448,
+        "sha256": "4ce1d8b495c6b28d2a6f3749c10a8537f1d84aefa05ff929e93b31ee0421d132"
+      },
+      "source/V6/experimental/v7_manual_collector.py": {
+        "bytes": 14703,
+        "sha256": "75f0aedf701a765b2a448c312b606f362db6a0460bf200188c90e1b909a73bf8"
+      },
+      "source/V6/experimental/v7_manual_collector_test.py": {
+        "bytes": 8230,
+        "sha256": "4baca4771600288d134b72cfa329d6f0f3ed6250b57a3b6e3f6a7db9fd6a2f30"
+      },
+      "source/V6/experimental/v7_ohlcv_provenance.py": {
+        "bytes": 3562,
+        "sha256": "9730730188586eeb56354c2d612696a4d6337401386804743eb53ca34acf3084"
+      },
+      "source/V6/experimental/v7_ohlcv_provenance_test.py": {
+        "bytes": 4686,
+        "sha256": "dc97309ee70c0ec649caa05efce45986b0a79afbeadf06c081f29de50115cff9"
+      },
+      "source/V6/experimental/v7_portfolio_contract.py": {
+        "bytes": 11110,
+        "sha256": "7b5a887adf88b45999fa830d54148ed3f137ca05937a4109a61df517b7f6c854"
+      },
+      "source/V6/experimental/v7_portfolio_contract_test.py": {
+        "bytes": 4888,
+        "sha256": "b0cc3df0336a4bc13f9e23daddae237acba37af7f9a592510d43890dbbf1b7da"
+      },
+      "source/V6/experimental/v7_portfolio_engine.py": {
+        "bytes": 19427,
+        "sha256": "0ec986ac4eda4ddaa4310bd8b8ae1c746eb62af59d3e8fd371b4729f7bc4a39c"
+      },
+      "source/V6/experimental/v7_portfolio_engine_test.py": {
+        "bytes": 19451,
+        "sha256": "8347ac6236b4dbe0990efe8603e4e59179f356e51738b202dea8e941d2beb943"
+      },
+      "source/V6/experimental/v7_portfolio_fixture.py": {
+        "bytes": 2903,
+        "sha256": "3fd3043aa662ca01dd3340230349557c7b8a50a746fb9ea6721114d510fceb66"
+      },
+      "source/V6/experimental/v7_portfolio_history.py": {
+        "bytes": 9721,
+        "sha256": "5c9fb03219e4c12d2ed1e05068b8ffb7be783b335c59771e86e44bb657c17541"
+      },
+      "source/V6/experimental/v7_portfolio_history_e2e_test.py": {
+        "bytes": 5202,
+        "sha256": "d32fbe4312132f4ca9b502b83d567ae4b269f08fc51873695051afb89fb14326"
+      },
+      "source/V6/experimental/v7_portfolio_history_test.py": {
+        "bytes": 6861,
+        "sha256": "ce73aaf1aceea472f586a6c1f37eea564adb6d2110bb90af86b2fe581b4d0e3d"
+      },
+      "source/V6/experimental/v7_portfolio_journal.py": {
+        "bytes": 15834,
+        "sha256": "d06ff693b44f9f658cc71ea34daedfbe013a42e293e677fadf162b053df5310b"
+      },
+      "source/V6/experimental/v7_portfolio_journal_test.py": {
+        "bytes": 21493,
+        "sha256": "83e1dae9634e13bdfe3550ecffa3de38549d1462539681d89b377db12ccc4911"
+      },
+      "source/V6/experimental/v7_portfolio_metrics.py": {
+        "bytes": 9426,
+        "sha256": "a46225cc7a83483c47b97e0a38887641bfdb88a85640723948374d8ca6905e62"
+      },
+      "source/V6/experimental/v7_portfolio_metrics_test.py": {
+        "bytes": 6370,
+        "sha256": "58c8ef85a9ea3a9976946b1129ab16a56d162ad65901540f9d189ee5bd6f60ce"
+      },
+      "source/V6/experimental/v7_portfolio_process_test.py": {
+        "bytes": 9309,
+        "sha256": "ab3d6d6abca893b70cb77740265ecd93546751e0f14a887b02376a0e7aa374c7"
+      },
+      "source/V6/experimental/v7_research_artifacts.py": {
+        "bytes": 13470,
+        "sha256": "63782997bec3220cf9fdb38d2b6c5eb92aa025525e351edd23c20b79f13b53ec"
+      },
+      "source/V6/experimental/v7_research_artifacts_test.py": {
+        "bytes": 10095,
+        "sha256": "5ae3fb1ac820943f535fdddd62e56bfcca01f471d292a9581e6028e49f20399e"
+      },
+      "source/V6/experimental/v7_research_comparison.py": {
+        "bytes": 7505,
+        "sha256": "529e8d94e39b99dd18cd6ad1992be075e0f56f27124ef60191fae0a98acd9155"
+      },
+      "source/V6/experimental/v7_research_comparison_test.py": {
+        "bytes": 7589,
+        "sha256": "883f69e4bff8cbab2c7280e9c8eb184386f12d4cd850b14ab3b77fc70f8b22fc"
+      },
+      "source/V6/experimental/v7_research_evaluation.py": {
+        "bytes": 14418,
+        "sha256": "9ad8f4b1f6f6d3d6e18051c3c71c2f042a2f05ed64c4791d12ae59b862a301f3"
+      },
+      "source/V6/experimental/v7_research_evaluation_test.py": {
+        "bytes": 9724,
+        "sha256": "ef5e4345ff57233f89e6747ff62e9aba434709a9d7dde30cbead1064064a389e"
+      },
+      "source/V6/experimental/v7_research_isolation.py": {
+        "bytes": 9688,
+        "sha256": "024f1474448d4e06e6f48cf1ef9c2bbd6bd6c3902f57f09e6a25dd48e34e9cbc"
+      },
+      "source/V6/experimental/v7_research_isolation_test.py": {
+        "bytes": 9501,
+        "sha256": "35b5a83be797398cc6e45992997ae72b43dfa7b54cf92fc2107863b6491fb26a"
+      },
+      "source/V6/experimental/v7_research_replay.py": {
+        "bytes": 23584,
+        "sha256": "906fdbfa9eb2ab2b1b848d048f8be8a3cea31b70adae7942845eb4bedb54388c"
+      },
+      "source/V6/experimental/v7_research_replay_test.py": {
+        "bytes": 16781,
+        "sha256": "f979a20e6a3ee54812e5e594267b8a768d76d19e472b9fa76f11611e6ee095fa"
+      },
+      "source/V6/experimental/v7_research_temporal.py": {
+        "bytes": 11772,
+        "sha256": "1e2a776099b063470dda673d1c717678d13aba35d7194f582d2e30c437fba119"
+      },
+      "source/V6/experimental/v7_research_temporal_test.py": {
+        "bytes": 8006,
+        "sha256": "bc00ea4395aead4c710a0304ad8068cccc8836964fc9ac03c5621c3df017f3f6"
+      },
+      "source/V6/experimental/v7_retrospective_smoke.py": {
+        "bytes": 2606,
+        "sha256": "7f1d5496c0e041b839a619ce1a9daa4b5f91bb2448b347664386082fed48d7a9"
+      },
+      "source/V6/experimental/v7_retrospective_smoke_test.py": {
+        "bytes": 4241,
+        "sha256": "51ea2efde3296ac03ae81d74f3fb306c6fdb3ed493b58f65a6498a9657fed4d1"
+      },
+      "source/V6/experimental/v7_robustness_audit.py": {
+        "bytes": 2549,
+        "sha256": "2e857a9d7fa1fda8602872ac2c930d608dc278f181f7ed3c427baa2f24e81681"
+      },
+      "source/V6/experimental/v7_robustness_audit_test.py": {
+        "bytes": 1900,
+        "sha256": "92870b328fe05bf2904f8200042be39e46214ab6be5db42fef46fec1b3ecc5a1"
+      },
+      "source/V6/experimental/v7_shadow_models.py": {
+        "bytes": 3382,
+        "sha256": "0e9faa75e77d62f9ce53b52d74bff35a5f988df0442f3a966f3937158a7d13d9"
+      },
+      "source/V6/experimental/v7_source_snapshot.py": {
+        "bytes": 11360,
+        "sha256": "b8c114a86ba7a5fede2459e3afe6121fa2737d54fb5f5dcb44ad9474e1e66462"
+      },
+      "source/V6/experimental/v7_source_snapshot_test.py": {
+        "bytes": 19794,
+        "sha256": "15f7542757cd057219d3fafc32ee8b79a7ef29d99cdd0b3bbb89a2a1e08ce85e"
+      },
+      "source/V6/experimental/v7_stability_contract.py": {
+        "bytes": 4684,
+        "sha256": "8a7056f5b83e7bb7731d545dac4ee5494b5d455fa0b0303fa2375f99aa3d8e7d"
+      },
+      "source/V6/experimental/v7_stability_delivery_test.py": {
+        "bytes": 1030,
+        "sha256": "102704c89e2b9b596eb3bfac6cca11595d620656b8a2bd96e8b4c649e8ab0096"
+      },
+      "source/V6/experimental/v7_stability_diagnostics.py": {
+        "bytes": 6613,
+        "sha256": "8e753599f4368b2f15743cf258a4fccaa374a8cde7183703a01e9f0a9112d4e9"
+      },
+      "source/V6/experimental/v7_stability_diagnostics_test.py": {
+        "bytes": 3606,
+        "sha256": "760c3bff70de757647049a34d350eb1d7466093356ba87253fa7c84e64f4d731"
+      },
+      "source/V6/experimental/v7_stability_export.py": {
+        "bytes": 5659,
+        "sha256": "6a2c1f5a711c926a2a0695e81c2a387e3231d020a9c46f8480e7b07a576fa1df"
+      },
+      "source/V6/experimental/v7_stability_export_test.py": {
+        "bytes": 4363,
+        "sha256": "3df57cea079dcba55243fe40801a70b33807289dfe477549114d834920201d7c"
+      },
+      "source/V6/experimental/v7_stability_suite.py": {
+        "bytes": 12849,
+        "sha256": "54c3ed7d6844564264244b6c9954a472a067920f9f811a759d6d3adf89ac87b3"
+      },
+      "source/V6/experimental/v7_stability_suite_test.py": {
+        "bytes": 2927,
+        "sha256": "5fa9c6dff818e7b0dafca36ce1749c157b38503a5b287c4276af1b1010ee9c2b"
+      },
+      "source/V6/experimental/v7_stability_test.py": {
+        "bytes": 3560,
+        "sha256": "e37a2bc01387ec29a96e1ec5cc667c7d09b4b8d797b354649fb672d7e215d2ca"
+      },
+      "source/V6/experimental/v7_stability_windows.py": {
+        "bytes": 2275,
+        "sha256": "dd2780891f4974290163f075d5ba7c9369cc1b6fd447a3e0721287e9e291f827"
+      },
+      "source/V6/experimental/v7_temporal_contract.py": {
+        "bytes": 5757,
+        "sha256": "867f8404f81f5b97f6b42a4e5db1d0af1e8e68b2ec4a1a0e38b6277e7ebfdcc8"
+      },
+      "source/V6/experimental/v7_temporal_contract_test.py": {
+        "bytes": 3569,
+        "sha256": "d3d01b5e98c037cc442e841e085b33a3d571a691ec5b0a466192e0135303d2d8"
+      },
+      "source/V6/experimental/v7_vintage_dryrun.py": {
+        "bytes": 11128,
+        "sha256": "cc83beb4795cb2d86fcc8d09577f9f68c065460c6c77a3e2126d13f47a5cfd3f"
+      },
+      "source/V6/experimental/v7_vintage_dryrun_test.py": {
+        "bytes": 7525,
+        "sha256": "42dd4f6309028de750ec96bc74169670b6fc0177cc1beda5e342b3c8b99313b7"
+      },
+      "source/V6/experimental/v7_window05_audit.py": {
+        "bytes": 10019,
+        "sha256": "5a90a7c8787b5a58521d34fa154bccabaf2e74e5a6ee20b7ca11defe5ecb33b2"
+      },
+      "source/V6/experimental/v7_window05_audit_test.py": {
+        "bytes": 1949,
+        "sha256": "9531752b0601d9f663d067402bd0864d5d559f055b1ef13eecec520a656a9d56"
+      },
+      "source/V6/experimental/v7_window05_signals.py": {
+        "bytes": 3266,
+        "sha256": "d23902f1c7e504eeb95b9cad70999b2f9710e9d2d0c52dfbdd32be8002acbe4c"
+      },
+      "source/V6/experimental/v7_window05_signals_test.py": {
+        "bytes": 3064,
+        "sha256": "a043c03e3786bc3355698d0e69bd59b40202ffc78c849f400a8e005672d5d18b"
+      },
+      "source/V6/experimental/v7_window11_l2_test.py": {
+        "bytes": 3523,
+        "sha256": "601656762b1cf49e01b8771df488907a650b0eff98de772c0102ded858dff403"
+      },
+      "source/V6/experimental/wf_scores.py": {
+        "bytes": 11010,
+        "sha256": "011617125541e069f9f660ec130a0a36f97c88fd0b8504a3f2feb3eeed864a4f"
+      },
+      "source/V6/research_lab/__init__.py": {
+        "bytes": 130,
+        "sha256": "657a7fa419bebb22e04b6e786494e6a1650bc11245af6f7d6a468287f36934f3"
+      },
+      "source/V6/research_lab/backtest.py": {
+        "bytes": 6608,
+        "sha256": "339e9069d8099982389e4d9b826d612dba94428d7ee11c95bf9a8e8cdd5039ef"
+      },
+      "source/V6/research_lab/build_dataset.py": {
+        "bytes": 4875,
+        "sha256": "87072688f80dd230739472a67930546810357b7beded4dc7a69d390836ef350a"
+      },
+      "source/V6/research_lab/c0plus.py": {
+        "bytes": 9070,
+        "sha256": "9b4b20b5dbc838f9e4c610b52ea3f4db03e05d277393c4205f29260c01c1201f"
+      },
+      "source/V6/research_lab/colab_runner.py": {
+        "bytes": 15565,
+        "sha256": "7e3c1dcfe0cef85cb8a259d595a9752f7f89275b51e4a49982c327680c896899"
+      },
+      "source/V6/research_lab/cross_stock.py": {
+        "bytes": 6140,
+        "sha256": "628ec6f80ffa4c25fc17684e10c1b0585b7648c8a202550d2a5000d2b9877502"
+      },
+      "source/V6/research_lab/data.py": {
+        "bytes": 5831,
+        "sha256": "16ed81a597cb2d5ece927986607c3116f7136259f01200b1b34dd2d6b2891991"
+      },
+      "source/V6/research_lab/data_health.py": {
+        "bytes": 16191,
+        "sha256": "bbcb8305cfb958e6e134a31d2cab16067528c726692502711c7f48f2547bdafb"
+      },
+      "source/V6/research_lab/disposal.py": {
+        "bytes": 9568,
+        "sha256": "536572151b583bf3989ecadb60651229a2c0376033dfb7b17a8eefffeb09c464"
+      },
+      "source/V6/research_lab/evaluate_predictions.py": {
+        "bytes": 8288,
+        "sha256": "1025f46c7779bc2b3471fd2156982ab5cf13cd005f4df3fd79356c0ddc3b8ec7"
+      },
+      "source/V6/research_lab/export_summary.py": {
+        "bytes": 10294,
+        "sha256": "36e6733d254c5bf9396d6eec2150d18f5df2e95f048bd50620d17b055e5e160b"
+      },
+      "source/V6/research_lab/features.py": {
+        "bytes": 2644,
+        "sha256": "5c82aade95459e664a59afe2e60c5bcf6dc928972dc00e60032dbca019b0a581"
+      },
+      "source/V6/research_lab/fetch_core.py": {
+        "bytes": 4350,
+        "sha256": "afab15584acbbeced404604bab8a3154b3257ff79219a650d30e532440cb73da"
+      },
+      "source/V6/research_lab/fill_prices.py": {
+        "bytes": 4667,
+        "sha256": "46d2eda672435a6c3017f3c97c37c34119fb83c86052b533a1392c107ee57c33"
+      },
+      "source/V6/research_lab/fin_audit.py": {
+        "bytes": 13734,
+        "sha256": "c6c5445204f9a694951f6b6ff220f54c28d6c27bb729475fc2e8fd41030df7be"
+      },
+      "source/V6/research_lab/fundamentals.py": {
+        "bytes": 4650,
+        "sha256": "45ba400bb043c78c0645b08371e496c733a2e11077388818ade037381dd819c0"
+      },
+      "source/V6/research_lab/gpu_env.py": {
+        "bytes": 15548,
+        "sha256": "ce6ad16c647c1b10292acdbb3ebbe28459a319b2dc980a39bcb1c2b5ff08e1d0"
+      },
+      "source/V6/research_lab/industry.py": {
+        "bytes": 3757,
+        "sha256": "681b8e085846a98c0c4589fa170a1238ae87efe6581ef6a3d26ab7f72fd4f4c5"
+      },
+      "source/V6/research_lab/labels.py": {
+        "bytes": 3412,
+        "sha256": "5ef6fa6463242a0aa36050ff4b0a63c30722102dd7f8b0bee718a58397f32a98"
+      },
+      "source/V6/research_lab/macro_sync.py": {
+        "bytes": 7284,
+        "sha256": "f8a5ceebc96e298b8b7acaf5ce30baeda7234b67ba8abcd3d5daa3b527a663c3"
+      },
+      "source/V6/research_lab/matrix_baselines.py": {
+        "bytes": 9212,
+        "sha256": "708801fc2e8e37607c8130f9174dece02ea625399b09855f609d5fbaf2cdee01"
+      },
+      "source/V6/research_lab/metrics.py": {
+        "bytes": 2504,
+        "sha256": "2f46cd381e37cde1218da666a48bb27c5fbd5c2a7973996d3e400fdaaf715f4e"
+      },
+      "source/V6/research_lab/models/__init__.py": {
+        "bytes": 2200,
+        "sha256": "a879fdaf6fa26eb5bee850f88a428470def287a2f13e60b9b0811d7f7c1bbc3d"
+      },
+      "source/V6/research_lab/p4_bundle.py": {
+        "bytes": 54401,
+        "sha256": "918dec775adbfe1973a6b40ddfd558eafad0c27a4fd606c4eb0dd6f9e32e34f5"
+      },
+      "source/V6/research_lab/p4_colab.py": {
+        "bytes": 51971,
+        "sha256": "59c9532732b52328594245d5258c13f87f26173e67cfb79912065eee2afadceb"
+      },
+      "source/V6/research_lab/p4_eval.py": {
+        "bytes": 12099,
+        "sha256": "c8e787f17e7818eec939ed0740285482af02f28435cee22a3d96b3a3f727c164"
+      },
+      "source/V6/research_lab/p4_source_compat.py": {
+        "bytes": 13269,
+        "sha256": "c98f41d805d51fac01f48d700e42e2f439100383c2d10cd0942e6c3fd51761bd"
+      },
+      "source/V6/research_lab/pit_snapshots.py": {
+        "bytes": 5706,
+        "sha256": "87fb50b3f48edd186338bd357a85ec05431145581273a4d3afe559ae7b9c4cfb"
+      },
+      "source/V6/research_lab/pit_universe.py": {
+        "bytes": 5279,
+        "sha256": "22ac831949e8c04adb38fc84c0b38bf0fa4702104fb5324efca71f346b805024"
+      },
+      "source/V6/research_lab/portfolio.py": {
+        "bytes": 22072,
+        "sha256": "15768f9c32475cca47d4c8c074de55e8cadd459b85945ae62072c073c73b4385"
+      },
+      "source/V6/research_lab/portfolio_eval.py": {
+        "bytes": 50314,
+        "sha256": "3e46e07277c5d13fe6b24608b7e7dc20648e9558be322ad414d2f82a60c4a30c"
+      },
+      "source/V6/research_lab/repair_derived.py": {
+        "bytes": 20013,
+        "sha256": "5453703a96dad44bf22f8969bd053f908bea59b59aeaa56b10757a56e9e8f099"
+      },
+      "source/V6/research_lab/repair_per.py": {
+        "bytes": 16612,
+        "sha256": "94c0e8b3ed7c9305bc692418818886047e26d3ae9c44ec5301e5ebbac642df93"
+      },
+      "source/V6/research_lab/repair_prices.py": {
+        "bytes": 6431,
+        "sha256": "10144bd5a926ff2890eff56ed7139ad370f735a11ca6a98a4b6fdf47d2ac5b48"
+      },
+      "source/V6/research_lab/revenue.py": {
+        "bytes": 2988,
+        "sha256": "92f848bb3cc068c002656b838e8979956e4af7155d18a55e9bd47b02eae82439"
+      },
+      "source/V6/research_lab/rolling_analysis.py": {
+        "bytes": 15475,
+        "sha256": "bb9b9580bd6d6faafb7b1db4616a10a7909a76f8865209f24095da29108a3922"
+      },
+      "source/V6/research_lab/rolling_folds.py": {
+        "bytes": 7924,
+        "sha256": "f2df5b32163d8b9225a3a9fd8dad65902b154590f955b6bc47f2f21c2adebb1e"
+      },
+      "source/V6/research_lab/rolling_h2.py": {
+        "bytes": 7134,
+        "sha256": "07fcc7b8cc3d1cad81b849c65b37527917c4e4c984c5f90c79ad548ddc821104"
+      },
+      "source/V6/research_lab/rolling_h3.py": {
+        "bytes": 7108,
+        "sha256": "8e602f27048f848bfe7d592557da90f86e9272f4572f24445a69cd8452b6248d"
+      },
+      "source/V6/research_lab/rolling_runner.py": {
+        "bytes": 5197,
+        "sha256": "d8e3e2636e7ac120ae623107ee95b9a7712560dc71d7cfc4eb481f2a7a00f821"
+      },
+      "source/V6/research_lab/rolling_scores.py": {
+        "bytes": 7611,
+        "sha256": "ed25a4d5f1c07747bcc40eb56200f3035126969854d4a7119601e2c206858bb3"
+      },
+      "source/V6/research_lab/rolling_seq_scores.py": {
+        "bytes": 50048,
+        "sha256": "5d10d52b1d423c73fa518535f01e80b2760a0d3087036b9b778491d13942aefd"
+      },
+      "source/V6/research_lab/run_experiment.py": {
+        "bytes": 10180,
+        "sha256": "c50deb075e45f78153e4f91460e3f493fa2b2502047d6513a1ff30d04339fe82"
+      },
+      "source/V6/research_lab/seq_models.py": {
+        "bytes": 7341,
+        "sha256": "54361cd3fb5bceafdba8d3945bc6ae4f8d2684c42b3b70f99211a39a001eea74"
+      },
+      "source/V6/research_lab/seq_runner.py": {
+        "bytes": 23135,
+        "sha256": "1f4ba6fa9d97a93a5f59413e26b68252c926f071e51dc5465098438af69b088e"
+      },
+      "source/V6/research_lab/significance.py": {
+        "bytes": 3409,
+        "sha256": "84d279cf8862b78e73d3a1757a967f3c0dd4445710458291c67a6e3f008ad0fb"
+      },
+      "source/V6/research_lab/significance_report.py": {
+        "bytes": 2499,
+        "sha256": "816dab7638ac766026a1d535e1bf5c71e691c6043ac15f61f48a3bb52bdc8df4"
+      },
+      "source/V6/research_lab/splits.py": {
+        "bytes": 2284,
+        "sha256": "4b9e36c64beaf5d6612c9e21aae2b8bdf8979a0d68fb136cd13fb8d4c1b7cec7"
+      },
+      "source/V6/research_lab/stale_audit.py": {
+        "bytes": 19462,
+        "sha256": "9a46be4dc3df308bbda856af0713e75ebf759f79cd573e8ae16cd36df93ae9fb"
+      },
+      "source/docs/operations/colab-p4.md": {
+        "bytes": 9424,
+        "sha256": "541cba2207959e498aabdbce9802c6f5c30578259fedd7250a2a796aa5abe2b9"
+      },
+      "source/environments/p4a-colab-runtime.json": {
+        "bytes": 2350,
+        "sha256": "b45380920c48c5548ef8880f63f4a351a3de7ff5d6b9f2abef50ebf87e763194"
+      },
+      "source/tasks/p4a-colab-contract-20261121.json": {
+        "bytes": 5649,
+        "sha256": "7d5813bc21644817ccc991c97049f2c65efe88a9f4c18903b42038337b328c41"
+      },
+      "source/tasks/spec-p4a-colab-20261121.md": {
+        "bytes": 8473,
+        "sha256": "4bad42af922c49d5fbd1bfe8fb181f5bfd48bbeff58d3c86f6e00171cec1e75e"
+      }
+    },
+    "status": "UNMERGED / NOT_DEPLOYED; hashes bind working bytes"
+  },
+  "version": "p4-source-compat-v1"
+}

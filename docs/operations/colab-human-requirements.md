@@ -49,6 +49,14 @@ MyDrive/MarketMamba/
 - **已實作（後續交付候選，UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED）**：speed-test 使用 `budget_speedtest/`，FORMAL 使用 `budget/`；各模式跨交付延續自身帳本。既有缺帳／chain／identity 保護維持，不自動遷移或重置歷史帳本。
 - **已實作（同上）**：第 5 節的串流逐行 flush、每 50 steps／每 epoch 進度、每約 60 秒 Drive 快照、可行動錯誤摘要與完成／中斷後摘要格。FORMAL 才顯示驗證 IC；speed-test 保持隔離。接續 fit ETA 只用本次啟動起點後的新 steps／耗時，至少 10 steps 且 1 秒才估計，否則顯示「預估中」。佇列目前 fit 優先用本次 step ETA，後續 fit 用本次已完成 fit 的固定實測耗時均值（至少 1 秒）；cached skips 不納入樣本，無可靠資料顯示「預估中」，Q5 耗時另列未知，不以 fit 計時冒充。略過也更新 fit 編號、Q 與完整識別欄位，進度行及 TXT／JSON 顯示「已完成（略過）」；最後 fit 完成時 fit／queue ETA 為 0。此兩項複審修補仍待獨立複審，不代表已解除 NO_GO。
 - 驗證層級：**CPU 合成測試**（含權重／預測 bytes 與 torch RNG 一致、串流大量輸出與非零退出、原子寫入／失敗繼續、模式帳本獨立與變異測試）；**Colab 現場 UNVERIFIED**，不是 Human acceptance。細節見[工程報告](../../reports/v7_p4a_colab_engineering.md)。
-- 正在跑的 02_formal 仍是原先 `subprocess.run` 版本；run identity 綁定原始碼，**不要中途換新版 zip**。本次只影響之後重新產生、重新綁定 identity 的交付。
+- 正在跑的 02_formal 仍是原先版本；不要在執行中的 kernel 換碼。斷線後的新版接續依第 8 節來源相容升級候選處理；原 notebook 原地續跑仍是保底。
 - Colab 單一 kernel 執行訓練時不能同時執行摘要格；主要從手機／Drive 網頁查看固定 `progress/formal/PROGRESS.txt` 或 `progress/speedtest/PROGRESS.txt`，並核對更新時間。
 - 矩陣增量追加能力未確認。
+
+## 8. 跨版本接續（來源相容升級）
+
+- 斷線後可改用經審查的新交付，沿用舊 run 目錄／run_hash、已完成 fit 與完整 epoch 檢查點。**只限數值中立的進度顯示、日誌、speed-test 帳本分離或文件變更**；模型、optimizer、RNG、研究配方、資料／矩陣、環境與預算契約不得變動。
+- 每次升級都要由工具產生逐檔 from／to SHA、差異與理由分類的宣告檔，隨 ZIP 交付；必須有舊版對新版的 CPU 位元一致及舊 checkpoint／completed-fit 接續測試。以後所有 Colab 交付都必須保留這個能力；新的來源基準先新增測試與獨立審查，再擴充認證範圍，不能只換 commit 參數。
+- 本次候選認證來源為 `4e56e9d`。舊 run_identity 只有 bundle manifest identity，因此必須保留 `02_formal/p4a-bundle.zip` 作逐檔證據；新版自動讀取，不需 Human 手貼 hash。缺少宣告、舊 ZIP 或任一身分不合一律 STOP，列出預期／實際與下一步；不得悄悄新開批次。只有第 0 格明設 `ALLOW_NEW_RUN=True` 才允許新批次，此開關不修復／重置原帳本，也不略過既有完整性驗證。
+- 斷線後操作：開新 notebook，將新版 zip＋ipynb 放到 `MarketMamba/p4a/03_formal_resume/`，從上到下執行；`EXPERIMENT_DIR` 仍指向 `MarketMamba/p4a`，資料不用再上傳，舊 ZIP／budget 不刪不搬。不要在仍執行訓練的 kernel 中更換程式。
+- 在 run 目錄與 hash-chain ledger 記錄 `SOURCE_UPGRADE`，含 from／to 來源清單雜湊、宣告身分、時間及環境。歷史 run_identity、完成標記與 checkpoint 不改寫。候選目前只有 CPU 工程證據，Colab／T4／Drive 現場仍 UNVERIFIED；仍需獨立審查與 Human acceptance。

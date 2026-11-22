@@ -675,7 +675,7 @@ def fit_queue(contract, speed=False, years=None):
     return jobs
 
 
-def run(bundle,drive_root,speed=False,max_hours=None,max_units=None,rate=None,planned_hours=0,reserve=None,data_dir=None):
+def run(bundle,drive_root,speed=False,max_hours=None,max_units=None,rate=None,planned_hours=0,reserve=None,data_dir=None,allow_new_run=False):
     """P4-only record accounting; old cap arguments are accepted but never constrain runs."""
     require_cuda()
     bundle=Path(bundle);drive_root=budget_root(drive_root,speed)
@@ -726,10 +726,20 @@ def run(bundle,drive_root,speed=False,max_hours=None,max_units=None,rate=None,pl
         except BaseException:
             if ledger.state['active']:ledger.end(setup_binding,False)
             raise
+        from .p4_source_compat import resolve
+        binding,upgrade=resolve(bundle,mf,binding,drive_root,budget_contract,allow_new=allow_new_run)
+        run_hash=hashed(binding)
         out=drive_root/f'run-{run_hash}'
         if out.exists():
             if json.loads((out/'run_identity.json').read_text())!=binding:raise ValueError('run identity mismatch')
         else:out.mkdir();write_json(out/'run_identity.json',binding)
+        if upgrade:
+            # Preserve run_identity and all historical fit/checkpoint bytes.
+            audit=out/f'source-upgrade-{uuid.uuid4().hex}.json'
+            write_json(audit,upgrade)
+            ledger.state['source_upgrade']=dict(audit=str(audit),identity=digest(audit),
+                **{k:upgrade[k] for k in ('from_sources_hash','to_sources_hash','declaration','observed_at','environment')})
+            ledger.append('SOURCE_UPGRADE')
         progress.update(run_hash=run_hash,bundle_identity=binding['bundle'],source_commit=mf['metadata'].get('source_commit'),total_fits=len(queue))
         reports=[];caches={};fit_paths={}
         for fit_index,job in enumerate(queue,1):
@@ -859,13 +869,13 @@ def permutation_fit(directory,year,cfg,fit_paths,ledger,progress=None):
 def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--bundle',type=Path,required=True);p.add_argument('--drive-root',type=Path,required=True)
-    p.add_argument('--speed-test',action='store_true');p.add_argument('--data-dir',type=Path)
+    p.add_argument('--allow-new-run',action='store_true');p.add_argument('--speed-test',action='store_true');p.add_argument('--data-dir',type=Path)
     # Legacy flags are optional and ignored: P4 has no wall/CU caps.
     p.add_argument('--max-hours',type=float);p.add_argument('--max-units',type=float)
     p.add_argument('--units-per-hour',type=float);p.add_argument('--planned-hours-per-fit',type=float,default=0)
     p.add_argument('--reserve',type=float)
     a=p.parse_args(argv)
-    result=run(a.bundle,a.drive_root,speed=a.speed_test,data_dir=a.data_dir)
+    result=run(a.bundle,a.drive_root,speed=a.speed_test,data_dir=a.data_dir,allow_new_run=a.allow_new_run)
     print(json.dumps(dict(version=result['version'],jobs=len(result['jobs']),evidence_class=result['evidence_class'],
                           environment_mismatch=result['binding']['environment'].get('environment_mismatch',[]),
                           comparability=result['binding']['environment'].get('comparability'))))

@@ -41,7 +41,8 @@ def allowed_path(name):
                  'source/environments/p4a-colab-runtime.json'}
     matrix = (len(parts) == 3 and parts[0] == 'folds' and parts[1] in
               {f'fold_{y}' for y in range(2021, 2027)} and parts[2] in MATRIX_FILES)
-    if not (source or matrix or name in documents or name in {
+    compat = (len(parts)==3 and parts[:2]==('source','tasks') and p.name.startswith('p4a-source-compat-') and p.suffix=='.json')
+    if not (source or matrix or compat or name in documents or name in {
             'reference/rank_average.parquet', 'reference/keys.parquet', 'reference/manifest.json', 'DATASET_MANIFEST.json',
             'requirements.lock.txt', 'bundle-manifest.json'}):
         raise ValueError(f'bundle path not allowlisted: {name}')
@@ -388,7 +389,7 @@ def extract(archive,destination,expected_sha256=None):
     return mf
 
 
-def pack(folds_root, years, p1, lock, output):
+def pack(folds_root, years, p1, lock, output, resume_from_commit=None):
     if not years or len(years)!=len(set(years)) or not set(years)<=set(range(2021,2027)):
         raise ValueError('unique P4 fold years required')
     files={}
@@ -415,6 +416,23 @@ def pack(folds_root, years, p1, lock, output):
     if not all(v in text for v in ('torch==2.10.0+cu128','mamba_ssm-2.3.2.post1','causal_conv1d-1.7.0','#sha256=')):
         raise ValueError('P4 exact lock mismatch')
     files['requirements.lock.txt']=Path(lock)
+    if resume_from_commit:
+        if not external:raise ValueError('source-compatible upgrade requires DATASET_MANIFEST')
+        from .p4_source_compat import declaration
+        import tempfile
+        # Temporary GENERATED declaration lives only for this immutable ZIP build.
+        with tempfile.TemporaryDirectory(prefix='p4-source-compat-') as scratch:
+            target=Path(scratch)/'declaration.json'
+            target.write_text(json.dumps(declaration(resume_from_commit,
+                {n:digest(p) for n,p in files.items() if n.startswith('source/')},
+                digest(Path(folds_root)/'DATASET_MANIFEST.json')),sort_keys=True,indent=2))
+            tag=subprocess.check_output(['git','rev-parse','--short','HEAD'],cwd=ROOT,text=True).strip()
+            files[f'source/tasks/p4a-source-compat-{tag}.json']=target
+            return _pack_reference(files,external,folds_root,years,p1,output,lock)
+    return _pack_reference(files,external,folds_root,years,p1,output,lock)
+
+
+def _pack_reference(files,external,folds_root,years,p1,output,lock):
     # P1 output identities contain original absolute paths; verify bytes, not runtime paths.
     ref=json.loads((Path(p1)/'manifest.json').read_text())['outputs']['rank_average.parquet']
     if any(digest(Path(p1)/'rank_average.parquet')[k]!=ref[k] for k in ('bytes','sha256')): raise ValueError('P1 reference hash mismatch')
@@ -588,9 +606,10 @@ def colab_notebook(run_name='02_formal', drive_root='/content/drive/MyDrive/Mark
         LEGACY_WHEEL_DIR = '/content/drive/MyDrive/Mamba_Wheels_T4_new'
         EXPECTED_ARCHIVE = __EXPECTED_ARCHIVE__  # deliver 自動綁定 ZIP bytes/SHA
         BUNDLE_NAME = 'p4a-bundle.zip'
-        LOCAL_ROOT = '/content/p4a'
+        LOCAL_ROOT = __LOCAL_ROOT__
+        ALLOW_NEW_RUN = False  # 只有明確要重跑新批次時才設 True；不相容預設 STOP
     ''')
-    cells[0]['source']=cells[0]['source'].replace('__RUN_DIR__',repr(str(drive_root/'p4a'/run_name))).replace('__DATA_DIR__',repr(str(drive_root/'data/matrix_v1'))).replace('__WHEEL_DIR__',repr(str(drive_root/'wheels'))).replace('__EXPECTED_ARCHIVE__',repr(expected_archive))
+    cells[0]['source']=cells[0]['source'].replace('__RUN_DIR__',repr(str(drive_root/'p4a'/run_name))).replace('__DATA_DIR__',repr(str(drive_root/'data/matrix_v1'))).replace('__WHEEL_DIR__',repr(str(drive_root/'wheels'))).replace('__EXPECTED_ARCHIVE__',repr(expected_archive)).replace('__LOCAL_ROOT__',repr('/content/p4a-'+expected_archive['sha256'][:16] if expected_archive else '/content/p4a'))
     markdown('兩檔交付：將同批 p4a-bundle.zip 與 notebook 上傳 RUN_DIR，再開啟 notebook 從上到下執行。需 GPU runtime。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；Colab ZIP／編譯／Drive 行為 UNVERIFIED。只執行自己信任來源的這兩個檔案；內部 hash 不證明來源。')
     code('''
         from pathlib import Path
@@ -760,6 +779,7 @@ def colab_notebook(run_name='02_formal', drive_root='/content/drive/MyDrive/Mark
         PROGRESS_DIR=Path(EXPERIMENT_DIR)/'progress'/('speedtest' if MODE=='SPEED_TEST' else 'formal')
         common=[sys.executable,'-u','-m','research_lab.p4_colab','--bundle',str(root),'--drive-root',str(Path(EXPERIMENT_DIR)/'budget'),
                 '--data-dir','/content/data']
+        if ALLOW_NEW_RUN: common.append('--allow-new-run')
         # FROZEN + OBSERVED 環境完整核對；DRAFT 仍拒絕。
         def stream_training(command,env):
             # 合併 stderr 並持續排空 PIPE，避免大量輸出造成死鎖。
@@ -815,7 +835,7 @@ def colab_notebook(run_name='02_formal', drive_root='/content/drive/MyDrive/Mark
         else:
             print('尚無進度快照；下一步：確認訓練已啟動、模式與 Drive 掛載，查看',snapshot)
     ''')
-    markdown('中斷後重跑同一本 notebook：相同 source／契約／矩陣 identity 才可從完整 epoch 接續；已完成 fit 逐檔驗證後跳過。orphan 保留但不自動升格；85°C 硬體 STOP 需人工查明，不自動清除。所有結果屬研究 evidence，Colab 現場仍 UNVERIFIED。')
+    markdown('跨版本接續：斷線後開新 notebook，將新版 zip＋ipynb 上傳 03_formal_resume，從上到下執行；保留 02_formal 原 ZIP 與 budget。來源相容宣告與所有身分驗證後才沿用舊 run；不符 STOP，勿刪帳本。相同版本中斷後重跑同一本 notebook：相同 source／契約／矩陣 identity 才可從完整 epoch 接續；已完成 fit 逐檔驗證後跳過。orphan 保留但不自動升格；85°C 硬體 STOP 需人工查明，不自動清除。所有結果屬研究 evidence，Colab 現場仍 UNVERIFIED。')
     code('''
         from google.colab import files
         download=Path('/content/p4a-results.zip')
@@ -830,7 +850,7 @@ def colab_notebook(run_name='02_formal', drive_root='/content/drive/MyDrive/Mark
     return dict(nbformat=4,nbformat_minor=5,metadata=dict(kernelspec=dict(display_name='Python 3',language='python',name='python3'),language_info=dict(name='python')),cells=cells)
 
 
-def delivery(folds_root, years, p1, lock, output_dir, run_name='02_formal', drive_root='/content/drive/MyDrive/MarketMamba'):
+def delivery(folds_root, years, p1, lock, output_dir, run_name='02_formal', drive_root='/content/drive/MyDrive/MarketMamba', resume_from_commit=None):
     """Publish the approved two-file interface; never overwrite shared outputs."""
     colab_notebook(run_name,drive_root)  # validate paths before publishing outputs
     output_dir=Path(output_dir)
@@ -838,7 +858,7 @@ def delivery(folds_root, years, p1, lock, output_dir, run_name='02_formal', driv
     readme=output_dir/'README.txt'
     if archive.exists() or notebook.exists() or readme.exists(): raise FileExistsError('delivery outputs already exist')
     output_dir.mkdir(parents=True,exist_ok=True)
-    mf=pack(folds_root,years,p1,lock,archive)
+    mf=pack(folds_root,years,p1,lock,archive,resume_from_commit=resume_from_commit)
     with notebook.open('x') as stream:
         json.dump(colab_notebook(run_name,drive_root,digest(archive)),stream,ensure_ascii=False,indent=2)
         stream.flush();os.fsync(stream.fileno())
@@ -855,7 +875,8 @@ def main(argv=None):
     dl.add_argument('--folds-root',type=Path,required=True);dl.add_argument('--years',type=int,nargs='+',default=[2021,2022,2023,2024,2025,2026])
     dl.add_argument('--p1',type=Path,required=True);dl.add_argument('--lock',type=Path,default=ROOT/'environments/p4a-colab.requirements.lock.txt')
     dl.add_argument('--output-dir',type=Path,required=True)
-    dl.add_argument('--run-name',default='02_formal')
+    dl.add_argument('--run-name',default=None)
+    dl.add_argument('--resume-from-commit')
     dl.add_argument('--drive-root',default='/content/drive/MyDrive/MarketMamba')
     ds=sub.add_parser('dataset-manifest');ds.add_argument('directory',type=Path)
     ex=sub.add_parser('extract');ex.add_argument('archive',type=Path);ex.add_argument('destination',type=Path);ex.add_argument('--sha256')
@@ -865,7 +886,7 @@ def main(argv=None):
     if a.cmd=='dataset-manifest':print(json.dumps(dataset_manifest(a.directory),indent=2))
     elif a.cmd=='pack': pack(a.folds_root,a.years,a.p1,a.lock,a.output);print(json.dumps(digest(a.output)))
     elif a.cmd=='deliver':
-        delivery(a.folds_root,a.years,a.p1,a.lock,a.output_dir,a.run_name,a.drive_root)
+        delivery(a.folds_root,a.years,a.p1,a.lock,a.output_dir,a.run_name or ('03_formal_resume' if a.resume_from_commit else '02_formal'),a.drive_root,a.resume_from_commit)
         print(json.dumps({p.name:digest(p) for p in sorted(a.output_dir.iterdir()) if p.name in {'p4a-bundle.zip','p4a-colab.ipynb','README.txt'}}))
     elif a.cmd=='extract': extract(a.archive,a.destination,a.sha256)
     elif a.cmd=='verify': print(json.dumps(verify(a.directory),indent=2))

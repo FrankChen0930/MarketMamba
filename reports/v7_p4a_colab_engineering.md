@@ -1,3 +1,122 @@
+## P4a 來源相容升級 — 2026-11-22（job-run-mwrxutx3-d28fa4）
+
+本輪 base/HEAD `20e6b5408d9f9b13d56290a72a2dc313c35d1b94`，既有 detached `builder_p4a_upgrade`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，明確不 commit／push／merge。只用本機 CPU；沒有 GPU、網路、Colab、資料取得、production、scheduler、通知、wakeup 或額外代理。沿用既有 research_lab／tests／tasks／docs／reports／knowledge；既有 runner 缺少跨來源證據層，因此新增單一 `p4_source_compat.py`，不另建 implementation／artifact tree，也不複製訓練或完成驗證。
+
+### 實作與限制
+
+- `deliver --resume-from-commit 4e56e9d` 自動從本機 `git show` 取出舊 ZIP 會納入 identity 的所有來源 bytes；完整 from／to、逐檔 SHA／size、unified diff、允許分類與理由寫入 ZIP 內 `source/tasks/p4a-source-compat-<HEAD短碼>.json`。本輪另用同一產生器生成 `tasks/p4a-source-compat-20e6b54.json` 供審查；新來源仍為未 commit 的工作樹 bytes，不能把檔名的 base commit 當成已提交實作。宣告為 GENERATED／CPU_ENGINEERING_ONLY，不是研究結果或來源簽章。
+- 原始 4e56e9d 的 run_identity 只有 bundle manifest digest，無逐檔來源；新版以 Drive 實驗下既有交付 ZIP 的有界 manifest bytes 匹配該 digest，再比較宣告 from。沒有憑記憶重建 metadata／run_hash，也沒有修改舊 artifacts 補欄位。缺原 ZIP、缺宣告、schema／hash／差異集／契約／queue／matrix／environment／budget／任何非來源輸入不符或多個 lineage，全部 STOP 並列預期／實際／下一步。run identity 缺失亦拒絕。只有無舊 run 才新建；明設 `--allow-new-run`／第 0 格 `ALLOW_NEW_RUN=True` 才容許新批次，原帳本／thermal STOP／完整性 gate 仍強制。
+- 採用後保留舊 binding 與 run_hash 作 fit／checkpoint 身分；已完成 fit 原 validator 驗證後略過，attempt-active 載入原 latest／previous／best pointer。每次採用在原 run 目錄獨占寫入 `source-upgrade-*.json`，ledger 追加 SOURCE_UPGRADE，綁 audit file identity、from／to 來源清單雜湊、宣告 digest、時間與當次環境。run audit 含完整清單及原／新 binding；ledger 用稽核檔 identity 連結完整事件，避免每一 epoch 重複大量清單。兩處寫入之間若中斷會保留 forensic audit，下一次重新驗證／另記事件，不重標完成或 BEST。
+- 目前只認證 4e56e9d；產生器還檢查 frozen fit／queue／ledger 函式 AST 未改，以及 train_fit／permutation_fit／Observer／seq_runner 與本次已測進度基準的 AST 相同，其他來源差異不能自動分類。未來來源基準須先擴充數值／接續證據與獨立審查，不是任意填 commit 即可。四種理由分類不取代這些檢查；本次新 helper 的來源證據／稽核控制屬日誌範圍，不宣稱完全沒有接續語義改變。
+- Notebook 預設 `03_formal_resume`，第 0 格仍由 RUN_DIR.parent 得 EXPERIMENT_DIR=`MarketMamba/p4a`；正式 budget 保持原路徑，speed-test 保持隔離。ZIP hash 衍生本機解壓 namespace，避免仍有舊 `/content` bundle 的衝突。原 notebook 不改；執行中不換碼，斷線後開新 notebook、上傳這兩個檔、從上到下執行。rank-gauss 原 implementation／input hash gate 保留，來源 hash 改變可能重建 CPU 快取，不放寬或遷移快取。
+
+### RED、GREEN 與本機原交付證據
+
+新增最初 RED：`10 failed, 4 deselected in 3.58s`（`/tmp/p4-upgrade-red.log`），來源相容模組尚不存在。修正後初步跨版 focused：`15 passed in 34.93s`（`/tmp/p4-upgrade-green2.log`）。整合先獨立執行：`1 passed, 15 deselected in 44.01s`（`/tmp/p4-upgrade-integration.log`）。後續再補缺證據／schema／typed budget／generator gate 與原 notebook 回跑測試，納入最終全套。中途診斷的環境 `python` 不在 PATH、暫存舊模組的 frozen contract 定位、mutation 的 PYTHONPATH 缺 repo root 已修正；這些失敗不算成功證據。自查另發現宣告不可共用 mutable BUDGET dict，改為 copy 並補 detached-budget 回歸，不修改原 ledger。
+
+位元比較實際以 `git show 4e56e9d` 取出 seq_runner／p4_colab 到隔離暫存模組；GRU 與 crossstock 使用 CPU CausalConvMixer 替身、4 epochs／51 steps／dropout .2，驗最後模型全部 tensor bytes、evaluation predictions bytes、sampler RNG、NumPy global RNG、torch CPU RNG；Python random state 不受影響，CUDA RNG 在 CPU checkpoint 明確 None。舊 Observer 寫出 epoch 2 的 latest／previous／best 與 pointer，HEAD load_resume 讀入再跑到 epoch 4，與舊版一次跑完位元一致。舊 complete_fit 寫出的正式格式完成標記由新版 resume_fit 接受，輸出 bytes 不變；64-fit runner 整合以 CPU artifact double 寫真實舊 ledger／checkpoint／complete 格式，舊版完成 12 後故意中斷，新版只呼叫剩餘 52，前 12 檔案原封不動，同一 run_identity／目錄；再跑 64 全部略過，原舊 runner 也仍可回跑而不重訓。這不是 64 個真模型的數值訓練證據。
+
+本機唯讀 `/mnt/d/Desktop/work/ProjectForMe/MarketMamba-drive-upload/p4a/02_formal/p4a-bundle.zip`：source_commit=`4e56e9db65a453a186511368788deb732a10eb1b`，229 個來源檔與 git objects **0 mismatch**。舊 manifest identity：39644 bytes／SHA `1a5b49561a8d65fd2c4054de659fba09356a49b0f146518b979e3789a6cda20a`。舊 external DATASET_MANIFEST 與本機原資料宣告均為 2183 bytes／SHA `bc6401095260e7d4153060e3106fff8dbae88cfb6df3f349b808b7dd762c7d9f`。未讀改正式訓練矩陣／正式 Data 或模型；此本機 ZIP 核對不能推定 Drive 正在寫入的 run 身分或進度。新來源 230 檔；實際差異僅 p4_bundle、p4_colab、新 helper、seq_runner 與操作指南，完整內容在 GENERATED 宣告。
+
+### 變異反證
+
+四個子程序只在記憶體置換相容驗證，不寫 source：移除宣告 hash gate、budget gate、environment gate、queue gates，各由對應負向測試以 DID NOT RAISE 失敗攔截。初次缺 `PYTHONPATH=.` 的 collection error 不算 mutation 證據；補正後四項皆 exit 1（詳列最終驗證）。缺宣告／hash／多出來源／差異多缺一檔／未知分類／研究契約／佇列／matrix／environment／budget／舊來源不符／舊 manifest 缺失等均有行為測試，沒有停用或降低既有門檻。
+
+### 最終驗證與 artifact identity（本輪）
+
+全套第一次（`/tmp/p4-upgrade-full.log`）為 `1 failed, 771 passed, 1 skipped, 5 warnings in 401.70s`：`test_revision2_handwritten_resolved_rejected` 觸發 `P3 source changed during run`。根因為回歸執行時 builder 仍更新來源 helper；既有 rolling_scores.provenance 會重算 research_lab 全部頂層 Python 的 hash，正確拒絕測試期間的來源變動。保留輸出，沒有改保護檔或例外放行。最後程式修改後重新啟動完整回歸；只有該次最終輸出作 completion 證據。
+
+實際最終 in-memory mutation（僅子程序記憶體，不修改 repo source）：
+
+```text
+hash exit=1; 1 failed in 2.57s
+budget exit=1; 1 failed in 2.63s
+environment exit=1; 1 failed in 2.65s
+queue exit=1; 1 failed in 2.51s
+```
+
+四份 logs `/tmp/p4-upgrade-mut-{hash,budget,environment,queue}.log` 均顯示 `Failed: DID NOT RAISE ValueError`，不是 import／collection error。最後擴充 focused（typed budget 新案例前）為 `28 passed in 109.00s`（`/tmp/p4-upgrade-final-focused.log`）；最終 typed-budget 案例納入完整回歸。
+
+下列 identity 已以 AST syntax parse／實際檔案 SHA 重核，宣告 to 清單逐項等於目前來源；受保護檔案及契約與 HEAD bytes 相同：
+
+| 路徑 | bytes | SHA-256 |
+|---|---:|---|
+| V6/research_lab/p4_colab.py | 51971 | 59c9532732b52328594245d5258c13f87f26173e67cfb79912065eee2afadceb |
+| V6/research_lab/p4_bundle.py | 54401 | 918dec775adbfe1973a6b40ddfd558eafad0c27a4fd606c4eb0dd6f9e32e34f5 |
+| V6/research_lab/p4_source_compat.py | 13269 | c98f41d805d51fac01f48d700e42e2f439100383c2d10cd0942e6c3fd51761bd |
+| V6/research_lab/tests/test_p4_source_compat.py | 18996 | fa83480c73ffbc3e679615d08a48015d92487001d595f2d797afad11f8bb4c8c |
+| tasks/p4a-source-compat-20e6b54.json | 139345 | 1ab931507ef012eccbb7d3db4b37deeea89bd68e3033e231e00a8077dafa841b |
+
+未改之 SHA：rolling_seq_scores=`5d10d52b1d423c73fa518535f01e80b2760a0d3087036b9b778491d13942aefd`；portfolio_eval=`3e46e07277c5d13fe6b24608b7e7dc20648e9558be322ad414d2f82a60c4a30c`；研究契約=`7d5813bc21644817ccc991c97049f2c65efe88a9f4c18903b42038337b328c41`；runtime契約=`b45380920c48c5548ef8880f63f4a351a3de7ff5d6b9f2abef50ebf87e763194`；lock=`2c39a3fb9567d1f9fc8ee83369c7b6c90cd19a8e679e32e4c8a6c1d75c5782c9`。64-fit queue compact sorted JSON SHA 仍為 `4dc90ec0ada6c6d34b43c429d359424c502634e502c6856c6774bf138de7ba23`。
+
+Runtime：WSL-native 本任務 worktree；Python 3.12.3／torch 2.15.0+cpu／numpy 2.5.4／pytest 9.2.0，借用 `/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python` 既有環境，不借用其研究 evidence。CUDA_VISIBLE_DEVICES 空字串、OMP／MKL threads=1；既有 `/tmp/p4-notebook-deps` 離線 nbformat，無安裝套件。MARKETMAMBA_DATA_ROOT unset；Data realpath 為本 worktree 下的 Data 一般目錄，測試只寫隔離合成資料。本機原交付 ZIP／DATASET_MANIFEST 僅唯讀核對，沒有 GPU／網路／Colab／Drive 操作。
+
+Knowledge-impact 人工判定：Semantics=YES（來源 lineage／接續行為）、Correctness gate=YES（嚴格相容證據）、Major blocker/next decision=YES；Authority／Subsystem boundary／Active runtime state／Canonical artifact supersession／Deprecate=NO。新增宣告是 GENERATED，未升格研究 authority；同 change 更新 Current State、Authority Map、Training、Worktree Register。原 runtime observed_at、治理政策與 authority pins 不改；工具不能取代此人工判斷。
+
+實際最終完整 CPU 指令（`/tmp/p4-upgrade-full-final.log`，exit 0）：
+
+```bash
+PYTHONPATH=.:V6:V6/research_lab/tests:/tmp/p4-notebook-deps \
+OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES='' \
+/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests tests -q -p no:cacheprovider
+```
+
+實際 stdout：
+
+```text
+........................................................................ [  9%]
+........................................................................ [ 18%]
+........................................................................ [ 27%]
+........................................................................ [ 37%]
+........................................................................ [ 46%]
+........................................................................ [ 55%]
+........................................................................ [ 65%]
+........................................................................ [ 74%]
+........................................................................ [ 83%]
+.................................................................s...... [ 92%]
+.......................................................                  [100%]
+774 passed, 1 skipped, 5 warnings in 382.55s (0:06:22)
+```
+
+唯一 skip 為既有 CUDA 測試；5 warnings 為刻意 duplicate ZIP fixture 一項及既有 Pandas4 棄用四項，未略過新測試／未放寬門檻。新增 29 項測試全部納入本次；nbformat／8 個 code cells compile、safe extraction 與合成交付 ZIP／manifest／宣告身分驗證均在測試執行，真實交付未產出。
+
+正常測試後執行 `check_knowledge_impact.py`，明列全部 12 paths（含 untracked）回報 WARNING：Operations／GOVERNANCE 為 REVIEW_REQUIRED，Current State／Authority Map 為 UPDATE_IF_SEMANTIC_CHANGE。已實際閱讀 review 兩檔，本輪未改 production ops 邊界或治理政策，因此這兩檔不修改；四個相關 knowledge 檔已更新，不用 NO_KNOWLEDGE_CHANGE_REQUIRED 隱藏影響。Health 預檢 exit 0／Overall WARNING，完成文件後重跑正式 health，結果見下列固定交接；沒有自動 repin 或更新 runtime observation。
+
+### 固定交接欄位（本輪）
+
+- Completed：來源相容產生器／runtime lineage 採用／SOURCE_UPGRADE 雙處稽核、舊 epoch 與完成 fit 接續、CPU RED→GREEN、四項 in-memory mutation、全套 774 passed 完成。完成不等於 Human acceptance。
+- Changed：`V6/research_lab/p4_bundle.py`、`V6/research_lab/p4_colab.py`、`V6/research_lab/p4_source_compat.py`、`V6/research_lab/tests/test_p4_source_compat.py`、`tasks/p4a-source-compat-20e6b54.json`、`docs/operations/colab-human-requirements.md`、`docs/operations/colab-p4.md`、本報告、`knowledge/00_Project_Map/Current_State.md`、`knowledge/00_Project_Map/Authority_Map.md`、`knowledge/00_Project_Map/Worktree_Register.md`、`knowledge/01_Domains/Training.md`，共 12 paths。
+- Decisions：只認證 4e56e9d 的數值中立升級；原 ZIP manifest 補足舊來源證據；沿用原 run_hash／fit 契約，原 artifacts 不改。缺證據或多 lineage STOP，明設開關才允許新批次。原 notebook 保底仍可回跑。
+- Evidence：最初 RED 10 failed；最終 774 passed／1 skipped／5 warnings（382.55s）；4 in-memory mutants 全被 DID NOT RAISE 反證攔截；本機舊 ZIP 229 sources 0 mismatch；語法／nbformat／8 cells／宣告 to 身分及保護檔 hashes／git diff --check 通過。完整輸出與 hashes 如上。
+- Remaining：沒有真實 Colab／T4／Drive FUSE／中斷現場／現行套件環境驗證；未產出正式交付 ZIP／ipynb、未上傳／啟動訓練。CPU mixer 替身不能證明 CUDA 數值一致；Drive 的實際 run_identity／已完成數未觀測。新來源基準須另補測試／審查。
+- Blockers：本機工程無阻擋；獨立審查與現場接受仍待完成。原 02_formal ZIP／完整 budget 必須保留，缺少即 STOP；rank-gauss source hash 改變可能觸發 CPU 快取重建，不略過舊 gate。
+- Next recommended action：獨立審查 patch／GENERATED 宣告／CPU 證據，通過後重新 deliver `--resume-from-commit 4e56e9d --run-name 03_formal_resume`；Human 斷線後上傳兩檔並依指南執行。此輪不授予 production／研究接受。
+- Project memory updated：YES（Current State／Training／Worktree Register）；沒有 runtime observed_at 更新。
+- Authority map updated：YES（候選接續邊界），machine contract／production／historical authority 不變。
+- Git status：起始 clean detached HEAD；結束 9 tracked modified＋3 untracked（新 helper／tests／GENERATED 宣告），0 staged。明確 no-commit，工作樹預期 dirty；沒有其他既有 dirty／untracked。
+- Commit：N/A（禁止）；Push：未執行；Merge／Deploy：未執行。
+- Worktree：沿用 `.worktrees/ruflo-workers/run-mwrxutx3-d28fa4/builder_p4a_upgrade`，base/HEAD `20e6b54`；未新增／刪除 worktree，dirty patch 需先保存才可移除。
+- Runtime/environment：WSL／Python 3.12.3／torch 2.15.0+cpu，環境／資料 realpath 與 artifact identity 如上；無 GPU／網路／Colab／額外代理／排程／正式 Data／V6/models 變更。
+
+正式 knowledge health 實際輸出（`/tmp/p4-upgrade-health-final.log`，exit 0）：
+
+```text
+KNOWLEDGE HEALTH
+
+Project Map        PASS
+Agent Guides       PASS
+Domains            PASS
+Governance         WARNING
+Authority Drift    WARNING
+Runtime Freshness  PASS
+Generated Index    PASS
+Legacy Docs        WARNING
+
+Overall: WARNING
+```
+
+Warnings 為既有 authority repin／legacy drift 類提醒，沒有 structural FAIL。已依 code-review-and-quality 作 correctness／介面與可讀性／架構／完整性與安全／成本五軸自查；這不是獨立複審。新 helper 為標準庫，沒有新依賴；原 Ledger、完成驗證、配方、queue、train_one 數值邏輯及 protected source 不改。
+
 ## P4a 進度兩項 REQUIRED 修補 — 2026-11-22（job-run-mwrpdfba-d4ad9d）
 
 本輪 base/HEAD `5156087da0e2aaba5d0cf703db3cdd67200cfbe9`，既有 detached worktree `fixer_p4a_progress`。範圍只處理複審的接續 ETA 與 cached-fit 身分；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依 Human 指示不 commit／push／merge。沿用既有 runner、tests、工程報告與 knowledge 結構，沒有新 implementation／artifact tree。所有產物僅 CPU 合成 ENGINEERING_OBSERVATION；完成不等於 Human acceptance。

@@ -1,5 +1,15 @@
 # Training
 
+## P4a 來源相容升級候選 — 2026-11-22
+
+`job-run-mwrxutx3-d28fa4` builder，沿用既有 detached worktree `builder_p4a_upgrade`，base/HEAD `20e6b5408d9f9b13d56290a72a2dc313c35d1b94`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依 no-commit 指示保留 patch。依 [Human 需求第 8 節](../../docs/operations/colab-human-requirements.md)新增 [來源驗證模組](../../V6/research_lab/p4_source_compat.py)，沿用 [runner](../../V6/research_lab/p4_colab.py)／[交付工具](../../V6/research_lab/p4_bundle.py)，沒有新 worktree／實驗樹。現有 runner 沒有跨來源證據層，因此在相同 research_lab 新增單一 helper；不複製訓練／完成驗證實作。
+
+目前只認證 `4e56e9d` → 本工作樹逐檔 bytes。`deliver --resume-from-commit 4e56e9d` 由 git objects 重算全部舊來源與逐檔 diff／分類，綁定未變的契約／64-fit queue／DATASET_MANIFEST／環境／record_only 預算，宣告隨 ZIP 打包；[本輪 GENERATED 宣告](../../tasks/p4a-source-compat-20e6b54.json)供審查，不是新研究 authority。以舊 run 身分綁定的原 ZIP manifest 補足舊 run_identity 缺少的來源清單，完整核對 from／to、差異集合及非來源輸入後才採用舊 run_hash。run 目錄與帳本追加 SOURCE_UPGRADE，歷史 complete／pointer／checkpoint／run_identity 不改寫。缺證據、差異或多 lineage 一律 STOP；無舊 run 才新建，明設 allow-new-run 才允許新批次，既有帳本／STOP gate 不略過。
+
+本節取代先前「任何換版只能重新綁身分開新 run」的操作限制：執行中的 kernel 仍不可換碼；斷線後才用 `03_formal_resume` 新 notebook，同一 EXPERIMENT_DIR／budget，保留原 02_formal ZIP 及原 notebook 保底。只限數值中立的進度／日誌／speed-test 帳本分離／文件；每個新來源基準先補跨版測試與獨立審查。研究、production、環境 authority 與 runtime observed_at 均未改動；本機唯讀原 ZIP 的 229 個來源與 git objects 完全一致，不能推定 Drive 現況。
+
+最終完整 CPU 回歸 **774 passed／1 skipped／5 warnings（382.55s）**，4 項 in-memory mutation 皆攔截。CPU 跨版 GRU／crossstock（mixer 替身）權重／預測／RNG、舊 epoch pointer 接續、舊完成 fit 驗證及 12 完成＋52 剩餘的 runner／ledger 整合證據見 [工程報告](../../reports/v7_p4a_colab_engineering.md)。Colab／T4／Drive FUSE 現場 UNVERIFIED；無 GPU／網路／資料取得／production／scheduler／通知／額外代理。Next：獨立審查 patch、宣告與測試，接受後重新 deliver；現場測試與 Human acceptance 仍未完成，不解除原 NO_GO。
+
 ## P4a 進度兩項 REQUIRED 修補候選 — 2026-11-22
 
 `job-run-mwrpdfba-d4ad9d` builder，既有 detached worktree `fixer_p4a_progress`，base/HEAD `5156087da0e2aaba5d0cf703db3cdd67200cfbe9`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依 no-commit 授權保留 patch。本節補正前節進度語義，沿用 [runner](../../V6/research_lab/p4_colab.py) 與 [進度測試](../../V6/research_lab/tests/test_p4_progress.py)：驗證 checkpoint 後設定本次 step 起點，至少 10 新 steps／1 秒才估 fit ETA；3900 → 4000／5000、10 秒的接續案例為 100 秒。佇列目前 fit 優先用本次 step ETA，後續 fit 用本次完成 fit 固定實測耗時均值（至少 1 秒），cached skips 不作樣本；無可靠量測即 null／預估中，Q5 仍額外未知。
