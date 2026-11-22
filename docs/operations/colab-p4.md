@@ -31,6 +31,16 @@ PYTHONPATH=V6 python -m research_lab.p4_bundle deliver \
 
 wheel 優先 `MyDrive/MarketMamba/wheels`，回退 `MyDrive/Mamba_Wheels_T4_new`；兩個 wheel 都不存在才執行官方sdist編譯備援格。部分缺失、多版本、cp313／ABI不符即 STOP。編譯格是交付程式碼，本次未執行網路、GPU或Colab。
 
+## 進度與模式帳本（後續交付）
+
+訓練 cell 使用 `Popen` 合併 stderr、逐行轉印並 flush，子程序 `python -u`；每 50 steps／每 epoch 顯示 fit 編號、Q 階段／臂／折／種子／窗／LR、loss、FORMAL 驗證 IC、耗時／ETA、GPU 溫度／時脈與檢查點時間。無完成 fit 計時時 ETA 為「預估中」；本 fit 按最大 epochs 外推（早停可能縮短），佇列按本次已完成 fit 的實際耗時均值外推，Q5 額外耗時未知，不承諾完成時間。
+
+每約 60 秒按時間心跳原子替換 `EXPERIMENT_DIR/progress/formal/{PROGRESS.txt,progress.json}`；speed-test 使用 `progress/speedtest/`，不含 IC／績效。寫入失敗會提示檢查 Drive／空間並繼續訓練。兩檔各自原子替換，不保證成對交易一致；以 JSON 與 `observed_at` 判讀新鮮度，強制中止可能留下舊快照。Colab 單一 kernel 正在訓練時無法再執行其他格，請主要用手機／Drive 網頁查看 TXT；完成或中斷後再執行「目前進度摘要」。
+
+FORMAL 結果與帳本在 `EXPERIMENT_DIR/budget/`，speed-test 在 `EXPERIMENT_DIR/budget_speedtest/`，跨交付延續各自帳本；CLI `--drive-root` 仍填正式帳本根目錄，runner 在 speed 模式自動選 sibling。不要把參數先填成 speed 路徑而重複加後綴。既有 chain／identity／缺帳保護不變，不自動搬移、清除或重置歷史帳本。訓練格結束（含失敗）列出結果目錄、manifest 與進度位置；失敗摘要含步驟／期望／實際回傳碼／下一步。
+
+以上只有 CPU 合成工程驗證，Colab／Drive 現場 **UNVERIFIED**。正在執行的舊 02_formal 保持原交付，新版須另行重建 source identity；不要中途替換 ZIP。
+
 ## 中斷與結果
 
 每個 validation 完成的 epoch 先本機fsync、Drive複製重讀hash，再原子更新 latest／previous／best pointer。重跑同 notebook、同 source／contract／matrix identity，恢復完整epoch的optimizer、scheduler與RNG；未完整epoch重做。已完成fit逐檔驗證後跳過。每fit即寫Drive。遺失／損壞pointer、identity不符、只有orphan均STOP，保留證據，不自動升格orphan。

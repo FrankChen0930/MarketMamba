@@ -15,6 +15,8 @@ MyDrive/MarketMamba/
 ├── wheels/                    ← 預編譯 wheel（回退 MyDrive/Mamba_Wheels_T4_new）
 └── p4a/                       ← 實驗資料夾（之後依實驗命名）
     ├── budget/                ← 帳本與結果，整個實驗共用；每個實驗階段不可共用同一本帳造成契約衝突（speed-test 另用獨立帳本）
+    ├── budget_speedtest/      ← speed-test 專用帳本，跨交付延續
+    ├── progress/formal/、progress/speedtest/ ← PROGRESS.txt／progress.json
     └── 01_speedtest/、02_formal/ …  ← 每次交付一個小資料夾：zip＋ipynb
 ```
 - 矩陣**建一次就好**，存 Drive 重用；不為了每天的新資料重建。新資料只在做前瞻驗證時另案擴充（現有矩陣涵蓋 2005-01-03 至 2026-09-11，尚未確認建置程式是否支援增量追加）。rank-gauss 快取建立一次後存回 Drive。
@@ -43,7 +45,10 @@ MyDrive/MarketMamba/
 - 完成通知要主動檢查，不只依賴完成通知（曾漏通知）。
 - 誠實回報：測過什麼、沒測什麼（Colab 現場行為在 Colab 實測前一律標 UNVERIFIED）。
 
-## 7. 已知待改進（尚未實作）
-- speed-test 與正式實驗共用同一本預算帳本，契約改變後會 `ledger identity/chain mismatch`（2026-11-22 遇到）；應改為 speed-test 使用獨立帳本。
-- 進度可見性（第 5 節）尚未在 02_formal 版本實作（該次 notebook 以 `subprocess.run` 執行，輸出被吞掉）；正在跑的 02_formal 因 run identity 綁定原始碼，不要中途換新版 zip。
+## 7. 已實作與仍待確認
+- **已實作（後續交付候選，UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED）**：speed-test 使用 `budget_speedtest/`，FORMAL 使用 `budget/`；各模式跨交付延續自身帳本。既有缺帳／chain／identity 保護維持，不自動遷移或重置歷史帳本。
+- **已實作（同上）**：第 5 節的串流逐行 flush、每 50 steps／每 epoch 進度、每約 60 秒 Drive 快照、可行動錯誤摘要與完成／中斷後摘要格。FORMAL 才顯示驗證 IC；speed-test 保持隔離。佇列 ETA 使用本次程序已完成 fit 的實際耗時均值；尚無資料顯示「預估中」，Q5 耗時另列未知，不以 fit 計時冒充。
+- 驗證層級：**CPU 合成測試**（含權重／預測 bytes 與 torch RNG 一致、串流大量輸出與非零退出、原子寫入／失敗繼續、模式帳本獨立與變異測試）；**Colab 現場 UNVERIFIED**，不是 Human acceptance。細節見[工程報告](../../reports/v7_p4a_colab_engineering.md)。
+- 正在跑的 02_formal 仍是原先 `subprocess.run` 版本；run identity 綁定原始碼，**不要中途換新版 zip**。本次只影響之後重新產生、重新綁定 identity 的交付。
+- Colab 單一 kernel 執行訓練時不能同時執行摘要格；主要從手機／Drive 網頁查看固定 `progress/formal/PROGRESS.txt` 或 `progress/speedtest/PROGRESS.txt`，並核對更新時間。
 - 矩陣增量追加能力未確認。

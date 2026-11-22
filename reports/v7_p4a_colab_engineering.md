@@ -1,5 +1,75 @@
 # P4a Colab 工程交接 — 2026-11-21
 
+## 2026-11-22：後續交付進度與 speed-test 獨立帳本（本輪候選）
+
+`job-run-mwrof3ay-8d0c43` builder；既有 worktree `.worktrees/ruflo-workers/run-mwrof3ay-8d0c43/builder_p4a_progress`，detached HEAD/base `f6a173eab03332bc3c50d78885a1d865366d2518`。**UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**，依明確 no-commit 授權保留 patch；工程完成不等於 Human acceptance。主要依據為完整閱讀的[Human 持續需求](../docs/operations/colab-human-requirements.md)第5／7節，不改正在跑的原始02_formal或其run identity。
+
+### 變更與決策
+
+- 沿用既有 `p4_bundle.py` notebook 產生器：訓練用 `Popen(stdout=PIPE, stderr=STDOUT, text=True, bufsize=1)`，持續逐行排空與 `print(..., flush=True)`，子程序同時 `python -u`／`PYTHONUNBUFFERED=1`。非零退出印訓練步驟、期望0、實際code與可行動下一步；中斷會終止／回收子程序。finally列出結果目錄、manifest、進度位置。第0格維持原有精簡設定；新增「目前進度摘要」格，speed僅印白名單工程欄位，文件說明單一kernel無法在訓練中另跑摘要格。
+- `seq_runner.train_one` 在既有 step_end 後每50 steps及epoch checkpoint後送純觀測事件，沒有新增抽樣、模型前向／反向、指標計算或RNG呼叫；P4的Observer統一顯示fit序號／總數、Q／臂／折／seed／window／LR、epoch／累計step／loss、FORMAL限定IC5、elapsed／ETA、GPU與checkpoint時間。P3未提供Observer時維持原訓練路徑；禁止修改的P3 adapter與portfolio evaluator bytes原樣。
+- P4 `Progress` 用獨立時間心跳（60秒，與steps無關），快照在 `EXPERIMENT_DIR/progress/formal/` 或 `progress/speedtest/`；先temporary寫入／flush／fsync，再原子replace。TXT繁體中文、JSON機器可讀，含run／bundle／source identity。快照是GENERATED／ENGINEERING_OBSERVATION，不是checkpoint、完成證據或研究authority。各檔原子，但兩檔不是交易；JSON及observed_at決定摘要新鮮度。寫入例外提示Drive／空間後繼續訓練。先取得ledger writer lock才啟動進度，避免第二個同帳本程序覆寫活躍快照。
+- fit ETA按最大epochs與已完成steps外推，早停可能縮短；queue ETA按本次程序已完成fit的實際耗時均值外推。尚無計時樣本以null／「預估中」呈現；已驗證cached skips不捏造耗時樣本。Q5不是fit，沒有以fit計時假裝其耗時；明列額外未知，Q5期間ETA為null。這是粗估，不是完成時間保證。
+- runner集中路由帳本：CLI `--drive-root` 保持正式root，speed自動使用sibling `<root>_speedtest`。Notebook固定formal=`EXPERIMENT_DIR/budget`，speed=`EXPERIMENT_DIR/budget_speedtest`，摘要／匯出採相同有效路徑；各模式跨交付延續自身帳本。原chain／identity／缺帳／thermal STOP不改，沒有自動遷移、重置或清除歷史帳本。SPEED_TEST進度不接受val_ic5，沒有保存model／history／scores的隔離例外。
+- 新增 `tests/test_p4_progress.py`，擴充既有P4測試而非新增平行implementation／報告／artifact tree；真實子程序、合成CPU模型、tempfile與故障注入均在既有結構可承載。現有 `test_p4_full` 的真實runner orchestration現在先3個speed fits，再64個FORMAL fits＋Q5，最後validated skip；只有GPU／mount／實際train邊界使用CPU doubles。
+
+### RED／GREEN 與實際證據
+
+最初6項新回歸測試於實作前RED：`6 failed in 7.38s`（`/tmp/p4-progress-red.log`）。首次GREEN `6 passed in 8.31s`。擴充focused最初 `2 failed, 158 passed, 1 warning in 74.95s`：變異測試os.replace注入延伸至後續Ledger（測試範圍錯誤）與既有orchestration仍讀舊speed root；先定位再修正，沒有放寬實作gate。修正後針對性回歸 `11 passed in 12.92s`（`/tmp/p4-progress-fixes.log`）。另有一輪未設單執行緒的research_lab subset主動中止exit130，不用該輪聲稱通過。
+
+測試包含：2,048行×1,024字元與stderr輸出無死鎖；child回傳7顯示摘要；READY→父程序轉印/ack→child才可退出，驗證不是收集後一次印出。原子replace前讀者仍見舊完整JSON；模擬Drive replace失敗保留舊快照並不中斷；step0時獨立心跳仍更新loss與observed_at。無樣本queue ETA=null，完成fit實耗20秒、總4 fits時下一fit開始的剩餘外推=60秒。兩個獨立模式帳本接受不同契約，刪head各自仍STOP；原共用root遇不同契約確實重現 `ledger identity/chain mismatch`。
+
+CPU GRU兩epochs×51steps、seed17、d_model8，有／無Progress與Observer，最終權重逐tensor的numpy bytes、預測完整bytes、torch RNG state均相同；沒有以近似誤差宣稱位元一致。SPEED_TEST實際CPU訓練僅5行進度（起始＋兩次step50＋兩次epoch），stdout／TXT／JSON均不含IC。測試使用的20ms心跳僅加速工程驗證；實作預設60秒。
+
+至少三項in-memory變異（僅記憶體compile，沒有修改磁碟implementation）實際輸出：
+
+```text
+IN_MEMORY speed_redaction KILLED=True (IC invariant assertion)
+IN_MEMORY unknown_ETA KILLED=True (None invariant assertion)
+IN_MEMORY nonfatal_Drive KILLED=True (unexpected exception)
+```
+
+WALLCLOCK_HEARTBEAT獨立觀測：無training steps，initial `2026-11-22T10:21:13.675095+00:00` → updated `2026-11-22T10:21:13.720515+00:00`，loss更新為.456。這是本機合成runtime證據，不更新Colab observed_at。
+
+完整CPU回歸指令與實際輸出（TEMPORARY log `/tmp/p4-progress-full-final.log`）：
+
+```bash
+PYTHONPATH=V6:/tmp/p4-notebook-deps OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES='' /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests tests -q -p no:cacheprovider
+```
+
+```text
+737 passed, 1 skipped, 5 warnings in 259.48s (0:04:19)
+```
+
+唯一skip為既有CUDA測試；warnings為刻意duplicate ZIP fixture與既有Pandas4棄用警告。沒有停用測試／降低threshold。完整全套期間source與測試未變更。
+
+實際runtime：WSL Python3.12.3、torch2.15.0+cpu、CUDA=False；上述既有venv只作runtime，不取用歷史repo研究結果。nbformat5.9.2從既有離線 `/tmp/p4-notebook-deps` 載入，無安裝／連網。初始focused用既有marketmamba-gpu venv但全在CPU；正式全套採CPU-only venv。`MARKETMAMBA_DATA_ROOT=UNSET`，本worktree `Data` realpath為該worktree/Data，未讀寫formal Data／模型payload。
+
+生成notebook通過nbformat、12cells／8code cells全compile；`/tmp/p4-progress-notebook.ipynb`，17,642 bytes，SHA256 `3683e125f2e5f8f222ce9c6e63f427314bebd668e88d6d71b668d6249676b94a`，TEMPORARY／ENGINEERING_ONLY，未打包真實ZIP、上傳或替換原交付。6個Python檔syntax PASS。逐bytes對HEAD驗證未變：`rolling_seq_scores.py` SHA `5d10d52b1d423c73fa518535f01e80b2760a0d3087036b9b778491d13942aefd`、`portfolio_eval.py` SHA `3e46e07277c5d13fe6b24608b7e7dc20648e9558be322ad414d2f82a60c4a30c`、FROZEN contract SHA `7d5813bc21644817ccc991c97049f2c65efe88a9f4c18903b42038337b328c41`、OBSERVED runtime SHA `b45380920c48c5548ef8880f63f4a351a3de7ff5d6b9f2abef50ebf87e763194`。
+
+### Knowledge-impact、限制與交接
+
+Gate：semantics=YES（進度及帳本路由）、next decision=YES（獨立審查後重建後續交付）；authority／subsystem boundary／active runtime／correctness thresholds／新增或supersede canonical artifact／deprecation=NO。正常tests後執行impact checker，再同change更新Current_State、Authority_Map、Training與Worktree_Register；Human requirements第7節如實標「已實作候選／CPU合成驗證／Colab UNVERIFIED」。不重標歷史artifact，不改runtime observed_at或authority pins。
+
+`check_knowledge_impact.py`對tracked diff exit0／WARNING；新增untracked測試另以 `--changed-file` 檢查exit0／PASS（該參數覆寫預設diff，不把此單檔PASS當全diff結果）。人工更新四份knowledge；已讀GOVERNANCE及Operations，治理規則及營運子系統邊界未變，不需改該兩檔。`knowledge_health.py --ci` exit0／Overall WARNING：Project Map／Agent Guides／Domains／Runtime Freshness／Generated Index PASS；Governance／Authority Drift／Legacy Docs WARNING，無FAIL，不更新觀測或重寫歷史以清除warning。`git diff --check`、新增Markdown本地連結及protected-path檢查PASS；新增untracked測試另檢查空白與compile。全套之後只更新文件與清除新測試一處行尾空白，無實作語義變更。
+
+最終新增進度測試（清除一處行尾空白後）：`10 passed in 9.83s`，log `/tmp/p4-progress-final-focused.log`。最終核對13paths（12modified／1untracked／0staged）、15個新增本地Markdown連結、6個Python syntax、protected bytes及 `git diff --check` PASS；工作樹依明確no-commit授權保留dirty。額外空白掃描曾誤將既有test_p4.py全檔舊空白納入，已限縮為新增檔全文及tracked新增diff，未格式化無關歷史程式。
+
+本輪implementation／新增測試artifact identity（source commit為上述HEAD，dirty content由以下hash識別）：
+
+| 路徑 | bytes | SHA-256 |
+|---|---:|---|
+| `V6/research_lab/p4_colab.py` | 49668 | `d4742a9ec41c1f1ffd69b22f36e05f7b557adcfcdc99add7b1bc08dd673e5b9b` |
+| `V6/research_lab/p4_bundle.py` | 52451 | `d080faee1ec73034584645249d50e49a0946031f7569bb2ac32ac7f3f22e1ad3` |
+| `V6/research_lab/seq_runner.py` | 23135 | `1f4ba6fa9d97a93a5f59413e26b68252c926f071e51dc5465098438af69b088e` |
+| `V6/research_lab/tests/test_p4_progress.py` | 9177 | `28c06387a2cd876e6462b5a7a5eedf0affdef0e156dd23b73977dbe8d96cd47e` |
+
+五軸自查：觀測不參與訓練／RNG；進度白名單及獨立namespace維持speed隔離；沿用既有P4 ownership、標準庫與輸出結構；I/O主要在心跳thread，步數輸出限50steps／epoch，不新增指標計算。沒有額外agents或獨立審查，不將自查視為acceptance。
+
+Remaining：Colab notebook即時呈現、T4／CUDA數值可重現、Drive FUSE fsync／rename／斷線持久性、Drive長時間卡住的I/O、真正Colab中斷與子程序終止、Q5現場推論與瀏覽器下載仍UNVERIFIED；本機原子檔測試不推定Drive保證。SIGKILL／runtime消失可能留下舊快照，Human應核對observed_at。舊帳本可能已含不同契約；新版不自動修復或遷移。正在跑的02_formal本輪完全未觀測／未修改。
+
+Completed：後續交付進度可見性與模式帳本分離工程。Changed：3實作、3測試、2operations文件、本報告及4knowledge文件，共13paths（含1個新測試）。Decisions／Evidence如上。Blockers：本機工程N/A；接受與現場驗證待辦。Next recommended action：獨立複審patch，接受後另案deliver與Colab驗證。Project memory updated：YES；Authority map updated：YES（候選邊界；研究／production authority未變）。Git status：起始clean，依no-commit保留dirty patch，0 staged；不宣稱clean。Commit：N/A（禁止）；Push：未執行；Merge／deploy：未執行。Worktree／Runtime/environment如上；沒有GPU／網路／Colab／資料取得／production／scheduler／additional agents／wakeups／recurring jobs或protected V6/models變更。
+
 ## 2026-11-22：d82d020 複審三項 REQUIRED 修補
 
 `job-run-mwric0jj-32d745`，builder，detached HEAD/base `d82d0209cba6686c10fc1a01c78172446a6796fa`。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；只沿用既有worktree、P4 implementation／tests／knowledge結構，不新增流程、artifact tree或agents。本輪工程完成不構成獨立複審GO、Colab現場驗證或Human acceptance。

@@ -265,7 +265,9 @@ def test_cpu_orchestration_charges_setup_and_resumes_completed_fits(tmp_path,mon
     root=tmp_path/'drive-budget'
     first=p4.run(unpacked,root,True,10,20,2,.1)
     assert len(calls)==3 and len(first['jobs'])==3
-    events=[json.loads(p.read_text()) for p in sorted(root.glob('event-*.json'))]
+    ledger_root=p4.budget_root(root,True)
+    assert not root.exists()
+    events=[json.loads(p.read_text()) for p in sorted(ledger_root.glob('event-*.json'))]
     assert events[0]['state']['active']['binding']['stage']=='verify_bundle_and_runtime'
     assert events[2]['state']['active']['binding']['stage']=='rankgauss_verify_or_build'
     assert first['budget']['spent_hours']>0
@@ -273,7 +275,7 @@ def test_cpu_orchestration_charges_setup_and_resumes_completed_fits(tmp_path,mon
     assert len(calls)==3 and len(second['jobs'])==3  # no re-fit
     assert second['budget']['spent_hours']>first['budget']['spent_hours']
     import re
-    for path in root.rglob('*'):
+    for path in list(ledger_root.rglob('*'))+list((root.parent/'progress/speedtest').rglob('*')):
         if path.is_file():
             text=path.read_text()
             assert not re.search(r'best_val_ic|val_ic|history|score|performance|research_conclusion|0\.987654321',text,re.I), path
@@ -843,6 +845,13 @@ def notebook_helpers():
 
 
 def test_drive_settings_shared_budget_and_formal_stop():
+    import subprocess
+    import io
+    class FakeProcess:
+        def __init__(self,args):commands.append(args);self.stdout=io.StringIO('CPU stream boundary\n')
+        def __enter__(self):return self
+        def __exit__(self,*args):pass
+        def wait(self):return 0
     nb=bundle.colab_notebook()
     settings={};exec(nb['cells'][0]['source'],settings)
     assert settings['MODE']=='FORMAL' and not {'MAX_HOURS','MAX_UNITS','RESERVE'} & settings.keys()
@@ -857,7 +866,8 @@ def test_drive_settings_shared_budget_and_formal_stop():
         namespace=dict(settings,MODE='SPEED_TEST' if run=='01_speedtest' else 'FORMAL',
                        RUN_DIR='/drive/p4a/'+run,EXPERIMENT_DIR='/drive/p4a',
                        root=Path('/bundle'),p4=type('P4',(),{'prepare_source':lambda _:None,'verify':lambda *a,**k:None}),
-                       os=__import__('os'),sys=__import__('sys'),subprocess=type('S',(),{'run':lambda args,**kw:commands.append(args)}))
+                       os=__import__('os'),sys=__import__('sys'),subprocess=type('S',(),{'PIPE':subprocess.PIPE,'STDOUT':subprocess.STDOUT,
+                           'Popen':lambda args,**kw:FakeProcess(args)}))
         exec(nb['cells'][6]['source'],namespace)
     assert [c[c.index('--drive-root')+1] for c in commands]==['/drive/p4a/budget']*2
 

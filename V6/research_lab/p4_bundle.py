@@ -755,23 +755,65 @@ def colab_notebook(run_name='02_formal', drive_root='/content/drive/MyDrive/Mark
     code('''
         if MODE not in ('SPEED_TEST','FORMAL'): raise ValueError('STOP: MODE must be SPEED_TEST or FORMAL')
         p4.prepare_source(root);p4.verify(root,allow_derived=True)
-        training_env=dict(os.environ,PYTHONPATH=f'{root}/source/V6:{root}/source',PYTHONDONTWRITEBYTECODE='1')
-        common=[sys.executable,'-m','research_lab.p4_colab','--bundle',str(root),'--drive-root',str(Path(EXPERIMENT_DIR)/'budget'),
+        training_env=dict(os.environ,PYTHONPATH=f'{root}/source/V6:{root}/source',PYTHONDONTWRITEBYTECODE='1',PYTHONUNBUFFERED='1')
+        BUDGET_DIR=Path(EXPERIMENT_DIR)/('budget_speedtest' if MODE=='SPEED_TEST' else 'budget')
+        PROGRESS_DIR=Path(EXPERIMENT_DIR)/'progress'/('speedtest' if MODE=='SPEED_TEST' else 'formal')
+        common=[sys.executable,'-u','-m','research_lab.p4_colab','--bundle',str(root),'--drive-root',str(Path(EXPERIMENT_DIR)/'budget'),
                 '--data-dir','/content/data']
         # FROZEN + OBSERVED 環境完整核對；DRAFT 仍拒絕。
-        subprocess.run(common+(['--speed-test'] if MODE=='SPEED_TEST' else []),env=training_env,check=True)
+        def stream_training(command,env):
+            # 合併 stderr 並持續排空 PIPE，避免大量輸出造成死鎖。
+            with subprocess.Popen(command,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,
+                                  text=True,bufsize=1,env=env) as process:
+                try:
+                    for line in process.stdout:
+                        print(line,end='',flush=True)
+                    actual=process.wait()
+                except BaseException:
+                    process.terminate()
+                    try: process.wait(timeout=10)
+                    except subprocess.TimeoutExpired: process.kill();process.wait()
+                    print('訓練步驟中斷；期望=正常完成；實際=kernel 中斷；下一步=查看 Drive 進度與檢查點，使用原交付重新執行',flush=True)
+                    raise
+            if actual!=0:
+                print(f'訓練步驟失敗；期望=回傳碼 0；實際=回傳碼 {actual}；下一步=查看上方最後錯誤及 Drive 進度，檢查環境／空間／identity；保留帳本與原交付，修復原因後重跑',flush=True)
+                raise subprocess.CalledProcessError(actual,command)
+        try:
+            stream_training(common+(['--speed-test'] if MODE=='SPEED_TEST' else []),training_env)
+        finally:
+            print('結果資料夾：',BUDGET_DIR,'進度檔：',PROGRESS_DIR/'PROGRESS.txt',flush=True)
+            print('run manifests',*[str(p) for p in BUDGET_DIR.glob('run-*/manifest.json')],sep='\\n',flush=True)
     ''')
     code('''
         # runner 已直接持久寫入 Drive：speed JSON、run manifest 與預算帳本。
         if MODE=='SPEED_TEST':
-            for path in sorted((Path(EXPERIMENT_DIR)/'budget').glob('run-*/**/speed.json')):
+            for path in sorted(BUDGET_DIR.glob('run-*/**/speed.json')):
                 report=json.loads(path.read_text())
                 print(path)
                 print(json.dumps({k:report[k] for k in ('arm','epoch_seconds','gpu_model') if k in report},ensure_ascii=False))
                 records=report['telemetry']
                 print(dict(temperature_c_max=max(r['temperature_c'] for r in records),
                            clock_mhz_min=min(r['clock_mhz'] for r in records),clock_mhz_max=max(r['clock_mhz'] for r in records)))
-        print('run manifests',*[str(p) for p in (Path(EXPERIMENT_DIR)/'budget').glob('run-*/manifest.json')],sep='\\n')
+        print('run manifests',*[str(p) for p in BUDGET_DIR.glob('run-*/manifest.json')],sep='\\n')
+    ''')
+    markdown('目前進度摘要：Colab 單一 kernel 訓練執行中無法再執行其他格，主要請用手機或 Drive 網頁開啟 EXPERIMENT_DIR/progress/formal/PROGRESS.txt（speed-test 在 progress/speedtest/）。以下儲存格可在完成或中斷後讀取快照；快照不是完成或交易證據。')
+    code('''
+        # 目前進度摘要：不依賴訓練格已成功執行。
+        import json
+        from pathlib import Path
+        progress_dir=Path(EXPERIMENT_DIR)/'progress'/('speedtest' if MODE=='SPEED_TEST' else 'formal')
+        snapshot=progress_dir/'progress.json'
+        if snapshot.exists():
+            summary=json.loads(snapshot.read_text())
+            # SPEED_TEST 僅顯示工程欄位，不轉印未知／歷史績效欄位。
+            keys=('observed_at','status','mode','queue','fit_index','total_fits','completed_fits',
+                  'arm','year','seed','window','lr','epoch','step','loss','fit_elapsed_seconds',
+                  'fit_eta_seconds','queue_eta_seconds','temperature_c','clock_mhz','last_checkpoint_at')
+            print('目前進度摘要（請確認更新時間；斷線後可能是舊快照）')
+            for key in keys+(() if MODE=='SPEED_TEST' else ('val_ic5',)):
+                print(key,summary.get(key) if summary.get(key) is not None else ('預估中' if 'eta' in key else '未知／尚無'))
+        else:
+            print('尚無進度快照；下一步：確認訓練已啟動、模式與 Drive 掛載，查看',snapshot)
     ''')
     markdown('中斷後重跑同一本 notebook：相同 source／契約／矩陣 identity 才可從完整 epoch 接續；已完成 fit 逐檔驗證後跳過。orphan 保留但不自動升格；85°C 硬體 STOP 需人工查明，不自動清除。所有結果屬研究 evidence，Colab 現場仍 UNVERIFIED。')
     code('''
@@ -779,9 +821,9 @@ def colab_notebook(run_name='02_formal', drive_root='/content/drive/MyDrive/Mark
         download=Path('/content/p4a-results.zip')
         # 評估前打包全部 durable scores／metrics／checkpoints／ledger，保留相對路徑。
         with zipfile.ZipFile(download,'w',compression=zipfile.ZIP_DEFLATED) as z:
-            for path in sorted((Path(EXPERIMENT_DIR)/'budget').rglob('*')):
+            for path in sorted(BUDGET_DIR.rglob('*')):
                 if path.is_file() and not path.is_symlink() and path.suffix in {'.json','.parquet','.pt','.jsonl'}:
-                    z.write(path,path.relative_to(Path(EXPERIMENT_DIR)/'budget'))
+                    z.write(path,path.relative_to(BUDGET_DIR))
         files.download(str(download))
     ''')
     for i,cell in enumerate(cells): cell['id']=f'p4a-{i:02d}'

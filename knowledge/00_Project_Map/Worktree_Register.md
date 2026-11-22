@@ -1,5 +1,11 @@
 # Worktree Register
 
+## P4a 進度 builder — 2026-11-22
+
+- Purpose/task：後續 Colab 交付串流／時間進度快照／speed-test 獨立帳本及 CPU RED/GREEN；owner Human/Codex builder，job-run-mwrof3ay-8d0c43。沿用 `.worktrees/ruflo-workers/run-mwrof3ay-8d0c43/builder_p4a_progress`，detached HEAD/base `f6a173eab03332bc3c50d78885a1d865366d2518`；created2026-11-22、retired N/A，起始clean，依 no-commit 保留dirty patch。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。
+- Authority：Human 持續需求及既有 FROZEN P4a／OBSERVED runtime 契約；只新增觀測與模式帳本路由，研究／production authority、runtime observed_at 不變。沿用既有 implementation／tests／docs／reports／knowledge 容器，不新建平行流程或 worktree；無GPU／網路／Colab／additional agents／commit／push／merge／deploy／正式Data／模型／scheduler。
+- Merge/artifact dependency：獨立審查與 Human acceptance；後續交付重新綁 source identity，正在跑的原始02_formal不可換版。CPU logs `/tmp/p4-progress-*.log`、合成pytest artifacts與 `/tmp/p4-progress-notebook.ipynb` 是 TEMPORARY／ENGINEERING_ONLY，詳見[工程報告](../../reports/v7_p4a_colab_engineering.md)。Safe-removal preconditions：先保存未提交patch與必要證據、處理引用並完成retirement review；目前dirty不可移除。
+
 ## P4a 三項 REQUIRED fixer — 2026-11-22
 
 - Purpose/task：獨立複審三項 REQUIRED：A/B 列支援、C 交集後排名、completed-fit 終止／配方／history驗證；owner Human/Codex builder，job-run-mwric0jj-32d745。沿用 `.worktrees/ruflo-workers/run-mwric0jj-32d745/fixer_p4a_full`，detached HEAD/base `d82d0209cba6686c10fc1a01c78172446a6796fa`；created2026-11-22、retired N/A，起始clean，依 no-commit 保留dirty patch。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。

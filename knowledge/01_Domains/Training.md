@@ -1,5 +1,11 @@
 # Training
 
+## P4a 進度與 speed-test 帳本候選 — 2026-11-22
+
+`job-run-mwrof3ay-8d0c43` builder，既有 detached HEAD/base `f6a173eab03332bc3c50d78885a1d865366d2518`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依 no-commit 授權保留 patch。依[Human 持續需求](../../docs/operations/colab-human-requirements.md)沿用 [notebook 產生器](../../V6/research_lab/p4_bundle.py)、[P4 runner](../../V6/research_lab/p4_colab.py)與 `seq_runner.train_one`：串流／flush、每 50 steps／epoch、60 秒時間心跳，Drive `progress/formal/` 與 `progress/speedtest/` 的 TXT／JSON、可行動錯誤及離線摘要格。快照是觀測，不是 checkpoint／完成／研究 authority；FORMAL 才顯示驗證 IC。ETA 未知即預估中，佇列以本次完成 fit 的實測耗時外推，不假設 Q5 耗時。
+
+本節取代舊候選「speed 與 formal 共用 budget」的操作描述：speed 自動使用 `budget_speedtest/`，FORMAL 保持 `budget/`；各自跨交付延續，既有 chain／identity／缺帳 gate 不變，不遷移或重置歷史帳本。正在跑的原始 02_formal 不可中途換版；後續交付須重新綁定 source identity。FROZEN 研究契約、OBSERVED runtime bytes／observed_at、P3 adapter 與 portfolio engine 不變，無 production／scheduler／正式 Data／模型操作。只有 CPU 合成工程證據（權重／預測 bytes 與 torch RNG 一致、真子程序串流、帳本先 speed 後 FORMAL、in-memory 變異），Colab／T4／Drive FUSE 仍 UNVERIFIED；不等同 Human acceptance。Next：獨立審查 patch，接受後另案重新 deliver 與現場驗證。實際輸出與限制見[工程報告](../../reports/v7_p4a_colab_engineering.md)。
+
 ## P4a completed-fit 與列支援修補 — 2026-11-22
 
 本節依 [FROZEN contract](../../tasks/p4a-colab-contract-20261121.json)／[規格](../../tasks/spec-p4a-colab-20261121.md) 更新舊候選操作描述：固定64 fits＋Q5、record-only帳本，85°C STOP 保留；partial 可按驗證 pointer 接續。正式 completed-fit 新增每 fit 的有效 frozen recipe identity（長窗／LR 消融使用自身值）、連續 history、重算 BEST／bad、8 epochs 或有效早停，以及 pointer／metrics／預測設定一致性檢查；發布與續跑共用，舊不足證據的標記 fail closed。Family A/B 不得裁列；Family C 先取全比較系統／W60／C0+交集，再逐 seed 重算排名及平均，明報支援與排除比例。研究／環境契約 bytes 未變，本節不重標歷史 artifacts。

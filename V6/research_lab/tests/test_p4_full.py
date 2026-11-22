@@ -229,6 +229,10 @@ def test_cpu_full_queue_and_validated_skip(tmp_path,monkeypatch):
     calls=[];permutations=[]
     def fake_train(directory,year,arm,seed,cfg,reference,observer):
         calls.append((year,arm,seed,cfg['window'],cfg['lr']));observer.device='cpu'
+        if observer.speed:
+            observer.steps=[.001]*200
+            observer.records=[dict(gpu='CPU_BOUNDARY_DOUBLE',temperature_c=40,clock_mhz=0,power_w=0)]
+            return None,dict(history=[dict(seconds=1.)]*2)
         weights={'weight':torch.tensor([1.])}
         history=[dict(epoch=i,val_ic5=.2 if i==1 else .1) for i in range(1,5)]
         for epoch in range(1,5):
@@ -242,6 +246,10 @@ def test_cpu_full_queue_and_validated_skip(tmp_path,monkeypatch):
     def fake_permutation(directory,year,*args):permutations.append(year);return {'CPU_BOUNDARY_DOUBLE':True}
     monkeypatch.setattr(p,'permutation_fit',fake_permutation)
     drive=tmp_path/'drive'
+    speed=p.run(tmp_path/'bundle',drive,speed=True,data_dir=tmp_path/'ssd')
+    assert len(calls)==3 and len(speed['jobs'])==3
+    assert (p.budget_root(drive,True)/'head.json').exists() and not drive.exists()
+    calls.clear()
     first=p.run(tmp_path/'bundle',drive,data_dir=tmp_path/'ssd')
     assert len(calls)==64 and permutations==[2021,2022,2023] and len(first['jobs'])==64
     second=p.run(tmp_path/'bundle',drive,data_dir=tmp_path/'ssd')

@@ -320,7 +320,10 @@ def train_one(kind, seed, data, tr, va, cfg, device='cuda', mixer_factory=None, 
             opt.zero_grad(set_to_none=True); loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.); opt.step(); sched.step()
             losses.append(float(loss.detach()))
-            if observer: observer('step_end', None)
+            if observer:
+                observer('step_end', None)
+                if (_+1)%50==0:
+                    observer('progress',dict(epoch=state['epoch']+1,step=state['epoch']*cfg['steps_per_epoch']+_+1,loss=float(np.mean(losses))))
         ic = daily_ic_rows(data, va, predict(model, data, va, device)[:, 0], 'y5')
         state['epoch'] += 1
         score = float(ic.mean()) if len(ic) else -9.
@@ -337,6 +340,9 @@ def train_one(kind, seed, data, tr, va, cfg, device='cuda', mixer_factory=None, 
             observer('epoch', dict(model=model.state_dict(), opt=opt.state_dict(), sched=sched.state_dict(),
                                    state=state, best_sd=best_sd, rng_state=rng.bit_generator.state,
                                    torch_rng=torch.get_rng_state(), numpy_rng=np.random.get_state()))
+        if observer:
+            observer('progress',dict(epoch=state['epoch'],step=state['epoch']*cfg['steps_per_epoch'],
+                                     loss=state['history'][-1]['loss'],val_ic5=score))
         if ckpt:
             tmp = str(ckpt)+'.tmp'
             torch.save(dict(model=model.state_dict(), opt=opt.state_dict(), sched=sched.state_dict(), state=state, best_sd=best_sd), tmp)

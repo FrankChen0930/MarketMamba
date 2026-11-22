@@ -16,6 +16,9 @@ import subprocess
 import time
 import uuid
 import sys
+import threading
+import tempfile
+from datetime import datetime, timezone
 os.environ['PYTHONDONTWRITEBYTECODE'] = '1'
 sys.dont_write_bytecode = True
 
@@ -29,6 +32,112 @@ ARMS=('mamba2','crossstock','gru')
 
 def hashed(value):
     return hashlib.sha256(json.dumps(value,sort_keys=True,allow_nan=False).encode()).hexdigest()
+
+
+def budget_root(root, speed=False):
+    """CLI takes the formal ledger root; timing owns a sibling, across deliveries."""
+    root=Path(root)
+    return root.with_name(root.name+'_speedtest') if speed else root
+
+
+class Progress:
+    """Best-effort observation only. No model, RNG, checkpoint or ledger authority.
+
+    A wall-clock heartbeat keeps Drive visible even during validation/slow steps.
+    Each file is atomically replaced; the pair is not a transaction. JSON is the
+    summary authority and both carry the same observed_at generation.
+    """
+    def __init__(self, root, speed=False, interval=60., clock=time.monotonic):
+        self.root=Path(root);self.speed=speed;self.interval=interval;self.clock=clock
+        self.lock=threading.RLock();self.stop=threading.Event();self.durations=[]
+        self.fit_started=None;self.completed=0;self.last_fit_elapsed=0.
+        self.data=dict(status='準備中',queue=None,fit_index=0,total_fits=0,epoch=0,step=0,
+                       loss=None,temperature_c=None,clock_mhz=None,last_checkpoint_at=None)
+
+    def __enter__(self):
+        self.write()
+        self.thread=threading.Thread(target=self._heartbeat,name='p4-progress',daemon=True)
+        self.thread.start();return self
+
+    def _heartbeat(self):
+        while not self.stop.wait(self.interval):self.write()
+
+    def __exit__(self,kind,error,tb):
+        self.stop.set();self.thread.join()
+        self.update(status='已中斷／失敗' if kind else '已完成')
+        self.write()
+
+    def update(self, **values):
+        # Whitelist prevents history/weights/performance leaking through payloads.
+        allowed={'status','queue','fit_index','total_fits','arm','year','seed','window','lr',
+                 'epoch','step','epochs','steps_per_epoch','loss','temperature_c','clock_mhz','last_checkpoint_at',
+                 'run_hash','bundle_identity','source_commit'}
+        if not self.speed:allowed.add('val_ic5')
+        with self.lock:self.data.update({k:v for k,v in values.items() if k in allowed})
+
+    def start_fit(self,job,index,total,cfg):
+        with self.lock:
+            self.fit_started=self.clock();self.last_fit_elapsed=0.
+            self.data.pop('val_ic5',None)
+            self.update(**job,fit_index=index,total_fits=total,epoch=0,step=0,loss=None,
+                        epochs=cfg['epochs'],steps_per_epoch=cfg['steps_per_epoch'],
+                        last_checkpoint_at=None,status='訓練中')
+        self.emit();self.write()
+
+    def finish_fit(self, skipped=False):
+        with self.lock:
+            if not skipped and self.fit_started is not None:
+                self.last_fit_elapsed=max(0.,self.clock()-self.fit_started)
+                self.durations.append(self.last_fit_elapsed)
+            self.completed+=1;self.fit_started=None
+        self.update(status='fit 已驗證完成');self.write()
+
+    def snapshot(self):
+        with self.lock:
+            result=dict(self.data)
+            elapsed=max(0.,self.clock()-self.fit_started) if self.fit_started is not None else self.last_fit_elapsed
+            step=result.get('step',0);total=result.get('epochs',0)*result.get('steps_per_epoch',0)
+            result.update(observed_at=datetime.now(timezone.utc).isoformat(),
+                          mode='SPEED_TEST' if self.speed else 'FORMAL',completed_fits=self.completed,
+                          fit_elapsed_seconds=elapsed,
+                          fit_eta_seconds=(0. if self.fit_started is None and self.completed else
+                              elapsed*(total-step)/step if step and total>=step else None),
+                          queue_eta_seconds=(max(0.,sum(self.durations)/len(self.durations)*
+                              (result['total_fits']-self.completed)-(elapsed if self.fit_started is not None else 0.)) if self.durations else None))
+            if result.get('queue')=='Q5':result['fit_eta_seconds']=result['queue_eta_seconds']=None
+            return result
+
+    @staticmethod
+    def render(data):
+        def value(key):
+            v=data.get(key)
+            return '預估中' if v is None and 'eta' in key else ('未知／尚無' if v is None else str(v))
+        labels=[('observed_at','更新時間'),('status','狀態'),('mode','模式'),('queue','佇列階段'),
+                ('fit_index','目前 fit'),('total_fits','總 fits'),('completed_fits','已完成 fits'),
+                ('arm','臂'),('year','折'),('seed','種子'),('window','窗'),('lr','學習率'),
+                ('epoch','epoch'),('step','累計 step'),('loss','loss'),
+                ('fit_elapsed_seconds','本 fit 已用秒數'),('fit_eta_seconds','本 fit 預估剩餘秒數（最大 epochs 外推）'),
+                ('queue_eta_seconds','佇列預估剩餘秒數（完成 fit 均值；不含 Q5）'),
+                ('temperature_c','GPU 溫度 °C'),('clock_mhz','GPU 時脈 MHz'),('last_checkpoint_at','最近檢查點時間')]
+        if data.get('mode')=='FORMAL':labels.insert(15,('val_ic5','驗證 IC5'))
+        return ' | '.join(label+': '+value(key) for key,label in labels)
+
+    def emit(self):print(self.render(self.snapshot()),flush=True)
+
+    def write(self):
+        try:
+            data=self.snapshot();self.root.mkdir(parents=True,exist_ok=True)
+            for name,content in [('progress.json',json.dumps(data,ensure_ascii=False,allow_nan=False,indent=2)),
+                                 ('PROGRESS.txt',self.render(data)+'\n')]:
+                temporary=None
+                try:
+                    with tempfile.NamedTemporaryFile(mode='w',encoding='utf-8',dir=self.root,suffix='.tmp',delete=False) as f:
+                        temporary=Path(f.name);f.write(content);f.flush();os.fsync(f.fileno())
+                    os.replace(temporary,self.root/name)
+                finally:
+                    if temporary is not None:temporary.unlink(missing_ok=True)
+        except Exception as error:
+            print(f'進度寫入失敗：步驟=Drive 進度快照；期望=原子更新；實際={error}；下一步=檢查 Drive 掛載與空間，訓練繼續',flush=True)
 
 
 def require_cuda():
@@ -334,9 +443,9 @@ def speed_report(arm,history,records,total,steps,environment=None):
 
 
 class Observer:
-    def __init__(self,root,contract,ledger,device='cuda',speed=False):
+    def __init__(self,root,contract,ledger,device='cuda',speed=False,progress=None):
         self.root=Path(root);self.contract=contract;self.ledger=ledger;self.device=device
-        self.speed=speed
+        self.speed=speed;self.progress=progress
         self.steps=[];self.records=[];self.pointer=dict(latest=None,previous=None,best=None)
         self.best=-9.;self.step_start=None
 
@@ -369,12 +478,14 @@ class Observer:
         if saved['best']['epoch']>saved['latest']['epoch'] or (saved['previous'] and saved['previous']['epoch']>=saved['latest']['epoch']):
             raise ValueError('checkpoint pointer order')
         self.pointer=saved;self.best=payloads['latest']['state']['best']
+        if self.progress:self.progress.update(last_checkpoint_at=datetime.fromtimestamp(pointer.stat().st_mtime,timezone.utc).isoformat())
         return payloads['latest']
 
 
     def check(self):
         self.ledger.check()
         r=telemetry();self.records.append(r)
+        if self.progress:self.progress.update(temperature_c=r['temperature_c'],clock_mhz=r['clock_mhz'])
         if hasattr(self.ledger,'observe'):self.ledger.observe(r)
         if r['temperature_c']>=85: raise RuntimeError('STOP: Colab GPU temperature >=85C (no pause/retry)')
 
@@ -387,6 +498,8 @@ class Observer:
         elif event=='step_end':
             if str(self.device).startswith('cuda'):torch.cuda.synchronize()
             self.steps.append(time.perf_counter()-self.step_start)
+        elif event=='progress':
+            if self.progress:self.progress.update(**payload);self.progress.emit()
         elif event=='epoch':
             if self.speed: return  # Never serialize state/history/weights in timing mode.
             epoch=payload['state']['epoch'];name=f'epoch-{epoch:03d}-{uuid.uuid4().hex}.pt'
@@ -399,6 +512,7 @@ class Observer:
                 self.best=payload['state']['best'];self.pointer['best']=entry
             atomic_json(self.root/'checkpoint-pointer.json',self.pointer)
             if hasattr(self.ledger,'append'):self.ledger.append('EPOCH_COMMITTED')
+            if self.progress:self.progress.update(last_checkpoint_at=datetime.now(timezone.utc).isoformat())
 
 
 def rankgauss(directory):
@@ -502,7 +616,7 @@ def train_fit(directory,year,arm,seed,cfg,reference,observer):
     data.windows=guarded
     restored=observer.load_resume() if not observer.speed else None
     model,state=train_one(arm,seed,data,tr,va,cfg,'cuda',observer=observer,resume_state=restored,
-                          log=(lambda *_: None) if observer.speed else print)
+                          log=lambda *_: None)
     if observer.speed:
         return None,dict(history=[dict(seconds=h['seconds']) for h in state['history']])
     if not np.isfinite(state['best']) or state['best']<=-9: raise ValueError('BEST unavailable; LAST prohibited')
@@ -535,13 +649,13 @@ def fit_queue(contract, speed=False, years=None):
 def run(bundle,drive_root,speed=False,max_hours=None,max_units=None,rate=None,planned_hours=0,reserve=None,data_dir=None):
     """P4-only record accounting; old cap arguments are accepted but never constrain runs."""
     require_cuda()
-    bundle=Path(bundle);drive_root=Path(drive_root)
+    bundle=Path(bundle);drive_root=budget_root(drive_root,speed)
     if (not os.path.ismount('/content/drive') or
         not drive_root.resolve().is_relative_to(Path('/content/drive/MyDrive'))):
         raise ValueError('durable output requires mounted /content/drive/MyDrive')
     run_started=time.perf_counter()
     budget_contract=dict(policy='record_only',units_per_hour=0,thermal_stop_c=85)
-    with Ledger(drive_root,budget_contract) as ledger:
+    with Ledger(drive_root,budget_contract) as ledger, Progress(drive_root.parent/'progress'/('speedtest' if speed else 'formal'),speed=speed) as progress:
         setup_binding=dict(stage='verify_bundle_and_runtime',bundle_manifest=digest(bundle/'bundle-manifest.json'))
         ledger.start(setup_binding,0)
         try:
@@ -587,8 +701,9 @@ def run(bundle,drive_root,speed=False,max_hours=None,max_units=None,rate=None,pl
         if out.exists():
             if json.loads((out/'run_identity.json').read_text())!=binding:raise ValueError('run identity mismatch')
         else:out.mkdir();write_json(out/'run_identity.json',binding)
+        progress.update(run_hash=run_hash,bundle_identity=binding['bundle'],source_commit=mf['metadata'].get('source_commit'),total_fits=len(queue))
         reports=[];caches={};fit_paths={}
-        for job in queue:
+        for fit_index,job in enumerate(queue,1):
             year,arm,seed=job['year'],job['arm'],job['seed']
             directory=(Path(data_dir) if external else bundle)/f'folds/fold_{year}'
             if year not in caches:
@@ -606,11 +721,13 @@ def run(bundle,drive_root,speed=False,max_hours=None,max_units=None,rate=None,pl
             fit=out/f"{job['queue']}-{year}-{arm}-{seed}-w{job['window']}-lr{job['lr']}"
             fit_paths[(year,arm,seed,job['window'],job['lr'])]=fit
             cached=resume_fit(fit,fit_contract)
-            if cached:reports.append(cached);continue
+            if cached:
+                reports.append(cached);progress.finish_fit(skipped=True);continue
             ledger.start(fit_contract,0)
             # Stable directory permits retry from the last pointer. Orphan epoch files remain forensic.
             attempt=fit/'attempt-active';attempt.mkdir(parents=True,exist_ok=True)
-            observer=Observer(attempt,fit_contract,ledger,speed=speed);started=time.perf_counter()
+            progress.start_fit(job,fit_index,len(queue),cfg)
+            observer=Observer(attempt,fit_contract,ledger,speed=speed,progress=progress);started=time.perf_counter()
             try:
                 frame,metrics=train_fit(directory,year,arm,seed,cfg,ref[ref.fold.eq(year)],observer)
                 if speed:
@@ -629,7 +746,7 @@ def run(bundle,drive_root,speed=False,max_hours=None,max_units=None,rate=None,pl
                     atomic_json(attempt/'metrics.json',metrics)
                 files=[p.relative_to(fit).as_posix() for p in attempt.iterdir() if p.is_file()]
                 complete_fit(fit,fit_contract,metrics,files)
-                ledger.end(fit_contract,True);reports.append(resume_fit(fit,fit_contract))
+                ledger.end(fit_contract,True);reports.append(resume_fit(fit,fit_contract));progress.finish_fit()
             except BaseException as error:
                 if 'temperature >=85C' in str(error):ledger.state['stopped']=True
                 if ledger.state['active']:ledger.end(fit_contract,False)
@@ -643,10 +760,11 @@ def run(bundle,drive_root,speed=False,max_hours=None,max_units=None,rate=None,pl
                     if saved['identity']!=identity or saved['sha256']!=hashed(saved['result']):
                         raise ValueError('permutation identity/hash mismatch')
                     continue
+                progress.update(queue='Q5',status='排列診斷中',year=year,epoch=0,step=0,loss=None,arm='crossstock');progress.emit();progress.write()
                 ledger.start(dict(stage='Q5',**identity),0)
                 try:
                     directory=(Path(data_dir) if external else bundle)/f'folds/fold_{year}'
-                    result=permutation_fit(directory,year,contract['recipe'],fit_paths,ledger)
+                    result=permutation_fit(directory,year,contract['recipe'],fit_paths,ledger,progress)
                     write_json(diagnostic,dict(identity=identity,result=result,sha256=hashed(result)))
                     ledger.end(dict(stage='Q5',**identity),True)
                 except BaseException as error:
@@ -675,7 +793,7 @@ def publish_or_validate(path,payload):
     return result
 
 
-def permutation_fit(directory,year,cfg,fit_paths,ledger):
+def permutation_fit(directory,year,cfg,fit_paths,ledger,progress=None):
     import torch
     from .seq_runner import SeqData,predict
     from .seq_models import SeqRanker
@@ -693,11 +811,13 @@ def permutation_fit(directory,year,cfg,fit_paths,ledger):
     original=data.windows
     def guarded(rows):
         ledger.check();r=telemetry();ledger.observe(r)
+        if progress:progress.update(temperature_c=r['temperature_c'],clock_mhz=r['clock_mhz'])
         if r['temperature_c']>=85:raise RuntimeError('STOP: Colab GPU temperature >=85C (no pause/retry)')
         return original(rows)
     data.windows=guarded
     result={}
     for split,rows in [('validation',va),('evaluation',ev)]:
+        if progress:progress.update(status=f'Q5 {year} {split} 推論中');progress.emit()
         base=predict_cross(cross,data,rows,'cuda',n_perm=2,seed=0)[:,0]
         temporal=predict(mamba,data,rows,'cuda')[:,0]
         permutations=[predict_cross(cross,data,rows,'cuda',n_perm=1,seed=100+r)[:,0] for r in range(10)]
