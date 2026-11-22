@@ -229,7 +229,7 @@ def _write_zip(output, files, manifest):
             if key in seen: aliases[name]=seen[key]
             else: seen[key]=name
     manifest['aliases']=aliases
-    _declared_bytes(manifest)
+    manifest['total_bytes']=_declared_bytes(manifest)
     payload=json.dumps(manifest,sort_keys=True,indent=2).encode()
     if len(payload)>MAX_MANIFEST_BYTES or len(files)+1>MAX_MEMBERS or _declared_bytes(manifest)+len(payload)>MAX_TOTAL_BYTES:
         raise ValueError('bundle manifest/member limit')
@@ -447,8 +447,13 @@ def installation_commands(root, wheel_dir=None):
             f'{py} -m pip check']
 
 
-def colab_notebook():
+def colab_notebook(run_name='01_speedtest', drive_root='/content/drive/MyDrive/MarketMamba', expected_archive=None):
     """Generated launch UX; research/environment contracts remain authoritative."""
+    if not run_name or run_name in {'.','..'} or '/' in run_name or '\\' in run_name or any(c in run_name for c in '\r\n'):
+        raise ValueError('run-name must be a single folder name')
+    drive_root=Path(drive_root)
+    if not drive_root.is_absolute() or any(c in str(drive_root) for c in '\r\n'):
+        raise ValueError('drive-root must be an absolute path')
     cells=[]
     def code(source):
         cells.append(dict(cell_type='code',execution_count=None,metadata={},outputs=[],source=textwrap.dedent(source).strip()+'\n'))
@@ -457,27 +462,74 @@ def colab_notebook():
     code('''
         # 設定：所有操作預算集中於此；CU 是保守估算，不是 Google 實扣。
         MODE = 'SPEED_TEST'  # 或 FORMAL；DRAFT 契約會拒絕 FORMAL
-        MAX_HOURS = 6.0  # runner 最大時數，另預留上傳／編譯／閒置
-        MAX_UNITS = 100.0  # runner CU 上限；請依帳戶剩餘額度調整
+        MAX_HOURS = 1.0 if MODE == 'SPEED_TEST' else None  # FORMAL 須由 Human 明確填入
+        MAX_UNITS = 15.0 if MODE == 'SPEED_TEST' else None
+        if MODE not in ('SPEED_TEST','FORMAL'): raise ValueError('STOP: invalid MODE')
+        if MAX_HOURS is None or MAX_UNITS is None:
+            raise ValueError('STOP: FORMAL 請由 Human 明確填寫 MAX_HOURS 與 MAX_UNITS')
         UNITS_PER_HOUR = 10.0  # 每小時 CU 保守估計，請對照現場 GPU 費率
         PLANNED_HOURS_PER_FIT = 0.5  # 每 fit／前處理 stage 的保守時數
         RESERVE = 0.25  # 至少保留 25%；不可降低
-        DRIVE_BASE = '/content/drive/MyDrive/MarketMambaP4'
-        WHEEL_DIR = '/content/drive/MyDrive/Mamba_Wheels_T4_new'
+        from pathlib import Path
+        RUN_DIR = __RUN_DIR__
+        EXPERIMENT_DIR = str(Path(RUN_DIR).parent)  # 整個 P4a 共用，不隨交付子目錄重置
+        WHEEL_DIR = __WHEEL_DIR__
+        LEGACY_WHEEL_DIR = '/content/drive/MyDrive/Mamba_Wheels_T4_new'
+        EXPECTED_ARCHIVE = __EXPECTED_ARCHIVE__  # deliver 自動綁定 ZIP bytes/SHA
         BUNDLE_NAME = 'p4a-bundle.zip'
         LOCAL_ROOT = '/content/p4a'
     ''')
-    markdown('兩檔交付：只需開啟本 notebook 並上傳同批 p4a-bundle.zip 至 /content（Files）或 Drive 的 inputs 目錄，再從上到下執行。需 GPU runtime。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；Colab ZIP／編譯／Drive 行為 UNVERIFIED。只執行自己信任來源的這兩個檔案；內部 hash 不證明來源。')
+    cells[0]['source']=cells[0]['source'].replace('__RUN_DIR__',repr(str(drive_root/'p4a'/run_name))).replace('__WHEEL_DIR__',repr(str(drive_root/'wheels'))).replace('__EXPECTED_ARCHIVE__',repr(expected_archive))
+    markdown('兩檔交付：將同批 p4a-bundle.zip 與 notebook 上傳 RUN_DIR，再開啟 notebook 從上到下執行。需 GPU runtime。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；Colab ZIP／編譯／Drive 行為 UNVERIFIED。只執行自己信任來源的這兩個檔案；內部 hash 不證明來源。')
     code('''
         from pathlib import Path
         import os, sys, json, subprocess, hashlib, zipfile, tempfile, importlib.util, stat
+        def find_archive(run_dir, experiment_dir, content_dir, name, expected):
+            candidates=[Path(run_dir)/name,Path(experiment_dir)/'inputs'/name,Path(content_dir)/name]
+            local=candidates[-1]
+            ignored=False
+            if local.is_file() and expected:
+                with local.open('rb') as stream:
+                    actual=hashlib.file_digest(stream,'sha256').hexdigest()
+                if actual!=expected['sha256']:
+                    print('WARNING: '+str(local)+' SHA 與預期不同，忽略此檔；可能是殘留或上傳不完整。Drive 優先。')
+                    ignored=True
+            for candidate in candidates:
+                if candidate.is_file() and not (candidate==local and ignored): return candidate
+            raise FileNotFoundError('STOP: 找不到合格 ZIP，已搜尋：'+', '.join(map(str,candidates)))
+
+        def resolve_wheel_dir(preferred, legacy):
+            for directory in (Path(preferred),Path(legacy)):
+                if directory.is_dir() and any(directory.glob('*.whl')): return directory
+            return Path(preferred)  # 無 wheel 時編譯寫回 MarketMamba/wheels
+
+        def validate_archive_size(archive, expected):
+            message='STOP: ZIP 大小 (size) 與交付／bundle manifest 不符，可能上傳不完整；請重新核對 Drive 檔案。'
+            if expected and archive.stat().st_size!=expected['bytes']: raise ValueError(message)
+            if expected:
+                with archive.open('rb') as stream:
+                    if hashlib.file_digest(stream,'sha256').hexdigest()!=expected['sha256']:
+                        raise ValueError('STOP: ZIP SHA mismatch；請核對同批交付檔案')
+            try:
+                with zipfile.ZipFile(archive) as z:
+                    info=z.getinfo('bundle-manifest.json')
+                    if info.file_size>4*1024**2: raise ValueError('STOP: manifest size limit')
+                    manifest=json.loads(z.read(info))
+                    total=sum(ident['bytes'] for ident in manifest['files'].values())
+                    if total!=manifest.get('total_bytes',total): raise ValueError(message)
+                    aliases=manifest.get('aliases',{})
+                    members=[m for m in z.infolist() if m.filename!='bundle-manifest.json']
+                    physical=sum(ident['bytes'] for name,ident in manifest['files'].items() if name not in aliases)
+                    if sum(m.file_size for m in members)!=physical: raise ValueError(message)
+                    if any(m.file_size!=manifest['files'][m.filename]['bytes'] for m in members): raise ValueError(message)
+            except (zipfile.BadZipFile,EOFError) as error:
+                raise ValueError(message) from error
+
         from google.colab import drive
         drive.mount('/content/drive')
-        base = Path(DRIVE_BASE)
-        archive = Path('/content')/BUNDLE_NAME
-        if not archive.is_file(): archive = base/'inputs'/BUNDLE_NAME
-        if not archive.is_file(): raise FileNotFoundError('STOP: 請將 '+BUNDLE_NAME+' 上傳到 /content 或 '+str(base/'inputs'))
-        print('archive SHA-256（僅供記錄）', end=' ')
+        archive = find_archive(RUN_DIR,EXPERIMENT_DIR,'/content',BUNDLE_NAME,EXPECTED_ARCHIVE)
+        validate_archive_size(archive,EXPECTED_ARCHIVE)
+        print('archive',archive,'bytes',archive.stat().st_size,'SHA-256',end=' ')
         with archive.open('rb') as stream:
             print(hashlib.file_digest(stream,'sha256').hexdigest())
         # 僅用標準庫取出固定 bootstrap，先限制 inventory、類型及兩個小檔大小。
@@ -530,7 +582,7 @@ def colab_notebook():
         if matches:
             print('已符合環境契約，跳過 wheel 安裝')
         else:
-            wheels=Path(WHEEL_DIR)
+            wheels=resolve_wheel_dir(WHEEL_DIR,LEGACY_WHEEL_DIR)
             both_absent=not list(wheels.glob('mamba_ssm-*.whl')) and not list(wheels.glob('causal_conv1d-*.whl'))
             if both_absent:
                 needs_compile=True
@@ -586,7 +638,7 @@ def colab_notebook():
         if MODE not in ('SPEED_TEST','FORMAL'): raise ValueError('STOP: MODE must be SPEED_TEST or FORMAL')
         p4.prepare_source(root);p4.verify(root,allow_derived=True)
         training_env=dict(os.environ,PYTHONPATH=f'{root}/source/V6:{root}/source',PYTHONDONTWRITEBYTECODE='1')
-        common=[sys.executable,'-m','research_lab.p4_colab','--bundle',str(root),'--drive-root',str(base/'budget'),
+        common=[sys.executable,'-m','research_lab.p4_colab','--bundle',str(root),'--drive-root',str(Path(EXPERIMENT_DIR)/'budget'),
                 '--max-hours',str(MAX_HOURS),'--max-units',str(MAX_UNITS),'--units-per-hour',str(UNITS_PER_HOUR),
                 '--planned-hours-per-fit',str(PLANNED_HOURS_PER_FIT),'--reserve',str(RESERVE)]
         # FORMAL 沿用既有 validate_contract；DRAFT 拒絕，不繞過。
@@ -595,38 +647,43 @@ def colab_notebook():
     code('''
         # runner 已直接持久寫入 Drive：speed JSON、run manifest 與預算帳本。
         if MODE=='SPEED_TEST':
-            for path in sorted((base/'budget').glob('run-*/**/speed.json')):
+            for path in sorted((Path(EXPERIMENT_DIR)/'budget').glob('run-*/**/speed.json')):
                 report=json.loads(path.read_text())
                 print(path)
                 print(json.dumps({k:report[k] for k in ('arm','epoch_seconds','gpu_model') if k in report},ensure_ascii=False))
                 records=report['telemetry']
                 print(dict(temperature_c_max=max(r['temperature_c'] for r in records),
                            clock_mhz_min=min(r['clock_mhz'] for r in records),clock_mhz_max=max(r['clock_mhz'] for r in records)))
-        print('run manifests',*[str(p) for p in (base/'budget').glob('run-*/manifest.json')],sep='\\n')
+        print('run manifests',*[str(p) for p in (Path(EXPERIMENT_DIR)/'budget').glob('run-*/manifest.json')],sep='\\n')
     ''')
-    markdown('中斷／重連：重新執行同一 notebook，沿用同一 zip、Drive_BASE、budget 與預算設定。已完成 fit 會驗證後略過；partial fit 不自動續 optimizer。未知中斷會保守扣帳並鎖 STOP，須盤點修復；不要刪帳本、換 budget 路徑或重置預算。新 runtime 重新解壓原 zip，既有 root 先驗 identity。下載格只匯出 JSON／帳本，正式權重仍須另核對 Drive 完整性。')
+    markdown('中斷／重連：重新執行同一 notebook，沿用同一 zip、EXPERIMENT_DIR、budget 與預算設定。已完成 fit 會驗證後略過；partial fit 不自動續 optimizer。未知中斷會保守扣帳並鎖 STOP，須盤點修復；不要刪帳本、換 budget 路徑或重置預算。新 runtime 重新解壓原 zip，既有 root 先驗 identity。下載格只匯出 JSON／帳本，正式權重仍須另核對 Drive 完整性。')
     code('''
         from google.colab import files
         download=Path('/content/p4a-results.zip')
         # 只打包現有 JSON；保留相對路徑與原 bytes，不覆寫 Drive evidence。
         with zipfile.ZipFile(download,'w',compression=zipfile.ZIP_DEFLATED) as z:
-            for path in sorted((base/'budget').rglob('*.json')):
-                z.write(path,path.relative_to(base/'budget'))
+            for path in sorted((Path(EXPERIMENT_DIR)/'budget').rglob('*.json')):
+                z.write(path,path.relative_to(Path(EXPERIMENT_DIR)/'budget'))
         files.download(str(download))
     ''')
     for i,cell in enumerate(cells): cell['id']=f'p4a-{i:02d}'
     return dict(nbformat=4,nbformat_minor=5,metadata=dict(kernelspec=dict(display_name='Python 3',language='python',name='python3'),language_info=dict(name='python')),cells=cells)
 
 
-def delivery(folds_root, years, p1, lock, output_dir):
+def delivery(folds_root, years, p1, lock, output_dir, run_name='01_speedtest', drive_root='/content/drive/MyDrive/MarketMamba'):
     """Publish the approved two-file interface; never overwrite shared outputs."""
+    colab_notebook(run_name,drive_root)  # validate paths before publishing outputs
     output_dir=Path(output_dir)
     archive=output_dir/'p4a-bundle.zip';notebook=output_dir/'p4a-colab.ipynb'
-    if archive.exists() or notebook.exists(): raise FileExistsError('delivery outputs already exist')
+    readme=output_dir/'README.txt'
+    if archive.exists() or notebook.exists() or readme.exists(): raise FileExistsError('delivery outputs already exist')
     output_dir.mkdir(parents=True,exist_ok=True)
     mf=pack(folds_root,years,p1,lock,archive)
     with notebook.open('x') as stream:
-        json.dump(colab_notebook(),stream,ensure_ascii=False,indent=2)
+        json.dump(colab_notebook(run_name,drive_root,digest(archive)),stream,ensure_ascii=False,indent=2)
+        stream.flush();os.fsync(stream.fileno())
+    with readme.open('x') as stream:
+        stream.write('上傳到 Drive 資料夾：'+str(Path(drive_root)/'p4a'/run_name)+'\n開啟檔案：p4a-colab.ipynb\n')
         stream.flush();os.fsync(stream.fileno())
     return mf
 
@@ -638,14 +695,16 @@ def main(argv=None):
     dl.add_argument('--folds-root',type=Path,required=True);dl.add_argument('--years',type=int,nargs='+',default=[2021,2022,2023,2024,2025])
     dl.add_argument('--p1',type=Path,required=True);dl.add_argument('--lock',type=Path,default=ROOT/'environments/p4a-colab.requirements.lock.txt')
     dl.add_argument('--output-dir',type=Path,required=True)
+    dl.add_argument('--run-name',default='01_speedtest')
+    dl.add_argument('--drive-root',default='/content/drive/MyDrive/MarketMamba')
     ex=sub.add_parser('extract');ex.add_argument('archive',type=Path);ex.add_argument('destination',type=Path);ex.add_argument('--sha256')
     ve=sub.add_parser('verify');ve.add_argument('directory',type=Path)
     ins=sub.add_parser('install-plan');ins.add_argument('directory',type=Path);ins.add_argument('--wheel-dir',type=Path)
     a=p.parse_args(argv)
     if a.cmd=='pack': pack(a.folds_root,a.years,a.p1,a.lock,a.output);print(json.dumps(digest(a.output)))
     elif a.cmd=='deliver':
-        delivery(a.folds_root,a.years,a.p1,a.lock,a.output_dir)
-        print(json.dumps({p.name:digest(p) for p in sorted(a.output_dir.iterdir()) if p.name in {'p4a-bundle.zip','p4a-colab.ipynb'}}))
+        delivery(a.folds_root,a.years,a.p1,a.lock,a.output_dir,a.run_name,a.drive_root)
+        print(json.dumps({p.name:digest(p) for p in sorted(a.output_dir.iterdir()) if p.name in {'p4a-bundle.zip','p4a-colab.ipynb','README.txt'}}))
     elif a.cmd=='extract': extract(a.archive,a.destination,a.sha256)
     elif a.cmd=='verify': print(json.dumps(verify(a.directory),indent=2))
     else: print('\n'.join(installation_commands(a.directory,a.wheel_dir)))

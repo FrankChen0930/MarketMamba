@@ -705,3 +705,78 @@ test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime
 1. 打包端對 `folds/` 輸入 `resolve(strict=True)` 後未限制解析後來源範圍（可將誤置符號連結指向的其他檔案包入）：**暫時接受為已知限制**，輸入為 Human 自己的 fold 目錄；正式 5 折打包前須補『解析結果必須落在指定 matrices 根目錄內』的檢查。
 2. ZIP 缺壓縮比上限（真實檔最高約 1014，不能任意設低值）：**暫時接受為已知限制**，zip 為 Human 自己產生；正式打包前須補以邏輯大小與矩陣預期大小為基準的上限與回歸測試。
 兩項皆記為 OPEN，不得在『正式 P4a』准入時省略；speed-test 交付不依賴它們被修正。複審的 GO／NO_GO 為 NO_GO，本節是主控對該結論的明示偏離，非複審通過。
+
+## P4a Drive 分次交付路徑候選 — 2026-11-22（job-run-mwqscvk1-a3db0f）
+
+UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。本輪在既有 `builder_p4a_drive` worktree，base／HEAD `df78d6cb3bb706f6f4d58b94310c3d352aab8385`，起始 clean detached HEAD；依 Human EXECUTE_APPROVED 授權僅保留 patch，無 commit／push／merge／額外 agents／GPU／網路／Colab。工程完成不等於 Human acceptance。本節取代前輪操作預設與交付路徑描述，不修改歷史測試或實驗證據。
+
+### 變更與界線
+
+沿用 `V6/research_lab/p4_bundle.py`、原 pack／executor／測試與既有 docs／reports／knowledge 容器，不建立新 implementation、artifact tree 或 worktree。`deliver` 新增 `--run-name`（預設01_speedtest）與 `--drive-root`（預設/content/drive/MyDrive/MarketMamba）；仍輸出到 `--output-dir`，另外寫兩行 README.txt：上傳 Drive 目的資料夾、開啟 notebook 檔名。三個輸出任一已存在皆拒絕覆寫，run-name 限單層資料夾，Drive root 必須為絕對路徑。CLI 回傳三檔大小／SHA。
+
+Notebook第0格預填 RUN_DIR、EXPERIMENT_DIR（RUN_DIR上一層）與 WHEEL_DIR。交付目錄是 `MarketMamba/p4a/<run-name>`；runner、摘要及 JSON 匯出均固定使用 `EXPERIMENT_DIR/budget`。speed 與 formal 換交付子資料夾不會改帳本根，不遷移／刪除／重置舊帳本；舊根已有消耗時仍須保留原 EXPERIMENT_DIR，帳本遷移另行盤點。WHEEL_DIR預設 `MarketMamba/wheels`，空／不存在則回退 `Mamba_Wheels_T4_new`；兩處皆缺必要wheel才編譯，輸出回 WHEEL_DIR。已裝套件符合契約仍略過安裝；部分wheel、重複版本或標籤不符維持STOP，不跨目錄拼湊wheel。
+
+ZIP搜尋順序是 RUN_DIR → EXPERIMENT_DIR/inputs → /content；找不到時列出全部候選完整路徑。`deliver` 自動將ZIP實際bytes／SHA綁到同批notebook，不需Human手貼；殘留/content同名檔SHA不符明確WARNING並忽略，即使Drive找不到也不採用。選中的Drive版identity不符則STOP，不靜默改用其他副本。
+
+ZIP壓縮後bytes不能與邏輯還原大小直接比較，因此採兩層檢查：先驗實際ZIP長度／SHA與notebook綁定交付identity一致；再驗manifest新增 `total_bytes` 等於完整 `files` 邏輯大小總和（含aliases），ZIP非alias實體成員的未壓縮大小則逐檔及加總比對manifest。舊manifest省略total_bytes時以files加總相容。大小不符／截斷均於bootstrap載入和解壓前STOP，提示可能上傳不完整；原白名單、資源上限、安全解壓與逐檔size／SHA驗證繼續強制。這不是來源認證，兩檔仍須可信。
+
+SPEED_TEST預設1.0小時／15.0 CU；FORMAL兩上限無預設，未明填就在第0格STOP。保留10 CU/hour、每fit/stage0.5小時、25%reserve。全新speed三臂加一stage的剩餘計畫至少 `(3+1)*0.5*1.25=2.5小時／25 CU`，尚未含已花費，因此新小上限會觸發既有計畫STOP；本輪沒有降低估計或gate，也不自行提高預算。Human須依實際保守估計與完整剩餘計畫另行核定。編譯、上傳與閒置仍不在runner估算帳本，不能把CU稱Google實扣。
+
+`rolling_seq_scores.py`、`portfolio_eval.py`、`p4_colab.py`、P4 DRAFT研究契約、runtime觀測時間、environment lock、formal Data、V6/models、production及scheduler不變。既有resolved fold來源範圍與ZIP壓縮比兩項OPEN限制仍OPEN，正式五折准入前仍需處理；本輪不宣稱複審GO或正式研究readiness。
+
+### 驗證方法與證據
+
+Python：`/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python`，3.12.3／torch2.15.0+cpu；GPU隱藏 `CUDA_VISIBLE_DEVICES=''`，單CPU執行緒。沿用既有離線 `/tmp/p4-notebook-deps` 的nbformat5.9.2及相依套件，沒有安裝／下載／改venv。`MARKETMAMBA_DATA_ROOT` unset；Data是本worktree一般目錄，realpath `/home/frank/projects/MarketMamba/.worktrees/ruflo-workers/run-mwqscvk1-a3db0f/builder_p4a_drive/Data`，未以formal資料執行實驗。
+
+RED：新行為測試 `6 failed, 107 deselected in 3.93s`（`/tmp/p4-drive-red.log`）；CLI `--run-name/--drive-root` 尚不存在，`1 failed, 112 deselected in 1.59s`（`/tmp/p4-drive-cli-red.log`）。GREEN focused：`113 passed, 1 warning in 16.58s`（`/tmp/p4-drive-focused-final.log`）。首次focused有一項測試誤取摘要格而非runner格，依實際失敗定位更正索引後通過，沒有停用測試。
+
+新增測試涵蓋第0格1/15上限、FORMAL未填STOP、custom run／Drive root、README精確兩行、ZIP預期identity綁定、跨交付及speed/formal相同budget路徑、三路搜尋順序、殘留/content警告／忽略及搜尋路徑錯誤訊息、wheel首選／舊目錄回退／編譯目的地、ZIP截斷／manifest total／成員宣告大小不符STOP。既有兩次實際stdlib bootstrap／解壓／同root重連測試仍執行；nbformat解析及全部7個code cells compile實際PASS，非skip。
+
+三個mutants僅在獨立程序記憶體覆寫colab_notebook回傳cell，不寫入source；runner `/tmp/p4-drive-mutate.py`：
+
+```text
+IN_MEMORY order pytest_exit=1 KILLED=True
+IN_MEMORY budget pytest_exit=1 KILLED=True
+IN_MEMORY size pytest_exit=1 KILLED=True
+```
+
+分別倒轉ZIP候選順序、將runner帳本綁到RUN_DIR、移除整個大小檢查；各由對應行為測試抓到。Logs：`/tmp/p4-drive-mut-{order,budget,size}.log`，皆TEMPORARY／ENGINEERING_ONLY，不是研究artifact。
+
+完整回歸命令：
+
+```bash
+OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES='' PYTHONDONTWRITEBYTECODE=1 \
+PYTHONPATH=/tmp/p4-notebook-deps:V6:V6/research_lab/tests:. \
+/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests tests -q -p no:cacheprovider
+```
+
+實際全套輸出（`/tmp/p4-drive-full.log`，exit0）：**690 passed, 1 skipped, 5 warnings in 181.88s (0:03:01)**。唯一skip為既有CUDA測試；warnings為刻意建立duplicate ZIP的fixture與既有Pandas4 Timestamp.dayofweek棄用警告，未刪測試／放寬門檻。
+
+受驗source identity：
+
+| Path | bytes | SHA-256 |
+|---|---:|---|
+| V6/research_lab/p4_bundle.py | 42549 | 391c24683f408311898d7026adf585b2cb17fd2fbc31dc1acc4966e70dc8831a |
+| V6/research_lab/tests/test_p4.py | 49806 | 3a3f3abda43fbabb3b5345613b4194dbef312799e808731a7f5d8846c7a421e8 |
+
+全套中的合成fixture為 `/tmp/pytest-of-frank/pytest-81/test_deliver_cli_synthetic_two0/delivery`，只含測試bytes，**不可拿去訓練**：ZIP862938 bytes、SHA `7cdcc506f465589d6ff4cc828ff6c2b7bdff7e51d0037a1eeba09fd16ec2fcfc`；notebook14807 bytes、SHA `72aa8da272876deab06152ec5c24ee16868ddc46ab0949668cc7338280f6395c`；README100 bytes、SHA `4cb4cb4f94097cbcd61e7873d77fd6170f29dbec62391ae742b1587693d747b9`。notebook內嵌EXPECTED_ARCHIVE另行重核等於實際ZIP identity。pack manifest保留source commit／dirty狀態、逐檔source及合成輸入identity；無model／research結果，evidence class仍ENGINEERING_ONLY。
+
+Knowledge-impact逐項：semantics=YES（交付路徑／預設／大小檢查）；authority=NO；subsystem boundary=NO；active runtime state=NO；correctness gate=YES（新增預檢，無降標）；new/superseded canonical artifact=NO（交付檔為GENERATED）；deprecate=NO；major blocker/next decision=YES（新增小預算下計畫STOP需Human核定）。Current_State、Authority_Map、Training與Worktree_Register已同change更新。`check_knowledge_impact.py` exit0／WARNING，治理與worktree責任規則要求人工review：Operations與GOVERNANCE已讀，操作子系統／治理規則未變，不需改該兩檔。並非以NO_KNOWLEDGE_CHANGE_REQUIRED略過本輪knowledge更新。
+
+`knowledge_health.py --ci` exit0，Overall WARNING（Governance、Authority Drift、Legacy Docs）；Project Map／Agent Guides／Domains／Runtime Freshness／Generated Index全部PASS，無structural FAIL。未修改runtime observed_at、authority-map.json或generated indexes。syntax、nbformat／每格compile、artifact identity、連結／reference與`git diff --check`驗證；受保護路徑及p4_colab／environment／P4契約相對HEAD無diff。依code-review-and-quality對本輪差異作五軸自查，沒有新增獨立審查者；後續獨立review仍必要，不宣稱Human acceptance。
+
+### 固定交接欄位
+
+- Completed：Drive分次交付設定、共用budget、wheel回退、ZIP預檢、CLI／README及CPU RED→GREEN完成；不等於Human acceptance。
+- Changed：`V6/research_lab/p4_bundle.py`、`V6/research_lab/tests/test_p4.py`、`docs/operations/colab-p4.md`、本報告、`knowledge/00_Project_Map/{Current_State,Authority_Map,Worktree_Register}.md`、`knowledge/01_Domains/Training.md`，共8個tracked paths。
+- Decisions：沿用既有產生器／executor／knowledge；大小分壓縮identity與manifest邏輯大小核對；FORMAL無預設；既有budget、DRAFT／CUDA／25%reserve gate不變。
+- Evidence：RED6項＋CLI1項；focused113passed；full690passed／1skipped／5warnings；3項in-memory mutants全killed；nbformat5.9.2／7code cells compile；syntax、size／SHA、link／reference、protected-path diff及git diff --check。
+- Remaining：未產出／上傳真實交付、未操作或驗證Colab／GPU／Drive／編譯；未作研究結論。正式freeze與既有兩項OPEN限制待處理。
+- Blockers：本輪本機工程無阻擋；預設1小時／15CU不足既有保守全新speed計畫，會STOP，須Human核定估計／預算，不在本輪擅改。
+- Next recommended action：獨立審查patch與預算，核准真實輸入後重新deliver三檔，再由Human上傳指定Drive資料夾；現場驗證另行授權。
+- Project memory updated：YES（Current_State／Training／Worktree_Register）。
+- Authority map updated：YES（候選操作邊界）；研究／production authority未變。
+- Git status：起始clean detached HEAD；結束8個modified tracked paths、0 staged／untracked。依no-commit指示刻意保留dirty patch，未宣稱clean。
+- Commit：N/A（明確禁止）；Push：未執行；Merge：未執行。
+- Worktree：沿用既有 `.worktrees/ruflo-workers/run-mwqscvk1-a3db0f/builder_p4a_drive`，HEAD df78d6c；未新建／刪除worktree。
+- Runtime/environment：WSL本機Python3.12.3／torch2.15.0+cpu／CUDA隱藏、MARKETMAMBA_DATA_ROOT unset；Data realpath與離線nbformat namespace如上。無GPU／網路／Colab／data acquisition／agents／scheduler／production／protected models變更。

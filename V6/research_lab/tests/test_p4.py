@@ -756,9 +756,9 @@ def test_deliver_cli_synthetic_two_files(tmp_path):
     ref=tmp_path/'p1';ref.mkdir();(ref/'rank_average.parquet').write_bytes(b'synthetic P1 identity only')
     (ref/'manifest.json').write_text(json.dumps({'outputs':{'rank_average.parquet':bundle.digest(ref/'rank_average.parquet')}}))
     output=tmp_path/'delivery'
-    args=['deliver','--folds-root',str(folds),'--years','2021','2022','--p1',str(ref),'--output-dir',str(output)]
+    args=['deliver','--folds-root',str(folds),'--years','2021','2022','--p1',str(ref),'--output-dir',str(output),'--run-name','02_trial','--drive-root','/custom/MyDrive/MarketMamba']
     bundle.main(args)
-    assert {p.name for p in output.iterdir()}=={'p4a-bundle.zip','p4a-colab.ipynb'}
+    assert {p.name for p in output.iterdir()}=={'p4a-bundle.zip','p4a-colab.ipynb','README.txt'}
     with pytest.raises(FileExistsError):bundle.main(args)
     with zipfile.ZipFile(output/'p4a-bundle.zip') as z:
         assert len([n for n in z.namelist() if n.endswith('/X.npy')])==1
@@ -768,12 +768,19 @@ def test_deliver_cli_synthetic_two_files(tmp_path):
         for name in bundle.MATRIX_FILES:
             assert (tmp_path/'out/folds'/fold.name/name).read_bytes()==(fold/name).read_bytes()
     notebook=json.loads((output/'p4a-colab.ipynb').read_text())
+    settings={};exec(notebook['cells'][0]['source'],settings)
+    assert settings['RUN_DIR']=='/custom/MyDrive/MarketMamba/p4a/02_trial'
+    assert settings['EXPERIMENT_DIR']=='/custom/MyDrive/MarketMamba/p4a'
+    assert (output/'README.txt').read_text().splitlines()==[
+        '上傳到 Drive 資料夾：/custom/MyDrive/MarketMamba/p4a/02_trial',
+        '開啟檔案：p4a-colab.ipynb']
+    assert settings['EXPECTED_ARCHIVE']==bundle.digest(output/'p4a-bundle.zip')
     # Execute only the stdlib bootstrap/extract cell with a local fake Colab mount.
     import sys,types
     fake=types.ModuleType('google.colab');fake.drive=types.SimpleNamespace(mount=lambda _:None)
     from unittest.mock import patch
     with patch.dict(sys.modules,{'google.colab':fake}), patch.object(sys,'path',list(sys.path)):
-        namespace=dict(DRIVE_BASE=str(tmp_path),BUNDLE_NAME=str(output/'p4a-bundle.zip'),LOCAL_ROOT=str(tmp_path/'from-notebook'))
+        namespace=dict(settings,RUN_DIR=str(output),EXPERIMENT_DIR=str(tmp_path),LOCAL_ROOT=str(tmp_path/'from-notebook'))
         exec(notebook['cells'][2]['source'],namespace)
         exec(notebook['cells'][2]['source'],namespace)  # same-root reconnect identity
     assert bundle.verify(tmp_path/'from-notebook')['metadata']['years']==[2021,2022]
@@ -804,7 +811,7 @@ def test_notebook_environment_cpu_boundaries(tmp_path,monkeypatch,scenario):
     monkeypatch.setattr(platform,'python_version',lambda:contract['runtime']['python'])
     monkeypatch.setattr(importlib.metadata,'version',lambda name: contract['packages'][name] if scenario=='installed' else 'missing')
     calls=[];monkeypatch.setattr(subprocess,'run',lambda args,**kwargs:calls.append(args))
-    namespace=dict(Path=Path,root=root,json=json,subprocess=subprocess,p4=bundle,WHEEL_DIR=str(tmp_path/'missing'))
+    namespace=dict(Path=Path,root=root,json=json,subprocess=subprocess,p4=bundle,WHEEL_DIR=str(tmp_path/'missing'),LEGACY_WHEEL_DIR=str(tmp_path/'legacy'),resolve_wheel_dir=notebook_helpers()['resolve_wheel_dir'])
     cell=bundle.colab_notebook()['cells'][3]['source']
     if scenario=='no_cuda':
         with pytest.raises(RuntimeError,match='CUDA'):exec(cell,namespace)
@@ -813,3 +820,88 @@ def test_notebook_environment_cpu_boundaries(tmp_path,monkeypatch,scenario):
         exec(cell,namespace)
         assert namespace['needs_compile']==(scenario=='missing_both')
         assert calls==[['nvidia-smi']]  # matching installed runtime never invokes pip
+
+
+def notebook_helpers():
+    """Execute generated stdlib helper definitions without mounting Drive."""
+    import ast, hashlib, zipfile
+    tree=ast.parse(bundle.colab_notebook()['cells'][2]['source'])
+    functions=ast.Module(body=[n for n in tree.body if isinstance(n,ast.FunctionDef)],type_ignores=[])
+    namespace=dict(Path=Path,hashlib=hashlib,json=json,zipfile=zipfile)
+    exec(compile(functions,'notebook helpers','exec'),namespace)
+    return namespace
+
+
+def test_drive_settings_shared_budget_and_formal_stop():
+    nb=bundle.colab_notebook()
+    settings={};exec(nb['cells'][0]['source'],settings)
+    assert settings['MAX_HOURS']==1.0 and settings['MAX_UNITS']==15.0
+    assert Path(settings['RUN_DIR'])==Path('/content/drive/MyDrive/MarketMamba/p4a/01_speedtest')
+    assert Path(settings['EXPERIMENT_DIR'])==Path(settings['RUN_DIR']).parent
+    assert settings['WHEEL_DIR']=='/content/drive/MyDrive/MarketMamba/wheels'
+    formal=nb['cells'][0]['source'].replace("MODE = 'SPEED_TEST'","MODE = 'FORMAL'")
+    with pytest.raises(ValueError,match='STOP.*MAX_HOURS.*MAX_UNITS'):exec(formal,{})
+    commands=[]
+    for run in ('01_speedtest','02_formal'):
+        namespace=dict(settings,MODE='SPEED_TEST' if run=='01_speedtest' else 'FORMAL',
+                       RUN_DIR='/drive/p4a/'+run,EXPERIMENT_DIR='/drive/p4a',
+                       root=Path('/bundle'),p4=type('P4',(),{'prepare_source':lambda _:None,'verify':lambda *a,**k:None}),
+                       os=__import__('os'),sys=__import__('sys'),subprocess=type('S',(),{'run':lambda args,**kw:commands.append(args)}))
+        exec(nb['cells'][6]['source'],namespace)
+    assert [c[c.index('--drive-root')+1] for c in commands]==['/drive/p4a/budget']*2
+
+
+def test_drive_archive_search_and_stale_content(tmp_path,capsys):
+    helpers=notebook_helpers();select=helpers['find_archive']
+    run=tmp_path/'p4a/01_speedtest';run.mkdir(parents=True)
+    inputs=run.parent/'inputs';inputs.mkdir();content=tmp_path/'content';content.mkdir()
+    paths=[run/'p4a-bundle.zip',inputs/'p4a-bundle.zip',content/'p4a-bundle.zip']
+    for p in paths:p.write_bytes(b'expected')
+    expected=bundle.digest(paths[0])
+    assert select(run,run.parent,content,paths[0].name,expected)==paths[0]
+    paths[2].write_bytes(b'incomplete')
+    assert select(run,run.parent,content,paths[0].name,expected)==paths[0]
+    select(run,run.parent,content,paths[0].name,expected)
+    warning=capsys.readouterr().out
+    assert 'WARNING' in warning and str(paths[2]) in warning
+    paths[0].unlink()
+    assert select(run,run.parent,content,paths[0].name,expected)==paths[1]
+    paths[1].unlink()
+    with pytest.raises(FileNotFoundError,match='STOP') as error:select(run,run.parent,content,paths[0].name,expected)
+    assert all(str(p) in str(error.value) for p in paths)
+    paths[2].write_bytes(b'expected')
+    assert select(run,run.parent,content,paths[0].name,expected)==paths[2]
+
+
+def test_drive_wheel_fallback(tmp_path):
+    resolve=notebook_helpers()['resolve_wheel_dir']
+    preferred=tmp_path/'MarketMamba/wheels';legacy=tmp_path/'Mamba_Wheels_T4_new'
+    assert resolve(preferred,legacy)==preferred  # compile destination
+    preferred.mkdir(parents=True);legacy.mkdir()
+    (legacy/'mamba_ssm-test.whl').touch()
+    assert resolve(preferred,legacy)==legacy
+    (preferred/'mamba_ssm-test.whl').touch()
+    assert resolve(preferred,legacy)==preferred  # partial preferred stays STOP at installer
+
+
+@pytest.mark.parametrize('change',['truncated','manifest_total','member_size'])
+def test_drive_zip_size_stop_before_extraction(tmp_path,change):
+    import zipfile
+    helpers=notebook_helpers()
+    source=tmp_path/'x';source.write_bytes(b'hello')
+    archive=tmp_path/'bundle.zip'
+    mf=bundle.write_archive(archive,{'folds/fold_2021/X.npy':source},{})
+    expected=bundle.digest(archive)
+    helpers['validate_archive_size'](archive,expected)
+    assert mf['total_bytes']==5
+    if change=='truncated':archive.write_bytes(archive.read_bytes()[:-10])
+    else:
+        with zipfile.ZipFile(archive) as z:items={m.filename:z.read(m) for m in z.infolist()}
+        if change=='manifest_total':mf['total_bytes']+=1
+        else:mf['files']['folds/fold_2021/X.npy']['bytes']+=1
+        items['bundle-manifest.json']=json.dumps(mf).encode()
+        with zipfile.ZipFile(archive,'w') as z:
+            for name,data in items.items():z.writestr(name,data)
+        expected=bundle.digest(archive)  # isolate manifest check from outer identity
+    with pytest.raises(ValueError,match='STOP.*(大小|size).*上傳不完整'):
+        helpers['validate_archive_size'](archive,expected)

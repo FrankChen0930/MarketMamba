@@ -4,27 +4,46 @@ UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。研究規格仍為 [DRAFT](../../tasks/
 
 ## 主流程：一個 ZIP ＋一個 notebook
 
-Human 2026-11-22 核准的交付介面是 `p4a-bundle.zip` ＋ `p4a-colab.ipynb`。沿用既有 `p4_bundle`／`p4_colab`，不另建流程樹。在可信任 checkout 用同一條 CLI 產生兩檔（獨立輸出 namespace，拒絕覆寫）：
+Human 2026-11-22 核准的交付介面是 `p4a-bundle.zip` ＋ `p4a-colab.ipynb`。沿用既有 `p4_bundle`／`p4_colab`，不另建流程樹。在可信任 checkout 用同一條 CLI 產生 ZIP、notebook 與兩行 README.txt（獨立輸出 namespace，拒絕覆寫）：
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=V6:. /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m research_lab.p4_bundle deliver \
   --folds-root /ABSOLUTE/EXISTING/FOLDS --years 2021 2022 2023 2024 2025 \
   --p1 /ABSOLUTE/P1/FULL/SCORES \
   --lock environments/p4a-colab.requirements.lock.txt \
-  --output-dir /ABSOLUTE/NEW/DELIVERY
+  --output-dir /ABSOLUTE/NEW/DELIVERY \
+  --run-name 01_speedtest \
+  --drive-root /content/drive/MyDrive/MarketMamba
 ```
 
-只需在 Colab 開啟產生的 notebook，選 GPU runtime，將 ZIP 上傳 Files 的 `/content/`，或 Drive `MyDrive/MarketMambaP4/inputs/`，從上到下執行。所有預算與路徑集中於第0格；預設 SPEED_TEST、6小時／100 CU、10 CU/hour、每 fit 0.5小時、25%餘裕，均為保守操作預設而非現場計費觀測。Drive掛載仍需 Google 登入授權。無須手貼 SHA、另傳 bootstrap 或手查版本。
+將 `--output-dir` 產生的 ZIP 與 notebook 上傳到 README.txt 第一行指定的 Drive 資料夾，開啟第二行指定的 notebook。`--output-dir` 仍是本機交付輸出；`--run-name` 預設 `01_speedtest`，`--drive-root` 預設 `/content/drive/MyDrive/MarketMamba`，兩者只預填 notebook 路徑，不建立或上傳 Drive 內容。
+
+```text
+MyDrive/MarketMamba/
+  wheels/                 # Human 可自行搬入預編譯 wheels
+  p4a/
+    budget/               # speed-test 與正式實驗共用的帳本、run 輸出
+    01_speedtest/          # p4a-bundle.zip、p4a-colab.ipynb
+    02_.../               # 下一次交付，仍沿用同一 budget/
+```
+
+第0格集中設定 `RUN_DIR`、`EXPERIMENT_DIR`（預設 RUN_DIR 上一層）、`WHEEL_DIR`。Runner、摘要與 JSON 匯出都固定讀寫 `EXPERIMENT_DIR/budget`，不能以交付子資料夾另開帳本。切換交付只改 RUN_DIR；保留同一 EXPERIMENT_DIR 與既有帳本，speed／formal 不重置。從舊根目錄遷移既有帳本不在本輪自動執行範圍；如已有消耗帳本，須先盤點原帳本並保留它的 EXPERIMENT_DIR，不得直接建立空的新 budget 繞過消耗／STOP。
+
+ZIP 依 `RUN_DIR → EXPERIMENT_DIR/inputs（舊式 inputs 佈局）→ /content` 順序搜尋。找不到合格檔會列出三個已搜尋的完整路徑。`deliver` 將實際 ZIP 大小與 SHA 自動寫入 notebook；若 `/content` 同名檔 SHA 不符，明確 WARNING 並忽略，Drive 版優先，沒有合格 Drive 版也不使用該殘留檔。選中的 Drive ZIP 若 identity 不符則 STOP，不靜默退到其他副本。
+
+解壓及載入 bootstrap 前先核對 ZIP **壓縮檔實際 bytes** 與 notebook 綁定的交付大小／SHA；再將 ZIP inventory 的非 alias 成員大小與 manifest 逐檔大小總和核對。新 ZIP manifest 的 `total_bytes` 是包含 aliases 的**邏輯還原 bytes**，必須等於 `files` 大小總和；舊 manifest 無此欄時從 `files` 計算，維持相同核對。壓縮檔大小與邏輯還原量不同，不直接互比。大小不符或 ZIP 截斷會 STOP 並提示可能上傳不完整；重傳同批檔案，不手改預期值繞過。後續白名單、資源限制與逐檔 hash 安全驗證仍強制。
+
+預設 SPEED_TEST 為 **1.0 小時／15.0 CU**；FORMAL 的兩上限預設 None，第0格就 STOP，須由 Human 明確填寫。10 CU/hour、每 fit／stage 0.5 小時與至少25%餘裕維持保守預設；全新三臂 speed-test 的剩餘三個 fit 加一個前處理 stage，以每項0.5小時及25%餘裕計需至少2.5小時／25 CU（尚未加已花時間），因此這組預設會在計畫檢查 STOP，不能降低 gate 或自行增加預算。它們不是現場計費觀測。Drive 掛載仍需 Google 登入授權，上傳／編譯／閒置另預留。
 
 ZIP 是真正 ZIP64 格式；fold 的 `X.npy` 以 `(bytes,SHA-256)` 內容去重，manifest `files` 保存完整邏輯清單，`aliases` 記錄重複 fold → 實體成員。解壓重讀該成員並還原每個 fold 的一般檔案，逐份驗證，不建立 symlink。只在打包端允許 fold 輸入 symlink，先解析一般檔案；解壓端仍拒絕所有 links。既有 tar.gz 保留相容，不做 alias 去重。ZIP 邏輯還原大小（不是壓縮大小）仍受256 GiB上限；單檔64 GiB、10,000成員、4 MiB manifest、白名單、逐檔 size/SHA、拒絕 executable cache 與 descriptor 安全寫入維持強制。
 
-Notebook先用標準庫 `zipfile` 只取固定 bootstrap／manifest，驗兩者大小／類型、重複成員及 bootstrap 內部 hash，再由 bootstrap 完整安全解壓與驗證。SHA僅印供記錄；兩檔必須來自可信任的交付來源，內部hash不能自證來源。重連驗原ZIP與現有root manifest bytes一致，完整驗證後才重用，partial不自動覆寫。
+Notebook先用標準庫 `zipfile` 只取固定 bootstrap／manifest，驗兩者大小／類型、重複成員及 bootstrap 內部 hash，再由 bootstrap 完整安全解壓與驗證。deliver 內嵌的 ZIP SHA 必須相符並印出供記錄；兩檔必須來自可信任的交付來源，內部hash不能自證來源。重連驗原ZIP與現有root manifest bytes一致，完整驗證後才重用，partial不自動覆寫。
 
-環境先印Python／torch／CUDA／GPU／套件與 nvidia-smi。已安裝套件及runtime符合環境契約即跳過wheel安裝；否則檢查指定Drive目錄，僅以 `--no-deps --no-index --find-links` 安裝兩個wheel。Human提供的OBSERVED環境是Python3.13.16／torch2.14.1+cu130／CUDA13.0／Tesla T4，使用 `MyDrive/Mamba_Wheels_T4_new/` 的 `mamba_ssm-2.3.2.post1-cp313-cp313-linux_x86_64.whl`（349592341 bytes）與 `causal_conv1d-1.7.0-cp313-cp313-linux_x86_64.whl`（207063960 bytes）。cp313正向／cp312不符STOP有CPU標籤測試；此處沒有讀取或驗證Drive實際wheel bytes。缺其中一個、多版本或標籤不符STOP；CUDA不可用一律STOP。
+環境先印Python／torch／CUDA／GPU／套件與 nvidia-smi。已安裝套件及runtime符合環境契約即跳過wheel安裝；否則依序檢查 `WHEEL_DIR`（預設 `MyDrive/MarketMamba/wheels`）與 `MyDrive/Mamba_Wheels_T4_new`；前者不存在或沒有任何 `.whl` 才回退。選定目錄若只有部分 wheel、版本或標籤不符仍 STOP，不混用兩目錄。僅以 `--no-deps --no-index --find-links` 安裝兩個wheel。Human提供的OBSERVED環境是Python3.13.16／torch2.14.1+cu130／CUDA13.0／Tesla T4，使用 `MyDrive/Mamba_Wheels_T4_new/` 的 `mamba_ssm-2.3.2.post1-cp313-cp313-linux_x86_64.whl`（349592341 bytes）與 `causal_conv1d-1.7.0-cp313-cp313-linux_x86_64.whl`（207063960 bytes）。cp313正向／cp312不符STOP有CPU標籤測試；此處沒有讀取或驗證Drive實際wheel bytes。缺其中一個、多版本或標籤不符STOP；CUDA不可用一律STOP。
 
-只有兩個wheel均不存在才執行編譯備援格：官方PyPI sdist SHA核對，mamba setup.py全部 `-std=c++17` → `-std=c++20`、`MAMBA_FORCE_BUILD=TRUE`、`MAX_JOBS=4`、T4 sm75，wheel輸出Drive。需GPU，估30–90分鐘或更久；時間／CU不在runner帳本，須額外預留。安裝或略過後均跑 Mamba2 `[8,60,64]` 前向／反向有限值冒煙與 pip check。這不等於專案正式GPU smoke。FORMAL仍由既有DRAFT gate拒絕；SPEED_TEST只產生計時與telemetry，結果格摘要秒／epoch、GPU、溫度與時脈，不產生IC／績效。
+兩處皆無 wheel 才走編譯備援，產出寫入 `WHEEL_DIR`（預設 MarketMamba/wheels）。只有兩個必要 wheel 均不存在才執行編譯備援格：官方PyPI sdist SHA核對，mamba setup.py全部 `-std=c++17` → `-std=c++20`、`MAMBA_FORCE_BUILD=TRUE`、`MAX_JOBS=4`、T4 sm75，wheel輸出Drive。需GPU，估30–90分鐘或更久；時間／CU不在runner帳本，須額外預留。安裝或略過後均跑 Mamba2 `[8,60,64]` 前向／反向有限值冒煙與 pip check。這不等於專案正式GPU smoke。FORMAL仍由既有DRAFT gate拒絕；SPEED_TEST只產生計時與telemetry，結果格摘要秒／epoch、GPU、溫度與時脈，不產生IC／績效。
 
-Runner直接將speed JSON、run manifest與持久budget帳本寫Drive；下載格匯出JSON到 `p4a-results.zip`，不包含正式權重。重連沿用相同Drive根目錄、ZIP與設定，completed-fit驗後略過，未知中斷保守扣帳並STOP；不得換root／刪帳本重置。Colab現場ZIP解壓、編譯儲存格、Drive掛載／寫入／下載均 **UNVERIFIED**；本輪只有CPU合成測試，沒有真實大型bundle、GPU／研究結果或Human acceptance。
+Runner直接將speed JSON、run manifest與持久budget帳本寫Drive；下載格匯出JSON到 `p4a-results.zip`，不包含正式權重。重連沿用相同 EXPERIMENT_DIR、ZIP 與預算設定，completed-fit驗後略過，未知中斷保守扣帳並STOP；不得換root／刪帳本重置。Colab現場ZIP解壓、編譯儲存格、Drive掛載／寫入／下載均 **UNVERIFIED**；本輪只有CPU合成測試，沒有真實大型bundle、GPU／研究結果或Human acceptance。
 
 ## 備援：舊手動逐格流程（歷史操作範例）
 

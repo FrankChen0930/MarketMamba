@@ -1,5 +1,15 @@
 # MarketMamba Authority Map
 
+## P4a Drive 分次交付路徑候選 — 2026-11-22
+
+`job-run-mwqscvk1-a3db0f` builder，base/HEAD `df78d6cb3bb706f6f4d58b94310c3d352aab8385`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依本輪 no-commit 授權保留 patch。沿用 [p4_bundle](../../V6/research_lab/p4_bundle.py) 的 deliver／notebook；新增 `--run-name`（01_speedtest）／`--drive-root`（MyDrive/MarketMamba）與兩行 README.txt，不建立平行流程或新 worktree。
+
+第0格預填 `RUN_DIR=.../MarketMamba/p4a/01_speedtest`、`EXPERIMENT_DIR=RUN_DIR.parent`；runner／摘要／匯出都使用 `EXPERIMENT_DIR/budget`，speed 與 formal 跨交付共用同一本帳。ZIP 依 RUN_DIR → EXPERIMENT_DIR/inputs → /content 搜尋；殘留 /content SHA 不符明確 WARNING 並忽略。notebook 綁定實際 ZIP bytes/SHA，解壓前另核對 manifest `total_bytes`（含 aliases 邏輯大小）及實體成員大小，不混比壓縮與還原大小；不符 STOP 並提示上傳不完整。WHEEL_DIR 預設 MarketMamba/wheels，空／不存在才回退 Mamba_Wheels_T4_new，均無 wheel 才編譯寫回新目錄；部分 wheel／不相容仍 STOP。
+
+SPEED_TEST 上限改1.0小時／15 CU；FORMAL 無預設，須 Human 明確填入。其餘0.5小時每fit/stage、10 CU/hour、25% reserve 保留；全新三臂 speed 計畫至少需2.5小時／25 CU加已花時間，因此小上限下計畫檢查會STOP，需Human依實際保守估計另行決策，不能放寬gate。既有舊根帳本不自動搬移／重置；若已有消耗，須保留原 EXPERIMENT_DIR 或先獨立盤點遷移。DRAFT 正式 gate、研究／production authority、runtime observed_at 與 lock 未變。
+
+本輪僅本機 CPU 合成工程證據；沒有上傳 Drive、網路、GPU、Colab、資料取得或研究結果，現場行為仍 UNVERIFIED。此節取代前節的6小時／100 CU、/content優先與舊預設wheel路徑操作描述，保留歷史驗證紀錄。既有 fold resolved-root 邊界與壓縮比兩項 OPEN 限制未處理。Next：獨立審查 patch 與預算設定，核准真實輸入後重新 deliver；現場 Colab 驗證及 Human acceptance 另行處理。詳見 [指南](../../docs/operations/colab-p4.md)、[工程報告](../../reports/v7_p4a_colab_engineering.md)。
+
 ## P4a 兩檔 Colab 交付候選 — 2026-11-22
 
 `job-run-mwqr9yiu-8c464e` builder，既有 detached HEAD/base `74795a4a56f25585000d26d281e305381de6230a`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，明確 no-commit 授權保留 patch。[產生器](../../V6/research_lab/p4_bundle.py) 的 `deliver` 一次輸出 `p4a-bundle.zip` 與 `p4a-colab.ipynb`，沿用既有 pack／executor／研究契約，沒有平行流程或新 worktree。ZIP 以內容 identity 去重跨 fold 的 X.npy，manifest 完整邏輯檔案清單加 aliases；安全解壓還原各 fold 的一般檔案並逐份驗 size/SHA。fold 輸入 symlink 只在打包端解析，解壓仍禁止 links，tar 相容與白名單／資源／cache gate 維持。

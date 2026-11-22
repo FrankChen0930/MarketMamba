@@ -1,5 +1,11 @@
 # Worktree Register
 
+## P4a Drive 分次交付 builder — 2026-11-22
+
+- Purpose/task：既有deliver／notebook的Drive路徑、共用budget、wheel回退、ZIP大小／identity預檢及CPU RED/GREEN；owner Human/Codex builder，job-run-mwqscvk1-a3db0f。沿用 `.worktrees/ruflo-workers/run-mwqscvk1-a3db0f/builder_p4a_drive`，detached base/HEAD `df78d6cb3bb706f6f4d58b94310c3d352aab8385`；created2026-11-22，retired N/A，起始clean；依no-commit指示保留dirty patch。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。
+- Authority：P4 DRAFT機器契約、既有Human OBSERVED runtime契約與本輪CPU合成tests；無新GPU／Colab／研究／production authority。沿用research_lab、docs、reports及knowledge容器；不新建implementation／artifact tree或worktree。無protected source、formal Data、V6/models、scheduler變更。
+- Merge/artifact dependency：獨立審查、Human預算／正式契約凍結及另行授權現場Colab；TEMPORARY logs為 `/tmp/p4-drive-*`、合成zip／notebook／README在pytest隔離目錄，依賴既有離線 `/tmp/p4-notebook-deps`，無網路／未改venv。Safe-removal preconditions：先保存未提交patch與必要證據、處理引用並完成retirement review，目前dirty不可移除；不commit/push/merge/deploy。
+
 ## P4a 兩檔交付 builder — 2026-11-22
 
 - Purpose/task：擴充既有bundle產生器為ZIP＋notebook、X.npy去重、安全bootstrap／cp313自檢與CPU反證；owner Human/Codex builder。沿用 `.worktrees/ruflo-workers/run-mwqr9yiu-8c464e/builder_p4a_delivery`，detached HEAD/base `74795a4a56f25585000d26d281e305381de6230a`；created2026-11-22，retired N/A，起始clean，依明確no-commit指示保留dirty patch。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。
