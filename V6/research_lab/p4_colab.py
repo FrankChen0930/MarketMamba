@@ -647,43 +647,101 @@ REHEARSAL_STAGES=(('Q3 W120 mamba2','Q3',120,'mamba2',1),
                   ('Q5（兩個 prerequisite fits）','Q5',None,None,2))
 
 
+def validate_rehearsal_schema(value,schema,path='rehearsal'):
+    """One strict recursive validator for stage publications and cache metadata.
+
+    Objects are closed, numeric types exclude bool, and conversion/recursion
+    errors become invalid evidence rather than escaping the rehearsal gate.
+    """
+    try:
+        kind,*args=schema
+        valid=False
+        if kind=='object':
+            valid=type(value) is dict and set(value)==set(args[0])
+            if valid:
+                for key,child in args[0].items():validate_rehearsal_schema(value[key],child,f'{path}.{key}')
+        elif kind=='list':
+            child,minimum,maximum=args
+            valid=type(value) is list and len(value)>=minimum and (maximum is None or len(value)<=maximum)
+            if valid:
+                for i,item in enumerate(value):validate_rehearsal_schema(item,child,f'{path}[{i}]')
+        elif kind=='tuple':
+            valid=type(value) is list and len(value)==len(args[0])
+            if valid:
+                for i,(item,child) in enumerate(zip(value,args[0])):validate_rehearsal_schema(item,child,f'{path}[{i}]')
+        elif kind in ('int','number'):
+            low,high=args
+            valid=(type(value) is int if kind=='int' else type(value) in (int,float))
+            valid=valid and math.isfinite(value) and (low is None or value>=low) and (high is None or value<=high)
+        elif kind=='exact':valid=type(value) is type(args[0]) and hashed(value)==hashed(args[0])
+        elif kind=='bool':valid=type(value) is bool
+        elif kind=='date':
+            # numpy day strings and ISO timestamps from permutation_summary.
+            from datetime import datetime
+            valid=type(value) is str and len(value)>=10
+            if valid:datetime.fromisoformat(value.replace('Z','+00:00'))
+        elif kind=='string':valid=type(value) is str and bool(value)
+        elif kind=='sha256':valid=type(value) is str and len(value)==64 and all(c in '0123456789abcdef' for c in value)
+        if not valid:raise ValueError(f'{path}: invalid {kind}')
+    except (OverflowError,TypeError,RecursionError) as error:
+        raise ValueError(f'{path}: invalid schema value ({type(error).__name__})') from error
+
+
+def rehearsal_schema(kind,expected=None):
+    """Schemas follow actual publications; R=10 is frozen by permutation_summary."""
+    obj=lambda **fields:('object',fields)
+    seq=lambda child,lo=0,hi=None:('list',child,lo,hi)
+    exact=lambda value:('exact',value)
+    number=lambda lo=None,hi=None:('number',lo,hi)
+    integer=lambda lo=0,hi=None:('int',lo,hi)
+    identity=obj(bytes=integer(1),sha256=('sha256',))
+    if kind=='q5':
+        return obj(R=exact(10),label_support=obj(input_rows=integer(1),used_rows=integer(1),excluded_nan_rows=integer(),excluded_dates=seq(('date',))),
+            daily=seq(obj(permutation=integer(0,9),date=('date',),score_spearman=number(-1,1),ic=number(-1,1),ic_change=number(-2,2),top50_overlap=number(0,1)),1),
+            permutation_mean_ic=seq(number(-1,1),10,10),ic_std=number(0),mamba_ic_gap=number(0,2),order_sensitive=('bool',),
+            rule=exact('IC std >= absolute crossstock minus mamba2 IC gap'),evidence_class=exact('DESCRIPTIVE_ONLY'))
+    if kind=='stage_identity':
+        binding,queue,window,arm=expected
+        return obj(binding=exact(binding),queue=exact(queue),window=exact(window),arm=exact(arm),steps=exact(1),result=identity)
+    if kind=='marker':
+        stages=[obj(stage=exact(name),seconds=number(0),identity=rehearsal_schema('stage_identity',(expected,queue,window,arm)),
+                    evidence_class=exact(REHEARSAL_EVIDENCE),fit_count=exact(count))
+                for name,queue,window,arm,count in REHEARSAL_STAGES]
+        return obj(identity=exact(expected),passed=exact(True),stages=('tuple',stages),evidence_class=exact(REHEARSAL_EVIDENCE),digest=('sha256',))
+    if kind=='result':
+        request=expected
+        fields=dict(evidence_class=exact(REHEARSAL_EVIDENCE),artifact_class=exact('TEMPORARY'),output=('string',),
+            fits=seq(('string',),1,2),inputs=obj(data_realpath=('string',),matrix_manifest=identity,reference=identity),
+            implementation=obj(**{n:identity for n in ('p4_colab.py','p4_eval.py','seq_runner.py')}),
+            environment=obj(**{n:('string',) for n in ('python','torch','numpy','device','mixer')}),
+            cuda_max_memory_allocated=integer(1),request=exact(request),context=exact(request['binding']['identity']),
+            **{key:exact(request[key]) for key in ('queue','window','arm','steps')})
+        if request['queue']=='Q5':fields['diagnostic']=obj(validation=rehearsal_schema('q5'),evaluation=rehearsal_schema('q5'))
+        return ('object',fields)
+    if kind=='identity':return identity
+    raise ValueError('unknown rehearsal schema: '+kind)
+
+
 def validate_rehearsal_marker(saved,binding):
-    """Strict observational cache schema; unknown keys and bool-as-number fail closed."""
-    if not isinstance(saved,dict) or set(saved)!={'identity','passed','stages','evidence_class','digest'}:return False
-    if saved.get('identity')!=binding or saved.get('passed') is not True or saved.get('evidence_class')!=REHEARSAL_EVIDENCE:return False
-    stages=saved.get('stages')
-    if not isinstance(stages,list) or len(stages)!=3:return False
-    for record,(name,queue,window,arm,count) in zip(stages,REHEARSAL_STAGES):
-        if not isinstance(record,dict) or set(record)!={'stage','seconds','identity','evidence_class','fit_count'}:return False
-        if record['stage']!=name or record['evidence_class']!=REHEARSAL_EVIDENCE or type(record['fit_count']) is not int or record['fit_count']!=count:return False
-        if type(record['seconds']) not in (int,float) or not math.isfinite(record['seconds']) or record['seconds']<0:return False
-        ident=record['identity']
-        if not isinstance(ident,dict) or set(ident)!={'binding','queue','window','arm','steps','result'}:return False
-        if type(ident['steps']) is not int or type(ident['window']) is not type(window) or ident!=dict(binding=binding,queue=queue,window=window,arm=arm,steps=1,result=ident['result']):return False
-        result=ident['result']
-        if not isinstance(result,dict) or set(result)!={'bytes','sha256'}:return False
-        if type(result['bytes']) is not int or result['bytes']<=0 or not isinstance(result['sha256'],str) or len(result['sha256'])!=64 or any(c not in '0123456789abcdef' for c in result['sha256']):return False
-    try:return (hashed(saved['identity'])==hashed(binding) and
-                all(hashed(stage['identity']['binding'])==hashed(binding) for stage in stages) and
-                saved['digest']==hashed({k:v for k,v in saved.items() if k!='digest'}))
-    except (TypeError,ValueError):return False
+    """Validate with the stage schema engine; corrupted caches always rerun."""
+    try:
+        validate_rehearsal_schema(saved,rehearsal_schema('marker',binding))
+        return saved['digest']==hashed({k:v for k,v in saved.items() if k!='digest'})
+    except (ValueError,OverflowError,TypeError,RecursionError,KeyError):return False
 
 
 def validate_rehearsal_result(path,request,common):
     """Gate-owned validation of result, requested inputs, and completed publications."""
     try:
+        if Path(path).is_symlink():raise ValueError('result metadata symlink prohibited')
         result=json.loads(Path(path).read_text())
-        expected={'evidence_class','artifact_class','output','queue','window','arm','steps','fits','inputs',
-                  'implementation','environment','cuda_max_memory_allocated','request','context'}
-        if request['queue']=='Q5':expected.add('diagnostic')
-        if not isinstance(result,dict) or set(result)!=expected:raise ValueError('result schema mismatch')
-        for key in ('queue','window','arm','steps'):
-            if type(result[key]) is not type(request[key]) or result[key]!=request[key]:raise ValueError('request selection mismatch')
-        if hashed(result['request'])!=hashed(request) or hashed(result['context'])!=hashed(request['binding']['identity']):raise ValueError('run/source/data/environment identity mismatch')
-        if result['evidence_class']!=REHEARSAL_EVIDENCE or result['artifact_class']!='TEMPORARY':raise ValueError('evidence class mismatch')
+        validate_rehearsal_schema(result,rehearsal_schema('result',request))
         root=Path(result['output'])
         if not root.is_absolute() or root.is_symlink() or root.parent!=Path('/tmp') or not root.name.startswith('p4-REHEARSAL-'):raise ValueError('output must be retained /tmp rehearsal directory')
-        if json.loads((root/'REHEARSAL.json').read_text())!=result:raise ValueError('result publication mismatch')
+        if (root/'REHEARSAL.json').is_symlink():raise ValueError('publication metadata symlink prohibited')
+        publication=json.loads((root/'REHEARSAL.json').read_text())
+        validate_rehearsal_schema(publication,rehearsal_schema('result',request))
+        if hashed(publication)!=hashed(result):raise ValueError('result publication mismatch')
         data=Path(common[common.index('--data-dir')+1]).resolve(strict=True)
         bundle=Path(common[common.index('--bundle')+1])
         reference=bundle/'reference/keys.parquet'
@@ -700,33 +758,28 @@ def validate_rehearsal_result(path,request,common):
         implementation={name:digest(Path(__file__).with_name(name)) for name in ('p4_colab.py','p4_eval.py','seq_runner.py')}
         if result['implementation']!=implementation:raise ValueError('implementation identity mismatch')
         environment=result['environment']
-        if not isinstance(environment,dict) or set(environment)!={'python','torch','numpy','device','mixer'}:raise ValueError('environment schema mismatch')
         if environment['device']!='cuda' or environment['mixer']!='official':raise ValueError('official CUDA rehearsal required')
         observed=result['context']['environment']
         if not isinstance(observed,dict) or environment['python']!=observed['python'] or any(environment[n]!=observed['packages'][n] for n in ('torch','numpy')):raise ValueError('environment identity mismatch')
-        if type(result['cuda_max_memory_allocated']) is not int or result['cuda_max_memory_allocated']<=0:raise ValueError('CUDA memory evidence missing')
         for name,job in zip(names,jobs):
-            fit=root/name;complete=json.loads((fit/'REHEARSAL-complete.json').read_text())
+            fit=root/name
+            if fit.is_symlink() or (fit/'REHEARSAL-complete.json').is_symlink():raise ValueError('complete metadata symlink prohibited')
+            complete=json.loads((fit/'REHEARSAL-complete.json').read_text())
             contract=dict(**job,recipe=dict(frozen['recipe'],window=job['window'],lr=job['lr'],epochs=1,steps_per_epoch=1),speed_test=False,evidence_class=REHEARSAL_EVIDENCE,rehearsal_binding=hashed(request))
-            if set(complete)!={'contract','outputs','evidence_class'} or hashed(complete['contract'])!=hashed(contract) or complete['evidence_class']!=REHEARSAL_EVIDENCE:raise ValueError('completed identity mismatch')
+            validate_rehearsal_schema(complete,('object',dict(contract=('exact',contract),outputs=('object',{n:rehearsal_schema('identity') for n in complete['outputs']}),evidence_class=('exact',REHEARSAL_EVIDENCE))))
             validate_fit_outputs(fit,contract,complete['outputs'],rehearsal=True)
         if queue=='Q5':
             diagnostic=result['diagnostic']
-            if not isinstance(diagnostic,dict) or set(diagnostic)!={'validation','evaluation'}:raise ValueError('Q5 split completion missing')
             for split in diagnostic.values():
-                fields={'R','label_support','daily','permutation_mean_ic','ic_std','mamba_ic_gap','order_sensitive','rule','evidence_class'}
-                if not isinstance(split,dict) or set(split)!=fields or type(split['R']) is not int or split['R']!=10 or split['evidence_class']!='DESCRIPTIVE_ONLY':raise ValueError('Q5 success schema mismatch')
                 support=split['label_support']
-                if not isinstance(support,dict) or set(support)!={'input_rows','used_rows','excluded_nan_rows','excluded_dates'}:raise ValueError('Q5 support schema mismatch')
-                if any(type(support[k]) is not int or support[k]<0 for k in ('input_rows','used_rows','excluded_nan_rows')) or support['used_rows']<=0 or support['input_rows']!=support['used_rows']+support['excluded_nan_rows']:raise ValueError('Q5 mature support missing')
-                daily=split['daily'];means=split['permutation_mean_ic']
-                if not isinstance(daily,list) or not daily or not isinstance(means,list) or len(means)!=10 or not all(type(v) in (int,float) and math.isfinite(v) for v in means):raise ValueError('Q5 diagnostics incomplete')
-                if {row['permutation'] for row in daily}!=set(range(10)):raise ValueError('Q5 permutations incomplete')
-                for row in daily:
-                    if set(row)!={'permutation','date','score_spearman','ic','ic_change','top50_overlap'} or any(type(row[k]) not in (int,float) or not math.isfinite(row[k]) for k in ('score_spearman','ic','ic_change','top50_overlap')):raise ValueError('Q5 daily schema mismatch')
-                if type(split['order_sensitive']) is not bool or any(type(split[k]) not in (int,float) or not math.isfinite(split[k]) or split[k]<0 for k in ('ic_std','mamba_ic_gap')):raise ValueError('Q5 numeric evidence invalid')
+                if support['input_rows']!=support['used_rows']+support['excluded_nan_rows']:raise ValueError('Q5 mature support missing')
+                daily=split['daily']
+                if {row['permutation'] for row in daily}!=set(range(split['R'])):raise ValueError('Q5 permutations incomplete')
+                keys=[(row['permutation'],row['date']) for row in daily]
+                dates={row['date'] for row in daily}
+                if len(keys)!=len(set(keys)) or len(keys)!=split['R']*len(dates):raise ValueError('Q5 daily permutation/date support mismatch')
         return dict(binding=request['binding'],queue=queue,window=request['window'],arm=request['arm'],steps=1,result=digest(path))
-    except (OSError,ValueError,KeyError,TypeError,IndexError,AttributeError) as error:
+    except (OSError,ValueError,KeyError,TypeError,IndexError,AttributeError,OverflowError,RecursionError) as error:
         raise ValueError(f'REHEARSAL 排練結果／產物驗證失敗: {error}') from error
 
 
@@ -739,12 +792,15 @@ def launch_with_rehearsal(common,env,progress,identity,stream,*,enabled=True):
     progress=Path(progress);marker=progress/'rehearsal_passed.json'
     binding=dict(identity=identity,command=common,policy='Q3-W120-mamba2/Q3-W250-mamba2/Q5-1step-v2')
     saved={}
-    try:saved=json.loads(marker.read_text())
-    except (OSError,ValueError):pass
+    try:
+        if marker.is_symlink():raise ValueError('marker metadata symlink prohibited')
+        saved=json.loads(marker.read_text())
+    except (OSError,ValueError,OverflowError,TypeError,RecursionError):pass
     if not isinstance(saved,dict):saved={}
     if enabled and validate_rehearsal_marker(saved,binding):
         print('排練通過（不是研究結果）：同一 run/source/data/environment，略過；各步耗時：',saved.get('stages'),flush=True)
     elif enabled:
+        print('排練標記無效或缺少；期望=完整 schema／有限數值／非符號連結；實際=無可採用標記；下一步=移除舊標記並重新執行三階段排練',flush=True)
         # A stale success must not survive a failed recheck.
         marker.unlink(missing_ok=True)
         base=common[:common.index('--drive-root')]+common[common.index('--drive-root')+2:]
@@ -1009,7 +1065,7 @@ def permutation_fit(directory,year,cfg,fit_paths,ledger,progress=None,*,device='
         base=predict_cross(cross,data,rows,device,n_perm=2,seed=0)[:,0]
         temporal=predict(mamba,data,rows,device)[:,0]
         permutations=[predict_cross(cross,data,rows,device,n_perm=1,seed=100+r)[:,0] for r in range(10)]
-        result[split]=permutation_summary(data.date_idx[rows],np.asarray(np.load(directory/'stock_ids.npy',mmap_mode='r')[rows]),
+        result[split]=permutation_summary(np.load(directory/'dates.npy',mmap_mode='r')[rows],np.asarray(np.load(directory/'stock_ids.npy',mmap_mode='r')[rows]),
                                           data.y['y5'][rows],base,temporal,permutations)
     return result
 

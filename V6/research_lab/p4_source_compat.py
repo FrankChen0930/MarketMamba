@@ -21,7 +21,7 @@ BUDGET=dict(policy='record_only',units_per_hour=0,thermal_stop_c=85)
 # a category is an explanation, not a numerical-equivalence proof.
 REASONS={
     'V6/research_lab/seq_runner.py':(['進度顯示'],'observer progress callbacks only; CPU bitwise regression required'),
-    'V6/research_lab/p4_colab.py':(['進度顯示','日誌','speed-test 帳本分離','窗≠60 錯誤修正','新增排練模式','長窗前置檢查','正式前自動排練閘門'],'W!=60 session/eligible preflight; gate-owned strict result/artifact/request-identity checks and strict digest-bound three-stage marker; identity-bound one-step launch gate and CUDA peak telemetry; long-window NaN row identity fix, shared publication, isolated rehearsal and Q5 mature-label diagnostics; completed W60 training unchanged'),
+    'V6/research_lab/p4_colab.py':(['進度顯示','日誌','speed-test 帳本分離','窗≠60 錯誤修正','新增排練模式','長窗前置檢查','正式前自動排練閘門'],'W!=60 session/eligible preflight; Q5 diagnostic dates use dates.npy rather than session indices (same groups/numerics); shared closed recursive schema for stage/Q5/marker types, finite numeric ranges and ISO dates; metadata symlinks rejected; malformed/overflowing cache reruns actionably; gate-owned result/artifact/request-identity checks and digest-bound three-stage marker; identity-bound one-step launch gate and CUDA peak telemetry; long-window NaN row identity fix, shared publication, isolated rehearsal and Q5 mature-label diagnostics; completed W60 training unchanged'),
     'V6/research_lab/p4_eval.py':(['窗≠60 錯誤修正','Q5 成熟標籤診斷'],'NaN-equivalent identity with infinities rejected; Q1/Q2 W60 train/publication never calls common_rows; IC excludes and reports immature labels'),
     'V6/research_lab/p4_bundle.py':(['進度顯示','日誌','文件','正式前自動排練閘門'],'FORMAL/resume default rehearsal gate, SPEED_TEST opt-out default, verified source/data/environment identity; streaming notebook, source-upgrade declaration packaging and instructions'),
     'V6/research_lab/p4_source_compat.py':(['日誌'],'source lineage evidence validation and SOURCE_UPGRADE audit; explicit gate/preflight reason categories; no numerical operations'),
@@ -30,15 +30,17 @@ REASONS={
 
 
 # Reviewed candidate AST pins: changing these requires renewed tests and review.
-REVIEWED_AST={'p4_colab.py:launch_with_rehearsal': 'a81f133541a58bc5577960993fa44a01ce713902980c391b82a66031ba94d747',
+REVIEWED_AST={'p4_colab.py:rehearsal_schema': '065011a4c219e8b489351475668c993bcf0f19ca3496e02b6ae8ea3f5cfda752',
+ 'p4_colab.py:validate_rehearsal_schema': 'a8321b934fd5efba2e89858ad52aeeda26804d1545a734b6ef16ee6bd7038ebc',
+ 'p4_colab.py:launch_with_rehearsal': '0b4d2dc7a4576268cc7173eaee0bfcb3defb6c02fd6ce4dab7edb41b8c60d6b7',
  'p4_colab.py:long_window_data': 'a1b26a5fc91fcb4c14b18d2b5ea9f03bba70218c8fe1c858e13239d21244bdf4',
- 'p4_colab.py:permutation_fit': '45753a42be30bcaa6dfa55df71ff6626d95467388fc5ae1137dc0f3803f01cdd',
+ 'p4_colab.py:permutation_fit': 'a20821bc2b78077823404ad239cda30cb3593a5ad4bdacf6eb58160183671db6',
  'p4_colab.py:publish_predictions': '4b40d606f4452f61d25387138485dbb482c89d485da64a46fab87562c202dbd7',
  'p4_colab.py:rehearse': '3d81bc3b7f9a3a892e479af943dccd74a51d49c21a13b358847f2260283e9081',
  'p4_colab.py:train_fit': 'b13f2ebefe99f7a3f662df9d35e08d3dff8026041aad05469eb582a322a883d2',
  'p4_colab.py:validate_fit_outputs': '89294572e3b92f833a1494123e5dcc100af0d450c5c2872da58924595c1eb350',
- 'p4_colab.py:validate_rehearsal_marker': 'a9d345fcccae6285b9a2407675ea0c53dba4b531c738af44f1f70683c56f3e77',
- 'p4_colab.py:validate_rehearsal_result': 'e991ca7d7106ef753ffd998e6898a24f47302c3c3dd18005923ebae38539a3ad',
+ 'p4_colab.py:validate_rehearsal_marker': 'df41d986c4e90f6da0828cb73747801cad67a4e9842de6fbaeecb797d788d113',
+ 'p4_colab.py:validate_rehearsal_result': '5e9b95d09fcef55a3511fb91b64d917ae58be20b6d19de5cf646f2f4a2fcb5e6',
  'p4_eval.py:common_rows': '7e5f6a8fadd5b37686f525dd27b23580d1e447f100b827c9449df903c53afbc3',
  'p4_eval.py:permutation_summary': '29942f8bd148c5cdc71b6b48661b08ff146e080309e20e5b639d5fb2d3444c00'}
 
@@ -129,7 +131,7 @@ def declaration(commit,to_sources,matrix):
     if queue_sha!=QUEUE_SHA:raise ValueError('frozen queue SHA mismatch')
     return dict(version='p4-source-compat-v1',artifact_class='GENERATED',evidence_class='CPU_ENGINEERING_ONLY / COLAB_UNVERIFIED',
                 **{'from':dict(commit=full,sources=before),'to':dict(commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
-                status='UNMERGED / NOT_DEPLOYED; hashes bind working bytes',sources=to_sources)},
+                status='UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED; to.commit is generation-time HEAD; hashes bind working bytes; deliver recomputes declaration after any commit',sources=to_sources)},
                 adoption=dict(required_completed_prefix=36,queues=['Q1','Q2'],validator='resume_fit',retrain=False),
                 differences=changes,invariants=invariants,queue_sha256=queue_sha,matrix=matrix,budget=dict(BUDGET),research_budget=contract['budget'])
 

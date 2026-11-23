@@ -1,3 +1,406 @@
+## P4a 第 13 次複審 REQUIRED＋兩項 MINOR 修補 — 2026-11-24（job-run-mwtn0pir-48e95f）
+
+Completed：修補候選針對 HEAD `40d621cc9ac586e45fff1e095f59465b388094a1` 的 Q5 巢狀 schema 繞過、marker 超大數值／解析錯誤、metadata 符號連結。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；獨立複審原 NO_GO 未解除，本次工程完成不是 Human acceptance。
+
+Changed：沿用既有 runner、source-compat、兩個排練測試檔、Human requirements 第 9 節、本工程報告與四份 knowledge。沒有新 implementation tree、worktree 或 artifact tree；現有 schema／gate 容器可承載本次修補。
+
+Decisions：使用單一 `validate_rehearsal_schema` 遞迴引擎與宣告式 `rehearsal_schema`，統一驗證各階段 result、REHEARSAL.json、完成 metadata、Q5 診斷及成功 marker。封閉必要／允許欄位，拒絕未知欄位；數值明確排除 bool、非有限值及溢位，檢查值域。`excluded_dates` 依實際 producer 定義固定為 ISO 日期字串清單（可空，不接受計數）；`rule` 僅允許既有凍結規則字串。daily permutation 必須為 0…9 整數、date 可解析，permutation mean IC 恰好 R=10，daily 各 permutation 的日期集合一致且不可重複。Q5 schema 參數化 22 欄位／容器 × 8 類值，marker 19 欄位／容器 × 8 類值；合法的空 excluded_dates、bool order_sensitive／passed 保留，其餘不合法替換均拒絕，未以 skip 掩蓋合法例外。
+
+診斷額外發現：真實 Q5 producer 原本傳 `data.date_idx`（整數 session index），使日期輸出為 "260" 等，會被嚴格日期 schema 正確拒絕。因此先新增真路徑 CPU Q5 schema 回歸（RED），再僅將傳入的日期改成同列 `dates.npy`。對照測試逐列比對所有數值、mean IC、std、gap、order_sensitive／rule，與 index 分組完全一致；只有日期表示改正，訓練／模型／RNG／研究門檻不變。不能用接受 index 字串來放寬日期 gate。發布副本亦經共用 schema，再用保留 JSON 型別差異的 hash 比對，補上 `True == 1` 普通 dict equality 的額外落差。
+
+marker 遇 OverflowError／TypeError／RecursionError 與原有 OSError／ValueError 解析失敗時視為無效，顯示期望／實際／下一步，移除後重跑三階段；任何階段失敗都不寫成功 marker／不啟動正式 runner。`REHEARSAL-complete.json`、REHEARSAL.json、獨立 result JSON、成功 marker 與 fit 目錄拒絕符號連結，fit 內 metadata／scores／reference／checkpoint 沿用既有 validator 的父路徑與檔案 link 拒絕規則。成功 marker 仍是觀測快取，不取代正式 completed-fit gate。
+
+來源相容：工具由 `4e56e9d` git objects 與本輪 working bytes 重產既有 GENERATED 宣告；`to.commit` 是當時可得 HEAD `40d621c`，不是聲稱未提交 bytes 已存在該 commit。宣告與 requirements 明載 hashes 綁 working bytes，後續 commit 可不同，deliver 必須重算最終宣告。230 個 source identities 全部重新核對，6 個相對舊來源的差異；AST pins 只限定候選範圍，不取代獨立審查。36 個 Q1／Q2 W60 完成 fit 全部 resume_fit 驗證、保留 bytes／不重訓的採用條件不變；64-fit 佇列 SHA `4dc90ec0ada6c6d34b43c429d359424c502634e502c6856c6774bf138de7ba23`、R=10、研究／runtime／lock／budget 與 protected adapters 不變。
+
+Evidence：先 RED 10 failed／225 deselected（真子程序發布的四種 Q5 繞過、三種 metadata 連結、huge／recursive JSON／symlink marker）；發布型別副本 RED 1 failed／399 deselected；實際 Q5 日期 producer RED 1 failed／16 deselected。最終 focused GREEN 418 passed；最終完整 pytest exit=0，1195 passed／1 skipped／5 warnings，469.90s。三項新 in-memory 變異於最終程式上執行實際 pytest：放寬 object 未知欄位、停用日期解析、允許 bool 當整數，各為 pytest exit=1／DID NOT RAISE，harness 確認預期失敗才 exit=0。僅替換子程序記憶體函式，repo source bytes 未經變異；完整實際輸出下附。
+
+驗證中間失敗如實保留：第一輪 focused 為 1 failed／234 passed（舊單點 mutation 已被新共用 schema 防線攔下）；第二輪為 1 failed／246 passed（日期 mutation 僅改一列，仍被每日支援集合一致性檢查攔下）。已改成同時變異結果／發布副本的共用 schema，日期案例改全部列同一非法日期，精確隔離防線。中途來源相容 focused 已知有舊 mutation failure，為補實際 producer RED 以 Ctrl-C 中止，exit=130，`/tmp/p4-gate3-regression.log` 是未完成／不採用證據；不是最終全套結果。最終程式與測試在全套執行期間凍結。
+
+自查（code-review-and-quality）：正確性 gate 收緊、既有接受條件不降標；介面沿用 CLI／callback／request protocol，沒有新增依賴。schema 在原 runner 中集中取代散落型別檢查；欄位跨支援與 bytes 保留原產物 validator。成本增加為結果及發布副本的 CPU schema／hash traversal，不改 GPU 訓練或重跑正式完成 fits。檔案原已大型，本輪沿用既有 gate owner 且未建立平行訓練／驗證實作。自查不等於獨立複審。
+
+Remaining：真實 fold、CUDA／官方 mixer／W250 RAM 與 GPU 峰值、Colab／T4／Drive FUSE、現場 36 artifacts 與正式接續均 UNVERIFIED；沒有產生新研究結果。Blockers：獨立複審與 Human 現場排練／acceptance 待完成，原 NO_GO 保留。Next recommended action：獨立複審 patch、GENERATED 宣告及測試；通過後由 Human 決定現場排練與最終 deliver，不能用 CPU 證據自行升格可交易或接續 accepted。
+
+Project memory updated：YES（Current_State、Training、Worktree_Register）；Authority map updated：YES（僅工程候選／證據界線）。人工 impact：semantics=YES（schema 與 Q5 日期表示）、authority=NO（沒有研究／production 提升）、subsystem boundary=NO、active runtime=NO、correctness gate=YES、new/superseded canonical artifact=NO（重產既有 GENERATED 候選）、deprecate=NO、major blocker/next decision=YES（第 13 次 NO_GO 待複審）。依規定先正常 tests，再 impact checker、knowledge 更新與 health；GOVERNANCE 規則仍可承載，未改 runtime observed_at／authority-map.json／generated indexes。
+
+Git status：起始 clean detached HEAD `40d621c`，結束保留本任務 unstaged patch，沒有 staged／untracked 或既有 unrelated dirty。明確 no-commit 指令優先，因此不宣稱 worktree clean。Commit：無。Push：無；merge／deploy：無。Worktree：沿用 `/home/frank/projects/MarketMamba/.worktrees/ruflo-workers/run-mwtn0pir-48e95f/builder_p4a_gate3`，未建立／移除 worktree，dirty 不可移除。
+
+Runtime/environment：WSL-native 本 worktree，`/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python`（只借既有 runtime，沒有混用研究 evidence），Python3.12.3／torch2.15.0+cpu／numpy2.5.4／pytest9.2.0，CUDA=False。`CUDA_VISIBLE_DEVICES=''`、OMP／MKL threads=1、PYTHONDONTWRITEBYTECODE=1，既有離線 `/tmp/p4-notebook-deps` 提供 nbformat，無安裝／網路。MARKETMAMBA_DATA_ROOT unset；Data 是本 worktree 的普通目錄（realpath 同路徑），未使用正式資料。來源宣告僅唯讀既有上傳副本 DATASET_MANIFEST（2183 bytes，SHA `bc6401095260e7d4153060e3106fff8dbae88cfb6df3f349b808b7dd762c7d9f`）。未動 protected V6/models／formal Data；無 GPU／網路／Colab／資料取得／production／scheduler／通知／additional agents／wakeup／recurring jobs／commit／push／merge／部署。
+
+Changed paths：
+
+```text
+V6/research_lab/p4_colab.py
+V6/research_lab/p4_source_compat.py
+V6/research_lab/tests/test_p4_rehearsal.py
+V6/research_lab/tests/test_p4_rehearsal_gate.py
+docs/operations/colab-human-requirements.md
+knowledge/00_Project_Map/Authority_Map.md
+knowledge/00_Project_Map/Current_State.md
+knowledge/00_Project_Map/Worktree_Register.md
+knowledge/01_Domains/Training.md
+reports/v7_p4a_colab_engineering.md
+tasks/p4a-source-compat-20e6b54.json
+```
+
+指定全套測試指令（exit 以實際 log 與工具 completion 確認；未修改 warnings／進度輸出）：
+
+```bash
+CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 \
+PYTHONPATH=/tmp/p4-notebook-deps:V6:V6/research_lab/tests:. \
+/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests tests -q -p no:cacheprovider
+```
+
+Focused GREEN 完整實際輸出：
+
+```text
+........................................................................ [ 17%]
+........................................................................ [ 34%]
+........................................................................ [ 51%]
+........................................................................ [ 68%]
+........................................................................ [ 86%]
+..........................................................               [100%]
+418 passed in 36.39s
+
+```
+
+指定全套 pytest 完整實際輸出：
+
+```text
+........................................................................ [  6%]
+........................................................................ [ 12%]
+........................................................................ [ 18%]
+........................................................................ [ 24%]
+........................................................................ [ 30%]
+........................................................................ [ 36%]
+........................................................................ [ 42%]
+........................................................................ [ 48%]
+........................................................................ [ 54%]
+........................................................................ [ 60%]
+........................................................................ [ 66%]
+........................................................................ [ 72%]
+........................................................................ [ 78%]
+........................................................................ [ 84%]
+........................................................................ [ 90%]
+......................................................s................. [ 96%]
+............................................                             [100%]
+=============================== warnings summary ===============================
+research_lab/tests/test_p4.py::test_zip_inventory_and_payload_gates[duplicate]
+  /usr/lib/python3.12/zipfile/__init__.py:1620: UserWarning: Duplicate name: 'folds/fold_2021/X.npy'
+    return self._open_to_write(zinfo, force_zip64=force_zip64)
+
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+  /tmp/pytest-of-frank/pytest-235/test_mutation_controls_session0/mutant.py:93: Pandas4Warning: Timestamp.dayofweek is deprecated and will be removed in a future version. Use Timestamp.day_of_week instead.
+    sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+1195 passed, 1 skipped, 5 warnings in 469.90s (0:07:49)
+
+```
+
+最終 in-memory object 變異實際輸出：
+
+```text
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___________ test_gate3_q5_closed_schema_and_support[unknown_support] ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-237/test_gate3_q5_closed_schema_an0')
+damage = 'unknown_support'
+
+    @pytest.mark.parametrize('damage',['date_invalid','excluded_invalid','R_count','daily_duplicate','daily_missing','mean_count','unknown_split','unknown_support','unknown_daily','missing_rule','numeric_range'])
+    def test_gate3_q5_closed_schema_and_support(tmp_path,damage):
+        common=['python','--bundle',str(tmp_path/'bundle'),'--data-dir',str(tmp_path/'data')]
+        request=dict(binding={'identity':{'environment':TEST_ENV}},queue='Q5',window=None,arm=None,steps=1,nonce='unique')
+        result=evidence(tmp_path,request,common);split=result['diagnostic']['validation']
+        if damage=='date_invalid':
+            for row in split['daily']:row['date']='2021-02-30'
+        elif damage=='excluded_invalid':split['label_support']['excluded_dates']=['not-a-date']
+        elif damage=='R_count':split['R']=9
+        elif damage=='daily_duplicate':split['daily'].append(dict(split['daily'][0]))
+        elif damage=='daily_missing':split['daily'].pop()
+        elif damage=='mean_count':split['permutation_mean_ic'].pop()
+        elif damage=='unknown_split':split['unknown']=1
+        elif damage=='unknown_support':split['label_support']['unknown']=1
+        elif damage=='unknown_daily':split['daily'][0]['unknown']=1
+        elif damage=='missing_rule':split.pop('rule')
+        else:split['daily'][0]['top50_overlap']=2
+        path=tmp_path/'result.json';p.atomic_json(Path(result['output'])/'REHEARSAL.json',result);p.atomic_json(path,result)
+>       with pytest.raises(ValueError,match='REHEARSAL'):p.validate_rehearsal_result(path,request,common)
+E       Failed: DID NOT RAISE ValueError
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:440: Failed
+=========================== short test summary info ============================
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_gate3_q5_closed_schema_and_support[unknown_support]
+1 failed in 0.67s
+IN_MEMORY gate3-object pytest_exit=1 KILLED=True
+
+```
+
+最終 in-memory date 變異實際輸出：
+
+```text
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____________ test_gate3_q5_closed_schema_and_support[date_invalid] _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-236/test_gate3_q5_closed_schema_an0')
+damage = 'date_invalid'
+
+    @pytest.mark.parametrize('damage',['date_invalid','excluded_invalid','R_count','daily_duplicate','daily_missing','mean_count','unknown_split','unknown_support','unknown_daily','missing_rule','numeric_range'])
+    def test_gate3_q5_closed_schema_and_support(tmp_path,damage):
+        common=['python','--bundle',str(tmp_path/'bundle'),'--data-dir',str(tmp_path/'data')]
+        request=dict(binding={'identity':{'environment':TEST_ENV}},queue='Q5',window=None,arm=None,steps=1,nonce='unique')
+        result=evidence(tmp_path,request,common);split=result['diagnostic']['validation']
+        if damage=='date_invalid':
+            for row in split['daily']:row['date']='2021-02-30'
+        elif damage=='excluded_invalid':split['label_support']['excluded_dates']=['not-a-date']
+        elif damage=='R_count':split['R']=9
+        elif damage=='daily_duplicate':split['daily'].append(dict(split['daily'][0]))
+        elif damage=='daily_missing':split['daily'].pop()
+        elif damage=='mean_count':split['permutation_mean_ic'].pop()
+        elif damage=='unknown_split':split['unknown']=1
+        elif damage=='unknown_support':split['label_support']['unknown']=1
+        elif damage=='unknown_daily':split['daily'][0]['unknown']=1
+        elif damage=='missing_rule':split.pop('rule')
+        else:split['daily'][0]['top50_overlap']=2
+        path=tmp_path/'result.json';p.atomic_json(Path(result['output'])/'REHEARSAL.json',result);p.atomic_json(path,result)
+>       with pytest.raises(ValueError,match='REHEARSAL'):p.validate_rehearsal_result(path,request,common)
+E       Failed: DID NOT RAISE ValueError
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:440: Failed
+=========================== short test summary info ============================
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_gate3_q5_closed_schema_and_support[date_invalid]
+1 failed in 0.70s
+IN_MEMORY gate3-date pytest_exit=1 KILLED=True
+
+```
+
+最終 in-memory bool 變異實際輸出：
+
+```text
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_q5_shared_schema_rejects_each_malformed_field[bool-daily.0.permutation] _
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-238/test_q5_shared_schema_rejects_0')
+path = ('daily', 0, 'permutation'), bad = True
+
+    @pytest.mark.parametrize('path',Q5_PATHS,ids=lambda v:'.'.join(map(str,v)))
+    @pytest.mark.parametrize('bad',BAD_SCHEMA_VALUES,ids=['string','list','dict','null','bool','nan','inf','huge'])
+    def test_q5_shared_schema_rejects_each_malformed_field(tmp_path,path,bad):
+        import copy
+        split=dict(R=10,label_support=dict(input_rows=12,used_rows=10,excluded_nan_rows=2,excluded_dates=['2020-12-31']),
+            daily=[dict(permutation=r,date='2021-01-01',score_spearman=1.,ic=.2,ic_change=0.,top50_overlap=1.) for r in range(10)],
+            permutation_mean_ic=[.2]*10,ic_std=0.,mamba_ic_gap=0.,order_sensitive=False,
+            rule='IC std >= absolute crossstock minus mamba2 IC gap',evidence_class='DESCRIPTIVE_ONLY')
+        changed=copy.deepcopy(split);target=changed
+        for key in path[:-1]:target=target[key]
+        target[path[-1]]=bad
+        # Empty excluded dates and either boolean order_sensitive are valid output values.
+        valid=(path==('label_support','excluded_dates') and bad==[] or path==('order_sensitive',) and type(bad) is bool)
+        if valid:p.validate_rehearsal_schema(changed,p.rehearsal_schema('q5'))
+        else:
+>           with pytest.raises(ValueError):p.validate_rehearsal_schema(changed,p.rehearsal_schema('q5'))
+E           Failed: DID NOT RAISE ValueError
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:377: Failed
+=========================== short test summary info ============================
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_q5_shared_schema_rejects_each_malformed_field[bool-daily.0.permutation]
+1 failed in 1.03s
+IN_MEMORY gate3-bool pytest_exit=1 KILLED=True
+
+```
+
+Syntax／artifact／protected bytes 核對：
+
+```text
+SYNTAX V6/research_lab/p4_colab.py PASS {'bytes': 73594, 'sha256': '6a12a7090d6866de3e7249b63e486bf043d69f38f77c0dfffbebc997ded966f2'}
+SYNTAX V6/research_lab/p4_source_compat.py PASS {'bytes': 17937, 'sha256': 'f086b69181a610a1d50411991863db3aa20845a89c206c7fec4f782c11b77b98'}
+SYNTAX V6/research_lab/tests/test_p4_rehearsal_gate.py PASS {'bytes': 32980, 'sha256': 'c748f2065db5140c054c9539742426f012217cd45924bc1ed71a8bd7644eff8e'}
+SYNTAX V6/research_lab/tests/test_p4_rehearsal.py PASS {'bytes': 9337, 'sha256': '7ce7832a0d22cd7a723abfa8ac008e33e59daa1efbcb6ccda5730a5244b8204d'}
+DECLARATION {'bytes': 184495, 'sha256': '72ff0d32de550eacaa857a8e58138835401af30534e48d4eb8ad6855c1baa11f'} to.commit 40d621cc9ac586e45fff1e095f59465b388094a1 source_files 230 differences 6
+INVARIANTS queue_fits=64 required_completed_prefix=36 R=10 queue_sha256=4dc90ec0ada6c6d34b43c429d359424c502634e502c6856c6774bf138de7ba23
+UNCHANGED V6/research_lab/rolling_seq_scores.py {'bytes': 50048, 'sha256': '5d10d52b1d423c73fa518535f01e80b2760a0d3087036b9b778491d13942aefd'}
+UNCHANGED V6/research_lab/portfolio_eval.py {'bytes': 50314, 'sha256': '3e46e07277c5d13fe6b24608b7e7dc20648e9558be322ad414d2f82a60c4a30c'}
+UNCHANGED tasks/p4a-colab-contract-20261121.json {'bytes': 5649, 'sha256': '7d5813bc21644817ccc991c97049f2c65efe88a9f4c18903b42038337b328c41'}
+UNCHANGED environments/p4a-colab-runtime.json {'bytes': 2350, 'sha256': 'b45380920c48c5548ef8880f63f4a351a3de7ff5d6b9f2abef50ebf87e763194'}
+UNCHANGED environments/p4a-colab.requirements.lock.txt {'bytes': 2659, 'sha256': '2c39a3fb9567d1f9fc8ee83369c7b6c90cd19a8e679e32e4c8a6c1d75c5782c9'}
+PROTECTED V6/models and Data diff=empty
+
+```
+
+Knowledge-impact 實際輸出：
+
+```text
+{
+  "acknowledgment": null,
+  "automatic_updates_performed": false,
+  "changed": [
+    "V6/research_lab/p4_colab.py",
+    "V6/research_lab/p4_source_compat.py",
+    "V6/research_lab/tests/test_p4_rehearsal.py",
+    "V6/research_lab/tests/test_p4_rehearsal_gate.py",
+    "docs/operations/colab-human-requirements.md",
+    "tasks/p4a-source-compat-20e6b54.json"
+  ],
+  "matched_rules": {
+    "V6/research_lab/p4_colab.py": [
+      "DEFAULT"
+    ],
+    "V6/research_lab/p4_source_compat.py": [
+      "DEFAULT"
+    ],
+    "V6/research_lab/tests/test_p4_rehearsal.py": [
+      "DEFAULT"
+    ],
+    "V6/research_lab/tests/test_p4_rehearsal_gate.py": [
+      "DEFAULT"
+    ],
+    "docs/operations/colab-human-requirements.md": [
+      "DEFAULT"
+    ],
+    "tasks/p4a-source-compat-20e6b54.json": [
+      "history-reports-tasks"
+    ]
+  },
+  "potential_knowledge_impact": [
+    {
+      "artifact": "knowledge/02_History/README.md",
+      "rules": [
+        "history-reports-tasks"
+      ],
+      "severity": "NO_KNOWLEDGE_IMPACT"
+    }
+  ],
+  "schema_version": 1,
+  "status": "PASS"
+}
+
+```
+
+Knowledge health 實際輸出：
+
+```text
+KNOWLEDGE HEALTH
+
+Project Map        PASS
+Agent Guides       PASS
+Domains            PASS
+Governance         WARNING
+Authority Drift    WARNING
+Runtime Freshness  PASS
+Generated Index    PASS
+Legacy Docs        WARNING
+
+Overall: WARNING
+
+```
+
+最終 knowledge review：更新後 impact checker 為 WARNING／exit=0，要求人工 review Operations.md 與 GOVERNANCE.md；兩者已閱讀，本輪未改 operational ledger／scheduler／治理分類或規則，現有規則可承載，因此無需修改兩檔。已更新候選邊界與 worktree responsibility。knowledge_health --ci 為 exit=0／Overall WARNING，Governance、Authority Drift、Legacy Docs 警告保留；Project Map／Agent Guides／Domains／Runtime Freshness／Generated Index PASS，無 structural FAIL。不以 acknowledgment 略過任何 FAIL。
+
+最終 diff 的 impact checker 完整輸出：
+
+```text
+{
+  "acknowledgment": null,
+  "automatic_updates_performed": false,
+  "changed": [
+    "V6/research_lab/p4_colab.py",
+    "V6/research_lab/p4_source_compat.py",
+    "V6/research_lab/tests/test_p4_rehearsal.py",
+    "V6/research_lab/tests/test_p4_rehearsal_gate.py",
+    "docs/operations/colab-human-requirements.md",
+    "knowledge/00_Project_Map/Authority_Map.md",
+    "knowledge/00_Project_Map/Current_State.md",
+    "knowledge/00_Project_Map/Worktree_Register.md",
+    "knowledge/01_Domains/Training.md",
+    "reports/v7_p4a_colab_engineering.md",
+    "tasks/p4a-source-compat-20e6b54.json"
+  ],
+  "matched_rules": {
+    "V6/research_lab/p4_colab.py": [
+      "DEFAULT"
+    ],
+    "V6/research_lab/p4_source_compat.py": [
+      "DEFAULT"
+    ],
+    "V6/research_lab/tests/test_p4_rehearsal.py": [
+      "DEFAULT"
+    ],
+    "V6/research_lab/tests/test_p4_rehearsal_gate.py": [
+      "DEFAULT"
+    ],
+    "docs/operations/colab-human-requirements.md": [
+      "DEFAULT"
+    ],
+    "knowledge/00_Project_Map/Authority_Map.md": [
+      "canonical-knowledge"
+    ],
+    "knowledge/00_Project_Map/Current_State.md": [
+      "canonical-knowledge"
+    ],
+    "knowledge/00_Project_Map/Worktree_Register.md": [
+      "worktree-responsibility",
+      "canonical-knowledge"
+    ],
+    "knowledge/01_Domains/Training.md": [
+      "canonical-knowledge"
+    ],
+    "reports/v7_p4a_colab_engineering.md": [
+      "history-reports-tasks"
+    ],
+    "tasks/p4a-source-compat-20e6b54.json": [
+      "history-reports-tasks"
+    ]
+  },
+  "potential_knowledge_impact": [
+    {
+      "artifact": "knowledge/01_Domains/Operations.md",
+      "rules": [
+        "worktree-responsibility"
+      ],
+      "severity": "REVIEW_REQUIRED"
+    },
+    {
+      "artifact": "knowledge/GOVERNANCE.md",
+      "rules": [
+        "canonical-knowledge"
+      ],
+      "severity": "REVIEW_REQUIRED"
+    },
+    {
+      "artifact": "knowledge/00_Project_Map/Authority_Map.md",
+      "rules": [
+        "worktree-responsibility"
+      ],
+      "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+    },
+    {
+      "artifact": "knowledge/00_Project_Map/Current_State.md",
+      "rules": [
+        "worktree-responsibility"
+      ],
+      "severity": "UPDATE_IF_SEMANTIC_CHANGE"
+    },
+    {
+      "artifact": "knowledge/02_History/README.md",
+      "rules": [
+        "history-reports-tasks"
+      ],
+      "severity": "NO_KNOWLEDGE_IMPACT"
+    }
+  ],
+  "schema_version": 1,
+  "status": "WARNING"
+}
+
+```
+
+---
+
 ## P4a 第 12 次複審兩項 REQUIRED 修補 — 2026-11-24（job-run-mwtlq2cv-a82151）
 
 Completed：修補候選針對 `99b4e0e` 的兩項 REQUIRED；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。本次完成不等於 Human acceptance，也不解除原 NO_GO。範圍沿用既有 runner／bundle／tests／source-compat／文件與 knowledge，沒有新增代理、worktree 或 artifact tree。

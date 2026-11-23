@@ -1,3 +1,13 @@
+## P4a 第 13 次複審 REQUIRED＋兩項 MINOR 修補候選 — 2026-11-24
+
+`job-run-mwtn0pir-48e95f`／`builder_p4a_gate3`，沿用既有 detached worktree，base/HEAD `40d621cc9ac586e45fff1e095f59465b388094a1`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依明確授權保留未提交 patch。第 13 次獨立複審為 NO_GO；本輪修補 Q5 巢狀 schema、超大數值／遞迴損壞 marker，以及 metadata 符號連結。完成不解除 NO_GO，不等同 Human acceptance。
+
+[runner](../../V6/research_lab/p4_colab.py) 的階段結果、發布 metadata、Q5 診斷與成功 marker 共用單一封閉遞迴 schema；必要／允許欄位、精確型別、數值有限性／值域、ISO 日期、凍結 rule、R=10 與 permutation/date 支援均 fail closed。`excluded_dates` 依 producer 定義為日期字串清單（可空）；布林只在契約的 bool 欄位合法。Q5 producer 原先傳 session index，現在傳同列 `dates.npy` 的日期，合成證據確認分組與數值診斷不變。marker 的 OverflowError／TypeError／RecursionError 與既有解析錯誤視為無效，顯示期望／實際／下一步後移除並重排練。完成、發布、result JSON 與 marker 拒絕符號連結；產物 bytes、請求、來源與正式完成驗證沿用原 gate。
+
+[工具重產宣告](../../tasks/p4a-source-compat-20e6b54.json) 的 `to.commit` 為本輪可得 HEAD `40d621c`，230 個來源 hashes 綁定 working bytes；後續 commit 可不同，deliver 必須以最終 bytes 重算，不可直接採用舊宣告。36 個 Q1／Q2 W60 完成 fit 全部 resume_fit 驗證／保留 bytes／不重訓的條件與 64-fit SHA `4dc90ec0ada6c6d34b43c429d359424c502634e502c6856c6774bf138de7ba23` 不變；研究／環境／預算契約、P3 adapter／portfolio engine 及正式 Data／模型未動。AST pins 僅限定候選範圍，非獨立審查證明。
+
+Evidence：本機 CPU 合成與真子程序發布替身；RED→GREEN、逐欄位型別矩陣、三項新 in-memory mutation、實際完整測試與 artifact identity 見[工程報告](../../reports/v7_p4a_colab_engineering.md)。CUDA／官方 mixer／真實 fold／W250 峰值／Colab／Drive FUSE／現場 36 artifacts 與正式接續仍 UNVERIFIED。Next：獨立複審 patch、宣告與測試，通過後由 Human 決定現場排練及 acceptance。無 GPU／網路／Colab／資料取得／production／scheduler／排程／additional agents／wakeup／recurring jobs／commit／push／merge／deploy，未更新 runtime observed_at。
+
 ## P4a 第 12 次複審兩項 REQUIRED 修補候選 — 2026-11-24
 
 `job-run-mwtlq2cv-a82151`／`builder_p4a_gate2`，沿用既有 detached worktree，base/HEAD `99b4e0e3547868847262aa305cd5fe7100c3c9f5`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依授權保留未提交 patch。第 12 次複審為 NO_GO：排練只憑返回碼放行、有效 JSON 的成功標記可被清空／竄改仍略過。本候選收緊 [runner](../../V6/research_lab/p4_colab.py) 的工程 gate；不解除原 NO_GO，不取代獨立複審與 Human acceptance。

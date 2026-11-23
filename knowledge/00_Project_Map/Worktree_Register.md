@@ -1,5 +1,11 @@
 # Worktree Register
 
+## P4a 第 13 次複審 schema／metadata builder — 2026-11-24
+
+- Purpose/task：Q5 完整巢狀 schema、marker 溢位／解析失敗重排練與 metadata symlink 防護；owner Human/Codex builder，job-run-mwtn0pir-48e95f。沿用 `.worktrees/ruflo-workers/run-mwtn0pir-48e95f/builder_p4a_gate3`，detached HEAD/base `40d621cc9ac586e45fff1e095f59465b388094a1`；created 2026-11-24（本輪接手，非宣稱新建），retired N/A。起始 clean；依 no-commit 指示保留本任務 dirty patch，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。
+- Authority：Human EXECUTE_APPROVED bounded task；沿用既有 runner／tests／source-compat／requirements／工程報告與 knowledge，未建立新實作樹或 worktree。不改 frozen research／environment／budget、36-fit 採用與64-fit SHA；未動 rolling_seq_scores／portfolio_eval／Data／V6/models。無 GPU／網路／Colab／production／scheduler／additional agents／wakeup／recurring jobs／commit／push／merge／deploy。
+- Merge/artifact dependency：獨立複審與 Human 現場排練／acceptance 待完成；GENERATED 宣告綁定 working bytes，後續 deliver 重算；CPU logs／合成資料／in-memory mutations 在 `/tmp/p4-gate3-*`／pytest 獨立暫存目錄，完整輸出收入[工程報告](../../reports/v7_p4a_colab_engineering.md)。Safe-removal preconditions：先保存未提交 patch／必要證據、處理引用並完成 retirement review；目前 dirty 不可移除，其他 worktrees 不動。
+
 ## P4a 正式前自動排練閘門 builder — 2026-11-24
 
 - Purpose/task：notebook 正式前 Q3 W120／W250 mamba2＋Q5 自動排練閘門、W≠60 前置檢查與來源相容證據；owner Human/Codex builder，job-run-mwtk8k4r-a80ee8。沿用 `.worktrees/ruflo-workers/run-mwtk8k4r-a80ee8/builder_p4a_gate`，detached HEAD/base `bf0114dad9dc2d9bef7502c21d6fd36737eb0458`，created 2026-11-24、retired N/A。起始 clean；依 no-commit 指示保留 dirty patch，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。

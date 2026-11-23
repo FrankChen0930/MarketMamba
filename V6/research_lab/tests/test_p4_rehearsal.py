@@ -63,7 +63,12 @@ def test_rehearsal_full_cpu(tmp_path,monkeypatch,queue,window,arm):
         assert saved['evidence_class']==result['evidence_class']
         assert {'attempt-active/scores.parquet','attempt-active/reference.parquet','attempt-active/best.pt'}<=saved['outputs'].keys()
         assert all(p.digest(out/fit/name)==ident for name,ident in saved['outputs'].items())
-    if queue=='Q5':assert result['diagnostic']['evaluation']['label_support']['excluded_nan_rows']==100
+    if queue=='Q5':
+        assert result['diagnostic']['evaluation']['label_support']['excluded_nan_rows']==100
+        for split in result['diagnostic'].values():
+            p.validate_rehearsal_schema(split,p.rehearsal_schema('q5'))
+        dates=set(np.load(tmp_path/'matrix/dates.npy').astype(str))
+        assert all(row['date'] in dates for split in result['diagnostic'].values() for row in split['daily'])
     assert before=={str(f):p.digest(f) for f in (tmp_path/'matrix').iterdir() if f.is_file()}
     import shutil
     shutil.rmtree(out)
