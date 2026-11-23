@@ -1,3 +1,502 @@
+## P4a 第 12 次複審兩項 REQUIRED 修補 — 2026-11-24（job-run-mwtlq2cv-a82151）
+
+Completed：修補候選針對 `99b4e0e` 的兩項 REQUIRED；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。本次完成不等於 Human acceptance，也不解除原 NO_GO。範圍沿用既有 runner／bundle／tests／source-compat／文件與 knowledge，沒有新增代理、worktree 或 artifact tree。
+
+Changed paths（11 個既有檔案）：
+
+```text
+V6/research_lab/p4_bundle.py
+V6/research_lab/p4_colab.py
+V6/research_lab/p4_source_compat.py
+V6/research_lab/tests/test_p4_rehearsal_gate.py
+docs/operations/colab-human-requirements.md
+docs/operations/colab-p4.md
+knowledge/00_Project_Map/Current_State.md
+knowledge/00_Project_Map/Authority_Map.md
+knowledge/01_Domains/Training.md
+reports/v7_p4a_colab_engineering.md
+tasks/p4a-source-compat-20e6b54.json
+```
+
+Changed：`p4_colab.py` 新增 gate-owned result validator、完整 marker validator；`rehearse` 的結果新增 window／arm／steps，CLI 以環境中的獨立 request/result 路徑發布 gate 結果。每次請求含 run command／source／prepared data／environment binding 與 nonce，排練 fit 契約增加 rehearsal_binding，確保本次產物 identity；CLI 重新觀測 bundle／prepared data／environment，不能只複製請求中的期望值。gate 核對結果 schema、selection、Q3=1／Q5=2 fits、Q5 validation＋evaluation 診斷、來源／reference／matrix 身分，再自行呼叫既有 completed-output validator 驗 scores／reference／checkpoint／complete。返回碼 0、空 stdout 或吞例外均不構成成功。
+
+Decisions：成功 marker 使用完整欄位白名單、恰好三階段、逐階段 identity／耗時／REHEARSAL evidence／fit 數、內容 digest；schema 或型別不符、未知欄位、stages=[]、TAMPERED 或 digest 錯誤一律重排練。Python `True == 1` 的巢狀 identity 陷阱另有 RED/GREEN，內容比對保留 JSON 型別差異。digest 是誤改檢查，非惡意認證。成功後僅寫 Drive progress 觀測 marker；重連時不要求 `/tmp` 仍存在，正式 completed-fit gate 不承認此 marker。FORMAL／resume 預設開啟、SPEED_TEST 預設關閉與明設 False 行為保留。
+
+來源相容宣告由 `python -m research_lab.p4_source_compat` 從 `4e56e9d`、git objects、當前工作 bytes 及唯讀既有 DATASET_MANIFEST 重產，再複製回既有 GENERATED 檔。原 `to.commit=bf0114d` 是上一輪產生時的 HEAD；本輪改為當前 `99b4e0e3547868847262aa305cd5fe7100c3c9f5`，與實際 HEAD 相符，sources hashes 綁定 dirty 工作 bytes，並未把 patch 冒充為該 commit 內已保存的內容。AST pins 更新僅為候選範圍限制，仍需獨立複審。36 個 Q1／Q2 W60 completed fits 必須全部原地 resume_fit 驗證、保留 bytes／不重訓；64-fit compact SHA `4dc90ec0ada6c6d34b43c429d359424c502634e502c6856c6774bf138de7ba23` 不變。
+
+Evidence：新測試使用真子程序透過產生 notebook 的 stream_training 執行空輸出、吞例外 returncode=0 與完整但 selection 不符的結果；成功替身亦透過真子程序發布 JSON。測試 fixture 為 CPU 合成 publications，CUDA／official 欄位只是驗證器輸入替身，絕非現場 CUDA 證據。gate 實際重驗 completed-output，包含缺 scores／reference／complete、錯 fit identity／request／source／environment、fit 數錯誤及 Q5 缺 validation／evaluation。marker 覆蓋缺／空／型別／unknown／digest／階段與 evidence_class 竄改，保留原有失敗、中斷、identity invalidation、W60 權重／預測／RNG 位元與 36 完成 fit 採用測試。CLI 協定測試證明 context 是實際重新觀測，非直接抄 expected identity。
+
+RED 實際為 6 failed（舊閘門放行三種零返回碼問題及三種有效 JSON marker 竄改）；巢狀 numeric identity 另為 1 failed。GREEN focused 最終 49 passed；最終全套 **843 passed／1 skipped／5 warnings，470.34s，exit=0**；來源相容／排練回歸 96 passed（最終型別補強前，最終完整回歸另列）。三項新 in-memory mutation 分別移除 selection、completed-output、request/context identity gate，對相應 pytest 各得到 exit=1 的 DID NOT RAISE；不是 import／collection 失敗。初次 identity mutation 用不具合法 environment 的 context=[] 作案例，其他 environment check 仍擋住，得到 exit=0；改用獨立 request mismatch 準確隔離該檢查後得到 exit=1。所有變異只存在子程序記憶體，repo bytes 未被變異。
+
+驗證流程限制與更正：第一輪完整回歸在 numeric identity 型別補強時仍在執行，因執行中 source／AST pins／inspect 行號改變，輸出 `31 failed, 810 passed, 1 skipped, 5 warnings in 341.26s (0:05:41)`，不作最終證據。實際失敗包含 `executed source differs from bundle`、`unreviewed implementation semantics changed: p4_colab.py:validate_rehearsal_marker` 及 inspect.getsource 指到已移動函式；這是本輪驗證排程造成的失效。已停止修改 implementation／tests，完成宣告重產後，另起最終完整回歸（下附其完整實際輸出），不以先前 focused 取代。原始失效 log 保留 `/tmp/p4-gate2-full.log`。
+
+自查（code-review-and-quality）：correctness gate 收緊，沒有改研究 threshold／正式 fit validator；介面沿用現有 CLI 與 callback、環境參數只傳排練子程序，不傳正式 runner；未新增依賴。成本增加為每階段重新讀取並驗證排練 publications／checkpoint，未重訓正式 36 fits，未推估 GPU 全量耗時。舊 marker policy v1 會失效，需重排練，屬預期安全收緊。
+
+Remaining／Blockers：CUDA／官方 mixer、真實 fold、W250 windows RAM／GPU 峰值、T4／Colab／Drive FUSE 持久性、現場 36 artifacts 與正式接續皆 UNVERIFIED。獨立複審與 Human acceptance 未完成。1 step 不省略完整驗證／推論，CPU fixture 耗時不能推估 T4。TEMPORARY request／result／排練 artifacts 均位於 `/tmp`，沒有寫正式帳本／Data／V6/models。未變更 runtime observed_at。
+
+Next recommended action：獨立複審此 patch、工具宣告與測試，通過後另依 Human 決定現場驗證與交付；原 NO_GO 保留。
+
+Project memory updated：YES，Current_State 與 Training 同一 change 更新；knowledge-impact 初次 PASS／DEFAULT，knowledge 文件更新後為 WARNING（GOVERNANCE.md REVIEW_REQUIRED）；人工已檢視治理分類、artifact authority 與 runtime 邊界，現有 Governance 規則可承載、不需改其規則。工具不取代人工判斷，本次工程 semantics／correctness gate／next decision 改變，因此更新 canonical knowledge。Authority map updated：YES，僅記錄候選與證據界線，不 supersede production／研究／runtime authority。
+
+Git status：起始 clean、detached HEAD `99b4e0e`；保留本任務 dirty patch，無 staged 或既有 unrelated dirty。Commit：無（明確禁止）。Push：無；merge／deploy：無。Worktree：沿用 `/home/frank/projects/MarketMamba/.worktrees/ruflo-workers/run-mwtlq2cv-a82151/builder_p4a_gate2`，未建立／移除其他 worktree。
+
+Runtime/environment：WSL-native 本工作樹；既有 `/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python`（只借 runtime，不借研究 evidence），Python 3.12.3／torch 2.15.0+cpu／numpy 2.5.4／pytest 9.2.0，CUDA_VISIBLE_DEVICES=''、OMP／MKL threads=1、PYTHONDONTWRITEBYTECODE=1；`/tmp/p4-notebook-deps` 為既有離線 nbformat，無安裝／網路。MARKETMAMBA_DATA_ROOT unset；Data realpath 是本工作樹 Data 普通目錄（非此任務資料來源）。正式 DATASET_MANIFEST 僅唯讀其既有上傳副本 2183 bytes／bc6401095260e7d4153060e3106fff8dbae88cfb6df3f349b808b7dd762c7d9f。無 GPU／網路／Colab／資料取得／production／scheduler／notification／additional agents／wakeup／recurring jobs。
+
+驗證指令（所有 pytest 同一環境；log 為 TEMPORARY）：
+
+```bash
+CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 \
+PYTHONPATH=/tmp/p4-notebook-deps:V6:V6/research_lab/tests:. \
+/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests tests -q -p no:cacheprovider
+```
+
+下列保留本輪 RED／GREEN／三項變異與 identity 實際完整輸出；最終全套及 knowledge 檢查輸出在同節後段補入。
+
+最初 RED，exit=1：
+
+```text
+FFFFFF                                                                   [100%]
+=================================== FAILURES ===================================
+___________ test_real_subprocess_zero_exit_requires_evidence[empty] ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-202/test_real_subprocess_zero_exit0')
+behavior = 'empty'
+
+    @pytest.mark.parametrize('behavior',['empty','swallowed','mismatch'])
+    def test_real_subprocess_zero_exit_requires_evidence(tmp_path,behavior):
+        import ast,sys
+        cell=next(c['source'] for c in b.colab_notebook()['cells'] if 'def stream_training' in c['source'])
+        function=next(n for n in ast.parse(cell).body if isinstance(n,ast.FunctionDef) and n.name=='stream_training')
+        ns=dict(subprocess=subprocess)
+        exec(compile(ast.Module(body=[function],type_ignores=[]),'notebook-stream','exec'),ns)
+        seen=[]
+        scripts={'empty':'pass','swallowed':'try:\n raise RuntimeError("lost")\nexcept Exception:\n pass',
+                 'mismatch':'import os,json; from pathlib import Path; p=os.environ.get("P4_REHEARSAL_RESULT"); p and Path(p).write_text(json.dumps({"queue":"Q4"}))'}
+        def stream(command,env):
+            seen.append(command)
+            ns['stream_training']([sys.executable,'-c',scripts[behavior]],env)
+        common=[sys.executable,'-m','research_lab.p4_colab','--bundle','bundle','--data-dir','local','--drive-root','budget']
+>       with pytest.raises((ValueError,OSError),match='rehearsal|REHEARSAL|排練'):
+E       Failed: DID NOT RAISE any of (ValueError, OSError)
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:180: Failed
+----------------------------- Captured stdout call -----------------------------
+排練通過（不是研究結果）；各步耗時： [{'stage': 'Q3 W120 mamba2', 'seconds': 0.01113546101259999}, {'stage': 'Q3 W250 mamba2', 'seconds': 0.01050966398906894}, {'stage': 'Q5（兩個 prerequisite fits）', 'seconds': 0.011558483995031565}]
+_________ test_real_subprocess_zero_exit_requires_evidence[swallowed] __________
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-202/test_real_subprocess_zero_exit1')
+behavior = 'swallowed'
+
+    @pytest.mark.parametrize('behavior',['empty','swallowed','mismatch'])
+    def test_real_subprocess_zero_exit_requires_evidence(tmp_path,behavior):
+        import ast,sys
+        cell=next(c['source'] for c in b.colab_notebook()['cells'] if 'def stream_training' in c['source'])
+        function=next(n for n in ast.parse(cell).body if isinstance(n,ast.FunctionDef) and n.name=='stream_training')
+        ns=dict(subprocess=subprocess)
+        exec(compile(ast.Module(body=[function],type_ignores=[]),'notebook-stream','exec'),ns)
+        seen=[]
+        scripts={'empty':'pass','swallowed':'try:\n raise RuntimeError("lost")\nexcept Exception:\n pass',
+                 'mismatch':'import os,json; from pathlib import Path; p=os.environ.get("P4_REHEARSAL_RESULT"); p and Path(p).write_text(json.dumps({"queue":"Q4"}))'}
+        def stream(command,env):
+            seen.append(command)
+            ns['stream_training']([sys.executable,'-c',scripts[behavior]],env)
+        common=[sys.executable,'-m','research_lab.p4_colab','--bundle','bundle','--data-dir','local','--drive-root','budget']
+>       with pytest.raises((ValueError,OSError),match='rehearsal|REHEARSAL|排練'):
+E       Failed: DID NOT RAISE any of (ValueError, OSError)
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:180: Failed
+----------------------------- Captured stdout call -----------------------------
+排練通過（不是研究結果）；各步耗時： [{'stage': 'Q3 W120 mamba2', 'seconds': 0.010802514007082209}, {'stage': 'Q3 W250 mamba2', 'seconds': 0.010469903005287051}, {'stage': 'Q5（兩個 prerequisite fits）', 'seconds': 0.009544733999064192}]
+__________ test_real_subprocess_zero_exit_requires_evidence[mismatch] __________
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-202/test_real_subprocess_zero_exit2')
+behavior = 'mismatch'
+
+    @pytest.mark.parametrize('behavior',['empty','swallowed','mismatch'])
+    def test_real_subprocess_zero_exit_requires_evidence(tmp_path,behavior):
+        import ast,sys
+        cell=next(c['source'] for c in b.colab_notebook()['cells'] if 'def stream_training' in c['source'])
+        function=next(n for n in ast.parse(cell).body if isinstance(n,ast.FunctionDef) and n.name=='stream_training')
+        ns=dict(subprocess=subprocess)
+        exec(compile(ast.Module(body=[function],type_ignores=[]),'notebook-stream','exec'),ns)
+        seen=[]
+        scripts={'empty':'pass','swallowed':'try:\n raise RuntimeError("lost")\nexcept Exception:\n pass',
+                 'mismatch':'import os,json; from pathlib import Path; p=os.environ.get("P4_REHEARSAL_RESULT"); p and Path(p).write_text(json.dumps({"queue":"Q4"}))'}
+        def stream(command,env):
+            seen.append(command)
+            ns['stream_training']([sys.executable,'-c',scripts[behavior]],env)
+        common=[sys.executable,'-m','research_lab.p4_colab','--bundle','bundle','--data-dir','local','--drive-root','budget']
+>       with pytest.raises((ValueError,OSError),match='rehearsal|REHEARSAL|排練'):
+E       Failed: DID NOT RAISE any of (ValueError, OSError)
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:180: Failed
+----------------------------- Captured stdout call -----------------------------
+排練通過（不是研究結果）；各步耗時： [{'stage': 'Q3 W120 mamba2', 'seconds': 0.029433468997012824}, {'stage': 'Q3 W250 mamba2', 'seconds': 0.026129307021619752}, {'stage': 'Q5（兩個 prerequisite fits）', 'seconds': 0.024855822004610673}]
+_____________ test_valid_json_marker_tamper_reruns[stages-value0] ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-202/test_valid_json_marker_tamper_0')
+field = 'stages', value = []
+
+    @pytest.mark.parametrize('field,value',[('stages',[]),('evidence_class','TAMPERED'),('unknown',True)])
+    def test_valid_json_marker_tamper_reruns(tmp_path,field,value):
+        launch(tmp_path)
+        marker=tmp_path/'rehearsal_passed.json';saved=json.loads(marker.read_text());saved[field]=value
+        marker.write_text(json.dumps(saved))
+>       assert len(launch(tmp_path))==4
+E       AssertionError: assert 1 == 4
+E        +  where 1 = len([['python', '-m', 'research_lab.p4_colab', '--bundle', 'bundle', '--data-dir', ...]])
+E        +    where [['python', '-m', 'research_lab.p4_colab', '--bundle', 'bundle', '--data-dir', ...]] = launch(PosixPath('/tmp/pytest-of-frank/pytest-202/test_valid_json_marker_tamper_0'))
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:191: AssertionError
+----------------------------- Captured stdout call -----------------------------
+排練通過（不是研究結果）；各步耗時： [{'stage': 'Q3 W120 mamba2', 'seconds': 7.519847713410854e-07}, {'stage': 'Q3 W250 mamba2', 'seconds': 4.379835445433855e-07}, {'stage': 'Q5（兩個 prerequisite fits）', 'seconds': 2.00001522898674e-07}]
+排練通過（不是研究結果）：同一 run/source/data/environment，略過；各步耗時： []
+________ test_valid_json_marker_tamper_reruns[evidence_class-TAMPERED] _________
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-202/test_valid_json_marker_tamper_1')
+field = 'evidence_class', value = 'TAMPERED'
+
+    @pytest.mark.parametrize('field,value',[('stages',[]),('evidence_class','TAMPERED'),('unknown',True)])
+    def test_valid_json_marker_tamper_reruns(tmp_path,field,value):
+        launch(tmp_path)
+        marker=tmp_path/'rehearsal_passed.json';saved=json.loads(marker.read_text());saved[field]=value
+        marker.write_text(json.dumps(saved))
+>       assert len(launch(tmp_path))==4
+E       AssertionError: assert 1 == 4
+E        +  where 1 = len([['python', '-m', 'research_lab.p4_colab', '--bundle', 'bundle', '--data-dir', ...]])
+E        +    where [['python', '-m', 'research_lab.p4_colab', '--bundle', 'bundle', '--data-dir', ...]] = launch(PosixPath('/tmp/pytest-of-frank/pytest-202/test_valid_json_marker_tamper_1'))
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:191: AssertionError
+----------------------------- Captured stdout call -----------------------------
+排練通過（不是研究結果）；各步耗時： [{'stage': 'Q3 W120 mamba2', 'seconds': 5.490146577358246e-07}, {'stage': 'Q3 W250 mamba2', 'seconds': 2.680171746760607e-07}, {'stage': 'Q5（兩個 prerequisite fits）', 'seconds': 1.3899989426136017e-07}]
+排練通過（不是研究結果）：同一 run/source/data/environment，略過；各步耗時： [{'stage': 'Q3 W120 mamba2', 'seconds': 5.490146577358246e-07}, {'stage': 'Q3 W250 mamba2', 'seconds': 2.680171746760607e-07}, {'stage': 'Q5（兩個 prerequisite fits）', 'seconds': 1.3899989426136017e-07}]
+______________ test_valid_json_marker_tamper_reruns[unknown-True] ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-202/test_valid_json_marker_tamper_2')
+field = 'unknown', value = True
+
+    @pytest.mark.parametrize('field,value',[('stages',[]),('evidence_class','TAMPERED'),('unknown',True)])
+    def test_valid_json_marker_tamper_reruns(tmp_path,field,value):
+        launch(tmp_path)
+        marker=tmp_path/'rehearsal_passed.json';saved=json.loads(marker.read_text());saved[field]=value
+        marker.write_text(json.dumps(saved))
+>       assert len(launch(tmp_path))==4
+E       AssertionError: assert 1 == 4
+E        +  where 1 = len([['python', '-m', 'research_lab.p4_colab', '--bundle', 'bundle', '--data-dir', ...]])
+E        +    where [['python', '-m', 'research_lab.p4_colab', '--bundle', 'bundle', '--data-dir', ...]] = launch(PosixPath('/tmp/pytest-of-frank/pytest-202/test_valid_json_marker_tamper_2'))
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:191: AssertionError
+----------------------------- Captured stdout call -----------------------------
+排練通過（不是研究結果）；各步耗時： [{'stage': 'Q3 W120 mamba2', 'seconds': 5.259935278445482e-07}, {'stage': 'Q3 W250 mamba2', 'seconds': 3.200257197022438e-07}, {'stage': 'Q5（兩個 prerequisite fits）', 'seconds': 1.5899422578513622e-07}]
+排練通過（不是研究結果）：同一 run/source/data/environment，略過；各步耗時： [{'stage': 'Q3 W120 mamba2', 'seconds': 5.259935278445482e-07}, {'stage': 'Q3 W250 mamba2', 'seconds': 3.200257197022438e-07}, {'stage': 'Q5（兩個 prerequisite fits）', 'seconds': 1.5899422578513622e-07}]
+=========================== short test summary info ============================
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_real_subprocess_zero_exit_requires_evidence[empty]
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_real_subprocess_zero_exit_requires_evidence[swallowed]
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_real_subprocess_zero_exit_requires_evidence[mismatch]
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_valid_json_marker_tamper_reruns[stages-value0]
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_valid_json_marker_tamper_reruns[evidence_class-TAMPERED]
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_valid_json_marker_tamper_reruns[unknown-True]
+6 failed, 12 deselected in 2.19s
+```
+
+numeric identity RED，exit=1：
+
+```text
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___________ test_marker_rejects_nested_identity_numeric_type_change ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-213/test_marker_rejects_nested_ide0')
+
+    def test_marker_rejects_nested_identity_numeric_type_change(tmp_path):
+        identity=dict(source={'bytes':1,'sha256':'a'*64})
+        launch(tmp_path,identity=identity)
+        path=tmp_path/'rehearsal_passed.json';saved=json.loads(path.read_text())
+        saved['identity']['identity']['source']['bytes']=True
+        for stage in saved['stages']:stage['identity']['binding']['identity']['source']['bytes']=True
+        saved['digest']=p.hashed({k:v for k,v in saved.items() if k!='digest'})
+        binding=json.loads(path.read_text())['identity']
+>       assert not p.validate_rehearsal_marker(saved,binding)
+E       AssertionError: assert not True
+E        +  where True = <function validate_rehearsal_marker at 0x7adc107ecd60>({'identity': {'identity': {'source': {'bytes': True, 'sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...': None, 'arm': None, ...}, 'evidence_class': 'REHEARSAL / 不是研究結果', ...}], 'evidence_class': 'REHEARSAL / 不是研究結果', ...}, {'identity': {'source': {'bytes': 1, 'sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'}, 'e...213/test_marker_rejects_nested_ide0/bundle', '--data-dir', ...], 'policy': 'Q3-W120-mamba2/Q3-W250-mamba2/Q5-1step-v2'})
+E        +    where <function validate_rehearsal_marker at 0x7adc107ecd60> = p.validate_rehearsal_marker
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:344: AssertionError
+----------------------------- Captured stdout call -----------------------------
+排練通過（不是研究結果）；各步耗時： [{'stage': 'Q3 W120 mamba2', 'seconds': 0.32597594999242574, 'identity': {'binding': {'identity': {'source': {'bytes': 1, 'sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'}, 'environment': {'python': 'test', 'packages': {'torch': 'test', 'numpy': 'test'}, 'tag': 'c'}}, 'command': ['python', '-m', 'research_lab.p4_colab', '--bundle', '/tmp/pytest-of-frank/pytest-213/test_marker_rejects_nested_ide0/bundle', '--data-dir', '/tmp/pytest-of-frank/pytest-213/test_marker_rejects_nested_ide0/local', '--drive-root', 'budget'], 'policy': 'Q3-W120-mamba2/Q3-W250-mamba2/Q5-1step-v2'}, 'queue': 'Q3', 'window': 120, 'arm': 'mamba2', 'steps': 1, 'result': {'bytes': 1905, 'sha256': '6800b454d96ed1b59dfce18c8216cb38957c90733b4219a49194e36457c4ab10'}}, 'evidence_class': 'REHEARSAL / 不是研究結果', 'fit_count': 1}, {'stage': 'Q3 W250 mamba2', 'seconds': 0.08883707100176252, 'identity': {'binding': {'identity': {'source': {'bytes': 1, 'sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'}, 'environment': {'python': 'test', 'packages': {'torch': 'test', 'numpy': 'test'}, 'tag': 'c'}}, 'command': ['python', '-m', 'research_lab.p4_colab', '--bundle', '/tmp/pytest-of-frank/pytest-213/test_marker_rejects_nested_ide0/bundle', '--data-dir', '/tmp/pytest-of-frank/pytest-213/test_marker_rejects_nested_ide0/local', '--drive-root', 'budget'], 'policy': 'Q3-W120-mamba2/Q3-W250-mamba2/Q5-1step-v2'}, 'queue': 'Q3', 'window': 250, 'arm': 'mamba2', 'steps': 1, 'result': {'bytes': 1905, 'sha256': 'e1078e938053779a5ffde342905fb53c8c56aaac218d5f4751146330383f3a1a'}}, 'evidence_class': 'REHEARSAL / 不是研究結果', 'fit_count': 1}, {'stage': 'Q5（兩個 prerequisite fits）', 'seconds': 0.16328842999064364, 'identity': {'binding': {'identity': {'source': {'bytes': 1, 'sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'}, 'environment': {'python': 'test', 'packages': {'torch': 'test', 'numpy': 'test'}, 'tag': 'c'}}, 'command': ['python', '-m', 'research_lab.p4_colab', '--bundle', '/tmp/pytest-of-frank/pytest-213/test_marker_rejects_nested_ide0/bundle', '--data-dir', '/tmp/pytest-of-frank/pytest-213/test_marker_rejects_nested_ide0/local', '--drive-root', 'budget'], 'policy': 'Q3-W120-mamba2/Q3-W250-mamba2/Q5-1step-v2'}, 'queue': 'Q5', 'window': None, 'arm': None, 'steps': 1, 'result': {'bytes': 4994, 'sha256': '3983cbb27843e13fa700049e28253a3f11f16b679cbe0db78bc04cd2b4f4534d'}}, 'evidence_class': 'REHEARSAL / 不是研究結果', 'fit_count': 2}]
+=========================== short test summary info ============================
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_marker_rejects_nested_identity_numeric_type_change
+1 failed, 48 deselected in 2.74s
+```
+
+最終 focused，exit=0：
+
+```text
+.................................................                        [100%]
+49 passed in 28.08s
+```
+
+來源相容／排練回歸，exit=0：
+
+```text
+........................................................................ [ 75%]
+........................                                                 [100%]
+96 passed in 205.46s (0:03:25)
+```
+
+IN_MEMORY selection，外層 exit=0／pytest exit=1：
+
+```text
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_________ test_gate_independently_rejects_invalid_publications[window] _________
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-215/test_gate_independently_reject0')
+damage = 'window'
+
+    @pytest.mark.parametrize('damage',['fits','window','arm','queue','steps','inputs','implementation','context','request','environment','class','missing_scores','missing_reference','missing_complete','complete_identity','q5_validation','q5_evaluation'])
+    def test_gate_independently_rejects_invalid_publications(tmp_path,damage):
+        common=['python','--bundle',str(tmp_path/'bundle'),'--data-dir',str(tmp_path/'data')]
+        request=dict(binding={'identity':{'environment':TEST_ENV}},queue='Q5' if damage.startswith('q5') else 'Q3',window=None if damage.startswith('q5') else 120,arm=None if damage.startswith('q5') else 'mamba2',steps=1,nonce='unique')
+        result=evidence(tmp_path,request,common)
+        path=tmp_path/'result.json';root=Path(result['output'])
+        if damage in ('fits','inputs','implementation','context','request','environment'):result[damage]=[]
+        elif damage in ('window','steps'):result[damage]=True
+        elif damage in ('queue','arm'):result[damage]='WRONG'
+        elif damage=='class':result['evidence_class']='TAMPERED'
+        elif damage.startswith('q5'):result['diagnostic'].pop(damage.removeprefix('q5_'))
+        else:
+            fit=root/result['fits'][0]
+            if damage=='complete_identity':
+                saved=json.loads((fit/'REHEARSAL-complete.json').read_text());saved['contract']['rehearsal_binding']='stale';p.atomic_json(fit/'REHEARSAL-complete.json',saved)
+            elif damage=='missing_complete':(fit/'REHEARSAL-complete.json').unlink()
+            else:(fit/'attempt-active'/('scores.parquet' if damage=='missing_scores' else 'reference.parquet')).unlink()
+        p.atomic_json(root/'REHEARSAL.json',result);p.atomic_json(path,result)
+>       with pytest.raises(ValueError,match='REHEARSAL'):p.validate_rehearsal_result(path,request,common)
+E       Failed: DID NOT RAISE ValueError
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:270: Failed
+=========================== short test summary info ============================
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_gate_independently_rejects_invalid_publications[window]
+1 failed in 0.94s
+IN_MEMORY selection pytest_exit= 1 KILLED= True
+```
+
+IN_MEMORY artifacts，外層 exit=0／pytest exit=1：
+
+```text
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_____ test_gate_independently_rejects_invalid_publications[missing_scores] _____
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-217/test_gate_independently_reject0')
+damage = 'missing_scores'
+
+    @pytest.mark.parametrize('damage',['fits','window','arm','queue','steps','inputs','implementation','context','request','environment','class','missing_scores','missing_reference','missing_complete','complete_identity','q5_validation','q5_evaluation'])
+    def test_gate_independently_rejects_invalid_publications(tmp_path,damage):
+        common=['python','--bundle',str(tmp_path/'bundle'),'--data-dir',str(tmp_path/'data')]
+        request=dict(binding={'identity':{'environment':TEST_ENV}},queue='Q5' if damage.startswith('q5') else 'Q3',window=None if damage.startswith('q5') else 120,arm=None if damage.startswith('q5') else 'mamba2',steps=1,nonce='unique')
+        result=evidence(tmp_path,request,common)
+        path=tmp_path/'result.json';root=Path(result['output'])
+        if damage in ('fits','inputs','implementation','context','request','environment'):result[damage]=[]
+        elif damage in ('window','steps'):result[damage]=True
+        elif damage in ('queue','arm'):result[damage]='WRONG'
+        elif damage=='class':result['evidence_class']='TAMPERED'
+        elif damage.startswith('q5'):result['diagnostic'].pop(damage.removeprefix('q5_'))
+        else:
+            fit=root/result['fits'][0]
+            if damage=='complete_identity':
+                saved=json.loads((fit/'REHEARSAL-complete.json').read_text());saved['contract']['rehearsal_binding']='stale';p.atomic_json(fit/'REHEARSAL-complete.json',saved)
+            elif damage=='missing_complete':(fit/'REHEARSAL-complete.json').unlink()
+            else:(fit/'attempt-active'/('scores.parquet' if damage=='missing_scores' else 'reference.parquet')).unlink()
+        p.atomic_json(root/'REHEARSAL.json',result);p.atomic_json(path,result)
+>       with pytest.raises(ValueError,match='REHEARSAL'):p.validate_rehearsal_result(path,request,common)
+E       Failed: DID NOT RAISE ValueError
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:270: Failed
+=========================== short test summary info ============================
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_gate_independently_rejects_invalid_publications[missing_scores]
+1 failed in 0.48s
+IN_MEMORY artifacts pytest_exit= 1 KILLED= True
+```
+
+IN_MEMORY binding，外層 exit=0／pytest exit=1：
+
+```text
+F                                                                        [100%]
+=================================== FAILURES ===================================
+________ test_gate_independently_rejects_invalid_publications[request] _________
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-218/test_gate_independently_reject0')
+damage = 'request'
+
+    @pytest.mark.parametrize('damage',['fits','window','arm','queue','steps','inputs','implementation','context','request','environment','class','missing_scores','missing_reference','missing_complete','complete_identity','q5_validation','q5_evaluation'])
+    def test_gate_independently_rejects_invalid_publications(tmp_path,damage):
+        common=['python','--bundle',str(tmp_path/'bundle'),'--data-dir',str(tmp_path/'data')]
+        request=dict(binding={'identity':{'environment':TEST_ENV}},queue='Q5' if damage.startswith('q5') else 'Q3',window=None if damage.startswith('q5') else 120,arm=None if damage.startswith('q5') else 'mamba2',steps=1,nonce='unique')
+        result=evidence(tmp_path,request,common)
+        path=tmp_path/'result.json';root=Path(result['output'])
+        if damage in ('fits','inputs','implementation','context','request','environment'):result[damage]=[]
+        elif damage in ('window','steps'):result[damage]=True
+        elif damage in ('queue','arm'):result[damage]='WRONG'
+        elif damage=='class':result['evidence_class']='TAMPERED'
+        elif damage.startswith('q5'):result['diagnostic'].pop(damage.removeprefix('q5_'))
+        else:
+            fit=root/result['fits'][0]
+            if damage=='complete_identity':
+                saved=json.loads((fit/'REHEARSAL-complete.json').read_text());saved['contract']['rehearsal_binding']='stale';p.atomic_json(fit/'REHEARSAL-complete.json',saved)
+            elif damage=='missing_complete':(fit/'REHEARSAL-complete.json').unlink()
+            else:(fit/'attempt-active'/('scores.parquet' if damage=='missing_scores' else 'reference.parquet')).unlink()
+        p.atomic_json(root/'REHEARSAL.json',result);p.atomic_json(path,result)
+>       with pytest.raises(ValueError,match='REHEARSAL'):p.validate_rehearsal_result(path,request,common)
+E       Failed: DID NOT RAISE ValueError
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:270: Failed
+=========================== short test summary info ============================
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_gate_independently_rejects_invalid_publications[request]
+1 failed in 0.59s
+IN_MEMORY binding pytest_exit= 1 KILLED= True
+```
+
+syntax／notebook／identity，exit=0：
+
+```text
+syntax: 4 files compiled
+02_formal compiled_cells= 8 nbformat=PASS
+03_formal_resume compiled_cells= 8 nbformat=PASS
+declaration.to.commit= 99b4e0e3547868847262aa305cd5fe7100c3c9f5 sources_identical=True adoption= {'queues': ['Q1', 'Q2'], 'required_completed_prefix': 36, 'retrain': False, 'validator': 'resume_fit'}
+queue fits= 64 SHA256= 4dc90ec0ada6c6d34b43c429d359424c502634e502c6856c6774bf138de7ba23
+rolling_seq_scores.py bytes_equal(e4f21c3)=True SHA256= 5d10d52b1d423c73fa518535f01e80b2760a0d3087036b9b778491d13942aefd
+portfolio_eval.py bytes_equal(e4f21c3)=True SHA256= 3e46e07277c5d13fe6b24608b7e7dc20648e9558be322ad414d2f82a60c4a30c
+declaration identity= {'bytes': 181696, 'sha256': '51492e81b2466f69cbfc8252de6d8fcd5c908312643f03653210eb66b1a08bfc'}
+runtime= {'python': '3.12.3', 'torch': '2.15.0+cpu', 'numpy': '2.5.4', 'pytest': '9.2.0', 'cuda_available': False}
+```
+
+最終完整回歸（implementation／tests 凍結後重跑，exit=0）：
+
+```text
+........................................................................ [  8%]
+........................................................................ [ 17%]
+........................................................................ [ 25%]
+........................................................................ [ 34%]
+........................................................................ [ 42%]
+........................................................................ [ 51%]
+........................................................................ [ 59%]
+........................................................................ [ 68%]
+........................................................................ [ 76%]
+........................................................................ [ 85%]
+..............................................................s......... [ 93%]
+....................................................                     [100%]
+=============================== warnings summary ===============================
+research_lab/tests/test_p4.py::test_zip_inventory_and_payload_gates[duplicate]
+  /usr/lib/python3.12/zipfile/__init__.py:1620: UserWarning: Duplicate name: 'folds/fold_2021/X.npy'
+    return self._open_to_write(zinfo, force_zip64=force_zip64)
+
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+  /tmp/pytest-of-frank/pytest-216/test_mutation_controls_session0/mutant.py:93: Pandas4Warning: Timestamp.dayofweek is deprecated and will be removed in a future version. Use Timestamp.day_of_week instead.
+    sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+843 passed, 1 skipped, 5 warnings in 470.34s (0:07:50)
+```
+
+最終 knowledge-impact（exit=0，WARNING 是 review 提醒，不代表自動放行；已在上文記錄人工治理檢視與 canonical updates）：
+
+```json
+{
+  "acknowledgment": null,
+  "automatic_updates_performed": false,
+  "changed": [
+    "V6/research_lab/p4_bundle.py",
+    "V6/research_lab/p4_colab.py",
+    "V6/research_lab/p4_source_compat.py",
+    "V6/research_lab/tests/test_p4_rehearsal_gate.py",
+    "docs/operations/colab-human-requirements.md",
+    "docs/operations/colab-p4.md",
+    "knowledge/00_Project_Map/Authority_Map.md",
+    "knowledge/00_Project_Map/Current_State.md",
+    "knowledge/01_Domains/Training.md",
+    "reports/v7_p4a_colab_engineering.md",
+    "tasks/p4a-source-compat-20e6b54.json"
+  ],
+  "matched_rules": {
+    "V6/research_lab/p4_bundle.py": [
+      "DEFAULT"
+    ],
+    "V6/research_lab/p4_colab.py": [
+      "DEFAULT"
+    ],
+    "V6/research_lab/p4_source_compat.py": [
+      "DEFAULT"
+    ],
+    "V6/research_lab/tests/test_p4_rehearsal_gate.py": [
+      "DEFAULT"
+    ],
+    "docs/operations/colab-human-requirements.md": [
+      "DEFAULT"
+    ],
+    "docs/operations/colab-p4.md": [
+      "DEFAULT"
+    ],
+    "knowledge/00_Project_Map/Authority_Map.md": [
+      "canonical-knowledge"
+    ],
+    "knowledge/00_Project_Map/Current_State.md": [
+      "canonical-knowledge"
+    ],
+    "knowledge/01_Domains/Training.md": [
+      "canonical-knowledge"
+    ],
+    "reports/v7_p4a_colab_engineering.md": [
+      "history-reports-tasks"
+    ],
+    "tasks/p4a-source-compat-20e6b54.json": [
+      "history-reports-tasks"
+    ]
+  },
+  "potential_knowledge_impact": [
+    {
+      "artifact": "knowledge/GOVERNANCE.md",
+      "rules": [
+        "canonical-knowledge"
+      ],
+      "severity": "REVIEW_REQUIRED"
+    },
+    {
+      "artifact": "knowledge/02_History/README.md",
+      "rules": [
+        "history-reports-tasks"
+      ],
+      "severity": "NO_KNOWLEDGE_IMPACT"
+    }
+  ],
+  "schema_version": 1,
+  "status": "WARNING"
+}
+```
+
+最終 knowledge health（--ci exit=0，Overall WARNING，無 structural FAIL；Governance／Authority Drift 的 AUTHORITY_REPIN_CANDIDATE 與既有 legacy README／OVERVIEW／PROJECT claims 警告未在本任務越界處理）：
+
+```text
+KNOWLEDGE HEALTH
+
+Project Map        PASS
+Agent Guides       PASS
+Domains            PASS
+Governance         WARNING
+Authority Drift    WARNING
+Runtime Freshness  PASS
+Generated Index    PASS
+Legacy Docs        WARNING
+
+Overall: WARNING
+```
+
+最終 Git／artifact 檢查：git diff --check 通過；HEAD 保持 99b4e0e，11 tracked paths 修改、0 staged、0 untracked。未 commit，依使用者明令保留 patch，因此工作樹刻意不 clean；沒有其他既有 dirty 變更。宣告 sources 逐檔等於目前 bytes，to.commit 等於 HEAD，36-fit adoption 與 queue SHA 不變，兩 protected scripts 對 e4f21c3 bytes_equal=True。沒有額外 runtime observation 或 Human acceptance。
+
 ## P4a 正式前自動排練閘門 — 2026-11-24（job-run-mwtk8k4r-a80ee8）
 
 Completed：針對 bf0114d 獨立審查 NO_GO 的唯一 REQUIRED，新增 deliver notebook 正式 runner 同格前段的自動排練。此為 UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED 工程候選；完成不等於 Human acceptance，獨立複審與現場驗證尚未完成。

@@ -641,6 +641,95 @@ def long_window_data(directory,year,window,val_dates):
     return data
 
 
+REHEARSAL_EVIDENCE='REHEARSAL / 不是研究結果'
+REHEARSAL_STAGES=(('Q3 W120 mamba2','Q3',120,'mamba2',1),
+                  ('Q3 W250 mamba2','Q3',250,'mamba2',1),
+                  ('Q5（兩個 prerequisite fits）','Q5',None,None,2))
+
+
+def validate_rehearsal_marker(saved,binding):
+    """Strict observational cache schema; unknown keys and bool-as-number fail closed."""
+    if not isinstance(saved,dict) or set(saved)!={'identity','passed','stages','evidence_class','digest'}:return False
+    if saved.get('identity')!=binding or saved.get('passed') is not True or saved.get('evidence_class')!=REHEARSAL_EVIDENCE:return False
+    stages=saved.get('stages')
+    if not isinstance(stages,list) or len(stages)!=3:return False
+    for record,(name,queue,window,arm,count) in zip(stages,REHEARSAL_STAGES):
+        if not isinstance(record,dict) or set(record)!={'stage','seconds','identity','evidence_class','fit_count'}:return False
+        if record['stage']!=name or record['evidence_class']!=REHEARSAL_EVIDENCE or type(record['fit_count']) is not int or record['fit_count']!=count:return False
+        if type(record['seconds']) not in (int,float) or not math.isfinite(record['seconds']) or record['seconds']<0:return False
+        ident=record['identity']
+        if not isinstance(ident,dict) or set(ident)!={'binding','queue','window','arm','steps','result'}:return False
+        if type(ident['steps']) is not int or type(ident['window']) is not type(window) or ident!=dict(binding=binding,queue=queue,window=window,arm=arm,steps=1,result=ident['result']):return False
+        result=ident['result']
+        if not isinstance(result,dict) or set(result)!={'bytes','sha256'}:return False
+        if type(result['bytes']) is not int or result['bytes']<=0 or not isinstance(result['sha256'],str) or len(result['sha256'])!=64 or any(c not in '0123456789abcdef' for c in result['sha256']):return False
+    try:return (hashed(saved['identity'])==hashed(binding) and
+                all(hashed(stage['identity']['binding'])==hashed(binding) for stage in stages) and
+                saved['digest']==hashed({k:v for k,v in saved.items() if k!='digest'}))
+    except (TypeError,ValueError):return False
+
+
+def validate_rehearsal_result(path,request,common):
+    """Gate-owned validation of result, requested inputs, and completed publications."""
+    try:
+        result=json.loads(Path(path).read_text())
+        expected={'evidence_class','artifact_class','output','queue','window','arm','steps','fits','inputs',
+                  'implementation','environment','cuda_max_memory_allocated','request','context'}
+        if request['queue']=='Q5':expected.add('diagnostic')
+        if not isinstance(result,dict) or set(result)!=expected:raise ValueError('result schema mismatch')
+        for key in ('queue','window','arm','steps'):
+            if type(result[key]) is not type(request[key]) or result[key]!=request[key]:raise ValueError('request selection mismatch')
+        if hashed(result['request'])!=hashed(request) or hashed(result['context'])!=hashed(request['binding']['identity']):raise ValueError('run/source/data/environment identity mismatch')
+        if result['evidence_class']!=REHEARSAL_EVIDENCE or result['artifact_class']!='TEMPORARY':raise ValueError('evidence class mismatch')
+        root=Path(result['output'])
+        if not root.is_absolute() or root.is_symlink() or root.parent!=Path('/tmp') or not root.name.startswith('p4-REHEARSAL-'):raise ValueError('output must be retained /tmp rehearsal directory')
+        if json.loads((root/'REHEARSAL.json').read_text())!=result:raise ValueError('result publication mismatch')
+        data=Path(common[common.index('--data-dir')+1]).resolve(strict=True)
+        bundle=Path(common[common.index('--bundle')+1])
+        reference=bundle/'reference/keys.parquet'
+        if not reference.exists():reference=bundle/'reference/rank_average.parquet'
+        frozen=json.loads((Path(__file__).resolve().parents[2]/'tasks/p4a-colab-contract-20261121.json').read_text())
+        queue=request['queue']
+        jobs=[j for j in fit_queue(frozen) if j['queue']==('Q1' if queue=='Q5' else queue)]
+        jobs=([next(j for j in jobs if j['arm']==a) for a in ('crossstock','mamba2')] if queue=='Q5' else
+              [j for j in jobs if j['window']==request['window'] and j['arm']==request['arm']][:1])
+        names=[f"{j['arm']}-w{j['window']}" for j in jobs]
+        if result['fits']!=names or len(names)!=(2 if queue=='Q5' else 1):raise ValueError('fit count/selection mismatch')
+        source=data/f"folds/fold_{jobs[0]['year']}" if (data/'folds').is_dir() else data
+        if result['inputs']!=dict(data_realpath=str(source),matrix_manifest=digest(source/'manifest.json'),reference=digest(reference)):raise ValueError('input identity mismatch')
+        implementation={name:digest(Path(__file__).with_name(name)) for name in ('p4_colab.py','p4_eval.py','seq_runner.py')}
+        if result['implementation']!=implementation:raise ValueError('implementation identity mismatch')
+        environment=result['environment']
+        if not isinstance(environment,dict) or set(environment)!={'python','torch','numpy','device','mixer'}:raise ValueError('environment schema mismatch')
+        if environment['device']!='cuda' or environment['mixer']!='official':raise ValueError('official CUDA rehearsal required')
+        observed=result['context']['environment']
+        if not isinstance(observed,dict) or environment['python']!=observed['python'] or any(environment[n]!=observed['packages'][n] for n in ('torch','numpy')):raise ValueError('environment identity mismatch')
+        if type(result['cuda_max_memory_allocated']) is not int or result['cuda_max_memory_allocated']<=0:raise ValueError('CUDA memory evidence missing')
+        for name,job in zip(names,jobs):
+            fit=root/name;complete=json.loads((fit/'REHEARSAL-complete.json').read_text())
+            contract=dict(**job,recipe=dict(frozen['recipe'],window=job['window'],lr=job['lr'],epochs=1,steps_per_epoch=1),speed_test=False,evidence_class=REHEARSAL_EVIDENCE,rehearsal_binding=hashed(request))
+            if set(complete)!={'contract','outputs','evidence_class'} or hashed(complete['contract'])!=hashed(contract) or complete['evidence_class']!=REHEARSAL_EVIDENCE:raise ValueError('completed identity mismatch')
+            validate_fit_outputs(fit,contract,complete['outputs'],rehearsal=True)
+        if queue=='Q5':
+            diagnostic=result['diagnostic']
+            if not isinstance(diagnostic,dict) or set(diagnostic)!={'validation','evaluation'}:raise ValueError('Q5 split completion missing')
+            for split in diagnostic.values():
+                fields={'R','label_support','daily','permutation_mean_ic','ic_std','mamba_ic_gap','order_sensitive','rule','evidence_class'}
+                if not isinstance(split,dict) or set(split)!=fields or type(split['R']) is not int or split['R']!=10 or split['evidence_class']!='DESCRIPTIVE_ONLY':raise ValueError('Q5 success schema mismatch')
+                support=split['label_support']
+                if not isinstance(support,dict) or set(support)!={'input_rows','used_rows','excluded_nan_rows','excluded_dates'}:raise ValueError('Q5 support schema mismatch')
+                if any(type(support[k]) is not int or support[k]<0 for k in ('input_rows','used_rows','excluded_nan_rows')) or support['used_rows']<=0 or support['input_rows']!=support['used_rows']+support['excluded_nan_rows']:raise ValueError('Q5 mature support missing')
+                daily=split['daily'];means=split['permutation_mean_ic']
+                if not isinstance(daily,list) or not daily or not isinstance(means,list) or len(means)!=10 or not all(type(v) in (int,float) and math.isfinite(v) for v in means):raise ValueError('Q5 diagnostics incomplete')
+                if {row['permutation'] for row in daily}!=set(range(10)):raise ValueError('Q5 permutations incomplete')
+                for row in daily:
+                    if set(row)!={'permutation','date','score_spearman','ic','ic_change','top50_overlap'} or any(type(row[k]) not in (int,float) or not math.isfinite(row[k]) for k in ('score_spearman','ic','ic_change','top50_overlap')):raise ValueError('Q5 daily schema mismatch')
+                if type(split['order_sensitive']) is not bool or any(type(split[k]) not in (int,float) or not math.isfinite(split[k]) or split[k]<0 for k in ('ic_std','mamba_ic_gap')):raise ValueError('Q5 numeric evidence invalid')
+        return dict(binding=request['binding'],queue=queue,window=request['window'],arm=request['arm'],steps=1,result=digest(path))
+    except (OSError,ValueError,KeyError,TypeError,IndexError,AttributeError) as error:
+        raise ValueError(f'REHEARSAL 排練結果／產物驗證失敗: {error}') from error
+
+
 def launch_with_rehearsal(common,env,progress,identity,stream,*,enabled=True):
     """Launch formal only after all three official CLI rehearsals pass.
 
@@ -648,32 +737,38 @@ def launch_with_rehearsal(common,env,progress,identity,stream,*,enabled=True):
     Caller supplies identities after bundle verification and SSD preparation.
     """
     progress=Path(progress);marker=progress/'rehearsal_passed.json'
-    binding=dict(identity=identity,command=common,policy='Q3-W120-mamba2/Q3-W250-mamba2/Q5-1step-v1')
+    binding=dict(identity=identity,command=common,policy='Q3-W120-mamba2/Q3-W250-mamba2/Q5-1step-v2')
     saved={}
     try:saved=json.loads(marker.read_text())
     except (OSError,ValueError):pass
     if not isinstance(saved,dict):saved={}
-    if enabled and saved.get('identity')==binding and saved.get('passed') is True:
+    if enabled and validate_rehearsal_marker(saved,binding):
         print('排練通過（不是研究結果）：同一 run/source/data/environment，略過；各步耗時：',saved.get('stages'),flush=True)
     elif enabled:
         # A stale success must not survive a failed recheck.
         marker.unlink(missing_ok=True)
         base=common[:common.index('--drive-root')]+common[common.index('--drive-root')+2:]
         stages=[]
-        for stage,flags in [('Q3 W120 mamba2',['--queue','Q3','--window','120','--arm','mamba2']),
-                            ('Q3 W250 mamba2',['--queue','Q3','--window','250','--arm','mamba2']),
-                            ('Q5（兩個 prerequisite fits）',['--queue','Q5'])]:
+        for stage,queue,window,arm,count in REHEARSAL_STAGES:
+            flags=['--queue',queue]+([] if window is None else ['--window',str(window),'--arm',arm])
             command=base+['--rehearse','--steps','1']+flags
+            scratch=Path(tempfile.mkdtemp(prefix='p4-REHEARSAL-gate-',dir='/tmp'))
+            request=dict(binding=binding,queue=queue,window=window,arm=arm,steps=1,nonce=uuid.uuid4().hex)
+            atomic_json(scratch/'request.json',request)
+            stage_env=dict(env,P4_REHEARSAL_REQUEST=str(scratch/'request.json'),P4_REHEARSAL_RESULT=str(scratch/'result.json'))
             started=time.perf_counter()
             try:
-                stream(command,env)
+                stream(command,stage_env)
+                verified=validate_rehearsal_result(scratch/'result.json',request,common)
             except BaseException as error:
                 print(f'排練失敗階段={stage}；暫存產物位置=/tmp/p4-REHEARSAL-*（本步確切路徑見上方）；'
-                      f'期望=回傳碼 0；實際={error!r}；下一步=將本格完整輸出貼給 Claude，修正後重跑；正式 runner 未啟動',flush=True)
+                      f'期望=回傳碼 0 且完整排練 JSON／產物／identity 驗證；實際={error!r}；下一步=將本格完整輸出貼給 Claude，修正後重跑；正式 runner 未啟動',flush=True)
                 raise
-            stages.append(dict(stage=stage,seconds=time.perf_counter()-started))
+            stages.append(dict(stage=stage,seconds=time.perf_counter()-started,identity=verified,evidence_class=REHEARSAL_EVIDENCE,fit_count=count))
         progress.mkdir(parents=True,exist_ok=True)
-        atomic_json(marker,dict(identity=binding,passed=True,stages=stages,evidence_class='REHEARSAL / 不是研究結果'))
+        record=dict(identity=binding,passed=True,stages=stages,evidence_class=REHEARSAL_EVIDENCE)
+        record['digest']=hashed(record)
+        atomic_json(marker,record)
         print('排練通過（不是研究結果）；各步耗時：',stages,flush=True)
     else:print('REHEARSE_FIRST=False：本次未執行自動排練',flush=True)
     stream(common,env)
@@ -975,6 +1070,8 @@ def rehearse(data_dir,reference,*,queue='Q3',window=None,arm=None,steps=1,device
     for job in jobs:
         cfg=dict(frozen['recipe'] if recipe is None else recipe,window=job['window'],lr=job['lr'],epochs=1,steps_per_epoch=steps)
         contract=dict(**job,recipe=cfg,speed_test=False,evidence_class='REHEARSAL / 不是研究結果')
+        if 'P4_REHEARSAL_REQUEST' in os.environ:
+            contract['rehearsal_binding']=hashed(json.loads(Path(os.environ['P4_REHEARSAL_REQUEST']).read_text()))
         fit=root/f"{job['arm']}-w{job['window']}";attempt=fit/'attempt-active';attempt.mkdir(parents=True)
         observer=Observer(attempt,contract,guard,device=device)
         frame,metrics=train_fit(directory,year,job['arm'],job['seed'],cfg,ref[ref.fold.eq(year)],observer,mixer_factory=mixer_factory)
@@ -988,7 +1085,7 @@ def rehearse(data_dir,reference,*,queue='Q3',window=None,arm=None,steps=1,device
         validate_fit_outputs(fit,saved['contract'],saved['outputs'],rehearsal=True)
         fits.append(fit.name);paths[(year,job['arm'],17,60,3e-4)]=fit
     import torch,platform
-    result=dict(evidence_class='REHEARSAL / 不是研究結果',artifact_class='TEMPORARY',output=str(root),queue=queue,fits=fits,
+    result=dict(evidence_class='REHEARSAL / 不是研究結果',artifact_class='TEMPORARY',output=str(root),queue=queue,window=window,arm=arm,steps=steps,fits=fits,
                 inputs=dict(data_realpath=str(source),matrix_manifest=digest(source/'manifest.json'),reference=digest(reference)),
                 implementation={name:digest(Path(__file__).with_name(name)) for name in ('p4_colab.py','p4_eval.py','seq_runner.py')},
                 environment=dict(python=platform.python_version(),torch=torch.__version__,numpy=np.__version__,device=device,mixer='official' if mixer_factory is None else 'TEST_DOUBLE'))
@@ -1017,7 +1114,17 @@ def main(argv=None):
             reference=a.bundle/'reference/keys.parquet'
             if not reference.exists():reference=a.bundle/'reference/rank_average.parquet'
         if a.data_dir is None or reference is None:p.error('--rehearse requires --data-dir and --reference (or --bundle)')
-        print(json.dumps(rehearse(a.data_dir,reference,queue=a.queue,window=a.window,arm=a.arm,steps=a.steps),ensure_ascii=False));return
+        result=rehearse(a.data_dir,reference,queue=a.queue,window=a.window,arm=a.arm,steps=a.steps)
+        if 'P4_REHEARSAL_REQUEST' in os.environ:
+            request=json.loads(Path(os.environ['P4_REHEARSAL_REQUEST']).read_text())
+            runtime=json.loads((a.bundle/'source/environments/p4a-colab-runtime.json').read_text())
+            context=dict(source=digest(a.bundle/'bundle-manifest.json'),
+                         data=json.loads((a.data_dir/'prepared.json').read_text()),
+                         data_realpath=str(a.data_dir.resolve()),environment=environment_snapshot(runtime['packages']))
+            result.update(request=request,context=context)
+            atomic_json(Path(result['output'])/'REHEARSAL.json',result)
+            atomic_json(Path(os.environ['P4_REHEARSAL_RESULT']),result)
+        print(json.dumps(result,ensure_ascii=False));return
     if a.bundle is None or a.drive_root is None:p.error('formal execution requires --bundle and --drive-root')
     result=run(a.bundle,a.drive_root,speed=a.speed_test,data_dir=a.data_dir,allow_new_run=a.allow_new_run)
     print(json.dumps(dict(version=result['version'],jobs=len(result['jobs']),evidence_class=result['evidence_class'],

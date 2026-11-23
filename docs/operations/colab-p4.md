@@ -108,3 +108,9 @@ python -m research_lab.p4_colab --rehearse --data-dir /path/matrix_v1 --referenc
 第 0 格 `REHEARSE_FIRST = MODE != 'SPEED_TEST'`：FORMAL／03_formal_resume 預設啟用，SPEED_TEST 預設關閉；可明設 False。全部成功印出「排練通過（不是研究結果）」與各步秒數，將身分綁定的 `rehearsal_passed.json` 寫入模式的 progress 資料夾；同一 run command、已驗 bundle source、prepared matrix／rankgauss、資料 realpath 與實際 Python／torch／mamba／CUDA／GPU／ABI 等 environment snapshot 相符才略過。遺失／壞 JSON／來源、資料、環境或 run command 改變即重做；重做失敗不保留舊成功標記。這只是工程觀測，不能採用為正式 fit 或研究結果；正式 36 個 completed-fit 採用 gate 與固定 64-fit queue SHA 完全保留。
 
 W≠60 在 SeqData 配置及 split 索引前檢查 sessions≥W、eligible 訓練日≥val_dates+20；不足會顯示 fold、W、需要與實際及下一步。W60 不走新增檢查。成功排練輸出 `torch.cuda.max_memory_allocated` bytes；每個子程序先 reset。**真實 W250 windows 張量／CUDA 峰值與首次完整推論耗時仍 UNVERIFIED**；1 step 不等於全部只做一個 batch 的推論。CPU 合成／mixer 替身只能證明工程控制流程，現場官方 mixer／CUDA／Colab／Drive FUSE 與 Human acceptance 均未驗證。此候選為 UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，不解除獨立審查 NO_GO。
+
+## 自動排練結果驗證（第 12 次複審修補候選）
+
+正式前依序 Q3 W120 mamba2、Q3 W250 mamba2、Q5，各 1 step。FORMAL／resume 預設開啟；SPEED_TEST 預設關閉，明設 REHEARSE_FIRST=False 的既有行為保留。返回碼 0 後，閘門仍逐階段讀獨立 JSON，核對請求／輸入身分、Q3 1 fit／Q5 2 fits、Q5 validation／evaluation 完成，以及既有 completed-output validator 的 scores／reference／checkpoint／complete 證據。結果與每個排練 fit 的契約綁定本次請求，空輸出、吞例外、缺檔或不符都 STOP，顯示階段、期望／實際與修正重跑的下一步。
+
+三步均驗證後才寫 progress 的 rehearsal_passed.json。快取要求完整 schema、恰好三階段 identity／耗時／REHEARSAL evidence／fit 數及內容 digest；空 stages、TAMPERED、型別錯誤、額外欄位或 digest 不符會重做。TEMPORARY 結果仍在 `/tmp/p4-REHEARSAL-*`，只將驗證後 identity 摘要存入 Drive marker，重連略過不依賴暫存檔仍存在。digest 為誤改檢查，非惡意竄改防護。此 marker 不是研究或正式 completed-fit authority；36 fits 採用條件及 frozen queue 不變。修補尚待獨立複審與現場 CUDA／官方 mixer／Colab／Drive 驗證，不等於 Human acceptance。

@@ -783,7 +783,7 @@ def colab_notebook(run_name='02_formal', drive_root='/content/drive/MyDrive/Mark
         if ALLOW_NEW_RUN: common.append('--allow-new-run')
         # FROZEN + OBSERVED 環境完整核對；DRAFT 仍拒絕。
         def stream_training(command,env):
-            # 合併 stderr 並持續排空 PIPE，避免大量輸出造成死鎖。
+            # 合併 stderr 並持續排空 PIPE；排練另由 gate 驗 JSON、產物與 identity，返回碼 0 不代表通過。
             with subprocess.Popen(command,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,
                                   text=True,bufsize=1,env=env) as process:
                 try:

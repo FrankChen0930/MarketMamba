@@ -1,3 +1,13 @@
+## P4a 第 12 次複審兩項 REQUIRED 修補候選 — 2026-11-24
+
+`job-run-mwtlq2cv-a82151`／`builder_p4a_gate2`，沿用既有 detached worktree，base/HEAD `99b4e0e3547868847262aa305cd5fe7100c3c9f5`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依授權保留未提交 patch。第 12 次複審為 NO_GO：排練只憑返回碼放行、有效 JSON 的成功標記可被清空／竄改仍略過。本候選收緊 [runner](../../V6/research_lab/p4_colab.py) 的工程 gate；不解除原 NO_GO，不取代獨立複審與 Human acceptance。
+
+閘門逐階段讀獨立結果 JSON，核對 Q3 W120 mamba2／Q3 W250 mamba2 各 1 fit、Q5 2 fits 與 validation／evaluation 完成，核對 source／prepared data／reference／environment 與本次 run command、nonce；每個 fit 契約綁定請求，並由 gate 自行重驗既有 completed-output validator 的 scores／reference／checkpoint／complete identity 與 bytes。空輸出、吞例外後正常退出、錯誤 selection／identity 或缺產物一律 STOP，不寫成功 marker、不啟動正式 runner。成功 marker 要求完整 schema、恰好三階段 identity／耗時／REHEARSAL evidence／fit 數及內容 digest；缺欄位、型別錯誤、未知欄位、空 stages 或不符即重排練。digest 只防誤改，非惡意防護；重連快取不依賴 `/tmp` 產物仍存在，marker 不是正式完成或研究 authority。
+
+[工具重產宣告](../../tasks/p4a-source-compat-20e6b54.json) 的 `to.commit` 從舊 `bf0114d` 更新為本任務 HEAD `99b4e0e`，sources hashes 綁定 dirty working bytes；不是已提交或已接受的認證。36 個 Q1／Q2 W60 completed fits 全部 resume_fit 驗證的採用條件、64-fit SHA `4dc90ec0ada6c6d34b43c429d359424c502634e502c6856c6774bf138de7ba23`、研究／環境／預算契約及 P3 adapter／portfolio engine bytes 均維持。AST pins 為候選範圍限制，仍待獨立複審。
+
+只有本機 CPU 合成工程證據與真子程序替身；CUDA／官方 mixer／W250 峰值／Colab／Drive FUSE／現場 36 artifacts 仍 UNVERIFIED，未更新 runtime observed_at。沒有 GPU／網路／Colab／資料取得／production／scheduler／排程／額外代理／commit／push／merge／部署。實際測試、變異、限制及交接見 [工程報告](../../reports/v7_p4a_colab_engineering.md)。Next：獨立複審 patch、宣告與測試，再由 Human 決定接受及現場驗證；本次完成不等於 Human acceptance。
+
 ## P4a 自動排練閘門的 authority 邊界 — 2026-11-24
 
 `job-run-mwtk8k4r-a80ee8`／detached `bf0114d` 是 UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED 候選。依 [Human 需求第 9 節](../../docs/operations/colab-human-requirements.md)，[notebook](../../V6/research_lab/p4_bundle.py) 正式前自動排練與 [runner](../../V6/research_lab/p4_colab.py) W≠60 前置檢查是工程 gate；`progress/*/rehearsal_passed.json` 僅觀測工程排練成功，不能取代正式 completed-fit／checkpoint／研究 gate。標記綁 run command、已驗 bundle source、prepared data／rankgauss 與實際 environment；無效即重做。TEMPORARY 排練 outputs 只在 `/tmp`。

@@ -72,3 +72,6 @@ MyDrive/MarketMamba/
 - 第 0 格 `REHEARSE_FIRST = MODE != 'SPEED_TEST'`：FORMAL／resume 預設 True，SPEED_TEST 預設 False，可明設開關。同一 run command／已驗 bundle source、prepared matrix／rankgauss identity 與實際 environment identity 全相同時，以 `progress/formal/rehearsal_passed.json` 略過；缺少、損毀或任一身分改變即重做。標記不是完成 fit／研究 authority；失敗不寫成功標記，重檢前移除過期標記。保留第 9 節其他類型首次擬合現場排練要求。
 - W≠60 在 train_fit 前檢查 sessions≥W、eligible 訓練日≥val_dates+20；不足報 fold／W／需要與實際數量及下一步，禁止縮窗／降低門檻。W60 不進入新增檢查，CPU 跨版權重／預測／RNG 位元驗證不得取代 CUDA evidence。
 - 排練成功輸出 `torch.cuda.max_memory_allocated` bytes（每個子程序先 reset，Q5 包含兩個 fits／診斷）。**W250 真實 windows 張量與 CUDA 峰值、全量推論耗時仍 UNVERIFIED**；1 step 只縮短訓練，完整驗證／推論可能仍慢，首次排練耗時未實測。標記用於避免相同身分的重複完整推論。
+
+- 第 12 次複審 NO_GO 修補候選（UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED）：返回碼 0 只是必要條件；每階段由閘門讀取獨立結果 JSON，嚴格核對 queue／window／arm／steps、Q3 1 fit／Q5 2 fits、Q5 validation＋evaluation 成功診斷、輸入 reference／matrix／source／environment，以及每個 completed-output 的 scores／reference／checkpoint／complete 身分與 bytes。每次請求有獨立 nonce；完成契約綁定本次 run／source／data／environment 請求。空輸出、吞例外或任何不符都 STOP，不寫成功標記、不啟動正式 runner。
+- `rehearsal_passed.json` 僅在恰好三個已驗證階段後寫入，包含各階段 identity／耗時／evidence_class／fit 數及內容 digest。缺欄位、型別錯誤、空 stages、階段不符、未知欄位或 digest 不符皆重排練。digest 僅防誤改，不防惡意改寫。marker 可在重連後使用；不要求 `/tmp` 仍存在，不取代正式 36 fits 的 resume_fit 驗證。
