@@ -1,3 +1,9 @@
+## P4a Q3 標籤／排練候選的 authority 邊界 — 2026-11-23
+
+本輪 `job-run-mwt8u5js-7f212c`／detached `685f6ec` 是 UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；[p4_eval](../../V6/research_lab/p4_eval.py) 的 NaN 列身分／Q5 成熟 IC 修正與 [p4_colab](../../V6/research_lab/p4_colab.py) 排練入口是候選工程語義，非研究結果或 deployment authority。[Human 需求第 9 節](../../docs/operations/colab-human-requirements.md)是新增的上線前真實資料排練規則；CPU 測試不取代現場 gate。原 36 completed fits／Q3 事故屬 Human-reported evidence，非本輪 Drive observation。
+
+[來源相容工具](../../V6/research_lab/p4_source_compat.py)與[工具重產宣告](../../tasks/p4a-source-compat-20e6b54.json)（GENERATED／CPU_ENGINEERING_ONLY）綁定工作 bytes、固定 queue SHA／研究／矩陣／環境／預算；新增採用前全部 36 個 Q1／Q2 resume_fit 驗證，不重跑、不改歷史 artifacts。AST pin 只是候選範圍限制，仍需獨立審查。排練僅 TEMPORARY／REHEARSAL，正式 resume_fit 不承認其完成檔。[工程報告](../../reports/v7_p4a_colab_engineering.md)與[Training note](../01_Domains/Training.md)提供驗證及剩餘現場風險；無既有研究／production authority 或 runtime observed_at supersession。
+
 ## P4a 來源相容升級候選 — 2026-11-22
 
 `job-run-mwrxutx3-d28fa4` builder，沿用既有 detached worktree `builder_p4a_upgrade`，base/HEAD `20e6b5408d9f9b13d56290a72a2dc313c35d1b94`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依 no-commit 指示保留 patch。依 [Human 需求第 8 節](../../docs/operations/colab-human-requirements.md)新增 [來源驗證模組](../../V6/research_lab/p4_source_compat.py)，沿用 [runner](../../V6/research_lab/p4_colab.py)／[交付工具](../../V6/research_lab/p4_bundle.py)，沒有新 worktree／實驗樹。現有 runner 沒有跨來源證據層，因此在相同 research_lab 新增單一 helper；不複製訓練／完成驗證實作。

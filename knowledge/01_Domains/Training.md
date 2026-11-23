@@ -1,5 +1,17 @@
 # Training
 
+## P4a Q3 尾端標籤事故與排練候選 — 2026-11-23
+
+`job-run-mwt8u5js-7f212c`，Codex builder，既有 detached worktree `fixer_p4a_q3`，base/HEAD `685f6ece1faa7ed39ff7ebff7056b2c4ad7eb4b2`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。依 Human bounded EXECUTE_APPROVED／no-commit 指示保留 patch；無 GPU、網路、資料取得、Colab、production、scheduler、additional agents 或正式 Data／模型寫入。
+
+Human 報告舊 `02_formal@4e56e9d` 已完成 Q1＋Q2 共 36 fits，Q3 第一筆 2021/mamba2/17/W120 因尾端未知 label_y5 被 common_rows 當成錯誤而中斷；這是 Human-reported runtime evidence，未自行觀測 Drive，也未改任何 observed_at。本次 [evaluator](../../V6/research_lab/p4_eval.py) 允許 NaN 等價的列身分核對、仍拒絕 ±inf／標籤不一致；組合收益由價格與 score 決定，不使用該標籤。Family C 仍取全部 W60／W120／W250／C0+ 交集後逐 seed 排名。Q5 IC 改用共用成熟標籤列並回報排除量；沒有成熟支援、每日期不足 10 名或常數相關仍 fail closed。沒有變更研究契約、queue、矩陣、環境／lock、預算契約、P3 adapter 或 portfolio engine。
+
+[runner](../../V6/research_lab/p4_colab.py) 新增 `--rehearse`，以真實 data_dir 執行同一 train_fit／train_one／predict／發布與輸出 validator；只寫 `/tmp/p4-REHEARSAL-*`，標示 `REHEARSAL / 不是研究結果`，正式 resume_fit 不識別排練完成檔。Q5 先產生兩個排練檢查點再跑診斷。[Human 規則第 9 節](../../docs/operations/colab-human-requirements.md) 要求各類第一個 fit 與兩種長窗均先現場排練；CPU 合成證據不能代替此 gate。
+
+[來源相容工具](../../V6/research_lab/p4_source_compat.py) 擴充窗≠60 修正／排練／Q5 診斷分類；以 AST pins 限制本候選變動面，原 frozen queue／recipe／ledger／正式 completed validator 的預設 gate 不放寬。[工具重產的 GENERATED 宣告](../../tasks/p4a-source-compat-20e6b54.json) 綁定目前工作樹 bytes（舊檔名不是新 source commit），不升格研究 authority；採用前必須原地 resume_fit 驗證 36 個 Q1／Q2 W60 完成 fit，保留 bytes、不重跑。先前只限進度／日誌的相容範圍僅由本事故專項擴充，不授權任意換配方。
+
+CPU 證據、完整回歸實際輸出、四項 in-memory 變異、來源 identity 與限制見 [工程報告最新節](../../reports/v7_p4a_colab_engineering.md)。涵蓋舊／新各 36 筆 W60 train_fit 呼叫記錄未進 common_rows、原 GRU／crossstock 權重／預測／RNG 位元一致測試，以及 36 完成後只啟動第一個 Q3 的接續整合。這些是合成資料／CPU mixer 或 artifact 替身證據；真實 fold CUDA、官方 mixer、T4／Colab／Drive FUSE、完整正式訓練和 Human acceptance 仍 UNVERIFIED。Next：獨立審查 patch／宣告，Human 於本機 RTX 3060 或 Colab 真實資料排練，再決定正式接續；本輪不產生新交付 ZIP／notebook，不消耗 GPU。
+
 ## P4a 來源相容升級候選 — 2026-11-22
 
 `job-run-mwrxutx3-d28fa4` builder，沿用既有 detached worktree `builder_p4a_upgrade`，base/HEAD `20e6b5408d9f9b13d56290a72a2dc313c35d1b94`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依 no-commit 指示保留 patch。依 [Human 需求第 8 節](../../docs/operations/colab-human-requirements.md)新增 [來源驗證模組](../../V6/research_lab/p4_source_compat.py)，沿用 [runner](../../V6/research_lab/p4_colab.py)／[交付工具](../../V6/research_lab/p4_bundle.py)，沒有新 worktree／實驗樹。現有 runner 沒有跨來源證據層，因此在相同 research_lab 新增單一 helper；不複製訓練／完成驗證實作。

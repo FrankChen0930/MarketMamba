@@ -262,7 +262,7 @@ def validate_training_state(state,recipe):
     return best_epoch
 
 
-def validate_fit_outputs(directory, contract, outputs):
+def validate_fit_outputs(directory, contract, outputs, *, rehearsal=False):
     """Required schema plus bytes and semantic checks, before publish and resume."""
     from .p4_bundle import safe_name
     directory=Path(directory)
@@ -287,7 +287,8 @@ def validate_fit_outputs(directory, contract, outputs):
         return
     required={'best.pt','scores.parquet','reference.parquet','metrics.json','checkpoint-pointer.json'}
     if not required<=names: raise ValueError('completed fit missing required artifacts')
-    recipe=effective_recipe(contract)
+    recipe=contract['recipe'] if rehearsal else effective_recipe(contract)
+    if rehearsal and contract.get('evidence_class')!='REHEARSAL / 不是研究結果':raise ValueError('rehearsal identity required')
     metrics=json.loads((attempt/'metrics.json').read_text())
     if not metrics.get('history') or not np.isfinite(metrics.get('best_val_ic5',np.nan)):
         raise ValueError('invalid metrics')
@@ -626,7 +627,7 @@ def environment(lock, runtime_contract=None, speed=False):
     return actual
 
 
-def train_fit(directory,year,arm,seed,cfg,reference,observer):
+def train_fit(directory,year,arm,seed,cfg,reference,observer,*,mixer_factory=None):
     """Reuse P3 checked_splits/row admission and existing train_one; P3 collect owns a different ledger."""
     from .seq_runner import SeqData,train_one,predict
     data=SeqData(directory,window=cfg.get('window',60),normalize='rankgauss');tr,va,ev=checked_splits(data,cfg['val_dates'])
@@ -644,12 +645,14 @@ def train_fit(directory,year,arm,seed,cfg,reference,observer):
         observer.check();return windows(rows)
     data.windows=guarded
     restored=observer.load_resume() if not observer.speed else None
-    model,state=train_one(arm,seed,data,tr,va,cfg,'cuda',observer=observer,resume_state=restored,
+    extra={} if mixer_factory is None else dict(mixer_factory=mixer_factory)
+    device=getattr(observer,'device','cuda')
+    model,state=train_one(arm,seed,data,tr,va,cfg,device,**extra,observer=observer,resume_state=restored,
                           log=lambda *_: None)
     if observer.speed:
         return None,dict(history=[dict(seconds=h['seconds']) for h in state['history']])
     if not np.isfinite(state['best']) or state['best']<=-9: raise ValueError('BEST unavailable; LAST prohibited')
-    frame['score']=predict(model,data,ev,'cuda')[:,0];frame['seed']=seed;frame['system']=arm
+    frame['score']=predict(model,data,ev,device)[:,0];frame['seed']=seed;frame['system']=arm
     frame['window']=cfg.get('window',60);frame['lr']=cfg['lr']
     if not np.isfinite(frame.score).all(): raise ValueError('nonfinite predictions')
     best=io.BytesIO();import torch
@@ -775,13 +778,7 @@ def run(bundle,drive_root,speed=False,max_hours=None,max_units=None,rate=None,pl
                     atomic_json(attempt/'speed.json',report);metrics=report
                 else:
                     # A prior crash after prediction publication must validate identical bytes.
-                    reference=ref[ref.fold.eq(year)]
-                    if job['window']!=60:
-                        from .p4_eval import common_rows
-                        aligned,_=common_rows({'model':frame,'reference':reference});reference=aligned['reference']
-                    for name,table in (('scores.parquet',frame),('reference.parquet',reference)):
-                        buffer=io.BytesIO();table.to_parquet(buffer,index=False)
-                        publish_or_validate(attempt/name,buffer.getvalue())
+                    publish_predictions(attempt,frame,ref[ref.fold.eq(year)],job['window'])
                     metrics.update(wall_seconds=time.perf_counter()-started,guard_wait_seconds=0)
                     atomic_json(attempt/'metrics.json',metrics)
                 files=[p.relative_to(fit).as_posix() for p in attempt.iterdir() if p.is_file()]
@@ -833,21 +830,23 @@ def publish_or_validate(path,payload):
     return result
 
 
-def permutation_fit(directory,year,cfg,fit_paths,ledger,progress=None):
+def permutation_fit(directory,year,cfg,fit_paths,ledger,progress=None,*,device='cuda',mixer_factory=None,rehearsal=False):
     import torch
     from .seq_runner import SeqData,predict
     from .seq_models import SeqRanker
     from .cross_stock import CrossStockRanker,predict_cross
     from .p4_eval import permutation_summary
     data=SeqData(directory,window=60);_,va,ev=checked_splits(data,cfg['val_dates'])
+    extra={} if mixer_factory is None else dict(mixer_factory=mixer_factory)
     cross=CrossStockRanker(n_features=data.X.shape[1],d_model=cfg['d_model'],n_layers=cfg['n_layers'],
-                          n_cross=cfg['n_cross'],mixer_kw=cfg['mixer_kw'],dropout=cfg['dropout']).cuda()
-    mamba=SeqRanker('mamba2',data.X.shape[1],cfg['d_model'],cfg['n_layers'],mixer_kw=cfg['mixer_kw']).cuda()
+                          n_cross=cfg['n_cross'],mixer_kw=cfg['mixer_kw'],dropout=cfg['dropout'],**extra).to(device)
+    mamba=SeqRanker('mamba2',data.X.shape[1],cfg['d_model'],cfg['n_layers'],mixer_kw=cfg['mixer_kw'],**extra).to(device)
     for arm,model in [('crossstock',cross),('mamba2',mamba)]:
         fit=fit_paths[(year,arm,17,60,3e-4)]
-        complete=json.loads((fit/'complete.json').read_text())
-        resume_fit(fit,complete['contract'])
-        model.load_state_dict(torch.load(fit/'attempt-active/best.pt',map_location='cuda',weights_only=False)['model'])
+        complete=json.loads((fit/('REHEARSAL-complete.json' if rehearsal else 'complete.json')).read_text())
+        if rehearsal:validate_fit_outputs(fit,complete['contract'],complete['outputs'],rehearsal=True)
+        else:resume_fit(fit,complete['contract'])
+        model.load_state_dict(torch.load(fit/'attempt-active/best.pt',map_location=device,weights_only=False)['model'])
     original=data.windows
     def guarded(rows):
         ledger.check();r=telemetry();ledger.observe(r)
@@ -858,23 +857,109 @@ def permutation_fit(directory,year,cfg,fit_paths,ledger,progress=None):
     result={}
     for split,rows in [('validation',va),('evaluation',ev)]:
         if progress:progress.update(status=f'Q5 {year} {split} 推論中');progress.emit()
-        base=predict_cross(cross,data,rows,'cuda',n_perm=2,seed=0)[:,0]
-        temporal=predict(mamba,data,rows,'cuda')[:,0]
-        permutations=[predict_cross(cross,data,rows,'cuda',n_perm=1,seed=100+r)[:,0] for r in range(10)]
+        base=predict_cross(cross,data,rows,device,n_perm=2,seed=0)[:,0]
+        temporal=predict(mamba,data,rows,device)[:,0]
+        permutations=[predict_cross(cross,data,rows,device,n_perm=1,seed=100+r)[:,0] for r in range(10)]
         result[split]=permutation_summary(data.date_idx[rows],np.asarray(np.load(directory/'stock_ids.npy',mmap_mode='r')[rows]),
                                           data.y['y5'][rows],base,temporal,permutations)
     return result
 
 
+def publish_predictions(attempt,frame,reference,window):
+    """Shared formal/rehearsal publication, with full model support required."""
+    if window!=60:
+        from .p4_eval import common_rows
+        aligned,_=common_rows({'model':frame,'reference':reference})
+        if len(aligned['model'])!=len(frame):raise ValueError('long-window rows outside C0+ reference')
+        reference=aligned['reference']
+    require_same_rows(frame,reference)
+    for name,table in (('scores.parquet',frame),('reference.parquet',reference)):
+        buffer=io.BytesIO();table.to_parquet(buffer,index=False)
+        publish_or_validate(Path(attempt)/name,buffer.getvalue())
+
+
+def rehearse(data_dir,reference,*,queue='Q3',window=None,arm=None,steps=1,device='cuda',mixer_factory=None,recipe=None):
+    """One first-fit rehearsal (Q5: two prerequisite fits plus diagnostics).
+
+    Inputs are read only. All derived caches, checkpoints and publications live
+    in a retained system temporary directory, never a Drive run or budget.
+    CPU/mixer/recipe injection is for offline tests, not exposed by the CLI.
+    """
+    import shutil
+    from .seq_runner import _x_tag
+    if queue not in ('Q1','Q3','Q4','Q5') or type(steps)!=int or steps<1:raise ValueError('invalid rehearsal queue/steps')
+    if device=='cuda':require_cuda()
+    frozen=json.loads((Path(__file__).resolve().parents[2]/'tasks/p4a-colab-contract-20261121.json').read_text())
+    jobs=[j for j in fit_queue(frozen) if j['queue']==('Q1' if queue=='Q5' else queue)]
+    if queue=='Q5':
+        if window not in (None,60) or arm not in (None,'crossstock'):raise ValueError('Q5 requires W60 crossstock and mamba2')
+        jobs=[next(j for j in jobs if j['arm']==a) for a in ('crossstock','mamba2')]
+    else:
+        jobs=[j for j in jobs if (window is None or j['window']==window) and (arm is None or j['arm']==arm)]
+        if not jobs:raise ValueError('rehearsal selection outside frozen queue')
+        jobs=jobs[:1]
+    root=Path(tempfile.mkdtemp(prefix='p4-REHEARSAL-',dir='/tmp'))
+    print(f'REHEARSAL / 不是研究結果: {root}',flush=True)
+    ref=pd.read_parquet(reference)
+    if 'system' in ref:ref=ref[ref.system.eq('c0plus')]
+    source=Path(data_dir).resolve(strict=True)
+    year=jobs[0]['year'];source=source/f'folds/fold_{year}' if (source/'folds').is_dir() else source
+    directory=root/'matrix';directory.mkdir()
+    # Reuse immutable matrix bytes, but never allow SeqData to write caches to input.
+    for name in MATRIX_FILES:
+        (directory/name).symlink_to((source/name).resolve(strict=True))
+    if (source/'X_rankgauss.npy').is_file() and (source/'X_rankgauss.tag').is_file() and (source/'X_rankgauss.tag').read_text()==_x_tag(source):
+        (directory/'X_rankgauss.npy').symlink_to((source/'X_rankgauss.npy').resolve())
+        shutil.copyfile(source/'X_rankgauss.tag',directory/'X_rankgauss.tag')
+    class LocalGuard:
+        def check(self):pass
+        def observe(self,record):pass
+    guard=LocalGuard();fits=[];paths={}
+    for job in jobs:
+        cfg=dict(frozen['recipe'] if recipe is None else recipe,window=job['window'],lr=job['lr'],epochs=1,steps_per_epoch=steps)
+        contract=dict(**job,recipe=cfg,speed_test=False,evidence_class='REHEARSAL / 不是研究結果')
+        fit=root/f"{job['arm']}-w{job['window']}";attempt=fit/'attempt-active';attempt.mkdir(parents=True)
+        observer=Observer(attempt,contract,guard,device=device)
+        frame,metrics=train_fit(directory,year,job['arm'],job['seed'],cfg,ref[ref.fold.eq(year)],observer,mixer_factory=mixer_factory)
+        publish_predictions(attempt,frame,ref[ref.fold.eq(year)],job['window'])
+        atomic_json(attempt/'metrics.json',metrics)
+        outputs={p.relative_to(fit).as_posix():digest(p) for p in attempt.iterdir() if p.is_file()}
+        validate_fit_outputs(fit,contract,outputs,rehearsal=True)
+        complete=dict(contract=contract,outputs=outputs,evidence_class=contract['evidence_class'])
+        atomic_json(fit/'REHEARSAL-complete.json',complete)
+        saved=json.loads((fit/'REHEARSAL-complete.json').read_text())
+        validate_fit_outputs(fit,saved['contract'],saved['outputs'],rehearsal=True)
+        fits.append(fit.name);paths[(year,job['arm'],17,60,3e-4)]=fit
+    import torch,platform
+    result=dict(evidence_class='REHEARSAL / 不是研究結果',artifact_class='TEMPORARY',output=str(root),queue=queue,fits=fits,
+                inputs=dict(data_realpath=str(source),matrix_manifest=digest(source/'manifest.json'),reference=digest(reference)),
+                implementation={name:digest(Path(__file__).with_name(name)) for name in ('p4_colab.py','p4_eval.py','seq_runner.py')},
+                environment=dict(python=platform.python_version(),torch=torch.__version__,numpy=np.__version__,device=device,mixer='official' if mixer_factory is None else 'TEST_DOUBLE'))
+    if queue=='Q5':result['diagnostic']=permutation_fit(directory,year,cfg,paths,guard,device=device,mixer_factory=mixer_factory,rehearsal=True)
+    atomic_json(root/'REHEARSAL.json',result)
+    return result
+
+
 def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--bundle',type=Path,required=True);p.add_argument('--drive-root',type=Path,required=True)
+    p.add_argument('--bundle',type=Path);p.add_argument('--drive-root',type=Path)
+    p.add_argument('--rehearse',action='store_true');p.add_argument('--reference',type=Path)
+    p.add_argument('--queue',choices=('Q1','Q3','Q4','Q5'),default='Q3');p.add_argument('--window',type=int)
+    p.add_argument('--arm',choices=ARMS);p.add_argument('--steps',type=int,default=1)
     p.add_argument('--allow-new-run',action='store_true');p.add_argument('--speed-test',action='store_true');p.add_argument('--data-dir',type=Path)
     # Legacy flags are optional and ignored: P4 has no wall/CU caps.
     p.add_argument('--max-hours',type=float);p.add_argument('--max-units',type=float)
     p.add_argument('--units-per-hour',type=float);p.add_argument('--planned-hours-per-fit',type=float,default=0)
     p.add_argument('--reserve',type=float)
     a=p.parse_args(argv)
+    if a.rehearse:
+        reference=a.reference
+        if reference is None and a.bundle is not None:
+            reference=a.bundle/'reference/keys.parquet'
+            if not reference.exists():reference=a.bundle/'reference/rank_average.parquet'
+        if a.data_dir is None or reference is None:p.error('--rehearse requires --data-dir and --reference (or --bundle)')
+        print(json.dumps(rehearse(a.data_dir,reference,queue=a.queue,window=a.window,arm=a.arm,steps=a.steps),ensure_ascii=False));return
+    if a.bundle is None or a.drive_root is None:p.error('formal execution requires --bundle and --drive-root')
     result=run(a.bundle,a.drive_root,speed=a.speed_test,data_dir=a.data_dir,allow_new_run=a.allow_new_run)
     print(json.dumps(dict(version=result['version'],jobs=len(result['jobs']),evidence_class=result['evidence_class'],
                           environment_mismatch=result['binding']['environment'].get('environment_mismatch',[]),

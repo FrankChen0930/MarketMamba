@@ -1,3 +1,112 @@
+## P4a Q3 事故修補與 pre-flight rehearsal — 2026-11-23
+
+範圍：`job-run-mwt8u5js-7f212c`，Codex builder；既有工作樹 `.worktrees/ruflo-workers/run-mwt8u5js-7f212c/fixer_p4a_q3`、detached base/HEAD `685f6ece1faa7ed39ff7ebff7056b2c4ad7eb4b2`，起始 clean。Human 明確 no-commit／push／merge，保留未提交 patch。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。沿用現有 research_lab、tests、tasks、docs、reports、knowledge；既有 runner 缺少實際 single-fit 排練入口，因此在同一 runner 加入口，無新 implementation tree、worktree 或研究結果 namespace。
+
+事故來源：Human 報告 4e56e9d 的 02_formal 已有效完成 Q1＋Q2 的 36 fits，Q3 2021/mamba2/17/W120 在 common_rows 被尾端未知 label_y5 擋下。這不是本輪 Drive runtime observation；本輪沒有讀取真實 completed fits，也不宣稱驗證該 36 份現場產物。CPU 合成矩陣刻意保留尾端 5／10 日 NaN、IPO 歷史不足，使用實際 SeqData／checked_splits，重現舊假設的失敗。
+
+### Changed／Decisions
+
+- `p4_eval.common_rows` 將 label_y5 明確作列身分交叉核對，NaN 等價、±inf 仍拒絕，交集外的未知尾端不成為收益；有限值／NaN 不一致也拒絕。Family C 與發布 reference 共用此修正；全比較系統共同交集、先裁原始 seed 再排名不變。實際 portfolio checked_cell 在有限與全 NaN label 下輸出完全相同。
+- `p4_colab.publish_predictions` 為正式與排練共用發布入口。長窗 reference 裁到共同支援並確認沒有丟掉任何 model 列；W60 不呼叫 common_rows，保留完整 reference。`train_fit` 仍用相同 recipe、sampler、train_one、predict，只以 Observer 的 device 支援本機 CPU 測試注入，正式預設 cuda。
+- `--rehearse` 支援 Q1／Q3／Q4／Q5、window／arm／steps，固定 1 epoch、預設 1 step；資料可用 matrix_v1 根目錄或單 fold 目錄，reference 可直接給或從 bundle 選。只讀矩陣；所有導出快取、checkpoint、scores／reference／metrics 與完成驗證都在 `/tmp/p4-REHEARSAL-*`。輸出附實作、輸入 manifest／reference identity、配方、環境與 TEMPORARY／REHEARSAL 標籤。完成標記用 `REHEARSAL-complete.json`，正式 complete_fit／resume_fit 與 frozen effective_recipe 不放寬。排練 validator 僅由明確 keyword 注入排練 recipe，共用其餘 hash／history／BEST／pointer／列／設定檢查。
+- Q5 排練先訓練 W60 crossstock＋mamba2，再以兩個排練 checkpoint 執行實際 permutation_fit。IC 需要已成熟標籤，因此所有模型與 10 次排列套用同一 NaN mask；報 input／used／excluded_nan rows 及完全排除日期。±inf label、任何非有限 prediction、空成熟支援、每日期不足 10 名或常數相關仍 STOP。正式 Q5 仍驗正式 complete.json，沒有替換訓練權重或診斷 seed。
+- `p4_source_compat` 擴充三種理由，保留原凍結函式 AST gate，對本次變動函式另設固定 AST pin；其餘 evaluator 與 seq_runner 維持 baseline AST。pins 只約束候選來源，不是獨立審查或 Human acceptance。新增採用 gate：必須以 resume_fit 原地驗證舊 run 前 36 個 Q1／Q2 W60 完成 fit，檢查 run_hash／job／formal identity，不重寫、不重訓；缺 36th、輸出損毀、錯 run_hash 均 STOP。
+- 現有 `tasks/p4a-source-compat-20e6b54.json` 是 GENERATED 候選檔，依任務用工具重產；`to.commit` 是本輪 base HEAD，逐檔 SHA 才綁定未 commit 的工作 bytes。相對 4e56e9d 共 6 個差異來源：p4_bundle、p4_colab、p4_eval、p4_source_compat、seq_runner、colab-p4.md。此任務實際未修改 p4_bundle／seq_runner，兩者是基準已存在的相容差異。矩陣 manifest identity 仍為 2183 bytes／bc6401095260e7d4153060e3106fff8dbae88cfb6df3f349b808b7dd762c7d9f；只唯讀既有本機上傳目錄的 manifest，未寫正式 Data。
+- Human requirements 新增第 9 節，必須對每類 queue 第一個 fit 與 W120／W250 在真實資料／CUDA 排練；指南提供命令。相容範圍只依此事故專項擴充，不改 frozen research／environment／budget authority。
+
+### Evidence（CPU 工程證據）
+
+RED：`/tmp/p4-q3-red.log`，**9 failed in 4.74s**，事故標籤測試與尚未存在的排練入口均失敗。初步 GREEN 曾出現兩項夾具設定錯誤（Q4 首筆是 2022 折，Q5 需要 n_cross），修正後 9 passed；擴充支援／路徑後 11 passed；最後 focused 為 **17 passed in 14.67s**（`/tmp/p4-q3-focused2.log`）。36 完成採用負向測試另為 **3 passed in 10.23s**（`/tmp/p4-q3-adoption.log`）。跨版測試第一次受 fixture 區域變數覆蓋 manifest bytes 影響而中斷；修正後一次候選測試又因同一行程載入舊 AST pins 時繼續更新候選 rehearsal 函式而 fail closed（15 passed／1 skipped 後一項失敗）。保留 `/tmp/p4-q3-compat*.log`，這些不是全套成功證據；最終凍結來源後完整重跑，以最終 full log 為準。
+
+- 舊與新各 36 個 Q1／Q2 train_fit 真實 admission 路徑（訓練邊界 double），共 72 次，common_rows 呼叫記錄為 0。原 GRU／crossstock CPU test 從 git show 4e56e9d 載入舊 seq_runner，維持 W60／4 epochs／51 steps／dropout .2，逐 tensor bytes、prediction bytes、sampler／NumPy／torch RNG 與 epoch2→4 resume 比對。
+- 舊 runner／ledger／complete 寫出 36 完成後故意中斷；新版沿用原 run identity，先驗證 36 個，僅啟動 Q3 第一個 2021/mamba2/17/W120（帶 NaN reference），發布並通過 complete，再在第二筆前停止；此時 37 completed，舊 bytes 全不變。之後完成其餘 27，總共只新增 28 個訓練呼叫，最終 64 全 cached；原舊 notebook runner 回跑仍全略過。這是 CPU artifact double，不是 64 個真模型訓練。
+- Family C 同時比較 W60／W120／W250，有交集外 IPO、尾端 NaN；共同支援與每 seed 重排名均有數值斷言。W120／W250 實際 SeqData 排練包含 train_one、predict、pointer／BEST／history、發布及完成輸出再驗證；Q4 真實 2022 首筆 job 選擇及不同 LR 配方也經此路徑。
+- 四項 in-memory mutation 只改子程序記憶體，無 source 落盤：finite exit=1（1 failed in 0.06s）；nan_equality exit=1（1 failed in 0.07s）；reference exit=1（1 failed in 3.00s）；permutation exit=1（1 failed in 0.84s）。各 log `/tmp/p4-q3-mutation-*.log` 是對應測試的行為失敗，不是 import／collection error。彙總 `/tmp/p4-q3-mutations.log`。
+
+### Q3 之後靜態審視與 Remaining／Blockers
+
+Q4 有兩個 LR／mamba2、GRU、2022 折，沿用 W60 對齊及 effective recipe 驗證；完整 synthetic runner 涵蓋全四筆，CPU single-fit 排練覆蓋 GRU 首筆。Q5 有獨立模型重建、正式 complete／BEST 載入、兩種 split、10 次排列、GPU thermal check 與 diagnostic identity/hash 快取；CPU 排練覆蓋前述模型／checkpoint／推論／split／排列路徑，舊 full runner 測試涵蓋 cached diagnostic schema gate。官方 mamba mixer 的 CUDA kernel／ABI、RTX 3060／T4 峰值記憶體、全量 fold 推論耗時、GPU 溫度、Colab 斷線、Drive FUSE 持久性與真實 36 完成 artifacts 均未實測；Q5 若每日期成熟股票少於 10 名或常數，仍會明確 STOP，不能用 0 取代未知。排練保留完整評估支援，因此 1 step 不保證全量推論很快；這是刻意重演實際路徑。
+
+本輪無 GPU／網路／Colab／新資料／production／scheduler／push／merge／deploy／additional agents／wakeup。沒有新交付 ZIP／notebook，未驗證 Human 現場 acceptance。既有 unrelated worktrees 沒有動作；本工作樹依 no-commit 指示刻意 dirty，不宣稱 clean。Next recommended action：獨立防禦性審查後，由 Human 在本機 RTX 3060 以真實 fold/reference 排練 Q1／Q3 W120＋W250／Q4／Q5，再決定新版正式接續。
+
+Runtime/environment：WSL-native 本任務 worktree；借用 `/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python` 的既有 CPU 環境，只借 runtime、不借研究 evidence。MARKETMAMBA_DATA_ROOT unset；Data realpath 為本工作樹一般目錄。CUDA_VISIBLE_DEVICES=''、OMP/MKL threads=1，既有 `/tmp/p4-notebook-deps` 提供離線 nbformat。版本與最終輸出／hash／knowledge gate 列於下方最終驗證。
+
+### 完整變更路徑
+
+- `V6/research_lab/p4_colab.py`
+- `V6/research_lab/p4_eval.py`
+- `V6/research_lab/p4_source_compat.py`
+- `V6/research_lab/tests/test_p4_source_compat.py`
+- `docs/operations/colab-human-requirements.md`
+- `docs/operations/colab-p4.md`
+- `knowledge/00_Project_Map/Authority_Map.md`
+- `knowledge/00_Project_Map/Current_State.md`
+- `knowledge/00_Project_Map/Worktree_Register.md`
+- `knowledge/01_Domains/Training.md`
+- `reports/v7_p4a_colab_engineering.md`
+- `tasks/p4a-source-compat-20e6b54.json`
+- `V6/research_lab/tests/test_p4_rehearsal.py`
+
+### 最終驗證（本輪，來源凍結後）
+
+實際完整 CPU 指令（exit 0）：
+
+```bash
+PYTHONPATH=.:V6:V6/research_lab/tests:/tmp/p4-notebook-deps \
+CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests tests -q -p no:cacheprovider
+```
+
+實際 stdout（含原有 warning，未停用測試）：
+
+```text
+........................................................................ [  9%]
+........................................................................ [ 18%]
+........................................................................ [ 27%]
+........................................................................ [ 36%]
+........................................................................ [ 45%]
+........................................................................ [ 54%]
+........................................................................ [ 63%]
+........................................................................ [ 72%]
+........................................................................ [ 81%]
+........................................................................ [ 90%]
+.............s.......................................................... [ 99%]
+...                                                                      [100%]
+=============================== warnings summary ===============================
+research_lab/tests/test_p4.py::test_zip_inventory_and_payload_gates[duplicate]
+  /usr/lib/python3.12/zipfile/__init__.py:1620: UserWarning: Duplicate name: 'folds/fold_2021/X.npy'
+    return self._open_to_write(zinfo, force_zip64=force_zip64)
+
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+  /tmp/pytest-of-frank/pytest-178/test_mutation_controls_session0/mutant.py:93: Pandas4Warning: Timestamp.dayofweek is deprecated and will be removed in a future version. Use Timestamp.day_of_week instead.
+    sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+794 passed, 1 skipped, 5 warnings in 418.34s (0:06:58)
+```
+
+Syntax AST parse：5 個變更 Python 檔通過；JSON 宣告 schema／to_sources 逐項 identity：230 個來源一致。下表為實際 bytes／SHA-256：
+
+| 路徑 | bytes | SHA-256 |
+|---|---:|---|
+| V6/research_lab/p4_colab.py | 58150 | ba686a8ce66b0ee4a7ed87d586f3dd11efd311ac9898389607ebe1961e68168b |
+| V6/research_lab/p4_eval.py | 12906 | 41cdbcd017080ad5026102e7d2d4833d4e4bf96da99e5e751561274e89a1728b |
+| V6/research_lab/p4_source_compat.py | 16476 | e84fce9b835d6c8ab4adc2dd6ece6587dd8c4e7a11d302b50db8e057cb22d602 |
+| V6/research_lab/tests/test_p4_rehearsal.py | 8643 | 40ff8af905b9e28570193bbf42e8976bfcec3d70c87640e9f34cb0c2e8f46350 |
+| V6/research_lab/tests/test_p4_source_compat.py | 22104 | 04eafd1f09807e4dc1741ccd5a55b7af2d7e33a8f83649c0e99243b71bf4f194 |
+| tasks/p4a-source-compat-20e6b54.json | 161158 | 13e0ede8720a196eed0e60061eec0fd3c8c03bf22d5734c21ab9f11b6637def9 |
+
+研究契約、runtime 契約、lock 與 protected rolling_seq_scores／portfolio_eval 均與 HEAD 及事故來源 4e56e9d 一致；queue compact sorted JSON SHA 維持 `4dc90ec0ada6c6d34b43c429d359424c502634e502c6856c6774bf138de7ba23`。Runtime 實測版本 Python 3.12.3／torch 2.15.0+cpu／NumPy 2.5.4／pytest 9.2.0。
+
+Knowledge-impact 人工 gate：Semantics=YES（NaN 列身分、Q5 成熟標籤、排練）；Correctness gate=YES（36 completed 採用）；Major blocker/next decision=YES（真實 CUDA 排練）；Authority／Subsystem boundary／Active runtime state／Canonical artifact supersession／Deprecate=NO。worktree responsibility 已登記本 task。同 change 更新 Current State、Authority Map、Training、Worktree Register，未改歷史 runtime observed_at。
+
+正常 tests 後執行 `check_knowledge_impact.py`：PASS（自動 map 只識別 history/reports/tasks 的 NO_KNOWLEDGE_IMPACT，人工仍如上判定需更新）；寫入知識後 `knowledge_health.py --ci` exit 0／Overall WARNING，Project Map／Agent Guides／Domains／Runtime Freshness／Generated Index PASS，Governance／Authority Drift／Legacy Docs WARNING。詳細是原 authority pins 的 8 項 AUTHORITY_REPIN_CANDIDATE、舊外部觀測 STALE_OBSERVATION、legacy README／OVERVIEW／PROJECT 文案；這些引用與文件本輪未修改，不為變綠而 repin 或刷新時間。治理工具實際檢查 843 個 Markdown links／18 個 authority refs／53 JSON，無 structural FAIL；詳細 `/tmp/p4-q3-knowledge-health.json`。`git diff --check` 通過。
+
+Git status：12 個 tracked modified＋1 個 untracked 新測試；起始無既有 dirty/staged/untracked，最終無 staged，依 no-commit 要求保留全部 patch。Commit=N/A；Push=N/A；Merge/Deploy=N/A。Project memory updated=YES；Authority map updated=YES（僅候選界線，未提升 authority）。Completed=bounded engineering candidate；Remaining=真實 CUDA／Colab／Drive 現場及獨立審查／Human acceptance；Blockers=沒有已知 CPU 工程失敗，現場驗證未授權本輪執行。完成不代表 Human acceptance。
+
 ## P4a 來源相容升級 — 2026-11-22（job-run-mwrxutx3-d28fa4）
 
 本輪 base/HEAD `20e6b5408d9f9b13d56290a72a2dc313c35d1b94`，既有 detached `builder_p4a_upgrade`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，明確不 commit／push／merge。只用本機 CPU；沒有 GPU、網路、Colab、資料取得、production、scheduler、通知、wakeup 或額外代理。沿用既有 research_lab／tests／tasks／docs／reports／knowledge；既有 runner 缺少跨來源證據層，因此新增單一 `p4_source_compat.py`，不另建 implementation／artifact tree，也不複製訓練或完成驗證。

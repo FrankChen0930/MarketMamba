@@ -21,12 +21,22 @@ BUDGET=dict(policy='record_only',units_per_hour=0,thermal_stop_c=85)
 # a category is an explanation, not a numerical-equivalence proof.
 REASONS={
     'V6/research_lab/seq_runner.py':(['進度顯示'],'observer progress callbacks only; CPU bitwise regression required'),
-    'V6/research_lab/p4_colab.py':(['進度顯示','日誌','speed-test 帳本分離'],'progress, isolated timing ledger and audited lineage selection; frozen training/fit validation unchanged'),
+    'V6/research_lab/p4_colab.py':(['進度顯示','日誌','speed-test 帳本分離','窗≠60 錯誤修正','新增排練模式'],'long-window NaN row identity fix, shared publication, isolated rehearsal and Q5 mature-label diagnostics; completed W60 training unchanged'),
+    'V6/research_lab/p4_eval.py':(['窗≠60 錯誤修正','Q5 成熟標籤診斷'],'NaN-equivalent identity with infinities rejected; Q1/Q2 W60 train/publication never calls common_rows; IC excludes and reports immature labels'),
     'V6/research_lab/p4_bundle.py':(['進度顯示','日誌','文件'],'streaming notebook, source-upgrade declaration packaging and instructions'),
     'V6/research_lab/p4_source_compat.py':(['日誌'],'source lineage evidence validation and SOURCE_UPGRADE audit; no numerical operations'),
     'docs/operations/colab-p4.md':(['文件'],'operator instructions'),
 }
 
+
+# Reviewed candidate AST pins: changing these requires renewed tests and review.
+REVIEWED_AST={'p4_colab.py:permutation_fit': '45753a42be30bcaa6dfa55df71ff6626d95467388fc5ae1137dc0f3803f01cdd',
+ 'p4_colab.py:publish_predictions': '4b40d606f4452f61d25387138485dbb482c89d485da64a46fab87562c202dbd7',
+ 'p4_colab.py:rehearse': '06234bc3766a577193030d8c72a69be7df7799f9c4ce1a562eef21aa80d4d44a',
+ 'p4_colab.py:train_fit': '17a6537cc1da9655417d432be8bb4af50d35d6a5748d7fda7fb70b280a599753',
+ 'p4_colab.py:validate_fit_outputs': '89294572e3b92f833a1494123e5dcc100af0d450c5c2872da58924595c1eb350',
+ 'p4_eval.py:common_rows': '7e5f6a8fadd5b37686f525dd27b23580d1e447f100b827c9449df903c53afbc3',
+ 'p4_eval.py:permutation_summary': '29942f8bd148c5cdc71b6b48661b08ff146e080309e20e5b639d5fb2d3444c00'}
 
 def identity(payload):
     return dict(bytes=len(payload),sha256=hashlib.sha256(payload).hexdigest())
@@ -52,7 +62,7 @@ def neutral_surface(commit):
     old=ast.parse(git_bytes(commit,'V6/research_lab/p4_colab.py'))
     new=ast.parse((ROOT/'V6/research_lab/p4_colab.py').read_text())
     protected={'Ledger','fit_queue','resume_fit','complete_fit',
-               'validate_fit_outputs','validate_training_state','effective_recipe'}
+               'validate_training_state','effective_recipe'}
     def definitions(tree):
         return {node.name:ast.dump(node,include_attributes=False) for node in tree.body if isinstance(node,(ast.ClassDef,ast.FunctionDef)) and node.name in protected}
     if definitions(old)!=definitions(new):
@@ -60,10 +70,21 @@ def neutral_surface(commit):
     # These observer-bearing functions already differ only in reviewed progress
     # callbacks at this task's base. Refuse further edits without new review.
     baseline=ast.parse(git_bytes('20e6b5408d9f9b13d56290a72a2dc313c35d1b94','V6/research_lab/p4_colab.py'))
-    for name in ('train_fit','permutation_fit','Observer'):
+    for name in ('Observer',):
         left=next(n for n in baseline.body if getattr(n,'name',None)==name)
         right=next(n for n in new.body if getattr(n,'name',None)==name)
         if ast.dump(left)!=ast.dump(right):raise ValueError('unreviewed observer-bearing function: '+name)
+    for key,expected in REVIEWED_AST.items():
+        filename,name=key.split(':')
+        tree=ast.parse((ROOT/'V6/research_lab'/filename).read_text())
+        node=next(n for n in tree.body if getattr(n,'name',None)==name)
+        if hashlib.sha256(ast.dump(node).encode()).hexdigest()!=expected:
+            raise ValueError('unreviewed implementation semantics changed: '+key)
+    # Other evaluator semantics must remain exactly the original implementation.
+    def unchanged_eval(tree):
+        return [ast.dump(n) for n in tree.body if getattr(n,'name',None) not in ('common_rows','permutation_summary')]
+    if unchanged_eval(ast.parse(git_bytes(commit,'V6/research_lab/p4_eval.py')))!=unchanged_eval(ast.parse((ROOT/'V6/research_lab/p4_eval.py').read_text())):
+        raise ValueError('unreviewed evaluator semantics changed')
     path='V6/research_lab/seq_runner.py'
     left=ast.parse(git_bytes('20e6b5408d9f9b13d56290a72a2dc313c35d1b94',path))
     right=ast.parse((ROOT/path).read_text())
@@ -104,6 +125,7 @@ def declaration(commit,to_sources,matrix):
     return dict(version='p4-source-compat-v1',artifact_class='GENERATED',evidence_class='CPU_ENGINEERING_ONLY / COLAB_UNVERIFIED',
                 **{'from':dict(commit=full,sources=before),'to':dict(commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
                 status='UNMERGED / NOT_DEPLOYED; hashes bind working bytes',sources=to_sources)},
+                adoption=dict(required_completed_prefix=36,queues=['Q1','Q2'],validator='resume_fit',retrain=False),
                 differences=changes,invariants=invariants,queue_sha256=queue_sha,matrix=matrix,budget=dict(BUDGET),research_budget=contract['budget'])
 
 
@@ -162,7 +184,7 @@ def _resolve(bundle,mf,binding,root,budget,allow_new=False):
     same('difference path set',sorted(differences),sorted(x['path'] for x in d['differences']))
     for item in d['differences']:
         n=item['path'];same('diff before '+n,d['from']['sources'].get(n),item['before']);same('diff after '+n,sources.get(n),item['after'])
-        same('difference reason '+n,True,bool(item.get('reason')) and bool(item.get('diff')) and bool(item['categories']) and set(item['categories'])<={'進度顯示','日誌','speed-test 帳本分離','文件'})
+        same('difference reason '+n,True,bool(item.get('reason')) and bool(item.get('diff')) and bool(item['categories']) and set(item['categories'])<={'進度顯示','日誌','speed-test 帳本分離','文件','窗≠60 錯誤修正','新增排練模式','Q5 成熟標籤診斷'})
     for n,i in d['invariants'].items():
         target='requirements.lock.txt' if n==LOCK else 'source/'+n
         same('invariant '+n,i,mf['files'].get(target))
@@ -189,6 +211,22 @@ def _resolve(bundle,mf,binding,root,budget,allow_new=False):
         same('non-source inputs',old_inputs,new_inputs)
         matches.append(old)
     same('unique matching old lineage',1,len(matches))
+    same('adoption policy',dict(required_completed_prefix=36,queues=['Q1','Q2'],validator='resume_fit',retrain=False),d.get('adoption'))
+    # This incident's upgrade is certified only after all 36 W60 fits validate.
+    # Read old outputs in place; never rewrite or train while checking adoption.
+    from .p4_colab import resume_fit
+    old=matches[0];run=root/('run-'+hashed(old))
+    prefix=old['queue'][:36]
+    same('completed prefix queue classes',True,len(prefix)==36 and all(j['queue'] in ('Q1','Q2') and j['window']==60 for j in prefix))
+    for job in prefix:
+        fit=run/f"{job['queue']}-{job['year']}-{job['arm']}-{job['seed']}-w{job['window']}-lr{job['lr']}"
+        same('completed prefix marker '+fit.name,True,(fit/'complete.json').is_file())
+        saved=json.loads((fit/'complete.json').read_text())
+        fit_contract=saved['contract']
+        same('completed prefix run_hash',hashed(old),fit_contract.get('run_hash'))
+        same('completed prefix job',job,{k:fit_contract.get(k) for k in job})
+        same('completed prefix formal',False,fit_contract.get('speed_test'))
+        resume_fit(fit,fit_contract)
     event=dict(event='SOURCE_UPGRADE',from_sources_hash=hashed(d['from']['sources']),to_sources_hash=hashed(sources),
                from_sources=d['from']['sources'],to_sources=sources,declaration=digest(path),declaration_path=name,
                observed_at=datetime.now(timezone.utc).isoformat(),environment=binding['environment'],budget=budget,

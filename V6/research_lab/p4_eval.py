@@ -23,7 +23,8 @@ def common_rows(systems):
     for name,frame in systems.items():
         f=frame.copy();f['date']=pd.to_datetime(f.date);f['code']=f.code.astype(str)
         if f.empty or f.duplicated(KEYS).any():raise ValueError('empty/duplicate comparison rows')
-        if not np.isfinite(f.label_y5).all():raise ValueError('nonfinite label')
+        # Labels identify rows; tail NaNs are not portfolio outcomes.
+        if np.isinf(f.label_y5).any():raise ValueError('infinite label')
         normalized[name]=f;indices[name]=pd.MultiIndex.from_frame(f[KEYS])
     common=next(iter(indices.values()))
     for idx in indices.values():common=common.intersection(idx,sort=False)
@@ -31,7 +32,7 @@ def common_rows(systems):
     aligned={name:f.set_index(KEYS).loc[common].reset_index().sort_values(KEYS).reset_index(drop=True)
              for name,f in normalized.items()}
     first=next(iter(aligned.values())).label_y5.to_numpy()
-    if any(not np.array_equal(first,f.label_y5.to_numpy()) for f in aligned.values()):raise ValueError('common row label mismatch')
+    if any(not np.array_equal(first,f.label_y5.to_numpy(),equal_nan=True) for f in aligned.values()):raise ValueError('common row label mismatch')
     report=dict(common_rows=len(common),systems={name:dict(input_rows=len(f),excluded_rows=len(f)-len(common),
                 excluded_fraction=1-len(common)/len(f)) for name,f in normalized.items()})
     return aligned,report
@@ -42,7 +43,16 @@ def permutation_summary(dates,codes,labels,base,mamba,permutations):
     arrays=[np.asarray(a) for a in (dates,codes,labels,base,mamba)]
     dates,codes,labels,base,mamba=arrays
     if len(permutations)!=10 or any(len(a)!=len(dates) for a in arrays):raise ValueError('permutation schema')
-    if not all(np.isfinite(a).all() for a in (labels,base,mamba,*permutations)):raise ValueError('nonfinite permutation input')
+    if any(len(a)!=len(dates) for a in permutations):raise ValueError('permutation schema')
+    if np.isinf(labels).any() or not all(np.isfinite(a).all() for a in (base,mamba,*permutations)):raise ValueError('nonfinite permutation input')
+    # IC requires mature labels, unlike portfolio admission. Use one common mask
+    # for all permutations and both models; retain and report tail exclusions.
+    valid=~np.isnan(labels)
+    excluded_dates=[str(d) for d in sorted(set(dates)-set(dates[valid]))]
+    support=dict(input_rows=len(labels),used_rows=int(valid.sum()),excluded_nan_rows=int((~valid).sum()),excluded_dates=excluded_dates)
+    if not valid.any():raise ValueError('empty mature permutation support')
+    dates,codes,labels,base,mamba=[a[valid] for a in arrays]
+    permutations=[np.asarray(a)[valid] for a in permutations]
     days=sorted(set(dates));daily=[];means=[]
     def corr(a,b):
         if len(a)<10 or np.std(a)==0 or np.std(b)==0:raise ValueError('unknown permutation correlation')
@@ -63,7 +73,7 @@ def permutation_summary(dates,codes,labels,base,mamba,permutations):
                               ic_change=ic-baseline[i],top50_overlap=len(top(a)&top(b))/min(50,len(c))))
         means.append(float(np.mean(ics)))
     sd=float(np.std(means,ddof=1))
-    return dict(R=10,daily=daily,permutation_mean_ic=means,ic_std=sd,mamba_ic_gap=gap,
+    return dict(R=10,label_support=support,daily=daily,permutation_mean_ic=means,ic_std=sd,mamba_ic_gap=gap,
                 order_sensitive=sd>=gap,rule='IC std >= absolute crossstock minus mamba2 IC gap',evidence_class='DESCRIPTIVE_ONLY')
 
 

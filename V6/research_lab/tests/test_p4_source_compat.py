@@ -41,14 +41,32 @@ def setup_upgrade(tmp):
     old_binding=dict(binding,bundle=dict(bytes=len(payload),sha256=hashlib.sha256(payload).hexdigest()))
     root=tmp/'budget';out=root/('run-'+p.hashed(old_binding));out.mkdir(parents=True)
     (out/'run_identity.json').write_text(json.dumps(old_binding))
+    from test_p4 import formal_fixture
+    for job in binding['queue'][:36]:
+        fit=out/f"{job['queue']}-{job['year']}-{job['arm']}-{job['seed']}-w{job['window']}-lr{job['lr']}"
+        attempt=fit/'attempt-active';attempt.mkdir(parents=True)
+        fc,files=formal_fixture(attempt,job=job)
+        fc['run_hash']=p.hashed(old_binding)
+        for checkpoint in attempt.glob('*.pt'):
+            checkpoint_payload=torch.load(checkpoint,map_location='cpu',weights_only=False);checkpoint_payload['contract']=fc;torch.save(checkpoint_payload,checkpoint)
+        pointer=json.loads((attempt/'checkpoint-pointer.json').read_text())
+        for entry in pointer.values():
+            if entry:entry['identity']=b.digest(attempt/entry['file'])
+        (attempt/'checkpoint-pointer.json').write_text(json.dumps(pointer))
+        p.complete_fit(fit,fc,{},['attempt-active/'+f for f in files])
     delivery=tmp/'02_formal';delivery.mkdir()
     with zipfile.ZipFile(delivery/'p4a-bundle.zip','w') as z:z.writestr('bundle-manifest.json',payload)
     return c,bundle,mf,binding,root,out,decl,name
 
 
-def test_adopt_and_audit_identity(tmp_path):
+def test_adopt_and_audit_identity(tmp_path,monkeypatch):
     c,bundle,mf,binding,root,out,decl,name=setup_upgrade(tmp_path)
+    checked=[];original_resume=p.resume_fit
+    def resume(*args):
+        checked.append(args[0]);return original_resume(*args)
+    monkeypatch.setattr(p,'resume_fit',resume)
     chosen,event=c.resolve(bundle,mf,binding,root,dict(policy='record_only',units_per_hour=0,thermal_stop_c=85))
+    assert len(checked)==36 and len(set(checked))==36
     assert chosen==json.loads((out/'run_identity.json').read_text())
     assert p.hashed(chosen)==out.name[4:]
     assert event['declaration']==b.digest(bundle/name)
@@ -75,7 +93,8 @@ def test_upgrade_rejects_mismatch(tmp_path,damage):
 def test_no_old_run_is_new_and_explicit_override(tmp_path):
     c,bundle,mf,binding,root,out,decl,name=setup_upgrade(tmp_path)
     assert c.resolve(bundle,dict(files={}),binding,root,{},allow_new=True)==(binding,None)
-    (out/'run_identity.json').unlink();out.rmdir()
+    import shutil
+    shutil.rmtree(out)
     assert c.resolve(bundle,dict(files={}),binding,root,{})==(binding,None)
 
 
@@ -171,7 +190,7 @@ def test_delivery_includes_generated_declaration(tmp_path,monkeypatch):
     nbformat.validate(nbformat.read(output/'p4a-colab.ipynb',as_version=4))
 
 
-def test_run_old_twelve_fits_then_upgrade_skips_and_audits(tmp_path,monkeypatch):
+def test_run_old_36_fits_then_upgrade_starts_only_first_q3(tmp_path,monkeypatch):
     """Real old run/ledger/publication, CPU artifact double; no GPU claims."""
     import io
     import pandas as pd
@@ -179,7 +198,7 @@ def test_run_old_twelve_fits_then_upgrade_skips_and_audits(tmp_path,monkeypatch)
     op=old_module(tmp_path,'p4_colab')
     to=c.current_sources();decl=c.declaration(OLD,to,None)
     ref=tmp_path/'reference.parquet'
-    frame=pd.DataFrame([dict(fold=y,date=pd.Timestamp(f'{y}-02-01'),code=code,label_y5=float(i),score=float(i),system='c0plus') for y in range(2021,2027) for i,code in enumerate(('A','B'))])
+    frame=pd.DataFrame([dict(fold=y,date=pd.Timestamp(f'{y}-02-01'),code=code,label_y5=np.nan if i==1 else float(i),score=float(i),system='c0plus') for y in range(2021,2027) for i,code in enumerate(('A','B'))])
     frame.to_parquet(ref)
     refmanifest=tmp_path/'refmanifest.json';refmanifest.write_text(json.dumps(dict(outputs={'rank_average.parquet':b.digest(ref)})))
     common={'reference/rank_average.parquet':ref,'reference/manifest.json':refmanifest,'requirements.lock.txt':b.ROOT/c.LOCK}
@@ -209,9 +228,9 @@ def test_run_old_twelve_fits_then_upgrade_skips_and_audits(tmp_path,monkeypatch)
     calls=[];disconnect=[True]
     def fake_train(directory,year,arm,seed,cfg,reference,observer):
         calls.append((year,arm,seed,cfg['window'],cfg['lr']))
-        if disconnect[0] and len(calls)==13:
+        if disconnect[0] and len(calls)==37:
             disconnect[0]=False
-            raise RuntimeError('synthetic disconnection after twelve completed fits')
+            raise RuntimeError('synthetic disconnection after 36 completed fits')
         observer.device='cpu';weights={'weight':torch.tensor([1.])}
         history=[dict(epoch=i,val_ic5=.3 if i==1 else .3-i*.1) for i in range(1,5)]
         for epoch in range(1,5):
@@ -224,20 +243,37 @@ def test_run_old_twelve_fits_then_upgrade_skips_and_audits(tmp_path,monkeypatch)
     out=next(root.glob('run-*'))
     oldidentity=(out/'run_identity.json').read_bytes()
     originals={str(f):b.digest(f) for marker in out.glob('*/complete.json') for f in marker.parent.rglob('*') if f.is_file()}
-    assert len(list(out.glob('*/complete.json')))==12
-    completed_calls=calls[:12];calls.clear()
+    assert len(list(out.glob('*/complete.json')))==36
+    completed_calls=calls[:36];calls.clear()
     monkeypatch.setattr(p,'train_fit',fake_train)
     monkeypatch.setattr(p,'permutation_fit',lambda *a,**k:dict(CPU_TEST_DOUBLE=True))
+    # New run reaches Q3 with a tail NaN, then stops before its second fit.
+    # Both immutable bundles already carry tail NaNs (see construction).
+    class FirstQ3Done(RuntimeError):pass
+    def first_q3(*args):
+        if calls:raise FirstQ3Done('only Q3 first fit requested')
+        assert args[4]['window']==120
+        from research_lab.p4_eval import common_rows
+        common_rows({'model':args[5],'reference':args[5]})
+        return fake_train(*args)
+    monkeypatch.setattr(p,'train_fit',first_q3)
+    with pytest.raises(FirstQ3Done):p.run(newbundle,root)
+    assert len(calls)==1 and calls[0]==(2021,'mamba2',17,120,3e-4)
+    assert len(list(out.glob('*/complete.json')))==37
+    assert all(b.digest(Path(f))==ident for f,ident in originals.items())
+    assert (out/'run_identity.json').read_bytes()==oldidentity
+    # Complete remaining jobs, verifying cached first Q3 is not retrained.
+    monkeypatch.setattr(p,'train_fit',fake_train)
     result=p.run(newbundle,root)
-    assert len(calls)==52 and not set(completed_calls)&set(calls)
+    assert len(calls)==28 and not set(completed_calls)&set(calls)
     assert len(result['jobs'])==64 and (out/'run_identity.json').read_bytes()==oldidentity
     assert all(b.digest(Path(f))==ident for f,ident in originals.items())
     assert list(root.glob('run-*'))==[out]
-    audits=list(out.glob('source-upgrade-*.json'));assert len(audits)==1
+    audits=sorted(out.glob('source-upgrade-*.json'));assert len(audits)==2
     event=json.loads(audits[0].read_text());assert event['event']=='SOURCE_UPGRADE'
     ledger_events=[json.loads(f.read_text()) for f in root.glob('event-*.json')]
     recorded=next(e for e in ledger_events if e['event']=='SOURCE_UPGRADE')
-    assert recorded['state']['source_upgrade']['identity']==b.digest(audits[0])
+    assert recorded['state']['source_upgrade']['identity'] in [b.digest(a) for a in audits]
     assert recorded['state']['source_upgrade']['from_sources_hash']==event['from_sources_hash']
     assert result['binding']==json.loads(oldidentity)
     monkeypatch.setattr(p,'train_fit',lambda *a,**k:pytest.fail('cache retrained on second upgrade invocation'))
@@ -300,3 +336,17 @@ def test_budget_requires_exact_numeric_representation(tmp_path):
     decl['budget']['units_per_hour']=0.0
     (bundle/name).write_text(json.dumps(decl));mf['files'][name]=b.digest(bundle/name)
     with pytest.raises(ValueError,match='STOP: budget'):c.resolve(bundle,mf,binding,root,c.BUDGET)
+
+
+@pytest.mark.parametrize('damage',['missing_36th','corrupt_output','wrong_run_hash'])
+def test_adoption_requires_all_36_valid_completed_fits(tmp_path,monkeypatch,damage):
+    c,bundle,mf,binding,root,out,decl,name=setup_upgrade(tmp_path)
+    job=binding['queue'][35]
+    fit=out/f"{job['queue']}-{job['year']}-{job['arm']}-{job['seed']}-w{job['window']}-lr{job['lr']}"
+    if damage=='missing_36th':(fit/'complete.json').unlink()
+    elif damage=='corrupt_output':(fit/'attempt-active/scores.parquet').write_bytes(b'corrupt')
+    else:
+        marker=json.loads((fit/'complete.json').read_text());marker['contract']['run_hash']='wrong'
+        (fit/'complete.json').write_text(json.dumps(marker))
+    monkeypatch.setattr(p,'train_fit',lambda *a,**k:pytest.fail('adoption retrained a completed fit'))
+    with pytest.raises(ValueError,match='STOP'):c.resolve(bundle,mf,binding,root,c.BUDGET)

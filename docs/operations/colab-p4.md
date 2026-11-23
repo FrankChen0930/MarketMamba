@@ -81,3 +81,21 @@ Human 斷線後：開新 notebook，將同批 zip＋ipynb 上傳 `MarketMamba/p4
 Runner 掃描 `budget/run-*/run_identity.json`。舊身分只存 manifest 的 size／SHA，新版讀取實驗下既有交付 ZIP 的有界 manifest，先匹配舊 run 的 manifest identity，再逐檔核對宣告 from／to／完整差異集合及所有非來源輸入（含參考鍵）。契約／64-fit 佇列／DATASET_MANIFEST／環境／record_only 預算全相同且只有一個可採用 lineage 才繼續；沿用舊 run_hash，所以舊 complete.json 及 attempt-active 的 epoch pointer 可直接驗證。歷史 artifacts 不遷移、不改寫。run 目錄新增 `source-upgrade-*.json`，ledger 追加 `SOURCE_UPGRADE`，記錄來源清單／雜湊、宣告身分、時間、執行環境與原／新 binding。
 
 缺檔、雜湊或身分不合會 STOP 並說明預期／實際及下一步。保留帳本與舊 ZIP，修正交付或回原 notebook；不要刪 `budget/`。找不到舊 run 才建立全新 run；明確要新批次時才設第 0 格 `ALLOW_NEW_RUN=True`（runner `--allow-new-run`），此操作不自動清除 STOP／帳本。多個不同 lineage 保守拒絕，需另案盤點，不自選其中一個。升級宣告不是任意跨版許可，每次需 CPU GRU／crossstock 位元比較、舊 checkpoint 及完成 fit 接續測試與獨立審查。規則以 [Human 持續需求第 8 節](colab-human-requirements.md) 為準。
+
+## 事故後必做：上線前排練（候選，2026-11-23）
+
+長跑前先對真實資料排練；這是 [Human 需求第 9 節](colab-human-requirements.md) 的新 gate。以下指令在已備妥資料的本機 CUDA／Colab runtime 執行（`PYTHONPATH=V6`；`--bundle` 指已解壓目錄，可代替 `--reference` 自動選 keys.parquet／rank_average.parquet）：
+
+```bash
+python -m research_lab.p4_colab --rehearse --data-dir /path/matrix_v1 --reference /path/reference/keys.parquet --queue Q1
+python -m research_lab.p4_colab --rehearse --data-dir /path/matrix_v1 --reference /path/reference/keys.parquet --queue Q3 --window 120
+python -m research_lab.p4_colab --rehearse --data-dir /path/matrix_v1 --reference /path/reference/keys.parquet --queue Q3 --window 250
+python -m research_lab.p4_colab --rehearse --data-dir /path/matrix_v1 --reference /path/reference/keys.parquet --queue Q4
+python -m research_lab.p4_colab --rehearse --data-dir /path/matrix_v1 --reference /path/reference/keys.parquet --queue Q5
+```
+
+`--arm` 可選該佇列支援的臂；不指定時選 frozen queue 的第一筆（Q1／Q3 是 2021 mamba2 seed17，Q4 是 2022 mamba2 seed17、lr=1e-4）。Q5 固定 W60 crossstock＋mamba2，會先各做一個排練 fit，再用其 checkpoint 執行 validation／evaluation、10 次排列診斷。預設 `--steps 1` 且固定 1 epoch，保留原 validation／evaluation 支援，不以縮減列數藏掉尾端 NaN 或上市歷史不足。可直接傳單一 fold 目錄，Q4 需給 2022 折。
+
+輸入矩陣只讀；快取及產物都在 `/tmp/p4-REHEARSAL-*`，不需 `--drive-root`、不接觸正式 run 或 ledger。保留資料 realpath、manifest/reference identity、配方、source identity 與 runtime 版本；輸出標示 `REHEARSAL / 不是研究結果`。1 epoch 的 `REHEARSAL-complete.json` 通過相同輸出／pointer／BEST／history 檢查，但正式 `resume_fit` 不認此檔，也不放寬 frozen recipe。失敗時先讀終端列出的暫存路徑保留診斷，排練通過不等於完整研究或 Human acceptance。
+
+本次 4e56e9d 升級須保留舊 ZIP、36 份 Q1／Q2 complete 及其所有檢查點／輸出；逐一通過 resume_fit 才採用原 lineage。長窗發布 reference 取共同列，NaN 標籤只作列身分比對；±inf／標籤不一致仍拒絕。Q5 的 IC 明列成熟標籤支援與排除量，完全無成熟支援／不足 10 名／常數相關仍 STOP。Q4 的不同 LR 與 2022 折已由 CPU 排練覆蓋；真實 CUDA 記憶體、官方 mixer、T4 runtime、Drive FUSE 及完整 64-fit＋Q5 現場仍 UNVERIFIED。正在執行的 kernel 不換碼，獨立審查與現場排練後才採用新交付。

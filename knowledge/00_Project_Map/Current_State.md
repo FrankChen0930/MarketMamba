@@ -1,3 +1,11 @@
+## P4a Q3 事故修補／上線前排練候選 — 2026-11-23
+
+`job-run-mwt8u5js-7f212c`／`fixer_p4a_q3`，detached base `685f6ece1faa7ed39ff7ebff7056b2c4ad7eb4b2`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依 no-commit 指示保留 patch。Human 報告原 02_formal@4e56e9d 已完成 36 個 Q1／Q2，Q3 W120 因尾端 NaN label 中斷；本輪未觀測 Drive 或驗證現場 36 份產物。修正列身分 NaN 等價／±inf 拒絕，Q5 IC 僅用共用成熟標籤支援；新增同一訓練／發布／輸出驗證路徑的 `--rehearse`，產物僅 `/tmp`、明標不是研究結果。
+
+[Training note](../01_Domains/Training.md)／[工程報告](../../reports/v7_p4a_colab_engineering.md)記錄實際 CPU 回歸、跨版 bytes／RNG、72 次 W60 呼叫路徑、36 完成後首筆 Q3 接續、四項 in-memory 變異與限制。[工具重產的 GENERATED 宣告](../../tasks/p4a-source-compat-20e6b54.json)綁定本工作樹 bytes，新增採用前原地 resume_fit 驗證 36 份完成 fit；只擴充本事故的相容分類，不改研究／queue／matrix／環境／預算 authority。
+
+Next：獨立審查後，Human 以真實 fold/reference 在本機 RTX 3060 或 Colab 排練 Q1、Q3 W120＋W250、Q4、Q5，才決定新版正式接續。現場 CUDA／官方 mixer／T4／Drive FUSE／Human acceptance 仍 UNVERIFIED；無 GPU、網路、Colab、正式 Data／模型、production、scheduler、commit／push／merge 或額外 agents；runtime observed_at 未變。
+
 ## P4a 來源相容升級候選 — 2026-11-22
 
 `job-run-mwrxutx3-d28fa4` builder，沿用既有 detached worktree `builder_p4a_upgrade`，base/HEAD `20e6b5408d9f9b13d56290a72a2dc313c35d1b94`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依 no-commit 指示保留 patch。依 [Human 需求第 8 節](../../docs/operations/colab-human-requirements.md)新增 [來源驗證模組](../../V6/research_lab/p4_source_compat.py)，沿用 [runner](../../V6/research_lab/p4_colab.py)／[交付工具](../../V6/research_lab/p4_bundle.py)，沒有新 worktree／實驗樹。現有 runner 沒有跨來源證據層，因此在相同 research_lab 新增單一 helper；不複製訓練／完成驗證實作。

@@ -60,3 +60,10 @@ MyDrive/MarketMamba/
 - 本次候選認證來源為 `4e56e9d`。舊 run_identity 只有 bundle manifest identity，因此必須保留 `02_formal/p4a-bundle.zip` 作逐檔證據；新版自動讀取，不需 Human 手貼 hash。缺少宣告、舊 ZIP 或任一身分不合一律 STOP，列出預期／實際與下一步；不得悄悄新開批次。只有第 0 格明設 `ALLOW_NEW_RUN=True` 才允許新批次，此開關不修復／重置原帳本，也不略過既有完整性驗證。
 - 斷線後操作：開新 notebook，將新版 zip＋ipynb 放到 `MarketMamba/p4a/03_formal_resume/`，從上到下執行；`EXPERIMENT_DIR` 仍指向 `MarketMamba/p4a`，資料不用再上傳，舊 ZIP／budget 不刪不搬。不要在仍執行訓練的 kernel 中更換程式。
 - 在 run 目錄與 hash-chain ledger 記錄 `SOURCE_UPGRADE`，含 from／to 來源清單雜湊、宣告身分、時間及環境。歷史 run_identity、完成標記與 checkpoint 不改寫。候選目前只有 CPU 工程證據，Colab／T4／Drive 現場仍 UNVERIFIED；仍需獨立審查與 Human acceptance。
+
+## 9. 上線前排練（2026-11-23 事故後新增）
+
+- 每種佇列項目的第一個擬合，必須先用**真實 fold 資料與同一程式路徑**在本機 CUDA 或 Colab 排練；至少涵蓋 Q1、Q3 的 120／250 窗、Q4，以及以排練 checkpoint 執行的 Q5。CPU 合成測試不能代替此現場 gate。
+- `python -m research_lab.p4_colab --rehearse --data-dir ... --reference ... --queue Q3 --window 120 --arm mamba2 --steps 1` 預設 1 epoch／1 step；入口沿用 SeqData、checked_splits、train_fit／train_one、predict、發布與 completed-output validator。沒有 Drive 輸出／預算帳本，所有產物在系統 `/tmp/p4-REHEARSAL-*`，明標 `REHEARSAL / 不是研究結果`，不能納入正式 fit 或推論研究結論。
+- 第 8 節來源相容範圍針對本事故擴充：允許有專項證據的窗≠60 對齊錯誤修正、新增排練，以及 Q5 成熟標籤診斷。不是任意研究配方變更許可。`common_rows` 容許相同位置 NaN，拒絕 ±inf 與標籤不一致；Q5 IC 僅使用所有模型共用的成熟標籤列並回報排除量，未知／不足仍 STOP。組合績效不使用 label_y5。
+- 本事故升級採用條件：舊 run 的 **36 個 Q1／Q2 W60 completed fits 全部通過 resume_fit**，保留 bytes 並略過，從尚未完成的 Q3 接續。缺任一完成證據或損毀即 STOP；不重跑前 36 筆來湊數。本機 GRU／crossstock 位元一致、未呼叫修改路徑、36 完成接續整合、宣告重產與獨立審查都是必要工程證據；本機真實 CUDA／Colab 現場與 Human acceptance 仍需另外完成。

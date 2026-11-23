@@ -1,5 +1,11 @@
 # Worktree Register
 
+## P4a Q3 事故 fixer／排練 builder — 2026-11-23
+
+- Purpose/task：尾端 NaN 列身分修補、真實資料 single-fit 排練入口、36 完成接續與來源相容宣告；owner Human/Codex builder，job-run-mwt8u5js-7f212c。沿用 `.worktrees/ruflo-workers/run-mwt8u5js-7f212c/fixer_p4a_q3`，detached HEAD/base `685f6ece1faa7ed39ff7ebff7056b2c4ad7eb4b2`，created 2026-11-23、retired N/A。起始 clean；依 no-commit 指示保留 dirty patch，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。
+- Authority：Human EXECUTE_APPROVED bounded task；研究／queue／matrix／環境／預算契約與正式 completed gate 維持，新增本事故 36 完成採用檢查及 TEMPORARY 排練。不寫正式 Data／V6/models；無 GPU／網路／Colab／production／scheduler／additional agents／wakeup／commit／push／merge／deploy。沿用既有 implementation／tests／report／knowledge 容器，無新 worktree／artifact tree。
+- Merge/artifact dependency：獨立審查、Human 真實 CUDA 排練與 acceptance 未完成；GENERATED 宣告維持既有 `tasks/p4a-source-compat-20e6b54.json` 路徑，由工具重產綁定工作 bytes。CPU logs `/tmp/p4-q3-*`、合成資料與 rehearsal 目錄為 TEMPORARY，不是研究 evidence。詳見[工程報告](../../reports/v7_p4a_colab_engineering.md)。Safe-removal preconditions：先保存未提交 patch／必要證據、處理引用、完成 retirement review；目前 dirty 不可移除，既有其他 worktrees 不動。
+
 ## P4a 來源相容升級 builder — 2026-11-22
 
 - Purpose/task：4e56e9d → HEAD 來源相容宣告、舊 lineage 接續與 CPU RED/GREEN；owner Human/Codex builder，job-run-mwrxutx3-d28fa4。沿用 `.worktrees/ruflo-workers/run-mwrxutx3-d28fa4/builder_p4a_upgrade`，detached HEAD/base `20e6b5408d9f9b13d56290a72a2dc313c35d1b94`，created 2026-11-22、retired N/A。起始 clean，依 no-commit 保留 dirty patch；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。
