@@ -1,3 +1,13 @@
+## P4a 正式前自動排練閘門候選 — 2026-11-24
+
+`job-run-mwtk8k4r-a80ee8`／`builder_p4a_gate`，沿用既有 detached worktree，base/HEAD `bf0114dad9dc2d9bef7502c21d6fd36737eb0458`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依 no-commit 指示保留 patch。獨立審查 NO_GO 的唯一 REQUIRED 為 notebook 缺正式前自動排練；[產生器](../../V6/research_lab/p4_bundle.py) 現在於正式 runner 同一格前段依序跑 Q3 W120 mamba2、Q3 W250 mamba2、Q5（兩 prerequisite fits），各 1 step，真實資料／官方 mixer 由現場執行；本輪只有 CPU 合成工程證據。
+
+FORMAL／resume 預設啟用、SPEED_TEST 預設關閉，第 0 格可明設 `REHEARSE_FIRST`。任一步失敗／中斷不啟動正式 runner；輸出失敗階段、`/tmp`、期望／實際／下一步。全部成功才寫 progress 的 `rehearsal_passed.json`；同一 run command／已驗 bundle source／prepared matrix＋rankgauss／資料 realpath／實際 environment identity 相同才略過，標記不是研究或完成 fit authority。[runner](../../V6/research_lab/p4_colab.py) 新增 W≠60 的 sessions／eligible dates 前置檢查，W60 不走新路徑；排練成功輸出 CUDA peak allocated bytes。
+
+[來源相容宣告](../../tasks/p4a-source-compat-20e6b54.json) 由工具重產，誠實分類自動閘門與長窗前置檢查；固定 queue SHA `4dc90ec0ada6c6d34b43c429d359424c502634e502c6856c6774bf138de7ba23`、36 個 Q1／Q2 completed fits 全部 resume_fit 驗證採用條件與研究／環境／預算契約不變。沒有改 P3 adapter／portfolio engine 或正式 Data／模型。完整實際測試輸出、位元比對、三項 pytest exit=1 的 in-memory 變異與限制見[工程報告](../../reports/v7_p4a_colab_engineering.md)。
+
+Next：獨立複審此 patch，再由 Human 驗證真實 CUDA／官方 mixer／Colab／Drive 與正式接續；本輪完成不等於 Human acceptance，不解除 NO_GO。W250 windows 張量／GPU 峰值、首次全量推論耗時、Drive 真實 36 artifacts 均 UNVERIFIED；無 GPU／網路／Colab／production／scheduler／additional agents／commit／push／merge／deploy，無 runtime observed_at 更新。
+
 ## P4a Q3 事故修補／上線前排練候選 — 2026-11-23
 
 `job-run-mwt8u5js-7f212c`／`fixer_p4a_q3`，detached base `685f6ece1faa7ed39ff7ebff7056b2c4ad7eb4b2`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依 no-commit 指示保留 patch。Human 報告原 02_formal@4e56e9d 已完成 36 個 Q1／Q2，Q3 W120 因尾端 NaN label 中斷；本輪未觀測 Drive 或驗證現場 36 份產物。修正列身分 NaN 等價／±inf 拒絕，Q5 IC 僅用共用成熟標籤支援；新增同一訓練／發布／輸出驗證路徑的 `--rehearse`，產物僅 `/tmp`、明標不是研究結果。

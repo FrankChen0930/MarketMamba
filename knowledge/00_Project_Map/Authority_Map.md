@@ -1,3 +1,9 @@
+## P4a 自動排練閘門的 authority 邊界 — 2026-11-24
+
+`job-run-mwtk8k4r-a80ee8`／detached `bf0114d` 是 UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED 候選。依 [Human 需求第 9 節](../../docs/operations/colab-human-requirements.md)，[notebook](../../V6/research_lab/p4_bundle.py) 正式前自動排練與 [runner](../../V6/research_lab/p4_colab.py) W≠60 前置檢查是工程 gate；`progress/*/rehearsal_passed.json` 僅觀測工程排練成功，不能取代正式 completed-fit／checkpoint／研究 gate。標記綁 run command、已驗 bundle source、prepared data／rankgauss 與實際 environment；無效即重做。TEMPORARY 排練 outputs 只在 `/tmp`。
+
+[工具重產宣告](../../tasks/p4a-source-compat-20e6b54.json) 擴充的理由僅限自動排練閘門與長窗前置檢查，AST pin 與 CPU 位元／控制流程測試不等於獨立審查。36 完成 fit 採用條件、64-fit queue SHA、frozen research／runtime／environment／budget authority 維持；現場 CUDA／官方 mixer／W250 峰值／Colab／Drive 均 UNVERIFIED，原 NO_GO／Human acceptance 未解除。沒有 supersede 既有研究或 production authority，也沒有 runtime observed_at 更新。驗證與剩餘風險見[工程報告](../../reports/v7_p4a_colab_engineering.md)。
+
 ## P4a Q3 標籤／排練候選的 authority 邊界 — 2026-11-23
 
 本輪 `job-run-mwt8u5js-7f212c`／detached `685f6ec` 是 UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；[p4_eval](../../V6/research_lab/p4_eval.py) 的 NaN 列身分／Q5 成熟 IC 修正與 [p4_colab](../../V6/research_lab/p4_colab.py) 排練入口是候選工程語義，非研究結果或 deployment authority。[Human 需求第 9 節](../../docs/operations/colab-human-requirements.md)是新增的上線前真實資料排練規則；CPU 測試不取代現場 gate。原 36 completed fits／Q3 事故屬 Human-reported evidence，非本輪 Drive observation。

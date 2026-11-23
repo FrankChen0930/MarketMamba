@@ -1,5 +1,11 @@
 # Worktree Register
 
+## P4a 正式前自動排練閘門 builder — 2026-11-24
+
+- Purpose/task：notebook 正式前 Q3 W120／W250 mamba2＋Q5 自動排練閘門、W≠60 前置檢查與來源相容證據；owner Human/Codex builder，job-run-mwtk8k4r-a80ee8。沿用 `.worktrees/ruflo-workers/run-mwtk8k4r-a80ee8/builder_p4a_gate`，detached HEAD/base `bf0114dad9dc2d9bef7502c21d6fd36737eb0458`，created 2026-11-24、retired N/A。起始 clean；依 no-commit 指示保留 dirty patch，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。
+- Authority：Human EXECUTE_APPROVED bounded task；不改 frozen research／environment／budget、36 完成採用條件與64-fit queue。不改 rolling_seq_scores／portfolio_eval／正式 Data／V6/models；無 GPU／網路／Colab／production／scheduler／additional agents／wakeup／commit／push／merge／deploy。沿用既有 source／tests／docs／report／knowledge 容器，沒有新 worktree 或平行 artifact tree。
+- Merge/artifact dependency：獨立複審、Human 真實 CUDA／官方 mixer 排練及 acceptance 未完成；GENERATED 相容宣告由既有工具重產於原候選路徑。TEMPORARY CPU logs／合成 notebook／mutations 在 `/tmp/p4-gate-*`，完整輸出見[工程報告](../../reports/v7_p4a_colab_engineering.md)。Safe-removal preconditions：先保存未提交 patch／必要證據、處理引用並完成 retirement review；目前 dirty 不可移除，其他既有 worktrees 不動。
+
 ## P4a Q3 事故 fixer／排練 builder — 2026-11-23
 
 - Purpose/task：尾端 NaN 列身分修補、真實資料 single-fit 排練入口、36 完成接續與來源相容宣告；owner Human/Codex builder，job-run-mwt8u5js-7f212c。沿用 `.worktrees/ruflo-workers/run-mwt8u5js-7f212c/fixer_p4a_q3`，detached HEAD/base `685f6ece1faa7ed39ff7ebff7056b2c4ad7eb4b2`，created 2026-11-23、retired N/A。起始 clean；依 no-commit 指示保留 dirty patch，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。

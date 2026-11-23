@@ -99,3 +99,12 @@ python -m research_lab.p4_colab --rehearse --data-dir /path/matrix_v1 --referenc
 輸入矩陣只讀；快取及產物都在 `/tmp/p4-REHEARSAL-*`，不需 `--drive-root`、不接觸正式 run 或 ledger。保留資料 realpath、manifest/reference identity、配方、source identity 與 runtime 版本；輸出標示 `REHEARSAL / 不是研究結果`。1 epoch 的 `REHEARSAL-complete.json` 通過相同輸出／pointer／BEST／history 檢查，但正式 `resume_fit` 不認此檔，也不放寬 frozen recipe。失敗時先讀終端列出的暫存路徑保留診斷，排練通過不等於完整研究或 Human acceptance。
 
 本次 4e56e9d 升級須保留舊 ZIP、36 份 Q1／Q2 complete 及其所有檢查點／輸出；逐一通過 resume_fit 才採用原 lineage。長窗發布 reference 取共同列，NaN 標籤只作列身分比對；±inf／標籤不一致仍拒絕。Q5 的 IC 明列成熟標籤支援與排除量，完全無成熟支援／不足 10 名／常數相關仍 STOP。Q4 的不同 LR 與 2022 折已由 CPU 排練覆蓋；真實 CUDA 記憶體、官方 mixer、T4 runtime、Drive FUSE 及完整 64-fit＋Q5 現場仍 UNVERIFIED。正在執行的 kernel 不換碼，獨立審查與現場排練後才採用新交付。
+
+
+### 正式長跑前自動排練閘門（2026-11-24 候選）
+
+新版 deliver notebook 將閘門放在正式 runner 同一格前段：Q3 W120 mamba2 → Q3 W250 mamba2 → Q5（既有 crossstock＋mamba2 prerequisites），全部 `--rehearse --steps 1`。沿用前格 Drive→SSD 的 `/content/data`、bundle reference、官方 mixer；排練產物只寫 `/tmp/p4-REHEARSAL-*`，不寫正式 outputs／budget。任何非零或中斷均不啟動正式 runner；保留上方輸出的確切暫存路徑，將整格輸出貼給 Claude，修正後重跑。
+
+第 0 格 `REHEARSE_FIRST = MODE != 'SPEED_TEST'`：FORMAL／03_formal_resume 預設啟用，SPEED_TEST 預設關閉；可明設 False。全部成功印出「排練通過（不是研究結果）」與各步秒數，將身分綁定的 `rehearsal_passed.json` 寫入模式的 progress 資料夾；同一 run command、已驗 bundle source、prepared matrix／rankgauss、資料 realpath 與實際 Python／torch／mamba／CUDA／GPU／ABI 等 environment snapshot 相符才略過。遺失／壞 JSON／來源、資料、環境或 run command 改變即重做；重做失敗不保留舊成功標記。這只是工程觀測，不能採用為正式 fit 或研究結果；正式 36 個 completed-fit 採用 gate 與固定 64-fit queue SHA 完全保留。
+
+W≠60 在 SeqData 配置及 split 索引前檢查 sessions≥W、eligible 訓練日≥val_dates+20；不足會顯示 fold、W、需要與實際及下一步。W60 不走新增檢查。成功排練輸出 `torch.cuda.max_memory_allocated` bytes；每個子程序先 reset。**真實 W250 windows 張量／CUDA 峰值與首次完整推論耗時仍 UNVERIFIED**；1 step 不等於全部只做一個 batch 的推論。CPU 合成／mixer 替身只能證明工程控制流程，現場官方 mixer／CUDA／Colab／Drive FUSE 與 Human acceptance 均未驗證。此候選為 UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，不解除獨立審查 NO_GO。

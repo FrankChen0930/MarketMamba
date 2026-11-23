@@ -102,7 +102,8 @@ def test_completed_q1_q2_paths_never_call_common_rows(tmp_path,monkeypatch):
     import torch
     old=old_module(tmp_path,'p4_colab');ref=matrix(tmp_path/'matrix')
     frozen=json.loads((b.ROOT/'tasks/p4a-colab-contract-20261121.json').read_text())
-    calls=[];trains=[]
+    calls=[];trains=[];frames=[]
+    monkeypatch.setattr(p,'long_window_data',lambda *a,**k:pytest.fail('W60 entered new preflight'))
     monkeypatch.setattr(e,'common_rows',lambda *a,**k:calls.append(a) or pytest.fail('W60 entered changed common_rows'))
     model=torch.nn.Linear(1,1)
     def train(*a,**k):
@@ -119,6 +120,10 @@ def test_completed_q1_q2_paths_never_call_common_rows(tmp_path,monkeypatch):
             cfg=dict(frozen['recipe'],window=60,val_dates=15,val_max_rows=0)
             frame,_=mod.train_fit(tmp_path/'matrix',job['year'],job['arm'],job['seed'],cfg,ref.assign(fold=job['year']),obs)
             assert frame.label_y5.isna().any()
+            frames.append(frame)
+    for old_frame,new_frame in zip(frames[:36],frames[36:],strict=True):
+        pd.testing.assert_frame_equal(old_frame,new_frame,check_exact=True)
+        assert old_frame.score.to_numpy().tobytes()==new_frame.score.to_numpy().tobytes()
     assert calls==[] and len(trains)==72
 
 

@@ -67,3 +67,8 @@ MyDrive/MarketMamba/
 - `python -m research_lab.p4_colab --rehearse --data-dir ... --reference ... --queue Q3 --window 120 --arm mamba2 --steps 1` 預設 1 epoch／1 step；入口沿用 SeqData、checked_splits、train_fit／train_one、predict、發布與 completed-output validator。沒有 Drive 輸出／預算帳本，所有產物在系統 `/tmp/p4-REHEARSAL-*`，明標 `REHEARSAL / 不是研究結果`，不能納入正式 fit 或推論研究結論。
 - 第 8 節來源相容範圍針對本事故擴充：允許有專項證據的窗≠60 對齊錯誤修正、新增排練，以及 Q5 成熟標籤診斷。不是任意研究配方變更許可。`common_rows` 容許相同位置 NaN，拒絕 ±inf 與標籤不一致；Q5 IC 僅使用所有模型共用的成熟標籤列並回報排除量，未知／不足仍 STOP。組合績效不使用 label_y5。
 - 本事故升級採用條件：舊 run 的 **36 個 Q1／Q2 W60 completed fits 全部通過 resume_fit**，保留 bytes 並略過，從尚未完成的 Q3 接續。缺任一完成證據或損毀即 STOP；不重跑前 36 筆來湊數。本機 GRU／crossstock 位元一致、未呼叫修改路徑、36 完成接續整合、宣告重產與獨立審查都是必要工程證據；本機真實 CUDA／Colab 現場與 Human acceptance 仍需另外完成。
+
+- `deliver` notebook 在正式 runner **同一格前段**自動依序執行 Q3 W120 mamba2、Q3 W250 mamba2、Q5（既有兩個 prerequisite fits），各 `--rehearse --steps 1`，使用前格 Drive→SSD 準備的 `/content/data`、同一 bundle reference 與官方 mixer。任一步非零／中斷即停止；顯示階段、`/tmp/p4-REHEARSAL-*`、期望／實際及貼完整輸出給 Claude／修正重跑的下一步。全部通過才啟動正式 runner，摘要明標「排練通過（不是研究結果）」及各步耗時。
+- 第 0 格 `REHEARSE_FIRST = MODE != 'SPEED_TEST'`：FORMAL／resume 預設 True，SPEED_TEST 預設 False，可明設開關。同一 run command／已驗 bundle source、prepared matrix／rankgauss identity 與實際 environment identity 全相同時，以 `progress/formal/rehearsal_passed.json` 略過；缺少、損毀或任一身分改變即重做。標記不是完成 fit／研究 authority；失敗不寫成功標記，重檢前移除過期標記。保留第 9 節其他類型首次擬合現場排練要求。
+- W≠60 在 train_fit 前檢查 sessions≥W、eligible 訓練日≥val_dates+20；不足報 fold／W／需要與實際數量及下一步，禁止縮窗／降低門檻。W60 不進入新增檢查，CPU 跨版權重／預測／RNG 位元驗證不得取代 CUDA evidence。
+- 排練成功輸出 `torch.cuda.max_memory_allocated` bytes（每個子程序先 reset，Q5 包含兩個 fits／診斷）。**W250 真實 windows 張量與 CUDA 峰值、全量推論耗時仍 UNVERIFIED**；1 step 只縮短訓練，完整驗證／推論可能仍慢，首次排練耗時未實測。標記用於避免相同身分的重複完整推論。

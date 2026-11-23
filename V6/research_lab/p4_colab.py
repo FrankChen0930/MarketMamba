@@ -627,10 +627,64 @@ def environment(lock, runtime_contract=None, speed=False):
     return actual
 
 
+def long_window_data(directory,year,window,val_dates):
+    """Actionable checks before SeqData allocation/split indexing; W60 bypasses."""
+    from .seq_runner import SeqData
+    sessions=len(np.load(directory/'end_indices.npy',mmap_mode='r'))
+    def insufficient(kind,actual,needed):
+        raise ValueError(f'fold={year} W={window} {kind}: 需要={needed} 實際={actual}；'
+                         '下一步=確認 fold 與資料完整性，提供足夠歷史 sessions／eligible 訓練日後重跑；不得縮窗或放寬契約')
+    if sessions<window:insufficient('sessions',sessions,window)
+    data=SeqData(directory,window=window,normalize='rankgauss')
+    eligible=len(np.unique(data.date_idx[(data.splits==1)&data.eligible]))
+    if eligible<val_dates+20:insufficient('eligible training dates',eligible,val_dates+20)
+    return data
+
+
+def launch_with_rehearsal(common,env,progress,identity,stream,*,enabled=True):
+    """Launch formal only after all three official CLI rehearsals pass.
+
+    The marker is observational engineering evidence, never a completed fit.
+    Caller supplies identities after bundle verification and SSD preparation.
+    """
+    progress=Path(progress);marker=progress/'rehearsal_passed.json'
+    binding=dict(identity=identity,command=common,policy='Q3-W120-mamba2/Q3-W250-mamba2/Q5-1step-v1')
+    saved={}
+    try:saved=json.loads(marker.read_text())
+    except (OSError,ValueError):pass
+    if not isinstance(saved,dict):saved={}
+    if enabled and saved.get('identity')==binding and saved.get('passed') is True:
+        print('排練通過（不是研究結果）：同一 run/source/data/environment，略過；各步耗時：',saved.get('stages'),flush=True)
+    elif enabled:
+        # A stale success must not survive a failed recheck.
+        marker.unlink(missing_ok=True)
+        base=common[:common.index('--drive-root')]+common[common.index('--drive-root')+2:]
+        stages=[]
+        for stage,flags in [('Q3 W120 mamba2',['--queue','Q3','--window','120','--arm','mamba2']),
+                            ('Q3 W250 mamba2',['--queue','Q3','--window','250','--arm','mamba2']),
+                            ('Q5（兩個 prerequisite fits）',['--queue','Q5'])]:
+            command=base+['--rehearse','--steps','1']+flags
+            started=time.perf_counter()
+            try:
+                stream(command,env)
+            except BaseException as error:
+                print(f'排練失敗階段={stage}；暫存產物位置=/tmp/p4-REHEARSAL-*（本步確切路徑見上方）；'
+                      f'期望=回傳碼 0；實際={error!r}；下一步=將本格完整輸出貼給 Claude，修正後重跑；正式 runner 未啟動',flush=True)
+                raise
+            stages.append(dict(stage=stage,seconds=time.perf_counter()-started))
+        progress.mkdir(parents=True,exist_ok=True)
+        atomic_json(marker,dict(identity=binding,passed=True,stages=stages,evidence_class='REHEARSAL / 不是研究結果'))
+        print('排練通過（不是研究結果）；各步耗時：',stages,flush=True)
+    else:print('REHEARSE_FIRST=False：本次未執行自動排練',flush=True)
+    stream(common,env)
+
+
 def train_fit(directory,year,arm,seed,cfg,reference,observer,*,mixer_factory=None):
     """Reuse P3 checked_splits/row admission and existing train_one; P3 collect owns a different ledger."""
     from .seq_runner import SeqData,train_one,predict
-    data=SeqData(directory,window=cfg.get('window',60),normalize='rankgauss');tr,va,ev=checked_splits(data,cfg['val_dates'])
+    data=(SeqData(directory,window=60,normalize='rankgauss') if cfg.get('window',60)==60
+          else long_window_data(directory,year,cfg.get('window',60),cfg['val_dates']))
+    tr,va,ev=checked_splits(data,cfg['val_dates'])
     frame=pd.DataFrame(dict(fold=year,date=pd.to_datetime(np.load(directory/'dates.npy',mmap_mode='r')[ev]),
         code=np.asarray(np.load(directory/'stock_ids.npy',mmap_mode='r')[ev]),label_y5=data.y['y5'][ev]))
     if cfg.get('window',60)==60:require_same_rows(frame,reference)
@@ -888,7 +942,10 @@ def rehearse(data_dir,reference,*,queue='Q3',window=None,arm=None,steps=1,device
     import shutil
     from .seq_runner import _x_tag
     if queue not in ('Q1','Q3','Q4','Q5') or type(steps)!=int or steps<1:raise ValueError('invalid rehearsal queue/steps')
-    if device=='cuda':require_cuda()
+    if device=='cuda':
+        require_cuda()
+        import torch
+        torch.cuda.reset_peak_memory_stats()
     frozen=json.loads((Path(__file__).resolve().parents[2]/'tasks/p4a-colab-contract-20261121.json').read_text())
     jobs=[j for j in fit_queue(frozen) if j['queue']==('Q1' if queue=='Q5' else queue)]
     if queue=='Q5':
@@ -936,6 +993,8 @@ def rehearse(data_dir,reference,*,queue='Q3',window=None,arm=None,steps=1,device
                 implementation={name:digest(Path(__file__).with_name(name)) for name in ('p4_colab.py','p4_eval.py','seq_runner.py')},
                 environment=dict(python=platform.python_version(),torch=torch.__version__,numpy=np.__version__,device=device,mixer='official' if mixer_factory is None else 'TEST_DOUBLE'))
     if queue=='Q5':result['diagnostic']=permutation_fit(directory,year,cfg,paths,guard,device=device,mixer_factory=mixer_factory,rehearsal=True)
+    result['cuda_max_memory_allocated']=torch.cuda.max_memory_allocated() if device=='cuda' else None
+    print('torch.cuda.max_memory_allocated:',result['cuda_max_memory_allocated'],'bytes',flush=True)
     atomic_json(root/'REHEARSAL.json',result)
     return result
 

@@ -854,6 +854,7 @@ def test_drive_settings_shared_budget_and_formal_stop():
         def wait(self):return 0
     nb=bundle.colab_notebook()
     settings={};exec(nb['cells'][0]['source'],settings)
+    assert settings['REHEARSE_FIRST'] is True
     assert settings['MODE']=='FORMAL' and not {'MAX_HOURS','MAX_UNITS','RESERVE'} & settings.keys()
     assert Path(settings['RUN_DIR'])==Path('/content/drive/MyDrive/MarketMamba/p4a/02_formal')
     assert Path(settings['EXPERIMENT_DIR'])==Path(settings['RUN_DIR']).parent
@@ -863,7 +864,8 @@ def test_drive_settings_shared_budget_and_formal_stop():
     with pytest.raises(ValueError,match='STOP'):exec(formal.replace("MODE = 'FORMAL'","MODE = 'INVALID'"),{})
     commands=[]
     for run in ('01_speedtest','02_formal'):
-        namespace=dict(settings,MODE='SPEED_TEST' if run=='01_speedtest' else 'FORMAL',
+        # This existing test isolates budget routing; generated gate execution has its own tests.
+        namespace=dict(settings,REHEARSE_FIRST=False,MODE='SPEED_TEST' if run=='01_speedtest' else 'FORMAL',
                        RUN_DIR='/drive/p4a/'+run,EXPERIMENT_DIR='/drive/p4a',
                        root=Path('/bundle'),p4=type('P4',(),{'prepare_source':lambda _:None,'verify':lambda *a,**k:None}),
                        os=__import__('os'),sys=__import__('sys'),subprocess=type('S',(),{'PIPE':subprocess.PIPE,'STDOUT':subprocess.STDOUT,

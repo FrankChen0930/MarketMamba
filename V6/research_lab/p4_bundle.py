@@ -597,6 +597,7 @@ def colab_notebook(run_name='02_formal', drive_root='/content/drive/MyDrive/Mark
     code('''
         # 設定：P4 僅記錄耗時，不設時數／CU 上限；>=85°C 仍停止。
         MODE = 'FORMAL'  # 可選 SPEED_TEST；兩者輸出隔離
+        REHEARSE_FIRST = MODE != 'SPEED_TEST'  # FORMAL／resume 預設 True；可明設 False
         if MODE not in ('SPEED_TEST','FORMAL'): raise ValueError('STOP: invalid MODE')
         from pathlib import Path
         RUN_DIR = __RUN_DIR__
@@ -799,7 +800,17 @@ def colab_notebook(run_name='02_formal', drive_root='/content/drive/MyDrive/Mark
                 print(f'訓練步驟失敗；期望=回傳碼 0；實際=回傳碼 {actual}；下一步=查看上方最後錯誤及 Drive 進度，檢查環境／空間／identity；保留帳本與原交付，修復原因後重跑',flush=True)
                 raise subprocess.CalledProcessError(actual,command)
         try:
-            stream_training(common+(['--speed-test'] if MODE=='SPEED_TEST' else []),training_env)
+            from research_lab.p4_colab import launch_with_rehearsal, environment_snapshot
+            # prepared.json 由前格逐檔驗證／Drive→SSD 準備後產生，不猜資料身分。
+            rehearsal_identity=None
+            if REHEARSE_FIRST:
+                runtime=json.loads((root/'source/environments/p4a-colab-runtime.json').read_text())
+                rehearsal_identity=dict(source=p4.digest(root/'bundle-manifest.json'),
+                    data=json.loads(Path('/content/data/prepared.json').read_text()),
+                    data_realpath=str(Path('/content/data').resolve()),
+                    environment=environment_snapshot(runtime['packages']))
+            launch_with_rehearsal(common+(['--speed-test'] if MODE=='SPEED_TEST' else []),training_env,
+                                  PROGRESS_DIR,rehearsal_identity,stream_training,enabled=REHEARSE_FIRST)
         finally:
             print('結果資料夾：',BUDGET_DIR,'進度檔：',PROGRESS_DIR/'PROGRESS.txt',flush=True)
             print('run manifests',*[str(p) for p in BUDGET_DIR.glob('run-*/manifest.json')],sep='\\n',flush=True)

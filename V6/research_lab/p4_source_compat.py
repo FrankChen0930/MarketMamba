@@ -21,19 +21,21 @@ BUDGET=dict(policy='record_only',units_per_hour=0,thermal_stop_c=85)
 # a category is an explanation, not a numerical-equivalence proof.
 REASONS={
     'V6/research_lab/seq_runner.py':(['進度顯示'],'observer progress callbacks only; CPU bitwise regression required'),
-    'V6/research_lab/p4_colab.py':(['進度顯示','日誌','speed-test 帳本分離','窗≠60 錯誤修正','新增排練模式'],'long-window NaN row identity fix, shared publication, isolated rehearsal and Q5 mature-label diagnostics; completed W60 training unchanged'),
+    'V6/research_lab/p4_colab.py':(['進度顯示','日誌','speed-test 帳本分離','窗≠60 錯誤修正','新增排練模式','長窗前置檢查','正式前自動排練閘門'],'W!=60 session/eligible preflight; identity-bound one-step launch gate and CUDA peak telemetry; long-window NaN row identity fix, shared publication, isolated rehearsal and Q5 mature-label diagnostics; completed W60 training unchanged'),
     'V6/research_lab/p4_eval.py':(['窗≠60 錯誤修正','Q5 成熟標籤診斷'],'NaN-equivalent identity with infinities rejected; Q1/Q2 W60 train/publication never calls common_rows; IC excludes and reports immature labels'),
-    'V6/research_lab/p4_bundle.py':(['進度顯示','日誌','文件'],'streaming notebook, source-upgrade declaration packaging and instructions'),
-    'V6/research_lab/p4_source_compat.py':(['日誌'],'source lineage evidence validation and SOURCE_UPGRADE audit; no numerical operations'),
+    'V6/research_lab/p4_bundle.py':(['進度顯示','日誌','文件','正式前自動排練閘門'],'FORMAL/resume default rehearsal gate, SPEED_TEST opt-out default, verified source/data/environment identity; streaming notebook, source-upgrade declaration packaging and instructions'),
+    'V6/research_lab/p4_source_compat.py':(['日誌'],'source lineage evidence validation and SOURCE_UPGRADE audit; explicit gate/preflight reason categories; no numerical operations'),
     'docs/operations/colab-p4.md':(['文件'],'operator instructions'),
 }
 
 
 # Reviewed candidate AST pins: changing these requires renewed tests and review.
-REVIEWED_AST={'p4_colab.py:permutation_fit': '45753a42be30bcaa6dfa55df71ff6626d95467388fc5ae1137dc0f3803f01cdd',
+REVIEWED_AST={'p4_colab.py:launch_with_rehearsal': '6b1c03b5e78910d36c7f2da63b7b7cc9cded5f3976d5e07b28155e4094b604c7',
+ 'p4_colab.py:long_window_data': 'a1b26a5fc91fcb4c14b18d2b5ea9f03bba70218c8fe1c858e13239d21244bdf4',
+ 'p4_colab.py:permutation_fit': '45753a42be30bcaa6dfa55df71ff6626d95467388fc5ae1137dc0f3803f01cdd',
  'p4_colab.py:publish_predictions': '4b40d606f4452f61d25387138485dbb482c89d485da64a46fab87562c202dbd7',
- 'p4_colab.py:rehearse': '06234bc3766a577193030d8c72a69be7df7799f9c4ce1a562eef21aa80d4d44a',
- 'p4_colab.py:train_fit': '17a6537cc1da9655417d432be8bb4af50d35d6a5748d7fda7fb70b280a599753',
+ 'p4_colab.py:rehearse': 'f11964b47f8c0c46eb5e374569474a38e08ddd4558fdcedfebffb7718a5a672f',
+ 'p4_colab.py:train_fit': 'b13f2ebefe99f7a3f662df9d35e08d3dff8026041aad05469eb582a322a883d2',
  'p4_colab.py:validate_fit_outputs': '89294572e3b92f833a1494123e5dcc100af0d450c5c2872da58924595c1eb350',
  'p4_eval.py:common_rows': '7e5f6a8fadd5b37686f525dd27b23580d1e447f100b827c9449df903c53afbc3',
  'p4_eval.py:permutation_summary': '29942f8bd148c5cdc71b6b48661b08ff146e080309e20e5b639d5fb2d3444c00'}
@@ -184,7 +186,7 @@ def _resolve(bundle,mf,binding,root,budget,allow_new=False):
     same('difference path set',sorted(differences),sorted(x['path'] for x in d['differences']))
     for item in d['differences']:
         n=item['path'];same('diff before '+n,d['from']['sources'].get(n),item['before']);same('diff after '+n,sources.get(n),item['after'])
-        same('difference reason '+n,True,bool(item.get('reason')) and bool(item.get('diff')) and bool(item['categories']) and set(item['categories'])<={'進度顯示','日誌','speed-test 帳本分離','文件','窗≠60 錯誤修正','新增排練模式','Q5 成熟標籤診斷'})
+        same('difference reason '+n,True,bool(item.get('reason')) and bool(item.get('diff')) and bool(item['categories']) and set(item['categories'])<={'進度顯示','日誌','speed-test 帳本分離','文件','窗≠60 錯誤修正','新增排練模式','Q5 成熟標籤診斷','長窗前置檢查','正式前自動排練閘門'})
     for n,i in d['invariants'].items():
         target='requirements.lock.txt' if n==LOCK else 'source/'+n
         same('invariant '+n,i,mf['files'].get(target))

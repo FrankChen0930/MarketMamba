@@ -1,3 +1,519 @@
+## P4a 正式前自動排練閘門 — 2026-11-24（job-run-mwtk8k4r-a80ee8）
+
+Completed：針對 bf0114d 獨立審查 NO_GO 的唯一 REQUIRED，新增 deliver notebook 正式 runner 同格前段的自動排練。此為 UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED 工程候選；完成不等於 Human acceptance，獨立複審與現場驗證尚未完成。
+
+Decisions：沿用既有 p4_bundle／p4_colab／source-compat／tests／report／knowledge 容器，不新增 implementation 模組、artifact tree、worktree 或代理。依序執行 Q3 W120 mamba2 → Q3 W250 mamba2 → Q5（既有兩個 prerequisite fits），各 `--rehearse --steps 1`；沿用同一 CLI 與正式訓練／發布／輸出驗證路徑。前格 Drive→SSD 準備的 `/content/data`、bundle reference 與官方 mixer 只由現場 notebook 使用；本輪沒有真實資料或 GPU 執行。排練 outputs 僅 `/tmp/p4-REHEARSAL-*`，沒有 formal／budget 輸出。
+
+FORMAL／resume 第 0 格預設 `REHEARSE_FIRST=True`（運算式 `MODE != 'SPEED_TEST'`），SPEED_TEST 預設 False，可明設關閉。任一步非零或中斷顯示階段、暫存位置、期望／實際、貼完整輸出給 Claude／修正重跑等下一步並停止；只有全通過才啟動正式 runner。三步耗時與「排練通過（不是研究結果）」摘要寫出後，以既有 atomic_json 寫 progress 的 rehearsal_passed.json；binding 包含完整 run command（含 bundle／budget namespace／mode）、policy、已驗 bundle-manifest identity（含 source／reference）、prepared matrix／rankgauss identity、資料 realpath、實際 Python／package／CUDA／GPU／ABI／platform snapshot。任一改變、缺 marker、壞 JSON 或非 object 都重做；重做前刪除舊成功標記，失敗不留成功。它不是研究／completed-fit authority，不能用來略過正式 resume_fit。
+
+次要加固：W≠60 在 SeqData 配置前先檢查 sessions≥W，配置後、split 索引前檢查 eligible 訓練日≥val_dates+20。錯誤含 fold／W／需要／實際／下一步，不縮窗、不降低 gate；W60 完全不進新 helper。成功排練每個 CUDA 子程序先 reset peak stats，再輸出 `torch.cuda.max_memory_allocated` bytes；Q5 包含 prerequisite fits 與診斷。此指標不是 CPU windows 張量 RAM／reserved memory 的測量。
+
+來源相容：工具從 git objects 與工作 bytes 重產既有 GENERATED 宣告，新增「正式前自動排練閘門」「長窗前置檢查」分類，同步產生端與採用端白名單，為新增／變動函式更新候選 AST pins。pins 是範圍限制，不是獨立審查證明。36 個 Q1／Q2 W60 completed fits 必須全部原地 resume_fit 驗證、保留 bytes／不重訓，queue SHA `4dc90ec0ada6c6d34b43c429d359424c502634e502c6856c6774bf138de7ba23` 不變；研究／matrix／environment／budget 契約不變。DATASET_MANIFEST 僅唯讀既有本機上傳目錄的 manifest（2183 bytes／bc6401095260e7d4153060e3106fff8dbae88cfb6df3f349b808b7dd762c7d9f），未讀改正式矩陣或 V6/models。
+
+Evidence：新增 gate 測試直接執行產生的 notebook runner 格（子程序邊界替身），證明三種失敗均不啟動 formal，成功才啟動；涵蓋正確 Q3 windows／arm、Q5、steps=1、沿用 data／reference bundle、無 Drive rehearsal argument、marker 缺失／損毀／非 object、source／data／environment／run command 失效及過期成功移除。真實 SeqData 前置檢查測 sessions=100<W250、eligible=12<35。舊／新 36+36 個 W60 train_fit admission 呼叫以 fail sentinel 證明不進 common_rows／新 preflight；新增 GRU／crossstock 真實 train_fit CPU 測試，強制 CPU device／mixer 邊界替身，與 4e56e9d 比對權重 tensor、score 與 torch／NumPy RNG bytes。原有舊／新 seq_runner 多 epoch／resume 位元回歸仍在全套中。這是 CPU 工程證據，不是官方 CUDA 位元證據。
+
+RED：初始新測試 8 failed（入口不存在／notebook 無開關）；中間修正合成 fixture 的 inclusive train_end（eligible 實際12，不是11）與舊 train_fit 無 mixer injection／硬編 CUDA 的 CPU 邊界夾具。來源分類第一輪 focused 為55 passed／4 failed，根因為採用端仍拒絕新理由分類；同步明確白名單後四項回歸全過。第一次全套805 passed／1 failed／1 skipped／5 warnings，唯一失敗是舊 budget routing 測試直接執行假 /bundle 的 runner 格而無 rehearsal metadata；將此路由測試明設 REHEARSE_FIRST=False，另以新增測試執行啟用閘門的完整格，且將 rehearsal 專用 metadata 讀取移入開關。修正後13 focused passed，最後以完整回歸為準。
+
+三項額外 in-memory 變異只在獨立 Python 子程序記憶體修改 launch helper，未寫 source：bypass 移除 rehearsal stream、identity 無視來源身分、swallow 吞掉錯誤。對原測試執行 pytest，三者 exit=1，分別為行為斷言失敗／DID NOT RAISE，無 import／collection 偽失敗。TEMPORARY harness `/tmp/p4-gate-mutate.py`，repo 測試另保留三項 in-memory invariant 驗證。兩種 notebook 的8個 code cells逐格compile／nbformat通過；沒有另產真實交付 ZIP，現有 synthetic deliver 回歸包含在全套中。
+
+Remaining／Blockers：官方 mixer／CUDA／RTX3060／T4／Colab、W250 真實 windows 張量 RAM與 GPU 峰值、全量推論耗時／GPU熱、Drive FUSE fsync／rename／斷線持久性、真實36個完成 artifacts與 Human acceptance 都 UNVERIFIED。1 step只縮短訓練，不省略完整驗證／推論，所以首次耗時未承諾「小」；相同身分 marker 避免重複長推論。成功峰值輸出未以 GPU 實測；異常提前退出不保證取得最終峰值。手動將開關設False可跳過自動排練，但不能繞過正式研究／環境／completed-fit gate，也不代表滿足現場驗收。沒有以 CPU 測試解除 NO_GO。
+
+Next recommended action：獨立複審 patch、宣告、測試與下列輸出；接受後由 Human 另行執行真實 CUDA／官方 mixer／Colab 排練與正式接續。仍保留第9節其他 Q1／Q4 首次 fit 現場排練要求。
+
+Knowledge-impact Gate 人工逐項判斷：Semantics=YES（自動排練與長窗可行動錯誤）、Authority=NO（僅候選工程語義）、Subsystem boundary=NO、Active runtime state=NO、Correctness gate=YES、新增／supersede canonical artifact=NO（只重產 GENERATED 候選）、Deprecate=NO、Major blocker／next decision=YES。工具 PASS／DEFAULT 不取代人工判斷，因此更新既有 Current State／Authority Map／Training／Worktree Register。
+
+Project memory updated：Current_State、Training、Worktree_Register 已在同一 change 更新候選 gate／next decision／工作樹責任。Authority map updated：已記錄 marker 非研究／完成 authority，未變更 production／研究權威、runtime observed_at 或 machine authority map。
+
+Git status：初始 clean、detached HEAD bf0114dad9dc2d9bef7502c21d6fd36737eb0458；依 no-commit 指示保留14 paths dirty（13 tracked修改＋1新測試），無 staged／既有 unrelated dirty。Commit：未執行。Push／merge／deploy：未執行。Worktree：沿用 builder_p4a_gate，未建立／移除其他worktree。Runtime/environment：WSL-native 本工作樹，既有 /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python（Python3.12.3／torch2.15.0+cpu），只借 runtime，不借研究 evidence；CUDA_VISIBLE_DEVICES=''、OMP/MKL threads=1、PYTHONDONTWRITEBYTECODE=1，既有 /tmp/p4-notebook-deps 離線 nbformat。MARKETMAMBA_DATA_ROOT unset，Data realpath 為本工作樹普通目錄；未寫正式Data／模型。無 GPU、網路、資料取得、Colab、production、scheduler、通知、additional agents、wakeup或 recurring job。
+
+Changed（完整路徑）：
+
+- `V6/research_lab/p4_bundle.py`
+- `V6/research_lab/p4_colab.py`
+- `V6/research_lab/p4_source_compat.py`
+- `V6/research_lab/tests/test_p4.py`
+- `V6/research_lab/tests/test_p4_rehearsal.py`
+- `V6/research_lab/tests/test_p4_rehearsal_gate.py`
+- `docs/operations/colab-human-requirements.md`
+- `docs/operations/colab-p4.md`
+- `tasks/p4a-source-compat-20e6b54.json`
+- `knowledge/00_Project_Map/Current_State.md`
+- `knowledge/00_Project_Map/Authority_Map.md`
+- `knowledge/00_Project_Map/Worktree_Register.md`
+- `knowledge/01_Domains/Training.md`
+- `reports/v7_p4a_colab_engineering.md`
+
+實際完整回歸指令（最後一輪）：
+
+```bash
+CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 \
+PYTHONPATH=.:V6:V6/research_lab/tests:/tmp/p4-notebook-deps \
+/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests tests -q -p no:cacheprovider
+```
+
+下列保留各實際輸出（只移除行尾空白以通過 diff check，原始 logs 不改）；測試log／合成notebook／mutations為TEMPORARY，報告與來源／測試／GENERATED宣告為可審查紀錄。沒有新模型結果，model identity=N/A。
+
+### 初始RED完整輸出
+
+`/tmp/p4-gate-red.log`
+
+```text
+FFFFFFFF                                                                 [100%]
+=================================== FAILURES ===================================
+______________ test_gate_success_cache_and_identity_invalidation _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-181/test_gate_success_cache_and_id0')
+
+    def test_gate_success_cache_and_identity_invalidation(tmp_path):
+>       calls=launch(tmp_path)
+              ^^^^^^^^^^^^^^^^
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:23:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-181/test_gate_success_cache_and_id0')
+fail = None, identity = None, enabled = True, implementation = None
+
+    def launch(tmp_path, fail=None, identity=None, enabled=True, implementation=None):
+        seen=[]
+        def stream(cmd,env):
+            seen.append(cmd)
+            if fail and len(seen)==fail:raise subprocess.CalledProcessError(7,cmd)
+        common=['python','-m','research_lab.p4_colab','--bundle','bundle','--data-dir','local','--drive-root','budget']
+>       (implementation or p.launch_with_rehearsal)(common,{},tmp_path,identity or {'source':'a','data':'b','environment':'c'},stream,enabled=enabled)
+                           ^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'research_lab.p4_colab' has no attribute 'launch_with_rehearsal'
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:18: AttributeError
+____________________ test_failure_never_launches_formal[1] _____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-181/test_failure_never_launches_fo0')
+failure = 1, capsys = <_pytest.capture.CaptureFixture object at 0x79f0c26d6930>
+
+    @pytest.mark.parametrize('failure',[1,2,3])
+    def test_failure_never_launches_formal(tmp_path,failure,capsys):
+>       with pytest.raises(subprocess.CalledProcessError):launch(tmp_path,fail=failure)
+                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:42:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-181/test_failure_never_launches_fo0')
+fail = 1, identity = None, enabled = True, implementation = None
+
+    def launch(tmp_path, fail=None, identity=None, enabled=True, implementation=None):
+        seen=[]
+        def stream(cmd,env):
+            seen.append(cmd)
+            if fail and len(seen)==fail:raise subprocess.CalledProcessError(7,cmd)
+        common=['python','-m','research_lab.p4_colab','--bundle','bundle','--data-dir','local','--drive-root','budget']
+>       (implementation or p.launch_with_rehearsal)(common,{},tmp_path,identity or {'source':'a','data':'b','environment':'c'},stream,enabled=enabled)
+                           ^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'research_lab.p4_colab' has no attribute 'launch_with_rehearsal'
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:18: AttributeError
+____________________ test_failure_never_launches_formal[2] _____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-181/test_failure_never_launches_fo1')
+failure = 2, capsys = <_pytest.capture.CaptureFixture object at 0x79f0c219ef00>
+
+    @pytest.mark.parametrize('failure',[1,2,3])
+    def test_failure_never_launches_formal(tmp_path,failure,capsys):
+>       with pytest.raises(subprocess.CalledProcessError):launch(tmp_path,fail=failure)
+                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:42:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-181/test_failure_never_launches_fo1')
+fail = 2, identity = None, enabled = True, implementation = None
+
+    def launch(tmp_path, fail=None, identity=None, enabled=True, implementation=None):
+        seen=[]
+        def stream(cmd,env):
+            seen.append(cmd)
+            if fail and len(seen)==fail:raise subprocess.CalledProcessError(7,cmd)
+        common=['python','-m','research_lab.p4_colab','--bundle','bundle','--data-dir','local','--drive-root','budget']
+>       (implementation or p.launch_with_rehearsal)(common,{},tmp_path,identity or {'source':'a','data':'b','environment':'c'},stream,enabled=enabled)
+                           ^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'research_lab.p4_colab' has no attribute 'launch_with_rehearsal'
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:18: AttributeError
+____________________ test_failure_never_launches_formal[3] _____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-181/test_failure_never_launches_fo2')
+failure = 3, capsys = <_pytest.capture.CaptureFixture object at 0x79f0c219e7e0>
+
+    @pytest.mark.parametrize('failure',[1,2,3])
+    def test_failure_never_launches_formal(tmp_path,failure,capsys):
+>       with pytest.raises(subprocess.CalledProcessError):launch(tmp_path,fail=failure)
+                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:42:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-181/test_failure_never_launches_fo2')
+fail = 3, identity = None, enabled = True, implementation = None
+
+    def launch(tmp_path, fail=None, identity=None, enabled=True, implementation=None):
+        seen=[]
+        def stream(cmd,env):
+            seen.append(cmd)
+            if fail and len(seen)==fail:raise subprocess.CalledProcessError(7,cmd)
+        common=['python','-m','research_lab.p4_colab','--bundle','bundle','--data-dir','local','--drive-root','budget']
+>       (implementation or p.launch_with_rehearsal)(common,{},tmp_path,identity or {'source':'a','data':'b','environment':'c'},stream,enabled=enabled)
+                           ^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'research_lab.p4_colab' has no attribute 'launch_with_rehearsal'
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:18: AttributeError
+_________ test_long_window_actionable_preflight[100-70-250-15-100-250] _________
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-181/test_long_window_actionable_pr0')
+days = 100, train_end = 70, window = 250, val_dates = 15, actual = 100
+needed = 250
+
+    @pytest.mark.parametrize('days,train_end,window,val_dates,actual,needed',[(100,70,250,15,100,250),(270,260,250,15,11,35)])
+    def test_long_window_actionable_preflight(tmp_path,days,train_end,window,val_dates,actual,needed):
+        matrix=tmp_path/'matrix';matrix.mkdir();build(matrix,days=days,names=12,train_end=train_end,eval_start=train_end+1)
+>       with pytest.raises(ValueError) as error:p.long_window_data(matrix,2021,window,val_dates)
+                                                ^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'research_lab.p4_colab' has no attribute 'long_window_data'
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:51: AttributeError
+_________ test_long_window_actionable_preflight[270-260-250-15-11-35] __________
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-181/test_long_window_actionable_pr1')
+days = 270, train_end = 260, window = 250, val_dates = 15, actual = 11
+needed = 35
+
+    @pytest.mark.parametrize('days,train_end,window,val_dates,actual,needed',[(100,70,250,15,100,250),(270,260,250,15,11,35)])
+    def test_long_window_actionable_preflight(tmp_path,days,train_end,window,val_dates,actual,needed):
+        matrix=tmp_path/'matrix';matrix.mkdir();build(matrix,days=days,names=12,train_end=train_end,eval_start=train_end+1)
+>       with pytest.raises(ValueError) as error:p.long_window_data(matrix,2021,window,val_dates)
+                                                ^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'research_lab.p4_colab' has no attribute 'long_window_data'
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:51: AttributeError
+______________ test_notebook_gate_defaults_compile_and_validation ______________
+
+    def test_notebook_gate_defaults_compile_and_validation():
+        nb=b.colab_notebook()
+>       assert "REHEARSE_FIRST = MODE != 'SPEED_TEST'" in nb['cells'][0]['source']
+E       assert "REHEARSE_FIRST = MODE != 'SPEED_TEST'" in "# 設定：P4 僅記錄耗時，不設時數／CU 上限；>=85°C 仍停止。\nMODE = 'FORMAL'  # 可選 SPEED_TEST；兩者輸出隔離\nif MODE not in ('SPEED_TEST','FORMAL')...nBUNDLE_NAME = 'p4a-bundle.zip'\nLOCAL_ROOT = '/content/p4a'\nALLOW_NEW_RUN = False  # 只有明確要重跑新批次時才設 True；不相容預設 STOP\n"
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:58: AssertionError
+__________________ test_three_in_memory_mutations_are_killed ___________________
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-181/test_three_in_memory_mutations0')
+
+    def test_three_in_memory_mutations_are_killed(tmp_path):
+>       source=inspect.getsource(p.launch_with_rehearsal)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'research_lab.p4_colab' has no attribute 'launch_with_rehearsal'
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:69: AttributeError
+=========================== short test summary info ============================
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_gate_success_cache_and_identity_invalidation
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_failure_never_launches_formal[1]
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_failure_never_launches_formal[2]
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_failure_never_launches_formal[3]
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_long_window_actionable_preflight[100-70-250-15-100-250]
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_long_window_actionable_preflight[270-260-250-15-11-35]
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_notebook_gate_defaults_compile_and_validation
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_three_in_memory_mutations_are_killed
+8 failed in 5.10s
+```
+
+### 修正後focused完整輸出
+
+`/tmp/p4-gate-focused-after-toggle.log`
+
+```text
+.............                                                            [100%]
+13 passed in 5.29s
+```
+
+### 來源相容四項修正回歸
+
+`/tmp/p4-gate-compat-green.log`
+
+```text
+....                                                                     [100%]
+4 passed in 60.56s (0:01:00)
+```
+
+### 變異：bypass
+
+`/tmp/p4-gate-mut-bypass.log`
+
+```text
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______________ test_gate_success_cache_and_identity_invalidation _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-189/test_gate_success_cache_and_id0')
+
+    def test_gate_success_cache_and_identity_invalidation(tmp_path):
+        calls=launch(tmp_path)
+>       assert len(calls)==4 and '--rehearse' not in calls[-1]
+E       AssertionError: assert (1 == 4)
+E        +  where 1 = len([['python', '-m', 'research_lab.p4_colab', '--bundle', 'bundle', '--data-dir', ...]])
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:23: AssertionError
+----------------------------- Captured stdout call -----------------------------
+排練通過（不是研究結果）；各步耗時： [{'stage': 'Q3 W120 mamba2', 'seconds': 3.5899574868381023e-07}, {'stage': 'Q3 W250 mamba2', 'seconds': 3.390014171600342e-07}, {'stage': 'Q5（兩個 prerequisite fits）', 'seconds': 1.240114215761423e-07}]
+=========================== short test summary info ============================
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_gate_success_cache_and_identity_invalidation
+1 failed, 11 deselected in 0.13s
+IN_MEMORY bypass pytest_exit=1 KILLED=True
+```
+
+### 變異：identity
+
+`/tmp/p4-gate-mut-identity.log`
+
+```text
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______________ test_gate_success_cache_and_identity_invalidation _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-190/test_gate_success_cache_and_id0')
+
+    def test_gate_success_cache_and_identity_invalidation(tmp_path):
+        calls=launch(tmp_path)
+        assert len(calls)==4 and '--rehearse' not in calls[-1]
+        assert [c[c.index('--queue')+1] for c in calls[:-1]]==['Q3','Q3','Q5']
+        assert [c[c.index('--window')+1] for c in calls[:2]]==['120','250']
+        for c in calls[:-1]:
+            assert c[c.index('--steps')+1]=='1' and '--drive-root' not in c
+            assert c[c.index('--data-dir')+1]=='local' and '--bundle' in c
+        for c in calls[:2]:assert c[c.index('--arm')+1]=='mamba2'
+        assert len(launch(tmp_path))==1
+        for key in ('source','data','environment'):
+            changed={'source':'a','data':'b','environment':'c'};changed[key]='changed'
+>           assert len(launch(tmp_path,identity=changed))==4
+E           AssertionError: assert 1 == 4
+E            +  where 1 = len([['python', '-m', 'research_lab.p4_colab', '--bundle', 'bundle', '--data-dir', ...]])
+E            +    where [['python', '-m', 'research_lab.p4_colab', '--bundle', 'bundle', '--data-dir', ...]] = launch(PosixPath('/tmp/pytest-of-frank/pytest-190/test_gate_success_cache_and_id0'), identity={'source': 'changed', 'data': 'b', 'environment': 'c'})
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:33: AssertionError
+----------------------------- Captured stdout call -----------------------------
+排練通過（不是研究結果）；各步耗時： [{'stage': 'Q3 W120 mamba2', 'seconds': 1.0859803296625614e-06}, {'stage': 'Q3 W250 mamba2', 'seconds': 6.729969754815102e-07}, {'stage': 'Q5（兩個 prerequisite fits）', 'seconds': 3.080058377236128e-07}]
+排練通過（不是研究結果）：同一 run/source/data/environment，略過；各步耗時： [{'stage': 'Q3 W120 mamba2', 'seconds': 1.0859803296625614e-06}, {'stage': 'Q3 W250 mamba2', 'seconds': 6.729969754815102e-07}, {'stage': 'Q5（兩個 prerequisite fits）', 'seconds': 3.080058377236128e-07}]
+排練通過（不是研究結果）：同一 run/source/data/environment，略過；各步耗時： [{'stage': 'Q3 W120 mamba2', 'seconds': 1.0859803296625614e-06}, {'stage': 'Q3 W250 mamba2', 'seconds': 6.729969754815102e-07}, {'stage': 'Q5（兩個 prerequisite fits）', 'seconds': 3.080058377236128e-07}]
+=========================== short test summary info ============================
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_gate_success_cache_and_identity_invalidation
+1 failed, 11 deselected in 0.12s
+IN_MEMORY identity pytest_exit=1 KILLED=True
+```
+
+### 變異：swallow
+
+`/tmp/p4-gate-mut-swallow.log`
+
+```text
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+____________________ test_failure_never_launches_formal[1] _____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-191/test_failure_never_launches_fo0')
+failure = 1, capsys = <_pytest.capture.CaptureFixture object at 0x7b579ba9b170>
+
+    @pytest.mark.parametrize('failure',[1,2,3])
+    def test_failure_never_launches_formal(tmp_path,failure,capsys):
+        seen=[]
+>       with pytest.raises(subprocess.CalledProcessError):launch(tmp_path,fail=failure,seen=seen)
+E       Failed: DID NOT RAISE CalledProcessError
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:44: Failed
+----------------------------- Captured stdout call -----------------------------
+排練失敗階段=Q3 W120 mamba2；暫存產物位置=/tmp/p4-REHEARSAL-*（本步確切路徑見上方）；期望=回傳碼 0；實際=CalledProcessError(7, ['python', '-m', 'research_lab.p4_colab', '--bundle', 'bundle', '--data-dir', 'local', '--rehearse', '--steps', '1', '--queue', 'Q3', '--window', '120', '--arm', 'mamba2'])；下一步=將本格完整輸出貼給 Claude，修正後重跑；正式 runner 未啟動
+____________________ test_failure_never_launches_formal[2] _____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-191/test_failure_never_launches_fo1')
+failure = 2, capsys = <_pytest.capture.CaptureFixture object at 0x7b579b9f5a30>
+
+    @pytest.mark.parametrize('failure',[1,2,3])
+    def test_failure_never_launches_formal(tmp_path,failure,capsys):
+        seen=[]
+>       with pytest.raises(subprocess.CalledProcessError):launch(tmp_path,fail=failure,seen=seen)
+E       Failed: DID NOT RAISE CalledProcessError
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:44: Failed
+----------------------------- Captured stdout call -----------------------------
+排練失敗階段=Q3 W250 mamba2；暫存產物位置=/tmp/p4-REHEARSAL-*（本步確切路徑見上方）；期望=回傳碼 0；實際=CalledProcessError(7, ['python', '-m', 'research_lab.p4_colab', '--bundle', 'bundle', '--data-dir', 'local', '--rehearse', '--steps', '1', '--queue', 'Q3', '--window', '250', '--arm', 'mamba2'])；下一步=將本格完整輸出貼給 Claude，修正後重跑；正式 runner 未啟動
+____________________ test_failure_never_launches_formal[3] _____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-frank/pytest-191/test_failure_never_launches_fo2')
+failure = 3, capsys = <_pytest.capture.CaptureFixture object at 0x7b579b9f6990>
+
+    @pytest.mark.parametrize('failure',[1,2,3])
+    def test_failure_never_launches_formal(tmp_path,failure,capsys):
+        seen=[]
+>       with pytest.raises(subprocess.CalledProcessError):launch(tmp_path,fail=failure,seen=seen)
+E       Failed: DID NOT RAISE CalledProcessError
+
+V6/research_lab/tests/test_p4_rehearsal_gate.py:44: Failed
+----------------------------- Captured stdout call -----------------------------
+排練失敗階段=Q5（兩個 prerequisite fits）；暫存產物位置=/tmp/p4-REHEARSAL-*（本步確切路徑見上方）；期望=回傳碼 0；實際=CalledProcessError(7, ['python', '-m', 'research_lab.p4_colab', '--bundle', 'bundle', '--data-dir', 'local', '--rehearse', '--steps', '1', '--queue', 'Q5'])；下一步=將本格完整輸出貼給 Claude，修正後重跑；正式 runner 未啟動
+=========================== short test summary info ============================
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_failure_never_launches_formal[1]
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_failure_never_launches_formal[2]
+FAILED V6/research_lab/tests/test_p4_rehearsal_gate.py::test_failure_never_launches_formal[3]
+3 failed, 9 deselected in 0.11s
+IN_MEMORY swallow pytest_exit=1 KILLED=True
+```
+
+### 工具重產宣告
+
+`/tmp/p4-gate-declaration.log`
+
+```text
+{"path": "/tmp/p4-gate-source-compat-after-toggle.json", "identity": {"bytes": 169430, "sha256": "f8ef0bde02b298390a1114b8bec0df05fbe1741faa2403bb06310122abd355ac"}, "matrix": {"bytes": 2183, "sha256": "bc6401095260e7d4153060e3106fff8dbae88cfb6df3f349b808b7dd762c7d9f"}}
+```
+
+### 語法／notebook／artifact／保護檔案驗證
+
+`/tmp/p4-gate-artifacts-after-toggle.log`
+
+```text
+syntax: 3 modules compiled
+notebook 02_formal: 8 code cells compiled; nbformat PASS; identity={'bytes': 18287, 'sha256': '51340d2ddfcc2578c7bc1900e00df079702c43e659b3c862c313bde7411376f1'}
+notebook 03_formal_resume: 8 code cells compiled; nbformat PASS; identity={'bytes': 18294, 'sha256': 'beb1319e51d9ba20dfe047e9270c57799643cbfa7dd4689a64cacfa6d423e6a4'}
+queue fits=64 SHA=4dc90ec0ada6c6d34b43c429d359424c502634e502c6856c6774bf138de7ba23; completed-prefix=36 unchanged; source identity PASS
+protected rolling_seq_scores.py: unchanged SHA256=5d10d52b1d423c73fa518535f01e80b2760a0d3087036b9b778491d13942aefd
+protected portfolio_eval.py: unchanged SHA256=3e46e07277c5d13fe6b24608b7e7dc20648e9558be322ad414d2f82a60c4a30c
+runtime: 3.12.3 torch: 2.15.0+cpu
+```
+
+### 最終完整回歸stdout
+
+`/tmp/p4-gate-full-after-toggle.log`
+
+```text
+........................................................................ [  8%]
+........................................................................ [ 17%]
+........................................................................ [ 26%]
+........................................................................ [ 35%]
+........................................................................ [ 44%]
+........................................................................ [ 53%]
+........................................................................ [ 62%]
+........................................................................ [ 71%]
+........................................................................ [ 80%]
+........................................................................ [ 89%]
+.........................s.............................................. [ 98%]
+...............                                                          [100%]
+=============================== warnings summary ===============================
+research_lab/tests/test_p4.py::test_zip_inventory_and_payload_gates[duplicate]
+  /usr/lib/python3.12/zipfile/__init__.py:1620: UserWarning: Duplicate name: 'folds/fold_2021/X.npy'
+    return self._open_to_write(zinfo, force_zip64=force_zip64)
+
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+  /tmp/pytest-of-frank/pytest-194/test_mutation_controls_session0/mutant.py:93: Pandas4Warning: Timestamp.dayofweek is deprecated and will be removed in a future version. Use Timestamp.day_of_week instead.
+    sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+806 passed, 1 skipped, 5 warnings in 413.79s (0:06:53)
+```
+
+### knowledge impact（更新前）
+
+`/tmp/p4-gate-impact.log`
+
+```text
+{
+  "acknowledgment": null,
+  "automatic_updates_performed": false,
+  "changed": [
+    "V6/research_lab/p4_bundle.py",
+    "V6/research_lab/p4_colab.py",
+    "V6/research_lab/p4_source_compat.py",
+    "V6/research_lab/tests/test_p4.py",
+    "V6/research_lab/tests/test_p4_rehearsal.py",
+    "docs/operations/colab-human-requirements.md",
+    "docs/operations/colab-p4.md",
+    "tasks/p4a-source-compat-20e6b54.json"
+  ],
+  "matched_rules": {
+    "V6/research_lab/p4_bundle.py": [
+      "DEFAULT"
+    ],
+    "V6/research_lab/p4_colab.py": [
+      "DEFAULT"
+    ],
+    "V6/research_lab/p4_source_compat.py": [
+      "DEFAULT"
+    ],
+    "V6/research_lab/tests/test_p4.py": [
+      "DEFAULT"
+    ],
+    "V6/research_lab/tests/test_p4_rehearsal.py": [
+      "DEFAULT"
+    ],
+    "docs/operations/colab-human-requirements.md": [
+      "DEFAULT"
+    ],
+    "docs/operations/colab-p4.md": [
+      "DEFAULT"
+    ],
+    "tasks/p4a-source-compat-20e6b54.json": [
+      "history-reports-tasks"
+    ]
+  },
+  "potential_knowledge_impact": [
+    {
+      "artifact": "knowledge/02_History/README.md",
+      "rules": [
+        "history-reports-tasks"
+      ],
+      "severity": "NO_KNOWLEDGE_IMPACT"
+    }
+  ],
+  "schema_version": 1,
+  "status": "PASS"
+}
+```
+
+### Source artifact identities
+
+| Path | Bytes | SHA-256 |
+|---|---:|---|
+| V6/research_lab/p4_bundle.py | 55289 | d6f402e036c2819ca8bedf4c30073e4e36e5a876177c15ef1fbbc5be682fbae8 |
+| V6/research_lab/p4_colab.py | 61710 | aa8159bb86920fb12074173ac6894c1998027e9bb10b8a869757d7555c66eced |
+| V6/research_lab/p4_source_compat.py | 17062 | 20472ef8cf7442e53f3829daa9774031659a93e16f0300cac3cbbf96324a61a3 |
+| V6/research_lab/tests/test_p4.py | 51168 | fc17b758ad1ef145df33d351b6078ba325f11a504e5525fe1f135aff8badeb81 |
+| V6/research_lab/tests/test_p4_rehearsal.py | 9026 | f62b5c4233764bbef67f052939d0a4049cf06565613a3d57fa6a59fad3c43647 |
+| V6/research_lab/tests/test_p4_rehearsal_gate.py | 8595 | 6db1469a19b64d2a5c0e24ce150fb91d08694de74f4aa90191d9566fb0f791ac |
+| docs/operations/colab-human-requirements.md | 12402 | e30c46de84f902d45c70f127889cb788bbd79a2b99bd5833d98310d5ce44cde5 |
+| docs/operations/colab-p4.md | 14040 | 9ad3575f6704d06ebf2a647710129b56bed270b35f64985db5589cc60d1eb445 |
+| tasks/p4a-source-compat-20e6b54.json | 169430 | f8ef0bde02b298390a1114b8bec0df05fbe1741faa2403bb06310122abd355ac |
+
+### 治理與最終檢查
+
+唯一既有 skip：`test_official_mamba2_gpu_smoke`（環境缺 mamba_ssm，由既有 importorskip 跳過）；不是 CUDA／官方 mixer 通過證據。五項 warnings 為一項故意測 duplicate ZIP member、四項舊 mutation 的 Pandas dayofweek deprecated warning。
+
+`knowledge_health.py --ci --as-of 2026-11-24` 實際 exit=0；WARNING 不當成 PASS：Governance 為8項 AUTHORITY_REPIN_CANDIDATE，Authority Drift 亦含既有 stale runtime observation，Legacy Docs為8項既有描述 drift。沒有 FAIL；Project Map broken_links=0、Generated Index mismatches=0。未改 repin、runtime observed_at 或歷史文件來消除此任務範圍外的警告。
+
+```text
+KNOWLEDGE HEALTH
+
+Project Map        PASS
+Agent Guides       PASS
+Domains            PASS
+Governance         WARNING
+Authority Drift    WARNING
+Runtime Freshness  PASS
+Generated Index    PASS
+Legacy Docs        WARNING
+
+Overall: WARNING
+```
+
+最終自查依 code-review-and-quality 的 correctness／readability／architecture／security／performance 五軸：未發現本 bounded patch 的未處理 REQUIRED；保留前述現場記憶體／效能與獨立審查限制。`git diff --check` 初次只發現本節貼入 RED traceback 的行尾空白，已僅清除新節尾空白；歷史報告 bytes 完整保留。最終 source identity／queue／保護檔案 checks見上，最終實際狀態14 paths dirty、無 staged，依 no-commit保留patch，並於交接前再次讀取git status確認。
+
 ## P4a Q3 事故修補與 pre-flight rehearsal — 2026-11-23
 
 範圍：`job-run-mwt8u5js-7f212c`，Codex builder；既有工作樹 `.worktrees/ruflo-workers/run-mwt8u5js-7f212c/fixer_p4a_q3`、detached base/HEAD `685f6ece1faa7ed39ff7ebff7056b2c4ad7eb4b2`，起始 clean。Human 明確 no-commit／push／merge，保留未提交 patch。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。沿用現有 research_lab、tests、tasks、docs、reports、knowledge；既有 runner 缺少實際 single-fit 排練入口，因此在同一 runner 加入口，無新 implementation tree、worktree 或研究結果 namespace。
