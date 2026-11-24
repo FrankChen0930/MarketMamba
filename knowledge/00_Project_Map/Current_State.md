@@ -1,3 +1,15 @@
+## P4b 對話凍結與 CPU 實作候選 — 2026-11-24
+
+Human對話已核准P4b採預設值，原規格SHA `8d4f194730c2a147b42afe69750f722fccab1d0111e721d2a1f279df369f53c2`；不是數位簽章，僅P4b FROZEN，前瞻／P4d仍DRAFT。`job-run-mwuunk1u-38d24c/builder_p4b`、detached base bc549b8、起始clean；**CPU_ENGINEERING_ONLY / E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。
+
+建立前盤點後沿用research_lab／tests／reports，新增 [P4b adapter](../../V6/research_lab/p4b_blend.py)、[測試](../../V6/research_lab/tests/test_p4b.py)與[工程報告](../../reports/v7_p4b_engineering.md)，不改原64-fit gate、rolling_seq_scores或portfolio_eval。固定36-fit子集唯讀resume_fit／BEST/hash/ledger/source-upgrade驗證，三個固定混合先seed rank→臂rank→blend、B2外層rank；D由凍結P1 date/split hashes產生，完整NaN及95%／≥50 gate。統計／候選及持股診斷實作仍待全量真實驗收。
+
+實際本機排練36 fits＋18 P1原seed檔全驗、ledger769 events；僅2021混合378,547列／244日期、四臂976個每日gate，保留率最小1.0、共同股票數最小1493。最終排練manifest SHA `78090080bcbc3c4d4a2e5564a130fe3ee0a44310658ebdb52fbda4e5825122f4`，輸出在指派worktree `.artifacts/p4b/rehearsal-2021-final/`，未跑真實組合／統計。先前29項focused及9項mutation通過，完整回歸與identity詳報告。已曝光、C0+三seed調參與神經兩seed固定配方不對稱；raw/PIT/universe/下市限制未解除，無研究成功／可交易宣稱。
+
+Knowledge-impact：P4b凍結狀態／候選入口／blocker及next decision=YES，已同步Research／Authority Map／Worktree Register；production、scheduler、active外部runtime、既有machine thresholds／64-fit authority、deprecation=NO。未更新外部runtime observed_at。Next：獨立複審、保存候選patch及產物，先凍結price/market_value/volume snapshot再由Human另行執行全量評估與判讀；本次未提供價格snapshot、未全六折真實評估、未Human acceptance。no-commit故保留dirty，非clean完成宣告。
+
+最終補錄：adapter `233f08fb7462bf3c5375772b34fa0f7f20bc85a4c44edb99a93f1424bdd5c399`；工程identity `21b33e7a4a7bca49ca375e07bba8f570f7f71d822dfbf819e4956a85c5c931d3`；最終2021排練manifest `0dcd0477c5318edfb764bf646585d08fd132d5f3616231393e045cc54ace35e4`（`.artifacts/p4b/rehearsal-2021-verified/`），8份分數hash與前次相同。focused **30 passed／9 mutants killed**；全套 **1153 passed／28 failed／6 skipped**（384.86s），28項均P4a source-compat gate拒絕未獨立審查的新增P4b模組，已單測重現。**整合驗收STOP**；不放寬gate或偽稱全套通過。需獨立審查數值中立／來源打包範圍，及price-volume snapshot／Human另行全量評估；未變production／64-fit authority。
+
 ## 三份DRAFT複審修補候選 — 2026-11-24
 
 `job-run-mwuu88xi-da927f/spec_fixer2`，既有detached HEAD/base `abc12f50a8246bbece3f187636f697c9a536a235`，起始clean；本次僅文件patch，**DRAFT / E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。前瞻P2將公開全宇宙觀測比例與逐必要欄適用集合100% gate分開，合法停牌不冒充當日OHLCV、停牌／估值證據對持有及未持有皆100%；補成對fixture與固定來源錯誤處置，修正入口為`portfolio.run_backtest`。P4d模組表B同步為訓練隨機性與集成，保留batch／更新長度選擇混淆。未實作adapter／摘要runner或訓練，不宣稱修補已通過獨立複審或Human acceptance。
@@ -10,7 +22,7 @@ P4a既有失敗判定為**文件段落結構錯置**：Current State及Authority
 
 ## 三份DRAFT Human凍結決定彙整
 
-**全列狀態：待Human簽署全文；不是執行／費用授權。** 請逐列記「採預設／採替代＋完整修訂／不執行」，並綁定最終文件及輸入hash、批准者、UTC／台北時間；不得用本表勾選代替正文所需證據。三案可分別凍結，但跨案衝突須在各自第一筆新結果之前處理。
+**前瞻與P4d：仍待Human凍結；P4b：FROZEN（2026-11-24 對話核准採預設值，無數位簽章）。不是額外執行／費用授權。** 請逐列記「採預設／採替代＋完整修訂／不執行」，並綁定最終文件及輸入hash、批准者、UTC／台北時間；不得用本表勾選代替正文所需證據。三案可分別凍結，但跨案衝突須在各自第一筆新結果之前處理。
 
 | 案／決定 | 建議凍結內容（正文位置） | 重大替代與代價／尚待證據 |
 |---|---|---|
@@ -22,7 +34,9 @@ P4a既有失敗判定為**文件段落結構錯置**：Current State及Authority
 | 前瞻正式日曆／截止 | 合格2027／2028calendar及假日／延期例外，實際T0/T1、R、origin−21、252收益終點、末日+11安全成熟及每版訊號／再平衡暴露；至少一次成功更新及更新後既定再平衡 | 日期未驗維持UNKNOWN；20-session連續流程、T1前20／5-session截止、跨Q2未啟動STOP均待簽署。依工程gate延後T1需重訓，開始後不重設／補日 |
 | 前瞻揭曉／隔離 | 階段0到正式唯一端點才描述性揭曉；Human為保管／重訓owner，凍結head外部保管、提醒管道、淨化與事故／手動開盲演練 | T1規格簽署且已啟動後揭曉階段0，或永不揭曉；均不得績效調規。可另選OS使用者／ACL，現有同權限紀律不能稱OS隔離 |
 | 前瞻統計／成本／影子臂 | 已決定252單端點、H-F1／Holm1、雙邊p、raw主要與比例成本基準；C0+三seed17/29/43、185欄固定；固定／神經影子臂預設不收集；WP1～WP6先驗收 | total_return、單邊p、新影子臂只能在結果前另補完整契約／成本及身分，不中途替換；CPU/RAM/disk預算仍待實測及另案授權 |
-| P4b公式 | [P4b](../../tasks/spec-p4b-blend-20261124.md)「凍結參數」三個0.5/0.5，先seed rank→臂rank→blend，B2保留R_all外層rank，不搜尋權重 | 無外層rank僅能結果前改為單一版本；其他權重需新設計，不兩版擇優 |
+| P4b凍結身分 | Human 於 2026-11-24 以對話核准採預設值凍結 P4b；凍結身分＝本規格檔案 SHA-256 8d4f194730c2a147b42afe69750f722fccab1d0111e721d2a1f279df369f53c2＋ 所有輸入與程式 identity（實作完成後補入）；此凍結僅限 P4b，不涵蓋前瞻與 P4d；不是執行授權之外的任何授權（Human 已同意以本機 CPU 實作與描述性評估） | 無數位簽章；確切時間 UNKNOWN；工程身分見 [P4b報告](../../reports/v7_p4b_engineering.md)，不得改凍結規則 |
+| P4b公式（FROZEN／對話核准） | [P4b](../../tasks/spec-p4b-blend-20261124.md)「凍結參數」三個0.5/0.5，先seed rank→臂rank→blend，B2保留R_all外層rank，不搜尋權重 | 無外層rank僅能結果前改為單一版本；其他權重需新設計，不兩版擇優 |
+| P4b工程身分補錄 | adapter SHA `064e8b8404bc0aefbb60598471c58ac78a71e952be203c5dff8126dfd10b5823`；269檔code／契約identity manifest SHA `3a9b6d8bd48d9218927d53d2d82aed6c507b792af71a4d1774c5e4554f16c276`；實讀輸入及2021排練manifest SHA `78090080bcbc3c4d4a2e5564a130fe3ee0a44310658ebdb52fbda4e5825122f4` | 僅CPU_ENGINEERING_ONLY；price/market_value/volume snapshot未提供／未驗證，不能全量評估；無Human acceptance |
 | P4b支援／輸入 | 36-fit固定subset獨立准入且不降64-fit gate；P1原seed scores、共同S先裁後rank；事前D＋日期聯集、每日95%與≥50、NaN不刪組合列；固定snapshot／volume與完整Config identity | 只看交集／日期聯集均不足；缺fit／日／折即STOP或不具提名資格。本機匯出、逐fit lineage與來源驗證待另案，不讀Drive |
 | P4b統計／候選／限制 | Holm3只2021–2023，block20／1000／seed17雙邊；全六折揭露；兩折CI正／三折mean正／近期方向及完整診斷，優先序B1→B2→B3；E2及不對稱限制 | 無候選就停止；多臂前瞻需新家族／alpha，不加入已開始P2。CPU subset loader／評估資源與授權另案，不重訓 |
 | P4d macro schema凍結名單 | [P4d](../../tasks/spec-p4d-equal-tuning-20261125.md)「預處理隔離契約」神經歸零36…47：TWII_Return、SPX_Return、VIX、TNX、Gold_Return、Oil_Return、USD_TWD、Futures_OI_Foreign、Options_PC_Ratio、Fear_Greed、Business_Signal、FED_Rate；綁48欄order SHA及cache／fit support identity | 替代僅用合格tuning fit完整截面估mask後全案固定；不可全矩陣抽樣／按fold或fraction重估。future-mutation／cache hit/rebuild／新程序驗收尚未實作；C0+不刪macro |

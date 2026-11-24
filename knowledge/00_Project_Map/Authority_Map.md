@@ -1,3 +1,13 @@
+## P4b FROZEN 對話核准與工程候選邊界 — 2026-11-24
+
+[規格](../../tasks/spec-p4b-blend-20261124.md)採Human本次對話2026-11-24核准預設值，**FROZEN（無數位簽章）**；身分是原規格SHA `8d4f194730c2a147b42afe69750f722fccab1d0111e721d2a1f279df369f53c2`＋逐輸入與程式identity，詳[工程報告](../../reports/v7_p4b_engineering.md)。前瞻／P4d仍DRAFT；凍結不授予額外費用、production或執行權限。
+
+`job-run-mwuunk1u-38d24c/builder_p4b@bc549b8`未提交 [adapter](../../V6/research_lab/p4b_blend.py) 是 UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED 候選。36-fit固定子集驗證不是完整P4a驗收，不降低原64-fit loader gate，不supersede P1/P2/P3/P4a machine authority或歷史結果，authority-map.json不變。唯讀本機36-fit／P1原始三seed與2021混合證據上限CPU_ENGINEERING_ONLY，不能由支持率通過推定研究或PIT／成交正確。來源ZIP hash為Human提供、未重開原ZIP；實際逐fit、BEST、ledger/source-upgrade hash均已驗。
+
+來源／公式／門檻保持原凍結文字，僅更新核准metadata；全部歷史已曝光且調參／seed數不對稱，僅描述性。全量真實六折組合／統計／candidate、價格volume snapshot與獨立複審／Human acceptance未完成。未變外部runtime observed_at／production／scheduler。後續仍須按原門檻fail closed，不能把branch-local code presence升格authority。
+
+最終補錄：adapter `233f08fb7462bf3c5375772b34fa0f7f20bc85a4c44edb99a93f1424bdd5c399`；工程identity `21b33e7a4a7bca49ca375e07bba8f570f7f71d822dfbf819e4956a85c5c931d3`；最終2021排練manifest `0dcd0477c5318edfb764bf646585d08fd132d5f3616231393e045cc54ace35e4`（`.artifacts/p4b/rehearsal-2021-verified/`），8份分數hash與前次相同。focused **30 passed／9 mutants killed**；全套 **1153 passed／28 failed／6 skipped**（384.86s），28項均P4a source-compat gate拒絕未獨立審查的新增P4b模組，已單測重現。**整合驗收STOP**；不放寬gate或偽稱全套通過。需獨立審查數值中立／來源打包範圍，及price-volume snapshot／Human另行全量評估；未變production／64-fit authority。
+
 ## 三份DRAFT複審修補的authority邊界 — 2026-11-24
 
 `job-run-mwuu88xi-da927f/spec_fixer2`，detached base `abc12f50a8246bbece3f187636f697c9a536a235`的未提交文件patch，**DRAFT / E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。前瞻P2公開全宇宙觀測比例不等於必要欄適用集合100% gate；合法停牌不造OHLCV、分類／錯誤及節奏不依持股，成對fixture僅驗收需求。P4d B模組表同步描述性混淆，入口改實際`portfolio.run_backtest`。Current State與本檔P4a第13次標題的原正文移回，僅修結構，不修改歷史狀態或升格64-fit驗收。

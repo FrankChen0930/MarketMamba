@@ -1,5 +1,13 @@
 # Worktree Register
 
+## P4b CPU builder — 2026-11-24 對話授權
+
+- Purpose/task：固定36-fit准入、P4b混合／描述性評估adapter、合成測試及2021本機排練；owner Human/Codex，job-run-mwuunk1u-38d24c/builder_p4b。沿用 `.worktrees/ruflo-workers/run-mwuunk1u-38d24c/builder_p4b`，detached HEAD/base `bc549b80703e97028602afb6e3186db5012764c6`，實際created date UNKNOWN（環境日期2026-11-24；Human決定日期2026-11-24），retired N/A；起始clean，未新增worktree。
+- Current state/authority：Human EXECUTE_APPROVED bounded CPU；P4b原SHA預設FROZEN，implementation為未提交candidate / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。依no-commit保留指定patch、不stage/push/merge，不能稱clean。無GPU／訓練實驗／資料取得／Colab/Drive／blind／正式Data或V6/models修改／production／scheduler／額外agents。
+- Artifact dependencies：唯讀主checkout指定P4a解壓及P1分數；本worktree `.artifacts/p4b/engineering/` tests/logs 與 `rehearsal-2021-final/` GENERATED CPU_ENGINEERING_ONLY manifest／混合parquet。merge dependency為獨立複審與Human決定，沒有retained新commit。Safe removal：先保存未提交patch及唯一工程產物、核對引用／dependencies並完成retirement review／clean檢查；本輪不移除。
+- Runtime：WSL-native，`/home/frank/.venvs/marketmamba-gpu/bin/python` 3.12.3、CUDA_VISIBLE_DEVICES空、CPU；MARKETMAMBA_DATA_ROOT unset，Data realpath是本worktree普通Data。名稱含gpu的venv不代表使用GPU；外部runtime observed_at未更新。
+
+
 ## 三份DRAFT複審文件修補 spec_fixer2 — 2026-11-24
 
 - Path `.worktrees/ruflo-workers/run-mwuu88xi-da927f/spec_fixer2`；branch detached HEAD，base `abc12f50a8246bbece3f187636f697c9a536a235`；owner Codex builder，task 五項文件修訂；created date UNKNOWN（指派日2026-11-24），retired N/A。既有worktree，起始clean，未新增worktree。

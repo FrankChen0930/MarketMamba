@@ -1,6 +1,6 @@
 # 預先登記草案 P4b：神經分數與 C0+ 的 rank-average 混合（描述性）
 
-**DRAFT — 待 Human 凍結；尚未登記生效，非執行授權。E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。** 草案日期 2026-11-24。**已看過 P3／P4a Q1／Q2 結果，本案是在已曝光資料上的描述性、形成假設實驗；即使通過所有門檻，也不是確認性。** 本輪不產生任何混合分數、績效、相關或檢定結果；凍結前不得出現本案結果。既有結果只作輸入身分與設計背景，不填入新的結果表。
+**FROZEN — Human 對話核准採預設值（2026-11-24）；非數位簽章。E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。** 草案日期 2026-11-24。**已看過 P3／P4a Q1／Q2 結果，本案是在已曝光資料上的描述性、形成假設實驗；即使通過所有門檻，也不是確認性。** 本輪不產生任何混合分數、績效、相關或檢定結果；凍結前不得出現本案結果。既有結果只作輸入身分與設計背景，不填入新的結果表。
 
 ## 建立前盤點與身分
 
@@ -126,3 +126,17 @@
 WSL CPU，文件工具`/usr/bin/python3` 3.12.3，唯讀NumPy及shared統計檢查使用`/home/frank/.venvs/marketmamba-gpu/bin/python` 3.12.3（CUDA_VISIBLE_DEVICES空，未載入GPU／訓練）。MARKETMAMBA_DATA_ROOT unset，Data realpath為本worktree的普通Data目錄，未讀正式Data；唯讀實證僅使用Human指定外部prepared／pilot09矩陣及既有公開歷史artifact metadata。沒有讀封盲區、改V6/models、GPU／Colab／Drive、資料取得、production／scheduler、通知／wakeup／recurring jobs或額外agents。
 
 Knowledge-impact：DRAFT設計語義／blocker與next decision細分=YES，同改三份knowledge；已生效machine authority／runtime／subsystem／correctness thresholds／canonical supersession／deprecation=NO。Human仍須選端點、摘要及預處理完整契約並凍結；正式calendar、來源／事件與所有未來adapter／mutation／推導測試及獨立複審未完成。文件完成不等於Human acceptance。
+
+## Human 對話凍結紀錄 — 2026-11-24
+
+Human 於 2026-11-24 以對話核准採預設值凍結 P4b；凍結身分＝本規格檔案 SHA-256 8d4f194730c2a147b42afe69750f722fccab1d0111e721d2a1f279df369f53c2＋ 所有輸入與程式 identity（實作完成後補入）；此凍結僅限 P4b，不涵蓋前瞻與 P4d；不是執行授權之外的任何授權（Human 已同意以本機 CPU 實作與描述性評估）。
+
+上述 SHA 為加入核准紀錄前、HEAD bc549b8 的原始規則 bytes；本次只更新狀態並附加核准／工程身分，不修改凍結文字規則。批准者為 Human、來源為本次對話，未提供確切 UTC／台北時刻，故記 UNKNOWN；沒有數位簽章。正文的「草案／待凍結／本輪不執行／Open Questions」保留為原始設計歷史，P4b 預設值已依本紀錄選定；不追認其他方案。工程身分與尚未驗證範圍見 [P4b 工程報告](../reports/v7_p4b_engineering.md)。
+
+
+工程身分補錄（僅metadata，不改規則）：adapter SHA `064e8b8404bc0aefbb60598471c58ac78a71e952be203c5dff8126dfd10b5823`；269檔code／契約及tests的identity manifest為本worktree `.artifacts/p4b/engineering/identity.json`，SHA `3a9b6d8bd48d9218927d53d2d82aed6c507b792af71a4d1774c5e4554f16c276`（內含補錄前規格bytes）。所有已實讀36-fit／18份P1 seed／date/split／環境／Config／2021 outputs身分在 `.artifacts/p4b/rehearsal-2021-final/manifest.json`，SHA `78090080bcbc3c4d4a2e5564a130fe3ee0a44310658ebdb52fbda4e5825122f4`。這次未全量評估，price/market_value/volume snapshot尚未驗證／凍結；全量入口缺snapshot即STOP。來源ZIP SHA是Human提供、未重開ZIP，逐fit解壓bytes已核對。詳工程報告；只屬CPU_ENGINEERING_ONLY、未Human acceptance。
+
+
+最終驗證補錄（前次identity／排練產物皆保留、不覆寫）：每日同成熟mask實際IC、實際交易成本／gross/net揭露及執行時git身分補齊後，adapter SHA `233f08fb7462bf3c5375772b34fa0f7f20bc85a4c44edb99a93f1424bdd5c399`，tests SHA `3a242d019a322a6d25a4aa6bcb9fbfadf4ba21bc8cb15231b403630989fde793`；最終269檔code／契約identity manifest `.artifacts/p4b/engineering/identity-verified.json` SHA `21b33e7a4a7bca49ca375e07bba8f570f7f71d822dfbf819e4956a85c5c931d3`（包含此補錄前spec bytes）。最終真實排練 `.artifacts/p4b/rehearsal-2021-verified/manifest.json` SHA `0dcd0477c5318edfb764bf646585d08fd132d5f3616231393e045cc54ace35e4`；36 fits／18份P1 seeds／ledger769 events／2021共378,547列／244日期，976每日gate均通過，min retention=1.0、min names=1493，所有8份分數parquet hashes與前次完全相同。
+
+最終focused **30 passed in 14.60s**、9項assertion-killed mutation。全套research_lab實際 **28 failed, 1153 passed, 6 skipped, 4 warnings in 384.86s**，28項同為`p4_source_compat.declaration`拒絕未審查新增`p4b_blend.py`；已獨立單測重現1 failed。保留gate、不修改P4a來源相容白名單或原64-fit gate，故**驗收STOP／未全套通過**，不是宣稱既有baseline缺陷；新分析模組造成source inventory整合阻擋，需獨立數值中立審查及明確來源打包範圍決策。未執行Drive／Colab或建立升級交付。全量真實評估／price-volume snapshot／獨立複審／Human acceptance仍待。

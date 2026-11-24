@@ -1,3 +1,11 @@
+## P4b 對話凍結／CPU 工程候選 — 2026-11-24
+
+Human核准 [P4b](../../tasks/spec-p4b-blend-20261124.md) 採原SHA `8d4f194730c2a147b42afe69750f722fccab1d0111e721d2a1f279df369f53c2` 預設值凍結（對話、非數位簽章）；前瞻／P4d仍DRAFT。指派detached bc549b8／builder_p4b的未提交adapter與tests為CPU_ENGINEERING_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，詳[工程報告](../../reports/v7_p4b_engineering.md)。獨立36-fit准入沿用resume_fit、原64-fit gate不變；原始seed共同S後重rank、固定B1/B2/B3、95%／50、D及日期聯集、NaN與Holm3/centered雙邊契約不變。
+
+實讀本機36-fit與P1三seed、ledger769 generations，2021共同378,547列／244 dates，976個gate全部通過、最小保留率1.0。只混合計算，未執行真實portfolio／significance／nomination、不重訓；先前29 focused、9 mutation證據詳報告。C0+調參三seed vs 神經固定兩seed不對稱，已曝光、僅描述性，raw/PIT/universe/下市限制未解除。下一步為獨立複審及事前凍結price/market_value/volume snapshot，Human另行跑全量與判讀；現場全六折評估及acceptance仍未驗證。無外部runtime observation或production authority變化。
+
+最終補錄：adapter `233f08fb7462bf3c5375772b34fa0f7f20bc85a4c44edb99a93f1424bdd5c399`；工程identity `21b33e7a4a7bca49ca375e07bba8f570f7f71d822dfbf819e4956a85c5c931d3`；最終2021排練manifest `0dcd0477c5318edfb764bf646585d08fd132d5f3616231393e045cc54ace35e4`（`.artifacts/p4b/rehearsal-2021-verified/`），8份分數hash與前次相同。focused **30 passed／9 mutants killed**；全套 **1153 passed／28 failed／6 skipped**（384.86s），28項均P4a source-compat gate拒絕未獨立審查的新增P4b模組，已單測重現。**整合驗收STOP**；不放寬gate或偽稱全套通過。需獨立審查數值中立／來源打包範圍，及price-volume snapshot／Human另行全量評估；未變production／64-fit authority。
+
 ## 三份DRAFT coverage／凍結索引修補 — 2026-11-24
 
 `job-run-mwuu88xi-da927f/spec_fixer2@abc12f5`的未提交文件候選，DRAFT / E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。[前瞻P2](../../tasks/spec-forward-p2-primary-20261124.md)公開觀測比例以全宇宙含停牌為分母；必要資料gate逐欄適用集合100%，非停牌必要OHLCV／features不得豁免，合法停牌估值／lifecycle證據對持有與未持有都須完整，不冒充當日OHLCV。成對S/M合成fixture定義公開來源投影／分類／節奏不受持股影響；runner／推導與時序驗收尚未實作。入口名稱核對為`portfolio.run_backtest`；P4d B表格只描述訓練隨機性與集成。P4a空標題為原正文錯置，已移回Current State／Authority Map原標題，未重標結果或新造驗收狀態。
@@ -303,7 +311,7 @@ Expanding各Origin仍需另凍結model-ready/maturity/purge/refit/selection與�
 
 ## P2 前瞻與 P4b 文件候選 — 2026-11-24
 
-[P2前瞻草案](../../tasks/spec-forward-p2-primary-20261124.md)／[P4b草案](../../tasks/spec-p4b-blend-20261124.md)仍DRAFT待Human凍結，E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，無新結果或執行授權。2026-11-24最新兩階段文件修訂：`job-run-mwuoasa7-93afef/spec_writer_phases`／detached base `0db633bcedc97484bff6c316d7cc9d19334137d2`，初始clean，4份文件未提交patch；DRAFT / E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。Human新決定取代Q1／Q3：嚴格T0（候選2026-11-25之後）僅試運行整日流程，績效封盲且永不調規；年報後重訓T1才正式起算252收益sessions、唯一H-F1／Holm m=1／雙邊保守p。一般年度3/31＋Q2 8/14作整體更新時鐘，75日、金融半年8/31、順延／延期／非曆年等按公司期別核實，不能當可得日。DRAFT提案年報N_A=10／Q2 N_H=8＋必要資料實際公開／入管線2-session緩衝，保留18:00與最多2-session重試／超時STOP；N是作者提案、非已凍結Human數值。試運行預設直到正式端點才描述性揭曉，另列T1簽署且啟動後揭曉／永不揭曉替代風險；正式規則／日曆必在任何階段0績效曝光前簽署。
+[P2前瞻草案](../../tasks/spec-forward-p2-primary-20261124.md)／[P4b草案](../../tasks/spec-p4b-blend-20261124.md)仍DRAFT待Human凍結，E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，無新結果或執行授權。2026-11-24最新兩階段文件修訂：`job-run-mwuoasa7-93afef/spec_writer_phases`／detached base `0db633bcedc97484bff6c316d7cc9d19334137d2`，初始clean，4份文件未提交patch；DRAFT / E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。Human新決定取代Q1／Q3：嚴格T0（候選2026-11-24之後）僅試運行整日流程，績效封盲且永不調規；年報後重訓T1才正式起算252收益sessions、唯一H-F1／Holm m=1／雙邊保守p。一般年度3/31＋Q2 8/14作整體更新時鐘，75日、金融半年8/31、順延／延期／非曆年等按公司期別核實，不能當可得日。DRAFT提案年報N_A=10／Q2 N_H=8＋必要資料實際公開／入管線2-session緩衝，保留18:00與最多2-session重試／超時STOP；N是作者提案、非已凍結Human數值。試運行預設直到正式端點才描述性揭曉，另列T1簽署且啟動後揭曉／永不揭曉替代風險；正式規則／日曆必在任何階段0績效曝光前簽署。
 
 無假日週日曆示例為T1=2027-04-14、Q2更新8/25、252末日2028-03-31、次年年報更新4/14；正式交易所calendar未驗，真實端點會受休市影響，第二次更新可能入窗，正式次數UNKNOWN，不按績效選日。工程按兩次容量準備，逐版計算訊號與20-session再平衡暴露。WP1～WP6拆T0前最低安全日鏈與T1前完整驗收，建議T1前20／5 sessions截止；20日穩定流程及跨Q2仍未啟動就STOP是待凍結提案。試運行不穩只按無績效gate延後T1，重新as-of重訓、不回填；正式開始後不得重設T1／延長252日。所有工程仍另案批准／獨立驗收，文件完成不等於Human acceptance。
 
