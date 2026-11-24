@@ -1,3 +1,11 @@
+## P4d 對等調參／資料縮放草案 — 2026-11-24
+
+`job-run-mwus8xvs-57bc73/spec_writer_p4d`，既有detached HEAD/base `aa89bca6030fd4a02e47ba9e52d567a1c08a0425`，初始clean；僅文件patch、不commit。[P4d規格](../../tasks/spec-p4d-equal-tuning-20261125.md)為 **DRAFT 待Human凍結／E2 RESEARCH_ONLY／UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED**，全部已曝光、描述性，未產生研究結果或授予執行authority。沿用tasks與research_lab，不建新目錄／worktree／實作。提案為C0+、GRU、Mamba2各N12候選×2seed、單一2021前126-session驗證區間、random search／IC5選擇；六折固定BEST更新長度重訓、不用舊test選超參或early stop；Holm2。暫不納S-Mamba；可選25/50/100%最近完整交易年等值、全列且固定配方的描述性斜率模組。Human仍須凍結預算／臂／調參折／縮放是否併入。
+
+P1 manifest核到18個固定配方jobs（每job兩樹模型，非18次搜尋）、500k cap、185欄；歷來調參總數UNKNOWN。P1兩模型整job122.35–165.76秒、中位139.51秒，不能當P4d全列CPU單fit耗時。P4a原始ledger未取得，Human提供25–30min Mamba／10min GRU僅暫估；N12含縮放T4基準35–40h、容量／epochs敏感度52.5–160h，CPU/RAM、費率與現場仍UNKNOWN／UNVERIFIED，不是核准費用。Next：取得可讀本機ledger與split／成本證據，Human凍結後另案實作／獨立審查／排練，不能自行啟動pilot。
+
+Knowledge-impact：候選研究設計／next decision有新增，更新本節與Research；已檢查Authority Map，DRAFT不supersede任何machine contract，故無需修改authority。沒有runtime observed_at更新、GPU／資料取得／Colab／Drive／blind／formal Data／V6/models／production／scheduler／wakeups／額外agent操作。23個knowledge工具tests通過、規格14個本機引用通過，成本算術與P1 metadata核對；完成不等於Human acceptance。impact checker同步後WARNING要求review GOVERNANCE，已人工確認無治理規則變更；health --ci（as-of 2026-11-24）exit0／WARNING、無structural FAIL，git diff --check通過。工作樹依no-commit指示保留指定文件dirty，既有其他worktrees不動。
+
 ## 專案洩漏稽核／Colab 排練清單候選 — 2026-11-24
 
 `job-run-mwuchypx-211f4f/skill_writer`，既有 detached HEAD/base `8eff9fef3386d5b852b79f5c66d09a0893891122`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，Human 核准僅文件／skill、no-commit。新增 [ml-leakage-audit](../../.claude/skills/ml-leakage-audit/SKILL.md) 與 [colab-preflight](../../.claude/skills/colab-preflight/SKILL.md)，AGENTS.md 加 Codex 共用清單來源指標；本文不授予研究、執行或 production authority。

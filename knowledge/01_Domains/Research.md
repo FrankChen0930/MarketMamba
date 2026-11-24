@@ -1,3 +1,7 @@
+## P4d 對等調參／資料縮放候選 — 2026-11-24
+
+[P4d規格](../../tasks/spec-p4d-equal-tuning-20261125.md)為DRAFT待Human凍結，E2 RESEARCH_ONLY／UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED；全部已曝光、僅描述性。建議三臂C0+／GRU／Mamba2各N12×2seed、單一2021前126日驗證、random／IC5選擇與固定更新長度六折重訓，Holm2；不使用任何2021–2026測試日期作超參／early-stop選擇。暫不納S-Mamba，縮放為可選最近25/50/100%完整交易年等值、固定調好配方／計算的描述模組，不作斜率顯著性或因果宣稱。新預算對等不能抵銷過去特徵／調參投入；P1正式18jobs不是18個trial，累積搜尋總數UNKNOWN。P4a原始ledger與全列CPU/RAM成本尚缺，耗時表是附敏感度的暫估，無執行／費用授權。來源、替代方案、待Human清單與驗收見規格；現況及authority仍依project map與既有machine contracts，不重標P1/P3/P4a歷史證據。
+
 ## P4a 固定佇列候選 — 2026-11-22
 
 [規格](../../tasks/spec-p4a-colab-20261121.md)／[機器契約](../../tasks/p4a-colab-contract-20261121.json)依Human核准在任何P4a結果前FROZEN：36主格＋24回看＋4學習率，再做排列診斷；環境使用既有OBSERVED cp313契約。工程候選 UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，只完成CPU合成驗證，現場Colab仍UNVERIFIED。歷史mamba2/crossstock是P3已曝光replication，A/B/C Holm3/2/4與共同列限制不提供獨立確認；唯一獨立路徑仍是未曝光P2前瞻資料。C0+調參不對稱保留，本機CPU P4d另案OPEN。現況與authority見project map，無新研究結論。
