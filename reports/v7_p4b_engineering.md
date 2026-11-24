@@ -56,3 +56,122 @@ Knowledge unittest：23 tests OK；health `--ci --as-of 2026-11-24` exit0、Over
 規格原凍結規則bytes（排除核准狀態行／附加metadata）與HEAD逐字比較通過；protected rolling_seq_scores／portfolio_eval與HEAD bytes一致。AST兩檔、674個本機Markdown references、8個輸出parquet hashes與前次一致、git diff --check通過。工程identity manifest保留各時點bytes，不覆寫前版manifest。無staged、5份既有文件modified＋3份新增untracked；artifact為ignored。依no-commit未做到clean，沒有commit／push／merge。
 
 後續Human用法：唯讀排練可用`PYTHONPATH=V6 CUDA_VISIBLE_DEVICES='' /home/frank/.venvs/marketmamba-gpu/bin/python -m research_lab.p4b_blend --run-dir <指定run-6fbaf815…> --c0plus-dir <指定P1目錄> --output-dir .artifacts/p4b/<fresh-id> --rehearse-2021`。全量改`--evaluate --data-root <事先凍結的snapshot目錄> --snapshot-manifest <事先保存的JSON>`；JSON需`files`中的prices_raw.parquet／market_value_raw.parquet各bytes/sha256、`volume_units`完整同源證據及`primary_config`完整全欄JSON。這次沒有產生此snapshot或全量結果，不能略過。
+
+
+## 本機評估模組與 Colab bundle 來源邊界修補（2026-11-24）
+
+本輪 `job-run-mwuv96vj-55da06/builder_bundle_exclude`，沿用既有 detached HEAD `8dc5cc961f520272cd94281b8e104347cdecd034`、起始 clean；**UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED / CPU_ENGINEERING_ONLY**。上一節 28 failed 為原執行歷史，不改寫其 log 或原研究 artifacts。原 log 不在本 worktree，已唯讀核對主 checkout 同路徑 `.artifacts/p4b/engineering/full-suite.log`，確為 `28 failed, 1153 passed, 6 skipped, 4 warnings in 384.86s`，共同 error 為未審查新增 p4b_blend.py；本輪新 log 使用 `bundle-exclude-*` 名稱，不覆寫原證據。
+
+重大選擇與替代：
+
+| 方案 | 決定與理由 |
+|---|---|
+| 一般顯式 denylist | 單純排除不足；若未綁宣告與必要來源保護，可能悄悄漏掉訓練檔 |
+| 本機專用精確路徑契約清單 | **採用**；唯一 `V6/research_lab/p4b_blend.py`，固定 SHA pin、共用 collector、宣告／採用精確比對及負向測試，最小可稽核邊界；未來逐項審查擴充，不自動納入同名類型 |
+| 依目錄排除／搬檔 | 涉及移動既有評估入口與 imports，擴大改動；整目錄排除也可能隱藏必要來源，未採 |
+| 依命名排除（例如 p4b_*） | 新檔可意外逃過差異 gate，未採 |
+| 只重產宣告 | 仍把本機研究模組打進 Colab，不能解決邊界；把它加 REASONS 會錯誤宣稱舊訓練依賴新評估，未採。重產宣告是選定清單機制後的必要步驟 |
+
+沿用 p4_bundle／p4_source_compat、既有來源相容測試、tasks GENERATED 宣告與既有 docs／reports／knowledge 容器；不建立新 implementation、worktree、實驗／memory tree 或交付。collector 不讀本機專用 bytes；AST 檢查拒絕包內來源靜態及字面值動態 import 該模組；allowed_path 在 write_archive／extract／verify 拒絕手動注入。這不是任意 Python 動態程式之形式化安全證明；動態構造新載入行為必須另審，Colab 亦不得自行把本機 checkout 加入 sys.path。
+
+宣告由現有 `p4_source_compat.declaration('4e56e9d', current_sources(), previous_declaration['matrix'])` 工具重算，再 JSON serialize（未手填逐檔 hash／diff）。from 不變、to.commit 是 generation-time HEAD `8dc5cc9`，230 個 to sources hashes 綁 working bytes。matrix identity 由已版本化舊宣告保留 2183 bytes／`bc6401095260e7d4153060e3106fff8dbae88cfb6df3f349b808b7dd762c7d9f`，本輪沒有讀正式矩陣或重新認證資料 bytes；deliver 仍須以實際 manifest 重算。六個實際差異仍為 p4_bundle、p4_colab、p4_eval、p4_source_compat、seq_runner、colab-p4.md；本輪只改前述 bundle／source_compat 兩個來源，理由增加「本機專用來源排除」且採用端限定此分類只可用在這兩檔。先前進度／日誌／W≠60／成熟標籤／排練閘門差異完整保留，不冒稱純文件或本輪新改。排除的 P4b 自基準不存在，故不是偽造一筆來源 deletion；宣告另明列精確排除清單。
+
+36 個完成 Q1／Q2 W60 必須全部 resume_fit 原地驗證、保留 bytes／不重訓的採用政策與 64-fit queue SHA `4dc90ec0ada6c6d34b43c429d359424c502634e502c6856c6774bf138de7ba23` 不變。既有回歸繼續驗跨版 GRU／crossstock CPU 權重／預測／RNG／epoch resume、36→首個 Q3→64 fits、原 notebook 保底及 missing/corrupt/wrong-run 拒絕。p4b_blend.py、rolling_seq_scores.py、portfolio_eval.py、P4a contract、runtime／lock 與起始 HEAD 逐 byte 一致；沒有真實重訓或改 P3 規則。
+
+新增負向：清單加入 p4_colab／seq_runner／p4_eval／p4_bundle 必須拒絕；非清單新檔不得未審查進宣告；caller 漏掉 seq_runner 的 to inventory 拒絕；缺失／擴大宣告清單、重新注入本機來源及把排除分類誤套 seq_runner 均拒絕。測試以隔離合成 checkout 兩次完整 pack／declaration／extract／verify，只改 p4b_blend bytes（第二版含無效 Python／NUL），比對所有成員含宣告與 bundle-manifest 的 bytes／SHA 完全相同；隔離 `python -I` 僅加 extracted source 路徑，確認 find_spec 無該模組。三項 in-memory mutation 分別移除 collector filter、archive boundary、policy pin，由 assertion／DID NOT RAISE 殺死，不以 import 或環境錯誤計數。
+
+本輪最終驗證與 identities 見下方補錄。初始 RED 為 `1 failed, 32 deselected in 1.73s`，確實在來源集合仍含 p4b_blend 的 assertion 失敗。
+
+
+### 最終驗證補錄（執行跨日至 2026-11-25）
+
+開發 focused 實際 `47 passed, 1 skipped in 266.54s`（較早測試集合；不冒充最後版本）。自查發現合成 checkout fixture 原假設 `.git` 為檔案，改用 `git rev-parse --absolute-git-dir`，可承載一般 checkout 與 worktree；新增字面值動態 import 兩種形式、排除分類範圍及實際新增 `p4b_other_local.py` 仍拒絕的案例。第一次尚未完成的全套被主動中止（exit130），log 保留為 `bundle-exclude-full-suite-interrupted.log`，不算 completed run 或 PASS。
+
+修改後 focused 命令：
+
+```bash
+PYTHONPATH=V6 CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 /home/frank/.venvs/marketmamba-gpu/bin/python -m pytest -q -s V6/research_lab/tests/test_p4_source_compat.py -k 'excluded_content or local_only_in_memory or manual_local_only or colab_dependency'
+```
+
+實際輸出（ZIP container SHA 受打包時間 metadata 影響，沒有宣稱兩個 ZIP container hash 相同；逐成員 bytes／SHA 才是本驗收）：
+
+```text
+excluded-content isolation: 236 bundle members byte/hash identical; isolated Colab import absent
+assertion-killed: collection_filter
+assertion-killed: archive_boundary
+assertion-killed: policy_pin
+12 passed, 42 deselected in 20.41s
+```
+
+最後全套沿用原命令，不刪測試、不放寬斷言：
+
+```bash
+PYTHONPATH=V6 CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 /home/frank/.venvs/marketmamba-gpu/bin/python -m pytest -q V6/research_lab/tests
+```
+
+七份保護檔逐 byte 核對 HEAD：P4b adapter、P3 rolling_seq_scores／portfolio_eval／規格、P4a contract／runtime／lock；其中 P4b adapter SHA 仍 `233f08fb7462bf3c5375772b34fa0f7f20bc85a4c44edb99a93f1424bdd5c399`。相對上一份版本化 GENERATED 宣告的 to source 集合差為空，只有 p4_bundle／p4_source_compat 兩個 hashes 變動；相對 4e56e9d 的六檔差異仍完整揭露。宣告當前 identity 為 189414 bytes／SHA `3843dffe9e6a6703520f29ce9aa76ebdac67370fbfb4899313970b19509b4d6f`。
+
+人工 knowledge-impact gate：來源邊界／候選工程 gate／GENERATED 宣告／整合 blocker與next action=YES，故同一 patch 更新 Current State、Authority Map、Training 與 Worktree Register；既有研究語義／正式權威／active外部runtime／deprecation=NO。工具 impact PASS／DEFAULT 不取代此人工判斷。治理 unittest `23 tests OK`；六份文件本機 Markdown references 682 checked／0 missing。code-review-and-quality 五軸自查：來源集合與負向 gate、單一 collector／無新增實作樹、標準庫 AST 不執行研究程式、封裝多層拒絕與無訓練熱路徑影響；不是獨立複審，不能自行宣告 Human acceptance。
+
+Runtime：WSL-native 指派 worktree，Python3.12.3／torch2.10.0+cu128／numpy2.5.4／pandas3.1.1／pytest9.2.0，使用既有 marketmamba-gpu venv 但 CUDA_VISIBLE_DEVICES=''、OMP／MKL=1，執行全限 CPU。MARKETMAMBA_DATA_ROOT unset，Data realpath 是本 worktree 普通 Data 目錄；未讀改正式 Data。沒有 GPU／Drive／Colab／網路或資料取得／production／scheduler／wakeup／recurring job／額外agents／commit／push／merge／deploy。
+
+Remaining／風險：僅 synthetic CPU 工程與歷史來源 objects；不重新驗現場36 artifacts、CUDA官方mixer、Drive持久化或真實資料接續。P4b 全量 price-volume snapshot／全六折組合及研究判讀、獨立複審、Human acceptance 仍待；工程全套通過也不解除這些 STOP。不把原1153/28失敗紀錄或歷史研究成果重標為新證據。最後保留本任務10份 unstaged、0 staged／0 untracked source（logs為ignored），遵no-commit無clean完成宣告；safe-removal須先保留patch／必要證據並另行審查。
+
+全套完成 exit0，完整實際輸出（不含前次中止執行）：
+
+```text
+........................................................................ [  5%]
+.......................................s...s............................ [ 11%]
+........................................................................ [ 17%]
+........................................................................ [ 23%]
+........................................................................ [ 29%]
+........................................................................ [ 35%]
+........s............................................................... [ 41%]
+.................................s...................................... [ 47%]
+........................................................................ [ 53%]
+........................................................................ [ 59%]
+........................................................................ [ 65%]
+........................................................................ [ 71%]
+........................................................................ [ 77%]
+..........s............................................................. [ 83%]
+........................................................................ [ 89%]
+........................................................................ [ 95%]
+................................s.s........................              [100%]
+=============================== warnings summary ===============================
+research_lab/tests/test_gpu_env.py::test_verify_requires_cuda_or_raises
+research_lab/tests/test_gpu_env.py::test_verify_requires_cuda_or_raises
+  /home/frank/.venvs/marketmamba-gpu/lib/python3.12/site-packages/quack/copy_utils.py:15: DeprecationWarning: cutlass.utils.LayoutEnum is deprecated; use cutlass.tensor_utils.LayoutEnum instead. It will be removed in a future release.
+    from cutlass.utils import LayoutEnum, block_copy
+
+research_lab/tests/test_gpu_env.py::test_verify_requires_cuda_or_raises
+  /home/frank/.venvs/marketmamba-gpu/lib/python3.12/site-packages/quack/copy_utils.py:562: DeprecationWarning: cutlass.utils.LayoutEnum is deprecated; use cutlass.tensor_utils.LayoutEnum instead. It will be removed in a future release.
+    layout_c: cutlass.utils.LayoutEnum,
+
+research_lab/tests/test_p4.py::test_zip_inventory_and_payload_gates[duplicate]
+  /usr/lib/python3.12/zipfile/__init__.py:1620: UserWarning: Duplicate name: 'folds/fold_2021/X.npy'
+    return self._open_to_write(zinfo, force_zip64=force_zip64)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+1204 passed, 7 skipped, 4 warnings in 608.24s (0:10:08)
+```
+
+共1211項＝1204 passed＋7 skipped，0 failed。skip為三項套件已存在的缺件訊息測試、三項可選nbformat缺件、以及一項CUDA smoke；原先來源相容交付在產生宣告即失敗，本輪走過既有交付內容／notebook compile斷言後才因nbformat缺件而skip，因此相對原6個skip多1。未新增skip、刪測試或放寬斷言。4 warnings為既有cutlass deprecation與故意重複ZIP member的負向fixture。
+
+最終 source／tests／保護檔與主要logs identity manifest：`.artifacts/p4b/engineering/bundle-exclude-identity.json`，48572 bytes／SHA `b8e470293220544ff346350ab7f5df5323c6215c18b8875e225cfc159b894d33`，277個source／tests／contract／文件identity及7份HEAD byte-identical保護檔；保留matrix未重驗／CPU合成／not accepted限制。完整全套log SHA `3f0efd6b71a196428642aea2c06de1b25a9a7c0698c4a69bbd857eaa35357b0b`。
+文件結果補錄後另跑既有三項相關契約測試：`3 passed, 110 deselected in 1.66s`；log `.artifacts/p4b/engineering/bundle-exclude-docs-final.log`，SHA `f6261386a782c4390785970f2d2fba0090b99a00af83b3813422700d86024cbe`。此補充log產生於上列identity manifest之後，故直接於此記錄，不偽稱已收進該manifest。
+最終impact（全部10個changed paths）exit0／WARNING，原因為canonical-knowledge及worktree-responsibility要求人工review；上文source/report子集PASS是較早工具輸出。人工已依gate更新四份knowledge。最終 `knowledge_health.py --ci --as-of 2026-11-25` exit0，Project Map／Agent Guides／Domains／Runtime Freshness／Generated Index PASS；Governance／Authority Drift／Legacy Docs WARNING，Overall WARNING，無structural FAIL。外部runtime observed_at未變。
+
+本輪changed paths（10）：
+
+- `V6/research_lab/p4_bundle.py`
+- `V6/research_lab/p4_source_compat.py`
+- `V6/research_lab/tests/test_p4_source_compat.py`
+- `tasks/p4a-source-compat-20e6b54.json`
+- `docs/operations/colab-human-requirements.md`
+- `reports/v7_p4b_engineering.md`
+- `knowledge/00_Project_Map/Current_State.md`
+- `knowledge/00_Project_Map/Authority_Map.md`
+- `knowledge/00_Project_Map/Worktree_Register.md`
+- `knowledge/01_Domains/Training.md`
+
+Completed：bounded bundle來源邊界修補／完整CPU回歸；Changed：上列10paths；Decisions：精確本機專用契約清單，替代方案如表；Evidence：1204 passed／7 skipped／0 failed、236成員hash隔離、3 mutation killed。Remaining：現場／獨立複審／Human acceptance／全量P4b；Blockers：本候選CPU整合無，既有現場／研究STOP仍在；Next recommended action：獨立複審patch與宣告，再由Human決定。Project memory updated：YES；Authority map updated：YES（candidate邊界，不升格authority）；Git status：10 unstaged、0 staged／untracked source，ignored artifacts保留；Commit：N/A（禁止）；Push：N/A（亦無merge／deploy）；Worktree：既有builder_bundle_exclude detached8dc5cc9；Runtime/environment：上列WSL／Python3.12.3／CPU，Data與正式模型未動。完成不是Human acceptance。

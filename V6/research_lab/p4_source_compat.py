@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 import subprocess
 import zipfile
-from .p4_bundle import ROOT, digest, MAX_MANIFEST_BYTES
+from .p4_bundle import ROOT, digest, MAX_MANIFEST_BYTES, source_paths, local_only_sources
 
 CONTRACT='tasks/p4a-colab-contract-20261121.json'
 RUNTIME='environments/p4a-colab-runtime.json'
@@ -23,8 +23,8 @@ REASONS={
     'V6/research_lab/seq_runner.py':(['進度顯示'],'observer progress callbacks only; CPU bitwise regression required'),
     'V6/research_lab/p4_colab.py':(['進度顯示','日誌','speed-test 帳本分離','窗≠60 錯誤修正','新增排練模式','長窗前置檢查','正式前自動排練閘門'],'W!=60 session/eligible preflight; Q5 diagnostic dates use dates.npy rather than session indices (same groups/numerics); shared closed recursive schema for stage/Q5/marker types, finite numeric ranges and ISO dates; metadata symlinks rejected; malformed/overflowing cache reruns actionably; gate-owned result/artifact/request-identity checks and digest-bound three-stage marker; identity-bound one-step launch gate and CUDA peak telemetry; long-window NaN row identity fix, shared publication, isolated rehearsal and Q5 mature-label diagnostics; completed W60 training unchanged'),
     'V6/research_lab/p4_eval.py':(['窗≠60 錯誤修正','Q5 成熟標籤診斷'],'NaN-equivalent identity with infinities rejected; Q1/Q2 W60 train/publication never calls common_rows; IC excludes and reports immature labels'),
-    'V6/research_lab/p4_bundle.py':(['進度顯示','日誌','文件','正式前自動排練閘門'],'FORMAL/resume default rehearsal gate, SPEED_TEST opt-out default, verified source/data/environment identity; streaming notebook, source-upgrade declaration packaging and instructions'),
-    'V6/research_lab/p4_source_compat.py':(['日誌'],'source lineage evidence validation and SOURCE_UPGRADE audit; explicit gate/preflight reason categories; no numerical operations'),
+    'V6/research_lab/p4_bundle.py':(['進度顯示','日誌','文件','正式前自動排練閘門','本機專用來源排除'],'exact pinned local-only source policy, shared source inventory and import dependency rejection; archive/verification reject local-only members; FORMAL/resume default rehearsal gate, SPEED_TEST opt-out default, verified source/data/environment identity; streaming notebook, source-upgrade declaration packaging and instructions'),
+    'V6/research_lab/p4_source_compat.py':(['日誌','本機專用來源排除'],'source lineage evidence validation and SOURCE_UPGRADE audit; shared source inventory, exact to-source set and local-only policy validation; explicit gate/preflight reason categories; no numerical operations'),
     'docs/operations/colab-p4.md':(['文件'],'operator instructions'),
 }
 
@@ -54,7 +54,7 @@ def source_name(name):
 
 
 def current_sources():
-    paths=[p for subtree in ('V6/research_lab','V6/experimental') for p in (ROOT/subtree).rglob('*.py') if 'tests' not in p.parts]
+    paths=source_paths(ROOT)
     paths += [ROOT/n for n in (CONTRACT,'tasks/spec-p4a-colab-20261121.md','docs/operations/colab-p4.md',RUNTIME)]
     return {'source/'+p.relative_to(ROOT).as_posix():digest(p) for p in sorted(paths)}
 
@@ -106,6 +106,7 @@ def declaration(commit,to_sources,matrix):
     if full!='4e56e9db65a453a186511368788deb732a10eb1b':
         raise ValueError('uncertified from commit: this upgrade has bitwise evidence only for 4e56e9d; add reviewed cross-version tests first')
     neutral_surface(full)
+    same('current source inventory',current_sources(),to_sources)
     paths=subprocess.check_output(['git','ls-tree','-r','--name-only',full],cwd=ROOT,text=True).splitlines()
     paths=[n for n in paths if (n.startswith(('V6/research_lab/','V6/experimental/')) and n.endswith('.py') and 'tests' not in Path(n).parts)
            or n in (CONTRACT,'tasks/spec-p4a-colab-20261121.md','docs/operations/colab-p4.md',RUNTIME)]
@@ -133,6 +134,7 @@ def declaration(commit,to_sources,matrix):
                 **{'from':dict(commit=full,sources=before),'to':dict(commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
                 status='UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED; to.commit is generation-time HEAD; hashes bind working bytes; deliver recomputes declaration after any commit',sources=to_sources)},
                 adoption=dict(required_completed_prefix=36,queues=['Q1','Q2'],validator='resume_fit',retrain=False),
+                local_only_sources=local_only_sources(),
                 differences=changes,invariants=invariants,queue_sha256=queue_sha,matrix=matrix,budget=dict(BUDGET),research_budget=contract['budget'])
 
 
@@ -183,7 +185,9 @@ def _resolve(bundle,mf,binding,root,budget,allow_new=False):
     same('宣告檔 hash',mf['files'][name],digest(path))
     d=json.loads(path.read_text())
     same('declaration schema','p4-source-compat-v1',d.get('version'))
+    same('local-only source policy',local_only_sources(),d.get('local_only_sources'))
     sources={n:i for n,i in mf['files'].items() if source_name(n)}
+    same('local-only sources absent',[],sorted(set(sources)&{'source/'+n for n in local_only_sources()}))
     # Report paths individually so a mismatching file is directly actionable.
     same('to source path set',sorted(d['to']['sources']),sorted(sources))
     for n,i in sources.items():same('to '+n,d['to']['sources'][n],i)
@@ -191,7 +195,10 @@ def _resolve(bundle,mf,binding,root,budget,allow_new=False):
     same('difference path set',sorted(differences),sorted(x['path'] for x in d['differences']))
     for item in d['differences']:
         n=item['path'];same('diff before '+n,d['from']['sources'].get(n),item['before']);same('diff after '+n,sources.get(n),item['after'])
-        same('difference reason '+n,True,bool(item.get('reason')) and bool(item.get('diff')) and bool(item['categories']) and set(item['categories'])<={'進度顯示','日誌','speed-test 帳本分離','文件','窗≠60 錯誤修正','新增排練模式','Q5 成熟標籤診斷','長窗前置檢查','正式前自動排練閘門'})
+        same('difference reason '+n,True,bool(item.get('reason')) and bool(item.get('diff')) and bool(item['categories']) and set(item['categories'])<={'進度顯示','日誌','speed-test 帳本分離','文件','窗≠60 錯誤修正','新增排練模式','Q5 成熟標籤診斷','長窗前置檢查','正式前自動排練閘門','本機專用來源排除'})
+        if '本機專用來源排除' in item['categories']:
+            same('local-only difference surface',True,n in {
+                'source/V6/research_lab/p4_bundle.py','source/V6/research_lab/p4_source_compat.py'})
     for n,i in d['invariants'].items():
         target='requirements.lock.txt' if n==LOCK else 'source/'+n
         same('invariant '+n,i,mf['files'].get(target))

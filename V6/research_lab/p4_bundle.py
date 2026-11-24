@@ -1,6 +1,7 @@
 """P4 self-contained source/data bundle. Standard library bootstrap; never installs implicitly."""
 from __future__ import annotations
 import argparse
+import ast
 from contextlib import contextmanager
 import gzip
 import hashlib
@@ -26,9 +27,48 @@ MAX_EXTENDED_BYTES = 64 * 1024
 MAX_ARCHIVE_OVERHEAD = 32 * 1024**2
 MAX_ZIP_COMPRESSION_RATIO = 2000
 
+# Exact reviewed contract, not a filename/directory convention. Adding entries
+# requires updating the pin, declaration and dependency/negative tests together.
+LOCAL_ONLY_SOURCES = {
+    'V6/research_lab/p4b_blend.py': 'local CPU evaluation only; never executed in Colab',
+}
+LOCAL_ONLY_POLICY_SHA256 = '3e6c46b52bb73121f5fe16b1a103c333e39225bdd841aa9c3b916a3117ec1191'
+
+
+def local_only_sources():
+    payload=json.dumps(LOCAL_ONLY_SOURCES,sort_keys=True,separators=(',',':')).encode()
+    if hashlib.sha256(payload).hexdigest()!=LOCAL_ONLY_POLICY_SHA256:
+        raise ValueError('unreviewed local-only source policy')
+    return dict(LOCAL_ONLY_SOURCES)
+
+
+def source_paths(root=None):
+    """Shared inventory for pack and compatibility; never read excluded bytes."""
+    root=ROOT if root is None else Path(root)
+    excluded=local_only_sources()
+    paths=sorted(p for subtree in ('V6/research_lab','V6/experimental')
+                 for p in (root/subtree).rglob('*.py')
+                 if 'tests' not in p.parts and p.relative_to(root).as_posix() not in excluded)
+    modules={Path(n).stem for n in excluded}
+    for path in paths:
+        # Reject static imports and literal dynamic imports of excluded modules.
+        # Runtime packaging also forbids their presence, including manual injection.
+        for node in ast.walk(ast.parse(path.read_bytes(),filename=str(path))):
+            names=[]
+            if isinstance(node,ast.Import): names=[n.name for n in node.names]
+            elif isinstance(node,ast.ImportFrom): names=[node.module or '']+[n.name for n in node.names]
+            elif isinstance(node,ast.Call) and (getattr(node.func,'id',None) in {'__import__','import_module'} or getattr(node.func,'attr',None)=='import_module'):
+                values=list(node.args)+[k.value for k in node.keywords]
+                names=[n.value for n in values if isinstance(n,ast.Constant) and isinstance(n.value,str)]
+            if any(modules.intersection(n.split('.')) for n in names):
+                raise ValueError('Colab source imports local-only module: '+path.relative_to(root).as_posix())
+    return paths
+
 
 def allowed_path(name):
     p = safe_name(name)
+    if name.removeprefix('source/') in local_only_sources():
+        raise ValueError('local-only source forbidden in Colab bundle: '+name)
     if executable_cache(name): raise ValueError('executable cache forbidden')
     if p.name in {'sitecustomize.py', 'usercustomize.py', 'conftest.py', 'setup.py'} or p.suffix in {'.pth', '.so', '.pyd'}:
         raise ValueError('bundle startup/native path forbidden')
@@ -394,9 +434,8 @@ def pack(folds_root, years, p1, lock, output, resume_from_commit=None):
         raise ValueError('unique P4 fold years required')
     files={}
     # Existing research implementation plus experimental dependencies; no production/models/data.
-    for subtree in ('V6/research_lab','V6/experimental'):
-        for path in (ROOT/subtree).rglob('*.py'):
-            if 'tests' not in path.parts: files['source/'+path.relative_to(ROOT).as_posix()]=path
+    for path in source_paths():
+        files['source/'+path.relative_to(ROOT).as_posix()]=path
     for name in ('tasks/p4a-colab-contract-20261121.json','tasks/spec-p4a-colab-20261121.md','docs/operations/colab-p4.md','environments/p4a-colab-runtime.json'):
         files['source/'+name]=ROOT/name
     external=(Path(folds_root)/'shared').is_dir()

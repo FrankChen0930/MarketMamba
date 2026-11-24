@@ -61,6 +61,14 @@ MyDrive/MarketMamba/
 - 斷線後操作：開新 notebook，將新版 zip＋ipynb 放到 `MarketMamba/p4a/03_formal_resume/`，從上到下執行；`EXPERIMENT_DIR` 仍指向 `MarketMamba/p4a`，資料不用再上傳，舊 ZIP／budget 不刪不搬。不要在仍執行訓練的 kernel 中更換程式。
 - 在 run 目錄與 hash-chain ledger 記錄 `SOURCE_UPGRADE`，含 from／to 來源清單雜湊、宣告身分、時間及環境。歷史 run_identity、完成標記與 checkpoint 不改寫。候選目前只有 CPU 工程證據，Colab／T4／Drive 現場仍 UNVERIFIED；仍需獨立審查與 Human acceptance。
 
+### 本機專用評估來源邊界（2026-11-24 核准工程候選）
+
+- Colab 來源使用 `p4_bundle.local_only_sources()` 的精確路徑契約，目前唯一排除為 `V6/research_lab/p4b_blend.py`（本機 CPU 評估，不在 Colab 執行）。清單與固定 policy SHA 綁定；不得依檔名、前綴或目錄自動擴大。未來同類須逐項審查依賴、更新契約 pin、宣告與負向測試；單純加入訓練必要檔案必須拒絕。
+- bundle 與宣告共用來源收集；宣告必含 `local_only_sources`，採用端核對精確清單並拒絕清單內來源被塞回 bundle。封裝、extract／verify 的 allowed_path 亦拒絕此檔，來源掃描拒絕靜態與字面值動態 import。新增加的非清單來源仍須既有差異審查，不可藉排除機制漏報；產生端亦拒絕遺漏必要來源的 to 清單。
+- 必須以兩次合成完整打包證明：僅改本機專用模組 bytes（含無效 Python）時，所有 bundle 成員含宣告與 manifest 的 bytes／SHA 不變；隔離 Python 的 Colab 來源路徑不可 import 該模組，手動注入也必須拒絕。這不是一般 Python 動態程式的形式化證明；任何新依賴／動態載入設計仍需審查。
+- 本次重新由工具產生 `4e56e9d` → generation-time HEAD／working bytes 宣告；理由誠實包含先前修正、自動排練閘門與這次「本機專用來源排除」，不將 bundle 產生器／相容工具的變動冒稱純文件。36 個 Q1／Q2 W60 completed fits 全數 `resume_fit` 原地驗證、保留 bytes／不重訓、64-fit queue SHA `4dc90ec0ada6c6d34b43c429d359424c502634e502c6856c6774bf138de7ba23`、舊 notebook 保底及 P3 凍結檔均不改。
+- 候選仍 UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED；實際 CPU 證據與替代方案見 [P4b 工程報告](../../reports/v7_p4b_engineering.md)。沒有因此建立或操作雲端交付；完成不等於 Human acceptance。
+
 ## 9. 上線前排練（2026-11-23 事故後新增）
 
 - 每種佇列項目的第一個擬合，必須先用**真實 fold 資料與同一程式路徑**在本機 CUDA 或 Colab 排練；至少涵蓋 Q1、Q3 的 120／250 窗、Q4，以及以排練 checkpoint 執行的 Q5。CPU 合成測試不能代替此現場 gate。

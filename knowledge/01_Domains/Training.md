@@ -277,3 +277,12 @@ Expanding各Origin仍需另凍結model-ready/maturity/purge/refit/selection與�
 ## W37 readonly adoption
 
 W34 model JSON/scaler/recipe/feature identity is available through `V6/experimental/v7_shadow_models.py`; only readonly scoring port, no fitting. See [integration](../../research/v7/window37-integration.json). Original training evidence remains W34@82cd49c; no new model or research admission.
+
+
+## P4b 本機專用模組的 bundle 邊界候選 — 2026-11-24
+
+`builder_bundle_exclude`／base 8dc5cc9，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。本機 `p4b_blend.py` 不屬 Colab runtime；[bundle](../../V6/research_lab/p4_bundle.py) 的精確固定摘要清單與 [source compatibility](../../V6/research_lab/p4_source_compat.py) 共用來源集合，宣告列明排除政策；未宣告新來源、必要檔排除、Colab import 依賴或手動注入均拒絕。兩次完整合成 bundle 只改本機模組 bytes，所有成員含宣告／manifest bytes/hash 必須一致；隔離 import 與至少三項 in-memory mutation 依 [測試](../../V6/research_lab/tests/test_p4_source_compat.py) 驗證。明細／最終實測見 [P4b報告](../../reports/v7_p4b_engineering.md)。
+
+from=4e56e9d 不變，to 為 generation-time HEAD／working hashes；matrix 只沿用版本化 identity、未重新認證資料。36 個 W60 完成 fit 全數 resume_fit／不改歷史 bytes／不重訓、64-fit queue SHA、舊 notebook 與 P3 凍結檔均維持。只限本機 CPU 工程，不取代真實官方 mixer／Colab／Drive／現場 artifacts／獨立複審或 Human acceptance。沒有更新外部 observed_at；沒有原研究結論或 production authority supersession。
+
+本輪最終完整CPU回歸（2026-11-25）1204 passed／7 skipped／4 warnings／0 failed（608.24s，exit0）；最終focused 12 passed，3項mutation killed，236成員bytes/hash不變。7 skip為既有套件／nbformat／CUDA環境限制，明細見報告；不等於現場或研究驗收。

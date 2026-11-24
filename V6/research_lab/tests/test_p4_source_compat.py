@@ -350,3 +350,169 @@ def test_adoption_requires_all_36_valid_completed_fits(tmp_path,monkeypatch,dama
         (fit/'complete.json').write_text(json.dumps(marker))
     monkeypatch.setattr(p,'train_fit',lambda *a,**k:pytest.fail('adoption retrained a completed fit'))
     with pytest.raises(ValueError,match='STOP'):c.resolve(bundle,mf,binding,root,c.BUDGET)
+
+
+def test_local_only_source_boundary():
+    from research_lab import p4_source_compat as c
+    local='source/V6/research_lab/p4b_blend.py'
+    assert local not in c.current_sources()
+    with pytest.raises(ValueError,match='local-only'):
+        b.allowed_path(local)
+    stored=json.loads((b.ROOT/'tasks/p4a-source-compat-20e6b54.json').read_text())
+    decl=c.declaration(OLD,c.current_sources(),stored['matrix'])
+    # generation-time HEAD may differ after a commit; source bytes must agree.
+    assert stored['to']['sources']==decl['to']['sources']
+    assert stored['differences']==decl['differences']
+    assert stored['local_only_sources']==decl['local_only_sources']
+    assert decl['local_only_sources']=={
+        'V6/research_lab/p4b_blend.py':'local CPU evaluation only; never executed in Colab'}
+    assert decl['queue_sha256']=='4dc90ec0ada6c6d34b43c429d359424c502634e502c6856c6774bf138de7ba23'
+    assert decl['adoption']==dict(required_completed_prefix=36,queues=['Q1','Q2'],validator='resume_fit',retrain=False)
+
+
+@pytest.mark.parametrize('required',['p4_colab.py','seq_runner.py','p4_eval.py','p4_bundle.py'])
+def test_local_only_policy_cannot_hide_training_sources(monkeypatch,required):
+    from research_lab import p4_source_compat as c
+    monkeypatch.setattr(b,'LOCAL_ONLY_SOURCES',dict(b.LOCAL_ONLY_SOURCES,**{
+        'V6/research_lab/'+required:'local CPU evaluation only; never executed in Colab'}))
+    with pytest.raises(ValueError,match='unreviewed local-only'):
+        c.current_sources()
+    with pytest.raises(ValueError,match='unreviewed local-only'):
+        b.allowed_path('source/V6/research_lab/'+required)
+
+
+def test_undeclared_new_source_still_rejected(tmp_path,monkeypatch):
+    from research_lab import p4_source_compat as c
+    original=c.current_sources()
+    monkeypatch.setattr(c,'current_sources',lambda:dict(original,**{
+        'source/V6/research_lab/new_local_eval.py':c.identity(b'# undeclared new source\n')}))
+    with pytest.raises(ValueError,match='unreviewed source difference: V6/research_lab/new_local_eval.py'):
+        c.declaration(OLD,c.current_sources(),None)
+    # Omitting any necessary source from the caller's inventory also fails.
+    monkeypatch.undo()
+    sources=c.current_sources();del sources['source/V6/research_lab/seq_runner.py']
+    with pytest.raises(ValueError,match='current source inventory'):
+        c.declaration(OLD,sources,None)
+
+
+@pytest.mark.parametrize('statement',[
+    'from research_lab import p4b_blend',
+    'from .p4b_blend import main',
+    'import research_lab.p4b_blend',
+    "importlib.import_module('research_lab.p4b_blend')",
+    "__import__('research_lab.p4b_blend')",
+    "import_module('research_lab.p4b_blend')",
+    "importlib.import_module(name='research_lab.p4b_blend')",
+])
+def test_colab_dependency_on_local_only_source_rejected(tmp_path,statement):
+    folder=tmp_path/'V6/research_lab';folder.mkdir(parents=True)
+    (folder/'p4_colab.py').write_text(statement+'\n')
+    with pytest.raises(ValueError,match='imports local-only'):
+        b.source_paths(tmp_path)
+
+
+@pytest.mark.parametrize('damage',['missing','expanded','injected','misclassified'])
+def test_resolve_rejects_local_only_policy_tampering(tmp_path,damage):
+    c,bundle,mf,binding,root,out,decl,name=setup_upgrade(tmp_path)
+    if damage=='missing':del decl['local_only_sources']
+    elif damage=='expanded':decl['local_only_sources']['V6/research_lab/seq_runner.py']='not allowed'
+    elif damage=='misclassified':
+        next(d for d in decl['differences'] if d['path'].endswith('/seq_runner.py'))['categories']=['本機專用來源排除']
+    else:
+        local='source/V6/research_lab/p4b_blend.py'
+        mf['files'][local]=decl['to']['sources'][local]=c.identity(b'injected')
+    (bundle/name).write_text(json.dumps(decl));mf['files'][name]=b.digest(bundle/name)
+    with pytest.raises(ValueError,match='STOP: local-only'):
+        c.resolve(bundle,mf,binding,root,c.BUDGET)
+
+
+def test_excluded_content_cannot_change_any_bundle_file(tmp_path,monkeypatch):
+    """Real pack/declaration/extract twice, changing only excluded bytes."""
+    import shutil
+    import pandas as pd
+    from test_p4_full import dataset
+    from research_lab import p4_source_compat as c
+    original_root=b.ROOT
+    checkout=tmp_path/'checkout';checkout.mkdir()
+    # Retain the same read-only git object identity; no git writes in this test.
+    git_dir=subprocess.check_output(['git','rev-parse','--absolute-git-dir'],cwd=original_root,text=True).strip()
+    (checkout/'.git').write_text('gitdir: '+git_dir+'\n')
+    for name in [n.removeprefix('source/') for n in c.current_sources()]+list(b.local_only_sources())+[c.LOCK]:
+        target=checkout/name;target.parent.mkdir(parents=True,exist_ok=True)
+        shutil.copyfile(original_root/name,target)
+    monkeypatch.setattr(b,'ROOT',checkout);monkeypatch.setattr(c,'ROOT',checkout)
+    matrix=dataset(tmp_path/'matrix');b.dataset_manifest(matrix,enforce_x=False)
+    monkeypatch.setattr(b,'DATASET_X',b.digest(matrix/'shared/X.npy'))
+    ref=tmp_path/'ref';ref.mkdir()
+    pd.DataFrame(dict(fold=[2021],date=pd.to_datetime(['2021-01-01']),code=['A'],label_y5=[.1],score=[.2],system=['c0plus'])).to_parquet(ref/'rank_average.parquet')
+    (ref/'manifest.json').write_text(json.dumps(dict(outputs={'rank_average.parquet':b.digest(ref/'rank_average.parquet')})))
+    snapshots=[]
+    for index,payload in enumerate((b'raise RuntimeError("must never run")\n',b'not even valid Python: changed local bytes\x00')):
+        (checkout/'V6/research_lab/p4b_blend.py').write_bytes(payload)
+        archive=tmp_path/f'bundle-{index}.zip'
+        mf=b.pack(matrix,[2021],ref,checkout/c.LOCK,archive,resume_from_commit=OLD)
+        with zipfile.ZipFile(archive) as z:
+            snapshots.append({name:z.read(name) for name in z.namelist()})
+            assert 'source/V6/research_lab/p4b_blend.py' not in z.namelist()
+        extracted=tmp_path/f'extracted-{index}'
+        b.extract(archive,extracted);assert b.verify(extracted)==mf
+        result=subprocess.run([sys.executable,'-I','-c',
+            'import sys, importlib.util; sys.dont_write_bytecode=True; sys.path.insert(0,sys.argv[1]); '
+            'assert importlib.util.find_spec("research_lab.p4b_blend") is None',
+            str(extracted/'source/V6')],capture_output=True,text=True)
+        assert result.returncode==0,result.stderr
+    assert snapshots[0]==snapshots[1]  # Includes declaration AND bundle-manifest bytes.
+    assert {n:c.identity(v) for n,v in snapshots[0].items()}=={n:c.identity(v) for n,v in snapshots[1].items()}
+    print('excluded-content isolation:',len(snapshots[0]),'bundle members byte/hash identical; isolated Colab import absent')
+    # A real new file with a similar prefix is not silently excluded.
+    (checkout/'V6/research_lab/p4b_other_local.py').write_text('# undeclared local evaluation\n')
+    assert 'source/V6/research_lab/p4b_other_local.py' in c.current_sources()
+    with pytest.raises(ValueError,match='unreviewed source difference: V6/research_lab/p4b_other_local.py'):
+        c.declaration(OLD,c.current_sources(),None)
+
+
+def test_local_only_in_memory_mutations_are_killed(monkeypatch):
+    from research_lab import p4_source_compat as c
+    local='source/V6/research_lab/p4b_blend.py'
+    def assert_excluded():
+        assert local not in c.current_sources()
+    def assert_archive_rejects():
+        with pytest.raises(ValueError,match='local-only'):b.allowed_path(local)
+    def assert_expansion_rejects():
+        b.LOCAL_ONLY_SOURCES['V6/research_lab/seq_runner.py']='hidden training'
+        with pytest.raises(ValueError,match='unreviewed local-only'):b.local_only_sources()
+    mutations=[
+        ('collection_filter',c,'source_paths',lambda root:list(b.source_paths(root))+[root/'V6/research_lab/p4b_blend.py'],assert_excluded),
+        ('archive_boundary',b,'allowed_path',lambda name:None,assert_archive_rejects),
+        ('policy_pin',b,'local_only_sources',lambda:dict(b.LOCAL_ONLY_SOURCES),assert_expansion_rejects),
+    ]
+    for label,module,name,mutant,check in mutations:
+        with monkeypatch.context() as patch:
+            patch.setattr(b,'LOCAL_ONLY_SOURCES',dict(b.LOCAL_ONLY_SOURCES))
+            patch.setattr(module,name,mutant)
+            with pytest.raises((AssertionError,pytest.fail.Exception)):
+                check()
+        print('assertion-killed:',label)
+
+
+@pytest.mark.parametrize('stage',['write','extract','verify'])
+def test_manual_local_only_archive_injection_rejected(tmp_path,stage):
+    name='source/V6/research_lab/p4b_blend.py'
+    payload=b'raise RuntimeError("local only")\n'
+    file=tmp_path/'local.py';file.write_bytes(payload)
+    if stage=='write':
+        with pytest.raises(ValueError,match='local-only'):
+            b.write_archive(tmp_path/'rejected.zip',{name:file},{})
+    else:
+        mf=dict(version='p4-bundle-v1',files={name:b.digest(file)},metadata={})
+        archive=tmp_path/'injected.zip'
+        with zipfile.ZipFile(archive,'w') as z:
+            z.writestr(name,payload);z.writestr('bundle-manifest.json',json.dumps(mf))
+        if stage=='extract':
+            with pytest.raises(ValueError,match='local-only'):
+                b.extract(archive,tmp_path/'output')
+            assert not (tmp_path/'output').exists()
+        else:
+            root=tmp_path/'bundle';target=root/name;target.parent.mkdir(parents=True)
+            target.write_bytes(payload);(root/'bundle-manifest.json').write_text(json.dumps(mf))
+            with pytest.raises(ValueError,match='local-only'):b.verify(root)

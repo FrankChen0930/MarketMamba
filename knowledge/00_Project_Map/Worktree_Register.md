@@ -1,5 +1,13 @@
 # Worktree Register
 
+## P4b bundle 來源邊界 builder — 2026-11-24
+
+- Purpose/task／owner：Human／Codex builder，`job-run-mwuv96vj-55da06/builder_bundle_exclude`；精確排除本機專用評估來源、重產 P4a 宣告、CPU 負向／hash 隔離回歸及文件。沿用 `.worktrees/ruflo-workers/run-mwuv96vj-55da06/builder_bundle_exclude`，detached HEAD/base `8dc5cc961f520272cd94281b8e104347cdecd034`；created date UNKNOWN（本輪接手2026-11-24），retired N/A；起始 clean，未新增 worktree。
+- State/authority：EXECUTE_APPROVED bounded CPU，未提交 patch／UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED。Human 明令 no-commit／push／merge，故最後應保留指定 unstaged、不能宣稱 clean。無 GPU、資料取得、正式 Data／V6/models／Drive／Colab／production／scheduler／額外agents。
+- Dependencies：獨立複審與 Human acceptance；[GENERATED 宣告](../../tasks/p4a-source-compat-20e6b54.json) 綁 working bytes，真正 deliver 需重算。本 worktree `.artifacts/p4b/engineering/bundle-exclude-*` 為隔離合成 CPU logs／identity；主 checkout 舊 full-suite.log 唯讀，原 artifact 不覆寫。Safe removal：先保存未提交 patch／唯一必要證據、處理引用、確認 clean 與 retirement review，本輪不清理 worktree。
+- Runtime：WSL-native，`/home/frank/.venvs/marketmamba-gpu/bin/python` 3.12.3／torch2.10.0+cu128，但 CUDA_VISIBLE_DEVICES 空且所有執行限 CPU；MARKETMAMBA_DATA_ROOT unset，Data 為此 worktree 普通目錄，未讀改正式資料。沒有更新外部 runtime observed_at。
+
+
 ## P4b CPU builder — 2026-11-24 對話授權
 
 - Purpose/task：固定36-fit准入、P4b混合／描述性評估adapter、合成測試及2021本機排練；owner Human/Codex，job-run-mwuunk1u-38d24c/builder_p4b。沿用 `.worktrees/ruflo-workers/run-mwuunk1u-38d24c/builder_p4b`，detached HEAD/base `bc549b80703e97028602afb6e3186db5012764c6`，實際created date UNKNOWN（環境日期2026-11-24；Human決定日期2026-11-24），retired N/A；起始clean，未新增worktree。

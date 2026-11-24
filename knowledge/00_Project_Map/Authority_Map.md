@@ -1,5 +1,12 @@
 ## P4b FROZEN 對話核准與工程候選邊界 — 2026-11-24
 
+## P4b bundle 本機專用來源契約候選 — 2026-11-24
+
+`job-run-mwuv96vj-55da06/builder_bundle_exclude`／既有 detached base `8dc5cc9` 的未提交 patch，**UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED / CPU_ENGINEERING_ONLY**。[bundle](../../V6/research_lab/p4_bundle.py) 的精確 `LOCAL_ONLY_SOURCES`／policy SHA 只排除本機 CPU 評估 `p4b_blend.py`，不依目錄／命名擴張；共用來源 collector、宣告清單與採用端精確驗證及封裝／extract／verify 禁入是候選工程邊界。[來源相容工具](../../V6/research_lab/p4_source_compat.py) 仍拒絕未宣告新來源，新增理由只可用於 bundle／source_compat，不授予模型／研究變動相容性。
+
+[GENERATED 宣告](../../tasks/p4a-source-compat-20e6b54.json) 由既有工具重算 4e56e9d→8dc5cc9 generation-time HEAD／working hashes，230 sources／六個差異；matrix identity 保留原宣告、不宣稱重新驗資料。36 個完成 W60 fit 全部 resume_fit／保留 bytes／不重訓、64-fit queue SHA、舊 notebook 保底、P3 bytes 與原 P4a／P4b 凍結門檻維持；不 supersede 任何研究結果、production authority 或 authority-map.json。完整 CPU 測試、236-member bytes/hash 隔離及 mutation 實測見 [報告](../../reports/v7_p4b_engineering.md)；現場 Colab／Drive／CUDA／36-fit artifacts 不在本輪驗證範圍。未更新 runtime observed_at，完成不是 Human acceptance；獨立複審及 Human 決定仍待。
+
+
 [規格](../../tasks/spec-p4b-blend-20261124.md)採Human本次對話2026-11-24核准預設值，**FROZEN（無數位簽章）**；身分是原規格SHA `8d4f194730c2a147b42afe69750f722fccab1d0111e721d2a1f279df369f53c2`＋逐輸入與程式identity，詳[工程報告](../../reports/v7_p4b_engineering.md)。前瞻／P4d仍DRAFT；凍結不授予額外費用、production或執行權限。
 
 `job-run-mwuunk1u-38d24c/builder_p4b@bc549b8`未提交 [adapter](../../V6/research_lab/p4b_blend.py) 是 UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED 候選。36-fit固定子集驗證不是完整P4a驗收，不降低原64-fit loader gate，不supersede P1/P2/P3/P4a machine authority或歷史結果，authority-map.json不變。唯讀本機36-fit／P1原始三seed與2021混合證據上限CPU_ENGINEERING_ONLY，不能由支持率通過推定研究或PIT／成交正確。來源ZIP hash為Human提供、未重開原ZIP；實際逐fit、BEST、ledger/source-upgrade hash均已驗。
@@ -7,6 +14,8 @@
 來源／公式／門檻保持原凍結文字，僅更新核准metadata；全部歷史已曝光且調參／seed數不對稱，僅描述性。全量真實六折組合／統計／candidate、價格volume snapshot與獨立複審／Human acceptance未完成。未變外部runtime observed_at／production／scheduler。後續仍須按原門檻fail closed，不能把branch-local code presence升格authority。
 
 最終補錄：adapter `233f08fb7462bf3c5375772b34fa0f7f20bc85a4c44edb99a93f1424bdd5c399`；工程identity `21b33e7a4a7bca49ca375e07bba8f570f7f71d822dfbf819e4956a85c5c931d3`；最終2021排練manifest `0dcd0477c5318edfb764bf646585d08fd132d5f3616231393e045cc54ace35e4`（`.artifacts/p4b/rehearsal-2021-verified/`），8份分數hash與前次相同。focused **30 passed／9 mutants killed**；全套 **1153 passed／28 failed／6 skipped**（384.86s），28項均P4a source-compat gate拒絕未獨立審查的新增P4b模組，已單測重現。**整合驗收STOP**；不放寬gate或偽稱全套通過。需獨立審查數值中立／來源打包範圍，及price-volume snapshot／Human另行全量評估；未變production／64-fit authority。
+
+最終 CPU 回歸（跨日至2026-11-25）：**1204 passed／7 skipped／4 warnings／0 failed，608.24s，exit0**，1211項完整collection；focused最終12 passed／42 deselected，3項assertion-killed mutations、236成員bytes/hash隔離與實際未宣告新增檔拒絕通過。原來源inventory整合阻擋在本候選CPU工程層閉合；原歷史失敗log保留，獨立複審／現場NO_GO／Human acceptance不因此解除。skip明細及完整輸出見工程報告，未新增skip或刪測試。
 
 ## 三份DRAFT複審修補的authority邊界 — 2026-11-24
 
