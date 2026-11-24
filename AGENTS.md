@@ -12,6 +12,8 @@
 3. 任務相關的 machine contract、manifest、artifact 與 executable tests
 4. [`knowledge/01_Domains/`](knowledge/01_Domains/) 中的任務相關 domain note
 
+資料／特徵／標籤／切分／評估／回測與 Colab 交付的專案檢查清單 canonical 出處分別為 [ml-leakage-audit](.claude/skills/ml-leakage-audit/SKILL.md) 與 [colab-preflight](.claude/skills/colab-preflight/SKILL.md)；Codex 亦依觸發範圍讀取，兩者不覆蓋 AGENTS.md、Human 最新指示或 machine authority。
+
 先確認 repository root、branch/HEAD、`git status --short --branch`、worktrees、實際 runtime 與資料 realpath。`AGENTS.md` 是操作契約，Current State 是目前狀態，Authority Map 決定衝突時誰有權威；README、檔名、未追蹤檔與聊天記憶不能單獨升格成 authority。
 
 ## Reconnaissance before creation

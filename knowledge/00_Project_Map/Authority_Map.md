@@ -1,3 +1,7 @@
+## 專案稽核清單來源邊界 — 2026-11-24
+
+[ml-leakage-audit](../../.claude/skills/ml-leakage-audit/SKILL.md)／[colab-preflight](../../.claude/skills/colab-preflight/SKILL.md) 為本次核准建立的專案清單來源，AGENTS.md 指向同份內容供 Codex 依任務讀取；候選為 `job-run-mwuchypx-211f4f/skill_writer@8eff9fe` 的未提交文件 patch，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。只萃取 P3／P4a 事故、規則與檢查入口，不取代 machine contracts、manifests、tests、project map 或 [Human Colab 需求](../../docs/operations/colab-human-requirements.md)；本 skill 不覆蓋 AGENTS.md 與 Human 最新指示。清單的 canonical 出處指單一維護位置，不表示候選已驗收或研究 authority 升格；不更動 authority-map.json、研究結果、現場狀態或 observed_at。舊 advisor／agents 內 stale 狀態敘述仍依原 hierarchy 處理，本次不複製或升格。
+
 ## P4a 第 13 次複審 REQUIRED＋兩項 MINOR 修補候選 — 2026-11-24
 
 ## P2 前瞻／P4b 草案的 authority 邊界 — 2026-11-24

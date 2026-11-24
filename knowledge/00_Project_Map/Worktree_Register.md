@@ -1,5 +1,11 @@
 # Worktree Register
 
+## 專案清單 skill_writer — 2026-11-24
+
+- Purpose/task／owner：Human／Codex builder，`job-run-mwuchypx-211f4f/skill_writer`，洩漏稽核與 Colab preflight 兩份 skill、共用指標及 knowledge 導航；沿用 `.worktrees/ruflo-workers/run-mwuchypx-211f4f/skill_writer`，detached branch、base/HEAD `8eff9fef3386d5b852b79f5c66d09a0893891122`。本輪接手2026-11-24，實際建立時間 UNKNOWN，retired N/A。起始 clean，僅文件 patch，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；不 commit／push／merge。
+- Authority／dependency：Human EXECUTE_APPROVED bounded task；清單連回既有 contracts／reports／tests／Human 單一需求檔，沒有新研究或 production authority，沒有 runtime observation。無外部 artifact 產生或執行中 Colab／Drive 依賴變更；候選須後續獨立 session／Human 驗收，不改既有研究 NO_GO。新增 skill 被既有 ignore 規則涵蓋，僅兩個指定檔案使用 intent-to-add 供 patch 檢閱，未暫存內容。
+- Safe-removal preconditions：先保存未提交六檔 patch、核對引用與完成 retirement review；目前 dirty 不可移除，既有其他 worktrees 不動。Runtime：WSL-native、`/usr/bin/python3` 3.12.3；文件 pytest 借既有 pilot09 venv 但不借其研究 evidence，CPU／CUDA_VISIBLE_DEVICES=''。MARKETMAMBA_DATA_ROOT unset；Data 為本 worktree 一般目錄、realpath 為同 worktree/Data，不代表 canonical formal data；未讀改其中資料。
+
 ## P4a 第 13 次複審 schema／metadata builder — 2026-11-24
 
 - Purpose/task：Q5 完整巢狀 schema、marker 溢位／解析失敗重排練與 metadata symlink 防護；owner Human/Codex builder，job-run-mwtn0pir-48e95f。沿用 `.worktrees/ruflo-workers/run-mwtn0pir-48e95f/builder_p4a_gate3`，detached HEAD/base `40d621cc9ac586e45fff1e095f59465b388094a1`；created 2026-11-24（本輪接手，非宣稱新建），retired N/A。起始 clean；依 no-commit 指示保留本任務 dirty patch，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。

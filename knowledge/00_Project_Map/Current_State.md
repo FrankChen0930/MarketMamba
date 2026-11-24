@@ -1,3 +1,13 @@
+## 專案洩漏稽核／Colab 排練清單候選 — 2026-11-24
+
+`job-run-mwuchypx-211f4f/skill_writer`，既有 detached HEAD/base `8eff9fef3386d5b852b79f5c66d09a0893891122`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，Human 核准僅文件／skill、no-commit。新增 [ml-leakage-audit](../../.claude/skills/ml-leakage-audit/SKILL.md) 與 [colab-preflight](../../.claude/skills/colab-preflight/SKILL.md)，AGENTS.md 加 Codex 共用清單來源指標；本文不授予研究、執行或 production authority。
+
+建立前盤點：既有 advisor／agents 涵蓋角色隔離，ruflo-project 涵蓋 worker／artifact 交接；quant_rigor_checklist 是通用複習，Training domain／P3／P4a reports 保存契約與事故，colab-human-requirements 是 Human 偏好單一來源。缺口是任務觸發的短清單與逐項可追溯檢查，故僅沿用 `.claude/skills/` 增兩個入口，不建立新流程、記憶或報告樹。選擇連結既有證據而非複製報告／Human 需求；不塞入 advisor 或 AGENTS 長清單，避免角色協定與跨 CLI 規則分叉。歷史事故、已知限制與未驗證候選分開描述。
+
+Knowledge-impact：清單導航／同份 canonical 清單來源新增=YES；研究語義、primary authority、subsystem、active runtime、correctness thresholds、deprecation 與研究 blocker=NO。已人工檢查 GOVERNANCE，不改治理規則或 machine authority。既有文件測試發現 HEAD 的 Current_State／Authority_Map 首個 P4a 標題空段落，`test_p4_knowledge_preserves_candidate_authority_status` 原已失敗；保留原文件結構、不順修無關段落。獨立審查待後續 session，作者自查不等於 Human acceptance；沒有 GPU／網路／Colab／Drive、資料取得、正式 Data／V6/models、production／scheduler／通知／wakeup／額外 agents／commit／push／merge／deploy，也未更新 runtime observed_at。
+
+Evidence：兩份 skill 為72／61行，quick_validate 均通過；本機引用核對13個連結、36個測試名稱通過；`python3 -m unittest discover -s tools/project_knowledge -p 'test_*.py'` 為23 tests OK。CPU／`PYTHONPATH=V6` 的 `test_p4.py -k 'draft_documents or operations_require or knowledge_preserves'` 為2 passed／1 failed／110 deselected，失敗即上述 HEAD 既有空標題（首次未設 PYTHONPATH 的 collection error 不算通過）。impact checker WARNING，已人工核對 Operations／GOVERNANCE，無操作子系統或治理語義需改；health `--ci --as-of 2026-11-24` exit0／WARNING，含 authority repin、stale runtime 與 legacy docs，無 structural FAIL。skill SHA-256：ml=`7c9001821293558331efbab82850c0c7dfee149fdaab4569d238af59656adc1f`、colab=`cea48735bcc3a4e755df0d497ed025274040aaf9217afa4a3c2d5220ce81ccbb`。Next：獨立 session 核對清單與原始證據並由 Human 驗收；既有空標題文件測試失敗另案處理。工作樹身分與保留條件見 [Worktree Register](Worktree_Register.md)。
+
 ## P4a 第 13 次複審 REQUIRED＋兩項 MINOR 修補候選 — 2026-11-24
 
 ## P2 前瞻／P4b 描述性規格草案 — 2026-11-24
