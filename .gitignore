@@ -71,6 +71,8 @@ obsidian_note/
 !.claude/skills/
 .claude/skills/*
 !.claude/skills/advisor/
+!.claude/skills/ml-leakage-audit/
+!.claude/skills/colab-preflight/
 
 # Temporary debug / test output
 app/backend/_api_check.txt
