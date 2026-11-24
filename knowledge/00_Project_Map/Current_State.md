@@ -1,10 +1,10 @@
-## P4d 對等調參／資料縮放草案 — 2026-11-24
+## P4d 對等調參／三軸曲線草案 — 2026-11-24
 
-`job-run-mwus8xvs-57bc73/spec_writer_p4d`，既有detached HEAD/base `aa89bca6030fd4a02e47ba9e52d567a1c08a0425`，初始clean；僅文件patch、不commit。[P4d規格](../../tasks/spec-p4d-equal-tuning-20261125.md)為 **DRAFT 待Human凍結／E2 RESEARCH_ONLY／UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED**，全部已曝光、描述性，未產生研究結果或授予執行authority。沿用tasks與research_lab，不建新目錄／worktree／實作。提案為C0+、GRU、Mamba2各N12候選×2seed、單一2021前126-session驗證區間、random search／IC5選擇；六折固定BEST更新長度重訓、不用舊test選超參或early stop；Holm2。暫不納S-Mamba；可選25/50/100%最近完整交易年等值、全列且固定配方的描述性斜率模組。Human仍須凍結預算／臂／調參折／縮放是否併入。
+`job-run-mwut6qrj-7d9826/spec_writer_p4d_modules`，沿用指派detached HEAD/base `ffe98b4`、初始clean，只交三文件patch、不commit。[P4d規格](../../tasks/spec-p4d-equal-tuning-20261125.md)仍 **DRAFT／E2 RESEARCH_ONLY／UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED**，全部歷史資料已曝光、僅描述性，無執行／費用authority。核心維持三臂各N12×2seed、2021前126-session全列驗證、random／IC5與固定更新六折重訓、Holm2；不以outer選超參。Human同意加入容量A與種子B設計，三模組預設固定P4a配方：A六格（寬度32/64/128/256×2層＋d64×1/4層），headdim8／state16／expand2固定；B固定序列17/29/43/59/71/89/101/113之前1/2/4/8排名平均；D可選25/50/100%最近完整年等值。baseline更新數在2021前固定，各格不再早停；不同配方核心結果不得默認共用。
 
-P1 manifest核到18個固定配方jobs（每job兩樹模型，非18次搜尋）、500k cap、185欄；歷來調參總數UNKNOWN。P1兩模型整job122.35–165.76秒、中位139.51秒，不能當P4d全列CPU單fit耗時。P4a原始ledger未取得，Human提供25–30min Mamba／10min GRU僅暫估；N12含縮放T4基準35–40h、容量／epochs敏感度52.5–160h，CPU/RAM、費率與現場仍UNKNOWN／UNVERIFIED，不是核准費用。Next：取得可讀本機ledger與split／成本證據，Human凍結後另案實作／獨立審查／排練，不能自行啟動pilot。
+P4a原始ledger證據已由Human的 `p4a-results (3).zip` 提供派生摘要；本輪實讀主checkout `.artifacts/p4/p4a-fit-durations-min.json`（64 fit記錄／12群組），W60 GRU均值9.05／max10.5、Mamba2均值27.5／max29.0min；W120／250 Mamba均值38.4／61.8、max40.9／62.8min。未重新開ZIP驗hash-chain或逐fit環境，不能稱正式結果驗收；P4a逐折早停／80k val cap與P4d切分／更新不同，**本預設不重用P4a兩seed fits**。三模組7 origins共享baseline去重共308神經fits＝93.81 T4h基準等效；加N12核心為380 fits／115.74h，觀測max情境125.08h。資料D增量17.06h，A六格增量42.64h均需明列；容量倍率未知，這不是總工時上界。T4估計1.5–2.5 CU/h，全案基準至max情境173.6–312.7 CU，需當次面板觀測替換；不核准費用。P1累積調參總次數仍UNKNOWN。
 
-Knowledge-impact：候選研究設計／next decision有新增，更新本節與Research；已檢查Authority Map，DRAFT不supersede任何machine contract，故無需修改authority。沒有runtime observed_at更新、GPU／資料取得／Colab／Drive／blind／formal Data／V6/models／production／scheduler／wakeups／額外agent操作。23個knowledge工具tests通過、規格14個本機引用通過，成本算術與P1 metadata核對；完成不等於Human acceptance。impact checker同步後WARNING要求review GOVERNANCE，已人工確認無治理規則變更；health --ci（as-of 2026-11-24）exit0／WARNING、無structural FAIL，git diff --check通過。工作樹依no-commit指示保留指定文件dirty，既有其他worktrees不動。
+Next：Human凍結六／12格、三模組開關、固定配方／種子及分階段資源；另案實作／獨立審查，先baseline及GRU B/A，再Mamba B，依排練資源決定大容量停／續；d256×4只屬12格替代且先排練，不能結果後擴格。全列CPU/RAM、實際split／hash、最大容量時間／顯存、原始逐fit身分與當次CU率仍待驗證，未自行啟動pilot。Knowledge-impact為候選設計與blocker／next decision更新；Research同步、Authority Map已檢查但不變，無machine authority supersession或runtime observed_at更新。工作樹保留三文件dirty符合no-commit指示；無程式／GPU／Data／blind／Colab／Drive／排程／額外agents操作，完成不等於Human acceptance。
 
 ## 專案洩漏稽核／Colab 排練清單候選 — 2026-11-24
 

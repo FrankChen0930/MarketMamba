@@ -1,6 +1,8 @@
-## P4d 對等調參／資料縮放候選 — 2026-11-24
+## P4d 對等調參／資料、容量、種子曲線候選 — 2026-11-24
 
-[P4d規格](../../tasks/spec-p4d-equal-tuning-20261125.md)為DRAFT待Human凍結，E2 RESEARCH_ONLY／UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED；全部已曝光、僅描述性。建議三臂C0+／GRU／Mamba2各N12×2seed、單一2021前126日驗證、random／IC5選擇與固定更新長度六折重訓，Holm2；不使用任何2021–2026測試日期作超參／early-stop選擇。暫不納S-Mamba，縮放為可選最近25/50/100%完整交易年等值、固定調好配方／計算的描述模組，不作斜率顯著性或因果宣稱。新預算對等不能抵銷過去特徵／調參投入；P1正式18jobs不是18個trial，累積搜尋總數UNKNOWN。P4a原始ledger與全列CPU/RAM成本尚缺，耗時表是附敏感度的暫估，無執行／費用授權。來源、替代方案、待Human清單與驗收見規格；現況及authority仍依project map與既有machine contracts，不重標P1/P3/P4a歷史證據。
+[P4d規格](../../tasks/spec-p4d-equal-tuning-20261125.md)仍DRAFT／E2 RESEARCH_ONLY／UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED、全部已曝光。核心N12三臂對等調參不變；新增Human同意的A六格容量（12格替代）、B固定seed前綴1/2/4/8排名平均，D為可選25/50/100%最近完整交易年等值。三模組統一固定P4a配方及2021前baseline BEST更新長度，主看驗證IC5、train–val gap診斷，outer IC及組合層僅描述；固定headdim8／state16／expand2，不因新結果換設計。成本及同預算「更多seed vs 更大單模型」、27種三軸方向解讀與階段資源決策見規格。
+
+Human `p4a-results (3).zip` 的ledger／metrics派生摘要已取得，本輪核主checkout摘要64 fits；W60 GRU均值9.05／max10.5、Mamba2均值27.5／max29.0min，原始hash-chain／逐fit環境未重驗。P4a逐折早停／80k validation cap與本案不同，預設不重用。三模組共享baseline共308神經fits／93.81h基準等效，加N12為115.74h；大容量時間／顯存未知，並非預算上界，T4估計1.5–2.5 CU/h非實扣。先GRU B/A再Mamba B，昂貴容量需排練後按資源停／續，不能據勝負加格；全列CPU/RAM、split／hash、machine實作／獨立審查／Human凍結與現場仍待辦。Project map／machine authority不變，不授執行／費用或production權限，不重標舊證據。
 
 ## P4a 固定佇列候選 — 2026-11-22
 
