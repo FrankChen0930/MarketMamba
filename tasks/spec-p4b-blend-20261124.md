@@ -46,7 +46,7 @@
 |---|---|
 | 組合設定 | `p2_primary_config()`：top50、20-session 再平衡、buffer100、等權、min_dollar_volume=2e7、commission=.001425×.6、min_fee=20 TWD、sell_tax=.003、slippage=10bp 單邊、initial_capital=1e6、raw、benchmark_proportional_only=True、preserve_frozen_overflow=True |
 | 時序／對齊 | 收盤 signal、次 session open；`portfolio_rows` 同 price slice／universe_eligible 建置；同 fold 起點、相位、終點，無歷史跨折持倉繼承；`p3_pair` 以共同 return dates 配對，逐折列出雙方排除日 |
-| 支援門檻 | 各 seed 列集合需完全相同；跨臂取 S 並報各系統 input/common/excluded rows、比例與日期。每 fold／date S 至少保留各輸入 95%，且可排名股票≥50；任一不足則完整報告但 `NOT_ELIGIBLE_FOR_FORWARD_NOMINATION`，不刪該折或另縮家族 |
+| 支援門檻 | 各 seed 列集合需完全相同；跨臂取 S 並報各系統 input/common/excluded rows、比例與日期。每日檢查域採事前fold／evaluation日期清單D（以calendar／split manifest凍結），並納入所有輸入日期聯集以攔截額外日期，禁止只遍歷交集後日期。對每臂a、d∈D，分母N_a,d為交集前unique keys數，分子為S在該日數；N_a,d=0則保留率UNKNOWN且gate失敗，其他臂非零而S為0則0%。各臂每日均須有≥50列，整折空缺直接STOP／INCOMPLETE，不能從D消失。每 fold／date S 至少保留各非空輸入 95%，且可排名股票≥50；任一不足則完整報告但 `NOT_ELIGIBLE_FOR_FORWARD_NOMINATION`，不刪該折或另縮家族 |
 | Bootstrap | circular block=20、1000 draws、seed=17；`paired_ic_test` 用逐日淨報酬差 vs 0、95% percentile CI、centred **雙邊** p_boot；沿 shared 函式，不另造統計引擎 |
 | Multiplicity | 正式登記的歷史比較 family={B1,B2,B3}、m=3，三個雙邊 p 一次 Holm；只對 2021–2023 合併表做這一組校正。逐折／2024–2026／六折合併是描述性，CI／p 標示未作額外多重校正，不當獨立顯著證據 |
 | Fold pools | 每折 2021…2026 全報；2021–2023 historical registered pool、2024–2026 descriptive pool、全部六折池分列，2026 部分年度。不能把前者稱本案確認性折；只保留其在舊 P3/P4a 契約的名稱作來源欄 |
@@ -88,7 +88,7 @@
 
 1. 手算 ties／N 百分位、兩 seed 平均／三 seed 平均／三臂等權與 B 0.5/0.5，逐日／逐折隔離；常數分數與 code tie-break、未來 score／label 擾動不改較早 blend。
 2. 缺 seed／missing entire fold／重複 keys／nonfinite score／±inf label／有限 label 不符皆拒絕；尾端 NaN 對 NaN 成功、NaN 對有限失敗；portfolio 保留 NaN，IC 僅共同成熟列。
-3. 不同支援時先交集後 seed rank 的手算反例，cached rank 再切片必失敗；輸出 input/excluded/common counts，95% gate 與少於 50 gate 可反證，不靜默 dropna。
+3. 某一臂整日消失：兩個預定日期、其中一臂只有一天，交集只剩一天時仍須輸出兩日分母；缺失臂UNKNOWN／失敗、其他臂該日0%且失敗，不准靜默略日。某臂整折消失直接STOP／INCOMPLETE；所有臂同日消失仍以事前D攔下；輸入日期聯集含未排定日期也拒絕。不同支援時先交集後 seed rank 的手算反例，cached rank 再切片必失敗；輸出 input/excluded/common counts，95% gate 與少於 50 gate 可反證，不靜默 dropna。
 4. B 退化到同 C0+ 分數的合成案例必須給相同持股／daily returns；共用 engine 的 P2 設定／比例成本 benchmark／最低費／折扣／滑價／凍結持股 regression；不以新 pipeline 改舊結果。
 5. 配對僅共同 return dates、重複日拒絕、排除日可追溯；三個 p 的已知 Holm 手算、seed=17／block20／draws1000 可重現，fold pool／2026 partial／缺結果不縮家族。
 6. subset loader 只接受指定 36 queue jobs；缺 fit、錯 seed/window/lr、錯 BEST／history/hash／matrix／source lineage、speed／rehearsal／P3 artifact 皆拒絕；原 64-fit loader gate 不變，不改正在跑的 artifact。
@@ -110,8 +110,17 @@
 ## Open Questions／需要 Human 決定
 
 1. 是否凍結 B1/B2/B3 的三個 0.5/0.5 公式、seed-rank→臂-rank→混合的順序，以及 B2 的外層 rank？預設如表，不搜尋替代權重。
-2. 是否同意全局 S／95% 每日保留率／至少50檔，以及同源 NaN／支援處理？P1 原 seed 分數與 36-fit 本機匯出是否可供之後准入？目前不存取雲端。
+2. 是否凍結事前日期D＋輸入日期聯集核對（預設，能抓所有臂同日遺失；只用聯集不能抓全部消失，故不採）及整日／整折缺失驗收；是否同意全局 S／95% 每日保留率／至少50檔，以及同源 NaN／支援處理？P1 原 seed 分數與 36-fit 本機匯出是否可供之後准入？目前不存取雲端。
 3. 是否同意 Holm m=3 只在 2021–2023 pool 作登記門檻，逐折、2024–2026、六折池均描述性，原「確認性折」只作舊契約來源標籤？
 4. 是否凍結兩折 CI 正、三折方向一致、近期方向與完整 gates 的候選規則，以及多候選 B1→B2→B3 的簡單性優先序？沒有達標者就停止。
 5. 認可 C0+ 調參／種子數不對稱、raw／下市等限制與 E2 上限？是否另案做預算對等研究，不能把它混入本家族。
 6. 待 03_formal_resume 安全完成／有既有本機匯出後，另案授權 CPU 實作 subset loader、測試與描述性評估；凍結紀錄需批准者、時間、文件／所有輸入與程式 SHA、環境及 output namespace。現在只交 DRAFT，不執行。
+
+
+## 本輪六項審查修訂身分 — 2026-11-24
+
+`job-run-mwutomlv-e3974c/spec_fixer`，既有worktree、detached HEAD/base `3ed68762a51aa1f62223aa10c354f3a1eae0686f`，起始clean。只改三規格及Current State／Authority Map／Research共6份Markdown，不stage／commit／push／merge，不建立實作或訓練；全數仍DRAFT / E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。F1／F2／D1／D2／B1／D3文件修訂供再審，未解除原NO_GO或取代Human決定。前輪「本輪」字樣為各段歷史紀錄，不當本次驗證證據。
+
+WSL CPU，文件工具`/usr/bin/python3` 3.12.3，唯讀NumPy及shared統計檢查使用`/home/frank/.venvs/marketmamba-gpu/bin/python` 3.12.3（CUDA_VISIBLE_DEVICES空，未載入GPU／訓練）。MARKETMAMBA_DATA_ROOT unset，Data realpath為本worktree的普通Data目錄，未讀正式Data；唯讀實證僅使用Human指定外部prepared／pilot09矩陣及既有公開歷史artifact metadata。沒有讀封盲區、改V6/models、GPU／Colab／Drive、資料取得、production／scheduler、通知／wakeup／recurring jobs或額外agents。
+
+Knowledge-impact：DRAFT設計語義／blocker與next decision細分=YES，同改三份knowledge；已生效machine authority／runtime／subsystem／correctness thresholds／canonical supersession／deprecation=NO。Human仍須選端點、摘要及預處理完整契約並凍結；正式calendar、來源／事件與所有未來adapter／mutation／推導測試及獨立複審未完成。文件完成不等於Human acceptance。

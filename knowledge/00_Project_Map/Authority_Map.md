@@ -1,3 +1,11 @@
+## 三份DRAFT審查修訂候選 — 2026-11-24
+
+`job-run-mwutomlv-e3974c/spec_fixer`，既有detached HEAD/base `3ed6876`，起始clean、6份Markdown未提交patch；**DRAFT / E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[前瞻P2](../../tasks/spec-forward-p2-primary-20261124.md)補F1完整252收益契約：建議T1純現金→次日open首建含費、s1…s252 close估值、無終止清倉費、停牌／未知下市fail closed及同基準時鐘；與舊engine末entry open清倉不同，WP6只驗已選語義。F2封閉公開來源／全宇宙摘要schema、分母、持股診斷禁公開、私有256-bit nonce承諾、固定錯誤處置及與公開市場資訊結合推導驗收。[P4b](../../tasks/spec-p4b-blend-20261124.md)補B1事前日期域與聯集核對、整日／整折消失不得被交集隱藏。[P4d](../../tasks/spec-p4d-equal-tuning-20261125.md)補D1明確36…47欄macro schema／fit support cache與未來特徵mutation；D2雙邊centered公式＋Holm2；D3改稱訓練隨機性與集成的描述性反應，anchor選更新數有選擇偏向。
+
+唯讀CPU實證：prepared及pilot09六折共12組，X實算SHA `9778392d4c337d1f9cb5768002340a0d1aec13f7689b2f601b77bd2329b55363`；整矩陣60日、train60日、2021前60日、train逐日及2021前逐日的mask全同36…47。P1／P3六折X／split identity均吻合，P4a限本機prepared；**已完成結果不受此問題影響（僅限該mask及所列identity）**，不升格P3完整性／P4a逐fit驗收或PIT。輸入hash、方法與逐折數值在P4d附註，不依賴臨時輸出。
+
+Next：獨立再審後Human選定端點A（收盤估值；替代開盤／收盤清倉）、摘要／nonce／處置表及macro schema（替代僅fit估計後凍結），並決定其餘既有DRAFT選項；文件修訂不解除原NO_GO或代替Human凍結。正式calendar／來源／事件、實作、future-mutation／推導測試及現場驗收仍blockers。只文件與指定唯讀實證，無正式Data／blind／models／GPU／Colab／Drive／production／scheduler／排程／額外agents／commit／push／merge；不更新外部runtime observed_at，不改machine authority或歷史結果。遵照no-commit保留6份unstaged，非clean-worktree完成宣告。
+
 ## 專案稽核清單來源邊界 — 2026-11-24
 
 [ml-leakage-audit](../../.claude/skills/ml-leakage-audit/SKILL.md)／[colab-preflight](../../.claude/skills/colab-preflight/SKILL.md) 為本次核准建立的專案清單來源，AGENTS.md 指向同份內容供 Codex 依任務讀取；候選為 `job-run-mwuchypx-211f4f/skill_writer@8eff9fe` 的未提交文件 patch，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。只萃取 P3／P4a 事故、規則與檢查入口，不取代 machine contracts、manifests、tests、project map 或 [Human Colab 需求](../../docs/operations/colab-human-requirements.md)；本 skill 不覆蓋 AGENTS.md 與 Human 最新指示。清單的 canonical 出處指單一維護位置，不表示候選已驗收或研究 authority 升格；不更動 authority-map.json、研究結果、現場狀態或 observed_at。舊 advisor／agents 內 stale 狀態敘述仍依原 hierarchy 處理，本次不複製或升格。

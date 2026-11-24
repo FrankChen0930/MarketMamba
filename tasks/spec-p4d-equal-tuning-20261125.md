@@ -45,6 +45,37 @@ Tuning 的訓練起點沿既有 matrix 最早可得、W60完整連續歷史；�
 
 選好一次全域配方後，六折可以按各自 as-of 使用此前已成熟歷史（包括先前折曾評估過的日期）**擬合固定權重**；不再拿其IC、組合報酬或early stopping選擇epoch、seed、配方。所有超參選擇、BEST epoch與迭代數只能來自2021前的tuning validation。測試label不進該折fit；每折outer train最後session `< eval_first-20`、完整outer split及label_end都驗。這區分「歷史label用於後續固定演算法擬合」與「用測試結果選規則」。
 
+### 預處理隔離契約（D1；待凍結）
+
+**預設採versioned明確macro schema，不從整矩陣偵測。** 綁定48欄order SHA `7d75d4a74c7802e70e9ca88c13f7c2169a4b4fb974847d907c774e82a9da9696`；神經rank-gauss恆歸零的零起算欄位為 **36…47**：`TWII_Return, SPX_Return, VIX, TNX, Gold_Return, Oil_Return, USD_TWD, Futures_OI_Foreign, Options_PC_Ratio, Fear_Greed, Business_Signal, FED_Rate`。其餘0…35只用當日已知全截面rank-gauss（average ties、norm.ppf((rank-.5)/N)、非有限值處理依凍結實作）；不隨後續日期、fraction、trial、fold或觀測常數性改mask。此為神經轉換schema，C0+仍用185欄causal特徵，不把macro一併刪除。更動有序欄／schema須新identity，不可沿用快取。
+
+替代（不與預設並跑選優）：只由合格tuning **fit** 日期的完整截面估mask（std<1e-9、每個fit session均滿足才列入），不得讀validation／2021–2026；凍結估計support鍵／日期及輸出mask後，全trial、A/B/D、outer只重用同mask。不能按outer或fraction重新估mask作調參輸入；這會改問題且預設不採。其他學得的scaler／imputer／binning一律僅fit合格fit rows，validation僅transform；context halo只供因果features，不供估計狀態。
+
+rank-gauss／macro mask **cache identity** 必含source／implementation hash、matrix原始X及有序features identity、macro schema完整內容hash、估計方法（明確schema標not_fitted）、tuning fit support／halo／calendar hashes、各session輸入截面及轉換輸出hash、dtype／非有限值／ties政策。不得只用X的size／mtime tag，也不能把只改未來X導致全檔hash變化誤認歷史features變化；可以cache miss重算，但歷史結果必須不變。outer重新擬合的學得狀態另綁該折fit support，禁止反向污染tuning cache。未來只更換cache identity並不證明隔離，必須驗內容。
+
+新增強制驗收：在固定tuning日期／support、seeds及候選表下，任意修改**調參區間之後**的features、labels、日期／股票列、缺值／常數性（包括2021–2026）或追加未來列，tuning features bytes、macro mask、每trial IC／ranking及selected recipe／BEST更新數須完全相同；測cache hit、強制rebuild及獨立新程序。替換為整矩陣抽60日的舊路徑必使專用合成反例失敗（過去120列不變，後段mutation使mask[0]→[]、過去[0,0]→[.67448975,-.67448975]）。本輪只規定驗收、未修程式，舊`ensure_rankgauss`不符合本隔離契約，不可直接作P4d准入。
+
+### 唯讀實證附註：既有各折macro mask（2026-11-24；D1）
+
+本輪離線CPU唯讀，沒有呼叫會建cache的`ensure_rankgauss`／`SeqData`，沒有修改矩陣、cache、程式或既有結果。以AST抽出HEAD `3ed68762a51aa1f62223aa10c354f3a1eae0686f` 的原`macro_columns`函式（整檔SHA `1f4ba6fa9d97a93a5f59413e26b68252c926f071e51dc5465098438af69b088e`）在NumPy namespace執行；X及metadata以`np.load(..., mmap_mode='r')`讀取。兩來源為 `/home/frank/projects/p4-bundles/prepared/folds/fold_2021…fold_2026/` 與 `/home/frank/projects/ruflo-evaluation/pilot09/marketmamba/.local-data/matrices/rolling/fold_2021…fold_2026/`，依symlink取得實際X分別在prepared/shared與pilot09/matrices/E5_fwd_lagus。每份X實算 **1,425,394,112 bytes／SHA `9778392d4c337d1f9cb5768002340a0d1aec13f7689b2f601b77bd2329b55363`**，shape 7,423,927×48；不同realpath不混作不同實驗。
+
+兩來源dates SHA皆 `b0632562242f107855770742762f15fa1f82b6d8e012dce8e4cfd1d68c641016`，end_indices SHA皆 `dd6c6e8e8e4c44ad28f42e9dd266f87c3baebbdc0f986e9aa6865789c9d3516f`；完整5334 sessions（2005-01-03～2026-09-11），2021前3952 sessions（至2020-12-31）。各fold用原split==1的**完整日期截面**（每session end row判斷，非500k抽樣列、非只取finite label）重建訓練日期池。
+
+比較5種mask：①原整矩陣seed0無放回抽60 sessions；②限制該fold train日期、以相同seed0抽60；③限制2021前日期再抽60；④該fold train全部sessions逐日AND；⑤2021前全部sessions逐日AND。②／③是先限制日期池再抽樣，不是把整矩陣抽樣結果截去未來。④／⑤沿原float64 std<1e-9、單日>1列才更新的規則逐日檢查，不改常數容差。所有12個fold／來源組合、5種判定均為 **[36,37,38,39,40,41,42,43,44,45,46,47]**；差異欄位為空。完整欄名同上節schema。下表兩來源的split bytes／hash相同（每檔7,424,055 bytes），train起日皆2013-01-02。
+
+| fold | train sessions | train末日 | splits.npy SHA-256 | 5種mask／兩來源 |
+|---|---:|---|---|---|
+| 2021 | 1942 | 2020-12-03 | `6c70097cb2f8bbbe27d16b5bc86cacbab506d3fabddc989a7eb28a3a290979d6` | 全相同36…47 |
+| 2022 | 2186 | 2021-12-02 | `f55a74081ba43359edff6231aab488b0df9944c607de8489746d399e06e4bf89` | 全相同36…47 |
+| 2023 | 2432 | 2022-12-02 | `20a8ad5b9d963130919eafa6c9b425c14bd5cd44f60c4f8c7964d169dc199eac` | 全相同36…47 |
+| 2024 | 2671 | 2023-12-01 | `8e6c57aaa8a8611c31440c3e673693d40f879abd708f3615c1f8e7cb9eeec98c` | 全相同36…47 |
+| 2025 | 2913 | 2024-12-03 | `281442ccb444f4a60d8b94a1a53ef5ae96a4a9a3d9b5b4662fd93ac91890727d` | 全相同36…47 |
+| 2026 | 3156 | 2025-12-02 | `dfd3fa021b5d29447b67c65ecbc602e990cf92778828d151123c714fce57fa6b` | 全相同36…47 |
+
+身分連結：唯讀核對主checkout `.artifacts/p1/full-scores-ace2eef/manifest.json`（既有SHA `dc3b9b3ad9c2c27a5366440c651f5f6baa7daaec9854368a0e944874890be9d8`）與 `.artifacts/p3/scores-c323e79/run_identity.json`（本輪SHA `3f089e92ce7107affa92541ee084f523408071daa2c498a5cdbffe8e1a4ed06c`）inputs，P1／P3各六折X與splits雜湊12/12項均符合上表。P4a本機prepared X符合`p4_bundle.DATASET_X`，prepared.json綁定dataset manifest SHA `bc6401095260e7d4153060e3106fff8dbae88cfb6df3f349b808b7dd762c7d9f`；本輪沒有逐fit或雲端重新驗證，shared/manifest.json內的舊X hash非實際X，不能拿它替代實算或DATASET identity。
+
+**結論：已完成結果不受此問題影響（僅限該mask，限上述identity的P1／P3及P4a本機準備矩陣）**。P1 C0+本身不走神經rank-gauss，這裡核其同源矩陣，不代表另做P1轉換；P3仍21/24、P4a逐fit來源／cache／CUDA未重驗。這不是證明不存在其他洩漏、重算績效或Human acceptance，不能撤銷P4d隔離修補需求；尚不存在的P4d tuning split、逐fraction合格fit／halo及future-mutation試驗仍待實作。可重現的判定方法／輸入hash／數值留在本附註；`/tmp`診斷JSON只是TEMPORARY、非durable authority，不作後續依賴。
+
 ## 3. 對等預算、搜尋與選擇
 
 **主要定義：每臂相同 N 個候選配置，每配置同兩個種子17／29，單一 tuning origin。** N 包含基準配置1個，其餘 N−1 是無放回簡單隨機搜尋；搜尋 RNG=20261125，臂名＋trial_id 派生獨立可重建stream，抽樣器版本與先生成的完整候選表先hash／凍結。重複候選重抽但不算新trial；合法組合在launch前驗證。基準神經為P4a配方（dropout0），基準C0+為P1預設；每個種子獨立初始化，不warm-start不同trial。每臂同N、同validation／seeds，不保證相同有效模型容量或過去研究投入。
@@ -151,7 +182,7 @@ S-Mamba風格預設不納入。替代案須在任何結果前同N×2seed／Holm3
 
 重用 [p4_eval.py](../V6/research_lab/p4_eval.py) 的共同列／排名、[portfolio_eval.py](../V6/research_lab/portfolio_eval.py) 的 `p2_primary_config/p3_pair` 與既有significance函式，由P4d獨立adapter驗證新manifest；不把新trial塞進P4a loader、降低64-fit gate或改family。主要格固定raw、top50、每20sessions、buffer100、成交值2000萬、佣金.1425%×.6、最低20元、資金100萬、稅.3%、單邊滑價10bp；同可交易宇宙等權基準只收比例成本。價格snapshot／volume單位／source provenance需凍結並fail closed，本輪未讀正式價格；不自動採用每日更新cache。
 
-只有兩個登記比較 H-D1=GRU−C0+、H-D2=Mamba2−C0+，在舊2021–2023池做20-session circular block bootstrap1000次、seed20261125、95%CI與Holm **m=2**，按既有P4單邊centered p演算法；登記門檻CI下界>0且Holm p<.05仍只代表「已曝光歷史門檻通過」。2024–2026、各折、六折池只描述，不能換到較好pool當主要結果。反向落後可報CI上界<0的方向證據，不拿正向p當反向顯著性。若Human選S-Mamba則凍結m=3，不加GRU vs Mamba、scaling slope等正式假設。小樣本、跨折block邊界及bootstrap Monte Carlo誤差沿既有方法揭露。
+只有兩個登記比較 H-D1=GRU−C0+、H-D2=Mamba2−C0+，在舊2021–2023池做20-session circular block bootstrap1000次、seed20261125、95%CI與Holm **m=2**，凍結為既有shared **雙邊centered p**：令observed_mean=mean(d)，bootstrap_mean為circular抽樣均值，尾端事件為 `|bootstrap_mean − observed_mean| ≥ |observed_mean|`；數值沿實作容差1e-15，即比較右側abs(observed_mean)−1e-15，`p_boot=min(1,(1+命中數)/(1000+1))`，mean=0時p=1；兩個p一次Holm m=2，不直接除二；登記門檻CI下界>0且Holm p<.05仍只代表「已曝光歷史門檻通過」。2024–2026、各折、六折池只描述，不能換到較好pool當主要結果。反向落後可報CI上界<0的方向證據，雙邊Holm通過且CI上界<0才描述此歷史協定下落後，不把方向性科學假設誤稱單邊檢定。若Human選S-Mamba則凍結m=3，不加GRU vs Mamba、scaling slope等正式假設。小樣本、跨折block邊界及bootstrap Monte Carlo誤差沿既有方法揭露。
 
 每折全部系統／seed/date/code列必完整一致；不是先刪不同列再宣稱完整。重訓各臂W60資格相同，label identity相同位置NaN可匹配，±inf／有限與NaN不符拒絕；IC只用共同成熟列，portfolio不把label當收益。seed排名在共同支援重算，選股tie用score降序、code升序；同日期缺價／未知tradability不可填零通過。報input/common/excluded rows與dates、fit／eval成熟數、實際return sessions、逐日配對、換手與成本、年度與pool結果，不只報最佳trial或正向年份。缺任一必要fit或identity即INCOMPLETE／STOP，不從較小子集推升完成。
 
@@ -182,7 +213,11 @@ S-Mamba風格預設不納入。替代案須在任何結果前同N×2seed／Holm3
 
 **預先固定headdim8、d_state16、expand2，不隨寬度調整**；以增加head數擴容量，保持每head維度／state及inner比例，所有nheads為8倍數、滿足現有 `seq_models.mamba2_dims` 靜態條件，不等於CUDA已驗證。替代一：headdim=`{8,16,32,64}`、固定8 heads，會同時改每head表示／動態性且d64不再是P4a headdim8；替代二：d_state按寬度成 `{8,16,32,64}`（expand2／headdim8），會同時改記憶深度及state成本；替代三：固定headdim8/state16、expand隨寬度改，會混入inner比例。不採這些方案，因目的為可解釋的容量反應，非搜尋Mamba結構。GRU同寬／層不代表同參數量；逐格記trainable／total參數、相對baseline倍數、fit秒數（含validation與不含的拆項）、epoch／step、峰值allocated／reserved顯存與裝置總用量、推論延遲／吞吐、失敗及重試。以實際參數／秒數作橫軸，不能只用d_model稱等容量。
 
-### B. 種子固定順序、重疊及P4a重用核對
+### B. 訓練隨機性與集成的描述性反應：固定種子順序及重用核對
+
+種子可同時改Python random、NumPy RNG（日期／股票batch抽樣）、torch CPU／CUDA初始化及dropout mask、DataLoader worker／shuffle（若使用）；LightGBM另記bagging／feature_fraction／data seed，搜尋候選RNG固定且不隨B seed變動。manifest列每個stream派生規則、版本、determinism設定與resume RNG狀態，不能只記一個整數便假設只改初始化。有效dropout0的P4a baseline不消除初始化／batch抽樣差異，GPU kernel仍可能非確定。
+
+17／29各自以同一anchor選BEST更新數，新seed依既定交替對應17／29，故K曲線同時混合訓練隨機性、更新長度選擇及集成效應，**不能單獨歸因初始化方差**。anchor用於選更新長度，曲線有選擇樂觀偏向，並非未用於選擇的驗證證據；outer也因整體歷史曝光只描述性。A容量固定更新／正則化不匹配、D歷史與regime混淆維持原限制。三軸表只形成工作假設，不識別機制。
 
 在任何新增結果前固定序列 **[17,29,43,59,71,89,101,113]**，兩臂、所有fold／fraction使用同一序列；K1={17}、K2={17,29}、K4=前4、K8=前8，嚴格巢狀。不是以validation／portfolio挑最佳seed。K1的選擇有單seed偏差，另列8個單seed IC5分散描述，不改主K1或挑最好的K集合。已有P4a 17／29永遠只放前兩位；不能因P4a seed表現換序、拿Q4 lr1e-4或crossstock補數量，也不能把同seed的多次續跑算獨立seed。
 
@@ -197,7 +232,7 @@ S-Mamba風格預設不納入。替代案須在任何結果前同N×2seed／Holm3
 
 原則上只有完整有效配方（含scheduler／BEST更新數）、資料／matrix／split／preprocess／support、環境／kernel與determinism、source數值相容及completed-fit hashes全部一致，才可重用P4a作17／29，仍標已曝光的重用來源，不能改寫歷史。若要改用P4a逐折早停協定以促成重用，須事前凍結為獨立描述性替代，不能默默替換P4d禁止outer選epoch的邊界。本預設重訓前兩seed；不同環境不得混入同一ensemble。
 
-同一計算預算比較 **更多seed vs 更大單模型**：按每臂實測累積fit GPU秒與推論秒建立資源曲線。B的K模型總fit成本＝K個baseline fits之和；A各容量報各seed單模型及17／29兩seed平均與ensemble，不能拿A兩seed成本冒稱一個大模型。anchor用seed17的較大單模型對B固定K序列，seed29另列敏感度；兩seed平均僅表示單模型期望分散，非ensemble。比較在預定baseline單fit的1／2／4／8倍預算點：只使用成本≤該點的已凍結配置，全部列出，不為湊點新增訓練；無合格大模型／成本不相當即標無可比點，不插值假裝實測。outer同樣整張描述，不依其結果選Pareto勝者去改規則。若B改善而A無改善，優先形成「方差勝於容量」假設；若A改善且B飽和，較大表示能力值得另案；兩者都升則報各預算邊際收益／推論與儲存代價，不宣稱大模型或ensemble普遍較佳。
+同一計算預算比較 **更多seed vs 更大單模型**：按每臂實測累積fit GPU秒與推論秒建立資源曲線。B的K模型總fit成本＝K個baseline fits之和；A各容量報各seed單模型及17／29兩seed平均與ensemble，不能拿A兩seed成本冒稱一個大模型。anchor用seed17的較大單模型對B固定K序列，seed29另列敏感度；兩seed平均僅表示單模型期望分散，非ensemble。比較在預定baseline單fit的1／2／4／8倍預算點：只使用成本≤該點的已凍結配置，全部列出，不為湊點新增訓練；無合格大模型／成本不相當即標無可比點，不插值假裝實測。outer同樣整張描述，不依其結果選Pareto勝者去改規則。若B改善而A無改善，只形成「訓練隨機性／更新長度與集成較容量擴展有利」假設，不能識別初始化方差機制；若A改善且B飽和，較大表示能力值得另案；兩者都升則報各預算邊際收益／推論與儲存代價，不宣稱大模型或ensemble普遍較佳。
 
 ### D. 資料量的操作定義與混淆
 
@@ -223,13 +258,13 @@ S-Mamba風格預設不納入。替代案須在任何結果前同N×2seed／Holm3
 
 | A容量 | B種子 | D資料量 | 允許的工作假設／下一步（皆需另案，非自動加預算） |
 |---|---|---|---|
-| ↑ | ↑ | ↑ | 表示能力、方差與歷史資訊均有改善線索；按實測同預算效益提出前瞻候選 |
+| ↑ | ↑ | ↑ | 容量、訓練隨機性／集成與歷史均有描述性改善線索，未識別機制；按實測同預算效益提出前瞻候選 |
 | ↑ | ↑ | → | 容量／集成有用，更多舊歷史未見增益；檢查regime及固定更新限制 |
 | ↑ | ↑ | ↓ | 大模型／多seed改善，舊歷史可能稀釋；核時代組成與品質，不能事後縮history選收益 |
 | ↑ | {→,↓} | ↑ | 容量／歷史有線索；集成飽和或稀釋，檢查seed相關，不挑seed |
 | ↑ | {→,↓} | → | 容量優先假設；集成／歷史受限，先查大模型收斂及gap |
 | ↑ | {→,↓} | ↓ | 容量有空間但歷史延長退化；查regime／資料品質與更新不足 |
-| {→,↓} | ↑ | ↑ | 方差與歷史改善，容量未改善；若A↓且gap增大則過擬合線索 |
+| {→,↓} | ↑ | ↑ | 訓練隨機性／集成與歷史曲線改善，容量未改善；若A↓且gap增大則過擬合線索 |
 | {→,↓} | ↑ | → | 更多seed優於更大模型的線索；資訊可能受限，查相關與成本 |
 | {→,↓} | ↑ | ↓ | 集成穩定化有用，歷史延長不利；查regime，不能靠集成掩蓋source缺口 |
 | {→,↓} | {→,↓} | ↑ | 主要為歷史量線索；A↓查過擬合／欠收斂，B↓查稀釋，不能說架構無效 |
@@ -261,8 +296,8 @@ S-Mamba風格預設不納入。替代案須在任何結果前同N×2seed／Holm3
 3. 依 [Human操作契約](../docs/operations/colab-human-requirements.md) 交付**一個zip＋一個ipynb＋兩行README.txt**；矩陣一次上傳、保留Drive既有data/wheels與歷史目錄、P4d／speed各自ledger。自動safe-extract逐檔size/SHA，不要求Human手貼hash、查版本或改路徑，不以pip check作gate。當次最新Colab runtime需OBSERVED exact identity，官方T4 wheels缺失才走既有可驗fallback；不假設P4a lock永遠適用。
 4. 每epoch local serialize/fsync/hash→durable copy/reverify→atomic pointer，latest/previous/best與optimizer/scheduler/RNG全部保存；trial／seed／fraction／source／matrix／env／contract mismatch STOP。完整fit驗證後跳過、partial從完整epoch接續、不重抽候選；validated orphan只能依明訂policy恢復latest，不升best或formal。每50steps／epoch串流flush、約60秒TXT/JSON心跳、IC／trial進度／fit與queue ETA／溫度時脈／最近checkpoint／可行動錯誤，未知ETA寫未知。做完驗durable artifacts才打包下載並由Human關runtime；不新增通知／wakeups／排程。
 5. 保留來源相容升級能力：每次宣告逐檔from/to SHA與差異分類、舊completed-fit／checkpoint／CPU位元一致證明，非中立數值變更須新run；P4d新搜尋與配方不是把P4a原run直接升級。不能清空帳本、刪Drive或只改commit參數繞identity。
-6. 先RED後GREEN的CPU合成測試：2021邊界label_end／嚴格20sessions；fit／val／eval date集合與tuning loader禁止讀eval；跨fraction起點／halo／嵌套鍵；全列沒有500k cap；尾端y5/y10 NaN、±inf、缺session、新上市不足60日、<64股、常數／空成熟支援、極端raw值、重複鍵、缺seed／缺trial；dropout接線、head loss權重有效性、Mamba四寬維度表非法組合、六格去重／12格切換、baseline共享identity、固定種子前綴不挑最佳、P4a重用逐項拒絕、成本帳不得跨module重複計費或漏計；IC／BEST tie、抽樣表重建、排名tie與共同支援，不能只測正常常態矩陣。
-7. Resume round-trip、kill/restart、missing/corrupt pointer、orphan、contract/matrix/source mismatch、seed／trial／fraction隔離、失敗成本／重試鏈、cached skips不計速度、全trial表完整性；中立升級舊checkpoint到新版、0dropout與1:.5預設舊路徑位元regression。mutation至少移除purge、偷讀eval選recipe、改fraction為隨機抽樣、忽略dropout／head weight、排名先做再裁、漏seed仍complete、移除hash驗證，全部必被測試攔下；保存mutation結果與source identity。
+6. 強制執行§2未來特徵mutation及cache hit／rebuild／新程序三路隔離測試，確認tuning features、trial ranking、selected recipe全不變，並殺死舊全矩陣macro抽樣mutation。先RED後GREEN的CPU合成測試：2021邊界label_end／嚴格20sessions；fit／val／eval date集合與tuning loader禁止讀eval；跨fraction起點／halo／嵌套鍵；全列沒有500k cap；尾端y5/y10 NaN、±inf、缺session、新上市不足60日、<64股、常數／空成熟支援、極端raw值、重複鍵、缺seed／缺trial；dropout接線、head loss權重有效性、Mamba四寬維度表非法組合、六格去重／12格切換、baseline共享identity、固定種子前綴不挑最佳、P4a重用逐項拒絕、成本帳不得跨module重複計費或漏計；IC／BEST tie、抽樣表重建、排名tie與共同支援，不能只測正常常態矩陣。
+7. 統計驗收需符號反轉d→−d時雙邊p相同、正負CI方向相反、mean=0／常數差／尾端等號容差、+1平滑及Holm m=2手算相符。若Human另案要單邊，須另凍結正向尾端 `bootstrap_mean−observed_mean ≥ observed_mean`（同+1平滑與容差）及正／負／零差驗收、重新審查假設；本案不採、不能把雙邊p除二。Resume round-trip、kill/restart、missing/corrupt pointer、orphan、contract/matrix/source mismatch、seed／trial／fraction隔離、失敗成本／重試鏈、cached skips不計速度、全trial表完整性；中立升級舊checkpoint到新版、0dropout與1:.5預設舊路徑位元regression。mutation至少移除purge、偷讀eval選recipe、改fraction為隨機抽樣、忽略dropout／head weight、排名先做再裁、漏seed仍complete、移除hash驗證，全部必被測試攔下；保存mutation結果與source identity。
 8. CPU測試不能代替上線前現場排練：最大width／layer／epochs配置、GRU／Mamba、各fraction／新split、resume／全量validation推論以同真實資料與正式路徑排練，報峰值memory與wall；獨立結果schema／identity驗證，不只exit0。必要排練全通過才launch；Colab/T4/Drive現場至實測前一律UNVERIFIED，費用需Human另案同意。本輪禁止GPU所以未執行。獨立審查須不同session，作者自查不等於review，未授權另派agent故本輪不派。
 
 ## 9. Open Questions／Human 決定清單、blockers 與知識影響
@@ -271,6 +306,8 @@ Human已同意加入A容量與B種子並想實際嘗試；本輪只落成可審�
 
 | 待凍結／重大選擇 | 預設／替代與影響 |
 |---|---|
+| 預處理隔離／統計 | 預設明確36…47欄schema歸零、cache綁schema及fit support、未來mutation全路徑不變；替代僅合格fit估mask後全案凍結，不能全矩陣抽樣。採雙邊centered公式＋Holm2；單邊僅另案公式／驗收，不除二 |
+| B解讀 | 訓練隨機性與集成的描述性反應；保留各RNG與baseline epoch選擇混淆。若要隔離初始化須另案固定batch／dropout stream，不能把本曲線改名因果證據 |
 | 核心預算 | N12／臂、17／29、單一2021前126日validation；N6較省、N24覆蓋多但仍已曝光。21.93h是基準等效，非搜尋實測；CPU全列RAM未量測 |
 | A六格或12格 | 預設六格，兩臂每格至少2seed，7 origins共168 fits；12格336 fits可估交互作用，多51.17h基準等效，大角落未知。凍結後不依結果擴格 |
 | Mamba縮放 | 固定headdim8／state16／expand2，隨width增加heads；替代固定8 heads調headdim、state隨width、或調expand都引入額外混淆，預設不採 |
@@ -285,6 +322,15 @@ Blockers：不再是「P4a ledger未取得」，而是派生摘要未含原ZIP�
 
 ml-leakage-audit自查：look-ahead／source PIT與universe／下市仍UNKNOWN，raw／市值非PIT限制未解；§2／5／6規定label maturity／purge、train-only scaler、共同列及交集後rank、seed／設計預凍結。所有12項僅文件邊界核對，沒有新資料路徑測試或source／CUDA驗證；壞形狀與resume驗收仍列§8未來需求。缺證據仍STOP，不以描述性上升升格為strict executable／trading readiness，獨立review另session待辦。
 
-Knowledge-impact八問：候選研究設計／major blocker／next decision=YES；已生效semantics、authority、subsystem、runtime、correctness gate、canonical supersession、deprecation=NO。同步Current State／Research。Authority Map hierarchy已檢查，本DRAFT未取代machine contract，故不修改；runtime observed_at不更新。沿用原文件與knowledge，不建重複memory或handoff樹。只交patch、不commit／push／merge，工作樹預期僅三文件dirty，不能宣稱clean或Human acceptance。
+Knowledge-impact八問：候選研究設計／major blocker／next decision=YES；已生效semantics、authority、subsystem、runtime、correctness gate、canonical supersession、deprecation=NO。前輪同步Current State／Research；本輪另於Authority Map記本修訂的DRAFT邊界，仍未取代machine contract；runtime observed_at不更新。沿用原文件與knowledge，不建重複memory或handoff樹。只交patch、不commit／push／merge，前輪工作樹預期僅三文件dirty（本輪實際範圍見末段），不能宣稱clean或Human acceptance。
 
 本輪驗證紀錄：既有knowledge工具23 tests通過；摘要64 fits與均值／max、共享去重與N6/12/24算術、Markdown本機引用、diff scope與空白檢查另於交接列實際結果。沒有新增可執行schema／程式，無訓練或現場測試；之前版本驗證紀錄不當成本輪通過證據。
+
+
+## 本輪六項審查修訂身分 — 2026-11-24
+
+`job-run-mwutomlv-e3974c/spec_fixer`，既有worktree、detached HEAD/base `3ed68762a51aa1f62223aa10c354f3a1eae0686f`，起始clean。只改三規格及Current State／Authority Map／Research共6份Markdown，不stage／commit／push／merge，不建立實作或訓練；全數仍DRAFT / E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。F1／F2／D1／D2／B1／D3文件修訂供再審，未解除原NO_GO或取代Human決定。前輪「本輪」字樣為各段歷史紀錄，不當本次驗證證據。
+
+WSL CPU，文件工具`/usr/bin/python3` 3.12.3，唯讀NumPy及shared統計檢查使用`/home/frank/.venvs/marketmamba-gpu/bin/python` 3.12.3（CUDA_VISIBLE_DEVICES空，未載入GPU／訓練）。MARKETMAMBA_DATA_ROOT unset，Data realpath為本worktree的普通Data目錄，未讀正式Data；唯讀實證僅使用Human指定外部prepared／pilot09矩陣及既有公開歷史artifact metadata。沒有讀封盲區、改V6/models、GPU／Colab／Drive、資料取得、production／scheduler、通知／wakeup／recurring jobs或額外agents。
+
+Knowledge-impact：DRAFT設計語義／blocker與next decision細分=YES，同改三份knowledge；已生效machine authority／runtime／subsystem／correctness thresholds／canonical supersession／deprecation=NO。Human仍須選端點、摘要及預處理完整契約並凍結；正式calendar、來源／事件與所有未來adapter／mutation／推導測試及獨立複審未完成。文件完成不等於Human acceptance。

@@ -1,3 +1,13 @@
+## 三份DRAFT審查修訂候選 — 2026-11-24
+
+`job-run-mwutomlv-e3974c/spec_fixer`，既有detached HEAD/base `3ed6876`，起始clean、6份Markdown未提交patch；**DRAFT / E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[前瞻P2](../../tasks/spec-forward-p2-primary-20261124.md)補F1完整252收益契約：建議T1純現金→次日open首建含費、s1…s252 close估值、無終止清倉費、停牌／未知下市fail closed及同基準時鐘；與舊engine末entry open清倉不同，WP6只驗已選語義。F2封閉公開來源／全宇宙摘要schema、分母、持股診斷禁公開、私有256-bit nonce承諾、固定錯誤處置及與公開市場資訊結合推導驗收。[P4b](../../tasks/spec-p4b-blend-20261124.md)補B1事前日期域與聯集核對、整日／整折消失不得被交集隱藏。[P4d](../../tasks/spec-p4d-equal-tuning-20261125.md)補D1明確36…47欄macro schema／fit support cache與未來特徵mutation；D2雙邊centered公式＋Holm2；D3改稱訓練隨機性與集成的描述性反應，anchor選更新數有選擇偏向。
+
+唯讀CPU實證：prepared及pilot09六折共12組，X實算SHA `9778392d4c337d1f9cb5768002340a0d1aec13f7689b2f601b77bd2329b55363`；整矩陣60日、train60日、2021前60日、train逐日及2021前逐日的mask全同36…47。P1／P3六折X／split identity均吻合，P4a限本機prepared；**已完成結果不受此問題影響（僅限該mask及所列identity）**，不升格P3完整性／P4a逐fit驗收或PIT。輸入hash、方法與逐折數值在P4d附註，不依賴臨時輸出。
+
+Next：獨立再審後Human選定端點A（收盤估值；替代開盤／收盤清倉）、摘要／nonce／處置表及macro schema（替代僅fit估計後凍結），並決定其餘既有DRAFT選項；文件修訂不解除原NO_GO或代替Human凍結。正式calendar／來源／事件、實作、future-mutation／推導測試及現場驗收仍blockers。只文件與指定唯讀實證，無正式Data／blind／models／GPU／Colab／Drive／production／scheduler／排程／額外agents／commit／push／merge；不更新外部runtime observed_at，不改machine authority或歷史結果。遵照no-commit保留6份unstaged，非clean-worktree完成宣告。
+
+本候選實際驗證：knowledge unittest 23 tests OK；shared significance 8 passed；既有DRAFT exposure文件測試1 passed／112 deselected。合成符號反轉雙邊p均0.3806193806193806、Holm2手算[.01,.04]→[.02,.04]；無假日s0／s1／s20／s21／s240／s241／s251／s252／s253／s262／s263邊界重算符合規格，非正式交易所日曆。6份Markdown共659本機引用無缺失、36表格欄數一致；git diff --check通過。impact WARNING指向GOVERNANCE，已人工檢查、無治理規則變更；health --ci --as-of 2026-11-24 exit0／WARNING（Governance／Authority Drift／Legacy Docs），無structural FAIL。未執行尚不存在的adapter、未來mutation／摘要推導或正式資料測試，作者自查非獨立複審；no-commit故保留指定6份unstaged文件。
+
 ## P4d 對等調參／三軸曲線草案 — 2026-11-24
 
 `job-run-mwut6qrj-7d9826/spec_writer_p4d_modules`，沿用指派detached HEAD/base `ffe98b4`、初始clean，只交三文件patch、不commit。[P4d規格](../../tasks/spec-p4d-equal-tuning-20261125.md)仍 **DRAFT／E2 RESEARCH_ONLY／UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED**，全部歷史資料已曝光、僅描述性，無執行／費用authority。核心維持三臂各N12×2seed、2021前126-session全列驗證、random／IC5與固定更新六折重訓、Holm2；不以outer選超參。Human同意加入容量A與種子B設計，三模組預設固定P4a配方：A六格（寬度32/64/128/256×2層＋d64×1/4層），headdim8／state16／expand2固定；B固定序列17/29/43/59/71/89/101/113之前1/2/4/8排名平均；D可選25/50/100%最近完整年等值。baseline更新數在2021前固定，各格不再早停；不同配方核心結果不得默認共用。

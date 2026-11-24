@@ -164,14 +164,30 @@ P2 真正組合入口為 `research_lab/portfolio.py:backtest/_simulate`，不是
 
 6. 建立「可由截至任一日的資料重現 C0+ 訓練」流程：固定 as-of D、publication ledger 與 immutable inputs，按 origin／purge 產生 train keys、全截面 target、seed 抽樣 keys、185 欄及三模型；重跑、獨立新程序與未來資料擾動不能改舊版本。歷史已曝光日期至少涵蓋年界、半年界、20-session 邊界、缺 session、月底／休市與 label 未成熟；不能以當前 cache 冒充任一日 vintage。舊 P1 原 fold 重現與本 policy 新 origin adapter 各自驗收。
 7. 模型持久化／SHA、load/predict、損壞／缺 pointer、partial／缺 seed／錯 origin／錯 matrix／contract 拒絕、kill/restart／orphan 不自動升格，以及版本切換持倉／相位／費用連續性都需可失敗驗收。每次重訓共用同一已凍結 acceptance script（source SHA、非績效 pass/fail、實際數值與 report hash）；首次獨立驗收通過不代表每次自動通過。記錄排定／實際 origin、訓練截止／publication、耗時／RAM、模型 hashes、歷史 reference 結果、pointer／切換日及 delay sessions。此處沒有已存在的腳本名稱或通過證明。
-8. **252 日端點的 engine 相容性**：`portfolio.backtest` 目前以 20-session indices 的最後一個排定 entry 作 terminal liquidation，未保證精確252收益日；直接串接模型折也會重置狀態。需另案凍結並合成驗收單一連續研究 adapter 的首日NAV／首日成本、精確252收益日、末日估值／清倉成本及共同基準口徑，不改既有 P2 歷史 engine 語義；不准悄悄縮成240或延到260。未完成維持 STOP。
+8. **252 日端點的 engine 相容性**：以本文下節「252日估值與收益契約」為唯一待凍結語義；WP6只驗adapter符合此語義，不得到執行前再選收盤／開盤或清倉政策。`portfolio.backtest/_simulate` 現行最後排定entry開盤清倉、末日不取close，與本案收盤估值不同；另案薄adapter須隔離這項差異並維持歷史P2路徑不變，未驗收保持STOP。
 9. 本機 CPU 耗時估計來源：本輪唯讀 P1 manifest `full-scores-ace2eef/manifest.json`（32,500 bytes，SHA `dc3b9b3ad9c2c27a5366440c651f5f6baa7daaec9854368a0e944874890be9d8`），18 fold×seed jobs／全程 2572.822s；2026 seeds 17/29/43 分別 140.807／131.823／132.032s，合計 **404.663s≈6.74分鐘**。這些 jobs 含 day_t＋C0+ 擬合、feature建置與歷史推論，不是單獨 C0+ 計時；用其作同規模一次三種子重現的粗估 reference，獨立重做兩遍約13.49分鐘，另加原 fold 重現約6.74分鐘。每版最低三次 C0+ fits；現有 collect 實際六 fits。新 cutoff 多資料、首次矩陣建置／hash／落盤不含在估計，不能承諾一小時內完成。未來需在本機 CPU（n_jobs=4、三種子循序、不用GPU）量測並凍結時間／資源預算，確認2-session期限可行；失敗不得改期限救結果。
 10. 訓練抽樣 `500000×185×4` 約 **370 MB（353 MiB）** 只是單一 float32 feature payload，下限而非 peak RAM；48欄 full matrix、dense session×stock、LightGBM bins／pandas／推論 buffers、序列 eligibility 與重建 inputs 會額外占用。峰值 RAM、磁碟與全矩陣延伸耗時目前 **UNKNOWN**，需同機量測；不以P2純回測估時替代訓練估時。期限是policy失效界線，不是本輪訓練授權。
 11. Human 提醒需求：T1 凍結時交一份靜態 R_j／資料快照日／purge截止／最晚驗收日清單，提議各 origin 前5個交易日由指定 owner 人工提醒既有 Human 一人，當日核對無績效 checklist；失敗／逾期人工回報。owner已指定Human；實際人工提醒管道及無績效演練仍待凍結／驗收；只列需求，不建立通知、日曆事件、wakeup、recurring job，不部署或改 scheduler。
 
+## 252日估值與收益契約（F1；本次文件凍結的完整選項）
+
+**待Human一次選定；預設A為下述完整契約。** 選定後不得把任何端點語義留給WP6。比較：A「第252日收盤估值」涵蓋完整252個收益session且不假設收盤可成交；代價是端點尚有持股、非已變現收益。B「第252日開盤清倉」可接近舊engine，但失去末日盤中收益，不能稱252個完整收盤收益日。C「第252日收盤清倉」計終止成本，但需合格收盤成交證據及事前不可成交政策；不能用看過收盤的價格虛構交易。**建議A**，以估值研究問題避免添加未驗證的收盤執行假設；B／C均只列替代，不並跑後選較佳者。Human如選替代，須凍結前改寫整段及驗收，不能只改標籤。
+
+令合格日曆中的 `s0=T1`（首訊號收盤日）、`sk=T1後第k個session`。正式NAV在s0收盤為純現金1,000,000 TWD（正規化1），無階段0持股／費用繼承、無利息；首筆建倉為s1開盤。`V_k` 是sk **13:30收盤**、當日實際成交及成本入帳後的現金＋持股raw close估值，`V_0`是建倉前基準NAV。正式收益恰為 `r_k=V_k/V_(k-1)-1, k=1…252`；r1涵蓋首建倉佣金／最低費／滑價及s1開盤至收盤收益，r2…r252涵蓋前收盤至本收盤與期間交易成本。不得先記s1建倉後NAV當分母而漏首建倉成本。首日未成交則依原不可成交規則保留現金，不能另起算或填造交易。
+
+再平衡訊號只在 `s_(20j), j=0…12` 收盤產生，對應 `s_(20j+1)` 開盤（s1、s21…s241）；中間訊號及更新依原policy盲存，窗內最後可影響交易的每日訊號為s251，s252收盤訊號不進本端點。s252 **不強制清倉、不額外再平衡**；r252計至該日close，**終止賣出佣金／稅／滑價皆為0，因沒有終止交易**，正常期間賣出成本照計。其後清倉或報酬僅另列描述性，不能回塞第252筆。
+
+不可清倉政策預先封閉：A端點不下終止單，因此停牌／漲跌停不能觸發延長、假成交或額外成本。期間到期賣單無合格成交證據則保留原持股／現金並記私有blocked；估值須有當日合格close。正式停牌無當日close時，只在有合格停牌及未終止上市證據下沿用最後合格raw close，標私有stale且不視為可成交；復牌後按原規則。無法證明停牌、下市／減資／終止交易結算或持股價值無合格證據，立即 `INVALID_FOR_CONFIRMATION`；不以0、刪股票或末日延後處理。已凍結事件規則須有source／as-of及fixture；缺這些證據即不能啟動，不能臨場估殘值。
+
+基準使用**完全同一**s0初始現金、s1首建、s1…s252 close估值、收益分母、相位、停牌／事件估值及無終止清倉政策。唯一既有成本不對稱維持明示：策略有20 TWD最低費，等權基準為比例費（最低費0）；佣金率／賣稅／單邊滑價相同，各自按實際訂單入帳。這是既定基準較有利的成本協定，不能把「相同口徑」誤改為取消策略最低費。配對恰252日，任一臂無法估值則整批失效，不只取共同剩餘日。
+
+對照 `portfolio.py:_simulate`：`end=signals[-1][1]`、terminal時weights空並於open清倉，且跳過terminal close、時間戳09:00；`backtest`又以20-session schedule決定末entry。因此不得直接呼叫舊backtest或裁其尾端冒稱本端點。未來獨立adapter必須顯式輸入s0…s252日曆、保留單一連續狀態、移除本案terminal強制單並記s252 13:30估值；不得改舊P2／P3數值。WP6驗收手算r1含費、r252有末日盤中變動且無強制賣費、252/253邊界、正常再平衡費、停牌可估／下市未知失效、策略與基準一致日期、模型切換不重設狀態及舊engine回歸。
+
+**重算邊界（週一至五、無假日，非正式交易所日期）**：s0=2027-04-14，s1=04-15，s20=05-12訊號／s21=05-13開盤；s240=2028-03-15訊號／s241=03-16開盤；s251=03-30、s252=03-31 13:30估值，s253=04-03不計收益。s251+11=04-14為末個可影響窗內每日訊號的安全成熟日；另維持較保守的**不早於s252+11=04-17**開盲下限，且publication齊備。R_A(2028)=04-14=s262，下一session s263=04-17，未進252窗；R=s251可使次日s252分數生效但非既定再平衡日，不能算已有新版持倉暴露；R=s252連分數下一日收益也不入窗。正式calendar須同時重算T1、所有R、末端及成熟，不以本例替代。
+
 ## 成熟時程、首次檢驗與檢定力
 
-signal d 收盤後決策，d+1 open 入場，y5／y10 最早於第 5／10 個持有 session close 可計；凍結的安全延遲為 d+6／d+11 sessions 且來源已發布，缺停牌／exit evidence 時維持未知，不能補成 0。20-session purge 是訓練邊界，不是把前瞻前 20 日任意刪除。組合收益不以 label NaN 篩選；IC 只在共同成熟標籤支援上計算並報尾端排除。末日清倉／收益 cutoff 須在 machine contract 用 engine 語義明定並合成驗收，不事後延長持有挑終點。
+signal d 收盤後決策，d+1 open 入場，y5／y10 最早於第 5／10 個持有 session close 可計；凍結的安全延遲為 d+6／d+11 sessions 且來源已發布，缺停牌／exit evidence 時維持未知，不能補成 0。20-session purge 是訓練邊界，不是把前瞻前 20 日任意刪除。組合收益不以 label NaN 篩選；IC 只在共同成熟標籤支援上計算並報尾端排除。末日採上節A收盤估值契約（待Human選定），machine contract只序列化並驗收已選語義，不事後延長持有挑終點。
 
 第一次且唯一正式開盲（T1正式窗，不含階段0）：252 個排定收益 sessions 完整，且最後 signal 的 10d label 安全延遲與 source publication 已完成後；至少再等 11 sessions，需更久則據實等待。Human 凍結時依 calendar 寫實際 signal／return 起訖及 maturation 日；曆日僅以上節示例估計，正式calendar凍結後填入。
 
@@ -183,7 +199,7 @@ H-F1 的科學方向為單邊正向，但**統計預設雙邊 p**（沿現有 sh
 
 主端點只有整段252日的 policy−等權配對日均淨差及其CI／p。期末可描述性呈現前126／後126日與依實際切換劃分的各版本期間，兩種分段不必相同；持倉影響可能晚於分數切換，不將差異歸因重訓。分段不另作確認性檢定、不作額外正式假設、不依分段選winner或結束日。
 
-重訓增加的自由度／forking paths 包括：日曆錨點、最短間距、purge off-by-one／publication、expanding起點／截面／抽樣、特徵／參數／seed、資料revision、驗收reference、retry／deadline、切換時間／再平衡、事故缺日及分析分段。上列凍結參數表與重訓章逐一封閉；後續machine contract須完整顯式序列化，凍結後不得按績效或便利性改選。任何未封閉項目都阻擋T1，不能留作執行者現場裁量。
+重訓增加的自由度／forking paths 包括：日曆錨點、最短間距、purge off-by-one／publication、expanding起點／截面／抽樣、特徵／參數／seed、資料revision、驗收reference、retry／deadline、切換時間／再平衡、事故缺日及分析分段。上列參數表、重訓章與本輪F1／F2已列出完整待凍結語義；仍待Human選定及工程驗收，不宣稱forking paths已全部封閉；後續machine contract須完整顯式序列化，凍結後不得按績效或便利性改選。任何未封閉項目都阻擋T1，不能留作執行者現場裁量。
 
 正式 family 只有 1，Holm m=1 等於原 p；描述性項目不參與正式通過，不因結果好而增加假設。禁止中途查看累積報酬、IC、效應 CI／p、逐月績效或以模型排名決定延長；只允許不含收益／label 的 schema、hash、延遲與來源 coverage 檢查，由指定封盲保管者留 audit trail。若要中期效力分析，必須 T1 前新增時點與 alpha-spending／CI 校正；本草案**不允許**。
 
@@ -214,13 +230,46 @@ H-F1 的科學方向為單邊正向，但**統計預設雙邊 p**（沿現有 sh
 ## 封盲協議（Human保管與執行；啟動前須另案驗收）
 
 1. **儲存邊界**：封盲區指定 Windows `D:\Desktop\work\ProjectForMe\MarketMamba-blind\`，WSL `/mnt/d/Desktop/work/ProjectForMe/MarketMamba-blind/`。每日訊號／持倉／分數、逐日NAV／成本／成交、訓練labels／抽樣keys、重訓後模型／checkpoints、可還原訊號的指標，以及任何含收益、IC或績效欄位的檔案／logs／錯誤dump全部留在封盲區；新模型也不能複製到可見區供worker推論偷看。必要inputs／狀態如可合併還原績效亦只供Human隔離程序存取，不在工單貼原值。
-2. **可見區白名單**：只放 append-only SHA-256 hash chain 摘要（前一head、當次payload digest及新head）、行數、覆蓋率、錯誤計數及缺日清單。摘要不含收益、IC、分數、股號、持倉內容、模型bytes、排名、NAV或可還原績效的資訊；錯誤以固定代碼計數，不貼列內容／堆疊locals。摘要hash綁定完整私有manifest；公開hash不是私有payload的替代備份。Human保留私有原始檔、vintage、鏈與獨立head副本，以供開盲核對。
+2. **可見區白名單**：只允許下節 `forward-public-summary-v1` 的封閉schema；所有計數從來源／全宇宙管線產生，必須在讀取分數、模型或持倉前決定。完整manifest及診斷私有，公開commitment不是備份。公開不可含收益、IC、分數、股號、持倉、模型bytes、排名或NAV；**持股相關缺價數、持倉重疊、換手、持股相關缺日模式，以及可與公開停牌／下市事件交叉還原持股的任何欄位均禁止**，不能透過錯誤細分類／訊息／發布延遲間接輸出。
 3. **誰能讀寫**：Human是唯一封盲保管者及重訓執行owner；Claude與Codex worker皆不得讀寫、列目錄、Glob／Grep或間接要求工具輸出此區。每次Codex worker prompt須明載：**「禁止讀寫 Windows D:\Desktop\work\ProjectForMe\MarketMamba-blind\ 及 WSL /mnt/d/Desktop/work/ProjectForMe/MarketMamba-blind/；禁止透過子程序、symlink、複本或logs取得其內容；僅可看已淨化hash／計數／缺日摘要。」** 本輪未接觸該路徑。
 4. **保護邊界**：Human報告已在Claude本機 `.claude/settings.local.json` 加Read／Edit／Write／Glob／Grep／Bash拒絕（不進Git）；本輪不查驗本機設定，不宣稱Codex受此設定約束。Claude拒絕只約束Claude工具；Codex是另一程序，WSL使用者權限相同，故這是防疏忽偷看的紀律保護，**不是防竄改保護，也不是OS存取隔離**。同權限程序仍能重寫檔案與hash chain。Human可另選不同OS使用者／ACL，或未掛載於worker環境的儲存位置；未實施前不能聲稱技術隔離完成。若Human接觸策略績效，一樣適用偷看處置，兼任owner不是豁免。
-5. **每日健康檢查**：由Human的隔離程序在私有區檢查schema／來源／模型／覆蓋與當日封存、chain連續性，僅輸出上述hash／計數／缺日摘要；缺日、hash mismatch、錯誤計數>0、coverage未過凍結gate均報STOP或依原重訓2-session retry規則處理。不得以收益正常判成功，不把缺日填零；除每日摘要外，完整診斷僅留私有區。worker只可用已曝光／合成fixture診斷，不能進封盲區排錯。
+5. **每日健康檢查**：Human隔離程序於私有區驗schema／來源／模型／覆蓋／封存與chain，依下表固定處置。公開只投影來源錯誤計數；模型／持股／績效相關錯誤、當批有效性、重試進度全留私有，不能因其出錯改公開欄位或節奏。worker只用合成／已曝光fixture排錯，無法安全淨化即停止公開輸出並按私有事故表處理，不進封盲區。
 6. **重訓隔離**：重訓腳本由Human手動，或Human另行授權的排程執行；本文件不建立／啟用排程。fit／predict／persist在Human程序內，僅依固定日曆及工程gates，禁止stdout／notebook／logs輸出前瞻績效、eval IC或排名；使用同一截止快照，18:00切換、最多延遲2 sessions、超時STOP。Human只看淨化工程狀態，成熟train labels可由腳本使用，不手動檢視策略結果；腳本由worker以合成／已曝光資料開發及驗收，再交Human執行。
 7. **一次性開盲**：階段0預設同此次描述性揭曉，不提前釋出；固定252收益sessions完整且最末signal至少11-session安全成熟與必要publication全過後，Human手動觸發。先以盲態完成完整性／事故帳／chain與外部head核對並封存判定，再記UTC及台北開盲時間、批准者、規格／來源／資料／模型hashes。Human一次釋出固定端點的結果包供Claude取得；Claude只在此時取得結果。封存原始包，任何後續分析標描述性；不得先試算再決定是否開盲、延長或換規則。
 8. **偷看／洩漏**：階段0事故亦依兩階段章節記曝光及停止，未來確認性不得自動放行；任何人或worker意外看到可推導策略結果的資訊，立即停止擴散，記接觸者、時間、資訊類型、範圍／hash與設計可能受影響處（事故紀錄不再次散播績效）。該批確認性身分降為描述性／INVALID_FOR_CONFIRMATION，不換操作者、刪檔、重設T1或補日恢復；新確認性研究須新預先登記及全新未曝光期間。失敗與超時保留完整紀錄，不能為繼續流程放寬gate。
+
+### 公開摘要schema與固定處置（F2；待Human整體凍結）
+
+`forward-public-summary-v1` 每排定session固定次日12:00台北發布一筆UTF-8 canonical JSON（鍵排序、無額外空白）；缺來源也照發同形狀摘要。僅以下欄位，未知欄位／自由文字／巢狀額外診斷拒絕。日期ISO、計數非負整數、SHA為64小寫hex；固定source_id／field_class／error_code枚舉及來源calendar／宇宙政策在T0前版本化凍結，未知即STOP，不能事後為某持股加類別。摘要時間粒度只到session，不公開私人程序執行時刻／bytes大小。即使私有重訓／持股gate失效，來源摘要仍按原排定252日終點持續、獨立產生；不得以停止發布揭露持股事故。若淨化本身失敗則按BLIND_INTEGRITY立即失效並停止不安全發布，不宣稱仍保盲；禁止用另一種摘要替代。
+
+| 欄位 | 分母、分類與定義 |
+|---|---|
+| schema_version, session, public_contract_sha256 | 固定schema字串、來源session、公開schema／來源政策identity；不含模型配方或私有內容 |
+| source_files[source_id].expected / received / valid | 每來源、每日事前排定的邏輯檔slot為分母（revision不新增slot）；received為收到至少一版的slot，valid為as-of及schema/hash合格的slot；比例只能valid/expected，expected=0標null，不用0%或100% |
+| universe_rows[field_class].expected / valid | field_class固定為OHLCV／base_features／lifecycle；分母為由合格來源、事前生命週期規則產生的當日全宇宙unique(date,code)鍵，不依選股／成交／模型eligibility裁切。valid為必要欄全合格鍵數；停牌仍留expected、合格停牌狀態可滿足lifecycle但不冒充有OHLCV；無法建立分母時兩數null及SOURCE_UNIVERSE錯誤，不用cache猜測。比例只valid/expected，分母0則null |
+| source_error_counts[source_id][code] | 僅下表SOURCE類代碼；以不合格邏輯檔slot數計、每slot每code最多一次，可多code，不當總錯誤率。全宇宙列錯先歸所屬slot；不公開股票／列內容或持股錯誤數 |
+| missing_source_sessions[source_id] | 自T0至session的凍結來源應供session清單為分母；列出整個來源當日received=0的日期（排序去重），不列個股／持倉缺日。來源完整但部分列缺失不在此欄，以全宇宙valid計數揭露 |
+| previous_head, commitment, head | genesis previous_head為64個0；其後接前筆head；commitment綁定私有payload及nonce，head綁定前head、commitment及上述公開欄位（只排除head本身）；不得另發私有檔案digest或尺寸 |
+
+承諾固定為 `commitment=SHA256("MM-FWD-PRIVATE-v1\0" || nonce_32bytes || canonical_private_manifest_bytes)`，nonce由OS密碼學安全隨機源逐session獨立產生256 bits，**nonce及unsalted私有digest只留私有區**。manifest綁定當日所有敏感檔案identity／事故帳及前筆私有commitment；無新產物亦用新nonce承諾狀態，不能以特殊常數揭露錯誤。`head=SHA256("MM-FWD-PUBLIC-v1\0" || canonical_public_record_without_head)`；前head包含在該record。Human另保管外部head副本，開盲才一併驗nonce／manifest／鏈。salted承諾抑制低熵猜測，**不等於存取隔離、防竄改或已證明隱私**；原完整manifest digest本輪沒有已洩漏績效的證據。
+
+下表為**完整錯誤類別→固定處置**；多錯取最嚴（立即失效優先），未列代碼一律UNKNOWN_ERROR立即失效。SOURCE類可公開計數，其餘只私有。T0前同類錯阻擋啟動；T1後「立即失效」為STOP／INVALID_FOR_CONFIRMATION，保留全批、不補日或重設T1；階段0不自動回收為正式樣本。
+
+| 代碼／公開性 | 觸發與固定處置 |
+|---|---|
+| SOURCE_MISSING／公開 | 必要slot或session未於cutoff收齊：立即失效 |
+| SOURCE_COVERAGE／公開 | 已知全宇宙分母但必要列／欄未過100% gate：立即失效 |
+| SOURCE_UNIVERSE／公開 | 無法驗宇宙／lifecycle或分母：立即失效 |
+| SOURCE_INVALID／公開 | 重複衝突、非有限值、日期／schema／as-of／publication／provenance不合格或hash不符：立即失效 |
+| SOURCE_OPTIONAL／公開 | 凍結來源表明訂非必要、且不被任何特徵／gate使用的slot缺失：無影響；不能臨時改必要性 |
+| RETRAIN_TRANSIENT／私有 | 唯一可重試：固定快照完整且未產生／切換新版本前的可重建IO中斷／程序中斷。沿原版，R+1、R+2同18:00 cutoff原seed／snapshot重訓重試，最晚R+2；初始F0則不啟動並依既定非績效延期。超時立即失效 |
+| RETRAIN_IDENTITY／私有 | contract／matrix／seed／checkpoint mismatch、損壞／非有限模型或重現驗收不符：立即失效，不歸transient |
+| PRIVATE_MARK_EXECUTION／私有 | 持股missing mark無合格停牌證據、未知下市結算、無法重建決策：立即失效；已驗證停牌按端點規則估值／保留部位，屬PRIVATE_EXPECTED事件無影響 |
+| BLIND_INTEGRITY／私有 | nonce／chain／私有artifact不符、未封存、偷看、公開schema或推導測試失敗：立即失效 |
+| PRIVATE_EXPECTED／私有 | 合格停牌blocked、未成熟label、正常無交易／未到再平衡日：無影響；不輸出其計數 |
+| UNKNOWN_ERROR／私有 | 任何未分類例外：立即失效，禁止臨場改碼救流程 |
+
+驗收必含**摘要與公開市場資訊結合後的推導**：以合成同一來源／全宇宙、不同持倉／收益／停牌或下市暴露的成對fixture，公開結構、計數、缺日及固定發布節奏須相同（隨機commitment除外）；攻擊者持有公開停牌／下市日期、候選持股與低熵manifest字典，不能由持股缺價、換手、重疊、錯誤碼、尺寸或時間比對還原持股／績效。測未加nonce字典攻擊可命中、加私有nonce後不再可直接比對、nonce不外洩、未知欄位拒絕、錯誤表全部分支與多錯優先序。這是必要工程測試，不宣稱形式化隱私證明；未過不啟動。WP4／WP5須實作這個schema、固定節奏及私有錯誤分流，不能只測有hash。
 
 ## 已決定（Human 2026-11-24；全文仍DRAFT待凍結）
 
@@ -232,7 +281,7 @@ H-F1 的科學方向為單邊正向，但**統計預設雙邊 p**（沿現有 sh
 
 ## Open Questions／凍結與啟動前仍須完成
 
-1. T0前重盤曝光／完成最低安全日鏈；T1前凍結完整正式規格、N_A=10／N_H=8或替代值、合格2027／2028calendar、順延／例外、實際T1／252日末日／成熟日與各版有效暴露。未知日期不能宣稱正式啟動。
+1. F1端點須選定A收盤估值（建議）或在凍結前完整改寫為B開盤清倉／C收盤清倉；終止成本、停牌／下市證據與adapter驗收不可延後選語義。F2公開schema、256-bit私有nonce、錯誤處置表及推導測試整體待凍結；替代為不公開每日摘要、全部私有至期末，降低資訊風險但失去公開連續性監督，不可臨場混用。T0前重盤曝光／完成最低安全日鏈；T1前凍結完整正式規格、N_A=10／N_H=8或替代值、合格2027／2028calendar、順延／例外、實際T1／252日末日／成熟日與各版有效暴露。未知日期不能宣稱正式啟動。
 2. 確認試運行預設延後到正式端點揭曉（替代為簽署且T1啟動後揭曉、或永不揭曉）；不重問已決定兩階段／錨點／統計。任何揭曉以前必完成正式規則／日曆簽署，試運行永不作調規依據。
 3. 100% coverage／0漏日、必要source、lifecycle／下市／publication、舊vintage與流程20-session連續觀察的提案尚待證據驗收。T0最低安全gate也不得放寬；缺證據就延期。
 4. Human人工提醒管道、head保管、隔離／淨化、事故與手動開盲演練待驗；是否OS隔離仍待Human決定，不宣稱已部署。WP1～WP6完整工程與CPU／RAM／disk實測均待另案，不以文件完成代替接受。
@@ -248,7 +297,7 @@ H-F1 的科學方向為單邊正向，但**統計預設雙邊 p**（沿現有 sh
 | WP3 矩陣延伸 | WP1、WP2；先全量immutable reference，再驗feature-only追加 | 48／185欄舊keys／X／mask／dtype／scores bytes一致；新增labels另版，不讀未來labels；重複／中斷／錯identity拒絕 | 合成1～10分鐘；首次全矩陣重建、IO與hash UNKNOWN |
 | WP4 模型存檔與隔離執行 | WP2、WP3；三seed持久化、版本pointer、Human私有runner／淨化摘要 | serialize/fsync/hash→durable reverify→atomic pointer；load/predict round-trip、kill/restart、corrupt/missing pointer、orphan不升格、seed／matrix／contract mismatch拒絕；模型與敏感logs不外洩 | 合成1～10分鐘；每次fit約6.74分鐘reference，落盤／hash UNKNOWN |
 | WP5 每次重訓驗收腳本 | WP1～WP4；同一frozen非績效acceptance script及靜態Human清單 | 已曝光reference獨立重做相等、遲到R+1/R+2相同快照、18:00／超時STOP、不中斷chain；封盲壞輸出／缺日／偷看／手動開盲fixture，公開區白名單通過 | 兩次重現＋原fold約20.23分鐘reference；全量矩陣驗收額外UNKNOWN |
-| WP6 252日端點adapter | WP3～WP5；連續單一組合與固定基準 | 恰252收益sessions，首建／末估值清倉成本一致；模型切換不重設NAV／持倉／相位／buffer／pending；無額外重平衡、缺日STOP、端點開盲gate；固定P2歷史路徑不變 | 合成1～10分鐘；完整歷史reference回放UNKNOWN |
+| WP6 252日端點adapter | WP3～WP5；連續單一組合與固定基準 | 恰252收益sessions，符合本文已選A首建含費／s252收盤估值無終止單、252/253邊界、停牌估值與未知下市失效、相同基準時鐘；模型切換不重設NAV／持倉／相位／buffer／pending；無額外重平衡、缺日STOP、端點開盲gate；固定P2歷史路徑不變 | 合成1～10分鐘；完整歷史reference回放UNKNOWN |
 
 ### WP1～WP6分階段截止（新增，不降低完整驗收）
 
@@ -280,3 +329,12 @@ Knowledge-impact：設計語義／next decision／blocker細分=YES，已同步C
 2026-11-24兩階段修訂：`job-run-mwuoasa7-93afef/spec_writer_phases`，既有detached HEAD/base `0db633bcedc97484bff6c316d7cc9d19334137d2`，初始clean。只修改本規格與Current State／Authority Map／Research；不commit、不派agent，不讀blind或正式Data。WSL `/usr/bin/python3` 3.12.3 CPU；MARKETMAMBA_DATA_ROOT unset，Data realpath為本worktree普通目錄。未重觀測既有曝光artifacts／價格或雲端，不更新其observed_at。本輪選擇／替代及限制見兩階段、N比較、WP截止；維持DRAFT / E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，完成不是Human acceptance。
 
 Knowledge-impact（兩階段修訂）：設計語義／active next decision／工程blocker細分=YES，已同改Current State／Research及Authority Map邊界說明；machine authority／subsystem／runtime／既有correctness thresholds／canonical artifact新增或supersession／deprecation=NO。新N與流程20日是待凍結提案，非修改已凍結gate。驗證紀錄見Current State本輪段落；未commit依本任務明示禁止，保留4份未stage文件供獨立審查。
+
+
+## 本輪六項審查修訂身分 — 2026-11-24
+
+`job-run-mwutomlv-e3974c/spec_fixer`，既有worktree、detached HEAD/base `3ed68762a51aa1f62223aa10c354f3a1eae0686f`，起始clean。只改三規格及Current State／Authority Map／Research共6份Markdown，不stage／commit／push／merge，不建立實作或訓練；全數仍DRAFT / E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。F1／F2／D1／D2／B1／D3文件修訂供再審，未解除原NO_GO或取代Human決定。前輪「本輪」字樣為各段歷史紀錄，不當本次驗證證據。
+
+WSL CPU，文件工具`/usr/bin/python3` 3.12.3，唯讀NumPy及shared統計檢查使用`/home/frank/.venvs/marketmamba-gpu/bin/python` 3.12.3（CUDA_VISIBLE_DEVICES空，未載入GPU／訓練）。MARKETMAMBA_DATA_ROOT unset，Data realpath為本worktree的普通Data目錄，未讀正式Data；唯讀實證僅使用Human指定外部prepared／pilot09矩陣及既有公開歷史artifact metadata。沒有讀封盲區、改V6/models、GPU／Colab／Drive、資料取得、production／scheduler、通知／wakeup／recurring jobs或額外agents。
+
+Knowledge-impact：DRAFT設計語義／blocker與next decision細分=YES，同改三份knowledge；已生效machine authority／runtime／subsystem／correctness thresholds／canonical supersession／deprecation=NO。Human仍須選端點、摘要及預處理完整契約並凍結；正式calendar、來源／事件與所有未來adapter／mutation／推導測試及獨立複審未完成。文件完成不等於Human acceptance。
