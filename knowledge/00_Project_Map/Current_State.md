@@ -14,9 +14,11 @@ Evidence：兩份 skill 為72／61行，quick_validate 均通過；本機引用�
 
 `job-run-mwuc1teo-b3dba8/spec_writer_fwd_p4b`，既有 detached worktree/base `b7e4f50d4f061cce32f35f466de7ab992ffc35ed`；僅文件 patch，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依指示不 commit。[P2 前瞻草案](../../tasks/spec-forward-p2-primary-20261124.md)與 [P4b 混合草案](../../tasks/spec-p4b-blend-20261124.md)均 **DRAFT 待 Human 凍結**，沒有新研究結果或執行授權。沿用 tasks／research_lab，歷史規格不能承接新的研究身分，未建立新目錄、程式或輸出樹。
 
-唯讀本機 artifacts 發現 P1/P3 分數到 2026-09-11，但 P2 收益評估到 **2026-11-19**；本機價格到 2026-11-23。前瞻 T0 預設晚於已曝光／現有價格末日、Human 凍結及前置驗收，不追認 11/20；預設固定三種子 C0+、252-session 窗與單一假設。矩陣延伸功能、舊區間逐位元一致、模型持久化、PIT／lifecycle／coverage 與封盲仍為 Blockers。P4b 固定三個等權混合與 Holm3、沿共同列 NaN 語義；需要另案 36-fit subset loader，不降低既有 64-fit gate。36/36 完成是 Human 報告，不是本輪現場驗證。
+唯讀本機 artifacts 發現 P1/P3 分數到 2026-09-11，但 P2 收益評估到 **2026-11-19**；本機價格到 2026-11-23。Human 於2026-11-24已選前瞻T0嚴格晚於已曝光／現有價格末日、Human凍結及前置驗收，不追認11/20；主假設改為三種子C0+加半年重訓policy，預設252-session整段端點、單一假設／Holm m=1。固定模型僅替代／描述性，前後段不新增正式假設。矩陣延伸功能、舊區間逐位元一致、模型持久化、PIT／lifecycle／coverage 與封盲仍為 Blockers。P4b 固定三個等權混合與 Holm3、沿共同列 NaN 語義；需要另案 36-fit subset loader，不降低既有 64-fit gate。36/36 完成是 Human 報告，不是本輪現場驗證。
 
-Next：Human 決定／凍結選項與另案實作驗收；不啟動前瞻或混合評估。沒有接觸雲端 Drive／正在執行的 03_formal_resume、正式 Data／模型、GPU／訓練／資料取得、production／scheduler／通知／排程；沒有更新外部 runtime observation，既有研究／production authority 不變。完整盤點身分、檢定力估算、替代方案與 Open Questions 見兩份草案。
+2026-11-24修訂：`job-run-mwufq5k5-71212c/spec_writer_retrain`，既有detached HEAD/base `176282179b2428bcc7f9ab1f1b6bd93b0408e164`，初始clean、僅未提交文件patch。草案提議T0錨定每6曆月、origin−21最晚train訊號（strict 20-session purge）、18:00切換及最多延遲2 sessions；細節尚待Human凍結，實際T0未知，日期表僅條件式。新增任意as-of重現、每次封存／驗收、CPU資源估計／人工提醒與連續持倉要求；P1 manifest的2026三seed共404.663s（含兩模型與推論）僅估時reference，RAM峰值UNKNOWN。現有portfolio最後排定entry清倉不能保證252收益日，列為另案adapter驗收Blocker，沒有改engine。P4b文件／固定歷史C0+分數／Holm3與64-fit gate不變。
+
+Next：Human凍結日曆／期限／封盲owner及另案CPU實作驗收；不啟動前瞻或混合評估。沒有接觸雲端 Drive／正在執行的 03_formal_resume、正式 Data／模型、GPU／訓練／資料取得、production／scheduler／通知／排程；沒有更新外部 runtime observation，既有研究／production authority 不變。完整盤點身分、檢定力估算、替代方案與 Open Questions 見兩份草案。
 
 
 `job-run-mwtn0pir-48e95f`／`builder_p4a_gate3`，沿用既有 detached worktree，base/HEAD `40d621cc9ac586e45fff1e095f59465b388094a1`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依明確授權保留未提交 patch。第 13 次獨立複審為 NO_GO；本輪修補 Q5 巢狀 schema、超大數值／遞迴損壞 marker，以及 metadata 符號連結。完成不解除 NO_GO，不等同 Human acceptance。

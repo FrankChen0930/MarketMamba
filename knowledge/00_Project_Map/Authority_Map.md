@@ -6,7 +6,9 @@
 
 ## P2 前瞻／P4b 草案的 authority 邊界 — 2026-11-24
 
-[P2 前瞻規格](../../tasks/spec-forward-p2-primary-20261124.md)與 [P4b 混合規格](../../tasks/spec-p4b-blend-20261124.md)僅為本 detached worktree `b7e4f50` 上的未提交 **DRAFT / PROPOSED / NOT_ACCEPTED** 文件；E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED。不是 FROZEN machine contract，不 supersede P1/P2/P3/P4a 契約、歷史結果、P4a 64-fit 完成閘門、現場 Colab 或 production authority，因此 `authority-map.json` 與歷史 supersession 記錄不變。
+[P2 前瞻規格](../../tasks/spec-forward-p2-primary-20261124.md)與 [P4b 混合規格](../../tasks/spec-p4b-blend-20261124.md)為已提交草案來源 `8eff9fe` 的 **DRAFT / PROPOSED / NOT_ACCEPTED** 文件；本輪在既有detached `1762821` 僅修訂P2前瞻與knowledge、保留未提交patch（P4b文件未改）；E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED。不是 FROZEN machine contract，不 supersede P1/P2/P3/P4a 契約、歷史結果、P4a 64-fit 完成閘門、現場 Colab 或 production authority，因此 `authority-map.json` 與歷史 supersession 記錄不變。
+
+Human於2026-11-24已決定嚴格T0與C0+半年重訓policy，這是設計決定，不是整份規格凍結或執行授權；T0錨定日曆／最多延遲2 sessions／18:00等細節仍是提案。唯一H-F1／Holm m=1以整段252日檢驗policy，固定模型與分段僅描述性。任意as-of重現、模型SHA／每次歷史驗收、矩陣bytes延伸與252日連續組合adapter皆未驗收，保持STOP；不修改P4b固定歷史輸入或任何既有machine authority。
 
 前瞻獨立確認必須在 Human 凍結與前置驗收後使用未曝光資料；本機分數末日不等於收益曝光末日，T0 證據與較嚴格預設見前瞻草案。P4b 因已看 P3／P4a 結果只能描述性；通過 Holm／CI 不能升格。Human 報告 Q1/Q2 36 fits 已完成，不是本輪逐 fit 或雲端觀測。Next 是 Human 凍結與另案驗收，不授權改 03_formal_resume／Drive。詳見 [Current State](Current_State.md)。
 
