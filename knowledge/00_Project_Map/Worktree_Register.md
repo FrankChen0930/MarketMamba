@@ -1,5 +1,11 @@
 # Worktree Register
 
+## 三份DRAFT複審文件修補 spec_fixer2 — 2026-11-24
+
+- Path `.worktrees/ruflo-workers/run-mwuu88xi-da927f/spec_fixer2`；branch detached HEAD，base `abc12f50a8246bbece3f187636f697c9a536a235`；owner Codex builder，task 五項文件修訂；created date UNKNOWN（指派日2026-11-24），retired N/A。既有worktree，起始clean，未新增worktree。
+- State：DRAFT / E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；僅三規格及必要knowledge的未stage patch，Human明令no-commit／push／merge。無研究程式、訓練或外部操作，未攜新資料artifact；凍結彙整沿用Current State，不新增檔案樹。
+- Dependencies：獨立複審與Human凍結／後續執行授權；patch未提交即尚無retained commit。Safe removal須patch已由Human保留／整合且確認無唯一產物、clean及明確授權；本輪不清理worktree。
+
 ## 專案清單 skill_writer — 2026-11-24
 
 - Purpose/task／owner：Human／Codex builder，`job-run-mwuchypx-211f4f/skill_writer`，洩漏稽核與 Colab preflight 兩份 skill、共用指標及 knowledge 導航；沿用 `.worktrees/ruflo-workers/run-mwuchypx-211f4f/skill_writer`，detached branch、base/HEAD `8eff9fef3386d5b852b79f5c66d09a0893891122`。本輪接手2026-11-24，實際建立時間 UNKNOWN，retired N/A。起始 clean，僅文件 patch，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；不 commit／push／merge。

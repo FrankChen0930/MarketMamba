@@ -1,3 +1,9 @@
+## 三份DRAFT coverage／凍結索引修補 — 2026-11-24
+
+`job-run-mwuu88xi-da927f/spec_fixer2@abc12f5`的未提交文件候選，DRAFT / E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。[前瞻P2](../../tasks/spec-forward-p2-primary-20261124.md)公開觀測比例以全宇宙含停牌為分母；必要資料gate逐欄適用集合100%，非停牌必要OHLCV／features不得豁免，合法停牌估值／lifecycle證據對持有與未持有都須完整，不冒充當日OHLCV。成對S/M合成fixture定義公開來源投影／分類／節奏不受持股影響；runner／推導與時序驗收尚未實作。入口名稱核對為`portfolio.run_backtest`；P4d B表格只描述訓練隨機性與集成。P4a空標題為原正文錯置，已移回Current State／Authority Map原標題，未重標結果或新造驗收狀態。
+
+沿用Current State承載[跨案Human凍結彙整表](../00_Project_Map/Current_State.md#三份draft-human凍結決定彙整)，三份規格決定清單均指向該表，完整語義以DRAFT正文為準。尚待獨立複審／Human凍結及另案工程、資源、來源／日曆驗收；不改machine authority／production／runtime observed_at，不接觸Data、blind、GPU、Colab或Drive。
+
 ## 三份DRAFT審查修訂候選 — 2026-11-24
 
 `job-run-mwutomlv-e3974c/spec_fixer`，既有detached HEAD/base `3ed6876`，起始clean、6份Markdown未提交patch；**DRAFT / E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[前瞻P2](../../tasks/spec-forward-p2-primary-20261124.md)補F1完整252收益契約：建議T1純現金→次日open首建含費、s1…s252 close估值、無終止清倉費、停牌／未知下市fail closed及同基準時鐘；與舊engine末entry open清倉不同，WP6只驗已選語義。F2封閉公開來源／全宇宙摘要schema、分母、持股診斷禁公開、私有256-bit nonce承諾、固定錯誤處置及與公開市場資訊結合推導驗收。[P4b](../../tasks/spec-p4b-blend-20261124.md)補B1事前日期域與聯集核對、整日／整折消失不得被交集隱藏。[P4d](../../tasks/spec-p4d-equal-tuning-20261125.md)補D1明確36…47欄macro schema／fit support cache與未來特徵mutation；D2雙邊centered公式＋Holm2；D3改稱訓練隨機性與集成的描述性反應，anchor選更新數有選擇偏向。

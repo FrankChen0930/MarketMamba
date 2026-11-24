@@ -195,7 +195,7 @@ S-Mamba風格預設不納入。替代案須在任何結果前同N×2seed／Holm3
 | 模組 | 假設 | 預定格／種子／共同項 | 量測與解讀 | 成本與依賴 |
 |---|---|---|---|---|
 | A 容量階梯 | 固定資訊與更新配方仍有容量空間 | GRU／Mamba2，預設六格，每格17／29；100%歷史 | 主要anchor驗證IC5及逐seed曲線；train–val IC5 gap診斷過擬合；outer IC5與P2組合層皆描述性。上升＝仍有容量空間的線索；持平／下降＝噪聲或資訊受限的工作假設，亦可能欠收斂／正則不合，非證明 | 單獨168 fits／51.17h等效；先baseline、各寬深shape與記憶體排練。實測大容量倍率未知 |
-| B 種子集成曲線 | 降低初始化方差可改善穩定度 | 同一d64×2配方，1／2／4／8排名平均；100%歷史 | 主要anchor驗證IC5增量／飽和點；outer IC5、淨超額、換手／成本／回撤描述性；單seed分散與prediction相關。上升＝方差／多樣性有用；持平＝種子高度相關或信號受限；下降＝互相稀釋／不穩定，非挑seed理由 | 單獨112 fits／34.11h；已有兩seed的28 fits合格時，新增84 fits／25.59h；只依賴baseline，不依賴核心調參 |
+| B 種子集成曲線 | 訓練隨機性與集成的描述性反應 | 同一d64×2配方，1／2／4／8排名平均；100%歷史 | 主要anchor驗證IC5增量／飽和點；outer IC5、淨超額、換手／成本／回撤描述性；單seed分散與prediction相關。上升＝訓練隨機性與集成可能有用的描述性線索，混合batch抽樣與baseline更新長度選擇，不能歸因初始化；持平＝種子高度相關或信號受限；下降＝互相稀釋／不穩定，非挑seed理由 | 單獨112 fits／34.11h；已有兩seed的28 fits合格時，新增84 fits／25.59h；只依賴baseline，不依賴核心調參 |
 | D 資料縮放曲線 | 固定容量／計算下，更多最近歷史提供可用資訊 | 25／50／100%，GRU／Mamba2與C0+參考；17／29，baseline容量與配方不變 | 主要anchor驗證IC5；outer IC5與神經−C0+組合差斜率描述性。上升＝更多歷史可能有用；持平＝此配方未吸收額外資訊；下降＝舊regime／品質或固定步數不足，不能說更多資料有害 | 單獨84神經fits／25.59h＋42 CPU fits假設7–42h；共用100%後新增56神經fits／17.06h。依賴split／history／halo清單，不能按資料比例折工時 |
 
 上述IC5一律同日期／股票／成熟標籤support、日權重；IC10為secondary，不能事後換主指標。train IC5用固定、完整合格train支援（另報計算成本），與val相同評估函式；train−val大且隨容量增長為過擬合線索，不跨不同regime斷言泛化差的唯一原因。anchor曲線不作額外Holm family或顯著性勝出判定；§5核心Holm2不被模組取代。外層組合層不得回流選容量、seed、資料量、epochs或下一格。
@@ -301,6 +301,8 @@ S-Mamba風格預設不納入。替代案須在任何結果前同N×2seed／Holm3
 8. CPU測試不能代替上線前現場排練：最大width／layer／epochs配置、GRU／Mamba、各fraction／新split、resume／全量validation推論以同真實資料與正式路徑排練，報峰值memory與wall；獨立結果schema／identity驗證，不只exit0。必要排練全通過才launch；Colab/T4/Drive現場至實測前一律UNVERIFIED，費用需Human另案同意。本輪禁止GPU所以未執行。獨立審查須不同session，作者自查不等於review，未授權另派agent故本輪不派。
 
 ## 9. Open Questions／Human 決定清單、blockers 與知識影響
+
+彙整簽署入口：[三份DRAFT Human凍結決定彙整](../knowledge/00_Project_Map/Current_State.md#三份draft-human凍結決定彙整)。全文與下列重大選擇均未凍結，不代替另案資源／執行授權。
 
 Human已同意加入A容量與B種子並想實際嘗試；本輪只落成可審查設計，不重問文件修改許可，亦未取得GPU／Colab／程式實作授權。重大預設與替代在正式執行前一次凍結：
 

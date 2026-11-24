@@ -1,3 +1,9 @@
+## 三份DRAFT複審修補的authority邊界 — 2026-11-24
+
+`job-run-mwuu88xi-da927f/spec_fixer2`，detached base `abc12f50a8246bbece3f187636f697c9a536a235`的未提交文件patch，**DRAFT / E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。前瞻P2公開全宇宙觀測比例不等於必要欄適用集合100% gate；合法停牌不造OHLCV、分類／錯誤及節奏不依持股，成對fixture僅驗收需求。P4d B模組表同步描述性混淆，入口改實際`portfolio.run_backtest`。Current State與本檔P4a第13次標題的原正文移回，僅修結構，不修改歷史狀態或升格64-fit驗收。
+
+[Human凍結彙整表](Current_State.md#三份draft-human凍結決定彙整)是現有Current State中的候選決策導航，不能取代三份DRAFT正文、versioned machine contracts或Human簽署。無canonical artifact supersession／authority-map.json改動；原前瞻coverage NO_GO待獨立複審，文件修補不自動解除，不授執行／費用／production權限，不更新runtime observed_at。
+
 ## 三份DRAFT審查修訂候選 — 2026-11-24
 
 `job-run-mwutomlv-e3974c/spec_fixer`，既有detached HEAD/base `3ed6876`，起始clean、6份Markdown未提交patch；**DRAFT / E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[前瞻P2](../../tasks/spec-forward-p2-primary-20261124.md)補F1完整252收益契約：建議T1純現金→次日open首建含費、s1…s252 close估值、無終止清倉費、停牌／未知下市fail closed及同基準時鐘；與舊engine末entry open清倉不同，WP6只驗已選語義。F2封閉公開來源／全宇宙摘要schema、分母、持股診斷禁公開、私有256-bit nonce承諾、固定錯誤處置及與公開市場資訊結合推導驗收。[P4b](../../tasks/spec-p4b-blend-20261124.md)補B1事前日期域與聯集核對、整日／整折消失不得被交集隱藏。[P4d](../../tasks/spec-p4d-equal-tuning-20261125.md)補D1明確36…47欄macro schema／fit support cache與未來特徵mutation；D2雙邊centered公式＋Holm2；D3改稱訓練隨機性與集成的描述性反應，anchor選更新數有選擇偏向。
@@ -12,6 +18,14 @@ Next：獨立再審後Human選定端點A（收盤估值；替代開盤／收盤�
 
 ## P4a 第 13 次複審 REQUIRED＋兩項 MINOR 修補候選 — 2026-11-24
 
+`job-run-mwtn0pir-48e95f`／`builder_p4a_gate3`，沿用既有 detached worktree，base/HEAD `40d621cc9ac586e45fff1e095f59465b388094a1`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依明確授權保留未提交 patch。第 13 次獨立複審為 NO_GO；本輪修補 Q5 巢狀 schema、超大數值／遞迴損壞 marker，以及 metadata 符號連結。完成不解除 NO_GO，不等同 Human acceptance。
+
+[runner](../../V6/research_lab/p4_colab.py) 的階段結果、發布 metadata、Q5 診斷與成功 marker 共用單一封閉遞迴 schema；必要／允許欄位、精確型別、數值有限性／值域、ISO 日期、凍結 rule、R=10 與 permutation/date 支援均 fail closed。`excluded_dates` 依 producer 定義為日期字串清單（可空）；布林只在契約的 bool 欄位合法。Q5 producer 原先傳 session index，現在傳同列 `dates.npy` 的日期，合成證據確認分組與數值診斷不變。marker 的 OverflowError／TypeError／RecursionError 與既有解析錯誤視為無效，顯示期望／實際／下一步後移除並重排練。完成、發布、result JSON 與 marker 拒絕符號連結；產物 bytes、請求、來源與正式完成驗證沿用原 gate。
+
+[工具重產宣告](../../tasks/p4a-source-compat-20e6b54.json) 的 `to.commit` 為本輪可得 HEAD `40d621c`，230 個來源 hashes 綁定 working bytes；後續 commit 可不同，deliver 必須以最終 bytes 重算，不可直接採用舊宣告。36 個 Q1／Q2 W60 完成 fit 全部 resume_fit 驗證／保留 bytes／不重訓的條件與 64-fit SHA `4dc90ec0ada6c6d34b43c429d359424c502634e502c6856c6774bf138de7ba23` 不變；研究／環境／預算契約、P3 adapter／portfolio engine 及正式 Data／模型未動。AST pins 僅限定候選範圍，非獨立審查證明。
+
+Evidence：本機 CPU 合成與真子程序發布替身；RED→GREEN、逐欄位型別矩陣、三項新 in-memory mutation、實際完整測試與 artifact identity 見[工程報告](../../reports/v7_p4a_colab_engineering.md)。CUDA／官方 mixer／真實 fold／W250 峰值／Colab／Drive FUSE／現場 36 artifacts 與正式接續仍 UNVERIFIED。Next：獨立複審 patch、宣告與測試，通過後由 Human 決定現場排練及 acceptance。無 GPU／網路／Colab／資料取得／production／scheduler／排程／additional agents／wakeup／recurring jobs／commit／push／merge／deploy，未更新 runtime observed_at。
+
 ## P2 前瞻／P4b 草案的 authority 邊界 — 2026-11-24
 
 [P2 前瞻規格](../../tasks/spec-forward-p2-primary-20261124.md)與 [P4b 混合規格](../../tasks/spec-p4b-blend-20261124.md)為已提交草案來源 `8eff9fe` 的 **DRAFT / PROPOSED / NOT_ACCEPTED** 文件；本輪在既有detached `0db633b`（job-run-mwuoasa7-93afef/spec_writer_phases）僅修訂P2前瞻與knowledge、保留未提交patch（P4b文件未改）；E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED。不是 FROZEN machine contract，不 supersede P1/P2/P3/P4a 契約、歷史結果、P4a 64-fit 完成閘門、現場 Colab 或 production authority，因此 `authority-map.json` 與歷史 supersession 記錄不變。
@@ -23,13 +37,6 @@ Human是封盲保管與重訓owner，封盲區指定 `D:\Desktop\work\ProjectFor
 前瞻獨立確認必須在 Human 凍結與前置驗收後使用未曝光資料；本機分數末日不等於收益曝光末日，T0試運行／T1正式邊界與較嚴格預設見前瞻草案。P4b 因已看 P3／P4a 結果只能描述性；通過 Holm／CI 不能升格。Human 報告 Q1/Q2 36 fits 已完成，不是本輪逐 fit 或雲端觀測。Next 是 Human 凍結與另案驗收，不授權改 03_formal_resume／Drive。詳見 [Current State](Current_State.md)。
 
 
-`job-run-mwtn0pir-48e95f`／`builder_p4a_gate3`，沿用既有 detached worktree，base/HEAD `40d621cc9ac586e45fff1e095f59465b388094a1`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依明確授權保留未提交 patch。第 13 次獨立複審為 NO_GO；本輪修補 Q5 巢狀 schema、超大數值／遞迴損壞 marker，以及 metadata 符號連結。完成不解除 NO_GO，不等同 Human acceptance。
-
-[runner](../../V6/research_lab/p4_colab.py) 的階段結果、發布 metadata、Q5 診斷與成功 marker 共用單一封閉遞迴 schema；必要／允許欄位、精確型別、數值有限性／值域、ISO 日期、凍結 rule、R=10 與 permutation/date 支援均 fail closed。`excluded_dates` 依 producer 定義為日期字串清單（可空）；布林只在契約的 bool 欄位合法。Q5 producer 原先傳 session index，現在傳同列 `dates.npy` 的日期，合成證據確認分組與數值診斷不變。marker 的 OverflowError／TypeError／RecursionError 與既有解析錯誤視為無效，顯示期望／實際／下一步後移除並重排練。完成、發布、result JSON 與 marker 拒絕符號連結；產物 bytes、請求、來源與正式完成驗證沿用原 gate。
-
-[工具重產宣告](../../tasks/p4a-source-compat-20e6b54.json) 的 `to.commit` 為本輪可得 HEAD `40d621c`，230 個來源 hashes 綁定 working bytes；後續 commit 可不同，deliver 必須以最終 bytes 重算，不可直接採用舊宣告。36 個 Q1／Q2 W60 完成 fit 全部 resume_fit 驗證／保留 bytes／不重訓的條件與 64-fit SHA `4dc90ec0ada6c6d34b43c429d359424c502634e502c6856c6774bf138de7ba23` 不變；研究／環境／預算契約、P3 adapter／portfolio engine 及正式 Data／模型未動。AST pins 僅限定候選範圍，非獨立審查證明。
-
-Evidence：本機 CPU 合成與真子程序發布替身；RED→GREEN、逐欄位型別矩陣、三項新 in-memory mutation、實際完整測試與 artifact identity 見[工程報告](../../reports/v7_p4a_colab_engineering.md)。CUDA／官方 mixer／真實 fold／W250 峰值／Colab／Drive FUSE／現場 36 artifacts 與正式接續仍 UNVERIFIED。Next：獨立複審 patch、宣告與測試，通過後由 Human 決定現場排練及 acceptance。無 GPU／網路／Colab／資料取得／production／scheduler／排程／additional agents／wakeup／recurring jobs／commit／push／merge／deploy，未更新 runtime observed_at。
 
 ## P4a 第 12 次複審兩項 REQUIRED 修補候選 — 2026-11-24
 

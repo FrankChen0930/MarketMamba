@@ -1,3 +1,39 @@
+## 三份DRAFT複審修補候選 — 2026-11-24
+
+`job-run-mwuu88xi-da927f/spec_fixer2`，既有detached HEAD/base `abc12f50a8246bbece3f187636f697c9a536a235`，起始clean；本次僅文件patch，**DRAFT / E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。前瞻P2將公開全宇宙觀測比例與逐必要欄適用集合100% gate分開，合法停牌不冒充當日OHLCV、停牌／估值證據對持有及未持有皆100%；補成對fixture與固定來源錯誤處置，修正入口為`portfolio.run_backtest`。P4d模組表B同步為訓練隨機性與集成，保留batch／更新長度選擇混淆。未實作adapter／摘要runner或訓練，不宣稱修補已通過獨立複審或Human acceptance。
+
+P4a既有失敗判定為**文件段落結構錯置**：Current State及Authority Map的第13次修補標題之後插入P2段落，原`job-run-mwtn0pir-48e95f`正文被歸入P2。只把原正文移回原P4a標題，不補造64-fit驗收／現場狀態，測試不改。已重現原focused結果1 failed／2 passed／110 deselected；搬回後3 passed／110 deselected。
+
+建立前盤點：tasks三份規格已有各自Human決定清單，Current State可承載跨規格的一次凍結導航，故沿用此處彙整表，不新增freeze-checklist檔案、目錄或memory樹。表格是待Human簽署的決策索引，完整語義仍以各DRAFT正文為準，不能提升為machine authority。既定決定只核對，不重新當未決問題；任一替代須在新結果前完整改稿／重算影響，不並跑挑優。
+
+驗證紀錄（本次CPU自查，非獨立複審）：`PYTHONPATH=V6 CUDA_VISIBLE_DEVICES='' /home/frank/.venvs/marketmamba-gpu/bin/python -m pytest -q V6/research_lab/tests/test_p4.py -k 'knowledge_preserves_candidate_authority_status or draft_documents or operations_require'`為3 passed／110 deselected；`python3 -m unittest discover -s tools/project_knowledge -p 'test_*.py'`為23 tests OK。實際import `research_lab.portfolio.run_backtest`成功，簽名(prices,predictions,config=Config(...))；全文無錯誤backtest入口，P4d「初始化方差」剩2處均明示不可歸因。P4a原正文與HEAD逐字相同，僅移回正確標題。合成算術：公開99/100=99%但必要99/99=100%為PASS；公開98/100=98%、必要98/99=98.9898989899%為FAIL；成對公開投影相同是文件預期，未執行尚不存在的摘要runner。7份Markdown本機引用688個缺失0、41個表格欄數一致、DRAFT標示3/3；`git diff --check`通過。impact為WARNING，已人工核對Operations／GOVERNANCE，無操作子系統／治理規則變更；health `--ci --as-of 2026-11-24` exit0／WARNING（Governance／Authority Drift／Legacy Docs），無structural FAIL。環境WSL CPU，系統python3及既有venv均3.12.3，MARKETMAMBA_DATA_ROOT unset，Data realpath為本worktree普通目錄；不讀其內容、不更新runtime observed_at。7份指定文件unstaged、無staged/untracked；依Human no-commit保留patch，非clean-worktree宣告。
+
+## 三份DRAFT Human凍結決定彙整
+
+**全列狀態：待Human簽署全文；不是執行／費用授權。** 請逐列記「採預設／採替代＋完整修訂／不執行」，並綁定最終文件及輸入hash、批准者、UTC／台北時間；不得用本表勾選代替正文所需證據。三案可分別凍結，但跨案衝突須在各自第一筆新結果之前處理。
+
+| 案／決定 | 建議凍結內容（正文位置） | 重大替代與代價／尚待證據 |
+|---|---|---|
+| 全案身分與邊界 | 三份DRAFT完整版本／hash、source commit＋dirty bytes、環境、輸入manifest、獨立審查與後續執行分案；P4b/P4d全為已曝光描述性 | 不執行任一案；文件GO／凍結不等於Human acceptance，不改P4a／production authority |
+| 前瞻端點F1 | [前瞻P2](../../tasks/spec-forward-p2-primary-20261124.md)「252日估值與收益契約」A：s0現金、s1 open首建含費、s1…s252 close估值、無終止交易，策略／基準同時鐘及原成本不對稱 | B末日open清倉／C末日close清倉須先完整改收益公式、終止費用、停牌及事件規則與fixture，不能由adapter現場決定 |
+| 前瞻公開schema F2 | `forward-public-summary-v1`封閉欄位、source slots／枚舉、全宇宙expected／valid觀測比例、逐欄R_c,d必要gate100%、合法停牌適用表、S/M成對fixture；次日12:00固定發布、256-bit私有nonce及hash chain | 全部私有至期末可減公開資訊風險但失去每日公開連續性監督；無nonce digest不可採。來源分類不得依持股、公開比例99%不得單獨判失效 |
+| 前瞻來源／事故 | 合格calendar、來源與欄位必要性、publication／as-of／provenance、lifecycle／停牌／下市／估值、預測資格及keys100%、0漏日、固定錯誤表／SOURCE多碼 | 證據不足即不啟動／失效；不能放寬門檻、假OHLCV、依持股移分母。正式來源及事件證據尚未驗收 |
+| 前瞻兩階段／重訓N | 已決定嚴格T0僅試運行、年報／Q2兩錨點、T1正式起算；待凍結N_A=10／N_H=8、A+2-session資料緩衝、18:00、R+1/R+2同快照重試與超時STOP | 8/8、10/10或更久依非績效來源延遲／CPU實測選；1–2太緊。公司期限例外不自動漂移整體時鐘，未知不得啟動 |
+| 前瞻正式日曆／截止 | 合格2027／2028calendar及假日／延期例外，實際T0/T1、R、origin−21、252收益終點、末日+11安全成熟及每版訊號／再平衡暴露；至少一次成功更新及更新後既定再平衡 | 日期未驗維持UNKNOWN；20-session連續流程、T1前20／5-session截止、跨Q2未啟動STOP均待簽署。依工程gate延後T1需重訓，開始後不重設／補日 |
+| 前瞻揭曉／隔離 | 階段0到正式唯一端點才描述性揭曉；Human為保管／重訓owner，凍結head外部保管、提醒管道、淨化與事故／手動開盲演練 | T1規格簽署且已啟動後揭曉階段0，或永不揭曉；均不得績效調規。可另選OS使用者／ACL，現有同權限紀律不能稱OS隔離 |
+| 前瞻統計／成本／影子臂 | 已決定252單端點、H-F1／Holm1、雙邊p、raw主要與比例成本基準；C0+三seed17/29/43、185欄固定；固定／神經影子臂預設不收集；WP1～WP6先驗收 | total_return、單邊p、新影子臂只能在結果前另補完整契約／成本及身分，不中途替換；CPU/RAM/disk預算仍待實測及另案授權 |
+| P4b公式 | [P4b](../../tasks/spec-p4b-blend-20261124.md)「凍結參數」三個0.5/0.5，先seed rank→臂rank→blend，B2保留R_all外層rank，不搜尋權重 | 無外層rank僅能結果前改為單一版本；其他權重需新設計，不兩版擇優 |
+| P4b支援／輸入 | 36-fit固定subset獨立准入且不降64-fit gate；P1原seed scores、共同S先裁後rank；事前D＋日期聯集、每日95%與≥50、NaN不刪組合列；固定snapshot／volume與完整Config identity | 只看交集／日期聯集均不足；缺fit／日／折即STOP或不具提名資格。本機匯出、逐fit lineage與來源驗證待另案，不讀Drive |
+| P4b統計／候選／限制 | Holm3只2021–2023，block20／1000／seed17雙邊；全六折揭露；兩折CI正／三折mean正／近期方向及完整診斷，優先序B1→B2→B3；E2及不對稱限制 | 無候選就停止；多臂前瞻需新家族／alpha，不加入已開始P2。CPU subset loader／評估資源與授權另案，不重訓 |
+| P4d macro schema凍結名單 | [P4d](../../tasks/spec-p4d-equal-tuning-20261125.md)「預處理隔離契約」神經歸零36…47：TWII_Return、SPX_Return、VIX、TNX、Gold_Return、Oil_Return、USD_TWD、Futures_OI_Foreign、Options_PC_Ratio、Fear_Greed、Business_Signal、FED_Rate；綁48欄order SHA及cache／fit support identity | 替代僅用合格tuning fit完整截面估mask後全案固定；不可全矩陣抽樣／按fold或fraction重估。future-mutation／cache hit/rebuild／新程序驗收尚未實作；C0+不刪macro |
+| P4d核心搜尋／選擇 | §2–5三臂C0+/GRU/Mamba2各N12×seed17/29、2021前126-session全列validation／purge／maturity、先生成random表RNG20261125、IC5/BEST及tie規則、固定更新六折fresh fit、§3完整搜尋空間與新dropout／loss接線 | N6省費／N24較廣；等牆鐘另案且硬體不等價；S-Mamba預設不納，若納須同預算Holm3與重算；不Optuna，不按outer／pilot績效改N |
+| P4d統計／完整性 | GRU−C0+及Mamba−C0+，centered雙邊公式、Holm2／seed20261125、2021–2023 pool，逐日同列、共同成熟IC、組合保留NaN、六折完整揭露 | 單邊需另案公式與驗收，不能除二；所有歷史結果均描述性，少fit不可稱equal_budget_complete |
+| P4d A／B／D開關與配方 | §6各模組可獨立開關；預設P4a固定配方、baseline選BEST更新數後各格固定更新，七origins共用合格baseline去重，本預設不重用P4a fits | 調參後配方混合搜尋／容量效應須先改設計，不兩版擇優；B只描述訓練隨機性與集成，保留batch／更新長度選擇混淆 |
+| P4d A容量／B種子／D資料 | A六格d32/64/128/256×2層＋d64×1/4層，headdim8/state16/expand2；B固定17/29/43/59/71/89/101/113之前1/2/4/8；D可關閉或25/50/100%最近完整年等值全列 | A12格可估交互但336fits且昂貴角落未測；改heads／state／expand會加混淆；D不是隨機抽樣。B無挑最佳seed，baseline新seed更新次數交替對應須一併凍結 |
+| P4d預算／順序／停續 | §4／6先baseline、GRU B/A→Mamba B→按排練資源決定原案Mamba A／D；pilot前4候選計入固定N；全模組＋N12共380神經fits約115.74 T4h基準等效，173.6–312.7 CU暫估非上限 | Human須定CPU/RAM/disk及分階段費用範圍、當次CU率與最大shape排練條件；超資源停並報partial，不按勝負擴格。CUDA／Colab／Drive現場及大容量倍率未知，現在不執行 |
+
+Knowledge-impact：DRAFT coverage判定／next decision細化與文件結構修復=YES，已同步Research與Authority Map；已生效machine authority、subsystem、active runtime、既有correctness thresholds、canonical artifact新增／supersession、deprecation=NO。現有worktree責任記Worktree Register；無外部runtime觀測，不更新observed_at。Next：獨立複審此patch，再由Human依本表凍結；正式calendar／來源／事件、工程實作、未來mutation／推導測試與現場驗收仍為blockers。no-commit保留指定文件unstaged，不能宣稱clean-worktree。
+
 ## 三份DRAFT審查修訂候選 — 2026-11-24
 
 `job-run-mwutomlv-e3974c/spec_fixer`，既有detached HEAD/base `3ed6876`，起始clean、6份Markdown未提交patch；**DRAFT / E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[前瞻P2](../../tasks/spec-forward-p2-primary-20261124.md)補F1完整252收益契約：建議T1純現金→次日open首建含費、s1…s252 close估值、無終止清倉費、停牌／未知下市fail closed及同基準時鐘；與舊engine末entry open清倉不同，WP6只驗已選語義。F2封閉公開來源／全宇宙摘要schema、分母、持股診斷禁公開、私有256-bit nonce承諾、固定錯誤處置及與公開市場資訊結合推導驗收。[P4b](../../tasks/spec-p4b-blend-20261124.md)補B1事前日期域與聯集核對、整日／整折消失不得被交集隱藏。[P4d](../../tasks/spec-p4d-equal-tuning-20261125.md)補D1明確36…47欄macro schema／fit support cache與未來特徵mutation；D2雙邊centered公式＋Holm2；D3改稱訓練隨機性與集成的描述性反應，anchor選更新數有選擇偏向。
@@ -28,6 +64,14 @@ Evidence：兩份 skill 為72／61行，quick_validate 均通過；本機引用�
 
 ## P4a 第 13 次複審 REQUIRED＋兩項 MINOR 修補候選 — 2026-11-24
 
+`job-run-mwtn0pir-48e95f`／`builder_p4a_gate3`，沿用既有 detached worktree，base/HEAD `40d621cc9ac586e45fff1e095f59465b388094a1`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依明確授權保留未提交 patch。第 13 次獨立複審為 NO_GO；本輪修補 Q5 巢狀 schema、超大數值／遞迴損壞 marker，以及 metadata 符號連結。完成不解除 NO_GO，不等同 Human acceptance。
+
+[runner](../../V6/research_lab/p4_colab.py) 的階段結果、發布 metadata、Q5 診斷與成功 marker 共用單一封閉遞迴 schema；必要／允許欄位、精確型別、數值有限性／值域、ISO 日期、凍結 rule、R=10 與 permutation/date 支援均 fail closed。`excluded_dates` 依 producer 定義為日期字串清單（可空）；布林只在契約的 bool 欄位合法。Q5 producer 原先傳 session index，現在傳同列 `dates.npy` 的日期，合成證據確認分組與數值診斷不變。marker 的 OverflowError／TypeError／RecursionError 與既有解析錯誤視為無效，顯示期望／實際／下一步後移除並重排練。完成、發布、result JSON 與 marker 拒絕符號連結；產物 bytes、請求、來源與正式完成驗證沿用原 gate。
+
+[工具重產宣告](../../tasks/p4a-source-compat-20e6b54.json) 的 `to.commit` 為本輪可得 HEAD `40d621c`，230 個來源 hashes 綁定 working bytes；後續 commit 可不同，deliver 必須以最終 bytes 重算，不可直接採用舊宣告。36 個 Q1／Q2 W60 完成 fit 全部 resume_fit 驗證／保留 bytes／不重訓的條件與 64-fit SHA `4dc90ec0ada6c6d34b43c429d359424c502634e502c6856c6774bf138de7ba23` 不變；研究／環境／預算契約、P3 adapter／portfolio engine 及正式 Data／模型未動。AST pins 僅限定候選範圍，非獨立審查證明。
+
+Evidence：本機 CPU 合成與真子程序發布替身；RED→GREEN、逐欄位型別矩陣、三項新 in-memory mutation、實際完整測試與 artifact identity 見[工程報告](../../reports/v7_p4a_colab_engineering.md)。CUDA／官方 mixer／真實 fold／W250 峰值／Colab／Drive FUSE／現場 36 artifacts 與正式接續仍 UNVERIFIED。Next：獨立複審 patch、宣告與測試，通過後由 Human 決定現場排練及 acceptance。無 GPU／網路／Colab／資料取得／production／scheduler／排程／additional agents／wakeup／recurring jobs／commit／push／merge／deploy，未更新 runtime observed_at。
+
 ## P2 前瞻／P4b 描述性規格草案 — 2026-11-24
 
 `job-run-mwuc1teo-b3dba8/spec_writer_fwd_p4b`，既有 detached worktree/base `b7e4f50d4f061cce32f35f466de7ab992ffc35ed`；僅文件 patch，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依指示不 commit。[P2 前瞻草案](../../tasks/spec-forward-p2-primary-20261124.md)與 [P4b 混合草案](../../tasks/spec-p4b-blend-20261124.md)均 **DRAFT 待 Human 凍結**，沒有新研究結果或執行授權。沿用 tasks／research_lab，歷史規格不能承接新的研究身分，未建立新目錄、程式或輸出樹。
@@ -49,13 +93,6 @@ Next：Human分階段凍結N_A／N_H、T0／T1 calendar／source gates及全文�
 
 
 
-`job-run-mwtn0pir-48e95f`／`builder_p4a_gate3`，沿用既有 detached worktree，base/HEAD `40d621cc9ac586e45fff1e095f59465b388094a1`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依明確授權保留未提交 patch。第 13 次獨立複審為 NO_GO；本輪修補 Q5 巢狀 schema、超大數值／遞迴損壞 marker，以及 metadata 符號連結。完成不解除 NO_GO，不等同 Human acceptance。
-
-[runner](../../V6/research_lab/p4_colab.py) 的階段結果、發布 metadata、Q5 診斷與成功 marker 共用單一封閉遞迴 schema；必要／允許欄位、精確型別、數值有限性／值域、ISO 日期、凍結 rule、R=10 與 permutation/date 支援均 fail closed。`excluded_dates` 依 producer 定義為日期字串清單（可空）；布林只在契約的 bool 欄位合法。Q5 producer 原先傳 session index，現在傳同列 `dates.npy` 的日期，合成證據確認分組與數值診斷不變。marker 的 OverflowError／TypeError／RecursionError 與既有解析錯誤視為無效，顯示期望／實際／下一步後移除並重排練。完成、發布、result JSON 與 marker 拒絕符號連結；產物 bytes、請求、來源與正式完成驗證沿用原 gate。
-
-[工具重產宣告](../../tasks/p4a-source-compat-20e6b54.json) 的 `to.commit` 為本輪可得 HEAD `40d621c`，230 個來源 hashes 綁定 working bytes；後續 commit 可不同，deliver 必須以最終 bytes 重算，不可直接採用舊宣告。36 個 Q1／Q2 W60 完成 fit 全部 resume_fit 驗證／保留 bytes／不重訓的條件與 64-fit SHA `4dc90ec0ada6c6d34b43c429d359424c502634e502c6856c6774bf138de7ba23` 不變；研究／環境／預算契約、P3 adapter／portfolio engine 及正式 Data／模型未動。AST pins 僅限定候選範圍，非獨立審查證明。
-
-Evidence：本機 CPU 合成與真子程序發布替身；RED→GREEN、逐欄位型別矩陣、三項新 in-memory mutation、實際完整測試與 artifact identity 見[工程報告](../../reports/v7_p4a_colab_engineering.md)。CUDA／官方 mixer／真實 fold／W250 峰值／Colab／Drive FUSE／現場 36 artifacts 與正式接續仍 UNVERIFIED。Next：獨立複審 patch、宣告與測試，通過後由 Human 決定現場排練及 acceptance。無 GPU／網路／Colab／資料取得／production／scheduler／排程／additional agents／wakeup／recurring jobs／commit／push／merge／deploy，未更新 runtime observed_at。
 
 ## P4a 第 12 次複審兩項 REQUIRED 修補候選 — 2026-11-24
 
