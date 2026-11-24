@@ -44,23 +44,35 @@ C0+ 是 **P1 加上時間上下文的 LightGBM**，不是 `lightgbm_day_t`。配
 
 LightGBM 固定：n_estimators=200、num_leaves=31、learning_rate=.05、min_child_samples=200、subsample=.8、subsample_freq=1、colsample_bytree=.8、reg_lambda=10、n_jobs=4、verbose=-1，random_state 分別取三種子；target=y5，完整訓練日截面中心化 percentile rank 後才依 seed 抽樣最多 500,000 列；無 early stopping／搜尋。推論共同資格沿用 60 session 歷史資格，不依未來 label 是否成熟決定是否打分。
 
-## 重訓政策（Human 已選半年更新，細節仍待凍結）
+## 重訓政策（Human 已選季報後半年更新；DRAFT 待凍結）
 
-H-F1 檢驗的是 **C0+＋半年重訓 policy** 的整段收益，不是任一模型的固定效果，也不是重訓相對不重訓的因果效果。Human 於 2026-11-24 排除固定模型為主要方案；以下時鐘、延遲與事故數字是 DRAFT 提案，尚未獲得細節凍結或執行授權。
+H-F1 檢驗 **C0+＋季報期限後半年重訓 policy** 的整段收益，不是單版模型效果或重訓的因果效果。Human 已選 Q1／Q3 報後交替更新；Q2 與年度財報不是額外重訓觸發器。以下第8交易日與資料緩衝為本輪具體設計選擇，待 Human 隨全文凍結。
 
-### 日曆與初始模型
+### 法定期限錨點、初始模型與固定日曆
 
-提議採 **T0 錨定、每六個曆月**，而非另選一月／七月：令 A_j = T0 加 6j 個曆月（月底不存在則截到該月末日），R_j 為合格交易所日曆中 A_j 當日或其後第一個交易日。R_0=T0；納入其訊號仍可能影響固定收益窗的所有 R_j。初始三模型必須在 T0 前完成訓練、歷史重現、封存與驗收，供 T0 收盤訊號使用；「T0 當時的訓練」指以 T0 為 origin 的 as-of 配方，不是沿用 fold_2026 的舊模型，也不允許等看到 T0 收益才訓練。
+依 [期限研究](research-financial-deadlines-20261118.md) 的已查證範圍（2026-11-18，並非本輪重新查法），12/31結算的一般公司 Q1／Q2／Q3 為5/15、8/14、11/14，年度為3/31；資本額達100億元上市櫃年度為75日，非閏年通常3/16，不能一律套3/31。金融業半年報可能8/31、金控季報可有60日補正，年度與其他豁免依適用規則；非曆年制、假日順延、核准延期及IPO身分須逐公司核實，不能依今天分類回填。年度75日須從實際年度期末計算，閏年不能固定3/16。
 
-實際 T0 尚缺 Human 凍結／前置驗收日，**不可聲稱已推導出正式日期表**。凍結時必須由同一 calendar identity 展開 R_j、purge 截止、完成期限、signal／entry／252 收益起訖及成熟日，寫入 machine contract。以下僅條件式範例：若嚴格公式與正式日曆最終給出 T0=2026-11-25：
+令 D_Q 為凍結年度適用於一般12/31公司、經當期公告核實的 Q1／Q3 法定期限（含合法順延）；**R_Q = 嚴格晚於 D_Q 的第8個合格交易所 session（N=8）**。期限日不計第1日。每年只取 Q1／Q3，按時間排序；M0 後首個更新取嚴格晚於 T0 的 R_Q，之後依同一清單，不再用 T0+6曆月。N=8 約留一週半供公開資料進管線、版本驗證及 CPU 訓練；N=1～2較新鮮但容錯小，N=10較保守但更慢，8是工程折衷，非實測最佳值，不能看收益調 N。
 
-| 版本 | 曆月錨點 A_j | 排定 origin R_j | 訓練訊號最晚 session | 切換／期限 |
-|---|---|---|---|---|
-| M0 | 2026-11-25 | 2026-11-25（仍須日曆確認） | index(R_0)−21 | T0 前驗收；T0 訊號開始使用 |
-| M1 | 2027-05-25 | calendar.next_on_or_after(2027-05-25) | index(R_1)−21 | R_1 收盤訊號起，最遲 R_1+2 sessions |
-| M2 | 2027-11-25 | calendar.next_on_or_after(2027-11-25) | index(R_2)−21 | 同規則；只有影響預定收益窗才納入 |
+日曆還有獨立資料 gate：每筆實際使用的財務 vintage 須同時有完整公開時點、進管線時點與來源身分；令其較晚時點落入 session A（18:00後或非交易日歸下一session），須 **A+2 sessions ≤ R_Q−1 session 的18:00快照截止**，即至少2個交易日緩衝。日期未知即不合格，期限不是可得日。個別遲報／特殊結算不讓整體日曆跟著漂移：只可沿凍結規則用既有合格舊 vintage；若契約要求當季資料，或必要來源缺失，當次 gate 失敗。不得臨時刪公司、回填新版本或放寬coverage。缺資料不因多等2日就換快照；重試仍固定原快照，超時STOP。對本案已排除的財報欄位，不憑空新增全市場財報收齊的輸入要求。
 
-若 T0 改變，整表依公式重算，不挑有利月份。**T0 太靠近一月／七月不另觸發一次重訓**：沒有第二套固定半年日曆，首個更新永遠是 T0+6 個曆月；不得手動插入／略過 origin。此法避免初始模型剛建好幾日就重訓。替代的一月與七月首交易日方案雖易提醒，需額外最短間距／跳過規則，故本草案不選；年度更新也不符合已選半年頻率。此選擇仍須 Human 凍結。
+嚴格 T0 公式維持；前置驗收另須確認最近 Q1／Q3 的第8交易日門檻與實際必要資料緩衝均已達成。初始三模型必須在T0前訓練、重現、封存及驗收，使用T0 as-of／origin−21配方，不能沿用fold_2026模型。若11/24完成所有凍結／驗收且正式日曆允許，T0候選為2026-11-25：**它已在Q3的11/14之後**，故M0是Q3後初始版；不再追加一次近距離Q3更新。若特殊適用來源仍未合格，T0不能啟動；啟動後不得換T0。
+
+| 版本／條件例 | 法定季報錨點 | 排定 origin／作用 |
+|---|---|---|
+| M0，若T0=2026-11-25 | 2026 Q3 11/14（適用順延須核實） | T0前驗收；T0收盤訊號起使用 |
+| M1 | 2027 Q1 5/15（適用順延須核實） | 期限後第8交易日，約5月下旬；不是年度3/31或3/16後 |
+| M2 | 2027 Q3 11/14（適用順延須核實） | 期限後第8交易日，約11月下旬；若影響固定收益窗即照表執行 |
+
+以上不是已驗證的交易日日期表：本輪沒有合格2027日曆／當期順延公告。僅以週一至五、未加公告順延或假日示意，2026-11-14後第8日為11/25，2027-05-15後為5/26，2027-11-14後為11/24；**不得把此示意當正式日期**。以11/25附近啟動的252收益sessions（約一年）估計，窗內約有 **2次更新（M1、M2），加M0共3版**，第二次靠近末端，可能沒有足夠新版持倉暴露；不可假定恰好只重訓一次。正式次數必由凍結calendar計算：列出所有 R_Q>T0 且其訊號的次session open不晚於第252收益日者，逐一計數；若M2在窗外則只有1次。較晚T0也須依同公式重算，不挑日曆使某版進出窗口。凍結表須列purge截止、18:00／R+2期限、每版訊號與再平衡影響收益日數；至少一次成功更新且有更新後排定再平衡，否則STOP，不延長252日。
+
+### 季報進入特徵的實際方式（source evidence，非PIT認證）
+
+本輪只讀 [build_feature_matrix.py](../V6/scripts/build_feature_matrix.py) 及其實際呼叫的 [feature_engineer.py](../V6/marketmamba/data/feature_engineer.py)：`_merge_revenue` 以月末+11曆日作 `available_from` 再as-of lookup；`_merge_financial_statements` 預設 `fundamentals_v2=False`，一律期末+45曆日，連年度也如此。只有顯式開 `fundamentals_v2=True` 才將12月期末改+90曆日；此script沒有傳該旗標。`merger.py` 的generic helper預設monthly=11／quarterly=45，不能用檔頭「10日」或註解代替呼叫實況。90日不是通用3/31（閏年不同），45日也不是實際公開／入管線或修訂版本證明。**有固定 publication-lag proxy，沒有由這條路徑證明逐公司首次公告、遲報及revision vintage的嚴格PIT處理**；年度預設+45尤其有提前使用風險。
+
+更關鍵的是，本案P1/C0+沿用的 [48欄manifest](../research/v7/corrected-baseline-v1/feature-manifest.json)（order SHA `7d75d4a74c7802e70e9ca88c13f7c2169a4b4fb974847d907c774e82a9da9696`）已在 `dropped_features` 移除Revenue_MoM／YoY、EPS／Surprise、Gross_Margin、ROE等11個財務欄；[Features domain](../knowledge/01_Domains/Features.md)同樣記錄publication證據不足而排除。`c0plus.CORE/MARKET`新增的137欄不含財報／營收；corrected matrix builder只讀prepared features，不重算這些lag。因此不能說「P1目前會在季報後自動吃進新季財報」。V6 59欄builder不是P1 48→185欄的同一contract，matrix舊artifact的生成vintage亦未在本輪重驗。季報後日曆是Human指定的更新時鐘，不能據此聲稱新財報帶來改善。
+
+即使未來另案納入財報，重訓日與特徵可用日仍是兩個gate：新財報不得回填進公告前歷史train rows；origin−21可能使最近季報尚未出現在當次train尾端，但每日推論可於其當時合格公開／入管線／lag門檻全過後使用。等到報後訓練不會消除歷史修訂洩漏。新增財報欄會改48／185欄語義，必須另案新contract與預先登記，本案不做。
 
 ### 訓練視窗、資料與封存
 
@@ -68,19 +80,19 @@ H-F1 檢驗的是 **C0+＋半年重訓 policy** 的整段收益，不是任一�
 
 每次均從 **2013-01-02 expanding** 至上述 cutoff；沿 P1 base 非 warmup 資格、`split==1` 且 finite y5，完整合格 train 日截面 rank target，再依 17／29／43 各抽至多 500,000 列。5／10 日的 exit 與 publication 都須早於 origin 且在固定資料快照中已可得；訓練 target 仍僅 y5，不改為雙 head，也不藉未成熟 y10 任意縮小 P1 fit 母體。若無法證明安全成熟，該次驗收失敗。特徵 48→185、超參數、環境與抽樣方法完全沿上節 P1；不調參、不 early-stop、不挑 seed。前瞻期間已成熟的 labels 可依政策進入下次 train，但不向研究者顯示策略績效。
 
-資料快照最晚 as-of 為 R_j 前一交易日收盤後的事前固定 publication cutoff（提議台北 18:00）；train signal cutoff 固定 origin−21。遲到或更正資料不得在重試時偷偷換入；缺快照即依失敗政策處理。每版封存 source commit／dirty bytes、環境 lock、calendar、全量合格／抽樣 keys、features／labels／vintage、模型三份 bytes/size/SHA-256、spec/config 與輸出 hashes。先 local serialize/fsync/hash，再於獨立研究 namespace durable copy/reverify，驗 load→predict round-trip，最後 atomic publication pointer；保留上一版，不寫 V6/models，不覆寫歷史 artifact。
+資料快照最晚 as-of 為 R_j 前一交易日收盤後的事前固定 publication cutoff（台北 18:00）；train signal cutoff 固定 origin−21。遲到或更正資料不得在重試時偷偷換入；缺快照即依失敗政策處理。每版封存 source commit／dirty bytes、環境 lock、calendar、全量合格／抽樣 keys、features／labels／vintage、模型三份 bytes/size/SHA-256、spec/config 與輸出 hashes。先 local serialize/fsync/hash，再於獨立研究 namespace durable copy/reverify，驗 load→predict round-trip，最後 atomic publication pointer；保留上一版，不寫 V6/models，不覆寫歷史 artifact。
 
 **每次先封存，通過歷史已曝光資料重現檢查才切換**：驗收只用在 T0 前即列入曝光帳的固定 reference。先驗同 source 在原 P1 fold_2026 支援（實讀為 2013-01-02～2025-12-02）的三種子 scores/ranks 與原 artifact 逐位元相等；再以當次 as-of 快照獨立重建／重擬合當版，核 fit keys／模型預測在固定歷史 reference 上逐位元相等、模型 load 後預測相等。不同訓練窗的新舊模型預測本來可以不同，不能要求新模型等於舊模型，也不能用「歷史績效更好」作驗收。模型 SHA 用於封存完整性；若 serialization metadata 不 deterministic，須另記兩份 SHA 並驗參數／樹內容／預測一致，不能冒稱模型 bytes 一致。不能以 T0 後 IC／回報選驗收樣本或模型。
 
 ### 切換、延遲與事故
 
-提議新版須在排定 R_j 的台北 18:00 前完成全部無績效驗收，才用於該日收盤資料的訊號；最早執行是次 session open。遲到則沿用上一版，於 R_j+1、R_j+2 session 的同一 18:00 cutoff 依固定順序重試，使用相同 origin／快照／seeds，不重新抽樣；**最遲 R_j+2 的 18:00**。通過後在當日訊號一次切換完整三種子，不混搭；deadline 後即 STOP / INVALID_FOR_CONFIRMATION，不無限延遲、不跳過本次等下一半年。初始 M0 無可沿用模型，T0 前未驗收即不啟動，按嚴格公式重算 T0；已啟動後不得換 T0。延遲不移動後續 R_j。
+新版須在排定 R_j 的台北 18:00 前完成全部無績效驗收，才用於該日收盤資料的訊號；最早執行是次 session open。遲到則沿用上一版，於 R_j+1、R_j+2 session 的同一 18:00 cutoff 依固定順序重試，使用相同 origin／快照／seeds，不重新抽樣；**最遲 R_j+2 的 18:00**。通過後在當日訊號一次切換完整三種子，不混搭；deadline 後即 STOP / INVALID_FOR_CONFIRMATION，不無限延遲、不跳過本次等下一半年。初始 M0 無可沿用模型，T0 前未驗收即不啟動，按嚴格公式重算 T0；已啟動後不得換 T0。延遲不移動後續 R_j。
 
 P2 真正組合入口為 `research_lab/portfolio.py:backtest/_simulate`，不是另一個 `experimental/v7_portfolio_engine.py`。新分數僅影響 T0 起每 20 sessions 的既定再平衡訊號，次 open 執行；若模型切換日不是再平衡日，先封存新版分數，等原相位到期才影響交易。**持倉、現金、NAV、成本、buffer100、frozen holdings 與 pending 訊號不重置**；不因重訓額外交易，不重播已封存的舊訊號。需單一連續組合狀態，禁止按模型版本分段 backtest 後串接收益。基準同步維持原再平衡時鐘。
 
 單純重訓失敗但每日 inputs／舊模型分數仍完整：期限內用上一版、完整記錄失敗與實際切換時間，收益日全部保留；這是事前定義 policy 的結果，不能事後稱為偏離而刪除。資料事故若連舊版也無法產生合格訊號，或估值／成交缺證據，立即 STOP；不可補 0、回填成交、刪缺日或向後延長湊 252 日。僅可用可證明當時已封存的 inputs 技術重播，不能補新知；無法重建完整當時決策則整批確認性失效，原資料保留描述性。完整事故帳須不含收益地封存，期末一次揭露。
 
-重訓不得由績效觸發、取消或改期，亦不得由看過本前瞻績效的人決定；排定日曆與固定機器 gate 決定，執行者只接觸必要 train labels／工程狀態，不可接觸策略收益、效應或排名。獨立封盲保管者管收益輸出與權限；持有訓練 labels 不代表允許看前瞻績效，訓練程序禁止輸出 eval IC／逐月策略報表。既有 `c0plus.run` 會做額外模型／eval 診斷且不持久化 C0+，不能直接無隔離重用 CLI；需保留同配方的 fit/predict/persist 邊界並驗數值等價。人員意外接觸結果仍依開盲事故政策處理，不能換操作者後繼續宣稱盲態。
+重訓不得由績效觸發、取消或改期，亦不得由看過本前瞻績效的人決定；排定日曆與固定機器 gate 決定，執行者只接觸必要 train labels／工程狀態，不可接觸策略收益、效應或排名。Human兼任封盲保管者與重訓執行owner，依下節隔離收益輸出與權限；持有訓練 labels 不代表允許看前瞻績效，訓練程序禁止輸出 eval IC／逐月策略報表。既有 `c0plus.run` 會做額外模型／eval 診斷且不持久化 C0+，不能直接無隔離重用 CLI；需保留同配方的 fit/predict/persist 邊界並驗數值等價。人員意外接觸結果仍依開盲事故政策處理，不能換操作者後繼續宣稱盲態。
 
 ### 替代方案／描述性對照
 
@@ -90,7 +102,7 @@ P2 真正組合入口為 `research_lab/portfolio.py:backtest/_simulate`，不是
 
 | 項目 | 凍結值／提案（T0 嚴格與半年政策已決定；細節待 Human） |
 |---|---|
-| 模型更新 | C0+ 三種子、T0 as-of 初始版；T0+6j 曆月往後首交易日，20-session strict purge、2013-01-02 expanding、同 P1 配方；無績效決策 |
+| 模型更新 | C0+ 三種子、T0 as-of 初始版；Q1／Q3適用法定期限後第8交易日（實際公開／入管線另驗2-session緩衝），20-session strict purge、2013-01-02 expanding、同 P1 配方；無績效決策 |
 | 切換與失敗 | 全三 seed 封存＋歷史重現 gate，台北18:00；最多延遲2 sessions，期間沿上版，超時 STOP；不改快照／下次日曆／持倉／相位 |
 | 組合 | `p2_primary_config()`：top_k=50、rebalance_sessions=20、hold_buffer_rank=100、等權；首個 T0 訊號後次日 open 首建倉，再平衡相位從 T0 算，不沿用歷史持倉 |
 | 排序／凍結持股 | score 降冪、code 升冪決勝；缺分數不補未來值；preserve_frozen_overflow=True，凍結超額不強平、不新增，沿既有 engine 行為並記錄 |
@@ -126,7 +138,7 @@ P2 真正組合入口為 `research_lab/portfolio.py:backtest/_simulate`，不是
 8. **252 日端點的 engine 相容性**：`portfolio.backtest` 目前以 20-session indices 的最後一個排定 entry 作 terminal liquidation，未保證精確252收益日；直接串接模型折也會重置狀態。需另案凍結並合成驗收單一連續研究 adapter 的首日NAV／首日成本、精確252收益日、末日估值／清倉成本及共同基準口徑，不改既有 P2 歷史 engine 語義；不准悄悄縮成240或延到260。未完成維持 STOP。
 9. 本機 CPU 耗時估計來源：本輪唯讀 P1 manifest `full-scores-ace2eef/manifest.json`（32,500 bytes，SHA `dc3b9b3ad9c2c27a5366440c651f5f6baa7daaec9854368a0e944874890be9d8`），18 fold×seed jobs／全程 2572.822s；2026 seeds 17/29/43 分別 140.807／131.823／132.032s，合計 **404.663s≈6.74分鐘**。這些 jobs 含 day_t＋C0+ 擬合、feature建置與歷史推論，不是單獨 C0+ 計時；用其作同規模一次三種子重現的粗估 reference，獨立重做兩遍約13.49分鐘，另加原 fold 重現約6.74分鐘。每版最低三次 C0+ fits；現有 collect 實際六 fits。新 cutoff 多資料、首次矩陣建置／hash／落盤不含在估計，不能承諾一小時內完成。未來需在本機 CPU（n_jobs=4、三種子循序、不用GPU）量測並凍結時間／資源預算，確認2-session期限可行；失敗不得改期限救結果。
 10. 訓練抽樣 `500000×185×4` 約 **370 MB（353 MiB）** 只是單一 float32 feature payload，下限而非 peak RAM；48欄 full matrix、dense session×stock、LightGBM bins／pandas／推論 buffers、序列 eligibility 與重建 inputs 會額外占用。峰值 RAM、磁碟與全矩陣延伸耗時目前 **UNKNOWN**，需同機量測；不以P2純回測估時替代訓練估時。期限是policy失效界線，不是本輪訓練授權。
-11. Human 提醒需求：T0 凍結時交一份靜態 R_j／資料快照日／purge截止／最晚驗收日清單，提議各 origin 前5個交易日由指定 owner 人工提醒既有 Human 一人，當日核對無績效 checklist；失敗／逾期人工回報。owner、管道與責任確認仍 Blocker；只列需求，不建立通知、日曆事件、wakeup、recurring job，不部署或改 scheduler。
+11. Human 提醒需求：T0 凍結時交一份靜態 R_j／資料快照日／purge截止／最晚驗收日清單，提議各 origin 前5個交易日由指定 owner 人工提醒既有 Human 一人，當日核對無績效 checklist；失敗／逾期人工回報。owner已指定Human；實際人工提醒管道及無績效演練仍待凍結／驗收；只列需求，不建立通知、日曆事件、wakeup、recurring job，不部署或改 scheduler。
 
 ## 成熟時程、首次檢驗與檢定力
 
@@ -134,11 +146,11 @@ signal d 收盤後決策，d+1 open 入場，y5／y10 最早於第 5／10 個持
 
 第一次且唯一正式開盲：252 個排定收益 sessions 完整，且最後 signal 的 10d label 安全延遲與 source publication 已完成後；至少再等 11 sessions，需更久則據實等待。Human 凍結時依 calendar 寫實際 signal／return 起訖及 maturation 日；DRAFT 不預測曆日完成日。
 
-以 [P3 報告](../reports/v7_p3_portfolio_evaluation.md) 的 703 配對日估計：Mamba2 差值 CI [−.0414%, .0084%]，半寬 .0249 個百分點／日，SE≈.0249/1.96=.01270 個百分點；crossstock 半寬 .03205，SE≈.01635。假設方差與自相關相同，半寬隨 √(703/n) 縮放，126 日約 .0588／.0757、252 日約 .0416／.0535 個百分點。若欲偵測 +.02 個百分點／日、雙邊 α=.05、80% power，n≈703×[(1.96+.842)×SE/.02]^2，約 **2,227／3,690 日**。這是舊模型差值的粗略設計估計，非 C0+ 對等權的保證，不能把日數當獨立樣本或宣稱已有 80% power。P2 H-P2a 的 703 日 CI 半寬 .0554 更寬；故六個月尤其可能無法證實。預設 252 日是可行觀察窗，不是足夠檢定力承諾。T0+6月更新通常在約126 sessions，因此約留半年的更新後支援；實際假期、延遲及20-session再平衡會縮短新版持倉暴露。252日足以設計觀察至少一次半年更新，**不足以宣稱驗證長期重訓效果或80% power**；正式calendar展開須列每版訊號／實際影響收益日數，至少有一次成功更新及更新後排定再平衡，否則確認性gate失敗，不能改長度補救。若窗內第二次更新，照已登記日曆執行，不因結果挑是否納入。重訓引入非平穩與跨版本依賴，舊SE縮放只是設計參考，block20/1000也非對所有regime有效的保證；Human 可在凍結前選更長固定窗，不能看結果後續收至顯著。
+以 [P3 報告](../reports/v7_p3_portfolio_evaluation.md) 的 703 配對日估計：Mamba2 差值 CI [−.0414%, .0084%]，半寬 .0249 個百分點／日，SE≈.0249/1.96=.01270 個百分點；crossstock 半寬 .03205，SE≈.01635。假設方差與自相關相同，半寬隨 √(703/n) 縮放，126 日約 .0588／.0757、252 日約 .0416／.0535 個百分點。若欲偵測 +.02 個百分點／日、雙邊 α=.05、80% power，n≈703×[(1.96+.842)×SE/.02]^2，約 **2,227／3,690 日**。這是舊模型差值的粗略設計估計，非 C0+ 對等權的保證，不能把日數當獨立樣本或宣稱已有 80% power。P2 H-P2a 的 703 日 CI 半寬 .0554 更寬；故六個月尤其可能無法證實。預設 252 日是可行觀察窗，不是足夠檢定力承諾。Q1報後更新通常距11月下旬T0約半年，因此約留半年的更新後支援；實際假期、延遲及20-session再平衡會縮短新版持倉暴露。252日足以設計觀察至少一次半年更新，**不足以宣稱驗證長期重訓效果或80% power**；正式calendar展開須列每版訊號／實際影響收益日數，至少有一次成功更新及更新後排定再平衡，否則確認性gate失敗，不能改長度補救。若窗內第二次更新，照已登記日曆執行，不因結果挑是否納入。重訓引入非平穩與跨版本依賴，舊SE縮放只是設計參考，block20/1000也非對所有regime有效的保證；Human已維持252日；之後要改，只能在無本研究結果時、凍結前，或另開新預先登記，不能看結果後續收至顯著。
 
 ## 判定規則、多重比較與停止
 
-H-F1 的科學方向為單邊正向，但**統計預設雙邊 p**（沿現有 shared 函式，較保守）：僅當完整資料 gate 通過、95% CI 下界 >0 **且 p_boot<.05**，才記「在本預先登記期間及 raw 模擬假設下，P2 主要格相對指定基準的前瞻淨超額獲得確認性支持」。其餘記「未證實」；gate 不過記 `STOP / INVALID_FOR_CONFIRMATION`，不以未證實混淆無效資料。負向 CI 不得用方向性正向假設宣稱勝出。若改採單邊 p，須凍結前另寫 centred bootstrap 尾端公式與測試，不可將既有雙邊 p 隨手除二。
+H-F1 的科學方向為單邊正向，但**統計預設雙邊 p**（沿現有 shared 函式，較保守）：僅當完整資料 gate 通過、95% CI 下界 >0 **且 p_boot<.05**，才記「在本預先登記期間及 raw 模擬假設下，P2 主要格相對指定基準的前瞻淨超額獲得確認性支持」。其餘記「未證實」；gate 不過記 `STOP / INVALID_FOR_CONFIRMATION`，不以未證實混淆無效資料。負向 CI 不得用方向性正向假設宣稱勝出。Human已維持252日單一端點與雙邊保守p；之後要改，只能在無本研究結果時、凍結前，或另開新預先登記。若改採單邊 p，須凍結前另寫 centred bootstrap 尾端公式與測試，不可將既有雙邊 p 隨手除二。
 
 主端點只有整段252日的 policy−等權配對日均淨差及其CI／p。期末可描述性呈現前126／後126日與依實際切換劃分的各版本期間，兩種分段不必相同；持倉影響可能晚於分數切換，不將差異歸因重訓。分段不另作確認性檢定、不作額外正式假設、不依分段選winner或結束日。
 
@@ -170,20 +182,53 @@ H-F1 的科學方向為單邊正向，但**統計預設雙邊 p**（沿現有 sh
 
 證據上限 **E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED**；即使 H-F1 通過，也只是受限於 raw price／成本／宇宙／執行 proxy 的獨立前瞻研究支持，非 VERIFIED_EXECUTABLE／verified trading、非總報酬保證。限制：小樣本／自相關／regime shift、三種子未涵蓋模型選擇不確定性、舊研究曝光與人工市場知識、mutable non-PIT cache、市值非 PIT、下市與公司行動未全驗、無逐筆成交／漲跌停、整零股與容量未模擬。異常好結果必先稽核 leakage、PIT／universe／label timing／source provenance／selection bias／evaluation window；不能先升格。
 
-## 已決定（Human 2026-11-24）
+## 封盲協議（Human保管與執行；啟動前須另案驗收）
 
-1. T0 採嚴格預設：晚於 max(已知曝光末日2026-11-19及後續更新、價格可用末日、Human凍結日、前置驗收完成日) 的第一個合格交易日；不追認11/20為確認性。
-2. 主研究對象是 **C0+＋半年重訓 policy**；固定模型降為替代／描述性對照。正式假設僅H-F1，Holm m=1；預設固定252交易日，不能看結果續收。
-3. 此次只修文件、同步knowledge，維持DRAFT待Human凍結，不訓練、不動Colab／Drive、排程、正式Data／V6/models，不commit／push／merge。已讀P4b：其歷史固定C0+原分數、三混合／Holm3、36-fit subset與64-fit gate皆不受本policy修改，不替換其C0+輸入。
+1. **儲存邊界**：封盲區指定 Windows `D:\Desktop\work\ProjectForMe\MarketMamba-blind\`，WSL `/mnt/d/Desktop/work/ProjectForMe/MarketMamba-blind/`。每日訊號／持倉／分數、逐日NAV／成本／成交、訓練labels／抽樣keys、重訓後模型／checkpoints、可還原訊號的指標，以及任何含收益、IC或績效欄位的檔案／logs／錯誤dump全部留在封盲區；新模型也不能複製到可見區供worker推論偷看。必要inputs／狀態如可合併還原績效亦只供Human隔離程序存取，不在工單貼原值。
+2. **可見區白名單**：只放 append-only SHA-256 hash chain 摘要（前一head、當次payload digest及新head）、行數、覆蓋率、錯誤計數及缺日清單。摘要不含收益、IC、分數、股號、持倉內容、模型bytes、排名、NAV或可還原績效的資訊；錯誤以固定代碼計數，不貼列內容／堆疊locals。摘要hash綁定完整私有manifest；公開hash不是私有payload的替代備份。Human保留私有原始檔、vintage、鏈與獨立head副本，以供開盲核對。
+3. **誰能讀寫**：Human是唯一封盲保管者及重訓執行owner；Claude與Codex worker皆不得讀寫、列目錄、Glob／Grep或間接要求工具輸出此區。每次Codex worker prompt須明載：**「禁止讀寫 Windows D:\Desktop\work\ProjectForMe\MarketMamba-blind\ 及 WSL /mnt/d/Desktop/work/ProjectForMe/MarketMamba-blind/；禁止透過子程序、symlink、複本或logs取得其內容；僅可看已淨化hash／計數／缺日摘要。」** 本輪未接觸該路徑。
+4. **保護邊界**：Human報告已在Claude本機 `.claude/settings.local.json` 加Read／Edit／Write／Glob／Grep／Bash拒絕（不進Git）；本輪不查驗本機設定，不宣稱Codex受此設定約束。Claude拒絕只約束Claude工具；Codex是另一程序，WSL使用者權限相同，故這是防疏忽偷看的紀律保護，**不是防竄改保護，也不是OS存取隔離**。同權限程序仍能重寫檔案與hash chain。Human可另選不同OS使用者／ACL，或未掛載於worker環境的儲存位置；未實施前不能聲稱技術隔離完成。若Human接觸策略績效，一樣適用偷看處置，兼任owner不是豁免。
+5. **每日健康檢查**：由Human的隔離程序在私有區檢查schema／來源／模型／覆蓋與當日封存、chain連續性，僅輸出上述hash／計數／缺日摘要；缺日、hash mismatch、錯誤計數>0、coverage未過凍結gate均報STOP或依原重訓2-session retry規則處理。不得以收益正常判成功，不把缺日填零；除每日摘要外，完整診斷僅留私有區。worker只可用已曝光／合成fixture診斷，不能進封盲區排錯。
+6. **重訓隔離**：重訓腳本由Human手動，或Human另行授權的排程執行；本文件不建立／啟用排程。fit／predict／persist在Human程序內，僅依固定日曆及工程gates，禁止stdout／notebook／logs輸出前瞻績效、eval IC或排名；使用同一截止快照，18:00切換、最多延遲2 sessions、超時STOP。Human只看淨化工程狀態，成熟train labels可由腳本使用，不手動檢視策略結果；腳本由worker以合成／已曝光資料開發及驗收，再交Human執行。
+7. **一次性開盲**：固定252收益sessions完整且最末signal至少11-session安全成熟與必要publication全過後，Human手動觸發。先以盲態完成完整性／事故帳／chain與外部head核對並封存判定，再記UTC及台北開盲時間、批准者、規格／來源／資料／模型hashes。Human一次釋出固定端點的結果包供Claude取得；Claude只在此時取得結果。封存原始包，任何後續分析標描述性；不得先試算再決定是否開盲、延長或換規則。
+8. **偷看／洩漏**：任何人或worker意外看到可推導策略結果的資訊，立即停止擴散，記接觸者、時間、資訊類型、範圍／hash與設計可能受影響處（事故紀錄不再次散播績效）。該批確認性身分降為描述性／INVALID_FOR_CONFIRMATION，不換操作者、刪檔、重設T0或補日恢復；新確認性研究須新預先登記及全新未曝光期間。失敗與超時保留完整紀錄，不能為繼續流程放寬gate。
 
-## Open Questions／需要 Human 凍結與前置驗收
+## 已決定（Human 2026-11-24；全文仍待凍結）
 
-1. 確認T0曝光帳、合格calendar及真實凍結／驗收日，展開實際日曆表；接受T0錨定每6曆月（月底截斷／休市順延）與18:00 cutoff、最多延遲2 sessions嗎？本草案不採一月／七月雙日曆，細節尚未決定。
-2. 接受252日只能觀察少數更新、power未保證，以及單一整段端點／雙邊保守p嗎？若需更長固定窗，只能在凍結前、無本研究結果時決定。
-3. 是否同意神經臂與固定模型影子臂預設不收集，P1／分段只描述性、raw為主要、基準只收比例成本？
-4. 指定封盲保管者、隔離的重訓執行owner、手動提醒管道與權限／開盲audit；接受事故不可重建或延遲超時即確認性失效嗎？
-5. 確認100% coverage／0漏日、lifecycle／下市／publication gate；缺證據維持STOP。任意as-of重現、舊區間bytes、模型persist／每次驗收script與252端點adapter另案批准並驗收；CPU時間僅粗估、峰值資源UNKNOWN，尚不能啟動。
+1. T0採嚴格預設，晚於max(曝光／價格末日／Human凍結日／前置驗收日)的第一合格交易日，不追認11/20；Q3後初始版仍須通過日曆與資料gate。
+2. 名義半年更新改為Q1／Q3法定季報期限後的事前日曆；第8交易日與2-session資料緩衝是本輪具體提案，凍結前驗calendar；18:00 cutoff、最多延遲2 sessions、超時STOP，不由績效決定。
+3. 固定252日單一整段端點、雙邊保守p、唯一H-F1／Holm m=1維持。之後要改，只能在無結果時、凍結前，或另開新預先登記。
+4. 神經臂及固定模型影子臂預設不收集；P1／分段只描述性、raw主要、基準只收比例成本。
+5. Human兼任封盲保管者及重訓執行owner，使用上述Windows／WSL封盲路徑；Claude／Codex不讀寫，僅看淨化摘要。保護僅紀律性、防疏忽，不宣稱防竄改。
+6. 前置工程另案批准與驗收，依附錄工作包推進；此次只文件與knowledge，DRAFT不啟動研究。P4b固定歷史C0+輸入、三混合／Holm3、36-fit subset與64-fit gate不變，不因本policy重算。
 
-## 本次修訂身分與限制
+## Open Questions／凍結與啟動前仍須完成
 
-2026-11-24，`job-run-mwufq5k5-71212c/spec_writer_retrain`，既有worktree detached HEAD/base `176282179b2428bcc7f9ab1f1b6bd93b0408e164`；沿用已提交草案來源 `8eff9fe`（本輪HEAD另包含後續文件）。初始clean；只修文件、未commit。`/usr/bin/python3` 3.12.3／WSL CPU，只讀source與P1 manifest metadata；`MARKETMAMBA_DATA_ROOT` unset，Data realpath為本worktree的 `Data` 普通目錄，沒有更動正式資料。上方原盤點observed_at與曝光artifacts保留為原輪證據，本輪沒有重新觀測價格／雲端或更新其freshness。E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；完成不等於Human acceptance，獨立審查與工程驗收仍待辦。
+1. 核實最終曝光帳、Human凍結／驗收日期與calendar identity；核實當期法定順延，凍結N=8／資料2-session緩衝，展開真實T0、R_Q、252收益窗、更新次數及各版有效暴露，不把上述週日曆示意當交易日證明。
+2. 100% coverage／0漏日、必要source清單、lifecycle／下市／publication gates及合法沿用舊vintage規則尚待完整凍結與證據驗收；缺證據STOP。確認現有48欄不含財報，不能以固定lag或報後日期替代PIT。
+3. Human的實際人工提醒管道、封盲淨化與一次性開盲演練／head保管仍待驗收；是否另加OS使用者隔離或未掛載儲存由Human決定，未完成不得宣稱有該防護。不再詢問已指定owner或已同意的統計／收集選項。
+4. 附錄工程各包另案批准與獨立驗收、同機CPU／RAM／disk量測及2-session期限可行性均待辦。本輪未實作，完成文件不等於啟動／Human acceptance。
+
+## 附錄：前置工程工作包（只規格，不實作／不授權執行）
+
+依賴順序如下；估計是本機CPU牆鐘執行時間，**不含開發工時**，未實測包不承諾上限。P1三seed 404.663s只作含兩模型與推論的舊reference；峰值RAM／磁碟均待量測，不啟動GPU。
+
+| 包 | 依賴與交付 | 驗收條件 | CPU時間（估計） |
+|---|---|---|---|
+| WP1 日期／來源與as-of契約 | 無；凍結calendar、期限分類／例外、publication／pipeline vintage與keys | 年界／閏年／休市／特殊結算／逾期／更正版／缺時戳fixture；正確展開N=8、緩衝、origin−21及252端點，未知fail closed | 合成1～5分鐘；來源盤點與全量hash UNKNOWN |
+| WP2 任意日期重現 | WP1；同P1配方的origin／purge／fit-predict薄adapter | 原P1三seed scores/ranks逐位元重現；年／半年／purge邊界及future-mutation不改歷史，fit keys／抽樣keys可重播 | 同規模舊fold約6.74分鐘；新origin兩次約13.49分鐘，均粗估 |
+| WP3 矩陣延伸 | WP1、WP2；先全量immutable reference，再驗feature-only追加 | 48／185欄舊keys／X／mask／dtype／scores bytes一致；新增labels另版，不讀未來labels；重複／中斷／錯identity拒絕 | 合成1～10分鐘；首次全矩陣重建、IO與hash UNKNOWN |
+| WP4 模型存檔與隔離執行 | WP2、WP3；三seed持久化、版本pointer、Human私有runner／淨化摘要 | serialize/fsync/hash→durable reverify→atomic pointer；load/predict round-trip、kill/restart、corrupt/missing pointer、orphan不升格、seed／matrix／contract mismatch拒絕；模型與敏感logs不外洩 | 合成1～10分鐘；每次fit約6.74分鐘reference，落盤／hash UNKNOWN |
+| WP5 每次重訓驗收腳本 | WP1～WP4；同一frozen非績效acceptance script及靜態Human清單 | 已曝光reference獨立重做相等、遲到R+1/R+2相同快照、18:00／超時STOP、不中斷chain；封盲壞輸出／缺日／偷看／手動開盲fixture，公開區白名單通過 | 兩次重現＋原fold約20.23分鐘reference；全量矩陣驗收額外UNKNOWN |
+| WP6 252日端點adapter | WP3～WP5；連續單一組合與固定基準 | 恰252收益sessions，首建／末估值清倉成本一致；模型切換不重設NAV／持倉／相位／buffer／pending；無額外重平衡、缺日STOP、端點開盲gate；固定P2歷史路徑不變 | 合成1～10分鐘；完整歷史reference回放UNKNOWN |
+
+各包只准在另案核准後用合成／已曝光資料驗收，驗收報告記source／input／contract／環境／實際秒數與資源／hash；獨立審查及Human接受後才可作前置完成證據。無法在既定期限／證據下完成就STOP，不縮測試、不改日曆救結果。
+
+## 修訂身分與限制（前輪紀錄保留）
+
+前輪紀錄：2026-11-24，`job-run-mwufq5k5-71212c/spec_writer_retrain`，既有worktree detached HEAD/base `176282179b2428bcc7f9ab1f1b6bd93b0408e164`；沿用已提交草案來源 `8eff9fe`（本輪HEAD另包含後續文件）。初始clean；只修文件、未commit。`/usr/bin/python3` 3.12.3／WSL CPU，只讀source與P1 manifest metadata；`MARKETMAMBA_DATA_ROOT` unset，Data realpath為本worktree的 `Data` 普通目錄，沒有更動正式資料。上方原盤點observed_at與曝光artifacts保留為原輪證據，本輪沒有重新觀測價格／雲端或更新其freshness。E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；完成不等於Human acceptance，獨立審查與工程驗收仍待辦。
+
+
+2026-11-24本輪修訂：`job-run-mwunxhyg-4cd29f/spec_writer_blind`，既有detached HEAD/base `191283bddbcd8107a467bf65fa8cbf7ab0cfb19b`，初始clean；僅4份文件patch，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。`/usr/bin/python3` 3.12.3／WSL CPU、MARKETMAMBA_DATA_ROOT unset，Data realpath為本worktree普通目錄，未讀正式Data或封盲資料夾，未重新觀測外部runtime／曝光artifacts。本輪覆蓋前輪T0+6曆月提案及owner待指定狀態；舊盤點時點僅保留原證據，不更新freshness。重大選擇：Q1／Q3後第8交易日優先於T0+6月或每季；維持252日雙邊而非延長／中期分析；Human紀律封盲而非宣稱OS隔離；財報欄維持排除而非臨時加回。完成不等於Human接受或規格凍結。
+
+Knowledge-impact：設計語義／next decision／blocker細分=YES，已同步Current State／Research並檢查Authority Map；machine authority、subsystem boundary、active runtime、correctness threshold、新增canonical artifact、能力deprecation=NO。已檢查GOVERNANCE，本輪不改治理規則、authority-map.json或supersession歷史。

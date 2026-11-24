@@ -16,9 +16,14 @@ Evidence：兩份 skill 為72／61行，quick_validate 均通過；本機引用�
 
 唯讀本機 artifacts 發現 P1/P3 分數到 2026-09-11，但 P2 收益評估到 **2026-11-19**；本機價格到 2026-11-23。Human 於2026-11-24已選前瞻T0嚴格晚於已曝光／現有價格末日、Human凍結及前置驗收，不追認11/20；主假設改為三種子C0+加半年重訓policy，預設252-session整段端點、單一假設／Holm m=1。固定模型僅替代／描述性，前後段不新增正式假設。矩陣延伸功能、舊區間逐位元一致、模型持久化、PIT／lifecycle／coverage 與封盲仍為 Blockers。P4b 固定三個等權混合與 Holm3、沿共同列 NaN 語義；需要另案 36-fit subset loader，不降低既有 64-fit gate。36/36 完成是 Human 報告，不是本輪現場驗證。
 
-2026-11-24修訂：`job-run-mwufq5k5-71212c/spec_writer_retrain`，既有detached HEAD/base `176282179b2428bcc7f9ab1f1b6bd93b0408e164`，初始clean、僅未提交文件patch。草案提議T0錨定每6曆月、origin−21最晚train訊號（strict 20-session purge）、18:00切換及最多延遲2 sessions；細節尚待Human凍結，實際T0未知，日期表僅條件式。新增任意as-of重現、每次封存／驗收、CPU資源估計／人工提醒與連續持倉要求；P1 manifest的2026三seed共404.663s（含兩模型與推論）僅估時reference，RAM峰值UNKNOWN。現有portfolio最後排定entry清倉不能保證252收益日，列為另案adapter驗收Blocker，沒有改engine。P4b文件／固定歷史C0+分數／Holm3與64-fit gate不變。
+2026-11-24最新文件修訂：`job-run-mwunxhyg-4cd29f/spec_writer_blind`，沿用既有detached worktree/base `191283bddbcd8107a467bf65fa8cbf7ab0cfb19b`，初始clean；只4份文件未提交patch，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。Human選定季報期限錨定的半年更新，取代前輪T0+6曆月提案；具體DRAFT採Q1／Q3適用期限後第8交易日，必要資料實際公開／入管線後另驗2-session緩衝、前一session 18:00快照、切換18:00、最多延遲2 sessions、超時STOP。嚴格T0若在2026-11-25附近，是Q3後初始版；下次為2027 Q1報後約5月下旬，252收益sessions估計1～2次更新、預期2次，正式calendar與當期順延未驗，不填造日期／次數。
 
-Next：Human凍結日曆／期限／封盲owner及另案CPU實作驗收；不啟動前瞻或混合評估。沒有接觸雲端 Drive／正在執行的 03_formal_resume、正式 Data／模型、GPU／訓練／資料取得、production／scheduler／通知／排程；沒有更新外部 runtime observation，既有研究／production authority 不變。完整盤點身分、檢定力估算、替代方案與 Open Questions 見兩份草案。
+本輪source核對：V6 builder revenue月末+11日、financials預設+45日，只有fundamentals_v2顯式啟用才年度+90日；非逐公司實際公告／revision PIT。**P1的48欄manifest已移除財報／營收等11欄，C0+185欄也未加回**，不能宣稱報後重訓會直接納入季報。嚴格source／PIT gate不因固定lag、季報期限或本文件放行。
+
+Human已維持252日單端點／雙邊保守p、神經與固定影子臂預設不收集、P1／分段描述性、raw主要／基準比例成本。Human兼任封盲保管與重訓執行owner，指定 `D:\Desktop\work\ProjectForMe\MarketMamba-blind\`（WSL `/mnt/d/Desktop/work/ProjectForMe/MarketMamba-blind/`）；Claude／Codex不得讀寫，worker prompt明載，只看append-only hash chain／行數／coverage／錯誤計數／缺日，不能還原績效。Claude本機拒絕設定為Human報告、未查驗；Codex另程序同WSL權限，這是防疏忽紀律，不是OS隔離或防竄改。一次性開盲由Human在端點成熟及完整性核對後手動觸發，Claude開盲後才取結果；偷看即確認性降級。隔離與健康檢查目前只有規格，沒有已部署保護的主張。
+
+Next：Human凍結N／calendar／source gates及全文，另案批准並驗收附錄WP1～WP6（日期／as-of→重現→矩陣延伸→模型存檔／隔離→每次驗收→252日adapter）。CPU時間僅估計，峰值RAM／IO未知，前置驗收未完成保持STOP。P4b文件／固定歷史C0+分數／三混合Holm3／36-fit subset／64-fit gate不變。沒有新結果、程式／資料／GPU／Colab／Drive／production／scheduler／排程／額外agents或commit／push／merge；未讀封盲區、未更新observed_at。完成不等於Human acceptance。
+
 
 
 `job-run-mwtn0pir-48e95f`／`builder_p4a_gate3`，沿用既有 detached worktree，base/HEAD `40d621cc9ac586e45fff1e095f59465b388094a1`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依明確授權保留未提交 patch。第 13 次獨立複審為 NO_GO；本輪修補 Q5 巢狀 schema、超大數值／遞迴損壞 marker，以及 metadata 符號連結。完成不解除 NO_GO，不等同 Human acceptance。

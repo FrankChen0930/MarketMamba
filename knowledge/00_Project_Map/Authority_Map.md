@@ -6,9 +6,11 @@
 
 ## P2 前瞻／P4b 草案的 authority 邊界 — 2026-11-24
 
-[P2 前瞻規格](../../tasks/spec-forward-p2-primary-20261124.md)與 [P4b 混合規格](../../tasks/spec-p4b-blend-20261124.md)為已提交草案來源 `8eff9fe` 的 **DRAFT / PROPOSED / NOT_ACCEPTED** 文件；本輪在既有detached `1762821` 僅修訂P2前瞻與knowledge、保留未提交patch（P4b文件未改）；E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED。不是 FROZEN machine contract，不 supersede P1/P2/P3/P4a 契約、歷史結果、P4a 64-fit 完成閘門、現場 Colab 或 production authority，因此 `authority-map.json` 與歷史 supersession 記錄不變。
+[P2 前瞻規格](../../tasks/spec-forward-p2-primary-20261124.md)與 [P4b 混合規格](../../tasks/spec-p4b-blend-20261124.md)為已提交草案來源 `8eff9fe` 的 **DRAFT / PROPOSED / NOT_ACCEPTED** 文件；本輪在既有detached `191283b`（job-run-mwunxhyg-4cd29f/spec_writer_blind）僅修訂P2前瞻與knowledge、保留未提交patch（P4b文件未改）；E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED。不是 FROZEN machine contract，不 supersede P1/P2/P3/P4a 契約、歷史結果、P4a 64-fit 完成閘門、現場 Colab 或 production authority，因此 `authority-map.json` 與歷史 supersession 記錄不變。
 
-Human於2026-11-24已決定嚴格T0與C0+半年重訓policy，這是設計決定，不是整份規格凍結或執行授權；T0錨定日曆／最多延遲2 sessions／18:00等細節仍是提案。唯一H-F1／Holm m=1以整段252日檢驗policy，固定模型與分段僅描述性。任意as-of重現、模型SHA／每次歷史驗收、矩陣bytes延伸與252日連續組合adapter皆未驗收，保持STOP；不修改P4b固定歷史輸入或任何既有machine authority。
+Human於2026-11-24已決定嚴格T0與C0+季報後半年policy、固定252日單端點／雙邊保守p、影子／神經臂預設不收集、raw主要與基準比例成本；這是設計決定，不是全文凍結或執行授權。具體DRAFT為Q1／Q3適用期限後第8交易日，必要資料實際公開／入管線另驗2-session緩衝；18:00切換、最多延遲2 sessions、超時STOP，取代T0+6曆月提案。正式calendar／當期順延、T0／窗內更新次數仍待核實。V6固定lag不能認證PIT，P1 48→185欄已排除財報／營收；不得以報後重訓或文件推定source admission。
+
+Human是封盲保管與重訓owner，封盲區指定 `D:\Desktop\work\ProjectForMe\MarketMamba-blind\`／`/mnt/d/Desktop/work/ProjectForMe/MarketMamba-blind/`，Claude／Codex禁止讀寫，只可看淨化hash／計數／缺日摘要。Claude本機拒絕設定為Human報告，非本輪runtime observation；它不約束同WSL權限的Codex，只有防疏忽紀律、不是防竄改或已驗證OS隔離。私有模型、績效相關logs與訊號由Human隔離程序保管，手動一次開盲；偷看降確認性。WP1～WP6工程、封盲演練與每次驗收均未完成，保持STOP；不修改P4b固定歷史輸入、64-fit gate或任何既有machine authority。
 
 前瞻獨立確認必須在 Human 凍結與前置驗收後使用未曝光資料；本機分數末日不等於收益曝光末日，T0 證據與較嚴格預設見前瞻草案。P4b 因已看 P3／P4a 結果只能描述性；通過 Holm／CI 不能升格。Human 報告 Q1/Q2 36 fits 已完成，不是本輪逐 fit 或雲端觀測。Next 是 Human 凍結與另案驗收，不授權改 03_formal_resume／Drive。詳見 [Current State](Current_State.md)。
 
