@@ -14,15 +14,20 @@ Evidence：兩份 skill 為72／61行，quick_validate 均通過；本機引用�
 
 `job-run-mwuc1teo-b3dba8/spec_writer_fwd_p4b`，既有 detached worktree/base `b7e4f50d4f061cce32f35f466de7ab992ffc35ed`；僅文件 patch，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依指示不 commit。[P2 前瞻草案](../../tasks/spec-forward-p2-primary-20261124.md)與 [P4b 混合草案](../../tasks/spec-p4b-blend-20261124.md)均 **DRAFT 待 Human 凍結**，沒有新研究結果或執行授權。沿用 tasks／research_lab，歷史規格不能承接新的研究身分，未建立新目錄、程式或輸出樹。
 
-唯讀本機 artifacts 發現 P1/P3 分數到 2026-09-11，但 P2 收益評估到 **2026-11-19**；本機價格到 2026-11-23。Human 於2026-11-24已選前瞻T0嚴格晚於已曝光／現有價格末日、Human凍結及前置驗收，不追認11/20；主假設改為三種子C0+加半年重訓policy，預設252-session整段端點、單一假設／Holm m=1。固定模型僅替代／描述性，前後段不新增正式假設。矩陣延伸功能、舊區間逐位元一致、模型持久化、PIT／lifecycle／coverage 與封盲仍為 Blockers。P4b 固定三個等權混合與 Holm3、沿共同列 NaN 語義；需要另案 36-fit subset loader，不降低既有 64-fit gate。36/36 完成是 Human 報告，不是本輪現場驗證。
+唯讀本機 artifacts 發現 P1/P3 分數到 2026-09-11，但 P2 收益評估到 **2026-11-19**；本機價格到 2026-11-23。Human 於2026-11-24已選前瞻T0嚴格晚於已曝光／現有價格末日、Human凍結及前置驗收，不追認11/20；主假設為三種子C0+加半年重訓policy，依下方最新兩階段修訂從T1起252-session整段端點、單一假設／Holm m=1。固定模型僅替代／描述性，前後段不新增正式假設。矩陣延伸功能、舊區間逐位元一致、模型持久化、PIT／lifecycle／coverage 與封盲仍為 Blockers。P4b 固定三個等權混合與 Holm3、沿共同列 NaN 語義；需要另案 36-fit subset loader，不降低既有 64-fit gate。36/36 完成是 Human 報告，不是本輪現場驗證。
 
-2026-11-24最新文件修訂：`job-run-mwunxhyg-4cd29f/spec_writer_blind`，沿用既有detached worktree/base `191283bddbcd8107a467bf65fa8cbf7ab0cfb19b`，初始clean；只4份文件未提交patch，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。Human選定季報期限錨定的半年更新，取代前輪T0+6曆月提案；具體DRAFT採Q1／Q3適用期限後第8交易日，必要資料實際公開／入管線後另驗2-session緩衝、前一session 18:00快照、切換18:00、最多延遲2 sessions、超時STOP。嚴格T0若在2026-11-25附近，是Q3後初始版；下次為2027 Q1報後約5月下旬，252收益sessions估計1～2次更新、預期2次，正式calendar與當期順延未驗，不填造日期／次數。
+2026-11-24最新兩階段文件修訂：`job-run-mwuoasa7-93afef/spec_writer_phases`／detached base `0db633bcedc97484bff6c316d7cc9d19334137d2`，初始clean，4份文件未提交patch；DRAFT / E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。Human新決定取代Q1／Q3：嚴格T0（候選2026-11-25之後）僅試運行整日流程，績效封盲且永不調規；年報後重訓T1才正式起算252收益sessions、唯一H-F1／Holm m=1／雙邊保守p。一般年度3/31＋Q2 8/14作整體更新時鐘，75日、金融半年8/31、順延／延期／非曆年等按公司期別核實，不能當可得日。DRAFT提案年報N_A=10／Q2 N_H=8＋必要資料實際公開／入管線2-session緩衝，保留18:00與最多2-session重試／超時STOP；N是作者提案、非已凍結Human數值。試運行預設直到正式端點才描述性揭曉，另列T1簽署且啟動後揭曉／永不揭曉替代風險；正式規則／日曆必在任何階段0績效曝光前簽署。
+
+無假日週日曆示例為T1=2027-04-14、Q2更新8/25、252末日2028-03-31、次年年報更新4/14；正式交易所calendar未驗，真實端點會受休市影響，第二次更新可能入窗，正式次數UNKNOWN，不按績效選日。工程按兩次容量準備，逐版計算訊號與20-session再平衡暴露。WP1～WP6拆T0前最低安全日鏈與T1前完整驗收，建議T1前20／5 sessions截止；20日穩定流程及跨Q2仍未啟動就STOP是待凍結提案。試運行不穩只按無績效gate延後T1，重新as-of重訓、不回填；正式開始後不得重設T1／延長252日。所有工程仍另案批准／獨立驗收，文件完成不等於Human acceptance。
 
 本輪source核對：V6 builder revenue月末+11日、financials預設+45日，只有fundamentals_v2顯式啟用才年度+90日；非逐公司實際公告／revision PIT。**P1的48欄manifest已移除財報／營收等11欄，C0+185欄也未加回**，不能宣稱報後重訓會直接納入季報。嚴格source／PIT gate不因固定lag、季報期限或本文件放行。
 
 Human已維持252日單端點／雙邊保守p、神經與固定影子臂預設不收集、P1／分段描述性、raw主要／基準比例成本。Human兼任封盲保管與重訓執行owner，指定 `D:\Desktop\work\ProjectForMe\MarketMamba-blind\`（WSL `/mnt/d/Desktop/work/ProjectForMe/MarketMamba-blind/`）；Claude／Codex不得讀寫，worker prompt明載，只看append-only hash chain／行數／coverage／錯誤計數／缺日，不能還原績效。Claude本機拒絕設定為Human報告、未查驗；Codex另程序同WSL權限，這是防疏忽紀律，不是OS隔離或防竄改。一次性開盲由Human在端點成熟及完整性核對後手動觸發，Claude開盲後才取結果；偷看即確認性降級。隔離與健康檢查目前只有規格，沒有已部署保護的主張。
 
-Next：Human凍結N／calendar／source gates及全文，另案批准並驗收附錄WP1～WP6（日期／as-of→重現→矩陣延伸→模型存檔／隔離→每次驗收→252日adapter）。CPU時間僅估計，峰值RAM／IO未知，前置驗收未完成保持STOP。P4b文件／固定歷史C0+分數／三混合Holm3／36-fit subset／64-fit gate不變。沒有新結果、程式／資料／GPU／Colab／Drive／production／scheduler／排程／額外agents或commit／push／merge；未讀封盲區、未更新observed_at。完成不等於Human acceptance。
+Next：Human分階段凍結N_A／N_H、T0／T1 calendar／source gates及全文，另案批准並驗收附錄WP1～WP6（日期／as-of→重現→矩陣延伸→模型存檔／隔離→每次驗收→252日adapter）。CPU時間僅估計，峰值RAM／IO未知，前置驗收未完成保持STOP。P4b文件／固定歷史C0+分數／三混合Holm3／36-fit subset／64-fit gate不變。沒有新結果、程式／資料／GPU／Colab／Drive／production／scheduler／排程／額外agents或commit／push／merge；未讀封盲區、未更新observed_at。完成不等於Human acceptance。
+
+本輪文件驗證：`python3 -m unittest discover -s tools/project_knowledge -p 'test_*.py'` 23 tests OK；規格10個本機連結缺失0、8個Markdown表格欄數一致、48欄／11個排除欄與manifest相符、6項無假日日曆算術assertions通過。P4b SHA-256維持 `da508479fb417d0a0b65ed84d7ca8ca6ef2548832b78ce176af13fbc1621e3ca`。impact WARNING（GOVERNANCE已人工檢查，無治理規則／machine authority改動）；health `--ci --as-of 2026-11-24` exit0／WARNING（Governance、Authority Drift、Legacy Docs，無structural FAIL，與修改knowledge前分類相同）。`git diff --check`通過；作者自查非獨立審查，正式日曆／實際流程／資源仍未驗證。初始無dirty/untracked/staged，交付保留上述4份未stage文件，依Human本任務禁止commit而非clean-worktree；沒有其他檔案修改。
+
 
 
 

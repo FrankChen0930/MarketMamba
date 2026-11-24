@@ -6,13 +6,13 @@
 
 ## P2 前瞻／P4b 草案的 authority 邊界 — 2026-11-24
 
-[P2 前瞻規格](../../tasks/spec-forward-p2-primary-20261124.md)與 [P4b 混合規格](../../tasks/spec-p4b-blend-20261124.md)為已提交草案來源 `8eff9fe` 的 **DRAFT / PROPOSED / NOT_ACCEPTED** 文件；本輪在既有detached `191283b`（job-run-mwunxhyg-4cd29f/spec_writer_blind）僅修訂P2前瞻與knowledge、保留未提交patch（P4b文件未改）；E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED。不是 FROZEN machine contract，不 supersede P1/P2/P3/P4a 契約、歷史結果、P4a 64-fit 完成閘門、現場 Colab 或 production authority，因此 `authority-map.json` 與歷史 supersession 記錄不變。
+[P2 前瞻規格](../../tasks/spec-forward-p2-primary-20261124.md)與 [P4b 混合規格](../../tasks/spec-p4b-blend-20261124.md)為已提交草案來源 `8eff9fe` 的 **DRAFT / PROPOSED / NOT_ACCEPTED** 文件；本輪在既有detached `0db633b`（job-run-mwuoasa7-93afef/spec_writer_phases）僅修訂P2前瞻與knowledge、保留未提交patch（P4b文件未改）；E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED。不是 FROZEN machine contract，不 supersede P1/P2/P3/P4a 契約、歷史結果、P4a 64-fit 完成閘門、現場 Colab 或 production authority，因此 `authority-map.json` 與歷史 supersession 記錄不變。
 
-Human於2026-11-24已決定嚴格T0與C0+季報後半年policy、固定252日單端點／雙邊保守p、影子／神經臂預設不收集、raw主要與基準比例成本；這是設計決定，不是全文凍結或執行授權。具體DRAFT為Q1／Q3適用期限後第8交易日，必要資料實際公開／入管線另驗2-session緩衝；18:00切換、最多延遲2 sessions、超時STOP，取代T0+6曆月提案。正式calendar／當期順延、T0／窗內更新次數仍待核實。V6固定lag不能認證PIT，P1 48→185欄已排除財報／營收；不得以報後重訓或文件推定source admission。
+Human於2026-11-24新決定兩階段與年報／Q2錨點，取代先前Q1／Q3：嚴格T0只試運行、績效不作調規，年報後重訓T1為正式T0，T1起252收益sessions／唯一H-F1／Holm m=1／雙邊保守p。DRAFT具體提案一般3/31後第10交易日與8/14後第8交易日，必要資料實際公開／入管線另驗2-session緩衝；75日／8/31等例外、延期與遲報不視為已可得，也不讓整體時鐘漂移。18:00切換、最多延遲2 sessions、超時STOP不變。試運行預設與正式端點同時描述性揭曉、20-session流程穩定／非績效延後T1／跨Q2未啟動STOP為待簽署提案，非執行授權；T1規則／日曆須在任何階段0績效曝光前簽署。正式calendar／T1／252端點與次年年報是否進窗仍UNKNOWN；週日曆估算不能升格可執行日曆。V6固定lag不能認證PIT，P1 48→185欄未加回財報／營收；更新錨點不授予source admission。當初是否量測排除欄位的洩漏幅度未驗證，不能以文件補造結論。WP1～WP6按T0最低安全／T1完整截止拆分，仍須另案驗收。
 
 Human是封盲保管與重訓owner，封盲區指定 `D:\Desktop\work\ProjectForMe\MarketMamba-blind\`／`/mnt/d/Desktop/work/ProjectForMe/MarketMamba-blind/`，Claude／Codex禁止讀寫，只可看淨化hash／計數／缺日摘要。Claude本機拒絕設定為Human報告，非本輪runtime observation；它不約束同WSL權限的Codex，只有防疏忽紀律、不是防竄改或已驗證OS隔離。私有模型、績效相關logs與訊號由Human隔離程序保管，手動一次開盲；偷看降確認性。WP1～WP6工程、封盲演練與每次驗收均未完成，保持STOP；不修改P4b固定歷史輸入、64-fit gate或任何既有machine authority。
 
-前瞻獨立確認必須在 Human 凍結與前置驗收後使用未曝光資料；本機分數末日不等於收益曝光末日，T0 證據與較嚴格預設見前瞻草案。P4b 因已看 P3／P4a 結果只能描述性；通過 Holm／CI 不能升格。Human 報告 Q1/Q2 36 fits 已完成，不是本輪逐 fit 或雲端觀測。Next 是 Human 凍結與另案驗收，不授權改 03_formal_resume／Drive。詳見 [Current State](Current_State.md)。
+前瞻獨立確認必須在 Human 凍結與前置驗收後使用未曝光資料；本機分數末日不等於收益曝光末日，T0試運行／T1正式邊界與較嚴格預設見前瞻草案。P4b 因已看 P3／P4a 結果只能描述性；通過 Holm／CI 不能升格。Human 報告 Q1/Q2 36 fits 已完成，不是本輪逐 fit 或雲端觀測。Next 是 Human 凍結與另案驗收，不授權改 03_formal_resume／Drive。詳見 [Current State](Current_State.md)。
 
 
 `job-run-mwtn0pir-48e95f`／`builder_p4a_gate3`，沿用既有 detached worktree，base/HEAD `40d621cc9ac586e45fff1e095f59465b388094a1`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依明確授權保留未提交 patch。第 13 次獨立複審為 NO_GO；本輪修補 Q5 巢狀 schema、超大數值／遞迴損壞 marker，以及 metadata 符號連結。完成不解除 NO_GO，不等同 Human acceptance。
