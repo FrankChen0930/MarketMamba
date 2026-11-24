@@ -1,5 +1,14 @@
 ## P4a 第 13 次複審 REQUIRED＋兩項 MINOR 修補候選 — 2026-11-24
 
+## P2 前瞻／P4b 描述性規格草案 — 2026-11-24
+
+`job-run-mwuc1teo-b3dba8/spec_writer_fwd_p4b`，既有 detached worktree/base `b7e4f50d4f061cce32f35f466de7ab992ffc35ed`；僅文件 patch，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依指示不 commit。[P2 前瞻草案](../../tasks/spec-forward-p2-primary-20261124.md)與 [P4b 混合草案](../../tasks/spec-p4b-blend-20261124.md)均 **DRAFT 待 Human 凍結**，沒有新研究結果或執行授權。沿用 tasks／research_lab，歷史規格不能承接新的研究身分，未建立新目錄、程式或輸出樹。
+
+唯讀本機 artifacts 發現 P1/P3 分數到 2026-09-11，但 P2 收益評估到 **2026-11-19**；本機價格到 2026-11-23。前瞻 T0 預設晚於已曝光／現有價格末日、Human 凍結及前置驗收，不追認 11/20；預設固定三種子 C0+、252-session 窗與單一假設。矩陣延伸功能、舊區間逐位元一致、模型持久化、PIT／lifecycle／coverage 與封盲仍為 Blockers。P4b 固定三個等權混合與 Holm3、沿共同列 NaN 語義；需要另案 36-fit subset loader，不降低既有 64-fit gate。36/36 完成是 Human 報告，不是本輪現場驗證。
+
+Next：Human 決定／凍結選項與另案實作驗收；不啟動前瞻或混合評估。沒有接觸雲端 Drive／正在執行的 03_formal_resume、正式 Data／模型、GPU／訓練／資料取得、production／scheduler／通知／排程；沒有更新外部 runtime observation，既有研究／production authority 不變。完整盤點身分、檢定力估算、替代方案與 Open Questions 見兩份草案。
+
+
 `job-run-mwtn0pir-48e95f`／`builder_p4a_gate3`，沿用既有 detached worktree，base/HEAD `40d621cc9ac586e45fff1e095f59465b388094a1`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依明確授權保留未提交 patch。第 13 次獨立複審為 NO_GO；本輪修補 Q5 巢狀 schema、超大數值／遞迴損壞 marker，以及 metadata 符號連結。完成不解除 NO_GO，不等同 Human acceptance。
 
 [runner](../../V6/research_lab/p4_colab.py) 的階段結果、發布 metadata、Q5 診斷與成功 marker 共用單一封閉遞迴 schema；必要／允許欄位、精確型別、數值有限性／值域、ISO 日期、凍結 rule、R=10 與 permutation/date 支援均 fail closed。`excluded_dates` 依 producer 定義為日期字串清單（可空）；布林只在契約的 bool 欄位合法。Q5 producer 原先傳 session index，現在傳同列 `dates.npy` 的日期，合成證據確認分組與數值診斷不變。marker 的 OverflowError／TypeError／RecursionError 與既有解析錯誤視為無效，顯示期望／實際／下一步後移除並重排練。完成、發布、result JSON 與 marker 拒絕符號連結；產物 bytes、請求、來源與正式完成驗證沿用原 gate。

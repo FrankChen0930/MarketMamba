@@ -1,5 +1,12 @@
 ## P4a 第 13 次複審 REQUIRED＋兩項 MINOR 修補候選 — 2026-11-24
 
+## P2 前瞻／P4b 草案的 authority 邊界 — 2026-11-24
+
+[P2 前瞻規格](../../tasks/spec-forward-p2-primary-20261124.md)與 [P4b 混合規格](../../tasks/spec-p4b-blend-20261124.md)僅為本 detached worktree `b7e4f50` 上的未提交 **DRAFT / PROPOSED / NOT_ACCEPTED** 文件；E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED。不是 FROZEN machine contract，不 supersede P1/P2/P3/P4a 契約、歷史結果、P4a 64-fit 完成閘門、現場 Colab 或 production authority，因此 `authority-map.json` 與歷史 supersession 記錄不變。
+
+前瞻獨立確認必須在 Human 凍結與前置驗收後使用未曝光資料；本機分數末日不等於收益曝光末日，T0 證據與較嚴格預設見前瞻草案。P4b 因已看 P3／P4a 結果只能描述性；通過 Holm／CI 不能升格。Human 報告 Q1/Q2 36 fits 已完成，不是本輪逐 fit 或雲端觀測。Next 是 Human 凍結與另案驗收，不授權改 03_formal_resume／Drive。詳見 [Current State](Current_State.md)。
+
+
 `job-run-mwtn0pir-48e95f`／`builder_p4a_gate3`，沿用既有 detached worktree，base/HEAD `40d621cc9ac586e45fff1e095f59465b388094a1`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依明確授權保留未提交 patch。第 13 次獨立複審為 NO_GO；本輪修補 Q5 巢狀 schema、超大數值／遞迴損壞 marker，以及 metadata 符號連結。完成不解除 NO_GO，不等同 Human acceptance。
 
 [runner](../../V6/research_lab/p4_colab.py) 的階段結果、發布 metadata、Q5 診斷與成功 marker 共用單一封閉遞迴 schema；必要／允許欄位、精確型別、數值有限性／值域、ISO 日期、凍結 rule、R=10 與 permutation/date 支援均 fail closed。`excluded_dates` 依 producer 定義為日期字串清單（可空）；布林只在契約的 bool 欄位合法。Q5 producer 原先傳 session index，現在傳同列 `dates.npy` 的日期，合成證據確認分組與數值診斷不變。marker 的 OverflowError／TypeError／RecursionError 與既有解析錯誤視為無效，顯示期望／實際／下一步後移除並重排練。完成、發布、result JSON 與 marker 拒絕符號連結；產物 bytes、請求、來源與正式完成驗證沿用原 gate。

@@ -280,3 +280,7 @@ Expanding各Origin仍需另凍結model-ready/maturity/purge/refit/selection與�
 ## P3 bounded engineering candidate — 2026-11-20
 
 [P3 spec](../../tasks/spec-mamba-portfolio-p3-20261120.md) 對官方Mamba2/no-conv有未解語義矛盾；[adapter](../../V6/research_lab/rolling_seq_scores.py) 與 [P3 portfolio mode](../../V6/research_lab/portfolio_eval.py) 為UNMERGED / NOT_DEPLOYED工程候選，正式訓練fail closed。只驗證injected CPU與synthetic三系統流程、P1相同列集合、maturity/purge、種子rank PIT、common dates、Holm及溫控；不升格IC／portfolio／GPU或trading evidence。不得用既有pilot09歷史結果取代此次研究。493passed/1skipped、五反證及完整限制見[工程報告](../../reports/v7_p3_portfolio_engineering.md)。未完成fit跨程序GPU預算尚非可靠會計；需先解決才能正式解鎖。
+
+## P2 前瞻與 P4b 文件候選 — 2026-11-24
+
+[P2 前瞻草案](../../tasks/spec-forward-p2-primary-20261124.md)與 [P4b 草案](../../tasks/spec-p4b-blend-20261124.md)為 DRAFT 待 Human 凍結，E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；未執行、無新結果。歷史分數最晚 2026-09-11，但本機 P2 收益評估延伸到 11/19，不能只用矩陣末日定義未曝光；前瞻預設 T0 晚於 Human 凍結／前置驗收，矩陣增量能力尚未確認。P4b 即使通過固定等權／Holm3 門檻仍只形成假設，不能回改 P4a family 或 64-fit gate。Blockers、已知限制及 Human 決定見草案與 [Current State](../00_Project_Map/Current_State.md)；既有研究結論、strict STOP 與 production boundary 不變，未觀測雲端或修改 runtime timestamps。
