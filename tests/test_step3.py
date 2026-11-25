@@ -282,3 +282,62 @@ def test_unknown_boolean_evidence_cannot_pass_via_truthiness():
         s.w60_eligible(np.full((70,1),np.nan))
     with pytest.raises(ValueError,match='STOP'):
         s.selection_table(pd.bdate_range('2020-01-01',periods=30),np.ones((30,1),bool),np.full((30,1),None))
+
+
+def test_pre2013_comparisons_are_nan_even_with_matching_scope():
+    f=events();old=f.iloc[:12].copy();old.period-=pd.DateOffset(years=1);old.available_date-=pd.DateOffset(years=1);old.source_row+=100
+    out=s.monthly_events(pd.concat([old,f]),pd.bdate_range('2012-01-01','2015-06-01'))
+    first=out.iloc[0]
+    assert out.session.min()>250
+    assert first[s.FEATURES].isna().all()
+    assert out.iloc[11][['monthly_yoy','monthly_cumulative_yoy','monthly_high12','monthly_surprise']].isna().all()
+
+
+def test_tej_exported_comparators_cannot_affect_features_mutation(monkeypatch):
+    f=events();f['去年單月營收(千元)']=1.;f['累計營收(千元)']=1.
+    days=pd.bdate_range('2013-01-01','2015-06-01')
+    expected=s.monthly_events(f,days)
+    f['去年單月營收(千元)']=999999.;f['累計營收(千元)']=-10.
+    pd.testing.assert_frame_equal(expected,s.monthly_events(f,days))
+    real=s.monthly_events
+    def mutant(frame,calendar):
+        out=real(frame,calendar);out['monthly_yoy']=frame['去年單月營收(千元)'].iloc[0];return out
+    monkeypatch.setattr(s,'monthly_events',mutant)
+    with pytest.raises(AssertionError):pd.testing.assert_frame_equal(expected,s.monthly_events(f,days))
+
+
+def test_bundle_gate_rechecks_all_identities(tmp_path):
+    import json
+    from tools.step3 import BUNDLE_CATEGORIES
+    files={}
+    for category in BUNDLE_CATEGORIES:
+        p=tmp_path/category;p.write_text(category)
+        files[category]={'path':str(p),'sha256':s.sha256(p),'bytes':p.stat().st_size}
+    m=tmp_path/'bundle.json';m.write_text(json.dumps({'contract':s.SPEC_SHA,'files':files,'jobs':{}}))
+    gate={'status':'PASS','contract_sha256':s.SPEC_SHA,'bundle':{'path':str(m),'sha256':s.sha256(m),'bytes':m.stat().st_size}}
+    s.require_admission(gate)
+    (tmp_path/'labels').write_text('mutated')
+    with pytest.raises(ValueError,match='STOP'):s.require_admission(gate)
+    with pytest.raises(ValueError,match='STOP'):s.require_admission({'status':'PASS'})
+
+
+def test_real_adapter_reconstructs_first_month_and_rejects_currency():
+    from tools.step3_prepare import admitted_events
+    f=events().rename(columns={'source_row':'input_row_number'})
+    f['單月營收(千元)']=np.arange(100.,128.)
+    f['去年單月營收(千元)']=1.;f['累計營收(千元)']=-999.
+    f['currency']='TWD_ASSUMED_UNIT_DOCUMENTATION_PENDING'
+    a=admitted_events(f)
+    np.testing.assert_array_equal(a.revenue,f['單月營收(千元)']*1000)
+    f['去年單月營收(千元)']=np.nan;f['累計營收(千元)']=1e100
+    pd.testing.assert_frame_equal(a,admitted_events(f))
+    f.loc[0,'currency']='USD'
+    assert np.isnan(admitted_events(f).revenue.iloc[0])
+
+
+def test_fit_rejects_array_mutation_before_lightgbm(tmp_path,monkeypatch):
+    from tools import step3_runner as r
+    monkeypatch.setattr(r,'require_admission',lambda gate:{'year':2026,'seed':17,'jobs':{}})
+    with pytest.raises(ValueError,match='STOP job arrays'):
+        r.fit_job({'bundle':{'sha256':'frozen'}},tmp_path,2026,17,'A',np.array([[0,0],[0,1]]),
+            np.array([1,2]),np.array([-.2,.2]),np.zeros((2,185)),np.zeros((2,185)),'frozen')

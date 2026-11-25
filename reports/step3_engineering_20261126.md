@@ -1,3 +1,122 @@
+# Step3b 准入與最大折資源量測接續 — 2026-11-26
+
+**CPU_ENGINEERING_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。本節 supersede 下方 Step3a 的「尚未授權解除歷史硬鎖」現況敘述；歷史觀測與產物不改寫。沒有執行或查看本案 IC／績效。**
+
+既有 assigned worktree `job-run-mwwebldn-201d27/builder_step3b`，detached HEAD/base `b8c4c8f574ea280057bb87a0a852f8ca0b830ef4`，起始 clean。Human 明確核准本次 bounded admission 與2026 A/B seed17工程量測；不 commit／push／merge、GPU、網路、blind、正式 Data、排程、P4d／P2 或額外 agents。凍結規格不修改。
+
+## 協調者裁定（Claude，待獨立審查）
+
+- A：§3「可核 TEJ 原始欄位說明或逐期原公告」為 OR；已 pin 原始 HTML SHA `2e0e9b5e6897e2eaf7af3565a1344f34cb4b475e1e1da786ee1c58a07dc62dfa`。依條文只接納 period≥2013/01 且有發布日的首次單月值，發布 D 後首 session 收盤可用；個股千元 NTD 轉元。2012 及以前不進比較歷史，因此2013 YoY／跨2012 MoM／YTD／high12／surprise缺值預期。不得使用 TEJ 去年單月／累計／去年累計欄；非NTD／幣別異常記NaN及原因。2013年度匯出去年欄的IFRS轉換值不納入。本裁定建立可用範圍，不要求逐期公告俱全。
+- B：完整 identity bundle 是工程待辦，凍結矩陣X、48欄順序、日曆、價格、成員、h20、月營收特徵、程式、共用抽樣、版本文件、source commit與逐檔bytes/SHA；runner每次重驗，不符即STOP。公開只報彙總，逐列及完整manifest只在本worktree `.artifacts/step3/`。
+- C：raw ZIP 當前觀測 bytes 與已凍結 SHA 一同凍結；不再要求另份事前 size。SHA仍逐一驗證，不接受內容漂移。
+- D：strict 前瞻維持STOP（官方日曆、lifecycle與公司行動證據不足），不阻擋完整價格研究股票之歷史嵌套工程。observed calendar、研究成員與 raw h20不升格可成交／全市場／含息證據。
+
+## 實作與驗證邊界
+
+沿用現有 `tools/step3*.py`／tests／本報告及 `.artifacts/step3/`，新增 `tools/step3_prepare.py` 是既有primitives與shared矩陣／price snapshot的串接入口；既有audit僅有布林選樣，不能承載h20／月營收／共用抽樣／凍結bundle，故此單一入口必要，不新增頂層tree或重建shared矩陣。所有共享來源唯讀，不觸模型權重。實際source/runtime與逐檔身分在私有bundle。
+
+`monthly_events`先移除2013以前月份；adapter只讀首次單月原欄，不讀去年／累計值。非NTD使用UNKNOWN currency，使依賴它的比較為NaN；逐事件缺值原因私存。兩臂以同列建構並逐值核對185欄含NaN相等，保留W60全部推論鍵，不因未來label或B缺值刪列；完整訓練日中心平均同秩後以seed17抽500,000列。2026使用shared原splits排除warmup，凍結observed日曆執行21-session purge。
+
+准入不接受單獨PASS字串：驗spec及完整bundle逐檔size/SHA。fit_job另核year、seed、兩臂sample／target／keys／fit／eval陣列digest與bundle相符，推論不載入評估標籤，僅查預測shape與有限性，私存模型／預測及資源telemetry。此次bundle只登記2026 seed17，其他年／seed均不能直接沿用，需要自己的凍結job identity。
+
+RED：新增反例先得到2 failed／29 passed（2012未排除、缺bundle gate），修正後31 passed；追加adapter禁止去年／累計依賴、USD→NaN及fit陣列不符STOP，focused最終33 passed／5.40s。去年度欄mutation實際注入函式並由assertion殺死。全套以bwrap遮蔽所有外部真實fold／正式Data／主artifacts，防止既有real-fold測例讀取真實研究績效；不執行Step3 evaluation模組。最後新增2個tests於全套collection後加入，由focused另覆蓋；全套數量以實際log為準。
+
+## 重播效能診斷與保留partial
+
+第一輪 `resource-20261126/` 在逐月重播耗時，1,000真實來源列probe為4.064秒；profile顯示每鍵小型DataFrame的drop_duplicates、每session重建itertuples及重複metadata檢查為瓶頸，並非OOM。主動中止exit130，保留原h20／日曆／source-check與partial，不稱完成或准入。
+
+只做不改語義的效能修補：整表logical+value去重後檢查logical碰撞、每股一次itertuples搭配有序groupby、每歷史月份快取已知可比identity／有限單月值。相同1,000列全部特徵（含NaN）與attrs（缺值原因、去重鏈）逐值相等，修補後1.146秒；不是完整資料耗時外推證明。現有版本碰撞、同session亂序、晚到舊月、UNKNOWN與缺月反例全部通過，focused33 passed／2.98秒。新版在獨立 `resource-optimized-20261126/` 重新建構並以實際程式SHA凍結，未減樣本或500,000 cap。
+
+全套程序在效能修補前collection／import，實際終局數字見後節；最終效能修補由33項focused及上述真實列一致性驗證補覆蓋，不能宣稱同一全套程序重載了最後版本Step3函式。沒有為求全套通過而改既有skip／gate。
+
+第二輪已完成全量重播，但對齊時發現pandas3會把15MB attrs深拷貝至每個group，單股分組實測1.29645秒，去除工作attrs後0.015562秒、數值表相等。中止第二輪exit130（非OOM），保留完整monthly_events及event_reasons；最終 `resource-release-20261126/` 先獨立持久化全部metadata，再清除工作表attrs，重新重播／對齊。這是metadata儲存位置與內部效能修補，不新增模型欄位、不刪研究樣本；舊partial均非准入artifact。最終focused及實跑終局如下。
+
+## Step3b 支援與原始檔大小（無績效統計）
+
+| 檢查 | 實際數值 |
+|---|---:|
+| 原矩陣列數 | 7,423,927 |
+| 2013起h20有限研究列 | 5,077,611 |
+| 2026完整訓練日候選 | 4,755,330 |
+| 2026推論候選（W60前） | 324,395 |
+| 最晚候選訓練訊號／出口 | 2025-12-01／2025-12-30 |
+| 首個評估session | 2026-01-02 |
+| 全候選嚴格purge | True（t+21 < origin） |
+| 月營收raw ZIP bytes | 12,571,050 |
+| IFRS raw ZIP bytes | 7,290,770 |
+| basic raw ZIP bytes | 18,697,958 |
+
+來源SHA仍為下方Step3a表中同三份既定SHA，當前bytes一同凍結；沒有取代raw或重命名歷史artifact。切分檢查私存 `resource-20261126/split_support_check.json`，只驗有限性／數量／日期，不讀取標籤績效。
+
+## 五欄覆蓋（原年度成員列，未套W60，非績效）
+
+| 年 | 分母 | YoY | MoM | YTD YoY | high12 | surprise |
+|---|---:|---:|---:|---:|---:|---:|
+| 2013 | 316,349 | 0 (0.00%) | 263,849 (83.40%) | 0 (0.00%) | 0 (0.00%) | 0 (0.00%) |
+| 2014 | 334,125 | 304,041 (91.00%) | 332,808 (99.61%) | 304,328 (91.08%) | 303,450 (90.82%) | 222,338 (66.54%) |
+| 2026 | 324,395 | 322,632 (99.46%) | 323,247 (99.65%) | 323,313 (99.67%) | 324,027 (99.89%) | 322,168 (99.31%) |
+
+2013同比類全缺為口徑限制之預期；2014 surprise暖身不足保留NaN。未知／非NTD欄本批0列，adapter合成USD測例仍驗NaN及原因；只使用千元NTD的原始單月欄，不讀匯出去年／累計值。
+
+## 最終凍結准入與驗證
+
+`resource-release-20261126/admission/admission.json`：歷史 **PASS**、stops=[]、文件條款4/4 True；strict前瞻 **STOP**。完整私有bundle `resource-release-20261126/bundle.json`，45個逐檔身分，13,538 bytes，SHA `5c734cf4997b5d9cc7b7ba6a6c6436290eacb7ac69955d19d2cdc27fa931c824`。准入時fits=0是該階段計數，後續量測須以各job COMPLETE manifest為準，不能拿它當最終fit數。最終準備165.05秒、峰值RSS3,635,872 KiB，exit0，無OOM；ulimit -v 9,961,472 KiB（9.5GiB），並非GPU或外部CPU。
+
+全套隔離命令同下方Step3a，加timeout1500與OPENBLAS_NUM_THREADS=1；本輪 **1383 passed／11 skipped／5 warnings／862.94秒／exit0**，完整log `.artifacts/step3/full-step3b.log`。本輪最後focused **33 passed／3.86秒／exit0**，log `focused-step3b-release.log`；全套載入時31個Step3測例，之後新增2例由focused覆蓋。最後內部效能修補全套未重新載入，已誠實列為驗證範圍限制，不以首次全套代替最終來源全套驗收。沒有新增skip或改既有門檻；既有11 skip包括被隔離的外部真fold及optional依賴，均非本案故意略過失敗。
+
+knowledge-impact逐項：Semantics YES（2013可用範圍），Authority NO（production／machine contracts未變），Subsystem boundary NO（沿用tools），Active local runtime YES（本地工程量測，無外部scheduler觀測），Correctness gate YES（bundle gate取代無條件歷史鎖），Canonical artifact supersession NO（新GENERATED bundle），Deprecation NO，Major blocker YES（歷史准入解除，strict保留）。Current State／Authority Map／Worktree Register／Data／Features同步更新；GOVERNANCE與Operations規則人工檢查後無語義變更，不需改穩定治理條文。knowledge-impact最終含新prepare入口、exit0／WARNING為人工review提示，不是結構FAIL。Builder依code-review-and-quality五軸自查：可比性／PIT／purge／共同列、私有輸出與hash、tools boundary、pandas metadata深拷貝及矩陣記憶體；無獨立review，未取代Human acceptance。
+
+## 公開identity彙總（完整45項只存私有bundle）
+
+| 身分 | bytes | SHA-256 |
+|---|---:|---|
+| matrix | 1425394112 | `9778392d4c337d1f9cb5768002340a0d1aec13f7689b2f601b77bd2329b55363` |
+| feature_order | 4328 | `26862fcbd29b1ef485b1aff981a78abf0fdfc55a4d238c721f89ac0b9d7456cd` |
+| calendar | 43184 | `fac6872b4598601caf2071b62adf7563ce6040462140b866be445e523b3f94e0` |
+| prices | 231509693 | `294338229d04e20a2708d00ef1a3c37a34f67d173c0b21f441adbc1fe48d9f42` |
+| membership | 950262784 | `8d5cc83037d2470f051d8ff40e5e7c8edb2d436e0db195dea78df5fca8567c21` |
+| labels | 59391544 | `4bd46c50a7ff2c6ab457ac99d8e2251801476f7e4f0468cda0635784c976c549` |
+| features | 148478668 | `8b56d339ab4921330980f3cc512ce6e524c30b5a37394c0fd78f848d6765f645` |
+| sampling | 4000128 | `1ce3c4c90b03259d6b8a4687a8c3f8fe62204eafeebeb7aab84ae7598e2b1bfb` |
+| version_evidence | 103453 | `2e0e9b5e6897e2eaf7af3565a1344f34cb4b475e1e1da786ee1c58a07dc62dfa` |
+| splits | 7424055 | `dfd3fa021b5d29447b67c65ecbc602e990cf92778828d151123c714fce57fa6b` |
+| keys | 2417952 | `c3f529548b63c875b9c899b29e2993759d03238c435c0e0a387d5a937577303d` |
+| implementation | 17194 | `a7a31887fdf4cfd30dc95c3c31c0e43b5f13b38ea798bcc7fdefa6fb85c30458` |
+
+## 2026最大訓練折資源量測（seed17，無績效）
+
+| 臂 | 擬合秒 | 推論秒 | fit+infer秒 | 峰值RSS KiB | fit矩陣bytes | infer矩陣bytes |
+|---|---:|---:|---:|---:|---:|---:|
+| A | 34.8334 | 0.9111 | 35.7445 | 1,331,400 | 370,000,000 | 223,648,720 |
+| B | 36.0945 | 0.9898 | 37.0843 | 1,365,460 | 380,000,000 | 229,693,280 |
+
+兩個job均COMPLETE／exit0，串行CPU四執行緒，各500,000 fit列／302,228 W60推論列；完整200棵、無早停／選種子，ulimit -v 9,961,472 KiB。程序wall（含import、bundle重驗與陣列hash）A45.83秒；B46.52秒（含身分重驗，詳measure-B-step3b.log）。RSS為整個該process高水位，與準備程序3,635,872 KiB分開；最大值均遠低於保護上限，未發生OOM，無需減樣本或轉用GPU／高RAM付費算力。若將來有新fold的資源問題，優先重用已凍結memory-map／逐job載入，保持研究樣本與cap，不自行改研究配方。
+
+最終 `verification-step3b.json` 重驗完整45項bundle、spec SHA與兩個job所有輸出hash，檢查模型各200棵、共同keys／sample／target SHA一致。prediction.npy只由runner檢查shape／有限性後私存及hash，未查看值、未計IC、未呼叫Step3評估器。這只交付兩fit成本，不是72-fit研究或Human acceptance。
+
+最終knowledge-health --ci **exit0／WARNING**：Project Map、Agent Guides、Domains、Runtime Freshness、Generated Index PASS；Governance／Authority Drift／Legacy Docs WARNING，無structural FAIL。6個Python檔syntax compile、6個本輪直接local link targets、untracked prepare whitespace及git diff --check均通過。全套程序、準備程序與A/B量測程序皆已結束，無留下背景工作。最終45項bundle／兩job的模型與predictions hashes、200棵、共同鍵／抽樣／目標身分已重驗，證據在 `verification-step3b.json`；完整本輪source／outputs／environment inventory在 `manifest-step3b.json`，不納入歷史partial作完成證據。
+
+## Step3b 固定交接欄位
+
+- Completed：依協調者A–D建立歷史admission PASS／strict STOP，凍結45項identity，實跑2026 A/B各seed17共2完整fit＋inference，無IC／績效。
+- Changed：`tools/step3.py`、`tools/step3_prepare.py`、`tools/step3_runner.py`、`tests/test_step3.py`、`reports/step3_engineering_20261126.md`、`knowledge/00_Project_Map/Current_State.md`、`knowledge/00_Project_Map/Authority_Map.md`、`knowledge/00_Project_Map/Worktree_Register.md`、`knowledge/01_Domains/Data.md`、`knowledge/01_Domains/Features.md`。
+- Decisions：協調者Claude裁定待獨立審查；2013前比較NaN，不用匯出去年／累計欄；bundle／job陣列不符STOP，strict前瞻STOP；只凍結此次2026 seed17，不授權其他fits。
+- Evidence：bundle SHA `5c734cf4997b5d9cc7b7ba6a6c6436290eacb7ac69955d19d2cdc27fa931c824`；上表兩fit資源；全套1383 passed／11 skipped／5 warnings／862.94秒，最終focused33 passed／3.86秒；metadata逐值一致性、syntax、hash、links、diff及knowledge gates詳本節與私有logs。
+- Remaining：獨立審查／Human acceptance；最終效能修補後重新完整全套（現有全套在修補前import，最後兩個新增測例／修補由focused覆蓋）；其他fold／seed的凍結job identities、72-fit與評估數值驗證均未執行，本任務禁止IC／績效。
+- Blockers：strict前瞻仍欠合格官方日曆／lifecycle／公司行動與來源管線驗收；本次歷史工程無source／RAM blocker。
+- Next recommended action：獨立審查裁定、bundle與兩fit工程證據，重跑最終來源全套；任何後續研究擬合／績效均待另案授權。
+- Project memory updated：YES，Current State／Worktree Register／Data／Features，同一no-commit patch。
+- Authority map updated：YES，只記branch-local歷史准入與strict STOP，不改production／machine authority。
+- Git status：起始clean；最終9個tracked unstaged＋1個untracked（prepare）；staged=0；依Human禁止commit保留patch，不宣稱clean。
+- Commit：N/A，明確禁止，HEAD仍 `b8c4c8f574ea280057bb87a0a852f8ca0b830ef4`。
+- Push：N/A，禁止push／merge／deploy。
+- Worktree：既有 `.worktrees/ruflo-workers/run-mwwebldn-201d27/builder_step3b` detached，created UNKNOWN，本輪接手2026-11-26，不新增／刪除；私有bundle／models／predictions／partial需保存，不可因ignored刪除。
+- Runtime/environment：WSL本機CPU，pilot09 Python3.12.3／NumPy2.5.4／pandas3.1.1／LightGBM4.7.0，CUDA_VISIBLE_DEVICES空，MARKETMAMBA_DATA_ROOT unset；Data realpath為本worktree普通目錄未讀寫。輸入只讀canonical artifacts／p4-bundles，逐列只寫本worktree `.artifacts/step3/`；無網路／GPU／blind／正式Data／V6/models／排程／P4d／P2／agents或外部observed_at更新。
+
+下方完整保留Step3a歷史報告；其中STOP／fits=0／未授權解鎖只描述其當時狀態。
+
+---
+
 # Step3 月營收 h20 歷史工程交付 — 2026-11-26
 
 **CPU_ENGINEERING_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。准入 STOP；真資料 fits=0；Step3 評估模組未執行。完成工程檢查不是 Human acceptance。**

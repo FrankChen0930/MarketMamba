@@ -1,3 +1,12 @@
+## Step3b 准入與資源量測 builder — 2026-11-26
+
+- Purpose／owner／task：Human／Codex，`job-run-mwwebldn-201d27/builder_step3b`；協調者A–D裁定下的歷史准入與最大2026折A/B seed17 CPU量測，不讀IC／績效。
+- Path／branch／base：`.worktrees/ruflo-workers/run-mwwebldn-201d27/builder_step3b`，既有detached HEAD `b8c4c8f574ea280057bb87a0a852f8ca0b830ef4`；created date UNKNOWN（本輪接手2026-11-26），retired N/A；起始clean，保留no-commit patch，不增減worktree。
+- State／authority：CPU_ENGINEERING_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；協調者裁定待獨立審查，strict前瞻STOP，凍結spec不動；結果見[報告Step3b](../../reports/step3_engineering_20261126.md)。
+- Artifact／merge dependencies：canonical checkout TEJ raw/PIT及既有price snapshot、p4-bundles shared／fold2026 splits唯讀。本worktree `.artifacts/step3/` 是唯一逐列輸出namespace，含GENERATED授權私有h20／特徵／抽樣／矩陣／模型／預測／完整bundle與logs；不能因gitignored刪除。無merge／deployment授權。
+- Safe removal：先保存patch及完整私有bundle／產物，驗SHA、references、唯一副本與可重建性，另案獨立review／Human acceptance／clean及retirement；本輪不移除或清理。
+- Runtime：WSL CPU，pilot09 Python3.12.3，CUDA_VISIBLE_DEVICES空，MARKETMAMBA_DATA_ROOT unset，本worktreeData普通目錄未讀寫；9.5GiB virtual memory上限。全套以bwrap遮蔽外部真實研究fold／正式Data與主artifacts，無網路／GPU／blind／P4d／P2／正式資料／排程／agents／commit／push／merge／deploy；無外部observed_at更新。
+
 ## Step3 歷史嵌套檢驗 builder — 2026-11-26
 
 - Purpose／owner／task：Human／Codex builder，`job-run-mwwctc1a-f7f0c1/builder_step3a`；只做凍結月營收 h20 歷史工程，無額外 agents。

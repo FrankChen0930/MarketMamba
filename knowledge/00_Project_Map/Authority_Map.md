@@ -1,3 +1,9 @@
+## Step3b 歷史准入裁定接續 — 2026-11-26
+
+`job-run-mwwebldn-201d27/builder_step3b`，既有 detached HEAD/base `b8c4c8f574ea280057bb87a0a852f8ca0b830ef4`，起始 clean，Human 明確 no-commit bounded approval；**CPU_ENGINEERING_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[工程報告](../../reports/step3_engineering_20261126.md)記錄協調者 Claude A–D 裁定（待獨立審查）：TEJ原始文件或逐期公告擇一，限2013/01起有發布日之首次單月值、NTD千元轉元，跨2012比較NaN且禁用匯出去年／累計欄；raw觀測bytes配既定SHA凍結；完整bundle不符STOP。strict前瞻官方日曆／lifecycle／公司行動STOP保留，歷史只限完整價格研究股票，不升格為可成交／含息／全市場證據。
+
+[串接入口](../../tools/step3_prepare.py)沿用既有tools與私有 `.artifacts/step3/`，將矩陣X／48欄順序／日曆／價格／成員／h20／五欄／共用抽樣／程式／版本證據凍結；[runner](../../tools/step3_runner.py)每次逐檔重驗及核對job陣列。僅本次2026 A/B seed17資源量測授權，不執行或查看任何IC／績效。最終 `resource-release-20261126/bundle.json`（45 identities，SHA `5c734cf4997b5d9cc7b7ba6a6c6436290eacb7ac69955d19d2cdc27fa931c824`）重驗後歷史admission **PASS**、strict前瞻**STOP**；準備165.05秒／RSS3,635,872 KiB／exit0，無OOM。全套1383 passed／11 skipped／5 warnings／862.94秒／exit0；最後內部效能修補另focused33 passed／3.86秒及真實來源列一致性驗證，未宣稱全套程序重載最後函式。2026 A/B seed17均COMPLETE／exit0（各500,000 fit、302,228推論、200棵）：A fit34.8334s／infer0.9111s／RSS1,331,400 KiB，B fit36.0945s／infer0.9898s／RSS1,365,460 KiB；沒有OOM、IC／績效或其他研究fits。最後重驗與限制以報告Step3b節為準；下方Step3a STOP／fits=0保留為當時歷史觀測，不再代表本輪授權邊界。無正式Data／V6/models／P4d／P2／production／scheduler／網路／GPU／額外agents／commit／push／merge／deploy，未刷新外部observed_at；frozen規格SHA不變，沒有machine authority或歷史結果supersession。
+
 ## Step3 工程候選的 authority 邊界 — 2026-11-26
 
 [凍結規格](../../tasks/spec-step3-monthly-revenue-h20-20261126.md) SHA `9cd7cb8681e3d881193efa3c6fa3c72bd74fba84a96f6a16e6da3a85398eaf34` 是本案研究語義依據，未改寫。[工程報告](../../reports/step3_engineering_20261126.md)與 `tools/step3*.py` 是 `job-run-mwwctc1a-f7f0c1/builder_step3a@224a814` 的 no-commit、UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED 候選；不 supersede 正式資料、P2、P4d 或既有研究結果。原始 TEJ 文件條文及 SHA 可核，不等於逐期數值／合併／幣別已認證；准入仍 STOP，真資料擬合鎖定、評估模組未執行，無新模型結果 authority。

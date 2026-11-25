@@ -6,6 +6,7 @@ Licensed rows and predictions must stay below this checkout's .artifacts/step3.
 from __future__ import annotations
 import argparse
 import hashlib
+from itertools import groupby
 from html.parser import HTMLParser
 import json
 import os
@@ -69,14 +70,16 @@ def monthly_events(frame,days):
     f=frame[required].copy()
     f['period']=pd.to_datetime(f.period);f['available_date']=pd.to_datetime(f.available_date)
     if f[['stock_id','period','version','source_row']].isna().any().any():raise ValueError('STOP missing event key')
-    f=f[f.available_date.notna()].copy()
+    f=f[f.available_date.notna() & (f.period>=pd.Timestamp('2013-01-01'))].copy()
     if (f.available_date<f.period+pd.offsets.MonthEnd(0)).any():raise ValueError('STOP release before period end')
     f['month']=f.period.dt.year*12+f.period.dt.month-1
     f['session']=[effective_session(d,days) for d in f.available_date]
     # Multiple conflicting values for an unorderable version are never row-order resolved.
     value_cols=['available_date','revenue','scope','currency','unit','comparability_id']
-    for _,g in f.groupby(['stock_id','month','version'],sort=False):
-        if len(g[value_cols].drop_duplicates())>1:raise ValueError('STOP version collision')
+    logical=['stock_id','month','version']
+    # Equivalent to per-key drop_duplicates, without constructing 380k frames.
+    distinct=f.drop_duplicates(logical+value_cols)
+    if distinct.duplicated(logical).any():raise ValueError('STOP version collision')
     # This first-announcement implementation does not silently replace earlier values.
     if (f.groupby(['stock_id','month']).version.nunique()>1).any():
         raise ValueError('STOP multiple versions require first-announcement evidence')
@@ -88,17 +91,18 @@ def monthly_events(frame,days):
     f=f.drop_duplicates(['stock_id','month','version'])
     rows=[];missing=[]
     for code,g in f.groupby('stock_id',sort=True):
-        history={}
-        for session,batch in g.groupby('session',sort=True):
+        history={};known_values={}
+        for session,batch in groupby(g.itertuples(index=False),key=lambda r:r.session):
             if session>=len(days):continue
-            for r in batch.itertuples(index=False):history[r.month]=r
-            month=max(history);r=history[month]
-            def comparable(a):
-                return a is not None and all(_known(getattr(r,k)) and _known(getattr(a,k)) and getattr(r,k)==getattr(a,k)
-                    for k in ['scope','currency','unit','comparability_id'])
+            for r in batch:
+                history[r.month]=r
+                identity=tuple(getattr(r,k) for k in ['scope','currency','unit','comparability_id'])
+                known_values[r.month]=(float(r.revenue) if np.isfinite(r.revenue) else np.nan,
+                    identity if all(_known(v) for v in identity) else None)
+            month=max(history);identity=known_values[month][1]
             def value(m):
-                a=history.get(m)
-                return float(a.revenue) if comparable(a) and np.isfinite(a.revenue) else np.nan
+                item=known_values.get(m)
+                return item[0] if item is not None and identity is not None and item[1]==identity else np.nan
             rev=value(month)
             def ratio(a,b):return a/b-1 if np.isfinite(a) and np.isfinite(b) and b>0 else np.nan
             yoy=ratio(rev,value(month-12));mom=ratio(rev,value(month-1))
@@ -220,7 +224,7 @@ class FieldText(HTMLParser):
         if text.strip():self.parts.append(text.strip())
 
 
-def admission(source_root,out):
+def admission(source_root,out,bundle=None):
     """Hash all frozen raw/PIT files; extract documentation without granting scope."""
     out=private_dir(out);verify_file(SPEC,SPEC_SHA)
     root=Path(source_root)/'.artifacts/tej';identities={};stops=[]
@@ -258,13 +262,18 @@ def admission(source_root,out):
                     'calendar_ytd':'1月累計起' in text}
     else:stops.append('STOP missing original field documentation checksums')
     if not clauses or not all(clauses.values()):stops.append('STOP required documentation clauses missing')
-    # Documentation proves the stated policy, not each historical row's scope/currency.
-    stops.extend(['STOP frozen raw ZIP size expectations not separately supplied; observed sizes recorded only',
-                  'STOP per-period first-announcement correspondence and anomaly evidence incomplete',
-                  'STOP historical currency/consolidation comparability range not established',
-                  'STOP qualified exchange calendar and lifecycle reconciliation unavailable',
-                  'STOP matrix/48-column/label/feature/version evidence identity bundle not frozen'])
-    result=dict(status='STOP',evidence_class='CPU_ENGINEERING_ONLY',contract_sha256=SPEC_SHA,
+    # Coordinator A-D ruling, pending independent review; historical research only.
+    bundle_info=None
+    if bundle is None:stops.append('STOP identity bundle missing')
+    else:
+        try:
+            bundle_info=dict(path=str(Path(bundle).resolve()),sha256=sha256(bundle),bytes=Path(bundle).stat().st_size)
+            require_admission(dict(status='PASS',contract_sha256=SPEC_SHA,bundle=bundle_info))
+        except (ValueError,OSError,KeyError,TypeError) as exc:stops.append('STOP bundle: '+str(exc))
+    result=dict(status='STOP' if stops else 'PASS',bundle=bundle_info,strict_forward_status='STOP',
+        strict_forward_reasons=['qualified exchange calendar/lifecycle/action evidence unavailable'],
+        coordinator_ruling='A-D 2026-11-26; PENDING_INDEPENDENT_REVIEW; historical complete-price research only',
+        evidence_class='CPU_ENGINEERING_ONLY',contract_sha256=SPEC_SHA,
         source_commit=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
         identities=identities,documentation_clauses=clauses,stops=stops,fit_count=0,
         implementation={str(p.relative_to(ROOT)):sha256(p) for p in sorted((ROOT/'tools').glob('step3*.py'))},
@@ -274,17 +283,30 @@ def admission(source_root,out):
     return result
 
 
+BUNDLE_CATEGORIES={'matrix','feature_order','calendar','prices','membership','labels','features',
+                   'sampling','version_evidence','splits','keys','implementation'}
+
+
 def require_admission(gate):
-    # No arbitrary caller-authored PASS is accepted by the current engineering phase.
-    # Independently admitted identity bundle and executable checks are still missing.
-    raise ValueError('STOP Step3 admission incomplete; fits disabled pending independent review')
+    """Reverify the entire frozen bundle. PASS text alone never authorizes fitting."""
+    try:
+        if gate['status']!='PASS' or gate['contract_sha256']!=SPEC_SHA:raise ValueError('status/contract')
+        info=gate['bundle'];verify_file(info['path'],info['sha256'],info['bytes'])
+        bundle=json.loads(Path(info['path']).read_text())
+        if bundle['contract']!=SPEC_SHA or not BUNDLE_CATEGORIES<=set(bundle['files']):raise ValueError('incomplete bundle')
+        for info in bundle['files'].values():verify_file(info['path'],info['sha256'],info['bytes'])
+        verify_file(SPEC,SPEC_SHA)
+        return bundle
+    except (OSError,ValueError,KeyError,TypeError) as exc:
+        raise ValueError('STOP admission/bundle identity: '+str(exc)) from exc
 
 
 def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--source-root',type=Path,default=Path('/home/frank/projects/MarketMamba'))
     p.add_argument('--out',type=Path,required=True)
-    a=p.parse_args(argv);r=admission(a.source_root,a.out)
+    p.add_argument('--bundle',type=Path)
+    a=p.parse_args(argv);r=admission(a.source_root,a.out,a.bundle)
     print(json.dumps({k:r[k] for k in ['status','documentation_clauses','stops','fit_count']},ensure_ascii=False,indent=2))
 
 

@@ -1,3 +1,7 @@
+## Step3b 協調者裁定與歷史bundle候選 — 2026-11-26
+
+[報告Step3b](../../reports/step3_engineering_20261126.md)記錄Claude A–D裁定（待獨立審查）：pin TEJ原始欄位文件，限2013/01起首次單月與發布日，NTD千元轉元，跨2012比較／非NTD為NaN且禁用去年／累計匯出欄。逐列h20、五欄、48欄原矩陣、日曆／價格／成員、185/190共用列、抽樣及版本／程式身分只在指派worktree `.artifacts/step3/` 凍結；runner bundle不符STOP。這是歷史完整價格研究股票之CPU工程准入候選；strict前瞻仍STOP，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，不改既有48欄或正式Data，不執行或查看IC／績效。下方Step3a source STOP及未materialize為當時歷史觀測，本輪實跑結果以報告為準。
+
 ## Step3 五欄工程候選 — 2026-11-26
 
 [Step3 工程報告](../../reports/step3_engineering_20261126.md)與[合成測試](../../tests/test_step3.py)涵蓋首次單月值重建 YTD、發布日後首 session 收盤、同 session 穩定重播、舊月晚到、版本碰撞 STOP、缺月及跨年起點。`tools/step3_runner.py` 重用原 `c0plus.build_features`，185／190 欄共同部分逐鍵逐值核對；缺值原因與去重來源鏈另存 metadata，不加研究特徵。候選 UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；沒有正式營收特徵 materialization 或 source admission，版本／幣別／合併口徑 gate 仍 STOP，不改既有48欄。

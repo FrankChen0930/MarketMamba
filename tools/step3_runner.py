@@ -1,6 +1,6 @@
 """Step3 fixed CPU fit queue and durable job artifacts, no evaluation imports.
 
-This phase's real-data admission remains STOP. fit_job checks it before fitting.
+Real-data fitting requires revalidation of the complete frozen identity bundle.
 No CLI implicitly starts training; caller supplies already verified matrices.
 """
 from __future__ import annotations
@@ -108,7 +108,7 @@ def fit_job(gate,root,year,seed,arm,keys,fit_rows,y_fit,x_fit,x_eval,input_ident
     No correlation, labels at evaluation time, feature importance, ranking or
     performance summary is computed. Scores are never printed or returned.
     """
-    require_admission(gate)
+    bundle=require_admission(gate)
     if year not in YEARS or seed not in SEEDS or arm not in ('A','B'):raise ValueError('STOP queue identity')
     width=185 if arm=='A' else 190
     if x_fit.shape!=(len(fit_rows),width) or x_eval.shape!=(len(keys),width):raise ValueError('STOP matrix dimensions')
@@ -119,6 +119,11 @@ def fit_job(gate,root,year,seed,arm,keys,fit_rows,y_fit,x_fit,x_eval,input_ident
         year=year,seed=seed,arm=arm,params=PARAMS,input_identity=input_identity,
         sample_sha256=array_digest(fit_rows),target_sha256=array_digest(y_fit),keys_sha256=array_digest(keys),
         fit_sha256=array_digest(x_fit),eval_sha256=array_digest(x_eval))
+    expected=bundle.get('jobs',{}).get(arm,{})
+    if bundle.get('year')!=year or bundle.get('seed')!=seed or any(request[k]!=expected.get(k) for k in
+            ['sample_sha256','target_sha256','keys_sha256','fit_sha256','eval_sha256']):
+        raise ValueError('STOP job arrays do not match frozen bundle')
+    if input_identity!=gate['bundle']['sha256']:raise ValueError('STOP input bundle identity')
     root=private_dir(root);name=f'fold{year}-{arm}-seed{seed}'
     if (root/name).exists():resume(root/name,request);return root/name
     from lightgbm import LGBMRegressor
@@ -156,7 +161,7 @@ def run_fold(gate,root,data,dates,base_splits,labels,monthly_values,present,year
 
     The complete original-day target is ranked before seed sampling. Inference
     eligibility depends only on matrix presence through t, never on labels or B.
-    This phase's unconditional admission lock prevents all actual fits here.
+    Every job must match the admitted frozen bundle and shared sampling plan.
     """
     require_admission(gate)
     from tools.step3 import fold_rows,sample_training,w60_eligible
@@ -175,3 +180,21 @@ def run_fold(gate,root,data,dates,base_splits,labels,monthly_values,present,year
             outputs[arm,seed]=np.load(path/'keys.npy',allow_pickle=False)
     validate_outputs(outputs)
     return dict(fold=year,jobs=6,expected_keys=len(keys),status='ARTIFACTS_ONLY_NO_EVALUATION')
+
+
+def measure(bundle_dir,arm):
+    """Resource-only 2026 seed17; does not load evaluation labels or print scores."""
+    directory=Path(bundle_dir)
+    gate=json.loads((directory/'admission/admission.json').read_text())
+    require_admission(gate)
+    load=lambda name:np.load(directory/name,mmap_mode='r',allow_pickle=False)
+    path=fit_job(gate,directory/'measurement',2026,17,arm,load('keys.npy'),load('sample.npy'),
+        load('target.npy'),load('fit_'+arm+'.npy'),load('eval_'+arm+'.npy'),gate['bundle']['sha256'])
+    result=json.loads((path/'manifest.json').read_text())
+    print(json.dumps(dict(arm=arm,status=result['state'],telemetry=result['telemetry']),indent=2))
+
+
+if __name__=='__main__':
+    import argparse
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--bundle-dir',type=Path,required=True);p.add_argument('--arm',choices=['A','B'],required=True)
+    args=p.parse_args();measure(args.bundle_dir,args.arm)
