@@ -1,0 +1,117 @@
+{
+  "version": "p4d-stage1-v1",
+  "experiment": "p4d_stage1",
+  "status": "STAGE1_FROZEN",
+  "approval": "Human 2026-11-24 conversation; no digital signature",
+  "spec_sha256": "c36aed96787e2b7e69fc92cd736ef3692c5542f1aecf350c4e0047470790fe54",
+  "seeds": [
+    17,
+    29,
+    43,
+    59,
+    71,
+    89,
+    101,
+    113
+  ],
+  "capacities": [
+    [
+      32,
+      2
+    ],
+    [
+      64,
+      2
+    ],
+    [
+      128,
+      2
+    ],
+    [
+      256,
+      2
+    ],
+    [
+      64,
+      1
+    ],
+    [
+      64,
+      4
+    ]
+  ],
+  "macro_schema": {
+    "version": "p4d-rankgauss-v1",
+    "feature_order_sha256": "7d75d4a74c7802e70e9ca88c13f7c2169a4b4fb974847d907c774e82a9da9696",
+    "zero_columns": [
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47
+    ],
+    "names": [
+      "TWII_Return",
+      "SPX_Return",
+      "VIX",
+      "TNX",
+      "Gold_Return",
+      "Oil_Return",
+      "USD_TWD",
+      "Futures_OI_Foreign",
+      "Options_PC_Ratio",
+      "Fear_Greed",
+      "Business_Signal",
+      "FED_Rate"
+    ],
+    "method": "not_fitted",
+    "ties": "average",
+    "nonfinite": "nan/inf to zero before daily rank (frozen legacy policy)",
+    "dtype": "float32"
+  },
+  "budget": {
+    "policy": "record_only",
+    "units_per_hour": 0,
+    "thermal_stop_c": 85
+  },
+  "deferred": [
+    "Mamba2",
+    "capacity beyond six cells",
+    "D",
+    "N12"
+  ],
+  "recipe": {
+    "window": 60,
+    "d_model": 64,
+    "n_layers": 2,
+    "lr": 0.0003,
+    "weight_decay": 0.01,
+    "epochs": 8,
+    "steps_per_epoch": 400,
+    "patience": 3,
+    "dates_per_batch": 8,
+    "stocks_per_date": 256,
+    "min_names": 64,
+    "listnet_w": 0.0,
+    "mixer_kw": {
+      "expand": 2,
+      "headdim": 8,
+      "d_state": 16
+    }
+  },
+  "validation_sessions": 126,
+  "purge": 20,
+  "label_end_offset": 11,
+  "history_year_sessions": 252,
+  "min_history_years": 4,
+  "evidence_class": "E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED",
+  "queue_sha256": "32506a22ecc1154096ca5c616ef0f33dc565d1f14a45a412cea5c8f620d8892f",
+  "fit_count": 140
+}

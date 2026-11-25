@@ -86,3 +86,11 @@ MyDrive/MarketMamba/
 
 - 第 13 次複審 NO_GO 修補候選（UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED）：各階段結果、發布 metadata、Q5 巢狀診斷與成功 marker 共用單一遞迴 schema 驗證器，必要／允許欄位封閉，拒絕未知欄位與 bool 當數值。`excluded_dates` 依實際輸出固定為可解析 ISO 日期字串清單（可空，不接受計數）；`rule` 限凍結的診斷規則字串。daily 日期須可解析；相關係數／IC、差值、overlap 等依值域檢查有限數值；permutation 為 0…9 的整數，mean IC 恰好凍結 R=10 筆，每個 permutation 的 daily 日期支援一致且不可重複。成功 marker 遇超大整數、OverflowError／TypeError／RecursionError 或其他既定解析錯誤，視為無效，輸出期望／實際／下一步，移除後重新排練；任何排練失敗仍 STOP。
 - `REHEARSAL-complete.json`、`REHEARSAL.json`、獨立 result JSON 與成功 marker 均拒絕符號連結；fit 內 scores／reference／checkpoint 等沿用原驗證規則。來源相容宣告 `to.commit` 記錄工具產生當時可得 HEAD，逐檔 hashes 綁定 working bytes；提交後 commit 可不同，`deliver` 必須以最終 bytes 重算宣告，不能沿用舊宣告。36-fit 採用條件與 64-fit 佇列完全不變。CPU 測試完成不解除 NO_GO，也不代表可交 Human 正式接續，仍需獨立複審、現場排練與 Human acceptance。
+
+### P4d 第一段候選（2026-11-25）
+
+- 僅第一段 baseline、GRU B及GRU A六格；其他仍DRAFT。兩檔產生器為 `PYTHONPATH=V6 python -m tools.p4d_bundle --prepared /home/frank/projects/p4-bundles/prepared --output <隔離目錄>`，預設run-name `p4d_stage1`，本次只允許本機隔離測試，獨立審查前不產生Windows正式交付。
+- 沿用本檔需求；新實驗使用 `MarketMamba/p4d/budget_p4d_stage1/` 與 `progress/formal/PROGRESS.txt`，不共用P4a帳本。baseline的BEST只在2021前選更新數，後續anchor容量／新增seed與outer固定更新數，保留原八epoch warm-up／cosine週期；outer不另選BEST，不使用測試標籤早停。
+- 正式前強制排練GRU d256×2、d64×4、d32×2各1 step、C0+以及outer評分／描述性IC評估路徑。逐產物hash、job／source／matrix／split／environment及固定更新數再驗；缺證據STOP，沒有略過開關。組合層須另提供凍結price snapshot，本輪未驗。
+- P4d只列入三個精確訓練來源 `tools/p4d.py`、`tools/p4d_train.py`、`tools/p4d_bundle.py`；`tools/p4d_evaluate.py`為本機專用、不入包。沿用舊safe-extract核心但使用獨立archive allowlist instance，不改P4a來源inventory／相容宣告或本機專用policy。新run不需要P4a來源升級，舊能力保留；P4d未認證任何跨版數值相容，變更來源須獨立審查，不能默接舊run。
+- GRU第一段不安裝或啟動Mamba2；runtime使用既有OBSERVED Colab契約的相關套件子集＋LightGBM4.6.0，精確差異即STOP，不更寫舊observed_at。CPU合成測試不是Colab／T4／Drive驗收，現場仍UNVERIFIED。

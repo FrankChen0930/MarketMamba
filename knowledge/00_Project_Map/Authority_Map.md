@@ -1,3 +1,9 @@
+## P4d 第一段 authority 邊界 — 2026-11-25
+
+Human 2026-11-24對話核准採預設值、無數位簽章；[原規格](../../tasks/spec-p4d-equal-tuning-20261125.md)全文原bytes SHA `c36aed96787e2b7e69fc92cd736ef3692c5542f1aecf350c4e0047470790fe54`綁定第一段 **STAGE1_FROZEN**，只含baseline、GRU B前1/2/4/8與A六格。Mamba2全部、超六格容量、D與N12仍DRAFT；此附加狀態取代下方歷史「全部P4d待凍結」對第一段的描述，不改原規則、P4a machine authority、歷史結果或production authority。
+
+[機器契約](../../tasks/p4d-stage1-contract-20261125.json)、[切分盤點](../../tasks/p4d-stage1-prepared-splits-20261125.json)、[工程候選](../../reports/v7_p4d_engineering.md)為本worktree未提交候選（base35cd9b8），UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；140-fit新run／新帳本不重用P4a結果。CPU測試與prepared metadata只支持工程切分，非CUDA／Drive、PIT、組合收益或Human acceptance。未新增研究結果／已驗收canonical artifact，不更動authority-map.json或observed_at；獨立審查與現場排練待辦。
+
 ## P4b FROZEN 對話核准與工程候選邊界 — 2026-11-24
 
 ## P4b bundle 本機專用來源契約候選 — 2026-11-24

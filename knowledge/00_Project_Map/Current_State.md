@@ -1,3 +1,13 @@
+## P4d 第一段分段凍結與CPU工程候選 — 2026-11-25
+
+`job-run-mwvnttp4-a9ebe0/builder_p4d_stage1`，既有detached base `35cd9b88ddec3bce3849ba0363c0514393d16d47`；**STAGE1_FROZEN / E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。Human對話核准只涵蓋baseline、GRU B（固定八seed前1/2/4/8）與A六格；原規則SHA `c36aed96787e2b7e69fc92cd736ef3692c5542f1aecf350c4e0047470790fe54`，原全文bytes保留且只附紀錄；其他段落仍DRAFT。下方歷史「P4d仍DRAFT」不代表本次第一段仍未核准。
+
+[工程報告](../../reports/v7_p4d_engineering.md)、[獨立契約](../../tasks/p4d-stage1-contract-20261125.json)、[prepared切分盤點](../../tasks/p4d-stage1-prepared-splits-20261125.json)與[新入口](../../tools/p4d.py)：140 fits＝126 GRU＋14 C0+，新佇列SHA `32506a22ecc1154096ca5c616ef0f33dc565d1f14a45a412cea5c8f620d8892f`，帳本 `budget_p4d_stage1`。2021前anchor126sessions、嚴格20-session不等式、共同finite labels／W60、完整交易年等值池、macro36…47與support/cache隔離；僅anchor baseline選更新、outer六折fresh固定更新。P4a程式／來源相容宣告／64-fit budget及歷史結果不改。使用既有tools容器，避免research_lab全掃描把新來源納入舊P4a；本機評估器不入包。
+
+唯讀prepared七個origins切分全通過：anchor fit3,935,478列／3,528sessions；val185,595列／126sessions（2020-06-04～2020-12-03）。只執行CPU合成邊界／單步路徑與metadata盤點，未訓練研究模型，沒有新績效。T4約19.01h為baseline等效估計，容量、完整train IC／全列C0+ RAM、現場T4／Drive、price snapshot與獨立審查仍未驗。Holm2含未核准Mamba2，第一段不縮成Holm1、不宣告完整核心家族勝出。
+
+Next：獨立審查候選patch；通過後由Human自行產生正式交付，現場排練失敗即STOP。依no-commit保留指定dirty/untracked；無GPU／Colab／Drive／blind／正式Data／models／production／scheduler／額外agents／commit／push／merge。完整實測輸出與限制以工程報告為準，不更新外部runtime observed_at。
+
 ## P4b 對話凍結與 CPU 實作候選 — 2026-11-24
 
 ## P4b 本機專用來源邊界修補候選 — 2026-11-24
@@ -33,7 +43,7 @@ P4a既有失敗判定為**文件段落結構錯置**：Current State及Authority
 
 ## 三份DRAFT Human凍結決定彙整
 
-**前瞻與P4d：仍待Human凍結；P4b：FROZEN（2026-11-24 對話核准採預設值，無數位簽章）。不是額外執行／費用授權。** 請逐列記「採預設／採替代＋完整修訂／不執行」，並綁定最終文件及輸入hash、批准者、UTC／台北時間；不得用本表勾選代替正文所需證據。三案可分別凍結，但跨案衝突須在各自第一筆新結果之前處理。
+**前瞻：仍待Human凍結；P4d：第一段STAGE1_FROZEN，其餘DRAFT（詳本表分段列）；P4b：FROZEN（2026-11-24 對話核准採預設值，無數位簽章）。不是額外執行／費用授權。** 請逐列記「採預設／採替代＋完整修訂／不執行」，並綁定最終文件及輸入hash、批准者、UTC／台北時間；不得用本表勾選代替正文所需證據。三案可分別凍結，但跨案衝突須在各自第一筆新結果之前處理。
 
 | 案／決定 | 建議凍結內容（正文位置） | 重大替代與代價／尚待證據 |
 |---|---|---|
@@ -50,8 +60,9 @@ P4a既有失敗判定為**文件段落結構錯置**：Current State及Authority
 | P4b工程身分補錄 | adapter SHA `064e8b8404bc0aefbb60598471c58ac78a71e952be203c5dff8126dfd10b5823`；269檔code／契約identity manifest SHA `3a9b6d8bd48d9218927d53d2d82aed6c507b792af71a4d1774c5e4554f16c276`；實讀輸入及2021排練manifest SHA `78090080bcbc3c4d4a2e5564a130fe3ee0a44310658ebdb52fbda4e5825122f4` | 僅CPU_ENGINEERING_ONLY；price/market_value/volume snapshot未提供／未驗證，不能全量評估；無Human acceptance |
 | P4b支援／輸入 | 36-fit固定subset獨立准入且不降64-fit gate；P1原seed scores、共同S先裁後rank；事前D＋日期聯集、每日95%與≥50、NaN不刪組合列；固定snapshot／volume與完整Config identity | 只看交集／日期聯集均不足；缺fit／日／折即STOP或不具提名資格。本機匯出、逐fit lineage與來源驗證待另案，不讀Drive |
 | P4b統計／候選／限制 | Holm3只2021–2023，block20／1000／seed17雙邊；全六折揭露；兩折CI正／三折mean正／近期方向及完整診斷，優先序B1→B2→B3；E2及不對稱限制 | 無候選就停止；多臂前瞻需新家族／alpha，不加入已開始P2。CPU subset loader／評估資源與授權另案，不重訓 |
+| P4d分段凍結（STAGE1_FROZEN） | Human 2026-11-24對話核准預設值，無數位簽章、確切時刻UNKNOWN；原全文規則SHA `c36aed96787e2b7e69fc92cd736ef3692c5542f1aecf350c4e0047470790fe54`；只含baseline、新C0+參考、GRU B前1/2/4/8與GRU A六格；原規則bytes不改，只附凍結紀錄 | Mamba2全部、超六格容量、D、N12核心搜尋仍DRAFT待第一段結果後另決；工程完成非Human acceptance，無GPU／費用／正式交付授權 |
 | P4d macro schema凍結名單 | [P4d](../../tasks/spec-p4d-equal-tuning-20261125.md)「預處理隔離契約」神經歸零36…47：TWII_Return、SPX_Return、VIX、TNX、Gold_Return、Oil_Return、USD_TWD、Futures_OI_Foreign、Options_PC_Ratio、Fear_Greed、Business_Signal、FED_Rate；綁48欄order SHA及cache／fit support identity | 替代僅用合格tuning fit完整截面估mask後全案固定；不可全矩陣抽樣／按fold或fraction重估。future-mutation／cache hit/rebuild／新程序驗收尚未實作；C0+不刪macro |
-| P4d核心搜尋／選擇 | §2–5三臂C0+/GRU/Mamba2各N12×seed17/29、2021前126-session全列validation／purge／maturity、先生成random表RNG20261125、IC5/BEST及tie規則、固定更新六折fresh fit、§3完整搜尋空間與新dropout／loss接線 | N6省費／N24較廣；等牆鐘另案且硬體不等價；S-Mamba預設不納，若納須同預算Holm3與重算；不Optuna，不按outer／pilot績效改N |
+| P4d核心搜尋／選擇（DRAFT，未核准） | §2–5三臂C0+/GRU/Mamba2各N12×seed17/29、2021前126-session全列validation／purge／maturity、先生成random表RNG20261125、IC5/BEST及tie規則、固定更新六折fresh fit、§3完整搜尋空間與新dropout／loss接線 | N6省費／N24較廣；等牆鐘另案且硬體不等價；S-Mamba預設不納，若納須同預算Holm3與重算；不Optuna，不按outer／pilot績效改N |
 | P4d統計／完整性 | GRU−C0+及Mamba−C0+，centered雙邊公式、Holm2／seed20261125、2021–2023 pool，逐日同列、共同成熟IC、組合保留NaN、六折完整揭露 | 單邊需另案公式與驗收，不能除二；所有歷史結果均描述性，少fit不可稱equal_budget_complete |
 | P4d A／B／D開關與配方 | §6各模組可獨立開關；預設P4a固定配方、baseline選BEST更新數後各格固定更新，七origins共用合格baseline去重，本預設不重用P4a fits | 調參後配方混合搜尋／容量效應須先改設計，不兩版擇優；B只描述訓練隨機性與集成，保留batch／更新長度選擇混淆 |
 | P4d A容量／B種子／D資料 | A六格d32/64/128/256×2層＋d64×1/4層，headdim8/state16/expand2；B固定17/29/43/59/71/89/101/113之前1/2/4/8；D可關閉或25/50/100%最近完整年等值全列 | A12格可估交互但336fits且昂貴角落未測；改heads／state／expand會加混淆；D不是隨機抽樣。B無挑最佳seed，baseline新seed更新次數交替對應須一併凍結 |

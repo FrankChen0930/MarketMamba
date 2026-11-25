@@ -336,3 +336,11 @@ Knowledge-impact八問：候選研究設計／major blocker／next decision=YES�
 WSL CPU，文件工具`/usr/bin/python3` 3.12.3，唯讀NumPy及shared統計檢查使用`/home/frank/.venvs/marketmamba-gpu/bin/python` 3.12.3（CUDA_VISIBLE_DEVICES空，未載入GPU／訓練）。MARKETMAMBA_DATA_ROOT unset，Data realpath為本worktree的普通Data目錄，未讀正式Data；唯讀實證僅使用Human指定外部prepared／pilot09矩陣及既有公開歷史artifact metadata。沒有讀封盲區、改V6/models、GPU／Colab／Drive、資料取得、production／scheduler、通知／wakeup／recurring jobs或額外agents。
 
 Knowledge-impact：DRAFT設計語義／blocker與next decision細分=YES，同改三份knowledge；已生效machine authority／runtime／subsystem／correctness thresholds／canonical supersession／deprecation=NO。Human仍須選端點、摘要及預處理完整契約並凍結；正式calendar、來源／事件與所有未來adapter／mutation／推導測試及獨立複審未完成。文件完成不等於Human acceptance。
+
+## 第一段分段凍結紀錄 — Human 2026-11-24 對話核准
+
+本段為附加狀態紀錄，不改上方規則。上方完整原檔 bytes 的 SHA-256 為 `c36aed96787e2b7e69fc92cd736ef3692c5542f1aecf350c4e0047470790fe54`，作全文預設規則凍結身分；附加後整檔SHA自然不同，不拿新hash替代原規則。凍結後規則文字不得再改。
+
+Human 原話「我通過了，可以開始，並且照你建議的順序做」，是對話核准、無數位簽章，確切時刻 UNKNOWN。**STAGE1_FROZEN**：baseline（GRU及新C0+參考）、GRU模組B固定序列17/29/43/59/71/89/101/113前1/2/4/8、GRU模組A預設六格 d32/64/128/256×2層及d64×1/4層；沿用全文預設切分／固定更新／預處理／描述性規則。其餘全部 **DRAFT待決**，含任何Mamba2、超六格容量、模組D及N12核心調參，須第一段結果後另行決定。只凍結第一段範圍，不宣稱全文所有階段獲准執行。
+
+本輪只實作與CPU工程驗證，不授權訓練、GPU／Colab／Drive、資料取得、production／scheduler或正式Windows交付。工程候選與待驗項見 [P4d工程報告](../reports/v7_p4d_engineering.md)。完成不等於Human acceptance。

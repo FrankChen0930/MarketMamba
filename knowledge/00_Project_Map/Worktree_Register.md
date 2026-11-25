@@ -1,5 +1,13 @@
 # Worktree Register
 
+## P4d stage1 builder — 2026-11-25
+
+- Purpose/task/owner：Human／Codex builder，job-run-mwvnttp4-a9ebe0/builder_p4d_stage1；baseline、GRU B與A六格的CPU工程、測試、交付產生器。既有path `.worktrees/ruflo-workers/run-mwvnttp4-a9ebe0/builder_p4d_stage1`，detached HEAD/base `35cd9b88ddec3bce3849ba0363c0514393d16d47`；created date UNKNOWN（本輪接手2026-11-25），retired N/A，初始clean，未新增worktree。
+- State/authority：EXECUTE_APPROVED bounded CPU；STAGE1_FROZEN，但實作UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED。依no-commit保留指定patch，沒有push／merge／GPU／Drive／Colab／正式Data／V6/models／blind／production／scheduler／agents。
+- Dependencies：獨立審查及Human後續交付，最大格T4／全量validation／C0+RAM與price snapshot未驗。本機 `.artifacts/p4d/` 或 `/tmp`為GENERATED／TEMPORARY工程證據；durable split metadata見[盤點](../../tasks/p4d-stage1-prepared-splits-20261125.json)。safe removal：先保存未提交patch與唯一證據、核對引用及retirement review並確認clean；本輪不移除。
+- Runtime：WSL，Python3.12.3，既有venv＋CUDA_VISIBLE_DEVICES空，MARKETMAMBA_DATA_ROOT unset，Data為本worktree普通目錄，未讀其內容。無外部runtime observation更新。
+
+
 ## P4b bundle 來源邊界 builder — 2026-11-24
 
 - Purpose/task／owner：Human／Codex builder，`job-run-mwuv96vj-55da06/builder_bundle_exclude`；精確排除本機專用評估來源、重產 P4a 宣告、CPU 負向／hash 隔離回歸及文件。沿用 `.worktrees/ruflo-workers/run-mwuv96vj-55da06/builder_bundle_exclude`，detached HEAD/base `8dc5cc961f520272cd94281b8e104347cdecd034`；created date UNKNOWN（本輪接手2026-11-24），retired N/A；起始 clean，未新增 worktree。
