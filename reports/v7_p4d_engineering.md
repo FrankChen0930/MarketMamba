@@ -310,6 +310,7 @@ exit0
 
 ## 2026-11-25 本機 C0+ 記憶體量測與交付修正（Claude）
 
-- 量測：`ulimit -v 9500000`（約 9.5 GB）下執行 `python -m tools.p4d_train --measure-c0plus --origin 2026 --data-dir /home/frank/projects/p4-bundles/prepared`，在配置 `(6190955,185) float32`（4.27 GiB）矩陣時 `_ArrayMemoryError` 失敗；此時最大 RSS 7,592,952 KB（約 7.6 GB），耗時 1 分 31 秒。結論：2026 C0+ 全列擬合峰值 > 11.8 GB，本機 WSL（11 GiB）不可行；實際峰值仍 UNKNOWN。
+- 量測：`ulimit -v 9500000`（虛擬記憶體上限約 9.06 GiB）下執行 `python -m tools.p4d_train --measure-c0plus --origin 2026 --data-dir /home/frank/projects/p4-bundles/prepared`，在配置 `(6190955,185) float32`（4.27 GiB）矩陣時 `_ArrayMemoryError` 失敗；此前程序最大 RSS 7,592,952 KB（約 7.24 GiB），耗時 1 分 31 秒。**只能說：在該虛擬記憶體上限下，於配置此矩陣時失敗；完整擬合的實際峰值 RSS 為 UNKNOWN。**`ulimit -v` 限制的是虛擬位址空間而非實體記憶體，歷史最大 RSS 也不能直接加上失敗的配置量當作峰值下界，因此不據此宣稱峰值數值或本機一定不可行；本機 WSL 總記憶體 11 GiB 與此量測結果並列，作為改用 Colab 高 RAM 的保守依據。
 - 處置：notebook 環境格新增 RAM 前置檢查（`MemTotal` ≥ 40 GiB，否則在長跑前 STOP 並指示切換 Colab「高 RAM」）；40 GiB 是保守門檻，不是量測值。不恢復抽樣 cap。
 - 獨立複審 2 的唯一 REQUIRED（量測入口接受任意 `--output`）已修正：移除 `--output`，輸出固定於 `.artifacts/p4d/measure-*`，`checked_measurement_output` 在建立目錄前拒絕 namespace 以外路徑；新增測試與 1 項 in-memory mutation（停用檢查）KILLED。
+- 獨立複審 3 的兩項 REQUIRED 已修正：(1) namespace root 或其祖先為 symlink、以及葉節點 symlink 時一律拒絕（比較 lexical 與 resolved 路徑），新增 root／祖先／葉節點 symlink 回歸測試；(2) 上一條量測敘述改為只陳述該上限下配置失敗、峰值 UNKNOWN，刪除『峰值 > 11.8 GB』的推論。

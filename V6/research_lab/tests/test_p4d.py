@@ -609,6 +609,31 @@ def test_measure_c0plus_output_namespace_enforced(tmp_path,monkeypatch):
     assert t.checked_measurement_output(root/'measure-ok')==(root/'measure-ok').resolve()
 
 
+def test_measure_c0plus_symlinked_root_or_target_rejected(tmp_path,monkeypatch):
+    from tools import p4d_train as t
+    outside=tmp_path/'outside';outside.mkdir()
+    # Namespace root itself is a symlink to an outside directory.
+    (tmp_path/'.artifacts').mkdir();linked_root=tmp_path/'.artifacts'/'p4d';linked_root.symlink_to(outside)
+    monkeypatch.setattr(t,'measurement_root',lambda:linked_root)
+    with pytest.raises(ValueError,match='symlinks'):
+        t.checked_measurement_output(linked_root/'measure-x')
+    assert not (outside/'measure-x').exists()
+    with pytest.raises(ValueError,match='symlinks'):
+        t.main(['--measure-c0plus','--origin','2026','--data-dir','unused'])
+    assert not any(outside.iterdir())
+    # Symlinked ancestor of the root.
+    real=tmp_path/'real';(real/'p4d').mkdir(parents=True);alias=tmp_path/'alias';alias.symlink_to(real)
+    monkeypatch.setattr(t,'measurement_root',lambda:alias/'p4d')
+    with pytest.raises(ValueError,match='symlinks'):
+        t.checked_measurement_output(alias/'p4d'/'measure-y')
+    # Real root but a symlinked leaf pointing elsewhere.
+    root=tmp_path/'clean'/'p4d';root.mkdir(parents=True)
+    monkeypatch.setattr(t,'measurement_root',lambda:root)
+    (root/'measure-z').symlink_to(outside)
+    with pytest.raises(ValueError,match='STOP: measurement output'):
+        t.checked_measurement_output(root/'measure-z')
+
+
 def test_rehearsal_every_path_gets_publisher(tmp_path,monkeypatch):
     from tools import p4d_train as t,p4d_bundle as b
     import torch

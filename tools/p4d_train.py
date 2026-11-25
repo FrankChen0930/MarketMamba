@@ -418,8 +418,14 @@ def measurement_root():
 
 def checked_measurement_output(output):
     """Reject any measurement directory outside .artifacts/p4d/measure-* before creating it."""
-    root=measurement_root().resolve();target=Path(output).resolve()
-    if target.parent!=root or not target.name.startswith('measure-'):
+    lexical_root=Path(os.path.abspath(measurement_root()))
+    root=lexical_root.resolve()
+    # A symlinked namespace root (or any symlinked ancestor) would make root and target
+    # resolve consistently to an outside location, so require the lexical root to be real.
+    if root!=lexical_root:
+        raise ValueError(f'STOP: measurement output root must not involve symlinks: {lexical_root} -> {root}')
+    lexical_target=Path(os.path.abspath(output));target=lexical_target.resolve()
+    if target!=lexical_target or target.parent!=root or not target.name.startswith('measure-'):
         raise ValueError(f'STOP: measurement output must be {root}/measure-*; got {target}')
     return target
 
