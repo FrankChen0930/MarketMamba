@@ -1,3 +1,13 @@
+## TEJ 第二步 2b 描述診斷候選 — 2026-11-25
+
+最終診斷430.75秒exit0；月營收等權h20早期0.0263／後期0.0152，季報0.0347／0.0263；四條延遲曲線未觸描述性驟降警旗，不證明PIT。h20有效期實際到2026-08-21。描述性建議值得規劃固定月營收h20第三步預先登記，未啟動實驗。最新focused26 passed／兩項新mutation killed；較早collection全套1347 passed／11 skipped／5 warnings／898.37秒exit0，修正後未再完整全套，限制見報告。五份正式parquet SHA均相符，私有manifest SHA `ec10a1d6781db6fa4e3f165d8e2301d86d1dce963598f186522fe74bffd65b13`；partial-before-coverage-fix不是完成證據。
+
+`job-run-mwwag5jb-fb775c/builder_tej_2b`，既有 detached base `099e17c6ee67ad5dfedc42a2b3045fa91557e26c`、起始 clean；本輪 no-commit patch，**DESCRIPTIVE_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[程式](../../tools/tej_diag.py)與[合成測試](../../tests/test_tej_diag.py)沿用 tools／tests；[報告](../../reports/tej_diag_20261125.md)與[JSON](../../reports/tej_diag_20261125.json)是彙總，所有逐列特徵／分數只在本 worktree `.artifacts/tej/diag/`。來源唯讀主 checkout TEJ 雙表及事前 frozen raw-price snapshot，逐份 SHA、source／config／support／輸出身分見 JSON；C0+ 逐日 date／stock 成員鍵、2021 後歷史分數僅描述，不用 X/y、不重訓。
+
+20 日主標籤在診斷前已鎖定，5／60 日僅描述；發布 D 後第一個 session 收盤才可形成訊號，age=0 不混入 1–5 桶。完整四控制 PIT 殘差 IC **STOP：無合格 PIT log 市值**，僅另報三價量控制及 C0+ 殘差對照。月營收範圍欄全缺、累計比較值版本未核；IFRS 排除長尾／非曆年／未知起迄／非 Q／現況金融與分類未知，值版本（含 EPS）仍 UNKNOWN。raw 價無股利、日曆為 observed union、研究成員不是 tradability／lifecycle authority；不升格 source admission 或嚴格 PIT。最終數值、第三步描述性判斷、驗證與未完成範圍以報告為準，builder 自查不等於獨立審查或 Human acceptance。
+
+不讀 blind、不改正式 Data／V6/models／實際帳本／production／scheduler／P4d，不用網路／GPU／額外 agents，不 commit／push／merge／deploy；不更新外部 observed_at。私有產物與 patch 必須先保存、驗 hash／references，才可另案審查 worktree 退役。
+
 ## TEJ 第二步 2a 資料層候選 — 2026-11-25
 
 `job-run-mww8tui1-604e40/builder_tej_2a`，detached base `aafd0d9c41ac2a42a7277936353a101f93aab95c`、起始 clean；Human 核准有界第二步，依 no-commit 保留 patch，**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[loader](../../tools/tej_pit.py)與[合成測試](../../tests/test_tej_pit.py)只做 TEJ 資料層，沿用既有tools離線資料工具邊界，避免納入P4a訓練打包；不改既有gate。[報告](../../reports/tej_pit_audit_20261125.md)／[JSON](../../reports/tej_pit_audit_20261125.json)記 source／input／輸出 hash 與實際統計；raw zip 和所有逐列衍生資料（含代碼日期示例）僅在 gitignored `.artifacts/tej/`，不入 PUBLIC git。

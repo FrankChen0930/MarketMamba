@@ -1,3 +1,11 @@
+## TEJ 第二步 2b 描述診斷的 authority 邊界 — 2026-11-25
+
+最終診斷430.75秒exit0；月營收等權h20早期0.0263／後期0.0152，季報0.0347／0.0263；四條延遲曲線未觸描述性驟降警旗，不證明PIT。h20有效期實際到2026-08-21。描述性建議值得規劃固定月營收h20第三步預先登記，未啟動實驗。最新focused26 passed／兩項新mutation killed；較早collection全套1347 passed／11 skipped／5 warnings／898.37秒exit0，修正後未再完整全套，限制見報告。五份正式parquet SHA均相符，私有manifest SHA `ec10a1d6781db6fa4e3f165d8e2301d86d1dce963598f186522fe74bffd65b13`；partial-before-coverage-fix不是完成證據。
+
+Human 核准本輪有界描述；`job-run-mwwag5jb-fb775c/builder_tej_2b@099e17c` 的 [工具](../../tools/tej_diag.py)／[報告](../../reports/tej_diag_20261125.md)為 **DESCRIPTIVE_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**，不是確認性假說檢定。20 日主標籤事前鎖定，5／60 日僅描述。TEJ 雙表及 frozen price SHA 支持本批輸入身分，不能證明歷史版本、官方日曆、universe lifecycle 或可成交；IFRS 全表及 EPS 版本 UNKNOWN，月營收範圍與累計比較值也有明示限制。
+
+完整四控制 IC 缺 PIT 市值而 STOP；三價量控制與 C0+ 殘差結果不得冒稱規模已控制。事件／延遲／bootstrap 是已曝光資料描述，低秩相關與區間不構成增益證明；第三步是否預登記只是下一步建議，不授權重訓或實驗。逐列只存本 worktree ignored `.artifacts/tej/diag/`，public 只程式／合成測試／彙總。未 supersede canonical artifacts、authority-map.json、P2／P4d／production／source admission 或歷史結果，無外部 observed_at 更新；最終驗證與未完成項目見報告，獨立 review／Human acceptance 待辦。
+
 ## TEJ 第二步 2a 候選的 authority 邊界 — 2026-11-25
 
 Human 本輪核准有界資料層；`job-run-mww8tui1-604e40/builder_tej_2a@aafd0d9` 未提交 [loader](../../tools/tej_pit.py)／[報告](../../reports/tej_pit_audit_20261125.md)為 **RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。TEJ raw／逐列資料及日期示例僅存指派worktree `.artifacts/tej/`，公開僅程式／合成測試／彙總。input SHA、manifest、可重算統計只證明本批匯出與轉換身分，不證明歷史值版本；IFRS首次／重編 UNKNOWN，月營收首次值為Human轉述TEJ文件、未核原件，發布日不代表盤中可得或嚴格PIT。

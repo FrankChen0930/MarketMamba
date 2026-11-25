@@ -1,3 +1,12 @@
+## TEJ 第二步 2b builder — 2026-11-25
+
+- Purpose／owner／task：Human／Codex builder，`job-run-mwwag5jb-fb775c/builder_tej_2b`；月營收主、季報附帶的有界描述性報酬診斷，不派 agents。
+- Path／branch／base：`.worktrees/ruflo-workers/run-mwwag5jb-fb775c/builder_tej_2b`；既有 detached HEAD `099e17c6ee67ad5dfedc42a2b3045fa91557e26c`，created date UNKNOWN（本輪接手 2026-11-25），retired N/A；起始 clean，不增減 worktree。
+- State／authority：no-commit patch，DESCRIPTIVE_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；20 日主標籤事前鎖定，不訓練研究模型、不把結果升格確認／交易證據；四控制 PIT IC 缺合格市值而 STOP。完整驗證、描述性判斷與限制見[報告](../../reports/tej_diag_20261125.md)。
+- Artifact／merge dependencies：主 checkout `.artifacts/tej/pit/`、`.artifacts/p4b/snapshot-prices-20261125/`、`.artifacts/p1/full-scores-ace2eef/` 與 `/home/frank/projects/p4-bundles/prepared/shared` 唯讀；本 worktree `.artifacts/tej/diag/` 含 GENERATED 授權逐列產物／manifest，屬私有 EXTERNAL_LARGE_DATA handling，全部 ignored，不能因無 Git 追蹤而刪除。無 merge／deployment dependency 授權。
+- Safe removal：先保留 patch、完整私有產物與 manifest／輸入位置、驗 SHA／references／唯一副本及重建授權，獨立 review／Human acceptance 後另案確認 clean／retirement；本輪不移除或清理。
+- Runtime：WSL CPU／pilot09 既有 venv Python 3.12.3；CUDA_VISIBLE_DEVICES 空，MARKETMAMBA_DATA_ROOT unset，Data 是本 worktree 普通目錄，未讀寫；無網路／GPU／blind／正式 Data／models／帳本／production／scheduler／P4d／commit／push／merge／deploy，無外部 observed_at 更新。全套測試以 bwrap 遮蔽真實 folds／主 artifacts／正式 Data，工程 synthetic CPU 測試不等同研究擬合。
+
 ## TEJ 第二步 2a builder — 2026-11-25
 
 - Purpose／owner／task：Human／Codex builder，`job-run-mww8tui1-604e40/builder_tej_2a`；有界TEJ轉換及資料稽核，不派agents。

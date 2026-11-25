@@ -1,3 +1,11 @@
+## TEJ 第二步 2b 描述性特徵候選 — 2026-11-25
+
+最終診斷430.75秒exit0；月營收等權h20早期0.0263／後期0.0152，季報0.0347／0.0263；四條延遲曲線未觸描述性驟降警旗，不證明PIT。h20有效期實際到2026-08-21。描述性建議值得規劃固定月營收h20第三步預先登記，未啟動實驗。最新focused26 passed／兩項新mutation killed；較早collection全套1347 passed／11 skipped／5 warnings／898.37秒exit0，修正後未再完整全套，限制見報告。五份正式parquet SHA均相符，私有manifest SHA `ec10a1d6781db6fa4e3f165d8e2301d86d1dce963598f186522fe74bffd65b13`；partial-before-coverage-fix不是完成證據。
+
+[工具](../../tools/tej_diag.py)／[報告](../../reports/tej_diag_20261125.md)在核准範圍使用發布日期的保守代理：D 後第一個 observed session 收盤可用，次日 open 至 h 日 close 的 raw-price labels；缺值／缺 session 不補。月營收固定五欄、季報三欄與完整欄位等權分數只作已曝光描述；逐列在本指派 worktree `.artifacts/tej/diag/`，public 只有彙總。月營收 scope 欄全缺、累計比較值版本未核；IFRS 排除 >365 日、非曆年／未知起迄、H、現況金融／分類未知，整表與 EPS 版本未確認。沒有改正式資料或 admission。
+
+PIT log 市值無合格來源，因此完整四控制 IC STOP；三價量控制不可冒稱規模已控制。raw 價未含股利、observed calendar 非官方、C0+ 日成員不是 lifecycle／tradability 證據，早期 C0+ 分數缺失不補。輸入／輸出 SHA 只證身分，不證 source PIT；DESCRIPTIVE_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，獨立 review 與 Human acceptance 另案。
+
 ## TEJ 匯出資料層候選 — 2026-11-25
 
 [loader](../../tools/tej_pit.py)與[報告](../../reports/tej_pit_audit_20261125.md)是未提交 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED 候選。UTF-16 TAB／strip／`.`缺值／字串前置零／千元→元（EPS不縮放）均以合成測試驗證；SHA不符STOP，缺發布日保留NO_RELEASE_DATE，無期限倒填。月營收380,514列、IFRS115,876列和所有逐列示例只在指派worktree `.artifacts/tej/`，不入公開git；manifest／input hashes見彙總JSON。
