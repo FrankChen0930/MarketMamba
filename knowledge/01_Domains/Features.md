@@ -1,3 +1,7 @@
+## Step3 五欄工程候選 — 2026-11-26
+
+[Step3 工程報告](../../reports/step3_engineering_20261126.md)與[合成測試](../../tests/test_step3.py)涵蓋首次單月值重建 YTD、發布日後首 session 收盤、同 session 穩定重播、舊月晚到、版本碰撞 STOP、缺月及跨年起點。`tools/step3_runner.py` 重用原 `c0plus.build_features`，185／190 欄共同部分逐鍵逐值核對；缺值原因與去重來源鏈另存 metadata，不加研究特徵。候選 UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；沒有正式營收特徵 materialization 或 source admission，版本／幣別／合併口徑 gate 仍 STOP，不改既有48欄。
+
 # Features
 
 ## Metadata

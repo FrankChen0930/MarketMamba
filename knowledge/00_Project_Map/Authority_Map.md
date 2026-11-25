@@ -1,3 +1,9 @@
+## Step3 工程候選的 authority 邊界 — 2026-11-26
+
+[凍結規格](../../tasks/spec-step3-monthly-revenue-h20-20261126.md) SHA `9cd7cb8681e3d881193efa3c6fa3c72bd74fba84a96f6a16e6da3a85398eaf34` 是本案研究語義依據，未改寫。[工程報告](../../reports/step3_engineering_20261126.md)與 `tools/step3*.py` 是 `job-run-mwwctc1a-f7f0c1/builder_step3a@224a814` 的 no-commit、UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED 候選；不 supersede 正式資料、P2、P4d 或既有研究結果。原始 TEJ 文件條文及 SHA 可核，不等於逐期數值／合併／幣別已認證；准入仍 STOP，真資料擬合鎖定、評估模組未執行，無新模型結果 authority。
+
+私有 evidence 在指派 worktree `.artifacts/step3/`，含來源與子檔 SHA、文件擷取文字、選樣原因及資源觀測；public 只彙總。5,334,161 個研究成員鍵／W60 4,900,707 與缺價 256,550 是工程選樣對帳，非 lifecycle、tradability 或完整市場證據。下一步需要獨立審查與版本／可比性證據，再另案授權執行；machine authority、production／scheduler、外部 observed_at 均未改變。
+
 ## TEJ 第二步 2b 描述診斷的 authority 邊界 — 2026-11-25
 
 最終診斷430.75秒exit0；月營收等權h20早期0.0263／後期0.0152，季報0.0347／0.0263；四條延遲曲線未觸描述性驟降警旗，不證明PIT。h20有效期實際到2026-08-21。描述性建議值得規劃固定月營收h20第三步預先登記，未啟動實驗。最新focused26 passed／兩項新mutation killed；較早collection全套1347 passed／11 skipped／5 warnings／898.37秒exit0，修正後未再完整全套，限制見報告。五份正式parquet SHA均相符，私有manifest SHA `ec10a1d6781db6fa4e3f165d8e2301d86d1dce963598f186522fe74bffd65b13`；partial-before-coverage-fix不是完成證據。

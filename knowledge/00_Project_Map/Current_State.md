@@ -1,3 +1,11 @@
+## Step3 月營收 h20 工程候選 — 2026-11-26
+
+`job-run-mwwctc1a-f7f0c1/builder_step3a`，既有 detached HEAD/base `224a81439838fb3b569291baaa4f50399249b71a`，起始 clean、依 Human no-commit 指示保留 patch；**CPU_ENGINEERING_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。凍結[規格](../../tasks/spec-step3-monthly-revenue-h20-20261126.md) SHA `9cd7cb8681e3d881193efa3c6fa3c72bd74fba84a96f6a16e6da3a85398eaf34` 相符且未修改。
+
+[工程報告](../../reports/step3_engineering_20261126.md)是本輪檢查與未完成項目導航；[准入／特徵](../../tools/step3.py)、[選樣稽核](../../tools/step3_audit.py)、[runner](../../tools/step3_runner.py)、[延後評估模組](../../tools/step3_evaluation.py)沿用既有 tools 邊界，不修改 P4d／P2／P4a 來源宣告。TEJ 原始 HTML 條文與 raw／PIT SHA 已核，發布日意義、單月值不隨次年更新、2013/01 口徑轉換及一月累計起點均找到原文；逐期首次版對應、幣別／合併可比範圍及合格日曆／lifecycle 仍未齊，**准入 STOP，不授予歷史擬合或 strict PIT**。runner 明確鎖住真資料擬合，資源量測 A/B fits=0；評估模組未執行，沒有本案研究績效或分數比較。
+
+選樣按年對回 5,334,161 個成員鍵，W60 4,900,707，沿用 2b 價格遮罩缺價 256,550；停牌／下市／公司行動原因未知，不從缺價推定。逐列產物、擷取原文、版本及 source/input/output hashes 僅在本 worktree gitignored `.artifacts/step3/`，必須保存後另案審查／退役。測試終局與限制以報告為準；builder 自查不是獨立驗收。Next：獨立審查、補原件與可比範圍／日曆／生命週期、凍結完整 identity bundle；另案才可解除執行鎖與量測2026最大折。無 blind／網路／GPU／正式 Data 寫入／production／scheduler／排程／agents／commit／push／merge／deploy；未刷新外部 runtime observed_at。
+
 ## TEJ 第二步 2b 描述診斷候選 — 2026-11-25
 
 最終診斷430.75秒exit0；月營收等權h20早期0.0263／後期0.0152，季報0.0347／0.0263；四條延遲曲線未觸描述性驟降警旗，不證明PIT。h20有效期實際到2026-08-21。描述性建議值得規劃固定月營收h20第三步預先登記，未啟動實驗。最新focused26 passed／兩項新mutation killed；較早collection全套1347 passed／11 skipped／5 warnings／898.37秒exit0，修正後未再完整全套，限制見報告。五份正式parquet SHA均相符，私有manifest SHA `ec10a1d6781db6fa4e3f165d8e2301d86d1dce963598f186522fe74bffd65b13`；partial-before-coverage-fix不是完成證據。

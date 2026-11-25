@@ -1,3 +1,7 @@
+## Step3 source admission 工程 — 2026-11-26
+
+[Step3 報告](../../reports/step3_engineering_20261126.md)記錄原始 TEJ HTML 文件條文與 raw/PIT SHA 檢查；原文及逐列稽核只存指派 worktree `.artifacts/step3/`。文件可核尚不能建立逐期首次版／幣別／合併可比範圍，准入 STOP。年度選樣對回5,334,161鍵，缺價256,550；停牌、下市、公司行動與官方日曆未知，不以價格聯集升格。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，沒有改正式 Data、P2／P4d 或 production authority；下一步是獨立審查及補 source evidence。
+
 ## TEJ 第二步 2b 描述性特徵候選 — 2026-11-25
 
 最終診斷430.75秒exit0；月營收等權h20早期0.0263／後期0.0152，季報0.0347／0.0263；四條延遲曲線未觸描述性驟降警旗，不證明PIT。h20有效期實際到2026-08-21。描述性建議值得規劃固定月營收h20第三步預先登記，未啟動實驗。最新focused26 passed／兩項新mutation killed；較早collection全套1347 passed／11 skipped／5 warnings／898.37秒exit0，修正後未再完整全套，限制見報告。五份正式parquet SHA均相符，私有manifest SHA `ec10a1d6781db6fa4e3f165d8e2301d86d1dce963598f186522fe74bffd65b13`；partial-before-coverage-fix不是完成證據。

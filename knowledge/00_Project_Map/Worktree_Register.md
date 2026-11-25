@@ -1,3 +1,12 @@
+## Step3 歷史嵌套檢驗 builder — 2026-11-26
+
+- Purpose／owner／task：Human／Codex builder，`job-run-mwwctc1a-f7f0c1/builder_step3a`；只做凍結月營收 h20 歷史工程，無額外 agents。
+- Path／branch／base：`.worktrees/ruflo-workers/run-mwwctc1a-f7f0c1/builder_step3a`；既有 detached HEAD `224a81439838fb3b569291baaa4f50399249b71a`；created date UNKNOWN（本輪接手2026-11-26），retired N/A，起始 clean，不新增／移除 worktree。
+- State／authority：no-commit patch，CPU_ENGINEERING_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；准入 STOP，fits=0，評估未執行；[工程報告](../../reports/step3_engineering_20261126.md)列實測及限制。
+- Artifact／merge dependencies：canonical checkout `.artifacts/tej/raw/`、`.artifacts/tej/pit/`、凍結 raw-price snapshot 與 p4-bundles shared 身分陣列唯讀；本 worktree `.artifacts/step3/` 含 GENERATED 私有授權逐列／原文／稽核 evidence，依 EXTERNAL_LARGE_DATA 保護，不能因 ignored 清理。無 merge 或 deployment 授權。
+- Safe removal：先保留 no-commit patch、私有 evidence 與 manifest，驗來源／輸出 hashes、唯一副本及 references，再獨立審查及 Human 另案批准退役；本輪不移除。
+- Runtime：WSL CPU／pilot09 venv Python3.12.3，MARKETMAMBA_DATA_ROOT unset，Data 為本 worktree 普通目錄；無 formal Data 寫入、GPU、網路、blind、P4d、P2、scheduler、commit／push／merge／deploy。無外部 observed_at 更新。
+
 ## TEJ 第二步 2b builder — 2026-11-25
 
 - Purpose／owner／task：Human／Codex builder，`job-run-mwwag5jb-fb775c/builder_tej_2b`；月營收主、季報附帶的有界描述性報酬診斷，不派 agents。
