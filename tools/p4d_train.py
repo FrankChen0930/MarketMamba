@@ -411,6 +411,19 @@ def measurement_inputs(directory):
             ('X.npy','y5.npy','y10.npy','dates.npy','stock_ids.npy','end_indices.npy','splits.npy','manifest.json')}
 
 
+def measurement_root():
+    """The only namespace measurement outputs may be written to."""
+    return p4d.ROOT/'.artifacts/p4d'
+
+
+def checked_measurement_output(output):
+    """Reject any measurement directory outside .artifacts/p4d/measure-* before creating it."""
+    root=measurement_root().resolve();target=Path(output).resolve()
+    if target.parent!=root or not target.name.startswith('measure-'):
+        raise ValueError(f'STOP: measurement output must be {root}/measure-*; got {target}')
+    return target
+
+
 def measure_c0plus(data_root,output,*,origin=2026):
     """Local CPU resource probe only; full frozen outer fit, no inference/research result.
 
@@ -420,7 +433,7 @@ def measure_c0plus(data_root,output,*,origin=2026):
     import platform,resource,subprocess,sys
     if origin!=2026:raise ValueError('measurement requires maximum origin 2026')
     p4d.verify_contract()
-    output=Path(output);output.mkdir(parents=True,exist_ok=False)
+    output=checked_measurement_output(output);output.mkdir(parents=True,exist_ok=False)
     directory=Path(data_root)/'folds'/f'fold_{origin}'
     started=time.perf_counter()
     inputs=measurement_inputs(directory)
@@ -452,9 +465,9 @@ def main(argv=None):
     parser.add_argument('--measure-c0plus',action='store_true',required=True)
     parser.add_argument('--origin',type=int,choices=[2026],default=2026)
     parser.add_argument('--data-dir',type=Path,required=True)
-    parser.add_argument('--output',type=Path,default=None)
     args=parser.parse_args(argv)
-    output=args.output or p4d.ROOT/'.artifacts/p4d'/('measure-'+uuid.uuid4().hex)
+    # No --output override: measurements may only land in .artifacts/p4d/measure-*.
+    output=measurement_root()/('measure-'+uuid.uuid4().hex)
     measure_c0plus(args.data_dir,output,origin=args.origin)
     return 0
 

@@ -253,6 +253,13 @@ def delivery(output,*,prepared=None,run_name='p4d_stage1'):
     code("""import os, sys, subprocess, importlib.metadata
 os.environ['CUBLAS_WORKSPACE_CONFIG']=':4096:8'
 os.environ['PYTHONPATH']=str(root/'source/V6')
+# C0+ 2026 全列擬合：單一特徵矩陣 4.27 GiB；本機 9.5 GB 上限實測在配置該矩陣前 RSS 已達 7.6 GB 而失敗。
+# 需要 Colab「高 RAM」執行環境；不足時在長跑前停止，而不是數小時後記憶體不足。
+MIN_RAM_GIB=40
+mem_gib=int(open('/proc/meminfo').read().split('MemTotal:')[1].split()[0])/1024**2
+print(f'RAM {mem_gib:.1f} GiB（需要 >= {MIN_RAM_GIB} GiB）',flush=True)
+if mem_gib<MIN_RAM_GIB:
+    raise SystemExit(f'STOP: RAM 只有 {mem_gib:.1f} GiB，C0+ 全列擬合需要高 RAM 執行環境。下一步：執行階段 > 變更執行階段類型 > 勾選「高 RAM」（T4），重新從頭執行。')
 # 第一段不安裝／啟動Mamba2；缺必要CPU評估套件才補安裝。
 try: version=importlib.metadata.version('lightgbm')
 except importlib.metadata.PackageNotFoundError: version=None

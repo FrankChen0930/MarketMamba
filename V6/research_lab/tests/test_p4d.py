@@ -578,9 +578,12 @@ def test_measure_c0plus_cli_tiny_full_rows(tmp_path,monkeypatch):
     support={'fit':rows,'validation':np.array([],int),'manifest':{'support':'tiny'}}
     monkeypatch.setattr(t,'prepare',lambda *a,**kw:(d,support,{'identity':'tiny'}))
     monkeypatch.setattr(t,'measurement_inputs',lambda directory:{'synthetic':True})
-    output=tmp_path/'measure-tiny'
-    assert t.main(['--measure-c0plus','--origin','2026','--data-dir',str(tmp_path/'data'),
-                   '--output',str(output)])==0
+    root=tmp_path/'.artifacts'/'p4d';root.mkdir(parents=True)
+    monkeypatch.setattr(t,'measurement_root',lambda:root)
+    assert t.main(['--measure-c0plus','--origin','2026','--data-dir',str(tmp_path/'data')])==0
+    created=[p for p in root.iterdir() if p.name.startswith('measure-')]
+    assert len(created)==1
+    output=created[0]
     report=json.loads((output/'measurement.json').read_text())
     assert report['fit_rows']==36 and report['matrix_shape']==[36,185]
     assert report['matrix_bytes']==36*185*4
@@ -589,6 +592,21 @@ def test_measure_c0plus_cli_tiny_full_rows(tmp_path,monkeypatch):
     assert report['evidence_class']=='CPU_RESOURCE_MEASUREMENT / 不是研究結果'
     assert report['preprocess_identity']=='tiny' and report['input_identity']=={'synthetic':True}
     with pytest.raises(SystemExit):t.main(['--measure-c0plus','--origin','2025','--data-dir','unused'])
+
+
+def test_measure_c0plus_output_namespace_enforced(tmp_path,monkeypatch):
+    from tools import p4d_train as t
+    root=tmp_path/'.artifacts'/'p4d';root.mkdir(parents=True)
+    monkeypatch.setattr(t,'measurement_root',lambda:root)
+    # The CLI no longer accepts an output override.
+    with pytest.raises(SystemExit):
+        t.main(['--measure-c0plus','--origin','2026','--data-dir','unused','--output',str(tmp_path/'elsewhere')])
+    # Direct calls outside the namespace are rejected before any directory is created.
+    for bad in (tmp_path/'elsewhere', root/'not-measure', root/'measure-x'/'nested', root.parent/'measure-y'):
+        with pytest.raises(ValueError,match='STOP: measurement output'):
+            t.checked_measurement_output(bad)
+        assert not bad.exists()
+    assert t.checked_measurement_output(root/'measure-ok')==(root/'measure-ok').resolve()
 
 
 def test_rehearsal_every_path_gets_publisher(tmp_path,monkeypatch):

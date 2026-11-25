@@ -307,3 +307,9 @@ exit0
 - Push：N/A（禁止）；merge／deploy同未執行。
 - Worktree：既有`builder_p4d_fix1`，base／HEAD d36e709a21088ce836c6d84e2964518c018cc12e，無新建／移除。
 - Runtime/environment：WSL、指定pilot09 CPU venv／Python3.12.3／torch2.15.0+cpu／LightGBM4.7.0，CUDA_VISIBLE_DEVICES空；MARKETMAMBA_DATA_ROOT unset，Data realpath為指派worktree/Data，未讀或寫formal資料。與Colab契約不等價，無runtime observation升格。
+
+## 2026-11-25 本機 C0+ 記憶體量測與交付修正（Claude）
+
+- 量測：`ulimit -v 9500000`（約 9.5 GB）下執行 `python -m tools.p4d_train --measure-c0plus --origin 2026 --data-dir /home/frank/projects/p4-bundles/prepared`，在配置 `(6190955,185) float32`（4.27 GiB）矩陣時 `_ArrayMemoryError` 失敗；此時最大 RSS 7,592,952 KB（約 7.6 GB），耗時 1 分 31 秒。結論：2026 C0+ 全列擬合峰值 > 11.8 GB，本機 WSL（11 GiB）不可行；實際峰值仍 UNKNOWN。
+- 處置：notebook 環境格新增 RAM 前置檢查（`MemTotal` ≥ 40 GiB，否則在長跑前 STOP 並指示切換 Colab「高 RAM」）；40 GiB 是保守門檻，不是量測值。不恢復抽樣 cap。
+- 獨立複審 2 的唯一 REQUIRED（量測入口接受任意 `--output`）已修正：移除 `--output`，輸出固定於 `.artifacts/p4d/measure-*`，`checked_measurement_output` 在建立目錄前拒絕 namespace 以外路徑；新增測試與 1 項 in-memory mutation（停用檢查）KILLED。
