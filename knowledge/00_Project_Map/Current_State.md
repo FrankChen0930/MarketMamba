@@ -1,3 +1,11 @@
+## P4d 排練 heartbeat 與本機資源量測修補候選 — 2026-11-25
+
+`job-run-mwvqcr5w-e515cb/builder_p4d_fix1`，既有 detached HEAD/base `d36e709a21088ce836c6d84e2964518c018cc12e`、起始 clean；依核准範圍保留 no-commit patch。**UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED / CPU_ENGINEERING_ONLY**。獨立審查原 NO_GO 的 REQUIRED 為排練未傳 Progress；本候選以 `tools.p4d_bundle.launch` 在 binding／排練前啟動同一發布器，穿過預處理、六條排練 fit、GRU 全列診斷／推論、C0+ 特徵與擬合至正式模式。每約60秒更新 `progress/formal/PROGRESS.txt`／`progress.json`，明標 REHEARSAL 與 stage，寫入失敗繼續；不改 P4a 共用來源、正式帳本／checkpoint／研究契約或成功 gate。
+
+本機 `python -m tools.p4d_train --measure-c0plus --origin 2026 --data-dir <prepared>` 僅量測完整2026 outer fit 的185欄特徵＋CPU LightGBM200輪，不抽樣、不推論、不選研究結果；略過C0+不用的rank-gauss。新程序輸出 `.artifacts/p4d/measure-<uuid>/measurement.json`，記錄 process-lifetime 峰值RSS、耗時、矩陣bytes及source／contract／input／split／環境身分。**本輪未執行真實完整量測**；36列合成邊界替身只證明入口／輸出schema可用。
+
+[工程報告](../../reports/v7_p4d_engineering.md#排練-heartbeat-required-與最大-fit-量測入口--2026-11-25)列RED→GREEN、focused31 passed、兩項in-memory mutations、完整回歸1275 passed／4 skipped／5 warnings／0 failed（653.96s、exit0）及限制。排練／正式共用publisher與寫入失敗以CPU替身驗證；真實2026峰值RSS、T4／Colab／Drive持久性與長操作heartbeat、獨立複審及Human acceptance仍待。原NO_GO不因builder完成解除，不更新外部observed_at／production authority；Next：獨立複審，再由Claude另案在本機新程序量測2026最大fit。
+
 ## P4d stage1b 接續工程候選 — 2026-11-25
 
 `job-run-mwvoxf7h-970cae/builder_p4d_stage1b`，指派 worktree／detached HEAD `b1871a9`（前輪WIP），起始clean，本輪no-commit patch；**STAGE1_FROZEN / E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。指定初始全套1265 passed／4 skipped／0 failed；修後完整回歸1269 passed／4 skipped／5 warnings、617.86s、exit0，P4a來源相容未壞；保留tools精確P4d邊界，不搬research_lab、不改舊policy／宣告。補空排練證據STOP、綁identity的持久化排練產物／成功標記與重連重驗，下載包含帳本／進度／排練及bundle manifest；研究語義／threshold不變。

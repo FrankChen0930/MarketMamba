@@ -3,6 +3,7 @@
 No runtime is launched by import. Formal execution requires a verified rehearsal.
 """
 from __future__ import annotations
+from contextlib import nullcontext
 from copy import deepcopy,copy
 import io
 import json
@@ -15,8 +16,35 @@ import numpy as np
 import pandas as pd
 from . import p4d
 from research_lab.p4_bundle import digest
-from research_lab.p4_colab import Observer, Ledger, Progress, publish_bytes, require_cuda, telemetry
+from research_lab.p4_colab import Observer, Ledger, Progress as BaseProgress, publish_bytes, require_cuda, telemetry
 from research_lab.rolling_seq_scores import atomic_json
+
+
+class Progress(BaseProgress):
+    """P4d observation spans rehearsal and formal, without touching P4a sources."""
+    def __init__(self,*args,**kwargs):
+        super().__init__(*args,**kwargs)
+        self.mode='REHEARSAL';self.current_stage='setup'
+
+    def stage(self,name,*,mode=None):
+        with self.lock:
+            self.current_stage=name
+            if mode is not None:self.mode=mode
+            self.update(status=f'{self.mode}: {name}')
+        self.write()
+
+    def snapshot(self):
+        with self.lock:
+            result=super().snapshot()
+            result.update(mode=self.mode,stage=self.current_stage)
+            # Rehearsal observations must never seed formal throughput estimates.
+            if self.mode=='REHEARSAL':
+                result['fit_eta_seconds']=result['queue_eta_seconds']=None
+            return result
+
+    @staticmethod
+    def render(data):
+        return BaseProgress.render(data)+' | 目前階段: '+str(data.get('stage'))
 
 
 class Checkpoints(Observer):
@@ -48,7 +76,7 @@ class Checkpoints(Observer):
 
 
 class CpuLedger:
-    """Synthetic tests only; formal runtime always uses the durable Ledger."""
+    """Non-durable rehearsal/synthetic guard; formal always uses durable Ledger."""
     def check(self):pass
 
 
@@ -88,6 +116,7 @@ def fit_gru(data,tr,va,cfg,seed,device,root,binding,*,fixed_epochs=None,ledger=N
     targets=[torch.from_numpy(centred_rank(data.y[k][tr],data.date_idx[tr])).to(device) for k in ('y5','y10')]
     endpoint=fixed_epochs or cfg['epochs']
     while state['epoch']<endpoint and (fixed_epochs is not None or state['bad']<cfg['patience']):
+        if progress:progress.stage('gru_training')
         losses=[];model.train()
         for step in range(cfg['steps_per_epoch']):
             observer('step_start',None)
@@ -103,10 +132,12 @@ def fit_gru(data,tr,va,cfg,seed,device,root,binding,*,fixed_epochs=None,ledger=N
             if (step+1)%50==0:observer('progress',dict(epoch=state['epoch']+1,step=state['epoch']*cfg['steps_per_epoch']+step+1,loss=float(np.mean(losses))))
         state['epoch']+=1;val=None
         if len(va):
+            if progress:progress.stage('validation_inference')
             ic=daily_ic_rows(data,va,predict(model,data,va,device)[:,0],'y5')
             if not len(ic) or not np.isfinite(ic).all():raise ValueError('unknown validation IC')
             val=float(ic.mean())
         # Full eligible train support; no random probe/cap for capacity diagnostics.
+        if progress:progress.stage('full_train_inference')
         tic=daily_ic_rows(data,tr,predict(model,data,tr,device)[:,0],'y5')
         if not len(tic) or not np.isfinite(tic).all():raise ValueError('unknown full train IC')
         state['history'].append(dict(epoch=state['epoch'],loss=float(np.mean(losses)),val_ic5=val,train_ic5=float(tic.mean())))
@@ -128,10 +159,11 @@ def fit_gru(data,tr,va,cfg,seed,device,root,binding,*,fixed_epochs=None,ledger=N
     return model,state
 
 
-def fit_c0plus(data,tr,va,cfg,seed,*,fixed_iterations=None):
+def fit_c0plus(data,tr,va,cfg,seed,*,fixed_iterations=None,progress=None):
     from lightgbm import LGBMRegressor
     from research_lab.c0plus import build_features
     from research_lab.seq_runner import centred_rank,daily_ic_rows
+    if progress:progress.stage('c0plus_features')
     xf,names=build_features(data,tr,data.feature_names)
     if len(names)!=185:raise ValueError('C0+ feature identity not 185')
     xv=build_features(data,va,data.feature_names)[0] if len(va) else None
@@ -153,10 +185,12 @@ def fit_c0plus(data,tr,va,cfg,seed,*,fixed_iterations=None):
         if bad>=75:
             from lightgbm.callback import EarlyStopException
             raise EarlyStopException(best_iter-1,[('validation','IC5',best,True)])
+    if progress:progress.stage('c0plus_fit')
     model.fit(xf,target,callbacks=[callback])
     chosen=fixed_iterations or best_iter
     if chosen is None:raise ValueError('C0+ BEST missing')
-    return model,dict(selected_iteration=chosen,history=history,feature_names=names,fit_rows=len(tr))
+    return model,dict(selected_iteration=chosen,history=history,feature_names=names,fit_rows=len(tr),
+        matrix_shape=list(xf.shape),matrix_bytes=int(xf.nbytes))
 
 
 def validate_complete(root,binding):
@@ -229,9 +263,11 @@ def execute_job(data,support,job,root,run_binding,selected,*,device='cuda',ledge
     tr,va=support['fit'],support['validation']
     rows=va if job['phase']=='anchor' else support['evaluation']
     if not len(rows):raise ValueError('empty prediction support')
+    if progress:progress.stage('gru_training' if job['arm']=='gru' else 'c0plus_features')
     if job['arm']=='gru':
         model,metrics=fit_gru(data,tr,va,cfg,job['seed'],device,root,binding,
             fixed_epochs=fixed,ledger=ledger,progress=progress)
+        if progress:progress.stage('full_row_inference')
         inference_started=time.perf_counter()
         score=predict(model,data,rows,device)[:,0]
         inference_seconds=time.perf_counter()-inference_started
@@ -240,8 +276,9 @@ def execute_job(data,support,job,root,run_binding,selected,*,device='cuda',ledge
         publish_bytes(root/'model.pt',stream.getvalue())
         model_name='model.pt'
     else:
-        model,metrics=fit_c0plus(data,tr,va,cfg,job['seed'],fixed_iterations=fixed)
+        model,metrics=fit_c0plus(data,tr,va,cfg,job['seed'],fixed_iterations=fixed,progress=progress)
         from research_lab.c0plus import build_features
+        if progress:progress.stage('full_row_inference')
         inference_started=time.perf_counter()
         score=model.predict(build_features(data,rows,data.feature_names)[0],num_iteration=metrics['selected_iteration'])
         inference_seconds=time.perf_counter()-inference_started
@@ -266,17 +303,19 @@ def execute_job(data,support,job,root,run_binding,selected,*,device='cuda',ledge
     return mf
 
 
-def prepare(directory,cache,*,anchor):
+def prepare(directory,cache,*,anchor,progress=None,normalize=True):
+    if progress:progress.stage('preprocessing')
     data=p4d.load_data(directory)
     origin=int(data.date_idx[np.flatnonzero(data.splits==2)].min())
     year=int(data.dates[origin].year)
     if year not in range(2021,2027) or (anchor and year!=2021):raise ValueError('P4d origin calendar year')
     support=p4d.split(data,origin,anchor=anchor)
+    if not normalize:return data,support,dict(identity='raw_C0plus_features_no_rankgauss')
     data.Xn,preprocess=p4d.rankgauss(data.X,data.ends,support['manifest'],cache,feature_names=data.feature_names)
     return data,support,preprocess
 
 
-def run(data_root,output,bundle,*,rehearsal_evidence):
+def run(data_root,output,bundle,*,rehearsal_evidence,progress=None):
     """Called only through guarded_launch; no formal training without exact gate."""
     from .p4d_bundle import pb
     from .p4d_bundle import run_binding
@@ -295,7 +334,8 @@ def run(data_root,output,bundle,*,rehearsal_evidence):
     run_hash=p4d.hashed(binding);run_root=root/'budget_p4d_stage1'/('run-'+run_hash)
     ledger_contract=dict(p4d.CONTRACT['budget'],experiment='p4d_stage1',run_hash=run_hash)
     selected={};current=None
-    with Ledger(root/'budget_p4d_stage1',ledger_contract) as ledger, Progress(root/'progress/formal') as progress:
+    with Ledger(root/'budget_p4d_stage1',ledger_contract) as ledger, (nullcontext(progress) if progress is not None else Progress(root/'progress/formal')) as progress:
+        progress.stage('formal_setup',mode='FORMAL')
         # Acquire and initialize the ledger before creating run-*; otherwise the
         # existing missing-ledger protection correctly treats a new run as orphaned.
         if ledger.count==0:ledger.append('RUN_CREATED')
@@ -308,7 +348,7 @@ def run(data_root,output,bundle,*,rehearsal_evidence):
             origin=job['origin'];key=(origin,job['phase'])
             if current!=key:
                 data,support,preprocessing=prepare(Path(data_root)/'folds'/f"fold_{2021 if origin=='anchor' else origin}",
-                    root/'rankgauss_cache',anchor=job['phase']=='anchor')
+                    root/'rankgauss_cache',anchor=job['phase']=='anchor',progress=progress)
                 from .p4d_bundle import require_frozen_split
                 require_frozen_split(binding,origin,support)
                 atomic_json(run_root/f'split-{origin}.json',dict(split=support['manifest'],preprocess=preprocessing['identity']))
@@ -362,3 +402,61 @@ def dataset_identity(root):
             identity[f'{year}/{name}']=known[path]
         identity[f'{year}/manifest']=digest(fold/'manifest.json')
     return identity
+
+
+
+def measurement_inputs(directory):
+    directory=Path(directory)
+    return {name:digest(directory/name) for name in
+            ('X.npy','y5.npy','y10.npy','dates.npy','stock_ids.npy','end_indices.npy','splits.npy','manifest.json')}
+
+
+def measure_c0plus(data_root,output,*,origin=2026):
+    """Local CPU resource probe only; full frozen outer fit, no inference/research result.
+
+    Run in a fresh process: ru_maxrss is a process-lifetime high-water mark,
+    including input hashing and preprocessing. It is not incremental fit RSS.
+    """
+    import platform,resource,subprocess,sys
+    if origin!=2026:raise ValueError('measurement requires maximum origin 2026')
+    p4d.verify_contract()
+    output=Path(output);output.mkdir(parents=True,exist_ok=False)
+    directory=Path(data_root)/'folds'/f'fold_{origin}'
+    started=time.perf_counter()
+    inputs=measurement_inputs(directory)
+    data,support,preprocess=prepare(directory,output/'rankgauss_cache',anchor=False,normalize=False)
+    prepared_seconds=time.perf_counter()-started
+    fit_started=time.perf_counter()
+    _,metrics=fit_c0plus(data,support['fit'],support['validation'],p4d.CONTRACT['recipe'],17,fixed_iterations=200)
+    import lightgbm
+    report=dict(origin=origin,fit_rows=len(support['fit']),matrix_shape=metrics['matrix_shape'],
+        matrix_bytes=metrics['matrix_bytes'],iterations=200,seed=17,
+        peak_rss_bytes=int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)*(1 if sys.platform=='darwin' else 1024),
+        rss_scope='process lifetime high-water including preprocessing; fresh process required',
+        elapsed_seconds=time.perf_counter()-started,prepare_seconds=prepared_seconds,
+        features_and_fit_seconds=time.perf_counter()-fit_started,
+        evidence_class='CPU_RESOURCE_MEASUREMENT / 不是研究結果',
+        source_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=p4d.ROOT,text=True).strip(),
+        source_identity={n:digest(p4d.ROOT/n) for n in ('tools/p4d.py','tools/p4d_train.py','V6/research_lab/c0plus.py')},
+        contract=p4d.hashed(p4d.CONTRACT),input_identity=inputs,split=support['manifest'],
+        preprocess_identity=preprocess['identity'],data_realpath=str(Path(data_root).resolve()),
+        environment=dict(python=sys.version,platform=platform.platform(),lightgbm=lightgbm.__version__,numpy=np.__version__))
+    atomic_json(output/'measurement.json',report)
+    print(json.dumps(report,ensure_ascii=False),flush=True)
+    return report
+
+
+def main(argv=None):
+    import argparse
+    parser=argparse.ArgumentParser(description='P4d local CPU resource measurement; no GPU')
+    parser.add_argument('--measure-c0plus',action='store_true',required=True)
+    parser.add_argument('--origin',type=int,choices=[2026],default=2026)
+    parser.add_argument('--data-dir',type=Path,required=True)
+    parser.add_argument('--output',type=Path,default=None)
+    args=parser.parse_args(argv)
+    output=args.output or p4d.ROOT/'.artifacts/p4d'/('measure-'+uuid.uuid4().hex)
+    measure_c0plus(args.data_dir,output,origin=args.origin)
+    return 0
+
+
+if __name__=='__main__':raise SystemExit(main())

@@ -1,3 +1,7 @@
+## P4d heartbeat 與資源量測工程候選 — 2026-11-25
+
+`job-run-mwvqcr5w-e515cb/builder_p4d_fix1@d36e709` 的未提交 bounded patch，**UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED / CPU_ENGINEERING_ONLY**。[工程報告](../../reports/v7_p4d_engineering.md#排練-heartbeat-required-與最大-fit-量測入口--2026-11-25)記錄排練前啟動共用Progress、REHEARSAL／FORMAL模式與stage、60秒heartbeat替身、寫入失敗繼續及2026全列C0+資源量測入口；不改split／features／selection／queue／threshold或P4a來源policy。僅36列合成特徵＋擬合，未實際量測2026全列RSS，不恢復抽樣cap；CPU回歸不是現場Drive／T4排練證據。原獨立NO_GO仍待複審，完成不等於Human acceptance；沒有研究結果／canonical artifact supersession／production authority變更，不更新authority-map.json或外部observed_at。Next：獨立審查與另案本機最大fit量測。
+
 ## P4d stage1b 排練接續候選 — 2026-11-25
 
 獨立tools交付保留原P4a來源inventory。P4d成功標記位於`progress/formal/rehearsal_passed.json`，六個fit與評估產物先複製至獨立publication namespace、重驗後才發布；重連逐bytes／binding／schema／內容重驗，不依賴舊/tmp，不共用P4a帳本。None／空證據STOP，損壞marker重新排練；checkpoint／固定更新／研究threshold不變。詳[工程報告](../../reports/v7_p4d_engineering.md#第一段接續-stage1b--2026-11-25)與[Human需求](../../docs/operations/colab-human-requirements.md#p4d-第一段候選2026-11-25)。CPU替身六fit／notebook驗證與全套回歸僅工程證據；T4顯存／耗時、全列C0+RAM／完整推論、Drive與長排練heartbeat仍待現場核對。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，獨立review與Human acceptance未完成，無GPU／Colab／Drive／外部runtime observation更新。

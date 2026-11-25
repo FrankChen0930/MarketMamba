@@ -96,3 +96,5 @@ MyDrive/MarketMamba/
 - GRU第一段不安裝或啟動Mamba2；runtime使用既有OBSERVED Colab契約的相關套件子集＋LightGBM4.6.0，精確差異即STOP，不更寫舊observed_at。CPU合成測試不是Colab／T4／Drive驗收，現場仍UNVERIFIED。
 
 P4d 第一段接續修補候選（2026-11-25，stage1b；仍 UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED）：排練通過後將六個 fit 與評估產物複製到 `progress/formal/rehearsal/<publication-id>/`，逐產物重驗後才原子寫入 `progress/formal/rehearsal_passed.json`。標記綁 bundle／queue／contract／matrix／split／environment；重連重驗持久化 bytes、schema 與內容，不依賴舊 `/tmp`。缺少、損壞、錯身分或 symlink 標記不得放行，移除無效標記後重新排練；保留既有產物，不重置帳本。閘門回傳 None／空字典也 STOP。最後下載包含 `budget_p4d_stage1/`、`progress/formal/` 與 bundle manifest；不包含可重建的大型 rankgauss cache。CPU 工程驗證不證明 Drive 持久性或現場排練通過。
+
+P4d 排練進度修補候選（2026-11-25；UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED）：notebook 使用 `tools.p4d_bundle.launch`，在 binding／排練前建立同一個 Progress，正式 run 沿用；排練與正式快照分別標 REHEARSAL／FORMAL 及目前 stage，預處理、全列推論、C0+ 特徵／擬合與 GRU 訓練步期間沿用約60秒 heartbeat。排練使用非持久化 guard，不寫正式帳本；快照寫入失敗提示後訓練繼續。CPU 假時鐘與寫入失敗測試不是 Drive／Colab 現場驗收，原 NO_GO 待獨立複審。2026 最大 fit 的本機量測入口只記資源、不產生研究結果，未在本輪執行完整量測。

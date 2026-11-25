@@ -43,6 +43,26 @@ def guarded_launch(gate,formal):
     return formal(evidence)
 
 
+def launch(data_root,output,bundle):
+    """One heartbeat publisher starts before binding/gate and survives into formal."""
+    from .p4d_train import Progress,run
+    output=Path(output)
+    with Progress(output/'progress/formal') as progress:
+        progress.stage('binding_verification',mode='REHEARSAL')
+        binding=run_binding(data_root,bundle)
+        result=guarded_launch(
+            lambda:ensure_rehearsal(output/'progress/formal',binding,
+                lambda:rehearse(data_root,bundle,output/'rankgauss_cache',progress=progress)),
+            lambda evidence:run(data_root,output,bundle,rehearsal_evidence=evidence,
+                progress=_formal_progress(progress)))
+        return result
+
+
+def _formal_progress(progress):
+    progress.stage('formal_setup',mode='FORMAL')
+    return progress
+
+
 def validate_gate(evidence,binding,publication_root=None):
     if not isinstance(evidence,dict) or set(evidence)!={'binding','evidence_class','fits','evaluation','elapsed_seconds'}:
         raise ValueError('STOP: rehearsal schema')
@@ -161,14 +181,18 @@ def run_binding(data_root,bundle):
         split_manifests=mf['metadata']['split_manifests'],bundle=pb.digest(Path(bundle)/'bundle-manifest.json'),matrix=matrix,environment=runtime(bundle))
 
 
-def rehearse(data_root,bundle,cache):
+def rehearse(data_root,bundle,cache,*,progress=None):
     import torch
-    from .p4d_train import prepare,execute_job
+    from .p4d_train import prepare,execute_job,Progress,CpuLedger
+    if progress is None:
+        with Progress(Path(cache).parent/'progress/formal') as publisher:
+            return rehearse(data_root,bundle,cache,progress=publisher)
+    progress.stage('binding_verification',mode='REHEARSAL')
     p4d.verify_contract();binding=run_binding(data_root,bundle)
     out=Path(tempfile.mkdtemp(prefix='p4d-REHEARSAL-'));started=time.perf_counter()
     fits={};frames={};selected={'gru:17':1,'c0plus:17':1}
     for phase in ('anchor','outer'):
-        data,support,_=prepare(Path(data_root)/'folds/fold_2021',cache,anchor=phase=='anchor')
+        data,support,_=prepare(Path(data_root)/'folds/fold_2021',cache,anchor=phase=='anchor',progress=progress)
         require_frozen_split(binding,'anchor' if phase=='anchor' else 2021,support)
         specs=[('gru',w,l) for w,l in REHEARSAL_JOBS] if phase=='anchor' else [('gru',32,2)]
         specs.append(('c0plus',64,2))
@@ -176,13 +200,15 @@ def rehearse(data_root,bundle,cache):
             job=dict(phase=phase,origin='anchor' if phase=='anchor' else 2021,arm=arm,seed=17,width=width,layers=layers)
             name=f'{arm}:{width}:{layers}:{phase}';path=out/name.replace(':','-')
             torch.cuda.reset_peak_memory_stats();t0=time.perf_counter()
-            mf=execute_job(data,support,job,path,binding,selected,rehearsal=True)
+            progress.start_fit(dict(queue='P4d REHEARSAL '+phase,year=job['origin'],arm=arm,seed=17,window=60,lr=3e-4),len(fits)+1,6,dict(epochs=1,steps_per_epoch=1))
+            mf=execute_job(data,support,job,path,binding,selected,rehearsal=True,progress=progress,ledger=CpuLedger())
             fits[name]=dict(path=str(path),complete=pb.digest(path/'complete.json'),binding=mf['binding'],
                 seconds=time.perf_counter()-t0,peak_allocated=torch.cuda.max_memory_allocated(),peak_reserved=torch.cuda.max_memory_reserved())
             if phase=='outer':
                 import pandas as pd
                 frames[arm]=pd.read_parquet(path/'scores.parquet')
             print('排練完成',name,fits[name]['seconds'],'seconds',flush=True)
+    progress.stage('rehearsal_evaluation')
     report=p4d.descriptive_pair(frames['gru'],frames['c0plus']);target=out/'evaluation.json'
     from research_lab.rolling_seq_scores import atomic_json
     atomic_json(target,report)
@@ -236,14 +262,10 @@ from tools.p4d_bundle import prepare_raw_dataset
 prepare_raw_dataset(DATA_DIR,'/content/p4d-data')
 """)
     code("""# 串流與flush由直接同kernel呼叫保留；60秒heartbeat寫PROGRESS.txt。
-from tools.p4d_bundle import guarded_launch,rehearse,ensure_rehearsal,run_binding
-from tools.p4d_train import run
+from tools.p4d_bundle import launch
+# launch uses ensure_rehearsal and a single publisher across both modes.
 try:
-    result=guarded_launch(
-        lambda:ensure_rehearsal(Path(EXPERIMENT_DIR)/'progress/formal',
-            run_binding('/content/p4d-data',root),
-            lambda:rehearse('/content/p4d-data',root,Path(EXPERIMENT_DIR)/'rankgauss_cache')),
-        lambda evidence:run('/content/p4d-data',EXPERIMENT_DIR,root,rehearsal_evidence=evidence))
+    result=launch('/content/p4d-data',EXPERIMENT_DIR,root)
 except BaseException as error:
     print('STOP: P4d排練／執行失敗；實際=',repr(error),'；下一步=保留帳本與checkpoint，檢查錯誤後重新從頭執行。',flush=True)
     raise

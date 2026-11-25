@@ -144,7 +144,7 @@ def test_two_file_delivery_and_safe_extract(tmp_path):
     assert not any('p4d_evaluate' in n for n in mf['files'])
     notebook=json.loads((output/'p4d_stage1.ipynb').read_text())
     sources='\n'.join(''.join(c['source']) for c in notebook['cells'])
-    assert 'guarded_launch' in sources and 'PROGRESS.txt' in sources
+    assert 'from tools.p4d_bundle import launch' in sources and 'PROGRESS.txt' in sources
     assert 'expected_sha256=' not in sources
 
 
@@ -507,3 +507,130 @@ def test_stage1b_empty_gate_result_never_launches():
         with pytest.raises(ValueError):
             bundle.guarded_launch(lambda:empty,lambda *args:events.append('formal'))
     assert not events
+
+
+def test_rehearsal_heartbeat_and_formal_continuity(tmp_path):
+    from tools.p4d_train import Progress
+    clock=[0.]
+    p=Progress(tmp_path,clock=lambda:clock[0])
+    p.stage('preprocessing',mode='REHEARSAL')
+    snapshots=[]
+    original=p.write
+    def record():
+        original();snapshots.append(json.loads((tmp_path/'progress.json').read_text()))
+    p.write=record
+    class FakeStop:
+        def wait(self,interval):
+            assert interval==60.
+            clock[0]+=interval
+            return clock[0]>180
+    p.stop=FakeStop()
+    p._heartbeat()
+    assert len(snapshots)==3
+    assert all(s['mode']=='REHEARSAL' and s['stage']=='preprocessing' for s in snapshots)
+    assert 'REHEARSAL' in (tmp_path/'PROGRESS.txt').read_text()
+    p.stage('formal_setup',mode='FORMAL')
+    p.start_fit(dict(queue='P4d',arm='gru',year=2026,seed=17),1,140,dict(epochs=1,steps_per_epoch=1))
+    s=p.snapshot()
+    assert s['mode']=='FORMAL' and s['stage']=='formal_setup' and s['fit_index']==1
+    assert p.clock()==240. and p.durations==[]
+
+
+def test_rehearsal_progress_write_failure_is_nonfatal(tmp_path,monkeypatch,capsys):
+    from tools.p4d_train import Progress
+    p=Progress(tmp_path)
+    p.stage('c0plus_fit',mode='REHEARSAL')
+    monkeypatch.setattr('os.replace',lambda *a:(_ for _ in ()).throw(OSError('disk failure')))
+    with p:
+        p.stage('inference')
+        p.write()
+    assert '訓練繼續' in capsys.readouterr().out
+    assert p.snapshot()['mode']=='REHEARSAL'
+
+
+def test_launch_progress_precedes_gate_and_is_shared(tmp_path,monkeypatch):
+    from tools import p4d_bundle as b,p4d_train as t
+    events=[];seen=[]
+    monkeypatch.setattr(b,'run_binding',lambda *a:events.append('binding') or {'run':'tiny'})
+    def gate(root,binding,callback):
+        events.append('gate');assert (root/'PROGRESS.txt').exists()
+        return callback()
+    monkeypatch.setattr(b,'ensure_rehearsal',gate)
+    def rehearsal(*args,progress):
+        assert progress.snapshot()['mode']=='REHEARSAL'
+        seen.append(progress);return {'ok':True}
+    monkeypatch.setattr(b,'rehearse',rehearsal)
+    def formal(*args,rehearsal_evidence,progress):
+        assert progress is seen[0] and progress.snapshot()['mode']=='FORMAL'
+        assert progress.thread.is_alive();return 'done'
+    monkeypatch.setattr(t,'run',formal)
+    assert b.launch('data',tmp_path,'bundle')=='done'
+    assert events==['binding','gate'] and not seen[0].thread.is_alive()
+
+
+def test_measure_c0plus_cli_tiny_full_rows(tmp_path,monkeypatch):
+    from tools import p4d_train as t
+    from research_lab.c0plus import CORE
+    d=tiny_data();d.X=np.random.default_rng(3).normal(size=(36,48)).astype('float32')
+    d.feature_names=CORE+[f'extra{i}' for i in range(48-len(CORE))]
+    d.ends=np.arange(12,37,12);d.stock_idx=np.tile(np.arange(12),3);d.n_stocks=12
+    rows=np.arange(36)
+    support={'fit':rows,'validation':np.array([],int),'manifest':{'support':'tiny'}}
+    monkeypatch.setattr(t,'prepare',lambda *a,**kw:(d,support,{'identity':'tiny'}))
+    monkeypatch.setattr(t,'measurement_inputs',lambda directory:{'synthetic':True})
+    output=tmp_path/'measure-tiny'
+    assert t.main(['--measure-c0plus','--origin','2026','--data-dir',str(tmp_path/'data'),
+                   '--output',str(output)])==0
+    report=json.loads((output/'measurement.json').read_text())
+    assert report['fit_rows']==36 and report['matrix_shape']==[36,185]
+    assert report['matrix_bytes']==36*185*4
+    assert report['peak_rss_bytes']>0 and report['elapsed_seconds']>0
+    assert report['iterations']==200 and report['origin']==2026
+    assert report['evidence_class']=='CPU_RESOURCE_MEASUREMENT / 不是研究結果'
+    assert report['preprocess_identity']=='tiny' and report['input_identity']=={'synthetic':True}
+    with pytest.raises(SystemExit):t.main(['--measure-c0plus','--origin','2025','--data-dir','unused'])
+
+
+def test_rehearsal_every_path_gets_publisher(tmp_path,monkeypatch):
+    from tools import p4d_train as t,p4d_bundle as b
+    import torch
+    p=t.Progress(tmp_path/'progress');seen=[];prepared=[]
+    monkeypatch.setattr(b,'run_binding',lambda *a:{'run':'tiny'})
+    def prepare(*args,anchor,progress):
+        assert progress is p and progress.snapshot()['mode']=='REHEARSAL'
+        prepared.append(anchor);return None,{'manifest':{}},{}
+    monkeypatch.setattr(t,'prepare',prepare)
+    monkeypatch.setattr(b,'require_frozen_split',lambda *a:None)
+    monkeypatch.setattr(torch.cuda,'reset_peak_memory_stats',lambda:None)
+    monkeypatch.setattr(torch.cuda,'max_memory_allocated',lambda:0)
+    monkeypatch.setattr(torch.cuda,'max_memory_reserved',lambda:0)
+    monkeypatch.setattr(b,'validate_gate',lambda *a:None)
+    monkeypatch.setattr(p4d,'descriptive_pair',lambda *a:{'synthetic':True})
+    monkeypatch.setattr(pd,'read_parquet',lambda *a:pd.DataFrame())
+    def execute(data,support,job,root,binding,selected,*,rehearsal,progress,ledger):
+        assert rehearsal and progress is p and ledger is not None
+        seen.append((job['phase'],job['arm'],job['width'],job['layers']))
+        root.mkdir();(root/'complete.json').write_text('{}')
+        return {'binding':{'synthetic':True}}
+    monkeypatch.setattr(t,'execute_job',execute)
+    result=b.rehearse('data','bundle',tmp_path/'cache',progress=p)
+    assert prepared==[True,False] and len(result['fits'])==6
+    assert seen==[('anchor','gru',256,2),('anchor','gru',64,4),('anchor','gru',32,2),
+                  ('anchor','c0plus',64,2),('outer','gru',32,2),('outer','c0plus',64,2)]
+
+
+def test_progress_two_in_memory_mutations_killed(tmp_path,monkeypatch):
+    from tools import p4d_train as t
+    def heartbeat_oracle():
+        test_rehearsal_heartbeat_and_formal_continuity(tmp_path/'heartbeat')
+    with monkeypatch.context() as m:
+        m.setattr(t.Progress,'_heartbeat',lambda self:None)
+        with pytest.raises(AssertionError):heartbeat_oracle()
+    print('MUTATION rehearsal_heartbeat_disabled KILLED')
+    with monkeypatch.context() as m:
+        real=t.Progress.snapshot
+        def wrong_mode(self):
+            snapshot=real(self);snapshot['mode']='FORMAL';return snapshot
+        m.setattr(t.Progress,'snapshot',wrong_mode)
+        with pytest.raises(AssertionError):heartbeat_oracle()
+    print('MUTATION rehearsal_mode_erased KILLED')

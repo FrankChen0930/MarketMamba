@@ -220,3 +220,90 @@ knowledge/01_Domains/Training.md
 - Push：無；merge／deploy亦無。
 - Worktree：`/home/frank/projects/MarketMamba/.worktrees/ruflo-workers/run-mwvoxf7h-970cae/builder_p4d_stage1b`；沿用指派worktree，未新增／移除。
 - Runtime/environment：WSL／pilot09既有CPU venv，Python3.12.3、torch2.15.0+cpu、LightGBM4.7.0；CUDA_VISIBLE_DEVICES空，最終回歸OMP／MKL threads=1。MARKETMAMBA_DATA_ROOT unset，Data realpath為本worktree普通Data且未讀內容，只唯讀指定prepared；沒有Colab／Drive／Windows正式交付或外部runtime observation。
+
+
+## 排練 heartbeat REQUIRED 與最大 fit 量測入口 — 2026-11-25
+
+### 範圍、盤點與決策
+
+本輪 `job-run-mwvqcr5w-e515cb/builder_p4d_fix1`，指定既有worktree `/home/frank/projects/MarketMamba/.worktrees/ruflo-workers/run-mwvqcr5w-e515cb/builder_p4d_fix1`，detached HEAD/base `d36e709a21088ce836c6d84e2964518c018cc12e`，起始clean。已讀AGENTS／CLAUDE、Current State／Authority Map、colab-preflight／Human需求第5節、frozen stage1 contract、訓練／bundle／tests與Training／Research domain。既有tools／tests／reports／knowledge與`.artifacts/p4d/measure-*` namespace可承載，不建立新top-level、worktree或替代experiment tree。量測輸出是新鮮隔離的CPU_RESOURCE_MEASUREMENT候選，非canonical研究artifact；測試輸出及logs為TEMPORARY。
+
+此為原獨立審查NO_GO的bounded修補，**UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED / CPU_ENGINEERING_ONLY**，不解除NO_GO。無commit／push／merge／額外agent／GPU／Colab／Drive／網路資料取得／production／scheduler／wakeup／recurring jobs；未讀MarketMamba-blind，未寫formal Data／V6/models或修改rolling_seq_scores.py／portfolio_eval.py。MARKETMAMBA_DATA_ROOT unset；Data realpath仍為本worktree普通Data路徑，未讀內容，不推定等於正式資料。Runtime為WSL；最終指定CPU環境Python3.12.3、torch2.15.0+cpu、NumPy2.5.4、pandas3.1.1、LightGBM4.7.0；與Colab frozen LightGBM4.6.0不同，未改runtime契約／observed_at。
+
+### 實作
+
+- `tools/p4d_bundle.py`：新增launch，在binding／ensure_rehearsal之前啟動發布器，傳入六條排練及正式run；notebook改呼叫launch。rehearse直接呼叫也建立預設publisher，排練傳非持久化CpuLedger guard，不產生正式ledger。嚴格marker／publication gate與6-fit coverage不變。
+- `tools/p4d_train.py`：P4d專用Progress繼承舊publisher，只加入mode／stage快照與TXT；不修改P4a共用來源inventory。沿用60秒daemon heartbeat、原子TXT／JSON及寫入失敗繼續。stage覆蓋binding、preprocessing、GRU training／validation／full train inference、C0+ features／fit、full row inference與rehearsal evaluation；正式runner使用同一publisher/context，無重啟heartbeat／帳本重置。排練不finish_fit累積正式throughput，排練ETA未知。
+- 同一模組的本機CLI限制origin=2026，走相同load／split與完整fit rows、185欄build_features及固定200輪CPU LightGBM（最大預設iteration成本探針，不是另選anchor更新數）。不抽樣、不推論、不保存模型或績效；C0+ raw features不需rank-gauss，因此僅此量測分支跳過它。`measurement.json`含peak_rss_bytes（resource.getrusage ru_maxrss、明示程序生命週期峰值）、elapsed／prepare／features_and_fit秒數、matrix shape／bytes、seed／iterations、source commit＋working hashes、contract、input hashes、split、data realpath及環境。輸出目錄必須全新，避免覆寫共用產物；失敗不產生成功JSON。完整2026 fit沒有在本任務執行。
+
+供Claude另案執行的本機命令（本輪未執行）：
+
+```bash
+PYTHONPATH=V6 CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m tools.p4d_train --measure-c0plus --origin 2026 --data-dir /home/frank/projects/p4-bundles/prepared
+```
+
+預設輸出`.artifacts/p4d/measure-<uuid>/measurement.json`；須新程序執行，process-lifetime RSS包括imports／讀取／split／features／fit，不是扣除baseline後的fit增量RSS，也不是T4可行性驗收。
+
+### RED → GREEN 與實際證據
+
+初始`/tmp/p4d-fix-red.log`：**4 failed, 25 deselected in 2.59s**，缺stage、launch及measurement_inputs重現。首輪新測試修後`/tmp/p4d-fix-green.log`：**4 passed, 25 deselected in 3.77s**。首輪focused實際為**1 failed, 30 passed in 74.46s**；失敗只因既有notebook文字斷言仍要求guarded_launch直接出現，獨立診斷重跑**1 failed, 30 deselected in 6.95s**確認。將該斷言更新為實際launch入口，gate仍在launch內且負向測試保留；未降低gate。最終程式／tests於完整回歸開始前凍結。
+
+```text
+PYTHONPATH=V6:V6/research_lab/tests:. CUDA_VISIBLE_DEVICES='' PYTHONDONTWRITEBYTECODE=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests/test_p4d.py -q -p no:cacheprovider
+31 passed in 75.51s (0:01:15)
+exit0
+
+MUTATION rehearsal_heartbeat_disabled KILLED
+MUTATION rehearsal_mode_erased KILLED
+1 passed, 30 deselected in 2.07s
+exit0
+```
+
+最終focused `/tmp/p4d-fix-focused-final.log`；兩項in-memory mutants `/tmp/p4d-fix-mutations.log`，只替換暫時namespace/class method，不改source bytes。假時鐘長操作驗60／120／180秒三次REHEARSAL preprocessing快照，並核FORMAL欄位與publisher/thread同一性；六條排練路徑均收到同publisher及非None guard，含預處理兩路。os.replace拋OSError時context與操作繼續，TXT／JSON欄位、原子寫入沿用舊實作。
+
+36列合成fixture使用loader／split邊界double，實際build_features與LightGBM擬合（不是完整2026資料）：matrix_shape=[36,185]、matrix_bytes=26640、iterations=200、peak_rss_bytes=1336168448、elapsed_seconds=0.007365068013314158。iterations=200是配置的n_estimators上限；極小fixture可能因無可分裂節點提早停止，不代表200棵有效樹。此RSS包含該pytest程序先前測試／imports，只用來驗輸出欄位，不能當2026資源估計。JSON位於TEMPORARY `/tmp/pytest-of-frank/pytest-289/test_measure_c0plus_cli_tiny_f0/measure-tiny/measurement.json`，pytest可自行回收；非canonical artifact。
+
+### 限制與knowledge-impact
+
+真實2026全列features＋fit RSS／耗時尚UNKNOWN，Colab／Drive FUSE持久性、T4記憶體／全列推論與native長操作期間實際60秒更新仍UNVERIFIED。Python daemon heartbeat非硬即時保證，OS排程／GIL／Drive阻塞仍需現場排練；未聲稱CPU替身等於現場驗收。strict PIT／source provenance／universe／tradability原UNKNOWN／STOP不變；本輪不新增模型比較、組合收益或research conclusion，不重標歷史artifact。
+
+Knowledge gate：進度語義YES、量測入口boundary YES、next decision YES；authority、production runtime、研究correctness threshold、canonical artifact supersession與deprecation均NO。focused後執行check_knowledge_impact.py自動為PASS／DEFAULT，但人工判定仍需同步Current State、Authority Map、Training、Research及Human需求實作狀態；不靠自動DEFAULT略過記憶更新。完整回歸、health、hash與最終Git交接如下節。
+
+
+### 最終完整回歸、來源身分與固定交接
+
+```text
+PYTHONPATH=V6:V6/research_lab/tests:. CUDA_VISIBLE_DEVICES='' PYTHONDONTWRITEBYTECODE=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests tests -q -p no:cacheprovider
+1275 passed, 4 skipped, 5 warnings in 653.96s (0:10:53)
+exit0
+```
+
+完整log `/tmp/p4d-fix-full.log`；較原1269項新增6項，0 failed／無新增skip。五warnings為刻意duplicate ZIP member一項、stale-audit mutant內pandas deprecated API四項；與原審查類型一致。focused為31 passed／75.51s；兩項新增in-memory mutants均KILLED，原五項mutation仍在全套內通過。完整回歸期間4份source／test SHA重驗未變，結束後再驗；其後只補文件。初始新測試使用marketmamba-gpu venv但停用CUDA，最終focused及完整回歸均使用上述指定pilot09 CPU venv（torch+cpu），未安裝任何套件或改環境。
+
+來源／tests working bytes SHA-256（HEAD仍d36e709，不以HEAD冒稱本patch身分）：
+
+```json
+{
+  "tools/p4d.py": "5df94ced0d62979de44468487229a3e999fe18aeb3340465de21ec67e0deccb1",
+  "tools/p4d_train.py": "1cc307f3a96ea022fb43b329764b6d75e909b5f635c5fca09e3753b7608dce71",
+  "tools/p4d_bundle.py": "76237e4e5cdf10624b7a235026a4458745d31ffc3f50e04bd3d2eb4088bf07cf",
+  "V6/research_lab/tests/test_p4d.py": "2fbdcc5015adc46da2bc67c2e0b5df6d5af90c72e882c209ee2145af540bd49e"
+}
+```
+
+保護核對：`tools/p4d.py`、P4a共用`p4_colab.py`／`p4_bundle.py`／`p4_source_compat.py`、`rolling_seq_scores.py`、`portfolio_eval.py`、`c0plus.py`及P4d frozen contract／prepared split共9份與HEAD逐bytes相同。修改Python3份AST parse通過；focused實際bundle封裝／safe-extract、五個notebook code cells compile通過；6份受影響Markdown本機引用746項missing0（最終新增引用另重驗）。`git diff --check`通過，無staged內容。治理unittest **23 tests OK**；正常測試後再執行impact工具，人工更新受影響knowledge。health `--ci` **exit0／WARNING**：Project Map、Agent Guides、Domains、Runtime Freshness、Generated Index PASS；Governance、Authority Drift、Legacy Docs WARNING，無structural FAIL。不更改既有warning／門檻以求PASS。
+
+- Completed：bounded REQUIRED進度修補、MINOR量測入口、RED→GREEN／focused／完整回歸與記憶更新完成；不是Human acceptance。
+- Changed：`tools/p4d_train.py`、`tools/p4d_bundle.py`、`V6/research_lab/tests/test_p4d.py`、`docs/operations/colab-human-requirements.md`、本報告、`knowledge/00_Project_Map/Current_State.md`／`Authority_Map.md`、`knowledge/01_Domains/Training.md`／`Research.md`，共9份unstaged patch。
+- Decisions：保留P4d tools獨立來源邊界，共用既有heartbeat原語；排練至正式沿用同publisher，觀測不改研究／帳本／checkpoint authority。資源量測完整rows／200設定上限，不恢復cap。
+- Evidence：上列實際RED、31 focused、1275全套、兩項新增mutants、23治理tests、syntax／hash／references／diff與health；evidence class僅CPU工程／合成資源欄位驗證。
+- Remaining：真實2026全列量測、T4／Colab／Drive長操作heartbeat及持久性、獨立複審／Human acceptance。未做formal交付或模型／收益結論。
+- Blockers：原NO_GO尚未由獨立複審解除；全列RSS／現場證據仍UNKNOWN／UNVERIFIED，不以CPU通過填補。
+- Next recommended action：Claude獨立審查patch與原需求，另案於本機新程序量測最大fit；再由Human決定現場排練／交付，不能由本輪完成推得授權。
+- Project memory updated：YES，Current State／Training／Research及本報告；不新增memory tree。
+- Authority map updated：YES，候選邊界與下一決策；authority-map.json／外部observed_at不改。
+- Git status：起始clean，結束detached HEAD、9份modified／unstaged，無staged；依no-commit授權保留patch，**不是clean-worktree**。
+- Commit：N/A（禁止）。
+- Push：N/A（禁止）；merge／deploy同未執行。
+- Worktree：既有`builder_p4d_fix1`，base／HEAD d36e709a21088ce836c6d84e2964518c018cc12e，無新建／移除。
+- Runtime/environment：WSL、指定pilot09 CPU venv／Python3.12.3／torch2.15.0+cpu／LightGBM4.7.0，CUDA_VISIBLE_DEVICES空；MARKETMAMBA_DATA_ROOT unset，Data realpath為指派worktree/Data，未讀或寫formal資料。與Colab契約不等價，無runtime observation升格。
