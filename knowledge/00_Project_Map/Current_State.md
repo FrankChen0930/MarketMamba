@@ -1,3 +1,9 @@
+## PIT 帳本獨立審查修補候選 — 2026-11-25
+
+`job-run-mww6g0bv-340962/builder_pit_fix1`、detached base `47bf4659e1143269b622bfd80ebed687f3538973`，起始clean、依no-commit保留patch。**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；每日排程 NO_GO 待複審／現場驗收**。[工具](../../tools/pit_ledger.py)在標準化後拒絕缺失／NaN／空白業務鍵，驗必要schema及四個append-only trigger的正規化SQL SHA；寫入限明確帳本namespace，拒絕root／祖先／既有後代symlink與Data／來源重疊。parquet索引暫存留帳本內，SQLite temp_store=MEMORY；真實全量新RAM峰值未量測。
+
+RED21 failed／18 passed，最終focused43 passed／17.47秒、兩項新mutation killed。tmp_path真實SQLite／journal寫入中SIGKILL與RLIMIT_FSIZE拒寫後，重開validate及四表重播皆為原完整1 run；重試CHANGED、再跑NO_CHANGE，不重複events。僅本機合成檔案工程證據，不是實體裝置斷電／Windows／publication PIT驗收；原實際帳本與正式Data完全未寫入。指定全套1320 passed／4 skipped／5 warnings／0 failed（709.05秒、exit0）；完整輸出見[報告](../../reports/pit_arrival_audit_20261125.md#獨立審查-required-修補--2026-11-25)。無網路／GPU／agents／抓取或P4d／production／排程／commit／push／merge變更，不刷新外部observed_at、不改machine authority。Next：獨立複審，Human另案依報告先停用註冊／手動action驗證後才決定啟用；完成不等於接受。
+
 ## 最小 PIT 帳本容量修補候選 — 2026-11-25
 
 Human 核准[計畫 §J](../../tasks/plan-fundamentals-supplychain-20261125.md)第一步及本輪 REQUIRED；`job-run-mww5b81x-8af923/builder_pit_step1b`，detached base `fb32e4c1a99fafb05abf80fd7b041b08859f5f24`，由前輪複製9檔接續，no-commit patch，**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[工具](../../tools/pit_ledger.py)改為不可變 SHA-256 來源 parquet＋zstd 每鍵列hash索引；SQLite只存後續diff與run chain，來源SHA不變記NO_CHANGE、不解碼來源列。完整性／重播與實際容量／測試以[報告](../../reports/pit_arrival_audit_20261125.md)及[JSON](../../reports/pit_arrival_audit_20261125.json)為準。

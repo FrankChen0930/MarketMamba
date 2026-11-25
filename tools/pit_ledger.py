@@ -12,6 +12,7 @@ import fcntl
 import hashlib
 import json
 import math
+import re
 import os
 import sqlite3
 import subprocess
@@ -36,6 +37,7 @@ KINDS = ('INITIAL_STOCK', 'FIRST_SEEN', 'REVISED', 'DISAPPEARED')
 SOURCE = Path('/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6')
 VERSION = 'pit-local-observation-v2'
 DEFAULT_LEDGER = Path('/home/frank/projects/MarketMamba/.artifacts/pit-ledger-v2')
+ALLOWED_LEDGER_ROOTS = (DEFAULT_LEDGER, Path(__file__).resolve().parents[1] / '.artifacts/pit-ledger-v2')
 
 
 class Stop(RuntimeError):
@@ -105,7 +107,21 @@ PRAGMA user_version=2;
 EVENT_SQL = 'SELECT table_name,key,kind,value_hash,value_json,previous_hash,previous_json FROM events WHERE run_id=? ORDER BY id'
 
 
+def schema_identity(c):
+    # Keep literal content/case intact; normalize whitespace only.
+    return {(kind, name, table): value_hash(re.sub(r'\s+', ' ', sql).strip())
+            for kind, name, table, sql in c.execute(
+                "SELECT type,name,tbl_name,sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%'")}
+
+
+with sqlite3.connect(':memory:') as _schema_connection:
+    _schema_connection.executescript(SCHEMA)
+    EXPECTED_SCHEMA = schema_identity(_schema_connection)
+
+
 def validate(c, ledger):
+    if schema_identity(c) != EXPECTED_SCHEMA:
+        raise Stop('ledger schema definitions mismatch')
     if c.execute('PRAGMA user_version').fetchone()[0] != 2:
         raise Stop('ledger schema mismatch')
     if c.execute('PRAGMA quick_check').fetchone()[0] != 'ok':
@@ -167,9 +183,10 @@ def publish_blob(source, ledger, expected=None):
 def records(path, name):
     for batch in pq.ParquetFile(path).iter_batches(batch_size=32768):
         for record in batch.to_pylist():
-            if any(record[k] is None for k in KEYS[name]):
-                raise Stop(f'{name}: null business key')
-            yield canonical({k: record[k] for k in KEYS[name]}), canonical(record)
+            key = {k: normalized(record[k]) for k in KEYS[name]}
+            if any(v is None or (isinstance(v, str) and not v.strip()) for v in key.values()):
+                raise Stop(f'{name}: missing business key')
+            yield canonical(key), canonical(record)
 
 
 def _overlay(c, name, seq):
@@ -227,8 +244,32 @@ def fsync_dir(path):
         os.close(fd)
 
 
+def checked_write_paths(source, ledger):
+    lexical = Path(os.path.abspath(ledger))
+    for path in (lexical, *lexical.parents):
+        if path.is_symlink():
+            raise Stop('ledger symlink root/ancestor forbidden')
+    resolved = lexical.resolve()
+    if lexical != resolved:
+        raise Stop('ledger lexical/resolved path mismatch')
+    if not any(resolved == root.resolve() or root.resolve() in resolved.parents
+               for root in ALLOWED_LEDGER_ROOTS):
+        raise Stop('ledger outside allowed namespace')
+    source = Path(source).resolve()
+    data = (Path(__file__).resolve().parents[1] / 'Data').resolve()
+    if resolved == data or data in resolved.parents or 'Data' in lexical.parts:
+        raise Stop('ledger namespace cannot be Data')
+    # Include dangling links, directories, journal/summary/lock targets.
+    if resolved.exists():
+        for parent, dirs, files in os.walk(resolved, followlinks=False):
+            for name in dirs + files:
+                if (Path(parent) / name).is_symlink():
+                    raise Stop('ledger symlink descendant forbidden')
+    return source, resolved
+
+
 def snapshot(source, ledger, now=None):
-    source, ledger = Path(source).resolve(), Path(ledger).resolve()
+    source, ledger = checked_write_paths(source, ledger)
     if ledger == source or source in ledger.parents or ledger in source.parents:
         raise Stop('source and research ledger must be disjoint')
     started = time.monotonic()
@@ -258,7 +299,7 @@ def _snapshot(source, ledger, now, started):
                               schema=str(pf.schema_arrow))
         c = sqlite3.connect(db if exists else temp)
         c.execute('PRAGMA synchronous=FULL')
-        c.execute('PRAGMA temp_store=FILE')
+        c.execute('PRAGMA temp_store=MEMORY')
         c.execute('PRAGMA cache_size=-65536')
         if exists:
             previous, last, initial = validate(c, ledger)
@@ -292,7 +333,7 @@ def _snapshot(source, ledger, now, started):
                 info['base'] = publish_blob(meta[name]['path'], ledger, meta[name]['sha256'])
                 scan_path = ledger / 'blobs' / (info['base']['sha256'] + '.parquet')
                 index_schema = pa.schema([('key', pa.string()), ('value_hash', pa.binary(32))])
-                with tempfile.NamedTemporaryFile(suffix='.parquet') as idx:
+                with tempfile.NamedTemporaryFile(dir=ledger, suffix='.parquet') as idx:
                     with pq.ParquetWriter(idx.name, index_schema, compression='zstd', use_dictionary=False) as writer:
                         batch_keys, batch_hashes = [], []
                         for key, val in records(scan_path, name):

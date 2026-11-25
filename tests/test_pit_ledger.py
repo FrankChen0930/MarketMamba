@@ -228,7 +228,7 @@ def test_event_corruption_and_missing_base_stop(tmp_path):
     with sqlite3.connect(ledger/'ledger.sqlite3') as c:
         c.execute('DROP TRIGGER events_no_update')
         c.execute("UPDATE events SET value_json='{}' WHERE kind='REVISED'")
-    with pytest.raises(p.Stop, match='events damaged'):
+    with pytest.raises(p.Stop, match='schema|events damaged'):
         list(p.replay(ledger, a['run_id'], 'revenue_raw'))
 
 
@@ -250,3 +250,230 @@ def test_replay_empty_and_reappearance_and_old_run(tmp_path):
     base.unlink()
     with pytest.raises(p.Stop):
         p.snapshot(root, ledger)
+
+
+@pytest.fixture(autouse=True)
+def isolated_ledger_allowlist(tmp_path, monkeypatch):
+    # Explicit test-only allowlist; never write the real observation ledger.
+    monkeypatch.setattr(p, 'ALLOWED_LEDGER_ROOTS', (tmp_path / 'ledger',), raising=False)
+
+
+@pytest.mark.parametrize('bad', [None, float('nan'), '', '   '])
+def test_normalized_missing_business_key_stops(tmp_path, bad):
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+    path = tmp_path / 'bad.parquet'
+    pq.write_table(pa.Table.from_pylist([dict(stock_id=bad, revenue_year=2026,
+                                           revenue_month=10, revenue=1)]), path)
+    with pytest.raises(p.Stop, match='business key'):
+        list(p.records(path, 'revenue_raw'))
+
+
+@pytest.mark.parametrize('trigger', ['events_no_update', 'events_no_delete',
+                                     'runs_no_update', 'runs_no_delete'])
+@pytest.mark.parametrize('replacement', [False, True])
+def test_missing_or_modified_trigger_stops(tmp_path, trigger, replacement):
+    root = sources(tmp_path)
+    ledger = tmp_path / 'ledger'
+    p.snapshot(root, ledger)
+    with sqlite3.connect(ledger / 'ledger.sqlite3') as c:
+        c.execute(f'DROP TRIGGER {trigger}')
+        if replacement:
+            table, action = trigger.split('_no_')
+            c.execute(f'CREATE TRIGGER {trigger} BEFORE {action} ON {table} BEGIN SELECT 1; END')
+        with pytest.raises(p.Stop, match='schema'):
+            p.validate(c, ledger)
+    with pytest.raises(p.Stop, match='schema'):
+        p.snapshot(root, ledger)
+
+
+def test_altered_table_schema_stops(tmp_path):
+    ledger = tmp_path / 'ledger'
+    p.snapshot(sources(tmp_path), ledger)
+    with sqlite3.connect(ledger / 'ledger.sqlite3') as c:
+        c.execute('ALTER TABLE events ADD COLUMN unexpected TEXT')
+        with pytest.raises(p.Stop, match='schema'):
+            p.validate(c, ledger)
+
+
+@pytest.mark.parametrize('destination', ['arbitrary/ledger', 'Data/other', 'source/ledger'])
+def test_outside_namespace_rejected_before_write(tmp_path, destination):
+    root = sources(tmp_path)
+    ledger = tmp_path / destination
+    with pytest.raises(p.Stop, match='namespace|disjoint'):
+        p.snapshot(root, ledger)
+    assert not ledger.exists()
+
+
+@pytest.mark.parametrize('component', ['root', 'ancestor', 'blobs', '.lock',
+                                       'ledger.sqlite3', 'initial.sqlite3', 'IDENTITY.json'])
+def test_symlink_write_targets_rejected(tmp_path, monkeypatch, component):
+    root = sources(tmp_path)
+    ledger = tmp_path / 'ledger'
+    outside = tmp_path / 'outside'
+    outside.mkdir()
+    if component == 'root':
+        ledger.symlink_to(outside, target_is_directory=True)
+    elif component == 'ancestor':
+        (tmp_path / 'alias').symlink_to(tmp_path, target_is_directory=True)
+        ledger = tmp_path / 'alias' / 'ledger'
+        monkeypatch.setattr(p, 'ALLOWED_LEDGER_ROOTS', (ledger,))
+    else:
+        ledger.mkdir()
+        (ledger / component).symlink_to(outside / 'victim')
+    with pytest.raises(p.Stop, match='symlink'):
+        p.snapshot(root, ledger)
+    assert list(outside.iterdir()) == []
+
+
+def test_index_and_sqlite_temporaries_confined(tmp_path, monkeypatch):
+    original_temp = p.tempfile.NamedTemporaryFile
+    original_connect = p.sqlite3.connect
+    seen = []
+    def confined(*args, **kwargs):
+        assert kwargs.get('dir') is not None
+        assert (tmp_path / 'ledger') in p.Path(kwargs['dir']).parents or p.Path(kwargs['dir']) == tmp_path / 'ledger'
+        seen.append(kwargs['dir'])
+        return original_temp(*args, **kwargs)
+    class Connection(sqlite3.Connection):
+        def execute(self, sql, *args, **kwargs):
+            if sql == 'BEGIN IMMEDIATE':
+                assert super().execute('PRAGMA temp_store').fetchone()[0] == 2
+            return super().execute(sql, *args, **kwargs)
+    monkeypatch.setattr(p.tempfile, 'NamedTemporaryFile', confined)
+    monkeypatch.setattr(p.sqlite3, 'connect', lambda *a, **kw: original_connect(*a, factory=Connection, **kw))
+    p.snapshot(sources(tmp_path), tmp_path / 'ledger')
+    assert len(seen) >= 4
+
+
+def _fault_writer(source, ledger, pipe, mode):
+    """Real file DB and rollback journal; no :memory: durability substitution."""
+    import os
+    import resource
+    import signal
+    p.ALLOWED_LEDGER_ROOTS = (ledger,)
+    original = sqlite3.connect
+    class Connection(sqlite3.Connection):
+        def execute(self, sql, *args, **kwargs):
+            result = super().execute(sql, *args, **kwargs)
+            if mode == 'kill' and sql.startswith('INSERT INTO events('):
+                # Spill dirty pages into the DB while the transaction is uncommitted.
+                super().execute('PRAGMA cache_size=1')
+                for i in range(32):
+                    super().execute('INSERT INTO events(run_id,table_name,key,kind,value_json) VALUES(?,?,?,?,?)',
+                                    ('uncommitted', 'revenue_raw', str(i), 'FIRST_SEEN', 'x' * 65536))
+                pipe.send('WRITING_WITH_JOURNAL')
+                signal.pause()
+            return result
+    try:
+        if mode == 'kill':
+            p.sqlite3.connect = lambda *a, **kw: original(*a, factory=Connection, **kw)
+        else:
+            signal.signal(signal.SIGXFSZ, signal.SIG_IGN)
+            limit = (ledger / 'ledger.sqlite3').stat().st_size + 4096
+            resource.setrlimit(resource.RLIMIT_FSIZE, (limit, limit))
+        p.snapshot(source, ledger)
+        pipe.send('COMMITTED')
+    except p.Stop as exc:
+        pipe.send('STOP:' + str(exc))
+    finally:
+        pipe.close()
+
+
+@pytest.mark.parametrize('mode', ['kill', 'full'])
+def test_real_sqlite_kill_and_file_size_limit_recovery(tmp_path, mode):
+    import multiprocessing as mp
+    import signal
+    ctx = mp.get_context('spawn')
+    root = sources(tmp_path)
+    ledger = tmp_path / 'ledger'
+    first = p.snapshot(root, ledger)
+    before = {name: sorted(p.replay(ledger, first['run_id'], name)) for name in p.KEYS}
+    if mode == 'full':
+        # Larger than the per-file RLIMIT for the real rollback journal/DB.
+        for name in p.KEYS:
+            path = root / f'{name}.parquet'
+            df = pd.read_parquet(path)
+            df['payload'] = ['x' * 200000, 'y' * 200000]
+            df.to_parquet(path, index=False)
+    else:
+        sources(tmp_path, [('2330', 9), ('2454', 3)])
+    expected = {name: sorted(p.canonical(row) for row in pd.read_parquet(root / f'{name}.parquet').to_dict('records'))
+                for name in p.KEYS}
+    parent, child = ctx.Pipe(duplex=False)
+    process = ctx.Process(target=_fault_writer, args=(root, ledger, child, mode))
+    process.start()
+    child.close()
+    try:
+        assert parent.poll(30), 'writer failed to reach fault boundary'
+        message = parent.recv()
+        if mode == 'kill':
+            assert message == 'WRITING_WITH_JOURNAL'
+            assert (ledger / 'ledger.sqlite3-journal').stat().st_size > 0
+            process.kill()
+        else:
+            assert message.startswith('STOP:'), message
+        process.join(10)
+        assert not process.is_alive()
+        assert process.exitcode == (-signal.SIGKILL if mode == 'kill' else 0)
+    finally:
+        if process.is_alive():
+            process.kill()
+            process.join(10)
+        parent.close()
+    with sqlite3.connect(ledger / 'ledger.sqlite3') as c:
+        _, last, _ = p.validate(c, ledger)
+        count = c.execute('SELECT count(*) FROM runs').fetchone()[0]
+    recovered = {name: sorted(p.replay(ledger, last['run_id'], name)) for name in p.KEYS}
+    assert recovered in (before, expected)
+    assert count == 1  # Both controlled failures occurred before commit.
+    assert recovered == before
+    retry = p.snapshot(root, ledger)
+    assert retry['status'] == 'CHANGED'
+    assert {name: sorted(p.replay(ledger, retry['run_id'], name)) for name in p.KEYS} == expected
+    event_count = len(events(ledger))
+    assert p.snapshot(root, ledger)['status'] == 'NO_CHANGE'
+    assert len(events(ledger)) == event_count
+    print(f'REAL_SQLITE fault={mode} message={message} recovered_runs={count} retry=CHANGED repeat=NO_CHANGE events={event_count}')
+
+
+@pytest.mark.parametrize('guard', ['normalized_key', 'schema_definition'])
+def test_new_guard_mutations_are_killed(tmp_path, monkeypatch, guard):
+    import inspect
+    def requires_stop(action):
+        blocked = False
+        try:
+            action()
+        except p.Stop:
+            blocked = True
+        assert blocked, 'mutant accepted invalid evidence'
+    if guard == 'normalized_key':
+        path = tmp_path / 'nan.parquet'
+        import pyarrow as pa
+        import pyarrow.parquet as pq
+        pq.write_table(pa.Table.from_pylist([dict(stock_id=float('nan'), revenue_year=2026,
+                                               revenue_month=10, revenue=1)]), path)
+        action = lambda: list(p.records(path, 'revenue_raw'))
+        name = 'records'
+        code = inspect.getsource(p.records).replace(
+            "if any(v is None or (isinstance(v, str) and not v.strip()) for v in key.values()):", 'if False:')
+    else:
+        ledger = tmp_path / 'ledger'
+        p.snapshot(sources(tmp_path), ledger)
+        with sqlite3.connect(ledger / 'ledger.sqlite3') as c:
+            c.execute('DROP TRIGGER events_no_delete')
+        action = lambda: list(p.replay(ledger, 'nonexistent', 'revenue_raw'))
+        # Direct validate oracle must fail specifically on the missing protection.
+        def action():
+            with sqlite3.connect(ledger / 'ledger.sqlite3') as c:
+                p.validate(c, ledger)
+        name = 'validate'
+        code = inspect.getsource(p.validate).replace('if schema_identity(c) != EXPECTED_SCHEMA:', 'if False:')
+    requires_stop(action)
+    namespace = dict(vars(p))
+    assert code != inspect.getsource(getattr(p, name))
+    exec(compile(code, p.__file__, 'exec'), namespace)
+    monkeypatch.setattr(p, name, namespace[name])
+    with pytest.raises(AssertionError, match='mutant accepted'):
+        requires_stop(action)
+    print(f'NEW_MUTATION {guard} KILLED')

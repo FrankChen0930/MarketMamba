@@ -1,3 +1,7 @@
+## PIT 帳本 REQUIRED 修補的候選邊界 — 2026-11-25
+
+`job-run-mww6g0bv-340962/builder_pit_fix1@47bf465`未提交修補，**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[工具](../../tools/pit_ledger.py)／[測試](../../tests/test_pit_ledger.py)收緊缺鍵、schema／四trigger及帳本namespace／symlink correctness gate；SQLite暫存改MEMORY，parquet索引暫存留namespace。測試allowlist只指tmp_path，不授權任何實際帳本寫入。[報告](../../reports/pit_arrival_audit_20261125.md#獨立審查-required-修補--2026-11-25)的SIGKILL／RLIMIT_FSIZE及mutation是本機合成檔案工程證據，不能升格斷電／Windows／正式PIT或排程接受。原實際13,760,451列帳本與歷史hash／時刻未改；沒有canonical artifact supersession、machine authority或外部runtime observed_at變化。可註冊每日排程維持NO_GO，獨立複審與Human現場驗收另案；本輪無排程操作。
+
 ## 最小 PIT 帳本 v2 authority 邊界 — 2026-11-25
 
 [Human核准計畫 §J](../../tasks/plan-fundamentals-supplychain-20261125.md)與本輪 REQUIRED 只授權獨立研究帳本／離線稽核。`job-run-mww5b81x-8af923/builder_pit_step1b@fb32e4c` 未提交候選，**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**；[工具](../../tools/pit_ledger.py)／[報告](../../reports/pit_arrival_audit_20261125.md)記本地版本。不可變原檔base／每鍵hash索引＋append-only diff events／run chain共同構成觀測機器證據；summary JSON為GENERATED，不能僅憑存在判通過。新版持久路徑 `/home/frank/projects/MarketMamba/.artifacts/pit-ledger-v2/`；舊v1保留、未修改，不混用兩版觀測時間。

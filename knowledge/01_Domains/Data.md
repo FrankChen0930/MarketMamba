@@ -1,3 +1,7 @@
+## PIT 帳本審查修補 — 2026-11-25
+
+未提交候選 `job-run-mww6g0bv-340962/builder_pit_fix1@47bf465`，RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。[報告](../../reports/pit_arrival_audit_20261125.md#獨立審查-required-修補--2026-11-25)與[測試](../../tests/test_pit_ledger.py)補標準化缺鍵STOP、schema／四trigger定義hash、namespace／symlink限制、暫存歸屬及真實檔案SIGKILL／RLIMIT_FSIZE恢復。focused43 passed、兩項新mutation killed；只合成工程證據，未讀寫實際帳本／正式Data，publication／strict PIT／法律適用仍UNKNOWN。SQLite MEMORY暫存的全量RAM峰值、Windows接線／斷電與獨立複審仍待，可註冊排程NO_GO；不變更來源准入或production authority。
+
 ## PIT 帳本 v2 候選邊界 — 2026-11-25
 
 [Ledger工具](../../tools/pit_ledger.py)與[報告](../../reports/pit_arrival_audit_20261125.md)為RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED未提交候選。四份processed_v6僅唯讀；起始原parquet不可變複本＋每鍵完整SHA索引，不逐列存JSON；後續完整diff前後值／SQLite交易／run chain／base與index SHA損毀STOP，來源SHA不變記NO_CHANGE。真實初始13,760,451列／556,400,149 bytes／614.602秒；NO_CHANGE1.748秒、增11,913 bytes、events仍0，工程focused15 passed／2 mutations killed；指定全套1292 passed／4 skipped／0 failed、exit0（詳報告），不升格PIT。新帳本在主checkout `.artifacts/pit-ledger-v2/`（EXTERNAL_LARGE_DATA），舊worktree 9.8GB v1未動，不移植觀測時刻。

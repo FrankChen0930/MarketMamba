@@ -77,9 +77,9 @@ $escIdentity = [Security.SecurityElement]::Escape($identity)
 $xml = @"
 <Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo><Description>Independent research-only PIT cache ledger after DataFetch; no source writes</Description></RegistrationInfo>
-  <Triggers><EventTrigger><Enabled>true</Enabled><Subscription>$escSubscription</Subscription></EventTrigger></Triggers>
+  <Triggers><EventTrigger><Enabled>false</Enabled><Subscription>$escSubscription</Subscription></EventTrigger></Triggers>
   <Principals><Principal id="Author"><UserId>$escIdentity</UserId><LogonType>InteractiveToken</LogonType><RunLevel>LeastPrivilege</RunLevel></Principal></Principals>
-  <Settings><MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy><DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries><StopIfGoingOnBatteries>false</StopIfGoingOnBatteries><StartWhenAvailable>false</StartWhenAvailable><WakeToRun>false</WakeToRun><Enabled>true</Enabled><ExecutionTimeLimit>PT0S</ExecutionTimeLimit></Settings>
+  <Settings><MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy><DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries><StopIfGoingOnBatteries>false</StopIfGoingOnBatteries><StartWhenAvailable>false</StartWhenAvailable><WakeToRun>false</WakeToRun><Enabled>false</Enabled><ExecutionTimeLimit>PT0S</ExecutionTimeLimit></Settings>
   <Actions Context="Author"><Exec><Command>powershell.exe</Command><Arguments>-NoProfile -NonInteractive -EncodedCommand $encoded</Arguments></Exec></Actions>
 </Task>
 "@
@@ -130,7 +130,7 @@ rows = replay('/home/frank/projects/MarketMamba/.artifacts/pit-ledger-v2', targe
 
 任一日的視圖取該日台北截止前最後一筆 runs.seq，再以 run_id 重播；沒有更早觀測則 UNKNOWN，不能回填。重播包括舊 run、NO_CHANGE、全表消失、重新出現；完整值只在 base 或 FIRST_SEEN／REVISED／DISAPPEARED 的差異中保存。DISAPPEARED 保存前值，REVISED 保存前後值。重跑相同來源不重造事件，僅追加觀測摘要。
 
-<1GB數值只指持久帳本；暫存磁碟及記憶體峰值未量測。初始化與內容變更表仍須完整掃描與暫存磁碟 hash 索引；來源 SHA 未變時只讀 SHA／metadata，不解碼列。完整性驗證仍重新 hash 不可變 base/index 及歷史事件，不以「不重掃來源列」解讀為零 I/O。diff／overlay 的記憶體與儲存量隨變更鍵增加；大量全面回補不保證 MB，日常稀疏變更才是 MB 級目標。失敗可能留下已驗 immutable orphan blob，無 run 引用即非已發布觀測；本輪不自動刪除。
+<1GB數值只指持久帳本；暫存磁碟及記憶體峰值未量測。初始化與內容變更表仍須完整掃描；本輪修補後 SQLite 暫存 hash 表固定在記憶體，parquet 索引暫存固定在帳本目錄；來源 SHA 未變時只讀 SHA／metadata，不解碼列。完整性驗證仍重新 hash 不可變 base/index 及歷史事件，不以「不重掃來源列」解讀為零 I/O。diff／overlay 的記憶體與儲存量隨變更鍵增加；大量全面回補不保證 MB，日常稀疏變更才是 MB 級目標。失敗可能留下已驗 immutable orphan blob，無 run 引用即非已發布觀測；本輪不自動刪除。
 
 舊帳本仍在 `/home/frank/projects/MarketMamba/.worktrees/ruflo-workers/run-mww46oz9-6edacd/builder_pit_step1/.artifacts/pit-ledger/`，本輪未寫入／刪除，由 Claude 另案處理。新帳本獨立起算，不把舊 v1 觀測時間貼到新版。初次執行 parser SHA 以帳本 summary 為準；啟動後補強動態 git identity 與唯讀模式驗證，最終 source SHA 另列，沒有重標已發布 run。因Git base未含未提交工具，JSON另保留final→initial的精確producer差異，已重建並驗回initial parser SHA；不另建備份樹。
 
@@ -141,7 +141,7 @@ rows = replay('/home/frank/projects/MarketMamba/.artifacts/pit-ledger-v2', targe
 - 持久位置：`/home/frank/projects/MarketMamba/.artifacts/pit-ledger-v2/`；初始 run `4eebefd111c34d3f9f6f87ff6640661f`，觀測時間 `2026-11-25T21:18:06.516630+08:00`；source commit `fb32e4c1a99fafb05abf80fd7b041b08859f5f24`，未提交程式 SHA 見 JSON。
 - 四表 13,760,451 列：營收459,119、損益2,625,875、資產負債8,307,996、現金流量2,367,461。INITIAL_STOCK 都由索引保存，SQLite events **0列**，無current表。
 - 真實初始總大小 **556400149 bytes（約 556.400 MB）**；目標 `<1,000,000,000 bytes` 的實際 assertion 通過。其中來源副本78,493,586 bytes、索引477,885,423 bytes，其餘為DB／摘要。初始化 commit 前實測 **614.601970秒**，不是合成外推。
-- 第二次 run `2b2dc1b9b3bb404c8e06f120e255633e`，status=NO_CHANGE，實測 **NO_CHANGE_614.601970秒**；只增加 **11913 bytes**，最終 **556412062 bytes**。零新增內容事件；已重新驗 schema／SQLite quick_check／run chain／event count與digest／base與index SHA及唯讀模式。
+- 第二次 run `2b2dc1b9b3bb404c8e06f120e255633e`，status=NO_CHANGE，實測 **1.748361秒（約1.75秒）**；只增加 **11913 bytes**，最終 **556412062 bytes**。零新增內容事件；已重新驗 schema／SQLite quick_check／run chain／event count與digest／base與index SHA及唯讀模式。
 - 四份原parquet的副本 SHA 與來源相同；8個唯讀base/index blobs以及DB／summary完整size與SHA inventory在JSON。DB SHA：`bfbb7a6296ad12b7e14b4d7ac561ebbcb19a9f230c1383e2e18d4743c42d0f5b`。舊9.8GB帳本未寫刪，本輪不主張已有外部備份或production部署。
 - 環境：WSL CPU，Python3.12.3；Pandas 3.1.1／PyArrow 26.0.1／SQLite 3.45.1；`CUDA_VISIBLE_DEVICES=''`、`MARKETMAMBA_DATA_ROOT` unset。來源實體路徑 `/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6`；本worktree Data為普通目錄、未作來源。
 
@@ -199,3 +199,119 @@ test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime
 ```
 
 Knowledge impact 的 REVIEW_REQUIRED 指向 Operations／GOVERNANCE：已檢閱，全球操作／安全政策與既有排程未改，兩檔無需更新；持久路徑與本worktree責任已在本輪四份knowledge及報告記錄。暫存磁碟與RAM峰值、Windows接線、長期每日運作及獨立複審仍未驗收。
+
+
+## 獨立審查 REQUIRED 修補 — 2026-11-25
+
+本節為 `job-run-mww6g0bv-340962/builder_pit_fix1`、detached HEAD/base
+`47bf4659e1143269b622bfd80ebed687f3538973` 的未提交修補；起始 clean。
+**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；可註冊每日排程仍為 NO_GO**，需獨立複審與下列現場驗收。
+僅改工具、測試與相關報告／knowledge；不讀 blind、不用網路／GPU、不寫正式 Data 或主 checkout 實際帳本，不改抓取／P4d／Windows runtime。
+以下為本輪合成檔案工程證據；上方真實初始化／inventory 是前輪歷史量測，本輪沒有重新量測或改寫它們。
+
+- 業務鍵先 `normalized()` 再驗證；None／NaN／空字串／純空白全部 STOP，非鍵欄位仍可 NaN→null，前置零股票字串保留。
+- `validate()` 將 sqlite_master 的必要 tables、constraints、四個 append-only triggers 與預期 SCHEMA 逐物件比對正規化 SQL SHA-256；缺少、被替換、額外 schema 或 table schema 改變即 STOP，`user_version` 不代替定義驗證。
+- 寫入根目錄只允許本 checkout `.artifacts/pit-ledger-v2` 或明列的主 checkout 同名 namespace（`ALLOWED_LEDGER_ROOTS`）；沒有任意 CLI allowlist 開關。測試以 monkeypatch 明確允許各自 tmp_path/ledger。來源與帳本互不包含、Data 禁入；lexical/resolved 不一致、root／祖先／既有後代（含 dangling link／lock／DB／blobs／marker）symlink 均 STOP，檢查在首次寫入前。
+- parquet 索引 NamedTemporaryFile 使用 `dir=ledger`；SQLite `temp_store=MEMORY`，不再讓 FILE temp 落到系統暫存區。這會增加 RAM 需求，真實13,760,451列的新記憶體峰值未量測，不能沿用前輪容量量測宣稱新峰值通過。
+- 路徑檢查需要本機可信、穩定且不被其他程序惡意改名的 namespace；不是對敵意並行 symlink 替換的 OS sandbox。原每日一次／共同刷新／publication UNKNOWN 不變。
+
+### RED、GREEN 與新 mutation
+
+命令：`PYTHONPATH=. /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest tests/test_pit_ledger.py -q -s -p no:cacheprovider`。
+先加回歸再改實作：**21 failed、18 passed，17.32秒**；NaN／空鍵、trigger 缺少與定義改寫、table schema、越界與 symlink、暫存設定的原始缺陷被重現。
+最終 focused：**43 passed in 17.47s，exit0**，無新增 skip。
+兩項新 mutation 在記憶體編譯函式，未修改磁碟工具；baseline oracle 先驗 STOP，變異後由相同 oracle 的 assertion 拒絕：
+
+```text
+NEW_MUTATION normalized_key KILLED
+NEW_MUTATION schema_definition KILLED
+```
+
+### 實體 SQLite 故障演練（可重跑）
+
+`test_real_sqlite_kill_and_file_size_limit_recovery` 使用 spawn 子程序、tmp_path 真實 parquet／SQLite DB／rollback journal；`:memory:` 只用於建構預期 schema，完全不作 durability 替身。
+SIGKILL 在實際 INSERT 後，將未提交 dirty pages spill 至 DB 並確認 journal 非空，再由父程序殺死 writer。
+RLIMIT_FSIZE 在子程序限制每個實體檔案大小，使用大值 diff 觸發 OS 拒寫，非 monkeypatch 例外注入；這是檔案大小限制模擬，沒有填滿主機實體磁碟。
+重新開啟後 validate、四表完整重播、run count 與 retry／NO_CHANGE／事件數均驗證：
+
+```text
+REAL_SQLITE fault=kill message=WRITING_WITH_JOURNAL recovered_runs=1 retry=CHANGED repeat=NO_CHANGE events=12
+REAL_SQLITE fault=full message=STOP:ledger/source validation STOP: disk I/O error recovered_runs=1 retry=CHANGED repeat=NO_CHANGE events=8
+```
+
+兩個受控 fault 都在 commit 前，恢復為完整舊狀態，沒有 partial run 或 orphan event；重試各四表完整新狀態，再跑不增內容事件。
+這沒有驗證每個 commit 邊界、初始化發布中斷、實體裝置斷電、Windows／跨檔案系統或長期運維；RLIMIT_FSIZE 的 SQLite 錯誤為 disk I/O error，不能改稱實測 ENOSPC。
+
+### 註冊前驗收程序（只供 Human／Claude 另案執行）
+
+1. 維持 NO_GO，先完成獨立複審並由 Human 確認允許執行；確認實際 Windows task／WSL runtime、帳本允許路徑、可用磁碟及 RAM、持久備份與可用的固定 checkout，替換上方示例中的舊 builder worktree。記錄 `observed_at`，不靠舊 snapshot 推定現況。
+2. 用 PowerShell parser 驗證 `$script`、`[xml]$xml` 解析 XML，檢視 action 與 upstream task 精確名稱。上方提案已改為 trigger／task 都 `Enabled=false`，且 `WakeToRun=false`；只以停用狀態註冊新獨立 task，確認無 recurring trigger，既有 DataFetch 不變。
+3. 待一次可驗證的成功 DataFetch 完成後，以同一 identity 手動執行新 task 的 action（直接呼叫 `$script` 的 PowerShell／WSL 命令，停用 task 不用 Start-ScheduledTask）。保留 stdout／stderr／退出碼；必須 exit0，摘要含四表與正確 run_id／observed_at。STOP／非零退出碼即保留停用並調查。
+4. 重新開啟 DB，驗 schema／triggers／quick_check／run chain／digest／base/index SHA；比對四表計數與來源 identity。再手動執行一次，在來源相同時須 NO_CHANGE 且 events 不增加，run 增一；確認 upstream 結果未被本 task 改寫。
+5. Human 另行批准後才同時啟用 task 與事件 trigger；驗一次真正 EventID=102 接線、退出碼與無重疊執行，失敗即停用新 task。睡眠／登出／停電與備份恢復仍須另驗，本輪沒有註冊、Run、啟用、wakeups 或任何排程操作。
+
+### 修補 identity 與 knowledge gate
+
+- 工具 SHA-256：`8604e766ce75df2475747b7a6bba0b4358d3ee364b086250c593081d1f8335fc`。
+- 測試 SHA-256：`b73c516be0b1bd91538618fec93fc684b8ab33ef11befec0acbc65063837c8ab`。
+- 環境沿用 `/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python`、Python3.12.3、WSL Linux CPU；本worktree Data realpath為同名本地目錄，`MARKETMAMBA_DATA_ROOT`未設；新增測試來源／帳本均pytest暫存目錄，未接觸正式來源或實際帳本。
+- Knowledge-impact 判斷：Semantics／Correctness gate／worktree責任與next action＝YES，因此更新Current State／Authority Map／Data；Authority／subsystem boundary／active runtime／canonical artifact supersession／deprecation＝NO。machine authority、歷史證據與外部observed_at不變。
+- `check_knowledge_impact.py`＝WARNING：要求檢閱GOVERNANCE；已閱讀，全球治理政策未改，無需修改。`knowledge_health.py --ci`＝exit0／Overall WARNING；Project Map、Agent Guides、Domains、Runtime Freshness、Generated Index皆PASS；Governance／Authority Drift的8項AUTHORITY_REPIN_CANDIDATE及Legacy Docs drift保留，無structural FAIL。
+- AST語法2檔、原JSON解析、修補區7個本機reference及 `git diff --check` PASS。起始無dirty／staged／untracked；本輪依no-commit保留6個指定相關modified，沒有staged／untracked，不宣稱clean-worktree完成。
+
+
+### 修補後指定全套 pytest 實際輸出
+
+```bash
+PYTHONPATH=V6:V6/research_lab/tests:. CUDA_VISIBLE_DEVICES='' /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests tests -q -p no:cacheprovider
+```
+
+**exit0；1320 passed／4 skipped／5 warnings／0 failed，709.05秒**。未新增skip，沒有放寬來源或接受門檻；完整實際stdout如下：
+
+```text
+........................................................................ [  5%]
+........................................................................ [ 10%]
+........................................................................ [ 16%]
+........................................................................ [ 21%]
+........................................................................ [ 27%]
+........................................................................ [ 32%]
+........s............................................................... [ 38%]
+.................................s...................................... [ 43%]
+........................................................................ [ 48%]
+........................................................................ [ 54%]
+........................................................................ [ 59%]
+........................................................................ [ 65%]
+........................................................................ [ 70%]
+..........s............................................................. [ 76%]
+........................................................................ [ 81%]
+........................................................................ [ 87%]
+...................................................................s.... [ 92%]
+........................................................................ [ 97%]
+............................                                             [100%]
+=============================== warnings summary ===============================
+research_lab/tests/test_p4.py::test_zip_inventory_and_payload_gates[duplicate]
+  /usr/lib/python3.12/zipfile/__init__.py:1620: UserWarning: Duplicate name: 'folds/fold_2021/X.npy'
+    return self._open_to_write(zinfo, force_zip64=force_zip64)
+
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+  /tmp/pytest-of-frank/pytest-320/test_mutation_controls_session0/mutant.py:93: Pandas4Warning: Timestamp.dayofweek is deprecated and will be removed in a future version. Use Timestamp.day_of_week instead.
+    sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+1320 passed, 4 skipped, 5 warnings in 709.05s (0:11:49)
+```
+
+Completed：REQUIRED修補候選與本機工程驗證完成，非Human acceptance。
+Changed：tools/pit_ledger.py、tests/test_pit_ledger.py、本報告與Current State／Authority Map／Data note，共6檔。
+Decisions：排程NO_GO保留，SQLite暫存MEMORY；歷史帳本／machine authority不改。
+Evidence：RED21 failures、focused43 passed、兩項新mutation killed、實體fault恢復、全套1320 passed／0 failed；identity及限制見本節。
+Remaining／Blockers：獨立複審、全量RAM峰值、Windows／事件接線／PowerShell／XML及斷電驗收仍待。
+Next recommended action：獨立複審後，由Human另案進行註冊前程序；本輪不註冊或啟用。
+Project memory updated／Authority map updated：YES，候選狀態與邊界；machine authority未變。
+Git status：6 modified、0 staged、0 untracked；依no-commit指示保留dirty patch。
+Commit／Push：未執行。
+Worktree：/home/frank/projects/MarketMamba/.worktrees/ruflo-workers/run-mww6g0bv-340962/builder_pit_fix1，detached HEAD 47bf4659e1143269b622bfd80ebed687f3538973。
+Runtime/environment：WSL Linux CPU／Python3.12.3，測試均獨立暫存來源／帳本；無正式Data／實際帳本寫入。
