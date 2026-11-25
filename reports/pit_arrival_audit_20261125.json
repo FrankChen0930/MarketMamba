@@ -1,0 +1,997 @@
+{
+  "schema": "pit-arrival-audit-v1",
+  "generated_at": "2026-11-25T20:48:42.230177+08:00",
+  "evidence_class": "DESCRIPTIVE_LOCAL_METADATA_ONLY",
+  "source": {
+    "path": "/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6/revenue_raw.parquet",
+    "sha256": "573118a101fd8f90c8be707451048ee7843d6d46fff9b4754326efd1d301c942"
+  },
+  "calendar": {
+    "path": "/home/frank/projects/MarketMamba/.artifacts/window34-calendar-model/calendar/combined-calendar.json",
+    "sha256": "f7fb12e8aa3a14f4ecd0809408eb189bd14808eb917f8e5a2d4a5bbba8c373a8",
+    "session_count": 679,
+    "evidence_class": "W34_OFFICIAL_DEVELOPMENT_DATES_ONLY"
+  },
+  "official_calendar_proxy": {
+    "total_rows": 459119,
+    "parseable_rows": 5942,
+    "unparseable_rows": 453177,
+    "legal_applicability": "UNKNOWN",
+    "verified_legal_late_fraction": null,
+    "semantic_warning": "create_time is unverified provider/cache metadata, not certified publication or local receipt; no issuer-specific exception/historical holiday-extension evidence",
+    "timezone_assumption": "naive create_time interpreted Asia/Taipei",
+    "calendar_coverage": [
+      "2024-01-02",
+      "2026-10-22"
+    ],
+    "general_10th_proxy": {
+      "rows": 5942,
+      "days_from_10th_midnight_quantiles": {
+        "0": -8.0,
+        "0.25": 0.0,
+        "0.5": 11.0,
+        "0.75": 42.0,
+        "0.9": 42.0,
+        "0.95": 42.0,
+        "0.99": 42.0,
+        "1": 60.0
+      },
+      "before_10th_count": 1188,
+      "calendar_covered_rows": 5711,
+      "calendar_unknown_rows": 231,
+      "late_plus_two_count": 3971,
+      "late_plus_two_fraction": 0.6953248117667659
+    },
+    "by_revenue_month": {
+      "2026-01": {
+        "rows": 1,
+        "days_from_10th_midnight_quantiles": {
+          "0": 57.0,
+          "0.25": 57.0,
+          "0.5": 57.0,
+          "0.75": 57.0,
+          "0.9": 57.0,
+          "0.95": 57.0,
+          "0.99": 57.0,
+          "1": 57.0
+        },
+        "before_10th_count": 0,
+        "calendar_covered_rows": 1,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 1,
+        "late_plus_two_fraction": 1.0
+      },
+      "2026-02": {
+        "rows": 1958,
+        "days_from_10th_midnight_quantiles": {
+          "0": 42.0,
+          "0.25": 42.0,
+          "0.5": 42.0,
+          "0.75": 42.0,
+          "0.9": 42.0,
+          "0.95": 42.0,
+          "0.99": 42.0,
+          "1": 46.0
+        },
+        "before_10th_count": 0,
+        "calendar_covered_rows": 1958,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 1958,
+        "late_plus_two_fraction": 1.0
+      },
+      "2026-03": {
+        "rows": 1958,
+        "days_from_10th_midnight_quantiles": {
+          "0": 10.0,
+          "0.25": 10.0,
+          "0.5": 11.0,
+          "0.75": 11.0,
+          "0.9": 11.0,
+          "0.95": 11.0,
+          "0.99": 11.0,
+          "1": 60.0
+        },
+        "before_10th_count": 0,
+        "calendar_covered_rows": 1958,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 1958,
+        "late_plus_two_fraction": 1.0
+      },
+      "2026-04": {
+        "rows": 119,
+        "days_from_10th_midnight_quantiles": {
+          "0": -5.0,
+          "0.25": -2.0,
+          "0.5": -1.0,
+          "0.75": 1.0,
+          "0.9": 2.0,
+          "0.95": 2.0,
+          "0.99": 2.0,
+          "1": 2.0
+        },
+        "before_10th_count": 81,
+        "calendar_covered_rows": 119,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 0,
+        "late_plus_two_fraction": 0.0
+      },
+      "2026-05": {
+        "rows": 119,
+        "days_from_10th_midnight_quantiles": {
+          "0": -8.0,
+          "0.25": -2.0,
+          "0.5": 0.0,
+          "0.75": 0.5,
+          "0.9": 1.0,
+          "0.95": 1.0,
+          "0.99": 1.0,
+          "1": 1.0
+        },
+        "before_10th_count": 57,
+        "calendar_covered_rows": 119,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 0,
+        "late_plus_two_fraction": 0.0
+      },
+      "2026-06": {
+        "rows": 394,
+        "days_from_10th_midnight_quantiles": {
+          "0": -8.0,
+          "0.25": -2.0,
+          "0.5": -1.0,
+          "0.75": 0.0,
+          "0.9": 3.0,
+          "0.95": 4.0,
+          "0.99": 15.279999999999973,
+          "1": 32.0
+        },
+        "before_10th_count": 228,
+        "calendar_covered_rows": 394,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 14,
+        "late_plus_two_fraction": 0.03553299492385787
+      },
+      "2026-07": {
+        "rows": 396,
+        "days_from_10th_midnight_quantiles": {
+          "0": -8.0,
+          "0.25": -3.0,
+          "0.5": -1.0,
+          "0.75": 1.0,
+          "0.9": 1.0,
+          "0.95": 1.0,
+          "0.99": 4.0,
+          "1": 7.0
+        },
+        "before_10th_count": 209,
+        "calendar_covered_rows": 396,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 14,
+        "late_plus_two_fraction": 0.03535353535353535
+      },
+      "2026-08": {
+        "rows": 357,
+        "days_from_10th_midnight_quantiles": {
+          "0": -8.0,
+          "0.25": -2.0,
+          "0.5": -1.0,
+          "0.75": 0.0,
+          "0.9": 1.0,
+          "0.95": 1.0,
+          "0.99": 5.0,
+          "1": 6.0
+        },
+        "before_10th_count": 210,
+        "calendar_covered_rows": 357,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 11,
+        "late_plus_two_fraction": 0.03081232492997199
+      },
+      "2026-09": {
+        "rows": 409,
+        "days_from_10th_midnight_quantiles": {
+          "0": -8.0,
+          "0.25": -2.0,
+          "0.5": -1.0,
+          "0.75": -1.0,
+          "0.9": 3.0,
+          "0.95": 3.0,
+          "0.99": 10.920000000000016,
+          "1": 31.0
+        },
+        "before_10th_count": 307,
+        "calendar_covered_rows": 409,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 15,
+        "late_plus_two_fraction": 0.03667481662591687
+      },
+      "2026-10": {
+        "rows": 231,
+        "days_from_10th_midnight_quantiles": {
+          "0": -8.0,
+          "0.25": -3.0,
+          "0.5": 0.0,
+          "0.75": 0.0,
+          "0.9": 1.0,
+          "0.95": 1.0,
+          "0.99": 7.0,
+          "1": 7.0
+        },
+        "before_10th_count": 96,
+        "calendar_covered_rows": 0,
+        "calendar_unknown_rows": 231,
+        "late_plus_two_count": 0,
+        "late_plus_two_fraction": null
+      }
+    },
+    "by_arrival_month": {
+      "2026-04": {
+        "rows": 3908,
+        "days_from_10th_midnight_quantiles": {
+          "0": 10.0,
+          "0.25": 11.0,
+          "0.5": 42.0,
+          "0.75": 42.0,
+          "0.9": 42.0,
+          "0.95": 42.0,
+          "0.99": 42.0,
+          "1": 57.0
+        },
+        "before_10th_count": 0,
+        "calendar_covered_rows": 3908,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 3908,
+        "late_plus_two_fraction": 1.0
+      },
+      "2026-05": {
+        "rows": 127,
+        "days_from_10th_midnight_quantiles": {
+          "0": -5.0,
+          "0.25": -2.0,
+          "0.5": -1.0,
+          "0.75": 1.0,
+          "0.9": 2.0,
+          "0.95": 26.69999999999999,
+          "0.99": 34.95999999999998,
+          "1": 47.0
+        },
+        "before_10th_count": 81,
+        "calendar_covered_rows": 127,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 8,
+        "late_plus_two_fraction": 0.06299212598425197
+      },
+      "2026-06": {
+        "rows": 120,
+        "days_from_10th_midnight_quantiles": {
+          "0": -8.0,
+          "0.25": -2.0,
+          "0.5": 0.0,
+          "0.75": 1.0,
+          "0.9": 1.0,
+          "0.95": 1.0,
+          "0.99": 1.0,
+          "1": 60.0
+        },
+        "before_10th_count": 57,
+        "calendar_covered_rows": 120,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 1,
+        "late_plus_two_fraction": 0.008333333333333333
+      },
+      "2026-07": {
+        "rows": 392,
+        "days_from_10th_midnight_quantiles": {
+          "0": -8.0,
+          "0.25": -2.0,
+          "0.5": -1.0,
+          "0.75": 0.0,
+          "0.9": 3.0,
+          "0.95": 4.0,
+          "0.99": 6.0,
+          "1": 21.0
+        },
+        "before_10th_count": 228,
+        "calendar_covered_rows": 392,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 12,
+        "late_plus_two_fraction": 0.030612244897959183
+      },
+      "2026-08": {
+        "rows": 398,
+        "days_from_10th_midnight_quantiles": {
+          "0": -8.0,
+          "0.25": -3.0,
+          "0.5": -1.0,
+          "0.75": 1.0,
+          "0.9": 1.0,
+          "0.95": 1.0,
+          "0.99": 4.089999999999918,
+          "1": 32.0
+        },
+        "before_10th_count": 209,
+        "calendar_covered_rows": 398,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 16,
+        "late_plus_two_fraction": 0.04020100502512563
+      },
+      "2026-09": {
+        "rows": 357,
+        "days_from_10th_midnight_quantiles": {
+          "0": -8.0,
+          "0.25": -2.0,
+          "0.5": -1.0,
+          "0.75": 0.0,
+          "0.9": 1.0,
+          "0.95": 1.0,
+          "0.99": 5.0,
+          "1": 6.0
+        },
+        "before_10th_count": 210,
+        "calendar_covered_rows": 357,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 11,
+        "late_plus_two_fraction": 0.03081232492997199
+      },
+      "2026-10": {
+        "rows": 405,
+        "days_from_10th_midnight_quantiles": {
+          "0": -8.0,
+          "0.25": -2.0,
+          "0.5": -2.0,
+          "0.75": -1.0,
+          "0.9": 3.0,
+          "0.95": 3.0,
+          "0.99": 6.0,
+          "1": 11.0
+        },
+        "before_10th_count": 307,
+        "calendar_covered_rows": 405,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 11,
+        "late_plus_two_fraction": 0.027160493827160494
+      },
+      "2026-11": {
+        "rows": 235,
+        "days_from_10th_midnight_quantiles": {
+          "0": -8.0,
+          "0.25": -3.0,
+          "0.5": 0.0,
+          "0.75": 0.0,
+          "0.9": 1.0,
+          "0.95": 1.0,
+          "0.99": 26.659999999999997,
+          "1": 31.0
+        },
+        "before_10th_count": 96,
+        "calendar_covered_rows": 4,
+        "calendar_unknown_rows": 231,
+        "late_plus_two_count": 4,
+        "late_plus_two_fraction": 1.0
+      }
+    }
+  },
+  "observed_calendar": {
+    "path": "/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6/prices_raw.parquet",
+    "sha256": "294338229d04e20a2708d00ef1a3c37a34f67d173c0b21f441adbc1fe48d9f42",
+    "columns_read": [
+      "Date"
+    ],
+    "method": "same Date union as fetcher._trading_calendar; NOT qualified exchange calendar"
+  },
+  "observed_price_calendar_proxy": {
+    "total_rows": 459119,
+    "parseable_rows": 5942,
+    "unparseable_rows": 453177,
+    "legal_applicability": "UNKNOWN",
+    "verified_legal_late_fraction": null,
+    "semantic_warning": "create_time is unverified provider/cache metadata, not certified publication or local receipt; no issuer-specific exception/historical holiday-extension evidence",
+    "timezone_assumption": "naive create_time interpreted Asia/Taipei",
+    "calendar_coverage": [
+      "2005-01-03",
+      "2026-11-24"
+    ],
+    "general_10th_proxy": {
+      "rows": 5942,
+      "days_from_10th_midnight_quantiles": {
+        "0": -8.0,
+        "0.25": 0.0,
+        "0.5": 11.0,
+        "0.75": 42.0,
+        "0.9": 42.0,
+        "0.95": 42.0,
+        "0.99": 42.0,
+        "1": 60.0
+      },
+      "before_10th_count": 1188,
+      "calendar_covered_rows": 5942,
+      "calendar_unknown_rows": 0,
+      "late_plus_two_count": 3977,
+      "late_plus_two_fraction": 0.6693032648939751
+    },
+    "by_revenue_month": {
+      "2026-01": {
+        "rows": 1,
+        "days_from_10th_midnight_quantiles": {
+          "0": 57.0,
+          "0.25": 57.0,
+          "0.5": 57.0,
+          "0.75": 57.0,
+          "0.9": 57.0,
+          "0.95": 57.0,
+          "0.99": 57.0,
+          "1": 57.0
+        },
+        "before_10th_count": 0,
+        "calendar_covered_rows": 1,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 1,
+        "late_plus_two_fraction": 1.0
+      },
+      "2026-02": {
+        "rows": 1958,
+        "days_from_10th_midnight_quantiles": {
+          "0": 42.0,
+          "0.25": 42.0,
+          "0.5": 42.0,
+          "0.75": 42.0,
+          "0.9": 42.0,
+          "0.95": 42.0,
+          "0.99": 42.0,
+          "1": 46.0
+        },
+        "before_10th_count": 0,
+        "calendar_covered_rows": 1958,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 1958,
+        "late_plus_two_fraction": 1.0
+      },
+      "2026-03": {
+        "rows": 1958,
+        "days_from_10th_midnight_quantiles": {
+          "0": 10.0,
+          "0.25": 10.0,
+          "0.5": 11.0,
+          "0.75": 11.0,
+          "0.9": 11.0,
+          "0.95": 11.0,
+          "0.99": 11.0,
+          "1": 60.0
+        },
+        "before_10th_count": 0,
+        "calendar_covered_rows": 1958,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 1958,
+        "late_plus_two_fraction": 1.0
+      },
+      "2026-04": {
+        "rows": 119,
+        "days_from_10th_midnight_quantiles": {
+          "0": -5.0,
+          "0.25": -2.0,
+          "0.5": -1.0,
+          "0.75": 1.0,
+          "0.9": 2.0,
+          "0.95": 2.0,
+          "0.99": 2.0,
+          "1": 2.0
+        },
+        "before_10th_count": 81,
+        "calendar_covered_rows": 119,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 0,
+        "late_plus_two_fraction": 0.0
+      },
+      "2026-05": {
+        "rows": 119,
+        "days_from_10th_midnight_quantiles": {
+          "0": -8.0,
+          "0.25": -2.0,
+          "0.5": 0.0,
+          "0.75": 0.5,
+          "0.9": 1.0,
+          "0.95": 1.0,
+          "0.99": 1.0,
+          "1": 1.0
+        },
+        "before_10th_count": 57,
+        "calendar_covered_rows": 119,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 0,
+        "late_plus_two_fraction": 0.0
+      },
+      "2026-06": {
+        "rows": 394,
+        "days_from_10th_midnight_quantiles": {
+          "0": -8.0,
+          "0.25": -2.0,
+          "0.5": -1.0,
+          "0.75": 0.0,
+          "0.9": 3.0,
+          "0.95": 4.0,
+          "0.99": 15.279999999999973,
+          "1": 32.0
+        },
+        "before_10th_count": 228,
+        "calendar_covered_rows": 394,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 14,
+        "late_plus_two_fraction": 0.03553299492385787
+      },
+      "2026-07": {
+        "rows": 396,
+        "days_from_10th_midnight_quantiles": {
+          "0": -8.0,
+          "0.25": -3.0,
+          "0.5": -1.0,
+          "0.75": 1.0,
+          "0.9": 1.0,
+          "0.95": 1.0,
+          "0.99": 4.0,
+          "1": 7.0
+        },
+        "before_10th_count": 209,
+        "calendar_covered_rows": 396,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 14,
+        "late_plus_two_fraction": 0.03535353535353535
+      },
+      "2026-08": {
+        "rows": 357,
+        "days_from_10th_midnight_quantiles": {
+          "0": -8.0,
+          "0.25": -2.0,
+          "0.5": -1.0,
+          "0.75": 0.0,
+          "0.9": 1.0,
+          "0.95": 1.0,
+          "0.99": 5.0,
+          "1": 6.0
+        },
+        "before_10th_count": 210,
+        "calendar_covered_rows": 357,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 11,
+        "late_plus_two_fraction": 0.03081232492997199
+      },
+      "2026-09": {
+        "rows": 409,
+        "days_from_10th_midnight_quantiles": {
+          "0": -8.0,
+          "0.25": -2.0,
+          "0.5": -1.0,
+          "0.75": -1.0,
+          "0.9": 3.0,
+          "0.95": 3.0,
+          "0.99": 10.920000000000016,
+          "1": 31.0
+        },
+        "before_10th_count": 307,
+        "calendar_covered_rows": 409,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 15,
+        "late_plus_two_fraction": 0.03667481662591687
+      },
+      "2026-10": {
+        "rows": 231,
+        "days_from_10th_midnight_quantiles": {
+          "0": -8.0,
+          "0.25": -3.0,
+          "0.5": 0.0,
+          "0.75": 0.0,
+          "0.9": 1.0,
+          "0.95": 1.0,
+          "0.99": 7.0,
+          "1": 7.0
+        },
+        "before_10th_count": 96,
+        "calendar_covered_rows": 231,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 6,
+        "late_plus_two_fraction": 0.025974025974025976
+      }
+    },
+    "by_arrival_month": {
+      "2026-04": {
+        "rows": 3908,
+        "days_from_10th_midnight_quantiles": {
+          "0": 10.0,
+          "0.25": 11.0,
+          "0.5": 42.0,
+          "0.75": 42.0,
+          "0.9": 42.0,
+          "0.95": 42.0,
+          "0.99": 42.0,
+          "1": 57.0
+        },
+        "before_10th_count": 0,
+        "calendar_covered_rows": 3908,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 3908,
+        "late_plus_two_fraction": 1.0
+      },
+      "2026-05": {
+        "rows": 127,
+        "days_from_10th_midnight_quantiles": {
+          "0": -5.0,
+          "0.25": -2.0,
+          "0.5": -1.0,
+          "0.75": 1.0,
+          "0.9": 2.0,
+          "0.95": 26.69999999999999,
+          "0.99": 34.95999999999998,
+          "1": 47.0
+        },
+        "before_10th_count": 81,
+        "calendar_covered_rows": 127,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 8,
+        "late_plus_two_fraction": 0.06299212598425197
+      },
+      "2026-06": {
+        "rows": 120,
+        "days_from_10th_midnight_quantiles": {
+          "0": -8.0,
+          "0.25": -2.0,
+          "0.5": 0.0,
+          "0.75": 1.0,
+          "0.9": 1.0,
+          "0.95": 1.0,
+          "0.99": 1.0,
+          "1": 60.0
+        },
+        "before_10th_count": 57,
+        "calendar_covered_rows": 120,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 1,
+        "late_plus_two_fraction": 0.008333333333333333
+      },
+      "2026-07": {
+        "rows": 392,
+        "days_from_10th_midnight_quantiles": {
+          "0": -8.0,
+          "0.25": -2.0,
+          "0.5": -1.0,
+          "0.75": 0.0,
+          "0.9": 3.0,
+          "0.95": 4.0,
+          "0.99": 6.0,
+          "1": 21.0
+        },
+        "before_10th_count": 228,
+        "calendar_covered_rows": 392,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 12,
+        "late_plus_two_fraction": 0.030612244897959183
+      },
+      "2026-08": {
+        "rows": 398,
+        "days_from_10th_midnight_quantiles": {
+          "0": -8.0,
+          "0.25": -3.0,
+          "0.5": -1.0,
+          "0.75": 1.0,
+          "0.9": 1.0,
+          "0.95": 1.0,
+          "0.99": 4.089999999999918,
+          "1": 32.0
+        },
+        "before_10th_count": 209,
+        "calendar_covered_rows": 398,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 16,
+        "late_plus_two_fraction": 0.04020100502512563
+      },
+      "2026-09": {
+        "rows": 357,
+        "days_from_10th_midnight_quantiles": {
+          "0": -8.0,
+          "0.25": -2.0,
+          "0.5": -1.0,
+          "0.75": 0.0,
+          "0.9": 1.0,
+          "0.95": 1.0,
+          "0.99": 5.0,
+          "1": 6.0
+        },
+        "before_10th_count": 210,
+        "calendar_covered_rows": 357,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 11,
+        "late_plus_two_fraction": 0.03081232492997199
+      },
+      "2026-10": {
+        "rows": 405,
+        "days_from_10th_midnight_quantiles": {
+          "0": -8.0,
+          "0.25": -2.0,
+          "0.5": -2.0,
+          "0.75": -1.0,
+          "0.9": 3.0,
+          "0.95": 3.0,
+          "0.99": 6.0,
+          "1": 11.0
+        },
+        "before_10th_count": 307,
+        "calendar_covered_rows": 405,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 11,
+        "late_plus_two_fraction": 0.027160493827160494
+      },
+      "2026-11": {
+        "rows": 235,
+        "days_from_10th_midnight_quantiles": {
+          "0": -8.0,
+          "0.25": -3.0,
+          "0.5": 0.0,
+          "0.75": 0.0,
+          "0.9": 1.0,
+          "0.95": 1.0,
+          "0.99": 26.659999999999997,
+          "1": 31.0
+        },
+        "before_10th_count": 96,
+        "calendar_covered_rows": 235,
+        "calendar_unknown_rows": 0,
+        "late_plus_two_count": 10,
+        "late_plus_two_fraction": 0.0425531914893617
+      }
+    }
+  },
+  "parser_sha256": "347d57288a2594e0cd7e8254575c02e468be0a658fbe6704facae4d1df9e9152",
+  "source_ledger_parser_sha256": "9e3a1d6294e65ac2d8fb00c23c0afee8736a0584e56d415921c5da102371a393",
+  "v2_revision": {
+    "status": "UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED",
+    "interpretation": "create_time 中位 +11日且大量集中 +42日，很可能為供應商建檔／回補時間，不能作為遲交比例上限依據。歷史 PIT 遲交上限需其他來源，例如 TEJ 營收／盈餘發布日，待 Human 確認授權。",
+    "historical_pit_late_upper_bound": null,
+    "ledger_path": "/home/frank/projects/MarketMamba/.artifacts/pit-ledger-v2",
+    "old_ledger_preserved": "/home/frank/projects/MarketMamba/.worktrees/ruflo-workers/run-mww46oz9-6edacd/builder_pit_step1/.artifacts/pit-ledger",
+    "audit_numbers": "prior offline audit preserved; not remeasured in this continuation",
+    "runtime_measurement": {
+      "ledger_path": "/home/frank/projects/MarketMamba/.artifacts/pit-ledger-v2",
+      "initial_run_id": "4eebefd111c34d3f9f6f87ff6640661f",
+      "initial_observed_at": "2026-11-25T21:18:06.516630+08:00",
+      "source_root": "/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6",
+      "source_commit": "fb32e4c1a99fafb05abf80fd7b041b08859f5f24",
+      "initial_parser_sha256": "1939cfba4c3c3183b5faf7d360b44402dfcae9a425aea481df18d30e171d738d",
+      "current_parser_sha256": "d478e4544ebe959c609f9c85364b703a200af714813b9a2e73ed472717d98b11",
+      "current_audit_parser_sha256": "347d57288a2594e0cd7e8254575c02e468be0a658fbe6704facae4d1df9e9152",
+      "test_source_sha256": "e70e4be1f26e21cd3096939f6c65cd72f5acde5103ea5be0c6b870c78d5bea51",
+      "initial_elapsed_seconds_before_commit": 614.6019695439609,
+      "initial_rows": 13760451,
+      "initial_tables": {
+        "balance_sheet_raw": {
+          "base": {
+            "bytes": 44447509,
+            "sha256": "f1fe8460e57fb5194f598bbc9794df924c91104de4dd48be6dabaeb7bc0d83b6"
+          },
+          "counts": {
+            "DISAPPEARED": 0,
+            "FIRST_SEEN": 0,
+            "INITIAL_STOCK": 8307996,
+            "REVISED": 0
+          },
+          "index": {
+            "bytes": 290255420,
+            "sha256": "fdafbdcec8428a055451d9e45a0c4dc06b91459a8e4b0d58058ad1861704af4c"
+          },
+          "path": "/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6/balance_sheet_raw.parquet",
+          "refresh_status": "UNKNOWN_NOT_INFERRED_FROM_CACHE",
+          "rows": 8307996,
+          "schema": "Date: timestamp[ns]\nstock_id: large_string\ntype: large_string\nvalue: double\norigin_name: large_string\n-- schema metadata --\npandas: '{\"index_columns\": [], \"column_indexes\": [], \"columns\": [{\"name\":' + 655",
+          "sha256": "f1fe8460e57fb5194f598bbc9794df924c91104de4dd48be6dabaeb7bc0d83b6"
+        },
+        "cashflow_raw": {
+          "base": {
+            "bytes": 15555559,
+            "sha256": "865937d1b68325a8caea6bbce15f489cb3e5d5ee8f185d07791a71b31bc3fe22"
+          },
+          "counts": {
+            "DISAPPEARED": 0,
+            "FIRST_SEEN": 0,
+            "INITIAL_STOCK": 2367461,
+            "REVISED": 0
+          },
+          "index": {
+            "bytes": 82174432,
+            "sha256": "f924da684196366e4b32e03b1b9de73b366c736d3cd04c4d61dadfd8e2a4451a"
+          },
+          "path": "/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6/cashflow_raw.parquet",
+          "refresh_status": "UNKNOWN_NOT_INFERRED_FROM_CACHE",
+          "rows": 2367461,
+          "schema": "Date: timestamp[ns]\nstock_id: large_string\ntype: large_string\nvalue: double\norigin_name: large_string\n-- schema metadata --\npandas: '{\"index_columns\": [], \"column_indexes\": [], \"columns\": [{\"name\":' + 655",
+          "sha256": "865937d1b68325a8caea6bbce15f489cb3e5d5ee8f185d07791a71b31bc3fe22"
+        },
+        "financials_raw": {
+          "base": {
+            "bytes": 14970647,
+            "sha256": "4bff5e3a3e3cc2036e36cc0debfa48c4e6bd25ea14cde6cc3c097efcd24224d1"
+          },
+          "counts": {
+            "DISAPPEARED": 0,
+            "FIRST_SEEN": 0,
+            "INITIAL_STOCK": 2625875,
+            "REVISED": 0
+          },
+          "index": {
+            "bytes": 90177755,
+            "sha256": "9e794d35f0c0fbfaf2e685bf0111834f03956b181125478e9ec4ae8df6987e29"
+          },
+          "path": "/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6/financials_raw.parquet",
+          "refresh_status": "UNKNOWN_NOT_INFERRED_FROM_CACHE",
+          "rows": 2625875,
+          "schema": "Date: timestamp[ns]\nstock_id: large_string\ntype: large_string\nvalue: double\norigin_name: large_string\n-- schema metadata --\npandas: '{\"index_columns\": [], \"column_indexes\": [], \"columns\": [{\"name\":' + 655",
+          "sha256": "4bff5e3a3e3cc2036e36cc0debfa48c4e6bd25ea14cde6cc3c097efcd24224d1"
+        },
+        "revenue_raw": {
+          "base": {
+            "bytes": 3519871,
+            "sha256": "573118a101fd8f90c8be707451048ee7843d6d46fff9b4754326efd1d301c942"
+          },
+          "counts": {
+            "DISAPPEARED": 0,
+            "FIRST_SEEN": 0,
+            "INITIAL_STOCK": 459119,
+            "REVISED": 0
+          },
+          "index": {
+            "bytes": 15277816,
+            "sha256": "c6972c2a35dc0664cf4f0a94c70c76dde25f8ce60048011091e141723d6512c8"
+          },
+          "path": "/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6/revenue_raw.parquet",
+          "refresh_status": "UNKNOWN_NOT_INFERRED_FROM_CACHE",
+          "rows": 459119,
+          "schema": "Date: timestamp[ns]\nstock_id: large_string\ncountry: large_string\nrevenue: int64\nrevenue_month: int64\nrevenue_year: int64\ncreate_time: large_string\nfirst_observed_at: string\n-- schema metadata --\npandas: '{\"index_columns\": [], \"column_indexes\": [], \"columns\": [{\"name\":' + 1039",
+          "sha256": "573118a101fd8f90c8be707451048ee7843d6d46fff9b4754326efd1d301c942"
+        }
+      },
+      "initial_bytes": 556400149,
+      "final_bytes": 556412062,
+      "limit_bytes": 1000000000,
+      "no_change_run_id": "2b2dc1b9b3bb404c8e06f120e255633e",
+      "no_change_observed_at": "2026-11-25T21:28:56.742920+08:00",
+      "no_change_elapsed_seconds": 1.7483613339718431,
+      "no_change_growth_bytes": 11913,
+      "event_count": 0,
+      "runs": [
+        [
+          1,
+          "4eebefd111c34d3f9f6f87ff6640661f",
+          "fea97eea22150dbc4055c38e35923aae8a7412741cdbaae183f9d9db01c01053"
+        ],
+        [
+          2,
+          "2b2dc1b9b3bb404c8e06f120e255633e",
+          "d36521419bd296f52e6f14dd3d30aa4abb1c387688fd6f1b81ca17d8a8535743"
+        ]
+      ],
+      "files": [
+        {
+          "path": ".lock",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "2b2dc1b9b3bb404c8e06f120e255633e.summary.json",
+          "bytes": 3721,
+          "sha256": "24db18855b46d61ffe64326117770a64465ca4a6fc5ee463a30a68244db3b654"
+        },
+        {
+          "path": "4eebefd111c34d3f9f6f87ff6640661f.summary.json",
+          "bytes": 4629,
+          "sha256": "47d8127e4fe8293d4eb03078c1da133675a556f58bd78b9fc87afaa0ba5d8dc6"
+        },
+        {
+          "path": "IDENTITY.json",
+          "bytes": 127,
+          "sha256": "96a379fea224f3719ddf64e31deac822e6454f9f23e0b3cdf002e8d6912a54c6"
+        },
+        {
+          "path": "blobs/4bff5e3a3e3cc2036e36cc0debfa48c4e6bd25ea14cde6cc3c097efcd24224d1.parquet",
+          "bytes": 14970647,
+          "sha256": "4bff5e3a3e3cc2036e36cc0debfa48c4e6bd25ea14cde6cc3c097efcd24224d1"
+        },
+        {
+          "path": "blobs/573118a101fd8f90c8be707451048ee7843d6d46fff9b4754326efd1d301c942.parquet",
+          "bytes": 3519871,
+          "sha256": "573118a101fd8f90c8be707451048ee7843d6d46fff9b4754326efd1d301c942"
+        },
+        {
+          "path": "blobs/865937d1b68325a8caea6bbce15f489cb3e5d5ee8f185d07791a71b31bc3fe22.parquet",
+          "bytes": 15555559,
+          "sha256": "865937d1b68325a8caea6bbce15f489cb3e5d5ee8f185d07791a71b31bc3fe22"
+        },
+        {
+          "path": "blobs/9e794d35f0c0fbfaf2e685bf0111834f03956b181125478e9ec4ae8df6987e29.parquet",
+          "bytes": 90177755,
+          "sha256": "9e794d35f0c0fbfaf2e685bf0111834f03956b181125478e9ec4ae8df6987e29"
+        },
+        {
+          "path": "blobs/c6972c2a35dc0664cf4f0a94c70c76dde25f8ce60048011091e141723d6512c8.parquet",
+          "bytes": 15277816,
+          "sha256": "c6972c2a35dc0664cf4f0a94c70c76dde25f8ce60048011091e141723d6512c8"
+        },
+        {
+          "path": "blobs/f1fe8460e57fb5194f598bbc9794df924c91104de4dd48be6dabaeb7bc0d83b6.parquet",
+          "bytes": 44447509,
+          "sha256": "f1fe8460e57fb5194f598bbc9794df924c91104de4dd48be6dabaeb7bc0d83b6"
+        },
+        {
+          "path": "blobs/f924da684196366e4b32e03b1b9de73b366c736d3cd04c4d61dadfd8e2a4451a.parquet",
+          "bytes": 82174432,
+          "sha256": "f924da684196366e4b32e03b1b9de73b366c736d3cd04c4d61dadfd8e2a4451a"
+        },
+        {
+          "path": "blobs/fdafbdcec8428a055451d9e45a0c4dc06b91459a8e4b0d58058ad1861704af4c.parquet",
+          "bytes": 290255420,
+          "sha256": "fdafbdcec8428a055451d9e45a0c4dc06b91459a8e4b0d58058ad1861704af4c"
+        },
+        {
+          "path": "ledger.sqlite3",
+          "bytes": 24576,
+          "sha256": "bfbb7a6296ad12b7e14b4d7ac561ebbcb19a9f230c1383e2e18d4743c42d0f5b"
+        }
+      ],
+      "environment": {
+        "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+        "pandas": "3.1.1",
+        "pyarrow": "26.0.1",
+        "sqlite": "3.45.1",
+        "MARKETMAMBA_DATA_ROOT": null,
+        "CUDA_VISIBLE_DEVICES": "",
+        "worktree": "/home/frank/projects/MarketMamba/.worktrees/ruflo-workers/run-mww5b81x-8af923/builder_pit_step1b",
+        "worktree_Data_realpath": "/home/frank/projects/MarketMamba/.worktrees/ruflo-workers/run-mww5b81x-8af923/builder_pit_step1b/Data"
+      },
+      "evidence_class": "LOCAL_CACHE_OBSERVATION_ONLY / CPU_ENGINEERING_ONLY",
+      "formal_pit_admission": "STOP"
+    },
+    "focused_tests": {
+      "result": "15 passed in 20.10s",
+      "exit_code": 0,
+      "in_memory_mutations_killed": 2,
+      "mutation_guards": [
+        "constant row hash rejected by previous-value verification",
+        "second-session boundary replaced by due date killed by late-count assertion"
+      ]
+    },
+    "synthetic_size_check": {
+      "rows": 100000,
+      "initial_bytes": 2295917,
+      "sum_index_bytes_before_deduplication": 3297676,
+      "projected_13760451_bytes_with_85MB_sources": 539775090,
+      "one_revision_per_table_growth_bytes": 11604,
+      "initial_limit_bytes": 10000000,
+      "projected_limit_bytes": 1000000000,
+      "sparse_diff_limit_bytes": 1000000
+    },
+    "producer_identity": {
+      "reason": "tools/pit_ledger.py was uncommitted and received small identity/read-only checks after initialization started; existing Git base cannot recover those producer bytes alone. Preserve a verified reverse patch inside this existing report, without another backup tree.",
+      "final_parser_sha256": "d478e4544ebe959c609f9c85364b703a200af714813b9a2e73ed472717d98b11",
+      "initial_parser_sha256": "1939cfba4c3c3183b5faf7d360b44402dfcae9a425aea481df18d30e171d738d",
+      "initial_producer_patch_from_final": "--- tools/pit_ledger.py.final\n+++ tools/pit_ledger.py.initial\n@@ -14,7 +14,6 @@\n import math\n import os\n import sqlite3\n-import subprocess\n import shutil\n import tempfile\n \n@@ -132,7 +131,7 @@\n         for kind in ('base', 'index'):\n             identity = info[kind]\n             path = ledger / 'blobs' / (identity['sha256'] + '.parquet')\n-            if path.is_symlink() or path.stat().st_mode & 0o222 or file_hash(path) != identity['sha256']:\n+            if path.is_symlink() or file_hash(path) != identity['sha256']:\n                 raise Stop('ledger base/index damaged')\n     return previous, last, initial\n \n@@ -154,7 +153,7 @@\n             target = blobs / (sha + '.parquet')\n             os.chmod(temp, 0o444)\n             if target.exists():\n-                if target.is_symlink() or target.stat().st_mode & 0o222 or file_hash(target) != sha:\n+                if target.is_symlink() or file_hash(target) != sha:\n                     raise Stop('existing blob damaged')\n             else:\n                 os.link(temp, target)  # atomic no-clobber publication, same filesystem\n@@ -275,8 +274,7 @@\n                        source_root=str(source), evidence_class='LOCAL_CACHE_OBSERVATION_ONLY',\n                        publication_time='UNKNOWN', refresh_coverage='UNKNOWN',\n                        previous_run_digest=previous, parser_sha256=file_hash(__file__),\n-                       source_commit=subprocess.check_output(\n-                           ['git', 'rev-parse', 'HEAD'], cwd=Path(__file__).resolve().parent, text=True).strip(),\n+                       source_commit='fb32e4c1a99fafb05abf80fd7b041b08859f5f24',\n                        python=sys.version, tables={})\n         rid = summary['run_id']\n         summary['status'] = 'INITIAL_STOCK' if last is None else 'NO_CHANGE'\n@@ -315,8 +313,7 @@\n                 idx = ledger / 'blobs' / (initial['tables'][name]['index']['sha256'] + '.parquet')\n                 for batch in pq.ParquetFile(idx).iter_batches(batch_size=32768):\n                     c.executemany('INSERT INTO prior VALUES(?,?)', ((r['key'], r['value_hash'].hex()) for r in batch.to_pylist()))\n-                last_seq = c.execute('SELECT max(seq) FROM runs').fetchone()[0]\n-                for key, (kind, val, sha) in _overlay(c, name, last_seq).items():\n+                for key, (kind, val, sha) in _overlay(c, name, last_seq := c.execute('SELECT max(seq) FROM runs').fetchone()[0]).items():\n                     if kind == 'DISAPPEARED':\n                         c.execute('DELETE FROM prior WHERE key=?', (key,))\n                     else:\n"
+    },
+    "full_pytest": {
+      "command": "PYTHONPATH=V6:V6/research_lab/tests:. CUDA_VISIBLE_DEVICES='' /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests tests -q -p no:cacheprovider",
+      "passed": 1292,
+      "skipped": 4,
+      "warnings": 5,
+      "failed": 0,
+      "elapsed_seconds": 944.62,
+      "exit_code": 0,
+      "stdout_sha256": "43fad887c92f4d846800b74f1ffedc757e3dee24ef0e23376a145c5895227e2c",
+      "stdout": "........................................................................ [  5%]\n........................................................................ [ 11%]\n........................................................................ [ 16%]\n........................................................................ [ 22%]\n........................................................................ [ 27%]\n........................................................................ [ 33%]\n........s............................................................... [ 38%]\n.................................s...................................... [ 44%]\n........................................................................ [ 50%]\n........................................................................ [ 55%]\n........................................................................ [ 61%]\n........................................................................ [ 66%]\n........................................................................ [ 72%]\n..........s............................................................. [ 77%]\n........................................................................ [ 83%]\n........................................................................ [ 88%]\n...................................................................s.... [ 94%]\n........................................................................ [100%]\n=============================== warnings summary ===============================\nresearch_lab/tests/test_p4.py::test_zip_inventory_and_payload_gates[duplicate]\n  /usr/lib/python3.12/zipfile/__init__.py:1620: UserWarning: Duplicate name: 'folds/fold_2021/X.npy'\n    return self._open_to_write(zinfo, force_zip64=force_zip64)\n\ntest_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime(\"%Y-%m-%d\")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]\ntest_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime(\"%Y-%m-%d\")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]\ntest_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime(\"%Y-%m-%d\")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]\ntest_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime(\"%Y-%m-%d\")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]\n  /tmp/pytest-of-frank/pytest-315/test_mutation_controls_session0/mutant.py:93: Pandas4Warning: Timestamp.dayofweek is deprecated and will be removed in a future version. Use Timestamp.day_of_week instead.\n    sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n1292 passed, 4 skipped, 5 warnings in 944.62s (0:15:44)\n"
+    },
+    "knowledge_review": {
+      "updated": [
+        "knowledge/00_Project_Map/Current_State.md",
+        "knowledge/00_Project_Map/Authority_Map.md",
+        "knowledge/00_Project_Map/Worktree_Register.md",
+        "knowledge/01_Domains/Data.md"
+      ],
+      "reviewed_no_update_required": {
+        "knowledge/01_Domains/Operations.md": "No operational workflow, deployed action or scheduler changed; persistent research path and worktree dependency recorded in four updated notes.",
+        "knowledge/GOVERNANCE.md": "Existing artifact and worktree lifecycle policies unchanged; this candidate follows them without global policy change."
+      }
+    }
+  }
+}

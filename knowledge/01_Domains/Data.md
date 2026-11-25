@@ -1,3 +1,9 @@
+## PIT 帳本 v2 候選邊界 — 2026-11-25
+
+[Ledger工具](../../tools/pit_ledger.py)與[報告](../../reports/pit_arrival_audit_20261125.md)為RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED未提交候選。四份processed_v6僅唯讀；起始原parquet不可變複本＋每鍵完整SHA索引，不逐列存JSON；後續完整diff前後值／SQLite交易／run chain／base與index SHA損毀STOP，來源SHA不變記NO_CHANGE。真實初始13,760,451列／556,400,149 bytes／614.602秒；NO_CHANGE1.748秒、增11,913 bytes、events仍0，工程focused15 passed／2 mutations killed；指定全套1292 passed／4 skipped／0 failed、exit0（詳報告），不升格PIT。新帳本在主checkout `.artifacts/pit-ledger-v2/`（EXTERNAL_LARGE_DATA），舊worktree 9.8GB v1未動，不移植觀測時刻。
+
+create_time可解析5942/459119，期限代理數字保留在報告；中位+11／大量+42日顯示很可能為供應商建檔／回補，不能作歷史遲交上限。TEJ營收／盈餘發布日待Human確認授權，法律遲報率null；不改publication／PIT／source admission，不讀labels。每日一次漏日內版本及四表共同刷新未知仍在，排程只提案。詳[Current State](../00_Project_Map/Current_State.md)。
+
 # Data
 
 ## V6 fetch hardening candidate — 2026-11-18

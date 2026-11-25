@@ -1,3 +1,11 @@
+## 最小 PIT 帳本容量修補候選 — 2026-11-25
+
+Human 核准[計畫 §J](../../tasks/plan-fundamentals-supplychain-20261125.md)第一步及本輪 REQUIRED；`job-run-mww5b81x-8af923/builder_pit_step1b`，detached base `fb32e4c1a99fafb05abf80fd7b041b08859f5f24`，由前輪複製9檔接續，no-commit patch，**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[工具](../../tools/pit_ledger.py)改為不可變 SHA-256 來源 parquet＋zstd 每鍵列hash索引；SQLite只存後續diff與run chain，來源SHA不變記NO_CHANGE、不解碼來源列。完整性／重播與實際容量／測試以[報告](../../reports/pit_arrival_audit_20261125.md)及[JSON](../../reports/pit_arrival_audit_20261125.json)為準。
+
+真實初始化13,760,451列／556,400,149 bytes、614.602秒；NO_CHANGE1.748秒、增11,913 bytes、events仍0。focused15 passed／2 mutations killed；指定全套1292 passed／4 skipped／5 warnings／0 failed、944.62秒、exit0，完整輸出見報告。新版持久帳本 `/home/frank/projects/MarketMamba/.artifacts/pit-ledger-v2/`，EXTERNAL_LARGE_DATA，獨立初始觀測、不移植舊時間；舊worktree v1約9.8GB原樣保留由Claude處理，禁止隨worktree清理丟失。INITIAL_STOCK不是首次公告、不倒填歷史PIT。create_time中位+11／大量+42日很可能為供應商建檔／回補，不能作歷史遲交上限；TEJ發布日等其他來源待Human確認授權，法律遲報比例null。
+
+不讀blind／報酬、不改正式Data／抓取／P4d／production／scheduler；排程只文件指令，指向新持久路徑、抓取成功完成後獨立執行、失敗不回傳upstream。未連網／GPU／agents／commit／push／merge。未刷新外部runtime observed_at，不升格strict PIT／admission／canonical artifact。Next：Claude獨立複審與Human接受；完成不是Human acceptance，現場接線與備份另案。
+
 ## P4d 排練 heartbeat 與本機資源量測修補候選 — 2026-11-25
 
 `job-run-mwvqcr5w-e515cb/builder_p4d_fix1`，既有 detached HEAD/base `d36e709a21088ce836c6d84e2964518c018cc12e`、起始 clean；依核准範圍保留 no-commit patch。**UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED / CPU_ENGINEERING_ONLY**。獨立審查原 NO_GO 的 REQUIRED 為排練未傳 Progress；本候選以 `tools.p4d_bundle.launch` 在 binding／排練前啟動同一發布器，穿過預處理、六條排練 fit、GRU 全列診斷／推論、C0+ 特徵與擬合至正式模式。每約60秒更新 `progress/formal/PROGRESS.txt`／`progress.json`，明標 REHEARSAL 與 stage，寫入失敗繼續；不改 P4a 共用來源、正式帳本／checkpoint／研究契約或成功 gate。

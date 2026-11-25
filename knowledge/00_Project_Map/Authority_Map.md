@@ -1,3 +1,9 @@
+## 最小 PIT 帳本 v2 authority 邊界 — 2026-11-25
+
+[Human核准計畫 §J](../../tasks/plan-fundamentals-supplychain-20261125.md)與本輪 REQUIRED 只授權獨立研究帳本／離線稽核。`job-run-mww5b81x-8af923/builder_pit_step1b@fb32e4c` 未提交候選，**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**；[工具](../../tools/pit_ledger.py)／[報告](../../reports/pit_arrival_audit_20261125.md)記本地版本。不可變原檔base／每鍵hash索引＋append-only diff events／run chain共同構成觀測機器證據；summary JSON為GENERATED，不能僅憑存在判通過。新版持久路徑 `/home/frank/projects/MarketMamba/.artifacts/pit-ledger-v2/`；舊v1保留、未修改，不混用兩版觀測時間。
+
+INITIAL_STOCK不是首次公告、不倒填PIT。create_time中位+11／大量+42日可能是供應商建檔／回補，不能當遲交上限；TEJ等來源待Human確認授權。一般期限代理／未知公司例外／prices日期union不升格法律遲報或strict PIT。排程僅文件，無註冊／外部observed_at。未supersede canonical artifact、authority-map.json、production、P2／P4d或既有研究結果；需要Claude獨立複審與Human接受，完成不是驗收。
+
 ## P4d heartbeat 修補的 authority 邊界 — 2026-11-25
 
 `job-run-mwvqcr5w-e515cb/builder_p4d_fix1@d36e709` 的未提交 bounded patch，**UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED / CPU_ENGINEERING_ONLY**。[工程報告](../../reports/v7_p4d_engineering.md#排練-heartbeat-required-與最大-fit-量測入口--2026-11-25)記錄排練前啟動共用Progress、REHEARSAL／FORMAL模式與stage、60秒heartbeat替身、寫入失敗繼續及2026全列C0+資源量測入口；不改split／features／selection／queue／threshold或P4a來源policy。僅36列合成特徵＋擬合，未實際量測2026全列RSS，不恢復抽樣cap；CPU回歸不是現場Drive／T4排練證據。原獨立NO_GO仍待複審，完成不等於Human acceptance；沒有研究結果／canonical artifact supersession／production authority變更，不更新authority-map.json或外部observed_at。Next：獨立審查與另案本機最大fit量測。

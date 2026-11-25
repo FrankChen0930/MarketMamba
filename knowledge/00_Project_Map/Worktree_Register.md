@@ -1,3 +1,20 @@
+## PIT 第一步容量修補接續 builder — 2026-11-25
+
+- Purpose／owner／task：Human／Codex builder，`job-run-mww5b81x-8af923/builder_pit_step1b`；從前輪指定9檔接續 REQUIRED 容量／重播／測試修補，不派agents。
+- Path／branch／base：`.worktrees/ruflo-workers/run-mww5b81x-8af923/builder_pit_step1b`；detached HEAD `fb32e4c1a99fafb05abf80fd7b041b08859f5f24`，created date UNKNOWN、本輪接手2026-11-25，retired N/A；起始clean，保留no-commit patch。
+- State／authority：RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；本地CPU工程與cache觀測，無正式Data／blind／GPU／網路／抓取／P4d／production／scheduler／commit／push／merge。
+- Artifact／merge dependencies：新帳本 `/home/frank/projects/MarketMamba/.artifacts/pit-ledger-v2/` 不隨worktree刪除，EXTERNAL_LARGE_DATA；舊worktree v1約9.8GB未寫刪、由Claude處理。base/index／diff DB要完整保存，summary可重建；[報告](../../reports/pit_arrival_audit_20261125.md)記身分。排程只文件，未註冊；若未來 action 引用本worktree，須先解除引用再退役。
+- Safe removal：先保存patch／source與完整帳本manifest、驗references和是否有action引用、獨立審查／Human接受及clean後另案retire；本輪不移除任何worktree。
+- Runtime：WSL CPU，pilot09 venv Python3.12.3；MARKETMAMBA_DATA_ROOT unset，Data普通目錄未用；唯讀Windows processed_v6 realpath。不更新外部observed_at。
+
+## PIT 第一步 builder — 2026-11-25
+
+- Purpose／owner／task：最小四表快照＋到檔時間稽核；Human／Codex builder，`job-run-mww46oz9-6edacd/builder_pit_step1`。
+- Path／branch／base：`.worktrees/ruflo-workers/run-mww46oz9-6edacd/builder_pit_step1`；detached HEAD `fb32e4c1a99fafb05abf80fd7b041b08859f5f24`；created date UNKNOWN（本輪接手2026-11-25），retired N/A。既有worktree，起始clean，未增減worktree。
+- State／authority：核准[計畫§J](../../tasks/plan-fundamentals-supplychain-20261125.md)第一步，本輪no-commit patch，RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；無網路／GPU／blind／formal Data寫入／抓取或成功條件變更／scheduler／P4d／其他agents／commit／push／merge。
+- Artifact／merge dependencies：`.artifacts/pit-ledger/ledger.sqlite3`是唯一此次INITIAL_STOCK與後續觀測副本，EXTERNAL_LARGE_DATA，summary JSON為GENERATED；不因ignored就當temporary。[報告](../../reports/pit_arrival_audit_20261125.md)含identity；前輪未啟用schedule提案已由本輪新worktree／主checkout持久輸出路徑取代，未曾註冊。需Claude獨立審查、Human接受及另案運維批准。Safe removal：先保存patch與完整ledger、驗SHA／references／是否已有排程引用，再review retirement及clean；本輪不移除。
+- Runtime：WSL CPU，pilot09既有venv Python3.12.3；MARKETMAMBA_DATA_ROOT unset，本地Data普通目錄未用；唯讀Windows processed_v6 realpath。Windowsinterop失敗不更新observed_at。
+
 ## P4d 第一段 stage1b 接續 — 2026-11-25
 
 - Purpose／owner／task：Human／Codex builder，`job-run-mwvoxf7h-970cae/builder_p4d_stage1b`；有界CPU回歸、排練／notebook驗證、marker修補及knowledge同步，不派agents。
