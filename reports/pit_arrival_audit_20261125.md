@@ -247,7 +247,44 @@ REAL_SQLITE fault=full message=STOP:ledger/source validation STOP: disk I/O erro
 1. 維持 NO_GO，先完成獨立複審並由 Human 確認允許執行；確認實際 Windows task／WSL runtime、帳本允許路徑、可用磁碟及 RAM、持久備份與可用的固定 checkout，替換上方示例中的舊 builder worktree。記錄 `observed_at`，不靠舊 snapshot 推定現況。
 2. 用 PowerShell parser 驗證 `$script`、`[xml]$xml` 解析 XML，檢視 action 與 upstream task 精確名稱。上方提案已改為 trigger／task 都 `Enabled=false`，且 `WakeToRun=false`；只以停用狀態註冊新獨立 task，確認無 recurring trigger，既有 DataFetch 不變。
 3. 待一次可驗證的成功 DataFetch 完成後，以同一 identity 手動執行新 task 的 action（直接呼叫 `$script` 的 PowerShell／WSL 命令，停用 task 不用 Start-ScheduledTask）。保留 stdout／stderr／退出碼；必須 exit0，摘要含四表與正確 run_id／observed_at。STOP／非零退出碼即保留停用並調查。
-4. 重新開啟 DB，驗 schema／triggers／quick_check／run chain／digest／base/index SHA；比對四表計數與來源 identity。再手動執行一次，在來源相同時須 NO_CHANGE 且 events 不增加，run 增一；確認 upstream 結果未被本 task 改寫。
+4. 在主 checkout 已納入本輪候選、步驟3成功且取得另案寫入授權後，於 WSL 執行以下完整命令。此程式先以 `mode=ro`／`query_only=1` validate 並完整 replay 四表，印出各表重播列數、來源 SHA 及 runs／events；接著手動 snapshot 一次，再用新的唯讀連線重驗。若上游來源在兩次間改變、出現 STOP 或計數不符，即停止驗收，保持 NO_GO。這段是另案驗收操作，本輪未執行。
+
+   ```bash
+   cd /home/frank/projects/MarketMamba
+   PYTHONDONTWRITEBYTECODE=1 CUDA_VISIBLE_DEVICES='' PYTHONPATH=. /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python - <<'PYVERIFY'
+   import sqlite3
+   from pathlib import Path
+   from tools import pit_ledger as p
+
+   ledger = Path('/home/frank/projects/MarketMamba/.artifacts/pit-ledger-v2')
+   source = Path('/mnt/d/Desktop/work/ProjectForMe/MarketMamba/Data/processed_v6')
+
+   def verify(label):
+       with sqlite3.connect(f'file:{ledger / "ledger.sqlite3"}?mode=ro', uri=True) as c:
+           c.execute('PRAGMA query_only=1')
+           _, last, _ = p.validate(c, ledger)
+           counts = tuple(c.execute('SELECT (SELECT count(*) FROM runs), (SELECT count(*) FROM events)').fetchone())
+           print(label, 'schema=', c.execute('PRAGMA user_version').fetchone()[0],
+                 'runs/events=', counts, 'run_id=', last['run_id'])
+       for name in p.KEYS:
+           rows = sum(1 for _ in p.replay(ledger, last['run_id'], name))
+           assert rows == last['tables'][name]['rows'], (name, rows)
+           assert p.file_hash(source / f'{name}.parquet') == last['tables'][name]['sha256'], name
+           print(label, name, 'replay_rows=', rows, 'source_sha256=', last['tables'][name]['sha256'])
+       return counts, last
+
+   before, previous = verify('BEFORE')
+   result = p.snapshot(source, ledger)
+   assert result['status'] == 'NO_CHANGE', result['status']
+   after, latest = verify('AFTER')
+   assert latest['run_id'] == result['run_id']
+   assert after == (before[0] + 1, before[1]), (before, after)
+   assert all(sum(t['counts'].values()) == 0 for t in result['tables'].values())
+   print('NO_CHANGE VERIFIED: runs+1 events+0', before, '->', after)
+   PYVERIFY
+   ```
+
+   預期相對值是 `runs+1、events+0`，不是 events 必須為0；若仍是前輪唯讀觀測的 `(2, 0)`，本次應為 `(3, 0)`，但不得把舊觀測當成現況。v2 首次成功續寫會同交易升至 schema v3、加入封存業務鍵稽核標記；原有 run_id／blobs／events 不改。命令列出的主 checkout 必須先含本候選，不能用舊 HEAD 代替驗收。最後另核對 upstream 原始退出碼／結果未變。
 5. Human 另行批准後才同時啟用 task 與事件 trigger；驗一次真正 EventID=102 接線、退出碼與無重疊執行，失敗即停用新 task。睡眠／登出／停電與備份恢復仍須另驗，本輪沒有註冊、Run、啟用、wakeups 或任何排程操作。
 
 ### 修補 identity 與 knowledge gate
@@ -315,3 +352,107 @@ Git status：6 modified、0 staged、0 untracked；依no-commit指示保留dirty
 Commit／Push：未執行。
 Worktree：/home/frank/projects/MarketMamba/.worktrees/ruflo-workers/run-mww6g0bv-340962/builder_pit_fix1，detached HEAD 47bf4659e1143269b622bfd80ebed687f3538973。
 Runtime/environment：WSL Linux CPU／Python3.12.3，測試均獨立暫存來源／帳本；無正式Data／實際帳本寫入。
+
+## 複審 Findings 修補 — 2026-11-25
+
+本節 supersede 上輪「額外 schema 皆 STOP」的過度宣稱；上輪全套輸出只代表其當時環境。複審另一次全套為82 failed／1238 passed，不能寫成通過。本輪從 detached HEAD `04e724dd09ef0d44974dfae9e235e777937e6784`、clean worktree開始，指派 `job-run-mww7h6b0-bba9f3/builder_pit_fix2`，只完成有界候選修補，**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。註冊／排程 NO_GO 保留。
+
+- P1：移除 `LIKE 'sqlite_%'`，完整 sqlite_master 所有物件的 `(type,name,tbl_name)` 集合及正規化 SQL SHA-256 必須精確相同；自動索引 SQL 為 NULL 時也保留於集合。額外 trigger／table／index／view 一律 STOP。`sqliteXdrop BEFORE INSERT ... RAISE(IGNORE)` 回歸確認 validate／snapshot 均拒絕，runs仍1、events仍0。
+- P2：舊 schema v2 validate 完整解碼不可變索引的業務鍵，拒絕 None／NaN／空字串／ASCII空白／全形空白／NBSP；同 SHA NO_CHANGE 不可略過。欄位集合或 JSON 不合法亦 STOP。合成估時超過30秒，因此採核准備案：成功 snapshot 才同 SQLite transaction 升至 `PRAGMA user_version=3`，在受 run digest 封存的 `business_key_audit` 記下四份初始索引 SHA。新建帳本由現行 records gate驗鍵後建立標記；後續 validate仍逐次核 blob SHA、run chain與標記 identity，不重複解碼已稽核索引。v2唯讀 validate不寫標記，故直到一次成功續寫前仍會重掃；v1／v3缺失或不符標記 STOP。失敗續寫 rollback保留v2／原run，重試可正常升級；舊run／events／blobs不重寫。資料格式 VERSION仍為 `pit-local-observation-v2`；schema3是新增驗證標記契約，舊版工具會拒絕schema3，後續操作須使用本候選或相容版本。
+- P3：**已知限制：單機無惡意者威脅模型下接受**。symlink 檢查與 pathname 寫入間 TOCTOU 競態未修；靜態祖先／後代拒絕不能證明不跟隨 symlink 的安全寫入邊界。使用者明確指定威脅模型為意外損壞／程式錯誤、要求不實作競態防護；不得再宣稱競態已防護。
+- 第4步已改為可複製的主 checkout／指定 Python 命令，先後各以唯讀 validate＋四表完整 replay，確認來源 identity／列數，明確斷言 NO_CHANGE時runs+1／events+0。此命令有另案snapshot寫入，本輪完全未執行。
+
+### 本輪 RED → GREEN 實際輸出
+
+命令均使用 `PYTHONDONTWRITEBYTECODE=1 CUDA_VISIBLE_DEVICES='' PYTHONPATH=V6:V6/research_lab/tests:.` 與 `/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python`，不設定外部TMPDIR，pytest停用cacheprovider。所有來源／帳本為獨立暫存合成資料。
+
+```text
+# 修實作前：pytest tests/test_pit_ledger.py -k 'extra_schema or legacy_v2' -q -p no:cacheprovider
+10 failed, 43 deselected in 3.64s
+# 一次性升級實作前：pytest tests/test_pit_ledger.py -k clean_v2_upgrade -q -p no:cacheprovider
+1 failed, 53 deselected in 1.55s
+# 最終 focused：pytest tests/test_pit_ledger.py -q -p no:cacheprovider
+........................................................                 [100%]
+56 passed in 41.89s
+```
+
+新增13個參數化案例涵蓋四種額外schema物件、六種舊無效鍵、乾淨v2一次稽核及NO_CHANGE計數／歷史replay、v3缺標記與v2升級交易rollback。原SIGKILL／RLIMIT_FSIZE及mutation回歸亦在56項內；仍未證明真正ENOSPC或實體斷電耐久性。
+
+### 合成性能及 identity
+
+本機CPU、Python3.12.3／SQLite3.45.1／既有venv，與全套同時量測，非正式Data效能保證。兩份各100萬唯一業務鍵、batch32768、zstd索引（value_hash為固定32-byte合成佔位）；僅估計完整鍵語義稽核CPU成本，不代表正式hash欄位的壓縮率／I/O：
+
+```text
+INDEX_AUDIT name=revenue_raw rows=1000000 bytes=985880 sha256=a41a3fe72dc9a8de24d1085398ec9f20a00f37e72a73b61d44da1ac8df907b3c seconds=2.784322 projected_13760451_seconds=38.313528 hash_seconds=0.001327
+INDEX_AUDIT name=financials_raw rows=1000000 bytes=1124865 sha256=9190c9d785ea80f3624caa6bd9ce546a6128c822bb37da74d75cb5ca86419fac seconds=2.814704 projected_13760451_seconds=38.731600 hash_seconds=0.001406
+UPGRADE_PERF rows=100000 blobs_bytes=2274957 upgrade=NO_CHANGE upgrade_seconds=0.443616 repeat=NO_CHANGE repeat_seconds=0.176507 v3_validate_seconds=0.005552 projected_v3_validate_13760451_seconds=0.763963 runs_events=(3, 0) db_sha256=aa15a5f238af53e73f38648d5cdead7b45eea5b90e56ccde835e2cb2a8f2b951
+```
+
+前兩次超過30秒目標而採一次性升級；最後一次為四表各25000鍵、正式hash索引生成流程的隔離帳本。0.764秒只為小型合成validate的線性投影，不包含正式全量磁碟／日後event chain增長成本。未讀寫主checkout實際帳本／formal Data，也未新增production authority或外部runtime observation。
+
+工具 SHA-256：`4206397d9b501ae028b9d4c63aef99a2dd3dafd93009a945fe223362dec3a171`；測試 SHA-256：`59dab69553112caf939fbbd3a011edba1949a22e6295f811ec41d7944477ead4`。
+
+### 本輪 knowledge-impact 與邊界檢查
+
+Semantics／Correctness gate／worktree責任＝YES（舊帳本鍵稽核、schema3升級標記）；Authority／subsystem boundary／active runtime／canonical artifact supersession／deprecation＝NO。Major blocker／next decision仍為獨立複審及另案Human驗收，未因builder測試解除。已同change更新Current State／Authority Map／Data；`check_knowledge_impact.py` 初次PASS，加入knowledge後WARNING要求檢閱GOVERNANCE，已閱讀，無需改全球政策。`knowledge_health.py --ci` exit0：Project Map／Agent Guides／Domains／Runtime Freshness／Generated Index PASS；Governance／Authority Drift／Legacy Docs WARNING，Overall WARNING，無structural FAIL。AST兩檔、報告驗收命令AST、新增本機links／section references及`git diff --check` PASS。
+
+Runtime為本指派WSL worktree；Data realpath是worktree下同名普通目錄，`MARKETMAMBA_DATA_ROOT`未設定。使用指定既有Python3.12.3 venv；來源／帳本／benchmark均獨立TEMPORARY合成artifact，沒有正式Data／主checkout帳本寫入，沒有網路／GPU／agents／P4d／protected V6/models／排程／production／commit／push／merge。本輪builder自查使用TDD、verification-before-completion、code-review-and-quality及專案ml-leakage-audit；未冒稱獨立審查。
+
+### 本輪指定全套 pytest 實際輸出（最終 source，exit0）
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 CUDA_VISIBLE_DEVICES='' PYTHONPATH=V6:V6/research_lab/tests:. /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests tests -q -p no:cacheprovider
+```
+
+```text
+........................................................................ [  5%]
+........................................................................ [ 10%]
+........................................................................ [ 16%]
+........................................................................ [ 21%]
+........................................................................ [ 26%]
+........................................................................ [ 32%]
+........s............................................................... [ 37%]
+.................................s...................................... [ 43%]
+........................................................................ [ 48%]
+........................................................................ [ 53%]
+........................................................................ [ 59%]
+........................................................................ [ 64%]
+........................................................................ [ 70%]
+..........s............................................................. [ 75%]
+........................................................................ [ 80%]
+........................................................................ [ 86%]
+...................................................................s.... [ 91%]
+........................................................................ [ 96%]
+.........................................                                [100%]
+=============================== warnings summary ===============================
+research_lab/tests/test_p4.py::test_zip_inventory_and_payload_gates[duplicate]
+  /usr/lib/python3.12/zipfile/__init__.py:1620: UserWarning: Duplicate name: 'folds/fold_2021/X.npy'
+    return self._open_to_write(zinfo, force_zip64=force_zip64)
+
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+test_stale_audit.py::test_mutation_controls[sessions = sorted(set(pd.to_datetime(trading_dates).strftime("%Y-%m-%d")))-sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)]
+  /tmp/pytest-of-frank/pytest-327/test_mutation_controls_session0/mutant.py:93: Pandas4Warning: Timestamp.dayofweek is deprecated and will be removed in a future version. Use Timestamp.day_of_week instead.
+    sessions = sorted(d for d in daily if pd.Timestamp(d).dayofweek < 5)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+1333 passed, 4 skipped, 5 warnings in 749.61s (0:12:29)
+```
+
+本次0 failed；4 skipped及5 warnings如上，不能稱零skip／零warning。一次性升級調整前啟動的中間全套已中止（exit130），不作最終驗證依據；以上完整執行是在最終source／tests凍結後啟動。
+
+Completed：複審三項Findings依核准範圍處理；builder工程驗證完成，不是Human acceptance。
+Changed：tools/pit_ledger.py、tests/test_pit_ledger.py、reports/pit_arrival_audit_20261125.md、knowledge/00_Project_Map/Current_State.md、knowledge/00_Project_Map/Authority_Map.md、knowledge/01_Domains/Data.md。
+Decisions：完整schema集合；舊v2無效鍵STOP，採一次稽核後原子schema3升級與封存標記；symlink競態依單機無惡意者模型接受為已知限制；排程NO_GO不變。
+Evidence：RED10 failed、升級RED1 failed；最終focused56 passed；全套1333 passed／4 skipped／5 warnings／0 failed、749.61秒、exit0；性能及hash如本節；AST／links／diff檢查通過，knowledge health WARNING／exit0，無structural FAIL。
+Remaining：獨立複審、Human另案主帳本驗收、真實全量耗時／RAM、Windows接線、真正ENOSPC／斷電耐久性未驗。
+Blockers：本輪有界實作無阻塞；註冊／啟用仍NO_GO待獨立審查與另案Human接受。
+Next recommended action：獨立複審此patch，再另案依報告第4步驗收；不直接註冊或啟用。
+Project memory updated：YES，Current State與Data note。
+Authority map updated：YES，候選gate與接受限制；machine authority未改。
+Git status：起始clean；最終6 modified、0 staged、0 untracked；依no-commit要求保留dirty patch，不宣稱clean worktree。
+Commit：未執行（明確禁止）。
+Push：未執行。
+Worktree：/home/frank/projects/MarketMamba/.worktrees/ruflo-workers/run-mww7h6b0-bba9f3/builder_pit_fix2，detached HEAD 04e724dd09ef0d44974dfae9e235e777937e6784。
+Runtime/environment：WSL Linux CPU；/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python，Python3.12.3／SQLite3.45.1；MARKETMAMBA_DATA_ROOT未設；獨立合成暫存資料，主帳本／formal Data未寫入。

@@ -477,3 +477,120 @@ def test_new_guard_mutations_are_killed(tmp_path, monkeypatch, guard):
     with pytest.raises(AssertionError, match='mutant accepted'):
         requires_stop(action)
     print(f'NEW_MUTATION {guard} KILLED')
+
+
+@pytest.mark.parametrize('sql', [
+    'CREATE TRIGGER sqliteXdrop BEFORE INSERT ON events BEGIN SELECT RAISE(IGNORE); END',
+    'CREATE TABLE sqliteXextra(value TEXT)',
+    'CREATE INDEX sqliteXindex ON events(key)',
+    'CREATE VIEW sqliteXview AS SELECT * FROM events',
+])
+def test_extra_schema_objects_stop_before_run(tmp_path, sql):
+    root = sources(tmp_path)
+    ledger = tmp_path / 'ledger'
+    p.snapshot(root, ledger)
+    sources(tmp_path, [('2330', 9), ('2317', 2)])
+    with sqlite3.connect(ledger / 'ledger.sqlite3') as c:
+        c.execute(sql)
+        with pytest.raises(p.Stop, match='schema'):
+            p.validate(c, ledger)
+    with pytest.raises(p.Stop, match='schema'):
+        p.snapshot(root, ledger)
+    with sqlite3.connect(ledger / 'ledger.sqlite3') as c:
+        assert c.execute('SELECT count(*) FROM runs').fetchone()[0] == 1
+        assert c.execute('SELECT count(*) FROM events').fetchone()[0] == 0
+
+
+@pytest.mark.parametrize('bad', [None, float('nan'), '', ' ', '\u3000', '\u00a0'])
+def test_legacy_v2_invalid_index_key_stops_before_no_change(tmp_path, monkeypatch, bad):
+    import pyarrow.parquet as pq
+    root = sources(tmp_path)
+    path = root / 'revenue_raw.parquet'
+    df = pd.read_parquet(path)
+    df['stock_id'] = [bad, bad]
+    # Distinct remaining business key components avoid unrelated duplicate STOP.
+    df['revenue_month'] = [9, 10]
+    df.to_parquet(path, index=False)
+    ledger = tmp_path / 'ledger'
+    original = p.records
+    def old_records(path, name):
+        for batch in pq.ParquetFile(path).iter_batches():
+            for row in batch.to_pylist():
+                yield p.canonical({k: row[k] for k in p.KEYS[name]}), p.canonical(row)
+    monkeypatch.setattr(p, 'records', old_records)
+    p.snapshot(root, ledger)
+    monkeypatch.setattr(p, 'records', original)
+    with sqlite3.connect(ledger / 'ledger.sqlite3') as c:
+        c.execute('PRAGMA user_version=2')  # Emulate the old writer's schema revision.
+        with pytest.raises(p.Stop, match='business key'):
+            p.validate(c, ledger)
+    with pytest.raises(p.Stop, match='business key'):
+        p.snapshot(root, ledger)
+    with sqlite3.connect(ledger / 'ledger.sqlite3') as c:
+        assert c.execute('SELECT count(*) FROM runs').fetchone()[0] == 1
+        assert c.execute('SELECT count(*) FROM events').fetchone()[0] == 0
+
+
+def test_clean_v2_upgrade_audits_once_and_preserves_no_change(tmp_path, monkeypatch):
+    root = sources(tmp_path)
+    ledger = tmp_path / 'ledger'
+    first = p.snapshot(root, ledger)
+    with sqlite3.connect(ledger / 'ledger.sqlite3') as c:
+        c.execute('PRAGMA user_version=2')
+    calls = []
+    audit = p.audit_index_keys
+    def counted(path, name):
+        calls.append(name)
+        return audit(path, name)
+    monkeypatch.setattr(p, 'audit_index_keys', counted)
+    second = p.snapshot(root, ledger)
+    assert second['status'] == 'NO_CHANGE'
+    assert sorted(calls) == sorted(p.KEYS)
+    with sqlite3.connect(ledger / 'ledger.sqlite3') as c:
+        assert c.execute('PRAGMA user_version').fetchone()[0] == 3
+    calls.clear()
+    third = p.snapshot(root, ledger)
+    assert third['status'] == 'NO_CHANGE'
+    assert calls == []
+    assert list(p.replay(ledger, first['run_id'], 'revenue_raw'))
+    with sqlite3.connect(ledger / 'ledger.sqlite3') as c:
+        assert c.execute('SELECT count(*) FROM runs').fetchone()[0] == 3
+        assert c.execute('SELECT count(*) FROM events').fetchone()[0] == 0
+        c.execute('PRAGMA user_version=1')
+        with pytest.raises(p.Stop, match='schema'):
+            p.validate(c, ledger)
+
+
+def test_v3_missing_audit_marker_stops(tmp_path):
+    ledger = tmp_path / 'ledger'
+    p.snapshot(sources(tmp_path), ledger)
+    with sqlite3.connect(ledger / 'ledger.sqlite3') as c:
+        c.execute('DROP TRIGGER runs_no_update')
+        rid, payload = c.execute('SELECT run_id,summary_json FROM runs').fetchone()
+        summary = json.loads(payload)
+        summary.pop('business_key_audit')
+        payload = json.dumps(summary, ensure_ascii=False, sort_keys=True, separators=(',', ':'))
+        c.execute('UPDATE runs SET summary_json=?,digest=? WHERE run_id=?', (payload, p.value_hash(payload), rid))
+        c.execute("CREATE TRIGGER runs_no_update BEFORE UPDATE ON runs BEGIN SELECT RAISE(ABORT,'append only'); END")
+        with pytest.raises(p.Stop, match='audit marker'):
+            p.validate(c, ledger)
+
+
+def test_v2_upgrade_rolls_back_with_failed_run(tmp_path, monkeypatch):
+    root = sources(tmp_path)
+    ledger = tmp_path / 'ledger'
+    p.snapshot(root, ledger)
+    with sqlite3.connect(ledger / 'ledger.sqlite3') as c:
+        c.execute('PRAGMA user_version=2')
+    sources(tmp_path, [('2330', 9), ('2317', 2)])
+    original = p.records
+    def broken(*args, **kwargs):
+        raise p.Stop('injected source read failure')
+    monkeypatch.setattr(p, 'records', broken)
+    with pytest.raises(p.Stop, match='injected'):
+        p.snapshot(root, ledger)
+    with sqlite3.connect(ledger / 'ledger.sqlite3') as c:
+        assert c.execute('PRAGMA user_version').fetchone()[0] == 2
+        assert c.execute('SELECT count(*) FROM runs').fetchone()[0] == 1
+    monkeypatch.setattr(p, 'records', original)
+    assert p.snapshot(root, ledger)['status'] == 'CHANGED'

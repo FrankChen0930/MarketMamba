@@ -1,3 +1,7 @@
+## PIT 帳本複審修補 — 2026-11-25
+
+`job-run-mww7h6b0-bba9f3/builder_pit_fix2@04e724d` 未提交候選，RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。[工具](../../tools/pit_ledger.py)拒絕完整 sqlite_master 集合之外物件（含 sqliteXdrop），舊 v2 在同 SHA 捷徑前完整稽核索引鍵。百萬鍵合成外推超過30秒，採成功續寫時同交易升 schema v3 並封存索引 SHA 稽核標記，後續逐次驗 hash、不重複解碼；v1／缺標記 v3／無效舊鍵 STOP。[報告](../../reports/pit_arrival_audit_20261125.md#複審-findings-修補--2026-11-25)保留合成性能、focused56及最終全套1333 passed／4 skipped／5 warnings／0 failed（exit0）實際結果。symlink 檢查與寫入競態未修，依 Human 單機無惡意者威脅模型接受為限制；無實際帳本或正式 Data 寫入，publication／strict PIT／法律適用仍 UNKNOWN，排程 NO_GO 與獨立驗收待辦不變。
+
 ## PIT 帳本審查修補 — 2026-11-25
 
 未提交候選 `job-run-mww6g0bv-340962/builder_pit_fix1@47bf465`，RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。[報告](../../reports/pit_arrival_audit_20261125.md#獨立審查-required-修補--2026-11-25)與[測試](../../tests/test_pit_ledger.py)補標準化缺鍵STOP、schema／四trigger定義hash、namespace／symlink限制、暫存歸屬及真實檔案SIGKILL／RLIMIT_FSIZE恢復。focused43 passed、兩項新mutation killed；只合成工程證據，未讀寫實際帳本／正式Data，publication／strict PIT／法律適用仍UNKNOWN。SQLite MEMORY暫存的全量RAM峰值、Windows接線／斷電與獨立複審仍待，可註冊排程NO_GO；不變更來源准入或production authority。

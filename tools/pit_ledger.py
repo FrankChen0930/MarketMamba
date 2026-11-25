@@ -102,16 +102,16 @@ CREATE TRIGGER events_no_update BEFORE UPDATE ON events BEGIN SELECT RAISE(ABORT
 CREATE TRIGGER events_no_delete BEFORE DELETE ON events BEGIN SELECT RAISE(ABORT,'append only'); END;
 CREATE TRIGGER runs_no_update BEFORE UPDATE ON runs BEGIN SELECT RAISE(ABORT,'append only'); END;
 CREATE TRIGGER runs_no_delete BEFORE DELETE ON runs BEGIN SELECT RAISE(ABORT,'append only'); END;
-PRAGMA user_version=2;
+PRAGMA user_version=3;
 '''
 EVENT_SQL = 'SELECT table_name,key,kind,value_hash,value_json,previous_hash,previous_json FROM events WHERE run_id=? ORDER BY id'
 
 
 def schema_identity(c):
     # Keep literal content/case intact; normalize whitespace only.
-    return {(kind, name, table): value_hash(re.sub(r'\s+', ' ', sql).strip())
+    return {(kind, name, table): value_hash(re.sub(r'\s+', ' ', sql).strip()) if sql is not None else None
             for kind, name, table, sql in c.execute(
-                "SELECT type,name,tbl_name,sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%'")}
+                'SELECT type,name,tbl_name,sql FROM sqlite_master')}
 
 
 with sqlite3.connect(':memory:') as _schema_connection:
@@ -122,7 +122,8 @@ with sqlite3.connect(':memory:') as _schema_connection:
 def validate(c, ledger):
     if schema_identity(c) != EXPECTED_SCHEMA:
         raise Stop('ledger schema definitions mismatch')
-    if c.execute('PRAGMA user_version').fetchone()[0] != 2:
+    schema_version = c.execute('PRAGMA user_version').fetchone()[0]
+    if schema_version not in (2, 3):
         raise Stop('ledger schema mismatch')
     if c.execute('PRAGMA quick_check').fetchone()[0] != 'ok':
         raise Stop('ledger SQLite integrity failed')
@@ -143,14 +144,37 @@ def validate(c, ledger):
         previous, last = seal, summary
     if last is None or c.execute('SELECT count(*) FROM events').fetchone()[0] != event_count:
         raise Stop('ledger missing run or orphan events')
+    audit_identity = {name: info['index']['sha256'] for name, info in initial['tables'].items()}
+    if schema_version == 3 and last.get('business_key_audit') != audit_identity:
+        raise Stop('ledger business key audit marker missing or mismatched')
     # Base/index bytes are the immutable initial state; the sealed diffs are its only changes.
-    for info in initial['tables'].values():
+    for name, info in initial['tables'].items():
         for kind in ('base', 'index'):
             identity = info[kind]
             path = ledger / 'blobs' / (identity['sha256'] + '.parquet')
             if path.is_symlink() or path.stat().st_mode & 0o222 or file_hash(path) != identity['sha256']:
                 raise Stop('ledger base/index damaged')
+        # Older v2 writers admitted missing keys. Audit the sealed index even
+        # when source SHA is unchanged; file integrity alone is not semantics.
+        if schema_version == 2:
+            audit_index_keys(ledger / 'blobs' / (info['index']['sha256'] + '.parquet'), name)
     return previous, last, initial
+
+
+def audit_index_keys(path, name):
+    required = set(KEYS[name])
+    for batch in pq.ParquetFile(path).iter_batches(batch_size=32768, columns=['key']):
+        for encoded in batch.column(0).to_pylist():
+            try:
+                key = json.loads(encoded)
+                if not isinstance(key, dict) or key.keys() != required:
+                    raise Stop(f'{name}: invalid business key fields')
+                for value in key.values():
+                    if (value is None or (isinstance(value, str) and not value.strip()) or
+                            (isinstance(value, float) and not math.isfinite(value))):
+                        raise Stop(f'{name}: missing business key')
+            except (TypeError, ValueError) as exc:
+                raise Stop(f'{name}: invalid business key encoding') from exc
 
 
 def publish_blob(source, ledger, expected=None):
@@ -312,6 +336,9 @@ def _snapshot(source, ledger, now, started):
         if last and observed_at < last['observed_at']:
             raise Stop('observation time moved backwards')
         c.execute('BEGIN IMMEDIATE')
+        # v2 validation above audited all sealed index keys. Upgrade and publish
+        # the sealed audit identity in the same transaction as this run.
+        c.execute('PRAGMA user_version=3')
         summary = dict(version=VERSION, run_id=uuid.uuid4().hex, observed_at=observed_at,
                        source_root=str(source), evidence_class='LOCAL_CACHE_OBSERVATION_ONLY',
                        publication_time='UNKNOWN', refresh_coverage='UNKNOWN',
@@ -388,6 +415,8 @@ def _snapshot(source, ledger, now, started):
         for name, info in meta.items():
             if file_hash(info['path']) != info['sha256']:
                 raise Stop(f'{name}: source changed before commit')
+        summary['business_key_audit'] = {name: info['index']['sha256']
+                                         for name, info in (initial or summary)['tables'].items()}
         summary['events_digest'] = digest_rows(c.execute(EVENT_SQL, (rid,)))
         summary['elapsed_seconds_before_commit'] = time.monotonic() - started
         payload = json.dumps(summary, ensure_ascii=False, sort_keys=True, separators=(',', ':'))

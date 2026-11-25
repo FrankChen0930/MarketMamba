@@ -1,3 +1,7 @@
+## PIT 帳本複審候選邊界 — 2026-11-25
+
+`job-run-mww7h6b0-bba9f3/builder_pit_fix2@04e724d` 未提交候選，**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[工具](../../tools/pit_ledger.py)改為完整 sqlite_master 精確集合及定義 SHA 比對；舊 schema v2 必須先通過索引鍵語義稽核，成功續寫才原子升為 schema v3，將已稽核索引 SHA 封存於 run。後續驗證仍核 blob SHA 與標記，v1／缺標記 v3 STOP；未變更業務鍵或原歷史 runs／events／blobs。[報告](../../reports/pit_arrival_audit_20261125.md#複審-findings-修補--2026-11-25)記合成工程證據，不能升格正式 PIT／交易／排程資格。symlink TOCTOU 未修，依 Human 單機無惡意者威脅模型明確接受為限制；靜態檢查不等於競態安全。實際帳本未寫入，無 machine authority／canonical artifact supersession 或外部 observed_at 更新；排程 NO_GO 與獨立審查／Human 驗收待辦不變。
+
 ## PIT 帳本 REQUIRED 修補的候選邊界 — 2026-11-25
 
 `job-run-mww6g0bv-340962/builder_pit_fix1@47bf465`未提交修補，**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[工具](../../tools/pit_ledger.py)／[測試](../../tests/test_pit_ledger.py)收緊缺鍵、schema／四trigger及帳本namespace／symlink correctness gate；SQLite暫存改MEMORY，parquet索引暫存留namespace。測試allowlist只指tmp_path，不授權任何實際帳本寫入。[報告](../../reports/pit_arrival_audit_20261125.md#獨立審查-required-修補--2026-11-25)的SIGKILL／RLIMIT_FSIZE及mutation是本機合成檔案工程證據，不能升格斷電／Windows／正式PIT或排程接受。原實際13,760,451列帳本與歷史hash／時刻未改；沒有canonical artifact supersession、machine authority或外部runtime observed_at變化。可註冊每日排程維持NO_GO，獨立複審與Human現場驗收另案；本輪無排程操作。

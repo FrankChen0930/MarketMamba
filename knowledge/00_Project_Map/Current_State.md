@@ -1,3 +1,9 @@
+## PIT 帳本複審修補候選 — 2026-11-25
+
+`job-run-mww7h6b0-bba9f3/builder_pit_fix2`、detached base `04e724dd09ef0d44974dfae9e235e777937e6784`，起始 clean，no-commit patch；**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[工具](../../tools/pit_ledger.py)精確比對完整 sqlite_master 名稱／定義集合（含自動索引），拒絕 sqliteXdrop 等額外物件。舊 schema v2 在續寫前稽核不可變索引業務鍵，None／NaN／Unicode 空白均 STOP；合成百萬鍵估計全量約38–39秒，因此成功續寫才同交易升至 schema v3、在封存 run 記索引 SHA 稽核標記，後續仍逐次驗 blob SHA，避免重掃。失敗 rollback 保留 v2；schema v1／v3 缺標記 STOP。
+
+focused56 passed；指定全套1333 passed／4 skipped／5 warnings／0 failed（749.61秒、exit0）；量測見[報告](../../reports/pit_arrival_audit_20261125.md#複審-findings-修補--2026-11-25)。symlink 檢查後至寫入間競態未修，依 Human 單機意外損壞／程式錯誤威脅模型接受為已知限制，不宣稱安全寫入邊界。每日排程 NO_GO 保留；無正式 Data／實際帳本／GPU／網路／agents／P4d／production／排程／commit／push／merge操作。Next：獨立複審與 Human 另案驗收；報告第4步含主 checkout 的精確 validate／replay／NO_CHANGE runs+1 events+0 命令。本輪未執行該實際帳本程序，完成不是接受。
+
 ## PIT 帳本獨立審查修補候選 — 2026-11-25
 
 `job-run-mww6g0bv-340962/builder_pit_fix1`、detached base `47bf4659e1143269b622bfd80ebed687f3538973`，起始clean、依no-commit保留patch。**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；每日排程 NO_GO 待複審／現場驗收**。[工具](../../tools/pit_ledger.py)在標準化後拒絕缺失／NaN／空白業務鍵，驗必要schema及四個append-only trigger的正規化SQL SHA；寫入限明確帳本namespace，拒絕root／祖先／既有後代symlink與Data／來源重疊。parquet索引暫存留帳本內，SQLite temp_store=MEMORY；真實全量新RAM峰值未量測。
