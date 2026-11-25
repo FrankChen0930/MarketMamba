@@ -1,3 +1,9 @@
+## P4d stage1b CPU 工程邊界 — 2026-11-25
+
+`job-run-mwvoxf7h-970cae/builder_p4d_stage1b@b1871a9`的未提交接續patch，**UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED / CPU_ENGINEERING_ONLY**。[工程報告](../../reports/v7_p4d_engineering.md#第一段接續-stage1b--2026-11-25)記指定全套回歸、五項mutation、prepared split與縮小支援排練、notebook檢查及最終identity。tools獨立來源邊界保留，P4a來源inventory／相容宣告不變；成功標記必須重驗同身分持久化產物，不能升格正式fit或現場排練證據。
+
+Human第一段凍結及[契約](../../tasks/p4d-stage1-contract-20261125.json)不變；其餘Mamba2／D／N12維持DRAFT。沒有研究結果、canonical artifact或production authority supersession，不更寫authority-map.json／外部observed_at。初始1265 passed不代替修後驗證；最終數字見工程報告，獨立審查、完整CUDA／Drive／RAM與Human acceptance仍待。no-commit依最新指示保留patch，非clean-worktree宣告。
+
 ## P4d 第一段 authority 邊界 — 2026-11-25
 
 Human 2026-11-24對話核准採預設值、無數位簽章；[原規格](../../tasks/spec-p4d-equal-tuning-20261125.md)全文原bytes SHA `c36aed96787e2b7e69fc92cd736ef3692c5542f1aecf350c4e0047470790fe54`綁定第一段 **STAGE1_FROZEN**，只含baseline、GRU B前1/2/4/8與A六格。Mamba2全部、超六格容量、D與N12仍DRAFT；此附加狀態取代下方歷史「全部P4d待凍結」對第一段的描述，不改原規則、P4a machine authority、歷史結果或production authority。

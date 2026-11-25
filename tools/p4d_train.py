@@ -284,7 +284,12 @@ def run(data_root,output,bundle,*,rehearsal_evidence):
     bundle=Path(bundle);manifest=pb.verify(bundle)
     binding=run_binding(data_root,bundle)
     from .p4d_bundle import validate_gate
-    validate_gate(rehearsal_evidence,binding)
+    publication_root=Path(output)/'progress/formal/rehearsal'
+    # Live /tmp evidence and persisted publications use the same strict gate.
+    if all(Path(f['path']).resolve().is_relative_to(publication_root.resolve()) for f in rehearsal_evidence.get('fits',{}).values()) and rehearsal_evidence.get('fits'):
+        validate_gate(rehearsal_evidence,binding,publication_root)
+    else:
+        validate_gate(rehearsal_evidence,binding)
     root=Path(output);root.mkdir(parents=True,exist_ok=True)
     # New experiment owns budget_p4d_stage1; never reuse or migrate P4a budget.
     run_hash=p4d.hashed(binding);run_root=root/'budget_p4d_stage1'/('run-'+run_hash)

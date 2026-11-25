@@ -1,3 +1,7 @@
+## P4d stage1b 接續工程 — 2026-11-25
+
+沿用WIP `b1871a9`的tools獨立bundle邊界；初始完整CPU回歸1265 passed／4 skipped／0 failed，未改P4a來源policy。排練產物持久化、marker重驗與空證據STOP為工程候選，不改第一段split／recipe／selection／threshold。prepared完整anchor及2021outer support已核對，65股縮小支援六fit／五項mutation／notebook compile與解包驗證僅CPU工程證據，非完整研究或現場排練。[工程報告](../../reports/v7_p4d_engineering.md#第一段接續-stage1b--2026-11-25)列最終回歸與identity。CUDA／全列C0+RAM／Drive／長排練progress／獨立review仍未驗；PIT／universe／tradability仍UNKNOWN／STOP，未新增績效結論。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；無GPU／Colab／Drive／研究fit或外部runtime observation變更。
+
 ## P4b 對話凍結／CPU 工程候選 — 2026-11-24
 
 Human核准 [P4b](../../tasks/spec-p4b-blend-20261124.md) 採原SHA `8d4f194730c2a147b42afe69750f722fccab1d0111e721d2a1f279df369f53c2` 預設值凍結（對話、非數位簽章）；前瞻／P4d仍DRAFT。指派detached bc549b8／builder_p4b的未提交adapter與tests為CPU_ENGINEERING_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，詳[工程報告](../../reports/v7_p4b_engineering.md)。獨立36-fit准入沿用resume_fit、原64-fit gate不變；原始seed共同S後重rank、固定B1/B2/B3、95%／50、D及日期聯集、NaN與Holm3/centered雙邊契約不變。

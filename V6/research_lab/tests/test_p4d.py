@@ -256,6 +256,20 @@ def test_cpu_rehearsal_real_seq_path_and_evaluator(tmp_path):
         with pytest.raises(ValueError):bundle.validate_gate(bad,{'synthetic':True})
 
 
+    # A reconnect revalidates durable publications without the old /tmp fits.
+    import shutil
+    progress=tmp_path/'progress'
+    durable=bundle.ensure_rehearsal(progress,{'synthetic':True},lambda:evidence)
+    for fit in evidence['fits'].values():shutil.rmtree(fit['path'])
+    target.unlink()
+    def must_not_rehearse():raise AssertionError('valid marker was not reused')
+    assert bundle.ensure_rehearsal(progress,{'synthetic':True},must_not_rehearse)==durable
+    Path(durable['evaluation']['path']).write_text('{}')
+    with pytest.raises(AssertionError,match='valid marker'):
+        bundle.ensure_rehearsal(progress,{'synthetic':True},must_not_rehearse)
+    assert not (progress/'rehearsal_passed.json').exists()
+
+
 def test_five_in_memory_mutations(monkeypatch,tmp_path):
     """Real assertions kill five semantic regressions without editing source."""
     original=p4d.queue
@@ -421,3 +435,75 @@ def test_loader_stock_index_is_verified_and_never_written(tmp_path):
     assert np.array_equal(p4d.load_data(tmp_path).stock_idx,d.stock_idx)
     bad=d.stock_idx.copy();bad[-1]=0;np.save(tmp_path/'stock_idx.npy',bad)
     with pytest.raises(ValueError,match='stock index cache'):p4d.load_data(tmp_path)
+
+
+def test_stage1b_delivery_cells_compile_and_rehearsal_resume(tmp_path):
+    from tools import p4d_bundle as bundle
+    bundle.delivery(tmp_path)
+    nb=json.loads((tmp_path/'p4d_stage1.ipynb').read_text())
+    for index,cell in enumerate(nb['cells']):
+        if cell['cell_type']=='code':
+            compile(''.join(cell['source']),f'p4d-cell-{index}','exec')
+    text='\n'.join(''.join(c['source']) for c in nb['cells'])
+    assert 'ensure_rehearsal' in text
+    assert 'progress/formal' in text and 'rehearsal_passed.json' in text
+    assert 'zipfile.ZipFile' in nb['cells'][-1]['source']
+
+
+def test_stage1b_invalid_marker_never_launches(tmp_path):
+    from tools import p4d_bundle as bundle
+    events=[]
+    def fail():
+        events.append('gate')
+        raise ValueError('missing evidence')
+    with pytest.raises(ValueError):bundle.ensure_rehearsal(tmp_path,{'run':'cpu'},fail)
+    assert events==['gate']
+    marker=tmp_path/'rehearsal_passed.json'
+    assert not marker.exists()
+    marker.write_text('{}')
+    with pytest.raises(ValueError):bundle.ensure_rehearsal(tmp_path,{'run':'cpu'},fail)
+    assert events==['gate','gate'] and not marker.exists()
+
+
+def test_stage1b_five_named_in_memory_mutations(monkeypatch):
+    import inspect
+    from tools import p4d_bundle as bundle
+    # Mutation is in a temporary namespace; repository bytes remain unchanged.
+    namespace=dict(p4d.__dict__)
+    source=inspect.getsource(p4d.split).replace('t[outer]>=origin-20','t[outer]>origin-20')
+    assert source!=inspect.getsource(p4d.split)
+    exec(compile(source,'split-boundary-mutant','exec'),namespace)
+    d=synthetic();d.splits[d.date_idx==1501]=1
+    with pytest.raises(pytest.fail.Exception):
+        with pytest.raises(ValueError,match='outer'):namespace['split'](d,1521)
+    print('MUTATION split_boundary KILLED')
+    with monkeypatch.context() as m:
+        m.setitem(p4d.SCHEMA,'zero_columns',[])
+        with pytest.raises(ValueError,match='contract'):p4d.verify_contract()
+    print('MUTATION macro_schema KILLED')
+    with monkeypatch.context() as m:
+        m.setattr(p4d,'SEEDS',(29,17,43,59,71,89,101,113))
+        with pytest.raises(ValueError,match='queue SHA'):p4d.verify_contract()
+    print('MUTATION seed_sequence KILLED')
+    with monkeypatch.context() as m:
+        real=p4d.queue
+        m.setattr(p4d,'queue',lambda:real()[::-1])
+        with pytest.raises(ValueError,match='queue SHA'):p4d.verify_contract()
+    print('MUTATION queue_SHA KILLED')
+    with monkeypatch.context() as m:
+        m.setattr(bundle,'guarded_launch',lambda gate,formal:formal())
+        launched=[]
+        def fail():raise ValueError('STOP')
+        with pytest.raises(pytest.fail.Exception):
+            with pytest.raises(ValueError):bundle.guarded_launch(fail,lambda:launched.append(True))
+        assert launched==[True]  # The oracle catches actual unauthorized launch.
+    print('MUTATION rehearsal_bypass KILLED')
+
+
+def test_stage1b_empty_gate_result_never_launches():
+    from tools import p4d_bundle as bundle
+    events=[]
+    for empty in (None,{}):
+        with pytest.raises(ValueError):
+            bundle.guarded_launch(lambda:empty,lambda *args:events.append('formal'))
+    assert not events

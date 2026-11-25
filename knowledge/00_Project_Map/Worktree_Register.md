@@ -1,3 +1,11 @@
+## P4d 第一段 stage1b 接續 — 2026-11-25
+
+- Purpose／owner／task：Human／Codex builder，`job-run-mwvoxf7h-970cae/builder_p4d_stage1b`；有界CPU回歸、排練／notebook驗證、marker修補及knowledge同步，不派agents。
+- Path：`.worktrees/ruflo-workers/run-mwvoxf7h-970cae/builder_p4d_stage1b`；detached HEAD／base `b1871a99890f2bfd8c6f2201a770cbbac73eb341`（前輪WIP），created date UNKNOWN，本輪接手2026-11-25，retired N/A；既有worktree，起始clean，不新增或移除。
+- Current state／authority：no-commit patch，UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED／CPU_ENGINEERING_ONLY；第一段STAGE1_FROZEN不變，未改P4a／production authority。
+- Dependencies：獨立review與Human另案現場排練／交付；CUDA最大格、全列C0+RAM、Drive與長排練progress未驗。工程temporary輸出在`/tmp/p4d-stage1b-*`，實際身分／數值見[工程報告](../../reports/v7_p4d_engineering.md#第一段接續-stage1b--2026-11-25)。Safe removal：先保留patch與唯一必要證據、核references／retirement review及clean；本輪不清理。
+- Runtime：WSL／pilot09既有venv Python3.12.3／CUDA_VISIBLE_DEVICES空；MARKETMAMBA_DATA_ROOT unset，Data為本worktree普通目錄且未讀內容；只讀Human指定prepared，未更新外部observed_at。無commit／push／merge／Windows正式交付。
+
 # Worktree Register
 
 ## P4d stage1 builder — 2026-11-25

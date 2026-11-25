@@ -73,3 +73,150 @@ anchor fit起日2006-01-17，validation **2020-06-04～2020-12-03**，最後保�
 未驗：任何真研究fit、T4／CUDA bitwise／顯存／最大容量倍率、全列C0+ fit／RAM、完整train IC推論、Drive fsync持久性／斷線、Colab最新runtime相符、正式price snapshot／組合績效、獨立審查與Human acceptance。source PIT、universe／下市與execution provenance未因本工程解除。Mamba2全部、D、N12與超六格容量未實作或執行。
 
 Knowledge-impact：分段凍結狀態、候選入口、split artifact／major blocker及next action＝YES；同步Current State／Authority Map／Research／Worktree Register。既有machine authority／production／active外部runtime／原閾值／deprecation＝NO；沒有更寫observed_at或authority-map.json。只保留未提交patch，非clean-worktree完成宣告。
+
+## 第一段接續 stage1b — 2026-11-25
+
+任務 `job-run-mwvoxf7h-970cae/builder_p4d_stage1b`，沿用指派 worktree；起始 clean、detached HEAD `b1871a99890f2bfd8c6f2201a770cbbac73eb341`（前輪 WIP），本輪僅交未提交 patch，不 commit／push／merge。原報告的 base35cd9b8／18 passed 為前輪紀錄；本段為本輪新證據。無額外 agents／GPU／Colab／Drive／資料取得／研究 fit／blind／正式 Data／models／production／scheduler／Windows 正式交付。
+
+### 結構決定與改動
+
+保留 `tools/p4d*.py`，不搬回 research_lab。實測 P4a `source_paths()` 為 **226** 個 Python 來源，加四份文件的相容 inventory 為 **230**；收集器只掃 `V6/research_lab`／`V6/experimental`，P4d 不在其中。P4d adapter 是獨立實驗／bundle 邊界，重用 research_lab 原語；三個 tools 精確來源與兩份規格／契約由獨立 allowlist 加入，`p4d_evaluate.py` 不入包。搬移會要求修改／重認證原 P4a 來源邊界；本輪無此必要，不用前綴排除或降低 gate 來維持舊相容宣告。解包後隔離 Python 已實際 import 三個 tools 模組並驗 contract／queue。原 P4a source／policy／相容宣告、rolling_seq_scores.py、portfolio_eval.py 與凍結規格未改。
+
+`tools/p4d_bundle.py`：新增持久化排練標記流程，複製完整六個排練 fit 與評估產物、重驗後原子發布；重連不需舊 /tmp，但仍重驗 durable bytes、完整 schema／job／run／步數／完成與 checkpoint／評估重算。拒絕 None／空閘門結果、metadata symlink、publication 越界與錯 evidence class。副本與 marker 位於 P4d progress namespace，不共用 P4a ledger、不升格研究結果。失敗副本保留而不產生成功 marker，未新增清理行為。`tools/p4d_train.py` 只增加已知 P4d durable publication root 的驗證入口；訓練／選擇語義不改。下載格現在打包帳本、進度／排練證據及 bundle manifest，仍由 Human 自行關閉 runtime。checkpoint 與 same-source resume 沿用既有驗證；P4d 跨版本數值相容仍未認證。
+
+### 實際命令與 RED／GREEN
+
+先執行 Human 指定命令（另設 CUDA_VISIBLE_DEVICES 空）：
+
+```text
+PYTHONPATH=V6:V6/research_lab/tests:. /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests tests -q -p no:cacheprovider
+1265 passed, 4 skipped, 5 warnings in 645.58s (0:10:45), exit0
+```
+
+初始完整回歸 log `/tmp/p4d-stage1b-full.log`，沒有來源相容失敗，沒有放寬 gate。新增 marker／notebook RED 為2 failed；空 gate RED 為1 failed（實際呼叫 formal，正確被反例指出）。第一次修後 focused為24 passed／1 failed（notebook未顯示成功標記檔名）；補上使用說明後 stage1b 四項 **4 passed／21 deselected，3.34s**。完整修後回歸另於下方補錄；不把早期 focused 當最終全套結果。
+
+五項 in-memory mutation 的真實 stdout（`/tmp/p4d-stage1b-green.log`；不改來源 bytes）：
+
+```text
+MUTATION split_boundary KILLED
+MUTATION macro_schema KILLED
+MUTATION seed_sequence KILLED
+MUTATION queue_SHA KILLED
+MUTATION rehearsal_bypass KILLED
+4 passed, 21 deselected in 3.34s
+```
+
+切分 mutant 將 outer `>= origin-20` 改成 `>`，邊界列被錯放時原拒絕 oracle 失敗；macro mutant 清空 schema 名單、seed mutant 互換17／29、queue mutant 反序，皆由 frozen contract／queue SHA 攔下。繞過排練 mutant 確實呼叫 formal，負向 oracle 因未 STOP 而殺死該 mutant；不是單純測試被 mock 的函式存在。
+
+### CPU prepared 排練的證據邊界
+
+使用 `/home/frank/projects/p4-bundles/prepared` 唯讀載入真正 SeqData，先確認完整 anchor 與2021 outer split 逐欄符合凍結 inventory。全量推論數百萬列，不適合本輪30分鐘 CPU 工程時限；使用明確 `CPU_SUBSET_REHEARSAL`、`formal_compatible=false` 的最小支援替身，未嘗試完整研究訓練。保留真實原日曆、W60／48欄、原始特徵與標籤；僅65支完整歷史且 fit／validation 兩標籤有限的股票，fit最近10 sessions＝650列、validation 1 session＝65列、evaluation前10 sessions＝650列。outer validation為0。因果 halo 明列，截面 rank 與 C0+ market aggregate 在65股替身上重算，**不等同全宇宙正式預處理**；小矩陣 keys／support 改以獨立 binding 標示，未更寫正式 split／matrix。
+
+harness 只替換 runtime／CUDA telemetry 邊界、prepare 為上述替身與 device=cpu，其餘沿用 `rehearse → execute_job → fit_gru/fit_c0plus → predict → validate_complete → descriptive_pair → validate_gate` 真路徑。六個 fit 各1 epoch／1 step或C0+一輪，未觸發正式 run。先前2次成功路徑約28.73／28.88秒，六fit／20筆daily；最終 source 的新實測身分另補錄。CPU memory telemetry 的0為測試邊界替身，不是CUDA實測0。C0+稀疏日曆的 empty-slice／degrees-of-freedom warnings 如實保留，未修改其實作或門檻。
+
+首次 harness 因縮小支援時未沿用有限標籤資格而出現 `nonfinite training loss`，正確STOP；修正 harness 選股條件後重跑，未放寬 split 或 loss gate。focused另驗持久化副本重驗、移除原暫存 fit／evaluation 後仍可重用標記，以及損壞 durable 評估時移除標記、重新排練失敗則不得放行。
+
+### Notebook 與交付自查
+
+合成資料／無 prepared 的 source-only notebook 於 executable test 逐格 compile；prepared 身分版另在 `/tmp` 打包、解壓並以隔離 Python import 驗 contract／queue。均為一個 zip＋一個 ipynb＋兩行 README，不要求手貼hash；prepared版綁完整 matrix identity與七個frozen origins。**5個 code cells 全部compile**，解包manifest **236** 個成員（不含manifest本身），沒有本機評估器。以假的 google.colab.files 下載邊界執行真實下載格，ZIP內帳本／PROGRESS／marker／bundle-manifest **4個測試成員全部吻合、download呼叫1次**；沒有連線或寫入 /content／Windows／Drive。CPU這些檢查不代表已在Colab執行安裝／mount／T4訓練。
+
+即時進度：正式runner沿用Progress、逐step／epoch訊息與約60秒PROGRESS.txt；140-fit帳本隔離／完整性與cached restart已有CPU orchestration tests。排練目前每個fit完成即flush，長時間排練中的手機heartbeat未新增；完整真資料setup／rankgauss／validation推論、T4排練等待與Drive快照仍需現場核對，不能把短CPU輸出當已實測60秒持久性。
+
+### 未驗證、決策與 knowledge impact
+
+CUDA／T4最大格顯存、耗時／數值、全列C0+185欄fit與RAM、完整train／validation／eval推論、Drive fsync／斷線持久性、最新Colab套件相符、正式price snapshot／組合層、獨立session審查、P4d跨版本接續認證、Human acceptance仍 **UNVERIFIED／Remaining**。Mamba2／D／N12／超六格維持DRAFT且未執行。source PIT／universe／下市／execution provenance仍UNKNOWN／STOP；CPU工程不解除strict executable／trading gate。
+
+八問：交付語義=YES；authority=NO；subsystem boundary=NO；active外部runtime=NO；工程correctness gate（更嚴格）=YES、研究threshold不變；新增或supersede canonical artifact=NO（只有TEMPORARY CPU工程產物）；deprecation=NO；major blocker／next decision=YES（來源相容回歸閉合，現場與獨立審查仍待）。影響工具最初只看到tools／tests而為PASS，不能代替人工判斷；同patch更新Current State／Authority Map／Training／Research／Worktree Register與本需求註記。不改authority-map.json或任何外部observed_at。採code-review-and-quality作者自查，不等於獨立review。
+
+### 最終工程 artifact identity
+
+Local CPU observation：2026-11-25T05:52:43Z；WSL、Python3.12.3／torch2.15.0+cpu／NumPy2.5.4／pandas3.1.1／LightGBM4.7.0／pytest9.2.0。LightGBM與Colab frozen4.6.0不同，未更寫Colab契約、沒有現場相符聲明。
+
+最終CPU summary `/tmp/p4d-stage1b-cpu-_cbw54pw/summary.json`：{"bytes": 112075, "sha256": "102deb56e046c6c98ae15728156fdf443a6dc85e902fea175e29fd0d89d55d8f"}；總計29.133秒。六fit耗時秒：{"gru:256:2:anchor": 14.668, "gru:64:4:anchor": 2.477, "gru:32:2:anchor": 0.592, "c0plus:64:2:anchor": 2.058, "gru:32:2:outer": 0.564, "c0plus:64:2:outer": 1.12}；每個GRU一step，C0+一iteration。20筆daily＝兩系統各10日；durable marker重用已重新驗證。
+
+最終prepared notebook驗證：
+
+```json
+{
+  "output": "/tmp/p4d-stage1b-notebook-yosdgpsr",
+  "code_cells_compiled": 5,
+  "bundle_files": 236,
+  "frozen_origins": 7,
+  "zip": {
+    "bytes": 941968,
+    "sha256": "4fb9ce0393e4396f8a02e69858d0ed26d2102d270e3c86cfaca4f3e619a52382"
+  },
+  "notebook": {
+    "bytes": 8763,
+    "sha256": "fb89f2560c25d090b4930316e84ea6408adb38fcb6ed75314123ed15684be5f9"
+  },
+  "download_cell_members": 4,
+  "download_invocations": 1
+}
+```
+
+Source bytes（與最終CPU binding逐一相符）：
+
+```json
+{
+  "p4d.py": {
+    "bytes": 13314,
+    "sha256": "5df94ced0d62979de44468487229a3e999fe18aeb3340465de21ec67e0deccb1"
+  },
+  "p4d_train.py": {
+    "bytes": 23152,
+    "sha256": "39e43cec14c9fedf4af8f7d41adc21fcca73bf12cc8bae9d7957a1c7822b30a7"
+  },
+  "p4d_bundle.py": {
+    "bytes": 18592,
+    "sha256": "24440f70d6b43bc7800ff7e03fc0f7966893f071f5f9271f32c4436dcff891d3"
+  }
+}
+```
+
+重現harness僅在`/tmp/p4d_stage1b_cpu.py`與`/tmp/p4d_stage1b_notebook.py`；temporary產物非canonical artifact，未提交資料／權重。TEMPORARY logs：`/tmp/p4d-stage1b-cpu-final2.log`、`/tmp/p4d-stage1b-notebook-final2.log`、`/tmp/p4d-stage1b-green.log`。原始失敗log保留，沒有清理。
+
+Knowledge工具：治理unittest **23 tests OK**；health `--ci --as-of 2026-11-25` **exit0／WARNING**（Governance、Authority Drift、Legacy Docs），Project Map／Agent Guides／Domains／Runtime Freshness／Generated Index PASS，無structural FAIL。impact最終WARNING候選Operations／GOVERNANCE已人工閱讀；本輪未改其production control plane或治理規則，不更新這兩份。受影響的Training／Research及project map已同步；外部observed_at不改。
+
+補充驗證：第一次解包後隔離import的harness未加-B，產生__pycache__，後續verify正確報`executable cache forbidden`；正式notebook bootstrap本已設sys.dont_write_bytecode=True。只修temporary harness加`-I -B`，重新建立隔離包與解包目錄，完整inventory／SHA驗證通過；未放寬bundle gate、未清理原失敗目錄。最終syntax **3個修改Python檔**、contract／queue／frozen prefix SHA、**3個bundle來源hash**均通過；受影響Markdown本機引用 **765個、missing 0**；**8個protected source／contract／split artifacts與HEAD逐bytes相同**。
+
+### 最終完整回歸與固定交接
+
+```text
+PYTHONPATH=V6:V6/research_lab/tests:. CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest V6/research_lab/tests tests -q -p no:cacheprovider
+1269 passed, 4 skipped, 5 warnings in 617.86s (0:10:17)
+exit0
+```
+
+最終log `/tmp/p4d-stage1b-full-final.log`，1273項collection、P4d25項均通過。新增4項，沒有新增skip／刪測試。4個既有skip：`test_delivery_nbformat_parser`、`test_notebook_gate_defaults_compile_and_validation`、`test_delivery_includes_generated_declaration`因離線runtime沒有nbformat（以-rs另核3 skipped／5.95s）；`test_official_mamba2_gpu_smoke`的原skipif為needs CUDA。未安裝套件；另唯讀probe既有marketmamba-gpu venv也沒有nbformat，未載入GPU。故nbformat parser與Colab真kernel執行仍未驗，不能只因code compile稱已過該parser。5個warnings為故意重複ZIP成員1項、stale-audit mutant內Pandas dayofweek deprecation4項，不是P4d gate放行異常。CPU替身單獨的稀疏panel warnings另依前節保留。
+
+重新打包前後manifest逐內容相同，ZIP容器hash可變；使用上列最後一次artifact身份，不把容器差異冒稱source變更。所有實作在最終全套期間凍結；其後只補knowledge／本報告。
+
+- Completed：本輪5項優先工作已完成工程實作／CPU檢查及如實列Remaining；不是Human acceptance，沒有正式交付。
+- Changed：下列10個檔案，均為本輪unstaged patch。
+
+```text
+tools/p4d_bundle.py
+tools/p4d_train.py
+V6/research_lab/tests/test_p4d.py
+docs/operations/colab-human-requirements.md
+reports/v7_p4d_engineering.md
+knowledge/00_Project_Map/Current_State.md
+knowledge/00_Project_Map/Authority_Map.md
+knowledge/00_Project_Map/Worktree_Register.md
+knowledge/01_Domains/Research.md
+knowledge/01_Domains/Training.md
+```
+
+- Decisions：保留tools精確來源邊界；持久化排練產物與嚴格marker重驗；不改研究切分／配方／threshold、不降低P4a來源相容gate。
+- Evidence：初始1265／最終1269 passed、4 skipped；5具名mutation killed；CPU6 fits／20 daily、5 code cells compile、解包hash／import／下載格；knowledge23 tests、health WARNING無FAIL；實際hash與輸出見以上各節。
+- Remaining：nbformat parser、CUDA／T4最大格與數值／耗時／顯存、全列C0+RAM、完整推論、Drive持久性／斷線、長排練heartbeat、最新Colabruntime、price／組合層、跨版相容認證、獨立review與Human acceptance。Mamba2／D／N12未核准且未實作。
+- Blockers：上述現場與獨立審查證據缺口；source PIT／universe／execution仍UNKNOWN／STOP。沒有本輪CPU regression失敗待修。
+- Next recommended action：不同session獨立審查patch／契約／實測證據，再由Human決定另案現場排練及正式交付；本輪不啟動任何外部工作。
+- Project memory updated：Current State／Worktree Register／Research／Training；knowledge_update: updated。同patch同步，不新增重複memory樹。
+- Authority map updated：只記候選工程與evidence邊界，沒有authority升格／authority-map.json或外部observed_at修改。
+- Git status：detached HEAD、10 modified／0 staged／0 untracked，初始clean；依no-commit保留patch，因此不是clean-worktree完成宣告。
+- Commit：本輪無；HEAD仍b1871a99890f2bfd8c6f2201a770cbbac73eb341（先前WIP）。
+- Push：無；merge／deploy亦無。
+- Worktree：`/home/frank/projects/MarketMamba/.worktrees/ruflo-workers/run-mwvoxf7h-970cae/builder_p4d_stage1b`；沿用指派worktree，未新增／移除。
+- Runtime/environment：WSL／pilot09既有CPU venv，Python3.12.3、torch2.15.0+cpu、LightGBM4.7.0；CUDA_VISIBLE_DEVICES空，最終回歸OMP／MKL threads=1。MARKETMAMBA_DATA_ROOT unset，Data realpath為本worktree普通Data且未讀內容，只唯讀指定prepared；沒有Colab／Drive／Windows正式交付或外部runtime observation。

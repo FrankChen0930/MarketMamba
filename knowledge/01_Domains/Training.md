@@ -1,3 +1,7 @@
+## P4d stage1b 排練接續候選 — 2026-11-25
+
+獨立tools交付保留原P4a來源inventory。P4d成功標記位於`progress/formal/rehearsal_passed.json`，六個fit與評估產物先複製至獨立publication namespace、重驗後才發布；重連逐bytes／binding／schema／內容重驗，不依賴舊/tmp，不共用P4a帳本。None／空證據STOP，損壞marker重新排練；checkpoint／固定更新／研究threshold不變。詳[工程報告](../../reports/v7_p4d_engineering.md#第一段接續-stage1b--2026-11-25)與[Human需求](../../docs/operations/colab-human-requirements.md#p4d-第一段候選2026-11-25)。CPU替身六fit／notebook驗證與全套回歸僅工程證據；T4顯存／耗時、全列C0+RAM／完整推論、Drive與長排練heartbeat仍待現場核對。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，獨立review與Human acceptance未完成，無GPU／Colab／Drive／外部runtime observation更新。
+
 ## P4a 第 13 次複審 REQUIRED＋兩項 MINOR 修補候選 — 2026-11-24
 
 `job-run-mwtn0pir-48e95f`／`builder_p4a_gate3`，沿用既有 detached worktree，base/HEAD `40d621cc9ac586e45fff1e095f59465b388094a1`；UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，依明確授權保留未提交 patch。第 13 次獨立複審為 NO_GO；本輪修補 Q5 巢狀 schema、超大數值／遞迴損壞 marker，以及 metadata 符號連結。完成不解除 NO_GO，不等同 Human acceptance。

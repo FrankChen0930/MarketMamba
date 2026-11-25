@@ -1,3 +1,9 @@
+## P4d stage1b 接續工程候選 — 2026-11-25
+
+`job-run-mwvoxf7h-970cae/builder_p4d_stage1b`，指派 worktree／detached HEAD `b1871a9`（前輪WIP），起始clean，本輪no-commit patch；**STAGE1_FROZEN / E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。指定初始全套1265 passed／4 skipped／0 failed；修後完整回歸1269 passed／4 skipped／5 warnings、617.86s、exit0，P4a來源相容未壞；保留tools精確P4d邊界，不搬research_lab、不改舊policy／宣告。補空排練證據STOP、綁identity的持久化排練產物／成功標記與重連重驗，下載包含帳本／進度／排練及bundle manifest；研究語義／threshold不變。
+
+prepared完整anchor／2021 split核對後，只跑65股／650-fit列的CPU支援替身六fit與描述IC；五項具名in-memory mutation全killed、notebook五個code cells compile與解包import／下載格驗證通過。最終回歸、source／產物hash與限制見[工程報告](../../reports/v7_p4d_engineering.md#第一段接續-stage1b--2026-11-25)。CPU不是現場gate，CUDA顯存／耗時、全列C0+RAM、全量推論、Drive持久性、排練長等待heartbeat、獨立審查與Human acceptance仍待；無真研究fit或外部runtime變更。Next：獨立session審查本patch，再由Human決定另案現場排練／交付；本輪不正式交付、不commit／push／merge。
+
 ## P4d 第一段分段凍結與CPU工程候選 — 2026-11-25
 
 `job-run-mwvnttp4-a9ebe0/builder_p4d_stage1`，既有detached base `35cd9b88ddec3bce3849ba0363c0514393d16d47`；**STAGE1_FROZEN / E2 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。Human對話核准只涵蓋baseline、GRU B（固定八seed前1/2/4/8）與A六格；原規則SHA `c36aed96787e2b7e69fc92cd736ef3692c5542f1aecf350c4e0047470790fe54`，原全文bytes保留且只附紀錄；其他段落仍DRAFT。下方歷史「P4d仍DRAFT」不代表本次第一段仍未核准。

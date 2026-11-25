@@ -94,3 +94,5 @@ MyDrive/MarketMamba/
 - 正式前強制排練GRU d256×2、d64×4、d32×2各1 step、C0+以及outer評分／描述性IC評估路徑。逐產物hash、job／source／matrix／split／environment及固定更新數再驗；缺證據STOP，沒有略過開關。組合層須另提供凍結price snapshot，本輪未驗。
 - P4d只列入三個精確訓練來源 `tools/p4d.py`、`tools/p4d_train.py`、`tools/p4d_bundle.py`；`tools/p4d_evaluate.py`為本機專用、不入包。沿用舊safe-extract核心但使用獨立archive allowlist instance，不改P4a來源inventory／相容宣告或本機專用policy。新run不需要P4a來源升級，舊能力保留；P4d未認證任何跨版數值相容，變更來源須獨立審查，不能默接舊run。
 - GRU第一段不安裝或啟動Mamba2；runtime使用既有OBSERVED Colab契約的相關套件子集＋LightGBM4.6.0，精確差異即STOP，不更寫舊observed_at。CPU合成測試不是Colab／T4／Drive驗收，現場仍UNVERIFIED。
+
+P4d 第一段接續修補候選（2026-11-25，stage1b；仍 UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED）：排練通過後將六個 fit 與評估產物複製到 `progress/formal/rehearsal/<publication-id>/`，逐產物重驗後才原子寫入 `progress/formal/rehearsal_passed.json`。標記綁 bundle／queue／contract／matrix／split／environment；重連重驗持久化 bytes、schema 與內容，不依賴舊 `/tmp`。缺少、損壞、錯身分或 symlink 標記不得放行，移除無效標記後重新排練；保留既有產物，不重置帳本。閘門回傳 None／空字典也 STOP。最後下載包含 `budget_p4d_stage1/`、`progress/formal/` 與 bundle manifest；不包含可重建的大型 rankgauss cache。CPU 工程驗證不證明 Drive 持久性或現場排練通過。
