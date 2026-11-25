@@ -1,3 +1,12 @@
+## TEJ 第二步 2a builder — 2026-11-25
+
+- Purpose／owner／task：Human／Codex builder，`job-run-mww8tui1-604e40/builder_tej_2a`；有界TEJ轉換及資料稽核，不派agents。
+- Path／branch／base：`.worktrees/ruflo-workers/run-mww8tui1-604e40/builder_tej_2a`；detached HEAD `aafd0d9c41ac2a42a7277936353a101f93aab95c`，created date UNKNOWN（本輪接手2026-11-25），retired N/A；沿用既有worktree，起始clean，不增減worktree。
+- State／authority：no-commit patch，RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。合成focused14 passed（0.94秒）、兩項in-memory mutation killed；P4a source-compat位置回歸1 passed（11.35秒）。隔離後全套因本輪30分鐘時間界線中止（exit130），collection1351項但無終局總計，NOT_COMPLETED／不宣稱全套通過；須續段完整重跑報告所列隔離命令；早期直接全套測試的真實fold存取偏差與最終bwrap資料隔離詳[報告](../../reports/tej_pit_audit_20261125.md)，不宣稱全程未讀標籤／未曝光。
+- Artifact／merge dependencies：主checkout `.artifacts/tej/raw/`為授權EXTERNAL_LARGE_DATA來源；本worktree `.artifacts/tej/pit/`及`runs/<manifest SHA>/`含授權GENERATED逐列資料，全部ignored且需保留。最終manifest SHA `f3532527b51ed05ad2b0360aad0c14de0531d18f230cf00c7ef456d79fa254f1`。尚待獨立review／Human acceptance，不存在已授權merge／部署或排程dependency。
+- Safe removal：先保留patch與完整私有產物／manifest／relocation記錄，驗SHA及所有引用、唯一副本／可重建輸入與授權，再另案review retirement與clean；本輪不移除或清理。
+- Runtime：WSL／pilot09既有CPU venv Python3.12.3，CUDA_VISIBLE_DEVICES空，MARKETMAMBA_DATA_ROOT unset，Data為此worktree普通目錄未讀寫。資料層唯讀指定Windows revenue_raw／financials_raw與TEJ原檔、C0+身分日期陣列；無GPU／網路／blind／實際ledger寫入／production／scheduler／P4d／commit／push／merge，無外部observed_at更新。
+
 ## PIT 第一步容量修補接續 builder — 2026-11-25
 
 - Purpose／owner／task：Human／Codex builder，`job-run-mww5b81x-8af923/builder_pit_step1b`；從前輪指定9檔接續 REQUIRED 容量／重播／測試修補，不派agents。

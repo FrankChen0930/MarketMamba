@@ -1,3 +1,9 @@
+## TEJ 匯出資料層候選 — 2026-11-25
+
+[loader](../../tools/tej_pit.py)與[報告](../../reports/tej_pit_audit_20261125.md)是未提交 RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED 候選。UTF-16 TAB／strip／`.`缺值／字串前置零／千元→元（EPS不縮放）均以合成測試驗證；SHA不符STOP，缺發布日保留NO_RELEASE_DATE，無期限倒填。月營收380,514列、IFRS115,876列和所有逐列示例只在指派worktree `.artifacts/tej/`，不入公開git；manifest／input hashes見彙總JSON。
+
+IFRS名目年月與實際財報迄日不同導致14列負延遲（min−82），用實際迄日後0列；>365日3,298列的補發／修訂原因與IFRS值版本UNKNOWN，整表strict PIT STOP。C0+研究成員date／stock聯集不等於正式歷史universe；現況產業不回填歷史身分。合成focused14 passed（0.94秒）、兩項in-memory mutation killed；P4a source-compat位置回歸1 passed（11.35秒）。隔離後全套因本輪30分鐘時間界線中止（exit130），collection1351項但無終局總計，NOT_COMPLETED／不宣稱全套通過；須續段完整重跑報告所列隔離命令；先前直接全套測試可能讀真實fold的邊界偏差、最終程序隔離與額外availability skips詳報告，不能宣稱全程未讀標籤。唯讀21筆EPS REVISED：16僅符新值／4新舊皆符／1皆不符；帳本SHA前後不變，不是公司重編原件證據／未動正式Data／排程／P4d；不變publication/source admission authority，仍待原件／版本與獨立驗收。
+
 ## PIT 帳本複審修補 — 2026-11-25
 
 `job-run-mww7h6b0-bba9f3/builder_pit_fix2@04e724d` 未提交候選，RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。[工具](../../tools/pit_ledger.py)拒絕完整 sqlite_master 集合之外物件（含 sqliteXdrop），舊 v2 在同 SHA 捷徑前完整稽核索引鍵。百萬鍵合成外推超過30秒，採成功續寫時同交易升 schema v3 並封存索引 SHA 稽核標記，後續逐次驗 hash、不重複解碼；v1／缺標記 v3／無效舊鍵 STOP。[報告](../../reports/pit_arrival_audit_20261125.md#複審-findings-修補--2026-11-25)保留合成性能、focused56及最終全套1333 passed／4 skipped／5 warnings／0 failed（exit0）實際結果。symlink 檢查與寫入競態未修，依 Human 單機無惡意者威脅模型接受為限制；無實際帳本或正式 Data 寫入，publication／strict PIT／法律適用仍 UNKNOWN，排程 NO_GO 與獨立驗收待辦不變。

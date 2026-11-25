@@ -1,3 +1,13 @@
+## TEJ 第二步 2a 資料層候選 — 2026-11-25
+
+`job-run-mww8tui1-604e40/builder_tej_2a`，detached base `aafd0d9c41ac2a42a7277936353a101f93aab95c`、起始 clean；Human 核准有界第二步，依 no-commit 保留 patch，**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[loader](../../tools/tej_pit.py)與[合成測試](../../tests/test_tej_pit.py)只做 TEJ 資料層，沿用既有tools離線資料工具邊界，避免納入P4a訓練打包；不改既有gate。[報告](../../reports/tej_pit_audit_20261125.md)／[JSON](../../reports/tej_pit_audit_20261125.json)記 source／input／輸出 hash 與實際統計；raw zip 和所有逐列衍生資料（含代碼日期示例）僅在 gitignored `.artifacts/tej/`，不入 PUBLIC git。
+
+最終 `.artifacts/tej/pit/` 生成月營收380,514列、IFRS115,876列；manifest SHA `f3532527b51ed05ad2b0360aad0c14de0531d18f230cf00c7ef456d79fa254f1`。缺發布日12,982／4,237列不倒填，所有 strict_pit_eligible=False。IFRS以名目年月當期末的14列負延遲（min −82日）均為非曆年期間，按實際財報迄日改算為0列；>365日3,298列全是曆年期間，成因／版本仍UNKNOWN，不升格PIT。月營收配對291,847列、>1%差446；Revenue／EPS差異不識別首次或重編值。C0+覆蓋只讀獨立date／stock身分陣列，以月內研究成員聯集為分母，非lifecycle authority；2026/10分母UNKNOWN。
+
+合成focused14 passed（0.94秒）、兩項in-memory mutation killed；P4a source-compat位置回歸1 passed（11.35秒）。隔離後全套因本輪30分鐘時間界線中止（exit130），collection1351項但無終局總計，NOT_COMPLETED／不宣稱全套通過；須續段完整重跑報告所列隔離命令。重要限制：早期未隔離全套測試已執行到既有外部真實fold讀取區段，不能宣稱本輪全程未讀真實標籤；發現後中止，最終以bwrap遮蔽外部資料後重跑，不改既有測試或skip條件。未把該值用於本案稽核或研究判定；偏差詳報告，待Human／獨立review判斷。無blind、實際帳本寫入、正式Data寫入、模型權重、網路、GPU、production、scheduler、P4d、agents、commit／push／merge；不更新外部observed_at。Next：核授權原件與IFRS版本語義、長尾／差異、精確春節順延及獨立驗收；不直接加回特徵或改authority。
+
+補充唯讀21筆EPS REVISED：16筆TEJ僅符新值、4筆新舊皆符、1筆皆不符；全部科目名稱同時改變，不能推定公司重編或整表版本。帳本SHA前後一致，未寫帳本。
+
 ## PIT 帳本複審修補候選 — 2026-11-25
 
 `job-run-mww7h6b0-bba9f3/builder_pit_fix2`、detached base `04e724dd09ef0d44974dfae9e235e777937e6784`，起始 clean，no-commit patch；**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[工具](../../tools/pit_ledger.py)精確比對完整 sqlite_master 名稱／定義集合（含自動索引），拒絕 sqliteXdrop 等額外物件。舊 schema v2 在續寫前稽核不可變索引業務鍵，None／NaN／Unicode 空白均 STOP；合成百萬鍵估計全量約38–39秒，因此成功續寫才同交易升至 schema v3、在封存 run 記索引 SHA 稽核標記，後續仍逐次驗 blob SHA，避免重掃。失敗 rollback 保留 v2；schema v1／v3 缺標記 STOP。

@@ -1,3 +1,9 @@
+## TEJ 第二步 2a 候選的 authority 邊界 — 2026-11-25
+
+Human 本輪核准有界資料層；`job-run-mww8tui1-604e40/builder_tej_2a@aafd0d9` 未提交 [loader](../../tools/tej_pit.py)／[報告](../../reports/tej_pit_audit_20261125.md)為 **RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。TEJ raw／逐列資料及日期示例僅存指派worktree `.artifacts/tej/`，公開僅程式／合成測試／彙總。input SHA、manifest、可重算統計只證明本批匯出與轉換身分，不證明歷史值版本；IFRS首次／重編 UNKNOWN，月營收首次值為Human轉述TEJ文件、未核原件，發布日不代表盤中可得或嚴格PIT。
+
+名目期末14列異常已辨為非曆年期間對齊，按實際財報迄日描述，不改原發布日／數值；長尾、版本與逐期科目仍待核。C0+ date／stock陣列月內聯集只作研究覆蓋分母，非正式universe/lifecycle或可交易證據。合成focused14 passed（0.94秒）、兩項in-memory mutation killed；P4a source-compat位置回歸1 passed（11.35秒）。隔離後全套因本輪30分鐘時間界線中止（exit130），collection1351項但無終局總計，NOT_COMPLETED／不宣稱全套通過；須續段完整重跑報告所列隔離命令；直接測試可能已讀真實fold的任務邊界偏差及最終bwrap隔離限制在報告，不能抹去或升格成未曝光。未supersede canonical artifact、authority-map.json、P2／P4d／production、source admission或既有研究結果；無外部runtime observed_at更新，獨立審查／Human acceptance仍待。
+
 ## PIT 帳本複審候選邊界 — 2026-11-25
 
 `job-run-mww7h6b0-bba9f3/builder_pit_fix2@04e724d` 未提交候選，**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[工具](../../tools/pit_ledger.py)改為完整 sqlite_master 精確集合及定義 SHA 比對；舊 schema v2 必須先通過索引鍵語義稽核，成功續寫才原子升為 schema v3，將已稽核索引 SHA 封存於 run。後續驗證仍核 blob SHA 與標記，v1／缺標記 v3 STOP；未變更業務鍵或原歷史 runs／events／blobs。[報告](../../reports/pit_arrival_audit_20261125.md#複審-findings-修補--2026-11-25)記合成工程證據，不能升格正式 PIT／交易／排程資格。symlink TOCTOU 未修，依 Human 單機無惡意者威脅模型明確接受為限制；靜態檢查不等於競態安全。實際帳本未寫入，無 machine authority／canonical artifact supersession 或外部 observed_at 更新；排程 NO_GO 與獨立審查／Human 驗收待辦不變。
