@@ -13,7 +13,7 @@ import time
 import uuid
 import numpy as np
 from tools.step3 import (FEATURES, PARAMS, SEEDS, YEARS, SPEC_SHA, ROOT, private_dir,
-                        require_admission, sha256, verify_file, validate_arms)
+                        require_admission, human_source_acceptance, job_id, sha256, verify_file, validate_arms)
 
 
 def digest_json(value):
@@ -62,7 +62,7 @@ def resume(directory,request):
         if p.is_symlink() or (p/'manifest.json').is_symlink():raise ValueError('symlink')
         m=json.loads((p/'manifest.json').read_text())
         if m['state']!='COMPLETE' or m['request']!=request or m['request_sha256']!=digest_json(request):raise ValueError('identity')
-        if not {'keys.npy','sample.npy','model.txt'}<=set(m['files']):raise ValueError('missing required outputs')
+        if not {'keys.npy','sample.npy','prediction.npy','model.txt'}<=set(m['files']):raise ValueError('missing required outputs')
         actual={v.name for v in p.iterdir()}
         if actual!=set(m['files'])|{'manifest.json'}:raise ValueError('unexpected outputs')
         for name,info in m['files'].items():
@@ -102,13 +102,13 @@ def recover_orphan(stage,final,request):
     return final
 
 
-def fit_job(gate,root,year,seed,arm,keys,fit_rows,y_fit,x_fit,x_eval,input_identity):
+def fit_job(gate,root,year,seed,arm,keys,fit_rows,y_fit,x_fit,x_eval,input_identity,*,human_accepted_source_gate=None):
     """One complete fit+inference, sampled training rows provided by shared P1 plan.
 
     No correlation, labels at evaluation time, feature importance, ranking or
     performance summary is computed. Scores are never printed or returned.
     """
-    bundle=require_admission(gate)
+    bundle=require_admission(gate,human_accepted_source_gate) if human_accepted_source_gate is not None else require_admission(gate)
     if year not in YEARS or seed not in SEEDS or arm not in ('A','B'):raise ValueError('STOP queue identity')
     width=185 if arm=='A' else 190
     if x_fit.shape!=(len(fit_rows),width) or x_eval.shape!=(len(keys),width):raise ValueError('STOP matrix dimensions')
@@ -119,10 +119,11 @@ def fit_job(gate,root,year,seed,arm,keys,fit_rows,y_fit,x_fit,x_eval,input_ident
         year=year,seed=seed,arm=arm,params=PARAMS,input_identity=input_identity,
         sample_sha256=array_digest(fit_rows),target_sha256=array_digest(y_fit),keys_sha256=array_digest(keys),
         fit_sha256=array_digest(x_fit),eval_sha256=array_digest(x_eval))
-    expected=bundle.get('jobs',{}).get(arm,{})
-    if bundle.get('year')!=year or bundle.get('seed')!=seed or any(request[k]!=expected.get(k) for k in
+    expected=bundle.get('jobs',{}).get(job_id(year,seed,arm),{})
+    if any(request[k]!=expected.get(k) for k in
             ['sample_sha256','target_sha256','keys_sha256','fit_sha256','eval_sha256']):
         raise ValueError('STOP job arrays do not match frozen bundle')
+    if human_accepted_source_gate is not None:request['human_source_acceptance']=human_source_acceptance(human_accepted_source_gate)
     if input_identity!=gate['bundle']['sha256']:raise ValueError('STOP input bundle identity')
     root=private_dir(root);name=f'fold{year}-{arm}-seed{seed}'
     if (root/name).exists():resume(root/name,request);return root/name
@@ -156,14 +157,14 @@ def build_arms(data,rows,monthly_values):
     return a,b,names+FEATURES
 
 
-def run_fold(gate,root,data,dates,base_splits,labels,monthly_values,present,year,input_identity,calendar):
+def run_fold(gate,root,data,dates,base_splits,labels,monthly_values,present,year,input_identity,calendar,*,human_accepted_source_gate=None):
     """Deferred end-to-end fold driver; does not call the evaluation module.
 
     The complete original-day target is ranked before seed sampling. Inference
     eligibility depends only on matrix presence through t, never on labels or B.
     Every job must match the admitted frozen bundle and shared sampling plan.
     """
-    require_admission(gate)
+    require_admission(gate,human_accepted_source_gate)
     from tools.step3 import fold_rows,sample_training,w60_eligible
     tr,ev=fold_rows(dates,base_splits,year,np.isfinite(labels),calendar=calendar)
     eligible=w60_eligible(present)[data.date_idx,data.stock_idx]
@@ -176,20 +177,21 @@ def run_fold(gate,root,data,dates,base_splits,labels,monthly_values,present,year
         rows,target=sample_training(tr,labels,data.date_idx,seed)
         xf_a,xf_b,_=build_arms(data,rows,monthly_values)
         for arm,xf,xe in [('A',xf_a,xe_a),('B',xf_b,xe_b)]:
-            path=fit_job(gate,root,year,seed,arm,keys,rows,target,xf,xe,input_identity)
+            path=fit_job(gate,root,year,seed,arm,keys,rows,target,xf,xe,input_identity,human_accepted_source_gate=human_accepted_source_gate)
             outputs[arm,seed]=np.load(path/'keys.npy',allow_pickle=False)
     validate_outputs(outputs)
     return dict(fold=year,jobs=6,expected_keys=len(keys),status='ARTIFACTS_ONLY_NO_EVALUATION')
 
 
-def measure(bundle_dir,arm):
-    """Resource-only 2026 seed17; does not load evaluation labels or print scores."""
+def measure(bundle_dir,arm,human_accepted_source_gate=None):
+    """Explicit resource-only execution; source acceptance is a separate prerequisite."""
     directory=Path(bundle_dir)
     gate=json.loads((directory/'admission/admission.json').read_text())
-    require_admission(gate)
-    load=lambda name:np.load(directory/name,mmap_mode='r',allow_pickle=False)
-    path=fit_job(gate,directory/'measurement',2026,17,arm,load('keys.npy'),load('sample.npy'),
-        load('target.npy'),load('fit_'+arm+'.npy'),load('eval_'+arm+'.npy'),gate['bundle']['sha256'])
+    bundle=require_admission(gate,human_accepted_source_gate)
+    job=bundle['jobs'][job_id(2026,17,arm)]
+    load=lambda role:np.load(bundle['files'][job[role+'_file']]['path'],mmap_mode='r',allow_pickle=False)
+    path=fit_job(gate,directory/'measurement',2026,17,arm,load('keys'),load('sample'),
+        load('target'),load('fit'),load('eval'),gate['bundle']['sha256'],human_accepted_source_gate=human_accepted_source_gate)
     result=json.loads((path/'manifest.json').read_text())
     print(json.dumps(dict(arm=arm,status=result['state'],telemetry=result['telemetry']),indent=2))
 
@@ -197,4 +199,5 @@ def measure(bundle_dir,arm):
 if __name__=='__main__':
     import argparse
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--bundle-dir',type=Path,required=True);p.add_argument('--arm',choices=['A','B'],required=True)
-    args=p.parse_args();measure(args.bundle_dir,args.arm)
+    p.add_argument('--human-accepted-source-gate',type=Path)
+    args=p.parse_args();measure(args.bundle_dir,args.arm,args.human_accepted_source_gate)

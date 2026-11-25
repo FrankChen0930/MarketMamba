@@ -1,3 +1,12 @@
+## Step3c 審查修補 builder — 2026-11-26
+
+- Purpose／owner／task：Human／Codex，`job-run-mwwgd60e-d894d4/builder_step3c`；只修獨立審查完整性及補跨來源彙總，不決定來源接受、不計IC／績效、不fits。
+- Path／branch／base：`.worktrees/ruflo-workers/run-mwwgd60e-d894d4/builder_step3c`，既有detached `31f89ed95feb182ccdc4669cc4c09f5766e1cd08`；created UNKNOWN，本輪接手2026-11-26；retired N/A，起始clean，不新增移除worktree。
+- State／authority：no-commit patch；HUMAN_DECISION_REQUIRED / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；凍結spec不改；[本輪報告](../../reports/step3_engineering_20261126.md)列實際驗證、限制及Human決定選項。
+- Artifact／merge dependencies：canonical TEJ raw/PIT／price snapshot／p4-bundles shared與FinMind revenue_raw唯讀，逐列只寫本worktree `.artifacts/step3/`；GENERATED私有bundle、配對、標籤、特徵、job矩陣與logs需保留，partial不得當complete。無merge／部署授權。
+- Safe removal：先保留patch及私有完整inventory／SHA、確認references／唯一副本與重建方式，獨立review及Human另案retirement後確認clean；本輪不清理。
+- Runtime：WSL CPU／pilot09 Python3.12.3，CUDA_VISIBLE_DEVICES空，MARKETMAMBA_DATA_ROOT unset；Data realpath本worktree普通目錄，無寫正式Data／V6/models／blind／網路／GPU／P4d／P2／排程／agents／commit／push／merge／deploy；不更新外部observed_at。
+
 ## Step3b 准入與資源量測 builder — 2026-11-26
 
 - Purpose／owner／task：Human／Codex，`job-run-mwwebldn-201d27/builder_step3b`；協調者A–D裁定下的歷史准入與最大2026折A/B seed17 CPU量測，不讀IC／績效。

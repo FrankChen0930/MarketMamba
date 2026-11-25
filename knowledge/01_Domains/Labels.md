@@ -1,3 +1,7 @@
+## Step3c 來源待 Human 決定／完整性修補 — 2026-11-26
+
+[Step3c報告](../../reports/step3_engineering_20261126.md)取代下方Step3b目前PASS主張。歷史版本gate為HUMAN_DECISION_REQUIRED，strict前瞻仍STOP；無Human接受、fits或IC／績效。跨來源291,847配對中291,360差<0.1%，446差>1%，只證明數值／單位一致而非首次版本或publication PIT。adapter一致列標NTD_BY_CROSS_SOURCE_AGREEMENT，其餘UNIT_UNVERIFIED／NaN；版本0只是匯出重播序，不是首次版認證，合併可比性仍是待Human接受的假設。完整72-job schema、原始來源manifest SHA、job陣列身分、prediction必備與凍結labels／keys／session驗證皆屬UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED工程候選；實際驗證及限制見報告，不改正式Data或既有48欄。下一步為獨立重審及Human明確選擇，不能自動啟動研究。
+
 # Labels
 
 ## Metadata

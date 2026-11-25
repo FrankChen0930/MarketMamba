@@ -29,7 +29,7 @@ def _circular_paired_interval(difference):
     return [float(v) for v in np.percentile(means,[2.5,97.5])]
 
 
-def evaluate(keys_by_job,predictions,labels,row_session,session_dates,*,independent_execution_authorized=False):
+def evaluate(keys_by_job,predictions,labels,row_session,session_dates,*,label_keys=None,frozen_labels=None,independent_execution_authorized=False):
     """Full ordered keys already concatenate folds in original row order.
 
     Both arms and all seeds must cover the entire W60 inference support, including
@@ -43,6 +43,11 @@ def evaluate(keys_by_job,predictions,labels,row_session,session_dates,*,independ
     y=np.asarray(labels,float);t=np.asarray(row_session);days=np.asarray(session_dates,dtype='datetime64[D]')
     if y.shape!=(n,) or t.shape!=(n,) or t.dtype.kind not in 'iu' or (t<0).any() or (t>=len(days)).any():
         raise ValueError('STOP evaluation alignment')
+    if label_keys is None or not np.array_equal(np.asarray(label_keys),keys) or not np.array_equal(t,keys[:,0]):
+        raise ValueError('STOP label keys/session alignment')
+    if frozen_labels is None or not np.array_equal(y,np.asarray(frozen_labels,float),equal_nan=True):
+        raise ValueError('STOP labels differ from frozen identity')
+    if np.isinf(y).any():raise ValueError('STOP infinite labels')
     if len(np.unique(days))!=len(days) or np.any(days[1:]<=days[:-1]):raise ValueError('STOP full session axis')
     for v in predictions.values():
         if np.asarray(v).shape!=(n,) or not np.isfinite(v).all():raise ValueError('STOP prediction finite support')

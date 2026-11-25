@@ -268,11 +268,13 @@ def admission(source_root,out,bundle=None):
     else:
         try:
             bundle_info=dict(path=str(Path(bundle).resolve()),sha256=sha256(bundle),bytes=Path(bundle).stat().st_size)
-            require_admission(dict(status='PASS',contract_sha256=SPEC_SHA,bundle=bundle_info))
+            candidate=json.loads(Path(bundle).read_text())
+            validate_bundle_schema(candidate);verify_source_provenance(candidate)
+            for info in candidate['files'].values():verify_file(info['path'],info['sha256'],info['bytes'])
         except (ValueError,OSError,KeyError,TypeError) as exc:stops.append('STOP bundle: '+str(exc))
-    result=dict(status='STOP' if stops else 'PASS',bundle=bundle_info,strict_forward_status='STOP',
+    result=dict(status='STOP' if stops else 'HUMAN_DECISION_REQUIRED',bundle=bundle_info,strict_forward_status='STOP',
         strict_forward_reasons=['qualified exchange calendar/lifecycle/action evidence unavailable'],
-        coordinator_ruling='A-D 2026-11-26; PENDING_INDEPENDENT_REVIEW; historical complete-price research only',
+        source_gate='HUMAN_DECISION_REQUIRED',residual_risks=['Company corrections / first-version identity unproven','Publication date means earliest related information, not proven first knowledge of this value','Cross-source agreement does not prove historical PIT or scope'],
         evidence_class='CPU_ENGINEERING_ONLY',contract_sha256=SPEC_SHA,
         source_commit=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
         identities=identities,documentation_clauses=clauses,stops=stops,fit_count=0,
@@ -287,13 +289,82 @@ BUNDLE_CATEGORIES={'matrix','feature_order','calendar','prices','membership','la
                    'sampling','version_evidence','splits','keys','implementation'}
 
 
-def require_admission(gate):
-    """Reverify the entire frozen bundle. PASS text alone never authorizes fitting."""
+def human_source_acceptance(path):
+    """Explicit Human record; never generated or inferred by the runner."""
+    from datetime import date
     try:
-        if gate['status']!='PASS' or gate['contract_sha256']!=SPEC_SHA:raise ValueError('status/contract')
+        p=Path(path);record=json.loads(p.read_text())
+        date.fromisoformat(record['decision_date'])
+        if record['decision']!='ACCEPT_HISTORICAL_SOURCE_GATE' or not record['decision_text'].strip():
+            raise ValueError('acceptance text/decision')
+        return dict(path=str(p.resolve()),sha256=sha256(p),bytes=p.stat().st_size,record=record)
+    except (OSError,ValueError,KeyError,TypeError) as exc:
+        raise ValueError('STOP invalid Human source-gate decision record') from exc
+
+
+def job_id(year,seed,arm):return f'fold{year}-{arm}-seed{seed}'
+
+
+def validate_bundle_schema(bundle):
+    files=bundle['files'];jobs=bundle['jobs']
+    if bundle['source_gate'] not in ('PASS','HUMAN_DECISION_REQUIRED'):raise ValueError('source gate')
+    if bundle['contract']!=SPEC_SHA or not BUNDLE_CATEGORIES<=set(files):raise ValueError('incomplete bundle')
+    if not bundle['source_commit'] or not bundle['source_identities']:raise ValueError('missing source identities')
+    for name,info in bundle['source_identities'].items():
+        if name not in files or files[name]!=info:raise ValueError('source identity mismatch')
+    if set(jobs)!={job_id(y,s,a) for y in YEARS for s in SEEDS for a in 'AB'}:raise ValueError('72 jobs required')
+    for y in YEARS:
+        for seed in SEEDS:
+            for arm in 'AB':
+                job=jobs[job_id(y,seed,arm)]
+                if (job['year'],job['seed'],job['arm'])!=(y,seed,arm):raise ValueError('job identity')
+                for role in ('sample','target','keys','fit','eval','splits','label_keys','eval_labels'):
+                    ref=job[role+'_file']
+                    if ref not in files:raise ValueError('missing job file '+role)
+                    if role in ('sample','target','keys','fit','eval'):
+                        digest=job[role+'_sha256']
+                        if not isinstance(digest,str) or len(digest)!=64:raise ValueError('missing array identity')
+    required_sources={'matrix','feature_order','calendar','prices','membership','labels','features','version_evidence',
+                      'matrix_dates','matrix_ends','stock_index','price_manifest','finmind_revenue','source_manifest'}
+    required_sources.update('code_'+p.name for p in (ROOT/'tools').glob('step3*.py') if p.name!='step3.py')
+    required_sources.add('implementation')
+    if not required_sources<=set(bundle['source_identities']):raise ValueError('incomplete source identities')
+    for y in YEARS:
+        for seed in SEEDS:
+            a,b=(jobs[job_id(y,seed,arm)] for arm in 'AB')
+            if any(a[k+'_sha256']!=b[k+'_sha256'] for k in ('sample','target','keys')):raise ValueError('unpaired jobs')
+
+
+def verify_source_provenance(bundle):
+    files=bundle['files']
+    verify_file(files['source_manifest']['path'],'f3532527b51ed05ad2b0360aad0c14de0531d18f230cf00c7ef456d79fa254f1')
+    manifest=json.loads(Path(files['source_manifest']['path']).read_text())
+    digests={v['sha256'] for v in bundle['source_identities'].values()}
+    required={v['sha256'] for group in ('inputs','outputs') for v in manifest[group].values()}
+    required.add(manifest['sha256sums_sha256'])
+    required.add(manifest['comparisons']['revenue_raw']['sha256'])
+    required.add('2e0e9b5e6897e2eaf7af3565a1344f34cb4b475e1e1da786ee1c58a07dc62dfa')
+    if not required<=digests:raise ValueError('incomplete original source provenance')
+    for path in (ROOT/'tools').glob('step3*.py'):
+        key='implementation' if path.name=='step3.py' else 'code_'+path.name
+        if files[key]['sha256']!=sha256(path):raise ValueError('implementation changed since preparation')
+
+
+def require_admission(gate,human_accepted_source_gate=None):
+    """Reverify schema and bytes; Human acceptance only overrides pending source decision."""
+    try:
+        if gate['contract_sha256']!=SPEC_SHA:raise ValueError('contract')
+        if gate['status']=='HUMAN_DECISION_REQUIRED':
+            if human_accepted_source_gate is None:raise ValueError('Human source decision required')
+            human_source_acceptance(human_accepted_source_gate)
+        elif gate['status']!='PASS':raise ValueError('status')
         info=gate['bundle'];verify_file(info['path'],info['sha256'],info['bytes'])
         bundle=json.loads(Path(info['path']).read_text())
-        if bundle['contract']!=SPEC_SHA or not BUNDLE_CATEGORIES<=set(bundle['files']):raise ValueError('incomplete bundle')
+        validate_bundle_schema(bundle)
+        if bundle['source_gate']=='HUMAN_DECISION_REQUIRED':
+            if human_accepted_source_gate is None:raise ValueError('Human source decision required by bundle')
+            human_source_acceptance(human_accepted_source_gate)
+        verify_source_provenance(bundle)
         for info in bundle['files'].values():verify_file(info['path'],info['sha256'],info['bytes'])
         verify_file(SPEC,SPEC_SHA)
         return bundle

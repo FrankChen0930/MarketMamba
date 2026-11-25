@@ -1,3 +1,7 @@
+## Step3c 來源待 Human 決定／完整性修補 — 2026-11-26
+
+[Step3c報告](../../reports/step3_engineering_20261126.md)取代下方Step3b目前PASS主張。歷史版本gate為HUMAN_DECISION_REQUIRED，strict前瞻仍STOP；無Human接受、fits或IC／績效。跨來源291,847配對中291,360差<0.1%，446差>1%，只證明數值／單位一致而非首次版本或publication PIT。adapter一致列標NTD_BY_CROSS_SOURCE_AGREEMENT，其餘UNIT_UNVERIFIED／NaN；版本0只是匯出重播序，不是首次版認證，合併可比性仍是待Human接受的假設。完整72-job schema、原始來源manifest SHA、job陣列身分、prediction必備與凍結labels／keys／session驗證皆屬UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED工程候選；實際驗證及限制見報告，不改正式Data或既有48欄。下一步為獨立重審及Human明確選擇，不能自動啟動研究。
+
 ## Step3b 協調者裁定與歷史bundle候選 — 2026-11-26
 
 [報告Step3b](../../reports/step3_engineering_20261126.md)記錄Claude A–D裁定（待獨立審查）：pin TEJ原始欄位文件，限2013/01起首次單月與發布日，NTD千元轉元，跨2012比較／非NTD為NaN且禁用去年／累計匯出欄。逐列h20、五欄、48欄原矩陣、日曆／價格／成員、185/190共用列、抽樣及版本／程式身分只在指派worktree `.artifacts/step3/` 凍結；runner bundle不符STOP。這是歷史完整價格研究股票之CPU工程准入候選；strict前瞻仍STOP，UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，不改既有48欄或正式Data，不執行或查看IC／績效。下方Step3a source STOP及未materialize為當時歷史觀測，本輪實跑結果以報告為準。

@@ -1,3 +1,13 @@
+## Step3c 審查修補候選 — 2026-11-26（目前狀態）
+
+**本輪實際完整72-job bundle未完成／不可准入。** 準備及未核驗快取已停止（exit130），精確inventory在本worktree `.artifacts/step3/preparation-status-step3c.json`；partial不當complete。來源待Human決定與完整性STOP分開；本輪不啟動正式72 fits／評估。 最新focused49 passed／9.35秒；全套timeout1500在30分鐘界線中止exit130／約66%／NOT_COMPLETED，無終局總計，不宣稱全套通過。
+
+`job-run-mwwgd60e-d894d4/builder_step3c`，既有 detached `31f89ed95feb182ccdc4669cc4c09f5766e1cd08`，起始 clean，Human no-commit bounded approval；**HUMAN_DECISION_REQUIRED / CPU_ENGINEERING_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。本段取代下方Step3b目前歷史PASS主張；舊數值只保留為歷史工程觀測，不撤改歷史artifact。[Step3c報告](../../reports/step3_engineering_20261126.md)附Human兩個決定選項；是否接受歷史來源gate由Human決定，本輪沒有接受紀錄、fits或IC／績效。
+
+[prepare](../../tools/step3_prepare.py)改為完整72-job（2015–2026／17,29,43／A,B）身分；只重用原warmup遮罩，每年度依凍結日曆重算purge。admission強制完整job／target／fit／eval／標籤鍵與全部來源manifest身分，runner待決來源無Human紀錄即拒絕，明示旗標只處理此待決，不解除其他STOP／strict前瞻STOP。resume補prediction必備；評估入口增加凍結labels值／鍵／session逐列核對及infinity拒絕。私有產物只在本worktree `.artifacts/step3/`，實際完成度及最新測試以報告補記為準，code presence不代表完整bundle通過。
+
+唯讀跨來源：380,514列，配對291,847，TEJ×1000對FinMind NTD相對差<0.1%有291,360（99.833132%），>1%有446（0.152820%）；未配對／非有限88,667。配對一致才標NTD_BY_CROSS_SOURCE_AGREEMENT，其他UNIT_UNVERIFIED／NaN。不宣稱原文件授權幣別或首次版本；公司更正與最早「相關資訊」日期對應該數值知悉時間仍未知，合併可比性假設待Human。原規格SHA `9cd7cb8681e3d881193efa3c6fa3c72bd74fba84a96f6a16e6da3a85398eaf34` 未改，無machine／production／P2／P4d authority supersession、無外部observed_at更新。
+
 ## Step3b 歷史准入裁定接續 — 2026-11-26
 
 `job-run-mwwebldn-201d27/builder_step3b`，既有 detached HEAD/base `b8c4c8f574ea280057bb87a0a852f8ca0b830ef4`，起始 clean，Human 明確 no-commit bounded approval；**CPU_ENGINEERING_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[工程報告](../../reports/step3_engineering_20261126.md)記錄協調者 Claude A–D 裁定（待獨立審查）：TEJ原始文件或逐期公告擇一，限2013/01起有發布日之首次單月值、NTD千元轉元，跨2012比較NaN且禁用匯出去年／累計欄；raw觀測bytes配既定SHA凍結；完整bundle不符STOP。strict前瞻官方日曆／lifecycle／公司行動STOP保留，歷史只限完整價格研究股票，不升格為可成交／含息／全市場證據。

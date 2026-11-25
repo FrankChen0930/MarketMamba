@@ -22,19 +22,57 @@ def write_json(path,value):
     with path.open('x') as f:json.dump(value,f,indent=2,ensure_ascii=False,allow_nan=False)
 
 
-def admitted_events(frame):
-    """Only first single-month source column, never exported prior/YTD values.
+def cross_source_evidence(frame,raw):
+    """Exact stock/month pairing; FinMind is a consistency reference, not PIT proof."""
+    f=frame.loc[pd.to_datetime(frame.period)>=pd.Timestamp('2013-01-01'),
+                ['stock_id','period','單月營收(千元)','input_row_number','證券代碼']].copy()
+    r=raw[['stock_id','revenue_year','revenue_month','revenue']].copy()
+    r['period']=pd.to_datetime(dict(year=r.revenue_year,month=r.revenue_month,day=1))
+    r['stock_id']=r.stock_id.astype(str);f['stock_id']=f.stock_id.astype(str)
+    if r.duplicated(['stock_id','period']).any():raise ValueError('STOP duplicate FinMind stock/month')
+    f=f.merge(r[['stock_id','period','revenue']].rename(columns={'revenue':'reference_ntd'}),on=['stock_id','period'],how='left',validate='many_to_one')
+    x=f['單月營收(千元)'].to_numpy(float)*1000;y=f.reference_ntd.to_numpy(float)
+    paired=np.isfinite(x)&np.isfinite(y)
+    relative=np.full(len(f),np.nan);nonzero=paired&(y!=0)
+    relative[nonzero]=np.abs(x[nonzero]-y[nonzero])/np.abs(y[nonzero])
+    relative[paired&(x==0)&(y==0)]=0
+    relative[paired&(x!=0)&(y==0)]=np.inf
+    f['relative_difference']=relative
+    f['agreement']=paired&(relative<.001)
+    f['classification']=np.select([~paired,relative<.001,relative>.01],
+        ['UNPAIRED_OR_NONFINITE','AGREEMENT_LT_0_1PCT','DIFFERENCE_GT_1PCT'],default='BETWEEN_0_1_AND_1PCT_INCLUSIVE')
+    # A name/code proxy only: absence of a marker does not establish domestic domicile.
+    foreign=f['證券代碼'].astype(str).str.contains(r'KY|DR|外國',case=False,regex=True)|f.stock_id.str.startswith('91')
+    f['company_proxy']=np.where(foreign,'KY_FOREIGN_IDENTIFIABLE','NO_FOREIGN_MARKER_NOT_DOMICILE_PROOF')
+    f['year']=pd.to_datetime(f.period).dt.year
+    def stats(g):
+        n=int(g.reference_ntd.notna().sum());p=np.isfinite(g.relative_difference)|np.isinf(g.relative_difference)
+        denominator=int(p.sum())
+        return dict(rows=len(g),paired=denominator,lt_0_1pct=int(g.agreement.sum()),
+            gt_1pct=int((g.relative_difference>.01).sum()),
+            agreement_rate=float(g.agreement.sum()/denominator) if denominator else None,
+            gt_1pct_rate=float((g.relative_difference>.01).sum()/denominator) if denominator else None,
+            classifications={str(k):int(v) for k,v in g.classification.value_counts().items()})
+    summary=dict(overall=stats(f),by_year={str(k):stats(g) for k,g in f.groupby('year')},
+        by_company_proxy={str(k):stats(g) for k,g in f.groupby('company_proxy')},
+        by_year_company_proxy={str(y)+'/'+str(c):stats(g) for (y,c),g in f.groupby(['year','company_proxy'])},
+        interpretation='UNIT_AND_VALUE_CONSISTENCY_ONLY_NOT_FIRST_VERSION_OR_PUBLICATION_PIT_PROOF',
+        relative_difference='abs(TEJ*1000-FinMind)/abs(FinMind); both zero=0; nonzero/zero=infinity')
+    return f,summary
 
-    Currency/unit mapping is licensed by the pinned TEJ original field document,
-    not by equality of missing consolidated flags. Invalid units remain missing.
-    """
+
+def admitted_events(frame,pairs=None):
+    """Cross-source unit evidence only; version zero is replay order, not first-version certification."""
     f=frame[['stock_id','period','available_date','單月營收(千元)','currency','input_row_number']].copy()
-    valid=f.currency.isin(['TWD','NTD','TWD_ASSUMED_UNIT_DOCUMENTATION_PENDING'])
-    f['revenue']=f['單月營收(千元)']*1000
-    f.loc[~valid,'revenue']=np.nan
-    f['currency']=np.where(valid,'NTD','UNKNOWN')
-    f['unit']='yuan';f['scope']='TEJ_201301_CONSOLIDATED_PREFERRED_OR_INDIVIDUAL_NO_SUBSIDIARY'
-    f['comparability_id']='TEJ_DOC_2e0e9b5e_201301_ONWARD_FIRST_MONTH'
+    if pairs is None:valid=np.zeros(len(f),bool)
+    else:
+        if pairs.input_row_number.duplicated().any():raise ValueError('STOP duplicate cross-source identity')
+        valid=f.input_row_number.map(pairs.set_index('input_row_number').agreement).fillna(False).to_numpy(bool)
+    valid = valid & f.currency.isin(['TWD','NTD','TWD_ASSUMED_UNIT_DOCUMENTATION_PENDING']).to_numpy()
+    f['revenue']=np.where(valid,f['單月營收(千元)']*1000,np.nan)
+    f['currency']=np.where(valid,'NTD_BY_CROSS_SOURCE_AGREEMENT','UNIT_UNVERIFIED')
+    f['unit']=np.where(valid,'yuan','UNKNOWN');f['scope']='TEJ_201301_CONSOLIDATED_PREFERRED_OR_INDIVIDUAL_NO_SUBSIDIARY'
+    f['comparability_id']=np.where(valid,'TEJ_201301_SCOPE_ASSUMPTION_PENDING_HUMAN','UNKNOWN')
     f['version']=0;f['source_row']=f.input_row_number
     return f
 
@@ -49,7 +87,9 @@ def prepare(out):
         path=Path(path).resolve();files[key]=dict(path=str(path),sha256=s.sha256(path),bytes=path.stat().st_size)
     for key,name in [('matrix','X.npy'),('membership','stock_ids.npy'),('matrix_dates','dates.npy'),('matrix_ends','end_indices.npy'),('stock_index','stock_idx.npy')]:record(key,SHARED/name)
     record('feature_order',SHARED/'manifest.json')
-    fold=SHARED.parent/'folds/fold_2026/splits.npy';record('splits',fold)
+    record('source_manifest',SOURCE/'.artifacts/tej/pit/manifest.json')
+    comparison=json.loads((SOURCE/'.artifacts/tej/pit/manifest.json').read_text())['comparisons']['revenue_raw']
+    s.verify_file(comparison['path'],comparison['sha256']);record('finmind_revenue',comparison['path'])
     prices=SOURCE/'.artifacts/p4b/snapshot-prices-20261125/prices_raw.parquet'
     record('prices',prices);record('price_manifest',SOURCE/'.artifacts/p4b/snapshot-manifest-20261125.json')
     pm=json.loads(Path(files['price_manifest']['path']).read_text())
@@ -77,8 +117,11 @@ def prepare(out):
     np.save(out/'calendar.npy',days.to_numpy());record('calendar',out/'calendar.npy')
     np.save(out/'h20.npy',labels);record('labels',out/'h20.npy')
     f=pd.read_parquet(SOURCE/'.artifacts/tej/pit/monthly_revenue.parquet')
-    invalid_currency=int((~f.currency.isin(['TWD','NTD','TWD_ASSUMED_UNIT_DOCUMENTATION_PENDING'])).sum())
-    ev=s.monthly_events(admitted_events(f),days);del f
+    pairs,summary=cross_source_evidence(f,pd.read_parquet(comparison['path']))
+    pairs.to_parquet(out/'cross_source_pairs.parquet',index=False);record('cross_source_pairs',out/'cross_source_pairs.parquet')
+    write_json(out/'cross_source_summary.json',summary);record('cross_source_summary',out/'cross_source_summary.json')
+    invalid_currency=int((~pairs.agreement).sum())
+    ev=s.monthly_events(admitted_events(f,pairs),days);del f,pairs
     write_json(out/'event_reasons.json',ev.attrs);record('event_reasons',out/'event_reasons.json')
     # pandas 3 deep-copies attrs into every group; audit metadata is durable above.
     ev.attrs={}
@@ -95,24 +138,45 @@ def prepare(out):
         a=monthly[dates.astype('datetime64[Y]')==np.datetime64(str(year),'Y')]
         coverage[str(year)]={'rows':len(a),'finite':dict(zip(s.FEATURES,np.isfinite(a).sum(axis=0).tolist()))}
     write_json(out/'coverage.json',dict(by_year=coverage,invalid_currency_rows=invalid_currency,invalid_currency_reason='NON_NTD_OR_UNKNOWN_UNIT_NAN',scope='201301_ONWARD_ONLY'))
-    splits=np.load(fold,mmap_mode='r');tr,er=s.fold_rows(dates,splits,2026,np.isfinite(labels),calendar=days)
-    er=er[eligible[er]];feature_support(monthly[tr]);feature_support(monthly[er])
-    rows,target=s.sample_training(tr,labels,di,17)
-    np.save(out/'sample.npy',rows);record('sampling',out/'sample.npy')
-    np.save(out/'target.npy',target);record('target',out/'target.npy')
-    keys=np.column_stack([di[er],si[er]]);np.save(out/'keys.npy',keys);record('keys',out/'keys.npy')
     data=SimpleNamespace(X=np.load(SHARED/'X.npy',mmap_mode='r'),date_idx=di,stock_idx=si,ends=ends,n_stocks=len(codes),feature_names=json.loads((SHARED/'manifest.json').read_text())['feature_order'])
-    # Persist requested rows only; release price and event intermediates first.
-    del ev,ids,labels,eligible,tr;gc.collect()
     jobs={}
-    for kind,idx in [('fit',rows),('eval',er)]:
-        a,b,names=build_arms(data,idx,monthly)
-        for arm,x in [('A',a),('B',b)]:
-            path=out/f'{kind}_{arm}.npy';np.save(path,x);record(f'{kind}_{arm}',path)
-            jobs.setdefault(arm,{})[kind+'_sha256']=array_digest(x)
+    # Only the original warmup mask (code zero) is reused. fold_rows computes
+    # every annual split against the frozen full calendar, not 2026 train/eval codes.
+    base_split=SHARED.parent/'folds/fold_2026/splits.npy';record('base_warmup',base_split)
+    base_splits=np.load(base_split,mmap_mode='r')
+    def save(name,value):
+        path=out/(name+'.npy');np.save(path,value);record(name,path)
+        return name,array_digest(value)
+    for year in s.YEARS:
+        split_name='base_warmup'
+        tr,er=s.fold_rows(dates,base_splits,year,np.isfinite(labels),calendar=days)
+        er=er[eligible[er]];feature_support(monthly[tr]);feature_support(monthly[er])
+        key_file,key_hash=save(f'keys_{year}',np.column_stack([di[er],si[er]]))
+        label_keys,_=save(f'label_keys_{year}',np.column_stack([di[er],si[er]]))
+        eval_labels,_=save(f'eval_labels_{year}',labels[er])
+        a,b,_=build_arms(data,er,monthly)
+        evals={arm:save(f'eval_{year}_{arm}',x) for arm,x in [('A',a),('B',b)]}
         del a,b;gc.collect()
-    for arm in 'AB':jobs[arm].update(sample_sha256=array_digest(rows),target_sha256=array_digest(target),keys_sha256=array_digest(keys))
-    bundle=dict(contract=s.SPEC_SHA,source_commit=pre['source_commit'],evidence_class='HISTORICAL_COMPLETE_PRICE_RESEARCH_ONLY',coordinator_ruling='A-D; PENDING_INDEPENDENT_REVIEW',files=files,jobs=jobs,year=2026,seed=17,coverage=coverage)
+        for seed in s.SEEDS:
+            rows,target=s.sample_training(tr,labels,di,seed)
+            sample_file,sample_hash=save(f'sample_{year}_{seed}',rows)
+            target_file,target_hash=save(f'target_{year}_{seed}',target)
+            a,b,_=build_arms(data,rows,monthly)
+            for arm,x in [('A',a),('B',b)]:
+                fit_file,fit_hash=save(f'fit_{year}_{seed}_{arm}',x)
+                eval_file,eval_hash=evals[arm]
+                jobs[s.job_id(year,seed,arm)]=dict(year=year,seed=seed,arm=arm,
+                    sample_file=sample_file,sample_sha256=sample_hash,target_file=target_file,target_sha256=target_hash,
+                    keys_file=key_file,keys_sha256=key_hash,fit_file=fit_file,fit_sha256=fit_hash,
+                    eval_file=eval_file,eval_sha256=eval_hash,splits_file=split_name,label_keys_file=label_keys,eval_labels_file=eval_labels)
+            del a,b;gc.collect()
+        print(json.dumps(dict(prepared_year=year,jobs=len(jobs))),flush=True)
+    for category,ref in [('sampling','sample_file'),('target','target_file'),('keys','keys_file'),('splits','splits_file')]:
+        files[category]=files[next(iter(jobs.values()))[ref]]
+    sources={k:v for k,v in files.items() if not any(k.startswith(prefix) for prefix in ('sample_','target_','keys_','fit_','eval_','splits_','label_keys_'))}
+    sources['splits']=files['splits']
+    bundle=dict(contract=s.SPEC_SHA,source_commit=pre['source_commit'],source_identities=sources,
+        evidence_class='HISTORICAL_COMPLETE_PRICE_RESEARCH_ONLY',source_gate='HUMAN_DECISION_REQUIRED',files=files,jobs=jobs,coverage=coverage)
     # Detect changes during preparation, including raw sizes paired with SHA.
     for info in files.values():s.verify_file(info['path'],info['sha256'],info['bytes'])
     write_json(out/'bundle.json',bundle)

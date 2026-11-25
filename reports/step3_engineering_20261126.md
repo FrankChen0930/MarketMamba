@@ -1,5 +1,118 @@
 # Step3b 准入與最大折資源量測接續 — 2026-11-26
 
+## Step3c 獨立審查修補 — 2026-11-26（目前狀態）
+
+**HUMAN_DECISION_REQUIRED / CPU_ENGINEERING_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。** 本節取代下方 Step3b 的「目前歷史 PASS」主張；舊節保留為歷史工程紀錄。Human 本輪只核准有界修補，不是接受來源 gate。凍結規格 SHA `9cd7cb8681e3d881193efa3c6fa3c72bd74fba84a96f6a16e6da3a85398eaf34` 不變。起始 clean、detached `31f89ed95feb182ccdc4669cc4c09f5766e1cd08`；不 commit／push／merge，不讀 blind，不執行 fits／真實評估或查看 IC／績效。
+
+### 來源證據與限制
+
+TEJ HTML 只能支持原件中的特定更新規則、2013/01 轉換及「營收相關資訊最早揭露」描述，沒有 NTD 幣別條款，也不能證明每個匯出值都是首次版本。本輪不再聲稱文件授權 NTD 映射或首次版本。版本 0 只表示此匯出單一版本的重播順序，不是首次版本認證；合併優先範圍／跨期可比性仍是待 Human 接受的歷史假設。
+
+唯讀使用既有 TEJ PIT（SHA `987c7c32636fcaebcff66a6ba774ff37f1c8fca8d20f589e794db8e28b45e44b`）及 FinMind revenue_raw（SHA `573118a101fd8f90c8be707451048ee7843d6d46fff9b4754326efd1d301c942`），按 stock_id／營收年月精確配對，自 2013-01-01 至 2026-10-01；拒絕 reference 重複鍵。比較 `abs(TEJ 單月千元×1000 − FinMind NTD)/abs(FinMind NTD)`；兩者零為差異零，reference 零但 TEJ 非零為無限差異。門檻嚴格 `<0.1%`／`>1%`，分母為可配對且兩值有限者。這是數值與單位交叉一致證據，兩來源都可能事後更正，不能證明 PIT／首次公告或可成交性。以事後跨來源一致來決定哪些歷史值記 NaN 本身也是 hindsight coverage／版本選擇限制，不代表當時可以取得該交叉驗證。
+
+全 380,514 列中，配對 291,847；`<0.1%` 291,360（99.833132%）；`>1%` 446（0.152820%）；中間含端點 41；未配對／非有限 88,667。只有配對一致列標 `NTD_BY_CROSS_SOURCE_AGREEMENT`；其餘標 `UNIT_UNVERIFIED`，營收 NaN，跨期比較依既有缺值規則傳遞，兩臂仍保留共同鍵。沒有比較資料時 adapter 全部維持未驗證，不因原來標 TWD 就自動放行。
+
+KY／外國是代碼／名稱含 KY、DR、外國，或代碼以 91 開頭的代理辨識；無標記不等於已認證本國公司。分類沒有上市當時 domicile authority；不能聲稱完全涵蓋外國公司。
+
+| 年度 | 全列 | 配對 | <0.1% | 一致率 | >1% | >1%比例 |
+|---|---:|---:|---:|---:|---:|---:|
+| 2013 | 24,583 | 18,403 | 18,398 | 99.972831% | 5 | 0.027169% |
+| 2014 | 25,315 | 18,960 | 18,958 | 99.989451% | 2 | 0.010549% |
+| 2015 | 25,898 | 19,701 | 19,692 | 99.954317% | 5 | 0.025379% |
+| 2016 | 26,193 | 20,224 | 20,212 | 99.940665% | 8 | 0.039557% |
+| 2017 | 26,470 | 20,669 | 20,662 | 99.966133% | 4 | 0.019353% |
+| 2018 | 26,852 | 21,105 | 21,098 | 99.966833% | 6 | 0.028429% |
+| 2019 | 26,990 | 21,309 | 21,304 | 99.976536% | 5 | 0.023464% |
+| 2020 | 27,319 | 21,559 | 21,536 | 99.893316% | 23 | 0.106684% |
+| 2021 | 27,873 | 21,669 | 21,654 | 99.930777% | 14 | 0.064608% |
+| 2022 | 28,436 | 21,633 | 21,611 | 99.898304% | 21 | 0.097074% |
+| 2023 | 29,083 | 21,675 | 21,563 | 99.483276% | 111 | 0.512111% |
+| 2024 | 29,825 | 22,259 | 22,194 | 99.707983% | 63 | 0.283032% |
+| 2025 | 30,468 | 22,996 | 22,894 | 99.556445% | 86 | 0.373978% |
+| 2026 | 25,209 | 19,685 | 19,584 | 99.486919% | 93 | 0.472441% |
+
+| 年度／辨識層（KY外國／未見外國標記） | 配對 | <0.1% | 一致率 | >1% | >1%比例 |
+|---|---:|---:|---:|---:|---:|
+| 2013／KY外國 | 713 | 713 | 100.000000% | 0 | 0.000000% |
+| 2013／未見外國標記 | 17,690 | 17,685 | 99.971735% | 5 | 0.028265% |
+| 2014／KY外國 | 812 | 812 | 100.000000% | 0 | 0.000000% |
+| 2014／未見外國標記 | 18,148 | 18,146 | 99.988980% | 2 | 0.011020% |
+| 2015／KY外國 | 947 | 947 | 100.000000% | 0 | 0.000000% |
+| 2015／未見外國標記 | 18,754 | 18,745 | 99.952010% | 5 | 0.026661% |
+| 2016／KY外國 | 1,092 | 1,092 | 100.000000% | 0 | 0.000000% |
+| 2016／未見外國標記 | 19,132 | 19,120 | 99.937278% | 8 | 0.041815% |
+| 2017／KY外國 | 1,230 | 1,230 | 100.000000% | 0 | 0.000000% |
+| 2017／未見外國標記 | 19,439 | 19,432 | 99.963990% | 4 | 0.020577% |
+| 2018／KY外國 | 1,318 | 1,318 | 100.000000% | 0 | 0.000000% |
+| 2018／未見外國標記 | 19,787 | 19,780 | 99.964623% | 6 | 0.030323% |
+| 2019／KY外國 | 1,246 | 1,246 | 100.000000% | 0 | 0.000000% |
+| 2019／未見外國標記 | 20,063 | 20,058 | 99.975079% | 5 | 0.024921% |
+| 2020／KY外國 | 1,396 | 1,395 | 99.928367% | 1 | 0.071633% |
+| 2020／未見外國標記 | 20,163 | 20,141 | 99.890889% | 22 | 0.109111% |
+| 2021／KY外國 | 1,383 | 1,382 | 99.927693% | 1 | 0.072307% |
+| 2021／未見外國標記 | 20,286 | 20,272 | 99.930987% | 13 | 0.064084% |
+| 2022／KY外國 | 1,327 | 1,327 | 100.000000% | 0 | 0.000000% |
+| 2022／未見外國標記 | 20,306 | 20,284 | 99.891658% | 21 | 0.103418% |
+| 2023／KY外國 | 1,329 | 1,326 | 99.774266% | 3 | 0.225734% |
+| 2023／未見外國標記 | 20,346 | 20,237 | 99.464268% | 108 | 0.530817% |
+| 2024／KY外國 | 1,360 | 1,355 | 99.632353% | 5 | 0.367647% |
+| 2024／未見外國標記 | 20,899 | 20,839 | 99.712905% | 58 | 0.277525% |
+| 2025／KY外國 | 1,433 | 1,423 | 99.302163% | 9 | 0.628053% |
+| 2025／未見外國標記 | 21,563 | 21,471 | 99.573343% | 77 | 0.357093% |
+| 2026／KY外國 | 1,199 | 1,194 | 99.582986% | 5 | 0.417014% |
+| 2026／未見外國標記 | 18,486 | 18,390 | 99.480688% | 88 | 0.476036% |
+
+KY／外國可辨識者：19,321 列、配對 16,785、<0.1% 16,760（99.851057%）、>1% 24。未見標記：361,193 列、配對 275,062、<0.1% 274,600（99.832038%）、>1% 422。
+
+差異 >1% 的 446 列按可觀測數值分類：TEJ_BELOW_REFERENCE=328；TEJ_ABOVE_REFERENCE=111；NEGATIVE_VALUE_PRESENT=5；REFERENCE_ZERO_TEJ_NONZERO=2。此分類不推定原因；公司更正、供應商版本與合併口徑原因仍 UNKNOWN，需原公告才能歸因。逐列證據／差異列只在本 worktree `.artifacts/step3/source-evidence-20261126/pairs.parquet`，完整分層彙總與輸入 SHA 在同目錄 summary.json，公開無公司逐列數值。
+
+### 給 Human 的決定
+
+1. **接受受限歷史 gate**：以原始說明＋跨來源一致作為歷史工程證據，接受公司更正版本未知、發布日僅為「相關資訊最早揭露」、合併可比性及來源未配對造成的缺值限制。其後歷史結果必須明列這些限制，不能升格為確認性／strict 前瞻／交易證據。只有 Human 明確決定並另有執行授權後才可啟動正式研究；本輪沒有代寫接受紀錄，也沒有 fits。
+2. **維持 STOP**：歷史檢驗不跑，等待具實際收到／驗證時間及版本鏈的前瞻資料。影響是沒有本案歷史增益估計，需等前瞻成熟及其他 strict gate 完整，不能把本輪跨來源一致率當作前瞻合格證明。
+
+runner 預設拒絕 `HUMAN_DECISION_REQUIRED`。選項 1 的紀錄檔是 JSON，需含 `decision_date`（ISO 日期）、非空 `decision_text`（Human 決定文字）及 `decision: "ACCEPT_HISTORICAL_SOURCE_GATE"`；由 Human 提供，透過 `--human-accepted-source-gate <紀錄檔>` 明示，request 封存原文與 SHA。此旗標只處理來源待決，不能解除 STOP、資料身分／程式 mismatch、完整 schema 或 strict 前瞻 STOP；不自動授權研究／排程。JSON 是決定留痕，並非使用者認證或密碼學簽章。
+
+### 本輪完成驗證補記
+
+最終focused命令及全套timeout1500命令在 `.artifacts/step3/commands-step3c.txt`；最新focused實際輸出（exit0）：
+
+```text
+.................................................                        [100%]
+49 passed in 9.35s
+```
+
+自查另增EUR明確外幣反例，先RED `1 failed, 48 deselected in 0.79s`，再把adapter改成原有TWD／NTD／待證標記的allowlist加上跨來源一致，其他明確幣別即使數值碰巧一致也NaN。上列49項包含此增補；全套collection在此既有測例加assert之前，不能把全套單獨當作新增EUR assertion的執行證據，該邊界由最新focused覆蓋。五欄、標籤、split、seeds與門檻沒有修改。
+
+6個Python AST解析通過；spec SHA完整相符；19個本輪local link targets無失敗；`git diff --check`通過。knowledge-impact為WARNING（受影響knowledge已同change更新），knowledge-health --ci exit0／WARNING，無structural FAIL；詳私有delivery logs。自查依code-review-and-quality五軸進行，不是獨立審查，沒有額外agents。完整bundle仍未完成，不能據tests通過升格72 fits readiness或Human acceptance。
+
+全套使用timeout1500，但在Human本輪30分鐘界線前主動中止，實際exit130／**NOT_COMPLETED**；最後進度約66%，沒有終局passed／failed總計，不宣稱完整regression通過。原始輸出 `.artifacts/step3/full-step3c-final.log` 最後為：
+
+```text
+........................................................................ [ 61%]
+........................................................................ [ 66%]
+..........s.
+```
+
+較早全套（首次41項focused版）也已中止exit130，不是最終完成證據。全套、focused及所有prepare／cache程序均已結束，沒有留下背景工作。最終source／runtime manifest為 `.artifacts/step3/manifest-step3c.json`；這是patch與partial inventory，**不是完整72-job admission manifest**。
+
+本輪固定交接：Completed＝來源待決三態與跨來源彙總、72-job prepare／schema程式、prediction resume與label identity／infinity guards、Human旗標及RED→GREEN反例；Changed＝四個tools、tests、本報告及六份knowledge（共12 paths）；Decisions＝來源交Human、其他工程缺漏仍拒絕執行；Evidence＝focused49 passed／9.35s、AST6、specSHA、19 links、diff check、knowledge WARNING；Remaining＝完整72-job物化及逐檔核驗、全套regression、獨立重審、Human決定；Blockers＝本輪時間／I/O及來源待決；Next recommended action＝另段工程預算完成bundle／regression後重審，Human決定另行留痕，不自動研究執行；Project memory updated＝是；Authority map updated＝是（只更新導航與候選狀態）；Git status＝12份unstaged修改，無stage、原先clean，依no-commit保留patch；Commit／Push＝無；Worktree＝既有builder_step3c／detached31f89ed；Runtime/environment＝WSL CPU／pilot09 Python3.12.3，MARKETMAMBA_DATA_ROOT unset，Data realpath本worktree普通目錄；無網路／GPU／blind／正式Data改動／V6/models／P2／P4d／production／scheduler／agents／deploy。
+
+### 實際72-job交付限制（NOT_COMPLETE）
+
+完整72-job的prepare／schema程式已修，但本輪**沒有產出可准入的完整72-job bundle**。原始逐job重算準備及私有build-once快取嘗試，都因本輪30分鐘界線與實測本機I/O進度而停止（各exit130），不是完成證據；未放寬任何門檻、未擬合模型。已產生2015 seed17的兩臂fit矩陣及部分共用陣列；未完成全部fold／seed。快取未完成canonical逐值比較，不可使用或宣稱等價。`base185_cache.npy`、`base185_cache.partial-rowmajor.npy`皆是partial，即使檔案header／logical size完整也不當complete。私有driver／未執行finalizer及所有partial保存，不刪除、不覆寫共用來源。
+
+精確inventory／環境／attempt退出狀態在 `.artifacts/step3/preparation-status-step3c.json`。`source-gate-step3c.json` 明確記錄來源HUMAN_DECISION_REQUIRED與殘餘風險；這不是完整bundle admission，缺bundle仍STOP。因此「完整72-job凍結交付」尚未完成，正式72 fits及評估不可開始，待獨立重審及Human來源決定。本輪沒有製造Human接受檔。後續需沿用既有namespace／manifest規則，在另段工程預算完成可重建矩陣與72-job完整身分核驗；不能直接把本輪partial當完整bundle。
+
+### 工程修補與驗證邊界
+
+沿用 tools／tests／reports／knowledge 及唯一私有 `.artifacts/step3/`，沒有新頂層樹。prepare 擴為 12 折×3 種子×2 臂的實際 fit／eval／target／sample／keys／label_keys／eval_labels 身分，每折 eval 兩臂共用，各種子 target／sample 兩臂共用。已有 shared 僅六個後期 fold，因此只沿用 fold2026 splits 的原 warmup（code 0）遮罩，每年度 fit/eval 候選都由凍結完整日曆及原 strict purge 重新算，不沿用2026的 train/eval 切分、不新增變更 shared split。逐 job 陣列 hash 在 fit 前再驗；完整 bundle 要求恰好72 jobs、全部角色 references、來源 identities，並驗 pinned source manifest 的全部 input/output SHA、原件與目前 implementation SHA。
+
+resume 的 COMPLETE 必須含 prediction.npy 及其 manifest identity；缺檔、刪除 manifest 項或 hash 損壞均拒絕。SIGKILL／完整 orphan／seed isolation 既有測例也補足合成預測檔。評估入口逐列核對 label_keys 與六 job 鍵、row_session 與鍵第一欄、標籤值與 frozen_labels（NaN 等價）；±inf 明確 STOP，不當缺值。新增入口拒絕測試將 scoring／bootstrap 設為禁止呼叫，只驗 defensive guards，沒有執行真實評估。
+
+RED：新增審查反例 8 failed／33 deselected；補強測例再重現 2 failed／47 deselected。GREEN 與最終全套結果見本節完成驗證補記。較早41／49項中間 focused 或被停止的全套不當最終證據。首次 bwrap 加 unshare-net 因環境 NETLINK_ROUTE 限制於啟動前 exit1，改沿用既有資料遮蔽；無任何網路呼叫，未申請權限。全套以 bwrap 遮蔽正式 Data、主 artifacts、真實 fold／local-data；只執行既有合成回歸，不讀真實模型分數。完整 timeout 為1500秒。
+
+
 **CPU_ENGINEERING_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。本節 supersede 下方 Step3a 的「尚未授權解除歷史硬鎖」現況敘述；歷史觀測與產物不改寫。沒有執行或查看本案 IC／績效。**
 
 既有 assigned worktree `job-run-mwwebldn-201d27/builder_step3b`，detached HEAD/base `b8c4c8f574ea280057bb87a0a852f8ca0b830ef4`，起始 clean。Human 明確核准本次 bounded admission 與2026 A/B seed17工程量測；不 commit／push／merge、GPU、網路、blind、正式 Data、排程、P4d／P2 或額外 agents。凍結規格不修改。
