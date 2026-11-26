@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "status": "PENDING_EXECUTION",
+  "evidence_class": "已曝光、量級與工程驗證、非確認",
+  "research_status": "RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED",
+  "spec_sha256": "9cd7cb8681e3d881193efa3c6fa3c72bd74fba84a96f6a16e6da3a85398eaf34",
+  "bundle_sha256": null,
+  "human_decision_sha256": null,
+  "periods": null,
+  "yearly_descriptive": null,
+  "folds": null,
+  "limitations": [
+    "歷史兩段均已曝光；C0+ 設計受後期資料影響，只作量級與工程驗證，非獨立確認。",
+    "約 23% 營收單位未核驗，相關比較記 NaN，由模型原生處理；不代表已核驗或補零。",
+    "公司更正版本未知；TEJ 首次單月值文件及 Human 歷史來源決定不能證明逐期公司更正鏈完整。",
+    "發布日為來源記載的日期，嚴格晚於發布日首個 session 收盤生效；缺盤中時間與實際收到時間，不能證明 strict PIT。",
+    "原價未含股利，拆併股、減資、除權息及公司行動證據不完整，不能解讀為含息收益或可成交績效。",
+    "選樣僅有完整價格的研究股票；研究成員、W60、缺價及未知停牌／下市原因存在選樣與存活者偏誤。",
+    "日曆為觀測價格日期聯集，非合格交易所日曆；lifecycle／tradability 未核驗，strict 前瞻 gate 仍 STOP。",
+    "五欄缺值與跨期合併／幣別可比性受已接受歷史來源範圍限制；2013 前比較排除，不使用匯出去年／累計欄。",
+    "每日需至少 20 股且兩側非恆定，尾端未成熟標籤保留 NaN；缺日位置保留，未知風險不記零。",
+    "循環區塊為 20 sessions、1000 次、seed17；更長相依可能使 95% 區間偏窄，非交易獲利區間。",
+    "兩段獨立估計，不合併投票；逐年差僅描述。+0.005 及下界>0 僅作門檻對照，歷史不得宣稱正式成功。",
+    "builder 合成測試不是獨立驗收或 Human acceptance；無前瞻、P2 開盲、交易、部署或排程授權。"
+  ],
+  "result": "{{RESULTS_FILLED_AT_EXECUTION}}"
+}

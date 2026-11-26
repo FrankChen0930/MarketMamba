@@ -1,3 +1,11 @@
+## Step3 延後評估驅動程式候選 — 2026-11-26
+
+`job-run-mwx2xzc6-056b2e/builder_step3_eval@10684c754cbe10fb7da2476c9b425775481473ef`，no-commit bounded patch，**CPU_ENGINEERING_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。Human 本輪明示已接受歷史來源 gate，要求等 72 fits 全部完成後再由 Claude 評估；本 worker 未讀取實際 fits／Human 決定 artifact、未查程序、未做真資料評估，不更新 runtime observation，也不將使用者敘述當成本輪驗收。
+
+新增 [延後入口](../../tools/run_step3_evaluation.py) 沿用 `step3_evaluation.evaluate`，先重驗 bundle／admission／Human 決定與 72 COMPLETE manifest 的完整 request、逐檔 SHA、全部鍵／樣本／凍結標籤，再計兩段配對 IC。矩陣 session 鍵驗證後映射完整凍結日曆，保留缺日位置，封版上限為矩陣與日曆共有末日。檔名避開 `tools/step3*.py`，不改既有 bundle code identity；凍結規格 SHA 不變。選用既有 tools／tests／reports 與私有 `.artifacts/step3/evaluation/`，無新頂層目錄或替代評估語義。
+
+[公開報告模板](../../reports/step3_results_20261126.md) 及同名 JSON 為 **PENDING_EXECUTION**；結果 placeholder 不含真實研究數字。執行時須明示 `--consume-placeholder`，只替換完全相符的待執行模板，既有完成輸出或私有 namespace 一律 STOP。私有保存逐日 IC、輸入 SHA、72 job manifests 及輸出 SHA；公開只列彙總。證據等級固定「已曝光、量級與工程驗證、非確認」，不解除 strict 前瞻 STOP、不 supersede 歷史結果／來源／P2／P4d／production authority。合成測試與執行交接見 [工程報告](../../reports/step3_engineering_20261126.md#step3-延後評估驅動程式--2026-11-26)；獨立 review、真資料執行與 Human acceptance 均待辦。
+
 ## Step3c 審查修補候選 — 2026-11-26（目前狀態）
 
 **本輪實際完整72-job bundle未完成／不可准入。** 準備及未核驗快取已停止（exit130），精確inventory在本worktree `.artifacts/step3/preparation-status-step3c.json`；partial不當complete。來源待Human決定與完整性STOP分開；本輪不啟動正式72 fits／評估。 最新focused49 passed／9.35秒；全套timeout1500在30分鐘界線中止exit130／約66%／NOT_COMPLETED，無終局總計，不宣稱全套通過。

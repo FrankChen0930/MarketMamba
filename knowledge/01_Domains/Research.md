@@ -1,3 +1,7 @@
+## Step3 延後評估入口 — 2026-11-26
+
+[新驅動程式](../../tools/run_step3_evaluation.py) 為 no-commit、UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED 候選；僅合成工程測試，不讀實際 fits 或執行真資料評估。[公開模板](../../reports/step3_results_20261126.md) 結果仍 pending。72 COMPLETE／bundle／Human 決定／request／鍵／標籤／SHA 全驗後才准評估，沿用既有統計模組，保留完整日曆缺日；已曝光歷史只報兩段量級與區間，不宣稱正式成功。詳 project map 新節；來源 gate 的實際 evidence、獨立審查與後續執行由 Claude 核對，strict 前瞻 STOP 不變。
+
 ## P4d 進度與本機量測證據邊界 — 2026-11-25
 
 `job-run-mwvqcr5w-e515cb/builder_p4d_fix1@d36e709` 的未提交 bounded patch，**UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED / CPU_ENGINEERING_ONLY**。[工程報告](../../reports/v7_p4d_engineering.md#排練-heartbeat-required-與最大-fit-量測入口--2026-11-25)記錄排練前啟動共用Progress、REHEARSAL／FORMAL模式與stage、60秒heartbeat替身、寫入失敗繼續及2026全列C0+資源量測入口；不改split／features／selection／queue／threshold或P4a來源policy。僅36列合成特徵＋擬合，未實際量測2026全列RSS，不恢復抽樣cap；CPU回歸不是現場Drive／T4排練證據。原獨立NO_GO仍待複審，完成不等於Human acceptance；沒有研究結果／canonical artifact supersession／production authority變更，不更新authority-map.json或外部observed_at。Next：獨立審查與另案本機最大fit量測。

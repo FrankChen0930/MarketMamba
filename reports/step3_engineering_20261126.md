@@ -350,3 +350,49 @@ syntax compile五個新Python檔通過；完成前重驗spec SHA、16個admissio
 - Push：N/A，明確禁止；無merge／deploy。
 - Worktree：`.worktrees/ruflo-workers/run-mwwctc1a-f7f0c1/builder_step3a`，既有detached，不新增／移除。
 - Runtime/environment：WSL CPU、指定pilot09 Python3.12.3，MARKETMAMBA_DATA_ROOT unset，Data realpath為本worktree普通目錄；來源是canonical checkout私有TEJ及事前price snapshot，shared身分唯讀。無正式Data／V6/models寫入、網路、GPU、blind、排程、agents或外部runtime observed_at更新。
+
+## Step3 延後評估驅動程式 — 2026-11-26
+
+**Completed：** 本輪只有程式、合成測試與待執行公開模板，沒有真資料 IC／績效。`job-run-mwx2xzc6-056b2e/builder_step3_eval`，base/HEAD `10684c754cbe10fb7da2476c9b425775481473ef`，detached、起始 clean。RESEARCH_ONLY / CPU_ENGINEERING_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；完成不等於 Human acceptance。
+
+**Changed：** `tools/run_step3_evaluation.py`、`tests/test_run_step3_evaluation.py`、`reports/step3_results_20261126.{md,json}`，及本報告／Current State／Authority Map／Research domain。沿用現有 tools/tests/reports 與核准私有 namespace；既有 `step3_evaluation.evaluate` 沒有 CLI／artifact orchestration，所以新增 additive driver，不另造統計實作。新檔不符合 `tools/step3*.py`，既有 bundle code identity glob 成員與內容未修改。公開報告為 GENERATED_PENDING_TEMPLATE；執行後彙總與私有逐日／manifest 為 GENERATED，私有輸入參照的資料／模型仍屬原 EXTERNAL_LARGE_DATA，不修改、搬動或重新分類原件。
+
+**Decisions：** 所有 72 manifests 均以 bundle 重建完整 request（contract、implementation、runner、參數、year/seed/arm、input identity、五種 array digests、Human decision identity），再沿用 runner.resume 逐檔驗 SHA／size／COMPLETE。驗全部 manifests 後才載入分數；每份輸出再核 frozen keys、sample、label_keys／eval_labels／global h20 與 splits。矩陣 session 索引先對回原列，再映射完整 frozen calendar，保留中間無矩陣列的 session，日曆上限為矩陣共有末日。兩段分開 bootstrap，逐年只描述；門檻含 +0.005，區間下界嚴格 >0，formal_success 固定 null。數值門檻達標也不稱歷史正式成功。原統計模組與 frozen spec 不改。
+
+**Evidence：**
+
+```bash
+PYTHONPATH=V6:. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 CUDA_VISIBLE_DEVICES='' \
+/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest -q \
+  tests/test_run_step3_evaluation.py tests/test_step3.py -p no:cacheprovider --tb=short
+```
+
+最新 **61 passed／12.40 秒／exit0**，其中新測試 12 項：完整72份、缺 job、PARTIAL、自洽但錯誤 request、缺鍵、缺 prediction、label_keys 不符、bundle 少 job、兩項 mutation、placeholder 正常替換／完成後拒覆寫、placeholder 改動即 STOP。合成早期差 +2、後期差 0，各6有效／12排定日；每日 CSV 24日保留12個無矩陣列的缺日，公開無逐日陣列或逐股鍵。mutation 1 跳過 COMPLETE/request 驗證後由拒收 oracle 殺死；mutation 2 將實質門檻 >= 改成 > 的等價擾動，在恰好 +0.005 被 oracle 殺死。fixture 只替換私有目錄政策與原始來源 provenance，仍使用真 bundle schema、admission SHA、Human record parser、resume、array hashes 與 evaluator；不代表真來源已驗。
+
+TDD 首次 collection 因新模組不存在失敗；初版 fixture 發現 runner 持有獨立 imported private_dir，修正測試隔離。首次 focused 回歸 57 passed／2 failed（缺 PYTHONPATH 導致 research_lab 匯入失敗），依指定環境修正後 61 passed／10.47 秒；最後調整 full-calendar 封版邊界後重新驗證如上。未跑全套，依 Human 要求避免與進行中的 fits 搶 CPU。`python3 -m py_compile`、CLI `--help`、JSON strict schema／模板一致性（合成測試）、`git diff --check` 通過。spec SHA `9cd7cb8681e3d881193efa3c6fa3c72bd74fba84a96f6a16e6da3a85398eaf34` 相符。knowledge-impact 對新入口／測試／模板 PASS；加入 canonical notes 後提示 Governance REVIEW_REQUIRED，已讀 GOVERNANCE.md，治理規則本身未改。knowledge health：Project Map／Agent Guides／Domains／Runtime Freshness／Generated Index PASS；Governance／Authority Drift／Legacy Docs WARNING，整體 WARNING／exit0，無 FAIL。
+
+**Remaining：** 真 bundle／決定紀錄／72 fits 的執行期實際完整性、真資料結果、全套 tests、獨立審查、Human acceptance 皆未驗。builder 未讀取實際 fits、未讀取決定 artifact、未查正在執行的程序；本輪使用者敘述不當作本輪 runtime observation。公開模板只有規格 SHA，其餘 SHA／結果為 null／placeholder，由實際執行填入。公開／私有完成結果不允許覆寫；兩個公開檔分別替換，完成 manifest 最後才寫入，若 I/O 中斷可能留 partial，須人工 inventory／審查後另案處理，不能直接重跑覆蓋。新 loader 會重驗所有凍結檔案，包含大型矩陣，正式執行的讀取成本未量測；既有 evaluator 逐日掃描效能未更動。
+
+**Blockers：** 本輪無程式交付 blocker；後續 CLI 必須等 queue 結束且由 Claude 明確執行。source gate 實際紀錄僅在執行時驗；strict 前瞻、版本／生命週期／日曆／公司行動與全部來源限制保留。
+
+**Next recommended action：** Claude 先獨立檢查 patch；在持有原 bundle 與 Human record 的 checkout 內，確認全部 fits 結束後才執行下列命令。本 worker 沒有執行此命令，也沒有建立任何輪詢／喚醒／排程。
+
+```bash
+PYTHONPATH=V6:. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 CUDA_VISIBLE_DEVICES='' \
+/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m tools.run_step3_evaluation \
+  --bundle-dir .artifacts/step3/bundle-72 \
+  --human-accepted-source-gate .artifacts/step3/human-source-gate-20261126.json \
+  --consume-placeholder
+```
+
+輸出私有 `.artifacts/step3/evaluation/{daily_ic.csv,input_sha256.json,manifest.json}`，公開 `reports/step3_results_20261126.{md,json}`。缺件或任何不一致 exit2 STOP；不做部分評估，也不更動 fits。執行時保留 CLI stderr 以供失敗交接。
+
+**Project memory updated：** Current State 與 Research domain 已加候選邊界；舊 Step3c 記錄保留為當時狀態，未改 runtime observed_at。
+
+**Authority map updated：** 新增 no-commit 候選導航，不變更 machine authority、不 supersede 既有結果或來源 gate。
+
+**Git status：** 預期4個 tracked 修改（兩個 project map、Research domain、本報告）及4個 untracked（新入口、新測試、兩個公開模板）；無 staged。依 Human no-commit 指示保留可審查 patch，故 worktree 不 clean。
+
+**Commit：** 無（明確禁止）。**Push：** 無。**Worktree：** `/home/frank/projects/MarketMamba/.worktrees/ruflo-workers/run-mwx2xzc6-056b2e/builder_step3_eval`；未新增或刪 worktree。
+
+**Runtime/environment：** WSL Linux／Python 3.12.3；Python executable 見測試命令，CPU threads 限1、CUDA 空。`MARKETMAMBA_DATA_ROOT` 未設，`Data` realpath 為本 worktree `/home/frank/projects/MarketMamba/.worktrees/ruflo-workers/run-mwx2xzc6-056b2e/builder_step3_eval/Data`，未讀內容、未假定等於 operational Data。未使用網路／GPU／額外 agents／MarketMamba-blind／資料取得／production／scheduler／wakeup／commit／push／merge／deploy。
