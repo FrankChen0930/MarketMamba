@@ -4,7 +4,7 @@
 
 新增 [延後入口](../../tools/run_step3_evaluation.py) 沿用 `step3_evaluation.evaluate`，先重驗 bundle／admission／Human 決定與 72 COMPLETE manifest 的完整 request、逐檔 SHA、全部鍵／樣本／凍結標籤，再計兩段配對 IC。矩陣 session 鍵驗證後映射完整凍結日曆，保留缺日位置，封版上限為矩陣與日曆共有末日。檔名避開 `tools/step3*.py`，不改既有 bundle code identity；凍結規格 SHA 不變。選用既有 tools／tests／reports 與私有 `.artifacts/step3/evaluation/`，無新頂層目錄或替代評估語義。
 
-[公開報告模板](../../reports/step3_results_20261126.md) 及同名 JSON 為 **PENDING_EXECUTION**；結果 placeholder 不含真實研究數字。執行時須明示 `--consume-placeholder`，只替換完全相符的待執行模板，既有完成輸出或私有 namespace 一律 STOP。私有保存逐日 IC、輸入 SHA、72 job manifests 及輸出 SHA；公開只列彙總。證據等級固定「已曝光、量級與工程驗證、非確認」，不解除 strict 前瞻 STOP、不 supersede 歷史結果／來源／P2／P4d／production authority。合成測試與執行交接見 [工程報告](../../reports/step3_engineering_20261126.md#step3-延後評估驅動程式--2026-11-26)；獨立 review、真資料執行與 Human acceptance 均待辦。
+[公開報告模板](../../reports/step3_results_20261126.md) 及同名 JSON 已於 2026-11-26 執行完成（**COMPLETE_HISTORICAL_ONLY**，commit `ca7d25e`）：B−A 每日 h20 IC 增量 2015–2020 +0.005769 [0.003228, 0.008537]、2021–2026 +0.004953 [0.000634, 0.009025]；獨立重算 GO（6 位小數吻合）；2024／2025 年差為負，增益非逐年穩定。執行時須明示 `--consume-placeholder`，只替換完全相符的待執行模板，既有完成輸出或私有 namespace 一律 STOP。私有保存逐日 IC、輸入 SHA、72 job manifests 及輸出 SHA；公開只列彙總。證據等級固定「已曝光、量級與工程驗證、非確認」，不解除 strict 前瞻 STOP、不 supersede 歷史結果／來源／P2／P4d／production authority。合成測試與執行交接見 [工程報告](../../reports/step3_engineering_20261126.md#step3-延後評估驅動程式--2026-11-26)；獨立 review、真資料執行與 Human acceptance 均待辦。
 
 ## Step3c 審查修補候選 — 2026-11-26（目前狀態）
 
