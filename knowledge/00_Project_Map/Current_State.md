@@ -1,8 +1,11 @@
 ## 第四步 4c 評估驅動候選 — 2026-11-27
 
+**第四步歷史結果（2026-11-27，commit `ea625d1`，COMPLETE_HISTORICAL_ONLY）**：在 C0+ 加月營收（190 欄）之上，1a 同業領先落後的 h20 IC 增量：2015–2020 為 −0.002145 [−0.004687, 0.000084]，2021–2026 為 +0.000486；1b 同業營收外溢：+0.000789 與 +0.000240。四組 Holm p 均 ≥ 0.15，全部未達門檻，屬空結果。1a 前期的負增量主要集中在 2018 年（佔負值年份合計的 81%）。獨立重算 GO（6 位小數吻合，`.artifacts/papers/notes/step4-results-review.md`）。基線與第三步 B 臂的 IC 差 0、分數差 5.6e−17。依凍結規格不重試其他分類或家數；前瞻仍照預先登記封存季報、1a、1b。
+
+
 `builder_step4c@b7d82d0` 未提交候選：**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[4c工程報告](../../reports/step4_engineering_20261127.md)記錄新增[評估驅動](../../tools/run_step4_evaluation.py)、[合成測試](../../tests/test_run_step4_evaluation.py)與4b來源陣列SHA反例。重用第三步評估與完整性載入，不改任何 `tools/step3*.py`／`tools/step4*.py`；108 jobs全部驗證才評估，三臂共同成熟／共同NA、兩期聯合20-session bootstrap／1000／seed17、中心化雙側p及Holm m=2，另驗新A與第三步B分數／IC一致性。
 
-[公開結果](../../reports/step4_results_20261127.md)及JSON為PENDING，需 `--consume-placeholder` 精確消費模板；本輪真實fits讀寫=0、真實fit啟動=0、真實IC=0；標準回歸含既有小型合成fit。Human告知主checkout背景佇列執行中，本輪禁止觀測該fits目錄，無目前完成數或runtime observed_at更新。Next：候選獨立審查，待佇列完成後依工程報告命令完整重驗108 jobs，再執行評估及第三步B交叉檢查。known_at UNKNOWN／strict PIT／前瞻／交易STOP及production authority不變；完成不等於Human acceptance。保留本worktree未提交patch，尚無真實私有評估artifact。
+[公開結果](../../reports/step4_results_20261127.md)及JSON已完成（見上方第四步歷史結果；原為PENDING），需 `--consume-placeholder` 精確消費模板；本輪真實fits讀寫=0、真實fit啟動=0、真實IC=0；標準回歸含既有小型合成fit。Human告知主checkout背景佇列執行中，本輪禁止觀測該fits目錄，無目前完成數或runtime observed_at更新。Next：候選獨立審查，待佇列完成後依工程報告命令完整重驗108 jobs，再執行評估及第三步B交叉檢查。known_at UNKNOWN／strict PIT／前瞻／交易STOP及production authority不變；完成不等於Human acceptance。保留本worktree未提交patch，尚無真實私有評估artifact。
 
 ## 第四步 4b CPU 執行器工程候選 — 2026-11-27
 

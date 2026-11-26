@@ -1,6 +1,9 @@
 ## 第四步 4c 評估候選邊界 — 2026-11-27
 
-[新驅動](../../tools/run_step4_evaluation.py)與[公開PENDING模板](../../reports/step4_results_20261127.md)是 `builder_step4c@b7d82d0` 未提交 **UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED** 候選。[4c報告](../../reports/step4_engineering_20261127.md)載命令／驗證／限制；檔名不匹配admission的 `step4*.py`，不修改任何第三／四步已pin程式。限定消費精確4a admission、108完整job request與輸出hash，重用第三步評估及原B工程交叉檢查；缺件或錯位STOP，不能部分評估。歷史Q-A兩對比／每期Holm2／共同NA／中心化雙側p由FROZEN規格控制，候選不能更改門檻。PENDING不是評估結果或108 jobs完成證據；本輪未讀背景fits、未擬合或評估真資料，未刷新runtime observation。私有結果限獨立evaluation namespace；模板替換須明示 `--consume-placeholder`。不supersede production、前瞻／strict PIT／交易STOP、第三步結果、P4d或Human acceptance。
+**第四步歷史結果（2026-11-27，commit `ea625d1`，COMPLETE_HISTORICAL_ONLY）**：在 C0+ 加月營收（190 欄）之上，1a 同業領先落後的 h20 IC 增量：2015–2020 為 −0.002145 [−0.004687, 0.000084]，2021–2026 為 +0.000486；1b 同業營收外溢：+0.000789 與 +0.000240。四組 Holm p 均 ≥ 0.15，全部未達門檻，屬空結果。1a 前期的負增量主要集中在 2018 年（佔負值年份合計的 81%）。獨立重算 GO（6 位小數吻合，`.artifacts/papers/notes/step4-results-review.md`）。基線與第三步 B 臂的 IC 差 0、分數差 5.6e−17。依凍結規格不重試其他分類或家數；前瞻仍照預先登記封存季報、1a、1b。
+
+
+[新驅動](../../tools/run_step4_evaluation.py)與[公開結果（已完成）](../../reports/step4_results_20261127.md)是 `builder_step4c@b7d82d0` 未提交 **UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED** 候選。[4c報告](../../reports/step4_engineering_20261127.md)載命令／驗證／限制；檔名不匹配admission的 `step4*.py`，不修改任何第三／四步已pin程式。限定消費精確4a admission、108完整job request與輸出hash，重用第三步評估及原B工程交叉檢查；缺件或錯位STOP，不能部分評估。歷史Q-A兩對比／每期Holm2／共同NA／中心化雙側p由FROZEN規格控制，候選不能更改門檻。PENDING不是評估結果或108 jobs完成證據；本輪未讀背景fits、未擬合或評估真資料，未刷新runtime observation。私有結果限獨立evaluation namespace；模板替換須明示 `--consume-placeholder`。不supersede production、前瞻／strict PIT／交易STOP、第三步結果、P4d或Human acceptance。
 
 ## 第四步 4b 執行器邊界 — 2026-11-27
 
