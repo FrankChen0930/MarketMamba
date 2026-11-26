@@ -1,3 +1,9 @@
+## 季報版本工作包1候選界線 — 2026-11-26
+
+[核准範圍規劃§A／E](../../tasks/plan-fundamentals-supplychain-integration-20261126.md)只授本輪資料層對帳；[新工具](../../tools/tej_quarterly_versions.py)／[測試](../../tests/test_tej_quarterly_versions.py)是 `job-run-mwx9hm8k-43c245/builder_quarterly_versions@9613273` 的未提交 **UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED** 候選，不是正式季報准入或新production authority。[報告](../../reports/tej_quarterly_versions_20261126.md)／[彙總JSON](../../reports/tej_quarterly_versions_20261126.json)及本worktree私有quarterly manifest只提供來源版本描述；不supersede既有TEJ原件、pit producer manifest、PIT ledger machine contract或歷史研究結果。
+
+同公司同期自結Y/N雙列不等於同範圍多版本；累計數值線索、跨來源一致及發布日都不證首次值。帳本40事件轉移已驗，只能重播本機實收觀測；INITIAL_STOCK／FIRST_SEEN不升格公司首次公告。自結與正式strict歷史版本不可判定100%，准入0；98,823結構／日期候選不授資料資格。金額單位、自結Q/YTD、歷史非金融分類及EPS可比股數待核。原始SHA256SUMS保持不變，新匯出僅讀SHA256SUMS.20261126；沒有改動正式Data、帳本、P4d、第三步、production／scheduler或外部observed_at。完成非Human acceptance，下一步獨立審查與工作包2原件核版。
+
 ## P2 WP2 工程候選與逐位元 STOP — 2026-11-26
 
 [WP2 adapter](../../tools/forward_wp2.py)／[測試](../../tests/test_forward_wp2.py)是 `run-mwx8ka1a-f6fcaa/builder_fwd_wp2@850ea71` 的 no-commit、**UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED** 候選。[原 P2 規格](../../tasks/spec-forward-p2-primary-20261124.md)、[P1 規格](../../tasks/spec-portfolio-eval-20261119.md)、原 `ace2eef` score manifest 及 executable recipe authority 均不變。origin−21 採含端點（P2原文 `< origin−20`）；WP1排他註解不覆蓋這個權威，未修改 dependency。唯讀舊 fold_2026 的 observed-union calendar 只用於歷史重現；不授前瞻日曆或來源資格。三seed中seed17有50筆逐位元分數不符即STOP（29／43及rank average相等），不以相同ranks或數值接近替代門檻；最終診斷與私有manifest身分見[報告](../../reports/forward_wp2_20261126.md)。不supersede任何歷史結果、P4d／第三步／production或machine authority；不更新外部 observed_at。獨立驗收與Human acceptance待辦。

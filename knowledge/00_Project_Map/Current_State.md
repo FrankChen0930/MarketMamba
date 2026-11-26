@@ -1,3 +1,11 @@
+## 季報版本工作包1工程候選 — 2026-11-26
+
+`job-run-mwx9hm8k-43c245/builder_quarterly_versions`，detached base `9613273bf1bc2f902e1d856f60aefcfaf55e302e`，起始clean，Human已核准整合規劃§A／E工作包1，no-commit。**DESCRIPTIVE_SOURCE_VERSION_AUDIT / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[工具](../../tools/tej_quarterly_versions.py)、[測試](../../tests/test_tej_quarterly_versions.py)、[報告](../../reports/tej_quarterly_versions_20261126.md)及[彙總JSON](../../reports/tej_quarterly_versions_20261126.json)沿用tools／tests／reports；逐列只在本worktree `.artifacts/tej/quarterly/release-20261126/`。未讀價格／報酬／標籤／blind，無網路、資料取得、GPU或額外代理。
+
+自結63,266列／2,581公司；3,898重複列全部是1,949組Y/N雙範圍，1,524組同日、425組異日，同範圍重鍵0，不能當修訂歷史。金額更接近YTD累計，僅為單位×1000假說下的數值線索；自結Q/YTD／單位／幣別仍待原件。2020Q4覆蓋1,930公司（2019Q4為488），現況市場／產業代理顯示跨類增加，但強制規則或供應政策成因UNKNOWN。60,641同範圍日期配對中，自結早於正式45,069、同日15,382、晚於190，中位提前3日；不證日期對應數值版本。
+
+唯讀4-run帳本chain／base/index驗證，實際40業務鍵／40事件轉移從base驗previous_json通過，留61個版本；僅2026-11-25本機觀測可回放，不倒推首次公司公告。21 EPS REVISED為5名稱變更、6浮點表示微差、10實質數值變化；正式16僅符new、4皆符、1皆不符，10實質變化皆符new，仍不證公司重編。19 FIRST_SEEN均非本次四科目。正式115,876列首次／修訂版本不可判定100%；98,823日期／結構候選不等於PIT，strict歷史合格0。下一步獨立review與工作包2原件核版，不讀報酬；未變更原SHA256SUMS、正式Data、V6/models、帳本、P4d、第三步bundle或production／scheduler authority，未commit／push／merge／deploy，未更新外部observed_at。最終focused與治理結果以報告為準；工程完成不等於Human acceptance。
+
 ## P2 前瞻 WP2 任意 origin 工程候選 — 2026-11-26
 
 指派 `run-mwx8ka1a-f6fcaa/builder_fwd_wp2`、detached base `850ea71c441b0a7288fbabf2cfafed04899125b7`，Human bounded no-commit 核准，**CPU_ENGINEERING_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[adapter](../../tools/forward_wp2.py)／[focused fixtures](../../tests/test_forward_wp2.py)沿用 P1 C0+ feature／full-cross-section rank／三 seed 抽樣；任意 origin 採 WP1 Calendar 算 origin−21 並**含端點**，等價 P2 `< origin−20`。WP1 排他 docstring 歧義未修改，依 P1 executable／P2 原文處理。歷史重現僅授權舊 fold_2026；observed-union calendar 明標 reproduction-only，不當正式前瞻 calendar。
