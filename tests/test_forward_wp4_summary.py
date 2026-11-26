@@ -66,7 +66,7 @@ def test_zero_and_unknown_denominators_do_not_turn_into_zero_risk():
 @pytest.mark.parametrize('phase', ['PRESTART', 'FORMAL'])
 def test_all_error_branches_and_multierror_priority(code, phase):
     expected = ('NO_EFFECT' if code in ('SOURCE_OPTIONAL','PRIVATE_EXPECTED') else
-                'RETRY_SAME_SNAPSHOT_R_PLUS_2_LIMIT' if code == 'RETRAIN_TRANSIENT' else
+                'RETRY_SAME_SNAPSHOT_R_PLUS_2_LIMIT' if code == 'RETRAIN_TRANSIENT' and phase == 'FORMAL' else
                 'STOP' if phase == 'PRESTART' else 'INVALID_FOR_CONFIRMATION')
     assert s.disposition([code],phase) == expected
     fatal = 'STOP' if phase == 'PRESTART' else 'INVALID_FOR_CONFIRMATION'

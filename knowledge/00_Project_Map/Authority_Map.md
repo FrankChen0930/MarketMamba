@@ -1,3 +1,9 @@
+## 單一事故 verdict 候選邊界 — 2026-11-26
+
+`job-run-mwxld77j-11853c/builder_fwd_sm@ed38501` no-commit，**SYNTHETIC_CPU_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。未修改的[P2](../../tasks/spec-forward-p2-primary-20261124.md)與[設計](../../tasks/design-forward-incident-state-machine-20261126.md)控制語義；[WP5](../../tools/forward_wp5.py)的純 `verdict(sealed_chain)` 統一 attempt、每日及完整鏈開盲判定，完整 inventory／receipt／hash-verified OPEN/CLOSE 提供輸入，wrapper return 與 manifest incident 無 authority。跨日相同 attempt prefix 只可逐 bytes 相同去重，衝突／缺件／改名／未關閉／fatal 不可解除；合法 transient 僅能依原 request R+1／R+2 恢復。registry identity 保持 spec SHA＋sessions＋external head，不因 calendar metadata／路徑改變。
+
+[WP2](../../tests/test_forward_wp2.py)的 20 seeds 全欄與跨欄缺值 oracle、[狀態機 oracle](../../tests/test_forward_wp5.py)的單 R_j 窮舉與兩 R_j 等價狀態排列僅工程驗收；最終標準522 passed／495.92秒，來源identity7/7及280筆WP2 hash紀錄見兩份[WP2](../../reports/forward_wp2_20261126.md)／[WP5](../../reports/forward_wp5_20261126.md)報告補記，不取代 machine contract、正式資料資格、原研究／模型 evidence 或 Human acceptance。同權限 hash 不等於認證簽章／OS 隔離。不授正式開盲／production／交易，不刷新外部 observed_at，不解除整包 NO_GO、seed17／WP6／calendar／lifecycle／lagus provenance 等既有 STOP。
+
 ## 第四輪 F1–F3 修補候選 authority 邊界 — 2026-11-26
 
 `job-run-mwxjk2fj-0e64c6/builder_fwd_fix_r4@68a8b95`，no-commit，**SYNTHETIC_CPU_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[WP5回應](../../reports/forward_wp5_20261126.md)引用未修改的[P2第118及275–290行](../../tasks/spec-forward-p2-primary-20261124.md)：唯一合法transient可在原快照R+1／R+2完整切換，只有規格不可逆失效永久拒絕；此處修正第三輪candidate對RETRY的過度拒絕，歷史artifacts／驗證紀錄不改寫。[summary](../../tools/forward_wp4_summary.py)的事故authority是完整manifest檔案集合、產生時receipt登記及hash-linked journal；目錄名、caller return、manifest incident摘要均不能取代。少檔、多檔、改名、未登記事故／孤立event均STOP；外留head、nonce／manifest／逐檔驗證與一次開盲registry仍保留。這些同權限hash證據不是OS隔離或認證簽章。

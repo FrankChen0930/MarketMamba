@@ -99,12 +99,42 @@ def assert_future_invariance(tmp_path, monkeypatch, mutation, offset, seed=17):
     origin = '2024-04-16'
     t = np.datetime64(c.shift(origin, offset))
     view = w.prepare_view(source, tmp_path/'view', c, origin, c.shift(origin, 13))
+    rng = np.random.default_rng(seed)
+    if mutation == 'random_joint':
+        # Independent masks per cell, all columns, not a synchronous row mask.
+        for key in ('X','y5','y10'):
+            # Labels are future information by realization time, including
+            # rows already signalled at <=t but maturing strictly after t.
+            boundary=t if key=='X' else np.datetime64(c.shift(str(t),-int(key[1:])))
+            future = np.flatnonzero(a['dates'] > boundary)
+            values = a[key][future].copy()
+            values[:] = rng.normal(size=values.shape)
+            values[rng.random(values.shape) < .35] = np.nan
+            values[0] = np.nan; values[1:3] = 1.0
+            a[key][future] = values
+            np.save(source/(key+'.npy'),a[key])
     if mutation == 'future_feature_missingness':
         future=np.flatnonzero(a['dates'] > t)
         a['X'][future[::3],:]=np.nan
         np.save(source/'X.npy',a['X'])
-    first, first_used = observed_fit_predict(view, seed, monkeypatch)
-    if mutation in ('future_features','future_feature_missingness'):
+    model_seed = (17,29,43)[seed % 3] if mutation == 'random_joint' else seed
+    first, first_used = observed_fit_predict(view, model_seed, monkeypatch)
+    if mutation == 'random_joint':
+        mask = a['dates'] > t
+        for key in ('X','y5','y10'):
+            boundary=t if key=='X' else np.datetime64(c.shift(str(t),-int(key[1:])))
+            key_mask=a['dates'] > boundary
+            changed = a[key][key_mask].copy()
+            selected = rng.random(changed.shape) < .6
+            replacement = rng.normal(size=changed.shape).astype(changed.dtype)
+            replacement[np.isfinite(changed) & (rng.random(changed.shape) < .5)] = np.nan
+            changed[selected] = replacement[selected]
+            # Guarantee both missingness directions and finite->finite for
+            # EVERY feature and label; the other cells remain independent.
+            changed[0] = 7.0; changed[1] = np.nan; changed[2] = -3.0
+            a[key][key_mask] = changed
+            np.save(source/(key+'.npy'),a[key])
+    elif mutation in ('future_features','future_feature_missingness'):
         mask = a['dates'] > t
         if mutation == 'future_features':
             a['X'][mask] = 1e15
@@ -124,7 +154,7 @@ def assert_future_invariance(tmp_path, monkeypatch, mutation, offset, seed=17):
                               if mutation == 'future_label_missingness' else np.nan)
             np.save(source/(label+'.npy'), a[label])
     assert mask.any()
-    second, second_used = observed_fit_predict(view, seed, monkeypatch)
+    second, second_used = observed_fit_predict(view, model_seed, monkeypatch)
     for key in ('train_idx', 'fit_idx', 'target', 'feature_order'):
         assert array_hash(first[key]) == array_hash(second[key]), key
     assert first_used['fit'] == second_used['fit'], 'fit_features/target hashes'
@@ -152,10 +182,9 @@ def assert_future_invariance(tmp_path, monkeypatch, mutation, offset, seed=17):
     (tmp_path/'invariance.json').write_text(json.dumps(evidence, sort_keys=True)+'\n')
 
 
-@pytest.mark.parametrize('seed', [17, 29, 43])
+@pytest.mark.parametrize('seed', range(20))
 @pytest.mark.parametrize('offset', range(14))
-@pytest.mark.parametrize('mutation', ['future_labels', 'immature_labels', 'future_features',
-                                     'future_feature_missingness','future_label_missingness'])
+@pytest.mark.parametrize('mutation', ['random_joint'])
 def test_future_mutation_preserves_all_history_and_actual_model_inputs(tmp_path, monkeypatch, mutation, offset, seed):
     assert_future_invariance(tmp_path, monkeypatch, mutation, offset, seed)
 
@@ -172,6 +201,8 @@ def leaking_fit_predict(kind):
         new = 'scores=model.predict(xe) + np.isfinite(data.X[-16:,0]).mean()'
     elif kind == 'missingness_col1':
         new = 'scores=model.predict(xe) + np.isfinite(data.X[-16:,1]).mean()'
+    elif kind == 'cross_column_availability':
+        new = 'scores=model.predict(xe) + np.isfinite(data.X[-16:,0]).mean() - np.isfinite(data.X[-16:,1]).mean()'
     elif kind == 'sample_order':
         old = 'xf,names=c0plus.build_features(data,ctx.fit_idx,data.feature_names)'
         new = "if data.X[-16:,0].mean() > 1e10: ctx.fit_idx = ctx.fit_idx[::-1]\n    xf,names=c0plus.build_features(data,ctx.fit_idx,data.feature_names)"
@@ -194,13 +225,24 @@ def leaking_fit_predict(kind):
     ('future_feature', 'future_features', 'predict_features hash'),
     ('missingness', 'future_feature_missingness', 'historical scores'),
     ('missingness_col1', 'future_feature_missingness', 'historical scores'),
+    ('cross_column_availability', 'random_joint', 'historical scores'),
 ])
 @pytest.mark.parametrize('offset', [9])
 def test_future_mutation_kills_leaking_mutants(tmp_path, monkeypatch, kind, mutation, reason, offset):
     mutant = leaking_fit_predict(kind)
     monkeypatch.setattr(w, 'fit_predict', mutant)
-    with pytest.raises(AssertionError, match=reason):
-        assert_future_invariance(tmp_path, monkeypatch, mutation, offset)
+    if mutation == 'random_joint':
+        killed = False
+        for mutation_seed in range(20):
+            case = tmp_path/str(mutation_seed); case.mkdir()
+            try: assert_future_invariance(case, monkeypatch, mutation, offset,mutation_seed)
+            except AssertionError as exc:
+                assert reason in str(exc)
+                killed = True; break
+        assert killed, 'mutant survived all 20 independent masks'
+    else:
+        with pytest.raises(AssertionError, match=reason):
+            assert_future_invariance(tmp_path, monkeypatch, mutation, offset)
 
 
 def test_key_replay_and_no_y10_filter_or_eval_label_filter(tmp_path):

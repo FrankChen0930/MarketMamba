@@ -125,47 +125,99 @@ def synthetic_acceptance():
                 reference_equal=True, seeds=list(SEEDS), roundtrip_equal=True)
 
 
-def decide(calendar, request, *, snapshot, at, codes, phase, acceptance=None):
-    """Pure SYNTHETIC clock decision; no fit, writes, pointer switch or timer.
+NO_EFFECT = frozenset(('SOURCE_OPTIONAL', 'PRIVATE_EXPECTED'))
 
-    Invoke at R, R+1 and R+2 in that order. This is not an operational runner
-    or a durable retry queue. Exact 18:00 is the synthetic switch instant;
-    completion earlier must be held until then, and late completion never backdates.
+
+def verdict(sealed_chain):
+    """Pure sole incident authority over verified, ordered OPEN/CLOSE records.
+
+    Integrity adapters validate hashes before constructing this value. No I/O,
+    calendar metadata, caller summaries or mutable global registry is consulted.
     """
-    validate_request(calendar, request)
-    if not isinstance(snapshot, bytes) or sha256_bytes(snapshot) != request['snapshot_sha256']:
+    states = {}; identities = {}; pending = {}; seen = set()
+    def rejected(reason):
+        return dict(status='REJECTED', reason=reason, states=states)
+    if sealed_chain.get('integrity_error'): return rejected('BLIND_INTEGRITY')
+    if sealed_chain.get('already_opened'): return rejected('ALREADY_OPENED')
+    try:
+        for record in sealed_chain['records']:
+            ident = record['attempt_id']
+            if record['kind'] == 'OPEN':
+                if record.get('identity_error'): return rejected('RETRAIN_IDENTITY')
+                if ident in seen: return rejected('BLIND_INTEGRITY')
+                seen.add(ident); pending[ident] = record
+                origin = record['origin']
+                identity = (record['snapshot'], tuple(record['seeds']), record['request'])
+                if origin in identities and identities[origin] != identity:
+                    return rejected('RETRAIN_IDENTITY')
+                identities[origin] = identity
+                states.setdefault(origin, ('PENDING', 0))
+            elif record['kind'] == 'CLOSE':
+                item = pending.pop(ident, None)
+                if item is None: return rejected('BLIND_INTEGRITY')
+                origin = item['origin']; outcome = record['outcome']
+                if outcome in NO_EFFECT: continue
+                state, count = states.get(origin, ('PENDING', 0))
+                if state == 'SWITCHED': return rejected('UNKNOWN_ERROR')
+                if item['k'] != count: return rejected('RETRAIN_IDENTITY')
+                clock = record.get('clock', item['clock'])
+                if clock == 'EXPIRED': return rejected('DEADLINE')
+                if outcome == 'SUCCESS' and clock == 'ONTIME':
+                    states[origin] = ('SWITCHED', count)
+                elif outcome == 'RETRAIN_TRANSIENT' and count < 2 and item['phase'] == 'FORMAL':
+                    states[origin] = ('RETRYING', count + 1)
+                else:
+                    return rejected(outcome if outcome in summary.SOURCE_CODES + summary.PRIVATE_CODES
+                                    else 'UNKNOWN_ERROR')
+            else: return rejected('BLIND_INTEGRITY')
+    except (KeyError, TypeError, ValueError): return rejected('BLIND_INTEGRITY')
+    if pending: return rejected('UNKNOWN_ERROR')
+    if any(state != 'SWITCHED' for state, _ in states.values()): return rejected('RETRY_PENDING')
+    return dict(status='ACCEPTED', reason=None, states=states)
+
+
+def _outcome(codes, clock, acceptance, phase):
+    if not isinstance(codes,(list,tuple)) or any(c not in summary.SOURCE_CODES+summary.PRIVATE_CODES for c in codes):
+        return 'UNKNOWN_ERROR'
+    fatal = [c for c in codes if c not in NO_EFFECT and c != 'RETRAIN_TRANSIENT']
+    if fatal: return fatal[0]
+    if clock == 'EXPIRED': return 'UNKNOWN_ERROR'
+    if 'RETRAIN_TRANSIENT' in codes or clock == 'LATE': return 'RETRAIN_TRANSIENT'
+    if clock == 'EARLY': return 'PRIVATE_EXPECTED'
+    return 'SUCCESS' if acceptance == synthetic_acceptance() else 'RETRAIN_IDENTITY'
+
+
+def decide(calendar, request, *, snapshot, at, codes, phase, acceptance=None):
+    """Clock adapter; verdict is the sole incident/state transition authority."""
+    validate_request(calendar,request)
+    if not isinstance(snapshot,bytes) or sha256_bytes(snapshot) != request['snapshot_sha256']:
         raise Stop('RETRAIN_IDENTITY: retry changed snapshot')
-    if phase not in ('PRESTART', 'FORMAL'): raise Stop('unknown phase')
-    now = timestamp(at); deadline = timestamp(request['deadline'])
-    origin = request['origin']; day = now.date().isoformat()
-    calendar.covered(day)
-    delay = sum(origin < d <= day for d in calendar.sessions)
-    fatal = 'STOP' if phase == 'PRESTART' else 'INVALID_FOR_CONFIRMATION'
-    result = dict(synthetic=True, forward_admitted=False, origin=origin,
-        train_last=request['train_last'], snapshot_sha256=request['snapshot_sha256'],
-        deadline=request['deadline'], delay_sessions=delay, action=fatal,
-        switch_session=None, effective_open=None, next_attempt=None)
-    # These checks precede acceptance: passing a report never extends the deadline.
-    if now > deadline: return result
-    allowed = set(summary.SOURCE_CODES + summary.PRIVATE_CODES)
-    if not isinstance(codes, (list, tuple)) or any(c not in allowed for c in codes): return result
-    if set(codes) - {'SOURCE_OPTIONAL', 'PRIVATE_EXPECTED', 'RETRAIN_TRANSIENT'}: return result
-    if now < timestamp(cutoff(origin)):
-        return dict(result, action='WAIT')
-    if day not in calendar.sessions:
-        return dict(result, action='WAIT', next_attempt=calendar.after(day))
-    if now < timestamp(cutoff(day)): return dict(result, action='WAIT')
-    late = now > timestamp(cutoff(day))
-    if 'RETRAIN_TRANSIENT' in codes or late:
-        # Initial M0/F0 cannot borrow an incumbent retry policy to start late.
-        # T0/T1 must be deferred and freshly frozen by the separate start policy.
-        if phase == 'PRESTART': return result
-        if delay < 2:
-            return dict(result, action='RETRY', next_attempt=calendar.shift(day, 1))
-        return result
-    if acceptance != synthetic_acceptance(): return result
-    return dict(result, action='SWITCH_ALL_THREE', switch_session=day,
-                effective_open=calendar.shift(day, 1))
+    if phase not in ('PRESTART','FORMAL'): raise Stop('unknown phase')
+    now=timestamp(at); deadline=timestamp(request['deadline']); day=now.date().isoformat()
+    calendar.covered(day); origin=request['origin']
+    delay=sum(origin<d<=day for d in calendar.sessions)
+    clock=('EXPIRED' if now > deadline else 'EARLY' if now<timestamp(cutoff(day)) or day<origin
+           else 'ONTIME' if now==timestamp(cutoff(day)) and day in calendar.sessions else 'LATE')
+    outcome=_outcome(codes,clock,acceptance,phase)
+    # The standalone clock probe has implicit earlier transient attempts. The
+    # durable runner separately evaluates the actual sealed history.
+    records=[]
+    for k in range(min(delay,2)+1):
+        opened=dict(kind='OPEN',attempt_id=str(k),origin=origin,k=k,
+            snapshot=request['snapshot_sha256'],seeds=request['seeds'],request='clock-probe',
+            clock=clock if k==min(delay,2) else 'ONTIME',phase=phase)
+        records.extend([opened,dict(kind='CLOSE',attempt_id=str(k),
+            outcome=outcome if k==min(delay,2) else 'RETRAIN_TRANSIENT')])
+    result=verdict(dict(records=records))
+    fatal='STOP' if phase=='PRESTART' else 'INVALID_FOR_CONFIRMATION'
+    action=('SWITCH_ALL_THREE' if result['status']=='ACCEPTED' and outcome=='SUCCESS' else
+            'WAIT' if clock=='EARLY' and outcome=='PRIVATE_EXPECTED' else
+            'RETRY' if result['reason']=='RETRY_PENDING' else fatal)
+    return dict(synthetic=True,forward_admitted=False,origin=origin,train_last=request['train_last'],
+        snapshot_sha256=request['snapshot_sha256'],deadline=request['deadline'],delay_sessions=delay,
+        action=action,switch_session=day if action=='SWITCH_ALL_THREE' else None,
+        effective_open=calendar.shift(day,1) if action=='SWITCH_ALL_THREE' else None,
+        next_attempt=calendar.shift(day,1) if action=='RETRY' else None)
 
 
 def compare_stores(reference, candidate):
@@ -266,96 +318,126 @@ def compare_c0plus(reference,candidate):
         raise Stop('incomplete/corrupt C0+ reference') from exc
 
 
+def _accept_evidence(request, reference, candidate, reference_c0plus, candidate_c0plus):
+    paths=[store.private_path(p) for p in (reference,candidate,reference_c0plus,candidate_c0plus)]
+    if len(set(p.resolve() for p in paths)) != 4: raise Stop('independent stores required')
+    receipts=[json.loads((p/'execution.json').read_bytes()) for p in paths[2:]]
+    if (receipts[0]['pid']==receipts[1]['pid'] or any(
+        r['request']!=request or r['origin']!=request['origin'] for r in receipts)):
+        raise Stop('independent request/origin evidence required')
+    executions=[json.loads((p/'execution-receipt.json').read_bytes()) for p in paths]
+    if (executions[0]!=executions[2] or executions[1]!=executions[3]
+            or executions[0]['nonce']==executions[1]['nonce']
+            or executions[0]['pid']==executions[1]['pid']
+            or executions[0]['started_ns']==executions[1]['started_ns']):
+        raise Stop('independent execution receipts required')
+    for receipt in executions:
+        if (receipt['request']!=request or not isinstance(receipt['pid'],int)
+                or receipt['pid']<=0 or not isinstance(receipt['started_ns'],int)
+                or receipt['started_ns']<=0 or len(receipt['nonce'])!=64
+                or any(c not in '0123456789abcdef' for c in receipt['nonce'])):
+            raise Stop('invalid execution receipt')
+    for p,receipt in zip(paths,executions):
+        bound=json.loads((p/'output-binding.json').read_bytes())
+        actual={str(f.relative_to(p)):store.file_info(f) for f in p.rglob('*')
+                if f.is_file() and f.name!='output-binding.json'}
+        if bound!=dict(request=request,receipt=receipt,files=actual): raise Stop('output binding mismatch')
+    evidence=dict(compare_stores(reference,candidate),
+        **compare_c0plus(reference_c0plus,candidate_c0plus))
+    return evidence
+
+
+def journal_records(journal):
+    try: return _journal_records(journal)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise Stop('corrupt/missing write-ahead journal') from exc
+
+
+def _journal_records(journal):
+    """Validate immutable write-ahead records; returns only state-machine input."""
+    plan = json.loads((journal/'request.json').read_bytes())
+    opens = journal/'opens'; events = journal/'events'
+    records = []; previous = '0'*64
+    open_paths = sorted(opens.iterdir())
+    close_paths = sorted(events.iterdir())
+    if len(close_paths) > len(open_paths): raise Stop('orphan CLOSE')
+    for i, path in enumerate(open_paths):
+        opened = json.loads(path.read_bytes())
+        if path.name != f'{i:03}.json' or opened['previous_event_sha256'] != previous:
+            raise Stop('corrupt OPEN chain')
+        identity_error = (opened['request'] != sha256_bytes(store.canonical(plan))
+            or opened['origin'] != plan['request']['origin']
+            or opened['snapshot'] != plan['request']['snapshot_sha256']
+            or opened['seeds'] != plan['request']['seeds'])
+        records.append(dict(opened, identity_error=True) if identity_error else opened)
+        if i >= len(close_paths): continue
+        path = close_paths[i]; closed = json.loads(path.read_bytes())
+        if (path.name != f'{i:03}.json' or closed['previous_event_sha256'] != previous
+                or closed['request_sha256'] != opened['request']
+                or closed['open_sha256'] != sha256_bytes(store.canonical(opened))
+                or closed['attempt_id'] != opened['attempt_id'] or closed['kind'] != 'CLOSE'):
+            raise Stop('corrupt CLOSE chain')
+        records.append(closed); previous = sha256_bytes(store.canonical(closed))
+    return records
+
+
 def run_attempt(journal, *, calendar, request, snapshot, at, codes, phase,
                 frozen_path, pin, reference=None, candidate=None,
                 reference_c0plus=None, candidate_c0plus=None):
-    """Private durable synthetic acceptance, same frozen script on EVERY attempt.
+    """Write/fsync/register OPEN before validation; CLOSE is append-only.
 
-    Immutable request + ordered hash-linked events prevent accidental retry
-    reset. WP4 owns flock/fsync and model pointer validation; no new model is
-    published here. The report is a synthetic switch authorization only.
-    Missing/corrupt evidence is fatal, never RETRAIN_TRANSIENT. The public source
-    producer is intentionally independent and does not consume this report.
+    Exceptions, including caller-swallowed identity failures, leave an OPEN.
+    Every action and admission is derived by verdict, also used by daily sealing
+    and the full cross-session opening gate. No production pointer is changed.
     """
-    verify_script(frozen_path,pin)
-    validate_request(calendar,request)
-    # Always enforce snapshot identity, even for transient failures.
-    preliminary=decide(calendar,request,snapshot=snapshot,at=at,codes=codes,phase=phase)
-    journal=store.private_path(journal)
+    journal = store.private_path(journal)
     with store.locked(journal):
-        plan=journal/'request.json'; events=journal/'events'
-        wanted=dict(request=request,phase=phase,frozen_sha256=sha256_bytes(store.canonical(pin)))
-        if not plan.exists():
-            if events.exists(): raise Stop('missing journal request; no reset')
-            store.write_sync(plan,store.canonical(wanted));events.mkdir();store._sync_dir(journal)
+        events = journal/'events'; opens = journal/'opens'; plan = journal/'request.json'
+        wanted = dict(request=request, phase=phase, frozen_sha256=sha256_bytes(store.canonical(pin)))
+        events.mkdir(exist_ok=True); opens.mkdir(exist_ok=True)
+        if not plan.exists(): store.write_sync(plan, store.canonical(wanted))
+        i = len(list(opens.iterdir()))
+        previous = sha256_bytes((events/f'{i-1:03}.json').read_bytes()) if i and (events/f'{i-1:03}.json').exists() else '0'*64
+        day = str(at)[:10]
+        k = sum(request.get('origin','') < d <= day for d in calendar.sessions)
+        opened = dict(schema='forward-wp5-open-v1', kind='OPEN', attempt_id=secrets.token_hex(32),
+            origin=request.get('origin'), k=k, snapshot=sha256_bytes(snapshot) if isinstance(snapshot,bytes) else None,
+            seeds=request.get('seeds'), request=sha256_bytes(store.canonical(wanted)),
+            phase=phase, clock='UNVALIDATED', at=str(at), previous_event_sha256=previous)
+        store.write_sync(opens/f'{i:03}.json', store.canonical(opened)); store._sync_dir(opens)
         summary.register_attempt(journal)
-        try:
-            store.private_path(plan);store.private_path(events)
-            if json.loads(plan.read_bytes()) != wanted: raise Stop('journal request/phase/source mismatch')
-            previous='0'*64; history=[]
-            for i,p in enumerate(sorted(events.iterdir())):
-                store.private_path(p)
-                event=json.loads(p.read_bytes())
-                if (p.name!=f'{i:03}.json' or event['previous_event_sha256']!=previous
-                        or event['request_sha256']!=sha256_bytes(store.canonical(wanted))
-                        or event['decision']['origin']!=request['origin']
-                        or event['decision']['snapshot_sha256']!=request['snapshot_sha256']
-                        or event['decision']['delay_sessions']!=i
-                        or event['decision']['action'] not in ('RETRY','SWITCH_ALL_THREE','STOP','INVALID_FOR_CONFIRMATION')):
-                    raise Stop('corrupt retry journal')
-                if history and history[-1]['decision']['action']!='RETRY':
-                    raise Stop('event after terminal decision')
-                previous=sha256_bytes(store.canonical(event));history.append(event)
-            if history and history[-1]['decision']['action']!='RETRY':
-                raise Stop('terminal journal; cannot restart or reset')
-        except (OSError,ValueError,KeyError,TypeError) as exc:
-            raise Stop('corrupt/missing retry journal') from exc
-        delay=preliminary['delay_sessions']
-        if preliminary['action']=='WAIT':
-            return dict(decision=preliminary,evidence=None,persisted=False)
-        if delay!=len(history) and delay<=2: raise Stop('retry order: must attempt R, R+1, R+2')
-        evidence=None; accepted=None
-        # Never pay for validation after the deadline or when a failure is known.
-        if not codes and timestamp(at)<=timestamp(request['deadline']):
+        # Everything that can reject input or compute evidence is after OPEN.
+        verify_script(frozen_path,pin); validate_request(calendar,request)
+        clock = ('EXPIRED' if timestamp(at)>timestamp(request['deadline']) else
+                 'EARLY' if timestamp(at)<timestamp(cutoff(day)) or day<request['origin'] else
+                 'ONTIME' if timestamp(at)==timestamp(cutoff(day)) else 'LATE')
+        if not isinstance(snapshot,bytes) or sha256_bytes(snapshot)!=request['snapshot_sha256']:
+            raise Stop('RETRAIN_IDENTITY: retry changed snapshot')
+        if json.loads(plan.read_bytes()) != wanted: raise Stop('RETRAIN_IDENTITY: journal request mismatch')
+        history = journal_records(journal)
+        prior = verdict(dict(records=history[:-1]))
+        if prior['reason'] not in (None,'RETRY_PENDING'): raise Stop('terminal/corrupt journal')
+        if i and prior['status']=='ACCEPTED': raise Stop('terminal journal; cannot restart')
+        retries = prior['states'].get(request['origin'], ('PENDING', 0))[1]
+        if k != retries and clock != 'EARLY': raise Stop('retry order: must attempt R, R+1, R+2')
+        evidence = None; acceptance = None
+        if set(codes) <= NO_EFFECT and clock == 'ONTIME':
             try:
-                paths=[store.private_path(p) for p in (reference,candidate,reference_c0plus,candidate_c0plus)]
-                if len(set(p.resolve() for p in paths)) != 4: raise Stop('independent stores required')
-                receipts=[json.loads((p/'execution.json').read_bytes()) for p in paths[2:]]
-                if (receipts[0]['pid']==receipts[1]['pid'] or any(
-                    r['request']!=request or r['origin']!=request['origin'] for r in receipts)):
-                    raise Stop('independent request/origin evidence required')
-                executions=[json.loads((p/'execution-receipt.json').read_bytes()) for p in paths]
-                if (executions[0]!=executions[2] or executions[1]!=executions[3]
-                        or executions[0]['nonce']==executions[1]['nonce']
-                        or executions[0]['pid']==executions[1]['pid']
-                        or executions[0]['started_ns']==executions[1]['started_ns']):
-                    raise Stop('independent execution receipts required')
-                for receipt in executions:
-                    if (receipt['request']!=request or not isinstance(receipt['pid'],int)
-                            or receipt['pid']<=0 or not isinstance(receipt['started_ns'],int)
-                            or receipt['started_ns']<=0 or len(receipt['nonce'])!=64
-                            or any(c not in '0123456789abcdef' for c in receipt['nonce'])):
-                        raise Stop('invalid execution receipt')
-                for p,receipt in zip(paths,executions):
-                    bound=json.loads((p/'output-binding.json').read_bytes())
-                    actual={str(f.relative_to(p)):store.file_info(f) for f in p.rglob('*')
-                            if f.is_file() and f.name!='output-binding.json'}
-                    if bound!=dict(request=request,receipt=receipt,files=actual): raise Stop('output binding mismatch')
-                evidence=dict(compare_stores(reference,candidate),
-                    **compare_c0plus(reference_c0plus,candidate_c0plus))
-                accepted=synthetic_acceptance()
-            except (Stop,OSError,ValueError,TypeError,KeyError):
-                codes=['RETRAIN_IDENTITY']
-        decision=decide(calendar,request,snapshot=snapshot,at=at,codes=codes,
-                        phase=phase,acceptance=accepted)
-        verify_script(frozen_path,pin)
-        event=dict(schema='forward-wp5-synthetic-attempt-v1',synthetic=True,
-            request_sha256=sha256_bytes(store.canonical(wanted)),
-            previous_event_sha256=previous,at=timestamp(at).isoformat(),
-            codes=list(codes),decision=decision,evidence=evidence)
-        store.write_sync(events/f'{len(history):03}.json',store.canonical(event))
-        store._sync_dir(events);store._sync_dir(journal)
+                evidence = _accept_evidence(request,reference,candidate,reference_c0plus,candidate_c0plus)
+                acceptance = synthetic_acceptance()
+            except (Stop,OSError,ValueError,TypeError,KeyError): codes=['RETRAIN_IDENTITY']
+        decision = decide(calendar,request,snapshot=snapshot,at=at,codes=codes,phase=phase,acceptance=acceptance)
+        outcome = _outcome(codes, clock, acceptance, phase)
+        event = dict(schema='forward-wp5-close-v1', synthetic=True, kind='CLOSE',
+            attempt_id=opened['attempt_id'], open_sha256=sha256_bytes(store.canonical(opened)),
+            request_sha256=opened['request'], previous_event_sha256=previous,
+            at=timestamp(at).isoformat(), codes=list(codes), outcome=outcome, clock=clock,
+            decision=decision,evidence=evidence)
+        store.write_sync(events/f'{i:03}.json',store.canonical(event)); store._sync_dir(events)
         summary.register_attempt(journal)
+        result=verdict(dict(records=journal_records(journal)))
+        if result['status']=='REJECTED' and decision['action']=='SWITCH_ALL_THREE':
+            raise Stop('state machine rejected switch')
         return event
 
 
@@ -400,12 +482,6 @@ def independent_reference_worker(root, request):
         store._sync_dir(path)
 
 
-def incident_state(previous, incident):
-    """Absorbing invalidity: changing owner, deleting a day or NONE cannot reset it."""
-    return ('VALID' if previous == 'VALID' and incident == 'NONE'
-            else 'INVALID_FOR_CONFIRMATION')
-
-
 def verify_chain(directories, expected_sessions, external_head):
     try:
         return summary.verify_synthetic_sessions(directories, expected_sessions, external_head)
@@ -431,16 +507,26 @@ def manual_unblind(*, calendar, expected_sessions, directories, external_head,
     maturity = cutoff(calendar.shift(expected[-1], 11))
     if timestamp(at) < timestamp(maturity): raise Stop('unblind immature endpoint')
     verify_chain(directories, expected, external_head)
-    for directory in directories:
-        try:
-            status=summary.private_operation_status(store.private_path(directory)/'private')
-        except (Stop,OSError,ValueError,KeyError,TypeError) as exc:
-            raise Stop('irreversible incident invalidity') from exc
-        if status not in ('PRIVATE_EXPECTED','SWITCH_ALL_THREE'):
-            raise Stop('irreversible incident invalidity')
-    # Caller-controlled metadata cannot create a new unexposed research identity.
+    # Merge immutable prefixes copied to later sessions by attempt identity;
+    # conflicting duplicates are integrity errors, never a new retry history.
+    records=[]; seen={}
+    try:
+        for directory in directories:
+            chain=summary.private_operation_chain(store.private_path(directory)/'private')
+            for record in chain['records']:
+                key=(record['kind'],record['attempt_id'])
+                if key in seen:
+                    if seen[key]!=record: raise Stop('conflicting copied attempt')
+                else:
+                    seen[key]=record; records.append(record)
+    except (Stop,OSError,ValueError,KeyError,TypeError) as exc:
+        raise Stop('irreversible incident invalidity') from exc
     identity = sha256_bytes(store.canonical(dict(spec_sha256=store.sha256(store.SPEC),
         sessions=expected,external_head=external_head)))
+    result=verdict(dict(records=records,already_opened=(store.ROOT/'unblind-registry'/(identity+'.json')).exists()))
+    if result['status']!='ACCEPTED':
+        if result['reason']=='ALREADY_OPENED': raise Stop('already unblinded; no second opening')
+        raise Stop('irreversible incident invalidity: '+result['reason'])
     registry = store.private_path(store.ROOT/'unblind-registry')
     registry.mkdir(parents=True, exist_ok=True)
     result = dict(schema='forward-wp5-synthetic-unblind-v1', synthetic=True,

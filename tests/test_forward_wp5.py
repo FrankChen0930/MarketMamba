@@ -22,6 +22,121 @@ def ticket():
     return c, w.freeze_request(c, c.sessions[30], b'fixed synthetic snapshot')
 
 
+def reference_verdict(records, opened=False, continuation=False):
+    """Independent specification oracle; no product functions or constants."""
+    harmless = {'SOURCE_OPTIONAL', 'PRIVATE_EXPECTED'}
+    states, pending, identities = {}, {}, {}
+    if opened: return False
+    for record in records:
+        if record['kind'] == 'OPEN':
+            if record.get('identity_error'): return False
+            key = record['origin']
+            if record['attempt_id'] in pending: return False
+            identity = (record['snapshot'], tuple(record['seeds']), record['request'])
+            if key in identities and identities[key] != identity: return False
+            identities[key] = identity
+            states.setdefault(key, ('PENDING', 0))
+            pending[record['attempt_id']] = record
+        elif record['kind'] == 'CLOSE':
+            item = pending.pop(record['attempt_id'], None)
+            if item is None: return False
+            key, outcome = item['origin'], record['outcome']
+            state, count = states.get(key, ('PENDING', 0))
+            if outcome in harmless: continue
+            if state == 'SWITCHED' or item['k'] != count: return False
+            clock = record.get('clock',item['clock'])
+            if clock == 'EXPIRED': return False
+            if outcome == 'SUCCESS' and clock == 'ONTIME':
+                states[key] = ('SWITCHED', count)
+            elif outcome == 'RETRAIN_TRANSIENT' and count < 2 and item['phase'] == 'FORMAL':
+                states[key] = ('RETRYING', count + 1)
+            else: return False
+        else: return False
+    if continuation:
+        return (tuple(sorted(states.items())), tuple(sorted(pending)),
+                tuple(sorted((key,str(value)) for key,value in identities.items())))
+    return not pending and all(value[0] == 'SWITCHED' for value in states.values())
+
+
+def abstract_attempt(index, outcome, origin='R0', **changes):
+    item = dict(kind='OPEN', attempt_id=f'{origin}-{index}', origin=origin,
+                k=index, snapshot='snapshot', seeds=[17,29,43], request=origin+'-request',
+                clock='ONTIME', phase='FORMAL')
+    item.update(changes)
+    return [item] if outcome == 'UNCLOSED' else [item, dict(
+        kind='CLOSE', attempt_id=item['attempt_id'], outcome=outcome)]
+
+
+def test_state_machine_exhaustive_independent_reference():
+    from itertools import product
+    alphabet = ['SOURCE_OPTIONAL','PRIVATE_EXPECTED','RETRAIN_TRANSIENT','SUCCESS',
+        'SOURCE_MISSING','SOURCE_COVERAGE','SOURCE_UNIVERSE','SOURCE_INVALID',
+        'RETRAIN_IDENTITY','PRIVATE_MARK_EXECUTION','BLIND_INTEGRITY','UNKNOWN_ERROR',
+        'BOGUS','UNCLOSED','EXPIRED','ORIGIN','SNAPSHOT','SEEDS']
+    # All words of length <=4 per R_j. Pair every local state class across two
+    # origins in both interleavings; local exhaustive words already cover order.
+    representatives = {}
+    for size in range(5):
+        for word in product(alphabet, repeat=size):
+            records = []
+            retry_count = 0
+            for i, token in enumerate(word):
+                changes = dict(attempt_id=f'R0-{i}')
+                outcome = token
+                if token in ('EXPIRED','ORIGIN','SNAPSHOT','SEEDS'):
+                    outcome = 'SUCCESS'
+                    changes.update({'EXPIRED':dict(clock='EXPIRED'), 'ORIGIN':dict(origin='wrong',identity_error=True),
+                        'SNAPSHOT':dict(snapshot='wrong',identity_error=True), 'SEEDS':dict(seeds=[1],identity_error=True)}[token])
+                records += abstract_attempt(retry_count, outcome, **changes)
+                retry_count += token == 'RETRAIN_TRANSIENT'
+            expected = reference_verdict(records)
+            assert (w.verdict(dict(records=records))['status'] == 'ACCEPTED') == expected, word
+            # Equivalent continuation states collapse exponentially many words.
+            signature = reference_verdict(records,continuation=True)
+            representatives.setdefault(str(signature), records)
+    values = list(representatives.values())
+    def attempts(records):
+        groups=[]
+        for item in records:
+            if item['kind']=='OPEN': groups.append([item])
+            else: groups[-1].append(item)
+        return groups
+    for left, right in product(values, repeat=2):
+        right = [dict(x, **({'origin':'R1','request':'R1-request'} if x['kind']=='OPEN' else {}),
+                      attempt_id='other-'+x['attempt_id']) for x in right]
+        # All order-preserving cross-session interleavings of both R_j traces.
+        def interleave(a,b):
+            if not a or not b:
+                yield a+b; return
+            for tail in interleave(a[1:],b): yield [a[0]]+tail
+            for tail in interleave(a,b[1:]): yield [b[0]]+tail
+        for groups in interleave(attempts(left),attempts(right)):
+            records = [item for group in groups for item in group]
+            assert (w.verdict(dict(records=records))['status']=='ACCEPTED') == reference_verdict(records)
+
+
+def test_r5_swallowed_identity_is_write_ahead_recorded(tmp_path):
+    c,r=ticket(); frozen=tmp_path/'frozen.json'; pin=w.freeze_script(frozen)
+    def operation(private):
+        try:
+            w.run_attempt(private/'journal',calendar=c,request=r,snapshot=b'wrong',
+                at=cutoff(r['origin']),codes=[],phase='FORMAL',frozen_path=frozen,pin=pin)
+        except Stop: pass
+    summary.run_synthetic_session(tmp_path/'sealed',private_operation=operation)
+    assert summary.private_operation_status(tmp_path/'sealed/private') != 'PRIVATE_EXPECTED'
+
+
+def test_wait_does_not_consume_same_origin_retry_slot(tmp_path):
+    c,r=ticket(); frozen=tmp_path/'frozen.json'; pin=w.freeze_script(frozen)
+    args=dict(calendar=c,request=r,snapshot=b'fixed synthetic snapshot',phase='FORMAL',
+              frozen_path=frozen,pin=pin)
+    first=w.run_attempt(tmp_path/'journal',at=cutoff(r['origin']).replace('18:00:00','17:59:59'),
+                        codes=['PRIVATE_EXPECTED'],**args)
+    assert first['decision']['action']=='WAIT'
+    second=w.run_attempt(tmp_path/'journal',at=cutoff(r['origin']),codes=['RETRAIN_TRANSIENT'],**args)
+    assert second['decision']['action']=='RETRY'
+
+
 def transient(c, request, delay=0):
     return w.decide(c, request, snapshot=b'fixed synthetic snapshot',
                     at=cutoff(c.shift(request['origin'], delay)),
@@ -264,10 +379,10 @@ def test_timeout_keeps_source_chain_and_private_failure_does_not_leak(tmp_path):
 
 @pytest.mark.parametrize('incident', ['PEEK', 'BAD_OUTPUT', 'MISSING_DAY', 'UNKNOWN'])
 def test_incidents_absorbing_and_not_reset_by_owner(incident):
-    invalid=w.incident_state('VALID', incident)
-    assert invalid=='INVALID_FOR_CONFIRMATION'
-    assert w.incident_state(invalid,'NONE')==invalid
-    assert w.incident_state(invalid,'CHANGE_OWNER')==invalid
+    records=abstract_attempt(0,incident)
+    assert w.verdict(dict(records=records))['status']=='REJECTED'
+    for later in ('PRIVATE_EXPECTED','CHANGE_OWNER','SUCCESS'):
+        assert w.verdict(dict(records=records+abstract_attempt(1,later)))['status']=='REJECTED'
 
 
 def test_manual_unblind_requires_full_chain_maturity_human_once(tmp_path):
@@ -368,24 +483,31 @@ def test_r4_attempt_inventory_cannot_disappear_before_seal(tmp_path, tamper):
 
 
 @pytest.mark.parametrize('delay', [1,2])
-def test_r4_recovered_retry_allows_unblind(tmp_path, delay):
+@pytest.mark.parametrize('scenario', ['same_session','cross_session','SOURCE_OPTIONAL','PRIVATE_EXPECTED'])
+def test_r4_recovered_retry_allows_unblind(tmp_path, delay, scenario):
     c=calendar(); days=c.sessions[31:283]
     r=w.freeze_request(c,days[0],b'snapshot'); pin=w.freeze_script(tmp_path/'frozen.json')
     w.independent_reference(tmp_path/'reference',tmp_path/'frozen.json',pin,request=r)
     def operation(private):
-        for i in range(delay+1):
+        import shutil
+        if scenario=='cross_session' and session_index:
+            shutil.copytree(dirs[-1]/'private/journal',private/'journal')
+        attempts = [session_index] if scenario=='cross_session' else range(delay+1)
+        for i in attempts:
             event=w.run_attempt(private/'journal',calendar=c,request=r,snapshot=b'snapshot',
-                at=cutoff(c.shift(r['origin'],i)),codes=['RETRAIN_TRANSIENT'] if i<delay else [],
+                at=cutoff(c.shift(r['origin'],i)),codes=['RETRAIN_TRANSIENT'] if i<delay else
+                    [scenario] if scenario in ('SOURCE_OPTIONAL','PRIVATE_EXPECTED') else [],
                 phase='FORMAL',frozen_path=tmp_path/'frozen.json',pin=pin,
                 reference=tmp_path/'reference/run-0',candidate=tmp_path/'reference/run-1',
                 reference_c0plus=tmp_path/'reference/run-0-c0plus',candidate_c0plus=tmp_path/'reference/run-1-c0plus')
-        assert event['decision']['action']=='SWITCH_ALL_THREE'
+        assert event['decision']['action']==('RETRY' if scenario=='cross_session' and session_index<delay else 'SWITCH_ALL_THREE')
         # Also verify discarded successful returns are derived from the journal.
     dirs=[]; head='0'*64; previous='0'*64
     for i,d in enumerate(days):
+        session_index=i
         directory=tmp_path/'chain'/str(i)
         record=summary.run_synthetic_session(directory,source=summary.synthetic_source(d),
-            private_operation=operation if i==0 else lambda _:None,
+            private_operation=operation if i==0 or scenario=='cross_session' and i<=delay else lambda _:None,
             previous_head=head,previous_private_commitment=previous)
         dirs.append(directory);head=record['head'];previous=record['commitment']
     assert w.manual_unblind(calendar=c,expected_sessions=days,directories=dirs,external_head=head,
@@ -395,7 +517,13 @@ def test_r4_recovered_retry_allows_unblind(tmp_path, delay):
     # P2 L285: transient is allowed only BEFORE producing/switching a version.
     # A new failure after success is terminal misuse, never a fresh retry.
     def failure_after_success(private):
-        operation(private)
+        nonlocal session_index
+        session_index=delay if scenario=='cross_session' else 0
+        if scenario=='cross_session':
+            import shutil
+            shutil.copytree(dirs[delay]/'private/journal',private/'journal')
+        else:
+            operation(private)
         w.run_attempt(private/'journal',calendar=c,request=r,snapshot=b'snapshot',
             at=cutoff(c.shift(r['origin'],delay+1)),codes=['RETRAIN_TRANSIENT'],
             phase='FORMAL',frozen_path=tmp_path/'frozen.json',pin=pin)

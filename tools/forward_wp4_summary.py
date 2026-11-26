@@ -39,7 +39,7 @@ def register_attempt(journal):
     active = _ATTEMPT_INVENTORY.get()
     if active is None: return
     private, inventory = active
-    paths = [journal/'request.json'] + list((journal/'events').iterdir())
+    paths = [journal/'request.json'] + list((journal/'events').iterdir()) + list((journal/'opens').iterdir())
     for path in paths:
         w.private_path(path)
         try: name = str(path.relative_to(private))
@@ -157,10 +157,18 @@ def disposition(codes, phase):
     if phase not in ('PRESTART', 'FORMAL'): raise Stop('unknown phase')
     if not codes or any(c not in SOURCE_CODES + PRIVATE_CODES for c in codes):
         codes = ['UNKNOWN_ERROR']
-    fatal = set(codes) - {'SOURCE_OPTIONAL', 'PRIVATE_EXPECTED', 'RETRAIN_TRANSIENT'}
-    if fatal: return 'STOP' if phase == 'PRESTART' else 'INVALID_FOR_CONFIRMATION'
-    if 'RETRAIN_TRANSIENT' in codes: return 'RETRY_SAME_SNAPSHOT_R_PLUS_2_LIMIT'
-    return 'NO_EFFECT'
+    from tools.forward_wp5 import verdict
+    records=[]
+    for i,code in enumerate(codes):
+        records.extend([dict(kind='OPEN',attempt_id=str(i),origin='routing',k=0,
+            snapshot='',seeds=[],request='',clock='ONTIME',phase=phase),
+            dict(kind='CLOSE',attempt_id=str(i),outcome=code)])
+    result=verdict(dict(records=records))
+    if result['status']=='ACCEPTED': return 'NO_EFFECT'
+    if result['reason']=='RETRY_PENDING' and all(state=='PENDING' for state,_ in result['states'].values()):
+        return 'NO_EFFECT'
+    if result['reason']=='RETRY_PENDING': return 'RETRY_SAME_SNAPSHOT_R_PLUS_2_LIMIT'
+    return 'STOP' if phase=='PRESTART' else 'INVALID_FOR_CONFIRMATION'
 
 
 def synthetic_source(session='2026-11-26', missing=False, unknown_lifecycle=False):
@@ -176,81 +184,56 @@ def synthetic_source(session='2026-11-26', missing=False, unknown_lifecycle=Fals
         source_error_counts={SOURCE: errors}, missing_source_sessions={SOURCE: []}))
 
 
-def private_operation_status(private, files=None):
-    """Derive status from committed receipts and actual hash-linked journals.
-
-    The manifest's descriptive incident field is never a decision authority.
-    Same-user commitments detect changes relative to the retained external head;
-    they do not provide OS isolation or authenticated signatures.
-    """
+def private_operation_chain(private, files=None):
+    """Integrity adapter only: complete inventory -> ordered machine records."""
     import json
     from tools import forward_wp4 as w
+    from tools import forward_wp5 as machine
     actual = {str(p.relative_to(private)): w.file_info(p) for p in private.rglob('*')
               if p.is_file() and p not in (private/'private-manifest.json',private/'nonce.bin')}
-    if files is None:
-        files = json.loads((private/'private-manifest.json').read_bytes())['files']
+    if files is None: files=json.loads((private/'private-manifest.json').read_bytes())['files']
     if actual != files: raise Stop('private inventory mismatch')
-    receipt = json.loads((private/'operation-receipt.json').read_bytes())
+    receipt=json.loads((private/'operation-receipt.json').read_bytes())
     if set(receipt) != {'event','exception','attempt_files'}: raise Stop('operation receipt schema')
-    inventory = receipt['attempt_files']
-    if any(name not in files or files[name] != info for name,info in inventory.items()):
+    inventory=receipt['attempt_files']
+    if any(name not in files or files[name]!=info for name,info in inventory.items()):
         raise Stop('missing/renamed attempt inventory')
-    # Inspect the COMPLETE committed file set, independently of directory names.
-    # An unregistered attempt cannot become an ordinary opaque output by renaming.
     for name in files:
-        try:
-            value = json.loads((private/name).read_bytes())
-        except (ValueError, UnicodeError):
-            continue
-        is_attempt = isinstance(value,dict) and (
-            value.get('schema') == 'forward-wp5-synthetic-attempt-v1'
-            or {'decision','previous_event_sha256','request_sha256'} <= set(value)
-            or isinstance(value.get('request'),dict) and
-            value['request'].get('schema') == 'forward-wp5-synthetic-request-v1')
-        if is_attempt and name not in inventory:
-            raise Stop('unregistered attempt record')
-    status = 'UNKNOWN_ERROR' if receipt['exception'] else 'PRIVATE_EXPECTED'
-    returned = receipt['event']
-    if returned is not None:
-        status = returned['decision']['action']
-    if status not in ('PRIVATE_EXPECTED', 'UNKNOWN_ERROR') + ATTEMPT_ACTIONS:
-        raise Stop('unknown operation status')
-    matched = False
-    terminal_statuses = []
-    plans = [name for name in inventory if name.endswith('/request.json')]
-    covered = set(plans)
-    for name in sorted(plans):
-        plan_path = private/name
-        events = plan_path.parent/'events'
-        plan = json.loads(plan_path.read_bytes())
-        previous = '0'*64; actions = []
-        for i,path in enumerate(sorted(events.iterdir())):
-            relative = str(path.relative_to(private))
-            if relative not in inventory: raise Stop('unregistered journal event')
-            covered.add(relative)
-            event = json.loads(path.read_bytes()); decision = event['decision']
-            if (path.name != f'{i:03}.json' or event['previous_event_sha256'] != previous
-                    or event['request_sha256'] != hashlib.sha256(canonical(plan)).hexdigest()
-                    or decision['origin'] != plan['request']['origin']
-                    or decision['snapshot_sha256'] != plan['request']['snapshot_sha256']
-                    or decision['delay_sessions'] != i
-                    or decision['action'] not in ATTEMPT_ACTIONS
-                    or (actions and actions[-1] != 'RETRY')):
-                raise Stop('invalid attempt journal')
-            actions.append(decision['action']); previous = hashlib.sha256(canonical(event)).hexdigest()
-            matched = matched or event == returned
-        if not actions and status != 'WAIT': raise Stop('empty attempt journal')
-        if actions: terminal_statuses.append(actions[-1])
+        try: value=json.loads((private/name).read_bytes())
+        except (ValueError,UnicodeError): continue
+        if isinstance(value,dict) and (value.get('kind') in ('OPEN','CLOSE') or
+                value.get('schema','').startswith('forward-wp5-') or
+                isinstance(value.get('request'),dict) and value['request'].get('schema','').startswith('forward-wp5-')):
+            if name not in inventory: raise Stop('unregistered attempt record')
+    records=[]; covered=set()
+    for name in sorted(n for n in inventory if n.endswith('/request.json')):
+        journal=(private/name).parent
+        members={str(p.relative_to(private)) for folder in ('opens','events') for p in (journal/folder).iterdir()}
+        if not members <= set(inventory): raise Stop('unregistered journal event')
+        covered |= members | {name}
+        records.extend(machine.journal_records(journal))
     if covered != set(inventory): raise Stop('orphan attempt inventory')
-    if returned is not None and status != 'WAIT' and not matched:
-        raise Stop('operation return not bound to journal')
-    # P2 §訓練視窗、資料與封存 / RETRAIN_TRANSIENT: only RETRY is
-    # recoverable; a valid terminal switch resolves it, never STOP/INVALID.
-    if receipt['exception']: return 'UNKNOWN_ERROR'
-    for terminal in ('INVALID_FOR_CONFIRMATION','STOP','RETRY','WAIT'):
-        if terminal in terminal_statuses: return terminal
-    if terminal_statuses: return 'SWITCH_ALL_THREE'
-    return status
+    if receipt['exception']:
+        records.extend([dict(kind='OPEN',attempt_id='wrapper-error',origin='wrapper',k=0,
+            snapshot='',seeds=[],request='',clock='ONTIME',phase='FORMAL'),
+            dict(kind='CLOSE',attempt_id='wrapper-error',outcome='UNKNOWN_ERROR')])
+    return dict(records=records)
+
+
+def private_operation_status(private, files=None):
+    """Daily acceptance uses the same verdict as attempts and full-chain opening."""
+    from tools.forward_wp5 import verdict
+    chain=private_operation_chain(private,files)
+    result=verdict(chain)
+    if result['status']=='ACCEPTED':
+        return 'SWITCH_ALL_THREE' if result['states'] else 'PRIVATE_EXPECTED'
+    if result['reason']=='RETRY_PENDING': return 'RETRY'
+    if result['reason']=='UNKNOWN_ERROR' and (
+            any(r['attempt_id']=='wrapper-error' for r in chain['records']) or
+            sum(r['kind']=='OPEN' for r in chain['records']) !=
+            sum(r['kind']=='CLOSE' for r in chain['records'])): return 'UNKNOWN_ERROR'
+    phases={r['phase'] for r in chain['records'] if r['kind']=='OPEN'}
+    return 'STOP' if phases=={'PRESTART'} else 'INVALID_FOR_CONFIRMATION'
 
 
 def run_synthetic_session(out, *, private_operation=None, source=None, previous_head='0'*64,
