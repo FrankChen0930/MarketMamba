@@ -1,3 +1,7 @@
+## 第四步 4b 執行器邊界 — 2026-11-27
+
+[4b工程報告](../../reports/step4_engineering_20261127.md)、[runner](../../tools/step4_runner.py)與[queue](../../tools/run_step4_queue.py)為 `builder_step4b@4ed84f5` 未提交 **UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED** 候選。只消費精確pin的4a ADMIT（bundle `1e0a6b75…`／admission `43d8ceca…`），逐檔重驗並另綁新增executor與job／陣列SHA；不改4a source glob契約或第三步identity。新增runtime只涵蓋本輪核准單job工程量測；108正式fits及IC不在本輪執行範圍。驗證與結果以私有manifest／報告為準，code presence及獨立4a GO不等於Human acceptance，不supersede production、strict PIT／前瞻／交易STOP或歷史artifact。
+
 ## 第四步 FROZEN Q-A／4a 有界工程 — 2026-11-27
 
 4a真實bundle完成限定歷史工程ADMIT（300檔、108jobs、48partitions）；准入綁定bundle SHA `1e0a6b7537c11939b7fecd95232817addd3778735a8fdc1df6d7e6abc84c9ed6`，admission SHA `43d8ceca7f9d1764489b82836c6ad95cef47185ad7b055b5ec635597356e71d0`。stops=[]、fits=0、未計IC／eval-label統計；不是獨立驗收或Human acceptance，不放寬下列strict來源／前瞻／交易STOP。

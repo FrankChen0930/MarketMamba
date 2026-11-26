@@ -1,3 +1,7 @@
+## Step4 4b CPU fit／inference 候選 — 2026-11-27
+
+[runner](../../tools/step4_runner.py)／[queue](../../tools/run_step4_queue.py)以固定190／193／192欄、12折×3seed×3臂重新擬合；只讀training target，不載eval labels、不算IC。沿用第三步durable primitives但不修改其bytes；request綁精確admission、job、輸入陣列、executor與環境，缺／壞artifact續跑STOP。[工程報告4b](../../reports/step4_engineering_20261127.md)記錄80項回歸／mutation、單job量測及108命令。本輪不跑完整佇列；候選UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED，不改正式模型、來源PIT或前瞻資格。
+
 ## WP4 三 seed 模型存檔工程候選 — 2026-11-26
 
 [forward_wp4](../../tools/forward_wp4.py)只做SYNTHETIC_CPU_ONLY／UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED模型存讀介面：17／29／43共用context與整體atomic current pointer，serialize／fsync／hash→durable copy／reverify→native seed與predict bytes核對→version rename→pointer。缺／壞pointer與seed／matrix／contract不符STOP；orphan不升格、不自動fallback／best，跨matrix要明示先前context且保留原bytes。直接重用Step3 resume與identity／fsync，不修改既有模型或第三步bundle。六類實際SIGKILL、兩項source mutation及完整[報告](../../reports/forward_wp4_20261126.md)只提供合成工程證據，不解除WP2歷史bitwise STOP或授正式前瞻模型使用；真實blind從未接觸。

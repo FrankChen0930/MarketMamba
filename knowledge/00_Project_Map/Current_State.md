@@ -1,3 +1,9 @@
+## 第四步 4b CPU 執行器工程候選 — 2026-11-27
+
+`builder_step4b@4ed84f5` 未提交候選：**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[工程報告 4b](../../reports/step4_engineering_20261127.md)記錄 [runner](../../tools/step4_runner.py)／[順序佇列](../../tools/run_step4_queue.py)、完整108 jobs執行命令及量測 evidence。沿用4a獨立複核GO的唯讀bundle `1e0a6b75…`／admission `43d8ceca…`；新執行器分開綁SHA，不改舊glob或任何第三步程式／artifact。80項合成及第三步回歸通過，含缺檔resume／錯job identity兩項source mutation；本輪真實單job `fold2015-B1a-seed17` 已完成至私有measurement：500,000 fit／312,782 eval、wall 69.92秒、RSS 1,967,328 KiB；model重載prediction逐筆完全一致，不執行正式108 jobs或IC。
+
+Next：依本輪單job量測與工程候選進行獨立4b審查，再決定正式108 jobs執行；Human acceptance仍未成立。strict PIT／前瞻／交易STOP、known_at UNKNOWN及production authority不變；未刷新外部runtime observed_at。worktree保留patch及唯一measurement artifact前不可移除。
+
 ## 第四步 4a 凍結契約與資料工程候選 — 2026-11-27
 
 Human [凍結紀錄](../../tasks/decision-step4-freeze-20261127.md)批准 Q-A；[規格](../../tasks/spec-step4-peer-quarterly-h20-20261127.md) SHA `79a0c24bc57369d03edc709933b44c21a95e81f0c532127f72af93156c8e7a5d`。此段取代下方「規格尚待凍結」的現況，保留其歷史紀錄。歷史 A=第三步B 190欄、B1a=193、B1b=192；Holm m=2，季報不做歷史 BQ fit。前瞻 m=3、至少4公告季度且1000公司季度；仍未准前瞻收集。

@@ -276,3 +276,193 @@ def test_full_admission_mutations_stop(engineering_bundle, mutation):
     (directory / 'bundle.json').write_text(json.dumps(bundle))
     result = audit.admission(directory)
     assert result['status'] == 'STOP' and result['stops']
+
+
+@pytest.fixture
+def runner_bundle(engineering_bundle, monkeypatch):
+    from tools import step4_runner as r
+    directory, bundle = engineering_bundle
+    audit.admission(directory)
+    monkeypatch.setattr(r, 'ADMITTED_CODE', set(bundle['implementation']))
+    monkeypatch.setattr(r, 'BUNDLE_SHA', s.sha256(directory / 'bundle.json'))
+    monkeypatch.setattr(r, 'ADMISSION_SHA', s.sha256(directory / 'admission.json'))
+    return r, directory, bundle
+
+
+def test_runner_roundtrip_and_seed_identity(runner_bundle, monkeypatch):
+    r, directory, bundle = runner_bundle
+    gate = r.require_admission(directory)
+    root = s.ROOT / '.artifacts/step4/measurement'
+    name = s.job_id(2015, 17, 'B1a')
+    path = r.run_job(directory, root, name, gate)
+    manifest = json.loads((path / 'manifest.json').read_text())
+    assert manifest['request']['arm'] == 'B1a'
+    assert manifest['request']['admission_sha256'] == r.ADMISSION_SHA
+    assert manifest['telemetry']['rows_fit'] == 6
+    import lightgbm
+    monkeypatch.setattr(lightgbm.LGBMRegressor, 'fit', lambda *a, **k: pytest.fail('resume fitted again'))
+    assert r.run_job(directory, root, name, gate) == path
+    (path / 'prediction.npy').unlink()
+    with pytest.raises(ValueError, match='STOP'):
+        r.run_job(directory, root, name, gate)
+
+
+def assert_missing_job_rejected(resumer, path, request):
+    with pytest.raises(ValueError, match='STOP'):
+        resumer(path, request)
+
+
+def test_mutation_resume_accepts_missing_job_killed(runner_bundle):
+    r, directory, _ = runner_bundle
+    gate = r.require_admission(directory)
+    path = r.run_job(directory, s.ROOT / '.artifacts/step4/measurement', s.job_id(2015, 17, 'A'), gate)
+    manifest = json.loads((path / 'manifest.json').read_text())
+    (path / 'model.txt').unlink()
+    assert_missing_job_rejected(r.resume, path, manifest['request'])
+    with pytest.raises(BaseException) as caught:
+        assert_missing_job_rejected(lambda *a: manifest, path, manifest['request'])
+    assert 'DID NOT RAISE' in str(caught.value)
+
+
+def assert_identity_rejected(r, directory, root, gate):
+    with pytest.raises(ValueError, match='STOP'):
+        r.run_job(directory, root, s.job_id(2015, 17, 'A'), gate)
+
+
+def test_mutation_job_identity_mismatch_killed(runner_bundle, monkeypatch):
+    r, directory, _ = runner_bundle
+    gate = r.require_admission(directory)
+    gate['jobs'][s.job_id(2015, 17, 'A')]['seed'] = 29
+    import lightgbm
+    calls = []
+    monkeypatch.setattr(lightgbm.LGBMRegressor, 'fit', lambda *a, **k: calls.append(1))
+    root = s.ROOT / '.artifacts/step4/measurement'
+    assert_identity_rejected(r, directory, root, gate)
+    assert calls == []
+    monkeypatch.setattr(r, 'run_job', lambda *a: calls.append(1))
+    with pytest.raises(BaseException) as caught:
+        assert_identity_rejected(r, directory, root, gate)
+    assert 'DID NOT RAISE' in str(caught.value)
+
+
+def test_runner_never_loads_eval_labels(runner_bundle, monkeypatch):
+    r, directory, bundle = runner_bundle
+    gate = r.require_admission(directory)
+    real_load = np.load
+    forbidden = {s.file_path(directory, bundle['files'][j['eval_labels_file']]) for j in bundle['jobs'].values()}
+    def guarded(path, *args, **kwargs):
+        assert Path(path) not in forbidden, 'evaluation labels must remain opaque'
+        return real_load(path, *args, **kwargs)
+    from pathlib import Path
+    monkeypatch.setattr(np, 'load', guarded)
+    r.run_job(directory, s.ROOT / '.artifacts/step4/measurement', s.job_id(2015, 17, 'B1b'), gate)
+
+
+@pytest.mark.parametrize('mutation', ['input', 'admission', 'manifest', 'artifact', 'request'])
+def test_runner_corruption_stops(runner_bundle, mutation):
+    r, directory, bundle = runner_bundle
+    gate = r.require_admission(directory)
+    name = s.job_id(2015, 17, 'A')
+    root = s.ROOT / '.artifacts/step4/measurement'
+    path = r.run_job(directory, root, name, gate)
+    if mutation == 'input':
+        target = s.file_path(directory, bundle['files'][bundle['jobs'][name]['fit_base']])
+        with target.open('ab') as f:
+            f.write(b'corrupt')
+    elif mutation == 'admission':
+        with (directory / 'admission.json').open('a') as f:
+            f.write(' ')
+    elif mutation == 'manifest':
+        (path / 'manifest.json').write_text('{')
+    elif mutation == 'artifact':
+        (path / 'prediction.npy').write_bytes(b'bad')
+    else:
+        manifest = json.loads((path / 'manifest.json').read_text())
+        manifest['request']['seed'] = 29
+        (path / 'manifest.json').write_text(json.dumps(manifest))
+    with pytest.raises(ValueError, match='STOP'):
+        r.run_job(directory, root, name, gate)
+
+
+def test_runner_source_mutation_identity_gate_killed(runner_bundle, monkeypatch):
+    """Mutate the actual guard: a wrong seed must never reach model.fit."""
+    import inspect
+    import lightgbm
+    r, directory, bundle = runner_bundle
+    gate = r.require_admission(directory)
+    name = s.job_id(2015, 17, 'A')
+    gate['jobs'][name]['seed'] = 29
+    monkeypatch.setattr(s, 'SEEDS', (17, 29))
+    (directory / 'bundle.json').write_text(json.dumps(gate))
+    monkeypatch.setattr(r, 'BUNDLE_SHA', s.sha256(directory / 'bundle.json'))
+    root = s.ROOT / '.artifacts/step4/measurement'
+    with pytest.raises(ValueError, match='STOP job identity'):
+        r.run_job(directory, root, name, gate)
+    def forbidden_fit(*args, **kwargs):
+        raise RuntimeError('MUTANT_REACHED_FIT')
+    monkeypatch.setattr(lightgbm.LGBMRegressor, 'fit', forbidden_fit)
+    source = inspect.getsource(r.run_job)
+    changed = source.replace('or s.job_id(year, seed, arm) != name', 'or False')
+    assert changed != source
+    namespace = dict(r.__dict__)
+    exec(compile(changed, '<identity-mutant>', 'exec'), namespace)
+    with pytest.raises(RuntimeError, match='MUTANT_REACHED_FIT'):
+        namespace['run_job'](directory, root, name, gate)
+
+
+def test_runner_source_mutation_missing_file_killed(runner_bundle):
+    import inspect
+    r, directory, _ = runner_bundle
+    gate = r.require_admission(directory)
+    path = r.run_job(directory, s.ROOT / '.artifacts/step4/measurement', s.job_id(2015, 17, 'A'), gate)
+    request = json.loads((path / 'manifest.json').read_text())['request']
+    (path / 'prediction.npy').unlink()
+    assert_missing_job_rejected(r.resume, path, request)
+    source = inspect.getsource(r.resume)
+    changed = source.replace("if actual!=set(m['files'])|{'manifest.json'}:", 'if False:')
+    changed = changed.replace("verify_file(p/name,info['sha256'],info['bytes'])", 'pass')
+    assert changed != source
+    namespace = dict(r.__dict__)
+    exec(compile(changed, '<resume-mutant>', 'exec'), namespace)
+    # The same oracle rejects this source mutant because it accepts missing data.
+    with pytest.raises(BaseException) as caught:
+        assert_missing_job_rejected(namespace['resume'], path, request)
+    assert 'DID NOT RAISE' in str(caught.value)
+
+
+def test_runner_orphan_recovery_and_output_boundary(runner_bundle, monkeypatch):
+    r, directory, _ = runner_bundle
+    root = s.ROOT / '.artifacts/step4/measurement'
+    root.mkdir(parents=True)
+    request = {'seed': 17}
+    arrays = {'keys.npy': np.array([[1, 2]]), 'sample.npy': np.array([0]), 'prediction.npy': np.array([.1])}
+    from pathlib import Path
+    rename = Path.rename
+    def interrupted(*args):
+        raise InterruptedError('publish interruption after durable stage')
+    monkeypatch.setattr(Path, 'rename', interrupted)
+    with pytest.raises(InterruptedError):
+        r.publish(root, 'synthetic', request, arrays, b'model')
+    stage, = root.glob('.partial-*')
+    assert not (root / 'synthetic').exists()
+    monkeypatch.setattr(Path, 'rename', rename)
+    final = r.recover_orphan(stage, root / 'synthetic', request)
+    assert r.resume(final, request)['state'] == 'COMPLETE'
+    with pytest.raises(ValueError, match='STOP'):
+        r.recover_orphan(final, root / 'other', request)
+    with pytest.raises(ValueError, match='STOP'):
+        r.private_dir(directory)
+
+
+def test_queue_108_and_resume_progress(runner_bundle, monkeypatch, capsys):
+    from tools import run_step4_queue as q
+    r, directory, _ = runner_bundle
+    monkeypatch.setattr(r, 'require_admission', lambda path: {})
+    calls = []
+    monkeypatch.setattr(r, 'run_job', lambda d, out, name, b: calls.append(name))
+    monkeypatch.setattr(s, 'YEARS', tuple(range(2015, 2027)))
+    monkeypatch.setattr(s, 'SEEDS', (17, 29, 43))
+    assert q.run_all(directory, s.ROOT / '.artifacts/step4/fits') == 108
+    assert len(set(calls)) == 108
+    assert calls[0] == 'fold2015-A-seed17' and calls[-1] == 'fold2026-B1b-seed43'
+    assert len(capsys.readouterr().out.splitlines()) == 108
