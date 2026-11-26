@@ -349,6 +349,82 @@ def test_returned_journal_incident_cannot_be_relabelled(tmp_path,monkeypatch,cod
             output=tmp_path/'opened.json')
 
 
+@pytest.mark.parametrize('tamper', ['rename', 'delete', 'unregistered'])
+def test_r4_attempt_inventory_cannot_disappear_before_seal(tmp_path, tamper):
+    c,r=ticket(); pin=w.freeze_script(tmp_path/'frozen.json')
+    def operation(private):
+        w.run_attempt(private/'journal',calendar=c,request=r,snapshot=b'fixed synthetic snapshot',
+            at=cutoff(r['origin']),codes=['UNKNOWN_ERROR'],phase='FORMAL',
+            frozen_path=tmp_path/'frozen.json',pin=pin)
+        event=private/'journal/events/000.json'
+        if tamper=='rename': event.parent.rename(private/'journal/attempt-records')
+        elif tamper=='delete': event.unlink()
+        else:
+            import shutil
+            shutil.copyfile(event,private/'unregistered.json')
+        # Deliberately discard the fatal return value.
+    with pytest.raises(Stop):
+        summary.run_synthetic_session(tmp_path/'sealed',private_operation=operation)
+
+
+@pytest.mark.parametrize('delay', [1,2])
+def test_r4_recovered_retry_allows_unblind(tmp_path, delay):
+    c=calendar(); days=c.sessions[31:283]
+    r=w.freeze_request(c,days[0],b'snapshot'); pin=w.freeze_script(tmp_path/'frozen.json')
+    w.independent_reference(tmp_path/'reference',tmp_path/'frozen.json',pin,request=r)
+    def operation(private):
+        for i in range(delay+1):
+            event=w.run_attempt(private/'journal',calendar=c,request=r,snapshot=b'snapshot',
+                at=cutoff(c.shift(r['origin'],i)),codes=['RETRAIN_TRANSIENT'] if i<delay else [],
+                phase='FORMAL',frozen_path=tmp_path/'frozen.json',pin=pin,
+                reference=tmp_path/'reference/run-0',candidate=tmp_path/'reference/run-1',
+                reference_c0plus=tmp_path/'reference/run-0-c0plus',candidate_c0plus=tmp_path/'reference/run-1-c0plus')
+        assert event['decision']['action']=='SWITCH_ALL_THREE'
+        # Also verify discarded successful returns are derived from the journal.
+    dirs=[]; head='0'*64; previous='0'*64
+    for i,d in enumerate(days):
+        directory=tmp_path/'chain'/str(i)
+        record=summary.run_synthetic_session(directory,source=summary.synthetic_source(d),
+            private_operation=operation if i==0 else lambda _:None,
+            previous_head=head,previous_private_commitment=previous)
+        dirs.append(directory);head=record['head'];previous=record['commitment']
+    assert w.manual_unblind(calendar=c,expected_sessions=days,directories=dirs,external_head=head,
+        state='VALID',at=cutoff(c.shift(days[-1],11)),publication_complete=True,
+        human='Human',manual=True,frozen_path=tmp_path/'frozen.json',pin=pin,
+        output=tmp_path/'opened.json')['return_sessions']==252
+    # P2 L285: transient is allowed only BEFORE producing/switching a version.
+    # A new failure after success is terminal misuse, never a fresh retry.
+    def failure_after_success(private):
+        operation(private)
+        w.run_attempt(private/'journal',calendar=c,request=r,snapshot=b'snapshot',
+            at=cutoff(c.shift(r['origin'],delay+1)),codes=['RETRAIN_TRANSIENT'],
+            phase='FORMAL',frozen_path=tmp_path/'frozen.json',pin=pin)
+    summary.run_synthetic_session(tmp_path/'after-success',private_operation=failure_after_success)
+    assert summary.private_operation_status(tmp_path/'after-success/private')=='UNKNOWN_ERROR'
+
+
+@pytest.mark.parametrize('phase,delays,codes,expected', [
+    ('FORMAL',1,['RETRAIN_TRANSIENT'],'RETRY'),
+    ('FORMAL',3,['RETRAIN_TRANSIENT'],'INVALID_FOR_CONFIRMATION'),
+    ('PRESTART',1,['RETRAIN_TRANSIENT'],'STOP'),
+    ('FORMAL',1,['UNKNOWN_ERROR'],'INVALID_FOR_CONFIRMATION'),
+    ('FORMAL',1,['BLIND_INTEGRITY'],'INVALID_FOR_CONFIRMATION'),
+    ('FORMAL',1,['SOURCE_MISSING'],'INVALID_FOR_CONFIRMATION'),
+    ('FORMAL',1,['RETRAIN_IDENTITY'],'INVALID_FOR_CONFIRMATION'),
+    ('FORMAL',1,['PRIVATE_MARK_EXECUTION'],'INVALID_FOR_CONFIRMATION'),
+])
+def test_r4_spec_incident_transitions(tmp_path,phase,delays,codes,expected):
+    # P2 L118 / L275-290: fixed snapshot retry, timeout, prestart and fatal table.
+    c,r=ticket(); pin=w.freeze_script(tmp_path/'frozen.json')
+    def operation(private):
+        for i in range(delays):
+            w.run_attempt(private/'journal',calendar=c,request=r,snapshot=b'fixed synthetic snapshot',
+                at=cutoff(c.shift(r['origin'],i)),codes=codes,phase=phase,
+                frozen_path=tmp_path/'frozen.json',pin=pin)
+    summary.run_synthetic_session(tmp_path/'sealed',private_operation=operation)
+    assert summary.private_operation_status(tmp_path/'sealed/private')==expected
+
+
 def test_unblind_derives_incident_invalidity(tmp_path):
     c=calendar(); days=c.sessions[31:283]; dirs=[]; head='0'*64; previous='0'*64
     def failure(_): raise RuntimeError('synthetic incident')

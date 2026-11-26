@@ -288,6 +288,7 @@ def run_attempt(journal, *, calendar, request, snapshot, at, codes, phase,
         if not plan.exists():
             if events.exists(): raise Stop('missing journal request; no reset')
             store.write_sync(plan,store.canonical(wanted));events.mkdir();store._sync_dir(journal)
+        summary.register_attempt(journal)
         try:
             store.private_path(plan);store.private_path(events)
             if json.loads(plan.read_bytes()) != wanted: raise Stop('journal request/phase/source mismatch')
@@ -354,6 +355,7 @@ def run_attempt(journal, *, calendar, request, snapshot, at, codes, phase,
             codes=list(codes),decision=decision,evidence=evidence)
         store.write_sync(events/f'{len(history):03}.json',store.canonical(event))
         store._sync_dir(events);store._sync_dir(journal)
+        summary.register_attempt(journal)
         return event
 
 

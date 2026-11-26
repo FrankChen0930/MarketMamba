@@ -101,7 +101,7 @@ def assert_future_invariance(tmp_path, monkeypatch, mutation, offset, seed=17):
     view = w.prepare_view(source, tmp_path/'view', c, origin, c.shift(origin, 13))
     if mutation == 'future_feature_missingness':
         future=np.flatnonzero(a['dates'] > t)
-        a['X'][future[::3],0]=np.nan
+        a['X'][future[::3],:]=np.nan
         np.save(source/'X.npy',a['X'])
     first, first_used = observed_fit_predict(view, seed, monkeypatch)
     if mutation in ('future_features','future_feature_missingness'):
@@ -110,7 +110,7 @@ def assert_future_invariance(tmp_path, monkeypatch, mutation, offset, seed=17):
             a['X'][mask] = 1e15
         else:
             changed=a['X'][mask].copy()
-            changed[:,::2]=np.where(np.isfinite(changed[:,::2]),np.nan,17.0)
+            changed[:,:]=np.where(np.isfinite(changed),np.nan,17.0)
             a['X'][mask]=changed
         np.save(source/'X.npy', a['X'])
     else:
@@ -170,6 +170,8 @@ def leaking_fit_predict(kind):
         new = "scores=model.predict(xe)\n    scores[144:160] += np.float64(data.X[-16:,0].mean())"
     elif kind == 'missingness':
         new = 'scores=model.predict(xe) + np.isfinite(data.X[-16:,0]).mean()'
+    elif kind == 'missingness_col1':
+        new = 'scores=model.predict(xe) + np.isfinite(data.X[-16:,1]).mean()'
     elif kind == 'sample_order':
         old = 'xf,names=c0plus.build_features(data,ctx.fit_idx,data.feature_names)'
         new = "if data.X[-16:,0].mean() > 1e10: ctx.fit_idx = ctx.fit_idx[::-1]\n    xf,names=c0plus.build_features(data,ctx.fit_idx,data.feature_names)"
@@ -191,6 +193,7 @@ def leaking_fit_predict(kind):
     ('target', 'future_labels', 'target'),
     ('future_feature', 'future_features', 'predict_features hash'),
     ('missingness', 'future_feature_missingness', 'historical scores'),
+    ('missingness_col1', 'future_feature_missingness', 'historical scores'),
 ])
 @pytest.mark.parametrize('offset', [9])
 def test_future_mutation_kills_leaking_mutants(tmp_path, monkeypatch, kind, mutation, reason, offset):

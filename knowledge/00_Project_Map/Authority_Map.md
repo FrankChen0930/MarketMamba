@@ -1,3 +1,9 @@
+## 第四輪 F1–F3 修補候選 authority 邊界 — 2026-11-26
+
+`job-run-mwxjk2fj-0e64c6/builder_fwd_fix_r4@68a8b95`，no-commit，**SYNTHETIC_CPU_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[WP5回應](../../reports/forward_wp5_20261126.md)引用未修改的[P2第118及275–290行](../../tasks/spec-forward-p2-primary-20261124.md)：唯一合法transient可在原快照R+1／R+2完整切換，只有規格不可逆失效永久拒絕；此處修正第三輪candidate對RETRY的過度拒絕，歷史artifacts／驗證紀錄不改寫。[summary](../../tools/forward_wp4_summary.py)的事故authority是完整manifest檔案集合、產生時receipt登記及hash-linked journal；目錄名、caller return、manifest incident摘要均不能取代。少檔、多檔、改名、未登記事故／孤立event均STOP；外留head、nonce／manifest／逐檔驗證與一次開盲registry仍保留。這些同權限hash證據不是OS隔離或認證簽章。
+
+[WP2全欄缺值oracle](../../tests/test_forward_wp2.py)加第1欄mutant，不改fit／predict或threshold；RED6 failed與完整forward442 passed僅CPU工程證據，最終凍結重跑442 passed／463.12秒與source identity見[WP2報告](../../reports/forward_wp2_20261126.md)。本候選不supersede machine contract、正式artifact或research／production authority，不刷新外部runtime observation；WP2／WP5仍待獨立複審與Human acceptance，整包NO_GO及所有既有外部STOP保留。
+
 ## 第三輪 F1–F4 修補的 authority 邊界 — 2026-11-26
 
 `job-run-mwxhve2s-34eacf/builder_fwd_fix_r3@5b9f352` 的 no-commit、**SYNTHETIC_CPU_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED** 候選。[WP5](../../tools/forward_wp5.py)開盲先驗外留head綁定的完整commitment／逐檔hash，再從完整operation receipt／實際hash-linked journal推導不可逆失效，wrapper manifest incident只是摘要；獨立重做須有同程序WP4／C0+配對且兩程序相異的nonce／PID／開始時間receipt並被output binding涵蓋。registry研究identity只含規格SHA、sessions鏈域及external head，不含可改calendar metadata。[WP2 tests](../../tests/test_forward_wp2.py)新增未來缺值狀態雙向擾動，不改fit/predict／P2規格／threshold。

@@ -1,3 +1,9 @@
+## 第四輪 F1–F3 有界修補候選 — 2026-11-26
+
+`job-run-mwxjk2fj-0e64c6/builder_fwd_fix_r4`，detached base `68a8b95d90dbcd3cff3c99d80b360f8314465425`、起始clean，Human EXECUTE_APPROVED／no-commit；**SYNTHETIC_CPU_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[WP5回應](../../reports/forward_wp5_20261126.md)含P2第118、275–290行狀態表：[summary](../../tools/forward_wp4_summary.py)以產生時receipt path／hash登記及封存完整檔案集合驗事故，不再按目錄名搜尋；改名、刪除、漏登記事故均STOP，丟棄return不消除事故。[WP5](../../tools/forward_wp5.py)完整journal合法RETRY→R+1／R+2 SWITCH_ALL_THREE可通過合成開盲；超時、STOP／INVALID、未知例外與成功後再失敗不恢復。這修正第三輪候選「所有非成功均永久事故」的錯誤語義，不改P2規格或門檻。[WP2回應](../../reports/forward_wp2_20261126.md)及[tests](../../tests/test_forward_wp2.py)將未來finite↔NaN擾動擴及全部feature欄，保留y5／y10缺值擾動，新增第1欄mutant。
+
+RED6 failed已重現三個事故inventory反例、兩個合法retry開盲回歸與第1欄mutant；一輪完整forward regression442 passed／494.31秒，最終凍結重跑442 passed／463.12秒，identity見兩份報告。中途source凍結不一致輪次不作GREEN。候選仍待獨立複審；整包NO_GO、seed17／WP6／calendar／lifecycle／lagus provenance及既有外部STOP保留。完成不是Human acceptance；不更新外部observed_at、不授production／正式開盲／交易。未讀blind或正式Data內容，無GPU／網路／agents／排程／commit／push／merge／deploy。
+
 ## 第三輪 F1–F4 修補驗證候選 — 2026-11-26
 
 既有 `job-run-mwxhve2s-34eacf/builder_fwd_fix_r3`，detached base `5b9f352dd81875261d67bc3a7283b10c1560c140`，起始clean，Human no-commit，**SYNTHETIC_CPU_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[WP5回應](../../reports/forward_wp5_20261126.md)記錄：事故回傳／丟棄回傳及誤導摘要不能繞過 journal 開盲 gate、兩程序 nonce／PID／開始時間 receipt 與四輸出 binding、spec＋sessions＋external-head 唯一開盲 identity；[WP2回應](../../reports/forward_wp2_20261126.md)記錄未來 features／labels finite↔NaN 的210組逐日 oracle 及 missingness mutant KILLED。測試等待30→120秒與 stderr 回報僅改善測試診斷，不放寬產品 deadline。

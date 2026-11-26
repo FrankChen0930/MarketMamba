@@ -4,6 +4,7 @@ Source policy below is a frozen SYNTHETIC fixture, never a real source admission
 Private diagnostics never enter source projection or the publication timetable.
 """
 from datetime import date, datetime, time, timedelta
+from contextvars import ContextVar
 import hashlib
 import re
 import secrets
@@ -25,6 +26,28 @@ CONTRACT = hashlib.sha256(canonical(dict(schema='forward-public-summary-v1',
 SOURCE_KEYS = {'schema_version', 'session', 'public_contract_sha256', 'source_files',
                'universe_rows', 'source_error_counts', 'missing_source_sessions'}
 CHAIN_KEYS = {'previous_head', 'commitment', 'head'}
+_ATTEMPT_INVENTORY = ContextVar('forward_attempt_inventory', default=None)
+
+
+def register_attempt(journal):
+    """Bind generated attempt evidence before the caller can discard or rename it.
+
+    Direct journal callers retain their own store contract. A synthetic wrapper
+    additionally requires every observed request/event in its sealed inventory.
+    """
+    from tools import forward_wp4 as w
+    active = _ATTEMPT_INVENTORY.get()
+    if active is None: return
+    private, inventory = active
+    paths = [journal/'request.json'] + list((journal/'events').iterdir())
+    for path in paths:
+        w.private_path(path)
+        try: name = str(path.relative_to(private))
+        except ValueError as exc: raise Stop('attempt outside private inventory') from exc
+        info = w.file_info(path)
+        if name in inventory and inventory[name] != info:
+            raise Stop('attempt inventory changed')
+        inventory[name] = info
 
 
 def iso_day(value):
@@ -153,7 +176,7 @@ def synthetic_source(session='2026-11-26', missing=False, unknown_lifecycle=Fals
         source_error_counts={SOURCE: errors}, missing_source_sessions={SOURCE: []}))
 
 
-def private_operation_status(private):
+def private_operation_status(private, files=None):
     """Derive status from committed receipts and actual hash-linked journals.
 
     The manifest's descriptive incident field is never a decision authority.
@@ -161,8 +184,31 @@ def private_operation_status(private):
     they do not provide OS isolation or authenticated signatures.
     """
     import json
+    from tools import forward_wp4 as w
+    actual = {str(p.relative_to(private)): w.file_info(p) for p in private.rglob('*')
+              if p.is_file() and p not in (private/'private-manifest.json',private/'nonce.bin')}
+    if files is None:
+        files = json.loads((private/'private-manifest.json').read_bytes())['files']
+    if actual != files: raise Stop('private inventory mismatch')
     receipt = json.loads((private/'operation-receipt.json').read_bytes())
-    if set(receipt) != {'event','exception'}: raise Stop('operation receipt schema')
+    if set(receipt) != {'event','exception','attempt_files'}: raise Stop('operation receipt schema')
+    inventory = receipt['attempt_files']
+    if any(name not in files or files[name] != info for name,info in inventory.items()):
+        raise Stop('missing/renamed attempt inventory')
+    # Inspect the COMPLETE committed file set, independently of directory names.
+    # An unregistered attempt cannot become an ordinary opaque output by renaming.
+    for name in files:
+        try:
+            value = json.loads((private/name).read_bytes())
+        except (ValueError, UnicodeError):
+            continue
+        is_attempt = isinstance(value,dict) and (
+            value.get('schema') == 'forward-wp5-synthetic-attempt-v1'
+            or {'decision','previous_event_sha256','request_sha256'} <= set(value)
+            or isinstance(value.get('request'),dict) and
+            value['request'].get('schema') == 'forward-wp5-synthetic-request-v1')
+        if is_attempt and name not in inventory:
+            raise Stop('unregistered attempt record')
     status = 'UNKNOWN_ERROR' if receipt['exception'] else 'PRIVATE_EXPECTED'
     returned = receipt['event']
     if returned is not None:
@@ -170,27 +216,40 @@ def private_operation_status(private):
     if status not in ('PRIVATE_EXPECTED', 'UNKNOWN_ERROR') + ATTEMPT_ACTIONS:
         raise Stop('unknown operation status')
     matched = False
-    for events in sorted(private.rglob('events')):
-        if not events.is_dir(): raise Stop('invalid attempt journal')
-        plan = json.loads((events.parent/'request.json').read_bytes())
+    terminal_statuses = []
+    plans = [name for name in inventory if name.endswith('/request.json')]
+    covered = set(plans)
+    for name in sorted(plans):
+        plan_path = private/name
+        events = plan_path.parent/'events'
+        plan = json.loads(plan_path.read_bytes())
         previous = '0'*64; actions = []
         for i,path in enumerate(sorted(events.iterdir())):
+            relative = str(path.relative_to(private))
+            if relative not in inventory: raise Stop('unregistered journal event')
+            covered.add(relative)
             event = json.loads(path.read_bytes()); decision = event['decision']
             if (path.name != f'{i:03}.json' or event['previous_event_sha256'] != previous
                     or event['request_sha256'] != hashlib.sha256(canonical(plan)).hexdigest()
                     or decision['origin'] != plan['request']['origin']
                     or decision['snapshot_sha256'] != plan['request']['snapshot_sha256']
+                    or decision['delay_sessions'] != i
                     or decision['action'] not in ATTEMPT_ACTIONS
                     or (actions and actions[-1] != 'RETRY')):
                 raise Stop('invalid attempt journal')
             actions.append(decision['action']); previous = hashlib.sha256(canonical(event)).hexdigest()
             matched = matched or event == returned
         if not actions and status != 'WAIT': raise Stop('empty attempt journal')
-        # A successful retry cannot erase an earlier non-success event.
-        for action in actions:
-            if action != 'SWITCH_ALL_THREE': return action
+        if actions: terminal_statuses.append(actions[-1])
+    if covered != set(inventory): raise Stop('orphan attempt inventory')
     if returned is not None and status != 'WAIT' and not matched:
         raise Stop('operation return not bound to journal')
+    # P2 §訓練視窗、資料與封存 / RETRAIN_TRANSIENT: only RETRY is
+    # recoverable; a valid terminal switch resolves it, never STOP/INVALID.
+    if receipt['exception']: return 'UNKNOWN_ERROR'
+    for terminal in ('INVALID_FOR_CONFIRMATION','STOP','RETRY','WAIT'):
+        if terminal in terminal_statuses: return terminal
+    if terminal_statuses: return 'SWITCH_ALL_THREE'
     return status
 
 
@@ -224,6 +283,8 @@ def run_synthetic_session(out, *, private_operation=None, source=None, previous_
     # single-process/single-caller, not a concurrent stdout redirection service.
     sys.stdout.flush(); sys.stderr.flush()
     saved = (os.dup(1), os.dup(2))
+    inventory = {}
+    token = _ATTEMPT_INVENTORY.set((private, inventory))
     try:
         with (private / 'runner.log').open('x') as log:
             os.dup2(log.fileno(), 1); os.dup2(log.fileno(), 2)
@@ -239,15 +300,17 @@ def run_synthetic_session(out, *, private_operation=None, source=None, previous_
                     outcome = 'UNKNOWN_ERROR'
                 log.flush(); os.fsync(log.fileno())
     finally:
+        _ATTEMPT_INVENTORY.reset(token)
         os.dup2(saved[0], 1); os.dup2(saved[1], 2)
         os.close(saved[0]); os.close(saved[1])
     if any(p.is_symlink() for p in private.rglob('*')): raise Stop('private output symlink')
-    w.write_sync(private/'operation-receipt.json', canonical(dict(event=returned,exception=exception)))
-    try: outcome = private_operation_status(private)
-    except (Stop, OSError, ValueError, KeyError, TypeError): outcome = 'UNKNOWN_ERROR'
+    w.write_sync(private/'operation-receipt.json', canonical(dict(
+        event=returned,exception=exception,attempt_files=inventory)))
+    files = {str(p.relative_to(private)): w.file_info(p) for p in private.rglob('*') if p.is_file()}
+    outcome = private_operation_status(private, files)
     manifest = dict(schema='forward-wp4-synthetic-private-v1', synthetic=True,
         previous_private_commitment=previous_private_commitment, incident=outcome,
-        files={str(p.relative_to(private)): w.file_info(p) for p in private.rglob('*') if p.is_file()})
+        files=files)
     public, nonce = seal(source, manifest, previous_head)
     w.write_sync(private / 'private-manifest.json', canonical(manifest))
     w.write_sync(private / 'nonce.bin', nonce)
