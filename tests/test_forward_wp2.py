@@ -99,19 +99,29 @@ def assert_future_invariance(tmp_path, monkeypatch, mutation, offset, seed=17):
     origin = '2024-04-16'
     t = np.datetime64(c.shift(origin, offset))
     view = w.prepare_view(source, tmp_path/'view', c, origin, c.shift(origin, 13))
+    if mutation == 'future_feature_missingness':
+        future=np.flatnonzero(a['dates'] > t)
+        a['X'][future[::3],0]=np.nan
+        np.save(source/'X.npy',a['X'])
     first, first_used = observed_fit_predict(view, seed, monkeypatch)
-    if mutation == 'future_features':
+    if mutation in ('future_features','future_feature_missingness'):
         mask = a['dates'] > t
-        a['X'][mask] = 1e15
+        if mutation == 'future_features':
+            a['X'][mask] = 1e15
+        else:
+            changed=a['X'][mask].copy()
+            changed[:,::2]=np.where(np.isfinite(changed[:,::2]),np.nan,17.0)
+            a['X'][mask]=changed
         np.save(source/'X.npy', a['X'])
     else:
         # A row's y5 realizes at signal+5, not at the signal date. Changing
         # only label rows dated >t cannot expose scores += y5[eval_idx].
         for label in ('y5', 'y10'):
             horizon = int(label[1:])
-            boundary = t if mutation == 'future_labels' else np.datetime64(c.shift(str(t), -horizon))
+            boundary = t if mutation in ('future_labels','future_label_missingness') else np.datetime64(c.shift(str(t), -horizon))
             mask = a['dates'] > boundary
-            a[label][mask] = np.nan
+            a[label][mask] = (np.where(np.isfinite(a[label][mask]),np.nan,17.0)
+                              if mutation == 'future_label_missingness' else np.nan)
             np.save(source/(label+'.npy'), a[label])
     assert mask.any()
     second, second_used = observed_fit_predict(view, seed, monkeypatch)
@@ -144,7 +154,8 @@ def assert_future_invariance(tmp_path, monkeypatch, mutation, offset, seed=17):
 
 @pytest.mark.parametrize('seed', [17, 29, 43])
 @pytest.mark.parametrize('offset', range(14))
-@pytest.mark.parametrize('mutation', ['future_labels', 'immature_labels', 'future_features'])
+@pytest.mark.parametrize('mutation', ['future_labels', 'immature_labels', 'future_features',
+                                     'future_feature_missingness','future_label_missingness'])
 def test_future_mutation_preserves_all_history_and_actual_model_inputs(tmp_path, monkeypatch, mutation, offset, seed):
     assert_future_invariance(tmp_path, monkeypatch, mutation, offset, seed)
 
@@ -157,6 +168,8 @@ def leaking_fit_predict(kind):
         new = "scores=model.predict(xe) + np.nan_to_num(data.y['y5'][-16:].mean()) * 1e-12"
     elif kind == 'origin9':
         new = "scores=model.predict(xe)\n    scores[144:160] += np.float64(data.X[-16:,0].mean())"
+    elif kind == 'missingness':
+        new = 'scores=model.predict(xe) + np.isfinite(data.X[-16:,0]).mean()'
     elif kind == 'sample_order':
         old = 'xf,names=c0plus.build_features(data,ctx.fit_idx,data.feature_names)'
         new = "if data.X[-16:,0].mean() > 1e10: ctx.fit_idx = ctx.fit_idx[::-1]\n    xf,names=c0plus.build_features(data,ctx.fit_idx,data.feature_names)"
@@ -177,6 +190,7 @@ def leaking_fit_predict(kind):
     ('sample_order', 'future_features', 'fit_idx'),
     ('target', 'future_labels', 'target'),
     ('future_feature', 'future_features', 'predict_features hash'),
+    ('missingness', 'future_feature_missingness', 'historical scores'),
 ])
 @pytest.mark.parametrize('offset', [9])
 def test_future_mutation_kills_leaking_mutants(tmp_path, monkeypatch, kind, mutation, reason, offset):

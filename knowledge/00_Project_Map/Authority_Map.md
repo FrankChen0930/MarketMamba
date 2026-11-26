@@ -1,3 +1,9 @@
+## 第三輪 F1–F4 修補的 authority 邊界 — 2026-11-26
+
+`job-run-mwxhve2s-34eacf/builder_fwd_fix_r3@5b9f352` 的 no-commit、**SYNTHETIC_CPU_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED** 候選。[WP5](../../tools/forward_wp5.py)開盲先驗外留head綁定的完整commitment／逐檔hash，再從完整operation receipt／實際hash-linked journal推導不可逆失效，wrapper manifest incident只是摘要；獨立重做須有同程序WP4／C0+配對且兩程序相異的nonce／PID／開始時間receipt並被output binding涵蓋。registry研究identity只含規格SHA、sessions鏈域及external head，不含可改calendar metadata。[WP2 tests](../../tests/test_forward_wp2.py)新增未來缺值狀態雙向擾動，不改fit/predict／P2規格／threshold。
+
+RED9 failed、集中GREEN14 passed、完整forward428 passed／172 warnings／386.13秒只提供本輪CPU工程證據，更新上一輪下方「未收斂」驗證狀態，不授正式開盲、交易、OS隔離或認證簽章。兩份[WP2](../../reports/forward_wp2_20261126.md)／[WP5](../../reports/forward_wp5_20261126.md)回應及本worktree私有manifest記source與outputs身分；不supersede任何規格、歷史artifact、machine／research／production authority，不刷新外部observed_at。WP1／WP3／WP4第三輪GO保留；WP2／WP5修補仍待複審，整包NO_GO、既知外部STOP與Human acceptance要求保留。
+
 ## F1–F6 有界複審修補候選 — 2026-11-26
 
 終局時間界線：完整 focused 已啟動，程式碼凍結後重跑仍有1個失敗且尚未收斂；依收集順序疑似WP3 SIGKILL測試，未取得traceback前不定因。集中關鍵驗證亦未結束。不得將本輪升格為全GREEN或Human acceptance；NO_GO保留，next為收取完整輸出、診斷失敗後再複審。

@@ -1,3 +1,9 @@
+## 第三輪 forward F1–F4 有界修補 — 2026-11-26
+
+`builder_fwd_fix_r3@5b9f352`，no-commit、SYNTHETIC_CPU_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。[WP2報告](../../reports/forward_wp2_20261126.md)新增14日×三seed×五擾動的210組oracle，future feature／label missingness雙向切換且新missingness mutant KILLED；這修補驗收盲點，不證明真實PIT或現行計算曾洩漏。[WP5報告](../../reports/forward_wp5_20261126.md)記錄事故journal而非manifest摘要控制開盲、兩fresh程序receipt與store／C0+配對binding、排除calendar metadata的唯一開盲identity。完整forward428 passed／172 NaN warnings／386.13秒，測試等待放寬不改產品timeout。
+
+同權限commitment仍非OS隔離／簽章；P2規格、selection與研究門檻不變。原seed17真實bitwise／WP6／calendar／lifecycle／lagus STOP未解，整包NO_GO待獨立複審與Human acceptance。證據僅本worktree`.artifacts/forward/fix-r3-20261126-5b9f352/`，沒有真資料fits、blind讀取或外部runtime observation更新。
+
 ## 前瞻 F1／F4 審查修補候選 — 2026-11-26
 
 `job-run-mwxcypdo-30712f/builder_fwd_fix12`，既有detached base `d8d76c7cd4f1c8533c3c7c16fc661efb03d76c88`，Human核准有界no-commit，**CPU_ENGINEERING_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。回應主checkout私有 `fwd-wp1-4-review.md` 的F1／F4；[WP2測試](../../tests/test_forward_wp2.py)改在origin與+1／+3／+8 sessions逐次改未來labels／features，另按+5／+10收益端點改未成熟labels；只改列日期>t不足以抓直接使用當列eval label。三seed共36 cases核全部≤t scores／ordered keys及實際LightGBM fit target／features與歷史predict features雜湊。審查eval-label及未來feature source mutants在四個時點共8／8被攔，正式oracle對兩mutants各exit1，原實作GREEN；未發現現行計算洩漏，未改fit/predict邏輯。[WP1測試](../../tests/test_forward_wp1.py)鎖定helper與WP2 train≤origin−21、origin−20排除；兩模組僅註解統一。

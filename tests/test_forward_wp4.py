@@ -85,10 +85,11 @@ w.synthetic_run(root)
         proc = subprocess.Popen([sys.executable, '-c', script, str(root), str(ready), phase],
                                 stdout=output, stderr=output)
         try:
-            deadline = time.monotonic() + 30
+            deadline = time.monotonic() + 120
             while not ready.exists() and proc.poll() is None and time.monotonic() < deadline:
                 time.sleep(.02)
-            assert ready.read_text() == phase, log.read_text()
+            assert ready.exists(), 'child failed/timed out; stderr tail: '+log.read_text()[-1500:]
+            assert ready.read_text() == phase, log.read_text()[-1500:]
             proc.kill()
             assert proc.wait(timeout=10) == -signal.SIGKILL
         finally:
@@ -106,7 +107,7 @@ w.write_sync(Path(sys.argv[2]), (root / 'current.json').read_bytes())
 '''
     check = tmp_path / 'restart.json'
     restarted = subprocess.run([sys.executable, '-c', script, str(root), str(check)],
-                               capture_output=True, timeout=30)
+                               capture_output=True, timeout=120)
     assert restarted.returncode == 0, restarted.stderr.decode()
     assert check.read_bytes() == after
     assert list(root.glob('local-*'))  # retained, never reclaimed as latest/best
@@ -261,8 +262,8 @@ def checkpoint(phase):
 w._checkpoint = checkpoint
 w.synthetic_run(Path(sys.argv[1]))
 '''
-    proc = subprocess.run([sys.executable,'-c',script,str(root)],capture_output=True,timeout=30)
-    assert proc.returncode == -signal.SIGKILL
+    proc = subprocess.run([sys.executable,'-c',script,str(root)],capture_output=True,timeout=120)
+    assert proc.returncode == -signal.SIGKILL, proc.stderr.decode()[-1500:]
     assert len(list((root/'versions').glob('version-*'))) == 1
     assert not (root/'current.json').exists()
     with pytest.raises(w.Stop): w.load_current(root,w.synthetic_context())

@@ -17,6 +17,7 @@ SOURCE_CODES = ('SOURCE_MISSING', 'SOURCE_COVERAGE', 'SOURCE_UNIVERSE',
                 'SOURCE_INVALID', 'SOURCE_OPTIONAL')
 PRIVATE_CODES = ('RETRAIN_TRANSIENT', 'RETRAIN_IDENTITY', 'PRIVATE_MARK_EXECUTION',
                  'BLIND_INTEGRITY', 'PRIVATE_EXPECTED', 'UNKNOWN_ERROR')
+ATTEMPT_ACTIONS = ('WAIT', 'RETRY', 'STOP', 'INVALID_FOR_CONFIRMATION', 'SWITCH_ALL_THREE')
 HEX = re.compile(r'[0-9a-f]{64}')
 CONTRACT = hashlib.sha256(canonical(dict(schema='forward-public-summary-v1',
     sources=[SOURCE], field_classes=FIELDS, errors=SOURCE_CODES,
@@ -152,6 +153,47 @@ def synthetic_source(session='2026-11-26', missing=False, unknown_lifecycle=Fals
         source_error_counts={SOURCE: errors}, missing_source_sessions={SOURCE: []}))
 
 
+def private_operation_status(private):
+    """Derive status from committed receipts and actual hash-linked journals.
+
+    The manifest's descriptive incident field is never a decision authority.
+    Same-user commitments detect changes relative to the retained external head;
+    they do not provide OS isolation or authenticated signatures.
+    """
+    import json
+    receipt = json.loads((private/'operation-receipt.json').read_bytes())
+    if set(receipt) != {'event','exception'}: raise Stop('operation receipt schema')
+    status = 'UNKNOWN_ERROR' if receipt['exception'] else 'PRIVATE_EXPECTED'
+    returned = receipt['event']
+    if returned is not None:
+        status = returned['decision']['action']
+    if status not in ('PRIVATE_EXPECTED', 'UNKNOWN_ERROR') + ATTEMPT_ACTIONS:
+        raise Stop('unknown operation status')
+    matched = False
+    for events in sorted(private.rglob('events')):
+        if not events.is_dir(): raise Stop('invalid attempt journal')
+        plan = json.loads((events.parent/'request.json').read_bytes())
+        previous = '0'*64; actions = []
+        for i,path in enumerate(sorted(events.iterdir())):
+            event = json.loads(path.read_bytes()); decision = event['decision']
+            if (path.name != f'{i:03}.json' or event['previous_event_sha256'] != previous
+                    or event['request_sha256'] != hashlib.sha256(canonical(plan)).hexdigest()
+                    or decision['origin'] != plan['request']['origin']
+                    or decision['snapshot_sha256'] != plan['request']['snapshot_sha256']
+                    or decision['action'] not in ATTEMPT_ACTIONS
+                    or (actions and actions[-1] != 'RETRY')):
+                raise Stop('invalid attempt journal')
+            actions.append(decision['action']); previous = hashlib.sha256(canonical(event)).hexdigest()
+            matched = matched or event == returned
+        if not actions and status != 'WAIT': raise Stop('empty attempt journal')
+        # A successful retry cannot erase an earlier non-success event.
+        for action in actions:
+            if action != 'SWITCH_ALL_THREE': return action
+    if returned is not None and status != 'WAIT' and not matched:
+        raise Stop('operation return not bound to journal')
+    return status
+
+
 def run_synthetic_session(out, *, private_operation=None, source=None, previous_head='0'*64,
                           previous_private_commitment='0'*64, at=None):
     """Synthetic Human-runner interface; writes BOTH sides only under forward.
@@ -176,6 +218,7 @@ def run_synthetic_session(out, *, private_operation=None, source=None, previous_
     private = out / 'private'; private.mkdir()
     w.write_sync(private / 'source-before-fit.json', snapshot)
     outcome = 'PRIVATE_EXPECTED'
+    returned = None; exception = None
     operation = private_operation or (lambda directory: w.synthetic_run(directory / 'store'))
     # Python AND native library output stays private. The wrapper is deliberately
     # single-process/single-caller, not a concurrent stdout redirection service.
@@ -185,13 +228,23 @@ def run_synthetic_session(out, *, private_operation=None, source=None, previous_
         with (private / 'runner.log').open('x') as log:
             os.dup2(log.fileno(), 1); os.dup2(log.fileno(), 2)
             with redirect_stdout(log), redirect_stderr(log):
-                try: operation(private)
-                except Exception: outcome = 'UNKNOWN_ERROR'
+                try:
+                    result = operation(private)
+                    if isinstance(result, dict) and 'decision' in result:
+                        returned = result
+                        outcome = result['decision']['action']
+                        if outcome not in ATTEMPT_ACTIONS: outcome = 'UNKNOWN_ERROR'
+                except Exception as exc:
+                    exception = type(exc).__name__
+                    outcome = 'UNKNOWN_ERROR'
                 log.flush(); os.fsync(log.fileno())
     finally:
         os.dup2(saved[0], 1); os.dup2(saved[1], 2)
         os.close(saved[0]); os.close(saved[1])
     if any(p.is_symlink() for p in private.rglob('*')): raise Stop('private output symlink')
+    w.write_sync(private/'operation-receipt.json', canonical(dict(event=returned,exception=exception)))
+    try: outcome = private_operation_status(private)
+    except (Stop, OSError, ValueError, KeyError, TypeError): outcome = 'UNKNOWN_ERROR'
     manifest = dict(schema='forward-wp4-synthetic-private-v1', synthetic=True,
         previous_private_commitment=previous_private_commitment, incident=outcome,
         files={str(p.relative_to(private)): w.file_info(p) for p in private.rglob('*') if p.is_file()})
@@ -222,7 +275,7 @@ def verify_synthetic_sessions(directories, expected_sessions, external_head):
                 or manifest['schema'] != 'forward-wp4-synthetic-private-v1'
                 or manifest['synthetic'] is not True
                 or manifest['previous_private_commitment'] != previous_private
-                or manifest['incident'] not in PRIVATE_CODES
+                or manifest['incident'] not in PRIVATE_CODES + ATTEMPT_ACTIONS
                 or commitment(manifest,nonce) != public['commitment']):
             raise Stop('private commitment chain')
         files = {str(p.relative_to(private)):w.file_info(p) for p in private.rglob('*')

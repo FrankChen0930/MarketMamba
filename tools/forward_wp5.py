@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import secrets
 from datetime import timezone
 import hashlib
 import json
@@ -322,11 +323,23 @@ def run_attempt(journal, *, calendar, request, snapshot, at, codes, phase,
                 if (receipts[0]['pid']==receipts[1]['pid'] or any(
                     r['request']!=request or r['origin']!=request['origin'] for r in receipts)):
                     raise Stop('independent request/origin evidence required')
-                for p in paths:
+                executions=[json.loads((p/'execution-receipt.json').read_bytes()) for p in paths]
+                if (executions[0]!=executions[2] or executions[1]!=executions[3]
+                        or executions[0]['nonce']==executions[1]['nonce']
+                        or executions[0]['pid']==executions[1]['pid']
+                        or executions[0]['started_ns']==executions[1]['started_ns']):
+                    raise Stop('independent execution receipts required')
+                for receipt in executions:
+                    if (receipt['request']!=request or not isinstance(receipt['pid'],int)
+                            or receipt['pid']<=0 or not isinstance(receipt['started_ns'],int)
+                            or receipt['started_ns']<=0 or len(receipt['nonce'])!=64
+                            or any(c not in '0123456789abcdef' for c in receipt['nonce'])):
+                        raise Stop('invalid execution receipt')
+                for p,receipt in zip(paths,executions):
                     bound=json.loads((p/'output-binding.json').read_bytes())
                     actual={str(f.relative_to(p)):store.file_info(f) for f in p.rglob('*')
                             if f.is_file() and f.name!='output-binding.json'}
-                    if bound!=dict(request=request,files=actual): raise Stop('output binding mismatch')
+                    if bound!=dict(request=request,receipt=receipt,files=actual): raise Stop('output binding mismatch')
                 evidence=dict(compare_stores(reference,candidate),
                     **compare_c0plus(reference_c0plus,candidate_c0plus))
                 accepted=synthetic_acceptance()
@@ -348,10 +361,8 @@ def independent_reference(out, frozen_path, pin, request=None):
     """Two fresh CPU processes; fixed WP4 synthetic recipe, never real P1 replay."""
     out = store.private_path(out); out.mkdir(parents=True, exist_ok=False)
     script = ('from pathlib import Path; import sys,json; '
-              'from tools.forward_wp4 import synthetic_run; '
-              'from tools.forward_wp5 import c0plus_reference_worker; '
-              'synthetic_run(Path(sys.argv[1])); '
-              'c0plus_reference_worker(Path(sys.argv[1]).parent/(Path(sys.argv[1]).name+"-c0plus"),json.loads(sys.argv[2]))')
+              'from tools.forward_wp5 import independent_reference_worker; '
+              'independent_reference_worker(Path(sys.argv[1]),json.loads(sys.argv[2]))')
     elapsed = []
     for i in range(2):
         verify_script(frozen_path, pin)
@@ -360,10 +371,12 @@ def independent_reference(out, frozen_path, pin, request=None):
             completed = subprocess.run([sys.executable, '-c', script, str(out/f'run-{i}'), json.dumps(request)],
                 cwd=REPO, stdout=log, stderr=subprocess.STDOUT, check=False)
         elapsed.append(time.monotonic()-started)
-        if completed.returncode != 0: raise Stop('independent reference process failed')
+        if completed.returncode != 0:
+            raise Stop('independent reference process failed: ' + (out/f'process-{i}.log').read_text()[-1500:])
     for p in [out/f'run-{i}{suffix}' for i in range(2) for suffix in ('','-c0plus')]:
         files={str(f.relative_to(p)):store.file_info(f) for f in p.rglob('*') if f.is_file()}
-        store.write_sync(p/'output-binding.json',store.canonical(dict(request=request,files=files)))
+        receipt=json.loads((p/'execution-receipt.json').read_bytes())
+        store.write_sync(p/'output-binding.json',store.canonical(dict(request=request,receipt=receipt,files=files)))
     verify_script(frozen_path, pin)
     result = dict(compare_stores(out/'run-0', out/'run-1'),
                   **compare_c0plus(out/'run-0-c0plus',out/'run-1-c0plus'), processes=2,
@@ -371,6 +384,18 @@ def independent_reference(out, frozen_path, pin, request=None):
     store.write_sync(out/'reference-report.json', store.canonical(result))
     store._sync_dir(out)
     return result
+
+
+def independent_reference_worker(root, request):
+    """One fresh execution binds both outputs to its start identity."""
+    receipt=dict(nonce=secrets.token_hex(32),pid=os.getpid(),
+        started_ns=time.time_ns(),request=request)
+    store.synthetic_run(root)
+    c0root=root.parent/(root.name+'-c0plus')
+    c0plus_reference_worker(c0root,request)
+    for path in (root,c0root):
+        store.write_sync(path/'execution-receipt.json',store.canonical(receipt))
+        store._sync_dir(path)
 
 
 def incident_state(previous, incident):
@@ -405,12 +430,15 @@ def manual_unblind(*, calendar, expected_sessions, directories, external_head,
     if timestamp(at) < timestamp(maturity): raise Stop('unblind immature endpoint')
     verify_chain(directories, expected, external_head)
     for directory in directories:
-        manifest = json.loads((store.private_path(directory)/'private/private-manifest.json').read_bytes())
-        if manifest['incident'] != 'PRIVATE_EXPECTED':
+        try:
+            status=summary.private_operation_status(store.private_path(directory)/'private')
+        except (Stop,OSError,ValueError,KeyError,TypeError) as exc:
+            raise Stop('irreversible incident invalidity') from exc
+        if status not in ('PRIVATE_EXPECTED','SWITCH_ALL_THREE'):
             raise Stop('irreversible incident invalidity')
-    # Study identity is anchored to the frozen session domain and calendar, not output.
-    identity = sha256_bytes(store.canonical(dict(first=expected[0],
-        calendar=calendar_identity(calendar), sessions=expected)))
+    # Caller-controlled metadata cannot create a new unexposed research identity.
+    identity = sha256_bytes(store.canonical(dict(spec_sha256=store.sha256(store.SPEC),
+        sessions=expected,external_head=external_head)))
     registry = store.private_path(store.ROOT/'unblind-registry')
     registry.mkdir(parents=True, exist_ok=True)
     result = dict(schema='forward-wp5-synthetic-unblind-v1', synthetic=True,

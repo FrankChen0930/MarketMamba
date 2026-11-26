@@ -1,3 +1,9 @@
+## 第三輪 F1–F4 修補驗證候選 — 2026-11-26
+
+既有 `job-run-mwxhve2s-34eacf/builder_fwd_fix_r3`，detached base `5b9f352dd81875261d67bc3a7283b10c1560c140`，起始clean，Human no-commit，**SYNTHETIC_CPU_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[WP5回應](../../reports/forward_wp5_20261126.md)記錄：事故回傳／丟棄回傳及誤導摘要不能繞過 journal 開盲 gate、兩程序 nonce／PID／開始時間 receipt 與四輸出 binding、spec＋sessions＋external-head 唯一開盲 identity；[WP2回應](../../reports/forward_wp2_20261126.md)記錄未來 features／labels finite↔NaN 的210組逐日 oracle 及 missingness mutant KILLED。測試等待30→120秒與 stderr 回報僅改善測試診斷，不放寬產品 deadline。
+
+RED 9 failed；集中GREEN 14 passed；最後標準全部 forward 測試 **428 passed／172 NaN聚合 warnings／386.13秒／exit0**，無basetemp。GENERATED logs／來源、規格、review hashes與環境見本worktree `.artifacts/forward/fix-r3-20261126-5b9f352/manifest.json`。本節更新下方上一輪「尚未收斂」的驗證狀態；不重寫其歷史證據。第三輪審查WP1／WP3／WP4 GO保留，WP2／WP5本輪候選待獨立複審，整包NO_GO／Human acceptance待辦；seed17真實bitwise、WP6、合格日曆、lifecycle可知時間、lagus provenance仍STOP。規格／正式資料／production authority未變，無外部runtime observation更新；next為獨立複審本輪四項及Human驗收。
+
 ## F1–F6 有界複審修補候選 — 2026-11-26
 
 終局時間界線：完整 focused 已啟動，程式碼凍結後重跑仍有1個失敗且尚未收斂；依收集順序疑似WP3 SIGKILL測試，未取得traceback前不定因。集中關鍵驗證亦未結束。不得將本輪升格為全GREEN或Human acceptance；NO_GO保留，next為收取完整輸出、診斷失敗後再複審。

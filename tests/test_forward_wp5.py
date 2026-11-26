@@ -158,6 +158,15 @@ def test_reference_two_independent_processes_and_corruption(tmp_path):
         assert accepted['decision']['action']=='SWITCH_ALL_THREE'
         assert accepted['decision']['origin']==r['origin']
         assert accepted['evidence']['reference_equal'] is True
+    import shutil
+    clone=tmp_path/'cloned-store'
+    shutil.copytree(tmp_path/'reference/run-0',clone)
+    cloned=w.run_attempt(tmp_path/'cloned-journal',calendar=c,request=r,
+        snapshot=b'fixed synthetic snapshot',at=cutoff(r['origin']),codes=[],phase='FORMAL',
+        frozen_path=tmp_path/'frozen.json',pin=pin,reference=tmp_path/'reference/run-0',
+        candidate=clone,reference_c0plus=tmp_path/'reference/run-0-c0plus',
+        candidate_c0plus=tmp_path/'reference/run-1-c0plus')
+    assert cloned['decision']['action']=='INVALID_FOR_CONFIRMATION'
     args=dict(calendar=c,request=r,snapshot=b'fixed synthetic snapshot',
         at=cutoff(r['origin']),codes=[],phase='FORMAL',frozen_path=tmp_path/'frozen.json',pin=pin,
         reference=tmp_path/'reference/run-0',candidate=tmp_path/'reference/run-0',
@@ -296,6 +305,48 @@ def test_unblind_identity_cannot_change_output(tmp_path):
         human='Human', manual=True, frozen_path=tmp_path/'frozen.json',pin=pin)
     w.manual_unblind(**args,output=tmp_path/'one.json')
     with pytest.raises(Stop): w.manual_unblind(**args,output=tmp_path/'two.json')
+    changed=Calendar(c.sessions,c.start,c.end,dict(c.identity,comment='same research'))
+    with pytest.raises(Stop,match='already unblinded'):
+        w.manual_unblind(**dict(args,calendar=changed),output=tmp_path/'metadata.json')
+
+
+@pytest.mark.parametrize('codes,phase,action', [
+    (['UNKNOWN_ERROR'],'FORMAL','INVALID_FOR_CONFIRMATION'),
+    (['RETRAIN_TRANSIENT'],'FORMAL','RETRY'),
+    (['UNKNOWN_ERROR'],'PRESTART','STOP'),
+])
+@pytest.mark.parametrize('discard_return', [False,True])
+def test_returned_journal_incident_cannot_be_relabelled(tmp_path,monkeypatch,codes,phase,action,discard_return):
+    import json
+    c=calendar(); days=c.sessions[31:283]; dirs=[]; head='0'*64; previous='0'*64
+    pin=w.freeze_script(tmp_path/'frozen.json')
+    r=w.freeze_request(c,days[0],b'snapshot')
+    if discard_return:
+        seal=summary.seal
+        def misleading_summary(source,manifest,previous_head):
+            manifest['incident']='PRIVATE_EXPECTED'
+            return seal(source,manifest,previous_head)
+        monkeypatch.setattr(summary,'seal',misleading_summary)
+    def operation(private):
+        event=w.run_attempt(private/'journal',calendar=c,request=r,snapshot=b'snapshot',
+            at=cutoff(r['origin']),codes=codes,phase=phase,
+            frozen_path=tmp_path/'frozen.json',pin=pin)
+        assert event['decision']['action']==action
+        return None if discard_return else event
+    for i,d in enumerate(days):
+        directory=tmp_path/'chain'/str(i)
+        record=summary.run_synthetic_session(directory,source=summary.synthetic_source(d),
+            private_operation=operation if i==0 else lambda _:None,
+            previous_head=head,previous_private_commitment=previous)
+        dirs.append(directory);head=record['head'];previous=record['commitment']
+    manifest=json.loads((dirs[0]/'private/private-manifest.json').read_bytes())
+    assert manifest['incident']==('PRIVATE_EXPECTED' if discard_return else action)
+    # The committed summary is deliberately ignored by the unblind decision.
+    with pytest.raises(Stop,match='irreversible incident invalidity'):
+        w.manual_unblind(calendar=c,expected_sessions=days,directories=dirs,external_head=head,
+            state='VALID',at=cutoff(c.shift(days[-1],11)),publication_complete=True,
+            human='Human',manual=True,frozen_path=tmp_path/'frozen.json',pin=pin,
+            output=tmp_path/'opened.json')
 
 
 def test_unblind_derives_incident_invalidity(tmp_path):

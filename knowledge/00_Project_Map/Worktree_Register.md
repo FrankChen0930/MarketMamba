@@ -1,3 +1,12 @@
+## 前瞻第三輪 F1–F4 builder — 2026-11-26
+
+- Purpose／owner／task：Human／Codex builder，`job-run-mwxhve2s-34eacf/builder_fwd_fix_r3`；僅修指定F1–F4及測試負載診斷、WP2／WP5報告與knowledge。
+- Path／branch／base：既有`.worktrees/ruflo-workers/run-mwxhve2s-34eacf/builder_fwd_fix_r3`，detached `5b9f352dd81875261d67bc3a7283b10c1560c140`；created UNKNOWN、接手2026-11-26、retired N/A；起始clean，no-commit，不新增／移除worktree。
+- State／authority：SYNTHETIC_CPU_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；完整forward428 passed／172 warnings／386.13秒，整包NO_GO與外部STOP保留，next為獨立複審與Human acceptance。
+- Artifact／merge dependencies：GENERATED logs／source與review hashes／contract／environment見本worktree`.artifacts/forward/fix-r3-20261126-5b9f352/manifest.json`；沿用forward namespace，獨立子目錄避免覆寫。TEMPORARY合成models／sessions由既有fixture清理；無formal Data／模型／歷史artifact變更，沒有commit／push／merge授權。
+- Safe removal：先保存本輪no-commit patch及unique evidence／manifest，核references與可重建性，Human另案退役且確認clean前不得移除。
+- Runtime：WSL CPU／pilot09 venv Python3.12.3，CUDA空、OMP4／BLAS1；MARKETMAMBA_DATA_ROOT unset，Data為本worktree普通目錄realpath，僅核metadata；無GPU／網路／agents／blind／production／scheduler／wakeup或外部observed_at更新。
+
 ## 前瞻 WP5 builder — 2026-11-26
 
 - Purpose／owner／task：Human／Codex builder，`job-run-mwxe944p-5885dc/builder_fwd_wp5`，有界WP5非績效acceptance／靜態清單／合成事故與重試演練。
