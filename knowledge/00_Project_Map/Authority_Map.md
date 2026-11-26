@@ -1,3 +1,9 @@
+## 前瞻 F1／F4 審查修補候選 — 2026-11-26
+
+`job-run-mwxcypdo-30712f/builder_fwd_fix12`，既有detached base `d8d76c7cd4f1c8533c3c7c16fc661efb03d76c88`，Human核准有界no-commit，**CPU_ENGINEERING_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。回應主checkout私有 `fwd-wp1-4-review.md` 的F1／F4；[WP2測試](../../tests/test_forward_wp2.py)改在origin與+1／+3／+8 sessions逐次改未來labels／features，另按+5／+10收益端點改未成熟labels；只改列日期>t不足以抓直接使用當列eval label。三seed共36 cases核全部≤t scores／ordered keys及實際LightGBM fit target／features與歷史predict features雜湊。審查eval-label及未來feature source mutants在四個時點共8／8被攔，正式oracle對兩mutants各exit1，原實作GREEN；未發現現行計算洩漏，未改fit/predict邏輯。[WP1測試](../../tests/test_forward_wp1.py)鎖定helper與WP2 train≤origin−21、origin−20排除；兩模組僅註解統一。
+
+標準PYTHONPATH=V6:V6/research_lab/tests:.、無--basetemp的focused61 passed／12.81秒，rolling split／runner29 passed／4.29秒；本輪未跑全套或真資料fit。來源PIT／日曆／lifecycle、WP2 seed17 bitwise待Human、WP3同版本mask／reference與WP4環境還原lock仍STOP，**WP1–WP4整包NO_GO**不解除；修補待獨立複審與Human acceptance。詳[WP1回應](../../reports/forward_wp1_20261126.md#f1f4-獨立審查回應--2026-11-26)與[WP2回應](../../reports/forward_wp2_20261126.md#f1f4-獨立審查回應--2026-11-26)。私有GENERATED evidence只在本worktree`.artifacts/forward/fix12-20261126/`，未改規格／acceptance門檻／machine或production authority；無外部observed_at更新，無網路／GPU／agents／正式Data／V6/models／P4d／第三步／排程／blind操作，無commit／push／merge／deploy。
+
 ## P2 WP4 合成持久化／摘要候選邊界 — 2026-11-26
 
 [原規格WP4／封盲F2](../../tasks/spec-forward-p2-primary-20261124.md)與既有WP1–WP3／P1／C0+ machine authority不變。`job-run-mwxb97t0-5e7fef/builder_fwd_wp4@561392a`之[store](../../tools/forward_wp4.py)／[summary](../../tools/forward_wp4_summary.py)、[store tests](../../tests/test_forward_wp4.py)／[summary tests](../../tests/test_forward_wp4_summary.py)是未提交 **SYNTHETIC_CPU_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**候選，非正式模型、來源、封盲或前瞻准入。直接重用Step3 validator／fsync／identity，不改Step3 root、bundle或orphan政策。
@@ -24,7 +30,7 @@ TEJ子產業按粒度／無變更紀錄比例選，非報酬選型。變更值�
 
 ## P2 WP2 工程候選與逐位元 STOP — 2026-11-26
 
-[WP2 adapter](../../tools/forward_wp2.py)／[測試](../../tests/test_forward_wp2.py)是 `run-mwx8ka1a-f6fcaa/builder_fwd_wp2@850ea71` 的 no-commit、**UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED** 候選。[原 P2 規格](../../tasks/spec-forward-p2-primary-20261124.md)、[P1 規格](../../tasks/spec-portfolio-eval-20261119.md)、原 `ace2eef` score manifest 及 executable recipe authority 均不變。origin−21 採含端點（P2原文 `< origin−20`）；WP1排他註解不覆蓋這個權威，未修改 dependency。唯讀舊 fold_2026 的 observed-union calendar 只用於歷史重現；不授前瞻日曆或來源資格。三seed中seed17有50筆逐位元分數不符即STOP（29／43及rank average相等），不以相同ranks或數值接近替代門檻；最終診斷與私有manifest身分見[報告](../../reports/forward_wp2_20261126.md)。不supersede任何歷史結果、P4d／第三步／production或machine authority；不更新外部 observed_at。獨立驗收與Human acceptance待辦。
+[WP2 adapter](../../tools/forward_wp2.py)／[測試](../../tests/test_forward_wp2.py)是 `run-mwx8ka1a-f6fcaa/builder_fwd_wp2@850ea71` 的 no-commit、**UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED** 候選。[原 P2 規格](../../tasks/spec-forward-p2-primary-20261124.md)、[P1 規格](../../tasks/spec-portfolio-eval-20261119.md)、原 `ace2eef` score manifest 及 executable recipe authority 均不變。origin−21 採含端點（P2原文 `< origin−20`）；WP1原排他註解不覆蓋這個權威，已由本次F4修補統一含端點。唯讀舊 fold_2026 的 observed-union calendar 只用於歷史重現；不授前瞻日曆或來源資格。三seed中seed17有50筆逐位元分數不符即STOP（29／43及rank average相等），不以相同ranks或數值接近替代門檻；最終診斷與私有manifest身分見[報告](../../reports/forward_wp2_20261126.md)。不supersede任何歷史結果、P4d／第三步／production或machine authority；不更新外部 observed_at。獨立驗收與Human acceptance待辦。
 
 ## 共用前瞻 WP1 候選邊界 — 2026-11-26
 

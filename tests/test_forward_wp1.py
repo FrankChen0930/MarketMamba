@@ -28,6 +28,21 @@ def test_calendar_edges_and_purge():
         with pytest.raises(w.Stop):call()
 
 
+def test_origin_minus21_is_inclusive_and_matches_wp2():
+    import numpy as np
+    from tools.forward_wp2 import origin_splits
+    c = calendar()
+    origin = '2025-02-01'
+    cutoff = c.origin_minus21(origin)
+    assert cutoff == c.shift(origin, -21) == '2025-01-11'
+    dates = np.array(c.sessions, dtype='datetime64[D]')
+    splits = origin_splits(dates, np.ones(len(dates), dtype='uint8'), c, origin, origin)
+    assert dates[splits == 1][-1] == np.datetime64(cutoff)
+    assert splits[dates == np.datetime64(cutoff)].tolist() == [1]
+    assert splits[dates == np.datetime64(c.shift(origin, -20))].tolist() == [4]
+    assert np.array_equal(splits == 1, dates < np.datetime64(c.shift(origin, -20)))
+
+
 def test_date_source_and_cutoff_missing_evidence():
     c=calendar()
     assert w.available_at(c,'2024-02-27','2024-02-29T12:00:00+08:00')=='2024-02-29T13:30:00+08:00'

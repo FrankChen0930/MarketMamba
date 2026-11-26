@@ -1,6 +1,12 @@
+## 前瞻 F1／F4 審查修補候選 — 2026-11-26
+
+`job-run-mwxcypdo-30712f/builder_fwd_fix12`，既有detached base `d8d76c7cd4f1c8533c3c7c16fc661efb03d76c88`，Human核准有界no-commit，**CPU_ENGINEERING_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。回應主checkout私有 `fwd-wp1-4-review.md` 的F1／F4；[WP2測試](../../tests/test_forward_wp2.py)改在origin與+1／+3／+8 sessions逐次改未來labels／features，另按+5／+10收益端點改未成熟labels；只改列日期>t不足以抓直接使用當列eval label。三seed共36 cases核全部≤t scores／ordered keys及實際LightGBM fit target／features與歷史predict features雜湊。審查eval-label及未來feature source mutants在四個時點共8／8被攔，正式oracle對兩mutants各exit1，原實作GREEN；未發現現行計算洩漏，未改fit/predict邏輯。[WP1測試](../../tests/test_forward_wp1.py)鎖定helper與WP2 train≤origin−21、origin−20排除；兩模組僅註解統一。
+
+標準PYTHONPATH=V6:V6/research_lab/tests:.、無--basetemp的focused61 passed／12.81秒，rolling split／runner29 passed／4.29秒；本輪未跑全套或真資料fit。來源PIT／日曆／lifecycle、WP2 seed17 bitwise待Human、WP3同版本mask／reference與WP4環境還原lock仍STOP，**WP1–WP4整包NO_GO**不解除；修補待獨立複審與Human acceptance。詳[WP1回應](../../reports/forward_wp1_20261126.md#f1f4-獨立審查回應--2026-11-26)與[WP2回應](../../reports/forward_wp2_20261126.md#f1f4-獨立審查回應--2026-11-26)。私有GENERATED evidence只在本worktree`.artifacts/forward/fix12-20261126/`，未改規格／acceptance門檻／machine或production authority；無外部observed_at更新，無網路／GPU／agents／正式Data／V6/models／P4d／第三步／排程／blind操作，無commit／push／merge／deploy。
+
 ## P2 WP2 任意 origin／重播邊界 — 2026-11-26
 
-[薄 adapter](../../tools/forward_wp2.py)只使用 C0+ fit/predict，不執行舊 `c0plus.run` 的 day-t fit 或 eval IC／收益診斷；完整train截面rank後三seed抽樣，W60只限推論，不用y10／eval label篩選。origin−21含端點承接P1／P2權威；WP1排他註解仍待獨立審查。全量／抽樣row索引及date/code keys保存於私有forward namespace且可重播，損壞或seed不符STOP。舊fold_2026 bitwise出現差異即維持STOP，即使ranks一致也不放寬。合成future-label／feature mutation不變性不等於真實PIT證明；完整結果、環境／hash及限制見[報告](../../reports/forward_wp2_20261126.md)。CPU_ENGINEERING_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；不是WP4持久化／交易／前瞻准入。
+[薄 adapter](../../tools/forward_wp2.py)只使用 C0+ fit/predict，不執行舊 `c0plus.run` 的 day-t fit 或 eval IC／收益診斷；完整train截面rank後三seed抽樣，W60只限推論，不用y10／eval label篩選。origin−21含端點承接P1／P2權威；WP1原排他註解已由本次F4修正，跨WP1／WP2邊界測試鎖定含端點，修補仍待複審。全量／抽樣row索引及date/code keys保存於私有forward namespace且可重播，損壞或seed不符STOP。舊fold_2026 bitwise出現差異即維持STOP，即使ranks一致也不放寬。合成future-label／feature mutation不變性不等於真實PIT證明；完整結果、環境／hash及限制見[報告](../../reports/forward_wp2_20261126.md)。CPU_ENGINEERING_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；不是WP4持久化／交易／前瞻准入。
 
 ## Step3 延後評估入口 — 2026-11-26
 

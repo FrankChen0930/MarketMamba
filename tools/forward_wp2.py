@@ -41,8 +41,8 @@ def output_path(path):
 def origin_splits(dates, base_splits, calendar, origin, eval_end):
     """P1-compatible inclusive cutoff origin-21; origin itself is scored.
 
-    WP1 origin_minus21 returns the date. Its exclusive-boundary docstring is
-    NOT adopted: P2 specification explicitly requires t < origin-20.
+    WP1 origin_minus21 returns the inclusive last allowed training session,
+    consistent with P2's explicit requirement t < origin-20.
     Complete historical calendar alignment is mandatory; never infer holidays.
     """
     origin=calendar.require_session(origin)

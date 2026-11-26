@@ -95,7 +95,7 @@ class Calendar:
         return max(annual_origin, self.start_after(signed_date, accepted_date))
 
     def origin_minus21(self, origin):
-        """Exclusive train boundary: t < returned session (last allowed = origin-22)."""
+        """Inclusive last train session: train <= origin-21 (also < origin-20)."""
         return self.shift(origin, -21)
 
     def p2_endpoint(self, t1):

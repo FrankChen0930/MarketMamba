@@ -1,3 +1,12 @@
+## 前瞻 F1／F4 修補 builder — 2026-11-26
+
+- Purpose／owner／task：Human／Codex，`job-run-mwxcypdo-30712f/builder_fwd_fix12`；只修獨立審查F1 mutation oracle及F4 inclusive文字／tests，不處理其餘STOP。
+- Path／branch／base：`.worktrees/ruflo-workers/run-mwxcypdo-30712f/builder_fwd_fix12`，既有detached `d8d76c7cd4f1c8533c3c7c16fc661efb03d76c88`；created UNKNOWN、接手2026-11-26、retired N/A，起始clean，no-commit；未新增／移除worktree。
+- State／authority：CPU_ENGINEERING_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；WP1–WP4整包NO_GO、所有來源／seed17／mask／環境lock STOP保留，修補待獨立複審及Human acceptance。見[回應報告](../../reports/forward_wp2_20261126.md#f1f4-獨立審查回應--2026-11-26)。
+- Artifact／merge dependencies：主checkout審查檔唯讀；logs、36筆hash比較證據、合成逐列與manifest在本worktree`.artifacts/forward/fix12-20261126/`，GENERATED／pytest中間檔TEMPORARY，非正式prediction；不改歷史artifacts、machine contracts或production authority。無push／merge／deployment授權。
+- Safe removal：先保存no-commit patch、必要合成evidence與inventory／SHA，核references及重建方法，Human另案退役且確認clean；本輪不清理。
+- Runtime：WSL CPU／pilot09 venv Python3.12.3／LightGBM4.7.0、CUDA空，MARKETMAMBA_DATA_ROOT unset，Data realpath為此worktree普通目錄未讀寫；無外部observed_at更新，無網路／GPU／agents／blind／正式Data／V6/models／P4d／第三步／production／scheduler操作。
+
 ## P2 WP4 模型存檔與合成隔離介面 builder — 2026-11-26
 
 - Purpose／owner／task：Human／Codex builder，`job-run-mwxb97t0-5e7fef/builder_fwd_wp4`；只做WP4三seeddurable存檔、環境、atomic pointer、合成runner／F2摘要、focused／mutation與knowledge。
