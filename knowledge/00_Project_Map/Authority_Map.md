@@ -1,3 +1,7 @@
+## 共用前瞻 WP1 候選邊界 — 2026-11-26
+
+P2 [WP1規格](../../tasks/spec-forward-p2-primary-20261124.md)與Step3 [FROZEN規格](../../tasks/spec-step3-monthly-revenue-h20-20261126.md)保持原bytes與authority。[共用模組](../../tools/forward_wp1.py)／[測試](../../tests/test_forward_wp1.py)是 `job-run-mwx7iuz6-61038d/builder_fwd_wp1` detached `08e69fe` 上 no-commit 工程候選，**UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**，不授予前瞻日曆、PIT、宇宙或交易資格。W34僅DEVELOPMENT_ONLY（官方679 sessions止於2026-10-22）；TEJ現況快照衍生歷史與ledger觀測版本皆不等於首次公告／當時可知。缺2027／2028／當前啟動日曆、lifecycle可知時間／變更語義，strict前瞻仍STOP。[報告](../../reports/forward_wp1_20261126.md)與私有 `.artifacts/forward/wp1-20261126-release/manifest.json`只記工程身分，不supersede frozen contracts、歷史結果或production。獨立驗收與Human acceptance待辦。
+
 ## Step3 延後評估驅動程式候選 — 2026-11-26
 
 `job-run-mwx2xzc6-056b2e/builder_step3_eval@10684c754cbe10fb7da2476c9b425775481473ef`，no-commit bounded patch，**CPU_ENGINEERING_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。Human 本輪明示已接受歷史來源 gate，要求等 72 fits 全部完成後再由 Claude 評估；本 worker 未讀取實際 fits／Human 決定 artifact、未查程序、未做真資料評估，不更新 runtime observation，也不將使用者敘述當成本輪驗收。

@@ -1,3 +1,12 @@
+## 共用前瞻 WP1 builder — 2026-11-26
+
+- Purpose／owner／task：Human／Codex builder，P2與Step3共用WP1離線日期／lifecycle／source as-of前置工程；`job-run-mwx7iuz6-61038d/builder_fwd_wp1`，無額外agents。
+- Path／branch／base：`.worktrees/ruflo-workers/run-mwx7iuz6-61038d/builder_fwd_wp1`，detached HEAD `08e69fe24486e3e42cce033b04c289e62984c668`；created date UNKNOWN，本輪接手2026-11-26，retired N/A；既有worktree、起始clean，不增減。
+- State／authority：依Human no-commit保留patch，CPU_ENGINEERING_ONLY／UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED；strict前瞻STOP。[報告](../../reports/forward_wp1_20261126.md)記focused79 passed、來源／產物身分及缺件。
+- Artifact／merge dependencies：主checkout W34／TEJ raw／pit-ledger-v2與外部prepared shared唯讀；本worktree `.artifacts/forward/` 含私有GENERATED授權逐列產物與manifest，採EXTERNAL_LARGE_DATA保留方式；不因ignored可刪。無merge／deployment授權。
+- Safe removal：先保存patch及唯一必要私有產物，核SHA／引用／重建來源，獨立review／Human接受及clean／retirement確認後另案處理；本輪不清理。
+- Runtime：WSL CPU／pilot09 venv Python3.12.3、CUDA關閉、MARKETMAMBA_DATA_ROOT unset；Data為此worktree普通目錄未讀寫。無網路／blind／production／scheduler／P4d／GPU／commit／push／merge／deploy，不刷新外部observed_at。
+
 ## Step3c 審查修補 builder — 2026-11-26
 
 - Purpose／owner／task：Human／Codex，`job-run-mwwgd60e-d894d4/builder_step3c`；只修獨立審查完整性及補跨來源彙總，不決定來源接受、不計IC／績效、不fits。

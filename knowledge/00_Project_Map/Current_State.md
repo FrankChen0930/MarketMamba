@@ -1,3 +1,9 @@
+## 共用前瞻 WP1 工程候選 — 2026-11-26
+
+`job-run-mwx7iuz6-61038d/builder_fwd_wp1`，detached HEAD/base `08e69fe24486e3e42cce033b04c289e62984c668`，初始 clean，Human 有界 no-commit 核准，**CPU_ENGINEERING_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[報告](../../reports/forward_wp1_20261126.md)、[模組](../../tools/forward_wp1.py)及[測試](../../tests/test_forward_wp1.py)提供 P2／Step3 共用 session 數學、18:00／A+2、snapshot lifecycle 與 readonly ledger as-of adapter；兩案輸出／模型／日鏈未啟動。focused 79 passed／27.74秒，3 mutations killed；隔離全套600秒逾時exit124／NOT_COMPLETED、約65%而無終局總計（全套載入補充函式前來源，最終版另由focused覆蓋）；獨立驗收／Human acceptance 尚待。
+
+唯讀 W34 官方範圍2024-01-01～2026-10-22共679 sessions，資格只 DEVELOPMENT_ONLY，不升格 forward admission；當前T0及2027／2028日曆缺失，**STOP**。TEJ補充380,514列／2,958檔、跨月靜態衝突0；研究矩陣1,952檔／7,423,927列代碼全覆蓋，但snapshot-derived history的known_at、變更值方向、事件終日語義仍UNKNOWN，strict PIT合格0。4-run帳本chain／blobs唯讀驗證，INITIAL_STOCK不當首次公告。逐列產物／manifest只在本worktree `.artifacts/forward/wp1-20261126-release/`；未讀正式Data／分數／標籤／blind，未變更規格、原SHA256SUMS、P4d、runtime／production／scheduler authority。無外部observed_at更新。下一步先獨立review，Human／Claude補合格日曆、lifecycle語義與可知時間，不用工程PASS解除strict STOP。
+
 ## Step3 延後評估驅動程式候選 — 2026-11-26
 
 `job-run-mwx2xzc6-056b2e/builder_step3_eval@10684c754cbe10fb7da2476c9b425775481473ef`，no-commit bounded patch，**CPU_ENGINEERING_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。Human 本輪明示已接受歷史來源 gate，要求等 72 fits 全部完成後再由 Claude 評估；本 worker 未讀取實際 fits／Human 決定 artifact、未查程序、未做真資料評估，不更新 runtime observation，也不將使用者敘述當成本輪驗收。

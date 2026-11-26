@@ -71,3 +71,7 @@ At least one historical listing-start issue remains `UNKNOWN` in the evidence in
 ## Update Triggers
 
 Update after lifecycle-source additions, symbol lineage changes, universe-rule changes, or resolution of an unknown listing interval.
+
+## WP1 snapshot-derived lifecycle candidate — 2026-11-26
+
+[共用 WP1](../../tools/forward_wp1.py)保留TEJ補充的掛牌／下市／全額交割及市場／產業變更日期，提供保守as-of查詢；known_at與變更值方向UNKNOWN，不回填今天產業，不認證歷史宇宙或tradability。研究矩陣1,952檔均有snapshot代碼覆蓋，strict PIT合格0；下市終日／停復牌與前瞻准入仍STOP。[工程報告](../../reports/forward_wp1_20261126.md)記來源SHA、私有產物與測試，候選UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，不取代上方corrected universe manifest。
