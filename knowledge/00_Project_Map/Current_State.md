@@ -1,3 +1,11 @@
+## 前瞻 WP3 同版本 mask／完整 reference 候選 — 2026-11-26
+
+`job-run-mwxdbyz7-28c523/builder_fwd_mask@3f94ae2`，no-commit **CPU_ENGINEERING_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[報告](../../reports/forward_wp3_mask_20261126.md)記錄2,244份prepared cache與22份universe完整hash符合原E5，呼叫原builder在補零前重建mask；重建X完整SHA `9778392d4c337d1f9cb5768002340a0d1aec13f7689b2f601b77bd2329b55363`、cmp exit0／0格差異。mask有2,453,171缺觀測格；F-layout序列化SHA精確符合原manifest的004771dd…，未用舊mask／全1／zero-filled X推回。
+
+真實7,423,927×185 immutable工程reference候選已封版並完整重驗，identity `e50d9db919f148f59685af598b345a40ab679e87434e3fa718016f126dc7098e`，私有`mask-rebuild-20261126/full-reference`；原C0+ helpers完整axis逐欄memmap，256真實列全部185欄重呼原函式bytes相同。reference395.472748秒／RSS10,667,880 KiB／exit0，198相關＋3串流tests通過。既有P1 scores僅opaque bytes；沒有fit／績效／labels或每日append驗收。
+
+原lagus腳本搜尋未恢復，僅roadmap配方重現後精確核X，mask仍為provenance-limited候選；原首輪layout／tree-root摘要誤判與中止的列批次partial完整保留。原WP3缺件報告是歷史觀測，本候選不覆寫舊artifact或解除整包NO_GO、WP1來源／calendar／lifecycle、WP2 seed17等STOP。Next為獨立review候選來源鏈及Human acceptance，再驗每日來源／延伸，不啟用日鏈／排程，無外部observed_at更新。
+
 ## 前瞻 F1／F4 審查修補候選 — 2026-11-26
 
 `job-run-mwxcypdo-30712f/builder_fwd_fix12`，既有detached base `d8d76c7cd4f1c8533c3c7c16fc661efb03d76c88`，Human核准有界no-commit，**CPU_ENGINEERING_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。回應主checkout私有 `fwd-wp1-4-review.md` 的F1／F4；[WP2測試](../../tests/test_forward_wp2.py)改在origin與+1／+3／+8 sessions逐次改未來labels／features，另按+5／+10收益端點改未成熟labels；只改列日期>t不足以抓直接使用當列eval label。三seed共36 cases核全部≤t scores／ordered keys及實際LightGBM fit target／features與歷史predict features雜湊。審查eval-label及未來feature source mutants在四個時點共8／8被攔，正式oracle對兩mutants各exit1，原實作GREEN；未發現現行計算洩漏，未改fit/predict邏輯。[WP1測試](../../tests/test_forward_wp1.py)鎖定helper與WP2 train≤origin−21、origin−20排除；兩模組僅註解統一。

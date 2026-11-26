@@ -1,3 +1,9 @@
+## WP3 mask 重建候選補證界線 — 2026-11-26
+
+[mask報告](../../reports/forward_wp3_mask_20261126.md)及本worktree私有validation／full-reference manifest是`job-run-mwxdbyz7-28c523/builder_fwd_mask@3f94ae2`的no-commit **UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**工程候選。原corrected48欄／C0+／P2 machine語義與threshold不變；prepared／universe source-tree SHA、完整target X bytes、重建mask F-serialization SHA皆精確核對。原lagus程式仍未恢復，roadmap重現程式不是歷史source authority，finite prepared mask也不證raw觀測／publication PIT。
+
+真實完整reference identity `e50d9db919f148f59685af598b345a40ab679e87434e3fa718016f126dc7098e`，完整load_snapshot重驗通過；只為`forward_admitted=false`候選，不授scores鍵／模型語義、每日append、來源准入或WP3整包GO。首輪誤導STOP摘要與partial保留，由獨立validation及最終reference-result說明本輪結論；不修改／重標任何歷史E5／lagus／P4d／第三步artifact，不supersedemachine、研究結果或production authority。獨立review／Human acceptance及WP1／WP2其他STOP保留，無外部runtime觀測更新。
+
 ## 前瞻 F1／F4 審查修補候選 — 2026-11-26
 
 `job-run-mwxcypdo-30712f/builder_fwd_fix12`，既有detached base `d8d76c7cd4f1c8533c3c7c16fc661efb03d76c88`，Human核准有界no-commit，**CPU_ENGINEERING_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。回應主checkout私有 `fwd-wp1-4-review.md` 的F1／F4；[WP2測試](../../tests/test_forward_wp2.py)改在origin與+1／+3／+8 sessions逐次改未來labels／features，另按+5／+10收益端點改未成熟labels；只改列日期>t不足以抓直接使用當列eval label。三seed共36 cases核全部≤t scores／ordered keys及實際LightGBM fit target／features與歷史predict features雜湊。審查eval-label及未來feature source mutants在四個時點共8／8被攔，正式oracle對兩mutants各exit1，原實作GREEN；未發現現行計算洩漏，未改fit/predict邏輯。[WP1測試](../../tests/test_forward_wp1.py)鎖定helper與WP2 train≤origin−21、origin−20排除；兩模組僅註解統一。

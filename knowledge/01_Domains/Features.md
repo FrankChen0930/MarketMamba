@@ -1,3 +1,9 @@
+## WP3 同版本 mask 重建補證候選 — 2026-11-26
+
+[報告](../../reports/forward_wp3_mask_20261126.md)：同一份prepared cache／universe tree重呼原`build_arrays`在補0前取finite mask；roadmap七欄lag配方重現之X與P1實際9778392d…完整file bytes一致，重建mask含2,453,171 false cells且F-layout SHA精確符合舊manifest004771dd…。mask不是舊檔複用、全1或zero-filled X推回；原轉換腳本仍缺，故只為provenance-limited候選，不賦予上游預設值／raw observation／strict PIT真實性。
+
+原C0+ dense／lagged／rolling helpers與相同market expressions完整axis逐欄寫F memmap，建立7,423,927×185 immutable工程reference；3種合成chunk全bytes／NaN相同、256真實列全185欄重查及全部snapshot hashes通過。fold_2026 splits與原W60 eligibility保留，既有P1 scores原樣opaque封存，未載入y5／y10陣列或用成熟labels篩features。UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED、forward_admitted=false；未驗真實每日append／score鍵與model語義，不變更48欄、任何歷史artifact／來源／production authority。獨立review與Human acceptance待辦；舊WP3缺mask描述保留為當時歷史觀測。
+
 ## P2 WP3 immutable feature-only候選 — 2026-11-26
 
 [工具](../../tools/forward_wp3.py)／[測試](../../tests/test_forward_wp3.py)只消費已causal prepared的frozen48欄，重用原C0+完整prefix建185欄；固定calendar／roster reduction axis，不用尾60日重設cumsum。追加前完整重驗父／delta identity，舊keys／X／mask／dtype／splits／eligibility／185欄與opaque既有scores bytes必須一致；labels另版，不讀未來labels或用label成熟篩日列。partial／重複／錯identity拒絕，未實作daily raw→prepared來源或WP4 pointer／recovery。CPU_ENGINEERING_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，152項合成／相關測試與2 source mutations屬作者自查。

@@ -1,3 +1,12 @@
+## 前瞻 WP3 mask 重建 builder — 2026-11-26
+
+- Purpose／owner／task：Human／Codex builder，`job-run-mwxdbyz7-28c523/builder_fwd_mask`；同版本X／mask唯讀來源重建、完整byte gate、真實immutable reference與資源量測。
+- Path／branch／base：既有`.worktrees/ruflo-workers/run-mwxdbyz7-28c523/builder_fwd_mask`，detached `3f94ae28a0dc73defe14d0b256d1c758cbf5a7a5`；created UNKNOWN、接手2026-11-26、retired N/A，起始clean，no-commit；未新增／移除worktree。
+- State／authority：CPU_ENGINEERING_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；[報告](../../reports/forward_wp3_mask_20261126.md)記錄exact X／重建mask候選、完整reference identity e50d9db9…、198＋3 tests／完整snapshot重驗。原lagus腳本缺失，其他WP／每日append／scores語義與Human acceptance仍待辦，不授production authority。
+- Artifact／merge dependencies：唯讀main prepared cache／歷史universe、pilot09 E5／lagus／fold_2026與P1 scores。GENERATED候選與完整sources／hashes／logs／程式在本worktree`.artifacts/forward/mask-rebuild-20261126/`；`C185.npy`為中止PARTIAL／TEMPORARY，首輪誤判manifest保留，最終結論依validation.json與reference-result.json；不因ignored清理。無push／merge／deployment授權。
+- Safe removal：先保存no-commit patch、本輪unique mask／完整reference／source inventory／private scripts及SHA，核所有references與可重建性；獨立review、Human另案退役且確認clean前不移除。
+- Runtime：WSL CPU／pilot09 Python3.12.3／NumPy2.5.4，CUDA空、OMP／BLAS1，MARKETMAMBA_DATA_ROOT unset，Data realpath本工作樹普通目錄；main Data與pilot09來源僅讀。無網路／GPU／agents／blind／正式Data或V6/models寫入／P4d／第三步／production／scheduler／wakeup或外部observed_at更新。
+
 ## 前瞻 F1／F4 修補 builder — 2026-11-26
 
 - Purpose／owner／task：Human／Codex，`job-run-mwxcypdo-30712f/builder_fwd_fix12`；只修獨立審查F1 mutation oracle及F4 inclusive文字／tests，不處理其餘STOP。
