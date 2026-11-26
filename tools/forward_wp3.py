@@ -374,3 +374,24 @@ def main():
 
 if __name__ == '__main__':
     raise SystemExit(main())
+
+
+def resolve_artifact(record, relocation, root=None):
+    """Resolve immutable content via a separate portable SHA-to-relative-path map.
+
+    Never edits historical manifests. Relocation paths are confined to the map's
+    directory and must match the original content digest, including on reuse.
+    """
+    try:
+        require_sha(record['sha256'])
+        relocation = Path(relocation).resolve(strict=True)
+        mapping = json.loads(relocation.read_bytes())['artifacts']
+        base = Path(root).resolve(strict=True) if root is not None else relocation.parent
+        relative = Path(mapping[record['sha256']])
+        if relative.is_absolute() or '..' in relative.parts: raise Stop('relocation boundary')
+        candidate = (base/relative).resolve(strict=True)
+        if not candidate.is_relative_to(base): raise Stop('relocation symlink')
+        if file_hash(candidate) != record['sha256']: raise Stop('relocation identity')
+        return candidate
+    except (OSError,ValueError,KeyError,TypeError) as exc:
+        raise Stop('unresolved artifact identity') from exc

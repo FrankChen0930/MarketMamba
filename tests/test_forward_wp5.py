@@ -134,7 +134,8 @@ def test_two_mutations_killed():
 
 def test_reference_two_independent_processes_and_corruption(tmp_path):
     pin = w.freeze_script(tmp_path/'frozen.json')
-    result = w.independent_reference(tmp_path/'reference', tmp_path/'frozen.json', pin)
+    c,r=ticket()
+    result = w.independent_reference(tmp_path/'reference', tmp_path/'frozen.json', pin, request=r)
     assert result['reference_equal'] is True
     assert result['processes'] == 2
     assert result['seeds'] == [17, 29, 43]
@@ -157,6 +158,15 @@ def test_reference_two_independent_processes_and_corruption(tmp_path):
         assert accepted['decision']['action']=='SWITCH_ALL_THREE'
         assert accepted['decision']['origin']==r['origin']
         assert accepted['evidence']['reference_equal'] is True
+    args=dict(calendar=c,request=r,snapshot=b'fixed synthetic snapshot',
+        at=cutoff(r['origin']),codes=[],phase='FORMAL',frozen_path=tmp_path/'frozen.json',pin=pin,
+        reference=tmp_path/'reference/run-0',candidate=tmp_path/'reference/run-0',
+        reference_c0plus=tmp_path/'reference/run-0-c0plus',candidate_c0plus=tmp_path/'reference/run-0-c0plus')
+    assert w.run_attempt(tmp_path/'same-store',**args)['decision']['action']=='INVALID_FOR_CONFIRMATION'
+    other=w.freeze_request(c,c.shift(r['origin'],1),b'fixed synthetic snapshot')
+    args.update(request=other,at=cutoff(other['origin']),candidate=tmp_path/'reference/run-1',
+        candidate_c0plus=tmp_path/'reference/run-1-c0plus')
+    assert w.run_attempt(tmp_path/'wrong-origin',**args)['decision']['action']=='INVALID_FOR_CONFIRMATION'
     assert w.compare_stores(tmp_path/'reference/run-0', tmp_path/'reference/run-1')['reference_equal']
     pointer = tmp_path/'reference/run-1/current.json'
     pointer.write_text('{}')
@@ -276,3 +286,51 @@ def test_blind_bad_output_rejected(tmp_path,kind):
                  'nonce':'private/nonce.bin'}[kind]
     file.write_bytes(b'corrupt')
     with pytest.raises(Stop): w.verify_chain(dirs,days,head)
+
+
+def test_unblind_identity_cannot_change_output(tmp_path):
+    c, days, dirs, head=chain(tmp_path/'chain',252)
+    pin=w.freeze_script(tmp_path/'frozen.json')
+    args=dict(calendar=c, expected_sessions=days, directories=dirs, external_head=head,
+        state='VALID', at=cutoff(c.shift(days[-1],11)), publication_complete=True,
+        human='Human', manual=True, frozen_path=tmp_path/'frozen.json',pin=pin)
+    w.manual_unblind(**args,output=tmp_path/'one.json')
+    with pytest.raises(Stop): w.manual_unblind(**args,output=tmp_path/'two.json')
+
+
+def test_unblind_derives_incident_invalidity(tmp_path):
+    c=calendar(); days=c.sessions[31:283]; dirs=[]; head='0'*64; previous='0'*64
+    def failure(_): raise RuntimeError('synthetic incident')
+    for i,d in enumerate(days):
+        directory=tmp_path/'chain'/str(i)
+        record=summary.run_synthetic_session(directory,source=summary.synthetic_source(d),
+            private_operation=failure if i==0 else lambda _:None,
+            previous_head=head,previous_private_commitment=previous)
+        dirs.append(directory);head=record['head'];previous=record['commitment']
+    assert w.verify_chain(dirs,days,head)
+    pin=w.freeze_script(tmp_path/'frozen.json')
+    with pytest.raises(Stop):
+        w.manual_unblind(calendar=c,expected_sessions=days,directories=dirs,external_head=head,
+            state='VALID',at=cutoff(c.shift(days[-1],11)),publication_complete=True,
+            human='Human',manual=True,frozen_path=tmp_path/'frozen.json',pin=pin,output=tmp_path/'open.json')
+
+
+def test_same_store_rejected_before_acceptance(tmp_path):
+    pin=w.freeze_script(tmp_path/'pin.json'); c,r=ticket()
+    event=w.run_attempt(tmp_path/'journal',calendar=c,request=r,snapshot=b'fixed synthetic snapshot',
+        at=cutoff(r['origin']),codes=[],phase='FORMAL',frozen_path=tmp_path/'pin.json',pin=pin,
+        reference=tmp_path/'same',candidate=tmp_path/'same',
+        reference_c0plus=tmp_path/'same-c0',candidate_c0plus=tmp_path/'same-c0')
+    assert event['decision']['action']=='INVALID_FOR_CONFIRMATION'
+
+
+def test_public_extra_file_stops(tmp_path):
+    c,days,dirs,head=chain(tmp_path/'chain')
+    (dirs[0]/'scores.csv').write_text('private score')
+    with pytest.raises(Stop): w.verify_chain(dirs,days,head)
+
+
+@pytest.fixture(autouse=True)
+def isolated_unblind_registry(request,tmp_path,monkeypatch):
+    if 'unblind' in request.node.name:
+        monkeypatch.setattr(w.store,'ROOT',tmp_path)

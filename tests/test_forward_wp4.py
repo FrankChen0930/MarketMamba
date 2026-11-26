@@ -283,3 +283,15 @@ def test_environment_is_fsynced_before_a_failed_fit(tmp_path, monkeypatch):
     with pytest.raises(RuntimeError): w.synthetic_train(attempt)
     assert (attempt/'seed-17/environment.json').exists()
     assert not (attempt/'seed-29').exists()
+
+
+def test_scratch_parent_symlink_rejected(tmp_path, monkeypatch):
+    import forward_tmp
+    from tools import forward_wp4
+    outside=tmp_path/'outside';outside.mkdir()
+    base=tmp_path/'base';base.mkdir()
+    (base/'pytest-tmp').symlink_to(outside,target_is_directory=True)
+    monkeypatch.setattr(forward_wp4,'ROOT',base)
+    generator=forward_tmp.tmp_path.__wrapped__()
+    with pytest.raises(forward_wp4.Stop): next(generator)
+    assert list(outside.iterdir())==[]

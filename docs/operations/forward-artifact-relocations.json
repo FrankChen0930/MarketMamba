@@ -1,0 +1,9 @@
+{
+  "schema": "forward-artifact-relocations-v1",
+  "policy": "relative to explicit checkout root; SHA required; historical manifests immutable",
+  "artifacts": {
+    "fa5091d7da54475fd6c52aa2ebb145cb15295a22ca152856676f9df41e777983": ".artifacts/forward/mask-rebuild-20261126/validation.json"
+  },
+  "historical_manifest_sha256": "3d7f7f01da3174729c88b9ec5bb165b105712fb2ea9aa4c82ad2c749e27009fd",
+  "evidence_class": "CPU_ENGINEERING_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED"
+}

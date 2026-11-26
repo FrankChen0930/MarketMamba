@@ -7,6 +7,7 @@ WP4 owns all model persistence and sanitized source publication.
 from __future__ import annotations
 
 import argparse
+import os
 from datetime import timezone
 import hashlib
 import json
@@ -190,7 +191,7 @@ def compare_stores(reference, candidate):
                 compared_predictions=predictions, compared_samples=samples)
 
 
-def c0plus_reference_worker(root):
+def c0plus_reference_worker(root, request=None):
     """Independently rebuild synthetic 48/185 matrix, keys, three fits and ranks.
 
     Reuse WP3 full reference and WP2 origin/target/sample/fit/rank implementations.
@@ -200,7 +201,8 @@ def c0plus_reference_worker(root):
     root=store.private_path(root); root.mkdir(parents=True,exist_ok=False)
     from datetime import date, timedelta
     import pandas as pd
-    days=[(date(2023,1,1)+timedelta(days=i)).isoformat() for i in range(130)]
+    start = date.fromisoformat(request['origin'])-timedelta(days=100) if request else date(2023,1,1)
+    days=[(start+timedelta(days=i)).isoformat() for i in range(130)]
     cal=Calendar(days,days[0],days[-1],{'synthetic':True})
     rng=np.random.default_rng(218)
     n=130*16; names=wp3.frozen_names()
@@ -235,6 +237,7 @@ def c0plus_reference_worker(root):
     avg=wp2.rank_average(pd.concat(frames,ignore_index=True))
     wp3.save_array(artifacts/'rank-average.npy',avg.score.to_numpy())
     store._sync_dir(artifacts)
+    store.write_sync(root/'execution.json',store.canonical(dict(pid=os.getpid(),origin=days[100],request=request)))
 
 
 def compare_c0plus(reference,candidate):
@@ -313,10 +316,21 @@ def run_attempt(journal, *, calendar, request, snapshot, at, codes, phase,
         # Never pay for validation after the deadline or when a failure is known.
         if not codes and timestamp(at)<=timestamp(request['deadline']):
             try:
+                paths=[store.private_path(p) for p in (reference,candidate,reference_c0plus,candidate_c0plus)]
+                if len(set(p.resolve() for p in paths)) != 4: raise Stop('independent stores required')
+                receipts=[json.loads((p/'execution.json').read_bytes()) for p in paths[2:]]
+                if (receipts[0]['pid']==receipts[1]['pid'] or any(
+                    r['request']!=request or r['origin']!=request['origin'] for r in receipts)):
+                    raise Stop('independent request/origin evidence required')
+                for p in paths:
+                    bound=json.loads((p/'output-binding.json').read_bytes())
+                    actual={str(f.relative_to(p)):store.file_info(f) for f in p.rglob('*')
+                            if f.is_file() and f.name!='output-binding.json'}
+                    if bound!=dict(request=request,files=actual): raise Stop('output binding mismatch')
                 evidence=dict(compare_stores(reference,candidate),
                     **compare_c0plus(reference_c0plus,candidate_c0plus))
                 accepted=synthetic_acceptance()
-            except (Stop,OSError,ValueError,TypeError):
+            except (Stop,OSError,ValueError,TypeError,KeyError):
                 codes=['RETRAIN_IDENTITY']
         decision=decide(calendar,request,snapshot=snapshot,at=at,codes=codes,
                         phase=phase,acceptance=accepted)
@@ -330,23 +344,26 @@ def run_attempt(journal, *, calendar, request, snapshot, at, codes, phase,
         return event
 
 
-def independent_reference(out, frozen_path, pin):
+def independent_reference(out, frozen_path, pin, request=None):
     """Two fresh CPU processes; fixed WP4 synthetic recipe, never real P1 replay."""
     out = store.private_path(out); out.mkdir(parents=True, exist_ok=False)
-    script = ('from pathlib import Path; import sys; '
+    script = ('from pathlib import Path; import sys,json; '
               'from tools.forward_wp4 import synthetic_run; '
               'from tools.forward_wp5 import c0plus_reference_worker; '
               'synthetic_run(Path(sys.argv[1])); '
-              'c0plus_reference_worker(Path(sys.argv[1]).parent/(Path(sys.argv[1]).name+"-c0plus"))')
+              'c0plus_reference_worker(Path(sys.argv[1]).parent/(Path(sys.argv[1]).name+"-c0plus"),json.loads(sys.argv[2]))')
     elapsed = []
     for i in range(2):
         verify_script(frozen_path, pin)
         started = time.monotonic()
         with (out/f'process-{i}.log').open('xb') as log:
-            completed = subprocess.run([sys.executable, '-c', script, str(out/f'run-{i}')],
+            completed = subprocess.run([sys.executable, '-c', script, str(out/f'run-{i}'), json.dumps(request)],
                 cwd=REPO, stdout=log, stderr=subprocess.STDOUT, check=False)
         elapsed.append(time.monotonic()-started)
         if completed.returncode != 0: raise Stop('independent reference process failed')
+    for p in [out/f'run-{i}{suffix}' for i in range(2) for suffix in ('','-c0plus')]:
+        files={str(f.relative_to(p)):store.file_info(f) for f in p.rglob('*') if f.is_file()}
+        store.write_sync(p/'output-binding.json',store.canonical(dict(request=request,files=files)))
     verify_script(frozen_path, pin)
     result = dict(compare_stores(out/'run-0', out/'run-1'),
                   **compare_c0plus(out/'run-0-c0plus',out/'run-1-c0plus'), processes=2,
@@ -387,12 +404,23 @@ def manual_unblind(*, calendar, expected_sessions, directories, external_head,
     maturity = cutoff(calendar.shift(expected[-1], 11))
     if timestamp(at) < timestamp(maturity): raise Stop('unblind immature endpoint')
     verify_chain(directories, expected, external_head)
+    for directory in directories:
+        manifest = json.loads((store.private_path(directory)/'private/private-manifest.json').read_bytes())
+        if manifest['incident'] != 'PRIVATE_EXPECTED':
+            raise Stop('irreversible incident invalidity')
+    # Study identity is anchored to the frozen session domain and calendar, not output.
+    identity = sha256_bytes(store.canonical(dict(first=expected[0],
+        calendar=calendar_identity(calendar), sessions=expected)))
+    registry = store.private_path(store.ROOT/'unblind-registry')
+    registry.mkdir(parents=True, exist_ok=True)
     result = dict(schema='forward-wp5-synthetic-unblind-v1', synthetic=True,
         forward_admitted=False, human=human, return_sessions=252, external_head=external_head,
         frozen_sha256=sha256_bytes(store.canonical(pin)),
         at_taipei=timestamp(at).isoformat(), at_utc=timestamp(at).astimezone(timezone.utc).isoformat(),
         maturity=maturity, integrity_checked_before_unblind=True)
     try:
+        store.write_sync(registry/(identity+'.json'), store.canonical(result))
+        store._sync_dir(registry)
         store.write_sync(output, store.canonical(result)); store._sync_dir(output.parent)
     except FileExistsError as exc: raise Stop('already unblinded; no second opening') from exc
     return result
@@ -411,9 +439,9 @@ def synthetic_rehearsal(out):
     # Source-only projection is frozen BEFORE any private model/reference read.
     sources=[summary.synthetic_source(d) for d in chain_days]
     store.write_sync(out/'sources-before-private.json',store.canonical(sources))
-    reference = independent_reference(out/'reference', out/'frozen.json', pin)
-    snapshot=store.canonical(dict(matrix=reference['matrix_identity'],context=store.synthetic_context()))
+    snapshot=store.canonical(dict(recipe='SYNTHETIC_GENERATOR_218',context=store.synthetic_context()))
     request=freeze_request(calendar,origin,snapshot)
+    reference = independent_reference(out/'reference', out/'frozen.json', pin, request)
     store.write_sync(out/'static-human-schedule.json',
         store.canonical(human_schedule(calendar,[origin],sessions[100])))
     # Preserve actual acceptance events as reviewable artifacts, not test counts.

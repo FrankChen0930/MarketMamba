@@ -165,7 +165,11 @@ w.append_features(parent, out, delta, w.snapshot_id(parent), manifest['context']
     process = subprocess.Popen([sys.executable, '-c', script, str(parent), str(out), str(incoming)],
                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     try:
-        assert select.select([process.stdout], [], [], 15)[0], 'writer did not reach first durable array'
+        # Generous bound: child interpreter start-up is slow when the full suite loads the machine.
+        ready = select.select([process.stdout], [], [], 120)[0]
+        if not ready or process.poll() is not None and not ready:
+            process.kill(); _, err = process.communicate(timeout=10)
+            raise AssertionError('writer did not reach first durable array; stderr tail: ' + err[-1500:])
         assert process.stdout.readline().strip() == 'partial_written'
     finally:
         process.kill()
@@ -324,3 +328,15 @@ def test_full_inventory_rejects_self_consistent_hashes_with_wrong_schema(tmp_pat
     result = w.audit_existing(source, tmp_path/'inventory')
     assert result['status'] == 'STOP_INCOMPLETE_REFERENCE'
     assert result['schema_conflicts']
+
+
+def test_relocated_artifact_identity(tmp_path):
+    from tools.forward_wp3 import resolve_artifact
+    target=tmp_path/'validation.json';target.write_bytes(b'synthetic evidence')
+    sha=__import__('hashlib').sha256(target.read_bytes()).hexdigest()
+    record=dict(path='/missing/retired-worktree/validation.json',sha256=sha)
+    relocation=tmp_path/'relocation.json'
+    relocation.write_text(__import__('json').dumps(dict(artifacts={sha:'validation.json'})))
+    assert resolve_artifact(record,relocation)==target.resolve()
+    target.write_bytes(b'corrupt')
+    with pytest.raises(w.Stop): resolve_artifact(record,relocation)

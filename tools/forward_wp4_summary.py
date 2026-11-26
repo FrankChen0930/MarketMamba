@@ -212,6 +212,8 @@ def verify_synthetic_sessions(directories, expected_sessions, external_head):
     for directory in directories:
         root = w.private_path(directory)
         if any(p.is_symlink() for p in root.rglob('*')): raise Stop('synthetic chain symlink')
+        if {p.name for p in root.iterdir()} != {'private','public-summary.json'}:
+            raise Stop('public file allowlist')
         private = root/'private'
         public = json.loads((root/'public-summary.json').read_text())
         manifest = json.loads((private/'private-manifest.json').read_text())

@@ -14,8 +14,11 @@ from tools import forward_wp4
 @pytest.fixture
 def tmp_path():
     root = forward_wp4.ROOT / 'pytest-tmp' / uuid.uuid4().hex
+    forward_wp4.private_path(root)
     root.mkdir(parents=True)
+    forward_wp4.private_path(root)
     try:
         yield root
     finally:
-        shutil.rmtree(root, ignore_errors=True)
+        forward_wp4.private_path(root)
+        shutil.rmtree(root)

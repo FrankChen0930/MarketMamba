@@ -98,7 +98,7 @@ def assert_future_invariance(tmp_path, monkeypatch, mutation, offset, seed=17):
     a, c = fixture(source)
     origin = '2024-04-16'
     t = np.datetime64(c.shift(origin, offset))
-    view = w.prepare_view(source, tmp_path/'view', c, origin, '2024-09-02')
+    view = w.prepare_view(source, tmp_path/'view', c, origin, c.shift(origin, 13))
     first, first_used = observed_fit_predict(view, seed, monkeypatch)
     if mutation == 'future_features':
         mask = a['dates'] > t
@@ -143,7 +143,7 @@ def assert_future_invariance(tmp_path, monkeypatch, mutation, offset, seed=17):
 
 
 @pytest.mark.parametrize('seed', [17, 29, 43])
-@pytest.mark.parametrize('offset', [0, 1, 3, 8])
+@pytest.mark.parametrize('offset', range(14))
 @pytest.mark.parametrize('mutation', ['future_labels', 'immature_labels', 'future_features'])
 def test_future_mutation_preserves_all_history_and_actual_model_inputs(tmp_path, monkeypatch, mutation, offset, seed):
     assert_future_invariance(tmp_path, monkeypatch, mutation, offset, seed)
@@ -152,11 +152,18 @@ def test_future_mutation_preserves_all_history_and_actual_model_inputs(tmp_path,
 def leaking_fit_predict(kind):
     """Source mutants keep SeqData/Context/C0+/LightGBM real; disk stays intact."""
     source = inspect.getsource(w.fit_predict)
+    old = 'scores=model.predict(xe)'
     if kind == 'eval_label':
-        old = 'scores=model.predict(xe)'
-        new = "scores=model.predict(xe) + np.nan_to_num(data.y['y5'][ctx.eval_idx])"
+        new = "scores=model.predict(xe) + np.nan_to_num(data.y['y5'][-16:].mean()) * 1e-12"
+    elif kind == 'origin9':
+        new = "scores=model.predict(xe)\n    scores[144:160] += np.float64(data.X[-16:,0].mean())"
+    elif kind == 'sample_order':
+        old = 'xf,names=c0plus.build_features(data,ctx.fit_idx,data.feature_names)'
+        new = "if data.X[-16:,0].mean() > 1e10: ctx.fit_idx = ctx.fit_idx[::-1]\n    xf,names=c0plus.build_features(data,ctx.fit_idx,data.feature_names)"
+    elif kind == 'target':
+        old = 'xf,names=c0plus.build_features(data,ctx.fit_idx,data.feature_names)'
+        new = "ctx.y_fit = ctx.y_fit.astype('float64') + np.nan_to_num(data.y['y5'][-16:].mean()) * 1e-12\n    xf,names=c0plus.build_features(data,ctx.fit_idx,data.feature_names)"
     else:
-        old = 'scores=model.predict(xe)'
         new = 'xe = xe + np.float32(data.X[-16:, 0].mean())\n    scores=model.predict(xe)'
     assert source.count(old) == 1
     namespace = dict(w.__dict__)
@@ -165,10 +172,13 @@ def leaking_fit_predict(kind):
 
 
 @pytest.mark.parametrize('kind,mutation,reason', [
-    ('eval_label', 'immature_labels', 'historical scores'),
+    ('eval_label', 'future_labels', 'historical scores'),
+    ('origin9', 'future_features', 'historical scores'),
+    ('sample_order', 'future_features', 'fit_idx'),
+    ('target', 'future_labels', 'target'),
     ('future_feature', 'future_features', 'predict_features hash'),
 ])
-@pytest.mark.parametrize('offset', [0, 1, 3, 8])
+@pytest.mark.parametrize('offset', [9])
 def test_future_mutation_kills_leaking_mutants(tmp_path, monkeypatch, kind, mutation, reason, offset):
     mutant = leaking_fit_predict(kind)
     monkeypatch.setattr(w, 'fit_predict', mutant)
