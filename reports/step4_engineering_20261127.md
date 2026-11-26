@@ -180,3 +180,66 @@ Runtime：WSL CPU，Python 3.12.3、NumPy 2.5.4、pandas 3.1.1、LightGBM 4.7.0�
 | Push | N/A（本輪明確禁止） |
 | Worktree | /home/frank/projects/MarketMamba/.worktrees/ruflo-workers/run-mwxuz6qu-2da059/builder_step4b；owner/task=builder_step4b，base=4ed84f5，2026-11-27；未提交patch及唯一measurement保存前不可移除 |
 | Runtime/environment | 上述WSL CPU Python／NumPy／pandas／LightGBM；無GPU／網路；正式Data未讀寫；無外部observed_at刷新 |
+
+## 4c 評估驅動與 4b P2 反例 — 2026-11-27
+
+本輪 `job-run-mwxvkv08-554e5f/builder_step4c`，base／HEAD `b7d82d090e213779473145039034849bedcc98c4`、detached HEAD、開工 clean。**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。完成不等於 Human acceptance。既有 tools／tests／reports／knowledge 足以承載，不建替代目錄；指定新驅動名稱 `run_step4_evaluation.py` 不匹配 frozen admission 的 `step4*.py`。原 `tools/step3*.py`、`tools/step4*.py` 與 frozen specs 不改。
+
+### 變更與決策
+
+- `tests/test_step4.py` 加入來源陣列 SHA 直接反例：只改 source-array pin，再更新 bundle SHA，確保不是外層檔案 hash 擋住。原 runner 必須拋 `STOP source array identity`；以記憶體 source mutation 移除 SHA guard 後，同一 oracle 失敗並觸及測試攔截的 fit。沒有寫入 runner 檔案或啟動真實擬合。
+- 新驅動重用 `step3_evaluation.evaluate` 的 alignment、成熟列、同秩百分位、三 seed 平均與 Spearman，以及 `run_step3_evaluation` 的第三步完整載入、exclusive JSON 寫入及證據限制。第四步專屬薄層處理三臂共同 NA、兩對比聯合重抽、中心化雙側 p 與 Holm m=2；沒有複製第三步模型或分數充作 A。
+- 先逐份驗完 108 jobs 的 COMPLETE、request digest、必要輸出集合與全部輸出 size／SHA，再載入陣列；隨後重建所有 request（含原始與組合矩陣陣列 SHA、executor、params、feature order、inputs），核完整共同鍵、sample、label keys、maturity、fold／eval rows。缺一、損壞、自洽但錯 identity 或標籤錯位均 STOP，無部分評估或補交集。
+- 每日共同成熟列、至少20股、三 seed 同秩百分位等權平均、h20 Spearman；任一臂恆定全臂當日 NA。完整 session 軸保留缺日；分別報 2015–2020、2021–2026。d=IC(Bk)−IC(A)；聯合 circular bootstrap 20 sessions／1000／seed17，空重抽 STOP。p=(1+count(abs(d*−mean(d))>=abs(mean(d))))/1001，Holm 固定 m=2／alpha=.05。數值門檻需增量≥.005、CI下界>0及Holm通過；`formal_success` 永為 false。
+- 工程交叉檢查先驗第三步完整72 jobs，僅拿 B 與新 A 的 raw scores／成熟列平均百分位分數／每日IC比較；共同鍵、標籤與日曆須完全相同。浮點檢查明列 rtol=1e-10、atol=1e-12，回報實際最大差；超出即 STOP，此容許量不影響統計門檻。
+- 公開 `reports/step4_results_20261127.{md,json}` 僅為 **PENDING_EXECUTION**，`fit_count`／`complete_verified` 未填。只有 `--consume-placeholder` 且兩個模板仍精確相符才可替換；COMPLETE 結果不得覆寫。私有輸出限 `.artifacts/step4/evaluation/` 及其子 namespace，既存目錄／symlink STOP。私有 manifest 記錄逐日 IC、summary、輸入／job hashes、完整成熟支援 identity、程式 hashes、source commit與環境。
+
+### 真實評估命令（本輪未執行）
+
+在本候選 worktree 執行；唯讀消費主 checkout 的既有 bundle／fits。必須等待背景佇列結束，且完整108 jobs重驗通過。下列命令只評估，不擬合、不監控、不排程；不應現在執行。
+
+```bash
+(OMP_NUM_THREADS=2 PYTHONPATH=V6 CUDA_VISIBLE_DEVICES='' \
+ /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -u -m tools.run_step4_evaluation \
+ --bundle-dir /home/frank/projects/MarketMamba/.artifacts/step4/bundle \
+ --fits-dir /home/frank/projects/MarketMamba/.artifacts/step4/fits \
+ --step3-bundle-dir /home/frank/projects/MarketMamba/.artifacts/step3/bundle-72 \
+ --human-accepted-source-gate /home/frank/projects/MarketMamba/.artifacts/step3/human-source-gate-20261126.json \
+ --private-out "$PWD/.artifacts/step4/evaluation" \
+ --public-report "$PWD/reports/step4_results_20261127.md" \
+ --consume-placeholder) 2>&1 | head -c 3000
+```
+
+### 驗證與範圍
+
+標準測試命令（保留 pipeline 內真實 pytest exit code）：
+
+```bash
+(set -o pipefail; OMP_NUM_THREADS=2 PYTHONPATH=V6 CUDA_VISIBLE_DEVICES='' \
+ /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest -q \
+ tests/test_step4.py tests/test_step3.py tests/test_run_step4_evaluation.py \
+ > /tmp/step4c-final-tests.log 2>&1; result=$?; tail -c 2800 /tmp/step4c-final-tests.log; exit "$result") 2>&1 | head -c 3000
+```
+
+TDD RED：新模組未建立時 collection 1 error。首輪93項為92 passed／1 failed，根因為缺 manifest 原樣拋 OSError；已統一為 STOP。新測試包含獨立 rank／Spearman oracle、聯合中心化 p／CI oracle、Holm source mutation、標籤對齊 source mutation、全臂共同 NA、少seed／少股／非有限分數，以及108份合成 native manifests 的完整載入／發布／hash驗收及末job五類反例。合成 model 是不透明假 bytes，未訓練；durable primitive 已由既有第三／四步回歸涵蓋。
+
+Runtime：WSL CPU；Python `/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python` 3.12.3、NumPy2.5.4、SciPy1.18.1、LightGBM4.7.0。OMP_NUM_THREADS=2；MARKETMAMBA_DATA_ROOT unset；Data realpath 為本 worktree 的普通 Data 目錄，未讀其內容。未讀主 checkout `.artifacts/step4/fits/`、第三步 fits／bundle 陣列、MarketMamba-blind 或 TEJ raw；未做網路、GPU、正式資料、P4d、排程、production、commit／push／merge／deploy，也未派 agent。
+
+Knowledge-impact：新增候選評估邊界與下一步，故更新 Current State、Authority Map與Research note；未 supersede 歷史 artifacts 或 production authority，未刷新 runtime observed_at。Human 告知背景佇列在跑，本輪不自行觀測完成數。正式評估、真實交叉檢查、獨立審查及 Human acceptance 均未處理；已曝光歷史、known_at UNKNOWN、strict PIT／前瞻／交易 STOP 保留。worktree 保留未提交 patch，安全移除前須先保留所有變更；本輪無真實私有評估產物。
+
+### 4c 最終工程驗證與固定交接
+
+- **Completed：**4b P2來源SHA直接反例與4c有界評估候選完成；不是獨立驗收／Human acceptance。
+- **Changed：**`tests/test_step4.py`、`tools/run_step4_evaluation.py`、`tests/test_run_step4_evaluation.py`、`reports/step4_results_20261127.{md,json}`、本報告、`knowledge/00_Project_Map/{Current_State,Authority_Map}.md`、`knowledge/01_Domains/Research.md`。
+- **Decisions：**第三／四步pin檔案不改；重用第三步實作、全108完成後才評估、共同NA、Holm2、歷史永不判正式成功；真實命令只交付不執行。五軸程式自審不取代獨立審查。
+- **Evidence：**指定三份測試 **99 passed in 26.08s**。另在記憶體移除原runner SHA guard後，直接重跑新反例得到預期 **1 failed in 1.95s／pytest exit1／MUTANT_REACHED_FIT**；外層驗證程式確認該失敗才exit0。protected `tools/step3*.py`／`tools/step4*.py`＋frozen規格共 **10檔** 與HEAD逐byte SHA一致；AST **3/3 PASS**、PENDING md／JSON exact schema **PASS**、glob排除 **PASS**、`git diff --check` **PASS**。Knowledge-impact 初輪 **PASS**，完整變更集合重跑為 **WARNING／REVIEW_REQUIRED**（canonical-knowledge觸發GOVERNANCE檢視）；已人工核對本次只新增候選導航與next action，不改治理規則。knowledge-health `--ci` exit0、**Overall WARNING、無FAIL**，Project Map／Agent Guides／Domains／Runtime Freshness／Generated Index PASS；Governance／Authority Drift為既有authority repin candidates，Legacy Docs為既存舊文件漂移。治理檢查涵蓋 **1263** Markdown links，未放寬任何結構gate。
+- **Artifact identity：**driver SHA256 `4af0d44373c47321c8dd28c358fc68e91d8275fc8d70fe9b5dcbb6a1c54dfada`；PENDING md `ff8be1eb233a97e295297ea322df79ac57d0ff17af1a24511d71304da89b43e0`、JSON `d92da562773bed2a5d31261828a8ea5a7fb35d751793778c143a7a3aff1cbf0e`。模板hash只代表待填內容，非真實評估結果。
+- **Remaining：**真實108-job完整驗收、真實分數／IC一致性、正式評估、獨立審查、Human acceptance；本輪未建立私有真實evaluation輸出。
+- **Blockers：**本輪禁止讀背景fits，無108完成證據；評估仍PENDING。known_at UNKNOWN／strict PIT／前瞻／交易STOP保留。
+- **Next recommended action：**先獨立審查候選；待背景佇列結束，再使用上列真實命令完整重驗並評估，不以此工程完成自動執行。
+- **Project memory updated：**是，Current State＋Research；無外部runtime observed_at刷新。
+- **Authority map updated：**是，只新增候選導航及消費邊界；machine／production authority不變。
+- **Git status：**開工clean；交付為5個tracked修改＋4個untracked新增，全部屬本task，無既有dirty／staged。依Human本輪不commit，故工作樹刻意保留未提交變更，不能宣稱clean。
+- **Commit／Push：**無／無；無merge、deploy、排程、網路、額外agents或正式資料修改。
+- **Worktree：**`/home/frank/projects/MarketMamba/.worktrees/ruflo-workers/run-mwxvkv08-554e5f/builder_step4c`；detached HEAD `b7d82d0`，既有隔離worktree；purpose為4b P2測試及4c候選，owner builder，建立日期由既有工作派送管理，本輪未新建worktree。保留patch前不可移除。
+- **Runtime/environment：**上述WSL CPU Python3.12.3／NumPy2.5.4／SciPy1.18.1／LightGBM4.7.0，標準回歸內有既有小型合成fit；無真實fit、GPU或資料取得。`MARKETMAMBA_DATA_ROOT` unset，formal Data未讀寫。

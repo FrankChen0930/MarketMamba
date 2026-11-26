@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "status": "PENDING_EXECUTION",
+  "evidence_class": "已曝光、量級與工程驗證、非確認",
+  "research_status": "RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED",
+  "spec_sha256": "79a0c24bc57369d03edc709933b44c21a95e81f0c532127f72af93156c8e7a5d",
+  "decision_sha256": "18909bacde1cbe4096fb52b66317b6d56d25a51ee4ffc930a6f8fce04f8e7744",
+  "bundle_sha256": "1e0a6b7537c11939b7fecd95232817addd3778735a8fdc1df6d7e6abc84c9ed6",
+  "admission_sha256": "43d8ceca7f9d1764489b82836c6ad95cef47185ad7b055b5ec635597356e71d0",
+  "expected_fit_count": 108,
+  "fit_count": null,
+  "complete_verified": null,
+  "periods": null,
+  "engineering_crosscheck": null,
+  "bootstrap": {
+    "block_sessions": 20,
+    "replicates": 1000,
+    "seed": 17,
+    "holm_m": 2,
+    "alpha": 0.05
+  },
+  "limitations": [
+    "歷史兩段均已曝光；C0+ 設計受後期資料影響，只作量級與工程驗證，非獨立確認。",
+    "約 23% 營收單位未核驗，相關比較記 NaN，由模型原生處理；不代表已核驗或補零。",
+    "公司更正版本未知；TEJ 首次單月值文件及 Human 歷史來源決定不能證明逐期公司更正鏈完整。",
+    "發布日為來源記載的日期，嚴格晚於發布日首個 session 收盤生效；缺盤中時間與實際收到時間，不能證明 strict PIT。",
+    "原價未含股利，拆併股、減資、除權息及公司行動證據不完整，不能解讀為含息收益或可成交績效。",
+    "選樣僅有完整價格的研究股票；研究成員、W60、缺價及未知停牌／下市原因存在選樣與存活者偏誤。",
+    "日曆為觀測價格日期聯集，非合格交易所日曆；lifecycle／tradability 未核驗，strict 前瞻 gate 仍 STOP。",
+    "五欄缺值與跨期合併／幣別可比性受已接受歷史來源範圍限制；2013 前比較排除，不使用匯出去年／累計欄。",
+    "每日需至少 20 股且兩側非恆定，尾端未成熟標籤保留 NaN；缺日位置保留，未知風險不記零。",
+    "循環區塊為 20 sessions、1000 次、seed17；更長相依可能使 95% 區間偏窄，非交易獲利區間。",
+    "兩段獨立估計，不合併投票；逐年差僅描述。+0.005 及下界>0 僅作門檻對照，歷史不得宣稱正式成功。",
+    "builder 合成測試不是獨立驗收或 Human acceptance；無前瞻、P2 開盲、交易、部署或排程授權。",
+    "第四步分類 known_at UNKNOWN，strict PIT STOP；6161 全期分類排除及研究在市／同業缺值限制不因 IC 解除。",
+    "本案歷史 Q-A 僅 1a／1b，逐期 Holm m=2；季報無歷史擬合或主 p 值。",
+    "第三步 B 只作工程交叉檢查；第四步 A 使用重新擬合分數，不以舊分數代替。"
+  ],
+  "formal_success": false
+}

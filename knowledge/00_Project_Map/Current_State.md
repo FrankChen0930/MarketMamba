@@ -1,3 +1,9 @@
+## 第四步 4c 評估驅動候選 — 2026-11-27
+
+`builder_step4c@b7d82d0` 未提交候選：**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[4c工程報告](../../reports/step4_engineering_20261127.md)記錄新增[評估驅動](../../tools/run_step4_evaluation.py)、[合成測試](../../tests/test_run_step4_evaluation.py)與4b來源陣列SHA反例。重用第三步評估與完整性載入，不改任何 `tools/step3*.py`／`tools/step4*.py`；108 jobs全部驗證才評估，三臂共同成熟／共同NA、兩期聯合20-session bootstrap／1000／seed17、中心化雙側p及Holm m=2，另驗新A與第三步B分數／IC一致性。
+
+[公開結果](../../reports/step4_results_20261127.md)及JSON為PENDING，需 `--consume-placeholder` 精確消費模板；本輪真實fits讀寫=0、真實fit啟動=0、真實IC=0；標準回歸含既有小型合成fit。Human告知主checkout背景佇列執行中，本輪禁止觀測該fits目錄，無目前完成數或runtime observed_at更新。Next：候選獨立審查，待佇列完成後依工程報告命令完整重驗108 jobs，再執行評估及第三步B交叉檢查。known_at UNKNOWN／strict PIT／前瞻／交易STOP及production authority不變；完成不等於Human acceptance。保留本worktree未提交patch，尚無真實私有評估artifact。
+
 ## 第四步 4b CPU 執行器工程候選 — 2026-11-27
 
 `builder_step4b@4ed84f5` 未提交候選：**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[工程報告 4b](../../reports/step4_engineering_20261127.md)記錄 [runner](../../tools/step4_runner.py)／[順序佇列](../../tools/run_step4_queue.py)、完整108 jobs執行命令及量測 evidence。沿用4a獨立複核GO的唯讀bundle `1e0a6b75…`／admission `43d8ceca…`；新執行器分開綁SHA，不改舊glob或任何第三步程式／artifact。80項合成及第三步回歸通過，含缺檔resume／錯job identity兩項source mutation；本輪真實單job `fold2015-B1a-seed17` 已完成至私有measurement：500,000 fit／312,782 eval、wall 69.92秒、RSS 1,967,328 KiB；model重載prediction逐筆完全一致，不執行正式108 jobs或IC。

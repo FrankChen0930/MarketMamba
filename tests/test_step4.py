@@ -410,6 +410,37 @@ def test_runner_source_mutation_identity_gate_killed(runner_bundle, monkeypatch)
         namespace['run_job'](directory, root, name, gate)
 
 
+def test_runner_source_array_sha_mismatch_stop_and_mutant_killed(runner_bundle, monkeypatch):
+    """Self-consistent file/bundle hashes cannot bypass the source-array pin."""
+    import inspect
+    import lightgbm
+    r, directory, bundle = runner_bundle
+    gate = r.require_admission(directory)
+    name = s.job_id(2015, 17, 'A')
+    gate['jobs'][name]['source_array_identities']['fit'] = '0' * 64
+    (directory / 'bundle.json').write_text(json.dumps(gate))
+    monkeypatch.setattr(r, 'BUNDLE_SHA', s.sha256(directory / 'bundle.json'))
+    root = s.ROOT / '.artifacts/step4/measurement'
+
+    def forbidden_fit(*args, **kwargs):
+        raise RuntimeError('MUTANT_REACHED_FIT')
+
+    monkeypatch.setattr(lightgbm.LGBMRegressor, 'fit', forbidden_fit)
+
+    def oracle(run_job):
+        with pytest.raises(ValueError, match='STOP source array identity'):
+            run_job(directory, root, name, gate)
+
+    oracle(r.run_job)
+    source = inspect.getsource(r.run_job)
+    changed = source.replace("if any(array_digest(a) != job['source_array_identities'][k] for k, a in arrays.items()):", 'if False:')
+    assert changed != source
+    namespace = dict(r.__dict__)
+    exec(compile(changed, '<source-array-sha-mutant>', 'exec'), namespace)
+    with pytest.raises(RuntimeError, match='MUTANT_REACHED_FIT'):
+        oracle(namespace['run_job'])
+
+
 def test_runner_source_mutation_missing_file_killed(runner_bundle):
     import inspect
     r, directory, _ = runner_bundle

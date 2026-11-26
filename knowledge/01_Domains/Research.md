@@ -1,3 +1,7 @@
+## 第四步 4c 歷史評估候選 — 2026-11-27
+
+[4c工程報告](../../reports/step4_engineering_20261127.md)及[評估驅動](../../tools/run_step4_evaluation.py)為 `builder_step4c@b7d82d0` 未提交 **UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED** 候選。只在108 jobs全數驗證後計算共同成熟列／全臂共同NA／三seed平均百分位h20 IC，兩期各自聯合circular bootstrap 20／1000／seed17與中心化雙側p、Holm2；新A與第三步B的分數／IC一致性僅為工程檢查。第三步原始程式、bundle／fits及第四步runner不改；4b source-array SHA反例含guard移除mutation。公開結果仍PENDING；本輪未讀背景fits、未fit、未算真實IC，無runtime observation更新。Next為獨立審查與佇列完成後完整評估；歷史即使過數值門檻仍非確認成功，known_at UNKNOWN及strict前瞻／交易STOP不變。
+
 ## 第四步 Q-A 凍結／4a 工程候選 — 2026-11-27
 
 4a終局：真實prepare／audit各一次，限定歷史工程ADMIT、stops=[]、108jobs／48共用partitions／4,294,004 eval鍵；19.19GB，0 fits／0真實IC／未統計eval標籤。Step4＋Step3 67 passed、peer24 passed，完整identity／資源／來源邊界見下列工程報告；下一步獨立工程審查，尚非Human acceptance。

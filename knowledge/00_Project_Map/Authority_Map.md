@@ -1,3 +1,7 @@
+## 第四步 4c 評估候選邊界 — 2026-11-27
+
+[新驅動](../../tools/run_step4_evaluation.py)與[公開PENDING模板](../../reports/step4_results_20261127.md)是 `builder_step4c@b7d82d0` 未提交 **UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED** 候選。[4c報告](../../reports/step4_engineering_20261127.md)載命令／驗證／限制；檔名不匹配admission的 `step4*.py`，不修改任何第三／四步已pin程式。限定消費精確4a admission、108完整job request與輸出hash，重用第三步評估及原B工程交叉檢查；缺件或錯位STOP，不能部分評估。歷史Q-A兩對比／每期Holm2／共同NA／中心化雙側p由FROZEN規格控制，候選不能更改門檻。PENDING不是評估結果或108 jobs完成證據；本輪未讀背景fits、未擬合或評估真資料，未刷新runtime observation。私有結果限獨立evaluation namespace；模板替換須明示 `--consume-placeholder`。不supersede production、前瞻／strict PIT／交易STOP、第三步結果、P4d或Human acceptance。
+
 ## 第四步 4b 執行器邊界 — 2026-11-27
 
 [4b工程報告](../../reports/step4_engineering_20261127.md)、[runner](../../tools/step4_runner.py)與[queue](../../tools/run_step4_queue.py)為 `builder_step4b@4ed84f5` 未提交 **UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED** 候選。只消費精確pin的4a ADMIT（bundle `1e0a6b75…`／admission `43d8ceca…`），逐檔重驗並另綁新增executor與job／陣列SHA；不改4a source glob契約或第三步identity。新增runtime只涵蓋本輪核准單job工程量測；108正式fits及IC不在本輪執行範圍。驗證與結果以私有manifest／報告為準，code presence及獨立4a GO不等於Human acceptance，不supersede production、strict PIT／前瞻／交易STOP或歷史artifact。
