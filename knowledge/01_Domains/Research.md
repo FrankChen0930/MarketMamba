@@ -1,3 +1,9 @@
+## 第四步同業／季報 h20 待決規格 — 2026-11-27
+
+[DRAFT](../../tasks/spec-step4-peer-quarterly-h20-20261127.md)依第三步及整合規劃起草，190欄基線＋1a三欄／1b兩欄，季報三欄是否納入歷史家族待Human選Q-A（建議只描述、Holm 2）或Q-B（接受更弱來源假設、Holm 3）。保留2015–2020／2021–2026各六折、seed17／29／43、50萬cap、20-session／1000次bootstrap；mean增量≥0.005且95%下界>0及Holm過關仍不能將已曝光歷史升為確認。前瞻與P2平行封存；三對比家族、第三步開盲依賴及季報事件門檻均為待凍結建議。
+
+**DRAFT / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**；known_at UNKNOWN、strict PIT STOP，季報首次版100%未知。文件不授執行，本輪無fit、報酬／IC計算或blind讀取；資源僅依Human提供的第三步實測摘要估算，未量測新案。下一步為Human完成§7決定及另案來源／契約驗收，不改其他研究或production authority。
+
 ## 原 P1 歷史 reference 限定再驗收 — 2026-11-26
 
 依 [Human 決定](../../tasks/decision-forward-wp2-wp6-20261126.md)，[WP2報告](../../reports/forward_wp2_20261126.md) 的原三seed candidate 以 keys／每seed ranks精確相等與score delta≤1e-15驗收，**PASS_HISTORICAL_TOLERANCE / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。seed17保留50／302,228筆bytes不同、max3.469446951953614e-18；29／43差0，9＋5＋21 hashes與三seed keys replay通過，沒有重訓。此節只supersede舊筆記對原P1微小score差的現行STOP；未知原環境／模型／差異根因及所有外部資格STOP仍在。前瞻load→predict／同環境replay仍bitwise，新增WP4 one-ULP拒絕測試；[WP5修補](../../reports/forward_wp5_20261126.md)只統一非session共用clock fail closed與write-ahead拒絕證據。規格、設計、決定、正式資料與production未改，完成非Human acceptance；下一步獨立複審，詳Current State與Authority Map。

@@ -1,3 +1,9 @@
+## 第四步同業／季報 h20 規格草稿 — 2026-11-27
+
+[第四步 DRAFT](../../tasks/spec-step4-peer-quarterly-h20-20261127.md)由 `job-run-mwxsxd9f-ed1029/builder_step4_spec` 在 detached base `3f418d4c610cb7345d965cad6a9e926e57e99a48` 起草，**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。沿用第三步配方／折／抽樣，以第三步 B（C0+ 加月營收，190 欄）為共同基線，1a 加三欄、1b 加兩欄；季報 Q-A（建議：歷史只描述、Holm 2）或 Q-B（更弱歷史來源假設、Holm 3）待 Human 決定。歷史只作量級與工程驗證，不能宣稱確認成功；known_at UNKNOWN、strict PIT STOP。前瞻家族、季報獨立季度門檻與開盲依賴仍待凍結，規格未授資料建置、fit、IC、前瞻收集或交易准入。
+
+本輪僅新增規格及 knowledge 導航，未改 machine／production authority、第三步／P2 契約或歷史 artifact；無外部 runtime observation 更新。Next：Human 決定規格 §7，再 pin 定稿／可執行契約與來源／矩陣身分，另案授權執行；完成非 Human acceptance。no-commit 交付保留文件 dirty／untracked；Runtime：WSL、Python 3.12.3，MARKETMAMBA_DATA_ROOT UNSET、Data 為本 worktree 普通目錄，未讀寫正式 Data。交接及變更保留前不可移除本 worktree。
+
 ## 同業代理 v3：TSE／OTC 聯集研究在市 — 2026-11-27
 
 `job-run-mwxs4cs8-f2d5bf/builder_peer_v3`，detached base `15b809234c9ace5f7271a7c3e28a7a9f2d282264`，開工clean、Human EXECUTE_APPROVED／no-commit。**RESEARCH_ONLY / STRICT_PIT_STOP / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[v3報告](../../reports/peer_proxies_data_v3_20261127.md)／[彙總](../../reports/peer_proxies_data_v3_20261127.json)記本次協調者研究設計決定：[工具](../../tools/peer_proxies.py)的v3只取明示TSE／OTC上市日最早者至下市日前，上市當日納入、下市當日排除；僅ROTC／GISA不能建立入口。v3完全不用市場變更欄作判定；v2規則及代理值／家數／原因仍逐列保存對照。產業分類與1a／1b時鐘、排除自身及≥3家門檻不變，不改WP1或正式universe。

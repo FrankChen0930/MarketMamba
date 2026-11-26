@@ -1,3 +1,9 @@
+## 第四步規格導航：未凍結候選 — 2026-11-27
+
+[第四步 h20 DRAFT](../../tasks/spec-step4-peer-quarterly-h20-20261127.md)為 `builder_step4_spec@3f418d4` no-commit 文件候選，**UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**，不是 executable／production authority。Human 本輪指定190欄基線（第三步B）；1a／1b分別追加，不改第三步凍結契約。Q-A／Q-B及Holm歷史2／3對比、前瞻家族／季報季度門檻／開盲順序待Human決定，不能由草稿或本輪起草授權推定已凍結／已准入。
+
+沿用第三步證據分級與v3研究資料限制：歷史非確認，季報首次版100%不可判定、可能修訂洩漏；known_at UNKNOWN、strict PIT STOP。私有peer-v3審查筆記只授限定歷史候選GO，非Human acceptance。此項只新增導航，不supersede machine contracts、正式universe／48欄、P2／P4d、任何歷史artifact或production authority；不刷新外部observed_at。
+
 ## 同業代理 v3 限定研究在市決定 — 2026-11-27
 
 Human 本輪 EXECUTE_APPROVED 轉述的協調者設計：同業代理僅需TSE／OTC聯集在市，入口為兩個明示上市日中最早有值者，出口為下市日（不含當日），ROTC／GISA不能充當入口。v3判定完全不讀市場變更欄；保留讀該欄僅為v2對照與來源audit。[實作](../../tools/peer_proxies.py)／[測試](../../tests/test_peer_proxies.py)／[報告](../../reports/peer_proxies_data_v3_20261127.md)／[彙總](../../reports/peer_proxies_data_v3_20261127.json)為 `builder_peer_v3@15b8092` no-commit **RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED** 候選。
