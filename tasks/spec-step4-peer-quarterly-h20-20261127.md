@@ -1,6 +1,6 @@
 # 第四步預先登記草稿｜同業代理與季報能否改善已有月營收的二十日排序？
 
-**DRAFT，待 Human 決定；RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。** 2026-11-27，起草基準 `3f418d4c610cb7345d965cad6a9e926e57e99a48`，任務 `job-run-mwxsxd9f-ed1029/builder_step4_spec`。本稿沒有凍結、資料准入、擬合或開盲授權；完成不等於 Human acceptance。沿用[第三步凍結規格](spec-step3-monthly-revenue-h20-20261126.md)的結構、h20、C0+ 配方、折、抽樣、重抽樣、證據等級與前瞻規則；新增問題依[整合規劃 §C／§D／§E](plan-fundamentals-supplychain-integration-20261126.md)。本輪 Human 已指定基線改為第三步 B 臂，故本稿的 190 欄增量問題取代整合規劃中「新區塊各對 185 欄」的本案設計提案，**不修改第三步契約或歷史結果**。
+**FROZEN 2026-11-27（Human：「第四步照建議」，見§8）；RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。** 2026-11-27，起草基準 `3f418d4c610cb7345d965cad6a9e926e57e99a48`，任務 `job-run-mwxsxd9f-ed1029/builder_step4_spec`。本稿沒有凍結、資料准入、擬合或開盲授權；完成不等於 Human acceptance。沿用[第三步凍結規格](spec-step3-monthly-revenue-h20-20261126.md)的結構、h20、C0+ 配方、折、抽樣、重抽樣、證據等級與前瞻規則；新增問題依[整合規劃 §C／§D／§E](plan-fundamentals-supplychain-integration-20261126.md)。本輪 Human 已指定基線改為第三步 B 臂，故本稿的 190 欄增量問題取代整合規劃中「新區塊各對 185 欄」的本案設計提案，**不修改第三步契約或歷史結果**。
 
 沿用既有 `tasks/` 放置規格及 project map／Research 導航即可承載，不新增實作、目錄樹、矩陣、bundle 或研究產物。本稿為待審規格候選，不是 machine contract；所有輸入／矩陣／輸出 identity 均待凍結及獨立驗收，不從檔名推定。
 
@@ -132,3 +132,15 @@
 - 另案以無標籤方式核來源、欄序／NaN、共同鍵、抽樣／折、凍結日曆／末日、safe bundle逐檔identity與合成反例；凍結不代表gate通過。來源或支援缺件記STOP與受影響對比，家族名額保留。
 - 本案執行另請Human授權，未授權不跑fit、IC、報酬或前瞻收集；strict前瞻仍需完整來源／管線／日曆／lifecycle驗收及獨立保管者。曝光後變更另登記新版本／新窗，不能重標歷史artifact為確認證據。
 - 本輪交付僅本規格與knowledge導航，未改第三步／P2／P4d契約、正式Data、V6/models、production／scheduler，未取得資料、用GPU／網路／額外agent或建立wakeup。開工detached HEAD、工作樹clean；no-commit交付保留明列文件dirty／untracked，不聲稱結束clean。
+
+### 凍結紀錄（2026-11-27）
+
+- Human 原文：「第四步照建議」，批准 §7 第 1–6 項的建議選項：
+  1. **Q-A**：季報不進入歷史主檢定；歷史家族只有 1a、1b，Holm m＝2。季報只做來源與覆蓋的描述，並標示「版本未知，可能含修訂洩漏、結果偏樂觀」；正式檢定只在合格的前瞻期間進行。
+  2. 凍結 190 欄基線，1a 三欄、1b 兩欄的欄序，以及以下設定：至少 3 家、TEJ 子產業、v3 在市設計、家數 UNKNOWN 記為 NaN。
+  3. 沿用第三步的標籤、暖身期、折、seed、抽樣、bootstrap 與門檻（0.005，且下界 > 0）；採用雙側中心化 bootstrap p 加 Holm。
+  4. 平行封存。前瞻家族為季報、1a、1b 三個對比，Holm m＝3；開盲時間不早於 P2，也不早於第三步正式開盲。**季報前瞻最低事件門檻**（協調者建議，經 Human 一併批准）：同時滿足「至少 4 個不同的公告季度」與「至少 1,000 個獨立公司季度」才判定；未達門檻則記 INSUFFICIENT，不得延窗或改門檻。
+  5. 接受 1a、1b 的歷史研究來源容差（known_at UNKNOWN、strict PIT STOP、研究用歷史產業重建、v3 在市研究設計、6161 排除），依 `reports/peer_proxies_data_v3_20261127.md` 與獨立複核 GO 記錄可用範圍。來源 gate 仍須逐項以無標籤方式驗收，不以本批准推定已通過。
+  6. 本機 CPU 串行執行、共享基線、獨立的 bundle identity。
+- 執行授權：Human 已同意依本規格進行資料包建置、無標籤准入、擬合與歷史評估（流程與第三步相同）。前瞻收集仍需 P2 前置工程與來源 gate 都通過。
+- 本檔凍結後的 SHA-256 記錄在 `tasks/decision-step4-freeze-20261127.md`。之後若有任何修改，須另登記新版本。
