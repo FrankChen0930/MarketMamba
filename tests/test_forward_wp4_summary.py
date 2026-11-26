@@ -4,6 +4,7 @@ from datetime import timedelta
 import hashlib
 
 import pytest
+from tests.forward_tmp import tmp_path  # noqa: F401  (overrides builtin)
 from tools import forward_wp4_summary as s
 
 

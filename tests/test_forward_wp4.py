@@ -11,6 +11,7 @@ import uuid
 
 import numpy as np
 import pytest
+from tests.forward_tmp import tmp_path  # noqa: F401  (overrides builtin)
 
 from tools import forward_wp4 as w
 
