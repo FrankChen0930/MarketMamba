@@ -1,3 +1,12 @@
+## P2 WP2 任意日期重現 builder — 2026-11-26
+
+- Purpose／owner／task：Human／Codex builder，`run-mwx8ka1a-f6fcaa/builder_fwd_wp2`，只做WP2薄adapter、合成mutation與舊fold_2026三seed重現。
+- Path／branch／base：`.worktrees/ruflo-workers/run-mwx8ka1a-f6fcaa/builder_fwd_wp2`，既有detached `850ea71c441b0a7288fbabf2cfafed04899125b7`；created UNKNOWN，本輪接手2026-11-26，retired N/A；起始clean，Human禁止commit，不新增／移除worktree。
+- State／authority：no-commit patch，CPU_ENGINEERING_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；bitwise不符STOP，最終證據見[報告](../../reports/forward_wp2_20261126.md)，不改原spec／machine authority。
+- Artifact／merge dependencies：P1 ace2eef reference及其指定矩陣唯讀；所有逐列、模型、keys／replay及logs只在本worktree `.artifacts/forward/wp2-20261126/`，屬GENERATED／私有research evidence，需保留。沒有push／merge／deployment授權。
+- Safe removal：先保留patch與完整private inventory／SHA，核references／唯一副本／重建方法，獨立審查及Human另案退役後確認clean；本輪不清理。
+- Runtime：WSL CPU／pilot09 Python3.12.3，CUDA空、fit n_jobs4；MARKETMAMBA_DATA_ROOT unset，本worktreeData普通目錄未讀寫；無blind／網路／GPU／正式Data寫入／V6/models／P4d／第三步bundle修改／production／scheduler／agents／commit／push／merge／deploy。外部observed_at未更新。
+
 ## 共用前瞻 WP1 builder — 2026-11-26
 
 - Purpose／owner／task：Human／Codex builder，P2與Step3共用WP1離線日期／lifecycle／source as-of前置工程；`job-run-mwx7iuz6-61038d/builder_fwd_wp1`，無額外agents。

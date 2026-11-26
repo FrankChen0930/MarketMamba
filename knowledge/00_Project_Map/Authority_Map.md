@@ -1,3 +1,7 @@
+## P2 WP2 工程候選與逐位元 STOP — 2026-11-26
+
+[WP2 adapter](../../tools/forward_wp2.py)／[測試](../../tests/test_forward_wp2.py)是 `run-mwx8ka1a-f6fcaa/builder_fwd_wp2@850ea71` 的 no-commit、**UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED** 候選。[原 P2 規格](../../tasks/spec-forward-p2-primary-20261124.md)、[P1 規格](../../tasks/spec-portfolio-eval-20261119.md)、原 `ace2eef` score manifest 及 executable recipe authority 均不變。origin−21 採含端點（P2原文 `< origin−20`）；WP1排他註解不覆蓋這個權威，未修改 dependency。唯讀舊 fold_2026 的 observed-union calendar 只用於歷史重現；不授前瞻日曆或來源資格。三seed中seed17有50筆逐位元分數不符即STOP（29／43及rank average相等），不以相同ranks或數值接近替代門檻；最終診斷與私有manifest身分見[報告](../../reports/forward_wp2_20261126.md)。不supersede任何歷史結果、P4d／第三步／production或machine authority；不更新外部 observed_at。獨立驗收與Human acceptance待辦。
+
 ## 共用前瞻 WP1 候選邊界 — 2026-11-26
 
 P2 [WP1規格](../../tasks/spec-forward-p2-primary-20261124.md)與Step3 [FROZEN規格](../../tasks/spec-step3-monthly-revenue-h20-20261126.md)保持原bytes與authority。[共用模組](../../tools/forward_wp1.py)／[測試](../../tests/test_forward_wp1.py)是 `job-run-mwx7iuz6-61038d/builder_fwd_wp1` detached `08e69fe` 上 no-commit 工程候選，**UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**，不授予前瞻日曆、PIT、宇宙或交易資格。W34僅DEVELOPMENT_ONLY（官方679 sessions止於2026-10-22）；TEJ現況快照衍生歷史與ledger觀測版本皆不等於首次公告／當時可知。缺2027／2028／當前啟動日曆、lifecycle可知時間／變更語義，strict前瞻仍STOP。[報告](../../reports/forward_wp1_20261126.md)與私有 `.artifacts/forward/wp1-20261126-release/manifest.json`只記工程身分，不supersede frozen contracts、歷史結果或production。獨立驗收與Human acceptance待辦。

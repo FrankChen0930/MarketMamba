@@ -1,3 +1,7 @@
+## P2 WP2 任意 origin／重播邊界 — 2026-11-26
+
+[薄 adapter](../../tools/forward_wp2.py)只使用 C0+ fit/predict，不執行舊 `c0plus.run` 的 day-t fit 或 eval IC／收益診斷；完整train截面rank後三seed抽樣，W60只限推論，不用y10／eval label篩選。origin−21含端點承接P1／P2權威；WP1排他註解仍待獨立審查。全量／抽樣row索引及date/code keys保存於私有forward namespace且可重播，損壞或seed不符STOP。舊fold_2026 bitwise出現差異即維持STOP，即使ranks一致也不放寬。合成future-label／feature mutation不變性不等於真實PIT證明；完整結果、環境／hash及限制見[報告](../../reports/forward_wp2_20261126.md)。CPU_ENGINEERING_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；不是WP4持久化／交易／前瞻准入。
+
 ## Step3 延後評估入口 — 2026-11-26
 
 [新驅動程式](../../tools/run_step3_evaluation.py) 為 no-commit、UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED 候選；僅合成工程測試，不讀實際 fits 或執行真資料評估。[公開模板](../../reports/step3_results_20261126.md) 結果仍 pending。72 COMPLETE／bundle／Human 決定／request／鍵／標籤／SHA 全驗後才准評估，沿用既有統計模組，保留完整日曆缺日；已曝光歷史只報兩段量級與區間，不宣稱正式成功。詳 project map 新節；來源 gate 的實際 evidence、獨立審查與後續執行由 Claude 核對，strict 前瞻 STOP 不變。
