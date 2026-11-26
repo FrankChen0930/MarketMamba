@@ -1,3 +1,9 @@
+## 同業代理 v3 限定研究在市決定 — 2026-11-27
+
+Human 本輪 EXECUTE_APPROVED 轉述的協調者設計：同業代理僅需TSE／OTC聯集在市，入口為兩個明示上市日中最早有值者，出口為下市日（不含當日），ROTC／GISA不能充當入口。v3判定完全不讀市場變更欄；保留讀該欄僅為v2對照與來源audit。[實作](../../tools/peer_proxies.py)／[測試](../../tests/test_peer_proxies.py)／[報告](../../reports/peer_proxies_data_v3_20261127.md)／[彙總](../../reports/peer_proxies_data_v3_20261127.json)為 `builder_peer_v3@15b8092` no-commit **RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED** 候選。
+
+此研究設計僅更新下方v2目前候選因市場變更方向UNKNOWN而全段排除的規則，不宣告方向已知，也不改WP1／正式universe manifest、machine authority-map或production authority。日期／snapshot衝突仍fail closed；known_at UNKNOWN、strict PIT STOP，會員資格不代表可交易。缺價僅交叉核對、不構成下市依據；100%候選區間資格不是全市場完整認證。舊v2 artifact、結果與排除理由保留歷史evidence，未改寫或升格。作者CPU自查／合成測試不授獨立review或Human acceptance；無外部observed_at、排程／部署／模型／標籤／IC變更。
+
 ## WP6 端點A候選邊界 — 2026-11-27
 
 [Human決定](../../tasks/decision-forward-wp2-wp6-20261126.md)已選[P2](../../tasks/spec-forward-p2-primary-20261124.md)端點A，不改既有machine authority。[WP6 adapter](../../tools/forward_wp6.py)／[tests](../../tests/test_forward_wp6.py)為 `builder_fwd_wp6@2214ca9` 的no-commit **SYNTHETIC_CPU_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**候選；獨立連續cash／holdings／buffer／pending／phase，253個NAV點對應恰252筆收益、首建含費、末日close無終止單；paired基準保留比例成本協定。未知下市／來源／估值fail closed，試運行不混入正式NAV。WP5 `manual_unblind` 繼續控制完整鏈、事故與成熟／publication／Human/manual門檻，不能以WP6存在繞過。

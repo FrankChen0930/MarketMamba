@@ -90,12 +90,12 @@ def test_history_direction_and_date_mutations_fail_closed(mutation,reason):
 
 def test_delisting_unknown_terminal_and_market_change():
     row={'stock_id':'A','首次掛牌日期':'20100101','首次掛牌市場':'TSE','上市別':'TSE','TSE上市日':'20100101','下市日期':'20200103'}
-    assert p.market_asof(row,'2020-01-02')==(True,'SNAPSHOT_DERIVED')
-    assert p.market_asof(row,'2020-01-03')==(False,'DELISTING_ENDPOINT_UNKNOWN')
-    assert not p.market_asof(row,'2020-01-06')[0]
-    assert not p.market_asof(row,'2009-12-31')[0]
+    assert p.market_asof_v2(row,'2020-01-02')==(True,'SNAPSHOT_DERIVED')
+    assert p.market_asof_v2(row,'2020-01-03')==(False,'DELISTING_ENDPOINT_UNKNOWN')
+    assert not p.market_asof_v2(row,'2020-01-06')[0]
+    assert not p.market_asof_v2(row,'2009-12-31')[0]
     row['前一次變更市場日期']='20190101';row['前一次變更市場']='TSE'
-    assert p.market_asof(row,'2020-01-02')==(False,'MARKET_HISTORY_DIRECTION_UNKNOWN')
+    assert p.market_asof_v2(row,'2020-01-02')==(False,'MARKET_HISTORY_DIRECTION_UNKNOWN')
 
 
 def test_listing_requires_explicit_tse_otc_date():
@@ -159,3 +159,50 @@ def test_unknown_classification_and_unlisted_do_not_join_peer_group():
     assert out.loc['A','market_valid_count']==4
     row={'TSE產業_代碼':'M2','首次掛牌TSE產業':'M1 old'}
     assert p.industry_asof(row,'2020-01-02','industry')[0] is None
+
+
+def test_v3_transfer_continuity_and_v2_comparison():
+    row={'OTC上市日':'20100101','TSE上市日':'20200103',
+         '前一次變更市場日期':'20200103','前一次變更市場':'TSE'}
+    for day in ['2020-01-02','2020-01-03','2020-01-06']:
+        assert p.market_asof(row,day)==(True,'EXPLICIT_TSE_OTC_INTERVAL')
+        assert p.market_asof_v2(row,day)==(False,'MARKET_HISTORY_DIRECTION_UNKNOWN')
+
+
+@pytest.mark.parametrize('market',['ROTC','GISA'])
+def test_v3_emerging_only_is_not_listed(market):
+    row={'首次掛牌日期':'20100101','首次掛牌市場':market,'上市別':market}
+    assert not p.market_asof(row,'2020-01-01')[0]
+
+
+def test_v3_listing_and_delisting_endpoints():
+    row={'OTC上市日':'20200103','下市日期':'20200107'}
+    assert not p.market_asof(row,'2020-01-02')[0]
+    assert p.market_asof(row,'2020-01-03')[0]
+    assert p.market_asof(row,'2020-01-06')[0]
+    assert p.market_asof(row,'2020-01-07')==(False,'DELISTED')
+    assert not p.market_asof(row,'2020-01-08')[0]
+
+
+def test_v3_future_transfer_and_market_mutation_cannot_rewrite_past():
+    row={'OTC上市日':'20100101'}
+    before=[p.market_asof(row,d) for d in ['2009-12-31','2010-01-01','2019-01-01']]
+    changed={**row,'TSE上市日':'20200103','下市日期':'20210101',
+             '前一次變更市場日期':'invalid','前一次變更市場':'UNKNOWN',
+             '上市別':'GISA','首次掛牌市場':'ROTC'}
+    assert before==[p.market_asof(changed,d) for d in ['2009-12-31','2010-01-01','2019-01-01']]
+    changed['下市日期']='20190101'
+    assert not p.market_asof(changed,'2019-01-01')[0]  # mutation has observable effect
+
+
+def test_v3_conflicts_and_invalid_interval_fail_closed():
+    for row in [{'TSE上市日':'bad'},{'TSE上市日':'20200103','下市日期':'20200102'},
+                {'OTC上市日':'20100101','snapshot_conflict':True}]:
+        assert not p.market_asof(row,'2020-01-01')[0]
+
+
+def test_v3_never_reads_market_change_fields(monkeypatch):
+    def forbidden(*args,**kwargs):
+        raise AssertionError('market history must never be used by v3')
+    monkeypatch.setattr(p,'history',forbidden)
+    assert p.market_asof({'OTC上市日':'20100101','TSE上市日':'20200103'},'2019-12-31')[0]

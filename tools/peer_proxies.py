@@ -137,7 +137,7 @@ def industry_asof(row, day, dimension):
     return result,'KNOWN_AT_UNKNOWN'
 
 
-def market_asof(row, day):
+def market_asof_v2(row, day):
     """Conservative subset of WP1 lifecycle semantics; terminal day is unknown."""
     day=str(day)
     dates=[tej_date(row,k) for k in ['TSE上市日','OTC上市日'] if field(row,k)]
@@ -154,6 +154,39 @@ def market_asof(row, day):
         return False,'MARKET_HISTORY_DIRECTION_UNKNOWN'
     known=dates and min(dates)<=day
     return (True,'SNAPSHOT_DERIVED') if known else (False,'MARKET_OR_LISTING_UNKNOWN')
+
+
+def listing_interval(row):
+    """Research design: TSE/OTC union; never inspect market-change fields.
+
+    Explicit dates are effective-date evidence only, not known_at or tradability.
+    ROTC/GISA first listing dates cannot establish this interval.
+    """
+    if row.get('snapshot_conflict'):
+        return None,None,'LIFECYCLE_UNKNOWN'
+    try:
+        entries=[tej_date(row,k) for k in ['TSE上市日','OTC上市日'] if field(row,k)]
+        end=tej_date(row,'下市日期')
+    except Stop:
+        return None,None,'INVALID_LIFECYCLE_DATE'
+    if not entries:
+        return None,end,'NO_EXPLICIT_TSE_OTC_LISTING'
+    start=min(entries)
+    if end and end<start:
+        return None,None,'INVALID_LIFECYCLE_INTERVAL'
+    return start,end,'EXPLICIT_TSE_OTC_INTERVAL'
+
+
+def market_asof(row, day):
+    start,end,reason=listing_interval(row)
+    day=pd.Timestamp(day).date().isoformat()
+    if not start:
+        return False,reason
+    if day<start:
+        return False,'NOT_LISTED'
+    if end and day>=end:
+        return False,'DELISTED'
+    return True,reason
 
 
 def lagged_returns(closes, valid):
@@ -257,7 +290,7 @@ def dist(series):
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source-root',type=Path,default=Path('/home/frank/projects/MarketMamba'))
-    parser.add_argument('--output',type=Path,default=Path('.artifacts/peer/replay-v2-20261127'))
+    parser.add_argument('--output',type=Path,default=Path('.artifacts/peer/replay-v3-20261127'))
     args=parser.parse_args(argv); start=time.monotonic(); output=private_output(args.output)
     source=args.source_root.resolve(); raw=source/'.artifacts/tej/raw'
     inputs={}
@@ -297,8 +330,10 @@ def main(argv=None):
     prices['adj_close']=np.nan
     validated=validate_prices(prices);quality=validated.attrs['quality'];del prices
     codes=sorted(book.rows)
+    prices_outside_basic=validated.loc[~validated.code.isin(codes),'code'].nunique()
     closes=validated.pivot(index='date',columns='code',values='close').reindex(index=days,columns=codes)
     valid=validated.pivot(index='date',columns='code',values='observation_valid').reindex(index=days,columns=codes).eq(True)
+    price_present=closes.notna().to_numpy()
     returns=lagged_returns(closes,valid);del closes,valid,validated
     events=revenue_events(monthly,days);del monthly
     output.mkdir(parents=True)
@@ -320,22 +355,40 @@ def main(argv=None):
                 values[days>=event['effective_date'],j]=code(event['reported_value'])
         historical[dim]=values;base[dim+'_reason']=reasons
     static={c:book.rows[c] for c in codes}
-    # As-of lifecycle mask via stock intervals: reproduce conservative WP1 rules.
-    eligible=np.zeros((len(days),len(codes)),bool);candidate=np.zeros_like(eligible)
-    market_reasons=np.full((len(days),len(codes)),'MARKET_OR_LISTING_UNKNOWN',object)
+    # v3 interval never reads market changes. Only the retained v2 comparator does.
+    eligible=np.zeros((len(days),len(codes)),bool)
+    eligible_v2=np.zeros_like(eligible);candidate=np.zeros_like(eligible)
+    market_reasons=np.full(eligible.shape,'NO_EXPLICIT_TSE_OTC_LISTING',object)
+    cross=Counter();transfer_checks=[]
     for j,c in enumerate(codes):
-        row=static[c]; first=tej_date(row,'首次掛牌日期');end=tej_date(row,'下市日期')
-        entries=[tej_date(row,k) for k in ['TSE上市日','OTC上市日'] if field(row,k)]
-        if row.get('snapshot_conflict'):continue
-        entry=min(entries) if entries else None
-        if not entry:continue
-        candidate[:,j]=(days>=entry) & ((days<end) if end else True)
-        if history(row,'market'):
-            market_reasons[:,j]='MARKET_HISTORY_DIRECTION_UNKNOWN'
-        else:
-            known_entry=bool(entries)
-            if known_entry:
-                eligible[:,j]=candidate[:,j];market_reasons[candidate[:,j],j]='SNAPSHOT_DERIVED'
+        row=static[c];entry,end,reason=listing_interval(row)
+        market_reasons[:,j]=reason
+        if entry:
+            candidate[:,j]=(days>=entry) & ((days<end) if end else True)
+            eligible[:,j]=candidate[:,j]
+            market_reasons[days<entry,j]='NOT_LISTED'
+            if end:market_reasons[days>=end,j]='DELISTED'
+            if not history(row,'market'):eligible_v2[:,j]=candidate[:,j]
+        present=price_present[:,j]
+        cross['listed_with_price']+=int((eligible[:,j] & present).sum())
+        cross['listed_without_price']+=int((eligible[:,j] & ~present).sum())
+        for r,n in Counter(market_reasons[present & ~eligible[:,j],j]).items():
+            cross['price_outside_'+r]+=n
+        otc,tse=tej_date(row,'OTC上市日'),tej_date(row,'TSE上市日')
+        if otc and tse and otc<tse and days.min()<=pd.Timestamp(tse)<=days.max() and len(transfer_checks)<10:
+            k=days.searchsorted(pd.Timestamp(tse))
+            observations=[{'date':str(days[i].date()),'v3':bool(eligible[i,j]),
+                           'v2':market_asof_v2(row,str(days[i].date()))[0],
+                           'price_present':bool(present[i])} for i in range(max(0,k-2),min(len(days),k+3))]
+            transfer_checks.append({'stock_id':c,'otc_entry':otc,'tse_entry':tse,'observations':observations})
+    (output/'transfer-continuity-samples.json').write_text(json.dumps(transfer_checks,ensure_ascii=False,indent=2)+'\n')
+    price_crosscheck={**cross,'scope':'all basic-stock x observed sessions; price=nonmissing raw close',
+        'listed_sessions':int(eligible.sum()),'price_present_sessions':int(price_present.sum()),
+        'listed_without_price_fraction':cross['listed_without_price']/int(eligible.sum()),
+        'price_outside_listed_fraction':int((price_present & ~eligible).sum())/int(price_present.sum()),
+        'missing_price_cause':'UNKNOWN: absence from frozen snapshot does not establish delisting/suspension',
+        'price_stock_ids_outside_basic':int(prices_outside_basic)}
+    v2_counts=Counter();v2_distributions={k:Counter() for k in ['return_peer_count','revenue_peer_count']}
     counts={k:Counter() for k in ['return_reason','revenue_reason','return_peer_count','revenue_peer_count']}
     valid_counts=Counter();annual=[];year_rows=[];stats=[];monthly_stats=[];year=None
     first_codes={dim:{c:code(field(static[c],'TSE產業_代碼' if dim=='industry' else 'TEJ子產業_代碼')) for c in codes} for dim in ['industry','tej_subindustry']}
@@ -345,6 +398,7 @@ def main(argv=None):
             year_rows=[]
         year=day.year
         m=base.copy();m['eligible']=eligible[i];m['market_reason']=market_reasons[i]
+        m['eligible_v2']=eligible_v2[i]
         for dim in ['industry','tej_subindustry']:
             m[dim]=historical[dim][i]
             g=m.loc[m.eligible,dim].dropna();sizes=g.value_counts()
@@ -362,8 +416,17 @@ def main(argv=None):
                 monthly_stats.append({'date':day,'classification':dim,'industry':group,'members':int(size)})
         m=m.rename(columns={'industry':'tse_industry','industry_reason':'tse_industry_reason','tej_subindustry':'industry'})
         y,a=revenue_day(events,day,codes)
+        old=m.copy();old['eligible']=eligible_v2[i]
+        prior=proxy_day(old.reset_index(),returns.iloc[i],y,a).loc[candidate[i]].copy()
+        v2_counts['rows']+=len(prior);v2_counts['eligible']+=int(prior.eligible.sum())
+        for name in ['peer_return','revenue_spillover','market_return']:
+            v2_counts[name]+=int(prior[name].notna().sum())
+        for name in v2_distributions:v2_distributions[name].update(prior[name].value_counts().to_dict())
         out=proxy_day(m.reset_index(),returns.iloc[i],y,a)
         out=out.loc[candidate[i]].copy()
+        for name in ['peer_return','revenue_spillover','market_return','return_peer_count','revenue_peer_count','return_reason','revenue_reason']:
+            out[name+'_v2']=prior[name]
+        out['price_present']=price_present[i,candidate[i]]
         out.insert(0,'date',day);out['revenue_month']=(day.to_period('M')-1).start_time
         out['available_at']=day.strftime('%Y-%m-%dT13:30:00+08:00');out['classification_known_at']='UNKNOWN'
         out['strict_pit_eligible']=False;out['evidence_class']=EVIDENCE
@@ -389,7 +452,7 @@ def main(argv=None):
                 'early_announcer_peer_fraction':float(num/denom) if denom else None,
                 'unannounced_target_member_sessions':int((~g.target_revenue_available).sum())})
     limitations=[
-        'STRICT_PIT_STOP：known_at UNKNOWN；啟用日不等於公告日。市場變更方向未通過全體驗證，維持UNKNOWN；下市當日保守排除。',
+        'STRICT_PIT_STOP：known_at UNKNOWN；啟用日不等於公告日。研究設計只用TSE/OTC最早上市日至下市日前，完全不以市場變更欄判定v3；下市當日排除。',
         '產業依Human確認的變更後新分類語義及啟用日分段重建；最新值／現況、日期或文件範例不一致者留缺。僅研究歷史分類，非完整歷史成員或公告PIT認證。',
         '歷史TEJ首次單月值依原資料說明作受限代理；公司逐期首次版本、合併可比性及實收時間未獨立驗證。',
         '價格為frozen raw價差、非含息；公司行動未完整驗證，沿用OHLCV有效性與>35%異常遮罩，不授交易資格。',
@@ -408,8 +471,15 @@ def main(argv=None):
     for path in inputs:
         if tej_pit.sha256(path)!=inputs[path]['sha256']:raise ValueError('STOP input changed during replay')
     outputs={p.name:{'sha256':tej_pit.sha256(p),'bytes':p.stat().st_size} for p in sorted(output.iterdir()) if p.is_file()}
-    before=json.loads(Path('reports/peer_proxies_data_20261126.json').read_text())['coverage']
-    result={'schema':'peer-proxies-data-v2','history_audit':history_audit,'coverage_before':before,
+    before=json.loads(Path('reports/peer_proxies_data_v2_20261127.json').read_text())['coverage']
+    if dict(v2_counts)!=before:raise ValueError('STOP v2 replay coverage mismatch')
+    result={'schema':'peer-proxies-data-v3','coverage_v2_recomputed':dict(v2_counts),
+        'distributions_v2_recomputed':{k:{str(a):int(b) for a,b in v.items()} for k,v in v2_distributions.items()},
+        'price_crosscheck':price_crosscheck,
+        'transfer_sample_summary':{'stocks':len(transfer_checks),'observations':sum(len(s['observations']) for s in transfer_checks),
+            'all_continuously_listed':all(x['v3'] for s in transfer_checks for x in s['observations'])},
+        'research_design_decision':'TSE_OR_OTC_UNION_MIN_EXPLICIT_ENTRY_EXCLUSIVE_DELISTING_NO_MARKET_CHANGES',
+        'known_at':'UNKNOWN','strict_pit':'STOP','history_audit':history_audit,'coverage_before':before,
         'coverage_change':{k:int(valid_counts[k]-before[k]) for k in valid_counts},
         'status':'PARTIAL_REPLAY_COMPLETE_STRICT_PIT_STOP',
         'state':['RESEARCH_ONLY','UNMERGED','NOT_DEPLOYED','NOT_ACCEPTED'],'evidence_class':EVIDENCE,
@@ -428,7 +498,7 @@ def main(argv=None):
     public={k:v for k,v in result.items() if k not in ['inputs','outputs','implementation','monthly_early_announcers']}
     public['private_manifest_sha256']=tej_pit.sha256(output/'manifest.json')
     public['monthly_early_announcers']=aggregates
-    report=Path('reports/peer_proxies_data_v2_20261127.json')
+    report=Path('reports/peer_proxies_data_v3_20261127.json')
     if report.exists():raise ValueError('STOP report exists')
     report.write_text(json.dumps(public,ensure_ascii=False,indent=2,allow_nan=False)+'\n')
     print(json.dumps({k:public[k] for k in ['status','sessions','coverage','elapsed_seconds']},ensure_ascii=False),flush=True)

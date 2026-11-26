@@ -1,3 +1,9 @@
+## 同業代理 v3 聯集在市研究候選 — 2026-11-27
+
+[v3報告](../../reports/peer_proxies_data_v3_20261127.md)／[彙總](../../reports/peer_proxies_data_v3_20261127.json)記Human核准的協調者研究設計：明示TSE／OTC上市日取最早者（當日含）至下市日前（當日不含），不分交易所，v3不用任何市場變更欄。ROTC／GISA／首次掛牌名稱或日期本身不建立資格；保留日期／snapshot衝突fail closed。此段更新下方同業v1／v2的目前研究市場規則；舊結果仍為歷史紀錄，不改WP1或正式universe／48欄／P4d／其他bundle authority。
+
+同一5,805,094候選日股，1a=5,260,246、1b=299,486，TEJ未知9,415；原始在市缺價1.2323%、有價不在市5.0050%，缺價原因UNKNOWN，不以缺價排除成員或推定下市。OTC→TSE十家五十觀測連續在市，v2規則與代理逐列留對照。產業啟用日／≥3家／排除自身、價格與營收可用時鐘不變。**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；known_at UNKNOWN、strict PIT STOP**。逐列僅本worktree `.artifacts/peer/`；價格日期聯集、來源版本／publication／公司行動／完整universe仍未認證，沒有標籤／blind／IC。驗證見報告，待獨立review與Human acceptance。
+
 ## WP3 同版本 mask 重建補證候選 — 2026-11-26
 
 [報告](../../reports/forward_wp3_mask_20261126.md)：同一份prepared cache／universe tree重呼原`build_arrays`在補0前取finite mask；roadmap七欄lag配方重現之X與P1實際9778392d…完整file bytes一致，重建mask含2,453,171 false cells且F-layout SHA精確符合舊manifest004771dd…。mask不是舊檔複用、全1或zero-filled X推回；原轉換腳本仍缺，故只為provenance-limited候選，不賦予上游預設值／raw observation／strict PIT真實性。

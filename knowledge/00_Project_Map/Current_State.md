@@ -1,3 +1,11 @@
+## 同業代理 v3：TSE／OTC 聯集研究在市 — 2026-11-27
+
+`job-run-mwxs4cs8-f2d5bf/builder_peer_v3`，detached base `15b809234c9ace5f7271a7c3e28a7a9f2d282264`，開工clean、Human EXECUTE_APPROVED／no-commit。**RESEARCH_ONLY / STRICT_PIT_STOP / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[v3報告](../../reports/peer_proxies_data_v3_20261127.md)／[彙總](../../reports/peer_proxies_data_v3_20261127.json)記本次協調者研究設計決定：[工具](../../tools/peer_proxies.py)的v3只取明示TSE／OTC上市日最早者至下市日前，上市當日納入、下市當日排除；僅ROTC／GISA不能建立入口。v3完全不用市場變更欄作判定；v2規則及代理值／家數／原因仍逐列保存對照。產業分類與1a／1b時鐘、排除自身及≥3家門檻不變，不改WP1或正式universe。
+
+同一3392 sessions／5,805,094候選鍵，研究資格2,043,542→5,805,094、1a 1,386,995→5,260,246、1b 56,481→299,486；v2覆蓋／家數histogram精確重現，新增資格不是新來源證據。TEJ分類仍有9,415候選日股未知。原始Close交叉檢查：在市無價71,535／5,805,094＝1.2323%；有價但不在市302,083／6,035,642＝5.0050%，原因與OHLC遮罩後對照見報告；不以缺價推定下市。排序前10家OTC→TSE、50觀測均連續在市。34 tests、2 source mutants KILLED、8輸入／6實作／21產物hash與5,805,094唯一鍵重驗、三日5122列scalar市場oracle；builder自查非獨立review。
+
+逐列／抽樣只在本worktree `.artifacts/peer/replay-v3-20261127/`，完成不等於Human acceptance。known_at UNKNOWN、strict PIT STOP；官方calendar、publication／版本、公司行動與完整universe等來源限制保留。無標籤／blind／IC、GPU／網路／agents、正式Data／V6/models／raw／P4d／帳本／第三步bundle／production／scheduler變更，無commit／push／merge／deploy／wakeup，未刷新外部observed_at。此段更新下方v2的目前研究在市規則，舊數值／文件保留歷史evidence；Next：獨立複核與Human驗收，不直接啟動。
+
 ## WP6 252日端點A工程候選 — 2026-11-27
 
 `job-run-mwxq9bgm-9b3a40/builder_fwd_wp6`，detached base `2214ca9e61ed664c955e7d5bebc3befdeb8ddf9c`，開工clean、Human EXECUTE_APPROVED／no-commit；**SYNTHETIC_CPU_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。依既有[Human選A](../../tasks/decision-forward-wp2-wp6-20261126.md)與[P2契約](../../tasks/spec-forward-p2-primary-20261124.md)，新增[adapter](../../tools/forward_wp6.py)／[合成測試](../../tests/test_forward_wp6.py)，不呼叫或裁尾舊portfolio simulator；明確s0…s252、首建含費、s252 13:30估值、無終止單，同時計算固定基準。模型ID切換保留單一連續狀態，trial不繼承正式NAV；停牌僅合格合成證據可stale估值，未知下市／任一臂無法估值整批失效。端點開盲沿用WP5完整鏈、publication、s252+11與Human/manual gate。

@@ -1,3 +1,9 @@
+## 同業代理 v3 聯集在市研究候選 — 2026-11-27
+
+[v3報告](../../reports/peer_proxies_data_v3_20261127.md)／[彙總](../../reports/peer_proxies_data_v3_20261127.json)記Human核准的協調者研究設計：明示TSE／OTC上市日取最早者（當日含）至下市日前（當日不含），不分交易所，v3不用任何市場變更欄。ROTC／GISA／首次掛牌名稱或日期本身不建立資格；保留日期／snapshot衝突fail closed。此段更新下方同業v1／v2的目前研究市場規則；舊結果仍為歷史紀錄，不改WP1或正式universe／48欄／P4d／其他bundle authority。
+
+同一5,805,094候選日股，1a=5,260,246、1b=299,486，TEJ未知9,415；原始在市缺價1.2323%、有價不在市5.0050%，缺價原因UNKNOWN，不以缺價排除成員或推定下市。OTC→TSE十家五十觀測連續在市，v2規則與代理逐列留對照。產業啟用日／≥3家／排除自身、價格與營收可用時鐘不變。**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；known_at UNKNOWN、strict PIT STOP**。逐列僅本worktree `.artifacts/peer/`；價格日期聯集、來源版本／publication／公司行動／完整universe仍未認證，沒有標籤／blind／IC。驗證見報告，待獨立review與Human acceptance。
+
 ## 同業代理工作包3 — 2026-11-26
 
 [資料層報告](../../reports/peer_proxies_data_20261126.md)／[實作](../../tools/peer_proxies.py)是未提交UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED候選；無正式特徵或資料准入。TEJ子產業依粒度及未列變更紀錄比例選主分類，兩套每日分類皆留unknown。首次與現況一致且無變更才重建穩定分類；raw產業／市場變更值方向未知，完整歷史成員及known_at仍STOP，不把現況分類倒填歷史。上市入口與下市端點採WP1保守子集，下市當日排除；價格缺失不移除已識別成員分母。
