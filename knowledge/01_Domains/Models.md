@@ -1,3 +1,7 @@
+## WP4 三 seed 模型存檔工程候選 — 2026-11-26
+
+[forward_wp4](../../tools/forward_wp4.py)只做SYNTHETIC_CPU_ONLY／UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED模型存讀介面：17／29／43共用context與整體atomic current pointer，serialize／fsync／hash→durable copy／reverify→native seed與predict bytes核對→version rename→pointer。缺／壞pointer與seed／matrix／contract不符STOP；orphan不升格、不自動fallback／best，跨matrix要明示先前context且保留原bytes。直接重用Step3 resume與identity／fsync，不修改既有模型或第三步bundle。六類實際SIGKILL、兩項source mutation及完整[報告](../../reports/forward_wp4_20261126.md)只提供合成工程證據，不解除WP2歷史bitwise STOP或授正式前瞻模型使用；真實blind從未接觸。
+
 # Models
 
 ## Metadata

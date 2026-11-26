@@ -1,3 +1,11 @@
+## P2 WP4 模型存檔／合成封盲介面候選 — 2026-11-26
+
+`job-run-mwxb97t0-5e7fef/builder_fwd_wp4`，既有detached base `561392a95c9232c946097630ac51d9e87724b5d6`，起始clean、Human有界no-commit核准。**SYNTHETIC_CPU_ONLY / CPU_ENGINEERING_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[存檔工具](../../tools/forward_wp4.py)沿用Step3 fsync／hash／resume primitives，三seed17／29／43先local封存、durable copy逐檔重驗與native load/predict bytes核對後才atomic切整體current pointer；corrupt／missing pointer STOP，orphan不升格、不自動fallback。每fit開始前fsync完整套件／LightGBM／native binaries／執行緒／CPU flags／affinity／layout與request，模型版本再保存環境；跨matrix切版須明示舊context且保留舊bytes。
+
+[淨化介面](../../tools/forward_wp4_summary.py)只有SYNTHETIC_SOURCE／合成clock，source projection先於private fit決定；Python/native logs與事故私有，公開閉合schema／來源全宇宙計數／私有256-bit nonce commitment／hash chain。沒有讀真正blind、真資料或部署Human runner，固定次日12:00僅clock fixture，非OS隔離、排程或operational證據。終局focused83 passed／105.89秒；相關WP1–WP3／Step3合成回歸114 passed／24.85秒，2／2 source mutants killed，6類實際SIGKILL／新程序恢復；合成CLI7.42秒／RSS426,876 KiB／exit0。終局57個合成檔案／before-fit環境／三seed各37筆預測bytes與public/private chain重驗通過，identity詳[報告](../../reports/forward_wp4_20261126.md)，不混用中間版本證據。
+
+WP1 calendar／PIT／lifecycle、WP2 seed17 bitwise、WP3真實mask／provenance STOP全部保留；完整環境紀錄不證實或解決WP2根因，未保證跨環境重訓相等。中間測試曾混用已載入舊fixture與磁碟新碼而186 pass／1 fail，原log保留；最終固定code新程序結果分開記錄。Next：獨立review／Human acceptance與既定WP5非績效驗收，未授前瞻啟動。只有forward namespace的GENERATED合成產物；無網路／資料取得／GPU／agents／正式Data／V6/models／TEJ SHA256SUMS／P4d／第三步／production／scheduler寫入、無commit／push／merge／deploy／wakeup或外部observed_at更新。
+
 ## P2 WP3 矩陣延伸工程候選 — 2026-11-26
 
 `job-run-mwxakzhz-f1f879/builder_fwd_wp3`，既有detached base `2df4504c9aa6e7a3cb1c43f13fa71621c2da6923`，起始clean、Human有界no-commit核准。**CPU_ENGINEERING_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；WP3整體驗收STOP**。[工具](../../tools/forward_wp3.py)、[合成測試](../../tests/test_forward_wp3.py)、[報告](../../reports/forward_wp3_20261126.md)沿用tools／tests／reports與私有`.artifacts/forward/wp3-20261126/`。已prepared的48欄feature-only切片先建完整reference、再追加獨立版本；原C0+完整prefix重建185欄，舊keys／X／mask／dtype／splits／eligibility與opaque既有scores bytes不變才可封版。固定calendar／stock axis；labels另版且有maturity gate，feature API不讀labels；未提供raw資料到prepared48欄的每日來源程序或前瞻准入。

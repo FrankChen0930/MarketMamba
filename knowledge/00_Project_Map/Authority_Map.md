@@ -1,3 +1,9 @@
+## P2 WP4 合成持久化／摘要候選邊界 — 2026-11-26
+
+[原規格WP4／封盲F2](../../tasks/spec-forward-p2-primary-20261124.md)與既有WP1–WP3／P1／C0+ machine authority不變。`job-run-mwxb97t0-5e7fef/builder_fwd_wp4@561392a`之[store](../../tools/forward_wp4.py)／[summary](../../tools/forward_wp4_summary.py)、[store tests](../../tests/test_forward_wp4.py)／[summary tests](../../tests/test_forward_wp4_summary.py)是未提交 **SYNTHETIC_CPU_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**候選，非正式模型、來源、封盲或前瞻准入。直接重用Step3 validator／fsync／identity，不改Step3 root、bundle或orphan政策。
+
+current pointer只選經三seeddurable reverify與bitwise round-trip的完整版本；缺／壞pointer、seed／matrix／contract不符STOP，orphan不作latest／best。每fit前保存環境；同主機合成存讀相等不解除WP2 seed17未證根因或WP1／WP3 STOP。SYNTHETIC_SOURCE roster與clock只屬fixture，F2來源／全宇宙摘要不接收私有成功／失敗／持股資訊；nonce／敏感logs／完整manifest只在forward合成私有namespace。fixed release API、nonce字典fixture與hash chain不是OS隔離／network namespace／真實固定節奏證明。終局83 focused＋114 related／2 mutants／6類SIGKILL及限制見[報告](../../reports/forward_wp4_20261126.md)，完成不是Human acceptance，不supersede任何歷史artifact／machine／production authority，無外部observed_at更新。
+
 ## P2 WP3 feature-only candidate authority — 2026-11-26
 
 [P2規格WP3](../../tasks/spec-forward-p2-primary-20261124.md)與既有corrected48欄／C0+ executable語義不變。`job-run-mwxakzhz-f1f879/builder_fwd_wp3@2df4504`之[工具](../../tools/forward_wp3.py)／[測試](../../tests/test_forward_wp3.py)是no-commit **CPU_ENGINEERING_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**候選；合成152 tests／2 mutants不授真實矩陣或forward admission。snapshot須有完整mask、固定context與parent／delta identity，全部舊bytes一致；labels獨立，不以未成熟labels篩features。來源identity是工程綁定，不是publication／PIT證明。

@@ -1,3 +1,9 @@
+## WP4 每 fit 環境封存候選 — 2026-11-26
+
+[合成runner](../../tools/forward_wp4.py)每fit前先fsync environment及seed／context／params／target request，完成模型版本內再保存完整快照；fit失敗仍保留已落盤環境。記錄套件／LightGBM版本、Python／compiler／libc、loaded native binary hashes、BLAS／OpenMP與thread env、n_jobs4、CPU flags／cpuinfo／affinity及X dtype／layout／identity。大型binary SHA按完整stat identity在單一程序快取，變更失效；每fit仍寫完整map。這補足日後診斷資料，不保證跨主機重訓逐位元相同，也不證實WP2 seed17的未證根因，不改C0+配方或deterministic參數。
+
+[淨化介面](../../tools/forward_wp4_summary.py)只用合成來源／clock，來源摘要先於private fit決定，Python與native logs私有；正式R+1／R+2／18:00重訓acceptance仍留WP5。證據與限制見[WP4報告](../../reports/forward_wp4_20261126.md)，SYNTHETIC_CPU_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；沒有真實訓練、GPU、blind、OS隔離、scheduler或production authority。
+
 ## P4d heartbeat 與資源量測工程候選 — 2026-11-25
 
 `job-run-mwvqcr5w-e515cb/builder_p4d_fix1@d36e709` 的未提交 bounded patch，**UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED / CPU_ENGINEERING_ONLY**。[工程報告](../../reports/v7_p4d_engineering.md#排練-heartbeat-required-與最大-fit-量測入口--2026-11-25)記錄排練前啟動共用Progress、REHEARSAL／FORMAL模式與stage、60秒heartbeat替身、寫入失敗繼續及2026全列C0+資源量測入口；不改split／features／selection／queue／threshold或P4a來源policy。僅36列合成特徵＋擬合，未實際量測2026全列RSS，不恢復抽樣cap；CPU回歸不是現場Drive／T4排練證據。原獨立NO_GO仍待複審，完成不等於Human acceptance；沒有研究結果／canonical artifact supersession／production authority變更，不更新authority-map.json或外部observed_at。Next：獨立審查與另案本機最大fit量測。

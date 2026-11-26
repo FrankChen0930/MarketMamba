@@ -1,3 +1,12 @@
+## P2 WP4 模型存檔與合成隔離介面 builder — 2026-11-26
+
+- Purpose／owner／task：Human／Codex builder，`job-run-mwxb97t0-5e7fef/builder_fwd_wp4`；只做WP4三seeddurable存檔、環境、atomic pointer、合成runner／F2摘要、focused／mutation與knowledge。
+- Path／branch／base：`.worktrees/ruflo-workers/run-mwxb97t0-5e7fef/builder_fwd_wp4`，既有detached `561392a95c9232c946097630ac51d9e87724b5d6`；created UNKNOWN，本輪接手2026-11-26，retired N/A；起始clean，no-commit，不新增／移除worktree。
+- State／authority：SYNTHETIC_CPU_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；[報告](../../reports/forward_wp4_20261126.md)記83 focused／114 related／2 mutations／6類SIGKILL，獨立review及Human acceptance未完成，strict forward依賴STOP保留。
+- Artifact／merge dependencies：所有逐列合成模型／probe／environment／logs／nonce／public summary／manifests／partial／orphans及驗證在本worktree`.artifacts/forward/wp4-20261126/`；封存evidence為GENERATED，test／partial為TEMPORARY但仍保留，不能因ignored任意刪。無真資料／blind／P4d／第三步bundle依賴寫入；不授merge／push／deployment。
+- Safe removal：先保存no-commit patch、必要合成evidence及完整inventory／SHA／references，核重建方法與無唯一必要證據；獨立review／Human另案退役後確認clean。本輪保留所有中斷／失敗證據，不清理。
+- Runtime：WSL CPU／pilot09 Python3.12.3／LightGBM4.7.0／NumPy2.5.4，n_jobs4，CUDA空，MARKETMAMBA_DATA_ROOT unset；Data是此worktree普通目錄，只核metadata未讀內容；無外部runtime observed_at更新。
+
 ## P2 WP3 矩陣延伸 builder — 2026-11-26
 
 - Purpose／owner／task：Human／Codex builder，`job-run-mwxakzhz-f1f879/builder_fwd_wp3`，只做WP3 feature-only immutable候選、合成mutation、一次真實reference hash／資源量測，不評估。
