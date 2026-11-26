@@ -1,3 +1,9 @@
+## WP6 端點A候選邊界 — 2026-11-27
+
+[Human決定](../../tasks/decision-forward-wp2-wp6-20261126.md)已選[P2](../../tasks/spec-forward-p2-primary-20261124.md)端點A，不改既有machine authority。[WP6 adapter](../../tools/forward_wp6.py)／[tests](../../tests/test_forward_wp6.py)為 `builder_fwd_wp6@2214ca9` 的no-commit **SYNTHETIC_CPU_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**候選；獨立連續cash／holdings／buffer／pending／phase，253個NAV點對應恰252筆收益、首建含費、末日close無終止單；paired基準保留比例成本協定。未知下市／來源／估值fail closed，試運行不混入正式NAV。WP5 `manual_unblind` 繼續控制完整鏈、事故與成熟／publication／Human/manual門檻，不能以WP6存在繞過。
+
+[報告](../../reports/forward_wp6_20261127.md)與本worktree forward manifest僅工程evidence；synthetic source／execution／status不授正式資料或交易資格，非synthetic入口拒絕。真實sealed evidence到portfolio的綁定、calendar／PIT／lifecycle／lagus等既有STOP仍在，整包NO_GO未解除；需獨立複核與Human acceptance。舊P2/P3 engine／歷史結果、production／scheduler、machine authority-map及外部observed_at不變；未commit／push／merge／部署。
+
 ## Human 原 P1 歷史容差的限定 authority — 2026-11-26
 
 未修改的 [Human 決定](../../tasks/decision-forward-wp2-wp6-20261126.md) 僅 supersede [P2](../../tasks/spec-forward-p2-primary-20261124.md) 與本 map 舊段落中**原 P1 historical reference scores 必須 bitwise**的要求：ordered keys／各 seed ranks 精確相等且 scores max abs delta≤1e-15。不得泛化至其他 reference、前瞻重訓、模型load→predict或同環境replay。原P1 manifest SHA `dc3b9b3ad9c2c27a5366440c651f5f6baa7daaec9854368a0e944874890be9d8` 與 `ace2eef` 來源commit固定；[WP2候選](../../tools/forward_wp2.py)／[報告](../../reports/forward_wp2_20261126.md) 以 `PASS_HISTORICAL_TOLERANCE` 表達真實三seed舊candidate驗收，保留seed17的50筆byte差與max 3.469446951953614e-18。原artifacts／原始STOP紀錄不改寫；新的local GENERATED manifest只記本次歷史再驗收，不升格成前瞻或正式交易evidence。

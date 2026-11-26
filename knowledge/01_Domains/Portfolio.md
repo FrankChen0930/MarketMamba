@@ -1,5 +1,11 @@
 # Portfolio
 
+## WP6 synthetic endpoint A candidate — 2026-11-27
+
+[Human已選A](../../tasks/decision-forward-wp2-wp6-20261126.md)；[WP6](../../tools/forward_wp6.py)以明確s0…s252日曆獨立估值，首建含費、末日13:30 raw close、無terminal order。策略與比例成本基準相同252收益時鐘，模型ID切換不重設NAV／股數／buffer／pending／20-session相位；trial與formal不混接。未知持股估值或下市事件使整個paired結果失效；停牌只在明確合成status／source／as-of與最後合格價下私有標stale。開盲沿用WP5成熟／完整鏈／Human gate。舊 `portfolio.run_backtest/_simulate` 仍維持歷史terminal-open語義，未修改或裁尾冒稱新端點。
+
+候選 **SYNTHETIC_CPU_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**，拒絕非synthetic calendar。不授真實execution／PIT／lifecycle、來源綁定、正式T1或交易資格；[報告](../../reports/forward_wp6_20261127.md)記兩source mutants與驗證，獨立複核／Human acceptance待辦。
+
 ## P2 research accounting candidate — 2026-11-19
 
 [Research engine](../../V6/research_lab/portfolio.py) 依 [P2 spec](../../tasks/spec-lowturnover-p2-20261119.md) 新增 hold_buffer_rank、min_fee、initial_capital。NAV、cash、order notional 都以初始 NAV=1 表示；notional × initial_capital 才是 TWD，不能再重複乘 NAV。緩衝只讀 signal-day eligible ranks，ties 以 code 排序；保留既有持股後按排名補缺。最低佣金逐策略委託收取，blocked／零委託不收；修訂 1 的 P2 基準只收比例成本，另列也收最低費用的 descriptive sensitivity，不能進確認性。P2全格明確啟用 preserve_frozen_overflow（含 buffer=top_k），P1預設關閉。凍結加選股數超過 top_k 時保留所有既有股數，不新增、不強制賣出可成交持股；terminal liquidation 不變。預設仍走原始比例成本路徑，另以 pre-P2 ace2eef 引擎的固定合成逐日報酬 hash 回歸。無整股／零股、券商或實際 execution 證據。UNMERGED / NOT_DEPLOYED；[tests](../../V6/research_lab/tests/test_p2.py) 與 [工程報告](../../reports/v7_p2_portfolio_engineering.md) 是 bounded 工程證據。
