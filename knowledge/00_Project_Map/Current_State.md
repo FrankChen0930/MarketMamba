@@ -4,7 +4,7 @@ Human [凍結紀錄](../../tasks/decision-step4-freeze-20261127.md)批准 Q-A；
 
 本輪 `builder_step4a@7a2231e` 為 no-commit **RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED** 候選。[工程報告](../../reports/step4_engineering_20261127.md)／[契約](../../tools/step4.py)／[prepare](../../tools/step4_prepare.py)／[audit](../../tools/step4_audit.py)／[tests](../../tests/test_step4.py)只建獨立 `.artifacts/step4/bundle/` 與無標籤准入，第三步 B 矩陣／抽樣／target／共同鍵及 peer-v3 唯讀重用。不得沿用第三步模型或分數；本輪 fits=0、IC=0、eval-label 陣列未載入，季報不建歷史矩陣。真實 bundle／admission 終局與資源以工程報告及私有 manifest 為準，不能由 code presence 推定 ADMIT。
 
-4a終局：真實prepare／audit各一次exit0，admission **ADMIT、stops=[]**；300唯一檔、108jobs、48共用partitions、4,294,004 eval鍵，末日2026-09-11。prepare232.30秒／RSS1,380,792KiB／19,185,475,829 bytes，audit86.27秒／RSS1,397,032KiB；Step4＋Step3 **67 passed**、peer **24 passed**，adapter未來擾動1536鍵0差異。bundle SHA `f3422c66ef9b551e2fb6c5090450546b358a11fe6ff7a556b7007246ff67b511`；完整identity與限制見報告／私有manifest。
+4a終局：真實prepare／audit各一次exit0，admission **ADMIT、stops=[]**；300唯一檔、108jobs、48共用partitions、4,294,004 eval鍵，末日2026-09-11。prepare232.30秒／RSS1,380,792KiB／19,185,475,829 bytes，audit86.27秒／RSS1,397,032KiB；Step4＋Step3 **67 passed**、peer **24 passed**，adapter未來擾動1536鍵0差異。bundle SHA `1e0a6b7537c11939b7fecd95232817addd3778735a8fdc1df6d7e6abc84c9ed6`；完整identity與限制見報告／私有manifest。
 
 Next：獨立工程審查，再依後續工作包處理108個新模型擬合；完成不等於 Human acceptance。known_at UNKNOWN、strict PIT STOP、正式universe／Data／V6/models／P2／P4d／production／scheduler authority 不變，無外部 observed_at 更新。既有 detached worktree 的 patch／唯一私有 artifacts 保存前不得移除。
 

@@ -37,7 +37,7 @@ PYTHONPATH=V6:V6/research_lab/tests:. CUDA_VISIBLE_DEVICES='' OMP_NUM_THREADS=1 
 
 建置前估算 **19,339,037,266 bytes（19.34 GB）**，硬上限 60,000,000,000 bytes，另需 10% free-space margin；當時可用 822,272,286,720 bytes。prepare **232.3019秒、峰值RSS 1,380,792 KiB、manifest列記 artifact bytes 19,185,475,829**；後者為300個唯一member、不含bundle／preflight／admission及logs的小型metadata，全部仍低於60GB。audit **86.2699秒、峰值RSS 1,397,032 KiB**；逐檔size／SHA共300項，**ADMIT、stops=[]、fit_count=0**。兩個CLI均exit0，沒有中止／orphan／背景任務。完整log／manifest位於本worktree `.artifacts/step4/`。
 
-Bundle SHA：`f3422c66ef9b551e2fb6c5090450546b358a11fe6ff7a556b7007246ff67b511`；admission SHA：`47639eda3428e643567cf674283d1547d3adde71400c738f753b8ff84c1edb7f`。bundle保留 `PREPARED_NOT_ADMITTED` 的immutable建置狀態；准入結論只由另份admission.json綁定其SHA，不回寫建置manifest。
+Bundle SHA：`1e0a6b7537c11939b7fecd95232817addd3778735a8fdc1df6d7e6abc84c9ed6`；admission SHA：`43d8ceca7f9d1764489b82836c6ad95cef47185ad7b055b5ec635597356e71d0`。bundle保留 `PREPARED_NOT_ADMITTED` 的immutable建置狀態；准入結論只由另份admission.json綁定其SHA，不回寫建置manifest。
 
 實際原矩陣7,423,927列，48個共用partitions（36 fit＋12 eval），108 jobs，12折共同eval鍵合計 **4,294,004**，signal末日 **2026-09-11**，未以v3新觀測延長。各臂前190欄由同一檔案提供並與第三步B SHA一致。新增五欄每partition全部具變異；下表只統計特徵有限支援，**未讀eval標籤數值或統計成熟標籤**。完整190＋5欄的float32／NaN比例見私有admission。
 
@@ -103,3 +103,19 @@ Knowledge-impact：Semantics YES（新adapter UNKNOWN家數）、Authority NO（
 - Push：N/A，禁止；無merge／deployment。
 - Worktree：既有`job-run-mwxtq8vx-c1a06e/builder_step4a`，detached；未建立／移除，patch與唯一私有證據保存前不可移除。
 - Runtime/environment：WSL CPU／pilot09 Python3.12.3／NumPy2.5.4／pandas3.1.1，CUDA空、OMP／BLAS1；MARKETMAMBA_DATA_ROOT unset、Data realpath本worktree普通目錄。沒有網路／GPU／正式Data／V6/models／raw來源寫入、blind、P4d、production／scheduler／wakeup或agents。
+
+## 主 checkout 重建紀錄（協調者，2026-11-27）
+
+builder 在自己的 worktree 建出的 bundle 記錄的是 worktree 內的路徑，因此在主 checkout 以同一份程式（commit `819fe27`）重新執行 prepare 與 audit。本報告引用的 identity 一律以這次重建為準，已全部替換；先前提到的建置耗時屬於舊建置。
+
+- bundle SHA：`1e0a6b7537c11939b7fecd95232817addd3778735a8fdc1df6d7e6abc84c9ed6`
+- admission SHA：`43d8ceca7f9d1764489b82836c6ad95cef47185ad7b055b5ec635597356e71d0`，結果 ADMIT，無 stops
+- prepare：339 秒，RSS 1.35 GB
+- audit：102 秒，RSS 1.39 GB
+
+獨立複核結果：4b GO（`.artifacts/papers/notes/step4a-review.md`）。重點如下：
+- 第三步原始檔 0 筆不符；
+- peer 對齊 840 鍵，值差異 0（3 鍵缺值，皆為 NaN）；
+- 1,800 萬筆抽樣 fit 列，purge 違規 0；
+- 1,536 鍵加入未來擾動後，結果差異 0；
+- 4 類合成反例全部 STOP。

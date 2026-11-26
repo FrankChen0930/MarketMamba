@@ -1,6 +1,6 @@
 ## 第四步 FROZEN Q-A／4a 有界工程 — 2026-11-27
 
-4a真實bundle完成限定歷史工程ADMIT（300檔、108jobs、48partitions）；准入綁定bundle SHA `f3422c66ef9b551e2fb6c5090450546b358a11fe6ff7a556b7007246ff67b511`，admission SHA `47639eda3428e643567cf674283d1547d3adde71400c738f753b8ff84c1edb7f`。stops=[]、fits=0、未計IC／eval-label統計；不是獨立驗收或Human acceptance，不放寬下列strict來源／前瞻／交易STOP。
+4a真實bundle完成限定歷史工程ADMIT（300檔、108jobs、48partitions）；准入綁定bundle SHA `1e0a6b7537c11939b7fecd95232817addd3778735a8fdc1df6d7e6abc84c9ed6`，admission SHA `43d8ceca7f9d1764489b82836c6ad95cef47185ad7b055b5ec635597356e71d0`。stops=[]、fits=0、未計IC／eval-label統計；不是獨立驗收或Human acceptance，不放寬下列strict來源／前瞻／交易STOP。
 
 [Human 凍結紀錄](../../tasks/decision-step4-freeze-20261127.md) SHA `18909bacde1cbe4096fb52b66317b6d56d25a51ee4ffc930a6f8fce04f8e7744`及其 pin 的[規格](../../tasks/spec-step4-peer-quarterly-h20-20261127.md)控制第四步；取代下方未凍結的現況敘述，不改凍結文件或第三步契約。Q-A 歷史僅1a／1b，Holm m=2；前瞻三對比m=3及季度事件門檻已凍結，但前瞻來源／管線 gate 未解除。
 
