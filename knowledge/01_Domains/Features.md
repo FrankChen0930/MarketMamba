@@ -1,3 +1,9 @@
+## P2 WP3 immutable feature-only候選 — 2026-11-26
+
+[工具](../../tools/forward_wp3.py)／[測試](../../tests/test_forward_wp3.py)只消費已causal prepared的frozen48欄，重用原C0+完整prefix建185欄；固定calendar／roster reduction axis，不用尾60日重設cumsum。追加前完整重驗父／delta identity，舊keys／X／mask／dtype／splits／eligibility／185欄與opaque既有scores bytes必須一致；labels另版，不讀未來labels或用label成熟篩日列。partial／重複／錯identity拒絕，未實作daily raw→prepared來源或WP4 pointer／recovery。CPU_ENGINEERING_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，152項合成／相關測試與2 source mutations屬作者自查。
+
+真實完整reference **STOP**：prepared缺原始masks.npy，zero-filled X無法反推；X實測identity符合外層P4 dataset inventory，內層舊manifest另列不同版本。一次唯讀hash／RSS evidence見[報告](../../reports/forward_wp3_20261126.md)；真實185欄與daily延伸未驗，不能推定PIT／來源准入或放寬舊bytes gate。沒有修改正式48欄schema、歷史artifact、Data、P4d或第三步bundle。
+
 ## 同業代理工作包3 — 2026-11-26
 
 [資料層報告](../../reports/peer_proxies_data_20261126.md)／[實作](../../tools/peer_proxies.py)是未提交UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED候選；無正式特徵或資料准入。TEJ子產業依粒度及未列變更紀錄比例選主分類，兩套每日分類皆留unknown。首次與現況一致且無變更才重建穩定分類；raw產業／市場變更值方向未知，完整歷史成員及known_at仍STOP，不把現況分類倒填歷史。上市入口與下市端點採WP1保守子集，下市當日排除；價格缺失不移除已識別成員分母。

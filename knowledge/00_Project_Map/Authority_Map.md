@@ -1,3 +1,9 @@
+## P2 WP3 feature-only candidate authority — 2026-11-26
+
+[P2規格WP3](../../tasks/spec-forward-p2-primary-20261124.md)與既有corrected48欄／C0+ executable語義不變。`job-run-mwxakzhz-f1f879/builder_fwd_wp3@2df4504`之[工具](../../tools/forward_wp3.py)／[測試](../../tests/test_forward_wp3.py)是no-commit **CPU_ENGINEERING_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**候選；合成152 tests／2 mutants不授真實矩陣或forward admission。snapshot須有完整mask、固定context與parent／delta identity，全部舊bytes一致；labels獨立，不以未成熟labels篩features。來源identity是工程綁定，不是publication／PIT證明。
+
+[報告](../../reports/forward_wp3_20261126.md)記唯一真實reference inventory **STOP_INCOMPLETE_REFERENCE**：prepared/shared缺masks.npy，X符合外層P4 DATASET_MANIFEST但不符內層舊header。沒有選邊覆寫、修manifest或代造mask；真實185欄／score／全量延伸未驗。原reference與audit-source SHA存私有forward namespace，不supersede任何歷史artifact／P1／WP1–WP2 gate／source或production authority。Next為獨立review與同版本mask／vintage evidence；沒有runtime／scheduler／部署／Human接受的authority變更。
+
 ## 同業代理工作包3資料層候選 — 2026-11-26
 
 [核准整合規劃§C／D／E](../../tasks/plan-fundamentals-supplychain-integration-20261126.md)是本輪工作包3範圍依據；[工具](../../tools/peer_proxies.py)／[測試](../../tests/test_peer_proxies.py)及[報告](../../reports/peer_proxies_data_20261126.md)是 `job-run-mwx9y2gu-4a162b/builder_peer_proxies@d8362c0` 的未提交 **UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED** 候選。只提供受限歷史資料層回放，非正式特徵准入、前瞻PIT、交易或production authority；不supersede原48欄、C0+、P4d、第三步、WP1或任何既有研究結果。

@@ -1,3 +1,9 @@
+## P2 WP3 矩陣延伸工程候選 — 2026-11-26
+
+`job-run-mwxakzhz-f1f879/builder_fwd_wp3`，既有detached base `2df4504c9aa6e7a3cb1c43f13fa71621c2da6923`，起始clean、Human有界no-commit核准。**CPU_ENGINEERING_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；WP3整體驗收STOP**。[工具](../../tools/forward_wp3.py)、[合成測試](../../tests/test_forward_wp3.py)、[報告](../../reports/forward_wp3_20261126.md)沿用tools／tests／reports與私有`.artifacts/forward/wp3-20261126/`。已prepared的48欄feature-only切片先建完整reference、再追加獨立版本；原C0+完整prefix重建185欄，舊keys／X／mask／dtype／splits／eligibility與opaque既有scores bytes不變才可封版。固定calendar／stock axis；labels另版且有maturity gate，feature API不讀labels；未提供raw資料到prepared48欄的每日來源程序或前瞻准入。
+
+最終focused／相關regression152 passed／46.96秒、2／2 source mutations killed，含未來X／universe／poisoned labels、真實SIGKILL與partial拒絕。唯一真實掃描4檔、7,423,927×48，6.0373秒／程序8.31秒／RSS1,696,492 KiB，**exit2／STOP_INCOMPLETE_REFERENCE**：prepared缺原始masks.npy；實測X SHA9778392d…符合外層P4 dataset manifest，與內層沿用舊manifest的67358805…不同。未代造mask、未改來源／manifest；真實185欄／scores／全量延伸成本尚未驗。Next：獨立review並定位同版本mask／vintage chain；WP1來源STOP與WP2 seed17裁定保留。完成不是Human acceptance。無網路／GPU／agents／blind／正式Data／V6/models／TEJ SHA256SUMS／P4d／第三步／production／scheduler寫入、無commit／push／merge／deploy或外部observed_at更新。初輪matrix regression曾以TemporaryDirectory寫合成/tmp，最終命令已將TMPDIR／basetemp限定forward；偏離與全部限制見報告。
+
 ## 同業代理工作包3資料層候選 — 2026-11-26
 
 `job-run-mwx9y2gu-4a162b/builder_peer_proxies`，既有detached base `d8362c055e68609aa4f5cf327cc5888f9d08699a`，起始clean，Human核准整合規劃§C／D／E工作包3，no-commit。**PARTIAL_RESEARCH_REPLAY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[工具](../../tools/peer_proxies.py)、[合成測試](../../tests/test_peer_proxies.py)、[報告](../../reports/peer_proxies_data_20261126.md)與[彙總JSON](../../reports/peer_proxies_data_20261126.json)只交同業落後價差／營收先公告資料層，逐列及manifest只在本worktree `.artifacts/peer/`，不串接P4d、第三步或正式矩陣。沿用tools／tests／reports與既有project map；既有流程沒有本包無標籤同業日表，因此新增單一工具，不另建頂層實驗樹。

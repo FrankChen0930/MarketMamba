@@ -1,3 +1,12 @@
+## P2 WP3 矩陣延伸 builder — 2026-11-26
+
+- Purpose／owner／task：Human／Codex builder，`job-run-mwxakzhz-f1f879/builder_fwd_wp3`，只做WP3 feature-only immutable候選、合成mutation、一次真實reference hash／資源量測，不評估。
+- Path／branch／base：`.worktrees/ruflo-workers/run-mwxakzhz-f1f879/builder_fwd_wp3`，既有detached `2df4504c9aa6e7a3cb1c43f13fa71621c2da6923`；created UNKNOWN，本輪接手2026-11-26，retired N/A；起始clean，no-commit，不新增／移除worktree。
+- State／authority：CPU_ENGINEERING_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；完整真實reference缺mask，WP3驗收STOP。152 tests／2 mutations為作者工程自查，詳[報告](../../reports/forward_wp3_20261126.md)，不改spec／source／production authority。
+- Artifact／merge dependencies：prepared/shared與外層P4 dataset manifest唯讀；私有GENERATED reference inventory、合成矩陣／labels／scores、audit-source、logs／hashes在本worktree`.artifacts/forward/wp3-20261126/`，不得因ignored刪。未改TEJ原SHA256SUMS。沒有push／merge／deployment授權。
+- Safe removal：先保存no-commit patch與唯一必要私有artifact、核完整inventory／SHA／references與重建方法，獨立review與Human另案退役後確認clean；本輪不清理。
+- Runtime：WSL CPU／pilot09 Python3.12.3／NumPy2.5.4，CUDA空；MARKETMAMBA_DATA_ROOT unset，Data realpath本worktree普通目錄未讀寫。無blind／網路／資料取得／GPU／agents／正式Data／V6/models／P4d／第三步／production／scheduler寫入，無commit／push／merge／deploy或外部observed_at更新。
+
 ## 同業代理工作包3 builder — 2026-11-26
 
 - Purpose／owner／task：Human／Codex builder，`job-run-mwx9y2gu-4a162b/builder_peer_proxies`，僅同業分類與1a／1b資料層，不作研究評估。
