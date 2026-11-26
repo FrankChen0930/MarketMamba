@@ -9,6 +9,14 @@ from tools.forward_wp1 import Calendar, Stop
 from V6.research_lab import c0plus, rolling_folds
 
 
+@pytest.fixture(autouse=True)
+def _checkout_root_under_tmp(tmp_path,monkeypatch,request):
+    # Outputs must live below the checkout; tests treat tmp_path as the checkout so they
+    # do not depend on where pytest's basetemp happens to be.
+    if request.node.name.startswith('test_output_namespace'):return
+    monkeypatch.setattr(w,'ROOT',tmp_path)
+
+
 def fixture(root):
     root.mkdir()
     days = pd.bdate_range('2023-10-02', '2024-09-02').to_numpy().astype('datetime64[D]')
