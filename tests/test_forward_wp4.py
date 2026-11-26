@@ -113,12 +113,16 @@ w.write_sync(Path(sys.argv[2]), (root / 'current.json').read_bytes())
     assert list(root.glob('local-*'))  # retained, never reclaimed as latest/best
 
 
-@pytest.mark.parametrize('kind', ['prediction', 'native_seed', 'seed_field', 'context', 'incomplete'])
+@pytest.mark.parametrize('kind', ['prediction', 'prediction_one_ulp', 'native_seed', 'seed_field', 'context', 'incomplete'])
 def test_invalid_candidate_never_switches_pointer(tmp_path, kind):
     root = tmp_path / 'store'; w.synthetic_run(root)
     before = (root / 'current.json').read_bytes()
     trained = w.synthetic_train(tmp_path / ('fit-' + uuid.uuid4().hex))
     if kind == 'prediction': trained[17]['prediction'][0] += 1
+    elif kind == 'prediction_one_ulp':
+        before_score = trained[17]['prediction'][0]
+        trained[17]['prediction'][0] = np.nextafter(before_score, np.inf)
+        assert 0 < abs(trained[17]['prediction'][0] - before_score) < 1e-15
     elif kind == 'native_seed': trained[17]['model_text'] = trained[29]['model_text']
     elif kind == 'seed_field': trained[17]['seed'] = 29
     elif kind == 'context': trained[17]['context'] = dict(trained[17]['context'], matrix_sha256='f'*64)

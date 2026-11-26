@@ -187,17 +187,28 @@ def _outcome(codes, clock, acceptance, phase):
     return 'SUCCESS' if acceptance == synthetic_acceptance() else 'RETRAIN_IDENTITY'
 
 
+def classify_clock(calendar, request, at):
+    """Shared fail-closed session/clock classification for probe and journal.
+
+    A civil date without a qualified session cannot be a retraining attempt,
+    including at 18:00. The durable caller has already persisted its OPEN.
+    """
+    now = timestamp(at)
+    day = calendar.require_session(now.date().isoformat())
+    if now > timestamp(request['deadline']): return 'EXPIRED'
+    if now < timestamp(cutoff(day)) or day < request['origin']: return 'EARLY'
+    return 'ONTIME' if now == timestamp(cutoff(day)) else 'LATE'
+
+
 def decide(calendar, request, *, snapshot, at, codes, phase, acceptance=None):
     """Clock adapter; verdict is the sole incident/state transition authority."""
     validate_request(calendar,request)
     if not isinstance(snapshot,bytes) or sha256_bytes(snapshot) != request['snapshot_sha256']:
         raise Stop('RETRAIN_IDENTITY: retry changed snapshot')
     if phase not in ('PRESTART','FORMAL'): raise Stop('unknown phase')
-    now=timestamp(at); deadline=timestamp(request['deadline']); day=now.date().isoformat()
-    calendar.covered(day); origin=request['origin']
+    day=timestamp(at).date().isoformat(); origin=request['origin']
     delay=sum(origin<d<=day for d in calendar.sessions)
-    clock=('EXPIRED' if now > deadline else 'EARLY' if now<timestamp(cutoff(day)) or day<origin
-           else 'ONTIME' if now==timestamp(cutoff(day)) and day in calendar.sessions else 'LATE')
+    clock=classify_clock(calendar,request,at)
     outcome=_outcome(codes,clock,acceptance,phase)
     # The standalone clock probe has implicit earlier transient attempts. The
     # durable runner separately evaluates the actual sealed history.
@@ -408,9 +419,7 @@ def run_attempt(journal, *, calendar, request, snapshot, at, codes, phase,
         summary.register_attempt(journal)
         # Everything that can reject input or compute evidence is after OPEN.
         verify_script(frozen_path,pin); validate_request(calendar,request)
-        clock = ('EXPIRED' if timestamp(at)>timestamp(request['deadline']) else
-                 'EARLY' if timestamp(at)<timestamp(cutoff(day)) or day<request['origin'] else
-                 'ONTIME' if timestamp(at)==timestamp(cutoff(day)) else 'LATE')
+        clock = classify_clock(calendar,request,at)
         if not isinstance(snapshot,bytes) or sha256_bytes(snapshot)!=request['snapshot_sha256']:
             raise Stop('RETRAIN_IDENTITY: retry changed snapshot')
         if json.loads(plan.read_bytes()) != wanted: raise Stop('RETRAIN_IDENTITY: journal request mismatch')

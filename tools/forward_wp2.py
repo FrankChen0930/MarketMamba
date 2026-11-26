@@ -27,6 +27,10 @@ PARAMS = dict(n_estimators=200, num_leaves=31, learning_rate=.05,
               colsample_bytree=.8, reg_lambda=10., n_jobs=4, verbose=-1)
 FILES = ('manifest.json','X.npy','dates.npy','end_indices.npy','splits.npy',
          'stock_ids.npy','stock_idx.npy','y5.npy','y10.npy')
+P1_COMMIT = 'ace2eef0c580d3484a4c6299de16b1c3d5420898'
+P1_MANIFEST_SHA = 'dc3b9b3ad9c2c27a5366440c651f5f6baa7daaec9854368a0e944874890be9d8'
+HISTORICAL_DECISION = Path('tasks/decision-forward-wp2-wp6-20261126.md')
+HISTORICAL_SCORE_ATOL = 1e-15
 
 
 def output_path(path):
@@ -160,6 +164,119 @@ def same_keys(actual, reference, keys):
         for key in keys)
 
 
+def compare_predictions_bitwise(actual, reference):
+    """Strict replay comparator. No historical tolerance is accepted here."""
+    a, b = actual.score.to_numpy(), reference.score.to_numpy()
+    same_shape = a.shape == b.shape and a.dtype == b.dtype == np.dtype('float64')
+    finite = same_shape and bool(np.isfinite(a).all() and np.isfinite(b).all())
+    scores_equal = finite and a.tobytes() == b.tobytes()
+    ranks_a = actual.groupby('date').score.rank(pct=True).to_numpy()
+    ranks_b = reference.groupby('date').score.rank(pct=True).to_numpy()
+    ranks_equal = finite and ranks_a.tobytes() == ranks_b.tobytes()
+    keys_equal = same_keys(actual, reference, ['fold','seed','system','date','code'])
+    return dict(keys_equal=keys_equal, scores_bitwise_equal=bool(scores_equal),
+        mismatched_scores=int(np.count_nonzero(a.view('uint64') != b.view('uint64'))) if same_shape else None,
+        max_absolute_difference=float(np.max(np.abs(a-b))) if finite and len(a) else None,
+        seed_ranks_bitwise_equal=bool(ranks_equal),
+        passed=bool(keys_equal and scores_equal and ranks_equal and len(a)))
+
+
+def compare_historical_p1(actual, reference):
+    """Only the original P1 reference; caller must verify its frozen identity.
+
+    Human 2026-11-26: exact ordered keys and per-seed rank bytes, score delta
+    <=1e-15. This result never admits a prospective model/replay.
+    """
+    check = compare_predictions_bitwise(actual, reference)
+    delta = check['max_absolute_difference']
+    check['historical_passed'] = bool(check['keys_equal'] and check['seed_ranks_bitwise_equal']
+        and delta is not None and delta <= HISTORICAL_SCORE_ATOL)
+    return check
+
+
+def historical_status(comparisons, ranks_equal):
+    passed = (len(comparisons) == len(SEEDS) and
+        {c['seed'] for c in comparisons} == set(SEEDS) and ranks_equal is True and
+        all(c['historical_passed'] for c in comparisons))
+    return 'PASS_HISTORICAL_TOLERANCE' if passed else 'STOP_HISTORICAL_MISMATCH'
+
+
+def historical_reference(reference):
+    reference = Path(reference)
+    if identity(reference/'manifest.json')['sha256'] != P1_MANIFEST_SHA:
+        raise Stop('not the original P1 historical reference')
+    manifest = json.loads((reference/'manifest.json').read_text())
+    if manifest['provenance']['source_commit'] != P1_COMMIT:
+        raise Stop('wrong P1 reference commit')
+    return manifest
+
+
+def recheck_saved_historical_p1(candidate, out, reference, year=2026):
+    """Reaccept immutable saved P1 candidates without invoking any training.
+
+    Verify original input/reference/output hashes and sampled-key replay first;
+    the new manifest links both the original fit and current acceptance code.
+    Historical manifests and scores are never rewritten.
+    """
+    candidate, reference = Path(candidate), Path(reference)
+    out = output_path(out)
+    original_id = identity(candidate/'manifest.json')
+    original = json.loads((candidate/'manifest.json').read_text())
+    refmanifest = historical_reference(reference)
+    if (original.get('origin') != '2026-01-02' or original.get('eval_end') != '2026-09-11'
+            or original.get('evidence_class') != 'CPU_ENGINEERING_ONLY / EXPOSED_HISTORICAL_REPRODUCTION'):
+        raise Stop('not the original P1 historical candidate window')
+    counts = {}
+    for group in ('inputs','reference_inputs','outputs'):
+        for name, expected in original[group].items():
+            path = candidate/name if group == 'outputs' else Path(expected['path'])
+            actual = identity(path)
+            if any(actual[k] != expected[k] for k in ('bytes','sha256')):
+                raise Stop('saved historical SHA mismatch: '+group+'/'+name)
+        counts[group] = len(original[group])
+    for name, expected in original['inputs'].items():
+        matches = [v['sha256'] for k,v in refmanifest['inputs'].items()
+                   if f'/fold_{year}/' in k and k.endswith('/'+name)]
+        if matches != [expected['sha256']]: raise Stop('P1 matrix identity mismatch: '+name)
+    comparisons = []; reference_inputs = {'manifest': identity(reference/'manifest.json')}
+    for seed in SEEDS:
+        replay_keys(candidate/'matrix-view', original['replay'][str(seed)], seed)
+        name = f'fold_{year}_seed_{seed}.parquet'
+        reference_inputs[name] = identity(reference/name)
+        if reference_inputs[name]['sha256'] != refmanifest['outputs'][name]['sha256']:
+            raise Stop('reference SHA mismatch')
+        ref = pd.read_parquet(reference/name)
+        ref = ref[ref.system == 'c0plus'].reset_index(drop=True)
+        frame = pd.read_parquet(candidate/f'scores-{seed}.parquet')
+        comparisons.append(dict(seed=seed, eval_rows=len(frame), **compare_historical_p1(frame,ref)))
+    reference_inputs['rank_average.parquet'] = identity(reference/'rank_average.parquet')
+    if reference_inputs['rank_average.parquet']['sha256'] != refmanifest['outputs']['rank_average.parquet']['sha256']:
+        raise Stop('rank reference SHA mismatch')
+    old = pd.read_parquet(reference/'rank_average.parquet')
+    old = old[(old.fold == year) & (old.system == 'c0plus')].reset_index(drop=True)
+    ranks = pd.read_parquet(candidate/'rank_average.parquet')
+    ranks_equal = (same_keys(ranks,old,['fold','system','date','code']) and
+                   ranks.score.to_numpy().tobytes() == old.score.to_numpy().tobytes())
+    manifest = dict(schema='forward-wp2-historical-reacceptance-v1', artifact_class='GENERATED',
+        evidence_class='CPU_ENGINEERING_ONLY / EXPOSED_HISTORICAL_REPRODUCTION',
+        status=historical_status(comparisons,ranks_equal), forward_admitted=False,
+        source_commit=provenance()['source_commit'], original_manifest=original_id,
+        original_provenance=original['provenance'], original_environment=original['thread_environment'],
+        implementation={str(Path(__file__)):identity(Path(__file__))},
+        policy=dict(scope='ORIGINAL_P1_ONLY', decision=identity(HISTORICAL_DECISION),
+                    score_max_absolute_difference=HISTORICAL_SCORE_ATOL, forward_replay='BITWISE_REQUIRED'),
+        verified_hash_counts=counts, replay_seeds=list(SEEDS), reference_inputs=reference_inputs,
+        jobs=comparisons, rank_average_bitwise_equal=bool(ranks_equal),
+        max_absolute_difference=max(c['max_absolute_difference'] for c in comparisons)
+            if all(c['max_absolute_difference'] is not None for c in comparisons) else None,
+        mismatched_scores=sum(c['mismatched_scores'] for c in comparisons)
+            if all(c['mismatched_scores'] is not None for c in comparisons) else None,
+        training_performed=False)
+    out.mkdir(parents=True,exist_ok=False)
+    write_json(out/'manifest.json',manifest)
+    return manifest
+
+
 def run(source,out,calendar,origin,eval_end,reference=None,year=None):
     out=output_path(out);source=Path(source)
     inputs={name:identity(source/name) for name in FILES}
@@ -169,7 +286,7 @@ def run(source,out,calendar,origin,eval_end,reference=None,year=None):
     view=prepare_view(source,out/'matrix-view',calendar,origin,eval_end)
     comparisons=[];frames=[];replays={};reference_inputs={}
     if reference:
-        reference=Path(reference);refmanifest=json.loads((reference/'manifest.json').read_text())
+        reference=Path(reference);refmanifest=historical_reference(reference)
         reference_inputs['manifest']=identity(reference/'manifest.json')
         if refmanifest['provenance']['source_commit']!='ace2eef0c580d3484a4c6299de16b1c3d5420898':
             raise Stop('wrong P1 reference commit')
@@ -194,11 +311,7 @@ def run(source,out,calendar,origin,eval_end,reference=None,year=None):
             reference_inputs[name]=identity(p)
             if reference_inputs[name]['sha256']!=refmanifest['outputs'][name]['sha256']:raise Stop('reference SHA mismatch')
             ref=pd.read_parquet(p);ref=ref[ref.system=='c0plus'].reset_index(drop=True)
-            keys=['fold','seed','system','date','code']
-            check['keys_equal']=same_keys(frame,ref,keys)
-            check['scores_bitwise_equal']=frame.score.to_numpy().tobytes()==ref.score.to_numpy().tobytes()
-            check['mismatched_scores']=int(np.count_nonzero(frame.score.to_numpy().view('uint64')!=ref.score.to_numpy().view('uint64'))) if len(frame)==len(ref) else None
-            check['seed_ranks_bitwise_equal']=frame.groupby('date').score.rank(pct=True).to_numpy().tobytes()==ref.groupby('date').score.rank(pct=True).to_numpy().tobytes()
+            check.update(compare_historical_p1(frame,ref))
         frames.append(frame);comparisons.append(check);print(json.dumps(check),flush=True)
     ranks=rank_average(pd.concat(frames,ignore_index=True))
     ranks.to_parquet(out/'rank_average.parquet',index=False)
@@ -212,9 +325,10 @@ def run(source,out,calendar,origin,eval_end,reference=None,year=None):
     if prov['implementation']!=provenance()['implementation'] or adapter_inputs!={p:identity(p) for p in adapter_inputs}:
         raise Stop('source code mutated during fit')
     outputs={str(p.relative_to(out)):identity(p) for p in sorted(out.rglob('*')) if p.is_file() and not p.is_symlink()}
-    passed=all(c.get('keys_equal') and c.get('scores_bitwise_equal') and c.get('seed_ranks_bitwise_equal') for c in comparisons) and ranks_equal is True
     manifest=dict(schema='forward-wp2-v1',artifact_class='GENERATED',evidence_class='CPU_ENGINEERING_ONLY / EXPOSED_HISTORICAL_REPRODUCTION',
-        status='PASS_BITWISE' if reference and passed else ('STOP_BITWISE_MISMATCH' if reference else 'ENGINEERING_ONLY_NOT_ACCEPTED'),
+        status=historical_status(comparisons,ranks_equal) if reference else 'ENGINEERING_ONLY_NOT_ACCEPTED',
+        historical_policy=dict(scope='ORIGINAL_P1_ONLY',score_max_absolute_difference=HISTORICAL_SCORE_ATOL,
+            decision=identity(HISTORICAL_DECISION)) if reference else None,
         forward_admitted=False,provenance=prov,inputs=inputs,reference_inputs=reference_inputs,
         implementation=adapter_inputs,
         thread_environment={k:os.environ.get(k) for k in ['OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS','CUDA_VISIBLE_DEVICES']},
@@ -244,7 +358,7 @@ def main():
         if not a.calendar:p.error('explicit WP1 calendar required; no inferred sessions')
         cal=load_w34(a.calendar)
     m=run(a.source,a.out,cal,a.origin,a.eval_end,a.historical_p1_reference,a.year)
-    if m['status']=='STOP_BITWISE_MISMATCH':raise SystemExit(2)
+    if m['status'].startswith('STOP_'):raise SystemExit(2)
 
 
 if __name__=='__main__':main()

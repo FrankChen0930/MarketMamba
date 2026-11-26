@@ -1,3 +1,9 @@
+## Human 原 P1 歷史容差的限定 authority — 2026-11-26
+
+未修改的 [Human 決定](../../tasks/decision-forward-wp2-wp6-20261126.md) 僅 supersede [P2](../../tasks/spec-forward-p2-primary-20261124.md) 與本 map 舊段落中**原 P1 historical reference scores 必須 bitwise**的要求：ordered keys／各 seed ranks 精確相等且 scores max abs delta≤1e-15。不得泛化至其他 reference、前瞻重訓、模型load→predict或同環境replay。原P1 manifest SHA `dc3b9b3ad9c2c27a5366440c651f5f6baa7daaec9854368a0e944874890be9d8` 與 `ace2eef` 來源commit固定；[WP2候選](../../tools/forward_wp2.py)／[報告](../../reports/forward_wp2_20261126.md) 以 `PASS_HISTORICAL_TOLERANCE` 表達真實三seed舊candidate驗收，保留seed17的50筆byte差與max 3.469446951953614e-18。原artifacts／原始STOP紀錄不改寫；新的local GENERATED manifest只記本次歷史再驗收，不升格成前瞻或正式交易evidence。
+
+`builder_fwd_wp2dec@590a3f1` no-commit，**UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[WP5共用clock分類](../../tools/forward_wp5.py)／[測試](../../tests/test_forward_wp5.py) 先驗session，非session直接Stop且保留write-ahead OPEN，不以原本偶然calendar.shift失敗作安全證明。前瞻WP4 bitwise gate原bytes不變，新增one-ULP拒絕測試；incident verdict／P2／設計／決定／production authority均未改。原模型／完整環境缺失及根因未知、calendar／PIT／lifecycle／lagus／WP6與整包NO_GO仍保留。此處不授獨立審查／Human acceptance，不刷新任何外部observed_at。
+
 ## 單一事故 verdict 候選邊界 — 2026-11-26
 
 `job-run-mwxld77j-11853c/builder_fwd_sm@ed38501` no-commit，**SYNTHETIC_CPU_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。未修改的[P2](../../tasks/spec-forward-p2-primary-20261124.md)與[設計](../../tasks/design-forward-incident-state-machine-20261126.md)控制語義；[WP5](../../tools/forward_wp5.py)的純 `verdict(sealed_chain)` 統一 attempt、每日及完整鏈開盲判定，完整 inventory／receipt／hash-verified OPEN/CLOSE 提供輸入，wrapper return 與 manifest incident 無 authority。跨日相同 attempt prefix 只可逐 bytes 相同去重，衝突／缺件／改名／未關閉／fatal 不可解除；合法 transient 僅能依原 request R+1／R+2 恢復。registry identity 保持 spec SHA＋sessions＋external head，不因 calendar metadata／路徑改變。

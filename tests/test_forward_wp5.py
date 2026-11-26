@@ -22,6 +22,37 @@ def ticket():
     return c, w.freeze_request(c, c.sessions[30], b'fixed synthetic snapshot')
 
 
+@pytest.mark.parametrize('hour', ['17:00:00', '18:00:00', '19:00:00'])
+def test_non_session_clock_and_attempt_both_fail_closed(tmp_path, hour):
+    c, r = ticket()
+    from datetime import timedelta
+    day = next((date.fromisoformat(r['origin']) + timedelta(days=i)).isoformat()
+               for i in range(1, 7)
+               if (date.fromisoformat(r['origin']) + timedelta(days=i)).isoformat() not in c.sessions)
+    assert day not in c.sessions
+    at = f'{day}T{hour}+08:00'
+    args = dict(calendar=c, request=r, snapshot=b'fixed synthetic snapshot',
+                at=at, codes=['RETRAIN_TRANSIENT'], phase='FORMAL')
+    frozen = tmp_path/'frozen.json'; pin = w.freeze_script(frozen)
+    for operation in (lambda: w.classify_clock(c, r, at),
+                      lambda: w.decide(**args),
+                      lambda: w.run_attempt(tmp_path/'journal', frozen_path=frozen, pin=pin, **args)):
+        with pytest.raises(Stop, match='not a qualified session'):
+            operation()
+    records = w.journal_records(tmp_path/'journal')
+    assert len(records) == 1 and records[0]['kind'] == 'OPEN'
+    assert w.verdict(dict(records=records))['status'] == 'REJECTED'
+
+
+def test_session_clock_classification():
+    c, r = ticket()
+    origin = r['origin']
+    assert w.classify_clock(c, r, cutoff(origin)) == 'ONTIME'
+    assert w.classify_clock(c, r, cutoff(origin).replace('18:00:00', '17:59:59')) == 'EARLY'
+    assert w.classify_clock(c, r, cutoff(origin).replace('18:00:00', '18:00:01')) == 'LATE'
+    assert w.classify_clock(c, r, cutoff(c.shift(origin, 3))) == 'EXPIRED'
+
+
 def reference_verdict(records, opened=False, continuation=False):
     """Independent specification oracle; no product functions or constants."""
     harmless = {'SOURCE_OPTIONAL', 'PRIVATE_EXPECTED'}
@@ -228,7 +259,7 @@ def test_two_mutations_killed():
     from _pytest.outcomes import Failed
     source = Path(w.__file__).read_text()
     cases = [('snapshot', "sha256_bytes(snapshot) != request['snapshot_sha256']", 'False'),
-             ('deadline', 'now > deadline', 'False')]
+             ('deadline', "now > timestamp(request['deadline'])", 'False')]
     c, r = ticket()
     for name, old, new in cases:
         assert source.count(old) == 1

@@ -11,6 +11,40 @@ from tools.forward_wp1 import Calendar, Stop
 from V6.research_lab import c0plus, rolling_folds
 
 
+def historical_pair():
+    a = pd.DataFrame(dict(fold=[2026, 2026], seed=[17, 17],
+        system=['c0plus']*2, date=pd.to_datetime(['2026-01-02']*2),
+        code=['A', 'B'], score=np.array([0., .01], dtype='float64')))
+    return a, a.copy()
+
+
+def test_historical_p1_tolerance_and_forward_bitwise():
+    a, b = historical_pair()
+    a.loc[0, 'score'] = 3.469446951953614e-18
+    historical = w.compare_historical_p1(a, b)
+    assert historical['historical_passed']
+    assert historical['max_absolute_difference'] == 3.469446951953614e-18
+    assert historical['mismatched_scores'] == 1
+    assert not historical['scores_bitwise_equal']
+    # A prospective replay uses the strict comparator even for this tiny delta.
+    assert not w.compare_predictions_bitwise(a, b)['passed']
+    assert w.compare_predictions_bitwise(b, b)['passed']
+
+
+@pytest.mark.parametrize('mutation', ['over_limit', 'rank', 'key', 'nan', 'inf', 'length'])
+def test_historical_p1_rejects_invalid_comparison(mutation):
+    a, b = historical_pair()
+    if mutation == 'over_limit': a.loc[0, 'score'] = 1.1e-15
+    if mutation == 'rank':
+        b['score'] = [0., 1e-17]
+        a['score'] = [1e-17, 0.]
+    if mutation == 'key': a.loc[0, 'code'] = 'OTHER'
+    if mutation == 'nan': a.loc[0, 'score'] = np.nan
+    if mutation == 'inf': a.loc[0, 'score'] = np.inf
+    if mutation == 'length': a = a.iloc[:1]
+    assert not w.compare_historical_p1(a, b)['historical_passed']
+
+
 @pytest.fixture(autouse=True)
 def _checkout_root_under_tmp(tmp_path,monkeypatch,request):
     # Outputs must live below the checkout; tests treat tmp_path as the checkout so they

@@ -1,3 +1,7 @@
+## 原 P1 歷史 reference 限定再驗收 — 2026-11-26
+
+依 [Human 決定](../../tasks/decision-forward-wp2-wp6-20261126.md)，[WP2報告](../../reports/forward_wp2_20261126.md) 的原三seed candidate 以 keys／每seed ranks精確相等與score delta≤1e-15驗收，**PASS_HISTORICAL_TOLERANCE / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。seed17保留50／302,228筆bytes不同、max3.469446951953614e-18；29／43差0，9＋5＋21 hashes與三seed keys replay通過，沒有重訓。此節只supersede舊筆記對原P1微小score差的現行STOP；未知原環境／模型／差異根因及所有外部資格STOP仍在。前瞻load→predict／同環境replay仍bitwise，新增WP4 one-ULP拒絕測試；[WP5修補](../../reports/forward_wp5_20261126.md)只統一非session共用clock fail closed與write-ahead拒絕證據。規格、設計、決定、正式資料與production未改，完成非Human acceptance；下一步獨立複審，詳Current State與Authority Map。
+
 ## 第三輪 forward F1–F4 有界修補 — 2026-11-26
 
 `builder_fwd_fix_r3@5b9f352`，no-commit、SYNTHETIC_CPU_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。[WP2報告](../../reports/forward_wp2_20261126.md)新增14日×三seed×五擾動的210組oracle，future feature／label missingness雙向切換且新missingness mutant KILLED；這修補驗收盲點，不證明真實PIT或現行計算曾洩漏。[WP5報告](../../reports/forward_wp5_20261126.md)記錄事故journal而非manifest摘要控制開盲、兩fresh程序receipt與store／C0+配對binding、排除calendar metadata的唯一開盲identity。完整forward428 passed／172 NaN warnings／386.13秒，測試等待放寬不改產品timeout。
