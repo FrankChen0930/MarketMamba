@@ -1,3 +1,9 @@
+## WP5 合成驗收候選界線 — 2026-11-26
+
+[WP5規格／封盲F2](../../tasks/spec-forward-p2-primary-20261124.md)及WP1～WP4／原P1機器語義不變。[WP5腳本](../../tools/forward_wp5.py)、[tests](../../tests/test_forward_wp5.py)、[靜態清單](../../docs/operations/forward-retraining-checklist.md)與[報告](../../reports/forward_wp5_20261126.md)是`job-run-mwxe944p-5885dc/builder_fwd_wp5@e600012`的no-commit **SYNTHETIC_CPU_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**候選。frozen source pin綁程式／測試／規格bytes，但不是Human簽署；純合成decision attestation不授正式切換，`run_attempt`須重驗實際WP4 stores及WP2／WP3合成C0+ outputs。重試保持原origin／快照／三seed，R+2 18:00超時失效、初始版本失敗不啟動；私有失效不停止安全來源摘要。
+
+兩獨立程序合成重做相等不解除原P1 seed17 bitwise STOP、WP1來源／calendar／PIT／lifecycle、WP3 provenance／daily source或WP4環境lock。合成unblind只寫audit record，正式T1／252端點綁定與結果釋出留WP6及Human；不證明OS隔離、真實20-session鏈或正式前瞻已啟動。不supersede任何machine／歷史artifact／production authority，無外部runtime觀測更新；獨立review／Human acceptance仍必須。
+
 ## WP3 mask 重建候選補證界線 — 2026-11-26
 
 [mask報告](../../reports/forward_wp3_mask_20261126.md)及本worktree私有validation／full-reference manifest是`job-run-mwxdbyz7-28c523/builder_fwd_mask@3f94ae2`的no-commit **UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**工程候選。原corrected48欄／C0+／P2 machine語義與threshold不變；prepared／universe source-tree SHA、完整target X bytes、重建mask F-serialization SHA皆精確核對。原lagus程式仍未恢復，roadmap重現程式不是歷史source authority，finite prepared mask也不證raw觀測／publication PIT。

@@ -1,3 +1,9 @@
+## P2 WP5 非績效驗收候選 — 2026-11-26
+
+`job-run-mwxe944p-5885dc/builder_fwd_wp5`、既有detached base `e60001207346573e26f03154cd502cada7ca2bd7`，起始clean、Human有界no-commit核准。**SYNTHETIC_CPU_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；完整前瞻仍STOP。** [腳本](../../tools/forward_wp5.py)／[測試](../../tests/test_forward_wp5.py)／[靜態Human清單](../../docs/operations/forward-retraining-checklist.md)沿WP1 calendar／18:00、WP2 C0+、WP3 immutable reference與WP4存檔／pointer／淨化摘要，驗固定source pin／snapshot／origin／seeds、R→R+1→R+2私有event鏈、截止／初始不啟動、事故／白名單／合成手動一次開盲。兩獨立新程序重做合成48／185矩陣、三seedkeys／scores／ranks及WP4 native roundtrip，全bytes比較；不計績效、不讀blind、不切正式pointer。私有重訓STOP不控制公開來源日鏈節奏；同權限hash鏈不是OS隔離或防竄改。
+
+[報告](../../reports/forward_wp5_20261126.md)記終局98 focused（標準PYTHONPATH、無basetemp）／195相關regression、兩source mutations KILLED；CLI44.42秒／RSS444,472 KiB／exit0，69份source pins及261終局artifacts，R+2成功／超時events與R到R+3來源鏈。所有逐列／模型／logs只在本worktree`.artifacts/forward/`。首輪deadline mutant被另一late guard遮蔽，改oracle為R+3精確18:00；來源投影先於private reference的新RED亦保留，修正後重新驗證，不放寬實作。候選source freeze不是Human簽署，合成252開盲audit不是WP6端點或正式結果釋出。真實P1 seed17 bitwise、合格calendar／PIT／lifecycle、WP3 provenance／daily source與WP4環境lock、20-session穩定鏈／WP6仍STOP／待辦。Next為獨立review及Human acceptance，未授T0／T1啟動。無網路／資料取得／GPU／agents／正式Data／V6/models／TEJ SHA256SUMS／P4d／第三步／production／scheduler操作，無commit／push／merge／deploy／wakeup或外部observed_at更新。
+
 ## 前瞻 WP3 同版本 mask／完整 reference 候選 — 2026-11-26
 
 `job-run-mwxdbyz7-28c523/builder_fwd_mask@3f94ae2`，no-commit **CPU_ENGINEERING_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[報告](../../reports/forward_wp3_mask_20261126.md)記錄2,244份prepared cache與22份universe完整hash符合原E5，呼叫原builder在補零前重建mask；重建X完整SHA `9778392d4c337d1f9cb5768002340a0d1aec13f7689b2f601b77bd2329b55363`、cmp exit0／0格差異。mask有2,453,171缺觀測格；F-layout序列化SHA精確符合原manifest的004771dd…，未用舊mask／全1／zero-filled X推回。

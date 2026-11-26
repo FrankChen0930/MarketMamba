@@ -1,3 +1,12 @@
+## 前瞻 WP5 builder — 2026-11-26
+
+- Purpose／owner／task：Human／Codex builder，`job-run-mwxe944p-5885dc/builder_fwd_wp5`，有界WP5非績效acceptance／靜態清單／合成事故與重試演練。
+- Path／branch／base：既有`.worktrees/ruflo-workers/run-mwxe944p-5885dc/builder_fwd_wp5`，detached `e60001207346573e26f03154cd502cada7ca2bd7`；created UNKNOWN、接手2026-11-26、retired N/A；起始clean，no-commit，未新增／移除worktree。
+- State／authority：SYNTHETIC_CPU_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED，完整前瞻STOP；[報告](../../reports/forward_wp5_20261126.md)是作者工程證據，不取代獨立review／Human acceptance。
+- Artifact／merge dependencies：僅合成inputs與既有程式／規格；GENERATED source pin／三seedmodels／完整reference／私有events／chain／logs／reports只在本worktree`.artifacts/forward/wp5-20261126/`；test fixture TEMPORARY位於同層`pytest-tmp`，由既有fixture清理自己的synthetic scratch。既有WP1～WP4 source／P1研究authority不變，沒有push／merge／deployment授權。
+- Safe removal：先保留no-commit patch、完整private artifact inventory／hash／logs與唯一副本，核references及可重建性；Human另案退役且確認clean前不移除。
+- Runtime：WSL CPU／pilot09 venv Python3.12.3，CUDA空、OMP4／BLAS1，MARKETMAMBA_DATA_ROOT unset，Data realpath本worktree普通目錄僅核metadata；無網路／GPU／agents／blind／正式Data／V6/models／P4d／第三步／production／scheduler／wakeup或外部observed_at更新。
+
 ## 前瞻 WP3 mask 重建 builder — 2026-11-26
 
 - Purpose／owner／task：Human／Codex builder，`job-run-mwxdbyz7-28c523/builder_fwd_mask`；同版本X／mask唯讀來源重建、完整byte gate、真實immutable reference與資源量測。

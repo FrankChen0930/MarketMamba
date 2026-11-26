@@ -1,3 +1,9 @@
+## WP5 每版非績效驗收候選 — 2026-11-26
+
+[WP5](../../tools/forward_wp5.py)與[Human靜態清單](../../docs/operations/forward-retraining-checklist.md)以同一source pin驗每版／每次重試，沿WP1 origin−21、快照R−1 18:00與R+2 18:00期限；沿WP4重驗完整三seed pointer／native roundtrip及WP2／WP3合成C0+ reference。兩新程序獨立重做keys／48與185欄／sample／scores／ranks逐bytes相等，非績效、不調參。私有event鏈固定R→R+1→R+2、snapshot／origin／seeds；超時／identity錯立即失效，初始M0／F0失敗不啟動。純合成切換授權不修改正式模型或portfolio state，來源摘要日鏈獨立。
+
+**SYNTHETIC_CPU_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。** [報告](../../reports/forward_wp5_20261126.md)記兩mutants與終局checks；合成PASS不是原P1 reference通過、Human source簽署、實際20-session鏈、跨環境lock或WP6正式端點驗收。WP2 seed17與WP1來源／calendar／PIT／lifecycle及WP3 provenance／daily-source STOP保留。無真實forward fit／blind讀取／GPU／排程／production authority或外部observed_at變更。
+
 ## WP4 每 fit 環境封存候選 — 2026-11-26
 
 [合成runner](../../tools/forward_wp4.py)每fit前先fsync environment及seed／context／params／target request，完成模型版本內再保存完整快照；fit失敗仍保留已落盤環境。記錄套件／LightGBM版本、Python／compiler／libc、loaded native binary hashes、BLAS／OpenMP與thread env、n_jobs4、CPU flags／cpuinfo／affinity及X dtype／layout／identity。大型binary SHA按完整stat identity在單一程序快取，變更失效；每fit仍寫完整map。這補足日後診斷資料，不保證跨主機重訓逐位元相同，也不證實WP2 seed17的未證根因，不改C0+配方或deterministic參數。

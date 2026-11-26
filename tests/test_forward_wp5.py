@@ -1,0 +1,278 @@
+"""Only synthetic WP5 fixtures; standard PYTHONPATH, no basetemp override."""
+from datetime import date, timedelta
+import types
+from pathlib import Path
+
+import pytest
+from tests.forward_tmp import tmp_path  # noqa: F401
+from tools import forward_wp5 as w
+from tools import forward_wp4_summary as summary
+from tools.forward_wp1 import Calendar, Stop, cutoff
+
+
+def calendar():
+    days = [(date(2026, 1, 1) + timedelta(days=i)).isoformat() for i in range(450)]
+    # Deliberately irregular synthetic calendar, never a trading calendar claim.
+    days = [d for i, d in enumerate(days) if i % 7 not in (2, 5)]
+    return Calendar(days, days[0], days[-1], {'synthetic': True})
+
+
+def ticket():
+    c = calendar()
+    return c, w.freeze_request(c, c.sessions[30], b'fixed synthetic snapshot')
+
+
+def transient(c, request, delay=0):
+    return w.decide(c, request, snapshot=b'fixed synthetic snapshot',
+                    at=cutoff(c.shift(request['origin'], delay)),
+                    codes=['RETRAIN_TRANSIENT'], phase='FORMAL')
+
+
+@pytest.mark.parametrize('delay', [0, 1, 2])
+def test_same_frozen_snapshot_and_origin_for_retries(delay):
+    c, r = ticket()
+    result = transient(c, r, delay)
+    assert result['action'] == ('RETRY' if delay < 2 else 'INVALID_FOR_CONFIRMATION')
+    assert result['origin'] == r['origin']
+    assert result['snapshot_sha256'] == r['snapshot_sha256']
+    assert result['delay_sessions'] == delay
+    assert result['next_attempt'] == (c.shift(r['origin'], delay+1) if delay < 2 else None)
+
+
+@pytest.mark.parametrize('delay', [0, 1, 2])
+def test_1800_switch_authorization_requires_acceptance(delay):
+    c, r = ticket()
+    out = w.decide(c, r, snapshot=b'fixed synthetic snapshot',
+                   at=cutoff(c.shift(r['origin'], delay)), codes=[], phase='FORMAL',
+                   acceptance=w.synthetic_acceptance())
+    assert out['action'] == 'SWITCH_ALL_THREE'
+    assert out['switch_session'] == c.shift(r['origin'], delay)
+    assert out['effective_open'] == c.shift(r['origin'], delay+1)
+    assert out['train_last'] == c.origin_minus21(r['origin'])
+
+
+@pytest.mark.parametrize('when', ['early', 'late', 'timeout', 'before_origin'])
+def test_clock_boundary_does_not_backdate(when):
+    c, r = ticket()
+    d = c.shift(r['origin'], {'early': 0, 'late': 0, 'timeout': 2, 'before_origin': -1}[when])
+    at = cutoff(d)
+    if when == 'early': at = at.replace('18:00:00', '17:59:59')
+    if when in ('late', 'timeout'): at = at.replace('18:00:00', '18:00:01')
+    result = w.decide(c, r, snapshot=b'fixed synthetic snapshot', at=at,
+                      codes=[], phase='FORMAL', acceptance=w.synthetic_acceptance())
+    assert result['action'] == ('WAIT' if when in ('early', 'before_origin') else
+                                'RETRY' if when == 'late' else 'INVALID_FOR_CONFIRMATION')
+    assert result['switch_session'] is None
+
+
+@pytest.mark.parametrize('phase', ['PRESTART', 'FORMAL'])
+@pytest.mark.parametrize('code', list(summary.SOURCE_CODES) + list(summary.PRIVATE_CODES) + ['BOGUS'])
+def test_error_routing_fails_closed(phase, code):
+    c, r = ticket()
+    result = w.decide(c, r, snapshot=b'fixed synthetic snapshot', at=cutoff(r['origin']),
+                      codes=[code, 'RETRAIN_TRANSIENT'], phase=phase)
+    if code in ('RETRAIN_TRANSIENT', 'SOURCE_OPTIONAL', 'PRIVATE_EXPECTED'):
+        assert result['action'] == ('RETRY' if phase=='FORMAL' else 'STOP')
+    else:
+        assert result['action'] == ('STOP' if phase == 'PRESTART' else 'INVALID_FOR_CONFIRMATION')
+
+
+def test_changed_snapshot_seed_origin_or_unknown_acceptance_stops():
+    c, r = ticket()
+    with pytest.raises(Stop):
+        w.decide(c, r, snapshot=b'late revised input', at=cutoff(r['origin']), codes=[], phase='FORMAL')
+    for key, value in [('seeds', [17, 29]), ('train_last', r['origin']), ('snapshot_cutoff', cutoff(r['origin']))]:
+        bad = dict(r, **{key: value})
+        with pytest.raises(Stop): w.validate_request(c, bad)
+    for evidence in [None, {}, dict(w.synthetic_acceptance(), reference_equal=False)]:
+        result = w.decide(c, r, snapshot=b'fixed synthetic snapshot', at=cutoff(r['origin']),
+                          codes=[], phase='FORMAL', acceptance=evidence)
+        assert result['action'] == 'INVALID_FOR_CONFIRMATION'
+
+
+def test_prestart_failure_does_not_start_late_with_incumbent_retry():
+    c,r=ticket()
+    for delay in range(3):
+        result=w.decide(c,r,snapshot=b'fixed synthetic snapshot',
+            at=cutoff(c.shift(r['origin'],delay)),codes=['RETRAIN_TRANSIENT'],phase='PRESTART')
+        assert result['action']=='STOP'
+        assert result['next_attempt'] is None
+
+
+def test_freeze_covers_code_tests_checklist_and_spec(tmp_path):
+    pin = w.freeze_script(tmp_path/'frozen.json')
+    assert w.verify_script(tmp_path/'frozen.json', pin) == pin
+    assert {'tools/forward_wp5.py', 'tools/forward_wp1.py', 'tools/forward_wp4.py',
+            'tools/forward_wp4_summary.py', 'tests/test_forward_wp5.py',
+            'docs/operations/forward-retraining-checklist.md'} <= set(pin['files'])
+    with pytest.raises(Stop): w.verify_script(tmp_path/'frozen.json', dict(pin, schema='changed'))
+    with pytest.raises(FileExistsError): w.freeze_script(tmp_path/'frozen.json')
+
+
+def test_two_mutations_killed():
+    from _pytest.outcomes import Failed
+    source = Path(w.__file__).read_text()
+    cases = [('snapshot', "sha256_bytes(snapshot) != request['snapshot_sha256']", 'False'),
+             ('deadline', 'now > deadline', 'False')]
+    c, r = ticket()
+    for name, old, new in cases:
+        assert source.count(old) == 1
+        mutant = types.ModuleType('wp5_mutant'); mutant.__file__ = w.__file__
+        exec(compile(source.replace(old, new), w.__file__, 'exec'), mutant.__dict__)
+        def oracle(module):
+            if name == 'snapshot':
+                with pytest.raises(Stop):
+                    module.decide(c, r, snapshot=b'changed', at=cutoff(r['origin']), codes=[], phase='FORMAL')
+            else:
+                out = module.decide(c, r, snapshot=b'fixed synthetic snapshot',
+                        at=cutoff(c.shift(r['origin'], 3)),
+                    codes=[], phase='FORMAL', acceptance=w.synthetic_acceptance())
+                assert out['action'] == 'INVALID_FOR_CONFIRMATION'
+        oracle(w)
+        with pytest.raises((Failed, AssertionError)): oracle(mutant)
+
+
+def test_reference_two_independent_processes_and_corruption(tmp_path):
+    pin = w.freeze_script(tmp_path/'frozen.json')
+    result = w.independent_reference(tmp_path/'reference', tmp_path/'frozen.json', pin)
+    assert result['reference_equal'] is True
+    assert result['processes'] == 2
+    assert result['seeds'] == [17, 29, 43]
+    assert result['compared_predictions'] == 111
+    assert result['compared_samples'] == 2400
+    assert result['c0plus_equal'] is True
+    assert result['c0plus_features'] == 185
+    c,r=ticket()
+    for delay in range(3):
+        journal=tmp_path/f'acceptance-delay-{delay}'
+        for previous in range(delay):
+            w.run_attempt(journal,calendar=c,request=r,snapshot=b'fixed synthetic snapshot',
+                at=cutoff(c.shift(r['origin'],previous)),codes=['RETRAIN_TRANSIENT'],phase='FORMAL',
+                frozen_path=tmp_path/'frozen.json',pin=pin)
+        accepted=w.run_attempt(journal,calendar=c,request=r,snapshot=b'fixed synthetic snapshot',
+            at=cutoff(c.shift(r['origin'],delay)),codes=[],phase='FORMAL',
+            frozen_path=tmp_path/'frozen.json',pin=pin,
+            reference=tmp_path/'reference/run-0',candidate=tmp_path/'reference/run-1',
+            reference_c0plus=tmp_path/'reference/run-0-c0plus',candidate_c0plus=tmp_path/'reference/run-1-c0plus')
+        assert accepted['decision']['action']=='SWITCH_ALL_THREE'
+        assert accepted['decision']['origin']==r['origin']
+        assert accepted['evidence']['reference_equal'] is True
+    assert w.compare_stores(tmp_path/'reference/run-0', tmp_path/'reference/run-1')['reference_equal']
+    pointer = tmp_path/'reference/run-1/current.json'
+    pointer.write_text('{}')
+    with pytest.raises(Stop): w.compare_stores(tmp_path/'reference/run-0', tmp_path/'reference/run-1')
+
+
+def test_retry_journal_is_ordered_immutable_and_timeout_absorbing(tmp_path):
+    c,r=ticket(); frozen=tmp_path/'frozen.json';pin=w.freeze_script(frozen)
+    args=dict(calendar=c,request=r,snapshot=b'fixed synthetic snapshot',phase='FORMAL',
+              frozen_path=frozen,pin=pin,codes=['RETRAIN_TRANSIENT'])
+    events=[]
+    for delay in range(3):
+        events.append(w.run_attempt(tmp_path/'journal',at=cutoff(c.shift(r['origin'],delay)),**args))
+    assert [e['decision']['action'] for e in events]==['RETRY','RETRY','INVALID_FOR_CONFIRMATION']
+    assert events[1]['previous_event_sha256']==w.sha256_bytes(w.store.canonical(events[0]))
+    with pytest.raises(Stop):
+        w.run_attempt(tmp_path/'journal',at=cutoff(c.shift(r['origin'],3)),**args)
+    with pytest.raises(Stop):
+        w.run_attempt(tmp_path/'skip',at=cutoff(c.shift(r['origin'],1)),**args)
+    assert len(list((tmp_path/'journal/events').glob('*.json')))==3
+
+
+def test_corrupt_journal_cannot_reset_or_change_snapshot(tmp_path):
+    c,r=ticket(); frozen=tmp_path/'frozen.json';pin=w.freeze_script(frozen)
+    args=dict(calendar=c,request=r,snapshot=b'fixed synthetic snapshot',phase='FORMAL',
+              frozen_path=frozen,pin=pin,codes=['RETRAIN_TRANSIENT'])
+    w.run_attempt(tmp_path/'journal',at=cutoff(r['origin']),**args)
+    (tmp_path/'journal/events/000.json').write_text('{}')
+    with pytest.raises(Stop):
+        w.run_attempt(tmp_path/'journal',at=cutoff(c.shift(r['origin'],1)),**args)
+
+
+def test_static_schedule_uses_sessions_and_keeps_origin():
+    c=calendar(); origin=c.sessions[40]; t1=c.sessions[60]
+    schedule=w.human_schedule(c,[origin],t1)
+    row=schedule['retraining'][0]
+    assert row['manual_check']==c.shift(origin,-5)
+    assert row['snapshot_cutoff']==cutoff(c.shift(origin,-1))
+    assert row['train_last']==c.shift(origin,-21)
+    assert row['attempt_cutoffs']==[cutoff(c.shift(origin,i)) for i in range(3)]
+    assert schedule['t1_full_wp5_deadline']==c.shift(t1,-20)
+
+
+def test_cli_source_projection_is_frozen_before_any_private_reference(tmp_path,monkeypatch):
+    sources=[]
+    original=summary.synthetic_source
+    def source(session):
+        value=original(session);sources.append(value);return value
+    def stop_before_private(*args):
+        assert len(sources)==4
+        raise Stop('synthetic pre-fit boundary probe')
+    monkeypatch.setattr(summary,'synthetic_source',source)
+    monkeypatch.setattr(w,'independent_reference',stop_before_private)
+    with pytest.raises(Stop,match='pre-fit boundary probe'):
+        w.synthetic_rehearsal(tmp_path/'boundary')
+
+
+def test_missing_reference_model_or_rank_is_not_accepted(tmp_path):
+    # No missing report may become a vacuous equality pass.
+    with pytest.raises(Stop): w.compare_c0plus(tmp_path/'absent',tmp_path/'also-absent')
+
+
+def chain(root, count=3):
+    c = calendar(); days = c.sessions[31:31+count]
+    dirs=[]; head='0'*64; private_head='0'*64
+    for i, d in enumerate(days):
+        directory=root/str(i)
+        p=summary.run_synthetic_session(directory, source=summary.synthetic_source(d),
+            private_operation=lambda _: None, previous_head=head, previous_private_commitment=private_head)
+        dirs.append(directory); head=p['head']; private_head=p['commitment']
+    return c, days, dirs, head
+
+
+def test_timeout_keeps_source_chain_and_private_failure_does_not_leak(tmp_path):
+    c, r=ticket()
+    assert transient(c,r,2)['action']=='INVALID_FOR_CONFIRMATION'
+    c, days, dirs, head=chain(tmp_path/'chain')
+    assert summary.verify_synthetic_sessions(dirs, days, head)
+    for directory in dirs:
+        import json
+        public=json.loads((directory/'public-summary.json').read_text())
+        assert set(public)==summary.SOURCE_KEYS | summary.CHAIN_KEYS
+        assert summary.release_bytes(public,summary.release_at(public['session']))
+    with pytest.raises(Stop): summary.verify_synthetic_sessions(dirs[1:], days, head)
+
+
+@pytest.mark.parametrize('incident', ['PEEK', 'BAD_OUTPUT', 'MISSING_DAY', 'UNKNOWN'])
+def test_incidents_absorbing_and_not_reset_by_owner(incident):
+    invalid=w.incident_state('VALID', incident)
+    assert invalid=='INVALID_FOR_CONFIRMATION'
+    assert w.incident_state(invalid,'NONE')==invalid
+    assert w.incident_state(invalid,'CHANGE_OWNER')==invalid
+
+
+def test_manual_unblind_requires_full_chain_maturity_human_once(tmp_path):
+    c, days, dirs, head=chain(tmp_path/'chain',252)
+    pin=w.freeze_script(tmp_path/'frozen.json')
+    args=dict(calendar=c, expected_sessions=days, directories=dirs, external_head=head,
+              state='VALID', at=cutoff(c.shift(days[-1],11)),
+              publication_complete=True, human='Human', manual=True,
+              frozen_path=tmp_path/'frozen.json', pin=pin, output=tmp_path/'unblind.json')
+    for changes in [dict(manual=False), dict(human='worker'), dict(state='INVALID_FOR_CONFIRMATION'),
+                    dict(publication_complete=False), dict(at=cutoff(c.shift(days[-1],10))),
+                    dict(directories=dirs[1:]), dict(external_head='1'*64), dict(expected_sessions=days[:-1])]:
+        with pytest.raises(Stop): w.manual_unblind(**dict(args,**changes))
+    assert not (tmp_path/'unblind.json').exists()
+    report=w.manual_unblind(**args)
+    assert report['synthetic'] is True
+    assert report['return_sessions']==252
+    with pytest.raises(Stop): w.manual_unblind(**args)
+
+
+@pytest.mark.parametrize('kind', ['public', 'private', 'nonce'])
+def test_blind_bad_output_rejected(tmp_path,kind):
+    c, days, dirs, head=chain(tmp_path/'chain')
+    file=dirs[0]/{'public':'public-summary.json', 'private':'private/source-before-fit.json',
+                 'nonce':'private/nonce.bin'}[kind]
+    file.write_bytes(b'corrupt')
+    with pytest.raises(Stop): w.verify_chain(dirs,days,head)
