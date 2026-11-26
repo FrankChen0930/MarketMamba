@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "status": "PENDING_EXECUTION",
+  "status": "COMPLETE_HISTORICAL_ONLY",
   "evidence_class": "已曝光、量級與工程驗證、非確認",
   "research_status": "RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED",
   "spec_sha256": "79a0c24bc57369d03edc709933b44c21a95e81f0c532127f72af93156c8e7a5d",
@@ -8,10 +8,90 @@
   "bundle_sha256": "1e0a6b7537c11939b7fecd95232817addd3778735a8fdc1df6d7e6abc84c9ed6",
   "admission_sha256": "43d8ceca7f9d1764489b82836c6ad95cef47185ad7b055b5ec635597356e71d0",
   "expected_fit_count": 108,
-  "fit_count": null,
-  "complete_verified": null,
-  "periods": null,
-  "engineering_crosscheck": null,
+  "fit_count": 108,
+  "complete_verified": 108,
+  "periods": {
+    "2015-2020": {
+      "1a": {
+        "mean_a": 0.1629160314757128,
+        "mean_b": 0.1607714789602175,
+        "mean_difference": -0.002144552515495301,
+        "paired_ci95": [
+          -0.004687330637937966,
+          8.391512248283157e-05
+        ],
+        "p_raw": 0.07692307692307693,
+        "p_holm": 0.15384615384615385,
+        "holm_reject": false,
+        "valid_days": 1468,
+        "scheduled_days": 1468,
+        "historical_numeric_threshold": false,
+        "formal_success": false,
+        "threshold_text": "未證實；不主張等效或確認成功"
+      },
+      "1b": {
+        "mean_a": 0.1629160314757128,
+        "mean_b": 0.1637045956763979,
+        "mean_difference": 0.0007885642006850782,
+        "paired_ci95": [
+          -0.0003588321763823296,
+          0.0019239463274521495
+        ],
+        "p_raw": 0.17682317682317683,
+        "p_holm": 0.17682317682317683,
+        "holm_reject": false,
+        "valid_days": 1468,
+        "scheduled_days": 1468,
+        "historical_numeric_threshold": false,
+        "formal_success": false,
+        "threshold_text": "未證實；不主張等效或確認成功"
+      }
+    },
+    "2021-2026": {
+      "1a": {
+        "mean_a": 0.15198102975967628,
+        "mean_b": 0.15246666510359316,
+        "mean_difference": 0.00048563534391688775,
+        "paired_ci95": [
+          -0.0015180152216567489,
+          0.0026841593875975307
+        ],
+        "p_raw": 0.6713286713286714,
+        "p_holm": 1.0,
+        "holm_reject": false,
+        "valid_days": 1367,
+        "scheduled_days": 1382,
+        "historical_numeric_threshold": false,
+        "formal_success": false,
+        "threshold_text": "未證實；不主張等效或確認成功"
+      },
+      "1b": {
+        "mean_a": 0.15198102975967628,
+        "mean_b": 0.15222099153242158,
+        "mean_difference": 0.00023996177274530214,
+        "paired_ci95": [
+          -0.001757416496659812,
+          0.002226823974741555
+        ],
+        "p_raw": 0.8261738261738262,
+        "p_holm": 1.0,
+        "holm_reject": false,
+        "valid_days": 1367,
+        "scheduled_days": 1382,
+        "historical_numeric_threshold": false,
+        "formal_success": false,
+        "threshold_text": "未證實；不主張等效或確認成功"
+      }
+    }
+  },
+  "engineering_crosscheck": {
+    "status": "CONSISTENT",
+    "rtol": 1e-10,
+    "atol": 1e-12,
+    "raw_score_max_abs_difference": 5.551115123125783e-17,
+    "percentile_score_max_abs_difference": 0.0,
+    "ic_max_abs_difference": 0.0
+  },
   "bootstrap": {
     "block_sessions": 20,
     "replicates": 1000,
@@ -36,5 +116,122 @@
     "本案歷史 Q-A 僅 1a／1b，逐期 Holm m=2；季報無歷史擬合或主 p 值。",
     "第三步 B 只作工程交叉檢查；第四步 A 使用重新擬合分數，不以舊分數代替。"
   ],
-  "formal_success": false
+  "formal_success": false,
+  "folds": [
+    {
+      "year": 2015,
+      "inference_rows": 312782,
+      "mature_rows": 308898,
+      "immature_rows": 3884,
+      "last_signal": "2015-12-31"
+    },
+    {
+      "year": 2016,
+      "inference_rows": 313060,
+      "mature_rows": 307982,
+      "immature_rows": 5078,
+      "last_signal": "2016-12-30"
+    },
+    {
+      "year": 2017,
+      "inference_rows": 332634,
+      "mature_rows": 328000,
+      "immature_rows": 4634,
+      "last_signal": "2017-12-29"
+    },
+    {
+      "year": 2018,
+      "inference_rows": 336574,
+      "mature_rows": 329539,
+      "immature_rows": 7035,
+      "last_signal": "2018-12-28"
+    },
+    {
+      "year": 2019,
+      "inference_rows": 337437,
+      "mature_rows": 331763,
+      "immature_rows": 5674,
+      "last_signal": "2019-12-31"
+    },
+    {
+      "year": 2020,
+      "inference_rows": 360897,
+      "mature_rows": 355858,
+      "immature_rows": 5039,
+      "last_signal": "2020-12-31"
+    },
+    {
+      "year": 2021,
+      "inference_rows": 378547,
+      "mature_rows": 373995,
+      "immature_rows": 4552,
+      "last_signal": "2021-12-30"
+    },
+    {
+      "year": 2022,
+      "inference_rows": 385419,
+      "mature_rows": 380789,
+      "immature_rows": 4630,
+      "last_signal": "2022-12-30"
+    },
+    {
+      "year": 2023,
+      "inference_rows": 390606,
+      "mature_rows": 387064,
+      "immature_rows": 3542,
+      "last_signal": "2023-12-29"
+    },
+    {
+      "year": 2024,
+      "inference_rows": 418138,
+      "mature_rows": 415007,
+      "immature_rows": 3131,
+      "last_signal": "2024-12-31"
+    },
+    {
+      "year": 2025,
+      "inference_rows": 425682,
+      "mature_rows": 421023,
+      "immature_rows": 4659,
+      "last_signal": "2025-12-31"
+    },
+    {
+      "year": 2026,
+      "inference_rows": 302228,
+      "mature_rows": 271982,
+      "immature_rows": 30246,
+      "last_signal": "2026-09-11"
+    }
+  ],
+  "driver_sha256": "4af0d44373c47321c8dd28c358fc68e91d8275fc8d70fe9b5dcbb6a1c54dfada",
+  "source_commit": "53333f8b17770ebb220ea58975e2b8b83ceb5a01",
+  "bundle_source_commit": "819fe2765fad935389ea3ba3eec199daa3084f85",
+  "implementation_sha256": {
+    "run_step4_evaluation.py": "4af0d44373c47321c8dd28c358fc68e91d8275fc8d70fe9b5dcbb6a1c54dfada",
+    "run_step3_evaluation.py": "eab055277f56a91857af72c96d21b73cfc53f38742c5df04d5f3285de7fdd0d2",
+    "step3_evaluation.py": "480acb35186dea35f44bb290379fd4ad2dfdc409f1fdf7aa94cb8905f445045e",
+    "step4_runner.py": "5b94e8fef1c943abc5f8c6aa370ddf7c152bd40225f523ced375330847b1ed78",
+    "step4.py": "76787390179c1c7fd2429fb3dbfb57fc566ed545d780e6e5eea1dc84ad49c5df"
+  },
+  "evaluation_environment": {
+    "python": "3.12.3",
+    "executable": "/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "data_root_env": null,
+    "data_realpath": "/home/frank/projects/MarketMamba/Data"
+  },
+  "third_step_bundle_sha256": "97a9d3e8f43bfde984455f2439b0ba9bb22561beb3a65088dfbde27a7ea14613",
+  "third_step_admission_sha256": "5be56be703fef23aa530eaca6f90f03560fb9b201fbf073993dd2f35f203d3c7",
+  "human_source_acceptance": {
+    "path": "/home/frank/projects/MarketMamba/.artifacts/step3/human-source-gate-20261126.json",
+    "sha256": "4ce8dc630993e9320933faae1814e1ca97167354e57565ea10e4945a51ca7efa",
+    "bytes": 477,
+    "record": {
+      "decision": "ACCEPT_HISTORICAL_SOURCE_GATE",
+      "decision_date": "2026-11-26",
+      "decision_text": "第三步接受、整合全部照建議",
+      "context": "Human chat reply to coordinator's option 1 (accept limited historical source gate: TEJ original field doc + 99.83% cross-source agreement; residual risks: company corrections/first-version unproven, release date = earliest related disclosure, ~23% revenue rows NaN for unverified unit). Recorded verbatim by Claude."
+    }
+  }
 }
