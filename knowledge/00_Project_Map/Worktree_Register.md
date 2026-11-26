@@ -1,3 +1,14 @@
+## 第四步 4a builder — 2026-11-27
+
+終局：300檔、108jobs／48partitions的19.19GB bundle及admission留本worktree；ADMIT僅限定歷史工程，0fits／0IC，67＋24 tests passed。獨立審查待辦；5份tracked unstaged＋5份untracked source/doc patch、staged=0，Human no-commit，故未clean，不可移除。
+
+- Purpose／owner／task：Human／Codex builder，`job-run-mwxtq8vx-c1a06e/builder_step4a`；僅凍結契約、prepare、無標籤audit、tests、報告與knowledge。
+- Path／branch／base：既有 `.worktrees/ruflo-workers/run-mwxtq8vx-c1a06e/builder_step4a`，detached HEAD/base `7a2231e183b02e516be133483fec9de8c26e072e`；created UNKNOWN、接手2026-11-27、retired N/A。起始clean，Human禁止commit／push／merge，不新增／刪除worktree。
+- State／authority：RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；[凍結紀錄](../../tasks/decision-step4-freeze-20261127.md)與[工程報告](../../reports/step4_engineering_20261127.md)控制本案範圍，private admission只授限定歷史工程，不升格strict PIT或production。
+- Artifact／merge dependencies：GENERATED私有bundle／admission／logs在本worktree `.artifacts/step4/`；來源是主checkout的唯讀peer-v3與第三步bundle，保留其manifest／hash及source commit；不讀第三步fits／分數，不改來源。具體build／test終局見報告。
+- Safe removal：先保存no-commit patch與唯一private artifacts／manifest，核references及重建方式；未交接保留、未另案退役且確認clean前不可移除。
+- Runtime：WSL CPU／pilot09 venv Python3.12.3、CUDA空、BLAS1；MARKETMAMBA_DATA_ROOT unset，Data realpath為本worktree普通目錄。無正式Data／V6/models改動、網路／GPU／blind／agents／production／scheduler／wakeup或外部observed_at更新。
+
 ## 前瞻第三輪 F1–F4 builder — 2026-11-26
 
 - Purpose／owner／task：Human／Codex builder，`job-run-mwxhve2s-34eacf/builder_fwd_fix_r3`；僅修指定F1–F4及測試負載診斷、WP2／WP5報告與knowledge。

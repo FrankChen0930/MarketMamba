@@ -1,3 +1,9 @@
+## 第四步 4a 模型欄序與 UNKNOWN 家數 — 2026-11-27
+
+[凍結契約](../../tools/step4.py)及[工程報告](../../reports/step4_engineering_20261127.md)將第三步B 190欄作A，依序獨立追加1a `peer_return/return_peer_count/market_return`或1b `revenue_spillover/revenue_peer_count`，不加入audit欄。peer-v3來源唯讀、按日股鍵左接；分類／研究在市未知及缺join的家數為NaN，已知集合不足三家仍保留實際數，目標營收可用後僅spillover回NaN。不以NaN刪共同鍵，不重抽樣、不計IC。
+
+每折每seed fit／eval新增欄至少兩個有限且具變異，1b無額外覆蓋率門檻；無支援STOP。Q-A不建歷史季報矩陣；190欄基線／5新欄以components共用，避免逐臂複製。本輪為**UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**工程候選，來源known_at UNKNOWN、strict PIT STOP、6161排除及v3研究在市限制不變，不改第三步／正式48欄或production authority。
+
 ## 同業代理 v3 聯集在市研究候選 — 2026-11-27
 
 [v3報告](../../reports/peer_proxies_data_v3_20261127.md)／[彙總](../../reports/peer_proxies_data_v3_20261127.json)記Human核准的協調者研究設計：明示TSE／OTC上市日取最早者（當日含）至下市日前（當日不含），不分交易所，v3不用任何市場變更欄。ROTC／GISA／首次掛牌名稱或日期本身不建立資格；保留日期／snapshot衝突fail closed。此段更新下方同業v1／v2的目前研究市場規則；舊結果仍為歷史紀錄，不改WP1或正式universe／48欄／P4d／其他bundle authority。

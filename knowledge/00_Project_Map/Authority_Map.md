@@ -1,3 +1,13 @@
+## 第四步 FROZEN Q-A／4a 有界工程 — 2026-11-27
+
+4a真實bundle完成限定歷史工程ADMIT（300檔、108jobs、48partitions）；准入綁定bundle SHA `f3422c66ef9b551e2fb6c5090450546b358a11fe6ff7a556b7007246ff67b511`，admission SHA `47639eda3428e643567cf674283d1547d3adde71400c738f753b8ff84c1edb7f`。stops=[]、fits=0、未計IC／eval-label統計；不是獨立驗收或Human acceptance，不放寬下列strict來源／前瞻／交易STOP。
+
+[Human 凍結紀錄](../../tasks/decision-step4-freeze-20261127.md) SHA `18909bacde1cbe4096fb52b66317b6d56d25a51ee4ffc930a6f8fce04f8e7744`及其 pin 的[規格](../../tasks/spec-step4-peer-quarterly-h20-20261127.md)控制第四步；取代下方未凍結的現況敘述，不改凍結文件或第三步契約。Q-A 歷史僅1a／1b，Holm m=2；前瞻三對比m=3及季度事件門檻已凍結，但前瞻來源／管線 gate 未解除。
+
+[4a 報告](../../reports/step4_engineering_20261127.md)與`tools/step4*.py`為 `builder_step4a@7a2231e` no-commit **UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED** 工程候選。來源 gate 依指定第三步bundle、peer-v3 manifest、獨立來源複核筆記、Human紀錄及逐檔SHA驗收；只有完整 admission.json 的 ADMIT 才表示該bundle限定歷史工程准入，不授予獨立驗收、fit自動執行、strict PIT／前瞻／交易資格。1b各fit／eval新增欄均須可觀測且具變異，未知家數→NaN；不新增百分比容差或縮Holm名額。原始來源及既有fits唯讀、不使用分數；本輪不fit、不算IC或eval-label統計。
+
+這是新增 Step4 契約及候選導航，不supersede production machine authority、正式Data／universe／模型、第三步／P2／P4d或歷史artifact。known_at UNKNOWN、strict PIT STOP與其他來源限制保留；未刷新任何外部runtime observation。
+
 ## 第四步規格導航：未凍結候選 — 2026-11-27
 
 [第四步 h20 DRAFT](../../tasks/spec-step4-peer-quarterly-h20-20261127.md)為 `builder_step4_spec@3f418d4` no-commit 文件候選，**UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**，不是 executable／production authority。Human 本輪指定190欄基線（第三步B）；1a／1b分別追加，不改第三步凍結契約。Q-A／Q-B及Holm歷史2／3對比、前瞻家族／季報季度門檻／開盲順序待Human決定，不能由草稿或本輪起草授權推定已凍結／已准入。

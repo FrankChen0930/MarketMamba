@@ -1,3 +1,13 @@
+## 第四步 4a 凍結契約與資料工程候選 — 2026-11-27
+
+Human [凍結紀錄](../../tasks/decision-step4-freeze-20261127.md)批准 Q-A；[規格](../../tasks/spec-step4-peer-quarterly-h20-20261127.md) SHA `79a0c24bc57369d03edc709933b44c21a95e81f0c532127f72af93156c8e7a5d`。此段取代下方「規格尚待凍結」的現況，保留其歷史紀錄。歷史 A=第三步B 190欄、B1a=193、B1b=192；Holm m=2，季報不做歷史 BQ fit。前瞻 m=3、至少4公告季度且1000公司季度；仍未准前瞻收集。
+
+本輪 `builder_step4a@7a2231e` 為 no-commit **RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED** 候選。[工程報告](../../reports/step4_engineering_20261127.md)／[契約](../../tools/step4.py)／[prepare](../../tools/step4_prepare.py)／[audit](../../tools/step4_audit.py)／[tests](../../tests/test_step4.py)只建獨立 `.artifacts/step4/bundle/` 與無標籤准入，第三步 B 矩陣／抽樣／target／共同鍵及 peer-v3 唯讀重用。不得沿用第三步模型或分數；本輪 fits=0、IC=0、eval-label 陣列未載入，季報不建歷史矩陣。真實 bundle／admission 終局與資源以工程報告及私有 manifest 為準，不能由 code presence 推定 ADMIT。
+
+4a終局：真實prepare／audit各一次exit0，admission **ADMIT、stops=[]**；300唯一檔、108jobs、48共用partitions、4,294,004 eval鍵，末日2026-09-11。prepare232.30秒／RSS1,380,792KiB／19,185,475,829 bytes，audit86.27秒／RSS1,397,032KiB；Step4＋Step3 **67 passed**、peer **24 passed**，adapter未來擾動1536鍵0差異。bundle SHA `f3422c66ef9b551e2fb6c5090450546b358a11fe6ff7a556b7007246ff67b511`；完整identity與限制見報告／私有manifest。
+
+Next：獨立工程審查，再依後續工作包處理108個新模型擬合；完成不等於 Human acceptance。known_at UNKNOWN、strict PIT STOP、正式universe／Data／V6/models／P2／P4d／production／scheduler authority 不變，無外部 observed_at 更新。既有 detached worktree 的 patch／唯一私有 artifacts 保存前不得移除。
+
 ## 第四步同業／季報 h20 規格草稿 — 2026-11-27
 
 [第四步 DRAFT](../../tasks/spec-step4-peer-quarterly-h20-20261127.md)由 `job-run-mwxsxd9f-ed1029/builder_step4_spec` 在 detached base `3f418d4c610cb7345d965cad6a9e926e57e99a48` 起草，**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。沿用第三步配方／折／抽樣，以第三步 B（C0+ 加月營收，190 欄）為共同基線，1a 加三欄、1b 加兩欄；季報 Q-A（建議：歷史只描述、Holm 2）或 Q-B（更弱歷史來源假設、Holm 3）待 Human 決定。歷史只作量級與工程驗證，不能宣稱確認成功；known_at UNKNOWN、strict PIT STOP。前瞻家族、季報獨立季度門檻與開盲依賴仍待凍結，規格未授資料建置、fit、IC、前瞻收集或交易准入。

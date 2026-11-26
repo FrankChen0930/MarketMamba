@@ -1,3 +1,11 @@
+## 第四步 Q-A 凍結／4a 工程候選 — 2026-11-27
+
+4a終局：真實prepare／audit各一次，限定歷史工程ADMIT、stops=[]、108jobs／48共用partitions／4,294,004 eval鍵；19.19GB，0 fits／0真實IC／未統計eval標籤。Step4＋Step3 67 passed、peer24 passed，完整identity／資源／來源邊界見下列工程報告；下一步獨立工程審查，尚非Human acceptance。
+
+[Human 決定](../../tasks/decision-step4-freeze-20261127.md)已凍結[規格](../../tasks/spec-step4-peer-quarterly-h20-20261127.md)為Q-A，取代下方待決現況：190欄基線、1a三欄／1b兩欄、歷史Holm2；季報只作來源描述，不建歷史BQ。前瞻Holm3、至少4公告季度與1000公司季度，來源／管線未過不得收集。
+
+[4a報告](../../reports/step4_engineering_20261127.md)記新`step4*.py`／tests及獨立component bundle，重用第三步B原始抽樣／target／鍵／矩陣；不重用第三步模型或分數。僅CPU無標籤工程，fits=0、IC=0；真bundle及admission狀態由私有manifest與報告終局決定。**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**；未解除known_at UNKNOWN／strict PIT STOP。新增來源／adapter及支援gate不會把已曝光歷史升格確認；下一步獨立審查，後續擬合不在本輪scope。
+
 ## 第四步同業／季報 h20 待決規格 — 2026-11-27
 
 [DRAFT](../../tasks/spec-step4-peer-quarterly-h20-20261127.md)依第三步及整合規劃起草，190欄基線＋1a三欄／1b兩欄，季報三欄是否納入歷史家族待Human選Q-A（建議只描述、Holm 2）或Q-B（接受更弱來源假設、Holm 3）。保留2015–2020／2021–2026各六折、seed17／29／43、50萬cap、20-session／1000次bootstrap；mean增量≥0.005且95%下界>0及Holm過關仍不能將已曝光歷史升為確認。前瞻與P2平行封存；三對比家族、第三步開盲依賴及季報事件門檻均為待凍結建議。
