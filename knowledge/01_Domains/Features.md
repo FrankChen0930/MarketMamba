@@ -1,3 +1,9 @@
+## 同業代理工作包3 — 2026-11-26
+
+[資料層報告](../../reports/peer_proxies_data_20261126.md)／[實作](../../tools/peer_proxies.py)是未提交UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED候選；無正式特徵或資料准入。TEJ子產業依粒度及未列變更紀錄比例選主分類，兩套每日分類皆留unknown。首次與現況一致且無變更才重建穩定分類；raw產業／市場變更值方向未知，完整歷史成員及known_at仍STOP，不把現況分類倒填歷史。上市入口與下市端點採WP1保守子集，下市當日排除；價格缺失不移除已識別成員分母。
+
+1a以t當期同業排除本股，聚合t−1／t−2完整session raw收盤價差，至少3家；市場等權另存。1b僅上一完整曆月，首次單月值各自配去年同月，兩期發布日之後首session收盤才可用，目標可用即回缺，至少3家；跨2013/01口徑NaN。逐列、原因及分母只存私有 `.artifacts/peer/`，不修改48欄、正式Data或其他bundle；日曆／公司行動／歷史版本限制見報告。
+
 ## Step3c 來源待 Human 決定／完整性修補 — 2026-11-26
 
 [Step3c報告](../../reports/step3_engineering_20261126.md)取代下方Step3b目前PASS主張。歷史版本gate為HUMAN_DECISION_REQUIRED，strict前瞻仍STOP；無Human接受、fits或IC／績效。跨來源291,847配對中291,360差<0.1%，446差>1%，只證明數值／單位一致而非首次版本或publication PIT。adapter一致列標NTD_BY_CROSS_SOURCE_AGREEMENT，其餘UNIT_UNVERIFIED／NaN；版本0只是匯出重播序，不是首次版認證，合併可比性仍是待Human接受的假設。完整72-job schema、原始來源manifest SHA、job陣列身分、prediction必備與凍結labels／keys／session驗證皆屬UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED工程候選；實際驗證及限制見報告，不改正式Data或既有48欄。下一步為獨立重審及Human明確選擇，不能自動啟動研究。

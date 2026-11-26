@@ -1,3 +1,12 @@
+## 同業代理工作包3 builder — 2026-11-26
+
+- Purpose／owner／task：Human／Codex builder，`job-run-mwx9y2gu-4a162b/builder_peer_proxies`，僅同業分類與1a／1b資料層，不作研究評估。
+- Path／branch／base：`.worktrees/ruflo-workers/run-mwx9y2gu-4a162b/builder_peer_proxies`，既有detached `d8362c055e68609aa4f5cf327cc5888f9d08699a`；created UNKNOWN，本輪接手2026-11-26；retired N/A；起始clean，no-commit，不新增或移除worktree。
+- State／authority：PARTIAL_RESEARCH_REPLAY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED；完整歷史分類／strict PIT STOP，非production authority；[報告](../../reports/peer_proxies_data_20261126.md)記錄限制與驗證。
+- Artifact／merge dependencies：唯讀主checkout TEJ原始ZIP／兩份既有checksum與frozen raw價格；GENERATED私有逐列、manifest、失敗／完成logs、mutation證據在本worktree `.artifacts/peer/`，不得因ignored而刪。無merge／deployment授權。
+- Safe removal：先保留patch、manifest引用與必要私有唯一副本，驗來源身分／可重建性及完整inventory，獨立review與Human另案退役後才可清理；本輪不退役。
+- Runtime：WSL CPU，pilot09 venv Python3.12.3，CUDA空、MARKETMAMBA_DATA_ROOT unset；Data realpath本worktree普通目錄，未讀寫。無網路／GPU／agents／正式Data或protected weights／帳本／P4d／第三步／production／scheduler寫入；無commit／push／merge／deploy，不刷新外部observed_at。
+
 ## P2 WP2 任意日期重現 builder — 2026-11-26
 
 - Purpose／owner／task：Human／Codex builder，`run-mwx8ka1a-f6fcaa/builder_fwd_wp2`，只做WP2薄adapter、合成mutation與舊fold_2026三seed重現。

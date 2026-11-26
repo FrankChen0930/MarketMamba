@@ -1,3 +1,11 @@
+## 同業代理工作包3資料層候選 — 2026-11-26
+
+`job-run-mwx9y2gu-4a162b/builder_peer_proxies`，既有detached base `d8362c055e68609aa4f5cf327cc5888f9d08699a`，起始clean，Human核准整合規劃§C／D／E工作包3，no-commit。**PARTIAL_RESEARCH_REPLAY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[工具](../../tools/peer_proxies.py)、[合成測試](../../tests/test_peer_proxies.py)、[報告](../../reports/peer_proxies_data_20261126.md)與[彙總JSON](../../reports/peer_proxies_data_20261126.json)只交同業落後價差／營收先公告資料層，逐列及manifest只在本worktree `.artifacts/peer/`，不串接P4d、第三步或正式矩陣。沿用tools／tests／reports與既有project map；既有流程沒有本包無標籤同業日表，因此新增單一工具，不另建頂層實驗樹。
+
+主分類固定TEJ子產業：較細，2958檔中1934檔無變更紀錄（TSE為1622），按結構穩定性選，未用報酬選型。raw變更值方向與known_at、下市終日語義仍UNKNOWN；有產業／市場變更者保留未知，不能推定生效後值或倒填現況。完整歷史成員／strict PIT皆STOP，報告區分可重建子集、未知分母及現況差異上下界。代理至少3家、排除本股；1a用t−1／t−2 raw close價差，市場等權為固定對照；1b只看上個完整月、發布日嚴格之後session收盤、兩期首次單月值都可用才計YoY，目標可用即回缺，跨2013口徑NaN。
+
+真資料3392 sessions／5,805,094候選日股鍵，1a有值912,976、1b有值33,974；focused33 passed／1.64秒，3程式mutation killed、2未來資料不變性測試。6輸入／18產物／6實作SHA與全部唯一鍵重驗；三session獨立數值重算1271／1271代理列與5141市場對照列通過。knowledge health為WARNING、無structural FAIL；詳報告。作者自查非獨立驗收，完成不等於Human acceptance。本輪回歸誤選既有tej_diag整份合成測試，曾執行合成IC／未來報酬測試，已記偏離並停止該測試；未讀真實標籤、未來報酬或blind，未計真資料IC。無網路、資料取得、GPU、agents、正式Data／V6/models／原SHA256SUMS／production／scheduler／帳本／P4d／第三步bundle寫入，無commit／push／merge／deploy或外部observed_at更新。Next：獨立review、補變更欄位方向及可知時間，再另案決定歷史／前瞻准入。
+
 ## 季報版本工作包1工程候選 — 2026-11-26
 
 `job-run-mwx9hm8k-43c245/builder_quarterly_versions`，detached base `9613273bf1bc2f902e1d856f60aefcfaf55e302e`，起始clean，Human已核准整合規劃§A／E工作包1，no-commit。**DESCRIPTIVE_SOURCE_VERSION_AUDIT / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[工具](../../tools/tej_quarterly_versions.py)、[測試](../../tests/test_tej_quarterly_versions.py)、[報告](../../reports/tej_quarterly_versions_20261126.md)及[彙總JSON](../../reports/tej_quarterly_versions_20261126.json)沿用tools／tests／reports；逐列只在本worktree `.artifacts/tej/quarterly/release-20261126/`。未讀價格／報酬／標籤／blind，無網路、資料取得、GPU或額外代理。

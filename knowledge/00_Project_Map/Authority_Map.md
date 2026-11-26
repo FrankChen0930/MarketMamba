@@ -1,3 +1,9 @@
+## 同業代理工作包3資料層候選 — 2026-11-26
+
+[核准整合規劃§C／D／E](../../tasks/plan-fundamentals-supplychain-integration-20261126.md)是本輪工作包3範圍依據；[工具](../../tools/peer_proxies.py)／[測試](../../tests/test_peer_proxies.py)及[報告](../../reports/peer_proxies_data_20261126.md)是 `job-run-mwx9y2gu-4a162b/builder_peer_proxies@d8362c0` 的未提交 **UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED** 候選。只提供受限歷史資料層回放，非正式特徵准入、前瞻PIT、交易或production authority；不supersede原48欄、C0+、P4d、第三步、WP1或任何既有研究結果。
+
+TEJ子產業按粒度／無變更紀錄比例選，非報酬選型。變更值方向與known_at不明即缺，市場歷史亦fail closed，不能用私有逐列存在或子集覆蓋解除完整歷史成員／strict PIT STOP。下市當日排除但語義仍UNKNOWN；日曆是歷史observed union、價格raw非含息且公司行動未全核。營收首次單月值／發布日只作受限歷史代理，逐期版本與實收仍未驗。全部逐列在本worktree `.artifacts/peer/`，原TEJ SHA256SUMS不變；無production／scheduler authority或外部observed_at更新。獨立review及Human acceptance待辦；合成回歸誤跑IC偏離詳報告。
+
 ## 季報版本工作包1候選界線 — 2026-11-26
 
 [核准範圍規劃§A／E](../../tasks/plan-fundamentals-supplychain-integration-20261126.md)只授本輪資料層對帳；[新工具](../../tools/tej_quarterly_versions.py)／[測試](../../tests/test_tej_quarterly_versions.py)是 `job-run-mwx9hm8k-43c245/builder_quarterly_versions@9613273` 的未提交 **UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED** 候選，不是正式季報准入或新production authority。[報告](../../reports/tej_quarterly_versions_20261126.md)／[彙總JSON](../../reports/tej_quarterly_versions_20261126.json)及本worktree私有quarterly manifest只提供來源版本描述；不supersede既有TEJ原件、pit producer manifest、PIT ledger machine contract或歷史研究結果。

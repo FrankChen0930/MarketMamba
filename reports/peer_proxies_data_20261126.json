@@ -1,0 +1,1616 @@
+{
+  "schema": "peer-proxies-data-v1",
+  "status": "PARTIAL_REPLAY_COMPLETE_STRICT_PIT_STOP",
+  "state": [
+    "RESEARCH_ONLY",
+    "UNMERGED",
+    "NOT_DEPLOYED",
+    "NOT_ACCEPTED"
+  ],
+  "evidence_class": "SNAPSHOT_DERIVED_PARTIAL_RESEARCH_REPLAY",
+  "primary_classification": "tej_subindustry",
+  "classification_choice_reason": "TEJ子產業較細，且2958檔中1934檔無變更紀錄，優於TSE的1622檔；依分類粒度與已記錄穩定性選擇，不依價格或報酬。無紀錄不證明完整歷史。",
+  "minimum_peers": 3,
+  "source_commit": "d8362c055e68609aa4f5cf327cc5888f9d08699a",
+  "lifecycle": {
+    "input_rows": 380514,
+    "stocks": 2958,
+    "conflicting_stocks": 0
+  },
+  "sessions": 3392,
+  "first_session": "2013-01-02",
+  "last_session": "2026-11-24",
+  "coverage": {
+    "rows": 5805094,
+    "eligible": 2043542,
+    "peer_return": 912976,
+    "revenue_spillover": 33974,
+    "market_return": 5800203
+  },
+  "distributions": {
+    "return_reason": {
+      "MARKET_OR_LIFECYCLE_UNKNOWN": 3761552,
+      "INSUFFICIENT_VALID_PEERS": 513815,
+      "INDUSTRY_UNKNOWN": 616751,
+      "OK": 912976
+    },
+    "revenue_reason": {
+      "MARKET_OR_LIFECYCLE_UNKNOWN": 3761552,
+      "INSUFFICIENT_VALID_PEERS": 404035,
+      "INDUSTRY_UNKNOWN": 616751,
+      "TARGET_REVENUE_AVAILABLE": 988782,
+      "OK": 33974
+    },
+    "return_peer_count": {
+      "0": 4528418,
+      "3": 165972,
+      "4": 243917,
+      "1": 194368,
+      "2": 169332,
+      "6": 129861,
+      "7": 41792,
+      "8": 45335,
+      "25": 65356,
+      "14": 36056,
+      "5": 90414,
+      "9": 22219,
+      "26": 12051,
+      "23": 1536,
+      "24": 9553,
+      "10": 27180,
+      "22": 188,
+      "21": 22,
+      "13": 9135,
+      "11": 8106,
+      "12": 4283
+    },
+    "revenue_peer_count": {
+      "0": 4894771,
+      "1": 175796,
+      "3": 130274,
+      "2": 131648,
+      "7": 26077,
+      "6": 82814,
+      "4": 154601,
+      "26": 5204,
+      "5": 53242,
+      "9": 31658,
+      "14": 20990,
+      "8": 20884,
+      "10": 10620,
+      "25": 38270,
+      "13": 3824,
+      "12": 3910,
+      "15": 189,
+      "11": 8156,
+      "23": 1347,
+      "24": 9811,
+      "21": 265,
+      "22": 248,
+      "19": 94,
+      "20": 213,
+      "16": 54,
+      "17": 72,
+      "18": 62
+    }
+  },
+  "classifications": {
+    "industry": {
+      "daily_member_size": {
+        "n": 85206,
+        "min": 1.0,
+        "median": 8.0,
+        "p10": 2.0,
+        "p90": 28.0,
+        "max": 39.0
+      },
+      "daily_singleton_industry_fraction": {
+        "n": 3392,
+        "min": 0.038461538461538464,
+        "median": 0.07692307692307693,
+        "p10": 0.04,
+        "p90": 0.08,
+        "max": 0.08333333333333333
+      },
+      "classified_member_sessions": 988663,
+      "unknown_member_sessions": 1054879,
+      "different_from_current_known": 0,
+      "different_fraction_known": 0.0,
+      "different_fraction_all_upper": 0.5162012818919308
+    },
+    "tej_subindustry": {
+      "daily_member_size": {
+        "n": 442235,
+        "min": 1.0,
+        "median": 2.0,
+        "p10": 1.0,
+        "p90": 6.0,
+        "max": 27.0
+      },
+      "daily_singleton_industry_fraction": {
+        "n": 3392,
+        "min": 0.2900763358778626,
+        "median": 0.3203125,
+        "p10": 0.29770992366412213,
+        "p90": 0.3435114503816794,
+        "max": 0.3533834586466165
+      },
+      "classified_member_sessions": 1426791,
+      "unknown_member_sessions": 616751,
+      "different_from_current_known": 0,
+      "different_fraction_known": 0.0,
+      "different_fraction_all_upper": 0.30180490540443994
+    }
+  },
+  "price_quality": {
+    "input_rows": 6273780,
+    "duplicates_removed": 0,
+    "invalid_price_rows": 114095,
+    "invalid_volume_rows": 0,
+    "zero_volume_rows": 35,
+    "outlier_rows": 90
+  },
+  "limitations": [
+    "STRICT_PIT_STOP：snapshot known_at、產業／市場變更值方向及下市日端點UNKNOWN；變更股票不推定歷史分類／市場。",
+    "僅無變更且首次／現況一致分類的部分重建；無法交付完整歷史成員。分類不同率僅可識別子集及全體上下界，不以0宣稱無變更。",
+    "歷史TEJ首次單月值依原資料說明作受限代理；公司逐期首次版本、合併可比性及實收時間未獨立驗證。",
+    "價格為frozen raw價差、非含息；公司行動未完整驗證，沿用OHLCV有效性與>35%異常遮罩，不授交易資格。",
+    "日曆為observed price-date union歷史研究代理，非官方前瞻日曆；缺價與未入價格快照者仍保留分母。",
+    "全體分母限可重建TSE/OTC分類成員；未明市場／分類數另列，不能冒稱全市場。",
+    "2013比較跨2013/01口徑NaN，禁止使用匯出去年／累計營收；分母公告晚到則等兩期都可用。",
+    "未讀標籤、未來報酬、blind或IC；作者自查非獨立審查，完成非Human acceptance。"
+  ],
+  "environment": {
+    "python": "3.12.3",
+    "numpy": "2.5.4",
+    "pandas": "3.1.1",
+    "executable": "/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python",
+    "data_root_env": "UNSET",
+    "data_realpath": "/home/frank/projects/MarketMamba/.worktrees/ruflo-workers/run-mwx9y2gu-4a162b/builder_peer_proxies/Data",
+    "cuda_visible_devices": ""
+  },
+  "artifact_class": "GENERATED",
+  "model_identity": "N/A",
+  "split_support": "N/A: no fitting or labels",
+  "elapsed_seconds": 197.104,
+  "private_manifest_sha256": "220ff6027689629a1fe39d9fa5a71980904ac13d5a1d796b971d73d600d802e1",
+  "monthly_early_announcers": [
+    {
+      "signal_month": "2013-01",
+      "member_sessions": 9289,
+      "peer_opportunities": 49540,
+      "announced_peer_opportunities": 0,
+      "early_announcer_peer_fraction": 0.0,
+      "unannounced_target_member_sessions": 9289
+    },
+    {
+      "signal_month": "2013-02",
+      "member_sessions": 5499,
+      "peer_opportunities": 29354,
+      "announced_peer_opportunities": 19178,
+      "early_announcer_peer_fraction": 0.6533351502350616,
+      "unannounced_target_member_sessions": 1971
+    },
+    {
+      "signal_month": "2013-03",
+      "member_sessions": 8883,
+      "peer_opportunities": 47418,
+      "announced_peer_opportunities": 33397,
+      "early_announcer_peer_fraction": 0.7043105993504576,
+      "unannounced_target_member_sessions": 2727
+    },
+    {
+      "signal_month": "2013-04",
+      "member_sessions": 8459,
+      "peer_opportunities": 45152,
+      "announced_peer_opportunities": 32047,
+      "early_announcer_peer_fraction": 0.709758150248051,
+      "unannounced_target_member_sessions": 2551
+    },
+    {
+      "signal_month": "2013-05",
+      "member_sessions": 9284,
+      "peer_opportunities": 49500,
+      "announced_peer_opportunities": 34937,
+      "early_announcer_peer_fraction": 0.7057979797979798,
+      "unannounced_target_member_sessions": 2817
+    },
+    {
+      "signal_month": "2013-06",
+      "member_sessions": 8018,
+      "peer_opportunities": 42750,
+      "announced_peer_opportunities": 29726,
+      "early_announcer_peer_fraction": 0.695345029239766,
+      "unannounced_target_member_sessions": 2525
+    },
+    {
+      "signal_month": "2013-07",
+      "member_sessions": 9710,
+      "peer_opportunities": 51722,
+      "announced_peer_opportunities": 34690,
+      "early_announcer_peer_fraction": 0.6707010556436332,
+      "unannounced_target_member_sessions": 3276
+    },
+    {
+      "signal_month": "2013-08",
+      "member_sessions": 8862,
+      "peer_opportunities": 46956,
+      "announced_peer_opportunities": 32216,
+      "early_announcer_peer_fraction": 0.6860891046937558,
+      "unannounced_target_member_sessions": 2908
+    },
+    {
+      "signal_month": "2013-09",
+      "member_sessions": 8440,
+      "peer_opportunities": 44720,
+      "announced_peer_opportunities": 30303,
+      "early_announcer_peer_fraction": 0.6776162790697674,
+      "unannounced_target_member_sessions": 2852
+    },
+    {
+      "signal_month": "2013-10",
+      "member_sessions": 9284,
+      "peer_opportunities": 49192,
+      "announced_peer_opportunities": 34176,
+      "early_announcer_peer_fraction": 0.6947471133517645,
+      "unannounced_target_member_sessions": 3001
+    },
+    {
+      "signal_month": "2013-11",
+      "member_sessions": 8883,
+      "peer_opportunities": 47030,
+      "announced_peer_opportunities": 33624,
+      "early_announcer_peer_fraction": 0.7149479055921752,
+      "unannounced_target_member_sessions": 2648
+    },
+    {
+      "signal_month": "2013-12",
+      "member_sessions": 9368,
+      "peer_opportunities": 49612,
+      "announced_peer_opportunities": 34900,
+      "early_announcer_peer_fraction": 0.70345884060308,
+      "unannounced_target_member_sessions": 2905
+    },
+    {
+      "signal_month": "2014-01",
+      "member_sessions": 7694,
+      "peer_opportunities": 40840,
+      "announced_peer_opportunities": 26078,
+      "early_announcer_peer_fraction": 0.6385406464250735,
+      "unannounced_target_member_sessions": 2834
+    },
+    {
+      "signal_month": "2014-02",
+      "member_sessions": 7242,
+      "peer_opportunities": 38488,
+      "announced_peer_opportunities": 29291,
+      "early_announcer_peer_fraction": 0.7610424028268551,
+      "unannounced_target_member_sessions": 1816
+    },
+    {
+      "signal_month": "2014-03",
+      "member_sessions": 8946,
+      "peer_opportunities": 47544,
+      "announced_peer_opportunities": 34414,
+      "early_announcer_peer_fraction": 0.7238347635874137,
+      "unannounced_target_member_sessions": 2566
+    },
+    {
+      "signal_month": "2014-04",
+      "member_sessions": 8946,
+      "peer_opportunities": 47544,
+      "announced_peer_opportunities": 33139,
+      "early_announcer_peer_fraction": 0.697017499579337,
+      "unannounced_target_member_sessions": 2831
+    },
+    {
+      "signal_month": "2014-05",
+      "member_sessions": 8946,
+      "peer_opportunities": 47544,
+      "announced_peer_opportunities": 34667,
+      "early_announcer_peer_fraction": 0.7291561500925459,
+      "unannounced_target_member_sessions": 2537
+    },
+    {
+      "signal_month": "2014-06",
+      "member_sessions": 8520,
+      "peer_opportunities": 45280,
+      "announced_peer_opportunities": 32493,
+      "early_announcer_peer_fraction": 0.7176015901060071,
+      "unannounced_target_member_sessions": 2486
+    },
+    {
+      "signal_month": "2014-07",
+      "member_sessions": 9372,
+      "peer_opportunities": 49808,
+      "announced_peer_opportunities": 33070,
+      "early_announcer_peer_fraction": 0.6639495663347253,
+      "unannounced_target_member_sessions": 3218
+    },
+    {
+      "signal_month": "2014-08",
+      "member_sessions": 8946,
+      "peer_opportunities": 47544,
+      "announced_peer_opportunities": 33984,
+      "early_announcer_peer_fraction": 0.7147905098435133,
+      "unannounced_target_member_sessions": 2658
+    },
+    {
+      "signal_month": "2014-09",
+      "member_sessions": 8931,
+      "peer_opportunities": 47514,
+      "announced_peer_opportunities": 32793,
+      "early_announcer_peer_fraction": 0.690175527213032,
+      "unannounced_target_member_sessions": 2884
+    },
+    {
+      "signal_month": "2014-10",
+      "member_sessions": 9372,
+      "peer_opportunities": 49940,
+      "announced_peer_opportunities": 34664,
+      "early_announcer_peer_fraction": 0.6941129355226272,
+      "unannounced_target_member_sessions": 3001
+    },
+    {
+      "signal_month": "2014-11",
+      "member_sessions": 8520,
+      "peer_opportunities": 45400,
+      "announced_peer_opportunities": 32659,
+      "early_announcer_peer_fraction": 0.7193612334801762,
+      "unannounced_target_member_sessions": 2521
+    },
+    {
+      "signal_month": "2014-12",
+      "member_sessions": 10229,
+      "peer_opportunities": 54486,
+      "announced_peer_opportunities": 37816,
+      "early_announcer_peer_fraction": 0.6940498476672907,
+      "unannounced_target_member_sessions": 3235
+    },
+    {
+      "signal_month": "2015-01",
+      "member_sessions": 8500,
+      "peer_opportunities": 45280,
+      "announced_peer_opportunities": 33805,
+      "early_announcer_peer_fraction": 0.7465768551236749,
+      "unannounced_target_member_sessions": 2232
+    },
+    {
+      "signal_month": "2015-02",
+      "member_sessions": 5525,
+      "peer_opportunities": 29432,
+      "announced_peer_opportunities": 15208,
+      "early_announcer_peer_fraction": 0.5167164990486546,
+      "unannounced_target_member_sessions": 2742
+    },
+    {
+      "signal_month": "2015-03",
+      "member_sessions": 9350,
+      "peer_opportunities": 49808,
+      "announced_peer_opportunities": 35056,
+      "early_announcer_peer_fraction": 0.7038226790876968,
+      "unannounced_target_member_sessions": 2865
+    },
+    {
+      "signal_month": "2015-04",
+      "member_sessions": 8500,
+      "peer_opportunities": 45280,
+      "announced_peer_opportunities": 32628,
+      "early_announcer_peer_fraction": 0.7205830388692579,
+      "unannounced_target_member_sessions": 2451
+    },
+    {
+      "signal_month": "2015-05",
+      "member_sessions": 8505,
+      "peer_opportunities": 45316,
+      "announced_peer_opportunities": 33862,
+      "early_announcer_peer_fraction": 0.7472415923735546,
+      "unannounced_target_member_sessions": 2236
+    },
+    {
+      "signal_month": "2015-06",
+      "member_sessions": 8907,
+      "peer_opportunities": 47442,
+      "announced_peer_opportunities": 31143,
+      "early_announcer_peer_fraction": 0.6564436575186544,
+      "unannounced_target_member_sessions": 3118
+    },
+    {
+      "signal_month": "2015-07",
+      "member_sessions": 9294,
+      "peer_opportunities": 48876,
+      "announced_peer_opportunities": 33381,
+      "early_announcer_peer_fraction": 0.6829732383992143,
+      "unannounced_target_member_sessions": 2939
+    },
+    {
+      "signal_month": "2015-08",
+      "member_sessions": 8862,
+      "peer_opportunities": 46158,
+      "announced_peer_opportunities": 33682,
+      "early_announcer_peer_fraction": 0.7297109926773258,
+      "unannounced_target_member_sessions": 2451
+    },
+    {
+      "signal_month": "2015-09",
+      "member_sessions": 8440,
+      "peer_opportunities": 43960,
+      "announced_peer_opportunities": 28417,
+      "early_announcer_peer_fraction": 0.6464285714285715,
+      "unannounced_target_member_sessions": 3040
+    },
+    {
+      "signal_month": "2015-10",
+      "member_sessions": 8862,
+      "peer_opportunities": 46158,
+      "announced_peer_opportunities": 32881,
+      "early_announcer_peer_fraction": 0.7123575544867629,
+      "unannounced_target_member_sessions": 2639
+    },
+    {
+      "signal_month": "2015-11",
+      "member_sessions": 8875,
+      "peer_opportunities": 46244,
+      "announced_peer_opportunities": 31645,
+      "early_announcer_peer_fraction": 0.6843049909177407,
+      "unannounced_target_member_sessions": 2819
+    },
+    {
+      "signal_month": "2015-12",
+      "member_sessions": 9731,
+      "peer_opportunities": 50482,
+      "announced_peer_opportunities": 34654,
+      "early_announcer_peer_fraction": 0.6864625014856781,
+      "unannounced_target_member_sessions": 3093
+    },
+    {
+      "signal_month": "2016-01",
+      "member_sessions": 8899,
+      "peer_opportunities": 46140,
+      "announced_peer_opportunities": 34520,
+      "early_announcer_peer_fraction": 0.7481577806675336,
+      "unannounced_target_member_sessions": 2302
+    },
+    {
+      "signal_month": "2016-02",
+      "member_sessions": 5499,
+      "peer_opportunities": 28444,
+      "announced_peer_opportunities": 20706,
+      "early_announcer_peer_fraction": 0.7279566868232316,
+      "unannounced_target_member_sessions": 1543
+    },
+    {
+      "signal_month": "2016-03",
+      "member_sessions": 9729,
+      "peer_opportunities": 50324,
+      "announced_peer_opportunities": 34963,
+      "early_announcer_peer_fraction": 0.6947579683649948,
+      "unannounced_target_member_sessions": 3035
+    },
+    {
+      "signal_month": "2016-04",
+      "member_sessions": 8051,
+      "peer_opportunities": 41768,
+      "announced_peer_opportunities": 32243,
+      "early_announcer_peer_fraction": 0.7719546063972419,
+      "unannounced_target_member_sessions": 1892
+    },
+    {
+      "signal_month": "2016-05",
+      "member_sessions": 8904,
+      "peer_opportunities": 46242,
+      "announced_peer_opportunities": 33995,
+      "early_announcer_peer_fraction": 0.7351541888326629,
+      "unannounced_target_member_sessions": 2406
+    },
+    {
+      "signal_month": "2016-06",
+      "member_sessions": 8900,
+      "peer_opportunities": 46234,
+      "announced_peer_opportunities": 31378,
+      "early_announcer_peer_fraction": 0.6786780291560324,
+      "unannounced_target_member_sessions": 2942
+    },
+    {
+      "signal_month": "2016-07",
+      "member_sessions": 8460,
+      "peer_opportunities": 44000,
+      "announced_peer_opportunities": 31975,
+      "early_announcer_peer_fraction": 0.7267045454545454,
+      "unannounced_target_member_sessions": 2375
+    },
+    {
+      "signal_month": "2016-08",
+      "member_sessions": 9730,
+      "peer_opportunities": 50610,
+      "announced_peer_opportunities": 34802,
+      "early_announcer_peer_fraction": 0.6876506619245208,
+      "unannounced_target_member_sessions": 3101
+    },
+    {
+      "signal_month": "2016-09",
+      "member_sessions": 8059,
+      "peer_opportunities": 42020,
+      "announced_peer_opportunities": 27215,
+      "early_announcer_peer_fraction": 0.6476677772489291,
+      "unannounced_target_member_sessions": 2868
+    },
+    {
+      "signal_month": "2016-10",
+      "member_sessions": 8500,
+      "peer_opportunities": 44400,
+      "announced_peer_opportunities": 32502,
+      "early_announcer_peer_fraction": 0.732027027027027,
+      "unannounced_target_member_sessions": 2346
+    },
+    {
+      "signal_month": "2016-11",
+      "member_sessions": 9350,
+      "peer_opportunities": 48840,
+      "announced_peer_opportunities": 33205,
+      "early_announcer_peer_fraction": 0.6798730548730548,
+      "unannounced_target_member_sessions": 3031
+    },
+    {
+      "signal_month": "2016-12",
+      "member_sessions": 9364,
+      "peer_opportunities": 48924,
+      "announced_peer_opportunities": 34323,
+      "early_announcer_peer_fraction": 0.7015575177826834,
+      "unannounced_target_member_sessions": 2842
+    },
+    {
+      "signal_month": "2017-01",
+      "member_sessions": 6816,
+      "peer_opportunities": 35616,
+      "announced_peer_opportunities": 23143,
+      "early_announcer_peer_fraction": 0.6497922282120395,
+      "unannounced_target_member_sessions": 2398
+    },
+    {
+      "signal_month": "2017-02",
+      "member_sessions": 7668,
+      "peer_opportunities": 40068,
+      "announced_peer_opportunities": 26048,
+      "early_announcer_peer_fraction": 0.650094838774084,
+      "unannounced_target_member_sessions": 2721
+    },
+    {
+      "signal_month": "2017-03",
+      "member_sessions": 9798,
+      "peer_opportunities": 51198,
+      "announced_peer_opportunities": 35379,
+      "early_announcer_peer_fraction": 0.6910230868393297,
+      "unannounced_target_member_sessions": 3060
+    },
+    {
+      "signal_month": "2017-04",
+      "member_sessions": 7669,
+      "peer_opportunities": 40068,
+      "announced_peer_opportunities": 31298,
+      "early_announcer_peer_fraction": 0.7811220924428471,
+      "unannounced_target_member_sessions": 1724
+    },
+    {
+      "signal_month": "2017-05",
+      "member_sessions": 8540,
+      "peer_opportunities": 44520,
+      "announced_peer_opportunities": 30625,
+      "early_announcer_peer_fraction": 0.6878930817610063,
+      "unannounced_target_member_sessions": 2715
+    },
+    {
+      "signal_month": "2017-06",
+      "member_sessions": 9861,
+      "peer_opportunities": 51312,
+      "announced_peer_opportunities": 34692,
+      "early_announcer_peer_fraction": 0.6760991580916744,
+      "unannounced_target_member_sessions": 3233
+    },
+    {
+      "signal_month": "2017-07",
+      "member_sessions": 9009,
+      "peer_opportunities": 46872,
+      "announced_peer_opportunities": 34239,
+      "early_announcer_peer_fraction": 0.730478750640041,
+      "unannounced_target_member_sessions": 2485
+    },
+    {
+      "signal_month": "2017-08",
+      "member_sessions": 9844,
+      "peer_opportunities": 51106,
+      "announced_peer_opportunities": 35362,
+      "early_announcer_peer_fraction": 0.6919344108323876,
+      "unannounced_target_member_sessions": 3069
+    },
+    {
+      "signal_month": "2017-09",
+      "member_sessions": 9421,
+      "peer_opportunities": 48904,
+      "announced_peer_opportunities": 35620,
+      "early_announcer_peer_fraction": 0.7283657778504826,
+      "unannounced_target_member_sessions": 2594
+    },
+    {
+      "signal_month": "2017-10",
+      "member_sessions": 8146,
+      "peer_opportunities": 42284,
+      "announced_peer_opportunities": 32171,
+      "early_announcer_peer_fraction": 0.7608315201967647,
+      "unannounced_target_member_sessions": 1996
+    },
+    {
+      "signal_month": "2017-11",
+      "member_sessions": 9408,
+      "peer_opportunities": 48848,
+      "announced_peer_opportunities": 33170,
+      "early_announcer_peer_fraction": 0.6790452014412054,
+      "unannounced_target_member_sessions": 3006
+    },
+    {
+      "signal_month": "2017-12",
+      "member_sessions": 8954,
+      "peer_opportunities": 46416,
+      "announced_peer_opportunities": 33439,
+      "early_announcer_peer_fraction": 0.7204196828679765,
+      "unannounced_target_member_sessions": 2550
+    },
+    {
+      "signal_month": "2018-01",
+      "member_sessions": 9366,
+      "peer_opportunities": 48584,
+      "announced_peer_opportunities": 34405,
+      "early_announcer_peer_fraction": 0.7081549481310719,
+      "unannounced_target_member_sessions": 2768
+    },
+    {
+      "signal_month": "2018-02",
+      "member_sessions": 5538,
+      "peer_opportunities": 28730,
+      "announced_peer_opportunities": 14591,
+      "early_announcer_peer_fraction": 0.5078663418029934,
+      "unannounced_target_member_sessions": 2750
+    },
+    {
+      "signal_month": "2018-03",
+      "member_sessions": 9798,
+      "peer_opportunities": 50830,
+      "announced_peer_opportunities": 36225,
+      "early_announcer_peer_fraction": 0.7126696832579186,
+      "unannounced_target_member_sessions": 2860
+    },
+    {
+      "signal_month": "2018-04",
+      "member_sessions": 7667,
+      "peer_opportunities": 39766,
+      "announced_peer_opportunities": 31122,
+      "early_announcer_peer_fraction": 0.7826283759995977,
+      "unannounced_target_member_sessions": 1702
+    },
+    {
+      "signal_month": "2018-05",
+      "member_sessions": 9350,
+      "peer_opportunities": 48312,
+      "announced_peer_opportunities": 34708,
+      "early_announcer_peer_fraction": 0.7184136446431528,
+      "unannounced_target_member_sessions": 2668
+    },
+    {
+      "signal_month": "2018-06",
+      "member_sessions": 8497,
+      "peer_opportunities": 43908,
+      "announced_peer_opportunities": 31041,
+      "early_announcer_peer_fraction": 0.7069554523093742,
+      "unannounced_target_member_sessions": 2532
+    },
+    {
+      "signal_month": "2018-07",
+      "member_sessions": 9335,
+      "peer_opportunities": 48282,
+      "announced_peer_opportunities": 34416,
+      "early_announcer_peer_fraction": 0.7128122281595626,
+      "unannounced_target_member_sessions": 2739
+    },
+    {
+      "signal_month": "2018-08",
+      "member_sessions": 9765,
+      "peer_opportunities": 50566,
+      "announced_peer_opportunities": 35233,
+      "early_announcer_peer_fraction": 0.6967725349048768,
+      "unannounced_target_member_sessions": 3005
+    },
+    {
+      "signal_month": "2018-09",
+      "member_sessions": 8075,
+      "peer_opportunities": 41838,
+      "announced_peer_opportunities": 29603,
+      "early_announcer_peer_fraction": 0.7075625029877145,
+      "unannounced_target_member_sessions": 2394
+    },
+    {
+      "signal_month": "2018-10",
+      "member_sessions": 9350,
+      "peer_opportunities": 48444,
+      "announced_peer_opportunities": 33467,
+      "early_announcer_peer_fraction": 0.6908389067789613,
+      "unannounced_target_member_sessions": 2950
+    },
+    {
+      "signal_month": "2018-11",
+      "member_sessions": 9336,
+      "peer_opportunities": 48416,
+      "announced_peer_opportunities": 33959,
+      "early_announcer_peer_fraction": 0.701400363516193,
+      "unannounced_target_member_sessions": 2833
+    },
+    {
+      "signal_month": "2018-12",
+      "member_sessions": 8919,
+      "peer_opportunities": 46260,
+      "announced_peer_opportunities": 33886,
+      "early_announcer_peer_fraction": 0.7325118893212278,
+      "unannounced_target_member_sessions": 2426
+    },
+    {
+      "signal_month": "2019-01",
+      "member_sessions": 8925,
+      "peer_opportunities": 46284,
+      "announced_peer_opportunities": 32231,
+      "early_announcer_peer_fraction": 0.6963745570823611,
+      "unannounced_target_member_sessions": 2737
+    },
+    {
+      "signal_month": "2019-02",
+      "member_sessions": 5525,
+      "peer_opportunities": 28652,
+      "announced_peer_opportunities": 19373,
+      "early_announcer_peer_fraction": 0.676148261901438,
+      "unannounced_target_member_sessions": 1829
+    },
+    {
+      "signal_month": "2019-03",
+      "member_sessions": 8500,
+      "peer_opportunities": 44080,
+      "announced_peer_opportunities": 33059,
+      "early_announcer_peer_fraction": 0.7499773139745917,
+      "unannounced_target_member_sessions": 2183
+    },
+    {
+      "signal_month": "2019-04",
+      "member_sessions": 8500,
+      "peer_opportunities": 44080,
+      "announced_peer_opportunities": 31702,
+      "early_announcer_peer_fraction": 0.7191923774954628,
+      "unannounced_target_member_sessions": 2410
+    },
+    {
+      "signal_month": "2019-05",
+      "member_sessions": 9350,
+      "peer_opportunities": 48488,
+      "announced_peer_opportunities": 34949,
+      "early_announcer_peer_fraction": 0.7207762745421548,
+      "unannounced_target_member_sessions": 2650
+    },
+    {
+      "signal_month": "2019-06",
+      "member_sessions": 8091,
+      "peer_opportunities": 42036,
+      "announced_peer_opportunities": 31486,
+      "early_announcer_peer_fraction": 0.7490246455419165,
+      "unannounced_target_member_sessions": 2079
+    },
+    {
+      "signal_month": "2019-07",
+      "member_sessions": 9798,
+      "peer_opportunities": 50922,
+      "announced_peer_opportunities": 35021,
+      "early_announcer_peer_fraction": 0.6877381092651507,
+      "unannounced_target_member_sessions": 3105
+    },
+    {
+      "signal_month": "2019-08",
+      "member_sessions": 8946,
+      "peer_opportunities": 46494,
+      "announced_peer_opportunities": 33182,
+      "early_announcer_peer_fraction": 0.7136834860412096,
+      "unannounced_target_member_sessions": 2603
+    },
+    {
+      "signal_month": "2019-09",
+      "member_sessions": 8094,
+      "peer_opportunities": 42066,
+      "announced_peer_opportunities": 28220,
+      "early_announcer_peer_fraction": 0.6708505681548044,
+      "unannounced_target_member_sessions": 2702
+    },
+    {
+      "signal_month": "2019-10",
+      "member_sessions": 8932,
+      "peer_opportunities": 46494,
+      "announced_peer_opportunities": 32126,
+      "early_announcer_peer_fraction": 0.6909708779627479,
+      "unannounced_target_member_sessions": 2857
+    },
+    {
+      "signal_month": "2019-11",
+      "member_sessions": 8925,
+      "peer_opportunities": 46494,
+      "announced_peer_opportunities": 33394,
+      "early_announcer_peer_fraction": 0.7182432141781735,
+      "unannounced_target_member_sessions": 2563
+    },
+    {
+      "signal_month": "2019-12",
+      "member_sessions": 9369,
+      "peer_opportunities": 49088,
+      "announced_peer_opportunities": 35014,
+      "early_announcer_peer_fraction": 0.7132904172099087,
+      "unannounced_target_member_sessions": 2734
+    },
+    {
+      "signal_month": "2020-01",
+      "member_sessions": 6387,
+      "peer_opportunities": 33510,
+      "announced_peer_opportunities": 19683,
+      "early_announcer_peer_fraction": 0.5873769024171889,
+      "unannounced_target_member_sessions": 2640
+    },
+    {
+      "signal_month": "2020-02",
+      "member_sessions": 8075,
+      "peer_opportunities": 42446,
+      "announced_peer_opportunities": 28158,
+      "early_announcer_peer_fraction": 0.6633840644583706,
+      "unannounced_target_member_sessions": 2886
+    },
+    {
+      "signal_month": "2020-03",
+      "member_sessions": 9350,
+      "peer_opportunities": 49148,
+      "announced_peer_opportunities": 34848,
+      "early_announcer_peer_fraction": 0.7090420769919427,
+      "unannounced_target_member_sessions": 2770
+    },
+    {
+      "signal_month": "2020-04",
+      "member_sessions": 8500,
+      "peer_opportunities": 44680,
+      "announced_peer_opportunities": 32604,
+      "early_announcer_peer_fraction": 0.7297224709042077,
+      "unannounced_target_member_sessions": 2346
+    },
+    {
+      "signal_month": "2020-05",
+      "member_sessions": 8498,
+      "peer_opportunities": 44676,
+      "announced_peer_opportunities": 33347,
+      "early_announcer_peer_fraction": 0.746418658787716,
+      "unannounced_target_member_sessions": 2206
+    },
+    {
+      "signal_month": "2020-06",
+      "member_sessions": 8460,
+      "peer_opportunities": 44600,
+      "announced_peer_opportunities": 29076,
+      "early_announcer_peer_fraction": 0.6519282511210762,
+      "unannounced_target_member_sessions": 3011
+    },
+    {
+      "signal_month": "2020-07",
+      "member_sessions": 9729,
+      "peer_opportunities": 51290,
+      "announced_peer_opportunities": 35540,
+      "early_announcer_peer_fraction": 0.6929225969974654,
+      "unannounced_target_member_sessions": 3015
+    },
+    {
+      "signal_month": "2020-08",
+      "member_sessions": 8878,
+      "peer_opportunities": 46820,
+      "announced_peer_opportunities": 34272,
+      "early_announcer_peer_fraction": 0.7319948739854762,
+      "unannounced_target_member_sessions": 2404
+    },
+    {
+      "signal_month": "2020-09",
+      "member_sessions": 9284,
+      "peer_opportunities": 49016,
+      "announced_peer_opportunities": 33578,
+      "early_announcer_peer_fraction": 0.6850416190631631,
+      "unannounced_target_member_sessions": 2995
+    },
+    {
+      "signal_month": "2020-10",
+      "member_sessions": 8017,
+      "peer_opportunities": 42332,
+      "announced_peer_opportunities": 32927,
+      "early_announcer_peer_fraction": 0.7778276481149012,
+      "unannounced_target_member_sessions": 1827
+    },
+    {
+      "signal_month": "2020-11",
+      "member_sessions": 8832,
+      "peer_opportunities": 46788,
+      "announced_peer_opportunities": 32672,
+      "early_announcer_peer_fraction": 0.6982987090707019,
+      "unannounced_target_member_sessions": 2689
+    },
+    {
+      "signal_month": "2020-12",
+      "member_sessions": 9660,
+      "peer_opportunities": 51244,
+      "announced_peer_opportunities": 35763,
+      "early_announcer_peer_fraction": 0.6978963390836,
+      "unannounced_target_member_sessions": 2962
+    },
+    {
+      "signal_month": "2021-01",
+      "member_sessions": 8389,
+      "peer_opportunities": 44472,
+      "announced_peer_opportunities": 32867,
+      "early_announcer_peer_fraction": 0.7390492894405468,
+      "unannounced_target_member_sessions": 2230
+    },
+    {
+      "signal_month": "2021-02",
+      "member_sessions": 5447,
+      "peer_opportunities": 28860,
+      "announced_peer_opportunities": 17707,
+      "early_announcer_peer_fraction": 0.6135481635481635,
+      "unannounced_target_member_sessions": 2145
+    },
+    {
+      "signal_month": "2021-03",
+      "member_sessions": 9218,
+      "peer_opportunities": 48840,
+      "announced_peer_opportunities": 35051,
+      "early_announcer_peer_fraction": 0.7176699426699427,
+      "unannounced_target_member_sessions": 2638
+    },
+    {
+      "signal_month": "2021-04",
+      "member_sessions": 7961,
+      "peer_opportunities": 42180,
+      "announced_peer_opportunities": 31143,
+      "early_announcer_peer_fraction": 0.7383357041251778,
+      "unannounced_target_member_sessions": 2081
+    },
+    {
+      "signal_month": "2021-05",
+      "member_sessions": 8799,
+      "peer_opportunities": 46620,
+      "announced_peer_opportunities": 34380,
+      "early_announcer_peer_fraction": 0.7374517374517374,
+      "unannounced_target_member_sessions": 2370
+    },
+    {
+      "signal_month": "2021-06",
+      "member_sessions": 8799,
+      "peer_opportunities": 46620,
+      "announced_peer_opportunities": 31377,
+      "early_announcer_peer_fraction": 0.673037323037323,
+      "unannounced_target_member_sessions": 2900
+    },
+    {
+      "signal_month": "2021-07",
+      "member_sessions": 9218,
+      "peer_opportunities": 48840,
+      "announced_peer_opportunities": 34512,
+      "early_announcer_peer_fraction": 0.7066339066339067,
+      "unannounced_target_member_sessions": 2753
+    },
+    {
+      "signal_month": "2021-08",
+      "member_sessions": 9217,
+      "peer_opportunities": 48828,
+      "announced_peer_opportunities": 35016,
+      "early_announcer_peer_fraction": 0.7171295158515606,
+      "unannounced_target_member_sessions": 2657
+    },
+    {
+      "signal_month": "2021-09",
+      "member_sessions": 8342,
+      "peer_opportunities": 44124,
+      "announced_peer_opportunities": 29315,
+      "early_announcer_peer_fraction": 0.6643776629498686,
+      "unannounced_target_member_sessions": 2812
+    },
+    {
+      "signal_month": "2021-10",
+      "member_sessions": 8340,
+      "peer_opportunities": 44120,
+      "announced_peer_opportunities": 31370,
+      "early_announcer_peer_fraction": 0.7110154125113327,
+      "unannounced_target_member_sessions": 2466
+    },
+    {
+      "signal_month": "2021-11",
+      "member_sessions": 9152,
+      "peer_opportunities": 48356,
+      "announced_peer_opportunities": 32990,
+      "early_announcer_peer_fraction": 0.6822317809578956,
+      "unannounced_target_member_sessions": 2911
+    },
+    {
+      "signal_month": "2021-12",
+      "member_sessions": 9148,
+      "peer_opportunities": 48348,
+      "announced_peer_opportunities": 33427,
+      "early_announcer_peer_fraction": 0.691383304376603,
+      "unannounced_target_member_sessions": 2826
+    },
+    {
+      "signal_month": "2022-01",
+      "member_sessions": 7470,
+      "peer_opportunities": 39528,
+      "announced_peer_opportunities": 27268,
+      "early_announcer_peer_fraction": 0.689840113337381,
+      "unannounced_target_member_sessions": 2331
+    },
+    {
+      "signal_month": "2022-02",
+      "member_sessions": 6225,
+      "peer_opportunities": 32940,
+      "announced_peer_opportunities": 22610,
+      "early_announcer_peer_fraction": 0.6863995142683668,
+      "unannounced_target_member_sessions": 1956
+    },
+    {
+      "signal_month": "2022-03",
+      "member_sessions": 9524,
+      "peer_opportunities": 50298,
+      "announced_peer_opportunities": 35371,
+      "early_announcer_peer_fraction": 0.7032287566106008,
+      "unannounced_target_member_sessions": 2868
+    },
+    {
+      "signal_month": "2022-04",
+      "member_sessions": 7863,
+      "peer_opportunities": 41514,
+      "announced_peer_opportunities": 32114,
+      "early_announcer_peer_fraction": 0.773570361805656,
+      "unannounced_target_member_sessions": 1805
+    },
+    {
+      "signal_month": "2022-05",
+      "member_sessions": 8652,
+      "peer_opportunities": 45822,
+      "announced_peer_opportunities": 34114,
+      "early_announcer_peer_fraction": 0.7444895465060452,
+      "unannounced_target_member_sessions": 2233
+    },
+    {
+      "signal_month": "2022-06",
+      "member_sessions": 8648,
+      "peer_opportunities": 45782,
+      "announced_peer_opportunities": 32635,
+      "early_announcer_peer_fraction": 0.7128347385435324,
+      "unannounced_target_member_sessions": 2490
+    },
+    {
+      "signal_month": "2022-07",
+      "member_sessions": 8620,
+      "peer_opportunities": 45524,
+      "announced_peer_opportunities": 32804,
+      "early_announcer_peer_fraction": 0.7205869431508655,
+      "unannounced_target_member_sessions": 2446
+    },
+    {
+      "signal_month": "2022-08",
+      "member_sessions": 9435,
+      "peer_opportunities": 49772,
+      "announced_peer_opportunities": 34806,
+      "early_announcer_peer_fraction": 0.6993088483484691,
+      "unannounced_target_member_sessions": 2899
+    },
+    {
+      "signal_month": "2022-09",
+      "member_sessions": 8631,
+      "peer_opportunities": 45444,
+      "announced_peer_opportunities": 32766,
+      "early_announcer_peer_fraction": 0.7210192764721416,
+      "unannounced_target_member_sessions": 2430
+    },
+    {
+      "signal_month": "2022-10",
+      "member_sessions": 8220,
+      "peer_opportunities": 43280,
+      "announced_peer_opportunities": 32095,
+      "early_announcer_peer_fraction": 0.7415665434380776,
+      "unannounced_target_member_sessions": 2161
+    },
+    {
+      "signal_month": "2022-11",
+      "member_sessions": 9028,
+      "peer_opportunities": 47216,
+      "announced_peer_opportunities": 32524,
+      "early_announcer_peer_fraction": 0.6888342934598441,
+      "unannounced_target_member_sessions": 2853
+    },
+    {
+      "signal_month": "2022-12",
+      "member_sessions": 9020,
+      "peer_opportunities": 46992,
+      "announced_peer_opportunities": 33257,
+      "early_announcer_peer_fraction": 0.7077162070139599,
+      "unannounced_target_member_sessions": 2678
+    },
+    {
+      "signal_month": "2023-01",
+      "member_sessions": 5330,
+      "peer_opportunities": 27768,
+      "announced_peer_opportunities": 16355,
+      "early_announcer_peer_fraction": 0.5889873235378853,
+      "unannounced_target_member_sessions": 2194
+    },
+    {
+      "signal_month": "2023-02",
+      "member_sessions": 7380,
+      "peer_opportunities": 38448,
+      "announced_peer_opportunities": 24121,
+      "early_announcer_peer_fraction": 0.6273668331252601,
+      "unannounced_target_member_sessions": 2786
+    },
+    {
+      "signal_month": "2023-03",
+      "member_sessions": 9430,
+      "peer_opportunities": 49128,
+      "announced_peer_opportunities": 34599,
+      "early_announcer_peer_fraction": 0.7042623351245726,
+      "unannounced_target_member_sessions": 2839
+    },
+    {
+      "signal_month": "2023-04",
+      "member_sessions": 6953,
+      "peer_opportunities": 36312,
+      "announced_peer_opportunities": 28308,
+      "early_announcer_peer_fraction": 0.7795769993390614,
+      "unannounced_target_member_sessions": 1570
+    },
+    {
+      "signal_month": "2023-05",
+      "member_sessions": 8998,
+      "peer_opportunities": 46992,
+      "announced_peer_opportunities": 33962,
+      "early_announcer_peer_fraction": 0.722718760640109,
+      "unannounced_target_member_sessions": 2534
+    },
+    {
+      "signal_month": "2023-06",
+      "member_sessions": 8180,
+      "peer_opportunities": 42720,
+      "announced_peer_opportunities": 29059,
+      "early_announcer_peer_fraction": 0.6802200374531835,
+      "unannounced_target_member_sessions": 2643
+    },
+    {
+      "signal_month": "2023-07",
+      "member_sessions": 8590,
+      "peer_opportunities": 44862,
+      "announced_peer_opportunities": 33262,
+      "early_announcer_peer_fraction": 0.7414292719896571,
+      "unannounced_target_member_sessions": 2296
+    },
+    {
+      "signal_month": "2023-08",
+      "member_sessions": 9020,
+      "peer_opportunities": 47124,
+      "announced_peer_opportunities": 34410,
+      "early_announcer_peer_fraction": 0.730201171377642,
+      "unannounced_target_member_sessions": 2482
+    },
+    {
+      "signal_month": "2023-09",
+      "member_sessions": 8200,
+      "peer_opportunities": 42840,
+      "announced_peer_opportunities": 30430,
+      "early_announcer_peer_fraction": 0.7103174603174603,
+      "unannounced_target_member_sessions": 2432
+    },
+    {
+      "signal_month": "2023-10",
+      "member_sessions": 8200,
+      "peer_opportunities": 42840,
+      "announced_peer_opportunities": 31578,
+      "early_announcer_peer_fraction": 0.7371148459383754,
+      "unannounced_target_member_sessions": 2253
+    },
+    {
+      "signal_month": "2023-11",
+      "member_sessions": 9039,
+      "peer_opportunities": 47168,
+      "announced_peer_opportunities": 32819,
+      "early_announcer_peer_fraction": 0.6957895183175034,
+      "unannounced_target_member_sessions": 2815
+    },
+    {
+      "signal_month": "2023-12",
+      "member_sessions": 8652,
+      "peer_opportunities": 45444,
+      "announced_peer_opportunities": 32666,
+      "early_announcer_peer_fraction": 0.7188187659537013,
+      "unannounced_target_member_sessions": 2465
+    },
+    {
+      "signal_month": "2024-01",
+      "member_sessions": 9070,
+      "peer_opportunities": 47620,
+      "announced_peer_opportunities": 34034,
+      "early_announcer_peer_fraction": 0.7146997060058798,
+      "unannounced_target_member_sessions": 2611
+    },
+    {
+      "signal_month": "2024-02",
+      "member_sessions": 5369,
+      "peer_opportunities": 28158,
+      "announced_peer_opportunities": 20968,
+      "early_announcer_peer_fraction": 0.7446551601676256,
+      "unannounced_target_member_sessions": 1425
+    },
+    {
+      "signal_month": "2024-03",
+      "member_sessions": 8673,
+      "peer_opportunities": 45486,
+      "announced_peer_opportunities": 32782,
+      "early_announcer_peer_fraction": 0.7207052719518093,
+      "unannounced_target_member_sessions": 2459
+    },
+    {
+      "signal_month": "2024-04",
+      "member_sessions": 8260,
+      "peer_opportunities": 43320,
+      "announced_peer_opportunities": 31652,
+      "early_announcer_peer_fraction": 0.7306555863342566,
+      "unannounced_target_member_sessions": 2265
+    },
+    {
+      "signal_month": "2024-05",
+      "member_sessions": 9086,
+      "peer_opportunities": 47652,
+      "announced_peer_opportunities": 34737,
+      "early_announcer_peer_fraction": 0.7289725509947117,
+      "unannounced_target_member_sessions": 2481
+    },
+    {
+      "signal_month": "2024-06",
+      "member_sessions": 7864,
+      "peer_opportunities": 41232,
+      "announced_peer_opportunities": 30179,
+      "early_announcer_peer_fraction": 0.7319315095071789,
+      "unannounced_target_member_sessions": 2156
+    },
+    {
+      "signal_month": "2024-07",
+      "member_sessions": 8715,
+      "peer_opportunities": 45612,
+      "announced_peer_opportunities": 30504,
+      "early_announcer_peer_fraction": 0.6687713759536964,
+      "unannounced_target_member_sessions": 2922
+    },
+    {
+      "signal_month": "2024-08",
+      "member_sessions": 9130,
+      "peer_opportunities": 47784,
+      "announced_peer_opportunities": 33827,
+      "early_announcer_peer_fraction": 0.7079147831910263,
+      "unannounced_target_member_sessions": 2703
+    },
+    {
+      "signal_month": "2024-09",
+      "member_sessions": 8300,
+      "peer_opportunities": 43440,
+      "announced_peer_opportunities": 29874,
+      "early_announcer_peer_fraction": 0.687707182320442,
+      "unannounced_target_member_sessions": 2636
+    },
+    {
+      "signal_month": "2024-10",
+      "member_sessions": 7885,
+      "peer_opportunities": 41268,
+      "announced_peer_opportunities": 30761,
+      "early_announcer_peer_fraction": 0.7453959484346224,
+      "unannounced_target_member_sessions": 2057
+    },
+    {
+      "signal_month": "2024-11",
+      "member_sessions": 8719,
+      "peer_opportunities": 45628,
+      "announced_peer_opportunities": 32928,
+      "early_announcer_peer_fraction": 0.7216621372841238,
+      "unannounced_target_member_sessions": 2472
+    },
+    {
+      "signal_month": "2024-12",
+      "member_sessions": 9152,
+      "peer_opportunities": 47872,
+      "announced_peer_opportunities": 34300,
+      "early_announcer_peer_fraction": 0.7164939839572193,
+      "unannounced_target_member_sessions": 2626
+    },
+    {
+      "signal_month": "2025-01",
+      "member_sessions": 6240,
+      "peer_opportunities": 32640,
+      "announced_peer_opportunities": 19546,
+      "early_announcer_peer_fraction": 0.5988357843137255,
+      "unannounced_target_member_sessions": 2501
+    },
+    {
+      "signal_month": "2025-02",
+      "member_sessions": 7904,
+      "peer_opportunities": 41344,
+      "announced_peer_opportunities": 29341,
+      "early_announcer_peer_fraction": 0.7096797600619195,
+      "unannounced_target_member_sessions": 2326
+    },
+    {
+      "signal_month": "2025-03",
+      "member_sessions": 8769,
+      "peer_opportunities": 45832,
+      "announced_peer_opportunities": 33762,
+      "early_announcer_peer_fraction": 0.7366468842729971,
+      "unannounced_target_member_sessions": 2331
+    },
+    {
+      "signal_month": "2025-04",
+      "member_sessions": 8360,
+      "peer_opportunities": 43680,
+      "announced_peer_opportunities": 32109,
+      "early_announcer_peer_fraction": 0.7350961538461539,
+      "unannounced_target_member_sessions": 2235
+    },
+    {
+      "signal_month": "2025-05",
+      "member_sessions": 8360,
+      "peer_opportunities": 43680,
+      "announced_peer_opportunities": 31494,
+      "early_announcer_peer_fraction": 0.7210164835164835,
+      "unannounced_target_member_sessions": 2385
+    },
+    {
+      "signal_month": "2025-06",
+      "member_sessions": 8790,
+      "peer_opportunities": 45864,
+      "announced_peer_opportunities": 32257,
+      "early_announcer_peer_fraction": 0.7033185068899355,
+      "unannounced_target_member_sessions": 2636
+    },
+    {
+      "signal_month": "2025-07",
+      "member_sessions": 9631,
+      "peer_opportunities": 50076,
+      "announced_peer_opportunities": 34640,
+      "early_announcer_peer_fraction": 0.6917485422158319,
+      "unannounced_target_member_sessions": 2988
+    },
+    {
+      "signal_month": "2025-08",
+      "member_sessions": 8778,
+      "peer_opportunities": 45318,
+      "announced_peer_opportunities": 32563,
+      "early_announcer_peer_fraction": 0.7185445077011342,
+      "unannounced_target_member_sessions": 2494
+    },
+    {
+      "signal_month": "2025-09",
+      "member_sessions": 8778,
+      "peer_opportunities": 45318,
+      "announced_peer_opportunities": 30524,
+      "early_announcer_peer_fraction": 0.6735513482501434,
+      "unannounced_target_member_sessions": 2915
+    },
+    {
+      "signal_month": "2025-10",
+      "member_sessions": 8340,
+      "peer_opportunities": 43000,
+      "announced_peer_opportunities": 30410,
+      "early_announcer_peer_fraction": 0.7072093023255814,
+      "unannounced_target_member_sessions": 2479
+    },
+    {
+      "signal_month": "2025-11",
+      "member_sessions": 8350,
+      "peer_opportunities": 43000,
+      "announced_peer_opportunities": 31326,
+      "early_announcer_peer_fraction": 0.7285116279069768,
+      "unannounced_target_member_sessions": 2300
+    },
+    {
+      "signal_month": "2025-12",
+      "member_sessions": 9196,
+      "peer_opportunities": 47300,
+      "announced_peer_opportunities": 32242,
+      "early_announcer_peer_fraction": 0.6816490486257928,
+      "unannounced_target_member_sessions": 2940
+    },
+    {
+      "signal_month": "2026-01",
+      "member_sessions": 8780,
+      "peer_opportunities": 45158,
+      "announced_peer_opportunities": 32580,
+      "early_announcer_peer_fraction": 0.721466849727623,
+      "unannounced_target_member_sessions": 2439
+    },
+    {
+      "signal_month": "2026-02",
+      "member_sessions": 5028,
+      "peer_opportunities": 25848,
+      "announced_peer_opportunities": 12200,
+      "early_announcer_peer_fraction": 0.4719900959455277,
+      "unannounced_target_member_sessions": 2605
+    },
+    {
+      "signal_month": "2026-03",
+      "member_sessions": 9218,
+      "peer_opportunities": 47388,
+      "announced_peer_opportunities": 33320,
+      "early_announcer_peer_fraction": 0.703131594496497,
+      "unannounced_target_member_sessions": 2720
+    },
+    {
+      "signal_month": "2026-04",
+      "member_sessions": 8380,
+      "peer_opportunities": 43080,
+      "announced_peer_opportunities": 31143,
+      "early_announcer_peer_fraction": 0.7229108635097493,
+      "unannounced_target_member_sessions": 2287
+    },
+    {
+      "signal_month": "2026-05",
+      "member_sessions": 8380,
+      "peer_opportunities": 43080,
+      "announced_peer_opportunities": 31652,
+      "early_announcer_peer_fraction": 0.7347260909935005,
+      "unannounced_target_member_sessions": 2204
+    },
+    {
+      "signal_month": "2026-06",
+      "member_sessions": 8799,
+      "peer_opportunities": 45234,
+      "announced_peer_opportunities": 29684,
+      "early_announcer_peer_fraction": 0.6562320378476367,
+      "unannounced_target_member_sessions": 3011
+    },
+    {
+      "signal_month": "2026-07",
+      "member_sessions": 9218,
+      "peer_opportunities": 47388,
+      "announced_peer_opportunities": 32915,
+      "early_announcer_peer_fraction": 0.6945851270363805,
+      "unannounced_target_member_sessions": 2809
+    },
+    {
+      "signal_month": "2026-08",
+      "member_sessions": 8799,
+      "peer_opportunities": 45234,
+      "announced_peer_opportunities": 32855,
+      "early_announcer_peer_fraction": 0.7263341734093823,
+      "unannounced_target_member_sessions": 2398
+    },
+    {
+      "signal_month": "2026-09",
+      "member_sessions": 8818,
+      "peer_opportunities": 45234,
+      "announced_peer_opportunities": 30110,
+      "early_announcer_peer_fraction": 0.6656497325021002,
+      "unannounced_target_member_sessions": 2952
+    },
+    {
+      "signal_month": "2026-10",
+      "member_sessions": 7980,
+      "peer_opportunities": 40926,
+      "announced_peer_opportunities": 27719,
+      "early_announcer_peer_fraction": 0.6772956067047843,
+      "unannounced_target_member_sessions": 2570
+    },
+    {
+      "signal_month": "2026-11",
+      "member_sessions": 7140,
+      "peer_opportunities": 36618,
+      "announced_peer_opportunities": 22643,
+      "early_announcer_peer_fraction": 0.6183570921404774,
+      "unannounced_target_member_sessions": 2677
+    }
+  ],
+  "verification": {
+    "inputs_verified": 6,
+    "outputs_verified": 18,
+    "implementation_verified": 6,
+    "rows_verified": 5805094,
+    "unique_keys": 5805094,
+    "valid_feature_cells": 946950,
+    "year_files": 14,
+    "strict_eligible_rows": 0,
+    "revenue_events_verified": 380514,
+    "independent_numeric_replay": {
+      "sample_sessions": 3,
+      "return_rows_checked": 1271,
+      "revenue_rows_checked": 1271,
+      "market_rows_checked": 5141
+    }
+  },
+  "checks": {
+    "focused": {
+      "passed": 33,
+      "seconds": 1.64,
+      "command": "CUDA_VISIBLE_DEVICES='' PYTHONPATH=. /home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python -m pytest tests/test_peer_proxies.py tests/test_forward_wp1.py tests/test_tej_pit.py -q -p no:cacheprovider"
+    },
+    "mutations": [
+      {
+        "mutation": "same_day_release",
+        "status": "KILLED",
+        "test": "test_release_same_day_target_announcement_and_late_denominator"
+      },
+      {
+        "mutation": "zero_lag_prices",
+        "status": "KILLED",
+        "test": "test_price_lag_missing_session_and_future_mutation"
+      },
+      {
+        "mutation": "include_self",
+        "status": "KILLED",
+        "test": "test_excludes_self_minimum_and_market"
+      }
+    ],
+    "knowledge_health": {
+      "overall": "WARNING",
+      "exit_code": 0,
+      "structural_failures": 0,
+      "components": {
+        "Project Map": "PASS",
+        "Agent Guides": "PASS",
+        "Domains": "PASS",
+        "Governance": "WARNING",
+        "Authority Drift": "WARNING",
+        "Runtime Freshness": "PASS",
+        "Generated Index": "PASS",
+        "Legacy Docs": "WARNING"
+      },
+      "warning_detail": "8 AUTHORITY_REPIN_CANDIDATE；既有README／OVERVIEW／PROJECT legacy claims。未改machine authority或舊文件。"
+    },
+    "syntax": "py_compile PASS",
+    "git_diff_check": "PASS",
+    "review": "AUTHOR_SELF_REVIEW_ONLY; independent review pending"
+  },
+  "scope_deviation": {
+    "status": "RECORDED_NOT_ACCEPTED",
+    "description": "擴大回歸時誤選整份tests/test_tej_diag.py，曾執行合成IC及合成未來報酬測試；無真實標籤／未來報酬檔或blind讀取，未計真資料IC。已停止該測試，最終focused僅資料層。",
+    "broad_run": {
+      "passed": 43,
+      "failed": 1,
+      "seconds": 3.39,
+      "failure": "既有test_label_parity_with_existing_contract缺research_lab import path；未改該測試或P4d。"
+    },
+    "correction": "後續測試清單僅peer_proxies、forward_wp1、tej_pit；不重跑IC／label suite。"
+  },
+  "output_column_order": [
+    "date",
+    "stock_id",
+    "tse_industry",
+    "tse_industry_reason",
+    "industry",
+    "tej_subindustry_reason",
+    "eligible",
+    "market_reason",
+    "return_peer_count",
+    "industry_peer_count",
+    "peer_return",
+    "return_reason",
+    "market_return",
+    "market_valid_count",
+    "announced_peer_count",
+    "unannounced_peer_count",
+    "revenue_peer_count",
+    "revenue_spillover",
+    "revenue_reason",
+    "missing_price_peer_count",
+    "announced_but_invalid_yoy_peer_count",
+    "target_revenue_available",
+    "revenue_month",
+    "available_at",
+    "classification_known_at",
+    "strict_pit_eligible",
+    "evidence_class",
+    "price_return_session"
+  ]
+}
