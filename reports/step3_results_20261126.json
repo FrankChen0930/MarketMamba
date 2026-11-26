@@ -1,14 +1,225 @@
 {
   "schema_version": 1,
-  "status": "PENDING_EXECUTION",
+  "status": "COMPLETE_HISTORICAL_ONLY",
   "evidence_class": "已曝光、量級與工程驗證、非確認",
   "research_status": "RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED",
   "spec_sha256": "9cd7cb8681e3d881193efa3c6fa3c72bd74fba84a96f6a16e6da3a85398eaf34",
-  "bundle_sha256": null,
-  "human_decision_sha256": null,
-  "periods": null,
-  "yearly_descriptive": null,
-  "folds": null,
+  "bundle_sha256": "97a9d3e8f43bfde984455f2439b0ba9bb22561beb3a65088dfbde27a7ea14613",
+  "human_decision_sha256": "4ce8dc630993e9320933faae1814e1ca97167354e57565ea10e4945a51ca7efa",
+  "periods": {
+    "2015-2020": {
+      "mean_a": 0.15714661436149271,
+      "mean_b": 0.1629160314757128,
+      "mean_difference": 0.0057694171142200976,
+      "paired_ci95": [
+        0.0032276067672831737,
+        0.008536515021942083
+      ],
+      "valid_days": 1468,
+      "scheduled_days": 1468,
+      "interpretation": "EXPOSED_HISTORICAL_ENGINEERING_ONLY_NO_CONFIRMATORY_SUCCESS",
+      "formal_success": null,
+      "threshold_text": "達數值門檻對照；已曝光歷史不判正式成功"
+    },
+    "2021-2026": {
+      "mean_a": 0.14702796791285033,
+      "mean_b": 0.15198102975967628,
+      "mean_difference": 0.004953061846825969,
+      "paired_ci95": [
+        0.0006340088139238488,
+        0.00902495065279716
+      ],
+      "valid_days": 1367,
+      "scheduled_days": 1382,
+      "interpretation": "EXPOSED_HISTORICAL_ENGINEERING_ONLY_NO_CONFIRMATORY_SUCCESS",
+      "formal_success": null,
+      "threshold_text": "正向但不足；已曝光歷史不判正式成功"
+    }
+  },
+  "yearly_descriptive": [
+    {
+      "year": 2015,
+      "mean_difference": 0.006120349908979439,
+      "valid_days": 244,
+      "scheduled_days": 244
+    },
+    {
+      "year": 2016,
+      "mean_difference": 0.004386652991229489,
+      "valid_days": 244,
+      "scheduled_days": 244
+    },
+    {
+      "year": 2017,
+      "mean_difference": 0.010246838529711593,
+      "valid_days": 246,
+      "scheduled_days": 246
+    },
+    {
+      "year": 2018,
+      "mean_difference": 0.0037387169337250005,
+      "valid_days": 247,
+      "scheduled_days": 247
+    },
+    {
+      "year": 2019,
+      "mean_difference": 0.0009177440660517531,
+      "valid_days": 242,
+      "scheduled_days": 242
+    },
+    {
+      "year": 2020,
+      "mean_difference": 0.00914088241265499,
+      "valid_days": 245,
+      "scheduled_days": 245
+    },
+    {
+      "year": 2021,
+      "mean_difference": 0.012924327024528202,
+      "valid_days": 244,
+      "scheduled_days": 244
+    },
+    {
+      "year": 2022,
+      "mean_difference": 0.006171066101455563,
+      "valid_days": 246,
+      "scheduled_days": 246
+    },
+    {
+      "year": 2023,
+      "mean_difference": 0.002163474807192973,
+      "valid_days": 239,
+      "scheduled_days": 239
+    },
+    {
+      "year": 2024,
+      "mean_difference": -0.0002452520754513763,
+      "valid_days": 242,
+      "scheduled_days": 242
+    },
+    {
+      "year": 2025,
+      "mean_difference": -0.0012660637884344575,
+      "valid_days": 243,
+      "scheduled_days": 243
+    },
+    {
+      "year": 2026,
+      "mean_difference": 0.012739552376456435,
+      "valid_days": 153,
+      "scheduled_days": 168
+    }
+  ],
+  "folds": [
+    {
+      "year": 2015,
+      "inference_rows": 312782,
+      "common_keys": 312782,
+      "mature_rows": 308898,
+      "immature_or_missing_label_rows": 3884,
+      "first_signal": "2015-01-05",
+      "last_signal": "2015-12-31"
+    },
+    {
+      "year": 2016,
+      "inference_rows": 313060,
+      "common_keys": 313060,
+      "mature_rows": 307982,
+      "immature_or_missing_label_rows": 5078,
+      "first_signal": "2016-01-04",
+      "last_signal": "2016-12-30"
+    },
+    {
+      "year": 2017,
+      "inference_rows": 332634,
+      "common_keys": 332634,
+      "mature_rows": 328000,
+      "immature_or_missing_label_rows": 4634,
+      "first_signal": "2017-01-03",
+      "last_signal": "2017-12-29"
+    },
+    {
+      "year": 2018,
+      "inference_rows": 336574,
+      "common_keys": 336574,
+      "mature_rows": 329539,
+      "immature_or_missing_label_rows": 7035,
+      "first_signal": "2018-01-02",
+      "last_signal": "2018-12-28"
+    },
+    {
+      "year": 2019,
+      "inference_rows": 337437,
+      "common_keys": 337437,
+      "mature_rows": 331763,
+      "immature_or_missing_label_rows": 5674,
+      "first_signal": "2019-01-02",
+      "last_signal": "2019-12-31"
+    },
+    {
+      "year": 2020,
+      "inference_rows": 360897,
+      "common_keys": 360897,
+      "mature_rows": 355858,
+      "immature_or_missing_label_rows": 5039,
+      "first_signal": "2020-01-02",
+      "last_signal": "2020-12-31"
+    },
+    {
+      "year": 2021,
+      "inference_rows": 378547,
+      "common_keys": 378547,
+      "mature_rows": 373995,
+      "immature_or_missing_label_rows": 4552,
+      "first_signal": "2021-01-04",
+      "last_signal": "2021-12-30"
+    },
+    {
+      "year": 2022,
+      "inference_rows": 385419,
+      "common_keys": 385419,
+      "mature_rows": 380789,
+      "immature_or_missing_label_rows": 4630,
+      "first_signal": "2022-01-03",
+      "last_signal": "2022-12-30"
+    },
+    {
+      "year": 2023,
+      "inference_rows": 390606,
+      "common_keys": 390606,
+      "mature_rows": 387064,
+      "immature_or_missing_label_rows": 3542,
+      "first_signal": "2023-01-03",
+      "last_signal": "2023-12-29"
+    },
+    {
+      "year": 2024,
+      "inference_rows": 418138,
+      "common_keys": 418138,
+      "mature_rows": 415007,
+      "immature_or_missing_label_rows": 3131,
+      "first_signal": "2024-01-02",
+      "last_signal": "2024-12-31"
+    },
+    {
+      "year": 2025,
+      "inference_rows": 425682,
+      "common_keys": 425682,
+      "mature_rows": 421023,
+      "immature_or_missing_label_rows": 4659,
+      "first_signal": "2025-01-02",
+      "last_signal": "2025-12-31"
+    },
+    {
+      "year": 2026,
+      "inference_rows": 302228,
+      "common_keys": 302228,
+      "mature_rows": 271982,
+      "immature_or_missing_label_rows": 30246,
+      "first_signal": "2026-01-02",
+      "last_signal": "2026-09-11"
+    }
+  ],
   "limitations": [
     "歷史兩段均已曝光；C0+ 設計受後期資料影響，只作量級與工程驗證，非獨立確認。",
     "約 23% 營收單位未核驗，相關比較記 NaN，由模型原生處理；不代表已核驗或補零。",
@@ -23,5 +234,903 @@
     "兩段獨立估計，不合併投票；逐年差僅描述。+0.005 及下界>0 僅作門檻對照，歷史不得宣稱正式成功。",
     "builder 合成測試不是獨立驗收或 Human acceptance；無前瞻、P2 開盲、交易、部署或排程授權。"
   ],
-  "result": "{{RESULTS_FILLED_AT_EXECUTION}}"
+  "result": "FILLED_AT_EXECUTION",
+  "fit_count": 72,
+  "source_gate": "HUMAN_ACCEPTED_HISTORICAL_ONLY_STRICT_FORWARD_STOP",
+  "bootstrap": {
+    "method": "circular_paired_full_session_axis",
+    "block_sessions": 20,
+    "replicates": 1000,
+    "seed": 17
+  },
+  "environment": {
+    "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+    "executable": "/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python",
+    "platform": "Linux-6.18.58.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "numpy": "2.5.4",
+    "data_root": null,
+    "data_realpath": "/home/frank/projects/MarketMamba/Data"
+  },
+  "driver_sha256": "eab055277f56a91857af72c96d21b73cfc53f38742c5df04d5f3285de7fdd0d2",
+  "source_commit": "042f600e476f0193acde5703ac868ac5d61aa1a5",
+  "fit_telemetry": [
+    {
+      "job": "fold2015-A-seed17",
+      "fit_seconds": 34.568892993964255,
+      "inference_seconds": 1.100799520034343,
+      "total_seconds": 35.66969651298132,
+      "peak_rss_kib": 1323748,
+      "rows_fit": 500000,
+      "rows_eval": 312782,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 231458680
+    },
+    {
+      "job": "fold2015-B-seed17",
+      "fit_seconds": 39.11017632205039,
+      "inference_seconds": 1.1005351599887945,
+      "total_seconds": 40.21071504399879,
+      "peak_rss_kib": 1415392,
+      "rows_fit": 500000,
+      "rows_eval": 312782,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 237714320
+    },
+    {
+      "job": "fold2015-A-seed29",
+      "fit_seconds": 32.51438472396694,
+      "inference_seconds": 0.9263781750341877,
+      "total_seconds": 33.44076500501251,
+      "peak_rss_kib": 1415392,
+      "rows_fit": 500000,
+      "rows_eval": 312782,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 231458680
+    },
+    {
+      "job": "fold2015-B-seed29",
+      "fit_seconds": 37.81625950598391,
+      "inference_seconds": 0.9818736120359972,
+      "total_seconds": 38.79813634202583,
+      "peak_rss_kib": 1416784,
+      "rows_fit": 500000,
+      "rows_eval": 312782,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 237714320
+    },
+    {
+      "job": "fold2015-A-seed43",
+      "fit_seconds": 34.006436833995394,
+      "inference_seconds": 0.9757491979980841,
+      "total_seconds": 34.98218921397347,
+      "peak_rss_kib": 1416784,
+      "rows_fit": 500000,
+      "rows_eval": 312782,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 231458680
+    },
+    {
+      "job": "fold2015-B-seed43",
+      "fit_seconds": 34.89624169404851,
+      "inference_seconds": 0.8750398089759983,
+      "total_seconds": 35.77128345204983,
+      "peak_rss_kib": 1417392,
+      "rows_fit": 500000,
+      "rows_eval": 312782,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 237714320
+    },
+    {
+      "job": "fold2016-A-seed17",
+      "fit_seconds": 43.20654173602816,
+      "inference_seconds": 1.5583744780160487,
+      "total_seconds": 44.764918708999176,
+      "peak_rss_kib": 1417392,
+      "rows_fit": 500000,
+      "rows_eval": 313060,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 231664400
+    },
+    {
+      "job": "fold2016-B-seed17",
+      "fit_seconds": 35.9825138260494,
+      "inference_seconds": 0.9669205109821633,
+      "total_seconds": 36.94943618704565,
+      "peak_rss_kib": 1417392,
+      "rows_fit": 500000,
+      "rows_eval": 313060,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 237925600
+    },
+    {
+      "job": "fold2016-A-seed29",
+      "fit_seconds": 33.3598610930494,
+      "inference_seconds": 1.0659718919778243,
+      "total_seconds": 34.42583496303996,
+      "peak_rss_kib": 1417392,
+      "rows_fit": 500000,
+      "rows_eval": 313060,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 231664400
+    },
+    {
+      "job": "fold2016-B-seed29",
+      "fit_seconds": 32.92513174703345,
+      "inference_seconds": 0.9729042160324752,
+      "total_seconds": 33.89803816500353,
+      "peak_rss_kib": 1417392,
+      "rows_fit": 500000,
+      "rows_eval": 313060,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 237925600
+    },
+    {
+      "job": "fold2016-A-seed43",
+      "fit_seconds": 31.830439374025445,
+      "inference_seconds": 1.0192686909576878,
+      "total_seconds": 32.849711293994915,
+      "peak_rss_kib": 1417392,
+      "rows_fit": 500000,
+      "rows_eval": 313060,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 231664400
+    },
+    {
+      "job": "fold2016-B-seed43",
+      "fit_seconds": 35.49208119197283,
+      "inference_seconds": 1.1799550980213098,
+      "total_seconds": 36.672038201999385,
+      "peak_rss_kib": 1417392,
+      "rows_fit": 500000,
+      "rows_eval": 313060,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 237925600
+    },
+    {
+      "job": "fold2017-A-seed17",
+      "fit_seconds": 33.84917934198165,
+      "inference_seconds": 1.1306478589540347,
+      "total_seconds": 34.979830444965046,
+      "peak_rss_kib": 1417392,
+      "rows_fit": 500000,
+      "rows_eval": 332634,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 246149160
+    },
+    {
+      "job": "fold2017-B-seed17",
+      "fit_seconds": 34.67886260803789,
+      "inference_seconds": 1.0616857780260034,
+      "total_seconds": 35.740550648013595,
+      "peak_rss_kib": 1426172,
+      "rows_fit": 500000,
+      "rows_eval": 332634,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 252801840
+    },
+    {
+      "job": "fold2017-A-seed29",
+      "fit_seconds": 36.187758988991845,
+      "inference_seconds": 1.405427318008151,
+      "total_seconds": 37.593189176986925,
+      "peak_rss_kib": 1426172,
+      "rows_fit": 500000,
+      "rows_eval": 332634,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 246149160
+    },
+    {
+      "job": "fold2017-B-seed29",
+      "fit_seconds": 33.06002111698035,
+      "inference_seconds": 1.026144334988203,
+      "total_seconds": 34.08616791799432,
+      "peak_rss_kib": 1426172,
+      "rows_fit": 500000,
+      "rows_eval": 332634,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 252801840
+    },
+    {
+      "job": "fold2017-A-seed43",
+      "fit_seconds": 32.86119730694918,
+      "inference_seconds": 1.0637977289734408,
+      "total_seconds": 33.92499837197829,
+      "peak_rss_kib": 1426172,
+      "rows_fit": 500000,
+      "rows_eval": 332634,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 246149160
+    },
+    {
+      "job": "fold2017-B-seed43",
+      "fit_seconds": 34.231559706968255,
+      "inference_seconds": 1.0859403350041248,
+      "total_seconds": 35.31750278797699,
+      "peak_rss_kib": 1426172,
+      "rows_fit": 500000,
+      "rows_eval": 332634,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 252801840
+    },
+    {
+      "job": "fold2018-A-seed17",
+      "fit_seconds": 33.26586921804119,
+      "inference_seconds": 1.0269587010261603,
+      "total_seconds": 34.29283026698977,
+      "peak_rss_kib": 1426172,
+      "rows_fit": 500000,
+      "rows_eval": 336574,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 249064760
+    },
+    {
+      "job": "fold2018-B-seed17",
+      "fit_seconds": 34.832628193020355,
+      "inference_seconds": 1.0677737190271728,
+      "total_seconds": 35.90040403598687,
+      "peak_rss_kib": 1426172,
+      "rows_fit": 500000,
+      "rows_eval": 336574,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 255796240
+    },
+    {
+      "job": "fold2018-A-seed29",
+      "fit_seconds": 41.53113857796416,
+      "inference_seconds": 1.2517224379698746,
+      "total_seconds": 42.782863679982256,
+      "peak_rss_kib": 1426172,
+      "rows_fit": 500000,
+      "rows_eval": 336574,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 249064760
+    },
+    {
+      "job": "fold2018-B-seed29",
+      "fit_seconds": 44.25780905602733,
+      "inference_seconds": 1.1484771879622713,
+      "total_seconds": 45.40629036503378,
+      "peak_rss_kib": 1355148,
+      "rows_fit": 500000,
+      "rows_eval": 336574,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 255796240
+    },
+    {
+      "job": "fold2018-A-seed43",
+      "fit_seconds": 39.296338263957296,
+      "inference_seconds": 1.1531841770047322,
+      "total_seconds": 40.449526182957925,
+      "peak_rss_kib": 1375708,
+      "rows_fit": 500000,
+      "rows_eval": 336574,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 249064760
+    },
+    {
+      "job": "fold2018-B-seed43",
+      "fit_seconds": 43.19695159600815,
+      "inference_seconds": 1.1861175009980798,
+      "total_seconds": 44.38307182502467,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 336574,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 255796240
+    },
+    {
+      "job": "fold2019-A-seed17",
+      "fit_seconds": 40.15959098795429,
+      "inference_seconds": 1.2531275799847208,
+      "total_seconds": 41.41272104997188,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 337437,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 249703380
+    },
+    {
+      "job": "fold2019-B-seed17",
+      "fit_seconds": 40.21403510600794,
+      "inference_seconds": 1.150063002947718,
+      "total_seconds": 41.36410139699001,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 337437,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 256452120
+    },
+    {
+      "job": "fold2019-A-seed29",
+      "fit_seconds": 43.10587893304182,
+      "inference_seconds": 1.1510436719981954,
+      "total_seconds": 44.25692509103101,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 337437,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 249703380
+    },
+    {
+      "job": "fold2019-B-seed29",
+      "fit_seconds": 41.236509031034075,
+      "inference_seconds": 1.1586842959513888,
+      "total_seconds": 42.395195302029606,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 337437,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 256452120
+    },
+    {
+      "job": "fold2019-A-seed43",
+      "fit_seconds": 39.49087197496556,
+      "inference_seconds": 1.1887366980081424,
+      "total_seconds": 40.67961108998861,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 337437,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 249703380
+    },
+    {
+      "job": "fold2019-B-seed43",
+      "fit_seconds": 41.02180590399075,
+      "inference_seconds": 1.1601014999905601,
+      "total_seconds": 42.18190967896953,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 337437,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 256452120
+    },
+    {
+      "job": "fold2020-A-seed17",
+      "fit_seconds": 49.53492650500266,
+      "inference_seconds": 1.3950989680015482,
+      "total_seconds": 50.930028286005836,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 360897,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 267063780
+    },
+    {
+      "job": "fold2020-B-seed17",
+      "fit_seconds": 40.87308007100364,
+      "inference_seconds": 1.2774326019571163,
+      "total_seconds": 42.15051525400486,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 360897,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 274281720
+    },
+    {
+      "job": "fold2020-A-seed29",
+      "fit_seconds": 38.911140292999335,
+      "inference_seconds": 1.261252430966124,
+      "total_seconds": 40.17239464004524,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 360897,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 267063780
+    },
+    {
+      "job": "fold2020-B-seed29",
+      "fit_seconds": 43.9753932270105,
+      "inference_seconds": 1.6022420930094086,
+      "total_seconds": 45.57763781998074,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 360897,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 274281720
+    },
+    {
+      "job": "fold2020-A-seed43",
+      "fit_seconds": 39.398594163998496,
+      "inference_seconds": 1.3576644560089335,
+      "total_seconds": 40.75626120303059,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 360897,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 267063780
+    },
+    {
+      "job": "fold2020-B-seed43",
+      "fit_seconds": 41.50796921097208,
+      "inference_seconds": 1.430336505989544,
+      "total_seconds": 42.93830827396596,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 360897,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 274281720
+    },
+    {
+      "job": "fold2021-A-seed17",
+      "fit_seconds": 38.206590773013886,
+      "inference_seconds": 1.5842917839763686,
+      "total_seconds": 39.79088532901369,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 378547,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 280124780
+    },
+    {
+      "job": "fold2021-B-seed17",
+      "fit_seconds": 40.98738773301011,
+      "inference_seconds": 1.3579381619929336,
+      "total_seconds": 42.345328263007104,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 378547,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 287695720
+    },
+    {
+      "job": "fold2021-A-seed29",
+      "fit_seconds": 38.288085852982476,
+      "inference_seconds": 1.3349205080303364,
+      "total_seconds": 39.62300923699513,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 378547,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 280124780
+    },
+    {
+      "job": "fold2021-B-seed29",
+      "fit_seconds": 39.52577500301413,
+      "inference_seconds": 1.3347780829644762,
+      "total_seconds": 40.8605550150387,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 378547,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 287695720
+    },
+    {
+      "job": "fold2021-A-seed43",
+      "fit_seconds": 38.433226330031175,
+      "inference_seconds": 1.2752342110034078,
+      "total_seconds": 39.70846290001646,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 378547,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 280124780
+    },
+    {
+      "job": "fold2021-B-seed43",
+      "fit_seconds": 41.06655053800205,
+      "inference_seconds": 1.4411041809944436,
+      "total_seconds": 42.50765720597701,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 378547,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 287695720
+    },
+    {
+      "job": "fold2022-A-seed17",
+      "fit_seconds": 39.19196646299679,
+      "inference_seconds": 1.4507254159543663,
+      "total_seconds": 40.64269529801095,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 385419,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 285210060
+    },
+    {
+      "job": "fold2022-B-seed17",
+      "fit_seconds": 44.767955793009605,
+      "inference_seconds": 1.6587991120177321,
+      "total_seconds": 46.42675779404817,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 385419,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 292918440
+    },
+    {
+      "job": "fold2022-A-seed29",
+      "fit_seconds": 38.98316473298473,
+      "inference_seconds": 1.4556731270276941,
+      "total_seconds": 40.43884024198633,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 385419,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 285210060
+    },
+    {
+      "job": "fold2022-B-seed29",
+      "fit_seconds": 40.813764757011086,
+      "inference_seconds": 1.492060036980547,
+      "total_seconds": 42.305827637028415,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 385419,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 292918440
+    },
+    {
+      "job": "fold2022-A-seed43",
+      "fit_seconds": 38.35879438498523,
+      "inference_seconds": 1.4481411710148677,
+      "total_seconds": 39.80693791300291,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 385419,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 285210060
+    },
+    {
+      "job": "fold2022-B-seed43",
+      "fit_seconds": 41.30812453199178,
+      "inference_seconds": 1.4828466859762557,
+      "total_seconds": 42.790973224968184,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 385419,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 292918440
+    },
+    {
+      "job": "fold2023-A-seed17",
+      "fit_seconds": 38.7154603190138,
+      "inference_seconds": 1.41821022197837,
+      "total_seconds": 40.133672625001054,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 390606,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 289048440
+    },
+    {
+      "job": "fold2023-B-seed17",
+      "fit_seconds": 39.93180413497612,
+      "inference_seconds": 1.362223632982932,
+      "total_seconds": 41.29402976500569,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 390606,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 296860560
+    },
+    {
+      "job": "fold2023-A-seed29",
+      "fit_seconds": 38.77356800896814,
+      "inference_seconds": 1.349154649011325,
+      "total_seconds": 40.12272569700144,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 390606,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 289048440
+    },
+    {
+      "job": "fold2023-B-seed29",
+      "fit_seconds": 39.70112963899737,
+      "inference_seconds": 1.3753601409844123,
+      "total_seconds": 41.07649152301019,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 390606,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 296860560
+    },
+    {
+      "job": "fold2023-A-seed43",
+      "fit_seconds": 38.72501207696041,
+      "inference_seconds": 1.3412078359979205,
+      "total_seconds": 40.0662213259493,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 390606,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 289048440
+    },
+    {
+      "job": "fold2023-B-seed43",
+      "fit_seconds": 41.250604232016485,
+      "inference_seconds": 1.4803957989788614,
+      "total_seconds": 42.731002465006895,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 390606,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 296860560
+    },
+    {
+      "job": "fold2024-A-seed17",
+      "fit_seconds": 40.649996207037475,
+      "inference_seconds": 1.5797935299924575,
+      "total_seconds": 42.229793236008845,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 418138,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 309422120
+    },
+    {
+      "job": "fold2024-B-seed17",
+      "fit_seconds": 42.07107749202987,
+      "inference_seconds": 1.7939070129650645,
+      "total_seconds": 43.8649874519906,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 418138,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 317784880
+    },
+    {
+      "job": "fold2024-A-seed29",
+      "fit_seconds": 40.955123410967644,
+      "inference_seconds": 1.5063680360326543,
+      "total_seconds": 42.46149342996068,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 418138,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 309422120
+    },
+    {
+      "job": "fold2024-B-seed29",
+      "fit_seconds": 43.68495639000321,
+      "inference_seconds": 1.5389442479936406,
+      "total_seconds": 45.223902670957614,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 418138,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 317784880
+    },
+    {
+      "job": "fold2024-A-seed43",
+      "fit_seconds": 39.356748586986214,
+      "inference_seconds": 1.5256750719854608,
+      "total_seconds": 40.8824258960085,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 418138,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 309422120
+    },
+    {
+      "job": "fold2024-B-seed43",
+      "fit_seconds": 42.542697830998804,
+      "inference_seconds": 1.5776586369611323,
+      "total_seconds": 44.12035821500467,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 418138,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 317784880
+    },
+    {
+      "job": "fold2025-A-seed17",
+      "fit_seconds": 40.52513829001691,
+      "inference_seconds": 1.5570723499986343,
+      "total_seconds": 42.08221395703731,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 425682,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 315004680
+    },
+    {
+      "job": "fold2025-B-seed17",
+      "fit_seconds": 41.544354245008435,
+      "inference_seconds": 1.5022066719830036,
+      "total_seconds": 43.04656376200728,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 425682,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 323518320
+    },
+    {
+      "job": "fold2025-A-seed29",
+      "fit_seconds": 39.75210739095928,
+      "inference_seconds": 1.5010081570362672,
+      "total_seconds": 41.2531178999925,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 425682,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 315004680
+    },
+    {
+      "job": "fold2025-B-seed29",
+      "fit_seconds": 41.7605565910344,
+      "inference_seconds": 1.4943559269886464,
+      "total_seconds": 43.25491498300107,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 425682,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 323518320
+    },
+    {
+      "job": "fold2025-A-seed43",
+      "fit_seconds": 41.75334502098849,
+      "inference_seconds": 1.612118710996583,
+      "total_seconds": 43.36546637502033,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 425682,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 315004680
+    },
+    {
+      "job": "fold2025-B-seed43",
+      "fit_seconds": 41.73607217503013,
+      "inference_seconds": 1.495773198956158,
+      "total_seconds": 43.23184790200321,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 425682,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 323518320
+    },
+    {
+      "job": "fold2026-A-seed17",
+      "fit_seconds": 40.26442763302475,
+      "inference_seconds": 1.0298135739867575,
+      "total_seconds": 41.29424348199973,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 302228,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 223648720
+    },
+    {
+      "job": "fold2026-B-seed17",
+      "fit_seconds": 43.462597139005084,
+      "inference_seconds": 1.0527091050171293,
+      "total_seconds": 44.51530871598516,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 302228,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 229693280
+    },
+    {
+      "job": "fold2026-A-seed29",
+      "fit_seconds": 39.30055911297677,
+      "inference_seconds": 1.103034759988077,
+      "total_seconds": 40.403596032003406,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 302228,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 223648720
+    },
+    {
+      "job": "fold2026-B-seed29",
+      "fit_seconds": 42.76788244099589,
+      "inference_seconds": 1.1406385370064527,
+      "total_seconds": 43.908522869984154,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 302228,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 229693280
+    },
+    {
+      "job": "fold2026-A-seed43",
+      "fit_seconds": 40.87500675098272,
+      "inference_seconds": 1.09036912600277,
+      "total_seconds": 41.96537791698938,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 302228,
+      "fit_matrix_bytes": 370000000,
+      "eval_matrix_bytes": 223648720
+    },
+    {
+      "job": "fold2026-B-seed43",
+      "fit_seconds": 41.849870581005234,
+      "inference_seconds": 1.1664541329955682,
+      "total_seconds": 43.016327355988324,
+      "peak_rss_kib": 1411340,
+      "rows_fit": 500000,
+      "rows_eval": 302228,
+      "fit_matrix_bytes": 380000000,
+      "eval_matrix_bytes": 229693280
+    }
+  ],
+  "job_manifest_sha256": {
+    "fold2015-A-seed17": "e558349f6a26fe6832047f072441613d0b39f8329d5e1e0f05ec2a8cb4d4e1b0",
+    "fold2015-B-seed17": "5e8ff45c55f7fdf41b0dc106924cab17b8051b194254efaf1d9c24e1610bf24a",
+    "fold2015-A-seed29": "032304484dc061820531d307f65f5ca5999f376eed9a2804abbb60f08aeea115",
+    "fold2015-B-seed29": "e207e30d419f7e13c4affa999225ec04c8e1148bb893ec7ffe6db4ecf1418e04",
+    "fold2015-A-seed43": "8f5e89b274bf8f9c23a7230f9eb7dd604f1d5d5d467817a7afd06808ef38a9ee",
+    "fold2015-B-seed43": "2629608ea5dfcd528541fa6821facc6ac6f53af4bd93973d0dd3f1a8d0c3a495",
+    "fold2016-A-seed17": "df966c4113959113d9634ab016424f9eb99249f77c6af719d733e56aa950e5a6",
+    "fold2016-B-seed17": "22259f79945e5587b7f11a53738b94868a18c401fc8d97122a6dfd3ad1c981ed",
+    "fold2016-A-seed29": "4b4d2e6763b6465596a760fc54cb5b16b872c064860306923fb4924d24291ed2",
+    "fold2016-B-seed29": "6d03dfd84b23ba4d386606232ca1f07a15ab586ee01c58f7ad9ac487b1c22566",
+    "fold2016-A-seed43": "e04ad67df6297c45618f2d7af42a9f02b54d4952820e3905e60696e85150a349",
+    "fold2016-B-seed43": "2e8d59169618a65c955946d6dc7216a9970deefc6292c6e59d47191ba2cdd7f1",
+    "fold2017-A-seed17": "f8f9235b2769e00b7ad04e225537a7fb50834fd7c94aa69e5b71bea7a1db416f",
+    "fold2017-B-seed17": "bd11f8f10780e39323e6cac3a62b7318667d2070ccc458657ee848d29658cb7e",
+    "fold2017-A-seed29": "1bdf0b79ac735052782d969c98a4478933912fa8b948272040e7303fdb931ff0",
+    "fold2017-B-seed29": "0051a98b8861de79b4fc8e83809e96462a6b48dacb0696ca56a02724446fdf4b",
+    "fold2017-A-seed43": "034b3789866b310ae76c87fe7af256850ecdb55c5edf8572c4914cdd99688dca",
+    "fold2017-B-seed43": "de7fdb142f76cfaf87af5142b625aa71be59952efbc490d42b47da6683ddec84",
+    "fold2018-A-seed17": "9b0ae0df1f7f35b5fe6f7a6671d95f74d1d34e3180ced2eba6a8df66215a573d",
+    "fold2018-B-seed17": "340189efd10f68ee0c9b196e45bdfed73f379765f10b7fb61289fea1232afaa2",
+    "fold2018-A-seed29": "ada01a8ae251127fdd6a56bd328844745312eb118d1ec99d3ce68da62e1da881",
+    "fold2018-B-seed29": "6a6850d21e8ef236af6b6809da0a59aaeadad6032760992a15ef29bf731ca807",
+    "fold2018-A-seed43": "e174f1ed1491eee74970ac0a6227eac54fcf24f8a0484adb0fe7ce2e8e7f3fbb",
+    "fold2018-B-seed43": "d68ed1c92da5a76b9ccc1f0e7455fc751516a8529394debb9da14017f40bc730",
+    "fold2019-A-seed17": "642e24d88e20d7b67425a494b9451d23309482a19b165c9fe9e4494b1c4c71ba",
+    "fold2019-B-seed17": "4627c29ab18140ea7fd9c1f531d391990457b6d23e26da58ca4e0d063ada24f9",
+    "fold2019-A-seed29": "cea264218d7c609d816bcd5035050125961b3fb0e03f45baec98e9ea03f59c08",
+    "fold2019-B-seed29": "f266a1db0d9b0ce5fd2d8816ae0221f1fc15adfe1a12b062e1352d1720408796",
+    "fold2019-A-seed43": "3b379fffb3a1e115766c97d8aba9077f7b74a4884de393ed6ffc46afea733f3c",
+    "fold2019-B-seed43": "137dd68252b5ee58d91aadfce8784cf641c616ba248a7239847f721163a242b4",
+    "fold2020-A-seed17": "8144f4041e37c776d9db0f9f5c241cd65c0d1e6b8897c70bbe463a967bc3f607",
+    "fold2020-B-seed17": "e79759fc5ce6f943528a2c86bd718a934b034d0d4e7f21d800694cc0d8001dc1",
+    "fold2020-A-seed29": "4d19d73aa03a210cee91bb2ed63da298ecb9e4769b47a39002200355160a960c",
+    "fold2020-B-seed29": "93f45ae7e1d2e0364f37f205e2e7e1fa4b8e9cb40dcc5f192cbc420e8c172780",
+    "fold2020-A-seed43": "959d5229b3609c10a59324889eabefecc1981d66fb66a61edefe2c36a0461f2a",
+    "fold2020-B-seed43": "74e238d08f27f548a535da295fdb602a2cde9a102cf1c2659ae3cce16a593efa",
+    "fold2021-A-seed17": "67d5a69730aba9040bd0cacb5c5d38eb19e412e1fdf089d64b4eba176bdfb6a9",
+    "fold2021-B-seed17": "968dbe01ab3ea8964a5268ad9b10574f8fbfbfc18a560924a8e6c13f6932c8d6",
+    "fold2021-A-seed29": "87b4c7e7ad4ff2d100283d0ea616a6e542d895ea2af7afe49dff048004818741",
+    "fold2021-B-seed29": "a3a94a2b7976fa5001f801301bc501aed680d9664992d50b74877ca7790d8c08",
+    "fold2021-A-seed43": "d355e3f6216a04315c2c7b46168894a3924e1c0e77aadb0c3b2c414c66c20acc",
+    "fold2021-B-seed43": "673815896322be19ca85adcfcd835705c274a3d70ebc3f5b38581e97f7fab0ca",
+    "fold2022-A-seed17": "4faf5a1aa85de65f5644795901c1761830397c8a4ede1668c26aa10db18c959b",
+    "fold2022-B-seed17": "7cb9c39813bcdb2fe1e9abc7835ebf60635a895cd4bb1dff84536a59b9f7aa02",
+    "fold2022-A-seed29": "fe71d7c64a8d696732fa86387d03e1bf4871afdbf5083c62d8200b443ccd85dd",
+    "fold2022-B-seed29": "38486b8136557aa11b7118679c9a10db315421bba86689fdf5e37daacd90e12d",
+    "fold2022-A-seed43": "ea79ffd1ef2fd197dcea425834abfd212d25fad7e83f2f00e08819a618e0692f",
+    "fold2022-B-seed43": "9ae3e08270e6cfeae9848da04315519dfd06b76911e0fa05b116b06e50c23fc5",
+    "fold2023-A-seed17": "e24771bc14709def8861c8b36380865403597a89aa8c823cca6af0988e2b16bf",
+    "fold2023-B-seed17": "7c307757acea4016d6081223e45f59a3a50f7efc8bcf04700c73ef5ae7c86db1",
+    "fold2023-A-seed29": "eaaf2e4b0bf6d0ce1ded414f83da22515e832c194e185e2ef0444487b4f75a81",
+    "fold2023-B-seed29": "667ac437cdbb19f81643f5f55d3f129a1c04519a85fe42f3c1aaf4979c566667",
+    "fold2023-A-seed43": "216458098f24063f3e7b4f0d7ddd37f4ee3c14b6f8d16ba62265c9d03b769783",
+    "fold2023-B-seed43": "b9c1dc4113e5fd5ba592070797a635169b77a86192f52d58958150e17b2d1037",
+    "fold2024-A-seed17": "33098f9839327f3390e4308f39ca66c6cb60ef81e30b2e47c3964c05d0859708",
+    "fold2024-B-seed17": "60b3ce48045248c1ac8f6bfc78ab47ed8a13af61c9b4437eb40cf7ebff262347",
+    "fold2024-A-seed29": "a45b8d2e1695eec14c058729494a58ff109555345c325e6aa4d67fa00e694af7",
+    "fold2024-B-seed29": "b746d9a0f069de0c482e1749724e290ec58c7622460f5f5c646bb22e52bf97e3",
+    "fold2024-A-seed43": "aa18964b2b0e171c38a505fcd61f9d1b088d9942bc2ea7a8737234b0afa50cd2",
+    "fold2024-B-seed43": "391d51ee1425881da421ace88f0011a5a66c645ac66d90ee8d7d2eb9ed8253fb",
+    "fold2025-A-seed17": "d8cef33ad95f0d9cee5393566ad9594bf511366adf24880dfbc5ca4743b2ebbe",
+    "fold2025-B-seed17": "f13e61c565cb9c7092ab1e27ce38907d9f87b9679e18ff622d36fbf38d6f2d5b",
+    "fold2025-A-seed29": "57b713c217ef86c6096f4cced7c52087ae84fe19b8aeff04115eb3fd78c98684",
+    "fold2025-B-seed29": "b9ade0accf3b90caa6ecb51233b1fa16a3525fdac671404af0650b83f42e5a7b",
+    "fold2025-A-seed43": "becf55913d6d60871737aaefefb44182328dd7ee5ecca65e5e0b3f41cbc67c1b",
+    "fold2025-B-seed43": "ec164e3ef15c10389c5244634384910e43099d7f44d9c8c0fa80947023d2ecdb",
+    "fold2026-A-seed17": "fe033ff0574cf88d5698752dce75d02ef97e80349988e4257eb64d39ed28ce2d",
+    "fold2026-B-seed17": "976d60a617d9d963ca7abfd18e0f39e04b79658cee2a4f1adc8260c7a121a07d",
+    "fold2026-A-seed29": "e9123649795a140e1c7a79cf605c3ca0618f1ece130220f17443e4588e8d5880",
+    "fold2026-B-seed29": "41dffb6eae3e93eb21751c1757b7f4e440583acbe21b8738f73e93bd08138f01",
+    "fold2026-A-seed43": "381219144b93dc5cfc8665e042ba139f3a6264219afdbaff2698813c51c98eb6",
+    "fold2026-B-seed43": "1279965b9de5d4efce91721e5d04020ac3c10770a88a5d1b264e8ab366d95980"
+  },
+  "period_signal_bounds": {
+    "2015-2020": {
+      "first_scheduled": "2015-01-05",
+      "last_scheduled": "2020-12-31",
+      "last_valid": "2020-12-31"
+    },
+    "2021-2026": {
+      "first_scheduled": "2021-01-04",
+      "last_scheduled": "2026-09-11",
+      "last_valid": "2026-08-21"
+    }
+  }
 }
