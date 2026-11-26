@@ -1,7 +1,7 @@
 """Offline WP3 peer data replay; no labels, forward returns or IC.
 
-Licensed row outputs ONLY under checkout .artifacts/peer/. Snapshot histories
-with unknown direction fail closed; engineering replay never confers strict PIT.
+Licensed rows ONLY under .artifacts/peer/. Documented industry effective-date
+histories are research classifications, never publication-time or strict PIT.
 """
 from __future__ import annotations
 
@@ -18,9 +18,9 @@ import numpy as np
 import pandas as pd
 
 from tools import tej_pit
-from tools.forward_wp1 import history, field, tej_date, load_lifecycle
+from tools.forward_wp1 import history, field, tej_date, load_lifecycle, Stop
 
-EVIDENCE = 'SNAPSHOT_DERIVED_PARTIAL_RESEARCH_REPLAY'
+EVIDENCE = 'DOCUMENTED_EFFECTIVE_DATE_HISTORICAL_RESEARCH_REPLAY'
 MIN_PEERS = 3
 PRIMARY = 'tej_subindustry'
 CHOICE = ('TEJ子產業較細，且2958檔中1934檔無變更紀錄，優於TSE的1622檔；'
@@ -44,27 +44,92 @@ def code(value):
     return token if token.startswith('M') else 'M'+token
 
 
-def industry_asof(row, day, dimension):
-    """Return historical code and limitation, never assume change-value direction.
+def validated_history(row, dimension):
+    """Newest-first raw history. Effective dates are never publication dates.
 
-    Explicit NEW_VALUE is a normalized, externally verified input contract. Raw
-    TEJ snapshots do NOT supply it. Even that contract lacks known_at here.
+    Industry NEW_VALUE semantics are Human-confirmed against the pinned TEJ
+    document (whose descriptions are displaced one HTML row). Market semantics
+    have no such authority: this function only audits their candidate direction.
     """
     current_key, first_key = (('TSE產業_代碼','首次掛牌TSE產業') if dimension=='industry'
                               else ('TEJ子產業_代碼','首次掛牌TEJ子產業'))
-    first, current = code(field(row,first_key)), code(field(row,current_key))
-    changes = history(row,dimension)
+    normalize=code
+    if dimension=='market':
+        current_key,first_key='上市別','首次掛牌市場'
+        normalize=lambda v:v.split()[0] if v else None
+    first,current=normalize(field(row,first_key)),normalize(field(row,current_key))
     if row.get('snapshot_conflict'):
-        return None, 'SNAPSHOT_CONFLICT'
+        return None, [], 'SNAPSHOT_CONFLICT'
+    try:
+        changes=history(row,dimension)
+        start=tej_date(row,'首次掛牌日期')
+    except (ValueError, Stop):
+        return None, [], 'INVALID_HISTORY_DATE'
     if not changes:
-        return (current,'KNOWN_AT_UNKNOWN') if current and current==first else (None,'INITIAL_CURRENT_CONFLICT_OR_MISSING')
-    if row.get('_'+dimension+'_value_direction') != 'NEW_VALUE':
-        return None, 'INDUSTRY_HISTORY_DIRECTION_UNKNOWN'
-    if not first or any(not c['effective_date'] or not code(c['reported_value']) for c in changes):
-        return None, 'INCOMPLETE_HISTORY'
+        return first, [], 'OK' if first and first==current else 'INITIAL_CURRENT_CONFLICT_OR_MISSING'
+    if dimension!='market':
+        for event in changes:event['value_direction']='NEW_VALUE'
+    if not first or not current or any(not c['effective_date'] or not normalize(c['reported_value']) for c in changes):
+        return None, changes, 'INCOMPLETE_HISTORY'
     dates=[c['effective_date'] for c in changes]
-    if len(set(dates)) != len(dates):
-        return None, 'CONFLICTING_CHANGE_DATES'
+    if any(dates[i]<=dates[i+1] for i in range(len(dates)-1)):
+        return None, changes, 'CHANGE_DATES_NOT_DESCENDING'
+    if start and min(dates)<start:
+        return None, changes, 'CHANGE_BEFORE_FIRST_LISTING'
+    if normalize(changes[0]['reported_value'])!=current:
+        return None, changes, 'LATEST_CURRENT_MISMATCH'
+    return first,changes,'OK'
+
+
+def audit_histories(book, output):
+    """Aggregate public diagnostics; licensed per-stock evidence stays private."""
+    records=[];summary={}
+    for dim in ['industry','tej_subindustry','market']:
+        counts=Counter();reasons=Counter()
+        for stock,row in book.rows.items():
+            first,h,reason=validated_history(row,dim)
+            reasons[reason]+=1
+            if h:
+                normalize=(lambda v:v.split()[0] if v else None) if dim=='market' else code
+                current=field(row,{'industry':'TSE產業_代碼','tej_subindustry':'TEJ子產業_代碼','market':'上市別'}[dim])
+                dates=[c['effective_date'] for c in h]
+                counts['changed_stocks']+=1
+                counts['latest_current_mismatches']+=int(normalize(h[0]['reported_value'])!=normalize(current))
+                counts['date_order_failures']+=int(any(not d for d in dates) or any(dates[i]<=dates[i+1] for i in range(len(dates)-1)))
+            records.append({'stock_id':stock,'dimension':dim,'initial':first,'history':h,'validation':reason})
+        n=counts['changed_stocks']
+        summary[dim]={**counts,'validation_reasons':dict(reasons),
+                      'latest_current_mismatch_fraction':counts['latest_current_mismatches']/n if n else None,
+                      'date_order_failure_fraction':counts['date_order_failures']/n if n else None}
+    # Pin the document's 6161 example as an oracle, never repair raw snapshots.
+    row=book.rows.get('6161');checks=[]
+    if row:
+        checks=[code(field(row,'首次掛牌TEJ子產業'))=='M23B1',
+                tej_date(row,'首次掛牌日期')=='2002-01-02']
+        expected=[('2007-07-30','M23B4A'),('2005-08-16','M23B4'),('2005-03-09','M23B5')]
+        h=history(row,'tej_subindustry')
+        for i,(day,value) in enumerate(expected):
+            checks.extend([len(h)>i and h[i]['effective_date']==day,
+                           len(h)>i and code(h[i]['reported_value'])==value])
+        checks.append(len(h)==len(expected))
+        if not all(checks):row['_tej_subindustry_document_conflict']=True
+        (output/'document-example-6161.json').write_text(json.dumps(
+            {'expected':expected,'actual_row':row,'checks':checks,'known_at':'UNKNOWN'},ensure_ascii=False,indent=2)+'\n')
+    summary['document_example_6161']={'present':row is not None,'checks':len(checks),
+        'passed':sum(checks),'failed':len(checks)-sum(checks),'policy':'EXCLUDE_ON_DOCUMENT_MISMATCH'}
+    # No undocumented global direction inferred from a partially passing sample.
+    summary['market']['value_direction']='UNKNOWN'
+    summary['market']['usage']='NO_CHANGED_MARKET_HISTORY_USED'
+    (output/'history-validation.json').write_text(json.dumps(records,ensure_ascii=False,indent=2)+'\n')
+    return summary
+
+
+def industry_asof(row, day, dimension):
+    first,changes,reason=validated_history(row,dimension)
+    if row.get('_'+dimension+'_document_conflict'):
+        return None,'DOCUMENT_EXAMPLE_MISMATCH'
+    if reason!='OK':
+        return None,reason
     result=first
     for c in sorted(changes,key=lambda x:x['effective_date']):
         if c['effective_date']<=str(day):
@@ -75,17 +140,19 @@ def industry_asof(row, day, dimension):
 def market_asof(row, day):
     """Conservative subset of WP1 lifecycle semantics; terminal day is unknown."""
     day=str(day)
-    start,end=tej_date(row,'首次掛牌日期'),tej_date(row,'下市日期')
-    if row.get('snapshot_conflict') or not start:
+    dates=[tej_date(row,k) for k in ['TSE上市日','OTC上市日'] if field(row,k)]
+    start,end=min(dates) if dates else None,tej_date(row,'下市日期')
+    if row.get('snapshot_conflict'):
         return False,'LIFECYCLE_UNKNOWN'
+    if not start:
+        return False,'MARKET_OR_LISTING_UNKNOWN'
     if day<start:
         return False,'NOT_LISTED'
     if end and day>=end:
         return False,'DELISTING_ENDPOINT_UNKNOWN' if day==end else 'DELISTED'
     if history(row,'market'):
         return False,'MARKET_HISTORY_DIRECTION_UNKNOWN'
-    dates=[tej_date(row,k) for k in ['TSE上市日','OTC上市日'] if field(row,k)]
-    known=(dates and min(dates)<=day) or (field(row,'首次掛牌市場') in ('TSE','OTC') and field(row,'首次掛牌市場')==field(row,'上市別'))
+    known=dates and min(dates)<=day
     return (True,'SNAPSHOT_DERIVED') if known else (False,'MARKET_OR_LISTING_UNKNOWN')
 
 
@@ -190,7 +257,7 @@ def dist(series):
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source-root',type=Path,default=Path('/home/frank/projects/MarketMamba'))
-    parser.add_argument('--output',type=Path,default=Path('.artifacts/peer/replay-20261126'))
+    parser.add_argument('--output',type=Path,default=Path('.artifacts/peer/replay-v2-20261127'))
     args=parser.parse_args(argv); start=time.monotonic(); output=private_output(args.output)
     source=args.source_root.resolve(); raw=source/'.artifacts/tej/raw'
     inputs={}
@@ -199,7 +266,12 @@ def main(argv=None):
     # Supplement is authorized by the separate checksum file; NEVER rewrite originals.
     basic=raw/'月營收盈餘_基本資料補充_2013_2026_export20261126.zip'
     sums=raw/'SHA256SUMS.20261126'; original=raw/'SHA256SUMS'
-    for p in [basic,sums,original]:identity(p)
+    doc=raw/'docs/company_basic_field_doc.html';doc_sums=raw/'docs/SHA256SUMS'
+    for p in [basic,sums,original,doc,doc_sums]:identity(p)
+    if tej_pit.sha256(doc)!='e49283d66edab4470d683dfe134bb04363cede05776fb3321c77d8aab484af92':
+        raise ValueError('STOP company basic field document identity mismatch')
+    if f'{tej_pit.sha256(doc)}  {doc.name}' not in doc_sums.read_text().splitlines():
+        raise ValueError('STOP field document checksum record mismatch')
     book,lifecycle_summary=load_lifecycle(basic,sums)
     monthly_path=raw/'monthly_revenue_2013_2026_export20261125.zip';identity(monthly_path)
     # Read only first single-month value and its date; never last-year/export YoY columns.
@@ -232,11 +304,21 @@ def main(argv=None):
     output.mkdir(parents=True)
     events.to_parquet(output/'revenue-events.parquet',index=False)
     (output/'lifecycle-history.json').write_text(json.dumps([book.describe(c) for c in codes],ensure_ascii=False,sort_keys=True)+'\n')
-    # Precompute per-stock invariant classification; raw direction is unknown.
+    history_audit=audit_histories(book,output)
+    # Build piecewise historical classification once, then slice by session.
     base=pd.DataFrame({'stock_id':codes}).set_index('stock_id')
+    historical={}
     for dim in ['industry','tej_subindustry']:
-        pairs=[industry_asof(book.rows[c],days[0].date().isoformat(),dim) for c in codes]
-        base[dim]=[v for v,r in pairs];base[dim+'_reason']=[r for v,r in pairs]
+        values=np.full((len(days),len(codes)),None,object);reasons=[]
+        for j,c in enumerate(codes):
+            row=book.rows[c];first,changes,reason=validated_history(row,dim)
+            if row.get('_'+dim+'_document_conflict'):reason='DOCUMENT_EXAMPLE_MISMATCH'
+            reasons.append('KNOWN_AT_UNKNOWN' if reason=='OK' else reason)
+            if reason!='OK':continue
+            values[:,j]=first
+            for event in reversed(changes):
+                values[days>=event['effective_date'],j]=code(event['reported_value'])
+        historical[dim]=values;base[dim+'_reason']=reasons
     static={c:book.rows[c] for c in codes}
     # As-of lifecycle mask via stock intervals: reproduce conservative WP1 rules.
     eligible=np.zeros((len(days),len(codes)),bool);candidate=np.zeros_like(eligible)
@@ -244,14 +326,14 @@ def main(argv=None):
     for j,c in enumerate(codes):
         row=static[c]; first=tej_date(row,'首次掛牌日期');end=tej_date(row,'下市日期')
         entries=[tej_date(row,k) for k in ['TSE上市日','OTC上市日'] if field(row,k)]
-        if not first or row.get('snapshot_conflict'):continue
-        entry=min(entries) if entries else (first if field(row,'首次掛牌市場') in ('TSE','OTC') else None)
+        if row.get('snapshot_conflict'):continue
+        entry=min(entries) if entries else None
         if not entry:continue
-        candidate[:,j]=(days>=max(first,entry)) & ((days<end) if end else True)
+        candidate[:,j]=(days>=entry) & ((days<end) if end else True)
         if history(row,'market'):
             market_reasons[:,j]='MARKET_HISTORY_DIRECTION_UNKNOWN'
         else:
-            known_entry=(entries or field(row,'首次掛牌市場')==field(row,'上市別'))
+            known_entry=bool(entries)
             if known_entry:
                 eligible[:,j]=candidate[:,j];market_reasons[candidate[:,j],j]='SNAPSHOT_DERIVED'
     counts={k:Counter() for k in ['return_reason','revenue_reason','return_peer_count','revenue_peer_count']}
@@ -264,6 +346,7 @@ def main(argv=None):
         year=day.year
         m=base.copy();m['eligible']=eligible[i];m['market_reason']=market_reasons[i]
         for dim in ['industry','tej_subindustry']:
+            m[dim]=historical[dim][i]
             g=m.loc[m.eligible,dim].dropna();sizes=g.value_counts()
             known=len(g);n=int(m.eligible.sum())
             different=sum(v!=first_codes[dim][c] for c,v in g.items())
@@ -306,8 +389,8 @@ def main(argv=None):
                 'early_announcer_peer_fraction':float(num/denom) if denom else None,
                 'unannounced_target_member_sessions':int((~g.target_revenue_available).sum())})
     limitations=[
-        'STRICT_PIT_STOP：snapshot known_at、產業／市場變更值方向及下市日端點UNKNOWN；變更股票不推定歷史分類／市場。',
-        '僅無變更且首次／現況一致分類的部分重建；無法交付完整歷史成員。分類不同率僅可識別子集及全體上下界，不以0宣稱無變更。',
+        'STRICT_PIT_STOP：known_at UNKNOWN；啟用日不等於公告日。市場變更方向未通過全體驗證，維持UNKNOWN；下市當日保守排除。',
+        '產業依Human確認的變更後新分類語義及啟用日分段重建；最新值／現況、日期或文件範例不一致者留缺。僅研究歷史分類，非完整歷史成員或公告PIT認證。',
         '歷史TEJ首次單月值依原資料說明作受限代理；公司逐期首次版本、合併可比性及實收時間未獨立驗證。',
         '價格為frozen raw價差、非含息；公司行動未完整驗證，沿用OHLCV有效性與>35%異常遮罩，不授交易資格。',
         '日曆為observed price-date union歷史研究代理，非官方前瞻日曆；缺價與未入價格快照者仍保留分母。',
@@ -325,7 +408,10 @@ def main(argv=None):
     for path in inputs:
         if tej_pit.sha256(path)!=inputs[path]['sha256']:raise ValueError('STOP input changed during replay')
     outputs={p.name:{'sha256':tej_pit.sha256(p),'bytes':p.stat().st_size} for p in sorted(output.iterdir()) if p.is_file()}
-    result={'schema':'peer-proxies-data-v1','status':'PARTIAL_REPLAY_COMPLETE_STRICT_PIT_STOP',
+    before=json.loads(Path('reports/peer_proxies_data_20261126.json').read_text())['coverage']
+    result={'schema':'peer-proxies-data-v2','history_audit':history_audit,'coverage_before':before,
+        'coverage_change':{k:int(valid_counts[k]-before[k]) for k in valid_counts},
+        'status':'PARTIAL_REPLAY_COMPLETE_STRICT_PIT_STOP',
         'state':['RESEARCH_ONLY','UNMERGED','NOT_DEPLOYED','NOT_ACCEPTED'],'evidence_class':EVIDENCE,
         'primary_classification':PRIMARY,'classification_choice_reason':CHOICE,'minimum_peers':MIN_PEERS,
         'source_commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
@@ -342,7 +428,7 @@ def main(argv=None):
     public={k:v for k,v in result.items() if k not in ['inputs','outputs','implementation','monthly_early_announcers']}
     public['private_manifest_sha256']=tej_pit.sha256(output/'manifest.json')
     public['monthly_early_announcers']=aggregates
-    report=Path('reports/peer_proxies_data_20261126.json')
+    report=Path('reports/peer_proxies_data_v2_20261127.json')
     if report.exists():raise ValueError('STOP report exists')
     report.write_text(json.dumps(public,ensure_ascii=False,indent=2,allow_nan=False)+'\n')
     print(json.dumps({k:public[k] for k in ['status','sessions','coverage','elapsed_seconds']},ensure_ascii=False),flush=True)

@@ -59,6 +59,12 @@ current pointer只選經三seeddurable reverify與bitwise round-trip的完整版
 
 [報告](../../reports/forward_wp3_20261126.md)記唯一真實reference inventory **STOP_INCOMPLETE_REFERENCE**：prepared/shared缺masks.npy，X符合外層P4 DATASET_MANIFEST但不符內層舊header。沒有選邊覆寫、修manifest或代造mask；真實185欄／score／全量延伸未驗。原reference與audit-source SHA存私有forward namespace，不supersede任何歷史artifact／P1／WP1–WP2 gate／source或production authority。Next為獨立review與同版本mask／vintage evidence；沒有runtime／scheduler／部署／Human接受的authority變更。
 
+## 同業代理 v2 研究分類邊界 — 2026-11-27 交付名
+
+Human 本輪 EXECUTE_APPROVED 明示前N次產業變更是**該次變更後的新分類**、前一次為最近一次、變更日為啟用基準日；與 pinned TEJ公司基本資料文件 `e49283d66edab4470d683dfe134bb04363cede05776fb3321c77d8aab484af92` 的完整6161例子合併解讀，HTML欄位說明錯位不能作機械逐列映射。此限定解讀更新下方v1候選的「產業方向未知」現況，不改WP1、正式contracts或production authority。[v2工具](../../tools/peer_proxies.py)／[測試](../../tests/test_peer_proxies.py)／[報告](../../reports/peer_proxies_data_v2_20261127.md)及[彙總](../../reports/peer_proxies_data_v2_20261127.json)是 `builder_peer_v2@cb74875` no-commit **UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED** 候選；舊報告保留historical evidence，沒有正式authority supersession。
+
+產業逐檔驗最新值、完整性與時序，衝突留缺；6161 raw與文件5項不符亦留缺、不重寫raw或猜分類映射。市場方向仍UNKNOWN（131／1591 latest mismatch），所有有市場變更紀錄者不推定資格；上市入口只用TSE／OTC日期，下市當日排除仍不授可成交終日。啟用日≠公告日，known_at UNKNOWN、**strict PIT STOP**；歷史分類／覆蓋改善不能授正式特徵、前瞻PIT、完整universe或交易資格。無模型／標籤／IC、無production／scheduler authority或外部observed_at更新；獨立review及Human acceptance待辦。
+
 ## 同業代理工作包3資料層候選 — 2026-11-26
 
 [核准整合規劃§C／D／E](../../tasks/plan-fundamentals-supplychain-integration-20261126.md)是本輪工作包3範圍依據；[工具](../../tools/peer_proxies.py)／[測試](../../tests/test_peer_proxies.py)及[報告](../../reports/peer_proxies_data_20261126.md)是 `job-run-mwx9y2gu-4a162b/builder_peer_proxies@d8362c0` 的未提交 **UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED** 候選。只提供受限歷史資料層回放，非正式特徵准入、前瞻PIT、交易或production authority；不supersede原48欄、C0+、P4d、第三步、WP1或任何既有研究結果。

@@ -63,6 +63,16 @@ WP1 calendar／PIT／lifecycle、WP2 seed17 bitwise、WP3真實mask／provenance
 
 最終focused／相關regression152 passed／46.96秒、2／2 source mutations killed，含未來X／universe／poisoned labels、真實SIGKILL與partial拒絕。唯一真實掃描4檔、7,423,927×48，6.0373秒／程序8.31秒／RSS1,696,492 KiB，**exit2／STOP_INCOMPLETE_REFERENCE**：prepared缺原始masks.npy；實測X SHA9778392d…符合外層P4 dataset manifest，與內層沿用舊manifest的67358805…不同。未代造mask、未改來源／manifest；真實185欄／scores／全量延伸成本尚未驗。Next：獨立review並定位同版本mask／vintage chain；WP1來源STOP與WP2 seed17裁定保留。完成不是Human acceptance。無網路／GPU／agents／blind／正式Data／V6/models／TEJ SHA256SUMS／P4d／第三步／production／scheduler寫入、無commit／push／merge／deploy或外部observed_at更新。初輪matrix regression曾以TemporaryDirectory寫合成/tmp，最終命令已將TMPDIR／basetemp限定forward；偏離與全部限制見報告。
 
+## 同業代理歷史分類 v2 候選 — 2026-11-27 交付名（實跑 2026-11-26）
+
+`job-run-mwxpr1uz-1aaf65/builder_peer_v2`，既有 detached base `cb748759171cca1949fc4d338348060239eb09ae`、初始 clean，Human EXECUTE_APPROVED／no-commit。**RESEARCH_ONLY / STRICT_PIT_STOP / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[v2 報告](../../reports/peer_proxies_data_v2_20261127.md)／[彙總](../../reports/peer_proxies_data_v2_20261127.json)記錄[工具](../../tools/peer_proxies.py)與[測試](../../tests/test_peer_proxies.py)的限定變更：Human 確認產業欄為變更後新分類、前一次為最近一次，以首次分類及啟用日分段，不能視為公告已知日。文件 SHA `e49283d6…`／raw docs checksum 唯讀，HTML 一列錯位依完整例子辨識，不逐列猜映射。
+
+TEJ 子產業 1024 檔變更者 latest/current 0 mismatch、日期排序 0 fail；另 23 檔事件早於首次掛牌、87 檔初始／現況缺失或衝突留缺。6161 與文件 9 項核對 5 不符（四分類碼、一日期），不改 raw，另留缺；共111檔未知分類。TSE 1336 檔變更者 latest mismatch10／0.7485%，日期排序0 fail，其他 gate 原因詳報告。市場1591檔變更者131／8.2338% latest mismatch，日期排序全過仍不足證明方向，維持UNKNOWN、有市場變更者不推定資格；入口只認TSE／OTC上市日，下市當日保守排除。
+
+3392 sessions／5,805,094候選日股鍵，1a由912,976至**1,386,995**、1b由33,974至**56,481**；市場已知2,043,542不變，不能把其TEJ分類全已知升格為全市場歷史完整。價格／營收時鐘、排除自身、≥3家均不變；known_at UNKNOWN、strict PIT STOP。27 passed／3.19秒；8輸入／6實作／20產物hash及5,805,094唯一鍵重驗，三日10,324分類／5,162市場與代理值oracle通過，2 source mutants killed。逐列與比對只在本worktree `.artifacts/peer/replay-v2-20261127/`，無標籤／blind／IC；作者自查非獨立review或Human acceptance。無GPU／網路／agents／正式Data／V6/models／P4d／帳本／第三步bundle／原raw與SHA／production／scheduler變更，無commit／push／merge／deploy／wakeup；runtime與治理結果詳報告。Next：獨立review與Human決定受限研究用途；市場／6161差異／publication PIT另案補證。
+
+本節更新下方舊同業工作包段落對**產業變更值方向及代理覆蓋**的現況敘述；舊報告保留歷史紀錄。其他authority、production及PIT STOP不變。
+
 ## 同業代理工作包3資料層候選 — 2026-11-26
 
 `job-run-mwx9y2gu-4a162b/builder_peer_proxies`，既有detached base `d8362c055e68609aa4f5cf327cc5888f9d08699a`，起始clean，Human核准整合規劃§C／D／E工作包3，no-commit。**PARTIAL_RESEARCH_REPLAY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。[工具](../../tools/peer_proxies.py)、[合成測試](../../tests/test_peer_proxies.py)、[報告](../../reports/peer_proxies_data_20261126.md)與[彙總JSON](../../reports/peer_proxies_data_20261126.json)只交同業落後價差／營收先公告資料層，逐列及manifest只在本worktree `.artifacts/peer/`，不串接P4d、第三步或正式矩陣。沿用tools／tests／reports與既有project map；既有流程沒有本包無標籤同業日表，因此新增單一工具，不另建頂層實驗樹。

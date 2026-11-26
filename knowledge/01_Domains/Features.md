@@ -10,11 +10,11 @@
 
 真實完整reference **STOP**：prepared缺原始masks.npy，zero-filled X無法反推；X實測identity符合外層P4 dataset inventory，內層舊manifest另列不同版本。一次唯讀hash／RSS evidence見[報告](../../reports/forward_wp3_20261126.md)；真實185欄與daily延伸未驗，不能推定PIT／來源准入或放寬舊bytes gate。沒有修改正式48欄schema、歷史artifact、Data、P4d或第三步bundle。
 
-## 同業代理工作包3 — 2026-11-26
+## 同業代理工作包3／歷史分類 v2 — 2026-11-27 交付名
 
-[資料層報告](../../reports/peer_proxies_data_20261126.md)／[實作](../../tools/peer_proxies.py)是未提交UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED候選；無正式特徵或資料准入。TEJ子產業依粒度及未列變更紀錄比例選主分類，兩套每日分類皆留unknown。首次與現況一致且無變更才重建穩定分類；raw產業／市場變更值方向未知，完整歷史成員及known_at仍STOP，不把現況分類倒填歷史。上市入口與下市端點採WP1保守子集，下市當日排除；價格缺失不移除已識別成員分母。
+[v2報告](../../reports/peer_proxies_data_v2_20261127.md)／[彙總](../../reports/peer_proxies_data_v2_20261127.json)／[實作](../../tools/peer_proxies.py)是no-commit **UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED** 候選；[v1](../../reports/peer_proxies_data_20261126.md)保留歷史紀錄。Human確認TEJ／TSE產業變更欄是新分類、前一次最近、日期為啟用日，從首次分類分段重建；最新值／時序／完整性／文件範例衝突留缺，不倒填現況。TEJ變更者1024檔最新值皆相符；23檔變更早於首次掛牌、87檔初始／現況不明、6161文件核對5項不符留缺。市場1591檔有131最新值不一致，方向仍UNKNOWN，有市場變更者不推定市場資格；入口只認TSE／OTC上市日，下市當日保守排除。
 
-1a以t當期同業排除本股，聚合t−1／t−2完整session raw收盤價差，至少3家；市場等權另存。1b僅上一完整曆月，首次單月值各自配去年同月，兩期發布日之後首session收盤才可用，目標可用即回缺，至少3家；跨2013/01口徑NaN。逐列、原因及分母只存私有 `.artifacts/peer/`，不修改48欄、正式Data或其他bundle；日曆／公司行動／歷史版本限制見報告。
+1a仍以t當期同業排除本股，聚合t−1／t−2完整session raw收盤價差，至少3家；市場等權另存。1b僅上一完整曆月，首次單月值配去年同月，兩期發布日之後首session收盤才可用，目標可用即回缺，至少3家；跨2013/01口徑NaN。3392 sessions／5,805,094候選日股鍵，1a=1,386,995、1b=56,481；市場已知2,043,542不變，條件式覆蓋不等於全市場完整。逐列與原因只存私有 `.artifacts/peer/`，不改48欄、正式Data／P4d／其他bundle。**known_at UNKNOWN、研究歷史分類、strict PIT STOP**；日曆、raw公司行動、營收歷史版本及市場來源限制仍保留，無標籤／blind／IC，待獨立review及Human acceptance。
 
 ## Step3c 來源待 Human 決定／完整性修補 — 2026-11-26
 

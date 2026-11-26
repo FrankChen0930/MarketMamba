@@ -51,11 +51,41 @@ def test_2013_break_and_invalid_release():
 
 def test_industry_effective_date_and_unknown_direction():
     row={'stock_id':'A','TSE產業_代碼':'M2','首次掛牌TSE產業':'M1 old','前一次TSE產業變更日':'20200103','前一次TSE產業變更':'M2 new'}
-    assert p.industry_asof(row,'2020-01-02','industry')[0] is None
-    row['_industry_value_direction']='NEW_VALUE'
     assert p.industry_asof(row,'2020-01-02','industry')[0]=='M1'
     assert p.industry_asof(row,'2020-01-03','industry')[0]=='M2'
     assert p.industry_asof(row,'2020-01-03','industry')[1]=='KNOWN_AT_UNKNOWN'
+
+
+def example_6161():
+    return {'stock_id':'6161','首次掛牌日期':'20020102',
+            '首次掛牌TEJ子產業':'M23B1 主機板','TEJ子產業_代碼':'M23B4A',
+            '前一次TEJ子產業變更':'M23B4A 繪圖卡','前一次TEJ子產業變更日':'20070730',
+            '前二次TEJ子產業變更':'M23B4 顯示卡','前二次TEJ子產業變更日':'20050816',
+            '前三次TEJ子產業變更':'M23B5 泛工業電腦','前三次TEJ子產業變更日':'20050309'}
+
+
+def test_documented_6161_segments_and_future_noninterference():
+    row=example_6161()
+    for day,expected in [('2002-01-02','M23B1'),('2005-03-08','M23B1'),
+                         ('2005-03-09','M23B5'),('2005-08-15','M23B5'),
+                         ('2005-08-16','M23B4'),('2007-07-29','M23B4'),
+                         ('2007-07-30','M23B4A')]:
+        assert p.industry_asof(row,day,'tej_subindustry')==(expected,'KNOWN_AT_UNKNOWN')
+    # Valid future event and matching snapshot must not rewrite prior segments.
+    row['前一次TEJ子產業變更']='M23ZZ';row['TEJ子產業_代碼']='M23ZZ'
+    assert p.industry_asof(row,'2006-01-01','tej_subindustry')[0]=='M23B4'
+
+
+@pytest.mark.parametrize('mutation,reason',[
+    ({'前一次TEJ子產業變更':'M23B4'},'LATEST_CURRENT_MISMATCH'),
+    ({'前二次TEJ子產業變更日':'20080101'},'CHANGE_DATES_NOT_DESCENDING'),
+    ({'前二次TEJ子產業變更日':None},'INCOMPLETE_HISTORY'),
+    ({'前二次TEJ子產業變更日':'bad'},'INVALID_HISTORY_DATE'),
+    ({'前四次TEJ子產業變更':'M23B0','前四次TEJ子產業變更日':'20010101'},'CHANGE_BEFORE_FIRST_LISTING'),
+])
+def test_history_direction_and_date_mutations_fail_closed(mutation,reason):
+    row=example_6161();row.update(mutation)
+    assert p.industry_asof(row,'2006-01-01','tej_subindustry')==(None,reason)
 
 
 def test_delisting_unknown_terminal_and_market_change():
@@ -66,6 +96,16 @@ def test_delisting_unknown_terminal_and_market_change():
     assert not p.market_asof(row,'2009-12-31')[0]
     row['前一次變更市場日期']='20190101';row['前一次變更市場']='TSE'
     assert p.market_asof(row,'2020-01-02')==(False,'MARKET_HISTORY_DIRECTION_UNKNOWN')
+
+
+def test_listing_requires_explicit_tse_otc_date():
+    row={'首次掛牌日期':'20020102','首次掛牌市場':'TSE','上市別':'TSE'}
+    assert not p.market_asof(row,'2003-01-01')[0]
+    row['OTC上市日']='20020301'
+    assert not p.market_asof(row,'2002-02-28')[0]
+    assert p.market_asof(row,'2002-03-01')[0]
+    del row['首次掛牌日期']
+    assert p.market_asof(row,'2002-03-01')[0]
 
 
 def test_price_lag_missing_session_and_future_mutation():
