@@ -1,5 +1,8 @@
 ## 第五步 5a audit 修正／5b 工程候選 — 2026-11-27
 
+**第五步歷史結果（2026-11-27，commit `2ed6091`，COMPLETE_HISTORICAL_ONLY）**：在 C0+ 加月營收（190 欄）之上，加入 4 欄月營收表示精煉（新鮮度、加速度、連續年增月數、季節調整月增），h20 IC 增量為 2015–2020 +0.000765 [−0.000671, 0.002448]、2021–2026 +0.000412 [−0.001488, 0.002350]，兩段 p 分別為 0.34 與 0.66，皆為空結果。獨立重算 GO（6 位小數吻合，`.artifacts/papers/notes/step5-results-review.md`）。72 個 fits 完成；step5 queue 與 evaluation 已完成。研究結論：月營收有效（第三步），但同業代理（第四步）與表示精煉（第五步）都沒有額外增量。下一步以前瞻確認為主，前瞻家族採分層把關（`tasks/decision-forward-family-gatekeeping-20261127.md`）。
+
+
 `builder_step5b@cbc6b76` 未提交候選，**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**；完成不等於 Human acceptance。5a 獨立 NO_GO 的當月缺值診斷已修：signed streak 每個 NaN 均記原因與左設限，四欄 7,423,927 列／118,782,832 bytes 原樣，model block SHA `29fffa7591684c947d4b59a23927c2f91ca910e8a593dfb70338afb4e7ceeba7`。舊 bundle／features 保留 `*-pre-auditfix`；主 checkout 重建 admission **ADMIT**，bundle `f7d67e3dc7dfd7ea6b1eb7b7b076d07927f7927320a4f9deaae55edd502d1169`、admission `c873e4cfd0a3992b4aca73bdabd765b663bf2c14e89cce16c2227f33cc0ba3e8`，tasks來源無worktree引用。
 
 新增 [runner](../../tools/step5_runner.py)、[queue](../../tools/run_step5_queue.py)、[evaluation](../../tools/run_step5_evaluation.py) 與[報告](../../reports/step5_engineering_20261127.md)，5b executor 獨立 pin；R-A 190／194欄、72 jobs、歷史m=1、兩段與bootstrap 20／1000／seed17不變。真實bundle只完成 `fold2015-B-seed17` 一個CPU量測（79.709秒）；未跑完整queue、真實IC／label statistics／前瞻，結果報告保持PENDING，評估須72／72 COMPLETE_VERIFIED及`--consume-placeholder`。第三步B僅工程crosscheck，不能替代重新擬合的第五步A。
