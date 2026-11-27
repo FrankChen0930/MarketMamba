@@ -1,3 +1,9 @@
+## 年報具名率盤點 — 2026-11-28
+
+本輪Human僅授固定20份盤點；[報告](../../reports/annual_report_named_rate_gate_20261128.md)及指派worktree私有 `edges.csv` 記錄目前可核實具名3／20＝15%，**STOP（<20%）**。電子2／10、其他1／10；完整年度具名14／97條目（含低於10%註解補充），距50條仍差36；含2025Q1為18／117，期間去重18筆、不同公司／對手／方向7組。缺件2、字型映射錯碼3、同型段落未定位1，未知不等於匿名；15%僅目前可核實率，不證明真實率必低於20%。無獨立抽查、證券身分映射驗收或Human acceptance，維持 `PUBLIC_DOCUMENT_DISCLOSURE_AUDIT_UNVERIFIED / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED`。
+
+此項只更新2026-11-27「盤點尚暫停」的本輪任務狀態，不重啟供應鏈實作或資料取得；未達50，不建資料契約／不發布獨立邊資料集。Next：維持STOP，若另案獲准則先人工複核錯碼、未命中、具名及STC縮寫。原年度揭露不延長為目前交易有效期，publication／known_at與strict PIT未驗；不supersede正式Data、machine authority、歷史研究或production，不刷新外部runtime observed_at。詳見報告的來源／輸出SHA及限制。
+
 ## 第五步 5a audit 修正／5b 工程候選 — 2026-11-27
 
 **第五步歷史結果（2026-11-27，commit `2ed6091`，COMPLETE_HISTORICAL_ONLY）**：在 C0+ 加月營收（190 欄）之上，加入 4 欄月營收表示精煉（新鮮度、加速度、連續年增月數、季節調整月增），h20 IC 增量為 2015–2020 +0.000765 [−0.000671, 0.002448]、2021–2026 +0.000412 [−0.001488, 0.002350]，兩段 p 分別為 0.34 與 0.66，皆為空結果。獨立重算 GO（6 位小數吻合，`.artifacts/papers/notes/step5-results-review.md`）。72 個 fits 完成；step5 queue 與 evaluation 已完成。研究結論：月營收有效（第三步），但同業代理（第四步）與表示精煉（第五步）都沒有額外增量。下一步以前瞻確認為主，前瞻家族採分層把關（`tasks/decision-forward-family-gatekeeping-20261127.md`）。

@@ -1,3 +1,12 @@
+## 年報具名率 builder — 2026-11-28
+
+- Purpose／owner／task：Human／Codex builder，`job-run-mwz6kjr0-686acf/builder_ar_gate`；固定20份年報具名率盤點、私有CSV／公開彙總及knowledge，不含獨立審查。
+- Path／branch／base：既有 `.worktrees/ruflo-workers/run-mwz6kjr0-686acf/builder_ar_gate`，detached HEAD/base `e52f937fa215278561e1dc16d9277611d5746ccb`；created UNKNOWN、接手2026-11-28、retired N/A，起始clean。本輪Human禁止commit／push／merge，交接保留dirty；不新增／移除worktree。
+- State／authority：目前可核實具名3／20＝15%，STOP；[報告](../../reports/annual_report_named_rate_gate_20261128.md)與[規劃§C](../../tasks/plan-fundamentals-supplychain-integration-20261126.md)控制本輪口徑，`RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED`；無production authority。
+- Artifact／merge dependencies：GENERATED私有 `edges.csv` 在本worktree `.artifacts/annual-reports/sample-20261128/`，來源主checkout同名目錄唯讀PDF／文字／manifest／sample，完整身份及SHA見報告；需保存唯一CSV與未提交patch供交接。
+- Safe removal：先保存no-commit patch與唯一CSV、確認input realpath／manifest references與重建方式、另案退役且clean前不可移除。
+- Runtime：WSL system Python3.12.3本機CPU；MARKETMAMBA_DATA_ROOT unset，Data realpath為本worktree普通目錄，未開啟正式Data。無網路／GPU／新增agent／production／scheduler／wakeup，未更新外部observed_at。
+
 ## 第四步 4a builder — 2026-11-27
 
 終局：300檔、108jobs／48partitions的19.19GB bundle及admission留本worktree；ADMIT僅限定歷史工程，0fits／0IC，67＋24 tests passed。獨立審查待辦；5份tracked unstaged＋5份untracked source/doc patch、staged=0，Human no-commit，故未clean，不可移除。
