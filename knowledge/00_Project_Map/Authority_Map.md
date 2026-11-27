@@ -1,3 +1,9 @@
+## 第五步規格導航：未凍結候選 — 2026-11-27
+
+[第五步DRAFT](../../tasks/spec-step5-revenue-refinement-h20-20261127.md)為 `builder_step5_spec@da43c9d` 的no-commit待決文件，**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**；只提出第三步B 190欄之上的最多四欄表示精煉、R-A／R-B及跨步前瞻家族選擇，不是machine contract、資料准入或執行授權。全部Human決定／凍結identity PENDING；既有[第三步規格](../../tasks/spec-step3-monthly-revenue-h20-20261126.md)、[第四步規格](../../tasks/spec-step4-peer-quarterly-h20-20261127.md)及[第四步凍結紀錄](../../tasks/decision-step4-freeze-20261127.md)不變。
+
+歷史m=1／2不能修復同資料第二次研究的分岔；合併前瞻m=5／6須Human在曝光前合法補充登記，另窗亦須先定曝光邊界，未決STOP。本項僅增導航，不supersede任何machine authority、既有歷史artifact、正式Data／模型、P2／P4d或production；strict來源／日曆／lifecycle／交易STOP不變，不更新authority-map.json或runtime observed_at。
+
 ## 第四步 4c 評估候選邊界 — 2026-11-27
 
 **第四步歷史結果（2026-11-27，commit `ea625d1`，COMPLETE_HISTORICAL_ONLY）**：在 C0+ 加月營收（190 欄）之上，1a 同業領先落後的 h20 IC 增量：2015–2020 為 −0.002145 [−0.004687, 0.000084]，2021–2026 為 +0.000486；1b 同業營收外溢：+0.000789 與 +0.000240。四組 Holm p 均 ≥ 0.15，全部未達門檻，屬空結果。1a 前期的負增量主要集中在 2018 年（佔負值年份合計的 81%）。獨立重算 GO（6 位小數吻合，`.artifacts/papers/notes/step4-results-review.md`）。基線與第三步 B 臂的 IC 差 0、分數差 5.6e−17。依凍結規格不重試其他分類或家數；前瞻仍照預先登記封存季報、1a、1b。

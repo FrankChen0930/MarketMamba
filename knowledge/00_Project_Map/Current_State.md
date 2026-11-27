@@ -1,3 +1,9 @@
+## 第五步月營收表示精煉 DRAFT — 2026-11-27
+
+[第五步待決規格](../../tasks/spec-step5-revenue-refinement-h20-20261127.md)由 `job-run-mwyb780k-67d815/builder_step5_spec` 在 detached base `da43c9d11aab3037fe2f15bc8ff1dcebaa54eb38` 起草；**DRAFT / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。以第三步 B 的190欄為基線，建議追加可用session年齡、連續三月YoY加速度、有號同增段長、同月份季節調整MoM，共四欄；24月YoY標準化驚喜與現行三筆YoY中位數surprise不同，但因長暖身／早折訓練無支援而建議刪除。建議R-A整組對照m=1，R-B兩組Holm m=2為替代，尚未決定。
+
+同一月營收歷史窗的第二次研究有研究分岔風險，歷史只看量級，確認只靠合格前瞻。Next：Human決定欄位／缺值、R-A或R-B、來源容差與資源，以及是否與第三／四步合併前瞻家族m=5／6或另起更晚未曝光窗。只新增文件／導航，未實作、建包、計算報酬／IC／標籤統計或讀私有產物；未凍結、未授執行，strict PIT／前瞻／交易STOP及既有各案authority不變，未刷新observed_at。
+
 ## 第四步 4c 評估驅動候選 — 2026-11-27
 
 **第四步歷史結果（2026-11-27，commit `ea625d1`，COMPLETE_HISTORICAL_ONLY）**：在 C0+ 加月營收（190 欄）之上，1a 同業領先落後的 h20 IC 增量：2015–2020 為 −0.002145 [−0.004687, 0.000084]，2021–2026 為 +0.000486；1b 同業營收外溢：+0.000789 與 +0.000240。四組 Holm p 均 ≥ 0.15，全部未達門檻，屬空結果。1a 前期的負增量主要集中在 2018 年（佔負值年份合計的 81%）。獨立重算 GO（6 位小數吻合，`.artifacts/papers/notes/step4-results-review.md`）。基線與第三步 B 臂的 IC 差 0、分數差 5.6e−17。依凍結規格不重試其他分類或家數；前瞻仍照預先登記封存季報、1a、1b。
