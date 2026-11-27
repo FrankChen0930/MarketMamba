@@ -1,8 +1,10 @@
-## 第六步客戶營收動能 — DRAFT（2026-11-28）
+## 第六步客戶營收動能 — H-0／E-PM工程候選（2026-11-28）
 
-[草案](../../tasks/spec-step6-customer-momentum-h20-20261128.md)問下游客戶首次月營收訊息對上游供應商h20排序的增量；supplier邊src為供應商、dst為客戶。候選A=第三步B的190欄，B6=A＋三欄等權客戶營收；建議H-0只作結構描述、primary-only，H-1須明示關係前視／存活偏誤、偏樂觀且只供量級。外部研究授權待定，資料只留本機、不進git；最終覆蓋與各折可變異支援未驗，所有Human選項／准入PENDING。僅文件及唯讀結構盤點，無擬合／新增績效統計／前瞻啟動，`RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED`。
+[凍結規格](../../tasks/spec-step6-customer-momentum-h20-20261128.md)與[決定](../../tasks/decision-step6-freeze-20261128.md)採H-0、E-PM、等權三欄（190→193），只準備特徵與無標籤來源／支援盤點；歷史0 fits、2015–2026各折NOT_RUN。第二層Holm補充登記m=5、第六步最後，登記時前瞻未啟動，不等於T0成立或授權fits。
 
-草案§6的第二層m=5、最後tie-break僅為待批准補充登記；目前仍由[既有決定](../../tasks/decision-forward-family-gatekeeping-20261127.md)的m=4控制，必須在任何相關前瞻開始前補登記。年報STOP與strict來源限制保持，不能把文件完成升格為Human acceptance。
+[特徵工具](../../tools/step6_features.py)重用第三步 `monthly_events` 的首次單月YoY／surprise；src供應商、dst客戶，supplier／E-PM、subsidiary無向連通分量、交易實體文字線索UNKNOWN隔離；兩數值欄共用≥2有效客戶集合，UNKNOWN範圍count為NaN。[盤點工具](../../tools/step6_audit.py)只讀上游git歷史／observations及第三步營收／日曆／cross-source pairs，不呼叫會讀價格或標籤的admission／prepare driver。
+
+[彙總報告](../../reports/step6_support_audit_20261128.md)為19個變更commit＋HEAD配同一最新營收的描述性橫斷面；最新594條候選邊／288供應商／121家≥2有效客戶，僅121鍵，STOP。不是歷史特徵、strict PIT或可交易支援；證券身分、集團／transaction實體、首次版與觀測驗證健康仍未合格。逐列輸出只留主checkout `.artifacts/step6/`，外部授權待定、不進git，年報STOP不變。`RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED`；下一步獨立審查與strict來源補證，不啟動前瞻。
 
 ## 年報具名率盤點 — 2026-11-28
 

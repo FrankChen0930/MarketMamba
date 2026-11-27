@@ -1,8 +1,10 @@
-## 第六步客戶營收動能 — 草案導航（2026-11-28）
+## 第六步客戶營收動能 — 凍結與工程導航（2026-11-28）
 
-[第六步DRAFT](../../tasks/spec-step6-customer-momentum-h20-20261128.md)是待Human決定的文件候選，`RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED`，不是machine contract或來源准入。候選A為第三步B的190欄，B6追加三欄；建議H-0、primary-only、等權。外部研究資料授權待定且無歷史關係PIT，不能以as_of或上游commit取代我方首次成功觀測／驗證時間；年報STOP及既有strict來源gate不變。
+[凍結決定](../../tasks/decision-step6-freeze-20261128.md)為本案Human選項authority：[規格](../../tasks/spec-step6-customer-momentum-h20-20261128.md) SHA-256 `d567d6cd493cfc716431e6003ee9e8bed6fbf0e2f8fd32032d52de3672fb9639`，採H-0／E-PM，取代內文未更新的E-P與待決提案字樣。並補充[既有分層把關決定](../../tasks/decision-forward-family-gatekeeping-20261127.md)為第二層m=5、第六步最後；凍結紀錄記載登記時前瞻未啟動。這不是前瞻收集／fits／排程授權。
 
-前瞻權威仍是[2026-11-27分層把關決定](../../tasks/decision-forward-family-gatekeeping-20261127.md)：第二層m=4。草案§6僅提供m=5補充登記文字，第六步最後tie-break；沒有Human補充批准及任何相關前瞻開始前的合格狀態證明，不得生效。不supersede第三至五步凍結規格、machine authority、正式Data或production；沒有新增runtime observation／排程授權。
+[step6_features.py](../../tools/step6_features.py)、[step6_audit.py](../../tools/step6_audit.py)及[測試](../../tests/test_step6_features.py)為branch-local工程候選，`RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED`。[盤點報告](../../reports/step6_support_audit_20261128.md)及主checkout私有 `.artifacts/step6/` 僅為可重播的描述性支援，整體STOP、歷史各折NOT_RUN，不能升格為來源准入。前瞻需我方實際觀測、驗證時間與7日健康gate；上游commit-only只供描述，不能回填歷史PIT。
+
+外部研究授權待定，原始／逐列資料僅本機私用；證券身分／集團／transaction與strict營收來源仍須核驗。年報STOP、第三至五步凍結規格、machine authority、正式Data與production均不被本工程supersede；沒有新增外部runtime observation或排程授權。
 
 ## 年報具名率盤點 — 2026-11-28
 

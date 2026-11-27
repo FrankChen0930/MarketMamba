@@ -1,8 +1,10 @@
-## 第六步客戶營收動能 — DRAFT／待 Human 決定（2026-11-28）
+## 第六步客戶營收動能 — 凍結／無標籤工程候選（2026-11-28）
 
-[第六步規格草案](../../tasks/spec-step6-customer-momentum-h20-20261128.md)只完成文件與唯讀關係結構盤點，`RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED`。候選以第三步B的190欄為A，B6追加最多三欄客戶營收，唯一B6−A；建議H-0不做歷史擬合、primary-only、等權。外部關係缺歷史PIT、授權待定，最終集團清理／有效營收支援未知；原始資料僅本機私用、不進git。Human選項、凍結、來源及支援准入均PENDING／STOP，未實作、擬合或啟動前瞻；完成不等於Human acceptance。年報路線STOP不變。
+[凍結紀錄](../../tasks/decision-step6-freeze-20261128.md)控制[規格](../../tasks/spec-step6-customer-momentum-h20-20261128.md)：H-0（歷史0 fits／各折NOT_RUN）、E-PM、等權三欄、190→193、50家／1,000鍵與7日觀測健康規則。新增[特徵純函式](../../tools/step6_features.py)、[盤點工具](../../tools/step6_audit.py)與[彙總報告](../../reports/step6_support_audit_20261128.md)，重用第三步首次單月營收YoY／surprise。狀態為 `RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED`，完成不等於Human acceptance。
 
-現行前瞻仍依[分層把關決定](../../tasks/decision-forward-family-gatekeeping-20261127.md)第二層m=4；草案§6的m=5（第六步最後tie-break）尚未生效，必須在任何相關前瞻開始前取得Human補充登記及狀態證明。Next：Human決定H-0／H-1、證據層級、三欄／支援／觀測健康規則與家族補充；本worktree僅負責起草，不改production、排程或runtime authority。
+19個上游變更commit＋HEAD共20筆描述性盤點；最新版本機械篩選594條候選邊、288家供應商，121家有≥2有效客戶，僅121個單一橫斷面公司×session鍵，**STOP**。這不是歷史客戶特徵或strict PIT准入；證券身分、集團／transaction實體、營收首次版及驗證完成時間／觀測健康鏈尚未合格。逐列資料只存主checkout `.artifacts/step6/`，不進git；年報STOP不變。Next：獨立審查與補齊strict來源／有效前瞻支援，不能以本盤點啟動前瞻或擬合。
+
+凍結紀錄亦批准第二層Holm m=5、第六步置最後，補充登記時前瞻尚未啟動；T0仍待交易日曆及來源驗收。未改[既有決定檔](../../tasks/decision-forward-family-gatekeeping-20261127.md)、production、排程或runtime authority。本指派worktree僅負責第六步特徵／無標籤盤點，不commit／push／merge。
 
 ## 年報具名率盤點 — 2026-11-28
 
