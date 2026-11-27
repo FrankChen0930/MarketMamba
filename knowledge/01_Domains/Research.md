@@ -1,3 +1,11 @@
+## 第五步 5a 月營收表示工程候選 — 2026-11-27
+
+5a實跑結果：features 7,423,927列／354,866事件；bundle 72 jobs／19,184,359,777 member bytes，audit **ADMIT（僅歷史無標籤工程）**、48 partitions全欄可觀測且有變異、stops空，94 tests passed。真資料fit／IC／標籤統計＝0；c／e支援仍待獨立審查及Human驗收，strict PIT／前瞻／交易STOP不變。
+
+[凍結規格](../../tasks/spec-step5-revenue-refinement-h20-20261127.md)／[決策](../../tasks/decision-step5-freeze-20261127.md)已採R-A（190／194欄、72 jobs、歷史m=1）與a,b,c,e固定公式，取代下方DRAFT待決描述。新增[5a報告](../../reports/step5_engineering_20261127.md)及tools/step5*.py；第三／四步程式與產物唯讀，基線、sample、target與eval標籤僅opaque copy/hash。c左設限不補零，e僅前三年同月MoM至少一筆，支援數僅audit，不進模型；每新欄各fit／eval有限數≥2且有變異，否則STOP。
+
+本輪不fit／IC／標籤統計，狀態 **RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**；實際工程結果以報告及私有admission為準。歷史研究分岔與source／calendar／universe限制不變。前瞻依[fixed-sequence gatekeeping](../../tasks/decision-forward-family-gatekeeping-20261127.md)，尚未授本輪收集；不得將5a工程通過升格研究確認或交易證據。
+
 ## 第五步月營收表示精煉待決規格 — 2026-11-27
 
 [第五步DRAFT](../../tasks/spec-step5-revenue-refinement-h20-20261127.md)為 `job-run-mwyb780k-67d815/builder_step5_spec@da43c9d` 的文件候選，**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。190欄第三步B基線不動，建議追加age／YoY加速度／有號連續段／季節調整MoM四欄，刪除需要36月回溯的24月YoY z-score；現有surprise是三個先前可計YoY中位數的營收預期偏差，不是z-score。取捨只依語義與歷史支援，沒有報酬／相關性篩選。

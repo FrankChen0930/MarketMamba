@@ -1,3 +1,11 @@
+## 第五步 5a：FROZEN R-A 工程候選 — 2026-11-27
+
+5a實跑結果：features 7,423,927列／354,866事件；bundle 72 jobs／19,184,359,777 member bytes，audit **ADMIT（僅歷史無標籤工程）**、48 partitions全欄可觀測且有變異、stops空，94 tests passed。真資料fit／IC／標籤統計＝0；c／e支援仍待獨立審查及Human驗收，strict PIT／前瞻／交易STOP不變。
+
+[凍結紀錄](../../tasks/decision-step5-freeze-20261127.md)與[規格](../../tasks/spec-step5-revenue-refinement-h20-20261127.md) SHA `977ec654dd8018d9524259141e8b9d0b43d476b220ec289ef5fdfa960012d78c` 已取代下方 DRAFT 的待決狀態；Human 採 a,b,c,e、R-A、歷史 m=1／72 jobs，前瞻依[分層把關](../../tasks/decision-forward-family-gatekeeping-20261127.md)。本輪僅 5a；不擬合、不計 IC／標籤統計、不收集前瞻。
+
+`builder_step5a@261686c` 未提交候選 **RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**：新增 [features](../../tools/step5_features.py)、[contract](../../tools/step5.py)、[prepare](../../tools/step5_prepare.py)、[audit](../../tools/step5_audit.py) 與[合成測試](../../tests/test_step5.py)。重用第三步 B 的190欄、抽樣、target及鍵；新增四欄區塊，主checkout絕對輸出 `.artifacts/step5/features/`、`.artifacts/step5/bundle/`，40 GB gate。詳[工程報告](../../reports/step5_engineering_20261127.md)之實際狀態與identity；完成不等於Human驗收。strict來源PIT、合格日曆、lifecycle／交易仍STOP，未改production或runtime observation。Next：獨立審查5a與c／e無標籤支援；5b驅動名稱不得以step5開頭，以免改變已pin implementation。
+
 ## 第五步月營收表示精煉 DRAFT — 2026-11-27
 
 [第五步待決規格](../../tasks/spec-step5-revenue-refinement-h20-20261127.md)由 `job-run-mwyb780k-67d815/builder_step5_spec` 在 detached base `da43c9d11aab3037fe2f15bc8ff1dcebaa54eb38` 起草；**DRAFT / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**。以第三步 B 的190欄為基線，建議追加可用session年齡、連續三月YoY加速度、有號同增段長、同月份季節調整MoM，共四欄；24月YoY標準化驚喜與現行三筆YoY中位數surprise不同，但因長暖身／早折訓練無支援而建議刪除。建議R-A整組對照m=1，R-B兩組Holm m=2為替代，尚未決定。

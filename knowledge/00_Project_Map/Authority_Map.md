@@ -1,3 +1,11 @@
+## 第五步 5a authority：FROZEN R-A — 2026-11-27
+
+5a實跑結果：features 7,423,927列／354,866事件；bundle 72 jobs／19,184,359,777 member bytes，audit **ADMIT（僅歷史無標籤工程）**、48 partitions全欄可觀測且有變異、stops空，94 tests passed。真資料fit／IC／標籤統計＝0；c／e支援仍待獨立審查及Human驗收，strict PIT／前瞻／交易STOP不變。
+
+[規格](../../tasks/spec-step5-revenue-refinement-h20-20261127.md) SHA `977ec654dd8018d9524259141e8b9d0b43d476b220ec289ef5fdfa960012d78c`、[Human凍結紀錄](../../tasks/decision-step5-freeze-20261127.md)及[前瞻分層把關](../../tasks/decision-forward-family-gatekeeping-20261127.md)控制本案；下方DRAFT／未凍結導航保留為歷史草案背景，不再表示目前授權。末尾凍結紀錄優先於規格前段起草邊界。
+
+[5a contract](../../tools/step5.py)與[工程報告](../../reports/step5_engineering_20261127.md)為 `builder_step5a@261686c` 的未提交 **UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED** 工程候選；不supersede既有第三／四步bundle、模型或結果。A固定第三步B的190欄，B追加四欄，72 logical jobs；只准無標籤工程，5a沒有fit／IC authority。來源受限歷史容差不升格strict PIT，前瞻／交易STOP及production authority不變。私有完整manifest／逐檔SHA是artifact identity，檔案存在或PREPARED不等於ADMIT；以報告與admission實際結果為準。未更新runtime observed_at或authority-map.json的production pin。
+
 ## 第五步規格導航：未凍結候選 — 2026-11-27
 
 [第五步DRAFT](../../tasks/spec-step5-revenue-refinement-h20-20261127.md)為 `builder_step5_spec@da43c9d` 的no-commit待決文件，**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**；只提出第三步B 190欄之上的最多四欄表示精煉、R-A／R-B及跨步前瞻家族選擇，不是machine contract、資料准入或執行授權。全部Human決定／凍結identity PENDING；既有[第三步規格](../../tasks/spec-step3-monthly-revenue-h20-20261126.md)、[第四步規格](../../tasks/spec-step4-peer-quarterly-h20-20261127.md)及[第四步凍結紀錄](../../tasks/decision-step4-freeze-20261127.md)不變。
