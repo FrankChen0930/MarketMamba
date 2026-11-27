@@ -1,6 +1,6 @@
 # 第六步預先登記草稿｜客戶月營收訊息能否改善供應商的二十日排序？
 
-**DRAFT，待 Human 決定；RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。** 日期 2026-11-28，來源 HEAD `ab717447ee69d5357632db062e6bb426c14f0378`；任務 `job-run-mwz7q63e-d2024a/builder_step6_spec`。本輪 EXECUTE_APPROVED 僅授權起草、外部關係結構盤點及 knowledge 導航；完成不等於 Human acceptance，不授予來源准入、實作、擬合、前瞻收集或排程權限。Human 選項、批准時間（台北／UTC）、定稿 SHA、machine contract、環境／矩陣／bundle identity 皆為 **PENDING**。
+**FROZEN 2026-11-28（Human：「第六步照建議」），選項見 `tasks/decision-step6-freeze-20261128.md`：H-0、E-PM、前瞻第二層 Holm m=5（第六步置最後）、其餘沿用既定設定。RESEARCH_ONLY / NOT_DEPLOYED。** 以下內文為凍結前的起草文字；文中「建議 E-P」已由 Human 選定的 E-PM 取代，其餘「待決」字樣以凍結紀錄為準。
 
 沿用既有 `tasks/` 與 project map／Research 導航即可承載，不新增目錄樹、程式、資料集或實驗產物。設計範本為[第三步](spec-step3-monthly-revenue-h20-20261126.md)、[第四步](spec-step4-peer-quarterly-h20-20261127.md)、[第五步](spec-step5-revenue-refinement-h20-20261127.md)凍結規格；前瞻 authority 仍為[2026-11-27 分層把關決定](decision-forward-family-gatekeeping-20261127.md)，本稿不改既有決定檔。
 
