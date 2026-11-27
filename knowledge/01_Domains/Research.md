@@ -1,3 +1,9 @@
+## 第六步客戶營收動能 — DRAFT（2026-11-28）
+
+[草案](../../tasks/spec-step6-customer-momentum-h20-20261128.md)問下游客戶首次月營收訊息對上游供應商h20排序的增量；supplier邊src為供應商、dst為客戶。候選A=第三步B的190欄，B6=A＋三欄等權客戶營收；建議H-0只作結構描述、primary-only，H-1須明示關係前視／存活偏誤、偏樂觀且只供量級。外部研究授權待定，資料只留本機、不進git；最終覆蓋與各折可變異支援未驗，所有Human選項／准入PENDING。僅文件及唯讀結構盤點，無擬合／新增績效統計／前瞻啟動，`RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED`。
+
+草案§6的第二層m=5、最後tie-break僅為待批准補充登記；目前仍由[既有決定](../../tasks/decision-forward-family-gatekeeping-20261127.md)的m=4控制，必須在任何相關前瞻開始前補登記。年報STOP與strict來源限制保持，不能把文件完成升格為Human acceptance。
+
 ## 年報具名率盤點 — 2026-11-28
 
 本輪Human僅授固定20份盤點；[報告](../../reports/annual_report_named_rate_gate_20261128.md)及指派worktree私有 `edges.csv` 記錄目前可核實具名3／20＝15%，**STOP（<20%）**。電子2／10、其他1／10；完整年度具名14／97條目（含低於10%註解補充），距50條仍差36；含2025Q1為18／117，期間去重18筆、不同公司／對手／方向7組。缺件2、字型映射錯碼3、同型段落未定位1，未知不等於匿名；15%僅目前可核實率，不證明真實率必低於20%。無獨立抽查、證券身分映射驗收或Human acceptance，維持 `PUBLIC_DOCUMENT_DISCLOSURE_AUDIT_UNVERIFIED / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED`。
