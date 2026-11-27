@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "status": "PENDING_EXECUTION",
+  "status": "COMPLETE_HISTORICAL_ONLY",
   "evidence_class": "已曝光、量級與工程驗證、非確認",
   "research_status": "RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED",
   "spec_sha256": "977ec654dd8018d9524259141e8b9d0b43d476b220ec289ef5fdfa960012d78c",
@@ -8,10 +8,56 @@
   "bundle_sha256": "f7d67e3dc7dfd7ea6b1eb7b7b076d07927f7927320a4f9deaae55edd502d1169",
   "admission_sha256": "c873e4cfd0a3992b4aca73bdabd765b663bf2c14e89cce16c2227f33cc0ba3e8",
   "expected_fit_count": 72,
-  "fit_count": null,
-  "complete_verified": null,
-  "periods": null,
-  "engineering_crosscheck": null,
+  "fit_count": 72,
+  "complete_verified": 72,
+  "periods": {
+    "2015-2020": {
+      "B-A": {
+        "mean_a": 0.1629160314757128,
+        "mean_b": 0.16368108340214943,
+        "mean_difference": 0.000765051926436623,
+        "paired_ci95": [
+          -0.0006711155764062162,
+          0.0024484304030937317
+        ],
+        "p_raw": 0.33766233766233766,
+        "p_holm": 0.33766233766233766,
+        "holm_reject": false,
+        "valid_days": 1468,
+        "scheduled_days": 1468,
+        "historical_numeric_threshold": false,
+        "formal_success": false,
+        "threshold_text": "未證實；不主張等效或確認成功"
+      }
+    },
+    "2021-2026": {
+      "B-A": {
+        "mean_a": 0.15198102975967628,
+        "mean_b": 0.15239272663263134,
+        "mean_difference": 0.0004116968729550681,
+        "paired_ci95": [
+          -0.0014880588553437984,
+          0.002350338397492236
+        ],
+        "p_raw": 0.6623376623376623,
+        "p_holm": 0.6623376623376623,
+        "holm_reject": false,
+        "valid_days": 1367,
+        "scheduled_days": 1382,
+        "historical_numeric_threshold": false,
+        "formal_success": false,
+        "threshold_text": "未證實；不主張等效或確認成功"
+      }
+    }
+  },
+  "engineering_crosscheck": {
+    "status": "CONSISTENT",
+    "rtol": 1e-10,
+    "atol": 1e-12,
+    "raw_score_max_abs_difference": 5.551115123125783e-17,
+    "percentile_score_max_abs_difference": 0.0,
+    "ic_max_abs_difference": 0.0
+  },
   "bootstrap": {
     "block_sessions": 20,
     "replicates": 1000,
@@ -36,5 +82,122 @@
     "全部來源 strict PIT STOP；歷史來源容差不因結果解除，前瞻仍受跨步 gatekeeping。",
     "第三步 B 只作工程交叉檢查；第五步 A 必須重新擬合，不能用舊分數代替。"
   ],
-  "formal_success": false
+  "formal_success": false,
+  "folds": [
+    {
+      "year": 2015,
+      "inference_rows": 312782,
+      "mature_rows": 308898,
+      "immature_rows": 3884,
+      "last_signal": "2015-12-31"
+    },
+    {
+      "year": 2016,
+      "inference_rows": 313060,
+      "mature_rows": 307982,
+      "immature_rows": 5078,
+      "last_signal": "2016-12-30"
+    },
+    {
+      "year": 2017,
+      "inference_rows": 332634,
+      "mature_rows": 328000,
+      "immature_rows": 4634,
+      "last_signal": "2017-12-29"
+    },
+    {
+      "year": 2018,
+      "inference_rows": 336574,
+      "mature_rows": 329539,
+      "immature_rows": 7035,
+      "last_signal": "2018-12-28"
+    },
+    {
+      "year": 2019,
+      "inference_rows": 337437,
+      "mature_rows": 331763,
+      "immature_rows": 5674,
+      "last_signal": "2019-12-31"
+    },
+    {
+      "year": 2020,
+      "inference_rows": 360897,
+      "mature_rows": 355858,
+      "immature_rows": 5039,
+      "last_signal": "2020-12-31"
+    },
+    {
+      "year": 2021,
+      "inference_rows": 378547,
+      "mature_rows": 373995,
+      "immature_rows": 4552,
+      "last_signal": "2021-12-30"
+    },
+    {
+      "year": 2022,
+      "inference_rows": 385419,
+      "mature_rows": 380789,
+      "immature_rows": 4630,
+      "last_signal": "2022-12-30"
+    },
+    {
+      "year": 2023,
+      "inference_rows": 390606,
+      "mature_rows": 387064,
+      "immature_rows": 3542,
+      "last_signal": "2023-12-29"
+    },
+    {
+      "year": 2024,
+      "inference_rows": 418138,
+      "mature_rows": 415007,
+      "immature_rows": 3131,
+      "last_signal": "2024-12-31"
+    },
+    {
+      "year": 2025,
+      "inference_rows": 425682,
+      "mature_rows": 421023,
+      "immature_rows": 4659,
+      "last_signal": "2025-12-31"
+    },
+    {
+      "year": 2026,
+      "inference_rows": 302228,
+      "mature_rows": 271982,
+      "immature_rows": 30246,
+      "last_signal": "2026-09-11"
+    }
+  ],
+  "driver_sha256": "09a9232f870b0ed34dac451a1615cbf387555d5584354211111310955a3efc18",
+  "source_commit": "b484de5e5079e0d9df463aad046f6f94e0b1af7a",
+  "bundle_source_commit": "cbc6b7622e9278e3bc695e75f34fbb6b7b00e54d",
+  "implementation_sha256": {
+    "run_step5_evaluation.py": "09a9232f870b0ed34dac451a1615cbf387555d5584354211111310955a3efc18",
+    "run_step3_evaluation.py": "eab055277f56a91857af72c96d21b73cfc53f38742c5df04d5f3285de7fdd0d2",
+    "step3_evaluation.py": "480acb35186dea35f44bb290379fd4ad2dfdc409f1fdf7aa94cb8905f445045e",
+    "step5_runner.py": "8a450b4b4e12e5d877e96e8ec5e2c1b80d66b4b97563901a30ddbd444d99c752",
+    "step5.py": "46dc4d72268be1d597c6063ac0d9a2a1572bb735e366cdfe0f83dc95f08f382f"
+  },
+  "evaluation_environment": {
+    "python": "3.12.3",
+    "executable": "/home/frank/projects/ruflo-evaluation/pilot09/.venv/bin/python",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "data_root_env": null,
+    "data_realpath": "/home/frank/projects/MarketMamba/Data"
+  },
+  "third_step_bundle_sha256": "97a9d3e8f43bfde984455f2439b0ba9bb22561beb3a65088dfbde27a7ea14613",
+  "third_step_admission_sha256": "5be56be703fef23aa530eaca6f90f03560fb9b201fbf073993dd2f35f203d3c7",
+  "human_source_acceptance": {
+    "path": "/home/frank/projects/MarketMamba/.artifacts/step3/human-source-gate-20261126.json",
+    "sha256": "4ce8dc630993e9320933faae1814e1ca97167354e57565ea10e4945a51ca7efa",
+    "bytes": 477,
+    "record": {
+      "decision": "ACCEPT_HISTORICAL_SOURCE_GATE",
+      "decision_date": "2026-11-26",
+      "decision_text": "第三步接受、整合全部照建議",
+      "context": "Human chat reply to coordinator's option 1 (accept limited historical source gate: TEJ original field doc + 99.83% cross-source agreement; residual risks: company corrections/first-version unproven, release date = earliest related disclosure, ~23% revenue rows NaN for unverified unit). Recorded verbatim by Claude."
+    }
+  }
 }

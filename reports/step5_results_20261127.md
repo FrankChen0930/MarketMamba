@@ -1,12 +1,15 @@
 # 第五步月營收表示精煉 h20 歷史評估
 
-狀態：PENDING_EXECUTION；RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。
+狀態：COMPLETE_HISTORICAL_ONLY；RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。
 
 證據等級：已曝光、量級與工程驗證、非確認。
 
-{{RESULTS_FILLED_AT_EXECUTION}}
+| 期間 | 對比 | A IC | B IC | d=B−A | 95% CI | p | Holm p | 有效／排定日 | 門檻對照 |
+|---|---|---:|---:|---:|---|---:|---:|---|---|
+| 2015-2020 | B-A | 0.16291603 | 0.16368108 | 0.00076505 | [-0.0006711155764062162, 0.0024484304030937317] | 0.33766234 | 0.33766234 | 1468/1468 | 未證實；不主張等效或確認成功 |
+| 2021-2026 | B-A | 0.15198103 | 0.15239273 | 0.00041170 | [-0.0014880588553437984, 0.002350338397492236] | 0.66233766 | 0.66233766 | 1367/1382 | 未證實；不主張等效或確認成功 |
 
-尚未評估；必須 72／72 COMPLETE_VERIFIED，不做部分評估。
+工程交叉檢查：{"status": "CONSISTENT", "rtol": 1e-10, "atol": 1e-12, "raw_score_max_abs_difference": 5.551115123125783e-17, "percentile_score_max_abs_difference": 0.0, "ic_max_abs_difference": 0.0}
 
 限制：
 
