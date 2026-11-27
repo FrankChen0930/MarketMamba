@@ -182,7 +182,7 @@ def prepare(out, step3_dir=SOURCE/'.artifacts/step3/bundle-72',
                     source_array_identities={r: original[r + '_sha256'] for r in ('fit', 'eval', 'sample', 'target', 'keys')})
         print(json.dumps(dict(prepared_year=year, jobs=len(jobs))), flush=True)
     implementation = {}
-    for path in [*sorted((s.ROOT / 'tools').glob('step5*.py')), *sorted((s.ROOT / 'tools').glob('step3*.py')), s.ROOT/'tools/step4.py', s.ROOT/'tools/step4_prepare.py', s.ROOT/'tools/step4_audit.py']:
+    for path in [*s.engineering_paths(), *sorted((s.ROOT / 'tools').glob('step3*.py')), s.ROOT/'tools/step4.py', s.ROOT/'tools/step4_prepare.py', s.ROOT/'tools/step4_audit.py']:
         ref = 'code_' + path.name
         info = dict(sha256=s.sha256(path), bytes=path.stat().st_size)
         copy(ref, path, info)

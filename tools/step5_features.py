@@ -12,6 +12,8 @@ from tools.step3 import effective_session, _known
 from tools.step3_prepare import admitted_events
 
 
+STREAK_REASONS = {'OK': 0, 'CURRENT_MISSING': 1, 'GAP_OR_NONCOMPARABLE': 2, 'LEFT_CENSORED_HISTORY_START': 3}
+
 def replay(frame, days):
     days=pd.DatetimeIndex(days)
     if not days.is_unique or not days.is_monotonic_increasing:raise ValueError('STOP calendar')
@@ -59,15 +61,18 @@ def replay(frame, days):
             age=float(session-first[month]) if month in first and np.isfinite(value(month)) else np.nan
             ys=np.array([yoy(month-k) for k in range(4)])
             acc=ys[0]-ys[1:].mean() if np.isfinite(ys).all() else np.nan
-            streak=np.nan;left=False
+            streak=np.nan;reason='CURRENT_MISSING'
             if np.isfinite(ys[0]):
+                reason='OK'
                 sign=np.sign(ys[0])
                 if sign==0:streak=0.
                 else:
                     k=1
                     while True:
                         prior=yoy(month-k)
-                        if not np.isfinite(prior):left=True;break
+                        if not np.isfinite(prior):
+                            reason='LEFT_CENSORED_HISTORY_START' if month-k-12<min(history) else 'GAP_OR_NONCOMPARABLE'
+                            break
                         if np.sign(prior)!=sign:streak=float(sign*k);break
                         k+=1
             past=np.array([mom(month-12*j) for j in (1,2,3)])
@@ -75,8 +80,8 @@ def replay(frame, days):
             seasonal=mom(month)-np.median(valid) if support and np.isfinite(mom(month)) else np.nan
             rows.append(dict(stock_id=str(code),session=int(session),
                 **dict(zip(s.EXTRA_FEATURES,(age,acc,streak,seasonal))),
-                streak_left_censored=left, seasonal_support=support))
-    return pd.DataFrame(rows,columns=['stock_id','session',*s.EXTRA_FEATURES,'streak_left_censored','seasonal_support'])
+                streak_left_censored=reason!='OK', streak_nan_reason=reason, seasonal_support=support))
+    return pd.DataFrame(rows,columns=['stock_id','session',*s.EXTRA_FEATURES,'streak_left_censored','streak_nan_reason','seasonal_support'])
 
 
 def align_events(events, days, keys, diagnostics=False):
@@ -86,7 +91,9 @@ def align_events(events, days, keys, diagnostics=False):
     n=6 if diagnostics else 4
     result=np.full((len(keys),n),np.nan,np.float32)
     stocks=np.asarray(keys.get_level_values(1).astype(str))
-    columns=[*s.EXTRA_FEATURES,'streak_left_censored','seasonal_support'][:n]
+    # Numeric diagnostic column 4 encodes an explicit reason; never a model input.
+    events=events.assign(streak_reason_code=events.streak_nan_reason.map(STREAK_REASONS))
+    columns=[*s.EXTRA_FEATURES,'streak_reason_code','seasonal_support'][:n]
     groups=pd.Series(stocks).groupby(stocks,sort=False).indices
     for code,g in events.groupby('stock_id',sort=False):
         rows=groups.get(str(code),np.empty(0,dtype=np.int64))
@@ -144,10 +151,10 @@ def build(out, resume_verified_partial=False):
         block.flush()
         np.save(out/'calendar.npy',days.to_numpy(),allow_pickle=False)
     outputs={p.name:dict(sha256=s.sha256(p),bytes=p.stat().st_size) for p in out.iterdir()}
-    s.write_json(out/'manifest.json',dict(schema='step5-features-v1',contract=s.contract(),
+    s.write_json(out/'manifest.json',dict(schema='step5-features-v1',streak_reason_codes=STREAK_REASONS,contract=s.contract(),
         source_bundle_sha256=s.STEP3_BUNDLE_SHA, source_input={**info,'path':str(raw)},
         outputs=outputs, source_commit=__import__('subprocess').check_output(['git','rev-parse','HEAD'],text=True).strip(), environment=dict(python=__import__('platform').python_version(),executable=__import__('sys').executable,data_root_env=__import__('os').getenv('MARKETMAMBA_DATA_ROOT'),data_realpath=str(Path('/home/frank/projects/MarketMamba/Data').resolve()),gpu_used=False), recovered_partial=resume_verified_partial, rows=len(dates),events=len(events),estimated_bytes=estimate,
-        strict_pit='STOP', evidence_class='HISTORICAL_RESEARCH_ONLY',implementation={str(p.relative_to(s.ROOT)):s.sha256(p) for p in (s.ROOT/'tools').glob('step5*.py')}))
+        strict_pit='STOP', evidence_class='HISTORICAL_RESEARCH_ONLY',implementation={str(p.relative_to(s.ROOT)):s.sha256(p) for p in s.engineering_paths()}))
     print(json.dumps(dict(rows=len(dates),events=len(events),estimated_bytes=estimate,manifest_sha256=s.sha256(out/'manifest.json'))),flush=True)
 
 

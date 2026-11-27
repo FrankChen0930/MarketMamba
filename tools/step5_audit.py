@@ -13,6 +13,7 @@ import pandas as pd
 from tools import step3
 from tools import step5 as s
 from tools.step5_prepare import axes, key_rows
+from tools.step5_features import STREAK_REASONS
 
 
 def feature_stats(x, names):
@@ -73,7 +74,7 @@ def _audit(directory, bundle, result):
             seen.add(path)
     result['verified_files'] = len(seen)
     expected_code = {str(p.relative_to(s.ROOT)) for prefix in ('step3*.py', 'step5*.py')
-                     for p in (s.ROOT / 'tools').glob(prefix)}
+                     for p in (s.ROOT / 'tools').glob(prefix) if p.name!='step5_runner.py'}
     expected_code.update({'tools/step4.py','tools/step4_prepare.py','tools/step4_audit.py'})
     if set(bundle['implementation']) != expected_code:
         raise ValueError('STOP incomplete implementation identity')
@@ -176,7 +177,9 @@ def _audit(directory, bundle, result):
                         stat['variance']=float(np.var(values)) if len(values) else None
                     result['support'][extra_ref] = stats
                     result.setdefault('diagnostics',{})[extra_ref]=dict(
-                        streak_left_censored_fraction=float(np.count_nonzero(raw[positions,4]==1)/len(positions)),
+                        streak_left_censored_fraction=float(np.count_nonzero(raw[positions,4]>0)/len(positions)),
+                        streak_nan_reasons={name:int(np.count_nonzero(raw[positions,4]==code)) for name,code in STREAK_REASONS.items()},
+                        streak_reason_unknown=int(np.count_nonzero(~np.isfinite(raw[positions,4]))),
                         seasonal_support={str(k):int(np.count_nonzero(raw[positions,5]==k)) for k in range(4)},
                         seasonal_support_unknown=int(np.count_nonzero(~np.isfinite(raw[positions,5]))))
                     if not all(v['variable'] for v in stats):

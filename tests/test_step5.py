@@ -144,3 +144,37 @@ def test_bad_calendar_and_duplicate_versions_fail_closed():
     with pytest.raises(ValueError,match='calendar'):replay(f,d[::-1])
     bad=f.iloc[-1:].copy();bad['version']=1
     with pytest.raises(ValueError,match='multiple versions'):replay(pd.concat([f,bad]),d)
+
+
+@pytest.mark.parametrize('case,reason', [('current','CURRENT_MISSING'),('gap','GAP_OR_NONCOMPARABLE'),('identity','GAP_OR_NONCOMPARABLE'),('start','LEFT_CENSORED_HISTORY_START'),('ok','OK')])
+def test_streak_reason_complete(case, reason):
+    f,d=fixture()
+    if case=='current': f.loc[f.index[-1],'revenue']=np.nan
+    elif case in ('gap','identity'):
+        f.loc[f.period>=pd.Timestamp('2017-03-01'),'revenue']=90.
+        if case=='gap': f.loc[f.period==pd.Timestamp('2017-02-01'),'revenue']=np.nan
+        else: f.loc[f.period==pd.Timestamp('2017-02-01'),'currency']='USD'
+    elif case=='start': f['revenue']=np.arange(len(f))+100.
+    r=latest(f,d)
+    assert r.streak_nan_reason==reason
+    assert bool(r.streak_left_censored)==(reason!='OK')
+    assert np.isnan(r.revenue_yoy_signed_streak)==(reason!='OK')
+
+
+def test_task_paths_are_main_checkout():
+    assert str(s.SPEC)=='/home/frank/projects/MarketMamba/tasks/spec-step5-revenue-refinement-h20-20261127.md'
+    assert str(s.DECISION)=='/home/frank/projects/MarketMamba/tasks/decision-step5-freeze-20261127.md'
+    assert '.worktrees' not in str(s.frozen_decision()['realpath'])
+
+
+def test_diagnostic_reason_encoding_and_model_column_isolation():
+    from tools.step5_features import STREAK_REASONS
+    f,d=fixture();f.loc[f.index[-1],'revenue']=np.nan
+    events=replay(f,d);last=events.iloc[-1]
+    keys=pd.MultiIndex.from_arrays([d[[int(last.session)]],['X']])
+    diagnostics=align_events(events,d,keys,diagnostics=True)
+    model=align_events(events,d,keys)
+    assert diagnostics[0,4]==STREAK_REASONS['CURRENT_MISSING']
+    assert diagnostics[:,:4].tobytes()==model.tobytes()
+    assert not any(p.name=='step5_runner.py' for p in s.engineering_paths())
+    assert {p.name for p in s.engineering_paths()}=={'step5.py','step5_features.py','step5_prepare.py','step5_audit.py'}

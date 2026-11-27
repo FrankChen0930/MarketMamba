@@ -15,9 +15,10 @@ import pandas as pd
 from tools.step3 import sha256, verify_file, SEEDS, YEARS, PARAMS, FEATURES as MONTHLY
 
 ROOT = Path(__file__).resolve().parents[1]
-SPEC = ROOT / 'tasks/spec-step5-revenue-refinement-h20-20261127.md'
+MAIN_ROOT = Path('/home/frank/projects/MarketMamba')
+SPEC = MAIN_ROOT / 'tasks/spec-step5-revenue-refinement-h20-20261127.md'
 SPEC_SHA = '977ec654dd8018d9524259141e8b9d0b43d476b220ec289ef5fdfa960012d78c'
-DECISION = ROOT / 'tasks/decision-step5-freeze-20261127.md'
+DECISION = MAIN_ROOT / 'tasks/decision-step5-freeze-20261127.md'
 DECISION_SHA = 'bb0e66fcad32e65a52874ab5458b41c29ff01ae6cb0db605b959db23d78224c2'
 STEP3_BUNDLE_SHA = '97a9d3e8f43bfde984455f2439b0ba9bb22561beb3a65088dfbde27a7ea14613'
 from tools.step4 import BASE48, BASELINE_FEATURES
@@ -101,3 +102,8 @@ def matrix(directory, bundle, job, phase, rows=slice(None)):
 
 def job_id(year, seed, arm):
     return f'fold{year}-{arm}-seed{seed}'
+
+
+def engineering_paths():
+    """5a sources; additive 5b executor is pinned separately to avoid hash cycles."""
+    return sorted(p for p in (ROOT/'tools').glob('step5*.py') if p.name!='step5_runner.py')

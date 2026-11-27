@@ -1,3 +1,11 @@
+## 第五步 5a audit 修正／5b 工程候選 — 2026-11-27
+
+`builder_step5b@cbc6b76` 未提交候選，**RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED**；完成不等於 Human acceptance。5a 獨立 NO_GO 的當月缺值診斷已修：signed streak 每個 NaN 均記原因與左設限，四欄 7,423,927 列／118,782,832 bytes 原樣，model block SHA `29fffa7591684c947d4b59a23927c2f91ca910e8a593dfb70338afb4e7ceeba7`。舊 bundle／features 保留 `*-pre-auditfix`；主 checkout 重建 admission **ADMIT**，bundle `f7d67e3dc7dfd7ea6b1eb7b7b076d07927f7927320a4f9deaae55edd502d1169`、admission `c873e4cfd0a3992b4aca73bdabd765b663bf2c14e89cce16c2227f33cc0ba3e8`，tasks來源無worktree引用。
+
+新增 [runner](../../tools/step5_runner.py)、[queue](../../tools/run_step5_queue.py)、[evaluation](../../tools/run_step5_evaluation.py) 與[報告](../../reports/step5_engineering_20261127.md)，5b executor 獨立 pin；R-A 190／194欄、72 jobs、歷史m=1、兩段與bootstrap 20／1000／seed17不變。真實bundle只完成 `fold2015-B-seed17` 一個CPU量測（79.709秒）；未跑完整queue、真實IC／label statistics／前瞻，結果報告保持PENDING，評估須72／72 COMPLETE_VERIFIED及`--consume-placeholder`。第三步B僅工程crosscheck，不能替代重新擬合的第五步A。
+
+本節 supersede 下方5a「fit=0／尚無5b」的目前狀態與舊c旗標比例；不supersede第三／四步歷史artifact、正式Data、production pin或門檻。獨立複核／Human驗收仍待辦；strict來源PIT／日曆／lifecycle／前瞻／交易STOP不變。Next：複核新診斷與本工程候選，由Human決定完整72-job CPU執行；完整命令及identity見工程報告。未改runtime observation／observed_at。
+
 ## 第五步 5a：FROZEN R-A 工程候選 — 2026-11-27
 
 5a實跑結果：features 7,423,927列／354,866事件；bundle 72 jobs／19,184,359,777 member bytes，audit **ADMIT（僅歷史無標籤工程）**、48 partitions全欄可觀測且有變異、stops空，94 tests passed。真資料fit／IC／標籤統計＝0；c／e支援仍待獨立審查及Human驗收，strict PIT／前瞻／交易STOP不變。
