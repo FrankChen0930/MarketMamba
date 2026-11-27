@@ -1,6 +1,6 @@
 # 第五步預先登記草稿｜月營收表示精煉能否再改善二十日排序？
 
-**DRAFT，待 Human 決定；RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。** 2026-11-27，起草來源 HEAD `da43c9d11aab3037fe2f15bc8ff1dcebaa54eb38`，任務 `job-run-mwyb780k-67d815/builder_step5_spec`。本輪 EXECUTE_APPROVED 只授權起草與 knowledge 導航；不是凍結、來源准入、實作、資料建置、擬合、歷史評估或前瞻收集授權。完成不等於 Human acceptance。
+**FROZEN 2026-11-27（Human：「第五步照建議」，見§8 凍結紀錄）；RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED。** 2026-11-27，起草來源 HEAD `da43c9d11aab3037fe2f15bc8ff1dcebaa54eb38`，任務 `job-run-mwyb780k-67d815/builder_step5_spec`。本輪 EXECUTE_APPROVED 只授權起草與 knowledge 導航；不是凍結、來源准入、實作、資料建置、擬合、歷史評估或前瞻收集授權。完成不等於 Human acceptance。
 
 沿用[第三步凍結規格](spec-step3-monthly-revenue-h20-20261126.md)、[第四步凍結規格及末尾 Human 決定](spec-step4-peer-quarterly-h20-20261127.md)與[第四步凍結紀錄](decision-step4-freeze-20261127.md)的 h20、兩段、折、模型、抽樣、bootstrap 與證據邊界。既有 `tasks/` 及 project map／Research 足以承載本案，不新增目錄、實作、資料、bundle 或報告樹；artifact identity 為本路徑的未凍結文件，定稿 SHA 與執行身分 PENDING。本稿不修改第三／四步、P2、P4d 或 production authority。
 
@@ -121,3 +121,21 @@ Bundle 以既有實測 **19 GB** 為起點，暫留 **20–25 GB／包**及 **50
 本輪只新增本 DRAFT 及更新 Current State／Authority Map／Research 導航，不 supersede canonical artifact、不改 machine authority、任何凍結規格或 production。未讀 MarketMamba-blind、私有逐日 IC／分數／標籤，未使用網路、GPU、資料取得、額外 agent、排程／wakeup、正式 Data 或 V6/models，未 commit／push／merge／deploy。
 
 Knowledge-impact：新增待決規格及下一決策的導航為 YES，故同步更新 project memory 與 authority 導航；研究／交易／runtime authority 及 observed_at 均不變。開工 worktree clean、detached HEAD；依 no-commit 指示保留本文件 untracked 與三個導航檔 modified，交付不聲稱 clean。環境為 WSL Linux `/usr/bin/python3` 3.12.3，`MARKETMAMBA_DATA_ROOT=UNSET`，`Data/` realpath 為本指派 worktree 的 `Data`，只解析路徑未讀其內容。後續應由 Human 決定 §7，完成不等於 Human acceptance。
+
+### 凍結紀錄（2026-11-27）
+
+- Human 原文：「第五步照建議」。
+- 批准的選項：
+  1. 採用 a、b、c、e 四欄，順序固定為 `revenue_age_sessions`、`revenue_yoy_acceleration`、`revenue_yoy_signed_streak`、`revenue_seasonal_mom`；刪除 d。
+  2. 採 **R-A**：B＝A（190 欄）＋四欄＝194 欄，只做一個 B−A 對比，歷史 m＝1，共 72 fits。
+  3. 評估方式沿用第三、四步。歷史結果只用來判斷量級，確認只看前瞻。
+  4. 前瞻家族採協調者建議的 **(iii) 分層把關（fixed-sequence gatekeeping）**，取代 §5 草案列的兩個方案：
+     - 第一層：只檢定第三步 B−A（月營收），使用完整 α＝0.05、雙側。
+     - 第二層：第一層的拒絕成立後，才以 Holm m＝4 檢定第四步 1a、1b、季報，以及第五步 R-A，各用其原基線。
+     - 第一層未拒絕時，第二層一律記 NOT_TESTED，不得解讀。
+     - 第二層同 p 值時的 tie-break 順序：1a、1b、季報、第五步。
+     - 整體 FWER 控制在 0.05。補充登記見 `tasks/decision-forward-family-gatekeeping-20261127.md`。
+  5. 來源與支援 gate 依 §7 第 5 項。
+  6. 資源與工作包依 §7 第 6 項。
+- 執行授權：資料包建置、無標籤准入、擬合、歷史評估，流程同第四步。前瞻收集須 P2 前置工程與來源 gate 都通過。
+- 凍結後本檔的 SHA-256 記在 `tasks/decision-step5-freeze-20261127.md`。之後若要修改，須另行登記新版本。
