@@ -2,7 +2,9 @@
 
 [診斷報告](../../reports/tradability_diagnostic_20261128.md)及[程式](../../tools/tradability_diagnostic.py)是第三步已曝光歷史的branch-local描述性診斷，`RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED`。輸入authority仍為第三步原bundle／hash／凍結標籤、[原評估器](../../tools/run_step3_evaluation.py)及其每日秩合成定義，未supersede任何machine contract、凍結決定、前瞻家族、strict execution gate或production authority。
 
-同價格快照manifest中的市值僅供描述性分層，不證明strict PIT。無實際成交金額與官方前收／公司行動漲停參考價，不得用close×volume／未知值補出可交易宇宙；投組與實算成本維持NOT_RUN。主checkout私有 `.artifacts/tradability/run-20261128-builder-checked/manifest.json`記錄最終輸入／程式／輸出identity及原IC重現結果；先前run-20261128-builder只是被取代的工程中間檔，不作authority。此診斷不是交易資格或Human acceptance。
+同價格快照manifest中的市值僅供描述性分層，不證明strict PIT。第二輪依Human有界指示使用既有FinMind `Trading_money`、`Trading_Volume`及`close−spread`，只建立前20 sessions均額／實際成交均價／t+1漲停與量的歷史代理；仍缺官方公司行動漲停參考價、開盤撮合及strict PIT，不能升格strict execution。缺列及來源尾端UNKNOWN排除，未用還原close×volume猜成交金額。兩來源皆為還原價、標籤已反映股利調整的來源事實更正見[Labels](../01_Domains/Labels.md)；不改凍結規格、label bytes或production authority。
+
+主checkout私有 `.artifacts/tradability/run-20261128-finmind-verified/manifest.json`記錄本輪最終來源逐檔hash、72模型輸出identity、原IC重現、完整日曆4,211,900標籤誤差0及條件投組。完整歷史投組為STOP／PARTIAL（缺未來價格造成大量週期與部分逐年偏移無支援），淨報酬不能升格整段可實現績效。第一輪builder-checked僅為原診斷證據；第二輪finmind-builder及finmind-checked為試跑／失敗工程中間檔。程式與報告均UNMERGED／NOT_DEPLOYED／NOT_ACCEPTED；不是交易資格或Human acceptance，未supersede任何凍結決定或strict gate。
 
 ## 第六步客戶營收動能 — 凍結與工程導航（2026-11-28）
 

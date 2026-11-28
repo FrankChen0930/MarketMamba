@@ -1,3 +1,9 @@
+## 第三步還原價事實更正 — 2026-11-28
+
+[可交易性診斷](../../reports/tradability_diagnostic_20261128.md)第二輪唯讀核對既有 FinMind `adj_price` 日檔、第三步 frozen `prices_raw.parquet` 與四檔高殖利率股（2412／3045／4904／2886）的2024現金除息日。既有組裝程式明確由 `TaiwanStockPriceAdj` 建立 `prices_raw.parquet`；兩來源均為還原價，第三步 open(t+1)／close(t+20) 標籤已反映股利調整。先前「未含股利原價」的第三步描述不精確；不因此改動 frozen labels／規格，也不再另加股利。除息日仍可有市場下跌，不能用報酬正負單獨證明調整完整。
+
+這是 `EXPOSED_HISTORICAL_DIAGNOSTIC_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED` 的來源事實核對，不是完整公司行動、現金股利再投資帳本、strict PIT 或可成交證據；其他 corrected V7 labels 的契約及 strict execution STOP 不變。逐檔來源／輸出 identity 與實際數值見同一報告及其私有 manifest；完成不等於 Human acceptance。
+
 ## Step3c 來源待 Human 決定／完整性修補 — 2026-11-26
 
 [Step3c報告](../../reports/step3_engineering_20261126.md)取代下方Step3b目前PASS主張。歷史版本gate為HUMAN_DECISION_REQUIRED，strict前瞻仍STOP；無Human接受、fits或IC／績效。跨來源291,847配對中291,360差<0.1%，446差>1%，只證明數值／單位一致而非首次版本或publication PIT。adapter一致列標NTD_BY_CROSS_SOURCE_AGREEMENT，其餘UNIT_UNVERIFIED／NaN；版本0只是匯出重播序，不是首次版認證，合併可比性仍是待Human接受的假設。完整72-job schema、原始來源manifest SHA、job陣列身分、prediction必備與凍結labels／keys／session驗證皆屬UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED工程候選；實際驗證及限制見報告，不改正式Data或既有48欄。下一步為獨立重審及Human明確選擇，不能自動啟動研究。

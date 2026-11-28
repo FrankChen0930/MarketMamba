@@ -2,7 +2,9 @@
 
 [診斷程式](../../tools/tradability_diagnostic.py)、[合成測試](../../tests/test_tradability_diagnostic.py)與[彙總報告](../../reports/tradability_diagnostic_20261128.md)僅處理第三步已曝光歷史：`EXPOSED_HISTORICAL_DIAGNOSTIC_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED`。沿用第三步鍵、三seed共同成熟支援平均秩與每日Spearman；A/B兩時段原IC四格皆精確重現（誤差0）。B臂市值Q1／Q5 IC於2015–2020為0.188830／0.097097，2021–2026為0.176836／0.110558；這是描述性分層，不是可交易超額報酬。
 
-成交金額及官方前收／漲停參考價缺失，流動性分層、兩個可交易宇宙門檻、20偏移投組及實算成本均跳過／NOT_RUN；不能量化真實可賺部分。最終私有彙總位於主checkout `.artifacts/tradability/run-20261128-builder-checked/`，不覆寫第三步 artifacts；先前run-20261128-builder僅被取代的工程中間檔。未新增擬合、不改凍結規格／前瞻家族、正式Data或production。Next：獨立複核既有診斷與來源缺口，缺證據不推定可交易；完成不等於Human acceptance。
+第二輪唯讀既有FinMind成交金額／spread日檔（來源存量2005-01-03～2026-04-24，本輪讀2014起3,001檔），完成前20 sessions均額、實際成交均價≥10元及t+1開盤／量的歷史代理宇宙。B臂≥1,000萬／≥5,000萬IC：2015–2020為0.147427／0.133246；2021–2026為0.140411／0.135673，報告另列同有效日原IC及A臂。來源尾端98個signal日全日UNKNOWN排除。四檔2024除息日與既有組裝程式確認兩價格來源皆為還原價，第三步標籤已反映股利調整；凍結規格措辭不精確但未改規格或標籤數值。完整日曆重建4,211,900個成熟標籤，誤差0。
+
+20偏移的前10%／前30／多空／同宇宙等權及三種滑價均已算出條件片段，**完整歷史投組STOP／PARTIAL**：兩門檻分別因名單／基準缺未來價格排除2,158／1,819日，另117日horizon跨來源終點；僅575／914個完整週期，不能量化整段真實可賺部分。部分逐年只有4–19個有效偏移，不補零。最終私有彙總位於主checkout `.artifacts/tradability/run-20261128-finmind-verified/`；第一輪builder-checked仍保留，第二輪builder試跑及checked驗證失敗run皆非最終authority。指派worktree `builder_tradability2`、base／detached HEAD `cde5c07`，不commit／push；未新增擬合、不改前瞻家族、正式Data或production。Next：協調者獨立複核來源事實、條件投組及缺價支援；缺證據不推定可交易，完成不等於Human acceptance。
 
 ## 第六步客戶營收動能 — 凍結／無標籤工程候選（2026-11-28）
 
