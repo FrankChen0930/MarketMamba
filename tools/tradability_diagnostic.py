@@ -129,14 +129,44 @@ def admission(mean_amount, money, volume, next_open, previous, next_volume, date
     return known & (mean_amount >= threshold) & (actual >= 10) & (next_volume > 0) & ~locked, known
 
 
-def cycle_path(entry, closes, weights, cost):
+def exit_missing_marks(entry, closes, policy='last_close', previous_close=None):
+    """Liquidate permanently on the first unavailable close; keep cash thereafter.
+
+    last_close marks the sale at the preceding observed close (entry-day missing
+    uses the signal-day close). loss100 marks zero from the missing day onward.
+    Returns filled marks and sale indices (-1 means no forced exit). This is a
+    historical sensitivity convention, not evidence of an executable exit.
+    """
+    entry = np.asarray(entry, float); out = np.array(closes, dtype=float, copy=True)
+    if (policy not in ('last_close', 'loss100') or out.ndim != 2 or
+            out.shape[1] != len(entry) or not np.isfinite(entry).all() or (entry <= 0).any()):
+        raise ValueError('STOP invalid missing-price exit inputs')
+    previous = entry if previous_close is None else np.asarray(previous_close, float)
+    if previous.shape != entry.shape:
+        raise ValueError('STOP unknown preceding close')
+    exits = np.full(len(entry), -1, dtype=int)
+    for j in range(len(entry)):
+        missing = np.flatnonzero(~np.isfinite(out[:, j]) | (out[:, j] <= 0))
+        if len(missing):
+            first = int(missing[0])
+            # Only a first-day gap needs the preceding close; require it then, per stock.
+            if first == 0 and policy == 'last_close' and (
+                    previous_close is None or not np.isfinite(previous[j]) or previous[j] <= 0):
+                raise ValueError('STOP unknown preceding close')
+            # last-close liquidation is booked at its last observed mark.
+            exits[j] = max(first - 1, 0) if policy == 'last_close' else first
+            out[first:, j] = (out[first-1, j] if first else previous[j]) if policy == 'last_close' else 0.
+    return out, exits
+
+
+def cycle_path(entry, closes, weights, cost, *, allow_zero=False):
     """Buy-and-hold equal entry notionals, 20 close marks, cost at entry.
 
     Unknown marks invalidate the whole selected cycle, never drop a loser.
     Weights can be +1 long and -1 short (gross 2, net 0 on NAV 1).
     """
     if (not np.isfinite(entry).all() or not np.isfinite(closes).all()
-            or (entry <= 0).any() or (closes <= 0).any()):
+            or (entry <= 0).any() or (closes < 0 if allow_zero else closes <= 0).any()):
         return None
     nav = 1 + (closes / entry - 1) @ weights - cost
     if not np.isfinite(nav).all() or (nav <= 0).any():
@@ -228,17 +258,18 @@ def selected_weights(score, stock, kind):
 
 
 def simulate_portfolios(keys, inference_scores, universe, prices, days, last_source,
-                        kinds=('top10', 'top30', 'longshort', 'equal')):
-    """Twenty fixed calendar offsets. All variants share complete-cycle support.
+                        kinds=('top10', 'top30', 'longshort', 'equal'), missing_policy='last_close'):
+    """Twenty fixed calendar offsets; missing marks cause permanent cash exits.
 
-    Selection uses inference ranks only; missing future marks invalidate the
-    entire cycle across arms/variants, without substituting securities.
+    Selection uses inference ranks only. Unknown entry opens remain inadmissible.
+    last_close is a diagnostic exit convention, not strict execution evidence.
     """
     n = len(days); groups = day_groups(keys); first = int(keys[0, 0])
     variants = [(a, k) for a in 'BA' for k in kinds]
     paths = {(a, k, slip): np.full((20, n), np.nan) for a, k in variants for slip in [0., .001, .003, -1.]}
     buys = {(a, k): np.full((20, n), np.nan) for a, k in variants}
     sells = {(a, k): np.full((20, n), np.nan) for a, k in variants}
+    # Retain the historical key for readers; it now counts missing ENTRY only.
     failures = dict(insufficient_universe=0, source_horizon=0, missing_selected_price=0)
     plans = [[] for _ in range(20)]
     for rows in groups:
@@ -252,11 +283,11 @@ def simulate_portfolios(keys, inference_scores, universe, prices, days, last_sou
         valid_marks = True
         for w in weights.values():
             stock = np.array(list(w)); entry = prices['Open'][d+1, stock]
-            marks = prices['Close'][d+1:d+21, stock]
-            if (not np.isfinite(entry).all() or not np.isfinite(marks).all()
-                    or (entry <= 0).any() or (marks <= 0).any()):
+            if not np.isfinite(entry).all() or (entry <= 0).any():
                 valid_marks = False; break
-            if cycle_path(entry, marks, np.array(list(w.values())), 0.) is None:
+            marks, _ = exit_missing_marks(entry, prices['Close'][d+1:d+21, stock],
+                                          missing_policy, prices['Close'][d, stock])
+            if cycle_path(entry, marks, np.array(list(w.values())), 0., allow_zero=True) is None:
                 raise ValueError('STOP selected portfolio insolvent; never drop a losing cycle')
         if not valid_marks:
             failures['missing_selected_price'] += 1; continue
@@ -270,25 +301,38 @@ def simulate_portfolios(keys, inference_scores, universe, prices, days, last_sou
             next_continuous = j + 1 < len(plan) and plan[j+1][0] == d + 20
             for a, k in variants:
                 w = weights[a, k]; stock = np.array(list(w)); vals = np.array(list(w.values()))
+                marks, exits = exit_missing_marks(prices['Open'][d+1, stock],
+                    prices['Close'][d+1:d+21, stock], missing_policy, prices['Close'][d, stock])
+                surviving = {int(code): w[code] for code, exit_day in zip(stock, exits) if exit_day < 0}
                 buy, sell = turnover(before[a, k] if continuous else {}, w)
-                end_buy, end_sell = (0., 0.) if next_continuous else turnover(w, {})
+                end_buy, end_sell = (0., 0.) if next_continuous else turnover(surviving, {})
                 buys[a, k][offset, d+1:d+21] = 0.; sells[a, k][offset, d+1:d+21] = 0.
                 buys[a, k][offset, d+1] = buy; sells[a, k][offset, d+1] = sell
                 buys[a, k][offset, d+20] += end_buy; sells[a, k][offset, d+20] += end_sell
+                forced_buy = np.zeros(20); forced_sell = np.zeros(20)
+                for weight, exit_day in zip(vals, exits):
+                    if exit_day >= 0:
+                        if weight > 0: forced_sell[exit_day] += weight
+                        else: forced_buy[exit_day] -= weight
+                buys[a, k][offset, d+1:d+21] += forced_buy
+                sells[a, k][offset, d+1:d+21] += forced_sell
                 for slip in [0., .001, .003, -1.]:
                     cost = trading_cost(buy, sell, slip) if slip >= 0 else 0.
-                    path = cycle_path(prices['Open'][d+1, stock], prices['Close'][d+1:d+21, stock], vals, cost)
+                    path = cycle_path(prices['Open'][d+1, stock], marks, vals, cost, allow_zero=True)
                     if path is None:
                         raise ValueError('STOP net portfolio insolvent; never drop a losing cycle')
                     end_cost = trading_cost(end_buy, end_sell, slip) if slip >= 0 else 0.
                     # Termination cost is deducted from final NAV, not twice.
-                    if end_cost:
-                        nav = np.cumprod(1 + path); nav[-1] -= end_cost
-                        if nav[-1] <= 0:
+                    forced_cost = (forced_buy*.001425 + forced_sell*.004425 +
+                                   (forced_buy+forced_sell)*slip) if slip >= 0 else np.zeros(20)
+                    if end_cost or forced_cost.any():
+                        nav = np.cumprod(1 + path) - np.cumsum(forced_cost)
+                        nav[-1] -= end_cost
+                        if (nav <= 0).any():
                             raise ValueError('STOP nonpositive terminal NAV')
                         path = nav / np.r_[1., nav[:-1]] - 1
                     paths[a, k, slip][offset, d+1:d+21] = path
-                before[a, k] = w
+                before[a, k] = surviving
             previous_d = d
     return paths, buys, sells, failures
 
@@ -452,7 +496,8 @@ def run_finmind(inputs, keys, scores, inference_scores, days, codes, periods, ba
         files=len(identities), identities='finmind_sources.json', dividend_identity=dividend_identity,
         rules=dict(amount='mean t-20..t-1 complete sessions; NTD', price='t Trading_money/Trading_Volume >=10',
                    entry='t+1 open/(close-spread), one theoretical-ceiling tick tolerance; volume>0',
-                   turnover='equal-weight list change, not drifted weights', horizon='t+1 open to t+20 close; 20 fixed offsets'),
+                   turnover='equal-weight list change, not drifted weights', horizon='t+1 open to t+20 close; 20 fixed offsets',
+                   missing_future_price='last observed close liquidation, cash thereafter, no reentry; diagnostic proxy'),
         portfolio_excluded_signal_days=failures)
     for p in private_out.iterdir():
         if p.is_file() and p.name != 'manifest.json':
@@ -464,11 +509,11 @@ def run_finmind(inputs, keys, scores, inference_scores, days, codes, periods, ba
                       original_signal_days - sum(fail.values()),
                       (original_signal_days - sum(fail.values())) / original_signal_days]
                      for th, fail in failures.items()]
-    summary = ('## 第二輪結論與完整性 STOP\n\n'
-        '診斷2的來源／宇宙IC已實算；診斷3–4的前10%／前30／多空／等權及全部成本格已算出，但只是完整價格週期的條件片段，**整段歷史投組完整性STOP／PARTIAL**。'
-        '選股不使用未來報酬，但報表因未來價格缺漏而排除整個週期，尤其同宇宙等權基準涉及更多股票，造成嚴重事後支援選擇。'
+    summary = ('## 缺價退出後支援與完整性 STOP\n\n'
+        '診斷2的來源／宇宙IC及診斷3–4的投組成本格已算出；**整段歷史可交易績效仍STOP／PARTIAL**。'
+        '持有期缺價依最後可得收盤變現為現金，不重入，不再因此排除整個週期；最後收盤退出是歷史診斷假設，不是撮合證據。未知進場價及來源／日曆不足仍排除。'
         '不得把下表淨年化當整段歷史可賺報酬，無法量化真實可賺百分比；不把排除期補零，亦不更換股票或放寬門檻。\n\n' +
-        _table(['均額門檻','原signal日','horizon跨來源終點日','選定名單／基準缺未來價格日','完整20-session週期','完整週期比例'], coverage_rows)+'\n')
+        _table(['均額門檻','原signal日','horizon跨指定來源終點日','選定名單／基準缺進場價格日','可評估20-session週期','可評估週期比例'], coverage_rows)+'\n')
     text = text.replace('## IC 重現 gate', summary+'## IC 重現 gate', 1)
     text += '\n## 來源事實（第二輪實際核對；更正第一輪描述）\n\n'
     text += f'本機來源存量{len(source_inventory)}個日檔，檔名範圍{source_inventory[0].name[:10]}～{source_inventory[-1].name[:10]}；實際realpath `{source.resolve()}`。本輪唯讀其中2014起{len(identities)}檔，以既有完整日曆逐日對齊，供2015前20 sessions暖身；不把全部來源存量說成本輪全讀。來源欄位 Trading_money 為成交金額（元）、Trading_Volume 為股數；未以還原收盤價×量推算。四檔固定選取中華電2412、台灣大3045、遠傳4904、兆豐金2886，使用本機 dividend_raw 的2024現金除息日／配息金額，未用績效挑選。\n\n'

@@ -1,3 +1,9 @@
+## 第三步洩漏稽核來源語義 — 2026-11-28
+
+[稽核報告 T1](../../reports/leak_audit_20261128.md)以2024-01-05／04-30／07-04的原始 cache、processed 與 prepared 逐層對照：2330 的 `Securities_Balance` 分別為1426／326／7732，精確等於當日原始借券成交 `volume` 加總，不能僅憑名稱當成借券餘額或每週資料。這三個實例不認證全部歷史的餘額語義；原48欄／正式Data沒有變動。集保 Week 與月資料 period 不能等同 publication_at；國際數據同曆日也不能等同台股收盤可得。缺 receipt／vintage 仍列 LAG_RISK／UNKNOWN。
+
+shared manifest 的 scaling 文字與未縮放 cache／X 實值存在 provenance 落差；本案只記錄稽核發現，不覆寫原 manifest 或 source gate。私有來源身分與三日期例證位於主 checkout `.artifacts/leak-audit/run-20261128-builder/`。`RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED`。
+
 ## Step3c 來源待 Human 決定／完整性修補 — 2026-11-26
 
 [Step3c報告](../../reports/step3_engineering_20261126.md)取代下方Step3b目前PASS主張。歷史版本gate為HUMAN_DECISION_REQUIRED，strict前瞻仍STOP；無Human接受、fits或IC／績效。跨來源291,847配對中291,360差<0.1%，446差>1%，只證明數值／單位一致而非首次版本或publication PIT。adapter一致列標NTD_BY_CROSS_SOURCE_AGREEMENT，其餘UNIT_UNVERIFIED／NaN；版本0只是匯出重播序，不是首次版認證，合併可比性仍是待Human接受的假設。完整72-job schema、原始來源manifest SHA、job陣列身分、prediction必備與凍結labels／keys／session驗證皆屬UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED工程候選；實際驗證及限制見報告，不改正式Data或既有48欄。下一步為獨立重審及Human明確選擇，不能自動啟動研究。

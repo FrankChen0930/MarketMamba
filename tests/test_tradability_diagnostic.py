@@ -76,13 +76,13 @@ def test_twenty_offsets_cash_boundaries_and_common_unknown_support():
         assert np.prod(1 + paths['B', 'top10', 0.][off][np.isfinite(paths['B', 'top10', 0.][off])]) == pytest.approx(
             (1-.001425)*(1-.004425))
         assert np.nanmax(np.abs(paths['B', 'longshort', -1.][off])) == 0.
-    # Stock20 isn't in top10, but is in the benchmark: exclude the entire cycle
-    # for all variants rather than leave a favorable top10-only support.
+    # Leak-audit T6 policy: a holding-period gap no longer drops the cycle; the
+    # stock is liquidated at its last observed close (benchmark stock20 here).
     price['Close'][10, 20] = np.nan
     paths, _, _, failed = simulate_portfolios(keys, scores, universe, price, days, days[-1])
-    assert failed['missing_selected_price'] == 10
-    assert np.isnan(paths['B', 'top10', -1.][0, 1:21]).all()
-    assert np.isnan(paths['A', 'equal', -1.][0, 1:21]).all()
+    assert failed['missing_selected_price'] == 0
+    assert np.isfinite(paths['B', 'top10', -1.][0, 1:21]).all()
+    assert np.isfinite(paths['A', 'equal', -1.][0, 1:21]).all()
 
 
 def test_performance_drawdown_includes_initial_nav():

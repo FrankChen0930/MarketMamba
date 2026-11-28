@@ -1,3 +1,9 @@
+## 第三步洩漏稽核導航 — 2026-11-28
+
+[洩漏稽核](../../reports/leak_audit_20261128.md)及 [leak_audit_run.py](../../tools/leak_audit_run.py)只提供已曝光歷史的 branch-local 稽核與新增對照擬合。原 bundle／keys／labels／sample／target／LightGBM 參數仍為第三步 machine authority；原 A185／B190 不重新命名，報告的 audit A190 明指原 B。新 transformed matrix、模型與預測只屬主 checkout `.artifacts/leak-audit/run-20261128-builder/` 的研究稽核證據，不 supersede 凍結規格、來源 gate、決定檔、前瞻家族或 production authority。
+
+來源／股票池問題與固定快照擾動通過必須分開：擾動不重建還原價 vintage，不能清除未來除權息資訊。新 [tradability_diagnostic.py](../../tools/tradability_diagnostic.py)採最後收盤變現及 −100%敏感度；舊 `.artifacts/tradability/run-20261128-finmind-verified/` 與舊報告保留為完整週期排除政策的歷史結果，不把兩政策數字混用。缺價退出是假設、strict executable／trading gate 仍 STOP。`RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED`；待獨立審查及 Human acceptance，沒有 authority supersession。
+
 ## 可交易性診斷導航 — 2026-11-28
 
 [診斷報告](../../reports/tradability_diagnostic_20261128.md)及[程式](../../tools/tradability_diagnostic.py)是第三步已曝光歷史的branch-local描述性診斷，`RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED`。輸入authority仍為第三步原bundle／hash／凍結標籤、[原評估器](../../tools/run_step3_evaluation.py)及其每日秩合成定義，未supersede任何machine contract、凍結決定、前瞻家族、strict execution gate或production authority。

@@ -1,3 +1,11 @@
+## 第三步價格水準與來源時鐘稽核 — 2026-11-28
+
+36個 matched CPU refits 依固定門檻為早期MINOR（IC下降0.007036）、後期NOT_MATERIAL（下降−0.002744），未達material≥0.02。指定15欄無尺度化不能解釋原IC的大部分；不因此推定其他來源無洩漏。原shared端到端擾動仍未重現，僅現存來源48欄子建構15/15 bitwise通過；14/20來源整檔及helper hashes與舊prepared identity不同。
+
+[稽核報告](../../reports/leak_audit_20261128.md)逐欄追 shared 48 欄：實際由未縮放 prepared cache 經 `build_arrays` 取欄／join／float32／補零，X 保留還原價水準；manifest 的 causal scaling 文字不能單獨證明實際縮放。Open／High／Low／Close／MA_20／MA_60／ATR_14 及 ATR 的 lag／mean 共15欄存在價格量綱。稽核無尺度臂以當日還原 Close 除該15欄，保留其他欄並新增實際成交均價 log，僅新 artifact；原48欄與第三步 bundle bytes 不變。
+
+同曆日 SPX／VIX／TNX 晚於台股 t 收盤；若改採翌日開盤前計算，仍需收到時間證據。Holdings 以 Week 同日 join，沒有真正公布日 lag；Business 本來源走月初＋2月 fallback，非 primary publication date；外資／投信／融資融券與 Fear_Greed／其他 macro receipt 仍未認證。固定快照因果擾動不會消除來源已含的未來公司行動。詳見報告 T1–T3，不更改既有 frozen 配方或 strict PIT gate。`RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED`。
+
 ## 第四步 4a 模型欄序與 UNKNOWN 家數 — 2026-11-27
 
 [凍結契約](../../tools/step4.py)及[工程報告](../../reports/step4_engineering_20261127.md)將第三步B 190欄作A，依序獨立追加1a `peer_return/return_peer_count/market_return`或1b `revenue_spillover/revenue_peer_count`，不加入audit欄。peer-v3來源唯讀、按日股鍵左接；分類／研究在市未知及缺join的家數為NaN，已知集合不足三家仍保留實際數，目標營收可用後僅spillover回NaN。不以NaN刪共同鍵，不重抽樣、不計IC。

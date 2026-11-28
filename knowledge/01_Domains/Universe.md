@@ -1,3 +1,9 @@
+## 第三步研究池存活者稽核 — 2026-11-28
+
+[洩漏報告 T4](../../reports/leak_audit_20261128.md)將實際 shared 公司×session 鍵與 TEJ basic 的 TSE／OTC 最早上市日至下市日前研究區間逐年比對；2015–2025 各年下市群全數未出現在該研究池，判 SURVIVOR_BIAS。這針對第三步實際研究樣本，不改 canonical lifecycle eligibility 定義，也不將 TEJ 生效日升格 publication PIT。2026 對照截至矩陣最後日2026-09-11；暫停交易事件歷史仍 UNKNOWN，不能以缺價推定暫停或下市。
+
+最早生成完整上游名單的版本／晚期快照日期仍需 provenance，不能因有每日 membership 就推定上游未採現況普通股分類或價格完整性篩選。逐年支援與遺漏集合保存在主 checkout `.artifacts/leak-audit/run-20261128-builder/`；不修正式 universe、不改前瞻家族。`RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED`。
+
 ## 同業代理 v3 聯集在市研究候選 — 2026-11-27
 
 [v3報告](../../reports/peer_proxies_data_v3_20261127.md)／[彙總](../../reports/peer_proxies_data_v3_20261127.json)記Human核准的協調者研究設計：明示TSE／OTC上市日取最早者（當日含）至下市日前（當日不含），不分交易所，v3不用任何市場變更欄。ROTC／GISA／首次掛牌名稱或日期本身不建立資格；保留日期／snapshot衝突fail closed。此段更新下方同業v1／v2的目前研究市場規則；舊結果仍為歷史紀錄，不改WP1或正式universe／48欄／P4d／其他bundle authority。

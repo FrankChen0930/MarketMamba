@@ -1,3 +1,11 @@
+## 第三步已曝光歷史洩漏稽核 — 2026-11-28
+
+36/36 CPU fits：audit A190→scalefree191 的平均IC早期0.162916→0.155880（下降0.007036，MINOR），後期0.151981→0.154725（下降−0.002744，NOT_MATERIAL）；未達任一期間下降0.02的material門檻，不能把高IC主要歸因這15個價格量綱欄。T2現存來源子建構15/15、0差異，但14/20 raw source及helper hash與舊prepared不同，原shared完整重播仍未證實。T5十次洗牌均接近0。T6主情境淨年化14.36%／21.65%、同宇宙超額9.65%／10.59%，只覆蓋至2026-05-22；−100%敏感度淨年化9.73%／18.91%。這些數字仍受T1來源與T4存活者偏差限制，不能解除strict PIT／execution STOP或更動前瞻家族。
+
+[稽核報告](../../reports/leak_audit_20261128.md)、[執行工具](../../tools/leak_audit_run.py)、[純函式](../../tools/leak_audit.py)與[新增測試](../../tests/test_leak_audit.py)屬 Human 有界核准的 CPU 歷史稽核（含新增擬合），`EXPOSED_HISTORICAL_AUDIT_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED`。原第三步 A=185、B=190，本案將原 B190 明稱 audit A190，避免名稱混用。來源追蹤確認 shared X 保留還原價格水準，不能只依 manifest 的 scaling 文字認定無價格水準；同曆日美國數據與台股 t 收盤時鐘有衝突，集保公布日／盤後 receipt 仍 UNKNOWN。TEJ 逐年比較顯示下市群遺漏，股票池判 SURVIVOR_BIAS。量化結果、配對 CI、擾動範圍與缺價退出敏感度以報告及主 checkout `.artifacts/leak-audit/run-20261128-builder/` 為準。
+
+本案修正 `tradability_diagnostic.py` 的研究投組缺價政策：最後收盤退出／−100%敏感度、變現後不重入，不再以未來缺價排除完整週期；不是可執行退出證據。不改 frozen contract、決定、前瞻家族、正式 Data 或 production authority；舊 tradability artifact 保留為舊缺價政策的歷史結果。指派 detached worktree `builder_leak_audit`、base `b447ca5`，不 commit／push。Next：協調者獨立複核完整報告與 artifact，決定第三步及前瞻來源修復；不得由完成推得 Human acceptance。
+
 ## 可交易性診斷 — 2026-11-28
 
 [診斷程式](../../tools/tradability_diagnostic.py)、[合成測試](../../tests/test_tradability_diagnostic.py)與[彙總報告](../../reports/tradability_diagnostic_20261128.md)僅處理第三步已曝光歷史：`EXPOSED_HISTORICAL_DIAGNOSTIC_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED`。沿用第三步鍵、三seed共同成熟支援平均秩與每日Spearman；A/B兩時段原IC四格皆精確重現（誤差0）。B臂市值Q1／Q5 IC於2015–2020為0.188830／0.097097，2021–2026為0.176836／0.110558；這是描述性分層，不是可交易超額報酬。
