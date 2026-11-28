@@ -1,3 +1,9 @@
+## 可交易性診斷導航 — 2026-11-28
+
+[診斷報告](../../reports/tradability_diagnostic_20261128.md)及[程式](../../tools/tradability_diagnostic.py)是第三步已曝光歷史的branch-local描述性診斷，`RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED`。輸入authority仍為第三步原bundle／hash／凍結標籤、[原評估器](../../tools/run_step3_evaluation.py)及其每日秩合成定義，未supersede任何machine contract、凍結決定、前瞻家族、strict execution gate或production authority。
+
+同價格快照manifest中的市值僅供描述性分層，不證明strict PIT。無實際成交金額與官方前收／公司行動漲停參考價，不得用close×volume／未知值補出可交易宇宙；投組與實算成本維持NOT_RUN。主checkout私有 `.artifacts/tradability/run-20261128-builder-checked/manifest.json`記錄最終輸入／程式／輸出identity及原IC重現結果；先前run-20261128-builder只是被取代的工程中間檔，不作authority。此診斷不是交易資格或Human acceptance。
+
 ## 第六步客戶營收動能 — 凍結與工程導航（2026-11-28）
 
 [凍結決定](../../tasks/decision-step6-freeze-20261128.md)為本案Human選項authority：[規格](../../tasks/spec-step6-customer-momentum-h20-20261128.md) SHA-256 `d567d6cd493cfc716431e6003ee9e8bed6fbf0e2f8fd32032d52de3672fb9639`，採H-0／E-PM，取代內文未更新的E-P與待決提案字樣。並補充[既有分層把關決定](../../tasks/decision-forward-family-gatekeeping-20261127.md)為第二層m=5、第六步最後；凍結紀錄記載登記時前瞻未啟動。這不是前瞻收集／fits／排程授權。

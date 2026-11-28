@@ -1,3 +1,9 @@
+## 可交易性診斷 — 2026-11-28
+
+[診斷程式](../../tools/tradability_diagnostic.py)、[合成測試](../../tests/test_tradability_diagnostic.py)與[彙總報告](../../reports/tradability_diagnostic_20261128.md)僅處理第三步已曝光歷史：`EXPOSED_HISTORICAL_DIAGNOSTIC_ONLY / RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED`。沿用第三步鍵、三seed共同成熟支援平均秩與每日Spearman；A/B兩時段原IC四格皆精確重現（誤差0）。B臂市值Q1／Q5 IC於2015–2020為0.188830／0.097097，2021–2026為0.176836／0.110558；這是描述性分層，不是可交易超額報酬。
+
+成交金額及官方前收／漲停參考價缺失，流動性分層、兩個可交易宇宙門檻、20偏移投組及實算成本均跳過／NOT_RUN；不能量化真實可賺部分。最終私有彙總位於主checkout `.artifacts/tradability/run-20261128-builder-checked/`，不覆寫第三步 artifacts；先前run-20261128-builder僅被取代的工程中間檔。未新增擬合、不改凍結規格／前瞻家族、正式Data或production。Next：獨立複核既有診斷與來源缺口，缺證據不推定可交易；完成不等於Human acceptance。
+
 ## 第六步客戶營收動能 — 凍結／無標籤工程候選（2026-11-28）
 
 [凍結紀錄](../../tasks/decision-step6-freeze-20261128.md)控制[規格](../../tasks/spec-step6-customer-momentum-h20-20261128.md)：H-0（歷史0 fits／各折NOT_RUN）、E-PM、等權三欄、190→193、50家／1,000鍵與7日觀測健康規則。新增[特徵純函式](../../tools/step6_features.py)、[盤點工具](../../tools/step6_audit.py)與[彙總報告](../../reports/step6_support_audit_20261128.md)，重用第三步首次單月營收YoY／surprise。狀態為 `RESEARCH_ONLY / UNMERGED / NOT_DEPLOYED / NOT_ACCEPTED`，完成不等於Human acceptance。
