@@ -24,7 +24,7 @@ export function atomicJson(file,value){
 export function validateJob(input){
  if(!input||typeof input!=='object'||!Array.isArray(input.workers)||!input.workers.length||input.workers.length>8||typeof input.taskContext!=='string'||!input.taskContext.trim())throw new Error('Expected taskContext and 1..8 workers');
  const timeoutSeconds=input.timeoutSeconds??900,maxConcurrent=input.maxConcurrent??3;
- if(!Number.isInteger(timeoutSeconds)||timeoutSeconds<1||timeoutSeconds>1800||!Number.isInteger(maxConcurrent)||maxConcurrent<1||maxConcurrent>3)throw new Error('Limits: timeoutSeconds 1..1800; maxConcurrent 1..3');
+ if(!Number.isInteger(timeoutSeconds)||timeoutSeconds<1||timeoutSeconds>7200||!Number.isInteger(maxConcurrent)||maxConcurrent<1||maxConcurrent>3)throw new Error('Limits: timeoutSeconds 1..7200; maxConcurrent 1..3');
  const ids=new Set();
  const workers=input.workers.map(w=>{
   if(!w||!SAFE.test(w.id)||ids.has(w.id)||!['claude','codex'].includes(w.platform)||typeof w.prompt!=='string'||!w.prompt.trim()||typeof w.readOnly!=='boolean'||typeof w.role!=='string'||!w.role.trim())throw new Error('Invalid worker');

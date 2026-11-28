@@ -9,7 +9,7 @@
   "maxConcurrent": 3,
   "maxWriters": 1,
   "maxWorkersPerJob": 8,
-  "maxTimeoutSeconds": 1800,
+  "maxTimeoutSeconds": 7200,
   "maxOutputBytesPerWorker": 2097152,
   "periodicSchedules": false,
   "automaticRetry": false,

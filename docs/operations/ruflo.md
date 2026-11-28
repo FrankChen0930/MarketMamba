@@ -8,7 +8,7 @@
 
 Canonical authority 不變：AGENTS → Current_State → Authority_Map → contracts/tests/domain。`.claude/agents/` 原角色不覆寫。Ruflo memory 和 worker summary 均為非權威協作證據。
 
-`tools/project_agents/integration-contract.json` 定義 acceptance bounds。主控每次明確提交一個已授權 job；同時一個 active job、job 內最多 3 workers、最多 1 writer、1–1800 秒/worker、最多 8 workers/job、stdout+stderr 最多 2 MiB/worker。預設 900 秒。失敗停止下游；無定期 audit/optimize、無自動重試、無 GPU/資料抓取或 production 權限。
+`tools/project_agents/integration-contract.json` 定義 acceptance bounds。主控每次明確提交一個已授權 job；同時一個 active job、job 內最多 3 workers、最多 1 writer、1–7200 秒/worker（2026-11-28 由 1800 調高，Human 指示）、最多 8 workers/job、stdout+stderr 最多 2 MiB/worker。預設 900 秒。失敗停止下游；無定期 audit/optimize、無自動重試、無 GPU/資料抓取或 production 權限。
 
 此工作使用已有 tools/tasks/docs/knowledge；新增 tools/project_agents 是程序邊界，既有 project_knowledge 不應兼任程序管理。外部評估目錄只提供已安裝 dependencies 及歷史線索，驗收必須本次重跑。
 
